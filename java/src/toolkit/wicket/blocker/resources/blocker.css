@@ -1,0 +1,30 @@
+.blocker-popup {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 6px;
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
+    background-color: white;
+}
+
+.blocker {
+    background-image: url('loading.gif');
+    background-repeat: no-repeat;
+    height: 48px;
+    width: 48px;
+    margin: 0 auto;
+}
+
+.blockUI.blockMsg.blockPage {
+    border: 1px solid #666;
+    padding: 20px;
+    border-radius: 6px;
+    box-shadow: 0px 0px 10px #444;
+    background-color: white;
+    color: #666;
+    font-size: 13px;
+    text-align: center;
+}
+
+.msg {
+    margin-top: 5px;
+}
