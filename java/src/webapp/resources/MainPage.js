@@ -23,7 +23,9 @@ function init () {
     $(".properties-button").click(function () {
         var effect = 'slide';
         var options = { direction: 'right' };
-        var duration = 700;
+        var duration = 300;
+
+        $(this).toggleClass('pressed');
         $('.properties-panel').toggle(effect, options, duration);
    });
 }
