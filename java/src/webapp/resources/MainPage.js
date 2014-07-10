@@ -1,5 +1,4 @@
-$(document).ready(function()
-{
+function init () {
 	//Add Inactive Class To All Accordion Headers
 	$('.accordion-header').toggleClass('inactive-header');
 
@@ -21,17 +20,13 @@ $(document).ready(function()
 		}
 	});
 
-
-   $(".properties-button").click(function () {
-           var effect = 'slide';
-           var options = { direction: 'right' };
-           var duration = 700;
-           $('.properties-panel').toggle(effect, options, duration);
-
-       });
-
-
-});
+    $(".properties-button").click(function () {
+        var effect = 'slide';
+        var options = { direction: 'right' };
+        var duration = 700;
+        $('.properties-panel').toggle(effect, options, duration);
+   });
+}
 
 
 

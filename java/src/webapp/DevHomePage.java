@@ -10,6 +10,7 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.request.resource.JavaScriptResourceReference;
 import org.apache.wicket.request.resource.PackageResourceReference;
+import toolkit.wicket.jqueryui.JQueryUIResourceReference;
 import toolkit.wicket.style.simple.SimpleStyleResourceReference;
 
 import javax.inject.Inject;
@@ -66,7 +67,9 @@ public class DevHomePage extends WebPage {
                 "   };" +
                 "   var targetEndpoint = jsPlumb.addEndpoint('" + target.getMarkupId() + "', targetEndpointOptions);" +
                 "});"));
+        response.render(JavaScriptHeaderItem.forReference(JQueryUIResourceReference.get()));
         response.render(JavaScriptHeaderItem.forReference(new JavaScriptResourceReference(DevHomePage.class, "resources/MainPage.js")));
+        response.render(OnDomReadyHeaderItem.forScript("init();"));
     }
 
     private void addPlumbContainer() {
