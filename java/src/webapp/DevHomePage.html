@@ -5,9 +5,31 @@
 <body>
 
 <div class="container">
-    <div class="page-section">
 
-        <div wicket:id="plumbContainer" class="plumbContainer" style="height:600px; width:600px;">
+
+    <div class="accordion-container">
+        <h2 class="accordion-header">Workflows</h2>
+
+        <div class="accordion-content"></div>
+
+        <h2 class="accordion-header">Data sets</h2>
+
+        <div class="accordion-content">
+
+        </div>
+
+        <h2 class="accordion-header">Transformers</h2>
+
+        <div class="accordion-content"></div>
+
+        <h2 class="accordion-header">Visualizers</h2>
+
+        <div class="accordion-content"></div>
+    </div>
+
+
+    <div class="work-area">
+        <div wicket:id="plumbContainer" class="plumbContainer" style="height:500px; width:500px;">
 
             <div wicket:id="source" class="window" style="position:absolute; width:100px; height:100px;"></div>
 
@@ -15,7 +37,6 @@
 
 
         </div>
-
     </div>
 </div>
 
