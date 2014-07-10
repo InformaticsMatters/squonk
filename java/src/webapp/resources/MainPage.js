@@ -21,5 +21,17 @@ $(document).ready(function()
 		}
 	});
 
-	return false;
+
+   $(".properties-button").click(function () {
+           var effect = 'slide';
+           var options = { direction: 'right' };
+           var duration = 700;
+           $('.properties-panel').toggle(effect, options, duration);
+
+       });
+
+
 });
+
+
+
