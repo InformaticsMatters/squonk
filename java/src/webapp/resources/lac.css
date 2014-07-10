@@ -24,6 +24,7 @@
      width: 730px;
      height: 600px;
      float: left;
+     position: relative;
  }
 
 .accordion-container {
@@ -95,11 +96,30 @@
 	height: 448px;
 }
 
+.right-menu {
+    height: 600px;
+    border-left: 1px solid #ddd;
+    width: 20px;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.properties-button {
+   transform:rotate(90deg);
+   -ms-transform:rotate(90deg); /* IE 9 */
+   -webkit-transform:rotate(90deg); /* Opera, Chrome, and Safari */
+   width: 20px;
+   margin-top: 10px;
+}
 
 .properties-panel {
-    margin-top: 10px;
-     background-color:#eee;
-     border:2px solid #333;
+     border-left:1px solid #ddd;
      display:none;
+     position: absolute;
+     right: 20px;
+     top: 0px;
+     height: 600px;
+     padding: 15px;
 }
 
