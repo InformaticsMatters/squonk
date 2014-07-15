@@ -191,7 +191,7 @@
 }
 
 .item {
-    position: relative!important;
+    position: absolute;
 }
 
 

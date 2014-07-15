@@ -1,6 +1,5 @@
 function init () {
 
-
     $(".dragg1").draggable({
         cursor: 'move',
         helper: 'clone',
@@ -14,10 +13,13 @@ function init () {
             accept: '.dragg1',
             drop: function(event, ui) {
                 $(this).append($(ui.draggable).clone());
-                $("#right-pane .dragg1").addClass("item");
-                $(".item").removeClass("ui-draggable dragg1");
 
+              jsPlumb.setContainer($("#right-pane"));
+              jsPlumb.draggable($("#right-pane .dragg1"), {
+                containment:"parent"
+              });
             }
+
         });
 
 
@@ -57,11 +59,9 @@ function init () {
 
 jsPlumb.ready(function() {
 
-    jsPlumb.setContainer($(".plumbContainer"));
 
-    jsPlumb.draggable($(".item"));
 
-    var sourceEndpoint = jsPlumb.addEndpoint();
+
 
 });
 
