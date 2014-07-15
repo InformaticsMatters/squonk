@@ -40,33 +40,33 @@ public class DevHomePage extends WebPage {
         response.render(CssHeaderItem.forReference(new PackageResourceReference(DevHomePage.class, "resources/flow.css")));
         response.render(CssHeaderItem.forReference(new PackageResourceReference(DevHomePage.class, "resources/lac.css")));
         response.render(JavaScriptHeaderItem.forReference(new PackageResourceReference(DevHomePage.class, "resources/js/dom.jsPlumb-1.6.2.js")));
-        response.render(OnDomReadyHeaderItem.forScript("jsPlumb.ready(function() {" +
-                "   jsPlumb.setContainer('" + plumbContainer.getMarkupId() + "');" +
-                "   jsPlumb.draggable('" + source.getMarkupId() + "');" +
-                "   jsPlumb.draggable('" + target.getMarkupId() + "');" +
-                "   var sourceEndpointOptions = { " +
-                "       isSource:true," +
-                "       paintStyle : {" +
-                "           fillStyle:'green'" +
-                "       }," +
-                "       connectorStyle : {" +
-                "           strokeStyle:'green'," +
-                "           lineWidth:8" +
-                "       }" +
-                "   };" +
-                "   var sourceEndpoint = jsPlumb.addEndpoint('" + source.getMarkupId() + "', sourceEndpointOptions);" +
-                "   var targetEndpointOptions = { " +
-                "       isTarget:true," +
-                "       paintStyle : {" +
-                "           fillStyle:'green'" +
-                "       }," +
-                "       connectorStyle : {" +
-                "           strokeStyle:'green'," +
-                "           lineWidth:8" +
-                "       }" +
-                "   };" +
-                "   var targetEndpoint = jsPlumb.addEndpoint('" + target.getMarkupId() + "', targetEndpointOptions);" +
-                "});"));
+        //    response.render(OnDomReadyHeaderItem.forScript("jsPlumb.ready(function() {" +
+        //            "   jsPlumb.setContainer('" + plumbContainer.getMarkupId() + "');" +
+        //            "   jsPlumb.draggable('" + source.getMarkupId() + "');" +
+        //            "   jsPlumb.draggable('" + target.getMarkupId() + "');" +
+        //            "   var sourceEndpointOptions = { " +
+        //            "       isSource:true," +
+        //            "       paintStyle : {" +
+        //            "           fillStyle:'green'" +
+        //            "       }," +
+        //            "       connectorStyle : {" +
+        //            "           strokeStyle:'green'," +
+        //            "           lineWidth:8" +
+        //            "       }" +
+        //            "   };" +
+        //            "   var sourceEndpoint = jsPlumb.addEndpoint('" + source.getMarkupId() + "', sourceEndpointOptions);" +
+        //            "   var targetEndpointOptions = { " +
+        //            "       isTarget:true," +
+        //            "       paintStyle : {" +
+        //            "           fillStyle:'green'" +
+        //            "       }," +
+        //            "       connectorStyle : {" +
+        //            "           strokeStyle:'green'," +
+        //            "           lineWidth:8" +
+        //            "       }" +
+        //            "   };" +
+        //            "   var targetEndpoint = jsPlumb.addEndpoint('" + target.getMarkupId() + "', targetEndpointOptions);" +
+        //            "});"));
         response.render(JavaScriptHeaderItem.forReference(JQueryUIResourceReference.get()));
         response.render(JavaScriptHeaderItem.forReference(new JavaScriptResourceReference(DevHomePage.class, "resources/MainPage.js")));
         response.render(OnDomReadyHeaderItem.forScript("init();"));

@@ -51,6 +51,7 @@
 .container {
     width: 1025px;
     margin: 10px auto;
+    position: relative;
 }
 
  .work-area {
@@ -187,6 +188,10 @@
      top: 0px;
      height: 600px;
      padding: 15px;
+}
+
+.item {
+    position: relative!important;
 }
 
 

@@ -1,4 +1,28 @@
 function init () {
+
+
+    $(".dragg1").draggable({
+        cursor: 'move',
+        helper: 'clone',
+        scroll: false,
+        appendTo: '#right-pane',
+        start: function () {},
+        stop: function (event, ui) {}
+    });
+
+    $("#right-pane").droppable({
+            accept: '.dragg1',
+            drop: function(event, ui) {
+                $(this).append($(ui.draggable).clone());
+                $("#right-pane .dragg1").addClass("item");
+                $(".item").removeClass("ui-draggable dragg1");
+
+            }
+        });
+
+
+
+
 	//Add Inactive Class To All Accordion Headers
 	$('.accordion-header').toggleClass('inactive-header');
 
@@ -31,4 +55,13 @@ function init () {
 }
 
 
+jsPlumb.ready(function() {
+
+    jsPlumb.setContainer($(".plumbContainer"));
+
+    jsPlumb.draggable($(".item"));
+
+    var sourceEndpoint = jsPlumb.addEndpoint();
+
+});
 
