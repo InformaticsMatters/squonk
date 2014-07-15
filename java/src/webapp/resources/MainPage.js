@@ -1,5 +1,7 @@
 function init () {
 
+    jsPlumb.setContainer($("#right-pane"));
+
     $(".dragg1").draggable({
         cursor: 'move',
         helper: 'clone',
@@ -10,20 +12,18 @@ function init () {
     });
 
     $("#right-pane").droppable({
-            accept: '.dragg1',
-            drop: function(event, ui) {
-                $(this).append($(ui.draggable).clone());
-
-              jsPlumb.setContainer($("#right-pane"));
-              jsPlumb.draggable($("#right-pane .dragg1"), {
-                containment:"parent"
-              });
-            }
-
-        });
-
-
-
+        accept: '.dragg1',
+        drop: function(event, ui) {
+            var clone = $(ui.draggable).clone();
+            clone.css({top: ui.position.top, left: ui.position.left});
+            $(this).append(clone);
+            jsPlumb.draggable($("#right-pane .dragg1"),
+                {
+                    containment:"parent"
+                }
+            );
+        }
+    });
 
 	//Add Inactive Class To All Accordion Headers
 	$('.accordion-header').toggleClass('inactive-header');
@@ -55,13 +55,4 @@ function init () {
         $('.properties-panel').toggle(effect, options, duration);
    });
 }
-
-
-jsPlumb.ready(function() {
-
-
-
-
-
-});
 
