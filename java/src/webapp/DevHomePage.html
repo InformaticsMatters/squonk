@@ -3,71 +3,39 @@
 <head>
 </head>
 <body>
-
 <div class="container">
-
-
     <div class="accordion-container">
         <h2 class="accordion-header">Workflows</h2>
 
         <div class="accordion-content">
-
-
         </div>
 
         <h2 class="accordion-header">Data sets</h2>
 
-        <div class="accordion-content">
-
+        <div class="accordion-content" wicket:id="datasets">
         </div>
 
         <h2 class="accordion-header">Transformers</h2>
 
-        <div class="accordion-content"></div>
+        <div class="accordion-content">
+        </div>
 
         <h2 class="accordion-header">Visualizers</h2>
 
-        <div class="accordion-content"></div>
-    </div>
-
-
-    <div class="work-area">
-
-        <div wicket:id="plumbContainer" class="plumbContainer" style="height:500px; width:500px;">
-
-            <div>
-                <div wicket:id="source" id="dragg1" class="window dragg1" style="width:50px; height:50px;">1</div>
-            </div>
-
-            <div style="margin-left: 100px;">
-                <div wicket:id="target" class="window dragg1" style="width:50px; height:50px;">2</div>
-            </div>
-
-
-            <div style="clear: bloth;"></div>
-
-            <div id="right-pane"
-                 style="position: relative; top: 200px; border: 1px solid; width: 200px; height: 200px;">
-            </div>
-
-
+        <div class="accordion-content">
         </div>
-
-
+    </div>
+    <div class="work-area">
+        <div wicket:id="plumbContainer" id="plumbContainer" class="plumbContainer" style="height:500px; width:500px;">
+        </div>
         <div class="right-menu">
             <div class="properties-button"><span>Properties</span></div>
         </div>
-
         <div class="properties-panel">
             <div class="label">Text field</div>
             <input style="width: 230px;" type="text"/>
         </div>
     </div>
-
-    <div>
-
-    </div>
 </div>
-
 </body>
 </html>

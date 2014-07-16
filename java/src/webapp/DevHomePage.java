@@ -31,6 +31,7 @@ public class DevHomePage extends WebPage {
 
     public DevHomePage() {
         addPlumbContainer();
+        addDatasetsPanel();
     }
 
     @Override
@@ -76,14 +77,9 @@ public class DevHomePage extends WebPage {
         plumbContainer = new WebMarkupContainer("plumbContainer");
         plumbContainer.setOutputMarkupId(true);
         add(plumbContainer);
-
-        source = new WebMarkupContainer("source");
-        source.setOutputMarkupId(true);
-        plumbContainer.add(source);
-
-        target = new WebMarkupContainer("target");
-        target.setOutputMarkupId(true);
-        plumbContainer.add(target);
     }
 
+    private void addDatasetsPanel() {
+        add(new DatasetsPanel("datasets"));
+    }
 }

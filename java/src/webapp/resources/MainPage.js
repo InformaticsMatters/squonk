@@ -1,27 +1,23 @@
 function init () {
 
-    jsPlumb.setContainer($("#right-pane"));
+    jsPlumb.setContainer($('#plumbContainer'));
 
-    $(".dragg1").draggable({
+    $('.palette-item').draggable({
         cursor: 'move',
         helper: 'clone',
         scroll: false,
-        appendTo: '#right-pane',
+        appendTo: '#plumbContainer',
         start: function () {},
         stop: function (event, ui) {}
     });
 
-    $("#right-pane").droppable({
-        accept: '.dragg1',
+    $('#plumbContainer').droppable({
+        accept: '.palette-item',
         drop: function(event, ui) {
             var clone = $(ui.draggable).clone();
-            clone.css({top: ui.position.top, left: ui.position.left});
+            clone.css({position: 'absolute', top: ui.position.top, left: ui.position.left});
             $(this).append(clone);
-            jsPlumb.draggable($("#right-pane .dragg1"),
-                {
-                    containment:"parent"
-                }
-            );
+            jsPlumb.draggable($('#plumbContainer .palette-item'), {containment:'parent'});
         }
     });
 
@@ -46,7 +42,7 @@ function init () {
 		}
 	});
 
-    $(".properties-button").click(function () {
+    $('.properties-button').click(function () {
         var effect = 'slide';
         var options = { direction: 'right' };
         var duration = 300;
