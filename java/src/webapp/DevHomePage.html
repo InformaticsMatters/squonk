@@ -3,32 +3,18 @@
 <head>
 </head>
 <body>
-<div class="container">
-    <div class="accordion-container">
-        <h2 class="accordion-header">Workflows</h2>
 
-        <div class="accordion-content">
-        </div>
+<div id="layoutContainer">
 
-        <h2 class="accordion-header">Data sets</h2>
-
-        <div class="accordion-content" wicket:id="datasets">
-        </div>
-
-        <h2 class="accordion-header">Transformers</h2>
-
-        <div class="accordion-content">
-        </div>
-
-        <h2 class="accordion-header">Visualizers</h2>
-
-        <div class="accordion-content">
+    <div class="ui-layout-center">
+        <div class="canvas">
+            <div wicket:id="plumbContainer" id="plumbContainer" class="plumbContainer">
+            </div>
         </div>
     </div>
-    <div class="work-area">
-        <div wicket:id="plumbContainer" id="plumbContainer" class="plumbContainer">
-        </div>
-        <div class="right-menu">
+
+    <div class="ui-layout-east">
+    <div class="right-menu">
             <div class="properties-button"><span>Properties</span></div>
         </div>
         <div class="properties-panel">
@@ -36,6 +22,32 @@
             <input style="width: 230px;" type="text"/>
         </div>
     </div>
+
+    <div class="ui-layout-west">
+        <div class="accordion-container">
+            <h2 class="accordion-header">Workflows</h2>
+
+            <div class="accordion-content">
+            </div>
+
+            <h2 class="accordion-header">Data sets</h2>
+
+            <div class="accordion-content" wicket:id="datasets">
+            </div>
+
+            <h2 class="accordion-header">Transformers</h2>
+
+            <div class="accordion-content">
+            </div>
+
+            <h2 class="accordion-header">Visualizers</h2>
+
+            <div class="accordion-content">
+            </div>
+        </div>
+    </div>
+
 </div>
+
 </body>
 </html>

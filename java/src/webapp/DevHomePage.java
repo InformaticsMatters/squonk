@@ -11,6 +11,7 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.request.resource.JavaScriptResourceReference;
 import org.apache.wicket.request.resource.PackageResourceReference;
 import toolkit.wicket.jqueryui.JQueryUIResourceReference;
+import toolkit.wicket.layout.LayoutResourceReference;
 import toolkit.wicket.style.simple.SimpleStyleResourceReference;
 
 import javax.inject.Inject;
@@ -37,6 +38,7 @@ public class DevHomePage extends WebPage {
     @Override
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
+        response.render(JavaScriptHeaderItem.forReference(LayoutResourceReference.get()));
         response.render(CssHeaderItem.forReference(SimpleStyleResourceReference.get()));
         response.render(CssHeaderItem.forReference(new PackageResourceReference(DevHomePage.class, "resources/flow.css")));
         response.render(CssHeaderItem.forReference(new PackageResourceReference(DevHomePage.class, "resources/lac.css")));

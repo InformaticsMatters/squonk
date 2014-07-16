@@ -1,4 +1,20 @@
+
 function init () {
+
+    var mainLayoutSettings = {
+
+            west: {
+                size: 300,
+                resizable: false,
+                slidable: false,
+                spacing_closed: 0,
+                spacing_open: 0,
+                togglerLength_closed: 00,
+                togglerLength_open: 00
+            }
+        };
+    mainLayout = $('#layoutContainer').layout(mainLayoutSettings);
+
 
     jsPlumb.setContainer($('#plumbContainer'));
 
