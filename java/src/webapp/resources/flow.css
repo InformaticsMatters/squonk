@@ -4,6 +4,8 @@ li {
 
 .plumbContainer {
     position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 .plumbContainer .window { border:1px solid #346789;

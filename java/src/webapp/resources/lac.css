@@ -54,20 +54,23 @@
     position: relative;
 }
 
- .work-area {
-     border: 1px solid #ccc;
-     -moz-border-radius: 5px;
+.work-area {
+    border: 1px solid #ccc;
+    -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     border-radius: 5px;
     -moz-box-shadow: 0 5px 15px #cccccc;
     -webkit-box-shadow: 0 5px 15px #cccccc;
     box-shadow: 0 5px 15px #cccccc;
-     padding: 20px 40px;
-     width: 730px;
-     height: 600px;
-     float: left;
-     position: relative;
- }
+    padding-top: 8px;
+    padding-bottom: 16px;
+    padding-left: 8px;
+    padding-right: 36px;
+    width: 730px;
+    height: 600px;
+    float: left;
+    position: relative;
+}
 
 .accordion-container {
 	background: #ffffff;
