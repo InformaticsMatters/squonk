@@ -11,9 +11,32 @@ function init () {
                 spacing_open: 0,
                 togglerLength_closed: 00,
                 togglerLength_open: 00
+            },
+            east: {
+                size: 20,
+                resizable: false,
+                spacing_open: 0,
+                togglerLength_closed: 00,
+                togglerLength_open: 00
             }
         };
     mainLayout = $('#layoutContainer').layout(mainLayoutSettings);
+
+    $('.properties-panel').hide();
+    $('#prop-button').click(function(){
+    var eastCurrentSize  = mainLayout.state.east.size;
+
+        if(eastCurrentSize == 20){
+                mainLayout.sizePane('east', 300);
+                $('.properties-panel').show();
+
+            } else {
+                mainLayout.sizePane('east', 20);
+                $('.properties-panel').hide();
+                }
+
+
+    });
 
 
     jsPlumb.setContainer($('#plumbContainer'));
@@ -58,13 +81,6 @@ function init () {
 		}
 	});
 
-    $('.properties-button').click(function () {
-        var effect = 'slide';
-        var options = { direction: 'right' };
-        var duration = 300;
 
-        $(this).toggleClass('pressed');
-        $('.properties-panel').toggle(effect, options, duration);
-   });
 }
 

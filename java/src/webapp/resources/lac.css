@@ -164,16 +164,11 @@
 }
 
 .right-menu {
-    height: 598px;
+    height: 100%;
     border-left: 1px solid #ddd;
     width: 20px;
-    position: absolute;
-    right: 0;
-    top: 0;
+    float: right;
     background: #efefef;
-    -moz-border-radius: 0 5px 5px 0;
-    -webkit-border-radius: 0 5px 5px 0;
-    border-radius: 0 5px 5px 0;
 }
 
 .properties-button {
@@ -206,15 +201,9 @@
 }
 
 .properties-panel {
-     border-left:1px solid #ddd;
-     display:none;
-    /* position: absolute;
-     right: 20px;
-     top: 0px;    */
-     height: 600px;
+     height: 100%;
      padding: 15px;
-     background: red;
-     float: right;
+     float: left;
 }
 
 .canvas {

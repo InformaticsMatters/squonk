@@ -41,14 +41,12 @@
 	}
         
         .ui-layout-west {
-		border-right: 1px solid #ddd;
 	}
         
-        .ui-layout-north {
+        .ui-layout-east {
 		padding: 0px;
-		overflow: visible;
+		border-left: 1px solid #ddd;
 	}
-        
         
 
 /*
