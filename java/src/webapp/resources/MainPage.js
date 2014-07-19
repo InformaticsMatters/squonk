@@ -17,7 +17,6 @@ function init () {
         mainLayout = $('#layoutContainer').layout(mainLayoutSettings);
 
      $("#accordion-west").accordion({ heightStyle: 'fill' });
-     $("#accordion-west").resize();
 
     var internalLayoutSettings = {
 
