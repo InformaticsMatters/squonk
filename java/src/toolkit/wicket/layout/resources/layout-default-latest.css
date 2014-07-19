@@ -25,7 +25,7 @@
 .ui-layout-pane { /* all 'panes' */
 	background:	#FFF; 
 	/*border:		1px solid #BBB;*/
-	padding:	10px; 
+	padding:	12px;
 	overflow:	auto;
 	/* DO NOT add scrolling (or padding) to 'panes' that have a content-div,
 	   otherwise you may get double-scrollbars - on the pane AND on the content-div
@@ -35,18 +35,45 @@
 	}
 	/* (scrolling) content-div inside pane allows for fixed header(s) and/or footer(s) */
 	.ui-layout-content {
-		padding:	10px;
 		position:	relative; /* contain floated or positioned elements */
 		overflow:	auto; /* add scrolling to content-div */
-	}
-        
-        .ui-layout-west {
 	}
         
         .ui-layout-east {
 		padding: 0px;
 		border-left: 1px solid #ddd;
 	}
+
+	    #internalLayoutContainer .ui-layout-center {
+	        border: none;
+	        box-shadow: none;
+	    }
+
+	    .wrapper {
+	        border: 1px solid #cccccc;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            border-radius: 5px;
+            -moz-box-shadow: 0 5px 15px #cccccc;
+            -webkit-box-shadow: 0 5px 15px #cccccc;
+            box-shadow: 0 5px 12px #cccccc;
+            padding: 0px;
+            height: 100%;
+	    }
+
+	    .wrapper-1 {
+            border: 1px solid #cccccc;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            border-radius: 5px;
+            -moz-box-shadow: 0 5px 15px #cccccc;
+            -webkit-box-shadow: 0 5px 15px #cccccc;
+            box-shadow: 0 5px 12px #cccccc;
+            padding: 10px;
+            height: 100%;
+        }
+
+
         
 
 /*

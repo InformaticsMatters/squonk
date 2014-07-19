@@ -7,42 +7,53 @@
 <div id="layoutContainer">
 
     <div class="ui-layout-center">
-        <div class="canvas">
-            <div wicket:id="plumbContainer" id="plumbContainer" class="plumbContainer">
+        <div class="wrapper" id="internalLayoutContainer">
+
+            <div class="ui-layout-center">
+                <div class="canvas">
+                    <div wicket:id="plumbContainer" id="plumbContainer" class="plumbContainer">
+                    </div>
+                </div>
             </div>
+
+            <div class="ui-layout-east">
+                <div class="right-menu">
+                    <div class="properties-button" id="prop-button"><span>Properties</span></div>
+                </div>
+                <div class="properties-panel">
+                    <div class="label">Text field</div>
+                    <input style="width: 230px;" type="text"/>
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <div class="ui-layout-east">
-        <div class="right-menu">
-            <div class="properties-button" id="prop-button"><span>Properties</span></div>
-        </div>
-        <div class="properties-panel">
-            <div class="label">Text field</div>
-            <input style="width: 230px;" type="text"/>
-        </div>
-    </div>
 
     <div class="ui-layout-west">
-        <div class="accordion-container">
-            <h2 class="accordion-header">Workflows</h2>
 
-            <div class="accordion-content">
-            </div>
+        <div class="wrapper-1">
+            <div id="accordion-west" class="ui-accordion">
 
-            <h2 class="accordion-header">Data sets</h2>
+                <h3 class="accordion-header" style="margin-top: 0;">Workflows</h3>
 
-            <div class="accordion-content" wicket:id="datasets">
-            </div>
+                <div class="accordion-content">
+                </div>
 
-            <h2 class="accordion-header">Transformers</h2>
+                <h3 class="accordion-header">Data sets</h3>
 
-            <div class="accordion-content">
-            </div>
+                <div class="accordion-content" wicket:id="datasets">
+                </div>
 
-            <h2 class="accordion-header">Visualizers</h2>
+                <h3 class="accordion-header">Transformers</h3>
 
-            <div class="accordion-content">
+                <div class="accordion-content">
+                </div>
+
+                <h3 class="accordion-header">Visualizers</h3>
+
+                <div class="accordion-content">
+                </div>
             </div>
         </div>
     </div>

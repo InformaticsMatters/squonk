@@ -3,15 +3,25 @@ function init () {
 
     var mainLayoutSettings = {
 
-            west: {
-                size: 300,
-                resizable: false,
-                slidable: false,
-                spacing_closed: 0,
-                spacing_open: 0,
-                togglerLength_closed: 00,
-                togglerLength_open: 00
-            },
+                west: {
+                    size: 305,
+                    resizable: false,
+                    slidable: false,
+                    spacing_closed: 0,
+                    spacing_open: 0,
+                    togglerLength_closed: 00,
+                    togglerLength_open: 00,
+                    onresize:  $.layout.callbacks.resizePaneAccordions
+                }
+            };
+        mainLayout = $('#layoutContainer').layout(mainLayoutSettings);
+
+     $("#accordion-west").accordion({ heightStyle: 'fill' });
+     $("#accordion-west").resize();
+
+    var internalLayoutSettings = {
+
+
             east: {
                 size: 20,
                 resizable: false,
@@ -20,19 +30,21 @@ function init () {
                 togglerLength_open: 00
             }
         };
-    mainLayout = $('#layoutContainer').layout(mainLayoutSettings);
+    internalLayout = $('#internalLayoutContainer').layout(internalLayoutSettings);
 
     $('.properties-panel').hide();
     $('#prop-button').click(function(){
-    var eastCurrentSize  = mainLayout.state.east.size;
+    var eastCurrentSize  = internalLayout.state.east.size;
 
         if(eastCurrentSize == 20){
-                mainLayout.sizePane('east', 300);
+                internalLayout.sizePane('east', 300);
                 $('.properties-panel').show();
+                $(this).addClass('pressed');
 
             } else {
-                mainLayout.sizePane('east', 20);
+                internalLayout.sizePane('east', 20);
                 $('.properties-panel').hide();
+                $(this).removeClass('pressed');
                 }
 
 
@@ -65,19 +77,19 @@ function init () {
 
 	//Open The First Accordion Section When Page Loads
 	$('.accordion-header').first().toggleClass('active-header').toggleClass('inactive-header');
-	$('.accordion-content').first().slideDown().toggleClass('opened-content');
+//	$('.accordion-content').first().slideDown().toggleClass('opened-content');
 
 	// The Accordion Effect
 	$('.accordion-header').click(function () {
 		if($(this).is('.inactive-header')) {
-			$('.active-header').toggleClass('active-header').toggleClass('inactive-header').next().slideToggle().toggleClass('opened-content');
+			$('.active-header').toggleClass('active-header').toggleClass('inactive-header');//.next().slideToggle().toggleClass('opened-content');
 			$(this).toggleClass('active-header').toggleClass('inactive-header');
-			$(this).next().slideToggle().toggleClass('opened-content');
+//			$(this).next().slideToggle().toggleClass('opened-content');
 		}
 
 		else {
 			$(this).toggleClass('active-header').toggleClass('inactive-header');
-			$(this).next().slideToggle().toggleClass('opened-content');
+//			$(this).next().slideToggle().toggleClass('opened-content');
 		}
 	});
 
