@@ -45,6 +45,8 @@ function setupPalette() {
 }
 
 function setupCanvas() {
+    jsPlumb.setContainer($('#plumbContainer'));
+
     $('#plumbContainer').droppable({
         accept: '.palette-item',
         drop: function(event, ui) {
@@ -62,19 +64,19 @@ function init () {
     var mainLayoutSettings = {
 
                 west: {
-                    size: 305,
-                    resizable: false,
-                    slidable: false,
-                    spacing_closed: 0,
-                    spacing_open: 0,
-                    togglerLength_closed: 00,
-                    togglerLength_open: 00,
-                    onresize:  $.layout.callbacks.resizePaneAccordions
-                }
+                       size: 305,
+                       slidable: false,
+                       spacing_closed: 0,
+                       spacing_open: 0,
+                       togglerLength_closed: 00,
+                       togglerLength_open: 00,
+                       onresize:  $.layout.callbacks.resizePaneAccordions
+                               }
             };
         mainLayout = $('#layoutContainer').layout(mainLayoutSettings);
 
-     $("#accordion-west").accordion({ heightStyle: 'fill' });
+
+    $("#accordion-west").accordion({ heightStyle: 'fill' });
 
     var internalLayoutSettings = {
 
@@ -107,7 +109,6 @@ function init () {
 
     });
 
-    jsPlumb.setContainer($('#plumbContainer'));
     setupPalette();
     setupCanvas();
 
@@ -134,4 +135,5 @@ function init () {
 
 
 }
+
 
