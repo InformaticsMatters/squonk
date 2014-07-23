@@ -1,3 +1,61 @@
+        //    response.render(OnDomReadyHeaderItem.forScript("jsPlumb.ready(function() {" +
+        //            "   jsPlumb.setContainer('" + plumbContainer.getMarkupId() + "');" +
+        //            "   jsPlumb.draggable('" + source.getMarkupId() + "');" +
+        //            "   jsPlumb.draggable('" + target.getMarkupId() + "');" +
+        //            "   var sourceEndpointOptions = { " +
+        //            "       isSource:true," +
+        //            "       paintStyle : {" +
+        //            "           fillStyle:'green'" +
+        //            "       }," +
+        //            "       connectorStyle : {" +
+        //            "           strokeStyle:'green'," +
+        //            "           lineWidth:8" +
+        //            "       }" +
+        //            "   };" +
+        //            "   var sourceEndpoint = jsPlumb.addEndpoint('" + source.getMarkupId() + "', sourceEndpointOptions);" +
+        //            "   var targetEndpointOptions = { " +
+        //            "       isTarget:true," +
+        //            "       paintStyle : {" +
+        //            "           fillStyle:'green'" +
+        //            "       }," +
+        //            "       connectorStyle : {" +
+        //            "           strokeStyle:'green'," +
+        //            "           lineWidth:8" +
+        //            "       }" +
+        //            "   };" +
+        //            "   var targetEndpoint = jsPlumb.addEndpoint('" + target.getMarkupId() + "', targetEndpointOptions);" +
+        //            "});"));
+
+
+var onCanvasDrop;
+
+function onCanvasItemAdded(itemId) {
+    console.log(itemId);
+}
+
+function setupPalette() {
+    $('.palette-item').draggable({
+        cursor: 'move',
+        helper: 'clone',
+        scroll: false,
+        appendTo: '#plumbContainer',
+        start: function () {},
+        stop: function (event, ui) {}
+    });
+}
+
+function setupCanvas() {
+    $('#plumbContainer').droppable({
+        accept: '.palette-item',
+        drop: function(event, ui) {
+            onCanvasDrop(ui.position.left, ui.position.top);
+        }
+    });
+}
+
+function makeCanvasItemsDraggable() {
+    jsPlumb.draggable($('#plumbContainer .canvas-item'), {containment:'parent'});
+}
 
 function init () {
 
@@ -49,27 +107,9 @@ function init () {
 
     });
 
-
     jsPlumb.setContainer($('#plumbContainer'));
-
-    $('.palette-item').draggable({
-        cursor: 'move',
-        helper: 'clone',
-        scroll: false,
-        appendTo: '#plumbContainer',
-        start: function () {},
-        stop: function (event, ui) {}
-    });
-
-    $('#plumbContainer').droppable({
-        accept: '.palette-item',
-        drop: function(event, ui) {
-            var clone = $(ui.draggable).clone();
-            clone.css({position: 'absolute', top: ui.position.top, left: ui.position.left});
-            $(this).append(clone);
-            jsPlumb.draggable($('#plumbContainer .palette-item'), {containment:'parent'});
-        }
-    });
+    setupPalette();
+    setupCanvas();
 
 	//Add Inactive Class To All Accordion Headers
 	$('.accordion-header').toggleClass('inactive-header');
