@@ -22,7 +22,6 @@ import toolkit.wicket.layout.LayoutResourceReference;
 import toolkit.wicket.style.simple.SimpleStyleResourceReference;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
 
 /**
  * @author simetrias
@@ -36,12 +35,12 @@ public class DevHomePage extends WebPage {
     private DevConfig config;
     @Inject
     private DevLocalService localService;
+    @Inject
+    private SessionData sessionData;
 
     private WebMarkupContainer plumbContainer;
     private WebMarkupContainer source;
     private WebMarkupContainer target;
-    private AbstractDefaultAjaxBehavior onCanvasDropBehavior;
-    private ArrayList<DatasetCanvasItemModel> canvasItemList;
     private RepeatingView repeatingView;
 
     public DevHomePage() {
@@ -67,8 +66,7 @@ public class DevHomePage extends WebPage {
         plumbContainer.setOutputMarkupId(true);
         add(plumbContainer);
 
-        canvasItemList = new ArrayList<DatasetCanvasItemModel>();
-        ListView<DatasetCanvasItemModel> listView = new ListView<DatasetCanvasItemModel>("canvasItem", canvasItemList) {
+        ListView<DatasetCanvasItemModel> listView = new ListView<DatasetCanvasItemModel>("canvasItem", sessionData.getCanvasItemList()) {
 
             @Override
             protected void populateItem(ListItem<DatasetCanvasItemModel> components) {
@@ -83,12 +81,13 @@ public class DevHomePage extends WebPage {
     private void addCanvasItem(AjaxRequestTarget target) {
         String x = getRequest().getRequestParameters().getParameterValue(POSITION_X_PARAM_NAME).toString();
         String y = getRequest().getRequestParameters().getParameterValue(POSITION_Y_PARAM_NAME).toString();
-        System.out.println(POSITION_X_PARAM_NAME + ": " + x + " " + POSITION_Y_PARAM_NAME + ": " + y);
+        // System.out.println("Added at: " + POSITION_X_PARAM_NAME + ": " + x + " " + POSITION_Y_PARAM_NAME + ": " + y);
 
         DatasetCanvasItemModel newItemModel = new DatasetCanvasItemModel();
-        newItemModel.setInitialX(x);
-        newItemModel.setInitialY(y);
-        canvasItemList.add(newItemModel);
+        newItemModel.setId(sessionData.getCanvasItemList().size());
+        newItemModel.setPositionX(x);
+        newItemModel.setPositionY(y);
+        sessionData.getCanvasItemList().add(newItemModel);
 
         target.add(plumbContainer);
         target.appendJavaScript("setupCanvas(); makeCanvasItemsDraggable()"); // since we are replacing the plumb container entirely
@@ -96,7 +95,7 @@ public class DevHomePage extends WebPage {
     }
 
     private void addCanvasDropBehavior() {
-        onCanvasDropBehavior = new AbstractDefaultAjaxBehavior() {
+        AbstractDefaultAjaxBehavior onCanvasDropBehavior = new AbstractDefaultAjaxBehavior() {
 
             @Override
             protected void respond(AjaxRequestTarget target) {

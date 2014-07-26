@@ -26,11 +26,49 @@
         //            "   var targetEndpoint = jsPlumb.addEndpoint('" + target.getMarkupId() + "', targetEndpointOptions);" +
         //            "});"));
 
-
 var onCanvasDrop;
+var onCanvasDragStop;
 
-function onCanvasItemAdded(itemId) {
-    console.log(itemId);
+function setupLayout() {
+    var mainLayoutSettings = {
+        west: {
+            size: 305,
+            slidable: false,
+            spacing_closed: 0,
+            spacing_open: 0,
+            togglerLength_closed: 00,
+            togglerLength_open: 00,
+            onresize:  $.layout.callbacks.resizePaneAccordions
+        }
+    };
+    mainLayout = $('#layoutContainer').layout(mainLayoutSettings);
+
+    $("#accordion-west").accordion({heightStyle: 'fill'});
+
+    var internalLayoutSettings = {
+        east: {
+            size: 20,
+            resizable: false,
+            spacing_open: 0,
+            togglerLength_closed: 00,
+            togglerLength_open: 00
+        }
+    };
+    internalLayout = $('#internalLayoutContainer').layout(internalLayoutSettings);
+
+    $('.properties-panel').hide();
+    $('#prop-button').click(function() {
+        var eastCurrentSize  = internalLayout.state.east.size;
+        if (eastCurrentSize == 20) {
+            internalLayout.sizePane('east', 300);
+            $('.properties-panel').show();
+            $(this).addClass('pressed');
+        } else {
+            internalLayout.sizePane('east', 20);
+            $('.properties-panel').hide();
+            $(this).removeClass('pressed');
+        }
+    });
 }
 
 function setupPalette() {
@@ -56,59 +94,17 @@ function setupCanvas() {
 }
 
 function makeCanvasItemsDraggable() {
-    jsPlumb.draggable($('#plumbContainer .canvas-item'), {containment:'parent'});
+    jsPlumb.draggable($('#plumbContainer .canvas-item'), {
+        containment: 'parent',
+        stop: function(params) {
+            console.log(params);
+            onCanvasDragStop(params.pos[0], params.pos[1]);
+        }
+    });
 }
 
 function init () {
-
-    var mainLayoutSettings = {
-
-                west: {
-                       size: 305,
-                       slidable: false,
-                       spacing_closed: 0,
-                       spacing_open: 0,
-                       togglerLength_closed: 00,
-                       togglerLength_open: 00,
-                       onresize:  $.layout.callbacks.resizePaneAccordions
-                               }
-            };
-        mainLayout = $('#layoutContainer').layout(mainLayoutSettings);
-
-
-    $("#accordion-west").accordion({ heightStyle: 'fill' });
-
-    var internalLayoutSettings = {
-
-
-            east: {
-                size: 20,
-                resizable: false,
-                spacing_open: 0,
-                togglerLength_closed: 00,
-                togglerLength_open: 00
-            }
-        };
-    internalLayout = $('#internalLayoutContainer').layout(internalLayoutSettings);
-
-    $('.properties-panel').hide();
-    $('#prop-button').click(function(){
-    var eastCurrentSize  = internalLayout.state.east.size;
-
-        if(eastCurrentSize == 20){
-                internalLayout.sizePane('east', 300);
-                $('.properties-panel').show();
-                $(this).addClass('pressed');
-
-            } else {
-                internalLayout.sizePane('east', 20);
-                $('.properties-panel').hide();
-                $(this).removeClass('pressed');
-                }
-
-
-    });
-
+    setupLayout();
     setupPalette();
     setupCanvas();
 
@@ -132,8 +128,6 @@ function init () {
 //			$(this).next().slideToggle().toggleClass('opened-content');
 		}
 	});
-
-
 }
 
 
