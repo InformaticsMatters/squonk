@@ -1,31 +1,3 @@
-        //    response.render(OnDomReadyHeaderItem.forScript("jsPlumb.ready(function() {" +
-        //            "   jsPlumb.setContainer('" + plumbContainer.getMarkupId() + "');" +
-        //            "   jsPlumb.draggable('" + source.getMarkupId() + "');" +
-        //            "   jsPlumb.draggable('" + target.getMarkupId() + "');" +
-        //            "   var sourceEndpointOptions = { " +
-        //            "       isSource:true," +
-        //            "       paintStyle : {" +
-        //            "           fillStyle:'green'" +
-        //            "       }," +
-        //            "       connectorStyle : {" +
-        //            "           strokeStyle:'green'," +
-        //            "           lineWidth:8" +
-        //            "       }" +
-        //            "   };" +
-        //            "   var sourceEndpoint = jsPlumb.addEndpoint('" + source.getMarkupId() + "', sourceEndpointOptions);" +
-        //            "   var targetEndpointOptions = { " +
-        //            "       isTarget:true," +
-        //            "       paintStyle : {" +
-        //            "           fillStyle:'green'" +
-        //            "       }," +
-        //            "       connectorStyle : {" +
-        //            "           strokeStyle:'green'," +
-        //            "           lineWidth:8" +
-        //            "       }" +
-        //            "   };" +
-        //            "   var targetEndpoint = jsPlumb.addEndpoint('" + target.getMarkupId() + "', targetEndpointOptions);" +
-        //            "});"));
-
 var onCanvasDrop;
 var onCanvasItemDragStop;
 
@@ -97,7 +69,7 @@ function makeCanvasItemsDraggable(selector) {
     jsPlumb.draggable($(selector), {
         containment: 'parent',
         stop: function(params) {
-            var index = $('#' + params.el.id).index();
+            var index = $('#' + params.el.id).index('.canvas-item');
             onCanvasItemDragStop(index, params.pos[0], params.pos[1]);
         }
     });
@@ -122,22 +94,37 @@ function setupAccordions() {
 	});
 }
 
-/*
-function onCanvasDragStop(positionX,positionY) {
-    var attrs = {"u":"./?0-1.IBehaviorListener.0-plumbContainer-canvasItem-3-item","c":"itema"};
-    var params = {'positionX': positionX,'positionY': positionY};
-    attrs.ep = params;
-    Wicket.Ajax.ajax(attrs);
+function addSourceEndpoint(itemId) {
+    var sourceEndpointOptions = {
+        isSource:true,
+        paintStyle : {
+            fillStyle:'green'
+        },
+        connectorStyle : {
+            strokeStyle:'green',
+            lineWidth:8
+        }
+    };
+    var sourceEndpoint = jsPlumb.addEndpoint(itemId, sourceEndpointOptions);
 }
-*/
+
+function addTargetEndpoint(itemId) {
+    var targetEndpointOptions = {
+        endpoint: 'Rectangle',
+        anchor: 'TopCenter',
+        isTarget:true,
+        paintStyle : {
+            fillStyle:'red'
+        },
+    };
+    var targetEndpoint = jsPlumb.addEndpoint(itemId, targetEndpointOptions);
+}
 
 function init () {
     setupLayout();
     setupPalette();
     setupCanvas();
     setupAccordions();
-
-    makeCanvasItemsDraggable('#plumbContainer .canvas-item');
 }
 
 

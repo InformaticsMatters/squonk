@@ -113,6 +113,8 @@ public class DevHomePage extends WebPage {
         target.add(listItem);
 
         target.appendJavaScript("makeCanvasItemsDraggable(':itemId')".replaceAll(":itemId", "#" + listItem.getMarkupId()));
+        target.appendJavaScript("addSourceEndpoint(':itemId')".replaceAll(":itemId", listItem.getMarkupId()));
+        target.appendJavaScript("addTargetEndpoint(':itemId')".replaceAll(":itemId", listItem.getMarkupId()));
     }
 
     private void addCanvasDropBehavior() {
