@@ -27,7 +27,7 @@
         //            "});"));
 
 var onCanvasDrop;
-var onCanvasDragStop;
+var onCanvasItemDragStop;
 
 function setupLayout() {
     var mainLayoutSettings = {
@@ -93,41 +93,51 @@ function setupCanvas() {
     });
 }
 
-function makeCanvasItemsDraggable() {
-    jsPlumb.draggable($('#plumbContainer .canvas-item'), {
+function makeCanvasItemsDraggable(selector) {
+    jsPlumb.draggable($(selector), {
         containment: 'parent',
         stop: function(params) {
-            console.log(params);
-            onCanvasDragStop(params.pos[0], params.pos[1]);
+            var index = $('#' + params.el.id).index();
+            onCanvasItemDragStop(index, params.pos[0], params.pos[1]);
         }
     });
 }
+
+function setupAccordions() {
+	// add inactive class to all accordion headers
+	$('.accordion-header').toggleClass('inactive-header');
+	// open the first accordion section when page loads
+	$('.accordion-header').first().toggleClass('active-header').toggleClass('inactive-header');
+    //	$('.accordion-content').first().slideDown().toggleClass('opened-content');
+	// the accordion effect
+	$('.accordion-header').click(function () {
+		if($(this).is('.inactive-header')) {
+			$('.active-header').toggleClass('active-header').toggleClass('inactive-header');//.next().slideToggle().toggleClass('opened-content');
+			$(this).toggleClass('active-header').toggleClass('inactive-header');
+            // $(this).next().slideToggle().toggleClass('opened-content');
+		} else {
+			$(this).toggleClass('active-header').toggleClass('inactive-header');
+            // $(this).next().slideToggle().toggleClass('opened-content');
+		}
+	});
+}
+
+/*
+function onCanvasDragStop(positionX,positionY) {
+    var attrs = {"u":"./?0-1.IBehaviorListener.0-plumbContainer-canvasItem-3-item","c":"itema"};
+    var params = {'positionX': positionX,'positionY': positionY};
+    attrs.ep = params;
+    Wicket.Ajax.ajax(attrs);
+}
+*/
 
 function init () {
     setupLayout();
     setupPalette();
     setupCanvas();
+    setupAccordions();
 
-	//Add Inactive Class To All Accordion Headers
-	$('.accordion-header').toggleClass('inactive-header');
-
-	//Open The First Accordion Section When Page Loads
-	$('.accordion-header').first().toggleClass('active-header').toggleClass('inactive-header');
-//	$('.accordion-content').first().slideDown().toggleClass('opened-content');
-
-	// The Accordion Effect
-	$('.accordion-header').click(function () {
-		if($(this).is('.inactive-header')) {
-			$('.active-header').toggleClass('active-header').toggleClass('inactive-header');//.next().slideToggle().toggleClass('opened-content');
-			$(this).toggleClass('active-header').toggleClass('inactive-header');
-//			$(this).next().slideToggle().toggleClass('opened-content');
-		}
-
-		else {
-			$(this).toggleClass('active-header').toggleClass('inactive-header');
-//			$(this).next().slideToggle().toggleClass('opened-content');
-		}
-	});
+    makeCanvasItemsDraggable('#plumbContainer .canvas-item');
 }
 
 
