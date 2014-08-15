@@ -17,6 +17,7 @@ import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.request.resource.CssResourceReference;
 import org.apache.wicket.request.resource.JavaScriptResourceReference;
+import org.apache.wicket.resource.JQueryResourceReference;
 import toolkit.wicket.layout.LayoutResourceReference;
 import toolkit.wicket.style.simple.SimpleStyleResourceReference;
 
@@ -54,7 +55,9 @@ public class DevHomePage extends WebPage {
     @Override
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
+        response.render(JavaScriptHeaderItem.forReference(JQueryResourceReference.get()));
         response.render(JavaScriptHeaderItem.forReference(LayoutResourceReference.get()));
+        response.render(JavaScriptHeaderItem.forReference(new JavaScriptResourceReference(DevHomePage.class, "resources/jquery.layout.resizePaneAccordions-1.2.min.js")));
         response.render(CssHeaderItem.forReference(SimpleStyleResourceReference.get()));
         response.render(CssHeaderItem.forReference(new CssResourceReference(DevHomePage.class, "resources/flow.css")));
         response.render(CssHeaderItem.forReference(new CssResourceReference(DevHomePage.class, "resources/lac.css")));

@@ -15,7 +15,8 @@ function setupLayout() {
     };
     mainLayout = $('#layoutContainer').layout(mainLayoutSettings);
 
-    $("#accordion-west").accordion({heightStyle: 'fill'});
+   $("#accordion-west").accordion({heightStyle: 'fill'});
+   // $('#accordion-west').height($('#accordion-west').parent().height());
 
     var internalLayoutSettings = {
         east: {
@@ -80,16 +81,13 @@ function setupAccordions() {
 	$('.accordion-header').toggleClass('inactive-header');
 	// open the first accordion section when page loads
 	$('.accordion-header').first().toggleClass('active-header').toggleClass('inactive-header');
-    //	$('.accordion-content').first().slideDown().toggleClass('opened-content');
 	// the accordion effect
 	$('.accordion-header').click(function () {
 		if($(this).is('.inactive-header')) {
-			$('.active-header').toggleClass('active-header').toggleClass('inactive-header');//.next().slideToggle().toggleClass('opened-content');
+			$('.active-header').toggleClass('active-header').toggleClass('inactive-header');
 			$(this).toggleClass('active-header').toggleClass('inactive-header');
-            // $(this).next().slideToggle().toggleClass('opened-content');
 		} else {
 			$(this).toggleClass('active-header').toggleClass('inactive-header');
-            // $(this).next().slideToggle().toggleClass('opened-content');
 		}
 	});
 }
