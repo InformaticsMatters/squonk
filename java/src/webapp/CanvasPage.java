@@ -18,6 +18,7 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.request.resource.CssResourceReference;
 import org.apache.wicket.request.resource.JavaScriptResourceReference;
 import org.apache.wicket.resource.JQueryResourceReference;
+import toolkit.wicket.layout.LayoutOverridesResourceReference;
 import toolkit.wicket.layout.LayoutResourceReference;
 import toolkit.wicket.style.simple.SimpleStyleResourceReference;
 
@@ -28,7 +29,7 @@ import java.util.List;
 /**
  * @author simetrias
  */
-public class DevHomePage extends WebPage {
+public class CanvasPage extends WebPage {
 
     private static final String POSITION_X_PARAM_NAME = "positionX";
     private static final String POSITION_Y_PARAM_NAME = "positionY";
@@ -45,7 +46,7 @@ public class DevHomePage extends WebPage {
     private WebMarkupContainer plumbContainer;
     private ListView<AbstractCanvasItemModel> canvasItemRepeater;
 
-    public DevHomePage() {
+    public CanvasPage() {
         addCanvas();
         addDatasetsPanel();
         addCanvasDropBehavior();
@@ -57,12 +58,12 @@ public class DevHomePage extends WebPage {
         super.renderHead(response);
         response.render(JavaScriptHeaderItem.forReference(JQueryResourceReference.get()));
         response.render(JavaScriptHeaderItem.forReference(LayoutResourceReference.get()));
-        response.render(JavaScriptHeaderItem.forReference(new JavaScriptResourceReference(DevHomePage.class, "resources/jquery.layout.resizePaneAccordions-1.2.min.js")));
+        response.render(JavaScriptHeaderItem.forReference(LayoutOverridesResourceReference.getResizeAccordionsOverrides()));
         response.render(CssHeaderItem.forReference(SimpleStyleResourceReference.get()));
-        response.render(CssHeaderItem.forReference(new CssResourceReference(DevHomePage.class, "resources/flow.css")));
-        response.render(CssHeaderItem.forReference(new CssResourceReference(DevHomePage.class, "resources/lac.css")));
-        response.render(JavaScriptHeaderItem.forReference(new JavaScriptResourceReference(DevHomePage.class, "resources/js/dom.jsPlumb-1.6.2.js")));
-        response.render(JavaScriptHeaderItem.forReference(new JavaScriptResourceReference(DevHomePage.class, "resources/MainPage.js")));
+        response.render(CssHeaderItem.forReference(new CssResourceReference(CanvasPage.class, "resources/flow.css")));
+        response.render(CssHeaderItem.forReference(new CssResourceReference(CanvasPage.class, "resources/lac.css")));
+        response.render(JavaScriptHeaderItem.forReference(new JavaScriptResourceReference(CanvasPage.class, "resources/js/dom.jsPlumb-1.6.2.js")));
+        response.render(JavaScriptHeaderItem.forReference(new JavaScriptResourceReference(CanvasPage.class, "resources/CanvasPage.js")));
         response.render(OnDomReadyHeaderItem.forScript("init();"));
     }
 

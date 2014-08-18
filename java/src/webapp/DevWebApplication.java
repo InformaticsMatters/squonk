@@ -14,7 +14,7 @@ public class DevWebApplication extends WebApplication {
 
     @Override
     public Class<? extends Page> getHomePage() {
-        return DevHomePage.class;
+        return CanvasPage.class;
     }
 
     @Override
