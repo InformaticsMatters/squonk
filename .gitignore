@@ -1,3 +1,12 @@
+.gitignore.swp
+/*.iml
+/*.ipr
+/*.iws
 java/.idea/workspace.xml
 java/out
 java/*.log.*
+/components/.nb-gradle/private
+/components/.nb-gradle/profiles/private
+/components/.gradle
+**/build
+

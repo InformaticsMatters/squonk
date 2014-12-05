@@ -1,0 +1,44 @@
+description = 'LAC tools for life sciences'
+
+allprojects {
+    
+    group = 'im.lac.components'
+    
+    apply plugin: 'groovy' // Apply the groovy plugin (also adds support for Java)
+    apply plugin: 'idea'   // can be used to generate Idea project files using ./gradlew idea
+    apply plugin: 'maven'  // Maven repo stuff
+    
+    sourceCompatibility = 1.7
+    version = '0.1-SNAPSHOT'
+
+
+    // In this section you declare where to find the dependencies of your project
+    repositories {
+        // Use 'jcenter' for resolving your dependencies.
+        // You can declare any Maven/Ivy/file repository here.
+        jcenter()
+    }
+
+    // In this section you declare the dependencies for your production and test code
+    dependencies {
+        // The production code uses the SLF4J logging API at compile time
+        compile 'org.slf4j:slf4j-api:1.7.7'
+        compile "org.codehaus.groovy:groovy-all:2.3.6"
+
+        // Spock for unit testing
+        testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+    }
+}
+
+// all subprojects are assumed to have artifacts to send to maven repo
+subprojects {
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                // hard coded URL as Jenkins puts things to there.
+                // If you want to run this locally then make sure that directory exists. 
+                repository(url: "file:///var/maven_repo/repo/")
+            }
+        }
+    }
+}

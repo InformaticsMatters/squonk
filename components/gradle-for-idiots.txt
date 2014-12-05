@@ -1,0 +1,42 @@
+Idiot's guide to using gradle for build
+
+
+------ gradle wrapper ------
+Use the gradle wrapper to run everything. 
+No need to install gradle, and everyone guaranteed to use the same version of gradle.
+./gradlew --help
+
+------ getting help ------
+See previous example!
+
+------ listing tasks ------
+./gradlew tasks
+
+------ compile ------
+./gradlew classes
+
+------ build everything ------
+./gradlew assemble
+
+------ run all tests ------
+./gradlew test
+
+------ run some tests ------
+./gradlew -Dtest.single=QualifiedValue* test
+(the pattern is the name of the test classes to run)
+
+------ clean ------
+./gradlew clean
+
+------ load artifacts to maven repo ------
+./gradlew uploadArchives
+
+------ run multiple tasks ------
+./gradlew clean test
+
+------ create/update Idea project files ------
+./gradlew idea
+
+------ faster startup time ------
+./gradlew --daemon ...
+(gradle runs as daemon so starts faster)
