@@ -1,0 +1,5 @@
+description = 'Mock DataModel'
+
+dependencies {
+    compile project(':datamodel')
+}
