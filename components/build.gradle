@@ -7,8 +7,8 @@ allprojects {
     apply plugin: 'groovy' // Apply the groovy plugin (also adds support for Java)
     apply plugin: 'idea'   // can be used to generate Idea project files using ./gradlew idea
     apply plugin: 'maven'  // Maven repo stuff
-    
-    sourceCompatibility = 1.7
+
+    sourceCompatibility = 1.6
     version = '0.1-SNAPSHOT'
 
 
