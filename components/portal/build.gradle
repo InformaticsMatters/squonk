@@ -1,0 +1,5 @@
+description = 'Portal'
+
+dependencies {
+    compile project(':datamodel')
+}
