@@ -9,10 +9,14 @@ dependencies {
     compile group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.1.0'
     compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '8.1.16.v20140903'
     compile group: 'org.eclipse.jetty', name: 'jetty-webapp', version: '8.1.16.v20140903'
+    compile 'jetty:jsp-api:2.1-6.0.2'
 
     compile group: 'org.jboss.weld.servlet', name: 'weld-servlet', version: '2.2.8.Final'
 
     compile group: 'org.glassfish.jersey', name: 'project', version: '2.13'
+    compile 'org.glassfish.web:javax.el:2.2.6'
+
+    compile 'org.slf4j:slf4j-jdk14:1.7.7'
 
     compile project(':datamodel')
 }

@@ -11,4 +11,6 @@ java/*.log.*
 **/build
 **/.idea
 **/*.iml
+**/*.log.*
+
 
