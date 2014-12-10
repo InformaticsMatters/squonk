@@ -1,5 +1,6 @@
 description = 'Portal'
 
 dependencies {
+    compile group: 'org.apache.wicket', name: 'wicket-core', version: '6.18.0'
     compile project(':datamodel')
 }
