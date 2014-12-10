@@ -1,4 +1,4 @@
-package com.im.lac.portal;
+package com.im.lac.portal.webapp;
 
 import org.apache.wicket.Page;
 import org.apache.wicket.protocol.http.WebApplication;
