@@ -1,13 +1,17 @@
 description = 'Portal'
 
 dependencies {
+
     compile group: 'org.apache.wicket', name: 'wicket-core', version: '6.18.0'
     compile group: 'org.apache.wicket', name: 'wicket-cdi', version: '6.18.0'
+
     compile group: 'org.eclipse.persistence', name: 'eclipselink', version: '2.5.0'
     compile group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.1.0'
-    compile group: 'org.jboss.weld.servlet', name: 'weld-servlet', version: '2.2.8.Final'
-    compile group: 'org.glassfish.jersey', name: 'jersey-server', version: '2.13'
+    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '8.1.16.v20140903'
 
+    compile group: 'org.jboss.weld.servlet', name: 'weld-servlet', version: '2.2.8.Final'
+
+    compile group: 'org.glassfish.jersey', name: 'jersey-server', version: '2.13'
 
     compile project(':datamodel')
 }
