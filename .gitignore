@@ -9,6 +9,6 @@ java/*.log.*
 /components/.nb-gradle/profiles/private
 /components/.gradle
 **/build
-/components/.idea
+**/.idea
 **/*.iml
 
