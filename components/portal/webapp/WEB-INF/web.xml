@@ -5,24 +5,6 @@
     </listener>
 
     <servlet>
-        <servlet-name>jersey</servlet-name>
-        <servlet-class>toolkit.jersey.CDIJerseyServlet</servlet-class>
-        <init-param>
-            <param-name>com.sun.jersey.config.property.packages</param-name>
-            <param-value>maestro.webservice</param-value>
-        </init-param>
-        <init-param>
-            <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
-            <param-value>true</param-value>
-        </init-param>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>jersey</servlet-name>
-        <url-pattern>/ws/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
         <servlet-name>wicket</servlet-name>
         <servlet-class>org.apache.wicket.protocol.http.WicketServlet</servlet-class>
         <init-param>
