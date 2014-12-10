@@ -12,7 +12,7 @@ dependencies {
 
     compile group: 'org.jboss.weld.servlet', name: 'weld-servlet', version: '2.2.8.Final'
 
-    compile group: 'org.glassfish.jersey', name: 'jersey-server', version: '2.13'
+    compile group: 'org.glassfish.jersey', name: 'project', version: '2.13'
 
     compile project(':datamodel')
 }
