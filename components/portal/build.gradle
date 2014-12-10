@@ -2,5 +2,10 @@ description = 'Portal'
 
 dependencies {
     compile group: 'org.apache.wicket', name: 'wicket-core', version: '6.18.0'
+    compile group: 'org.eclipse.persistence', name: 'eclipselink', version: '2.5.0'
+    compile group: 'org.jboss.weld.servlet', name: 'weld-servlet', version: '2.2.8.Final'
+
+
     compile project(':datamodel')
 }
+
