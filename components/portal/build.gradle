@@ -1,5 +1,9 @@
 description = 'Portal'
 
+
+sourceSets.main.resources.srcDir 'src/main/java'
+
+
 dependencies {
 
     compile 'org.apache.wicket:wicket-core:6.18.0'
