@@ -1,0 +1,105 @@
+
+em {
+    font-style: normal;
+}
+
+.separator10 {
+    height: 10px;
+}
+
+.separator15 {
+    height: 15px;
+}
+
+.separator20 {
+    height: 20px;
+}
+
+.separator25 {
+    height: 25px;
+}
+
+.rowActionsPanel ul {
+    padding: 0 2px;
+    margin: 0;
+}
+
+.rowActionsPanel ul li {
+    display: inline-block;
+}
+
+.rowActionsPanel ui li i.icon {
+    display: inline-block;
+}
+
+.animated> .icon> i.icon {
+    opacity: 0.85;
+    -webkit-transition:
+        all 0.2s ease-out
+      ;
+      -moz-transition:
+        all 0.2s ease-out
+      ;
+      -o-transition:
+        all 0.2s ease-out
+      ;
+      -ms-transition:
+        all 0.2s ease-out
+      ;
+      transition:
+        all 0.2s ease-out
+      ;
+}
+
+.animated:hover {
+    cursor: pointer;
+}
+
+.animated:hover> .icon> i.icon {
+    color: #000;
+    -webkit-transform: scale(1.1);
+    -moz-transform: scale(1.1);
+    -o-transform: scale(1.1);
+    -ms-transform: scale(1.1);
+    transform: scale(1.1);
+}
+
+
+/* OVERRIDE SEMANTIC */
+
+body {
+    background: #fff;
+}
+
+.ui.grid {
+    margin-top:0;
+    font-size: inherit;
+}
+
+.ui.modal > .header {
+    padding: 1rem 2rem;
+    font-size: 1.4em;
+}
+
+.ui.modal> .ui.form> .content {
+    display: table;
+    table-layout: fixed;
+    width: 100%;
+    font-size: 1em;
+    line-height: 1.4;
+    padding: 2rem;
+    background: #fff;
+}
+
+.ui.modal> .ui.form> .actions {
+    border-bottom-left-radius: 0.2857rem;
+    border-bottom-right-radius: 0.2857rem;
+}
+
+.ui.form .field {
+    font-size: 14px;
+}
+
+.field input {
+    font-family: "Helvetica Neue", "Helvetica", Arial;
+}
