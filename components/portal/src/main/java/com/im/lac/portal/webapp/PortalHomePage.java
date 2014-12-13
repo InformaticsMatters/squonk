@@ -3,6 +3,7 @@ package com.im.lac.portal.webapp;
 import com.im.lac.wicket.semantic.NotifierProvider;
 import com.im.lac.wicket.semantic.SemanticResourceReference;
 import com.inmethod.grid.common.AbstractGrid;
+import com.vaynberg.wicket.select2.ApplicationSettings;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.head.CssHeaderItem;
@@ -11,7 +12,6 @@ import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.internal.HtmlHeaderContainer;
 import org.apache.wicket.request.resource.CssResourceReference;
-import org.apache.wicket.settings.def.ApplicationSettings;
 
 import javax.inject.Inject;
 

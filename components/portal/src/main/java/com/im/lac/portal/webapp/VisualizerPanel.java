@@ -4,6 +4,7 @@ import com.inmethod.grid.IGridColumn;
 import com.inmethod.grid.treegrid.TreeGrid;
 import org.apache.wicket.markup.html.internal.HtmlHeaderContainer;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.Model;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -32,7 +33,12 @@ public class VisualizerPanel extends Panel {
     private List<IGridColumn<DefaultTreeModel, DefaultMutableTreeNode, String>> createTreeTableColumns() {
         List<IGridColumn<DefaultTreeModel, DefaultMutableTreeNode, String>> columns;
         columns = new ArrayList<IGridColumn<DefaultTreeModel, DefaultMutableTreeNode, String>>();
+        columns.add(createTreeColumn());
         return columns;
+    }
+
+    private StructureTreeColumn createTreeColumn() {
+        return new StructureTreeColumn("tree", Model.of("Tree"));
     }
 
     private DefaultTreeModel createTreeGridModel() {
