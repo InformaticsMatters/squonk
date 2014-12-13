@@ -1,6 +1,7 @@
 package com.im.lac.portal.webapp;
 
 import com.inmethod.grid.IGridColumn;
+import com.inmethod.grid.column.PropertyColumn;
 import com.inmethod.grid.treegrid.TreeGrid;
 import org.apache.wicket.markup.html.internal.HtmlHeaderContainer;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -34,6 +35,7 @@ public class VisualizerPanel extends Panel {
         List<IGridColumn<DefaultTreeModel, DefaultMutableTreeNode, String>> columns;
         columns = new ArrayList<IGridColumn<DefaultTreeModel, DefaultMutableTreeNode, String>>();
         columns.add(createTreeColumn());
+        columns.add(new PropertyColumn<DefaultTreeModel, DefaultMutableTreeNode, String, String>("p1", Model.of("P1"), "userObject.description", "userObject.description"));
         return columns;
     }
 
