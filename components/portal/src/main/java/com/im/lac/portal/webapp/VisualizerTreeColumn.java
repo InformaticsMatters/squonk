@@ -11,9 +11,9 @@ import org.apache.wicket.model.PropertyModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
-public class StructureTreeColumn extends BaseTreeColumn<DefaultTreeModel, DefaultMutableTreeNode, String> {
+public class VisualizerTreeColumn extends BaseTreeColumn<DefaultTreeModel, DefaultMutableTreeNode, String> {
 
-    public StructureTreeColumn(String columnId, IModel<String> headerModel) {
+    public VisualizerTreeColumn(String columnId, IModel<String> headerModel) {
         super(columnId, headerModel);
     }
 
@@ -21,7 +21,7 @@ public class StructureTreeColumn extends BaseTreeColumn<DefaultTreeModel, Defaul
     protected Component newNodeComponent(String id, IModel<DefaultMutableTreeNode> model) {
         DefaultMutableTreeNode node = model.getObject();
         if (!node.isLeaf()) {
-            return new StructurePanel(id, new RowData());
+            return new VisualizerStructurePanel(id);
         } else {
             return new Label(id, new PropertyModel(model, "userObject.description"));
         }

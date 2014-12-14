@@ -9,7 +9,6 @@ import org.apache.wicket.model.Model;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,42 +38,26 @@ public class VisualizerPanel extends Panel {
         return columns;
     }
 
-    private StructureTreeColumn createTreeColumn() {
-        return new StructureTreeColumn("tree", Model.of("Tree"));
+    private VisualizerTreeColumn createTreeColumn() {
+        return new VisualizerTreeColumn("tree", Model.of("Tree"));
     }
 
     private DefaultTreeModel createTreeGridModel() {
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new TreeColumnObject("root"));
-        DefaultTreeModel model = new DefaultTreeModel(rootNode);
-        DefaultMutableTreeNode rootChild1Node = new DefaultMutableTreeNode(new TreeColumnObject("Structure1"));
+        VisualizerTreeNode rootNode = new VisualizerTreeNode(new VisualizerTreeNodeData("root"));
+        VisualizerTreeModel model = new VisualizerTreeModel(rootNode);
+
+        VisualizerTreeNode rootChild1Node = new VisualizerTreeNode(new VisualizerTreeNodeData("Structure1"));
         rootNode.add(rootChild1Node);
-        DefaultMutableTreeNode rootChild2Node = new DefaultMutableTreeNode(new TreeColumnObject("Structure2"));
+        rootChild1Node.add(new VisualizerTreeNode(new VisualizerTreeNodeData("child1 of Structure1")));
+        rootChild1Node.add(new VisualizerTreeNode(new VisualizerTreeNodeData("child2 of Structure1")));
+
+        VisualizerTreeNode rootChild2Node = new VisualizerTreeNode(new VisualizerTreeNodeData("Structure2"));
         rootNode.add(rootChild2Node);
 
-        rootChild1Node.add(new DefaultMutableTreeNode(new TreeColumnObject("child1 of Structure1")));
-        rootChild1Node.add(new DefaultMutableTreeNode(new TreeColumnObject("child2 of Structure1")));
-
-        rootChild2Node.add(new DefaultMutableTreeNode(new TreeColumnObject("child1 of Structure2")));
-        rootChild2Node.add(new DefaultMutableTreeNode(new TreeColumnObject("child2 of Structure2")));
+        rootChild2Node.add(new VisualizerTreeNode(new VisualizerTreeNodeData("child1 of Structure2")));
+        rootChild2Node.add(new VisualizerTreeNode(new VisualizerTreeNodeData("child2 of Structure2")));
 
         return model;
-    }
-
-    private class TreeColumnObject implements Serializable {
-
-        private String description;
-
-        private TreeColumnObject(String description) {
-            this.description = description;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
     }
 
 }
