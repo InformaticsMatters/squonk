@@ -13,6 +13,9 @@ public class PrototypeServiceMock implements PrototypeService {
 
     @Override
     public DatasetDescriptor createDataset(DatamartSearch dataMartSearch) {
+        DatasetMock datasetMock = new DatasetMock();
+        datasetMock.setId(databaseMock.getNextId());
+        // TODO: add Dataset Rows
         return null;
     }
 
