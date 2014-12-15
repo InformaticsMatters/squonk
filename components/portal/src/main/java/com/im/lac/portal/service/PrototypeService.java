@@ -2,7 +2,7 @@ package com.im.lac.portal.service;
 
 import java.util.List;
 
-public interface VisualizerService {
+public interface PrototypeService {
 
     DatasetDescriptor createDataset(DatamartSearch dataMartSearch);
 
