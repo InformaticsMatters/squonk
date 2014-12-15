@@ -15,10 +15,7 @@ public class VisualizerPanel extends Panel {
     }
 
     private void addTreeTable() {
-        VisualizerTreeModel treeGridModel = createTreeGridModel();
-        List<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>> columns = createTreeTableColumns();
-        VisualizerTreeGrid treeGrid = new VisualizerTreeGrid("treeTable", treeGridModel, columns);
-        add(treeGrid);
+        add(new VisualizerTreeGrid("treeTable", createTreeGridModel(), createTreeTableColumns()));
     }
 
     private List<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>> createTreeTableColumns() {
