@@ -21,15 +21,11 @@ public class PrototypeServiceMock implements PrototypeService {
         properties.put("structure", "Structure");
         properties.put("p1", "Property 1");
         properties.put("p2", "Property 2");
-        for (int i = 1; i <= 100; i++) {
-            datasetMock.addDatasetRow(new Long(i), properties);
+        for (long i = 1; i <= 100; i++) {
+            datasetMock.addDatasetRow(i, properties);
         }
 
-        databaseMock.persistDatasetMock(datasetMock);
-
-        DatasetDescriptor datasetDescriptor = new DatasetDescriptor();
-        datasetDescriptor.setId(datasetMock.getId());
-        return datasetDescriptor;
+        return databaseMock.persistDatasetMock(datasetMock);
     }
 
     @Override
