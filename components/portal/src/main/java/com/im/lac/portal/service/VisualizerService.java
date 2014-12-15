@@ -10,6 +10,6 @@ public interface VisualizerService {
 
     List<DatasetDescriptor> listDatasetDescriptor();
 
-    List<PropertyDefinition> listPropertyDefinition(PropertyDefinitionFilter filter);
+    List<PropertyDefinition> listPropertyDefinition(ListPropertyDefinitionFilter filter);
 
 }

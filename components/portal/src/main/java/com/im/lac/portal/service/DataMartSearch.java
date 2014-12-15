@@ -1,15 +1,35 @@
 package com.im.lac.portal.service;
 
+import java.util.List;
+
 public class DataMartSearch {
 
     private StructureSearch structureSearch;
     private PropertySearch propertySearch;
 
-    class PropertySearch {
-        // una lista de propiedades, same API.
+    public static class StructureSearch {
+
+        private SearchType type;
+        private String structure;
+
+        public enum SearchType {
+
+            SUBSTRUCTURE
+
+        }
+
     }
 
-    class StructureSearch {
+    class PropertySearch {
 
+        private List<PropertyDefinition> propertyDefinitionList;
+
+        public List<PropertyDefinition> getPropertyDefinitionList() {
+            return propertyDefinitionList;
+        }
+
+        public void setPropertyDefinitionList(List<PropertyDefinition> propertyDefinitionList) {
+            this.propertyDefinitionList = propertyDefinitionList;
+        }
     }
 }

@@ -1,6 +1,6 @@
 package com.im.lac.portal.service;
 
-public class PropertyDefinitionFilter {
+public class ListPropertyDefinitionFilter {
 
     private String pattern;
 
