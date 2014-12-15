@@ -4,11 +4,12 @@ import java.util.List;
 
 public interface VisualizerService {
 
-    DatasetDescriptor createDataset(Search search);
+    DatasetDescriptor createDataset(DataMartSearch dataMartSearch);
 
     List<Long> openDataset(DatasetDescriptor datasetDescriptor);
 
     List<DatasetDescriptor> listDatasetDescriptor();
 
+    List<PropertyDefinition> listPropertyDefinition(PropertyDefinitionFilter filter);
 
 }
