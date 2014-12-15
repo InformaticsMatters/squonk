@@ -15,10 +15,10 @@ public class VisualizerPanel extends Panel {
     }
 
     private void addTreeTable() {
-        add(new VisualizerTreeGrid("treeTable", createTreeGridModel(), createTreeTableColumns()));
+        add(new VisualizerTreeGrid("treeTable", createTreeGridModel(), createTreeGridColumns()));
     }
 
-    private List<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>> createTreeTableColumns() {
+    private List<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>> createTreeGridColumns() {
         List<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>> columns;
         columns = new ArrayList<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>>();
         columns.add(new VisualizerTreeColumn("tree", Model.of("Tree")));
