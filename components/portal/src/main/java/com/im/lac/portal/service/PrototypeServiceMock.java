@@ -14,9 +14,7 @@ public class PrototypeServiceMock implements PrototypeService {
     private DatabaseMock databaseMock;
 
     @Override
-    public DatasetDescriptor createDataset(DatamartSearch dataMartSearch) {
-        // Now we're not using the param dataMartSearch
-
+    public DatasetDescriptor createDataset(DatamartSearch datamartSearch) {
         DatasetMock datasetMock = new DatasetMock();
 
         Map<String, String> properties = new HashMap<String, String>();
