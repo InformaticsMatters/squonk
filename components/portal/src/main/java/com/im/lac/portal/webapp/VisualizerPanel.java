@@ -22,26 +22,27 @@ public class VisualizerPanel extends Panel {
         List<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>> columns;
         columns = new ArrayList<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>>();
         columns.add(new VisualizerTreeColumn("tree", Model.of("Tree")));
-        columns.add(new VisualizerPropertyColumn("P1", "userObject.description", "userObject.description"));
+        columns.add(new VisualizerPropertyColumn("P1", "userObject.p1", "userObject.p1"));
+        columns.add(new VisualizerPropertyColumn("P2", "userObject.p2", "userObject.p2"));
+        columns.add(new VisualizerPropertyColumn("P3", "userObject.p3", "userObject.p3"));
         return columns;
     }
 
     private VisualizerTreeModel createTreeGridModel() {
-        VisualizerTreeNode rootNode = new VisualizerTreeNode(new VisualizerTreeNodeData("root"));
-        VisualizerTreeModel model = new VisualizerTreeModel(rootNode);
+        VisualizerTreeNode rootNode = new VisualizerTreeNode(new VisualizerTreeNodeData("root", "", ""));
 
-        VisualizerTreeNode rootChild1Node = new VisualizerTreeNode(new VisualizerTreeNodeData("Structure1"));
+        VisualizerTreeNode rootChild1Node = new VisualizerTreeNode(new VisualizerTreeNodeData("S1 P1", "S1 P2", "S1 P3"));
         rootNode.add(rootChild1Node);
-        rootChild1Node.add(new VisualizerTreeNode(new VisualizerTreeNodeData("child1 of Structure1")));
-        rootChild1Node.add(new VisualizerTreeNode(new VisualizerTreeNodeData("child2 of Structure1")));
+        rootChild1Node.add(new VisualizerTreeNode(new VisualizerTreeNodeData("S1 B1 P1", "S1 B1 P2", "S1 B1 P3")));
+        rootChild1Node.add(new VisualizerTreeNode(new VisualizerTreeNodeData("S1 B2 P1", "S1 B2 P2", "S1 B2 P3")));
 
-        VisualizerTreeNode rootChild2Node = new VisualizerTreeNode(new VisualizerTreeNodeData("Structure2"));
+        VisualizerTreeNode rootChild2Node = new VisualizerTreeNode(new VisualizerTreeNodeData("S2 P1", "S2 P2", "S2 P3"));
         rootNode.add(rootChild2Node);
 
-        rootChild2Node.add(new VisualizerTreeNode(new VisualizerTreeNodeData("child1 of Structure2")));
-        rootChild2Node.add(new VisualizerTreeNode(new VisualizerTreeNodeData("child2 of Structure2")));
+        rootChild2Node.add(new VisualizerTreeNode(new VisualizerTreeNodeData("S2 B1 P1", "S2 B1 P2", "S2 B1 P3")));
+        rootChild2Node.add(new VisualizerTreeNode(new VisualizerTreeNodeData("S2 B2 P1", "S2 B2 P2", "S2 B2 P3")));
 
-        return model;
+        return new VisualizerTreeModel(rootNode);
     }
 
 }

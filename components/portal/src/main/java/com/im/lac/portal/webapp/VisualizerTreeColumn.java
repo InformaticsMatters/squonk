@@ -20,7 +20,7 @@ public class VisualizerTreeColumn extends BaseTreeColumn<VisualizerTreeModel, Vi
         if (!node.isLeaf()) {
             return new VisualizerStructurePanel(id);
         } else {
-            return new Label(id, new PropertyModel(model, "userObject.description"));
+            return new Label(id, new PropertyModel(model, "userObject.p1"));
         }
     }
 
