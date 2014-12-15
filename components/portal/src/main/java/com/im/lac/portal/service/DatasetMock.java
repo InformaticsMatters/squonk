@@ -1,6 +1,7 @@
 package com.im.lac.portal.service;
 
 import java.util.List;
+import java.util.Map;
 
 public class DatasetMock {
 
@@ -21,5 +22,12 @@ public class DatasetMock {
 
     public void setDatasetRowList(List<DatasetRow> datasetRowList) {
         this.datasetRowList = datasetRowList;
+    }
+
+    public void addDatasetRow(Long id, Map properties) {
+        DatasetRow datasetRow = new DatasetRow();
+        datasetRow.setId(id);
+        datasetRow.setProperties(properties);
+        datasetRowList.add(datasetRow);
     }
 }
