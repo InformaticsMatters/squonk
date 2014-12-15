@@ -3,7 +3,10 @@ package com.im.lac.portal.service;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @ApplicationScoped
 public class PrototypeServiceMock implements PrototypeService {
@@ -15,7 +18,17 @@ public class PrototypeServiceMock implements PrototypeService {
     public DatasetDescriptor createDataset(DatamartSearch dataMartSearch) {
         DatasetMock datasetMock = new DatasetMock();
         datasetMock.setId(databaseMock.getNextId());
-        // TODO: add Dataset Rows
+        List<DatasetRow> datasetRowList = new ArrayList<DatasetRow>();
+        Map<String, String> properties = new HashMap<String, String>();
+        properties.put("structure", "Structure");
+        properties.put("p1", "Property 1");
+        properties.put("p2", "Property 2");
+        for (int i = 1; i <= 100; i++) {
+            DatasetRow datasetRow = new DatasetRow();
+            datasetRow.setId(new Long(i));
+            datasetRow.setProperties(properties);
+            datasetRowList.add(datasetRow);
+        }
         return null;
     }
 
