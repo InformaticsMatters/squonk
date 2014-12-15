@@ -1,9 +1,11 @@
 package com.im.lac.portal.service;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.InputStream;
 import java.util.List;
 
+@ApplicationScoped
 public class PrototypeServiceMock implements PrototypeService {
 
     @Inject
