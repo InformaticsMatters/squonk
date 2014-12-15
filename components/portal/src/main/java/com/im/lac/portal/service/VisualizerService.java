@@ -6,7 +6,7 @@ public interface VisualizerService {
 
     DatasetDescriptor createDataset(DatamartSearch dataMartSearch);
 
-    List<Long> openDataset(DatasetDescriptor datasetDescriptor);
+    List<Long> listDatasetRowId(DatasetDescriptor datasetDescriptor);
 
     List<DatasetDescriptor> listDatasetDescriptor();
 
