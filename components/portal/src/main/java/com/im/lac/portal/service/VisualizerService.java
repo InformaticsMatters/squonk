@@ -8,4 +8,6 @@ public interface VisualizerService {
 
     List<Long> openDataset(DatasetDescriptor datasetDescriptor);
 
+    List<DatasetDescriptor> listDatasetDescriptor();
+
 }
