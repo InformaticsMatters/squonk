@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface VisualizerService {
 
-    DatasetDescriptor createDataset(DataMartSearch dataMartSearch);
+    DatasetDescriptor createDataset(DatamartSearch dataMartSearch);
 
     List<Long> openDataset(DatasetDescriptor datasetDescriptor);
 
