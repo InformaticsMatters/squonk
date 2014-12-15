@@ -12,4 +12,6 @@ public interface VisualizerService {
 
     List<PropertyDefinition> listPropertyDefinition(ListPropertyDefinitionFilter filter);
 
+    List<DatasetRow> listDatasetRow(ListDatasetRowFilter filter);
+
 }
