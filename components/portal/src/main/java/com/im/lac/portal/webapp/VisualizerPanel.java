@@ -1,14 +1,9 @@
 package com.im.lac.portal.webapp;
 
 import com.inmethod.grid.IGridColumn;
-import com.inmethod.grid.column.PropertyColumn;
-import com.inmethod.grid.treegrid.TreeGrid;
-import org.apache.wicket.markup.html.internal.HtmlHeaderContainer;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,30 +14,22 @@ public class VisualizerPanel extends Panel {
         addTreeTable();
     }
 
-    @Override
-    public void renderHead(HtmlHeaderContainer container) {
-    }
-
     private void addTreeTable() {
-        DefaultTreeModel treeGridModel = createTreeGridModel();
-        List<IGridColumn<DefaultTreeModel, DefaultMutableTreeNode, String>> columns = createTreeTableColumns();
-        TreeGrid<DefaultTreeModel, DefaultMutableTreeNode, String> treeGrid = new TreeGrid<DefaultTreeModel, DefaultMutableTreeNode, String>("treeTable", treeGridModel, columns);
+        VisualizerTreeModel treeGridModel = createTreeGridModel();
+        List<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>> columns = createTreeTableColumns();
+        VisualizerTreeGrid treeGrid = new VisualizerTreeGrid("treeTable", treeGridModel, columns);
         add(treeGrid);
     }
 
-    private List<IGridColumn<DefaultTreeModel, DefaultMutableTreeNode, String>> createTreeTableColumns() {
-        List<IGridColumn<DefaultTreeModel, DefaultMutableTreeNode, String>> columns;
-        columns = new ArrayList<IGridColumn<DefaultTreeModel, DefaultMutableTreeNode, String>>();
-        columns.add(createTreeColumn());
-        columns.add(new PropertyColumn<DefaultTreeModel, DefaultMutableTreeNode, String, String>("p1", Model.of("P1"), "userObject.description", "userObject.description"));
+    private List<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>> createTreeTableColumns() {
+        List<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>> columns;
+        columns = new ArrayList<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>>();
+        columns.add(new VisualizerTreeColumn("tree", Model.of("Tree")));
+        columns.add(new VisualizerPropertyColumn("P1", "userObject.description", "userObject.description"));
         return columns;
     }
 
-    private VisualizerTreeColumn createTreeColumn() {
-        return new VisualizerTreeColumn("tree", Model.of("Tree"));
-    }
-
-    private DefaultTreeModel createTreeGridModel() {
+    private VisualizerTreeModel createTreeGridModel() {
         VisualizerTreeNode rootNode = new VisualizerTreeNode(new VisualizerTreeNodeData("root"));
         VisualizerTreeModel model = new VisualizerTreeModel(rootNode);
 

@@ -8,18 +8,15 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-
-public class VisualizerTreeColumn extends BaseTreeColumn<DefaultTreeModel, DefaultMutableTreeNode, String> {
+public class VisualizerTreeColumn extends BaseTreeColumn<VisualizerTreeModel, VisualizerTreeNode, String> {
 
     public VisualizerTreeColumn(String columnId, IModel<String> headerModel) {
         super(columnId, headerModel);
     }
 
     @Override
-    protected Component newNodeComponent(String id, IModel<DefaultMutableTreeNode> model) {
-        DefaultMutableTreeNode node = model.getObject();
+    protected Component newNodeComponent(String id, IModel<VisualizerTreeNode> model) {
+        VisualizerTreeNode node = model.getObject();
         if (!node.isLeaf()) {
             return new VisualizerStructurePanel(id);
         } else {
@@ -28,8 +25,8 @@ public class VisualizerTreeColumn extends BaseTreeColumn<DefaultTreeModel, Defau
     }
 
     @Override
-    protected Icon getIcon(IModel<DefaultMutableTreeNode> defaultMutableTreeNodeIModel) {
-        DefaultMutableTreeNode node = defaultMutableTreeNodeIModel.getObject();
+    protected Icon getIcon(IModel<VisualizerTreeNode> defaultMutableTreeNodeIModel) {
+        VisualizerTreeNode node = defaultMutableTreeNodeIModel.getObject();
         if (node.isLeaf()) {
             return Icons.ITEM;
         } else {
