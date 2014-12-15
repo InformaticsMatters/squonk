@@ -11,7 +11,7 @@ public class FirstPassServiceImplementation implements PrototypeService {
     }
 
     @Override
-    public DatasetDescriptor createDataset(DatasetInputStreamFormat format, InputStream sdfInputStream) {
+    public DatasetDescriptor createDataset(DatasetInputStreamFormat format, InputStream inputStream) {
         return null;
     }
 

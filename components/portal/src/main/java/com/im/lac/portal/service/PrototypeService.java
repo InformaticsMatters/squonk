@@ -7,7 +7,7 @@ public interface PrototypeService {
 
     DatasetDescriptor createDataset(DatamartSearch dataMartSearch);
 
-    DatasetDescriptor createDataset(DatasetInputStreamFormat format, InputStream sdfInputStream);
+    DatasetDescriptor createDataset(DatasetInputStreamFormat format, InputStream inputStream);
 
     List<Long> listDatasetRowId(DatasetDescriptor datasetDescriptor);
 
