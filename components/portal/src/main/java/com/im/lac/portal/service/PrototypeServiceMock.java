@@ -17,7 +17,6 @@ public class PrototypeServiceMock implements PrototypeService {
     @Override
     public DatasetDescriptor createDataset(DatamartSearch dataMartSearch) {
         DatasetMock datasetMock = new DatasetMock();
-        datasetMock.setId(databaseMock.getNextId());
         List<DatasetRow> datasetRowList = new ArrayList<DatasetRow>();
         Map<String, String> properties = new HashMap<String, String>();
         properties.put("structure", "Structure");
@@ -29,7 +28,11 @@ public class PrototypeServiceMock implements PrototypeService {
             datasetRow.setProperties(properties);
             datasetRowList.add(datasetRow);
         }
-        return null;
+        databaseMock.persistDatasetMock(datasetMock);
+
+        DatasetDescriptor datasetDescriptor = new DatasetDescriptor();
+        datasetDescriptor.setId(datasetMock.getId());
+        return datasetDescriptor;
     }
 
     @Override

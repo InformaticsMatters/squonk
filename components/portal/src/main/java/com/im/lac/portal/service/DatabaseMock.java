@@ -14,11 +14,12 @@ public class DatabaseMock {
         return datasetMockList;
     }
 
-    public void addDatasetMock(DatasetMock datasetMock) {
+    public void persistDatasetMock(DatasetMock datasetMock) {
+        datasetMock.setId(getNextId());
         this.datasetMockList.add(datasetMock);
     }
 
-    public Long getNextId() {
+    private Long getNextId() {
         id = id + 1;
         return id;
     }
