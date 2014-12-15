@@ -14,9 +14,13 @@ public class DatabaseMock {
         return datasetMockList;
     }
 
-    public void persistDatasetMock(DatasetMock datasetMock) {
+    public DatasetDescriptor persistDatasetMock(DatasetMock datasetMock) {
         datasetMock.setId(getNextId());
         this.datasetMockList.add(datasetMock);
+
+        DatasetDescriptor datasetDescriptor = new DatasetDescriptor();
+        datasetDescriptor.setId(datasetMock.getId());
+        return datasetDescriptor;
     }
 
     private Long getNextId() {
