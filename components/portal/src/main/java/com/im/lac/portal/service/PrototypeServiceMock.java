@@ -1,9 +1,13 @@
 package com.im.lac.portal.service;
 
+import javax.inject.Inject;
 import java.io.InputStream;
 import java.util.List;
 
-public class FirstPassServiceImplementation implements PrototypeService {
+public class PrototypeServiceMock implements PrototypeService {
+
+    @Inject
+    private DatabaseMock databaseMock;
 
     @Override
     public DatasetDescriptor createDataset(DatamartSearch dataMartSearch) {
@@ -12,6 +16,7 @@ public class FirstPassServiceImplementation implements PrototypeService {
 
     @Override
     public DatasetDescriptor createDataset(DatasetInputStreamFormat format, InputStream inputStream) {
+        // import from SDF and add to database mock.
         return null;
     }
 
