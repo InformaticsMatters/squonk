@@ -1,10 +1,13 @@
 package com.im.lac.portal.service;
 
+import java.io.InputStream;
 import java.util.List;
 
 public interface PrototypeService {
 
     DatasetDescriptor createDataset(DatamartSearch dataMartSearch);
+
+    DatasetDescriptor createDataset(InputStream sdfInputStream);
 
     List<Long> listDatasetRowId(DatasetDescriptor datasetDescriptor);
 
