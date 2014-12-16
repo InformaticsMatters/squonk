@@ -8,6 +8,7 @@ java/*.log.*
 /components/.nb-gradle/private
 /components/.nb-gradle/profiles/private
 /components/.gradle
+/components/gradle.properties
 **/build
 **/.idea
 **/*.iml

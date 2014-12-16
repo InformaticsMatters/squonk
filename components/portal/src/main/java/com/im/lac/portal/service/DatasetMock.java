@@ -1,12 +1,13 @@
 package com.im.lac.portal.service;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class DatasetMock {
 
     private Long id;
-    private List<DatasetRow> datasetRowList;
+    private List<DatasetRow> datasetRowList = new ArrayList<DatasetRow>();
 
     public Long getId() {
         return id;

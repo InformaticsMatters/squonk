@@ -5,6 +5,7 @@ mainClassName = "com.im.lac.portal.webapp.WebContainer"
 applicationDefaultJvmArgs = ["-Dorg.slf4j.simpleLogger.defaultLogLevel=info"]
 
 apply plugin: 'war'
+apply plugin: 'groovy'
 
 dependencies {
 
@@ -45,6 +46,8 @@ dependencies {
     }
 
     compile project(':datamodel')
+    
+    testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
 }
 
 sourceSets.main.resources.srcDir 'src/main/java'
