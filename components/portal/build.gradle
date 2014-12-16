@@ -1,5 +1,11 @@
 description = 'Portal'
 
+apply plugin: 'application'
+mainClassName = "com.im.lac.portal.webapp.WebContainer"
+applicationDefaultJvmArgs = ["-Dorg.slf4j.simpleLogger.defaultLogLevel=info"]
+
+apply plugin: 'war'
+
 dependencies {
 
     compile 'org.apache.wicket:wicket-core:6.18.0'
@@ -17,6 +23,26 @@ dependencies {
     compile 'org.glassfish.jersey.core:jersey-common:2.13'
     compile 'org.wicketstuff:wicketstuff-inmethod-grid:6.18.0'
     compile 'com.vaynberg.wicket.select2:wicket-select2:2.3'
+    
+    compile("com.chemaxon:jchem:6.3.4") {
+        // probably other things should be excluded too - jchem is not at all modular
+        exclude group:'chemaxonlib',module:'batik-core'
+        exclude group:'chemaxonlib',module:'dom4j'
+        exclude group:'chemaxonlib',module:'xercesImpl'
+        exclude group:'chemaxonlib',module:'castor-core'
+        exclude group:'chemaxonlib',module:'castor-xml'
+        exclude group:'chemaxonlib',module:'runtime12'
+        exclude group:'chemaxonlib',module:'classes12'
+        exclude group:'org.postgresql',module:'postgresql'
+        exclude group:'org.apache.derby',module:'derby'
+        exclude group:'org.apache.derby',module:'derbyclient'
+        exclude group:'org.apache.derby',module:'derbynet'
+        exclude group:'org.apache.derby',module:'derbyrun'
+        exclude group:'org.apache.derby',module:'derbytools'
+        exclude group:'mysql',module:'mysql-connector-java'
+        //exclude group:'com.oracle',module:'ojdbc6' // needed in JChem 6.3.4
+        exclude group:'org.hsqldb',module:'hsqldb'
+    }
 
     compile project(':datamodel')
 }
@@ -26,8 +52,6 @@ sourceSets.main.resources.srcDir 'src/main/java'
 sourceSets.main.output.resourcesDir = sourceSets.main.output.classesDir
 compileJava.dependsOn(processResources)
 
-apply plugin: 'application'
-mainClassName = "com.im.lac.portal.webapp.WebContainer"
-applicationDefaultJvmArgs = ["-Dorg.slf4j.simpleLogger.defaultLogLevel=info"]
+
 
 
