@@ -12,6 +12,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +122,6 @@ public class PrototypeServiceMock implements PrototypeService {
 
     @Override
     public List<Long> listDatasetRowId(DatasetDescriptor datasetDescriptor) {
-
         return null;
     }
 
@@ -137,7 +137,12 @@ public class PrototypeServiceMock implements PrototypeService {
 
     @Override
     public List<DatasetRow> listDatasetRow(ListDatasetRowFilter filter) {
-        return null;
+        DatasetMock datasetMock = databaseMock.findDatasetMockById(filter.getDatasetid());
+        if (datasetMock != null) {
+            return datasetMock.getDatasetRowList();
+        } else {
+            return new ArrayList<DatasetRow>();
+        }
     }
 
 }
