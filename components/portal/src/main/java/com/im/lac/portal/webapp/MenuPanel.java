@@ -10,6 +10,7 @@ import org.apache.wicket.model.PropertyModel;
 public class MenuPanel extends Panel {
 
     private AjaxLink homeLink;
+    private AjaxLink uploadPanelLink;
 
     public MenuPanel(String id) {
         super(id);
@@ -24,6 +25,14 @@ public class MenuPanel extends Panel {
             }
         };
         add(homeLink);
+
+        uploadPanelLink = new AjaxLink("upload") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+            }
+        };
+        add(uploadPanelLink);
 
         add(new Label("username", new PropertyModel<String>(this, "getUserName")));
 
