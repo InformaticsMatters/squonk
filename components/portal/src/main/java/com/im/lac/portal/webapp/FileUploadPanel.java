@@ -1,4 +1,4 @@
-package com.im.lac.files.api.webapp;
+package com.im.lac.portal.webapp;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
