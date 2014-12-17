@@ -1,15 +1,23 @@
 package com.im.lac.portal.webapp;
 
+import com.im.lac.portal.service.DatasetInputStreamFormat;
+import com.im.lac.portal.service.PrototypeServiceMock;
 import com.im.lac.wicket.semantic.SemanticModalPanel;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.form.Form;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UploadFilePanel extends SemanticModalPanel {
+
+    @Inject
+    private PrototypeServiceMock prototypeServiceMock;
 
     public UploadFilePanel(String id, String modalElementWicketId) {
         super(id, modalElementWicketId);
@@ -44,7 +52,9 @@ public class UploadFilePanel extends SemanticModalPanel {
 
             @Override
             public void onUpload(String clientFileName, InputStream inputStream, AjaxRequestTarget target) throws IOException {
-                // create dataset here
+                Map<String, Class> properties = new HashMap<String, Class>();
+                properties.put("set", Integer.class);
+                prototypeServiceMock.createDataset(DatasetInputStreamFormat.SDF, inputStream, properties);
             }
 
             @Override
