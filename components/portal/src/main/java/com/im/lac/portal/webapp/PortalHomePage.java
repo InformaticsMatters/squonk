@@ -19,12 +19,15 @@ public class PortalHomePage extends WebPage {
 
     @Inject
     private NotifierProvider notifierProvider;
+    private UploadFilePanel uploadFilePanel;
 
     public PortalHomePage() {
         notifierProvider.createNotifier(this, "notifier");
         add(new MenuPanel("menuPanel"));
         addShowNotifierAction();
         addVisualizerPanel();
+        addUploadFilePanel();
+        addUploadFileAction();
     }
 
     @Override
@@ -46,6 +49,21 @@ public class PortalHomePage extends WebPage {
                 notifierProvider.getNotifier(PortalHomePage.this).notify("Title", "Some message here");
             }
         });
+    }
+
+    private void addUploadFileAction() {
+        add(new AjaxLink("uploadFile") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                uploadFilePanel.showModal();
+            }
+        });
+    }
+
+    private void addUploadFilePanel() {
+        uploadFilePanel = new UploadFilePanel("uploadFilePanel", "modalElement");
+        add(uploadFilePanel);
     }
 
     private void addVisualizerPanel() {

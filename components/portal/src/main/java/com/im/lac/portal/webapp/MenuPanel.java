@@ -18,6 +18,27 @@ public class MenuPanel extends Panel {
     }
 
     private void addActions() {
+        addHomeLink();
+
+        addUserData();
+
+        addLogout();
+    }
+
+    private void addLogout() {
+        add(new Link<String>("logout") {
+
+            @Override
+            public void onClick() {
+            }
+        });
+    }
+
+    private void addUserData() {
+        add(new Label("username", new PropertyModel<String>(this, "getUserName")));
+    }
+
+    private void addHomeLink() {
         homeLink = new AjaxLink("home") {
 
             @Override
@@ -25,23 +46,6 @@ public class MenuPanel extends Panel {
             }
         };
         add(homeLink);
-
-        uploadPanelLink = new AjaxLink("upload") {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-            }
-        };
-        add(uploadPanelLink);
-
-        add(new Label("username", new PropertyModel<String>(this, "getUserName")));
-
-        add(new Link<String>("logout") {
-
-            @Override
-            public void onClick() {
-            }
-        });
     }
 
     public String getUserName() {
