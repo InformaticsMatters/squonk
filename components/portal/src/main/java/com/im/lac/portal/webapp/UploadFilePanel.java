@@ -53,7 +53,6 @@ public class UploadFilePanel extends SemanticModalPanel {
             @Override
             public void onUpload(String clientFileName, InputStream inputStream, AjaxRequestTarget target) throws IOException {
                 Map<String, Class> properties = new HashMap<String, Class>();
-                properties.put("set", Integer.class);
                 prototypeServiceMock.createDataset(DatasetInputStreamFormat.SDF, inputStream, properties);
             }
 
