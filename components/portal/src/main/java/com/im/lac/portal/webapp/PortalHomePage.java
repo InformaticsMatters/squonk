@@ -63,7 +63,25 @@ public class PortalHomePage extends WebPage {
 
     private void addUploadFilePanel() {
         uploadFilePanel = new UploadFilePanel("uploadFilePanel", "modalElement");
+        uploadFilePanel.setCallbacks(new UploadFilePanel.Callbacks() {
+            @Override
+            public void onSubmit() {
+                if (uploadFilePanel.getDatasetDescriptor() != null) {
+                    refreshVisualizerPanel();
+                }
+            }
+
+            @Override
+            public void onCancel() {
+                uploadFilePanel.hideModal();
+            }
+        });
         add(uploadFilePanel);
+    }
+
+    private void refreshVisualizerPanel() {
+        // TODO: impl
+        System.out.println("Descriptor ID = " + uploadFilePanel.getDatasetDescriptor().getId());
     }
 
     private void addVisualizerPanel() {

@@ -1,5 +1,6 @@
 package com.im.lac.portal.webapp;
 
+import com.im.lac.portal.service.DatasetDescriptor;
 import com.im.lac.portal.service.DatasetInputStreamFormat;
 import com.im.lac.portal.service.PrototypeServiceMock;
 import com.im.lac.wicket.semantic.SemanticModalPanel;
@@ -11,6 +12,7 @@ import org.apache.wicket.markup.html.form.Form;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +20,8 @@ public class UploadFilePanel extends SemanticModalPanel {
 
     @Inject
     private PrototypeServiceMock prototypeServiceMock;
+    private Callbacks callbacks;
+    private DatasetDescriptor datasetDescriptor;
 
     public UploadFilePanel(String id, String modalElementWicketId) {
         super(id, modalElementWicketId);
@@ -29,10 +33,11 @@ public class UploadFilePanel extends SemanticModalPanel {
         form.setOutputMarkupId(true);
         getModalRootComponent().add(form);
 
-        final AjaxSubmitLink submit = new AjaxSubmitLink("save") {
+        final AjaxSubmitLink submit = new AjaxSubmitLink("submit") {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                callbacks.onSubmit();
             }
         };
         submit.setOutputMarkupId(true);
@@ -42,7 +47,7 @@ public class UploadFilePanel extends SemanticModalPanel {
 
             @Override
             public void onClick(AjaxRequestTarget ajaxRequestTarget) {
-                hideModal();
+                callbacks.onCancel();
             }
         };
         form.add(cancelAction);
@@ -53,7 +58,7 @@ public class UploadFilePanel extends SemanticModalPanel {
             @Override
             public void onUpload(String clientFileName, InputStream inputStream, AjaxRequestTarget target) throws IOException {
                 Map<String, Class> properties = new HashMap<String, Class>();
-                prototypeServiceMock.createDataset(DatasetInputStreamFormat.SDF, inputStream, properties);
+                datasetDescriptor = prototypeServiceMock.createDataset(DatasetInputStreamFormat.SDF, inputStream, properties);
             }
 
             @Override
@@ -67,6 +72,22 @@ public class UploadFilePanel extends SemanticModalPanel {
             }
         });
         form.add(fileUploadPanel);
+    }
+
+    public DatasetDescriptor getDatasetDescriptor() {
+        return datasetDescriptor;
+    }
+
+    public void setCallbacks(Callbacks callbacks) {
+        this.callbacks = callbacks;
+    }
+
+    public interface Callbacks extends Serializable {
+
+        void onSubmit();
+
+        void onCancel();
+
     }
 
 }

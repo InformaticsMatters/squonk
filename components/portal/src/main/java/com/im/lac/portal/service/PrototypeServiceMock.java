@@ -5,17 +5,16 @@ import chemaxon.marvin.io.MPropHandler;
 import chemaxon.marvin.io.MRecord;
 import chemaxon.marvin.io.MRecordReader;
 import chemaxon.struc.MProp;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class PrototypeServiceMock implements PrototypeService {
@@ -121,8 +120,8 @@ public class PrototypeServiceMock implements PrototypeService {
     }
 
     @Override
-    public List<Long> listDatasetRowId(DatasetDescriptor datasetDescriptor
-    ) {
+    public List<Long> listDatasetRowId(DatasetDescriptor datasetDescriptor) {
+
         return null;
     }
 
@@ -132,14 +131,12 @@ public class PrototypeServiceMock implements PrototypeService {
     }
 
     @Override
-    public List<PropertyDefinition> listPropertyDefinition(ListPropertyDefinitionFilter filter
-    ) {
+    public List<PropertyDefinition> listPropertyDefinition(ListPropertyDefinitionFilter filter) {
         return null;
     }
 
     @Override
-    public List<DatasetRow> listDatasetRow(ListDatasetRowFilter filter
-    ) {
+    public List<DatasetRow> listDatasetRow(ListDatasetRowFilter filter) {
         return null;
     }
 

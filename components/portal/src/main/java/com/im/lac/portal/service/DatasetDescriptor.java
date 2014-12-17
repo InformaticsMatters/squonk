@@ -1,6 +1,8 @@
 package com.im.lac.portal.service;
 
-public class DatasetDescriptor {
+import java.io.Serializable;
+
+public class DatasetDescriptor implements Serializable {
 
     private Long id;
     private String description;

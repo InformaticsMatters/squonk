@@ -23,6 +23,15 @@ public class DatabaseMock {
         return datasetDescriptor;
     }
 
+    public DatasetMock findDatasetMockById(Long id) {
+        for (DatasetMock datasetMock : datasetMockList) {
+            if (datasetMock.getId().equals(id)) {
+                return datasetMock;
+            }
+        }
+        return null;
+    }
+
     private Long getNextId() {
         id = id + 1;
         return id;
