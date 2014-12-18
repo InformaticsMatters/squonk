@@ -17,10 +17,12 @@ public class VisualizerTreeColumn extends BaseTreeColumn<VisualizerTreeModel, Vi
     @Override
     protected Component newNodeComponent(String id, IModel<VisualizerTreeNode> model) {
         VisualizerTreeNode node = model.getObject();
+
+
         if (!node.isLeaf()) {
             return new VisualizerStructurePanel(id);
         } else {
-            return new Label(id, new PropertyModel(model, "userObject.p1"));
+            return new Label(id, new PropertyModel(model, "userObject.dummy"));
         }
     }
 

@@ -19,7 +19,7 @@ public class DatabaseMock {
         this.datasetMockList.add(datasetMock);
 
         DatasetDescriptor datasetDescriptor = new DatasetDescriptor();
-        datasetDescriptor.setId(datasetMock.getId());
+        datasetDescriptor.setDatasetId(datasetMock.getId());
         return datasetDescriptor;
     }
 

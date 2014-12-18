@@ -35,7 +35,6 @@ public class PortalHomePage extends WebPage {
         notifierProvider.createNotifier(this, "notifier");
         add(new MenuPanel("menuPanel"));
         addShowNotifierAction();
-        addVisualizerPanel();
         addUploadFilePanel();
         addUploadFileAction();
         addDatasetDescriptorGrid();
@@ -93,7 +92,7 @@ public class PortalHomePage extends WebPage {
             @Override
             public void onSubmit() {
                 if (uploadFilePanel.getDatasetDescriptor() != null) {
-                    refreshVisualizerPanel();
+                    System.out.println("File Imported");
                 }
             }
 
@@ -103,14 +102,5 @@ public class PortalHomePage extends WebPage {
             }
         });
         add(uploadFilePanel);
-    }
-
-    private void refreshVisualizerPanel() {
-        // TODO: impl
-        System.out.println("Descriptor ID = " + uploadFilePanel.getDatasetDescriptor().getId());
-    }
-
-    private void addVisualizerPanel() {
-        add(new VisualizerPanel("visualizerPanel"));
     }
 }

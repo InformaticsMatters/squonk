@@ -4,15 +4,15 @@ import java.io.Serializable;
 
 public class DatasetDescriptor implements Serializable {
 
-    private Long id;
+    private Long datasetId;
     private String description;
 
-    public Long getId() {
-        return id;
+    public Long getDatasetId() {
+        return datasetId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setDatasetId(Long datasetId) {
+        this.datasetId = datasetId;
     }
 
     public String getDescription() {

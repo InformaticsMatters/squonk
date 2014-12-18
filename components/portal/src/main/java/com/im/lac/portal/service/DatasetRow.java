@@ -1,11 +1,12 @@
 package com.im.lac.portal.service;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DatasetRow {
+public class DatasetRow implements Serializable {
 
     private Long id;
     private Map<String, Object> properties;
@@ -61,5 +62,9 @@ public class DatasetRow {
         if (children != null) {
             children.remove(child);
         }
+    }
+
+    public List<DatasetRow> getChildren() {
+        return children;
     }
 }
