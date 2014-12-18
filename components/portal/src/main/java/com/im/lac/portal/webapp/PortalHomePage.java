@@ -30,6 +30,7 @@ public class PortalHomePage extends WebPage {
 
     private UploadFilePanel uploadFilePanel;
     private EasyGrid<DatasetDescriptor> datasetDescriptorGrid;
+    private List<DatasetDescriptor> datasetDescriptorList;
 
     public PortalHomePage() {
         notifierProvider.createNotifier(this, "notifier");
@@ -38,21 +39,6 @@ public class PortalHomePage extends WebPage {
         addUploadFilePanel();
         addUploadFileAction();
         addDatasetDescriptorGrid();
-    }
-
-    private void addDatasetDescriptorGrid() {
-        EasyGridBuilder<DatasetDescriptor> easyGridBuilder = new EasyGridBuilder<DatasetDescriptor>("datasetDescriptors");
-        easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("ID", "id", "id"));
-        easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("Description", "description", "description"));
-
-        datasetDescriptorGrid = easyGridBuilder.build(new EasyListDataSource<DatasetDescriptor>(DatasetDescriptor.class) {
-
-            @Override
-            public List<DatasetDescriptor> loadData() {
-                return prototypeServiceMock.listDatasetDescriptor();
-            }
-        });
-        add(datasetDescriptorGrid);
     }
 
     @Override
@@ -92,6 +78,8 @@ public class PortalHomePage extends WebPage {
             @Override
             public void onSubmit() {
                 if (uploadFilePanel.getDatasetDescriptor() != null) {
+                    refreshVisualizerPanel();
+                    refreshDatasetDescriptorsGrid();
                     System.out.println("File Imported");
                 }
             }
@@ -103,4 +91,46 @@ public class PortalHomePage extends WebPage {
         });
         add(uploadFilePanel);
     }
+
+    private void refreshVisualizerPanel() {
+        // TODO: impl
+        System.out.println("Descriptor ID = " + uploadFilePanel.getDatasetDescriptor().getDatasetId());
+    }
+
+    private void refreshDatasetDescriptorsGrid() {
+        datasetDescriptorList = prototypeServiceMock.listDatasetDescriptor();
+        datasetDescriptorGrid.resetData();
+        getRequestCycle().find(AjaxRequestTarget.class).add(datasetDescriptorGrid);
+    }
+
+    private void addDatasetDescriptorGrid() {
+        datasetDescriptorList = prototypeServiceMock.listDatasetDescriptor();
+
+        EasyGridBuilder<DatasetDescriptor> easyGridBuilder = new EasyGridBuilder<DatasetDescriptor>("datasetDescriptors");
+        easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("ID", "datasetId", "datasetId"));
+        easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("Description", "description", "description"));
+
+        datasetDescriptorGrid = easyGridBuilder.build(new EasyListDataSource<DatasetDescriptor>(DatasetDescriptor.class) {
+
+            @Override
+            public List<DatasetDescriptor> loadData() {
+                return datasetDescriptorList;
+            }
+        });
+        add(datasetDescriptorGrid);
+
+        addDatasetDescriptorGridActions();
+    }
+
+    private void addDatasetDescriptorGridActions() {
+        add(new AjaxLink("addFromSDF") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                uploadFilePanel.showModal();
+            }
+        });
+    }
+
+
 }
