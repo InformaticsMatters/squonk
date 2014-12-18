@@ -5,6 +5,7 @@ import com.im.lac.portal.service.PrototypeServiceMock;
 import com.im.lac.wicket.inmethod.EasyGrid;
 import com.im.lac.wicket.inmethod.EasyGridBuilder;
 import com.im.lac.wicket.inmethod.EasyListDataSource;
+import com.im.lac.wicket.inmethod.RowActionsCallbackHandler;
 import com.im.lac.wicket.semantic.NotifierProvider;
 import com.im.lac.wicket.semantic.SemanticResourceReference;
 import com.inmethod.grid.common.AbstractGrid;
@@ -19,6 +20,7 @@ import org.apache.wicket.markup.html.internal.HtmlHeaderContainer;
 import org.apache.wicket.request.resource.CssResourceReference;
 
 import javax.inject.Inject;
+import java.util.Arrays;
 import java.util.List;
 
 public class PortalHomePage extends WebPage {
@@ -109,6 +111,18 @@ public class PortalHomePage extends WebPage {
         EasyGridBuilder<DatasetDescriptor> easyGridBuilder = new EasyGridBuilder<DatasetDescriptor>("datasetDescriptors");
         easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("ID", "datasetId", "datasetId"));
         easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("Description", "description", "description"));
+
+
+        List<String> actionNameList = Arrays.asList(PortalConstants.LARGE_EDIT_LINK_ICON);
+        easyGridBuilder.getColumnList().add(0, easyGridBuilder.newActionsColumn(actionNameList, new RowActionsCallbackHandler<DatasetDescriptor>() {
+
+            @Override
+            public void onAction(AjaxRequestTarget target, String name, DatasetDescriptor rowModelObject) {
+                if (PortalConstants.LARGE_EDIT_LINK_ICON.equals(name)) {
+                    // TODO: Do something...
+                }
+            }
+        }).setInitialSize(70));
 
         datasetDescriptorGrid = easyGridBuilder.build(new EasyListDataSource<DatasetDescriptor>(DatasetDescriptor.class) {
 
