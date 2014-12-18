@@ -119,7 +119,9 @@ public class PortalHomePage extends WebPage {
             @Override
             public void onAction(AjaxRequestTarget target, String name, DatasetDescriptor rowModelObject) {
                 if (PortalConstants.LARGE_EDIT_LINK_ICON.equals(name)) {
-                    // TODO: Do something...
+                    TreeGridDatasetVisualizerPage page = new TreeGridDatasetVisualizerPage();
+                    page.refreshVisualizerPanel(rowModelObject);
+                    setResponsePage(page);
                 }
             }
         }).setInitialSize(70));
