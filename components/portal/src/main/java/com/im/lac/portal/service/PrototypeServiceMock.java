@@ -136,6 +136,7 @@ public class PrototypeServiceMock implements PrototypeService {
         for (DatasetMock datasetMock : databaseMock.getDatasetMockList()) {
             DatasetDescriptor datasetDescriptor = new DatasetDescriptor();
             datasetDescriptor.setId(datasetMock.getId());
+            datasetDescriptors.add(datasetDescriptor);
         }
         return datasetDescriptors;
     }

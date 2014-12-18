@@ -1,5 +1,10 @@
 package com.im.lac.portal.webapp;
 
+import com.im.lac.portal.service.DatasetDescriptor;
+import com.im.lac.portal.service.PrototypeServiceMock;
+import com.im.lac.wicket.inmethod.EasyGrid;
+import com.im.lac.wicket.inmethod.EasyGridBuilder;
+import com.im.lac.wicket.inmethod.EasyListDataSource;
 import com.im.lac.wicket.semantic.NotifierProvider;
 import com.im.lac.wicket.semantic.SemanticResourceReference;
 import com.inmethod.grid.common.AbstractGrid;
@@ -14,12 +19,17 @@ import org.apache.wicket.markup.html.internal.HtmlHeaderContainer;
 import org.apache.wicket.request.resource.CssResourceReference;
 
 import javax.inject.Inject;
+import java.util.List;
 
 public class PortalHomePage extends WebPage {
 
     @Inject
     private NotifierProvider notifierProvider;
+    @Inject
+    private PrototypeServiceMock prototypeServiceMock;
+
     private UploadFilePanel uploadFilePanel;
+    private EasyGrid<DatasetDescriptor> datasetDescriptorGrid;
 
     public PortalHomePage() {
         notifierProvider.createNotifier(this, "notifier");
@@ -28,6 +38,22 @@ public class PortalHomePage extends WebPage {
         addVisualizerPanel();
         addUploadFilePanel();
         addUploadFileAction();
+        addDatasetDescriptorGrid();
+    }
+
+    private void addDatasetDescriptorGrid() {
+        EasyGridBuilder<DatasetDescriptor> easyGridBuilder = new EasyGridBuilder<DatasetDescriptor>("datasetDescriptors");
+        easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("ID", "id", "id"));
+        easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("Description", "description", "description"));
+
+        datasetDescriptorGrid = easyGridBuilder.build(new EasyListDataSource<DatasetDescriptor>(DatasetDescriptor.class) {
+
+            @Override
+            public List<DatasetDescriptor> loadData() {
+                return prototypeServiceMock.listDatasetDescriptor();
+            }
+        });
+        add(datasetDescriptorGrid);
     }
 
     @Override

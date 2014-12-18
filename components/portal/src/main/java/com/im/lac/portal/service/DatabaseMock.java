@@ -7,7 +7,7 @@ import java.util.List;
 @ApplicationScoped
 public class DatabaseMock {
 
-    private Long id = new Long("1");
+    private Long id = new Long("0");
     private List<DatasetMock> datasetMockList = new ArrayList<DatasetMock>();
 
     public List<DatasetMock> getDatasetMockList() {
