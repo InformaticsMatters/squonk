@@ -1,10 +1,21 @@
 package com.im.lac.portal.webapp;
 
-import com.im.lac.portal.service.*;
+import com.im.lac.portal.service.DatasetDescriptor;
+import com.im.lac.portal.service.DatasetRow;
+import com.im.lac.portal.service.ListDatasetRowFilter;
+import com.im.lac.portal.service.PrototypeService;
 import com.im.lac.wicket.semantic.NotifierProvider;
+import com.im.lac.wicket.semantic.SemanticResourceReference;
 import com.inmethod.grid.IGridColumn;
+import com.inmethod.grid.common.AbstractGrid;
+import com.vaynberg.wicket.select2.ApplicationSettings;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.internal.HtmlHeaderContainer;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.request.resource.CssResourceReference;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -20,10 +31,23 @@ public class TreeGridDatasetVisualizerPage extends WebPage {
 
     public TreeGridDatasetVisualizerPage() {
         notifierProvider.createNotifier(this, "notifier");
-        addVisualizerPanel();
+        addPanels();
     }
 
-    private void addVisualizerPanel() {
+    @Override
+    public void renderHead(HtmlHeaderContainer container) {
+        super.renderHead(container);
+        IHeaderResponse response = container.getHeaderResponse();
+        response.render(JavaScriptHeaderItem.forReference(SemanticResourceReference.get()));
+        response.render(CssHeaderItem.forReference(new CssResourceReference(AbstractGrid.class, "res/style.css")));
+        response.render(CssHeaderItem.forReference(new CssResourceReference(ApplicationSettings.class, "res/select2.css")));
+        response.render(CssHeaderItem.forReference(new CssResourceReference(SemanticResourceReference.class, "resources/semantic-overrides.css")));
+        response.render(CssHeaderItem.forReference(new CssResourceReference(SemanticResourceReference.class, "resources/easygrid-overrides.css")));
+    }
+
+    private void addPanels() {
+        add(new MenuPanel("menuPanel"));
+
         visualizerPanel = new VisualizerPanel("visualizerPanel");
         add(visualizerPanel);
     }

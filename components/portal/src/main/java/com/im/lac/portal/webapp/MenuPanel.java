@@ -18,34 +18,24 @@ public class MenuPanel extends Panel {
     }
 
     private void addActions() {
-        addHomeLink();
 
-        addUserData();
+        homeLink = new AjaxLink("home") {
 
-        addLogout();
-    }
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                setResponsePage(PortalHomePage.class);
+            }
+        };
+        add(homeLink);
 
-    private void addLogout() {
         add(new Link<String>("logout") {
 
             @Override
             public void onClick() {
             }
         });
-    }
 
-    private void addUserData() {
         add(new Label("username", new PropertyModel<String>(this, "getUserName")));
-    }
-
-    private void addHomeLink() {
-        homeLink = new AjaxLink("home") {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-            }
-        };
-        add(homeLink);
     }
 
     public String getUserName() {
