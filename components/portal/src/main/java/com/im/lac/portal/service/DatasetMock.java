@@ -1,8 +1,7 @@
 package com.im.lac.portal.service;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 
 public class DatasetMock {
 
@@ -21,14 +20,17 @@ public class DatasetMock {
         return datasetRowList;
     }
 
-    public void setDatasetRowList(List<DatasetRow> datasetRowList) {
-        this.datasetRowList = datasetRowList;
+    public void addDatasetRow(DatasetRow datasetRow) {
+        datasetRowList.add(datasetRow);
     }
 
-    public void addDatasetRow(Long id, Map properties) {
-        DatasetRow datasetRow = new DatasetRow();
-        datasetRow.setId(id);
-        datasetRow.setProperties(properties);
-        datasetRowList.add(datasetRow);
+    public DatasetRow findDatasetRowById(Long id) {
+        DatasetRow returnDatasetRow = null;
+        for(DatasetRow datasetRow : datasetRowList) {
+            if(id.equals(datasetRow.getId())) {
+                returnDatasetRow = datasetRow;
+            }
+        }
+        return returnDatasetRow;
     }
 }

@@ -13,39 +13,34 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @ApplicationScoped
 public class PrototypeServiceMock implements PrototypeService {
 
-    private static final Logger logger = LoggerFactory.getLogger(PrototypeServiceMock.class.getName());
-
     // TODO decide how to best handle this
     public static final String STRUCTURE_FIELD_NAME = "structure_as_text";
-
+    private static final Logger logger = LoggerFactory.getLogger(PrototypeServiceMock.class.getName());
     @Inject
     private DatabaseMock databaseMock;
 
     @Override
     public DatasetDescriptor createDataset(DatamartSearch datamartSearch) {
         DatasetMock datasetMock = new DatasetMock();
-
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put("structure", "Structure");
-        properties.put("p1", "Property 1");
-        properties.put("p2", "Property 2");
         for (long i = 1; i <= 100; i++) {
-            datasetMock.addDatasetRow(i, properties);
+            DatasetRow datasetRow = new DatasetRow();
+            datasetRow.setId(i);
+            datasetRow.setProperty(STRUCTURE_FIELD_NAME, "CCCCCC");
+            datasetRow.setProperty("p1", "Property 1");
+            datasetRow.setProperty("p2", "Property 2");
+            datasetMock.addDatasetRow(datasetRow);
         }
-
         return databaseMock.persistDatasetMock(datasetMock);
     }
 
     @Override
     public DatasetDescriptor createDataset(DatasetInputStreamFormat format, InputStream inputStream, Map<String, Class> fieldConfig) {
-        // import from SDF and add to database mock.
         try {
             DatasetMock datasetMock = parseSdf(format, inputStream, fieldConfig);
             return databaseMock.persistDatasetMock(datasetMock);
@@ -54,16 +49,17 @@ public class PrototypeServiceMock implements PrototypeService {
         }
     }
 
-    /** Parse file using ChemAxon Marvin and generate a DataSetMock
-     * Note: this is a temporary method to allow data to be created for testing. 
+    /**
+     * Parse file using ChemAxon Marvin and generate a DataSetMock
+     * Note: this is a temporary method to allow data to be created for testing.
      * It will be replaced by something more solid.
-     * 
-     * @param format currently ignored as format recognition left to Marvin
+     *
+     * @param format      currently ignored as format recognition left to Marvin
      * @param inputStream The data in a format that Marvin can handle
      * @param fieldConfig A Map of field names and destination classes. Must not be
-     * null. Empty Map means no conversions and everything will be a String. The data is 
-     * obtained as String and converted to the corresponding class using the #convert()
-     * method (note: this is very primitive).
+     *                    null. Empty Map means no conversions and everything will be a String. The data is
+     *                    obtained as String and converted to the corresponding class using the #convert()
+     *                    method (note: this is very primitive).
      * @return The generated DataSetMock with one DataSetRow per record in the input file.
      */
     protected DatasetMock parseSdf(DatasetInputStreamFormat format, InputStream inputStream, Map<String, Class> fieldConfig) throws Exception {
@@ -81,8 +77,9 @@ public class PrototypeServiceMock implements PrototypeService {
                 if (rec == null) {
                     break;
                 } else {
-                    Map<String, Object> properties = new HashMap<String, Object>();
-                    properties.put(STRUCTURE_FIELD_NAME, rec.getString());
+                    DatasetRow datasetRow = new DatasetRow();
+                    datasetRow.setId(count);
+                    datasetRow.setProperty(STRUCTURE_FIELD_NAME, rec.getString());
                     String[] fields = rec.getPropertyContainer().getKeys();
                     List<MProp> values = rec.getPropertyContainer().getPropList();
                     for (int x = 0; x < fields.length; x++) {
@@ -90,9 +87,9 @@ public class PrototypeServiceMock implements PrototypeService {
                         String strVal = MPropHandler.convertToString(values.get(x), null);
                         Object objVal = convert(strVal, fieldConfig.get(prop));
                         logger.trace("Generated value for field " + prop + " of " + objVal + " type " + objVal.getClass().getName());
-                        properties.put(prop, objVal);
+                        datasetRow.setProperty(prop, objVal);
                     }
-                    datasetMock.addDatasetRow(count, properties);
+                    datasetMock.addDatasetRow(datasetRow);
                 }
             }
         } finally {
@@ -107,7 +104,7 @@ public class PrototypeServiceMock implements PrototypeService {
         logger.info("File processed " + datasetMock.getDatasetRowList().size() + " records handled");
         return datasetMock;
     }
-    
+
     private Object convert(String value, Class cls) {
         if (cls == null || cls == String.class) {
             return value;
@@ -122,12 +119,25 @@ public class PrototypeServiceMock implements PrototypeService {
 
     @Override
     public List<Long> listDatasetRowId(DatasetDescriptor datasetDescriptor) {
-        return null;
+        List<Long> idDatasetRowList = new ArrayList<Long>();
+
+        DatasetMock datasetMock = databaseMock.findDatasetMockById(datasetDescriptor.getId());
+        if (datasetMock != null) {
+            for (DatasetRow datasetRow : datasetMock.getDatasetRowList()) {
+                idDatasetRowList.add(datasetRow.getId());
+            }
+        }
+        return idDatasetRowList;
     }
 
     @Override
     public List<DatasetDescriptor> listDatasetDescriptor() {
-        return null;
+        List<DatasetDescriptor> datasetDescriptors = new ArrayList<DatasetDescriptor>();
+        for (DatasetMock datasetMock : databaseMock.getDatasetMockList()) {
+            DatasetDescriptor datasetDescriptor = new DatasetDescriptor();
+            datasetDescriptor.setId(datasetMock.getId());
+        }
+        return datasetDescriptors;
     }
 
     @Override
