@@ -15,3 +15,5 @@ java/*.log.*
 **/*.log.*
 
 
+/components/routes/.nb-gradle/private/
+/components/routes/build/
