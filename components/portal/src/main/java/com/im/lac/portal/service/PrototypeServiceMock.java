@@ -124,7 +124,12 @@ public class PrototypeServiceMock implements PrototypeService {
 
     @Override
     public List<DatasetDescriptor> listDatasetDescriptor() {
-        return null;
+        List<DatasetDescriptor> datasetDescriptors = new ArrayList<DatasetDescriptor>();
+        for (DatasetMock datasetMock : databaseMock.getDatasetMockList()) {
+            DatasetDescriptor datasetDescriptor = new DatasetDescriptor();
+            datasetDescriptor.setId(datasetMock.getId());
+        }
+        return datasetDescriptors;
     }
 
     @Override
