@@ -13,6 +13,10 @@ class VisualizerTreeNodeData implements Serializable {
         this.datasetRow = datasetRow;
     }
 
+    public Long getId() {
+        return datasetRow.getId();
+    }
+
     public Object getPropertyValue(String propertyName) {
         return datasetRow.getProperty(propertyName);
     }

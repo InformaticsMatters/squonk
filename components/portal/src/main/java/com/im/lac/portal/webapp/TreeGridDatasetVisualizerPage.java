@@ -1,9 +1,6 @@
 package com.im.lac.portal.webapp;
 
-import com.im.lac.portal.service.DatasetDescriptor;
-import com.im.lac.portal.service.DatasetRow;
-import com.im.lac.portal.service.ListDatasetRowFilter;
-import com.im.lac.portal.service.PrototypeService;
+import com.im.lac.portal.service.*;
 import com.im.lac.wicket.semantic.NotifierProvider;
 import com.inmethod.grid.IGridColumn;
 import org.apache.wicket.markup.html.WebPage;
@@ -42,7 +39,7 @@ public class TreeGridDatasetVisualizerPage extends WebPage {
         //VisualizerTreeNode rootNode = new VisualizerTreeNode(new VisualizerTreeNodeData("root", "", ""));
         addDatasetChildren(rootNode, datasetRowList);
         List<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>> columns =  new ArrayList<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>>();
-        columns.add(new VisualizerTreeColumn("tree", Model.of("Tree")));
+        columns.add(new VisualizerTreeColumn("id", Model.of("Structure"), datasetDescriptor));
         visualizerPanel.setVisualizerTreeModel(new VisualizerTreeModel(rootNode), columns);
     }
 

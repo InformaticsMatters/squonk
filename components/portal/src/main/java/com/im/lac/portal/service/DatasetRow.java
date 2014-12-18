@@ -1,10 +1,7 @@
 package com.im.lac.portal.service;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DatasetRow implements Serializable {
 
@@ -20,18 +17,8 @@ public class DatasetRow implements Serializable {
         this.id = id;
     }
 
-    @Deprecated
-    public Map getProperties() {
-        return properties;
-    }
-
-    @Deprecated
-    public void setProperties(Map<String, Object> properties) {
-        this.properties = properties;
-    }
-
-    public boolean hasChildren() {
-        return children != null && children.size() > 0;
+    public Set<String> getPropertyKeys() {
+        return properties.keySet();
     }
 
     public void setProperty(String key, Object value) {

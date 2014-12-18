@@ -7,6 +7,7 @@ import com.im.lac.portal.service.DatasetRow;
 import com.im.lac.portal.service.ListDatasetRowFilter;
 import com.im.lac.portal.service.PrototypeService;
 import com.im.lac.portal.service.PrototypeServiceMock;
+import org.apache.wicket.cdi.CdiContainer;
 import org.apache.wicket.request.resource.DynamicImageResource;
 
 import javax.imageio.ImageIO;
@@ -22,6 +23,10 @@ public class DynamicStructureImageResource extends DynamicImageResource {
     private static final Rectangle RECTANGLE = new Rectangle(200, 130);
     @Inject
     private PrototypeService service;
+
+    public DynamicStructureImageResource() {
+        CdiContainer.get().getNonContextualManager().postConstruct(this);
+    }
 
     @Override
     protected void setResponseHeaders(ResourceResponse data, Attributes attributes) {

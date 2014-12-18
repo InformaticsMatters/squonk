@@ -1,5 +1,6 @@
 package com.im.lac.portal.webapp;
 
+import com.im.lac.portal.service.DatasetDescriptor;
 import com.inmethod.grid.common.Icons;
 import com.inmethod.grid.treegrid.BaseTreeColumn;
 import com.inmethod.icon.Icon;
@@ -10,17 +11,19 @@ import org.apache.wicket.model.PropertyModel;
 
 public class VisualizerTreeColumn extends BaseTreeColumn<VisualizerTreeModel, VisualizerTreeNode, String> {
 
-    public VisualizerTreeColumn(String columnId, IModel<String> headerModel) {
+    private DatasetDescriptor datasetDescriptor;
+
+    public VisualizerTreeColumn(String columnId, IModel<String> headerModel, DatasetDescriptor datasetDescriptor) {
         super(columnId, headerModel);
+        this.datasetDescriptor = datasetDescriptor;
     }
 
     @Override
     protected Component newNodeComponent(String id, IModel<VisualizerTreeNode> model) {
         VisualizerTreeNode node = model.getObject();
-
-
-        if (!node.isLeaf()) {
-            return new VisualizerStructurePanel(id);
+        VisualizerTreeNodeData vtnd = node.getUserObject();
+        if (vtnd.getId() != null) {
+            return new VisualizerStructurePanel(id, vtnd.getId(), datasetDescriptor.getDatasetId());
         } else {
             return new Label(id, new PropertyModel(model, "userObject.dummy"));
         }

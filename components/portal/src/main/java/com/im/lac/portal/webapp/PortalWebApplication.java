@@ -19,5 +19,8 @@ public class PortalWebApplication extends WebApplication {
         super.init();
         BeanManager beanManager = CDI.current().getBeanManager();
         new CdiConfiguration(beanManager).configure(this);
+
+        getSharedResources().add("structureImageResource", new DynamicStructureImageResource());
+
     }
 }
