@@ -119,7 +119,15 @@ public class PrototypeServiceMock implements PrototypeService {
 
     @Override
     public List<Long> listDatasetRowId(DatasetDescriptor datasetDescriptor) {
-        return null;
+        List<Long> idDatasetRowList = new ArrayList<Long>();
+
+        DatasetMock datasetMock = databaseMock.findDatasetMockById(datasetDescriptor.getId());
+        if (datasetMock != null) {
+            for (DatasetRow datasetRow : datasetMock.getDatasetRowList()) {
+                idDatasetRowList.add(datasetRow.getId());
+            }
+        }
+        return idDatasetRowList;
     }
 
     @Override
