@@ -23,4 +23,14 @@ public class DatasetMock {
     public void addDatasetRow(DatasetRow datasetRow) {
         datasetRowList.add(datasetRow);
     }
+
+    public DatasetRow findDatasetRowById(Long id) {
+        DatasetRow returnDatasetRow = null;
+        for(DatasetRow datasetRow : datasetRowList) {
+            if(id.equals(datasetRow.getId())) {
+                returnDatasetRow = datasetRow;
+            }
+        }
+        return returnDatasetRow;
+    }
 }
