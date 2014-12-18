@@ -31,4 +31,14 @@ public class DatasetMock {
         datasetRow.setProperties(properties);
         datasetRowList.add(datasetRow);
     }
+
+    public DatasetRow findDatasetRowById(Long id) {
+        DatasetRow returnDatasetRow = null;
+        for(DatasetRow datasetRow : datasetRowList) {
+            if(id.equals(datasetRow.getId())) {
+                returnDatasetRow = datasetRow;
+            }
+        }
+        return returnDatasetRow;
+    }
 }
