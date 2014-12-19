@@ -36,10 +36,7 @@ public class PortalHomePage extends WebPage {
 
     public PortalHomePage() {
         notifierProvider.createNotifier(this, "notifier");
-        add(new MenuPanel("menuPanel"));
-        addShowNotifierAction();
-        addUploadFilePanel();
-        addUploadFileAction();
+        addPanels();
         addDatasetDescriptorGrid();
     }
 
@@ -54,27 +51,8 @@ public class PortalHomePage extends WebPage {
         response.render(CssHeaderItem.forReference(new CssResourceReference(SemanticResourceReference.class, "resources/easygrid-overrides.css")));
     }
 
-    private void addShowNotifierAction() {
-        add(new AjaxLink("notify") {
 
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                notifierProvider.getNotifier(PortalHomePage.this).notify("Title", "Some message here");
-            }
-        });
-    }
-
-    private void addUploadFileAction() {
-        add(new AjaxLink("uploadFile") {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                uploadFilePanel.showModal();
-            }
-        });
-    }
-
-    private void addUploadFilePanel() {
+    private void addPanels() {
         uploadFilePanel = new UploadFilePanel("uploadFilePanel", "modalElement");
         uploadFilePanel.setCallbacks(new UploadFilePanel.Callbacks() {
             @Override
@@ -92,6 +70,8 @@ public class PortalHomePage extends WebPage {
             }
         });
         add(uploadFilePanel);
+
+        add(new MenuPanel("menuPanel"));
     }
 
     private void refreshVisualizerPanel() {
