@@ -148,7 +148,7 @@ public class PrototypeServiceMock implements PrototypeService {
 
     @Override
     public List<DatasetRow> listDatasetRow(ListDatasetRowFilter filter) {
-        DatasetMock datasetMock = databaseMock.findDatasetMockById(filter.getDatasetid());
+        DatasetMock datasetMock = databaseMock.findDatasetMockById(filter.getDatasetId());
         if (datasetMock != null) {
             return datasetMock.getDatasetRowList();
         } else {

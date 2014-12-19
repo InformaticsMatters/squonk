@@ -15,11 +15,9 @@ import javax.inject.Inject;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.util.logging.Logger;
 
 public class DynamicStructureImageResource extends DynamicImageResource {
 
-    private static final Logger logger = Logger.getLogger(DynamicStructureImageResource.class.getName());
     private static final Rectangle RECTANGLE = new Rectangle(200, 130);
     @Inject
     private PrototypeService service;
@@ -50,16 +48,16 @@ public class DynamicStructureImageResource extends DynamicImageResource {
         Long rowId = Long.valueOf(rowIdAsString);
 
         ListDatasetRowFilter listDatasetRowFilter = new ListDatasetRowFilter();
-        listDatasetRowFilter.setDatasetid(datasetId);
+        listDatasetRowFilter.setDatasetId(datasetId);
         java.util.List<DatasetRow> datasetRowList = service.listDatasetRow(listDatasetRowFilter);
-        DatasetRow matchDatasetRow = null;
-        for(DatasetRow datasetRow : datasetRowList) {
-            if(datasetRow.getId().equals(rowId)) {
-                matchDatasetRow = datasetRow;
+        DatasetRow datasetRowMatch = null;
+        for (DatasetRow datasetRow : datasetRowList) {
+            if (datasetRow.getId().equals(rowId)) {
+                datasetRowMatch = datasetRow;
             }
         }
-        if(matchDatasetRow != null) {
-            structureData = (String) matchDatasetRow.getProperty(PrototypeServiceMock.STRUCTURE_FIELD_NAME);
+        if (datasetRowMatch != null) {
+            structureData = (String) datasetRowMatch.getProperty(PrototypeServiceMock.STRUCTURE_FIELD_NAME);
         }
         return structureData;
     }
@@ -76,8 +74,6 @@ public class DynamicStructureImageResource extends DynamicImageResource {
     }
 
     private byte[] renderStructure(String datasetIdAsString, String rowIdAsString) throws Exception {
-        String fine = "Dynamically rendering structure " + datasetIdAsString + "/" + rowIdAsString;
-        logger.fine(fine);
         MolPrinter molPrinter = new MolPrinter();
         molPrinter.setMol(getMolecule(datasetIdAsString, rowIdAsString));
 

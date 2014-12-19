@@ -7,11 +7,11 @@ public class ListDatasetRowFilter {
     private Long datasetid;
     private List<Long> rowIdList;
 
-    public Long getDatasetid() {
+    public Long getDatasetId() {
         return datasetid;
     }
 
-    public void setDatasetid(Long datasetid) {
+    public void setDatasetId(Long datasetid) {
         this.datasetid = datasetid;
     }
 

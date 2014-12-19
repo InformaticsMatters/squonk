@@ -74,7 +74,7 @@ public class PortalHomePage extends WebPage {
     private void addDatasetDescriptorGrid() {
         datasetDescriptorList = prototypeServiceMock.listDatasetDescriptor();
         EasyGridBuilder<DatasetDescriptor> easyGridBuilder = new EasyGridBuilder<DatasetDescriptor>("datasetDescriptors");
-        easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("ID", "datasetId", "datasetId"));
+        easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("Id", "datasetId", "datasetId"));
         easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("Description", "description", "description"));
         List<String> actionNameList = Arrays.asList(LARGE_EDIT_LINK_ICON);
         easyGridBuilder.getColumnList().add(easyGridBuilder.newActionsColumn(actionNameList, new RowActionsCallbackHandler<DatasetDescriptor>() {

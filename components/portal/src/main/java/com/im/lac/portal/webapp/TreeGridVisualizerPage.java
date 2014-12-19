@@ -47,7 +47,7 @@ public class TreeGridVisualizerPage extends WebPage {
 
     public void addTreeGrid(DatasetDescriptor datasetDescriptor) {
         ListDatasetRowFilter listDatasetRowFilter = new ListDatasetRowFilter();
-        listDatasetRowFilter.setDatasetid(datasetDescriptor.getDatasetId());
+        listDatasetRowFilter.setDatasetId(datasetDescriptor.getDatasetId());
         List<DatasetRow> datasetRowList = service.listDatasetRow(listDatasetRowFilter);
 
         TreeGridVisualizerNode rootNode = new TreeGridVisualizerNode(new TreeGridVisualizerNodeData(new DatasetRow()));
