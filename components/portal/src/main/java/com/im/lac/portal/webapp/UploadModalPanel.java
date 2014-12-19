@@ -16,14 +16,14 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UploadFilePanel extends SemanticModalPanel {
+public class UploadModalPanel extends SemanticModalPanel {
 
     @Inject
     private PrototypeServiceMock prototypeServiceMock;
     private Callbacks callbacks;
     private DatasetDescriptor datasetDescriptor;
 
-    public UploadFilePanel(String id, String modalElementWicketId) {
+    public UploadModalPanel(String id, String modalElementWicketId) {
         super(id, modalElementWicketId);
         addForm();
     }

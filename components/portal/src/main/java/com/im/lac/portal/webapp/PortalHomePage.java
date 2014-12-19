@@ -25,18 +25,19 @@ import java.util.List;
 
 public class PortalHomePage extends WebPage {
 
+    private static final String LARGE_EDIT_LINK_ICON = "large edit link icon";
     @Inject
     private NotifierProvider notifierProvider;
     @Inject
     private PrototypeServiceMock prototypeServiceMock;
-
-    private UploadFilePanel uploadFilePanel;
+    private UploadModalPanel uploadModalPanel;
     private EasyGrid<DatasetDescriptor> datasetDescriptorGrid;
     private List<DatasetDescriptor> datasetDescriptorList;
 
     public PortalHomePage() {
         notifierProvider.createNotifier(this, "notifier");
-        addPanels();
+        add(new MenuPanel("menuPanel"));
+        addModals();
         addDatasetDescriptorGrid();
     }
 
@@ -51,61 +52,41 @@ public class PortalHomePage extends WebPage {
         response.render(CssHeaderItem.forReference(new CssResourceReference(SemanticResourceReference.class, "resources/easygrid-overrides.css")));
     }
 
+    private void addModals() {
+        uploadModalPanel = new UploadModalPanel("uploadFilePanel", "modalElement");
+        uploadModalPanel.setCallbacks(new UploadModalPanel.Callbacks() {
 
-    private void addPanels() {
-        uploadFilePanel = new UploadFilePanel("uploadFilePanel", "modalElement");
-        uploadFilePanel.setCallbacks(new UploadFilePanel.Callbacks() {
             @Override
             public void onSubmit() {
-                if (uploadFilePanel.getDatasetDescriptor() != null) {
-                    refreshVisualizerPanel();
+                if (uploadModalPanel.getDatasetDescriptor() != null) {
                     refreshDatasetDescriptorsGrid();
-                    System.out.println("File Imported");
                 }
             }
 
             @Override
             public void onCancel() {
-                uploadFilePanel.hideModal();
+                uploadModalPanel.hideModal();
             }
         });
-        add(uploadFilePanel);
-
-        add(new MenuPanel("menuPanel"));
-    }
-
-    private void refreshVisualizerPanel() {
-        // TODO: impl
-        System.out.println("Descriptor ID = " + uploadFilePanel.getDatasetDescriptor().getDatasetId());
-    }
-
-    private void refreshDatasetDescriptorsGrid() {
-        datasetDescriptorList = prototypeServiceMock.listDatasetDescriptor();
-        datasetDescriptorGrid.resetData();
-        getRequestCycle().find(AjaxRequestTarget.class).add(datasetDescriptorGrid);
+        add(uploadModalPanel);
     }
 
     private void addDatasetDescriptorGrid() {
         datasetDescriptorList = prototypeServiceMock.listDatasetDescriptor();
-
         EasyGridBuilder<DatasetDescriptor> easyGridBuilder = new EasyGridBuilder<DatasetDescriptor>("datasetDescriptors");
         easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("ID", "datasetId", "datasetId"));
         easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("Description", "description", "description"));
-
-
-        List<String> actionNameList = Arrays.asList(PortalConstants.LARGE_EDIT_LINK_ICON);
-        easyGridBuilder.getColumnList().add(0, easyGridBuilder.newActionsColumn(actionNameList, new RowActionsCallbackHandler<DatasetDescriptor>() {
+        List<String> actionNameList = Arrays.asList(LARGE_EDIT_LINK_ICON);
+        easyGridBuilder.getColumnList().add(easyGridBuilder.newActionsColumn(actionNameList, new RowActionsCallbackHandler<DatasetDescriptor>() {
 
             @Override
-            public void onAction(AjaxRequestTarget target, String name, DatasetDescriptor rowModelObject) {
-                if (PortalConstants.LARGE_EDIT_LINK_ICON.equals(name)) {
-                    TreeGridDatasetVisualizerPage page = new TreeGridDatasetVisualizerPage();
-                    page.refreshVisualizerPanel(rowModelObject);
+            public void onAction(AjaxRequestTarget target, String name, DatasetDescriptor datasetDescriptor) {
+                if (LARGE_EDIT_LINK_ICON.equals(name)) {
+                    TreeGridVisualizerPage page = new TreeGridVisualizerPage(datasetDescriptor);
                     setResponsePage(page);
                 }
             }
         }).setInitialSize(70));
-
         datasetDescriptorGrid = easyGridBuilder.build(new EasyListDataSource<DatasetDescriptor>(DatasetDescriptor.class) {
 
             @Override
@@ -114,8 +95,13 @@ public class PortalHomePage extends WebPage {
             }
         });
         add(datasetDescriptorGrid);
-
         addDatasetDescriptorGridActions();
+    }
+
+    private void refreshDatasetDescriptorsGrid() {
+        datasetDescriptorList = prototypeServiceMock.listDatasetDescriptor();
+        datasetDescriptorGrid.resetData();
+        getRequestCycle().find(AjaxRequestTarget.class).add(datasetDescriptorGrid);
     }
 
     private void addDatasetDescriptorGridActions() {
@@ -123,10 +109,8 @@ public class PortalHomePage extends WebPage {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                uploadFilePanel.showModal();
+                uploadModalPanel.showModal();
             }
         });
     }
-
-
 }

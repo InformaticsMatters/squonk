@@ -4,12 +4,12 @@ import com.im.lac.portal.service.DatasetRow;
 
 import java.io.Serializable;
 
-class VisualizerTreeNodeData implements Serializable {
+class TreeGridVisualizerNodeData implements Serializable {
 
     private DatasetRow datasetRow;
     private String dummy = "foo";
 
-    VisualizerTreeNodeData(DatasetRow datasetRow) {
+    TreeGridVisualizerNodeData(DatasetRow datasetRow) {
         this.datasetRow = datasetRow;
     }
 

@@ -25,9 +25,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * @author simetrias
- */
 public class FileUploadPanel extends Panel {
 
     private static final Logger logger = Logger.getLogger(FileUploadPanel.class.getName());

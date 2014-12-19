@@ -21,17 +21,17 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TreeGridDatasetVisualizerPage extends WebPage {
+public class TreeGridVisualizerPage extends WebPage {
 
     @Inject
     private NotifierProvider notifierProvider;
     @Inject
     private PrototypeService service;
-    private VisualizerPanel visualizerPanel;
 
-    public TreeGridDatasetVisualizerPage() {
+    public TreeGridVisualizerPage(DatasetDescriptor datasetDescriptor) {
         notifierProvider.createNotifier(this, "notifier");
-        addPanels();
+        add(new MenuPanel("menuPanel"));
+        addTreeGrid(datasetDescriptor);
     }
 
     @Override
@@ -45,34 +45,28 @@ public class TreeGridDatasetVisualizerPage extends WebPage {
         response.render(CssHeaderItem.forReference(new CssResourceReference(SemanticResourceReference.class, "resources/easygrid-overrides.css")));
     }
 
-    private void addPanels() {
-        add(new MenuPanel("menuPanel"));
-
-        visualizerPanel = new VisualizerPanel("visualizerPanel");
-        add(visualizerPanel);
-    }
-
-    public void refreshVisualizerPanel(DatasetDescriptor datasetDescriptor) {
+    public void addTreeGrid(DatasetDescriptor datasetDescriptor) {
         ListDatasetRowFilter listDatasetRowFilter = new ListDatasetRowFilter();
         listDatasetRowFilter.setDatasetid(datasetDescriptor.getDatasetId());
-
         List<DatasetRow> datasetRowList = service.listDatasetRow(listDatasetRowFilter);
 
-        DatasetRow rootDatasetRow = new DatasetRow();
-        VisualizerTreeNode rootNode = new VisualizerTreeNode(new VisualizerTreeNodeData(rootDatasetRow));
-        //VisualizerTreeNode rootNode = new VisualizerTreeNode(new VisualizerTreeNodeData("root", "", ""));
-        addDatasetChildren(rootNode, datasetRowList);
-        List<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>> columns =  new ArrayList<IGridColumn<VisualizerTreeModel, VisualizerTreeNode, String>>();
-        columns.add(new VisualizerTreeColumn("id", Model.of("Structure"), datasetDescriptor));
-        visualizerPanel.setVisualizerTreeModel(new VisualizerTreeModel(rootNode), columns);
+        TreeGridVisualizerNode rootNode = new TreeGridVisualizerNode(new TreeGridVisualizerNodeData(new DatasetRow()));
+        buildNodeHierarchy(rootNode, datasetRowList);
+
+        List<IGridColumn<TreeGridVisualizerModel, TreeGridVisualizerNode, String>> columns = new ArrayList<IGridColumn<TreeGridVisualizerModel, TreeGridVisualizerNode, String>>();
+        columns.add(new TreeGridVisualizerTreeColumn("id", Model.of("Structure"), datasetDescriptor));
+
+        TreeGridVisualizer treeGridVisualizer = new TreeGridVisualizer("treeGrid", new TreeGridVisualizerModel(rootNode), columns);
+        treeGridVisualizer.getTree().setRootLess(true);
+        add(treeGridVisualizer);
     }
 
-    private void addDatasetChildren(VisualizerTreeNode rootNode, List<DatasetRow> datasetRowList) {
-        for(DatasetRow dsr : datasetRowList) {
-            VisualizerTreeNode childNode = new VisualizerTreeNode(new VisualizerTreeNodeData(dsr));
+    private void buildNodeHierarchy(TreeGridVisualizerNode rootNode, List<DatasetRow> datasetRowList) {
+        for (DatasetRow datasetRow : datasetRowList) {
+            TreeGridVisualizerNode childNode = new TreeGridVisualizerNode(new TreeGridVisualizerNodeData(datasetRow));
             rootNode.add(childNode);
-            if (dsr.getChildren() != null && dsr.getChildren().size() > 0) {
-                addDatasetChildren(childNode, dsr.getChildren());
+            if (datasetRow.getChildren() != null && datasetRow.getChildren().size() > 0) {
+                buildNodeHierarchy(childNode, datasetRow.getChildren());
             }
         }
     }
