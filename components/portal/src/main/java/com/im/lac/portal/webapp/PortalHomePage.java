@@ -25,7 +25,7 @@ import java.util.List;
 
 public class PortalHomePage extends WebPage {
 
-    private static final String LARGE_EDIT_LINK_ICON = "large edit link icon";
+    private static final String LARGE_ARROW_CIRCLE_OUTLINE_RIGHT_LINK_ICON = "large arrow circle outline right link icon";
     @Inject
     private NotifierProvider notifierProvider;
     @Inject
@@ -76,12 +76,12 @@ public class PortalHomePage extends WebPage {
         EasyGridBuilder<DatasetDescriptor> easyGridBuilder = new EasyGridBuilder<DatasetDescriptor>("datasetDescriptors");
         easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("Id", "datasetId", "datasetId"));
         easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("Description", "description", "description"));
-        List<String> actionNameList = Arrays.asList(LARGE_EDIT_LINK_ICON);
+        List<String> actionNameList = Arrays.asList(LARGE_ARROW_CIRCLE_OUTLINE_RIGHT_LINK_ICON);
         easyGridBuilder.getColumnList().add(easyGridBuilder.newActionsColumn(actionNameList, new RowActionsCallbackHandler<DatasetDescriptor>() {
 
             @Override
             public void onAction(AjaxRequestTarget target, String name, DatasetDescriptor datasetDescriptor) {
-                if (LARGE_EDIT_LINK_ICON.equals(name)) {
+                if (LARGE_ARROW_CIRCLE_OUTLINE_RIGHT_LINK_ICON.equals(name)) {
                     TreeGridVisualizerPage page = new TreeGridVisualizerPage(datasetDescriptor);
                     setResponsePage(page);
                 }

@@ -64,6 +64,17 @@ em {
     transform: scale(1.1);
 }
 
+.menu.principal {
+    border-radius: 0;
+}
+
+.left-floated {
+    float: left;
+}
+
+.resourceUploaderPanel input:focus {
+    outline: none;
+}
 
 /* OVERRIDE SEMANTIC */
 
