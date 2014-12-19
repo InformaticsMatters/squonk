@@ -46,18 +46,9 @@ public class DynamicStructureImageResource extends DynamicImageResource {
         String structureData = null;
         Long datasetId = Long.valueOf(datasetIdAsString);
         Long rowId = Long.valueOf(rowIdAsString);
-
-        ListDatasetRowFilter listDatasetRowFilter = new ListDatasetRowFilter();
-        listDatasetRowFilter.setDatasetId(datasetId);
-        java.util.List<DatasetRow> datasetRowList = service.listDatasetRow(listDatasetRowFilter);
-        DatasetRow datasetRowMatch = null;
-        for (DatasetRow datasetRow : datasetRowList) {
-            if (datasetRow.getId().equals(rowId)) {
-                datasetRowMatch = datasetRow;
-            }
-        }
-        if (datasetRowMatch != null) {
-            structureData = (String) datasetRowMatch.getProperty(PrototypeServiceMock.STRUCTURE_FIELD_NAME);
+        DatasetRow datasetRow = service.findDatasetRowById(datasetId, rowId);
+        if (datasetRow!= null) {
+            structureData = (String) datasetRow.getProperty(PrototypeServiceMock.STRUCTURE_FIELD_NAME);
         }
         return structureData;
     }

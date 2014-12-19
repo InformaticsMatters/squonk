@@ -21,7 +21,7 @@ public class TreeGridVisualizerTreeColumn extends BaseTreeColumn<TreeGridVisuali
         TreeGridVisualizerNode node = model.getObject();
         TreeGridVisualizerNodeData vtnd = node.getUserObject();
         if (vtnd.getId() != null) {
-            return new TreeGridVisualizerStructurePanel(id, vtnd.getId(), datasetDescriptor.getDatasetId());
+            return new TreeGridVisualizerStructurePanel(id, datasetDescriptor.getDatasetId(), vtnd.getId());
         } else {
             return new WebMarkupContainer(id);
         }

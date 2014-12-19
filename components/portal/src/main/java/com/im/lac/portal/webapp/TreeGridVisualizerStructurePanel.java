@@ -6,7 +6,7 @@ public class TreeGridVisualizerStructurePanel extends Panel {
 
     public TreeGridVisualizerStructurePanel(String id, Long datasetId, Long rowId) {
         super(id);
-        add(new ExternalStructureImage("image", datasetId.toString(), rowId.toString(), "structureImageResource"));
+        add(new ExternalStructureImage("image", rowId.toString(), datasetId.toString(), "structureImageResource"));
     }
 
 }

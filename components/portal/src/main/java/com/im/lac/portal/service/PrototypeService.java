@@ -18,4 +18,6 @@ public interface PrototypeService {
 
     List<DatasetRow> listDatasetRow(ListDatasetRowFilter filter);
 
+    DatasetRow findDatasetRowById(Long datasetId, Long rowId);
+
 }

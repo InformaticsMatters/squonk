@@ -34,7 +34,7 @@ public class PrototypeServiceMock implements PrototypeService {
             datasetRow.setProperty(STRUCTURE_FIELD_NAME, "CCCCCC");
             datasetRow.setProperty("p1", "Property 1");
             datasetRow.setProperty("p2", "Property 2");
-            datasetMock.addDatasetRow(datasetRow);
+            datasetMock.addDatasetRow(i, datasetRow);
         }
         return databaseMock.persistDatasetMock(datasetMock);
     }
@@ -89,7 +89,7 @@ public class PrototypeServiceMock implements PrototypeService {
                         logger.trace("Generated value for field " + prop + " of " + objVal + " type " + objVal.getClass().getName());
                         datasetRow.setProperty(prop, objVal);
                     }
-                    datasetMock.addDatasetRow(datasetRow);
+                    datasetMock.addDatasetRow(count, datasetRow);
                 }
             }
         } finally {
@@ -154,6 +154,12 @@ public class PrototypeServiceMock implements PrototypeService {
         } else {
             return new ArrayList<DatasetRow>();
         }
+    }
+
+    @Override
+    public DatasetRow findDatasetRowById(Long datasetId, Long rowId) {
+        DatasetMock datasetMock = databaseMock.findDatasetMockById(datasetId);
+        return datasetMock.findDatasetRowById(rowId);
     }
 
 }

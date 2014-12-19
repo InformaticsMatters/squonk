@@ -9,13 +9,13 @@ import org.apache.wicket.request.resource.SharedResourceReference;
 
 public class ExternalStructureImage extends WebComponent {
 
-    private String key;
+    private String rowId;
     private String resourceName;
     private String datasetId;
 
-    public ExternalStructureImage(String id, String key, String datasetId, String resourceName) {
+    public ExternalStructureImage(String id, String rowId, String datasetId, String resourceName) {
         super(id);
-        this.key = key;
+        this.rowId = rowId;
         this.resourceName = resourceName;
         this.datasetId = datasetId;
     }
@@ -25,10 +25,10 @@ public class ExternalStructureImage extends WebComponent {
         super.onComponentTag(tag);
         ResourceReference resource = new SharedResourceReference(resourceName);
         PageParameters pageParameters = new PageParameters();
-        pageParameters.add("rowIdAsString", key);
+        pageParameters.add("rowIdAsString", rowId);
         pageParameters.add("datasetIdAsString", datasetId);
         CharSequence url = RequestCycle.get().urlFor(resource, pageParameters);
-        if(key != null && key.trim().length() > 0) {
+        if(rowId != null && rowId.trim().length() > 0) {
             tag.put("src", url);
         }
     }

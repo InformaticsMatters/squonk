@@ -7,7 +7,6 @@ import java.io.Serializable;
 class TreeGridVisualizerNodeData implements Serializable {
 
     private DatasetRow datasetRow;
-    private String dummy = "foo";
 
     TreeGridVisualizerNodeData(DatasetRow datasetRow) {
         this.datasetRow = datasetRow;
@@ -21,11 +20,4 @@ class TreeGridVisualizerNodeData implements Serializable {
         return datasetRow.getProperty(propertyName);
     }
 
-    public String getDummy() {
-        return dummy;
-    }
-
-    public void setDummy(String dummy) {
-        this.dummy = dummy;
-    }
 }

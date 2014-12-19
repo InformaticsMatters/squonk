@@ -1,12 +1,11 @@
 package com.im.lac.portal.service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class DatasetMock {
 
     private Long id;
-    private List<DatasetRow> datasetRowList = new ArrayList<DatasetRow>();
+    private Map<Long, DatasetRow> datasetRowList = new HashMap<Long, DatasetRow>();
 
     public Long getId() {
         return id;
@@ -17,22 +16,15 @@ public class DatasetMock {
     }
 
     public List<DatasetRow> getDatasetRowList() {
-        return datasetRowList;
+        return new ArrayList<DatasetRow>(datasetRowList.values());
     }
 
-    public void addDatasetRow(DatasetRow datasetRow) {
-        datasetRowList.add(datasetRow);
+    public void addDatasetRow(Long id, DatasetRow datasetRow) {
+        datasetRowList.put(id, datasetRow);
     }
 
-    /*
     public DatasetRow findDatasetRowById(Long id) {
-        DatasetRow returnDatasetRow = null;
-        for(DatasetRow datasetRow : datasetRowList) {
-            if(id.equals(datasetRow.getId())) {
-                returnDatasetRow = datasetRow;
-            }
-        }
-        return returnDatasetRow;
+        return datasetRowList.get(id);
     }
-    */
+
 }
