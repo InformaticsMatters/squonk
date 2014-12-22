@@ -118,20 +118,7 @@ public class PrototypeServiceMock implements PrototypeService {
     }
 
     @Override
-    public List<Long> listDatasetRowId(DatasetDescriptor datasetDescriptor) {
-        List<Long> idDatasetRowList = new ArrayList<Long>();
-
-        DatasetMock datasetMock = databaseMock.findDatasetMockById(datasetDescriptor.getDatasetId());
-        if (datasetMock != null) {
-            for (DatasetRow datasetRow : datasetMock.getDatasetRowList()) {
-                idDatasetRowList.add(datasetRow.getId());
-            }
-        }
-        return idDatasetRowList;
-    }
-
-    @Override
-    public List<DatasetDescriptor> listDatasetDescriptor() {
+    public List<DatasetDescriptor> listDatasetDescriptor(ListDatasetDescriptorFilter filter) {
         List<DatasetDescriptor> datasetDescriptors = new ArrayList<DatasetDescriptor>();
         for (DatasetMock datasetMock : databaseMock.getDatasetMockList()) {
             DatasetDescriptor datasetDescriptor = new DatasetDescriptor();
@@ -139,11 +126,6 @@ public class PrototypeServiceMock implements PrototypeService {
             datasetDescriptors.add(datasetDescriptor);
         }
         return datasetDescriptors;
-    }
-
-    @Override
-    public List<PropertyDefinition> listPropertyDefinition(ListPropertyDefinitionFilter filter) {
-        return null;
     }
 
     @Override

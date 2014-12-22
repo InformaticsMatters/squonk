@@ -6,15 +6,11 @@ import java.util.Map;
 
 public interface PrototypeService {
 
-    DatasetDescriptor createDataset(DatamartSearch dataMartSearch);
+    DatasetDescriptor createDataset(DatamartSearch datamartSearch);
 
     DatasetDescriptor createDataset(DatasetInputStreamFormat format, InputStream inputStream, Map<String, Class> fieldConfig);
 
-    List<Long> listDatasetRowId(DatasetDescriptor datasetDescriptor);
-
-    List<DatasetDescriptor> listDatasetDescriptor();
-
-    List<PropertyDefinition> listPropertyDefinition(ListPropertyDefinitionFilter filter);
+    List<DatasetDescriptor> listDatasetDescriptor(ListDatasetDescriptorFilter filter);
 
     List<DatasetRow> listDatasetRow(ListDatasetRowFilter filter);
 
