@@ -1,10 +1,11 @@
-package com.im.lac.portal.service;
+package com.im.lac.portal.service.mock;
 
 import chemaxon.formats.MFileFormatUtil;
 import chemaxon.marvin.io.MPropHandler;
 import chemaxon.marvin.io.MRecord;
 import chemaxon.marvin.io.MRecordReader;
 import chemaxon.struc.MProp;
+import com.im.lac.portal.service.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

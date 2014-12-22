@@ -1,6 +1,6 @@
 package com.im.lac.portal.webapp;
 
-import com.im.lac.portal.service.DatasetRow;
+import com.im.lac.portal.service.api.DatasetRow;
 
 import java.io.Serializable;
 

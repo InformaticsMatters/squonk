@@ -1,4 +1,4 @@
-package com.im.lac.portal.service;
+package com.im.lac.portal.service.api;
 
 import java.io.InputStream;
 import java.util.List;

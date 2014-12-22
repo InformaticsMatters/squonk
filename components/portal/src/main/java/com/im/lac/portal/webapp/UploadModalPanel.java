@@ -1,8 +1,8 @@
 package com.im.lac.portal.webapp;
 
-import com.im.lac.portal.service.DatasetDescriptor;
-import com.im.lac.portal.service.DatasetInputStreamFormat;
-import com.im.lac.portal.service.PrototypeServiceMock;
+import com.im.lac.portal.service.api.DatasetDescriptor;
+import com.im.lac.portal.service.api.DatasetInputStreamFormat;
+import com.im.lac.portal.service.mock.PrototypeServiceMock;
 import com.im.lac.wicket.semantic.SemanticModalPanel;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;

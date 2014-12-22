@@ -1,5 +1,6 @@
-package com.im.lac.portal.service;
+package com.im.lac.portal.service
 
+import com.im.lac.portal.service.mock.PrototypeServiceMock
 import spock.lang.Specification
 
 class PrototypeServiceMockSpec extends Specification {

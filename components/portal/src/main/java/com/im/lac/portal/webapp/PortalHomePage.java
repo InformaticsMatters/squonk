@@ -1,7 +1,8 @@
 package com.im.lac.portal.webapp;
 
-import com.im.lac.portal.service.DatasetDescriptor;
-import com.im.lac.portal.service.PrototypeServiceMock;
+import com.im.lac.portal.service.api.DatasetDescriptor;
+import com.im.lac.portal.service.api.ListDatasetDescriptorFilter;
+import com.im.lac.portal.service.mock.PrototypeServiceMock;
 import com.im.lac.wicket.inmethod.EasyGrid;
 import com.im.lac.wicket.inmethod.EasyGridBuilder;
 import com.im.lac.wicket.inmethod.EasyListDataSource;
@@ -72,7 +73,7 @@ public class PortalHomePage extends WebPage {
     }
 
     private void addDatasetDescriptorGrid() {
-        datasetDescriptorList = prototypeServiceMock.listDatasetDescriptor();
+        datasetDescriptorList = prototypeServiceMock.listDatasetDescriptor(new ListDatasetDescriptorFilter());
         EasyGridBuilder<DatasetDescriptor> easyGridBuilder = new EasyGridBuilder<DatasetDescriptor>("datasetDescriptors");
         easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("Id", "datasetId", "datasetId"));
         easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("Description", "description", "description"));
@@ -99,7 +100,7 @@ public class PortalHomePage extends WebPage {
     }
 
     private void refreshDatasetDescriptorsGrid() {
-        datasetDescriptorList = prototypeServiceMock.listDatasetDescriptor();
+        datasetDescriptorList = prototypeServiceMock.listDatasetDescriptor(new ListDatasetDescriptorFilter());
         datasetDescriptorGrid.resetData();
         getRequestCycle().find(AjaxRequestTarget.class).add(datasetDescriptorGrid);
     }

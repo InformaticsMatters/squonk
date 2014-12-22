@@ -1,4 +1,6 @@
-package com.im.lac.portal.service;
+package com.im.lac.portal.service.mock;
+
+import com.im.lac.portal.service.api.DatasetDescriptor;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;

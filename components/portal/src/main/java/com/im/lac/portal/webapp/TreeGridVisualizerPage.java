@@ -1,9 +1,9 @@
 package com.im.lac.portal.webapp;
 
-import com.im.lac.portal.service.DatasetDescriptor;
-import com.im.lac.portal.service.DatasetRow;
-import com.im.lac.portal.service.ListDatasetRowFilter;
-import com.im.lac.portal.service.PrototypeService;
+import com.im.lac.portal.service.api.DatasetDescriptor;
+import com.im.lac.portal.service.api.DatasetRow;
+import com.im.lac.portal.service.api.ListDatasetRowFilter;
+import com.im.lac.portal.service.api.PrototypeService;
 import com.im.lac.wicket.semantic.NotifierProvider;
 import com.im.lac.wicket.semantic.SemanticResourceReference;
 import com.inmethod.grid.IGridColumn;

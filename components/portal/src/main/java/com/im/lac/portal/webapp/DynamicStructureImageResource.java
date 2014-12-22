@@ -3,10 +3,9 @@ package com.im.lac.portal.webapp;
 import chemaxon.formats.MolImporter;
 import chemaxon.marvin.MolPrinter;
 import chemaxon.struc.Molecule;
-import com.im.lac.portal.service.DatasetRow;
-import com.im.lac.portal.service.ListDatasetRowFilter;
-import com.im.lac.portal.service.PrototypeService;
-import com.im.lac.portal.service.PrototypeServiceMock;
+import com.im.lac.portal.service.api.DatasetRow;
+import com.im.lac.portal.service.api.PrototypeService;
+import com.im.lac.portal.service.mock.PrototypeServiceMock;
 import org.apache.wicket.cdi.CdiContainer;
 import org.apache.wicket.request.resource.DynamicImageResource;
 

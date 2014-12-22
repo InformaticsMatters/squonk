@@ -1,6 +1,6 @@
 package com.im.lac.portal.webapp;
 
-import com.im.lac.portal.service.DatasetDescriptor;
+import com.im.lac.portal.service.api.DatasetDescriptor;
 import com.inmethod.grid.treegrid.BaseTreeColumn;
 import com.inmethod.icon.Icon;
 import org.apache.wicket.Component;
