@@ -1,6 +1,7 @@
 package com.im.lac.portal.service.mock;
 
 import com.im.lac.portal.service.api.DatasetDescriptor;
+import com.im.lac.portal.service.api.DatasetRowDescriptor;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
@@ -43,12 +44,24 @@ public class DatabaseMock {
     }
 
     public DatasetDescriptor findDatasetDescriptorById(Long id) {
-        for (DatasetDescriptor datasetDescriptor : datasetDescriptorList) {
-            if (datasetDescriptor.getId().equals(id)) {
-                return datasetDescriptor;
+        for (DatasetDescriptor dsd : datasetDescriptorList) {
+            if (dsd.getId().equals(id)) {
+                return dsd;
             }
         }
         return null;
+    }
+
+    public DatasetDescriptor updateDatasetDescriptor(DatasetDescriptor datasetDescriptor) {
+        for (int i = 0; i < datasetDescriptorList.size(); i++) {
+            DatasetDescriptor dsd = datasetDescriptorList.get(i);
+            if (dsd.getId().equals(datasetDescriptor.getId())) {
+                datasetDescriptorList.remove(i);
+                datasetDescriptorList.add(i, datasetDescriptor);
+                return datasetDescriptor;
+            }
+        }
+        return datasetDescriptor;
     }
 
     public void removeDatasetDescriptor(Long id) {
@@ -58,6 +71,11 @@ public class DatabaseMock {
                 return;
             }
         }
+    }
+
+    public DatasetRowDescriptor persistDatasetRowDescriptor(DatasetRowDescriptor datasetRowDescriptor) {
+        datasetRowDescriptor.setId(getNextId());
+        return datasetRowDescriptor;
     }
 
     private Long getNextId() {

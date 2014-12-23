@@ -24,4 +24,12 @@ public class DatasetDescriptor implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public List<DatasetRowDescriptor> getDatasetRowDescriptorList() {
+        return datasetRowDescriptorList;
+    }
+
+    public void setDatasetRowDescriptorList(List<DatasetRowDescriptor> datasetRowDescriptorList) {
+        this.datasetRowDescriptorList = datasetRowDescriptorList;
+    }
 }
