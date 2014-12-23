@@ -41,7 +41,7 @@ public class DatasetServiceMock implements DatasetService {
         }
         datasetMockMap.put(datasetMock.getId(), datasetMock);
         DatasetDescriptor datasetDescriptor = new DatasetDescriptor();
-        datasetDescriptor.setId(getNextId());
+        datasetDescriptor.setId(datasetMock.getId());
         datasetDescriptorMap.put(datasetDescriptor.getId(), datasetDescriptor);
         return datasetDescriptor;
     }
@@ -54,7 +54,7 @@ public class DatasetServiceMock implements DatasetService {
             datasetMockMap.put(datasetMock.getId(), datasetMock);
 
             DatasetDescriptor datasetDescriptor = new DatasetDescriptor();
-            datasetDescriptor.setId(getNextId());
+            datasetDescriptor.setId(datasetMock.getId());
             datasetDescriptorMap.put(datasetDescriptor.getId(), datasetDescriptor);
             return datasetDescriptor;
         } catch (Exception ex) {
@@ -167,6 +167,7 @@ public class DatasetServiceMock implements DatasetService {
     @Override
     public void removeDatasetDescriptor(Long datasetDescriptorId) {
         datasetDescriptorMap.remove(datasetDescriptorId);
+        datasetMockMap.remove(datasetDescriptorId);
     }
 
     @Override
