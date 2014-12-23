@@ -31,7 +31,7 @@ public class UploadModalPanel extends SemanticModalPanel {
     }
 
     private void addForm() {
-        Form form = new Form("form");
+        Form<UploadModalData> form = new Form("form");
         form.setOutputMarkupId(true);
         getModalRootComponent().add(form);
         form.setModel(new CompoundPropertyModel<UploadModalData>(new UploadModalData()));
