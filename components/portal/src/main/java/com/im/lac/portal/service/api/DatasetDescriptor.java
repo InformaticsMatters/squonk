@@ -1,14 +1,14 @@
 package com.im.lac.portal.service.api;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DatasetDescriptor implements Serializable {
 
     private Long id;
     private String description;
-    private List<DatasetRowDescriptor> datasetRowDescriptorList = new ArrayList<DatasetRowDescriptor>();
+    private Map<Long, DatasetRowDescriptor> datasetRowDescriptorMap = new HashMap<Long, DatasetRowDescriptor>();
 
     public Long getId() {
         return id;
@@ -26,8 +26,15 @@ public class DatasetDescriptor implements Serializable {
         this.description = description;
     }
 
-    public List<DatasetRowDescriptor> getDatasetRowDescriptorList() {
-        return datasetRowDescriptorList;
+    public void addDatasetRowDescriptor(DatasetRowDescriptor datasetRowDescriptor) {
+        datasetRowDescriptorMap.put(datasetRowDescriptor.getId(), datasetRowDescriptor);
     }
 
+    public void removeDatasetRowDescriptor(Long id) {
+        datasetRowDescriptorMap.remove(id);
+    }
+
+    public DatasetRowDescriptor getDatasetRowDescriptor(Long id) {
+        return datasetRowDescriptorMap.get(id);
+    }
 }

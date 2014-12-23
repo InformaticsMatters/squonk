@@ -172,9 +172,7 @@ public class DatasetServiceMock implements DatasetService {
     @Override
     public DatasetRowDescriptor createDatasetRowDescriptor(Long datasetDescriptorId, DatasetRowDescriptor datasetRowDescriptor) {
         datasetRowDescriptor.setId(getNextId());
-        DatasetDescriptor datasetDescriptor = datasetDescriptorMap.get(datasetDescriptorId);
-        List<DatasetRowDescriptor> datasetRowDescriptorList = datasetDescriptor.getDatasetRowDescriptorList();
-        datasetRowDescriptorList.add(datasetRowDescriptor);
+        datasetDescriptorMap.get(datasetDescriptorId).addDatasetRowDescriptor(datasetRowDescriptor);
         return datasetRowDescriptor;
     }
 
