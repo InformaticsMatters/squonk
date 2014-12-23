@@ -96,4 +96,17 @@ public class UploadModalPanel extends SemanticModalPanel {
 
     }
 
+    private class UploadModalData implements Serializable {
+
+        private String description;
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+    }
+
 }
