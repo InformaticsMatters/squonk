@@ -24,6 +24,7 @@ public class UploadModalPanel extends SemanticModalPanel {
     private DatasetService datasetService;
     private Callbacks callbacks;
     private DatasetDescriptor datasetDescriptor;
+    private Form<UploadModalData> uploadForm;
 
     public UploadModalPanel(String id, String modalElementWicketId) {
         super(id, modalElementWicketId);
@@ -31,20 +32,21 @@ public class UploadModalPanel extends SemanticModalPanel {
     }
 
     private void addForm() {
-        Form<UploadModalData> form = new Form<UploadModalData>("form");
-        form.setOutputMarkupId(true);
-        getModalRootComponent().add(form);
-        form.setModel(new CompoundPropertyModel<UploadModalData>(new UploadModalData()));
+        uploadForm = new Form<UploadModalData>("form");
+        uploadForm.setOutputMarkupId(true);
+        getModalRootComponent().add(uploadForm);
+        uploadForm.setModel(new CompoundPropertyModel<UploadModalData>(new UploadModalData()));
 
         final AjaxSubmitLink submit = new AjaxSubmitLink("submit") {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                System.out.println(uploadForm.getModelObject().getDescription());
                 callbacks.onSubmit();
             }
         };
         submit.setOutputMarkupId(true);
-        form.add(submit);
+        uploadForm.add(submit);
 
         AjaxLink cancelAction = new AjaxLink("cancel") {
 
@@ -53,7 +55,7 @@ public class UploadModalPanel extends SemanticModalPanel {
                 callbacks.onCancel();
             }
         };
-        form.add(cancelAction);
+        uploadForm.add(cancelAction);
 
         FileUploadPanel fileUploadPanel = new FileUploadPanel("upload", true);
         fileUploadPanel.setCallbackHandler(new FileUploadPanel.CallbackHandler() {
@@ -74,10 +76,10 @@ public class UploadModalPanel extends SemanticModalPanel {
                 return "document.getElementById('" + submit.getMarkupId() + "').disabled = false;";
             }
         });
-        form.add(fileUploadPanel);
+        uploadForm.add(fileUploadPanel);
 
         TextField<String> descriptionField = new TextField<String>("description");
-        form.add(descriptionField);
+        uploadForm.add(descriptionField);
     }
 
     public DatasetDescriptor getDatasetDescriptor() {
