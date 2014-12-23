@@ -8,6 +8,8 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.model.CompoundPropertyModel;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -32,6 +34,7 @@ public class UploadModalPanel extends SemanticModalPanel {
         Form form = new Form("form");
         form.setOutputMarkupId(true);
         getModalRootComponent().add(form);
+        form.setModel(new CompoundPropertyModel<UploadModalData>(new UploadModalData()));
 
         final AjaxSubmitLink submit = new AjaxSubmitLink("submit") {
 
@@ -72,6 +75,9 @@ public class UploadModalPanel extends SemanticModalPanel {
             }
         });
         form.add(fileUploadPanel);
+
+        TextField<String> descriptionField = new TextField<String>("description");
+        form.add(descriptionField);
     }
 
     public DatasetDescriptor getDatasetDescriptor() {
