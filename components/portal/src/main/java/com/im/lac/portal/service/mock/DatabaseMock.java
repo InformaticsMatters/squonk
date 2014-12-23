@@ -2,6 +2,7 @@ package com.im.lac.portal.service.mock;
 
 import com.im.lac.portal.service.api.DatasetDescriptor;
 import com.im.lac.portal.service.api.DatasetRowDescriptor;
+import com.im.lac.portal.service.api.PropertyDefinition;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
@@ -52,9 +53,9 @@ public class DatabaseMock {
         return null;
     }
 
-    public void removeDatasetDescriptor(Long id) {
+    public void removeDatasetDescriptor(Long datasetDescriptorId) {
         for (DatasetDescriptor datasetDescriptor : datasetDescriptorList) {
-            if (datasetDescriptor.getId().equals(id)) {
+            if (datasetDescriptor.getId().equals(datasetDescriptorId)) {
                 datasetDescriptorList.remove(datasetDescriptor);
                 return;
             }
@@ -64,6 +65,35 @@ public class DatabaseMock {
     public DatasetRowDescriptor persistDatasetRowDescriptor(DatasetRowDescriptor datasetRowDescriptor) {
         datasetRowDescriptor.setId(getNextId());
         return datasetRowDescriptor;
+    }
+
+    public void removeDatasetRowDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId) {
+        DatasetDescriptor datasetDescriptor = findDatasetDescriptorById(datasetDescriptorId);
+        for (DatasetRowDescriptor datasetRowDescriptor : datasetDescriptor.getDatasetRowDescriptorList()) {
+            if (datasetRowDescriptor.getId().equals(datasetRowDescriptorId)) {
+                datasetDescriptor.getDatasetRowDescriptorList().remove(datasetRowDescriptor);
+                return;
+            }
+        }
+    }
+
+    public PropertyDefinition persistPropertyDefinition(PropertyDefinition propertyDefinition) {
+        propertyDefinition.setId(getNextId());
+        return propertyDefinition;
+    }
+
+    public void removePropertyDefinition(Long datasetDescriptorId, Long datasetRowDescriptorId, Long propertyDefinitionId) {
+        DatasetDescriptor datasetDescriptor = findDatasetDescriptorById(datasetDescriptorId);
+        for (DatasetRowDescriptor datasetRowDescriptor : datasetDescriptor.getDatasetRowDescriptorList()) {
+            if (datasetRowDescriptor.getId().equals(datasetRowDescriptorId)) {
+                for (PropertyDefinition propertyDefinition : datasetRowDescriptor.getPropertyDefinitionList()) {
+                    if (propertyDefinition.getId().equals(propertyDefinitionId)) {
+                        datasetRowDescriptor.removePropertyDefinition(propertyDefinition);
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     private Long getNextId() {

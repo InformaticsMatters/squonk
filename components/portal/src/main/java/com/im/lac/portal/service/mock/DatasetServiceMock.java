@@ -168,17 +168,27 @@ public class DatasetServiceMock implements DatasetService {
 
     @Override
     public void removeDatasetRowDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId) {
-
+        databaseMock.removeDatasetRowDescriptor(datasetDescriptorId, datasetRowDescriptorId);
     }
 
     @Override
     public PropertyDefinition createPropertyDefinition(Long datasetDescriptorId, Long datasetRowDescriptorId, PropertyDefinition propertyDefinition) {
-        return null;
+        propertyDefinition = databaseMock.persistPropertyDefinition(propertyDefinition);
+
+        DatasetDescriptor datasetDescriptor = databaseMock.findDatasetDescriptorById(datasetDescriptorId);
+        List<DatasetRowDescriptor> datasetRowDescriptorList = datasetDescriptor.getDatasetRowDescriptorList();
+        for (DatasetRowDescriptor datasetRowDescriptor : datasetRowDescriptorList) {
+            if (datasetRowDescriptor.getId().equals(datasetRowDescriptorId)) {
+                datasetRowDescriptor.addPropertyDefinition(propertyDefinition);
+                return propertyDefinition;
+            }
+        }
+        return propertyDefinition;
     }
 
     @Override
     public void removePropertyDefinition(Long datasetDescriptorId, Long datasetRowDescriptorId, Long propertyDefinitionId) {
-
+        databaseMock.removePropertyDefinition(datasetDescriptorId, datasetRowDescriptorId, propertyDefinitionId);
     }
 
 }

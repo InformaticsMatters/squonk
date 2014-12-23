@@ -26,15 +26,15 @@ public class DatasetRowDescriptor {
     }
 
     public void addPropertyDefinition(PropertyDefinition propertyDefinition) {
-        if (propertyDefinitionList == null) {
-            propertyDefinitionList = new ArrayList<PropertyDefinition>();
-        }
         propertyDefinitionList.add(propertyDefinition);
     }
 
     public void removePropertyDefinition(PropertyDefinition propertyDefinition) {
-        if (propertyDefinitionList != null) {
-            propertyDefinitionList.remove(propertyDefinition);
-        }
+        propertyDefinitionList.remove(propertyDefinition);
     }
+
+    public List<PropertyDefinition> getPropertyDefinitionList() {
+        return propertyDefinitionList;
+    }
+
 }
