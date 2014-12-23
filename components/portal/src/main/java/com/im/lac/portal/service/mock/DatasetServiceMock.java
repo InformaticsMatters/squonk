@@ -147,12 +147,13 @@ public class DatasetServiceMock implements DatasetService {
 
     @Override
     public DatasetDescriptor createDatasetDescriptor(DatasetDescriptor datasetDescriptor) {
-        return null;
+        datasetDescriptor = databaseMock.persistDatasetDescriptor(datasetDescriptor);
+        return datasetDescriptor;
     }
 
     @Override
     public void removeDatasetDescriptor(Long datasetDescriptorId) {
-
+        databaseMock.removeDatasetDescriptor(datasetDescriptorId);
     }
 
     @Override
