@@ -7,7 +7,7 @@ public class DatasetRowDescriptor {
 
     private Long id;
     private String description;
-    private List<PropertyDefinition> propertyDefinitionList;
+    private List<PropertyDefinition> propertyDefinitionList = new ArrayList<PropertyDefinition>();
 
     public Long getId() {
         return id;

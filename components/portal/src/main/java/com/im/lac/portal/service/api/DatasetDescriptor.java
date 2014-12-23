@@ -1,13 +1,14 @@
 package com.im.lac.portal.service.api;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DatasetDescriptor implements Serializable {
 
     private Long id;
     private String description;
-    private List<DatasetRowDescriptor> datasetRowDescriptorList;
+    private List<DatasetRowDescriptor> datasetRowDescriptorList = new ArrayList<DatasetRowDescriptor>();
 
     public Long getId() {
         return id;
@@ -29,7 +30,4 @@ public class DatasetDescriptor implements Serializable {
         return datasetRowDescriptorList;
     }
 
-    public void setDatasetRowDescriptorList(List<DatasetRowDescriptor> datasetRowDescriptorList) {
-        this.datasetRowDescriptorList = datasetRowDescriptorList;
-    }
 }
