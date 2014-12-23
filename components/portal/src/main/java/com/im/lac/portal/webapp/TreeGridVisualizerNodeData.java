@@ -1,6 +1,7 @@
 package com.im.lac.portal.webapp;
 
 import com.im.lac.portal.service.api.DatasetRow;
+import com.im.lac.portal.service.api.PropertyDescriptor;
 
 import java.io.Serializable;
 
@@ -16,8 +17,9 @@ class TreeGridVisualizerNodeData implements Serializable {
         return datasetRow.getId();
     }
 
-    public Object getPropertyValue(String propertyName) {
-        return datasetRow.getProperty(propertyName);
+    public Object getPropertyValue(Long propertyId) {
+        PropertyDescriptor propertyDescriptor = datasetRow.getDatasetRowDescriptor().getPropertyDescriptor(propertyId);
+        return datasetRow.getProperty(propertyDescriptor);
     }
 
 }

@@ -5,6 +5,7 @@ import chemaxon.marvin.MolPrinter;
 import chemaxon.struc.Molecule;
 import com.im.lac.portal.service.api.DatasetRow;
 import com.im.lac.portal.service.api.DatasetService;
+import com.im.lac.portal.service.api.PropertyDescriptor;
 import com.im.lac.portal.service.mock.DatasetServiceMock;
 import org.apache.wicket.cdi.CdiContainer;
 import org.apache.wicket.request.resource.DynamicImageResource;
@@ -47,7 +48,8 @@ public class DynamicStructureImageResource extends DynamicImageResource {
         Long rowId = Long.valueOf(rowIdAsString);
         DatasetRow datasetRow = service.findDatasetRowById(datasetId, rowId);
         if (datasetRow!= null) {
-            structureData = (String) datasetRow.getProperty(DatasetServiceMock.STRUCTURE_FIELD_NAME);
+            PropertyDescriptor propertyDescriptor = datasetRow.getDatasetRowDescriptor().getPropertyDescriptor(PropertyDescriptor.STRUCTURE_PROPERTY_ID);
+            structureData = (String) datasetRow.getProperty(propertyDescriptor);
         }
         return structureData;
     }

@@ -1,9 +1,10 @@
 package com.im.lac.portal.service.api;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DatasetRowDescriptor {
+public class DatasetRowDescriptor implements Serializable {
 
     private Long id;
     private String description;
@@ -31,6 +32,10 @@ public class DatasetRowDescriptor {
 
     public void removePropertyDescriptor(Long id) {
         propertyDescriptorMap.remove(id);
+    }
+
+    public PropertyDescriptor getPropertyDescriptor(Long id){
+        return propertyDescriptorMap.get(id);
     }
 
 }

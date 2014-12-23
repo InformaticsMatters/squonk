@@ -6,7 +6,8 @@ import java.util.*;
 public class DatasetRow implements Serializable {
 
     private Long id;
-    private Map<String, Object> properties;
+    private DatasetRowDescriptor datasetRowDescriptor;
+    private Map<PropertyDescriptor, Object> properties;
     private List<DatasetRow> children;
 
     public Long getId() {
@@ -17,18 +18,26 @@ public class DatasetRow implements Serializable {
         this.id = id;
     }
 
-    public Set<String> getPropertyKeys() {
+    public DatasetRowDescriptor getDatasetRowDescriptor() {
+        return datasetRowDescriptor;
+    }
+
+    public void setDatasetRowDescriptor(DatasetRowDescriptor datasetRowDescriptor) {
+        this.datasetRowDescriptor = datasetRowDescriptor;
+    }
+
+    public Set<PropertyDescriptor> getPropertyKeys() {
         return properties.keySet();
     }
 
-    public void setProperty(String key, Object value) {
+    public void setProperty(PropertyDescriptor key, Object value) {
         if (properties == null) {
-            properties = new HashMap<String, Object>();
+            properties = new HashMap<PropertyDescriptor, Object>();
         }
         properties.put(key, value);
     }
 
-    public Object getProperty(String key) {
+    public Object getProperty(PropertyDescriptor key) {
         Object value = null;
         if (properties != null) {
             value = properties.get(key);
