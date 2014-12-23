@@ -123,7 +123,7 @@ public class DatasetServiceMock implements DatasetService {
         List<DatasetDescriptor> datasetDescriptors = new ArrayList<DatasetDescriptor>();
         for (DatasetMock datasetMock : databaseMock.getDatasetMockList()) {
             DatasetDescriptor datasetDescriptor = new DatasetDescriptor();
-            datasetDescriptor.setDatasetId(datasetMock.getId());
+            datasetDescriptor.setId(datasetMock.getId());
             datasetDescriptors.add(datasetDescriptor);
         }
         return datasetDescriptors;
@@ -140,8 +140,8 @@ public class DatasetServiceMock implements DatasetService {
     }
 
     @Override
-    public DatasetRow findDatasetRowById(Long datasetId, Long rowId) {
-        DatasetMock datasetMock = databaseMock.findDatasetMockById(datasetId);
+    public DatasetRow findDatasetRowById(Long datasetDescriptorId, Long rowId) {
+        DatasetMock datasetMock = databaseMock.findDatasetMockById(datasetDescriptorId);
         return datasetMock.findDatasetRowById(rowId);
     }
 
@@ -151,22 +151,27 @@ public class DatasetServiceMock implements DatasetService {
     }
 
     @Override
-    public DatasetRowDescriptor createDatasetRowDescriptor(DatasetDescriptor datasetDescriptor, DatasetRowDescriptor datasetRowDescriptor) {
+    public void removeDatasetDescriptor(Long datasetDescriptorId) {
+
+    }
+
+    @Override
+    public DatasetRowDescriptor createDatasetRowDescriptor(Long datasetDescriptorId, DatasetRowDescriptor datasetRowDescriptor) {
         return null;
     }
 
     @Override
-    public void removeDatasetRowDescriptor(DatasetDescriptor datasetDescriptor, DatasetRowDescriptor datasetRowDescriptor) {
+    public void removeDatasetRowDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId) {
 
     }
 
     @Override
-    public PropertyDefinition createPropertyDefinition(DatasetDescriptor datasetDescriptor, DatasetRowDescriptor datasetRowDescriptor, PropertyDefinition propertyDefinition) {
+    public PropertyDefinition createPropertyDefinition(Long datasetDescriptorId, Long datasetRowDescriptorId, PropertyDefinition propertyDefinition) {
         return null;
     }
 
     @Override
-    public void removePropertyDefinition(DatasetDescriptor datasetDescriptor, DatasetRowDescriptor datasetRowDescriptor, PropertyDefinition propertyDefinition) {
+    public void removePropertyDefinition(Long datasetDescriptorId, Long datasetRowDescriptorId, Long propertyDefinitionId) {
 
     }
 

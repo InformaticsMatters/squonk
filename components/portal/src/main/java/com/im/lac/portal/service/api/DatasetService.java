@@ -14,18 +14,20 @@ public interface DatasetService {
 
     List<DatasetRow> listDatasetRow(ListDatasetRowFilter filter);
 
-    DatasetRow findDatasetRowById(Long datasetId, Long rowId);
+    DatasetRow findDatasetRowById(Long datasetDescriptorId, Long rowId);
 
     // metadata related methods
 
     DatasetDescriptor createDatasetDescriptor(DatasetDescriptor datasetDescriptor);
 
-    DatasetRowDescriptor createDatasetRowDescriptor(DatasetDescriptor datasetDescriptor, DatasetRowDescriptor datasetRowDescriptor);
+    void removeDatasetDescriptor(Long datasetDescriptorId);
 
-    void removeDatasetRowDescriptor(DatasetDescriptor datasetDescriptor, DatasetRowDescriptor datasetRowDescriptor);
+    DatasetRowDescriptor createDatasetRowDescriptor(Long datasetDescriptorId, DatasetRowDescriptor datasetRowDescriptor);
 
-    PropertyDefinition createPropertyDefinition(DatasetDescriptor datasetDescriptor, DatasetRowDescriptor datasetRowDescriptor, PropertyDefinition propertyDefinition);
+    void removeDatasetRowDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId);
 
-    void removePropertyDefinition(DatasetDescriptor datasetDescriptor, DatasetRowDescriptor datasetRowDescriptor, PropertyDefinition propertyDefinition);
+    PropertyDefinition createPropertyDefinition(Long datasetDescriptorId, Long datasetRowDescriptorId, PropertyDefinition propertyDefinition);
+
+    void removePropertyDefinition(Long datasetDescriptorId, Long datasetRowDescriptorId, Long propertyDefinitionId);
 
 }

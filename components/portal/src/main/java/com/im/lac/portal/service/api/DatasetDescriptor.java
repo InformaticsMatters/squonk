@@ -5,16 +5,16 @@ import java.util.List;
 
 public class DatasetDescriptor implements Serializable {
 
-    private Long datasetId;
+    private Long id;
     private String description;
     private List<DatasetRowDescriptor> datasetRowDescriptorList;
 
-    public Long getDatasetId() {
-        return datasetId;
+    public Long getId() {
+        return id;
     }
 
-    public void setDatasetId(Long datasetId) {
-        this.datasetId = datasetId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getDescription() {
