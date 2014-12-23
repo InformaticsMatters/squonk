@@ -1,13 +1,13 @@
 package com.im.lac.portal.service.api;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DatasetRowDescriptor {
 
     private Long id;
     private String description;
-    private List<PropertyDescriptor> propertyDescriptorList = new ArrayList<PropertyDescriptor>();
+    private Map<Long, PropertyDescriptor> propertyDescriptorMap = new HashMap<Long, PropertyDescriptor>();
 
     public Long getId() {
         return id;
@@ -25,16 +25,12 @@ public class DatasetRowDescriptor {
         this.description = description;
     }
 
-    public void addPropertyDefinition(PropertyDescriptor propertyDescriptor) {
-        propertyDescriptorList.add(propertyDescriptor);
+    public void addPropertyDescriptor(PropertyDescriptor propertyDescriptor) {
+        propertyDescriptorMap.put(propertyDescriptor.getId(), propertyDescriptor);
     }
 
-    public void removePropertyDefinition(PropertyDescriptor propertyDescriptor) {
-        propertyDescriptorList.remove(propertyDescriptor);
-    }
-
-    public List<PropertyDescriptor> getPropertyDescriptorList() {
-        return propertyDescriptorList;
+    public void removePropertyDescriptor(Long id) {
+        propertyDescriptorMap.remove(id);
     }
 
 }
