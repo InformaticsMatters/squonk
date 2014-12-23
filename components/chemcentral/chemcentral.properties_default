@@ -1,0 +1,12 @@
+allowRecreate=true // set to false to prevent accidental re-creation
+schema = 'chemcentral'
+user='chemcentral'
+password='chemcentral'
+
+structuresTable=schema + '.structures'
+structurePropsTable=schema + '.structure_props'
+jchemPropertiesTable=schema + '.jchemproperties'
+propertyDefinitionsTable=schema + '.property_definitions'
+sourcesTable=schema + '.sources'
+categoriesTable=schema + '.categories'
+structureAliasesTable=schema + '.structure_aliases'
