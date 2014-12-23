@@ -11,6 +11,6 @@
 
 rootProject.name = 'components'
 // To declare projects as part of a multi-project build use the 'include' method
-include 'common', 'datamodel', 'datamodel:mockdatamodel', 'portal'
+include 'common', 'datamodel', 'datamodel:mockdatamodel', 'portal', 'chemcentral'
 
 
