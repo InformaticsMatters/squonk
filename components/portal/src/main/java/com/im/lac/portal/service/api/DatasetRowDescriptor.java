@@ -7,7 +7,7 @@ public class DatasetRowDescriptor {
 
     private Long id;
     private String description;
-    private List<PropertyDefinition> propertyDefinitionList = new ArrayList<PropertyDefinition>();
+    private List<PropertyDescriptor> propertyDescriptorList = new ArrayList<PropertyDescriptor>();
 
     public Long getId() {
         return id;
@@ -25,16 +25,16 @@ public class DatasetRowDescriptor {
         this.description = description;
     }
 
-    public void addPropertyDefinition(PropertyDefinition propertyDefinition) {
-        propertyDefinitionList.add(propertyDefinition);
+    public void addPropertyDefinition(PropertyDescriptor propertyDescriptor) {
+        propertyDescriptorList.add(propertyDescriptor);
     }
 
-    public void removePropertyDefinition(PropertyDefinition propertyDefinition) {
-        propertyDefinitionList.remove(propertyDefinition);
+    public void removePropertyDefinition(PropertyDescriptor propertyDescriptor) {
+        propertyDescriptorList.remove(propertyDescriptor);
     }
 
-    public List<PropertyDefinition> getPropertyDefinitionList() {
-        return propertyDefinitionList;
+    public List<PropertyDescriptor> getPropertyDescriptorList() {
+        return propertyDescriptorList;
     }
 
 }

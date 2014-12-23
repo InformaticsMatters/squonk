@@ -21,14 +21,14 @@ public class DatamartSearch {
 
     class PropertySearch {
 
-        private List<PropertyDefinition> propertyDefinitionList;
+        private List<PropertyDescriptor> propertyDescriptorList;
 
-        public List<PropertyDefinition> getPropertyDefinitionList() {
-            return propertyDefinitionList;
+        public List<PropertyDescriptor> getPropertyDescriptorList() {
+            return propertyDescriptorList;
         }
 
-        public void setPropertyDefinitionList(List<PropertyDefinition> propertyDefinitionList) {
-            this.propertyDefinitionList = propertyDefinitionList;
+        public void setPropertyDescriptorList(List<PropertyDescriptor> propertyDescriptorList) {
+            this.propertyDescriptorList = propertyDescriptorList;
         }
     }
 }

@@ -26,7 +26,7 @@ public interface DatasetService {
 
     void removeDatasetRowDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId);
 
-    PropertyDefinition createPropertyDefinition(Long datasetDescriptorId, Long datasetRowDescriptorId, PropertyDefinition propertyDefinition);
+    PropertyDescriptor createPropertyDefinition(Long datasetDescriptorId, Long datasetRowDescriptorId, PropertyDescriptor propertyDescriptor);
 
     void removePropertyDefinition(Long datasetDescriptorId, Long datasetRowDescriptorId, Long propertyDefinitionId);
 

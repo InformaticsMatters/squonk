@@ -1,6 +1,6 @@
 package com.im.lac.portal.service.api;
 
-public class PropertyDefinition {
+public class PropertyDescriptor {
 
     private Long id;
     private String description;
