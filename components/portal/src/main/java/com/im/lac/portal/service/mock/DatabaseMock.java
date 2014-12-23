@@ -52,18 +52,6 @@ public class DatabaseMock {
         return null;
     }
 
-    public DatasetDescriptor updateDatasetDescriptor(DatasetDescriptor datasetDescriptor) {
-        for (int i = 0; i < datasetDescriptorList.size(); i++) {
-            DatasetDescriptor dsd = datasetDescriptorList.get(i);
-            if (dsd.getId().equals(datasetDescriptor.getId())) {
-                datasetDescriptorList.remove(i);
-                datasetDescriptorList.add(i, datasetDescriptor);
-                return datasetDescriptor;
-            }
-        }
-        return datasetDescriptor;
-    }
-
     public void removeDatasetDescriptor(Long id) {
         for (DatasetDescriptor datasetDescriptor : datasetDescriptorList) {
             if (datasetDescriptor.getId().equals(id)) {

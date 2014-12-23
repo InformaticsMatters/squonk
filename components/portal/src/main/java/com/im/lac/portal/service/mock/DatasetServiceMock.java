@@ -166,8 +166,7 @@ public class DatasetServiceMock implements DatasetService {
             datasetRowDescriptorList = new ArrayList<DatasetRowDescriptor>();
         }
         datasetRowDescriptorList.add(datasetRowDescriptor);
-        databaseMock.updateDatasetDescriptor(datasetDescriptor);
-        return null;
+        return datasetRowDescriptor;
     }
 
     @Override
