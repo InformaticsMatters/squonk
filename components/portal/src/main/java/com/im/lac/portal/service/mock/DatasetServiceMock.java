@@ -228,10 +228,10 @@ public class DatasetServiceMock implements DatasetService {
     }
 
     @Override
-    public void removePropertyDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId, Long propertyDefinitionId) {
+    public void removePropertyDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId, Long propertyDescriptorId) {
         DatasetDescriptor datasetDescriptor = datasetDescriptorMap.get(datasetDescriptorId);
         DatasetRowDescriptor datasetRowDescriptor = datasetDescriptor.getDatasetRowDescriptor(datasetDescriptorId);
-        datasetRowDescriptor.removePropertyDescriptor(propertyDefinitionId);
+        datasetRowDescriptor.removePropertyDescriptor(propertyDescriptorId);
     }
 
 }

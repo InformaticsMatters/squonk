@@ -28,6 +28,6 @@ public interface DatasetService {
 
     PropertyDescriptor createPropertyDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId, PropertyDescriptor propertyDescriptor);
 
-    void removePropertyDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId, Long propertyDefinitionId);
+    void removePropertyDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId, Long propertyDescriptorId);
 
 }

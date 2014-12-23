@@ -2,12 +2,14 @@ package com.im.lac.portal.webapp;
 
 import com.im.lac.portal.service.api.DatasetDescriptor;
 import com.im.lac.portal.service.api.DatasetInputStreamFormat;
-import com.im.lac.portal.service.mock.DatasetServiceMock;
+import com.im.lac.portal.service.api.DatasetService;
 import com.im.lac.wicket.semantic.SemanticModalPanel;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.model.CompoundPropertyModel;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -19,9 +21,10 @@ import java.util.Map;
 public class UploadModalPanel extends SemanticModalPanel {
 
     @Inject
-    private DatasetServiceMock prototypeServiceMock;
+    private DatasetService datasetService;
     private Callbacks callbacks;
     private DatasetDescriptor datasetDescriptor;
+    private Form<UploadModalData> uploadForm;
 
     public UploadModalPanel(String id, String modalElementWicketId) {
         super(id, modalElementWicketId);
@@ -29,19 +32,21 @@ public class UploadModalPanel extends SemanticModalPanel {
     }
 
     private void addForm() {
-        Form form = new Form("form");
-        form.setOutputMarkupId(true);
-        getModalRootComponent().add(form);
+        uploadForm = new Form<UploadModalData>("form");
+        uploadForm.setOutputMarkupId(true);
+        getModalRootComponent().add(uploadForm);
+        uploadForm.setModel(new CompoundPropertyModel<UploadModalData>(new UploadModalData()));
 
         final AjaxSubmitLink submit = new AjaxSubmitLink("submit") {
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                System.out.println(uploadForm.getModelObject().getDescription());
                 callbacks.onSubmit();
             }
         };
         submit.setOutputMarkupId(true);
-        form.add(submit);
+        uploadForm.add(submit);
 
         AjaxLink cancelAction = new AjaxLink("cancel") {
 
@@ -50,7 +55,7 @@ public class UploadModalPanel extends SemanticModalPanel {
                 callbacks.onCancel();
             }
         };
-        form.add(cancelAction);
+        uploadForm.add(cancelAction);
 
         FileUploadPanel fileUploadPanel = new FileUploadPanel("upload", true);
         fileUploadPanel.setCallbackHandler(new FileUploadPanel.CallbackHandler() {
@@ -58,7 +63,7 @@ public class UploadModalPanel extends SemanticModalPanel {
             @Override
             public void onUpload(String clientFileName, InputStream inputStream, AjaxRequestTarget target) throws IOException {
                 Map<String, Class> properties = new HashMap<String, Class>();
-                datasetDescriptor = prototypeServiceMock.createDataset(DatasetInputStreamFormat.SDF, inputStream, properties);
+                datasetDescriptor = datasetService.createDataset(DatasetInputStreamFormat.SDF, inputStream, properties);
             }
 
             @Override
@@ -71,7 +76,10 @@ public class UploadModalPanel extends SemanticModalPanel {
                 return "document.getElementById('" + submit.getMarkupId() + "').disabled = false;";
             }
         });
-        form.add(fileUploadPanel);
+        uploadForm.add(fileUploadPanel);
+
+        TextField<String> descriptionField = new TextField<String>("description");
+        uploadForm.add(descriptionField);
     }
 
     public DatasetDescriptor getDatasetDescriptor() {
@@ -88,6 +96,19 @@ public class UploadModalPanel extends SemanticModalPanel {
 
         void onCancel();
 
+    }
+
+    private class UploadModalData implements Serializable {
+
+        private String description;
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
     }
 
 }
