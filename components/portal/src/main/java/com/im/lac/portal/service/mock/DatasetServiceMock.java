@@ -184,9 +184,10 @@ public class DatasetServiceMock implements DatasetService {
     @Override
     public PropertyDescriptor createPropertyDefinition(Long datasetDescriptorId, Long datasetRowDescriptorId, PropertyDescriptor propertyDescriptor) {
         propertyDescriptor.setId(getNextId());
-
-        return null;
-
+        DatasetDescriptor datasetDescriptor = datasetDescriptorMap.get(datasetDescriptorId);
+        DatasetRowDescriptor datasetRowDescriptor = datasetDescriptor.getDatasetRowDescriptor(datasetDescriptorId);
+        datasetRowDescriptor.addPropertyDescriptor(propertyDescriptor);
+        return propertyDescriptor;
     }
 
     @Override
