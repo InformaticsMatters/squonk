@@ -26,7 +26,6 @@ public class DatasetServiceMock implements DatasetService {
     private Map<Long, DatasetMock> datasetMockMap = new HashMap<Long, DatasetMock>();
     private Map<Long, DatasetDescriptor> datasetDescriptorMap = new HashMap<Long, DatasetDescriptor>();
 
-
     @Override
     public DatasetDescriptor createDataset(DatamartSearch datamartSearch) {
         DatasetMock datasetMock = new DatasetMock();
@@ -184,7 +183,7 @@ public class DatasetServiceMock implements DatasetService {
     }
 
     @Override
-    public PropertyDescriptor createPropertyDefinition(Long datasetDescriptorId, Long datasetRowDescriptorId, PropertyDescriptor propertyDescriptor) {
+    public PropertyDescriptor createPropertyDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId, PropertyDescriptor propertyDescriptor) {
         propertyDescriptor.setId(getNextId());
         DatasetDescriptor datasetDescriptor = datasetDescriptorMap.get(datasetDescriptorId);
         DatasetRowDescriptor datasetRowDescriptor = datasetDescriptor.getDatasetRowDescriptor(datasetDescriptorId);
@@ -193,7 +192,7 @@ public class DatasetServiceMock implements DatasetService {
     }
 
     @Override
-    public void removePropertyDefinition(Long datasetDescriptorId, Long datasetRowDescriptorId, Long propertyDefinitionId) {
+    public void removePropertyDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId, Long propertyDefinitionId) {
         DatasetDescriptor datasetDescriptor = datasetDescriptorMap.get(datasetDescriptorId);
         DatasetRowDescriptor datasetRowDescriptor = datasetDescriptor.getDatasetRowDescriptor(datasetDescriptorId);
         datasetRowDescriptor.removePropertyDescriptor(propertyDefinitionId);
