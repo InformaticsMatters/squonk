@@ -1,9 +1,9 @@
 package com.im.lac.portal.service
 
-import com.im.lac.portal.service.mock.PrototypeServiceMock
+import com.im.lac.portal.service.mock.DatasetServiceMock
 import spock.lang.Specification
 
-class PrototypeServiceMockSpec extends Specification {
+class DatasetServiceMockSpec extends Specification {
     
 
     
@@ -17,7 +17,7 @@ class PrototypeServiceMockSpec extends Specification {
         //def config = [PC_uM: Float.class, TG_uM: Float.class, RL_uM: Float.class, set: Integer.class]
         def config = [set: Integer.class]
         try {
-            def service = new PrototypeServiceMock()
+            def service = new DatasetServiceMock()
             mock = service.parseSdf(null, is, config)
         } finally {
             is.close()

@@ -2,7 +2,7 @@ package com.im.lac.portal.webapp;
 
 import com.im.lac.portal.service.api.DatasetDescriptor;
 import com.im.lac.portal.service.api.DatasetInputStreamFormat;
-import com.im.lac.portal.service.mock.PrototypeServiceMock;
+import com.im.lac.portal.service.mock.DatasetServiceMock;
 import com.im.lac.wicket.semantic.SemanticModalPanel;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -19,7 +19,7 @@ import java.util.Map;
 public class UploadModalPanel extends SemanticModalPanel {
 
     @Inject
-    private PrototypeServiceMock prototypeServiceMock;
+    private DatasetServiceMock prototypeServiceMock;
     private Callbacks callbacks;
     private DatasetDescriptor datasetDescriptor;
 

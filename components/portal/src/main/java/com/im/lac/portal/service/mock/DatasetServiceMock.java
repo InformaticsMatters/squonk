@@ -18,11 +18,11 @@ import java.util.List;
 import java.util.Map;
 
 @ApplicationScoped
-public class PrototypeServiceMock implements PrototypeService {
+public class DatasetServiceMock implements DatasetService {
 
     // TODO decide how to best handle this
     public static final String STRUCTURE_FIELD_NAME = "structure_as_text";
-    private static final Logger logger = LoggerFactory.getLogger(PrototypeServiceMock.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(DatasetServiceMock.class.getName());
     @Inject
     private DatabaseMock databaseMock;
 
@@ -143,6 +143,31 @@ public class PrototypeServiceMock implements PrototypeService {
     public DatasetRow findDatasetRowById(Long datasetId, Long rowId) {
         DatasetMock datasetMock = databaseMock.findDatasetMockById(datasetId);
         return datasetMock.findDatasetRowById(rowId);
+    }
+
+    @Override
+    public DatasetDescriptor createDatasetDescriptor(DatasetDescriptor datasetDescriptor) {
+        return null;
+    }
+
+    @Override
+    public DatasetRowDescriptor createDatasetRowDescriptor(DatasetDescriptor datasetDescriptor, DatasetRowDescriptor datasetRowDescriptor) {
+        return null;
+    }
+
+    @Override
+    public void removeDatasetRowDescriptor(DatasetDescriptor datasetDescriptor, DatasetRowDescriptor datasetRowDescriptor) {
+
+    }
+
+    @Override
+    public PropertyDefinition createPropertyDefinition(DatasetDescriptor datasetDescriptor, DatasetRowDescriptor datasetRowDescriptor, PropertyDefinition propertyDefinition) {
+        return null;
+    }
+
+    @Override
+    public void removePropertyDefinition(DatasetDescriptor datasetDescriptor, DatasetRowDescriptor datasetRowDescriptor, PropertyDefinition propertyDefinition) {
+
     }
 
 }

@@ -4,8 +4,8 @@ import chemaxon.formats.MolImporter;
 import chemaxon.marvin.MolPrinter;
 import chemaxon.struc.Molecule;
 import com.im.lac.portal.service.api.DatasetRow;
-import com.im.lac.portal.service.api.PrototypeService;
-import com.im.lac.portal.service.mock.PrototypeServiceMock;
+import com.im.lac.portal.service.api.DatasetService;
+import com.im.lac.portal.service.mock.DatasetServiceMock;
 import org.apache.wicket.cdi.CdiContainer;
 import org.apache.wicket.request.resource.DynamicImageResource;
 
@@ -19,7 +19,7 @@ public class DynamicStructureImageResource extends DynamicImageResource {
 
     private static final Rectangle RECTANGLE = new Rectangle(200, 130);
     @Inject
-    private PrototypeService service;
+    private DatasetService service;
 
     public DynamicStructureImageResource() {
         CdiContainer.get().getNonContextualManager().postConstruct(this);
@@ -47,7 +47,7 @@ public class DynamicStructureImageResource extends DynamicImageResource {
         Long rowId = Long.valueOf(rowIdAsString);
         DatasetRow datasetRow = service.findDatasetRowById(datasetId, rowId);
         if (datasetRow!= null) {
-            structureData = (String) datasetRow.getProperty(PrototypeServiceMock.STRUCTURE_FIELD_NAME);
+            structureData = (String) datasetRow.getProperty(DatasetServiceMock.STRUCTURE_FIELD_NAME);
         }
         return structureData;
     }

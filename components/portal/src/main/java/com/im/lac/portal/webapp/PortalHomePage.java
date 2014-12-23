@@ -2,7 +2,7 @@ package com.im.lac.portal.webapp;
 
 import com.im.lac.portal.service.api.DatasetDescriptor;
 import com.im.lac.portal.service.api.ListDatasetDescriptorFilter;
-import com.im.lac.portal.service.mock.PrototypeServiceMock;
+import com.im.lac.portal.service.mock.DatasetServiceMock;
 import com.im.lac.wicket.inmethod.EasyGrid;
 import com.im.lac.wicket.inmethod.EasyGridBuilder;
 import com.im.lac.wicket.inmethod.EasyListDataSource;
@@ -30,7 +30,7 @@ public class PortalHomePage extends WebPage {
     @Inject
     private NotifierProvider notifierProvider;
     @Inject
-    private PrototypeServiceMock prototypeServiceMock;
+    private DatasetServiceMock prototypeServiceMock;
     private UploadModalPanel uploadModalPanel;
     private EasyGrid<DatasetDescriptor> datasetDescriptorGrid;
     private List<DatasetDescriptor> datasetDescriptorList;
