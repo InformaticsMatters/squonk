@@ -1,9 +1,6 @@
 package com.im.lac.portal.webapp;
 
-import com.im.lac.portal.service.api.DatasetDescriptor;
-import com.im.lac.portal.service.api.DatasetRow;
-import com.im.lac.portal.service.api.DatasetService;
-import com.im.lac.portal.service.api.ListDatasetRowFilter;
+import com.im.lac.portal.service.api.*;
 import com.im.lac.wicket.semantic.NotifierProvider;
 import com.im.lac.wicket.semantic.SemanticResourceReference;
 import com.inmethod.grid.IGridColumn;
@@ -19,6 +16,7 @@ import org.apache.wicket.request.resource.CssResourceReference;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class TreeGridVisualizerPage extends WebPage {
@@ -55,6 +53,18 @@ public class TreeGridVisualizerPage extends WebPage {
 
         List<IGridColumn<TreeGridVisualizerModel, TreeGridVisualizerNode, String>> columns = new ArrayList<IGridColumn<TreeGridVisualizerModel, TreeGridVisualizerNode, String>>();
         columns.add(new TreeGridVisualizerTreeColumn("id", Model.of("Structure"), datasetDescriptor, 0l)); //Review
+
+        Collection<Long> datasetKeys = datasetDescriptor.getDatasetRowDescriptorKeys();
+        for (Long columnKey : datasetKeys) {
+            DatasetRowDescriptor datasetRowDescriptor = datasetDescriptor.getDatasetRowDescriptor(columnKey);
+            Collection<Long> propertyKeys = datasetRowDescriptor.getPropertyDescriptorKeys();
+            for (Long propertyDescriptorKey : propertyKeys) {
+                if (propertyDescriptorKey > 0) {
+                    PropertyDescriptor propertyDescriptor = datasetRowDescriptor.getPropertyDescriptor(propertyDescriptorKey);
+                    columns.add(new TreeGridVisualizerPropertyColumn(propertyDescriptor.getId().toString(), Model.of(propertyDescriptor.getDescription()), propertyDescriptor.getId()));
+                }
+            }
+        }
 
         TreeGridVisualizer treeGridVisualizer = new TreeGridVisualizer("treeGrid", new TreeGridVisualizerModel(rootNode), columns);
         treeGridVisualizer.getTree().setRootLess(true);

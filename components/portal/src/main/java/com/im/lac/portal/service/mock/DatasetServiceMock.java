@@ -133,6 +133,7 @@ public class DatasetServiceMock implements DatasetService {
                         PropertyDescriptor ps = new PropertyDescriptor();
                         ps.setId(x + 1l);
                         ps.setDescription(prop);
+                        createPropertyDescriptor(datasetMockId, datasetRow.getDatasetRowDescriptor().getId(), ps);
                         datasetRow.setProperty(ps, objVal);
                     }
                     datasetMock.addDatasetRow(count, datasetRow);

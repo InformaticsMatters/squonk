@@ -1,6 +1,7 @@
 package com.im.lac.portal.service.api;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,5 +37,9 @@ public class DatasetDescriptor implements Serializable {
 
     public DatasetRowDescriptor getDatasetRowDescriptor(Long id) {
         return datasetRowDescriptorMap.get(id);
+    }
+
+    public Collection<Long> getDatasetRowDescriptorKeys() {
+        return datasetRowDescriptorMap.keySet();
     }
 }
