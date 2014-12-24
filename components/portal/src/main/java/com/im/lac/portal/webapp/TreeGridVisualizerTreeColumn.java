@@ -4,26 +4,31 @@ import com.im.lac.portal.service.api.DatasetDescriptor;
 import com.inmethod.grid.treegrid.BaseTreeColumn;
 import com.inmethod.icon.Icon;
 import org.apache.wicket.Component;
-import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.IModel;
+
 
 public class TreeGridVisualizerTreeColumn extends BaseTreeColumn<TreeGridVisualizerModel, TreeGridVisualizerNode, String> {
 
     private DatasetDescriptor datasetDescriptor;
+    private Long propertyId;
 
-    public TreeGridVisualizerTreeColumn(String columnId, IModel<String> headerModel, DatasetDescriptor datasetDescriptor) {
+    public TreeGridVisualizerTreeColumn(String columnId, IModel<String> headerModel, DatasetDescriptor datasetDescriptor, Long propertyId) {
         super(columnId, headerModel);
         this.datasetDescriptor = datasetDescriptor;
+        this.propertyId = propertyId;
     }
 
     @Override
     protected Component newNodeComponent(String id, IModel<TreeGridVisualizerNode> model) {
         TreeGridVisualizerNode node = model.getObject();
-        TreeGridVisualizerNodeData vtnd = node.getUserObject();
-        if (vtnd.getId() != null) {
-            return new TreeGridVisualizerStructurePanel(id, datasetDescriptor.getId(), vtnd.getId());
+        TreeGridVisualizerNodeData nodeData = node.getUserObject();
+        if (propertyId == 0) {
+            return new TreeGridVisualizerStructurePanel(id, datasetDescriptor.getId(), nodeData.getId());
         } else {
-            return new WebMarkupContainer(id);
+            Object value = nodeData.getPropertyValue(propertyId);
+            Label label = new Label(id, value.toString());
+            return label;
         }
     }
 
