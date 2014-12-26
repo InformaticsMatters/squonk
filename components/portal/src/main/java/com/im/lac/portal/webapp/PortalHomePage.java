@@ -84,7 +84,6 @@ public class PortalHomePage extends WebPage {
 
         datasetGridViewPanel = new DatasetGridViewPanel("datasetGridViewPanel");
         datasetGridViewPanel.setOutputMarkupId(true);
-        Major API
         datasetGridViewPanel.setOutputMarkupPlaceholderTag(true);
         add(datasetGridViewPanel);
 
