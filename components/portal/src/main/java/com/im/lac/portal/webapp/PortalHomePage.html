@@ -6,16 +6,23 @@
 <div wicket:id="menuPanel"></div>
 <div class="separator20"></div>
 
+<div>
 <div class="ui page grid">
-    <div>
-        <div wicket:id="datasetDescriptors"></div>
-
-        <div class="separator10"></div>
-
-        <div class="ui small blue button" wicket:id="addFromSDF">Add from SDF file</div>
+    <div class="ui menu">
+        <div class="menu">
+            <a wicket:id="datasetGridView" class="active item">
+                <i class="home icon"></i> Grid view
+            </a>
+            <a wicket:id="datasetCardView" class="item">
+                <i class="user icon"></i> Card view
+            </a>
+        </div>
     </div>
 
-    <div wicket:id="uploadFilePanel"></div>
+    <div wicket:id="datasetGridViewPanel"></div>
+    <div wicket:id="datasetCardViewPanel"></div>
+
+</div>
 </div>
 
 </body>
