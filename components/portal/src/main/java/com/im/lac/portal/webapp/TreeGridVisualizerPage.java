@@ -45,10 +45,10 @@ public class TreeGridVisualizerPage extends WebPage {
     public void addTreeGrid(DatasetDescriptor datasetDescriptor) {
         ListRowFilter listRowFilter = new ListRowFilter();
         listRowFilter.setDatasetId(datasetDescriptor.getId());
-        List<Row> datasetRowList = service.listRow(listRowFilter);
+        List<Row> rowList = service.listRow(listRowFilter);
 
-        TreeGridVisualizerNode rootNode = new TreeGridVisualizerNode(new TreeGridVisualizerNodeData());
-        buildNodeHierarchy(rootNode, datasetRowList);
+        TreeGridVisualizerNode rootNode = new TreeGridVisualizerNode();
+        buildNodeHierarchy(rootNode, rowList);
 
         List<IGridColumn<TreeGridVisualizerModel, TreeGridVisualizerNode, String>> columns = new ArrayList<IGridColumn<TreeGridVisualizerModel, TreeGridVisualizerNode, String>>();
         columns.add(new TreeGridVisualizerTreeColumn("id", Model.of("Structure"), datasetDescriptor, 0l)); //Review
@@ -63,12 +63,13 @@ public class TreeGridVisualizerPage extends WebPage {
         add(treeGridVisualizer);
     }
 
-    private void buildNodeHierarchy(TreeGridVisualizerNode rootNode, List<Row> datasetRowList) {
-        for (Row datasetRow : datasetRowList) {
-            TreeGridVisualizerNode childNode = new TreeGridVisualizerNode(new TreeGridVisualizerNodeData(datasetRow));
+    private void buildNodeHierarchy(TreeGridVisualizerNode rootNode, List<Row> rowList) {
+        for (Row row : rowList) {
+            TreeGridVisualizerNode childNode = new TreeGridVisualizerNode();
+            childNode.setUserObject(row);
             rootNode.add(childNode);
-            if (datasetRow.getChildren() != null && datasetRow.getChildren().size() > 0) {
-                buildNodeHierarchy(childNode, datasetRow.getChildren());
+            if (row.getChildren() != null && row.getChildren().size() > 0) {
+                buildNodeHierarchy(childNode, row.getChildren());
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.im.lac.portal.webapp;
 
 import com.im.lac.portal.service.api.DatasetDescriptor;
+import com.im.lac.portal.service.api.Row;
 import com.inmethod.grid.treegrid.BaseTreeColumn;
 import com.inmethod.icon.Icon;
 import org.apache.wicket.Component;
@@ -21,14 +22,12 @@ public class TreeGridVisualizerTreeColumn extends BaseTreeColumn<TreeGridVisuali
 
     @Override
     protected Component newNodeComponent(String id, IModel<TreeGridVisualizerNode> model) {
-        TreeGridVisualizerNode node = model.getObject();
-        TreeGridVisualizerNodeData nodeData = node.getUserObject();
+        Row row = model.getObject().getUserObject();
         if (propertyId == 0) {
-            return new TreeGridVisualizerStructurePanel(id, datasetDescriptor.getId(), nodeData.getId());
+            return new TreeGridVisualizerStructurePanel(id, datasetDescriptor.getId(), row.getId());
         } else {
-            Object value = nodeData.getPropertyValue(propertyId);
-            Label label = new Label(id, value.toString());
-            return label;
+            Object value = row.getProperty(row.getDescriptor().findPropertyDescriptorById(propertyId));
+            return new Label(id, value.toString());
         }
     }
 

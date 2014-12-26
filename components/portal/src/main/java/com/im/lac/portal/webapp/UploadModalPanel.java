@@ -23,7 +23,7 @@ import java.util.List;
 public class UploadModalPanel extends SemanticModalPanel {
 
     @Inject
-    private DatasetService datasetService;
+    private DatasetService service;
     private Callbacks callbacks;
     private Form<UploadModalData> form;
     private FileUploadField fileUploadField;
@@ -71,7 +71,7 @@ public class UploadModalPanel extends SemanticModalPanel {
     private void processSubmission() {
         try {
             for (FileUpload upload : fileUploadField.getFileUploads()) {
-                datasetService.importFromStream(DatasetInputStreamFormat.SDF, upload.getInputStream(), new HashMap<String, Class>());
+                service.importFromStream(DatasetInputStreamFormat.SDF, upload.getInputStream(), new HashMap<String, Class>());
             }
         } catch (Throwable t) {
             throw new RuntimeException(t);
