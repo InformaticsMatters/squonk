@@ -27,7 +27,7 @@ public class DatasetServiceMock implements DatasetService {
     private Map<Long, DatasetDescriptorMock> datasetDescriptorMap = new HashMap<Long, DatasetDescriptorMock>();
 
     @Override
-    public DatasetDescriptor createDataset(DatasetInputStreamFormat format, InputStream inputStream, Map<String, Class> fieldConfig) {
+    public DatasetDescriptor importFromStream(DatasetInputStreamFormat format, InputStream inputStream, Map<String, Class> fieldConfig) {
         try {
             DatasetDescriptorMock dd = new DatasetDescriptorMock();
             dd.setDescription("Mock Dataset Descriptor");

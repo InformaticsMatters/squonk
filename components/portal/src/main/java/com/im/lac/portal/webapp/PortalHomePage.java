@@ -25,9 +25,9 @@ public class PortalHomePage extends WebPage {
     private DatasetGridViewPanel datasetGridViewPanel;
     private DatasetCardViewPanel datasetCardViewPanel;
 
-
     public PortalHomePage() {
         notifierProvider.createNotifier(this, "notifier");
+        add(new MenuPanel("menuPanel"));
         addPanels();
         addActions();
     }
@@ -79,8 +79,6 @@ public class PortalHomePage extends WebPage {
     }
 
     private void addPanels() {
-        add(new MenuPanel("menuPanel"));
-
         datasetGridViewPanel = new DatasetGridViewPanel("datasetGridViewPanel");
         datasetGridViewPanel.setOutputMarkupId(true);
         datasetGridViewPanel.setOutputMarkupPlaceholderTag(true);

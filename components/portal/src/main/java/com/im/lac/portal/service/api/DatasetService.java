@@ -6,15 +6,13 @@ import java.util.Map;
 
 public interface DatasetService {
 
-    DatasetDescriptor createDataset(DatasetInputStreamFormat format, InputStream inputStream, Map<String, Class> fieldConfig);
+    DatasetDescriptor importFromStream(DatasetInputStreamFormat format, InputStream inputStream, Map<String, Class> fieldConfig);
 
     List<DatasetDescriptor> listDatasetDescriptor(ListDatasetDescriptorFilter filter);
 
     List<Row> listRow(ListRowFilter filter);
 
     Row findRowById(Long datasetDescriptorId, Long rowId);
-
-    // metadata related methods
 
     DatasetDescriptor createDatasetDescriptor(DatasetDescriptor datasetDescriptor);
 

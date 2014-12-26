@@ -71,7 +71,7 @@ public class UploadModalPanel extends SemanticModalPanel {
     private void processSubmission() {
         try {
             for (FileUpload upload : fileUploadField.getFileUploads()) {
-                datasetService.createDataset(DatasetInputStreamFormat.SDF, upload.getInputStream(), new HashMap<String, Class>());
+                datasetService.importFromStream(DatasetInputStreamFormat.SDF, upload.getInputStream(), new HashMap<String, Class>());
             }
         } catch (Throwable t) {
             throw new RuntimeException(t);
