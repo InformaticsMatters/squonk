@@ -1,16 +1,16 @@
 package com.im.lac.portal.service.mock;
 
-import com.im.lac.portal.service.api.DatasetRow;
+import com.im.lac.portal.service.api.Row;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DatasetMock {
+class DatasetMock {
 
     private Long id;
-    private Map<Long, DatasetRow> datasetRowList = new HashMap<Long, DatasetRow>();
+    private Map<Long, RowMock> rowMap = new HashMap<Long, RowMock>();
 
     public Long getId() {
         return id;
@@ -20,16 +20,16 @@ public class DatasetMock {
         this.id = id;
     }
 
-    public List<DatasetRow> getDatasetRowList() {
-        return new ArrayList<DatasetRow>(datasetRowList.values());
+    public List<Row> getRowList() {
+        return new ArrayList<Row>(rowMap.values());
     }
 
-    public void addDatasetRow(Long id, DatasetRow datasetRow) {
-        datasetRowList.put(id, datasetRow);
+    public void addRow(Long id, RowMock rowMock) {
+        rowMap.put(id, rowMock);
     }
 
-    public DatasetRow findDatasetRowById(Long id) {
-        return datasetRowList.get(id);
+    public RowMock findRowById(Long id) {
+        return rowMap.get(id);
     }
 
 }

@@ -2,7 +2,7 @@ package com.im.lac.portal.service.api;
 
 import java.util.List;
 
-public class ListDatasetRowFilter {
+public class ListRowFilter {
 
     private Long datasetid;
     private List<Long> rowIdList;

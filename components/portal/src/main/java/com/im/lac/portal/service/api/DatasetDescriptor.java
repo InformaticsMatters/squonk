@@ -1,45 +1,16 @@
 package com.im.lac.portal.service.api;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
-public class DatasetDescriptor implements Serializable {
+public interface DatasetDescriptor extends Serializable {
 
-    private Long id;
-    private String description;
-    private Map<Long, DatasetRowDescriptor> datasetRowDescriptorMap = new HashMap<Long, DatasetRowDescriptor>();
+    Long getId();
 
-    public Long getId() {
-        return id;
-    }
+    String getDescription();
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    List<RowDescriptor> listAllRowDescriptors();
 
-    public String getDescription() {
-        return description;
-    }
+    RowDescriptor findRowDescriptorById(Long id);
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void addDatasetRowDescriptor(DatasetRowDescriptor datasetRowDescriptor) {
-        datasetRowDescriptorMap.put(datasetRowDescriptor.getId(), datasetRowDescriptor);
-    }
-
-    public void removeDatasetRowDescriptor(Long id) {
-        datasetRowDescriptorMap.remove(id);
-    }
-
-    public DatasetRowDescriptor getDatasetRowDescriptor(Long id) {
-        return datasetRowDescriptorMap.get(id);
-    }
-
-    public Collection<Long> getDatasetRowDescriptorKeys() {
-        return datasetRowDescriptorMap.keySet();
-    }
 }

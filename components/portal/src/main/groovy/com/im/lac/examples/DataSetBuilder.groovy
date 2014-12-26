@@ -1,8 +1,8 @@
 package com.im.lac.examples
 
-import com.im.lac.portal.service.api.*
-import com.im.lac.portal.service.mock.*
-
+import com.im.lac.portal.service.mock.DatasetMock
+import com.im.lac.portal.service.mock.DatasetServiceMock
+import com.im.lac.portal.service.mock.RowMock
 import groovy.json.JsonSlurper
 import groovy.util.logging.Log
 
@@ -31,13 +31,13 @@ class DataSetBuilder {
             int count = 0
             json.each {
                 count++
-                DatasetRow datasetRow = new DatasetRow()
+                RowMock datasetRow = new RowMock()
                 Long id = new Long(it.cd_id)
                 datasetRow.setId(id)
                 datasetRow.setProperty(DatasetServiceMock.STRUCTURE_FIELD_NAME, it.cd_structure)
                 datasetRow.setProperty("molweight", it.cd_molweight)
                 datasetRow.setProperty("formula", it.cd_formula)
-                mock.addDatasetRow(id, datasetRow)
+                mock.addRow(id, datasetRow)
                 log.fine("Added new parent row with id $id")
             }
             log.info("Added $count rows")
@@ -53,12 +53,12 @@ class DataSetBuilder {
             def json = slurper.parse(is)
             int count = 0
             json.each {
-                Long structureId = new Long(it.structure_id)               
-                DatasetRow parent = mock.findDatasetRowById(structureId)
+                Long structureId = new Long(it.structure_id)
+                RowMock parent = mock.findRowById(structureId)
                 if (parent) {
                     count++
                     Long id = new Long(it.property_id)
-                    DatasetRow child = parent.createChild()
+                    RowMock child = parent.createChild()
                     child.setId(id )
                     def data = it.property_data
                     child.setProperty("Assay name", "${data.assay_id} ${data.standard_type}") // need a proper name for the assay
@@ -88,7 +88,7 @@ class DataSetBuilder {
             recordStats('create rows') {
                 instance.addRows(datasetMock, new URL("http://localhost:8888/chemcentral/hitlists/25/structures"))
             }
-            println "${datasetMock.datasetRowList.size()} rows"
+            println "${datasetMock.rowList.size()} rows"
             ['CHEMBL1613886', 'CHEMBL1613777', 'CHEMBL1614110', 'CHEMBL1614027'].each { id ->
                 recordStats("create columns for $id") {
                     instance.addProperty(datasetMock, new URL("http://localhost:8888/chemcentral/hitlists/25/properties/" + id))

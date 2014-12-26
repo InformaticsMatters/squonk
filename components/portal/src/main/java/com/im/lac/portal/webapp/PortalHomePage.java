@@ -18,16 +18,17 @@ import javax.inject.Inject;
 
 public class PortalHomePage extends WebPage {
 
+    @Inject
+    private NotifierProvider notifierProvider;
     private AjaxLink gridViewLink;
     private AjaxLink cardViewLink;
     private DatasetGridViewPanel datasetGridViewPanel;
     private DatasetCardViewPanel datasetCardViewPanel;
 
-    @Inject
-    private NotifierProvider notifierProvider;
 
     public PortalHomePage() {
         notifierProvider.createNotifier(this, "notifier");
+        add(new MenuPanel("menuPanel"));
         addPanels();
         addActions();
     }
@@ -45,7 +46,6 @@ public class PortalHomePage extends WebPage {
     }
 
     private void addActions() {
-
         gridViewLink = new AjaxLink("datasetGridView") {
 
             @Override
@@ -80,11 +80,11 @@ public class PortalHomePage extends WebPage {
     }
 
     private void addPanels() {
-
         add(new MenuPanel("menuPanel"));
 
         datasetGridViewPanel = new DatasetGridViewPanel("datasetGridViewPanel");
         datasetGridViewPanel.setOutputMarkupId(true);
+        Major API
         datasetGridViewPanel.setOutputMarkupPlaceholderTag(true);
         add(datasetGridViewPanel);
 

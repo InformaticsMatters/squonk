@@ -6,21 +6,22 @@
         </div>
 
         <form wicket:id="form" class="ui form">
-
             <div class="content">
-                <div class="field">
-                    <label>File</label>
-
-                    <div wicket:id="upload"></div>
-                    <div style="clear: both;"></div>
-                </div>
-
                 <div class="field">
                     <label>Description</label>
                     <input wicket:id="description" type="text">
                 </div>
+                <div class="field">
+                    <div class="left-floated">
+                        <div class="left-floated">
+                            <input wicket:id="fileInput" type="file"/>
+                        </div>
+                        <div class="left-floated">
+                            <span id="appender" style="display: none;"><img wicket:id="appender"/></span>
+                        </div>
+                    </div>
+                </div>
             </div>
-
             <div class="actions">
                 <div wicket:id="cancel" class="ui black button">
                     Cancel

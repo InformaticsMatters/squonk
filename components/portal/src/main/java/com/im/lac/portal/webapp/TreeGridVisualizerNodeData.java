@@ -1,16 +1,18 @@
 package com.im.lac.portal.webapp;
 
-import com.im.lac.portal.service.api.DatasetRow;
-import com.im.lac.portal.service.api.PropertyDescriptor;
+import com.im.lac.portal.service.api.Row;
 
 import java.io.Serializable;
 
 class TreeGridVisualizerNodeData implements Serializable {
 
-    private DatasetRow datasetRow;
+    private Row datasetRow;
 
-    TreeGridVisualizerNodeData(DatasetRow datasetRow) {
+    TreeGridVisualizerNodeData(Row datasetRow) {
         this.datasetRow = datasetRow;
+    }
+
+    public TreeGridVisualizerNodeData() {
     }
 
     public Long getId() {
@@ -18,8 +20,11 @@ class TreeGridVisualizerNodeData implements Serializable {
     }
 
     public Object getPropertyValue(Long propertyId) {
-        PropertyDescriptor propertyDescriptor = datasetRow.getDatasetRowDescriptor().getPropertyDescriptor(propertyId);
-        return datasetRow.getProperty(propertyDescriptor);
+        Object result = null;
+        if (datasetRow != null) {
+            return datasetRow.getProperty(datasetRow.getDescriptor().findPropertyDescriptorById(propertyId));
+        }
+        return result;
     }
 
 }

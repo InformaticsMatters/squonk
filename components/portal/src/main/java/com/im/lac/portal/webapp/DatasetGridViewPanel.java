@@ -1,9 +1,8 @@
 package com.im.lac.portal.webapp;
 
-
 import com.im.lac.portal.service.api.DatasetDescriptor;
+import com.im.lac.portal.service.api.DatasetService;
 import com.im.lac.portal.service.api.ListDatasetDescriptorFilter;
-import com.im.lac.portal.service.mock.DatasetServiceMock;
 import com.im.lac.wicket.inmethod.EasyGrid;
 import com.im.lac.wicket.inmethod.EasyGridBuilder;
 import com.im.lac.wicket.inmethod.EasyListDataSource;
@@ -19,12 +18,11 @@ import java.util.List;
 public class DatasetGridViewPanel extends Panel {
 
     private static final String LARGE_ARROW_CIRCLE_OUTLINE_RIGHT_LINK_ICON = "large arrow circle outline right link icon";
-
     @Inject
-    private DatasetServiceMock prototypeServiceMock;
+    private DatasetService service;
     private UploadModalPanel uploadModalPanel;
-    private EasyGrid<DatasetDescriptor> datasetDescriptorGrid;
-    private List<DatasetDescriptor> datasetDescriptorList;
+    private EasyGrid<DatasetDescriptor> grid;
+    private List<DatasetDescriptor> descriptorList;
 
     public DatasetGridViewPanel(String id) {
         super(id);
@@ -38,9 +36,7 @@ public class DatasetGridViewPanel extends Panel {
 
             @Override
             public void onSubmit() {
-                if (uploadModalPanel.getDatasetDescriptor() != null) {
-                    refreshDatasetDescriptorsGrid();
-                }
+                refreshDatasetDescriptorsGrid();
             }
 
             @Override
@@ -52,7 +48,7 @@ public class DatasetGridViewPanel extends Panel {
     }
 
     private void addDatasetDescriptorGrid() {
-        datasetDescriptorList = prototypeServiceMock.listDatasetDescriptor(new ListDatasetDescriptorFilter());
+        descriptorList = service.listDatasetDescriptor(new ListDatasetDescriptorFilter());
         EasyGridBuilder<DatasetDescriptor> easyGridBuilder = new EasyGridBuilder<DatasetDescriptor>("datasetDescriptors");
         easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("Id", "id", "id"));
         easyGridBuilder.getColumnList().add(easyGridBuilder.newPropertyColumn("Description", "description", "description"));
@@ -67,21 +63,21 @@ public class DatasetGridViewPanel extends Panel {
                 }
             }
         }).setInitialSize(70));
-        datasetDescriptorGrid = easyGridBuilder.build(new EasyListDataSource<DatasetDescriptor>(DatasetDescriptor.class) {
+        grid = easyGridBuilder.build(new EasyListDataSource<DatasetDescriptor>(DatasetDescriptor.class) {
 
             @Override
             public List<DatasetDescriptor> loadData() {
-                return datasetDescriptorList;
+                return descriptorList;
             }
         });
-        add(datasetDescriptorGrid);
+        add(grid);
         addDatasetDescriptorGridActions();
     }
 
     private void refreshDatasetDescriptorsGrid() {
-        datasetDescriptorList = prototypeServiceMock.listDatasetDescriptor(new ListDatasetDescriptorFilter());
-        datasetDescriptorGrid.resetData();
-        getRequestCycle().find(AjaxRequestTarget.class).add(datasetDescriptorGrid);
+        descriptorList = service.listDatasetDescriptor(new ListDatasetDescriptorFilter());
+        grid.resetData();
+        getRequestCycle().find(AjaxRequestTarget.class).add(grid);
     }
 
     private void addDatasetDescriptorGridActions() {

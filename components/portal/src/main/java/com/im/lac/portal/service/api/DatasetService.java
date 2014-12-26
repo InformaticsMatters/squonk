@@ -6,15 +6,13 @@ import java.util.Map;
 
 public interface DatasetService {
 
-    DatasetDescriptor createDataset(DatamartSearch datamartSearch);
-
     DatasetDescriptor createDataset(DatasetInputStreamFormat format, InputStream inputStream, Map<String, Class> fieldConfig);
 
     List<DatasetDescriptor> listDatasetDescriptor(ListDatasetDescriptorFilter filter);
 
-    List<DatasetRow> listDatasetRow(ListDatasetRowFilter filter);
+    List<Row> listRow(ListRowFilter filter);
 
-    DatasetRow findDatasetRowById(Long datasetDescriptorId, Long rowId);
+    Row findRowById(Long datasetDescriptorId, Long rowId);
 
     // metadata related methods
 
@@ -22,12 +20,12 @@ public interface DatasetService {
 
     void removeDatasetDescriptor(Long datasetDescriptorId);
 
-    DatasetRowDescriptor createDatasetRowDescriptor(Long datasetDescriptorId, DatasetRowDescriptor datasetRowDescriptor);
+    RowDescriptor createRowDescriptor(Long datasetDescriptorId, RowDescriptor rowDescriptor);
 
-    void removeDatasetRowDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId);
+    void removeRowDescriptor(Long datasetDescriptorId, Long rowDescriptorId);
 
-    PropertyDescriptor createPropertyDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId, PropertyDescriptor propertyDescriptor);
+    PropertyDescriptor createPropertyDescriptor(Long datasetDescriptorId, Long rowDescriptorId, PropertyDescriptor propertyDescriptor);
 
-    void removePropertyDescriptor(Long datasetDescriptorId, Long datasetRowDescriptorId, Long propertyDescriptorId);
+    void removePropertyDescriptor(Long datasetDescriptorId, Long rowDescriptorId, Long propertyDescriptorId);
 
 }

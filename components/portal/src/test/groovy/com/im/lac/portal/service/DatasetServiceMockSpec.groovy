@@ -25,7 +25,7 @@ class DatasetServiceMockSpec extends Specification {
         
         then:
         mock != null
-        mock.getDatasetRowList().size() == 756
+        mock.getRowList().size() == 756
         
         
     }

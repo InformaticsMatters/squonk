@@ -16,7 +16,6 @@ import org.apache.wicket.request.resource.CssResourceReference;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class TreeGridVisualizerPage extends WebPage {
@@ -44,25 +43,18 @@ public class TreeGridVisualizerPage extends WebPage {
     }
 
     public void addTreeGrid(DatasetDescriptor datasetDescriptor) {
-        ListDatasetRowFilter listDatasetRowFilter = new ListDatasetRowFilter();
-        listDatasetRowFilter.setDatasetId(datasetDescriptor.getId());
-        List<DatasetRow> datasetRowList = service.listDatasetRow(listDatasetRowFilter);
+        ListRowFilter listRowFilter = new ListRowFilter();
+        listRowFilter.setDatasetId(datasetDescriptor.getId());
+        List<Row> datasetRowList = service.listRow(listRowFilter);
 
-        TreeGridVisualizerNode rootNode = new TreeGridVisualizerNode(new TreeGridVisualizerNodeData(new DatasetRow()));
+        TreeGridVisualizerNode rootNode = new TreeGridVisualizerNode(new TreeGridVisualizerNodeData());
         buildNodeHierarchy(rootNode, datasetRowList);
 
         List<IGridColumn<TreeGridVisualizerModel, TreeGridVisualizerNode, String>> columns = new ArrayList<IGridColumn<TreeGridVisualizerModel, TreeGridVisualizerNode, String>>();
         columns.add(new TreeGridVisualizerTreeColumn("id", Model.of("Structure"), datasetDescriptor, 0l)); //Review
-
-        Collection<Long> datasetKeys = datasetDescriptor.getDatasetRowDescriptorKeys();
-        for (Long columnKey : datasetKeys) {
-            DatasetRowDescriptor datasetRowDescriptor = datasetDescriptor.getDatasetRowDescriptor(columnKey);
-            Collection<Long> propertyKeys = datasetRowDescriptor.getPropertyDescriptorKeys();
-            for (Long propertyDescriptorKey : propertyKeys) {
-                if (propertyDescriptorKey > 0) {
-                    PropertyDescriptor propertyDescriptor = datasetRowDescriptor.getPropertyDescriptor(propertyDescriptorKey);
-                    columns.add(new TreeGridVisualizerPropertyColumn(propertyDescriptor.getId().toString(), Model.of(propertyDescriptor.getDescription()), propertyDescriptor.getId()));
-                }
+        for (RowDescriptor rowDescriptor : datasetDescriptor.listAllRowDescriptors()) {
+            for (PropertyDescriptor propertyDescriptor : rowDescriptor.listAllPropertyDescriptors()) {
+                columns.add(new TreeGridVisualizerPropertyColumn(propertyDescriptor.getId().toString(), Model.of(propertyDescriptor.getDescription()), propertyDescriptor.getId()));
             }
         }
 
@@ -71,8 +63,8 @@ public class TreeGridVisualizerPage extends WebPage {
         add(treeGridVisualizer);
     }
 
-    private void buildNodeHierarchy(TreeGridVisualizerNode rootNode, List<DatasetRow> datasetRowList) {
-        for (DatasetRow datasetRow : datasetRowList) {
+    private void buildNodeHierarchy(TreeGridVisualizerNode rootNode, List<Row> datasetRowList) {
+        for (Row datasetRow : datasetRowList) {
             TreeGridVisualizerNode childNode = new TreeGridVisualizerNode(new TreeGridVisualizerNodeData(datasetRow));
             rootNode.add(childNode);
             if (datasetRow.getChildren() != null && datasetRow.getChildren().size() > 0) {
