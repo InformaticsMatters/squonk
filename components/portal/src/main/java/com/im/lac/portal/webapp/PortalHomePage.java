@@ -28,7 +28,6 @@ public class PortalHomePage extends WebPage {
 
     public PortalHomePage() {
         notifierProvider.createNotifier(this, "notifier");
-        add(new MenuPanel("menuPanel"));
         addPanels();
         addActions();
     }
@@ -91,6 +90,7 @@ public class PortalHomePage extends WebPage {
         datasetCardViewPanel.setOutputMarkupId(true);
         datasetCardViewPanel.setOutputMarkupPlaceholderTag(true);
         add(datasetCardViewPanel);
+        datasetCardViewPanel.setVisible(false);
     }
 
 }
