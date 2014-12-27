@@ -20,9 +20,9 @@ allprojects {
         
         maven {
             credentials {
-                // put username and password in gradle.properties file in the top lac directory
-                username chemaxonRepoUsername
-                password chemaxonRepoPassword
+                // define username and password as environment variables 
+                username System.getenv('CHEMAXON_REPO_USERNAME')
+                password System.getenv('CHEMAXON_REPO_PASSWORD')
             }
             url "https://repository.chemaxon.com/artifactory/libs-release"
         }
