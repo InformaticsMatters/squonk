@@ -77,6 +77,8 @@ class SimpleGroovyDWSearcher {
     private ConfigObject database, chemcentral, users
     private DataSource dataSource
     private boolean structureCacheLoaded = false
+    private long structureCacheLoadTime
+    private Date initTime
     
     public static final String RESOURCE_STRUCTURES = "/chemcentral/structures"
     public static final String RESOURCE_HITLISTS = "/chemcentral/hitlists"
@@ -94,6 +96,7 @@ class SimpleGroovyDWSearcher {
         structureTable = chemcentral.structuresTable
         //propertyTable = 'vendordbs.jchemproperties'
         //structureTable = 'vendordbs.drugbank_feb_2014'
+        initTime = new Date()
         loadStructureCache()
     }
     
@@ -107,10 +110,12 @@ class SimpleGroovyDWSearcher {
             JChemSearchOptions searchOptions = new JChemSearchOptions(JChemSearch.FULL);
             searcher.setSearchOptions(searchOptions);
             searcher.setRunMode(JChemSearch.RUN_MODE_SYNCH_COMPLETE)
+            long t0 = System.currentTimeMillis()
             searcher.run()
-            
-            structureCacheLoaded = true
-            log.info("Structure cache loaded " + structureCacheLoaded)
+            long t1 = System.currentTimeMillis()
+            structureCacheLoadTime = t1 - t0
+            structureCacheLoaded = new Date()
+            log.info("Structure cache loaded in ${structureCacheLoadTime}ms")
         }
     }
     
@@ -127,15 +132,16 @@ class SimpleGroovyDWSearcher {
     @Path("/ping")
     public Response serviceOK() {
         log.fine("Being pinged")
-        StringBuilder builder = new StringBuilder("Service is running\n")
-        if (structureCacheLoaded) {
-            builder.append("Structure cache loaded")
-        } else {
-            builder.append("Structure cache still loading")
-        }
-        builder.append("\nDate: ")
+        StringBuilder builder = new StringBuilder("Service was started on $initTime\n")
+        builder.append("Current time is: ")
         .append(new Date())
-        .append("\nFree memory: ")
+        if (structureCacheLoaded) {
+            builder.append("\nStructure cache loaded in ${structureCacheLoadTime}ms")
+        } else {
+            builder.append("\nStructure cache still loading")
+        }
+        
+        builder.append("\nFree memory: ")
         .append(Runtime.getRuntime().freeMemory())
         .append("\nTotal memory: ")
         .append(Runtime.getRuntime().totalMemory())
@@ -391,7 +397,7 @@ class SimpleGroovyDWSearcher {
         try {
             
             log.info("Executing structure search")
-            JChemSearch searcher = createJChemSearch(con, propertyTable, structureTable)
+            JChemSearch searcher = createJChemSearch(db.connection, propertyTable, structureTable)
             searcher.setQueryStructure(queryStructure)
  
             JChemSearchOptions searchOptions = new JChemSearchOptions(JChemSearch.SUBSTRUCTURE);
@@ -399,6 +405,7 @@ class SimpleGroovyDWSearcher {
             searcher.setSearchOptions(searchOptions);
  
             searcher.setRunMode(JChemSearch.RUN_MODE_SYNCH_COMPLETE)
+            long t0 = System.currentTimeMillis()
             searcher.run()
             int[] hits = searcher.getResults()
             log.info("JChem search complete")
