@@ -5,15 +5,16 @@
 java/.idea/workspace.xml
 java/out
 java/*.log.*
-/components/.nb-gradle/private
-/components/.nb-gradle/profiles/private
-/components/.gradle
 /components/gradle.properties
 **/build
 **/.idea
 **/*.iml
 **/*.log.*
+**/.gradle
+**/.nb-gradle
+**/gradle
+**/private
 
-
-/components/routes/.nb-gradle/private/
-/components/routes/build/
+components/chemcentral/chemcentral.properties
+components/chemcentral/database.properties
+components/chemcentral/users.properties
