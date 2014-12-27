@@ -57,9 +57,12 @@ public class DatasetServiceMock implements DatasetService {
      *                    null. Empty Map means no conversions and everything will be a String. The data is
      *                    obtained as String and converted to the corresponding class using the #convert()
      *                    method (note: this is very primitive).
+     * @param datasetMockId ID of dataset
      * @return The generated DataSetMock with one DataSetRow per record in the input file.
+     * @throws java.lang.Exception
      */
-    protected DatasetMock parseSdf(DatasetInputStreamFormat format, InputStream inputStream, Map<String, Class> fieldConfig, Long datasetMockId) throws Exception {
+    private DatasetMock parseSdf(DatasetInputStreamFormat format, InputStream inputStream, Map<String, Class> fieldConfig, Long datasetMockId) 
+            throws Exception {
         MRecordReader recordReader = null;
         DatasetMock datasetMock = new DatasetMock();
         try {
