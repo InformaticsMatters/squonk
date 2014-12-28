@@ -100,6 +100,12 @@ sourceSets.main.resources.srcDir 'src/main/java'
 sourceSets.main.output.resourcesDir = sourceSets.main.output.classesDir
 compileJava.dependsOn(processResources)
 
+task runWebapp(dependsOn: 'classes', type: JavaExec) {
+    main = 'com.im.lac.portal.webapp.WebContainer'
+    classpath = sourceSets.main.runtimeClasspath
+    jvmArgs = ["-Dorg.slf4j.simpleLogger.defaultLogLevel=info"]
+}
+
 
 task runDataSetBuilder(dependsOn: 'classes', type: JavaExec) {
     main = 'com.im.lac.examples.DataSetBuilder'

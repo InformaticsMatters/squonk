@@ -34,14 +34,15 @@ class Utils {
         db.execute(sql)
     }
     
-    static DataSource createDataSource(ConfigObject database, String user, String password) {
-        PGSimpleDataSource ds = new PGSimpleDataSource()
-        ds.serverName = database.server
-        ds.portNumber = database.port
-        ds.databaseName = database.database
-        ds.user = user
-        ds.password = password
+    static DataSource createDataSource(ConfigObject database, String username, String password) {
         
+        PGSimpleDataSource ds = new PGSimpleDataSource()
+        ds.serverName = System.getenv("CHEMCENTRAL_DB_SERVER") ?: database.server
+        String portEnv = System.getenv("CHEMCENTRAL_DB_PORT")
+        ds.portNumber =  (portEnv ? new Integer(portEnv) : database.port)
+        ds.databaseName = database.database
+        ds.user = System.getenv("CHEMCENTRAL_DB_USERNAME") ?: username
+        ds.password = System.getenv("CHEMCENTRAL_DB_PASSWORD") ?: password
         return ds
     }
     

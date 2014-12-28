@@ -87,11 +87,10 @@ class SimpleGroovyDWSearcher {
 	
     SimpleGroovyDWSearcher() {
         log.info("Creating DW searcher")
-    
-        database = new ConfigSlurper().parse(new File('chemcentral/database.properties').toURL())
-        chemcentral = new ConfigSlurper().parse(new File('chemcentral/chemcentral.properties').toURL())
-        users = new ConfigSlurper().parse(new File('chemcentral/users.properties').toURL())
-        dataSource = Utils.createDataSource(database, chemcentral.user, chemcentral.password)
+        database = new ConfigSlurper().parse(getClass().getClassLoader().getResource('database.properties'))
+        chemcentral = new ConfigSlurper().parse(getClass().getClassLoader().getResource('chemcentral.properties'))
+        users = new ConfigSlurper().parse(getClass().getClassLoader().getResource('users.properties'))
+        dataSource = Utils.createDataSource(database, chemcentral.username, chemcentral.password)
         propertyTable = chemcentral.jchemPropertiesTable
         structureTable = chemcentral.structuresTable
         //propertyTable = 'vendordbs.jchemproperties'
