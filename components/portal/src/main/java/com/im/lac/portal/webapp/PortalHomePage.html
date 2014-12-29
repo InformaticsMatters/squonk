@@ -8,16 +8,11 @@
 
 <div>
 <div class="ui page grid">
-    <div class="ui menu">
-        <div class="menu">
-            <a wicket:id="datasetGridView" class="active item">
-                <i class="home icon"></i> Grid view
-            </a>
-            <a wicket:id="datasetCardView" class="item">
-                <i class="user icon"></i> Card view
-            </a>
-        </div>
+    <div>
+        <div class="ui left attached small button active" wicket:id="datasetGridView">Grid view</div>
+        <div class="ui right attached small button" wicket:id="datasetCardView">Card view</div>
     </div>
+    <div class="separator15"></div>
 
     <div wicket:id="datasetGridViewPanel"></div>
     <div wicket:id="datasetCardViewPanel"></div>
