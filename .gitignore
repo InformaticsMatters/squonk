@@ -18,3 +18,8 @@ java/*.log.*
 components/chemcentral/chemcentral.properties
 components/chemcentral/database.properties
 components/chemcentral/users.properties
+/components/common/build/
+/components/portal/build/
+/components/datamodel/build/
+/components/routes/simpleDocker/.nb-gradle/private/
+/components/routes/simpleDocker/build/

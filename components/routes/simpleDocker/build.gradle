@@ -1,0 +1,58 @@
+group = 'im.lac.routes'
+description = 'Simple example of a camel route run in Docker'
+version = '0.1-SNAPSHOT'
+
+apply plugin: 'groovy'
+sourceCompatibility = 1.7
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+apply plugin: 'application'
+mainClassName = "com.im.lac.examples.Main"
+
+apply plugin: 'docker'
+
+buildscript {
+    repositories { jcenter() }
+    dependencies {
+        classpath 'se.transmode.gradle:gradle-docker:1.2'
+    }
+}
+
+repositories {
+    jcenter()
+    
+    maven {
+        url "http://maven.restlet.org"
+    }
+}
+
+project.ext.set('camelVersion', '2.14.0')
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+    compile "org.slf4j:slf4j-simple:1.7.7"
+
+    compile "org.apache.camel:camel-core:$camelVersion"
+    compile "org.apache.camel:camel-restlet:$camelVersion"
+    compile "org.apache.camel:camel-jackson:$camelVersion"
+    
+    testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+}
+
+docker {
+    baseImage "dockerfile/java:oracle-java7"
+    maintainer 'Tim Dudgeon'
+}
+
+// run the generated image with something like this:
+// docker run -d -P --name examples <generated_image_id>
+task buildDocker(type: Docker, dependsOn: distZip) {
+    applicationName = "examples"
+    def zipFile = tasks.distZip.outputs.files.singleFile
+    addFile(zipFile, '/data/' + zipFile.name)
+    runCommand("unzip /data/" + zipFile.name)
+    exposePort(8080) // do we need to configure the port?
+    entryPoint(["/data/${project.name}-${version}/bin/${project.name}"])
+}

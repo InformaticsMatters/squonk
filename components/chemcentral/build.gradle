@@ -8,11 +8,13 @@ jettyRun {
 }
 
 apply plugin: 'docker'
+//apply plugin: 'com.bmuschko.docker-remote-api'
 
 buildscript {
     repositories { jcenter() }
     dependencies {
         classpath 'se.transmode.gradle:gradle-docker:1.1.1'
+        //classpath 'com.bmuschko:gradle-docker-plugin:0.7.2'
     }
 }
 
@@ -120,9 +122,25 @@ docker {
 */
 task dockerBuild(type: Docker, dependsOn: war) {
     applicationName = "chemcentral"
-    setEnvironment('CHEMCENTRAL_DB_SERVER', 'db') // assumes the db alias is used when linking. If not overrde with a -e argument
+    setEnvironment('CHEMCENTRAL_DB_SERVER', 'db') // assumes the db alias is used when linking. If not override with a -e argument
     setEnvironment('CHEMCENTRAL_DB_PORT', '5432')
-    //addFile(tasks.war.outputs.files.singleFile, '/maven/chemcentral.war')
-    //addFile('build/libs/chemcentral-0.1-SNAPSHOT.war', '/maven/chemcentral.war')
+    addFile(tasks.war.outputs.files.singleFile)
+    runCommand 'mkdir /maven'
+    runCommand "mv /${tasks.war.outputs.files.singleFile.name} /maven/chemcentral.war"
+    
+//    addFile {
+//        from 'build/libs/chemcentral-0.1-SNAPSHOT.war'
+//        into '/maven'
+//        rename '.+', 'chemcentral.war'
+//    }
 }
+
+//import com.bmuschko.gradle.docker.tasks.DockerVersion
+//import com.bmuschko.gradle.docker.tasks.DockerInfo
+//docker {
+//    serverUrl = 'unix:///var/run/docker.sock'
+//}
+//
+//task dockerVersion(type: DockerVersion)
+//task dockerInfo(type: DockerInfo)
 
