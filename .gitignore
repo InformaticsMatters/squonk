@@ -12,7 +12,6 @@ java/*.log.*
 **/*.log.*
 **/.gradle
 **/.nb-gradle
-**/gradle
 **/private
 
 components/chemcentral/chemcentral.properties
