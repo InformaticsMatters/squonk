@@ -73,7 +73,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
     def 'logp huge as stream'() {
         
         when:
-        def results = template.requestBody('direct:logp', new FileInputStream("/home/timbo/dev/git/lac/data/testfiles/dhfr_standardized.sdf"))
+        def results = template.requestBody('direct:logp', new FileInputStream("../../data/testfiles/nci1000.smiles"))
 
         then:
         results.collect().size() >100
