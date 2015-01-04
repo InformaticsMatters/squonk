@@ -22,3 +22,6 @@ components/chemcentral/users.properties
 /components/datamodel/build/
 /components/routes/simpleDocker/.nb-gradle/private/
 /components/routes/simpleDocker/build/
+/components/common-libs/cxnlib/build/
+/components/common-libs/core-test/build/
+/components/core-test/build/
