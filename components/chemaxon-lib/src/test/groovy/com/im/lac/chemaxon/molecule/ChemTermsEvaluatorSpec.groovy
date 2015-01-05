@@ -32,7 +32,7 @@ class ChemTermsEvaluatorSpec extends Specification {
     def 'ChemTerms filter for Molecule'() {
 
         given:
-        def atomCountLt6 = new ChemTermsEvaluator('atomCount()<6')
+        def atomCountLt6 = new ChemTermsEvaluator('atomCount()<6', ChemTermsEvaluator.Mode.Filter)
         
 
         when:  

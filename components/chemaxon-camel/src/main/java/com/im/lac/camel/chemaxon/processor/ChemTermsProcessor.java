@@ -72,6 +72,16 @@ import org.apache.http.client.utils.URLEncodedUtils;
  * Put your most selective filters first, and your slowest filters last. You probably
  * want to benchmark this if performance is a concern.
  * <br>
+ * <b>Transforming</b>. Some chemical terms expressions generate structures. You can 
+ * utilise these to transform your input molecule. For instance you can use the leconformer()
+ * expression to generate the lowest energy conformer of your structure. To support this
+ * there is a "transform" mode that can be used to replace your input molecule with the
+ * the result of the evaluation of the chemical terms expression, with all properties
+ * of the source molecule being copied to the new one.
+ * <br>
+ * To utilise this either use #transform(String) method to create the evaluator, or 
+ * use the "transform=chemTermsExpression()" syntax in an manner analogous to defining filters.
+ * <br>
  * <b>Accepted molecule formats</b>. The following inputs are supported (tried
  * in this order) with the corresponding outputs
  * <ol>
@@ -114,10 +124,24 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
      * @throws ParseException 
      */
     public ChemTermsProcessor filter(String ctExpression) throws ParseException {
-        evaluators.add(new ChemTermsEvaluator(ctExpression));
+        evaluators.add(new ChemTermsEvaluator(ctExpression, ChemTermsEvaluator.Mode.Filter));
         return this;
     }
 
+    /** Add a transform definition which replaces the input molecule with one generated
+     * from it using the specified chemical terms expression. The chemical terms expression
+     * MUST return a molecule. All SD file properties are copies from the source to
+     * the new Molecule.
+     * 
+     * @param ctExpression the expression which MUST return a Molecule
+     * @return
+     * @throws ParseException 
+     */
+    public ChemTermsProcessor transform(String ctExpression) throws ParseException {
+        evaluators.add(new ChemTermsEvaluator(ctExpression, ChemTermsEvaluator.Mode.Transform));
+        return this;
+    }
+    
     @Override
     public void process(Exchange exchange) throws Exception {
         LOG.fine("Processing ChemTerms");
@@ -126,7 +150,7 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
         Molecule mol = exchange.getIn().getBody(Molecule.class);
         if (mol != null) {
             for (ChemTermsEvaluator evaluator : evals) {
-                evaluator.evaluateMolecule(mol);
+                mol = evaluator.evaluateMolecule(mol);
             }
             exchange.getIn().setBody(mol);
         } else {
@@ -228,7 +252,9 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
         List<ChemTermsEvaluator> evals = new ArrayList<ChemTermsEvaluator>();
         for (NameValuePair nvp : params) {
             if ("filter".equals(nvp.getName())) {
-                evals.add(new ChemTermsEvaluator(nvp.getValue()));
+                evals.add(new ChemTermsEvaluator(nvp.getValue(), ChemTermsEvaluator.Mode.Filter));
+            } else if ("transform".equals(nvp.getName())) {
+                evals.add(new ChemTermsEvaluator(nvp.getValue(), ChemTermsEvaluator.Mode.Transform));
             } else {
                 evals.add(new ChemTermsEvaluator(nvp.getName(), nvp.getValue()));
             }

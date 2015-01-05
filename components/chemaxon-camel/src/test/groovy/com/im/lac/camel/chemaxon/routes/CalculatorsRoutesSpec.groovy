@@ -122,6 +122,18 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         result.getPropertyObject('atom_count') != null
         result.getPropertyObject('bond_count') != null
     } 
+    
+//    def 'standardize molecule'() {
+//
+//        when:
+//        def mol = MolImporter.importMol('C1=CC=CC=C1')
+//        def result = template.requestBody('direct:standardize', mol)
+//
+//        then:
+//        result instanceof Molecule
+//        result.isAromatic() == true
+//        println "aromatised : ${result.toFormat('smiles')}"
+//    }
 
     @Override
     RouteBuilder createRouteBuilder() {

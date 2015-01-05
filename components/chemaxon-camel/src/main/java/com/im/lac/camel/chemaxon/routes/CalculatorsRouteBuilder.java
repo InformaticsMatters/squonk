@@ -71,6 +71,13 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
         from("direct:chemTermsSingleMolecule")
                 .convertBodyTo(Molecule.class)
                 .process(new ChemTermsProcessor());
+        
+//        from("direct:standardize")
+//                .convertBodyTo(Molecule.class)
+//                .process(new ChemTermsProcessor()
+//                .calculate("szr", "standardize('aromatize')")
+//                );
+                
 
         from("direct:gunzip")
                 .unmarshal().gzip();

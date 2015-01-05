@@ -13,10 +13,12 @@ import java.util.logging.Logger;
  * @author timbo
  */
 public class ChemTermsEvaluator {
+    
+    public enum Mode { Calculate, Filter, Transform }
 
     private final String propName;
     private final ChemJEP chemJEP;
-    private final boolean filter;
+    private final Mode mode;
     private final String chemTermsFunction;
 
     /**
@@ -28,7 +30,7 @@ public class ChemTermsEvaluator {
      * @throws ParseException
      */
     public ChemTermsEvaluator(String propName, String chemTermsFunction) throws ParseException {
-        this(propName, chemTermsFunction, false);
+        this(propName, chemTermsFunction, Mode.Calculate);
     }
 
     /**
@@ -36,16 +38,17 @@ public class ChemTermsEvaluator {
      * a boolean value.
      *
      * @param chemTermsFunction
+     * @param mode Should be Filter or Transform
      * @throws ParseException
      */
-    public ChemTermsEvaluator(String chemTermsFunction) throws ParseException {
-        this("filter", chemTermsFunction, true);
+    public ChemTermsEvaluator(String chemTermsFunction, Mode mode) throws ParseException {
+        this("filter", chemTermsFunction, mode);
     }
 
-    ChemTermsEvaluator(String propName, String chemTermsFunction, boolean isFilter) throws ParseException {
+    ChemTermsEvaluator(String propName, String chemTermsFunction, Mode mode) throws ParseException {
         this.propName = propName;
         this.chemTermsFunction = chemTermsFunction;
-        this.filter = isFilter;
+        this.mode = mode;
         // create ChemJEP, compile the Chemical Terms expression
         chemJEP = new Evaluator().compile(chemTermsFunction, MolContext.class);
     }
@@ -58,23 +61,9 @@ public class ChemTermsEvaluator {
         return chemTermsFunction;
     }
     
-    public boolean isFilter() {
-        return filter;
+    public Mode getMode() {
+        return mode;
     }
-
-//    /**
-//     * Evaluate a set of molecules. The result of the chemical terms evaluation
-//     * is added as a property of each molecule
-//     *
-//     * @param mols
-//     */
-//    public void evaluateMolecules(Iterable<Molecule> mols) {
-//        MolContext context = new MolContext();
-//        for (Molecule mol : mols) {
-//            context.setMolecule(mol);
-//            evaluateMoleculeImpl(context);
-//        }
-//    }
 
     /**
      * Evaluate a single molecule. If this is a standard evaluator the result of 
@@ -94,11 +83,21 @@ public class ChemTermsEvaluator {
 
     private Molecule evaluateMoleculeImpl(MolContext context) {
         try {
-            if (filter) {
+            if (mode == Mode.Filter) {
                 boolean b = chemJEP.evaluate_boolean(context);
                 if (b) {
                     return context.getMolecule();
                 }
+            } else if (mode == Mode.Transform) {
+                Molecule oldMol = context.getMolecule();
+                Molecule newMol = (Molecule)chemJEP.evaluate(context);
+                newMol.clearProperties();
+                for (int i = 0; i < oldMol.getPropertyCount(); i++) {
+                    String key = oldMol.getPropertyKey(i);
+                    Object val = oldMol.getPropertyObject(key);
+                    newMol.setPropertyObject(key, val);
+                }
+                return newMol;
             } else {
                 Object result = chemJEP.evaluate(context);
                 Molecule mol = context.getMolecule(); 
