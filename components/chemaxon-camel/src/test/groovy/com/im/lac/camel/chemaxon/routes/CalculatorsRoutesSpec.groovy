@@ -70,13 +70,26 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         results.collect().size() == 3
     }
     
-    def 'logp huge as stream'() {
+    def 'logp as stream'() {
         
         when:
         def results = template.requestBody('direct:logp', new FileInputStream("../../data/testfiles/nci1000.smiles"))
 
         then:
         results.collect().size() >100
+    }
+    
+    def 'filter as stream'() {
+        
+        when:
+        long t0 = System.currentTimeMillis()
+        def results = template.requestBody('direct:filter_example', new FileInputStream("../../data/testfiles/nci1000.smiles"))
+        long t1 = System.currentTimeMillis()
+        int size = results.collect().size()
+        long t2 = System.currentTimeMillis()
+        println "filter down to $size first in ${t1-t0}ms last in ${t2-t0}ms"
+        then:
+        size < 1000
     }
     
     def 'multiple props'() {
@@ -88,8 +101,8 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         then:
         result instanceof Molecule
         result.getPropertyObject('logp') != null
-        result.getPropertyObject('atomCount') != null
-        result.getPropertyObject('bondCount') != null
+        result.getPropertyObject('atom_count') != null
+        result.getPropertyObject('bond_count') != null
     } 
 
     @Override

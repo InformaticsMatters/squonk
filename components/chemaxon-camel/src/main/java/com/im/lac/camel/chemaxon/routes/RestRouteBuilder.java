@@ -1,22 +1,17 @@
 package com.im.lac.camel.chemaxon.routes;
 
-import chemaxon.formats.MolExporter;
-import chemaxon.marvin.io.MolExportException;
-import chemaxon.struc.Molecule;
-import com.im.lac.chemaxon.io.MoleculeIOUtils;
 import dataFormat.MoleculeIteratorDataFormat;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.camel.*;
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Map;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import org.apache.camel.util.URISupport;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 
 /**
  * Camel REST web service
@@ -57,17 +52,46 @@ public class RestRouteBuilder extends RouteBuilder {
         rest("/atomCount").post()
                 .to("direct:handleAtomCount");
 
+        // This receives a POST request, processes it and returns the result
+        rest("/dump").get()
+                .to("direct:dump");
+
         from("direct:handleAtomCount")
                 .to("direct:atomcount")
                 .log("Calculations complete")
                 .marshal(molDataFormat)
                 .log("Marshalling complete");
 
-        from("direct:tryit")
-                .split().method(MoleculeIOUtils.class, "moleculeIterator").streaming()
-                .log("${body}")
-                .end()
-                .transform(constant("Job done\n"));
+        from("direct:dump")
+                .process(new Processor() {
+                    @Override
+                    public void process(Exchange exchange) throws Exception {
+                        StringBuilder buf = new StringBuilder();
+                        Map<String, Object> headers = exchange.getIn().getHeaders();
+                        buf.append("------ Headers ------\n");
+                        for (Map.Entry<String, Object> e : headers.entrySet()) {
+                            buf.append(e.getKey()).append(" -> ").append(e.getValue()).append("\n");
+                        }
+
+                        String uri = headers.get("CamelHttpUri").toString();
+                        String query = headers.get("CamelHttpQuery").toString();
+                        Map<String, Object> params = URISupport.parseQuery(query);
+                        buf.append("------ Query params Camel ------\n");
+                        for (Map.Entry<String, Object> e : params.entrySet()) {
+                            buf.append(e.getKey()).append(" -> ").append(e.getValue()).append("\n");
+                        }
+                        
+                        List<NameValuePair> params2 = URLEncodedUtils.parse(query, Charset.forName("UTF-8"));
+                        buf.append("------ Query params Apache HTTP ------\n");
+                        for (NameValuePair nvp : params2) {
+                            buf.append(nvp.getName()).append(" -> ").append(nvp.getValue()).append("\n");
+                        }
+
+                        System.out.println(buf.toString());
+                        exchange.getIn().setBody(buf.toString());
+                    }
+
+                });
 
     }
 }

@@ -5,6 +5,7 @@ import chemaxon.struc.Molecule;
 import com.im.lac.ClosableQueue;
 import com.im.lac.ResultExtractor;
 import com.im.lac.chemaxon.molecule.ChemTermsEvaluator;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,6 +15,8 @@ import java.util.logging.Level;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import java.util.logging.Logger;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 
 /**
  * Processor that calculates chemical properties using ChemAxon's
@@ -21,25 +24,61 @@ import java.util.logging.Logger;
  * chemical terms</a> expressions.
  * <br>
  * The expressions can either be statically set using the #add(String, String)
- * method, of can be defined dynamically by setting the
- * PROP_EVALUATORS_DEFINTION header property to a Map (key is the property name,
- * value is the chemical terms expression). If any expressions are set using the
- * #add(string, String) method then the header value is ignored.
+ * method, of can be defined dynamically by setting a header property. If any
+ * expressions are set using the #add(string, String) method then the header
+ * value is ignored.
  * <br>
- * Expressions defined using the PROP_EVALUATORS_DEFINTION header property are
- * created and used only for that one Exchange, so this is not an efficient
- * approach for multiple Exchanges. Instead you should pack your Molecules up as
- * an Iterable&lt;Molecule&gt; or Iterator&lt;Molecule&gt; and process them all
- * in one go.
+ * <b>Headers</b>. For chemical terms expressions using header values, the
+ * following header values are tried (the first one found is used):
+ * <ul>
+ * <li>The PROP_EVALUATORS_DEFINTION constant from this class</li>
+ * <li>The org.apache.camel.Exchange.HTTP_QUERY constant, which is set by Camel
+ * to the value of the query part of the URL</li>
+ * </ul>
  * <br>
- * The following inputs are supported (tried in this order) with the corresponding
- * outputs
- * <table cellPadding="3">
- * <tr><th>Input</th><th>Output</th></tr>
- * <tr><td>Molecule</td><td>Molecule</td></tr>
- * <tr><td>Iterator&lt;Molecule&gt;</td><td>Iterable&lt;Molecule&gt;</td></tr>
- * <tr><td>Iterable&lt;Molecule&gt;</td><td>Iterable&lt;Molecule&gt;</td></tr>
- * </table>
+ * <b>Syntax</b>. The syntax of the header properties corresponds to the query
+ * part of a URL. Multiple values can be separated with &amp; or ;. Examples
+ * are:
+ * <ul>
+ * <li>logp=logP()&amp;atom_count=atomCount()</li>
+ * <li>logd=logD('7.4');atom_count=atomCount()</li>
+ * </ul>
+ * This allows the parameters to be specified as the query part of a URL.
+ * e.g.<br>
+ * http://some.server/path/to/resource?logp=logP();atom_count=atomCount()
+ * <br>
+ * NOTE: if using this approach the URL almost certainly needs to be URL
+ * encoded.
+ * <br>
+ * <b>Performance</b>. Expressions defined using the header property are created
+ * and used ONLY for that one Exchange, so this is not an efficient approach for
+ * multiple Exchanges. Instead you should pack your Molecules up as an
+ * Iterable&lt;Molecule&gt; or Iterator&lt;Molecule&gt; and process them all in
+ * one Exchange.
+ * <br>
+ * <b>Filtering</b>. This class can also be used to filter molecules. To do so use
+ * the one-argument form of the constructor, or specify a filter in text format using 
+ * a syntax like this: filter=logP()&lt;5.
+ * <br>
+ * In both cases the chemical terms expression MUST evaluate to a boolean. 
+ * Multiple filter terms can be present. e.g.
+ * filter=logP()&lt;5;filter=atomCount()&lt;30
+ * <br>
+ * Filtering only applies when the input (body of the Exchange) is a Iterable&lt;Molecule&gt; 
+ * or a Iterator&lt;Molecule&gt;. Only Molecules that pass the filter are written to the output.
+ * When the input is a Molecule then filtering is not applied as it is assumed to be
+ * more useful to just calculate the properties and then inspect them for the single Molecule.
+ * <br>The order of the filters will impact the performance, so consider this carefully.
+ * Put your most selective filters first, and your slowest filters last. You probably
+ * want to benchmark this if performance is a concern.
+ * <br>
+ * <b>Accepted molecule formats</b>. The following inputs are supported (tried
+ * in this order) with the corresponding outputs
+ * <ol>
+ * <li>Input: Molecule Output: Molecule</li>
+ * <li>Input: Iterator&lt;Molecule&gt; Output: Iterable&lt;Molecule&gt;</li>
+ * <li>Input: Iterable&lt;Molecule&gt; Output: Iterable&lt;Molecule&gt;</li>
+ * </ol>
  *
  * @author Tim Dudgeon
  */
@@ -52,16 +91,30 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
 
     /**
      * Add a new chemical terms expression. If no terms are added then the
-     * PROP_EVALUATORS_DEFINTION header is used for the definitions.
+     * header values are tried for the definitions.
+     * <br>
+     * Note: the return type is the instance, to allow the fluent builder
+     * pattern to be used.
      *
-     * @param ctExpression The chemical terms expression e.g. logP()
      * @param name The name for the calculated property
+     * @param ctExpression The chemical terms expression e.g. logP()
      * @return
      * @throws ParseException
      */
-    public ChemTermsProcessor add(String ctExpression, String name) throws ParseException {
+    public ChemTermsProcessor add(String name, String ctExpression) throws ParseException {
+        evaluators.add(new ChemTermsEvaluator(name, ctExpression));
+        return this;
+    }
 
-        evaluators.add(new ChemTermsEvaluator(ctExpression, name));
+    /** Create a new filter based on a chemical terms expression.
+     * The expression MUST evaluate to a boolean value. e.g. logP() &lt; 5
+     * 
+     * @param ctExpression
+     * @return
+     * @throws ParseException 
+     */
+    public ChemTermsProcessor filter(String ctExpression) throws ParseException {
+        evaluators.add(new ChemTermsEvaluator(ctExpression));
         return this;
     }
 
@@ -87,27 +140,11 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
             }
 
             if (iterator != null) {
-                final Iterator<Molecule> mols = iterator;
-                final ClosableQueue q = new ClosableQueue(100);
-                Thread t = new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            while (mols.hasNext()) {
-                                Molecule mol = mols.next();
-                                LOG.finer("Processing Molecule");
-                                for (ChemTermsEvaluator evaluator : evals) {
-                                    evaluator.evaluateMolecule(mol);
-                                }
-                                q.add(mol);
-                            }
-                        } finally {
-                            q.close();
-                        }
-                    }
-                };
-                t.start();
-                exchange.getIn().setBody(q);
+                Iterator<Molecule> mols = iterator;
+                for (ChemTermsEvaluator evaluator : evals) {
+                    mols = evaluateMultiple(mols, evaluator);
+                }
+                exchange.getIn().setBody(mols);
             } else {
                 // give up
                 Object body = exchange.getIn().getBody();
@@ -117,19 +154,52 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
         }
     }
 
-    private List<ChemTermsEvaluator> getEvaluators(Exchange exchange) throws ParseException {
+    ClosableQueue<Molecule> evaluateMultiple(final Iterator<Molecule> mols, final ChemTermsEvaluator evaluator) {
+        final ClosableQueue<Molecule> q = new ClosableQueue<Molecule>(50);
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while (mols.hasNext()) {
+                        Molecule mol = mols.next();
+                        synchronized (evaluator) { // chem terms evaluator is not thread safe
+                            mol = evaluator.evaluateMolecule(mol);
+                        }
+                        if (mol != null) {
+                            q.add(mol);
+                        }
+                    }
+                } finally {
+                    q.close();
+                }
+            }
+        });
+        t.start();
+
+        return q;
+    }
+
+    /**
+     * Get or create the evaluators by whatever means we can. If these have been
+     * defined using the #add() method then those are used. If not we try to
+     * create ones specific for this Exchange based on header parameters.
+     *
+     * @param exchange
+     * @return
+     * @throws ParseException
+     */
+    List<ChemTermsEvaluator> getEvaluators(Exchange exchange) throws ParseException {
         List<ChemTermsEvaluator> result = null;
         if (evaluators != null && !evaluators.isEmpty()) {
             result = evaluators;
         } else {
-            Map<String, String> defs = exchange.getIn().getHeader(PROP_EVALUATORS_DEFINTION, Map.class);
-            LOG.finer("Generating dynamic ChemTerms evaluators");
+            String defs = exchange.getIn().getHeader(PROP_EVALUATORS_DEFINTION, String.class);
+            if (defs == null) {
+                defs = exchange.getIn().getHeader(Exchange.HTTP_QUERY, String.class);
+            }
             if (defs != null) {
-                result = new ArrayList<ChemTermsEvaluator>();
-                for (Map.Entry<String, String> e : defs.entrySet()) {
-                    LOG.log(Level.FINE, "Adding CT Evaluator for {0} -> {1}", new Object[]{e.getKey(), e.getValue()});
-                    result.add(new ChemTermsEvaluator(e.getValue(), e.getKey()));
-                }
+                LOG.finer("Generating dynamic ChemTerms evaluators");
+                result = parseParamString(defs);
             } else {
                 throw new IllegalStateException("No Chem terms configuration supplied");
             }
@@ -151,5 +221,18 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
             results.put(evaluator.getPropName(), evaluator.getResult(mol));
         }
         return results;
+    }
+
+    static List<ChemTermsEvaluator> parseParamString(String query) throws ParseException {
+        List<NameValuePair> params = URLEncodedUtils.parse(query, Charset.forName("UTF-8"));
+        List<ChemTermsEvaluator> evals = new ArrayList<ChemTermsEvaluator>();
+        for (NameValuePair nvp : params) {
+            if ("filter".equals(nvp.getName())) {
+                evals.add(new ChemTermsEvaluator(nvp.getValue()));
+            } else {
+                evals.add(new ChemTermsEvaluator(nvp.getName(), nvp.getValue()));
+            }
+        }
+        return evals;
     }
 }

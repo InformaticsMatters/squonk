@@ -3,12 +3,6 @@ package com.im.lac.camel.chemaxon.routes;
 import chemaxon.struc.Molecule;
 import com.im.lac.camel.chemaxon.processor.ChemTermsProcessor;
 import com.im.lac.camel.chemaxon.processor.MoleculeConverterProcessor;
-import com.im.lac.chemaxon.io.MoleculeIOUtils;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Iterator;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 
 /**
@@ -30,26 +24,39 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
         from("direct:logp")
                 .process(new MoleculeConverterProcessor())
                 .process(new ChemTermsProcessor()
-                        .add("logP()", "logp"));
+                        .add("logp", "logP()"));
 
         from("direct:logpSingleMolecule")
                 .convertBodyTo(Molecule.class)
                 .process(new ChemTermsProcessor()
-                        .add("logP()", "logp"));
+                        .add("logp", "logP()"));
 
         from("direct:atomcount")
                 .process(new MoleculeConverterProcessor())
                 .log("atomcount body is ${body}")
                 .process(new ChemTermsProcessor()
-                        .add("atomCount()", "atom_count"));
+                        .add("atom_count", "atomCount()"));
 
         // simple route that calcuates multiple hard coded properties
         from("direct:logp_atomcount_bondcount")
                 .process(new MoleculeConverterProcessor())
                 .process(new ChemTermsProcessor()
-                        .add("logP()", "logp")
-                        .add("atomCount()", "atomCount")
-                        .add("bondCount()", "bondCount")
+                        .add("logp", "logP()")
+                        .add("atom_count", "atomCount()")
+                        .add("bond_count", "bondCount()")
+                );
+        
+        // simple route that exemplifies filtering
+        from("direct:filter_example")
+                .process(new MoleculeConverterProcessor())
+                .process(new ChemTermsProcessor()
+                        .filter("mass()<400")
+                        .filter("ringCount()>0")
+                        .filter("rotatableBondCount()<5")
+                        .filter("donorCount()<=5")
+                        .filter("acceptorCount()<=10")
+                        .filter("logP()<4")
+                        
                 );
 
         // dynamic route that requires the chem terms configuration to be set using

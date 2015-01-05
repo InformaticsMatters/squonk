@@ -11,31 +11,10 @@ import chemaxon.struc.Molecule
 class ChemTermsEvaluatorSpec extends Specification {
 
 
-
-
-    def 'ChemTerms processor for List'() {
-
-        given:
-        def atomCount = new ChemTermsEvaluator('atomCount', 'atom_count')
-
-        when:
-        def mols = []
-        mols << MolImporter.importMol('C')
-        mols << MolImporter.importMol('CC')        
-        mols << MolImporter.importMol('CCC')
-        atomCount.evaluateMolecules(mols)
-
-        then:
-        mols[0].getPropertyObject('atom_count') == 5
-        mols[1].getPropertyObject('atom_count') == 8
-        mols[2].getPropertyObject('atom_count') == 11
-        
-    }
-    
      def 'ChemTerms processor for Molecule'() {
 
         given:
-        def atomCount = new ChemTermsEvaluator('atomCount', 'atom_count')
+        def atomCount = new ChemTermsEvaluator('atom_count', 'atomCount()')
         
 
         when: 
@@ -43,11 +22,26 @@ class ChemTermsEvaluatorSpec extends Specification {
         def mol1 = MolImporter.importMol('CC')
         atomCount.evaluateMolecule(mol0)
         atomCount.evaluateMolecule(mol1)
-        
 
         then:
         mol0.getPropertyObject('atom_count') == 5
         mol1.getPropertyObject('atom_count') == 8
+        
+    }
+    
+    def 'ChemTerms filter for Molecule'() {
+
+        given:
+        def atomCountLt6 = new ChemTermsEvaluator('atomCount()<6')
+        
+
+        when:  
+        def mol0 = atomCountLt6.evaluateMolecule(MolImporter.importMol('C'))
+        def mol1 = atomCountLt6.evaluateMolecule(MolImporter.importMol('CC'))
+
+        then:
+        mol0 != null
+        mol1 == null
         
     }
 
