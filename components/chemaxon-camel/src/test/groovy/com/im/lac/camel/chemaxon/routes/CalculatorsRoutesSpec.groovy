@@ -90,6 +90,24 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         println "filter down to $size first in ${t1-t0}ms last in ${t2-t0}ms"
         then:
         size < 1000
+       
+    }
+    
+     def 'filter as stream concurrent'() {
+        
+        when:
+        def results = []
+        (1..10).each {
+            results << template.requestBody('direct:filter_example', new FileInputStream("../../data/testfiles/nci1000.smiles"))
+        }
+        int size = results.size()
+        then:
+        size == 10
+        int s0 = results[0].collect().size()
+        (2..10).each {
+            results[it].collect().size() == s0
+        }
+       
     }
     
     def 'multiple props'() {

@@ -23,11 +23,11 @@ import org.apache.http.client.utils.URLEncodedUtils;
  * <a href="https://docs.chemaxon.com/display/chemicalterms/Chemical+Terms+Home">
  * chemical terms</a> expressions.
  * <br>
- * The expressions can either be statically set using the #add(String, String)
- * method, of can be defined dynamically by setting a header property. If any
- * expressions are set using the #add(string, String) method then the header
- * value is ignored.
- * <br>
+ The expressions can either be statically set using the #calculate(String, String)
+ method, of can be defined dynamically by setting a header property. If any
+ expressions are set using the #calculate(string, String) method then the header
+ value is ignored.
+ <br>
  * <b>Headers</b>. For chemical terms expressions using header values, the
  * following header values are tried (the first one found is used):
  * <ul>
@@ -90,7 +90,7 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
     private final List<ChemTermsEvaluator> evaluators = new ArrayList<ChemTermsEvaluator>();
 
     /**
-     * Add a new chemical terms expression. If no terms are added then the
+     * Add a new calculation using a chemical terms expression. If no terms are added then the
      * header values are tried for the definitions.
      * <br>
      * Note: the return type is the instance, to allow the fluent builder
@@ -101,7 +101,7 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
      * @return
      * @throws ParseException
      */
-    public ChemTermsProcessor add(String name, String ctExpression) throws ParseException {
+    public ChemTermsProcessor calculate(String name, String ctExpression) throws ParseException {
         evaluators.add(new ChemTermsEvaluator(name, ctExpression));
         return this;
     }
@@ -181,8 +181,8 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
 
     /**
      * Get or create the evaluators by whatever means we can. If these have been
-     * defined using the #add() method then those are used. If not we try to
-     * create ones specific for this Exchange based on header parameters.
+ defined using the #calculate() method then those are used. If not we try to
+ create ones specific for this Exchange based on header parameters.
      *
      * @param exchange
      * @return

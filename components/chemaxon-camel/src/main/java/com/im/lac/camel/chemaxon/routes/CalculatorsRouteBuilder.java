@@ -24,26 +24,26 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
         from("direct:logp")
                 .process(new MoleculeConverterProcessor())
                 .process(new ChemTermsProcessor()
-                        .add("logp", "logP()"));
+                        .calculate("logp", "logP()"));
 
         from("direct:logpSingleMolecule")
                 .convertBodyTo(Molecule.class)
                 .process(new ChemTermsProcessor()
-                        .add("logp", "logP()"));
+                        .calculate("logp", "logP()"));
 
         from("direct:atomcount")
                 .process(new MoleculeConverterProcessor())
                 .log("atomcount body is ${body}")
                 .process(new ChemTermsProcessor()
-                        .add("atom_count", "atomCount()"));
+                        .calculate("atom_count", "atomCount()"));
 
         // simple route that calcuates multiple hard coded properties
         from("direct:logp_atomcount_bondcount")
                 .process(new MoleculeConverterProcessor())
                 .process(new ChemTermsProcessor()
-                        .add("logp", "logP()")
-                        .add("atom_count", "atomCount()")
-                        .add("bond_count", "bondCount()")
+                        .calculate("logp", "logP()")
+                        .calculate("atom_count", "atomCount()")
+                        .calculate("bond_count", "bondCount()")
                 );
         
         // simple route that exemplifies filtering

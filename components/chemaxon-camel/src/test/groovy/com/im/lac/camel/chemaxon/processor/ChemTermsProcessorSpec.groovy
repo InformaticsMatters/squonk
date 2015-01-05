@@ -68,8 +68,8 @@ class ChemTermsProcessorSpec extends CamelSpecificationBase {
             public void configure() {
                 from("direct:chemTermsCalculator")
                 .process(new ChemTermsProcessor()
-                    .add('atom_count', 'atomCount()')
-                    .add('bond_count', 'bondCount()'))
+                    .calculate('atom_count', 'atomCount()')
+                    .calculate('bond_count', 'bondCount()'))
                 .to('mock:result')
             }
         }
