@@ -23,11 +23,11 @@ import org.apache.http.client.utils.URLEncodedUtils;
  * <a href="https://docs.chemaxon.com/display/chemicalterms/Chemical+Terms+Home">
  * chemical terms</a> expressions.
  * <br>
- The expressions can either be statically set using the #calculate(String, String)
- method, of can be defined dynamically by setting a header property. If any
- expressions are set using the #calculate(string, String) method then the header
- value is ignored.
- <br>
+ * The expressions can either be statically set using the #calculate(String,
+ * String) method, of can be defined dynamically by setting a header property.
+ * If any expressions are set using the #calculate(string, String) method then
+ * the header value is ignored.
+ * <br>
  * <b>Headers</b>. For chemical terms expressions using header values, the
  * following header values are tried (the first one found is used):
  * <ul>
@@ -56,31 +56,34 @@ import org.apache.http.client.utils.URLEncodedUtils;
  * Iterable&lt;Molecule&gt; or Iterator&lt;Molecule&gt; and process them all in
  * one Exchange.
  * <br>
- * <b>Filtering</b>. This class can also be used to filter molecules. To do so use
- * the one-argument form of the constructor, or specify a filter in text format using 
- * a syntax like this: filter=logP()&lt;5.
+ * <b>Filtering</b>. This class can also be used to filter molecules. To do so
+ * use the one-argument form of the constructor, or specify a filter in text
+ * format using a syntax like this: filter=logP()&lt;5.
  * <br>
- * In both cases the chemical terms expression MUST evaluate to a boolean. 
+ * In both cases the chemical terms expression MUST evaluate to a boolean.
  * Multiple filter terms can be present. e.g.
  * filter=logP()&lt;5;filter=atomCount()&lt;30
  * <br>
- * Filtering only applies when the input (body of the Exchange) is a Iterable&lt;Molecule&gt; 
- * or a Iterator&lt;Molecule&gt;. Only Molecules that pass the filter are written to the output.
- * When the input is a Molecule then filtering is not applied as it is assumed to be
- * more useful to just calculate the properties and then inspect them for the single Molecule.
- * <br>The order of the filters will impact the performance, so consider this carefully.
- * Put your most selective filters first, and your slowest filters last. You probably
- * want to benchmark this if performance is a concern.
+ * Filtering only applies when the input (body of the Exchange) is a
+ * Iterable&lt;Molecule&gt; or a Iterator&lt;Molecule&gt;. Only Molecules that
+ * pass the filter are written to the output. When the input is a Molecule then
+ * filtering is not applied as it is assumed to be more useful to just calculate
+ * the properties and then inspect them for the single Molecule.
+ * <br>The order of the filters will impact the performance, so consider this
+ * carefully. Put your most selective filters first, and your slowest filters
+ * last. You probably want to benchmark this if performance is a concern.
  * <br>
- * <b>Transforming</b>. Some chemical terms expressions generate structures. You can 
- * utilise these to transform your input molecule. For instance you can use the leconformer()
- * expression to generate the lowest energy conformer of your structure. To support this
- * there is a "transform" mode that can be used to replace your input molecule with the
- * the result of the evaluation of the chemical terms expression, with all properties
- * of the source molecule being copied to the new one.
+ * <b>Transforming</b>. Some chemical terms expressions generate structures. You
+ * can utilise these to transform your input molecule. For instance you can use
+ * the leconformer() expression to generate the lowest energy conformer of your
+ * structure. To support this there is a "transform" mode that can be used to
+ * replace your input molecule with the the result of the evaluation of the
+ * chemical terms expression, with all properties of the source molecule being
+ * copied to the new one.
  * <br>
- * To utilise this either use #transform(String) method to create the evaluator, or 
- * use the "transform=chemTermsExpression()" syntax in an manner analogous to defining filters.
+ * To utilise this either use #transform(String) method to create the evaluator,
+ * or use the "transform=chemTermsExpression()" syntax in an manner analogous to
+ * defining filters.
  * <br>
  * <b>Accepted molecule formats</b>. The following inputs are supported (tried
  * in this order) with the corresponding outputs
@@ -100,8 +103,8 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
     private final List<ChemTermsEvaluator> evaluators = new ArrayList<ChemTermsEvaluator>();
 
     /**
-     * Add a new calculation using a chemical terms expression. If no terms are added then the
-     * header values are tried for the definitions.
+     * Add a new calculation using a chemical terms expression. If no terms are
+     * added then the header values are tried for the definitions.
      * <br>
      * Note: the return type is the instance, to allow the fluent builder
      * pattern to be used.
@@ -116,66 +119,56 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
         return this;
     }
 
-    /** Create a new filter based on a chemical terms expression.
-     * The expression MUST evaluate to a boolean value. e.g. logP() &lt; 5
-     * 
+    /**
+     * Create a new filter based on a chemical terms expression. The expression
+     * MUST evaluate to a boolean value. e.g. logP() &lt; 5
+     *
      * @param ctExpression
      * @return
-     * @throws ParseException 
+     * @throws ParseException
      */
     public ChemTermsProcessor filter(String ctExpression) throws ParseException {
         evaluators.add(new ChemTermsEvaluator(ctExpression, ChemTermsEvaluator.Mode.Filter));
         return this;
     }
 
-    /** Add a transform definition which replaces the input molecule with one generated
-     * from it using the specified chemical terms expression. The chemical terms expression
-     * MUST return a molecule. All SD file properties are copies from the source to
-     * the new Molecule.
-     * 
+    /**
+     * Add a transform definition which replaces the input molecule with one
+     * generated from it using the specified chemical terms expression. The
+     * chemical terms expression MUST return a molecule. All SD file properties
+     * are copies from the source to the new Molecule.
+     *
      * @param ctExpression the expression which MUST return a Molecule
      * @return
-     * @throws ParseException 
+     * @throws ParseException
      */
     public ChemTermsProcessor transform(String ctExpression) throws ParseException {
         evaluators.add(new ChemTermsEvaluator(ctExpression, ChemTermsEvaluator.Mode.Transform));
         return this;
     }
-    
+
     @Override
-    public void process(Exchange exchange) throws Exception {
+    public void process(final Exchange exchange) throws Exception {
         LOG.fine("Processing ChemTerms");
         final List<ChemTermsEvaluator> evals = getEvaluators(exchange);
-        // first try as molecule
-        Molecule mol = exchange.getIn().getBody(Molecule.class);
-        if (mol != null) {
-            for (ChemTermsEvaluator evaluator : evals) {
-                mol = evaluator.evaluateMolecule(mol);
-            }
-            exchange.getIn().setBody(mol);
-        } else {
-            // try as stream of molecules
-            Iterator<Molecule> iterator = exchange.getIn().getBody(Iterator.class);
-            if (iterator == null) {
-                Iterable<Molecule> iterable = exchange.getIn().getBody(Iterable.class);
-                if (iterable != null) {
-                    iterator = iterable.iterator();
+        MoleculeSourcer sourcer = new MoleculeSourcer() {
+            @Override
+            void handleSingle(Exchange exchange, Molecule mol) throws Exception {
+                for (ChemTermsEvaluator evaluator : evals) {
+                    mol = evaluator.evaluateMolecule(mol);
                 }
+                exchange.getIn().setBody(mol);
             }
 
-            if (iterator != null) {
-                Iterator<Molecule> mols = iterator;
+            @Override
+            void handleMultiple(Exchange exchange, Iterator<Molecule> mols) throws Exception {
                 for (ChemTermsEvaluator evaluator : evals) {
                     mols = evaluateMultiple(mols, evaluator);
                 }
                 exchange.getIn().setBody(mols);
-            } else {
-                // give up
-                Object body = exchange.getIn().getBody();
-                LOG.log(Level.WARNING, "Can''t find molecules from {0}", body.getClass().getName());
-                throw new IllegalArgumentException("No valid Molecule content could be found");
             }
-        }
+        };
+        sourcer.handle(exchange);
     }
 
     ClosableQueue<Molecule> evaluateMultiple(final Iterator<Molecule> mols, final ChemTermsEvaluator evaluator) {
@@ -205,8 +198,8 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
 
     /**
      * Get or create the evaluators by whatever means we can. If these have been
- defined using the #calculate() method then those are used. If not we try to
- create ones specific for this Exchange based on header parameters.
+     * defined using the #calculate() method then those are used. If not we try
+     * to create ones specific for this Exchange based on header parameters.
      *
      * @param exchange
      * @return

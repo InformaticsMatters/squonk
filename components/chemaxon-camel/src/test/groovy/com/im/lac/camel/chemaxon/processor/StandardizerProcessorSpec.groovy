@@ -15,7 +15,7 @@ class StandardizerProcessorSpec extends CamelSpecificationBase {
 
     def resultEndpoint
 
-    def 'standardizer processor'() {
+    def 'standardizer for list'() {
 
         given:
         resultEndpoint = camelContext.getEndpoint('mock:result')
@@ -29,9 +29,27 @@ class StandardizerProcessorSpec extends CamelSpecificationBase {
 
         then:
         resultEndpoint.assertIsSatisfied()
-        List result = resultEndpoint.receivedExchanges.in.body[0]
+        def result = resultEndpoint.receivedExchanges.in.body[0].collect()
         result.size() == 1
         result[0].atomCount == 12
+        
+    }
+    
+    def 'standardizer for single'() {
+
+        given:
+        resultEndpoint = camelContext.getEndpoint('mock:result')
+        resultEndpoint.expectedMessageCount(1)
+        
+
+        when:
+        def mol = MolImporter.importMol('c1ccccc1')
+        template.sendBody('direct:start', mol)
+
+        then:
+        resultEndpoint.assertIsSatisfied()
+        Molecule result = resultEndpoint.receivedExchanges.in.body[0]
+        result.atomCount == 12
         
     }
 
