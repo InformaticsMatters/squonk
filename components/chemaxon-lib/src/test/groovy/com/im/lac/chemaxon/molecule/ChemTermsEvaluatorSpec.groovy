@@ -20,8 +20,8 @@ class ChemTermsEvaluatorSpec extends Specification {
         when: 
         def mol0 = MolImporter.importMol('C')
         def mol1 = MolImporter.importMol('CC')
-        atomCount.evaluateMolecule(mol0)
-        atomCount.evaluateMolecule(mol1)
+        atomCount.processMolecule(mol0)
+        atomCount.processMolecule(mol1)
 
         then:
         mol0.getPropertyObject('atom_count') == 5
@@ -36,8 +36,8 @@ class ChemTermsEvaluatorSpec extends Specification {
         
 
         when:  
-        def mol0 = atomCountLt6.evaluateMolecule(MolImporter.importMol('C'))
-        def mol1 = atomCountLt6.evaluateMolecule(MolImporter.importMol('CC'))
+        def mol0 = atomCountLt6.processMolecule(MolImporter.importMol('C'))
+        def mol1 = atomCountLt6.processMolecule(MolImporter.importMol('CC'))
 
         then:
         mol0 != null

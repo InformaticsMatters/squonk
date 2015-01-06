@@ -1,17 +1,19 @@
 package com.im.lac.camel.chemaxon.processor;
 
 import chemaxon.nfunk.jep.ParseException;
+import chemaxon.standardizer.Standardizer;
 import chemaxon.struc.Molecule;
 import com.im.lac.ClosableQueue;
 import com.im.lac.ResultExtractor;
 import com.im.lac.chemaxon.molecule.ChemTermsEvaluator;
+import com.im.lac.chemaxon.molecule.MoleculeEvaluator;
+import edu.emory.mathcs.backport.java.util.Collections;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import java.util.logging.Logger;
@@ -21,41 +23,25 @@ import org.apache.http.client.utils.URLEncodedUtils;
 /**
  * Processor that calculates chemical properties using ChemAxon's
  * <a href="https://docs.chemaxon.com/display/chemicalterms/Chemical+Terms+Home">
- * chemical terms</a> expressions.
+ * chemical terms</a> expressions and performs molecular transformations using
+ * <a href="http://www.chemaxon.com/products/standardizer/">Standardizer</a>.
  * <br>
- * The expressions can either be statically set using the #calculate(String,
- * String) method, of can be defined dynamically by setting a header property.
- * If any expressions are set using the #calculate(string, String) method then
- * the header value is ignored.
- * <br>
- * <b>Headers</b>. For chemical terms expressions using header values, the
- * following header values are tried (the first one found is used):
- * <ul>
- * <li>The PROP_EVALUATORS_DEFINTION constant from this class</li>
- * <li>The org.apache.camel.Exchange.HTTP_QUERY constant, which is set by Camel
- * to the value of the query part of the URL</li>
- * </ul>
- * <br>
- * <b>Syntax</b>. The syntax of the header properties corresponds to the query
- * part of a URL. Multiple values can be separated with &amp; or ;. Examples
- * are:
- * <ul>
- * <li>logp=logP()&amp;atom_count=atomCount()</li>
- * <li>logd=logD('7.4');atom_count=atomCount()</li>
- * </ul>
- * This allows the parameters to be specified as the query part of a URL.
- * e.g.<br>
- * http://some.server/path/to/resource?logp=logP();atom_count=atomCount()
- * <br>
- * NOTE: if using this approach the URL almost certainly needs to be URL
- * encoded.
- * <br>
- * <b>Performance</b>. Expressions defined using the header property are created
- * and used ONLY for that one Exchange, so this is not an efficient approach for
- * multiple Exchanges. Instead you should pack your Molecules up as an
- * Iterable&lt;Molecule&gt; or Iterator&lt;Molecule&gt; and process them all in
- * one Exchange.
- * <br>
+ * Three types of operation are supported:
+ * <ol>
+ * <li>Calculation of a molecular property using a Chemical Terms
+ * expression</li>
+ * <li>Filtering using a Chemical Terms expression</li>
+ * <li>Transformation of the Molecule using a Chemical Terms expression</li>
+ * <li>Transformation of the Molecule using a Standardizer</li>
+ * </ol>
+ * <p>
+ *
+ * <b>Calculations</b>. The expressions can either be statically set using the
+ * #calculate(String, String) method, of can be defined dynamically by setting a
+ * header property. The property is added to the Molecule using the given
+ * property name.
+ * <p>
+ *
  * <b>Filtering</b>. This class can also be used to filter molecules. To do so
  * use the one-argument form of the constructor, or specify a filter in text
  * format using a syntax like this: filter=logP()&lt;5.
@@ -72,7 +58,8 @@ import org.apache.http.client.utils.URLEncodedUtils;
  * <br>The order of the filters will impact the performance, so consider this
  * carefully. Put your most selective filters first, and your slowest filters
  * last. You probably want to benchmark this if performance is a concern.
- * <br>
+ * <p>
+ *
  * <b>Transforming</b>. Some chemical terms expressions generate structures. You
  * can utilise these to transform your input molecule. For instance you can use
  * the leconformer() expression to generate the lowest energy conformer of your
@@ -84,23 +71,65 @@ import org.apache.http.client.utils.URLEncodedUtils;
  * To utilise this either use #transform(String) method to create the evaluator,
  * or use the "transform=chemTermsExpression()" syntax in an manner analogous to
  * defining filters.
+ * <p>
+ *
+ * <b>Standardizing</b>. The molecule can be standardized using a standardizer
+ * configuration that is
+ * <a href="https://docs.chemaxon.com/display/standardizer/Standardizer+Actions">
+ * described here</a>. The action string syntax is the most suitable to use.
+ * Note that there is also a separate {@link StandardizerProcessor} that is more
+ * flexible in terms of configuration that should be used for more complex
+ * scenarios.
+ *
  * <br>
+ * <b>Headers</b>. If any expressions are set using the #calculate(string,
+ * String) , #filter(String), #transform(String) or #standardize(String) methods
+ * then header values are ignored. When none are set using these methods the
+ * following header values are tried (the first one found is used):
+ * <ul>
+ * <li>The PROP_EVALUATORS_DEFINTION constant from this class</li>
+ * <li>The org.apache.camel.Exchange.HTTP_QUERY constant, which is set by Camel
+ * to the value of the query part of the URL</li>
+ * </ul>
+ * <br>
+ * <b>Syntax</b>. The syntax of the header properties corresponds to the query
+ * part of a URL. Multiple values can be separated with &amp; or ;. Examples
+ * are:
+ * <ul>
+ * <li>logp=logP()&amp;atom_count=atomCount()</li>
+ * <li>logd=logD('7.4');atom_count=atomCount()</li>
+ * <li>filter=logP()&lt;5</li>
+ * <li>standardize('addexplicith')</li>
+ * </ul>
+ * This allows the parameters to be specified as the query part of a URL.
+ * e.g.<br>
+ * http://some.server/path/to/resource?logp=logP();atom_count=atomCount()
+ * <br>
+ * NOTE: if using this approach the URL almost certainly needs to be URL
+ * encoded.
+ * <br>
+ * <b>Performance</b>. Expressions defined using the header property are created
+ * and used ONLY for that one Exchange, so this is not an efficient approach for
+ * multiple Exchanges. Instead you should pack your Molecules up as an
+ * Iterable&lt;Molecule&gt; or Iterator&lt;Molecule&gt; and process them all in
+ * one Exchange.
+ * <p>
+ *
  * <b>Accepted molecule formats</b>. The following inputs are supported (tried
  * in this order) with the corresponding outputs
  * <ol>
  * <li>Input: Molecule Output: Molecule</li>
- * <li>Input: Iterator&lt;Molecule&gt; Output: Iterable&lt;Molecule&gt;</li>
  * <li>Input: Iterable&lt;Molecule&gt; Output: Iterable&lt;Molecule&gt;</li>
  * </ol>
  *
  * @author Tim Dudgeon
  */
-public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> {
+public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Molecule> {
 
-    private static final Logger LOG = Logger.getLogger(ChemTermsProcessor.class.getName());
+    private static final Logger LOG = Logger.getLogger(ChemAxonMoleculeProcessor.class.getName());
     public static final String PROP_EVALUATORS_DEFINTION = "ChemTermsProcessor_EvaluatorsDefintion";
 
-    private final List<ChemTermsEvaluator> evaluators = new ArrayList<ChemTermsEvaluator>();
+    private final List<MoleculeEvaluator> evaluators = new ArrayList<MoleculeEvaluator>();
 
     /**
      * Add a new calculation using a chemical terms expression. If no terms are
@@ -114,7 +143,7 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
      * @return
      * @throws ParseException
      */
-    public ChemTermsProcessor calculate(String name, String ctExpression) throws ParseException {
+    public ChemAxonMoleculeProcessor calculate(String name, String ctExpression) throws ParseException {
         evaluators.add(new ChemTermsEvaluator(name, ctExpression));
         return this;
     }
@@ -127,7 +156,7 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
      * @return
      * @throws ParseException
      */
-    public ChemTermsProcessor filter(String ctExpression) throws ParseException {
+    public ChemAxonMoleculeProcessor filter(String ctExpression) throws ParseException {
         evaluators.add(new ChemTermsEvaluator(ctExpression, ChemTermsEvaluator.Mode.Filter));
         return this;
     }
@@ -142,27 +171,32 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
      * @return
      * @throws ParseException
      */
-    public ChemTermsProcessor transform(String ctExpression) throws ParseException {
+    public ChemAxonMoleculeProcessor transform(String ctExpression) throws ParseException {
         evaluators.add(new ChemTermsEvaluator(ctExpression, ChemTermsEvaluator.Mode.Transform));
+        return this;
+    }
+
+    public ChemAxonMoleculeProcessor standardize(String szrExpression) {
+        evaluators.add(new StandardizerProcessor(szrExpression));
         return this;
     }
 
     @Override
     public void process(final Exchange exchange) throws Exception {
         LOG.fine("Processing ChemTerms");
-        final List<ChemTermsEvaluator> evals = getEvaluators(exchange);
+        final List<MoleculeEvaluator> evals = getEvaluators(exchange);
         MoleculeSourcer sourcer = new MoleculeSourcer() {
             @Override
             void handleSingle(Exchange exchange, Molecule mol) throws Exception {
-                for (ChemTermsEvaluator evaluator : evals) {
-                    mol = evaluator.evaluateMolecule(mol);
+                for (MoleculeEvaluator evaluator : evals) {
+                    mol = evaluator.processMolecule(mol);
                 }
                 exchange.getIn().setBody(mol);
             }
 
             @Override
             void handleMultiple(Exchange exchange, Iterator<Molecule> mols) throws Exception {
-                for (ChemTermsEvaluator evaluator : evals) {
+                for (MoleculeEvaluator evaluator : evals) {
                     mols = evaluateMultiple(mols, evaluator);
                 }
                 exchange.getIn().setBody(mols);
@@ -171,7 +205,7 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
         sourcer.handle(exchange);
     }
 
-    ClosableQueue<Molecule> evaluateMultiple(final Iterator<Molecule> mols, final ChemTermsEvaluator evaluator) {
+    ClosableQueue<Molecule> evaluateMultiple(final Iterator<Molecule> mols, final MoleculeEvaluator evaluator) {
         final ClosableQueue<Molecule> q = new ClosableQueue<Molecule>(50);
         Thread t = new Thread(new Runnable() {
             @Override
@@ -179,9 +213,7 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
                 try {
                     while (mols.hasNext()) {
                         Molecule mol = mols.next();
-                        synchronized (evaluator) { // chem terms evaluator is not thread safe
-                            mol = evaluator.evaluateMolecule(mol);
-                        }
+                        mol = evaluator.processMolecule(mol);
                         if (mol != null) {
                             q.add(mol);
                         }
@@ -205,8 +237,8 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
      * @return
      * @throws ParseException
      */
-    List<ChemTermsEvaluator> getEvaluators(Exchange exchange) throws ParseException {
-        List<ChemTermsEvaluator> result = null;
+    List<MoleculeEvaluator> getEvaluators(Exchange exchange) throws ParseException {
+        List<MoleculeEvaluator> result = null;
         if (evaluators != null && !evaluators.isEmpty()) {
             result = evaluators;
         } else {
@@ -234,24 +266,50 @@ public class ChemTermsProcessor implements Processor, ResultExtractor<Molecule> 
     @Override
     public Map<String, Object> extractResults(Molecule mol) {
         Map<String, Object> results = new HashMap<String, Object>();
-        for (ChemTermsEvaluator evaluator : evaluators) {
-            results.put(evaluator.getPropName(), evaluator.getResult(mol));
+        for (MoleculeEvaluator evaluator : evaluators) {
+            Map<String, Object> data = evaluator.getResults(mol);
+            results.putAll(data);
         }
         return results;
     }
 
-    static List<ChemTermsEvaluator> parseParamString(String query) throws ParseException {
+    static List<MoleculeEvaluator> parseParamString(String query) throws ParseException {
         List<NameValuePair> params = URLEncodedUtils.parse(query, Charset.forName("UTF-8"));
-        List<ChemTermsEvaluator> evals = new ArrayList<ChemTermsEvaluator>();
+        List<MoleculeEvaluator> evals = new ArrayList<MoleculeEvaluator>();
         for (NameValuePair nvp : params) {
             if ("filter".equals(nvp.getName())) {
                 evals.add(new ChemTermsEvaluator(nvp.getValue(), ChemTermsEvaluator.Mode.Filter));
             } else if ("transform".equals(nvp.getName())) {
                 evals.add(new ChemTermsEvaluator(nvp.getValue(), ChemTermsEvaluator.Mode.Transform));
+            } else if ("standardize".equals(nvp.getName())) {
+                evals.add(new StandardizerProcessor(nvp.getValue()));
             } else {
                 evals.add(new ChemTermsEvaluator(nvp.getName(), nvp.getValue()));
             }
         }
         return evals;
+    }
+
+    static class StandardizerProcessor implements MoleculeEvaluator {
+
+        Standardizer standardizer;
+
+        StandardizerProcessor(String szr) {
+            standardizer = new Standardizer(szr);
+        }
+
+        @Override
+        public Molecule processMolecule(Molecule mol) {
+            synchronized (standardizer) { // not thread safe
+                standardizer.standardize(mol);
+            }
+            return mol;
+        }
+
+        @Override
+        public Map<String, Object> getResults(Molecule mol) {
+            return Collections.emptyMap();
+        }
+
     }
 }

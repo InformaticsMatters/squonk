@@ -5,6 +5,8 @@ import chemaxon.jep.Evaluator;
 import chemaxon.jep.context.MolContext;
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.struc.Molecule;
+import java.util.Collections;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,9 +14,12 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class ChemTermsEvaluator {
-    
-    public enum Mode { Calculate, Filter, Transform }
+public class ChemTermsEvaluator implements MoleculeEvaluator {
+
+    public enum Mode {
+
+        Calculate, Filter, Transform
+    }
 
     private final String propName;
     private final ChemJEP chemJEP;
@@ -22,7 +27,7 @@ public class ChemTermsEvaluator {
     private final String chemTermsFunction;
 
     /**
-     * Constructor to standard ChemTerms evaluator. THe property is calculated
+     * Constructor to standard ChemTerms evaluator. The property is calculated
      * and added to the molecule.
      *
      * @param propName The name of the resulting calculated property
@@ -60,25 +65,28 @@ public class ChemTermsEvaluator {
     public String getChemTermsFunction() {
         return chemTermsFunction;
     }
-    
+
     public Mode getMode() {
         return mode;
     }
 
     /**
-     * Evaluate a single molecule. If this is a standard evaluator the result of 
-     * the chemical terms evaluation is added as a property of the molecule.
-     * If the evaluator is a filter then null is returned to signify that the filter
+     * Process a molecule. If this is a standard evaluator the result of the
+     * chemical terms evaluation is added as a property of the molecule. If the
+     * evaluator is a filter then null is returned to signify that the filter
      * has failed
      *
      * @param mol The molecule.
-     * @return The molecule with the calculated property set, or null if this evaluator 
-     * is a filter and the filter fails.
+     * @return The molecule with the calculated property set, or null if this
+     * evaluator is a filter and the filter fails.
      */
-    public Molecule evaluateMolecule(Molecule mol) {
+    @Override
+    public Molecule processMolecule(Molecule mol) {
         MolContext context = new MolContext();
         context.setMolecule(mol);
-        return evaluateMoleculeImpl(context);
+        synchronized (chemJEP) { // not thread safe
+            return evaluateMoleculeImpl(context);
+        }
     }
 
     private Molecule evaluateMoleculeImpl(MolContext context) {
@@ -90,7 +98,7 @@ public class ChemTermsEvaluator {
                 }
             } else if (mode == Mode.Transform) {
                 Molecule oldMol = context.getMolecule();
-                Molecule newMol = (Molecule)chemJEP.evaluate(context);
+                Molecule newMol = (Molecule) chemJEP.evaluate(context);
                 newMol.clearProperties();
                 for (int i = 0; i < oldMol.getPropertyCount(); i++) {
                     String key = oldMol.getPropertyKey(i);
@@ -100,7 +108,7 @@ public class ChemTermsEvaluator {
                 return newMol;
             } else {
                 Object result = chemJEP.evaluate(context);
-                Molecule mol = context.getMolecule(); 
+                Molecule mol = context.getMolecule();
                 mol.setPropertyObject(propName, result);
                 return mol;
             }
@@ -113,12 +121,18 @@ public class ChemTermsEvaluator {
 
     /**
      * Allows the result to be extracted from the Molecule once it has been
-     * calculated
+     * calculated. If not Mode.Calculate an empty Map is returned
      *
      * @param mol
-     * @return
+     * @return the calculated value as a Map, key being the property name.
      */
-    public Object getResult(Molecule mol) {
-        return mol.getPropertyObject(propName);
+    @Override
+    public Map<String, Object> getResults(Molecule mol) {
+        if (mode == Mode.Calculate) {
+            Object value = mol.getPropertyObject(propName);
+            return Collections.singletonMap(propName, value);
+        } else {
+            return Collections.emptyMap();
+        }
     }
 }

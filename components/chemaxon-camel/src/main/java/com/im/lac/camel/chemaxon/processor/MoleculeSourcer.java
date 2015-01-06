@@ -24,16 +24,10 @@ public abstract class MoleculeSourcer {
         if (mol != null) {
             handleSingle(exchange, mol);
         } else {
-            // try as stream of molecules
-            Iterator<Molecule> iterator = exchange.getIn().getBody(Iterator.class);
-            if (iterator == null) {
-                Iterable<Molecule> iterable = exchange.getIn().getBody(Iterable.class);
-                if (iterable != null) {
-                    iterator = iterable.iterator();
-                }
-            }
-            if (iterator != null) {
-                    handleMultiple(exchange, iterator);
+            // try as iterable of molecules
+            Iterable<Molecule> iterable = exchange.getIn().getBody(Iterable.class);
+            if (iterable != null) {
+                handleMultiple(exchange, iterable.iterator());
             } else {
                 // give up
                 handleOther(exchange, exchange.getIn().getBody());

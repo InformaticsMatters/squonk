@@ -11,7 +11,7 @@ import org.apache.camel.builder.RouteBuilder
 /**
  * Created by timbo on 14/04/2014.
  */
-class ChemTermsProcessorSpec extends CamelSpecificationBase {
+class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
 
 
     def 'ChemTerms processor for List<Molecule>'() {
@@ -73,7 +73,7 @@ class ChemTermsProcessorSpec extends CamelSpecificationBase {
         when:
         def mol0 = MolImporter.importMol('C') 
         template.sendBodyAndHeader('direct:dynamic', mol0, 
-            ChemTermsProcessor.PROP_EVALUATORS_DEFINTION, 'atom_Count=atomCount();bond_count=bondCount()')
+            ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION, 'atom_Count=atomCount();bond_count=bondCount()')
         
 
         then:
@@ -95,7 +95,7 @@ class ChemTermsProcessorSpec extends CamelSpecificationBase {
         def mol0 = MolImporter.importMol('OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O')
         mol0.setPropertyObject('foo', 'bar')
         template.sendBodyAndHeader('direct:dynamic', mol0, 
-            ChemTermsProcessor.PROP_EVALUATORS_DEFINTION, 'transform=leconformer();energy=mmff94Energy')
+            ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION, 'transform=leconformer();energy=mmff94Energy')
         
         then:
         resultEndpoint.assertIsSatisfied()
@@ -109,7 +109,7 @@ class ChemTermsProcessorSpec extends CamelSpecificationBase {
     def "simple query param parsing"() {
         
         when:
-        def q = ChemTermsProcessor.parseParamString("logp=logP();atom_count=atomCount()");
+        def q = ChemAxonMoleculeProcessor.parseParamString("logp=logP();atom_count=atomCount()");
         
         then:
         q.size() == 2
@@ -123,7 +123,7 @@ class ChemTermsProcessorSpec extends CamelSpecificationBase {
     def "query param with args parsing"() {
         
         when:
-        def q = ChemTermsProcessor.parseParamString("logd=logD('7.4');atom_count=atomCount()");
+        def q = ChemAxonMoleculeProcessor.parseParamString("logd=logD('7.4');atom_count=atomCount()");
         
         then:
         q.size() == 2
@@ -137,7 +137,7 @@ class ChemTermsProcessorSpec extends CamelSpecificationBase {
     def "query param with filter parsing"() {
         
         when:
-        def q = ChemTermsProcessor.parseParamString("filter=atomCount()<6;filter=bondCount()<6;logp=logP()");
+        def q = ChemAxonMoleculeProcessor.parseParamString("filter=atomCount()<6;filter=bondCount()<6;logp=logP()");
         
         
         then:
@@ -162,13 +162,13 @@ class ChemTermsProcessorSpec extends CamelSpecificationBase {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:static")
-                .process(new ChemTermsProcessor()
+                .process(new ChemAxonMoleculeProcessor()
                     .calculate('atom_count', 'atomCount()')
                     .calculate('bond_count', 'bondCount()'))
                 .to('mock:result')
                 
                 from("direct:dynamic")
-                .process(new ChemTermsProcessor())
+                .process(new ChemAxonMoleculeProcessor())
                 .to('mock:result')
             }
         }

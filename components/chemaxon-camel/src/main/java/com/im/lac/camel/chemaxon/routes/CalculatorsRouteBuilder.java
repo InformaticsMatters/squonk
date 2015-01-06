@@ -1,7 +1,7 @@
 package com.im.lac.camel.chemaxon.routes;
 
 import chemaxon.struc.Molecule;
-import com.im.lac.camel.chemaxon.processor.ChemTermsProcessor;
+import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 import com.im.lac.camel.chemaxon.processor.MoleculeConverterProcessor;
 import org.apache.camel.builder.RouteBuilder;
 
@@ -23,24 +23,24 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
         // simple route that calculates a hard coded property
         from("direct:logp")
                 .process(new MoleculeConverterProcessor())
-                .process(new ChemTermsProcessor()
+                .process(new ChemAxonMoleculeProcessor()
                         .calculate("logp", "logP()"));
 
         from("direct:logpSingleMolecule")
                 .convertBodyTo(Molecule.class)
-                .process(new ChemTermsProcessor()
+                .process(new ChemAxonMoleculeProcessor()
                         .calculate("logp", "logP()"));
 
         from("direct:atomcount")
                 .process(new MoleculeConverterProcessor())
                 .log("atomcount body is ${body}")
-                .process(new ChemTermsProcessor()
+                .process(new ChemAxonMoleculeProcessor()
                         .calculate("atom_count", "atomCount()"));
 
         // simple route that calcuates multiple hard coded properties
         from("direct:logp_atomcount_bondcount")
                 .process(new MoleculeConverterProcessor())
-                .process(new ChemTermsProcessor()
+                .process(new ChemAxonMoleculeProcessor()
                         .calculate("logp", "logP()")
                         .calculate("atom_count", "atomCount()")
                         .calculate("bond_count", "bondCount()")
@@ -49,7 +49,7 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
         // simple route that exemplifies filtering
         from("direct:filter_example")
                 .process(new MoleculeConverterProcessor())
-                .process(new ChemTermsProcessor()
+                .process(new ChemAxonMoleculeProcessor()
                         .filter("mass()<400")
                         .filter("ringCount()>0")
                         .filter("rotatableBondCount()<5")
@@ -60,23 +60,23 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
                 );
 
         // dynamic route that requires the chem terms configuration to be set using
-        // the ChemTermsProcessor.PROP_EVALUATORS_DEFINTION header property.
+        // the ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION header property.
         // NOTE: if this is to be used for multiple molecules send then all together
         // as an Iterable<Molecule> or InputStream that can be converted to Iterable<Molecule>
         // get get optimum performance
         from("direct:chemTerms")
                 .process(new MoleculeConverterProcessor())
-                .process(new ChemTermsProcessor());
+                .process(new ChemAxonMoleculeProcessor());
 
         from("direct:chemTermsSingleMolecule")
                 .convertBodyTo(Molecule.class)
-                .process(new ChemTermsProcessor());
+                .process(new ChemAxonMoleculeProcessor());
         
-//        from("direct:standardize")
-//                .convertBodyTo(Molecule.class)
-//                .process(new ChemTermsProcessor()
-//                .calculate("szr", "standardize('aromatize')")
-//                );
+        from("direct:standardize")
+                .convertBodyTo(Molecule.class)
+                .process(new ChemAxonMoleculeProcessor()
+                .standardize("aromatize")
+                );
                 
 
         from("direct:gunzip")

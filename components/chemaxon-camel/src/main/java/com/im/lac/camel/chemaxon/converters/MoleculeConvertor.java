@@ -42,9 +42,15 @@ public class MoleculeConvertor {
     
     
     @Converter
-    public static Iterator<Molecule> convert(InputStream is, Exchange exchange) 
-            throws MolFormatException, IOException {
+    public static Iterator<Molecule> createIterator(InputStream is, Exchange exchange) 
+            throws IOException {
         return MoleculeIOUtils.moleculeIterator(is);
+    }
+    
+    @Converter
+    public static Iterable<Molecule> createIterable(InputStream is, Exchange exchange) 
+            throws IOException {
+        return MoleculeIOUtils.moleculeIterable(is);
     }
 
 }

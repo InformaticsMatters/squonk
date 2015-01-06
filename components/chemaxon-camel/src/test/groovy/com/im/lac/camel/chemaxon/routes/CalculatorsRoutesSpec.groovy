@@ -3,6 +3,7 @@ package com.im.lac.camel.chemaxon.routes
 import spock.lang.Specification
 import chemaxon.formats.MolImporter
 import chemaxon.struc.Molecule
+import chemaxon.struc.MolBond
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
 
@@ -123,17 +124,17 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         result.getPropertyObject('bond_count') != null
     } 
     
-//    def 'standardize molecule'() {
-//
-//        when:
-//        def mol = MolImporter.importMol('C1=CC=CC=C1')
-//        def result = template.requestBody('direct:standardize', mol)
-//
-//        then:
-//        result instanceof Molecule
-//        result.isAromatic() == true
-//        println "aromatised : ${result.toFormat('smiles')}"
-//    }
+    def 'standardize molecule'() {
+
+        when:
+        def mol = MolImporter.importMol('C1=CC=CC=C1')
+        def result = template.requestBody('direct:standardize', mol)
+
+        then:
+        result instanceof Molecule
+        result.getBond(0).getType() == MolBond.AROMATIC
+        println "aromatised : ${result.toFormat('smiles')}"
+    }
 
     @Override
     RouteBuilder createRouteBuilder() {

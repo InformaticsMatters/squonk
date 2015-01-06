@@ -55,7 +55,9 @@ public class StandardizerProcessor implements Processor {
         MoleculeSourcer sourcer = new MoleculeSourcer() {
             @Override
             void handleSingle(Exchange exchange, Molecule mol) {
-                standardizer.standardize(mol);
+                synchronized (standardizer) {
+                    standardizer.standardize(mol);
+                }
                 exchange.getIn().setBody(mol);
             }
 
@@ -78,7 +80,9 @@ public class StandardizerProcessor implements Processor {
                         Molecule mol = mols.next();
                         synchronized (standardizer) { // not sure standardizer is thread safe
                             try {
-                                standardizer.standardize(mol);
+                                synchronized (standardizer) {
+                                    standardizer.standardize(mol);
+                                }
                                 q.add(mol);
                             } catch (Exception ex) {
                                 LOG.log(Level.SEVERE, "Standardization failed", ex);

@@ -140,6 +140,16 @@ public class MoleculeIOUtils implements MoleculeConstants {
         return importer.iterator();
     }
 
+    public static Iterable<Molecule> moleculeIterable(final InputStream is) throws IOException {
+        final MolImporter importer = new MolImporter(is);
+        return new Iterable() {
+            @Override
+            public Iterator iterator() {
+                return importer.iterator();
+            }
+        };
+    }
+
     public static Map<String, String> mrecordToMap(MRecord record) {
         Map<String, String> vals = new HashMap<String, String>();
         vals.put(STRUCTURE_FIELD_NAME, record.getString());
@@ -168,16 +178,19 @@ public class MoleculeIOUtils implements MoleculeConstants {
         String s = c.getSubString(1, (int) c.length());
         return convertToMolecule(s);
     }
-/** Takes a Map of properties, one of which is a Molecule in some form and returns
- * a Molecule (converted as necessary) with the additional values from the Map set 
- * as properties of the Molecule (see Molecule.getProperties()).
- * 
- * @param map The input
- * @param structureKey The key under which the structure is located
- * @return The Molecule
- * @throws MolFormatException
- * @throws SQLException 
- */
+
+    /**
+     * Takes a Map of properties, one of which is a Molecule in some form and
+     * returns a Molecule (converted as necessary) with the additional values
+     * from the Map set as properties of the Molecule (see
+     * Molecule.getProperties()).
+     *
+     * @param map The input
+     * @param structureKey The key under which the structure is located
+     * @return The Molecule
+     * @throws MolFormatException
+     * @throws SQLException
+     */
     public static Molecule convertToMolecule(Map<String, Object> map, String structureKey) throws MolFormatException, SQLException {
 
         Object v = map.get(structureKey);
@@ -191,7 +204,7 @@ public class MoleculeIOUtils implements MoleculeConstants {
         } else if (v.getClass() == Clob.class) {
             mol = convertToMolecule((Clob) v);
         } else if (v.getClass() == Molecule.class) {
-            mol = (Molecule)v;
+            mol = (Molecule) v;
         } else {
             throw new IllegalArgumentException("Unsupported conversion for Molecule: "
                     + v.getClass().getName());
