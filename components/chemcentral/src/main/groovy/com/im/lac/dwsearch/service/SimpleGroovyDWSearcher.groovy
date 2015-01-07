@@ -1,5 +1,6 @@
 package com.im.lac.dwsearch.service
 
+import chemaxon.jchem.db.CacheRegistrationUtil
 import chemaxon.jchem.db.JChemSearch
 import chemaxon.util.ConnectionHandler
 import chemaxon.sss.search.JChemSearchOptions
@@ -102,8 +103,15 @@ class SimpleGroovyDWSearcher {
     private void loadStructureCache() {
         Thread.start() {
             log.info("Loading structure cache")
+            def con = dataSource.connection
             
-            JChemSearch searcher = createJChemSearch(dataSource.connection, propertyTable, structureTable)
+            ConnectionHandler conh = createConenctionHandler(con, propertyTable)
+            CacheRegistrationUtil cru = new CacheRegistrationUtil(conh)
+            cru.registerPermanentCache("ChemCentral-" + this.hashCode())
+            
+            con.autoCommit = false
+            
+            JChemSearch searcher = createJChemSearch(conh, structureTable)
             searcher.setQueryStructure('CN1C=NC2=C1C(=O)N(C(=O)N2C)C')
  
             JChemSearchOptions searchOptions = new JChemSearchOptions(JChemSearch.FULL);
@@ -111,6 +119,7 @@ class SimpleGroovyDWSearcher {
             searcher.setRunMode(JChemSearch.RUN_MODE_SYNCH_COMPLETE)
             long t0 = System.currentTimeMillis()
             searcher.run()
+            con.commit()
             long t1 = System.currentTimeMillis()
             structureCacheLoadTime = t1 - t0
             structureCacheLoaded = new Date()
@@ -424,13 +433,17 @@ class SimpleGroovyDWSearcher {
         //}
     }
     
-    private JChemSearch createJChemSearch(Connection con, String propertyTable, String structureTable) {
-        ConnectionHandler conh = new ConnectionHandler(con, propertyTable)
+    private JChemSearch createJChemSearch(ConnectionHandler conh, String structureTable) {
         JChemSearch searcher = new JChemSearch()
         searcher.setConnectionHandler(conh)
         searcher.setStructureTable(structureTable)
         return searcher
     }
+    
+    private createConenctionHandler(Connection con, String propertyTable) {
+        return new ConnectionHandler(con, propertyTable)
+    }
+        
     
     /** Retrieve structure data for a particular structure
      * 

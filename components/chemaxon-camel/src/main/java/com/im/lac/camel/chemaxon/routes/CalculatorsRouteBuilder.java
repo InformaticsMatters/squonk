@@ -3,6 +3,7 @@ package com.im.lac.camel.chemaxon.routes;
 import chemaxon.struc.Molecule;
 import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 import com.im.lac.camel.chemaxon.processor.MoleculeConverterProcessor;
+import com.im.lac.camel.chemaxon.processor.Screen2DProcessor;
 import org.apache.camel.builder.RouteBuilder;
 
 /**
@@ -37,7 +38,7 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
                 .process(new ChemAxonMoleculeProcessor()
                         .calculate("atom_count", "atomCount()"));
 
-        // simple route that calcuates multiple hard coded properties
+        // simple route that calculates multiple hard coded properties
         from("direct:logp_atomcount_bondcount")
                 .process(new MoleculeConverterProcessor())
                 .process(new ChemAxonMoleculeProcessor()
@@ -76,6 +77,15 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
                 .convertBodyTo(Molecule.class)
                 .process(new ChemAxonMoleculeProcessor()
                 .standardize("aromatize")
+                );
+        
+        // simple route that exemplifies filtering
+        from("direct:screen2d")
+                .process(new MoleculeConverterProcessor())
+                .process(new Screen2DProcessor()
+                        .targetStructure("CC1=CC(=O)C=CC1=O")
+                        .propName("similarity")
+                        .threshold(0.5)
                 );
                 
 

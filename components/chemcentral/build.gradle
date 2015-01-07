@@ -125,6 +125,7 @@ task dockerBuild(type: Docker, dependsOn: war) {
     setEnvironment('CHEMCENTRAL_DB_SERVER', 'db') // assumes the db alias is used when linking. If not override with a -e argument
     setEnvironment('CHEMCENTRAL_DB_PORT', '5432')
     addFile(tasks.war.outputs.files.singleFile)
+    // TODO add chemaxon license file
     runCommand 'mkdir /maven'
     runCommand "mv /${tasks.war.outputs.files.singleFile.name} /maven/chemcentral.war"
     

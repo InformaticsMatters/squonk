@@ -1,7 +1,6 @@
 package com.im.lac.camel.chemaxon.routes;
 
 import dataFormat.MoleculeIteratorDataFormat;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
