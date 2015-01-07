@@ -10,7 +10,7 @@ apply plugin: 'docker'
 buildscript {
     repositories { jcenter() }
     dependencies {
-        classpath 'se.transmode.gradle:gradle-docker:1.2'
+        classpath 'se.transmode.gradle:gradle-docker:1.1.1'
     }
 }
 
@@ -106,7 +106,7 @@ docker {
 task buildDocker(type: Docker, dependsOn: distZip) {
     applicationName = "chemaxon"
     def zipFile = tasks.distZip.outputs.files.singleFile
-    addFile(zipFile, '/data/' + zipFile.name)
+    // TODO FIX addFile(zipFile, '/data/' + zipFile.name)
     runCommand("unzip /data/" + zipFile.name)
     exposePort(8080) // do we need to configure the port?
     entryPoint(["/data/${project.name}-${version}/bin/${project.name}"])
