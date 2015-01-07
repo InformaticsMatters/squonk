@@ -10,6 +10,7 @@ import org.apache.wicket.model.PropertyModel;
 public class MenuPanel extends Panel {
 
     private AjaxLink homeLink;
+    private AjaxLink descriptorsLink;
     private AjaxLink uploadPanelLink;
 
     public MenuPanel(String id) {
@@ -27,6 +28,15 @@ public class MenuPanel extends Panel {
             }
         };
         add(homeLink);
+
+        descriptorsLink = new AjaxLink("descriptors") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                setResponsePage(DescriptorsPage.class);
+            }
+        };
+        add(descriptorsLink);
 
         add(new Link<String>("logout") {
 
