@@ -25,7 +25,24 @@ public class DescriptorNodeData extends DefaultMutableTreeNode {
         return description;
     }
 
-    private enum DescriptorType {
+    public void setDatasetDescriptor(DatasetDescriptor datasetDescriptor) {
+        this.datasetDescriptor = datasetDescriptor;
+    }
+
+    public void setRowDescriptor(RowDescriptor rowDescriptor) {
+        this.rowDescriptor = rowDescriptor;
+    }
+
+    public void setPropertyDescriptor(PropertyDescriptor propertyDescriptor) {
+        this.propertyDescriptor = propertyDescriptor;
+    }
+
+    public void setDescriptorType(DescriptorType descriptorType) {
+        this.descriptorType = descriptorType;
+    }
+
+
+    protected enum DescriptorType {
 
         DATASET,
         ROW,
