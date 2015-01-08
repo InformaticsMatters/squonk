@@ -25,4 +25,14 @@ public class DescriptorNodeData extends DefaultMutableTreeNode {
         return description;
     }
 
+    private enum DescriptorType {
+
+        DATASET,
+        ROW,
+        PROPERTY
+
+    }
+
 }
+
+
