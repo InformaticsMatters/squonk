@@ -31,6 +31,7 @@ public class DescriptorsPage extends WebPage {
         List<IGridColumn<DefaultTreeModel, DefaultMutableTreeNode, String>> columns = new ArrayList<IGridColumn<DefaultTreeModel, DefaultMutableTreeNode, String>>();
 
         PropertyTreeColumn treeColumn = new PropertyTreeColumn(Model.of("Description"), "userObject.description");
+        treeColumn.setInitialSize(200);
         columns.add(treeColumn);
 
         DefaultTreeModel model = createTreeModel();
@@ -138,6 +139,38 @@ public class DescriptorsPage extends WebPage {
         });
         rowNode2.setUserObject(data);
         datasetNode.add(rowNode2);
+
+        DefaultMutableTreeNode propertyNode1 = new DefaultMutableTreeNode();
+        data = new DescriptorNodeData(new PropertyDescriptor() {
+
+            @Override
+            public Long getId() {
+                return null;
+            }
+
+            @Override
+            public String getDescription() {
+                return "Property 2.1";
+            }
+        });
+        propertyNode1.setUserObject(data);
+        rowNode2.add(propertyNode1);
+
+        DefaultMutableTreeNode propertyNode2 = new DefaultMutableTreeNode();
+        data = new DescriptorNodeData(new PropertyDescriptor() {
+
+            @Override
+            public Long getId() {
+                return null;
+            }
+
+            @Override
+            public String getDescription() {
+                return "Property 2.2";
+            }
+        });
+        propertyNode2.setUserObject(data);
+        rowNode2.add(propertyNode2);
 
         DefaultTreeModel model = new DefaultTreeModel(rootNode);
         return model;
