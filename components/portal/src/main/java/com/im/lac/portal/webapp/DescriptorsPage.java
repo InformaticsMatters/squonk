@@ -74,11 +74,11 @@ public class DescriptorsPage extends WebPage {
 
         List<PropertyDescriptor> propertyDescriptorList = rowDescriptor.listAllPropertyDescriptors();
         for (PropertyDescriptor propertyDescriptor : propertyDescriptorList) {
-            createPropertuDescriptorNode(rowNode, propertyDescriptor);
+            createPropertyDescriptorNode(rowNode, propertyDescriptor);
         }
     }
 
-    private void createPropertuDescriptorNode(DefaultMutableTreeNode rowNode, PropertyDescriptor propertyDescriptor) {
+    private void createPropertyDescriptorNode(DefaultMutableTreeNode rowNode, PropertyDescriptor propertyDescriptor) {
         DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode();
         DescriptorNodeData data = new DescriptorNodeData(propertyDescriptor);
         rowNode.setUserObject(data);
