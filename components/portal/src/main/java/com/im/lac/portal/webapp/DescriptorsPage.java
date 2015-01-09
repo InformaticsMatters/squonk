@@ -43,7 +43,6 @@ public class DescriptorsPage extends WebPage {
     private DefaultTreeModel createTreeModel() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
 
-        DefaultMutableTreeNode node;
         DescriptorNodeData data;
 
         DefaultMutableTreeNode datasetNode = new DefaultMutableTreeNode();
