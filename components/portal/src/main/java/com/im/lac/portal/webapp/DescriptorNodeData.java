@@ -4,52 +4,30 @@ import com.im.lac.portal.service.api.DatasetDescriptor;
 import com.im.lac.portal.service.api.PropertyDescriptor;
 import com.im.lac.portal.service.api.RowDescriptor;
 
-import javax.swing.tree.DefaultMutableTreeNode;
+import java.io.Serializable;
 
-public class DescriptorNodeData extends DefaultMutableTreeNode {
+public class DescriptorNodeData implements Serializable {
 
-    private DatasetDescriptor datasetDescriptor;
-    private RowDescriptor rowDescriptor;
-    private PropertyDescriptor propertyDescriptor;
-    private DescriptorType descriptorType;
+    private Object descriptor;
+
+    public DescriptorNodeData(Object descriptor) {
+        this.descriptor = descriptor;
+    }
 
     public String getDescription() {
-        String description = null;
-        if (descriptorType.equals(DescriptorType.DATASET)) {
-            description = datasetDescriptor.getDescription();
-        } else if (descriptorType.equals(DescriptorType.ROW)) {
-            description = rowDescriptor.getDescription();
-        } else if (descriptorType.equals(DescriptorType.PROPERTY)) {
-            description = propertyDescriptor.getDescription();
+        String result = null;
+
+        if (descriptor != null) {
+            if (descriptor instanceof DatasetDescriptor) {
+                result = ((DatasetDescriptor) descriptor).getDescription();
+            } else if (descriptor instanceof RowDescriptor) {
+                result = ((RowDescriptor) descriptor).getDescription();
+            } else if (descriptor instanceof PropertyDescriptor) {
+                result = ((PropertyDescriptor) descriptor).getDescription();
+            }
         }
-        return description;
+        return result;
     }
-
-    public void setDatasetDescriptor(DatasetDescriptor datasetDescriptor) {
-        this.datasetDescriptor = datasetDescriptor;
-    }
-
-    public void setRowDescriptor(RowDescriptor rowDescriptor) {
-        this.rowDescriptor = rowDescriptor;
-    }
-
-    public void setPropertyDescriptor(PropertyDescriptor propertyDescriptor) {
-        this.propertyDescriptor = propertyDescriptor;
-    }
-
-    public void setDescriptorType(DescriptorType descriptorType) {
-        this.descriptorType = descriptorType;
-    }
-
-
-    protected enum DescriptorType {
-
-        DATASET,
-        ROW,
-        PROPERTY
-
-    }
-
 }
 
 

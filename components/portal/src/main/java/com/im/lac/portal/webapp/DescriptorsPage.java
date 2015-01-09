@@ -13,7 +13,6 @@ import org.apache.wicket.model.Model;
 import javax.inject.Inject;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,20 +28,27 @@ public class DescriptorsPage extends WebPage {
     }
 
     private void addDescriptorsTreeTable() {
-        List<IGridColumn> columns = new ArrayList<IGridColumn>();
+        List<IGridColumn<DefaultTreeModel, DefaultMutableTreeNode, String>> columns = new ArrayList<IGridColumn<DefaultTreeModel, DefaultMutableTreeNode, String>>();
 
-        columns.add(new PropertyTreeColumn(new Model("Description"), "userObject.description"));
+        PropertyTreeColumn treeColumn = new PropertyTreeColumn(Model.of("Description"), "userObject.description");
+        columns.add(treeColumn);
 
-        TreeModel model = createTreeModel();
-        TreeGrid grid = new TreeGrid("grid", model, columns);
+        DefaultTreeModel model = createTreeModel();
+        TreeGrid<DefaultTreeModel, DefaultMutableTreeNode, String> treeGrid = new TreeGrid<DefaultTreeModel, DefaultMutableTreeNode, String>("grid", model, columns);
+        treeGrid.getTree().setRootLess(true);
 
-        add(grid);
+        add(treeGrid);
     }
 
-    private TreeModel createTreeModel() {
-        DescriptorNodeData dnd1 = new DescriptorNodeData();
-        dnd1.setDescriptorType(DescriptorNodeData.DescriptorType.DATASET);
-        dnd1.setDatasetDescriptor(new DatasetDescriptor() {
+    private DefaultTreeModel createTreeModel() {
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
+
+        DefaultMutableTreeNode node;
+        DescriptorNodeData data;
+
+        DefaultMutableTreeNode datasetNode = new DefaultMutableTreeNode();
+        data = new DescriptorNodeData(new DatasetDescriptor() {
+
             @Override
             public Long getId() {
                 return null;
@@ -50,7 +56,7 @@ public class DescriptorsPage extends WebPage {
 
             @Override
             public String getDescription() {
-                return "Descriptor 1";
+                return "Dataset 1";
             }
 
             @Override
@@ -63,10 +69,12 @@ public class DescriptorsPage extends WebPage {
                 return null;
             }
         });
+        datasetNode.setUserObject(data);
+        rootNode.add(datasetNode);
 
-        DescriptorNodeData dnd11 = new DescriptorNodeData();
-        dnd11.setDescriptorType(DescriptorNodeData.DescriptorType.ROW);
-        dnd11.setDatasetDescriptor(new DatasetDescriptor() {
+        DefaultMutableTreeNode rowNode1 = new DefaultMutableTreeNode();
+        data = new DescriptorNodeData(new DatasetDescriptor() {
+
             @Override
             public Long getId() {
                 return null;
@@ -87,11 +95,28 @@ public class DescriptorsPage extends WebPage {
                 return null;
             }
         });
-        dnd1.add(dnd11);
+        rowNode1.setUserObject(data);
+        datasetNode.add(rowNode1);
 
-        DescriptorNodeData dnd12 = new DescriptorNodeData();
-        dnd12.setDescriptorType(DescriptorNodeData.DescriptorType.ROW);
-        dnd12.setRowDescriptor(new RowDescriptor() {
+        DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode();
+        data = new DescriptorNodeData(new PropertyDescriptor() {
+
+            @Override
+            public Long getId() {
+                return null;
+            }
+
+            @Override
+            public String getDescription() {
+                return "Property 1";
+            }
+        });
+        propertyNode.setUserObject(data);
+        rowNode1.add(propertyNode);
+
+        DefaultMutableTreeNode rowNode2 = new DefaultMutableTreeNode();
+        data = new DescriptorNodeData(new RowDescriptor() {
+
             @Override
             public Long getId() {
                 return null;
@@ -112,25 +137,10 @@ public class DescriptorsPage extends WebPage {
                 return null;
             }
         });
-        dnd1.add(dnd12);
+        rowNode2.setUserObject(data);
+        datasetNode.add(rowNode2);
 
-        DescriptorNodeData dnd121 = new DescriptorNodeData();
-        dnd121.setDescriptorType(DescriptorNodeData.DescriptorType.PROPERTY);
-        dnd121.setPropertyDescriptor(new PropertyDescriptor() {
-            @Override
-            public Long getId() {
-                return null;
-            }
-
-            @Override
-            public String getDescription() {
-                return "Property 1";
-            }
-        });
-        dnd12.add(dnd121);
-
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(dnd1, true);
-        TreeModel model = new DefaultTreeModel(rootNode);
+        DefaultTreeModel model = new DefaultTreeModel(rootNode);
         return model;
     }
 
