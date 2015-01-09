@@ -1,8 +1,6 @@
 package com.im.lac.portal.webapp;
 
-import com.im.lac.portal.service.api.DatasetDescriptor;
-import com.im.lac.portal.service.api.PropertyDescriptor;
-import com.im.lac.portal.service.api.RowDescriptor;
+import com.im.lac.portal.service.api.*;
 import com.im.lac.wicket.semantic.NotifierProvider;
 import com.inmethod.grid.IGridColumn;
 import com.inmethod.grid.column.tree.PropertyTreeColumn;
@@ -20,6 +18,8 @@ public class DescriptorsPage extends WebPage {
 
     @Inject
     private NotifierProvider notifierProvider;
+    @Inject
+    private DatasetService service;
 
     public DescriptorsPage() {
         notifierProvider.createNotifier(this, "notifier");
@@ -42,138 +42,47 @@ public class DescriptorsPage extends WebPage {
     }
 
     private DefaultTreeModel createTreeModel() {
+        List<DatasetDescriptor> datasetDescriptorList = service.listDatasetDescriptor(new ListDatasetDescriptorFilter());
+
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
 
-        DescriptorNodeData data;
-
-        DefaultMutableTreeNode datasetNode = new DefaultMutableTreeNode();
-        data = new DescriptorNodeData(new DatasetDescriptor() {
-
-            @Override
-            public Long getId() {
-                return null;
-            }
-
-            @Override
-            public String getDescription() {
-                return "Dataset 1";
-            }
-
-            @Override
-            public List<RowDescriptor> listAllRowDescriptors() {
-                return null;
-            }
-
-            @Override
-            public RowDescriptor findRowDescriptorById(Long id) {
-                return null;
-            }
-        });
-        datasetNode.setUserObject(data);
-        rootNode.add(datasetNode);
-
-        DefaultMutableTreeNode rowNode1 = new DefaultMutableTreeNode();
-        data = new DescriptorNodeData(new DatasetDescriptor() {
-
-            @Override
-            public Long getId() {
-                return null;
-            }
-
-            @Override
-            public String getDescription() {
-                return "Row 1";
-            }
-
-            @Override
-            public List<RowDescriptor> listAllRowDescriptors() {
-                return null;
-            }
-
-            @Override
-            public RowDescriptor findRowDescriptorById(Long id) {
-                return null;
-            }
-        });
-        rowNode1.setUserObject(data);
-        datasetNode.add(rowNode1);
-
-        DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode();
-        data = new DescriptorNodeData(new PropertyDescriptor() {
-
-            @Override
-            public Long getId() {
-                return null;
-            }
-
-            @Override
-            public String getDescription() {
-                return "Property 1";
-            }
-        });
-        propertyNode.setUserObject(data);
-        rowNode1.add(propertyNode);
-
-        DefaultMutableTreeNode rowNode2 = new DefaultMutableTreeNode();
-        data = new DescriptorNodeData(new RowDescriptor() {
-
-            @Override
-            public Long getId() {
-                return null;
-            }
-
-            @Override
-            public String getDescription() {
-                return "Row 2";
-            }
-
-            @Override
-            public List<PropertyDescriptor> listAllPropertyDescriptors() {
-                return null;
-            }
-
-            @Override
-            public PropertyDescriptor findPropertyDescriptorById(Long id) {
-                return null;
-            }
-        });
-        rowNode2.setUserObject(data);
-        datasetNode.add(rowNode2);
-
-        DefaultMutableTreeNode propertyNode1 = new DefaultMutableTreeNode();
-        data = new DescriptorNodeData(new PropertyDescriptor() {
-
-            @Override
-            public Long getId() {
-                return null;
-            }
-
-            @Override
-            public String getDescription() {
-                return "Property 2.1";
-            }
-        });
-        propertyNode1.setUserObject(data);
-        rowNode2.add(propertyNode1);
-
-        DefaultMutableTreeNode propertyNode2 = new DefaultMutableTreeNode();
-        data = new DescriptorNodeData(new PropertyDescriptor() {
-
-            @Override
-            public Long getId() {
-                return null;
-            }
-
-            @Override
-            public String getDescription() {
-                return "Property 2.2";
-            }
-        });
-        propertyNode2.setUserObject(data);
-        rowNode2.add(propertyNode2);
+        for (DatasetDescriptor dd : datasetDescriptorList) {
+            createDatasetDescriptorNode(rootNode, dd);
+        }
 
         DefaultTreeModel model = new DefaultTreeModel(rootNode);
         return model;
+    }
+
+    private void createDatasetDescriptorNode(DefaultMutableTreeNode rootNode, DatasetDescriptor dd) {
+        DefaultMutableTreeNode datasetNode = new DefaultMutableTreeNode();
+        DescriptorNodeData data = new DescriptorNodeData(dd);
+        datasetNode.setUserObject(data);
+        rootNode.add(datasetNode);
+
+        List<RowDescriptor> rowDescriptorList = dd.listAllRowDescriptors();
+        for (RowDescriptor rowDescriptor : rowDescriptorList) {
+            createRowDescriptorNode(datasetNode, rowDescriptor);
+        }
+    }
+
+    private void createRowDescriptorNode(DefaultMutableTreeNode datasetNode, RowDescriptor rowDescriptor) {
+        DefaultMutableTreeNode rowNode = new DefaultMutableTreeNode();
+        DescriptorNodeData data = new DescriptorNodeData(rowDescriptor);
+        rowNode.setUserObject(data);
+        datasetNode.add(rowNode);
+
+        List<PropertyDescriptor> propertyDescriptorList = rowDescriptor.listAllPropertyDescriptors();
+        for (PropertyDescriptor propertyDescriptor : propertyDescriptorList) {
+            createPropertuDescriptorNode(rowNode, propertyDescriptor);
+        }
+    }
+
+    private void createPropertuDescriptorNode(DefaultMutableTreeNode rowNode, PropertyDescriptor propertyDescriptor) {
+        DefaultMutableTreeNode propertyNode = new DefaultMutableTreeNode();
+        DescriptorNodeData data = new DescriptorNodeData(propertyDescriptor);
+        rowNode.setUserObject(data);
+        rowNode.add(propertyNode);
     }
 
 }
