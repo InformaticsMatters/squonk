@@ -13,6 +13,7 @@ java/*.log.*
 **/.gradle
 **/.nb-gradle
 **/private
+**/derby.log
 
 components/chemcentral/chemcentral.properties
 components/chemcentral/database.properties

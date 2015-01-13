@@ -4,7 +4,6 @@ apply plugin: 'groovy'
 
 apply plugin: 'application'
 mainClassName = "com.im.lac.camel.chemaxon.routes.Main"
-
 apply plugin: 'docker'
 
 buildscript {
@@ -18,8 +17,11 @@ buildscript {
 dependencies {
 
     compile project(':chemaxon-lib')
+    compile project(':common')
 
     compile 'org.slf4j:slf4j-simple:1.7.7'
+    
+    compile "org.postgresql:postgresql:9.3-1102-jdbc4"
     
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-restlet:$camelVersion"
@@ -81,7 +83,7 @@ dependencies {
         exclude group:'org.apache.derby',module:'derbyLocale_zh_CN'
         exclude group:'org.apache.derby',module:'derbyLocale_zh_TW'
         exclude group:'mysql',module:'mysql-connector-java'
-        exclude group:'com.oracle',module:'ojdbc6' // needed in JChem 6.3.4
+        //exclude group:'com.oracle',module:'ojdbc6' // needed in JChem 6.3.4
         exclude group:'org.hsqldb',module:'hsqldb'
         exclude group:'net.sf.jacob-project',module:'jacob-native-x86'
         exclude group:'net.sf.jacob-project',module:'jacob-native-x64'
@@ -93,6 +95,7 @@ dependencies {
     }
 
     testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+    testCompile "org.apache.derby:derby:10.11.1.1"
     testCompile project(':core-test')
 }
 

@@ -12,38 +12,28 @@ import java.util.logging.Logger;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-/**
+/** Simple initial implementation of in memory similarity screening.
+ * This needs to be extended to support multiple descriptors and metrics.
  *
- * @author timbo
+ * @author Tim Dudgeon
  */
 public class Screen2DProcessor implements Processor {
 
-    private static final Logger LOG = Logger.getLogger(StandardizerProcessor.class.getName());
+    private static final Logger LOG = Logger.getLogger(Screen2DProcessor.class.getName());
 
-    private Molecule targetStructure;
     private byte[] targetFingerprint;
 
-    private String propName = "similarity";
+    private String propName;
 
     private Double threshold;
 
     private boolean aromatize = true;
 
-    /**
-     * Set the value of aromatize
-     *
-     * @param aromatize new value of aromatize
-     */
     public Screen2DProcessor aromatize(boolean aromatize) {
         this.aromatize = aromatize;
         return this;
     }
     
-    /**
-     * Set the value of propName
-     *
-     * @param propName new value of propName
-     */
     public Screen2DProcessor propName(String propName) {
         this.propName = propName;
         return this;
@@ -61,7 +51,6 @@ public class Screen2DProcessor implements Processor {
 
     public Screen2DProcessor targetStructure(Molecule target) {
         target.aromatize();
-        this.targetStructure = target;
         this.targetFingerprint = new MolHandler(target).generateFingerprintInBytes(16, 2, 6);
         return this;
     }
@@ -73,7 +62,7 @@ public class Screen2DProcessor implements Processor {
             void handleSingle(Exchange exchange, Molecule mol) {
                     double score = screen(mol);
                     if (propName != null) {
-                        mol.setPropertyObject(propName, new Double(score));
+                        mol.setPropertyObject(propName, score);
                     }
                 exchange.getIn().setBody(mol);
             }
@@ -102,7 +91,7 @@ public class Screen2DProcessor implements Processor {
                             }
                         }
                         if (propName != null) {
-                            mol.setPropertyObject(propName, new Double(score));
+                            mol.setPropertyObject(propName, score);
                         }
                         q.add(mol);
                     }
