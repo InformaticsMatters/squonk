@@ -85,7 +85,7 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         resultEndpoint.expectedMessageCount(1)
         
         when:
-        template.sendBodyAndHeader('direct:dhfr/molecules', 'c1ccncc1', 'JChemSearchOptions', 't:s')
+        template.sendBody('direct:dhfr/molecules', 'c1ccncc1')
         
         then:
         resultEndpoint.assertIsSatisfied()
@@ -104,7 +104,7 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         resultEndpoint.expectedMessageCount(1)
         
         when:
-        template.sendBodyAndHeader('direct:dhfr/molecules', 'CCC1=NC(N)=NC(N)=C1C1=CC=C(Cl)C=C1', 'JChemSearchOptions', 't:s')
+        template.sendBody('direct:dhfr/molecules', 'CCC1=NC(N)=NC(N)=C1C1=CC=C(Cl)C=C1')
         
         then:
         resultEndpoint.assertIsSatisfied()
@@ -123,7 +123,7 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         resultEndpoint.expectedMessageCount(1)
         
         when:
-        template.sendBodyAndHeader('direct:dhfr/smiles', 'c1ccncc1', 'JChemSearchOptions', 't:s')
+        template.sendBody('direct:dhfr/smiles', 'c1ccncc1')
         
         then:
         resultEndpoint.assertIsSatisfied()
@@ -137,7 +137,7 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         resultEndpoint.expectedMessageCount(1)
         
         when:
-        template.sendBodyAndHeader('direct:dhfr/cd_ids', 'c1ccncc1', 'JChemSearchOptions', 't:s')
+        template.sendBody('direct:dhfr/cd_ids', 'c1ccncc1')
         
         then:
         resultEndpoint.assertIsSatisfied()
@@ -151,12 +151,13 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         resultEndpoint.expectedMessageCount(1)
         
         when:
-        template.sendBodyAndHeader('direct:dhfr/cd_ids', 'CCC1=NC(N)=NC(N)=C1C1=CC=C(Cl)C=C1', 'JChemSearchOptions', 't:s')
+        template.sendBodyAndHeader('direct:dhfr/cd_ids', 'CCC1=NC(N)=NC(N)=C1C1=CC=C(Cl)C=C1',
+            JChemDBSearcher.HEADER_SEARCH_OPTIONS, 't:i')
         
         then:
         resultEndpoint.assertIsSatisfied()
         Iterable hits = resultEndpoint.receivedExchanges.in.body[0]
-        hits.iterator().collect().size() > 0
+        hits.iterator().collect().size() != 237
     }
     
     def 'search for raw'() {
@@ -165,7 +166,7 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         resultEndpoint.expectedMessageCount(1)
         
         when:
-        template.sendBodyAndHeader('direct:dhfr/raw', 'c1ccncc1', 'JChemSearchOptions', 't:s')
+        template.sendBody('direct:dhfr/raw', 'c1ccncc1')
         
         then:
         resultEndpoint.assertIsSatisfied()
@@ -179,7 +180,7 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         resultEndpoint.expectedMessageCount(1)
         
         when:
-        template.sendBodyAndHeader('direct:dhfr/stream', 'c1ccncc1', 'JChemSearchOptions', 't:s')
+        template.sendBody('direct:dhfr/stream', 'c1ccncc1')
         
         then:
         resultEndpoint.assertIsSatisfied()
@@ -200,7 +201,8 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         resultEndpoint.expectedMessageCount(1)
         
         when:
-        template.sendBodyAndHeader('direct:dhfr/stream', 'CCC1=NC(N)=NC(N)=C1C1=CC=C(Cl)C=C1', 'JChemSearchOptions', 't:i')
+        template.sendBodyAndHeader('direct:dhfr/stream', 'CCC1=NC(N)=NC(N)=C1C1=CC=C(Cl)C=C1', 
+            JChemDBSearcher.HEADER_SEARCH_OPTIONS, 't:i')
         
         then:
         resultEndpoint.assertIsSatisfied()
@@ -214,6 +216,55 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
             mol.getPropertyObject('mset') != null
         }
         count > 0
+    }
+    
+    def 'dynamic output mode as enum'() {
+        setup:
+        def resultEndpoint = camelContext.getEndpoint('mock:result')
+        resultEndpoint.expectedMessageCount(1)
+        
+        when:
+        // route is set for MOLECULES, but we overrride this to RAW
+        template.sendBodyAndHeader('direct:dhfr/molecules', 'c1ccncc1', 
+            JChemDBSearcher.HEADER_OUTPUT_MODE, JChemDBSearcher.OutputMode.RAW)
+        
+        then:
+        resultEndpoint.assertIsSatisfied()
+        // do we get the int[] array instead?
+        int[] hits = resultEndpoint.receivedExchanges.in.body[0]
+        hits.length == 237
+    }
+    
+    def 'dynamic output mode as string'() {
+        setup:
+        def resultEndpoint = camelContext.getEndpoint('mock:result')
+        resultEndpoint.expectedMessageCount(1)
+        
+        when:
+        // route is set for MOLECULES, but we overrride this to RAW
+        template.sendBodyAndHeader('direct:dhfr/molecules', 'c1ccncc1', 
+            JChemDBSearcher.HEADER_OUTPUT_MODE, 'RAW')
+        
+        then:
+        resultEndpoint.assertIsSatisfied()
+        // do we get the int[] array instead?
+        int[] hits = resultEndpoint.receivedExchanges.in.body[0]
+        hits.length == 237
+    }
+        
+    def 'dynamic structure fromat'() {
+        setup:
+        def resultEndpoint = camelContext.getEndpoint('mock:result')
+        resultEndpoint.expectedMessageCount(1)
+        
+        when:
+        template.sendBodyAndHeader('direct:dhfr/smiles', 'c1ccncc1',
+            JChemDBSearcher.HEADER_STRUCTURE_FORMAT, 'sdf')
+        
+        then:
+        resultEndpoint.assertIsSatisfied()
+        String body = resultEndpoint.receivedExchanges.in.body[0]
+        body.trim().split('\n').length > 237
     }
     
     
@@ -239,7 +290,7 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
                     .structureTable("dhfr")
                     .searchOptions("t:s")
                     .outputMode(JChemDBSearcher.OutputMode.TEXT)    
-                    .outputFormat("cxsmiles")
+                    .structureFormat("cxsmiles")
                 ).to('mock:result')
                 
                 from("direct:dhfr/raw")
@@ -268,7 +319,7 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
                     .searchOptions("t:s")
                     .outputMode(JChemDBSearcher.OutputMode.STREAM)
                     .outputColumns(['mset','name'])
-                    .outputFormat("sdf")
+                    .structureFormat("sdf")
                 ).to('mock:result')
                 
                 from("direct:dhfr/file")
@@ -279,7 +330,7 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
                     .searchOptions("t:s")
                     .outputMode(JChemDBSearcher.OutputMode.STREAM)
                     .outputColumns(['mset','name'])
-                    .outputFormat("sdf")
+                    .structureFormat("sdf")
                 )
                 .to("file:/Users/timbo/tmp?fileName=foo.sdf")
             }

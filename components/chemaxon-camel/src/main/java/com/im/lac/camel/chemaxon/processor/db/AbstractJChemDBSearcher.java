@@ -77,14 +77,14 @@ public abstract class AbstractJChemDBSearcher extends ConnectionHandlerSupport i
             LOG.log(Level.FINER, "Executing search using options: {0}", opts);
             handleQueryStructure(exchange, jcs);
             LOG.finer("Starting search");
-            startSearch(jcs);
+            startSearch(exchange, jcs);
             LOG.finer("Search started");
             handleSearchResults(exchange, jcs);
             LOG.fine("Search complete and results sent");
         }
     }
 
-    protected void startSearch(JChemSearch jcs) throws Exception {
+    protected void startSearch(Exchange exchange, JChemSearch jcs) throws Exception {
         jcs.setRunMode(JChemSearch.RUN_MODE_SYNCH_COMPLETE);
         jcs.setRunning(true);
     }

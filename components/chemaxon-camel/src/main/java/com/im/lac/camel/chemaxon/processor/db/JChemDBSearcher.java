@@ -49,8 +49,24 @@ import org.apache.camel.Exchange;
  * <p>
  * In certain output modes the results are streamed providing the first results
  * as early as possible and can be passed through to other components like
- * ChemAxonMoleculeProcessor and StandardizerProcessor
- *
+ * ChemAxonMoleculeProcessor and StandardizerProcessor.
+ * <p>
+ * The following properties can be dynamically set at runtime using header properties
+ * allowing a default route to be specified, but specific options set as needed:
+ * <br>
+ * <b>searchOptions</b> overridden by the header with name of the HEADER_SEARCH_OPTIONS
+ * constant which must have a String value.
+ * <br>
+ * <b>outputMode</b> overridden by the header with name of the HEADER_OUTPUT_MODE constant 
+ * which can have a value of the OutputMode enum or its text value.
+ * <br>
+ * <b>outputColumns</b> overridden by the header with name of the HEADER_OUTPUT_COLUMNS
+ * constant which must contain List<String> or a String of comma separated column names.
+ * <br>
+ * <b>structureFormat</b> overridden by the header with name of the HEADER_STRUCTURE_FORMAT
+ * constant which must have a String value.
+ * <br>
+ * 
  * @author Tim Dudgeon
  */
 public class JChemDBSearcher extends AbstractJChemDBSearcher {
@@ -58,6 +74,9 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     private final static Logger LOG = Logger.getLogger(JChemDBSearcher.class.getName());
 
     public static final String HEADER_SEARCH_OPTIONS = "JChemSearchOptions";
+    public static final String HEADER_OUTPUT_MODE = "JChemSearchOutputMode";
+    public static final String HEADER_OUTPUT_COLUMS = "JChemSearchOutputColumns";
+    public static final String HEADER_STRUCTURE_FORMAT = "JChemSearchStructureFormat";
 
     /**
      * The different types of output that can be generated.
@@ -74,8 +93,11 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
      * <br>
      * TEXT generates a String containing the structures (as if generated using
      * the MOLECULES options converted to a text in the format specified by the
-     * outputFormat field. NOTE: this builds the entire String in memory so is
-     * only suitable for small result sets.
+     * structureFormat field (or overridden using the header property with the
+     * name of the HEADER_STRUCTURE_FORMAT constant).
+     * <br>
+     * NOTE: this builds the entire String in memory so is only suitable for
+     * small result sets.
      * <br>
      * STREAM allows the resulting structures to be read as an InputStream. This
      * is similar in nature to the TEXT option but suitable for large numbers of
@@ -97,15 +119,24 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     /**
      * The type of output that is generated. One of the values of the OutputMode
      * enum. Default is RAW as this is the cheapest in terms of processing time,
-     * but leaves you with the most work to do.
+     * but leaves you with the most work to do. This value can be overriden at
+     * runtime by the header property with the name of the HEADER_OUTPUT_MODE
+     * constant. Default is RAW.
      *
      */
     protected OutputMode outputMode = OutputMode.RAW;
 
-    protected String outputFormat = "sdf";
+    /**
+     * The default output format that is used to generate textual output. This
+     * value can be overriden at runtime by the header property with the name of
+     * the HEADER_STRUCTURE_FORMAT constant. Default value is "sdf"
+     *
+     */
+    protected String structureFormat = "sdf";
 
     /**
-     * The list of columns to retrieve
+     * The list of columns to retrieve This value can be overriden at runtime by
+     * the header property with the name of the HEADER_OUTPUT_COLUMNS constant.
      *
      */
     protected List<String> outputColumns = Collections.EMPTY_LIST;
@@ -134,14 +165,15 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Specifies the file format when using TEXT or STREAM as the output mode.
-     * Default is "sdf"
+     * Specifies the default file format when using TEXT or STREAM as the output
+     * mode. e.g. "smiles", "cxsmiles:a-H", "sdf". Default is "sdf"
      *
+     * @param structureFormat The format for output in Chemaxon syntax
      * @return This instance, allowing fluent builder pattern to be used.
      * @see https://docs.chemaxon.com/display/FF/Molecule+Formats
      */
-    public JChemDBSearcher outputFormat(String outputFormat) {
-        this.outputFormat = outputFormat;
+    public JChemDBSearcher structureFormat(String structureFormat) {
+        this.structureFormat = structureFormat;
         return this;
     }
 
@@ -231,19 +263,62 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     @Override
     protected void handleSearchParams(Exchange exchange, JChemSearch jcs) {
 
-        String headerOpts = exchange.getIn().getHeader(HEADER_SEARCH_OPTIONS, String.class);
-        if (headerOpts != null) {
-            LOG.log(Level.INFO, "Using search options from header: {0}", headerOpts);
+        String headerOpt = exchange.getIn().getHeader(HEADER_SEARCH_OPTIONS, String.class);
+        if (headerOpt != null) {
+            LOG.log(Level.INFO, "Using search options from header: {0}", headerOpt);
             JChemSearchOptions opts = new JChemSearchOptions(JChemSearch.SUBSTRUCTURE);
-            opts.setOptions(headerOpts);
+            opts.setOptions(headerOpt);
             jcs.setSearchOptions(opts);
         } else {
             super.handleSearchParams(exchange, jcs);
         }
     }
 
+    private OutputMode determineOutputMode(Exchange exchange) {
+        Object headerOpt = exchange.getIn().getHeader(HEADER_OUTPUT_MODE);
+        if (headerOpt != null) {
+            if (headerOpt instanceof OutputMode) {
+                return (OutputMode) headerOpt;
+            } else {
+                return OutputMode.valueOf(headerOpt.toString());
+            }
+        } else {
+            return this.outputMode;
+        }
+    }
+
+    private String determineStructureFormat(Exchange exchange) {
+        String headerOpt = exchange.getIn().getHeader(HEADER_STRUCTURE_FORMAT, String.class);
+        if (headerOpt != null) {
+            return headerOpt;
+        } else {
+            return this.structureFormat;
+        }
+    }
+
+    private List<String> determineOutputColumns(Exchange exchange) {
+        Object headerOpt = exchange.getIn().getHeader(HEADER_OUTPUT_MODE);
+        if (headerOpt != null) {
+            if (headerOpt instanceof List) {
+                return (List<String>) headerOpt;
+            } else {
+                String[] cols = headerOpt.toString().split(",");
+                List<String> result = new ArrayList<String>();
+                for (String col : cols) {
+                    String c = col.trim();
+                    if (c.length() > 0) {
+                        result.add(c);
+                    }
+                }
+                return result;
+            }
+        } else {
+            return this.outputColumns;
+        }
+    }
+
     @Override
-    protected void startSearch(JChemSearch jcs) throws Exception {
+    protected void startSearch(Exchange exchange, JChemSearch jcs) throws Exception {
 
         if (jcs.getSearchOptions().getSearchType() == SearchConstants.SIMILARITY) {
             // similarity search needs the entire set to be searched before it can provide
@@ -251,7 +326,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
             jcs.setRunMode(JChemSearch.RUN_MODE_SYNCH_COMPLETE);
             jcs.setRunning(true);
         } else {
-            switch (outputMode) {
+            switch (determineOutputMode(exchange)) {
                 case STREAM:
                 case MOLECULES:
                     // ordering may need some attention in edge cases
@@ -260,15 +335,15 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
                     jcs.setRunning(true);
                     break;
                 default:
-                    super.startSearch(jcs);
+                    super.startSearch(exchange, jcs);
             }
         }
     }
 
     @Override
     protected void handleSearchResults(Exchange exchange, JChemSearch jcs) throws Exception {
-
-        switch (outputMode) {
+        OutputMode mode = determineOutputMode(exchange);
+        switch (mode) {
             case RAW:
                 int[] hits = jcs.getResults();
                 exchange.getIn().setBody(hits);
@@ -287,7 +362,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
                 handleAsTextStream(exchange, jcs);
                 break;
             default:
-                throw new UnsupportedOperationException("Mode " + outputMode + " not yet supported");
+                throw new UnsupportedOperationException("Mode " + mode + " not yet supported");
         }
     }
 
@@ -296,9 +371,9 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Create the molecules as text in the format specified by the outputFormat
-     * property. Note: this is only suitable for relatively small numbers of
-     * molecules. Use handleAsStream for large sets.
+     * Create the molecules as text in the format specified by the
+     * structureFormat property. Note: this is only suitable for relatively
+     * small numbers of molecules. Use handleAsStream for large sets.
      *
      * @param exchange
      * @param jcs
@@ -311,9 +386,9 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
      */
     private void handleAsText(final Exchange exchange, final JChemSearch jcs)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
-        final Molecule[] mols = loadMoleculesFromDB(jcs, jcs.getResults());
+        final Molecule[] mols = loadMoleculesFromDB(exchange, jcs, jcs.getResults());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final MolExporter exporter = new MolExporter(out, outputFormat);
+        final MolExporter exporter = new MolExporter(out, determineStructureFormat(exchange));
         try {
             writeMoleculesToMolExporter(exporter, mols);
             exchange.getIn().setBody(out.toString());
@@ -327,7 +402,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
 
         final ClosableQueue q = new ClosableMoleculeQueue(100);
 
-        writeMoleculeStream(jcs, new MoleculeWriter() {
+        writeMoleculeStream(exchange, jcs, new MoleculeWriter() {
             @Override
             public void writeMolecules(Molecule[] mols) {
                 try {
@@ -351,9 +426,9 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
 
         final PipedInputStream pis = new PipedInputStream();
         final PipedOutputStream out = new PipedOutputStream(pis);
-        final MolExporter exporter = new MolExporter(out, outputFormat);
+        final MolExporter exporter = new MolExporter(out, determineStructureFormat(exchange));
 
-        writeMoleculeStream(jcs, new MoleculeWriter() {
+        writeMoleculeStream(exchange, jcs, new MoleculeWriter() {
             @Override
             public void writeMolecules(Molecule[] mols) {
                 try {
@@ -376,7 +451,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         exchange.getIn().setBody(pis);
     }
 
-    private void writeMoleculeStream(final JChemSearch jcs, final MoleculeWriter molWriter)
+    private void writeMoleculeStream(final Exchange exchange, final JChemSearch jcs, final MoleculeWriter molWriter)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
 
         new Thread(
@@ -392,14 +467,14 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
                                     int[] hits = jcs.getAvailableNewHits(1);
                                     // TODO - chunk this as list could be huge 
                                     LOG.log(Level.FINER, "Processing {0} async hits", hits.length);
-                                    Molecule[] mols = loadMoleculesFromDB(jcs, hits);
+                                    Molecule[] mols = loadMoleculesFromDB(exchange, jcs, hits);
                                     molWriter.writeMolecules(mols);
                                 }
                             } else {
                                 LOG.log(Level.FINE, "sync mode");
                                 // just in case we also handle sync mode
                                 // TODO - break into chunks
-                                Molecule[] mols = loadMoleculesFromDB(jcs, jcs.getResults());
+                                Molecule[] mols = loadMoleculesFromDB(exchange, jcs, jcs.getResults());
                                 LOG.log(Level.FINER, "Processing {0} synch hits", mols.length);
                                 molWriter.writeMolecules(mols);
                             }
@@ -415,16 +490,17 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         ).start();
     }
 
-    private Molecule[] loadMoleculesFromDB(JChemSearch jcs, int[] hits)
+    private Molecule[] loadMoleculesFromDB(Exchange exchange, JChemSearch jcs, int[] hits)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
         List<Object[]> props = new ArrayList<Object[]>();
-        Molecule[] mols = jcs.getHitsAsMolecules(hits, null, outputColumns, props);
+        List<String> outCols = determineOutputColumns(exchange);
+        Molecule[] mols = jcs.getHitsAsMolecules(hits, null, outCols, props);
 
         int i = 0;
         for (Molecule mol : mols) {
             Object[] vals = props.get(i);
             int j = 0;
-            for (String col : outputColumns) {
+            for (String col : outCols) {
                 mol.setPropertyObject(col, vals[j]);
                 j++;
             }
