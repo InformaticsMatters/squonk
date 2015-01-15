@@ -2,6 +2,7 @@ package com.im.lac.camel.chemaxon.processor;
 
 import chemaxon.standardizer.Standardizer;
 import chemaxon.struc.Molecule;
+import com.im.lac.ClosableMoleculeQueue;
 import com.im.lac.ClosableQueue;
 
 import java.io.File;
@@ -66,22 +67,20 @@ public class StandardizerProcessor implements Processor {
     }
 
     ClosableQueue<Molecule> standardizeMultiple(final Iterator<Molecule> mols) {
-        final ClosableQueue<Molecule> q = new ClosableQueue<Molecule>(50);
+        final ClosableQueue<Molecule> q = new ClosableMoleculeQueue(50);
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     while (mols.hasNext()) {
                         Molecule mol = mols.next();
-                        synchronized (standardizer) { // not sure standardizer is thread safe
-                            try {
-                                synchronized (standardizer) {
-                                    standardizer.standardize(mol);
-                                }
-                                q.add(mol);
-                            } catch (Exception ex) {
-                                LOG.log(Level.SEVERE, "Standardization failed", ex);
+                        try {
+                            synchronized (standardizer) {
+                                standardizer.standardize(mol);
                             }
+                            q.add(mol);
+                        } catch (Exception ex) {
+                            LOG.log(Level.SEVERE, "Standardization failed", ex);
                         }
                     }
                 } finally {

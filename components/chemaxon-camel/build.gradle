@@ -4,6 +4,7 @@ apply plugin: 'groovy'
 
 apply plugin: 'application'
 mainClassName = "com.im.lac.camel.chemaxon.routes.Main"
+applicationDefaultJvmArgs = ["-Xmx4000m"]
 apply plugin: 'docker'
 
 buildscript {

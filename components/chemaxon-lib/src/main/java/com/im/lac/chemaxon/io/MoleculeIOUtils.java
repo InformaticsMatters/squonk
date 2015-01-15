@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.im.lac.chemaxon.molecule.MoleculeConstants;
+import com.im.lac.chemaxon.molecule.MoleculeIterable;
 
 /**
  * Created by timbo on 14/04/2014.
@@ -140,11 +141,11 @@ public class MoleculeIOUtils implements MoleculeConstants {
         return importer.iterator();
     }
 
-    public static Iterable<Molecule> moleculeIterable(final InputStream is) throws IOException {
+    public static MoleculeIterable moleculeIterable(final InputStream is) throws IOException {
         final MolImporter importer = new MolImporter(is);
-        return new Iterable() {
+        return new MoleculeIterable() {
             @Override
-            public Iterator iterator() {
+            public Iterator<Molecule> iterator() {
                 return importer.iterator();
             }
         };

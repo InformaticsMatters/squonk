@@ -6,6 +6,7 @@
 package com.im.lac.camel.chemaxon.processor;
 
 import chemaxon.struc.Molecule;
+import com.im.lac.chemaxon.molecule.MoleculeIterable;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,7 +26,10 @@ public abstract class MoleculeSourcer {
             handleSingle(exchange, mol);
         } else {
             // try as iterable of molecules
-            Iterable<Molecule> iterable = exchange.getIn().getBody(Iterable.class);
+            Iterable<Molecule> iterable = exchange.getIn().getBody(MoleculeIterable.class);
+            if (iterable == null) {
+                iterable = exchange.getIn().getBody(Iterable.class);
+            }
             if (iterable != null) {
                 handleMultiple(exchange, iterable.iterator());
             } else {

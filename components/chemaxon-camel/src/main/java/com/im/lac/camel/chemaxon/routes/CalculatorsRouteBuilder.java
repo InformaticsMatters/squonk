@@ -2,8 +2,11 @@ package com.im.lac.camel.chemaxon.routes;
 
 import chemaxon.struc.Molecule;
 import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
+import com.im.lac.camel.chemaxon.processor.HeaderPropertySetterProcessor;
 import com.im.lac.camel.chemaxon.processor.MoleculeConverterProcessor;
 import com.im.lac.camel.chemaxon.processor.Screen2DProcessor;
+import java.io.File;
+import java.io.InputStream;
 import org.apache.camel.builder.RouteBuilder;
 
 /**
@@ -59,6 +62,14 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
                         .filter("logP()<4")
                         
                 );
+        
+        String base = "../../lacfiledrop/screen/filter";
+        from("file:" + base + "?antInclude=*.sdf&move=in")
+                .log("running filter")
+                .to("direct:filter_example")
+                .to("direct:logp_atomcount_bondcount")
+                .convertBodyTo(InputStream.class)
+                .to("file:" + base + "/out?fileName=${file:name.noext}.sdf");
 
         // dynamic route that requires the chem terms configuration to be set using
         // the ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION header property.

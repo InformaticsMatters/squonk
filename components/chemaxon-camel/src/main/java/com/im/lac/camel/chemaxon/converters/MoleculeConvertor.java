@@ -2,7 +2,9 @@ package com.im.lac.camel.chemaxon.converters;
 
 import chemaxon.formats.MolFormatException;
 import chemaxon.struc.Molecule;
+import com.im.lac.ClosableMoleculeQueue;
 import com.im.lac.chemaxon.io.MoleculeIOUtils;
+import com.im.lac.chemaxon.molecule.MoleculeIterable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
@@ -39,6 +41,12 @@ public class MoleculeConvertor {
             throws MolFormatException, SQLException {
         return MoleculeIOUtils.convertToMolecule(clob);
     }
+     @Converter
+    public static InputStream convert(ClosableMoleculeQueue mols, Exchange exchange)
+            throws IOException {
+        // TODO - handle format
+        return mols.getTextStream("sdf");
+    }
     
     
     @Converter
@@ -48,7 +56,7 @@ public class MoleculeConvertor {
     }
     
     @Converter
-    public static Iterable<Molecule> createIterable(InputStream is, Exchange exchange) 
+    public static MoleculeIterable createIterable(InputStream is, Exchange exchange) 
             throws IOException {
         return MoleculeIOUtils.moleculeIterable(is);
     }

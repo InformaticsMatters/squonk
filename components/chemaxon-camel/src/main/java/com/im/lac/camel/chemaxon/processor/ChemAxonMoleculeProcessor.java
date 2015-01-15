@@ -3,6 +3,7 @@ package com.im.lac.camel.chemaxon.processor;
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.standardizer.Standardizer;
 import chemaxon.struc.Molecule;
+import com.im.lac.ClosableMoleculeQueue;
 import com.im.lac.ClosableQueue;
 import com.im.lac.ResultExtractor;
 import com.im.lac.chemaxon.molecule.ChemTermsEvaluator;
@@ -206,7 +207,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
     }
 
     ClosableQueue<Molecule> evaluateMultiple(final Iterator<Molecule> mols, final MoleculeEvaluator evaluator) {
-        final ClosableQueue<Molecule> q = new ClosableQueue<Molecule>(50);
+        final ClosableQueue<Molecule> q = new ClosableMoleculeQueue(50);
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
