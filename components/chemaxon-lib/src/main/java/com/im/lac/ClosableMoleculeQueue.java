@@ -44,7 +44,7 @@ public class ClosableMoleculeQueue extends ClosableQueue<Molecule> implements Mo
 
             @Override
             public void run() {
-                LOG.info("Starting to write molecules");
+                LOG.fine("Starting to write molecules");
                 try {
                     for (Molecule mol : ClosableMoleculeQueue.this) {
                         try {
@@ -53,7 +53,7 @@ public class ClosableMoleculeQueue extends ClosableQueue<Molecule> implements Mo
                             LOG.log(Level.SEVERE, "Error writing Molecule", ex);
                         }
                     }
-                    LOG.info("Finished to write molecules");
+                    LOG.fine("Finished to write molecules");
                 } finally {
                     try {
                         exporter.close();

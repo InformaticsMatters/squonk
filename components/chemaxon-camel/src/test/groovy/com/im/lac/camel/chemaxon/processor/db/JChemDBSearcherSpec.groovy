@@ -252,7 +252,7 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         hits.length == 237
     }
         
-    def 'dynamic structure fromat'() {
+    def 'dynamic structure format'() {
         setup:
         def resultEndpoint = camelContext.getEndpoint('mock:result')
         resultEndpoint.expectedMessageCount(1)
@@ -265,6 +265,22 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         resultEndpoint.assertIsSatisfied()
         String body = resultEndpoint.receivedExchanges.in.body[0]
         body.trim().split('\n').length > 237
+    }
+    
+    def 'hit colouring alignment'() {
+        setup:
+        def resultEndpoint = camelContext.getEndpoint('mock:result')
+        resultEndpoint.expectedMessageCount(1)
+        
+        when:
+        template.sendBody('direct:dhfr/hcao', '[#6]-[#6]-[#6]-1=[#7]-[#6](-[#7])=[#7]-[#6](-[#7])=[#6]-1-[#6]-1=[#6]-[#6](-[#7]=[#7])=[#6](Cl)-[#6]=[#6]-1')
+        
+        then:
+        resultEndpoint.assertIsSatisfied()
+        String body = resultEndpoint.receivedExchanges.in.body[0]
+        body.length() > 0
+        body.split('atomSetRGB').length > 25
+        // this doesn't test it works correctly, just that it returns data
     }
     
     
@@ -333,6 +349,17 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
                     .structureFormat("sdf")
                 )
                 .to("file:/Users/timbo/tmp?fileName=foo.sdf")
+                
+                from("direct:dhfr/hcao")
+                .convertBodyTo(String.class)
+                .process(new JChemDBSearcher()
+                    .connection(con)
+                    .structureTable("dhfr")
+                    .searchOptions("t:s")
+                    .outputMode(JChemDBSearcher.OutputMode.TEXT)    
+                    .structureFormat("mrv")
+                    .hitColorAndAlignOptions("hitColoring:y align:r")
+                ).to('mock:result')
             }
         }
     }

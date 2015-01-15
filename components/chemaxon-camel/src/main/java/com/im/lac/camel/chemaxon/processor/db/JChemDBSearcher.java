@@ -9,6 +9,7 @@ import chemaxon.sss.search.JChemSearchOptions;
 import chemaxon.sss.search.SearchException;
 import chemaxon.struc.Molecule;
 import chemaxon.util.ConnectionHandler;
+import chemaxon.util.HitColoringAndAlignmentOptions;
 import com.im.lac.ClosableMoleculeQueue;
 import com.im.lac.ClosableQueue;
 import com.im.lac.util.CollectionUtils;
@@ -51,22 +52,28 @@ import org.apache.camel.Exchange;
  * as early as possible and can be passed through to other components like
  * ChemAxonMoleculeProcessor and StandardizerProcessor.
  * <p>
- * The following properties can be dynamically set at runtime using header properties
- * allowing a default route to be specified, but specific options set as needed:
+ * The following properties can be dynamically set at runtime using header
+ * properties allowing a default route to be specified, but specific options set
+ * as needed:
  * <br>
- * <b>searchOptions</b> overridden by the header with name of the HEADER_SEARCH_OPTIONS
- * constant which must have a String value.
+ * <b>searchOptions</b> overridden by the header with name of the
+ * HEADER_SEARCH_OPTIONS constant which must have a String value.
  * <br>
- * <b>outputMode</b> overridden by the header with name of the HEADER_OUTPUT_MODE constant 
- * which can have a value of the OutputMode enum or its text value.
+ * <b>outputMode</b> overridden by the header with name of the
+ * HEADER_OUTPUT_MODE constant which can have a value of the OutputMode enum or
+ * its text value.
  * <br>
- * <b>outputColumns</b> overridden by the header with name of the HEADER_OUTPUT_COLUMNS
- * constant which must contain List<String> or a String of comma separated column names.
+ * <b>outputColumns</b> overridden by the header with name of the
+ * HEADER_OUTPUT_COLUMNS constant which must contain List<String> or a String of
+ * comma separated column names.
  * <br>
- * <b>structureFormat</b> overridden by the header with name of the HEADER_STRUCTURE_FORMAT
- * constant which must have a String value.
+ * <b>structureFormat</b> overridden by the header with name of the
+ * HEADER_STRUCTURE_FORMAT constant which must have a String value.
  * <br>
- * 
+ * <b>hitColorAndAlignOptions</b> overridden by the header with name of the
+ * HEADER_HIT_COLOR_ALIGN_OPTIONS constant which must have a String value.
+ * <br>
+ *
  * @author Tim Dudgeon
  */
 public class JChemDBSearcher extends AbstractJChemDBSearcher {
@@ -77,6 +84,9 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     public static final String HEADER_OUTPUT_MODE = "JChemSearchOutputMode";
     public static final String HEADER_OUTPUT_COLUMS = "JChemSearchOutputColumns";
     public static final String HEADER_STRUCTURE_FORMAT = "JChemSearchStructureFormat";
+    public static final String HEADER_HIT_COLOR_ALIGN_OPTIONS = "JChemSearchHitColorAndAlignOptions";
+    
+    
 
     /**
      * The different types of output that can be generated.
@@ -142,6 +152,16 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     protected List<String> outputColumns = Collections.EMPTY_LIST;
 
     /**
+     * Options for hit alignment and coloring. If null then no alignment or
+     * coloring.
+     * The effect of this option is very dependent on the structure format being used.
+     * Coloring will only work for MRV format or for MOLECULES output, alignment will 
+     * also work for file formats that support 2D coordinates, but not for smiles etc. 
+     *
+     */
+    protected String hitColorAndAlignOptions;
+
+    /**
      * The output mode. See the docs for the OutputMode enum for details.
      *
      * @param outputMode
@@ -174,6 +194,20 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
      */
     public JChemDBSearcher structureFormat(String structureFormat) {
         this.structureFormat = structureFormat;
+        return this;
+    }
+
+    /**
+     * Options for hit alignment and coloring.
+     * e.g. "hitColoring:y align:r"
+     *
+     * @param hitColorAndAlignOptions
+     * @return This instance, allowing fluent builder pattern to be used.
+     * @see
+     * https://www.chemaxon.com/jchem/doc/dev/java/api/chemaxon/util/HitColoringAndAlignmentOptions.html#setOptions(chemaxon.util.HitColoringAndAlignmentOptions,%20java.lang.String)
+     */
+    public JChemDBSearcher hitColorAndAlignOptions(String hitColorAndAlignOptions) {
+        this.hitColorAndAlignOptions = hitColorAndAlignOptions;
         return this;
     }
 
@@ -316,6 +350,24 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
             return this.outputColumns;
         }
     }
+    
+    private HitColoringAndAlignmentOptions determineHitColorAndAlignOptions(Exchange exchange) {
+        String headerOpt = exchange.getIn().getHeader(HEADER_HIT_COLOR_ALIGN_OPTIONS, String.class);
+        String opts;
+        if (headerOpt != null) {
+            opts = headerOpt;
+        } else {
+            opts = hitColorAndAlignOptions;
+        }
+        if (opts == null) {
+            return null;
+        } else {
+            LOG.log(Level.INFO, "Using hit colour alignment options of {0}", opts);
+            HitColoringAndAlignmentOptions hcao =new HitColoringAndAlignmentOptions();
+            HitColoringAndAlignmentOptions.setOptions(hcao, opts);
+            return hcao;
+        }
+    }
 
     @Override
     protected void startSearch(Exchange exchange, JChemSearch jcs) throws Exception {
@@ -386,7 +438,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
      */
     private void handleAsText(final Exchange exchange, final JChemSearch jcs)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
-        final Molecule[] mols = loadMoleculesFromDB(exchange, jcs, jcs.getResults());
+        final Molecule[] mols = loadMoleculesFromDB(exchange, jcs, jcs.getResults(), determineHitColorAndAlignOptions(exchange));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         final MolExporter exporter = new MolExporter(out, determineStructureFormat(exchange));
         try {
@@ -459,6 +511,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
                     @Override
                     public void run() {
                         LOG.log(Level.FINE, "Processing hits");
+                        HitColoringAndAlignmentOptions hcao = determineHitColorAndAlignOptions(exchange);
                         try {
                             if (jcs.getRunMode() == JChemSearch.RUN_MODE_ASYNCH_PROGRESSIVE) {
                                 LOG.log(Level.FINE, "async mode");
@@ -467,14 +520,14 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
                                     int[] hits = jcs.getAvailableNewHits(1);
                                     // TODO - chunk this as list could be huge 
                                     LOG.log(Level.FINER, "Processing {0} async hits", hits.length);
-                                    Molecule[] mols = loadMoleculesFromDB(exchange, jcs, hits);
+                                    Molecule[] mols = loadMoleculesFromDB(exchange, jcs, hits, hcao);
                                     molWriter.writeMolecules(mols);
                                 }
                             } else {
                                 LOG.log(Level.FINE, "sync mode");
                                 // just in case we also handle sync mode
                                 // TODO - break into chunks
-                                Molecule[] mols = loadMoleculesFromDB(exchange, jcs, jcs.getResults());
+                                Molecule[] mols = loadMoleculesFromDB(exchange, jcs, jcs.getResults(), hcao);
                                 LOG.log(Level.FINER, "Processing {0} synch hits", mols.length);
                                 molWriter.writeMolecules(mols);
                             }
@@ -490,11 +543,11 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         ).start();
     }
 
-    private Molecule[] loadMoleculesFromDB(Exchange exchange, JChemSearch jcs, int[] hits)
+    private Molecule[] loadMoleculesFromDB(Exchange exchange, JChemSearch jcs, int[] hits, HitColoringAndAlignmentOptions hcao)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
         List<Object[]> props = new ArrayList<Object[]>();
         List<String> outCols = determineOutputColumns(exchange);
-        Molecule[] mols = jcs.getHitsAsMolecules(hits, null, outCols, props);
+        Molecule[] mols = jcs.getHitsAsMolecules(hits, hcao, outCols, props);
 
         int i = 0;
         for (Molecule mol : mols) {
