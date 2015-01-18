@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.im.lac.camel.chemaxon.processor;
 
 import chemaxon.struc.Molecule;
@@ -14,13 +9,13 @@ import org.apache.camel.Exchange;
 
 /**
  *
- * @author timbo
+ * @author Tim Dudgeon
  */
 public abstract class MoleculeSourcer {
 
     private static final Logger LOG = Logger.getLogger(MoleculeSourcer.class.getName());
 
-    void handle(Exchange exchange) throws Exception {
+    public void handle(Exchange exchange) throws Exception {
         Molecule mol = exchange.getIn().getBody(Molecule.class);
         if (mol != null) {
             handleSingle(exchange, mol);
@@ -39,11 +34,11 @@ public abstract class MoleculeSourcer {
         }
     }
 
-    abstract void handleSingle(Exchange exchange, Molecule mol) throws Exception;
+    public abstract void handleSingle(Exchange exchange, Molecule mol) throws Exception;
 
-    abstract void handleMultiple(Exchange exchange, Iterator<Molecule> mols) throws Exception;
+    public abstract void handleMultiple(Exchange exchange, Iterator<Molecule> mols) throws Exception;
 
-    protected void handleOther(Exchange exchange, Object o) {
+    public void handleOther(Exchange exchange, Object o) {
         LOG.log(Level.WARNING, "Can't find molecules from {0}", o.getClass().getName());
         throw new IllegalArgumentException("No valid Molecule content could be found");
     }

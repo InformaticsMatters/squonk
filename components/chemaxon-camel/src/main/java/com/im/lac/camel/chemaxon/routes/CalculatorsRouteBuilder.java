@@ -1,10 +1,15 @@
 package com.im.lac.camel.chemaxon.routes;
 
 import chemaxon.struc.Molecule;
+import com.chemaxon.descriptors.fingerprints.ecfp.EcfpGenerator;
+import com.chemaxon.descriptors.fingerprints.ecfp.EcfpParameters;
+import com.chemaxon.descriptors.fingerprints.pf2d.PfGenerator;
+import com.chemaxon.descriptors.fingerprints.pf2d.PfParameters;
 import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 import com.im.lac.camel.chemaxon.processor.HeaderPropertySetterProcessor;
 import com.im.lac.camel.chemaxon.processor.MoleculeConverterProcessor;
-import com.im.lac.camel.chemaxon.processor.Screen2DProcessor;
+import com.im.lac.camel.chemaxon.processor.screening.MoleculeScreenerProcessor;
+import com.im.lac.chemaxon.screening.MoleculeScreener;
 import java.io.File;
 import java.io.InputStream;
 import org.apache.camel.builder.RouteBuilder;
@@ -14,6 +19,8 @@ import org.apache.camel.builder.RouteBuilder;
  * @author timbo
  */
 public class CalculatorsRouteBuilder extends RouteBuilder {
+
+    String base = "../../lacfiledrop/";
 
     @Override
     public void configure() throws Exception {
@@ -49,7 +56,7 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
                         .calculate("atom_count", "atomCount()")
                         .calculate("bond_count", "bondCount()")
                 );
-        
+
         // simple route that exemplifies filtering
         from("direct:filter_example")
                 .process(new MoleculeConverterProcessor())
@@ -60,16 +67,14 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
                         .filter("donorCount()<=5")
                         .filter("acceptorCount()<=10")
                         .filter("logP()<4")
-                        
                 );
-        
-        String base = "../../lacfiledrop/screen/filter";
-        from("file:" + base + "?antInclude=*.sdf&move=in")
+
+        from("file:" + base + "screen/filter?antInclude=*.sdf&move=in")
                 .log("running filter")
                 .to("direct:filter_example")
                 .to("direct:logp_atomcount_bondcount")
                 .convertBodyTo(InputStream.class)
-                .to("file:" + base + "/out?fileName=${file:name.noext}.sdf");
+                .to("file:" + base + "screen/filter/out?fileName=${file:name.noext}.sdf");
 
         // dynamic route that requires the chem terms configuration to be set using
         // the ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION header property.
@@ -83,26 +88,50 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
         from("direct:chemTermsSingleMolecule")
                 .convertBodyTo(Molecule.class)
                 .process(new ChemAxonMoleculeProcessor());
-        
+
         from("direct:standardize")
                 .convertBodyTo(Molecule.class)
                 .process(new ChemAxonMoleculeProcessor()
-                .standardize("aromatize")
+                        .standardize("aromatize")
                 );
-        
-        // simple route that exemplifies filtering
-        from("direct:screen2d")
+
+        EcfpParameters ecfpParams = EcfpParameters.createNewBuilder().build();
+        EcfpGenerator ecfpGenerator = ecfpParams.getDescriptorGenerator();
+        MoleculeScreener ecfpScreener = new MoleculeScreener(ecfpGenerator, ecfpGenerator.getDefaultComparator());
+
+        from("direct:screening/ecfp")
                 .process(new MoleculeConverterProcessor())
-                .process(new Screen2DProcessor()
-                        .targetStructure("CC1=CC(=O)C=CC1=O")
-                        .propName("similarity")
-                        .threshold(0.5)
+                .process(new MoleculeScreenerProcessor(ecfpScreener)
                 );
-                
+
+        from("file:" + base + "screening/ecfp?antInclude=*.sdf&preMove=processing&move=../in")
+                .log("running ecfp screening")
+                .process(new HeaderPropertySetterProcessor(new File(base + "/screening/ecfp/headers.properties")))
+                .to("direct:screening/ecfp")
+                .convertBodyTo(InputStream.class)
+                .to("file:" + base + "screening/ecfp/out?fileName=${file:name.noext}.sdf")
+                .log("ecfp screening complete");
+
+        PfParameters pfParams = PfParameters.createNewBuilder().build();
+        PfGenerator pfGenerator = pfParams.getDescriptorGenerator();
+        MoleculeScreener pfScreener = new MoleculeScreener(pfGenerator, pfGenerator.getDefaultComparator());
+
+        from("direct:screening/pharmacophore")
+                .process(new MoleculeConverterProcessor())
+                .process(new MoleculeScreenerProcessor(pfScreener)
+                );
+
+        from("file:" + base + "screening/pharmacophore?antInclude=*.sdf&preMove=processing&move=../in")
+                .log("running pharmacophore screening")
+                .process(new HeaderPropertySetterProcessor(new File(base + "/screening/pharmacophore/headers.properties")))
+                .to("direct:screening/pharmacophore")
+                .convertBodyTo(InputStream.class)
+                .to("file:" + base + "screening/pharmacophore/out?fileName=${file:name.noext}.sdf")
+                .log("pharmacophore screening complete");
 
         from("direct:gunzip")
                 .unmarshal().gzip();
-        
+
         from("direct:gunzipAndCalculate")
                 .to("direct:gunzip")
                 .log("gunzip complete")

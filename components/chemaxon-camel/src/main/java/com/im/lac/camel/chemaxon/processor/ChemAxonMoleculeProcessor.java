@@ -188,7 +188,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         final List<MoleculeEvaluator> evals = getEvaluators(exchange);
         MoleculeSourcer sourcer = new MoleculeSourcer() {
             @Override
-            void handleSingle(Exchange exchange, Molecule mol) throws Exception {
+            public void handleSingle(Exchange exchange, Molecule mol) throws Exception {
                 for (MoleculeEvaluator evaluator : evals) {
                     mol = evaluator.processMolecule(mol);
                 }
@@ -196,7 +196,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
             }
 
             @Override
-            void handleMultiple(Exchange exchange, Iterator<Molecule> mols) throws Exception {
+            public void handleMultiple(Exchange exchange, Iterator<Molecule> mols) throws Exception {
                 for (MoleculeEvaluator evaluator : evals) {
                     mols = evaluateMultiple(mols, evaluator);
                 }

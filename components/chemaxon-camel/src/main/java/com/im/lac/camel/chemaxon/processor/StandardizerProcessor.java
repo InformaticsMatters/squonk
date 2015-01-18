@@ -50,7 +50,7 @@ public class StandardizerProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
         MoleculeSourcer sourcer = new MoleculeSourcer() {
             @Override
-            void handleSingle(Exchange exchange, Molecule mol) {
+            public void handleSingle(Exchange exchange, Molecule mol) {
                 synchronized (standardizer) {
                     standardizer.standardize(mol);
                 }
@@ -58,7 +58,7 @@ public class StandardizerProcessor implements Processor {
             }
 
             @Override
-            void handleMultiple(Exchange exchange, Iterator<Molecule> mols) {
+            public void handleMultiple(Exchange exchange, Iterator<Molecule> mols) {
                 ClosableQueue<Molecule> q = standardizeMultiple(mols);
                 exchange.getIn().setBody(q);
             }
