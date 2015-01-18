@@ -2,11 +2,20 @@ package com.im.lac.portal.webapp;
 
 import com.im.lac.portal.service.api.*;
 import com.im.lac.wicket.semantic.NotifierProvider;
+import com.im.lac.wicket.semantic.SemanticResourceReference;
 import com.inmethod.grid.IGridColumn;
 import com.inmethod.grid.column.tree.PropertyTreeColumn;
+import com.inmethod.grid.common.AbstractGrid;
 import com.inmethod.grid.treegrid.TreeGrid;
+import com.vaynberg.wicket.select2.ApplicationSettings;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.internal.HtmlHeaderContainer;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.request.resource.CssResourceReference;
+import org.apache.wicket.request.resource.JavaScriptResourceReference;
 
 import javax.inject.Inject;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -25,6 +34,19 @@ public class DescriptorsPage extends WebPage {
         notifierProvider.createNotifier(this, "notifier");
         add(new MenuPanel("menuPanel"));
         addDescriptorsTreeTable();
+    }
+
+    @Override
+    public void renderHead(HtmlHeaderContainer container) {
+        super.renderHead(container);
+        IHeaderResponse response = container.getHeaderResponse();
+        response.render(JavaScriptHeaderItem.forReference(SemanticResourceReference.get()));
+        response.render(CssHeaderItem.forReference(new CssResourceReference(AbstractGrid.class, "res/style.css")));
+        response.render(CssHeaderItem.forReference(new CssResourceReference(ApplicationSettings.class, "res/select2.css")));
+        response.render(CssHeaderItem.forReference(new CssResourceReference(SemanticResourceReference.class, "resources/semantic-overrides.css")));
+        response.render(CssHeaderItem.forReference(new CssResourceReference(SemanticResourceReference.class, "resources/easygrid-overrides.css")));
+        response.render(JavaScriptHeaderItem.forReference(new JavaScriptResourceReference(DescriptorsPage.class, "resources/lac.js")));
+        response.render(CssHeaderItem.forReference(new CssResourceReference(DescriptorsPage.class, "resources/lac.css")));
     }
 
     private void addDescriptorsTreeTable() {
