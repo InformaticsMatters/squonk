@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.im.lac;
 
 import chemaxon.formats.MolExporter;
@@ -34,7 +29,7 @@ public class ClosableMoleculeQueue extends ClosableQueue<Molecule> implements Mo
 
     public InputStream getTextStream(String format) throws IOException {
         
-        LOG.info("Creating Text stream");
+        LOG.fine("Creating Text stream");
 
         final PipedInputStream pis = new PipedInputStream();
         final PipedOutputStream out = new PipedOutputStream(pis);

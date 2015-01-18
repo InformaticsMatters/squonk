@@ -135,21 +135,6 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         result.getBond(0).getType() == MolBond.AROMATIC
         println "aromatised : ${result.toFormat('smiles')}"
     }
-    
-    
-    def 'screen2d as stream'() {
-        
-        when:
-        def results = template.requestBody('direct:screen2d', new FileInputStream("../../data/testfiles/nci1000.smiles"))
-
-        then:
-        def mols = results.collect()
-        mols.size() <1000
-        println "screened down to ${mols.size()} mols"
-        mols.each {
-            println it.toFormat("sdf")
-        }
-    }
 
     @Override
     RouteBuilder createRouteBuilder() {
