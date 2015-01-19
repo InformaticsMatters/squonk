@@ -1,9 +1,10 @@
-package com.im.lac.camel.chemaxon.routes
+package com.im.lac.services.chemaxon
 
 import spock.lang.Specification
 import chemaxon.formats.MolImporter
 import chemaxon.struc.Molecule
 import chemaxon.struc.MolBond
+import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
 
@@ -88,13 +89,31 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         long t1 = System.currentTimeMillis()
         int size = results.collect().size()
         long t2 = System.currentTimeMillis()
-        println "filter down to $size first in ${t1-t0}ms last in ${t2-t0}ms"
+        //println "filter down to $size first in ${t1-t0}ms last in ${t2-t0}ms"
         then:
         size < 1000
        
     }
     
-     def 'filter as stream concurrent'() {
+    def 'filter dynamic'() {
+        
+        when:
+        long t0 = System.currentTimeMillis()
+        def results = template.requestBodyAndHeader(
+            'direct:chemTerms', new FileInputStream("../../data/testfiles/nci1000.smiles"),
+            ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION, "filter=mass()<250"
+        )
+        long t1 = System.currentTimeMillis()
+        int size = results.collect().size()
+        long t2 = System.currentTimeMillis()
+        println "dynamic filter down to $size first in ${t1-t0}ms last in ${t2-t0}ms"
+        then:
+        size < 1000
+        size > 0
+       
+    }
+    
+    def 'filter as stream concurrent'() {
         
         when:
         def results = []
@@ -133,7 +152,6 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         then:
         result instanceof Molecule
         result.getBond(0).getType() == MolBond.AROMATIC
-        println "aromatised : ${result.toFormat('smiles')}"
     }
 
     @Override

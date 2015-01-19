@@ -1,4 +1,4 @@
-package com.im.lac.camel.chemaxon.routes;
+package com.im.lac.services.chemaxon;
 
 import chemaxon.struc.Molecule;
 import com.chemaxon.descriptors.fingerprints.ecfp.EcfpGenerator;
@@ -15,6 +15,8 @@ import java.io.InputStream;
 import org.apache.camel.builder.RouteBuilder;
 
 /**
+ * These are routes that provide examples of services. They are supposed to
+ * illustrate what real-world services would need to do
  *
  * @author timbo
  */
@@ -69,6 +71,8 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
                         .filter("logP()<4")
                 );
 
+        // filedrop service that uses the filter_example to filter the input structures
+        // then uses the logp_atomcount_bondcount to calculate some properties 
         from("file:" + base + "screen/filter?antInclude=*.sdf&move=in")
                 .log("running filter")
                 .to("direct:filter_example")
@@ -95,6 +99,7 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
                         .standardize("aromatize")
                 );
 
+        // virtual screening using ECFP similarity
         EcfpParameters ecfpParams = EcfpParameters.createNewBuilder().build();
         EcfpGenerator ecfpGenerator = ecfpParams.getDescriptorGenerator();
         MoleculeScreener ecfpScreener = new MoleculeScreener(ecfpGenerator, ecfpGenerator.getDefaultComparator());
@@ -112,6 +117,7 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
                 .to("file:" + base + "screening/ecfp/out?fileName=${file:name.noext}.sdf")
                 .log("ecfp screening complete");
 
+        // virtual screening using pharmacophore similarity
         PfParameters pfParams = PfParameters.createNewBuilder().build();
         PfGenerator pfGenerator = pfParams.getDescriptorGenerator();
         MoleculeScreener pfScreener = new MoleculeScreener(pfGenerator, pfGenerator.getDefaultComparator());

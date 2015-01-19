@@ -1,4 +1,4 @@
-package com.im.lac.camel.chemaxon.routes;
+package com.im.lac.services.chemaxon;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

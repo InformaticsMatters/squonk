@@ -1,4 +1,4 @@
-package com.im.lac.camel.chemaxon.routes;
+package com.im.lac.services.chemaxon;
 
 import com.im.lac.camel.chemaxon.processor.HeaderPropertySetterProcessor;
 import com.im.lac.camel.chemaxon.processor.db.JChemDBSearcher;
@@ -36,7 +36,7 @@ public class DatabaseRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-
+        // structure searche for drugbank
         from("direct:chemsearch/drugbank")
                 .convertBodyTo(String.class)
                 .log("Searching DrugBank")
@@ -48,6 +48,7 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                         .outputMode(JChemDBSearcher.OutputMode.MOLECULES)
                 );
 
+        // structure searche for eMolecules screening compounds
         from("direct:chemsearch/emolecules_sc")
                 .convertBodyTo(String.class)
                 .process(new JChemDBSearcher()
@@ -58,6 +59,7 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                         .outputMode(JChemDBSearcher.OutputMode.MOLECULES)
                 );
 
+        // filedrop service for searching eMolecules screening compounds
         String base = "../../lacfiledrop/dbsearch/emolecules_sc";
         from("file:" + base + "?antInclude=*.mol&move=in")
                 .process(new HeaderPropertySetterProcessor(new File(base + "/headers.properties")))

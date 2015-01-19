@@ -1,4 +1,4 @@
-package com.im.lac.camel.chemaxon.routes;
+package com.im.lac.services.chemaxon;
 
 import dataFormat.MoleculeIteratorDataFormat;
 import java.nio.charset.Charset;
@@ -45,18 +45,27 @@ public class RestRouteBuilder extends RouteBuilder {
 
         // simples example
         rest("/ping").get()
-                .route().transform().constant("Service Running");
+                .route().transform().constant("Service Running\n");
 
         // This receives a POST request, processes it and returns the result
         rest("/atomCount").post()
                 .to("direct:handleAtomCount");
+        
+        rest("/chemterms").post()
+                .to("direct:handleChemTerms");
 
-        // This receives a POST request, processes it and returns the result
+
         rest("/dump").get()
                 .to("direct:dump");
 
         from("direct:handleAtomCount")
                 .to("direct:atomcount")
+                .log("Calculations complete")
+                .marshal(molDataFormat)
+                .log("Marshalling complete");
+        
+        from("direct:handleChemTerms")
+                .to("direct:chemTerms")
                 .log("Calculations complete")
                 .marshal(molDataFormat)
                 .log("Marshalling complete");

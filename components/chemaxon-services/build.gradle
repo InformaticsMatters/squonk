@@ -1,10 +1,23 @@
-description = 'ChemAxon Camel components'
+description = 'ChemAxon services'
 
 apply plugin: 'groovy'
+
+apply plugin: 'application'
+mainClassName = "com.im.lac.services.chemaxon.Main"
+applicationDefaultJvmArgs = ["-Xmx4000m"]
+apply plugin: 'docker'
+
+buildscript {
+    repositories { jcenter() }
+    dependencies {
+        classpath 'se.transmode.gradle:gradle-docker:1.1.1'
+    }
+}
 
 
 dependencies {
 
+    compile project(':chemaxon-camel')
     compile project(':chemaxon-lib')
     compile project(':common')
 
@@ -84,7 +97,22 @@ dependencies {
     }
 
     testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
-    testCompile "org.apache.derby:derby:10.11.1.1"
+    //testCompile "org.apache.derby:derby:10.11.1.1"
     testCompile project(':core-test')
 }
 
+docker {
+    baseImage "dockerfile/java:oracle-java7"
+    maintainer 'Tim Dudgeon'
+}
+
+// run the generated image with something like this:
+// docker run -d -P --name examples <generated_image_id>
+task buildDocker(type: Docker, dependsOn: distZip) {
+    applicationName = "chemaxon"
+    def zipFile = tasks.distZip.outputs.files.singleFile
+    // TODO FIX addFile(zipFile, '/data/' + zipFile.name)
+    runCommand("unzip /data/" + zipFile.name)
+    exposePort(8080) // do we need to configure the port?
+    entryPoint(["/data/${project.name}-${version}/bin/${project.name}"])
+}
