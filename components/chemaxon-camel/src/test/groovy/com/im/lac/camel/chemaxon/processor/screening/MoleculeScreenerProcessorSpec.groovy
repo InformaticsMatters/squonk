@@ -90,6 +90,7 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
                 from("direct:start")
                 .process(new MoleculeScreenerProcessor(screener))
                 .to('mock:result')
+                
             }
         }
     }

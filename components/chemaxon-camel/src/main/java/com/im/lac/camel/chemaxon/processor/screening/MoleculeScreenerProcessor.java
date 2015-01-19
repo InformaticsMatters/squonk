@@ -1,11 +1,13 @@
 package com.im.lac.camel.chemaxon.processor.screening;
 
+import chemaxon.standardizer.Standardizer;
 import chemaxon.struc.Molecule;
 import com.chemaxon.descriptors.common.Descriptor;
 import com.im.lac.ClosableMoleculeQueue;
 import com.im.lac.ClosableQueue;
 import com.im.lac.camel.chemaxon.processor.MoleculeSourcer;
 import com.im.lac.chemaxon.screening.MoleculeScreener;
+import java.io.File;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +61,21 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
         return this;
     }
 
+    public MoleculeScreenerProcessor standardizer(String szr) {
+        screener.setStandardizer(new Standardizer(szr));
+        return this;
+    }
+    
+    public MoleculeScreenerProcessor standardizer(File szr) {
+        screener.setStandardizer(new Standardizer(szr));
+        return this;
+    }
+    
+    public MoleculeScreenerProcessor clearStandardizer() {
+        screener.setStandardizer(null);
+        return this;
+    }
+    
     @Override
     public void process(Exchange exchange) throws Exception {
 
