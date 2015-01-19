@@ -1,4 +1,4 @@
 function makeMenuItemActive(itemId) {
-    $('.button').removeClass("active");
+    $('.item').removeClass("active");
     $('#' + itemId).addClass("active");
 }
