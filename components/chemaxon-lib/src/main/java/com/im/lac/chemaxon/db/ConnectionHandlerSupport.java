@@ -4,6 +4,7 @@ import chemaxon.jchem.db.DatabaseProperties;
 import chemaxon.util.ConnectionHandler;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sql.DataSource;
 
@@ -71,11 +72,16 @@ public class ConnectionHandlerSupport {
 
     public ConnectionHandler getConnectionHandler() {
         if (conh == null) {
-            LOG.warning("No ConnectionHandler. Should call start() before getConnectionHandler()");
+            conh = new ConnectionHandler();
+            conh.setPropertyTable(propertyTable);
+        }
+        if (connection != null) {
+            conh.setConnection(connection);
+        } else if (dataSource != null) {
             try {
-                start();
-            } catch (Exception ex) {
-                throw new RuntimeException("start() failed. Was ConnectionHandler specified correctly?", ex);
+                conh.setConnection(dataSource.getConnection());
+            } catch (SQLException ex) {
+                throw new RuntimeException("Can't get connection from datasource", ex);
             }
         }
         return conh;
@@ -86,15 +92,7 @@ public class ConnectionHandlerSupport {
     }
 
     public void start() throws Exception {
-        if (conh == null) {
-            if (connection == null) {
-                if (dataSource == null) {
-                    throw new IllegalStateException("Must provide ConnectionHandler, DataSource or Connection");
-                }
-                connection = dataSource.getConnection();
-            }
-            conh = new ConnectionHandler(connection, propertyTable);
-        }
+
     }
 
     public void stop() {

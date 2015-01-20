@@ -60,12 +60,20 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                 );
 
         // filedrop service for searching eMolecules screening compounds
-        String base = "../../lacfiledrop/dbsearch/emolecules_sc";
-        from("file:" + base + "?antInclude=*.mol&move=in")
-                .process(new HeaderPropertySetterProcessor(new File(base + "/headers.properties")))
+        String emolsbase = "../../lacfiledrop/dbsearch/emolecules_sc";
+        from("file:" + emolsbase + "?antInclude=*.mol&preMove=processing&move=../in")
+                .process(new HeaderPropertySetterProcessor(new File(emolsbase + "/headers.properties")))
                 .to("direct:chemsearch/emolecules_sc")
                 .convertBodyTo(InputStream.class)
-                .to("file:" + base + "/out?fileName=${file:name.noext}.sdf");
+                .to("file:" + emolsbase + "/out?fileName=${file:name.noext}.sdf");
+        
+         // filedrop service for searching drugbank
+        String dbbase = "../../lacfiledrop/dbsearch/drugbank";
+        from("file:" + dbbase + "?antInclude=*.mol&preMove=processing&move=../in")
+                .process(new HeaderPropertySetterProcessor(new File(dbbase + "/headers.properties")))
+                .to("direct:chemsearch/drugbank")
+                .convertBodyTo(InputStream.class)
+                .to("file:" + dbbase + "/out?fileName=${file:name.noext}.sdf");
 
     }
 

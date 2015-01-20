@@ -19,7 +19,6 @@ public abstract class AbstractJChemDBSearcher extends ConnectionHandlerSupport i
 
     private static final Logger LOG = Logger.getLogger(AbstractJChemDBSearcher.class.getName());
 
-    private JChemSearch jcs;
     protected String structureTable;
     protected String searchOptions;
 
@@ -39,13 +38,6 @@ public abstract class AbstractJChemDBSearcher extends ConnectionHandlerSupport i
         this.searchOptions = searchOptions;
     }
 
-    @Override
-    public void start() throws Exception {
-        LOG.log(Level.FINE, "Starting JChemSearcher {0}", this.toString());
-        super.start();
-        jcs = createJChemSearch();
-    }
-
     private JChemSearch createJChemSearch() throws SQLException {
         LOG.log(Level.FINE, "Creating JChemSearch for table %s", structureTable);
         JChemSearch j = new JChemSearch();
@@ -62,26 +54,20 @@ public abstract class AbstractJChemDBSearcher extends ConnectionHandlerSupport i
     @Override
     public void process(Exchange exchange) throws Exception {
 
+        JChemSearch jcs = createJChemSearch();
+
         LOG.fine("Processing search");
-        // TODO - evaluate this, complex issues are involved
-        // If JChemSearch is already running, need to wait for it to complete
-        // JChemSearch is not thread safe but creating a new one (and new connection to db) is expensive.
-        // Assuming here that this is a single "search unit" and scaling will happen
-        // by running multiple instances in parallel so if a previous search is still 
-        // running in async mode then we need to wait for it to finish.
-        // But this might introduce risks of deadlock.
-        synchronized (jcs) {
-            LOG.finer("Initiating search");
-            handleSearchParams(exchange, jcs);
-            String opts = jcs.getSearchOptions().toString();
-            LOG.log(Level.FINER, "Executing search using options: {0}", opts);
-            handleQueryStructure(exchange, jcs);
-            LOG.finer("Starting search");
-            startSearch(exchange, jcs);
-            LOG.finer("Search started");
-            handleSearchResults(exchange, jcs);
-            LOG.fine("Search complete and results sent");
-        }
+        // TODO - evaluate whetehr creating new jcs each time is optimal
+        LOG.finer("Initiating search");
+        handleSearchParams(exchange, jcs);
+        String opts = jcs.getSearchOptions().toString();
+        LOG.log(Level.FINER, "Executing search using options: {0}", opts);
+        handleQueryStructure(exchange, jcs);
+        LOG.finer("Starting search");
+        startSearch(exchange, jcs);
+        LOG.finer("Search started");
+        handleSearchResults(exchange, jcs);
+        LOG.fine("Search complete and results sent");
     }
 
     protected void startSearch(Exchange exchange, JChemSearch jcs) throws Exception {

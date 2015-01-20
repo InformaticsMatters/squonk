@@ -9,6 +9,7 @@ import chemaxon.marvin.io.MRecordParseException;
 import chemaxon.marvin.io.MRecordReader;
 import chemaxon.struc.MProp;
 import chemaxon.struc.Molecule;
+import com.im.lac.chemaxon.molecule.MolImporterIterable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
@@ -142,13 +143,7 @@ public class MoleculeIOUtils implements MoleculeConstants {
     }
 
     public static MoleculeIterable moleculeIterable(final InputStream is) throws IOException {
-        final MolImporter importer = new MolImporter(is);
-        return new MoleculeIterable() {
-            @Override
-            public Iterator<Molecule> iterator() {
-                return importer.iterator();
-            }
-        };
+        return new MolImporterIterable(is);
     }
 
     public static Map<String, String> mrecordToMap(MRecord record) {

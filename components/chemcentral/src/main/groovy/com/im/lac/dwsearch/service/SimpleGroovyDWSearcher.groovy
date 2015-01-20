@@ -109,7 +109,9 @@ class SimpleGroovyDWSearcher {
             CacheRegistrationUtil cru = new CacheRegistrationUtil(conh)
             cru.registerPermanentCache("ChemCentral-" + this.hashCode())
             
+            log.info("setting autocommit to false")
             con.autoCommit = false
+            
             
             JChemSearch searcher = createJChemSearch(conh, structureTable)
             searcher.setQueryStructure('CN1C=NC2=C1C(=O)N(C(=O)N2C)C')
@@ -117,10 +119,14 @@ class SimpleGroovyDWSearcher {
             JChemSearchOptions searchOptions = new JChemSearchOptions(JChemSearch.FULL);
             searcher.setSearchOptions(searchOptions);
             searcher.setRunMode(JChemSearch.RUN_MODE_SYNCH_COMPLETE)
+            log.info("starting search")
             long t0 = System.currentTimeMillis()
             searcher.run()
-            con.commit()
             long t1 = System.currentTimeMillis()
+            log.info("search complete")
+            log.info("autocommit is " + con.autoCommit)
+            con.commit()
+            
             structureCacheLoadTime = t1 - t0
             structureCacheLoaded = new Date()
             log.info("Structure cache loaded in ${structureCacheLoadTime}ms")
