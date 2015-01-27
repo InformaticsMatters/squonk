@@ -112,7 +112,7 @@ docker {
  * 
  * To run it linking to a postgres db also running in docker do something like this:
  * ./gradlew chemcentral:dockerBuild
- * docker run -P --link pg_db:db -name chemcentral <image-id-from-docker-build>
+ * docker run -d -P --link pg_db:db -name chemcentral <image-id-from-docker-build>
  * (where pg_db is the name of the postgres docker instance)
  * 
  * If running against postgres outside of docker then omit the "--link pg_db:db" bit

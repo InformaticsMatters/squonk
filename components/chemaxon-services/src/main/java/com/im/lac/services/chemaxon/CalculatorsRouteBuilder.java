@@ -50,13 +50,22 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
                 .process(new ChemAxonMoleculeProcessor()
                         .calculate("atom_count", "atomCount()"));
 
-        // simple route that calculates multiple hard coded properties
+        // simple routes that calculates multiple hard coded properties
         from("direct:logp_atomcount_bondcount")
                 .process(new MoleculeConverterProcessor())
                 .process(new ChemAxonMoleculeProcessor()
                         .calculate("logp", "logP()")
                         .calculate("atom_count", "atomCount()")
                         .calculate("bond_count", "bondCount()")
+                );
+        
+        from("direct:lipinski")
+                .process(new MoleculeConverterProcessor())
+                .process(new ChemAxonMoleculeProcessor()
+                        .calculate("mol_weight", "mass()")
+                        .calculate("logp", "logP()")
+                        .calculate("hbd_count", "donorCount()")
+                        .calculate("hba_count", "acceptorCount()")
                 );
 
         // simple route that exemplifies filtering

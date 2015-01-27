@@ -48,7 +48,7 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                         .outputMode(JChemDBSearcher.OutputMode.MOLECULES)
                 );
 
-        // structure searche for eMolecules screening compounds
+        // structure search for eMolecules screening compounds
         from("direct:chemsearch/emolecules_sc")
                 .convertBodyTo(String.class)
                 .process(new JChemDBSearcher()
@@ -56,6 +56,8 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                         .structureTable("vendordbs.emolecules_ordersc")
                         .propertyTable("vendordbs.jchemproperties")
                         .searchOptions("t:d")
+                        .searchOptionsOverride("maxResults:5000 maxTime:30000")
+                        .outputColumn("version_id")
                         .outputMode(JChemDBSearcher.OutputMode.MOLECULES)
                 );
 

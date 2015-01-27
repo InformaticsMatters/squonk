@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Descriptions of how the examples work</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?lang=java"></script>
+
+        <h2>Introduction</h2>
+        <p>This pages provides a brief description of how the examples work.
+            <br>
+            The examples can see been and run <a href="index.html">here</a>
+        </p>
+
+
+        <h2>Structure search example</h2>
+        <p>We describe how we run a structure search against a JChem database, and 
+            make this accessible as a REST web 
+            service. You can see the  example running <a href="index.html#dbsearch">here</a>.
+        </p>
+        <p>The service uses a database that already exists containing the 
+            <a href="http://emolecules.com/">eMolecules</a>
+            screening compounds (approx 7 million structures) loaded as a JChem structure 
+            table. This is searched using ChemAxon's 
+            <a href="https://www.chemaxon.com/jchem/doc/dev/java/api/chemaxon/jchem/db/JChemSearch.html">JChemSearch class</a>
+            , but most of the dirty details are handled behind the scenes and you can just 
+            concentrate on the bits that matter.</p>
+        <p>The basic processing is implemented like this:</p>
+        <pre class="prettyprint linenums">
+from("direct:chemsearch/emolecules_sc")
+    .convertBodyTo(String.class)
+    .process(new JChemDBSearcher()
+        .dataSource(dataSource)
+        .structureTable("vendordbs.emolecules_ordersc")
+        .propertyTable("vendordbs.jchemproperties")
+        .searchOptions("t:d")
+        .searchOptionsOverride("maxResults:5000 maxTime:30000")
+        .outputColumn("version_id")
+        .outputMode(JChemDBSearcher.OutputMode.MOLECULES)
+    );</pre>
+        <p>This is pure Java, but probably needs some explanation as a lot might 
+            seem to be missing to a normal Java developer, and you might think that
+            some deeper magic is involved.
+        </p>
+        <p>The first line just provides the entry point. Data can be sent to this route 
+            for processing by sending to to the route named "chemsearch/emolecules_sc". From 
+            here the data is processed by first on line 2 forcing the input (the query structure) 
+            to be text (in the unlikely case of it not being so) and then passing on 
+            to a Processor that handles the JChem search on line 3. A Processor is just one
+            of the ways to handle data, but is the simplest and probably the most 
+            common.</p>
+
+        <p>The Processor is implemented by the JChemDBSearcher class. This takes the 
+            query structure and the search options (we'll see later how these are specified)
+            and executes a JChem search with those. The remaining lines specify various
+            aspects of the search:
+            <br>Line 4 specifies the dataSource that is used to connect to the database (this is specified elsewhere)
+            <br>Line 5 specifies the name of the structure table that is to be searched
+            <br>Line 6 specifies the name of the JChem property table (this is specific to JChem)
+            <br>Line 7 specifies the default search options. These are irrelevant as we override these dynamically when we run the search.
+            <br>Line 8 specifies some search options that we don't want the user to be able to change, in this case to prevent badly specified searches overloading the server.
+            <br>Line 9 specifies which data columns we want included in the output, in this case just the eMolecules identifier 
+            <br>Line 10 specifies what type of output we want (there are several options here)
+        </p>
+
+        <p>The output of the search is a stream of molecules from the eMolecules database
+            that match the search criteria. In this case this is the last step in the route so this
+            stream of Molecules is the output of the route and is passed back to whatever
+            called the route. So what does call the route?</p>
+
+        <p>Routes of type "direct" can only be accessed from within the Java Virtual 
+            Machine. To make this functionality accessible as a RESTful web service
+            we create another route like this:</p>
+
+        <pre class="prettyprint linenums">
+MoleculeIteratorDataFormat molDataFormat = new MoleculeIteratorDataFormat();
+
+rest("/rest/chemsearch/emolecules_sc").post()
+    .route()
+    .to("direct:chemsearch/emolecules_sc")
+    .marshal(molDataFormat);</pre>
+
+        <p>The work starts on line 3 which uses the REST Domain Specific Language (DSL)
+            to define the REST endpoint. The path (/rest/chemsearch/emolecules_sc) is 
+            specified and we define that it must handle POST requests on a URL like
+            http://your.server.com:8080/rest/chemsearch/emolecules_sc.
+            Then on line 4 we say we route our data (which is the details of the query) 
+            to the route named "direct:chemsearch/emolecules_sc", which is the route 
+            described above. The response from that 
+            (molecules for the hits) is then marshalled to text on line 6, using
+            an instance of the MoleculeIteratorDataFormat class that is created on line 1.
+            The response to the HTTP POST request is this marshalled text, the search 
+            results written out in SDF format and can be sent across the network.</p>
+
+        <p>The one thing left to explain is how the query and search options get handled.
+            The query structure, because it is potentially large is best handled as the 
+            body of a HTTP POST request, so that's how it is handled - the body is the
+            text that you specify for the query, in this case probably a smiles or smarts string,
+            but other formats could be used. The search options are set as an HTTP header 
+            named "JChemSearchOptions" which the JChemDBSearcher 
+            uses to override the default options, thus allowing the user to specify 
+            the search type, and potentially much more.</p>
+
+        <p>Defining a REST web service is really that easy! Actually there is one 
+            extra thing needed to get this running, you need to specify what web server
+            component to use, so for a minimal implementation you also need something 
+            like this:</p>
+
+        <pre class="prettyprint linenums">
+restConfiguration().component("jetty").host("0.0.0.0").port(8080)</pre>
+
+        <p>Which is enough to get a minimal web server running (Jetty in this case,
+            but several others can be used), and this is where you would also specify
+            things like security and SSL.</p>
+
+
+        <h2>Property filtering example</h2>
+        <p>We describe how we achieve simple filtering of molecules based on a series
+            on molecular property filters, and make this accessible as a REST web 
+            service. You can see the  example running <a href="index.html#filter">here</a>.
+        </p>
+        <p>This example is fairly similar to the previous one. The way the REST web 
+            service is defined is identical, and is not repeated.
+            The basic processing is implemented like this:</p>
+        <pre class="prettyprint linenums">
+from("direct:filter_example")
+    .process(new MoleculeConverterProcessor())
+    .process(new ChemAxonMoleculeProcessor()
+        .filter("mass()<400")
+        .filter("ringCount()>0")
+        .filter("rotatableBondCount()<5")
+        .filter("donorCount()<=5")
+        .filter("acceptorCount()<=10")
+        .filter("logP()<4")
+    );</pre>
+
+        <p>The first line, like before, just provides the entry point. Data can be sent to this route 
+            for processing by sending to to the route named "filter_example". From 
+            here the data is processed by 2 processors in turn (thus the processing 
+            here is linear, but that need not be the case).</p>
+
+        <p>The first Processor is implemented by the MoleculeConverterProcessor class.
+            This transforms the input data (if necessary) into a format that can be
+            handled by ChemAxon tools, which is either a Molecule, or, in this case,
+            a stream of Molecules (the reading of the SD file is handled transparently 
+            for you and it tries to be as flexible as possible in the input types it
+            handles).</p>
+
+        <p>The second Processor starting on line 3 is the more interesting. It is a 
+            ChemAxonMoleculeProcessor which can perform a number of operations on Molecules.
+            In this case we just use its filtering capabilites by using the filter() method.
+            The argument to filter() is a 
+            <a target="_blank" href="https://docs.chemaxon.com/display/chemicalterms/Chemical+Terms+Home">Chemical Terms</a>
+            expression that evaluates
+            to a boolean value, and the input Molecule is filtered in or out according to
+            the result. The fluent builder pattern is used to allow multiple filters to 
+            be chained together with the Molecules being processed by each one in turn 
+            as long as they pass the filter.The output is the molecules that pass all 
+            filters. In this case this is the last step in the route so the result, a
+            stream of Molecules, is the output of the route and is passed back to whatever
+            called the route, in our case the REST route.</p>
+
+
+        <h2>Property calculation example</h2>
+        <p>We describe how we implement calculating a set of molecular properties, 
+            and make this accessible as a REST web 
+            service. You can see the  example running <a href="index.html#lipinski">here</a>.
+        </p>
+        <p>This example is very similar to the previous one. The ways the REST web 
+            service is defined is identical, and is not repeated.
+            The basic processing is implemented like this:</p>
+        <pre class="prettyprint linenums">
+from("direct:lipinski")
+    .process(new MoleculeConverterProcessor())
+    .process(new ChemAxonMoleculeProcessor()
+        .calculate("mol_weight", "mass()")
+        .calculate("logp", "logP()")
+        .calculate("hbd_count", "donorCount()")
+        .calculate("hba_count", "acceptorCount()"
+    );</pre>
+
+        <p>Lines 1-3 are the same as before. But instead of using the filter() method
+            to describe a filter, we use the calculate() method to describe a calculation.
+            calculate() takes 2 parameters, first the name that will be used to store
+            the calculated property and second the chemical terms expression for the 
+            molecular property. For instance line 4 declares a property named "mol_weight"
+            and a chemical terms expression of "mass()". The net result will be a 
+            new property in the resulting SD file named mol_weight containing the 
+            result of the mass() chemical terms expression. Similarly we define properties
+            for the other 3 Lipinski properties so that the resulting SD file will 
+            contain sections like this:</p>
+        <pre>
+&gt;  &lt;mol_weight&gt; [MProp:scalar:double]
+131.1745
+
+&gt;  &lt;logp&gt; [MProp:scalar:double]
+2.5854291983333333
+
+&gt;  &lt;hbd_count&gt; [MProp:scalar:integer]
+1
+
+&gt;  &lt;hba_count&gt; [MProp:scalar:integer]
+0
+        </pre>
+        <p>In all other aspects details are the same as the previous example.</p>
+        <p>Note that its the same ChemAxonMoleculeProcessor class that's been used 
+            to filter and to calculate, and actually you can combine these features
+            together and calculate and filter in the same processor. Also there are
+            2 other type of operation supported:</p>
+        <b>Transform</b>
+        <p>You can use Chemical terms expressions that generate a molecule to transform
+            the input molecule. This can be useful for things like generating a 3D conformer
+            or a canonical tautomer. For instance this example would generate the lowest 
+            energy 3D conformer of the input molecules</p>
+        <pre class="prettyprint linenums">
+from("direct:generate_conformer")
+    .process(new MoleculeConverterProcessor())
+    .process(new ChemAxonMoleculeProcessor()
+        .transform("leconfomer")
+    );</pre>
+
+        <b>Standarize</b>
+        <p>You can specify a ChemAxon
+            <a href="https://docs.chemaxon.com/display/standardizer/Home">standardizer</a>
+            to transform your input molecules using syntax like this:</p>
+        <pre class="prettyprint linenums">
+from("direct:standardize")
+    .process(new MoleculeConverterProcessor())
+    .process(new ChemAxonMoleculeProcessor()
+        .standardize("aromatize..removeexplicith")
+    );</pre>
+
+        <p>And you can combine filter(), calculate(), transform() and standardize() 
+            as you see fit. For example, what this route does is pretty awesome, 
+            but should not need any further explanation:</p>
+        <pre class="prettyprint linenums">
+from("direct:filter_example")
+    .process(new MoleculeConverterProcessor())
+    .process(new ChemAxonMoleculeProcessor()
+        .standardize("removefragment:method=keeplargest..aromatize..removeexplicith")
+        .filter("mass()<400")
+        .filter("ringCount()>0")
+        .filter("rotatableBondCount()<5")
+        .filter("donorCount()<=5")
+        .filter("acceptorCount()<=10")
+        .filter("logP()<4")
+        .transform("leconfomer")
+        .calculate("mol_weight", "mass()")
+        .calculate("logp", "logP()")
+        .calculate("hbd_count", "donorCount()")
+        .calculate("hba_count", "acceptorCount()")        
+    );</pre>
+
+        <p>What's nice is that there is a minimal amount of boilerplate clutter involved.
+            Not only is the proportion of code that is doing your important chemistry 
+            maximised, but what you end up with is very readable and understandable
+            (probably pretty understandable even if you don't know Java).</p>
+        <p>And the output can be processed further, for instance, screened against
+            a target molecule using chemical fingerprints, or a 2D pharmacophore.
+            We hope to provide examples soon.</p>
+        <p>Its also worth noting that whilst in these examples the criteria are hard
+            coded into the processors (e.g. a route does the same thing every time),
+            but this does not need to be the case. The calculations, 
+            filters, transforms and standardizations can be defined at runtime instead
+            making processing incredibly flexible. We hope to provide examples soon.</p>
+    </body>
+</html>

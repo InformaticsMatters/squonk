@@ -19,7 +19,6 @@ public class MoleculeIteratorDataFormat implements DataFormat {
     @Override
     public void marshal(Exchange exchange, Object o, OutputStream out) throws Exception {
         Iterator<Molecule> mols = null;
-        System.out.println("Input  is of type " + o.getClass().getName());
         if (o instanceof Iterator) {
             mols = (Iterator<Molecule>) o;
         } else if (o instanceof Iterable) {

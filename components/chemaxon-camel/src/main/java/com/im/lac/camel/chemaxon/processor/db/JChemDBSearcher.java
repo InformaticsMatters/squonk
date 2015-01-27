@@ -1,6 +1,5 @@
 package com.im.lac.camel.chemaxon.processor.db;
 
-
 import chemaxon.enumeration.supergraph.SupergraphException;
 import chemaxon.formats.MolExporter;
 import chemaxon.jchem.db.DatabaseSearchException;
@@ -21,7 +20,6 @@ import java.io.PipedOutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,11 +81,10 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
 
     public static final String HEADER_SEARCH_OPTIONS = "JChemSearchOptions";
     public static final String HEADER_OUTPUT_MODE = "JChemSearchOutputMode";
-    public static final String HEADER_OUTPUT_COLUMS = "JChemSearchOutputColumns";
+    public static final String HEADER_OUTPUT_COLUMNS = "JChemSearchOutputColumns";
     public static final String HEADER_STRUCTURE_FORMAT = "JChemSearchStructureFormat";
     public static final String HEADER_HIT_COLOR_ALIGN_OPTIONS = "JChemSearchHitColorAndAlignOptions";
-    
-    
+    public static final String HEADER_SIMILARITY_SCORE_PROP_NAME = "SimilarityScorePropertyName";
 
     /**
      * The different types of output that can be generated.
@@ -135,7 +132,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
      * constant. Default is RAW.
      *
      */
-    protected OutputMode outputMode = OutputMode.RAW;
+    private OutputMode outputMode = OutputMode.RAW;
 
     /**
      * The default output format that is used to generate textual output. This
@@ -143,24 +140,26 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
      * the HEADER_STRUCTURE_FORMAT constant. Default value is "sdf"
      *
      */
-    protected String structureFormat = "sdf";
+    private String structureFormat = "sdf";
 
     /**
      * The list of columns to retrieve This value can be overriden at runtime by
      * the header property with the name of the HEADER_OUTPUT_COLUMNS constant.
      *
      */
-    protected List<String> outputColumns = Collections.EMPTY_LIST;
+    private List<String> outputColumns = new ArrayList();
 
     /**
      * Options for hit alignment and coloring. If null then no alignment or
-     * coloring.
-     * The effect of this option is very dependent on the structure format being used.
-     * Coloring will only work for MRV format or for MOLECULES output, alignment will 
-     * also work for file formats that support 2D coordinates, but not for smiles etc. 
+     * coloring. The effect of this option is very dependent on the structure
+     * format being used. Coloring will only work for MRV format or for
+     * MOLECULES output, alignment will also work for file formats that support
+     * 2D coordinates, but not for smiles etc.
      *
      */
-    protected String hitColorAndAlignOptions;
+    private String hitColorAndAlignOptions;
+
+    private String similarityScorePropertyName = "similarity";
 
     /**
      * The output mode. See the docs for the OutputMode enum for details.
@@ -186,6 +185,30 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
+     * Add this column to the list of columns that are retrieved
+     *
+     * @param outputColumn
+     * @return
+     */
+    public JChemDBSearcher outputColumn(String outputColumn) {
+        this.outputColumns.add(outputColumn);
+        return this;
+    }
+
+    /**
+     * Set the name for the similarity score. Only used for similarity searches.
+     * Default is "similarity". Can be overridden using the header of the name
+     * of the HEADER_SIMILARITY_SCORE_PROP_NAME constant.
+     *
+     * @param propName
+     * @return
+     */
+    public JChemDBSearcher similarityScorePropertyName(String propName) {
+        this.similarityScorePropertyName = propName;
+        return this;
+    }
+
+    /**
      * Specifies the default file format when using TEXT or STREAM as the output
      * mode. e.g. "smiles", "cxsmiles:a-H", "sdf". Default is "sdf"
      *
@@ -199,8 +222,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Options for hit alignment and coloring.
-     * e.g. "hitColoring:y align:r"
+     * Options for hit alignment and coloring. e.g. "hitColoring:y align:r"
      *
      * @param hitColorAndAlignOptions
      * @return This instance, allowing fluent builder pattern to be used.
@@ -236,6 +258,21 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
      */
     public JChemDBSearcher searchOptions(String searchOptions) {
         setSearchOptions(searchOptions);
+        return this;
+    }
+
+    /**
+     * These options (if defined) are always set LAST so that they can be used
+     * to override or limit searches. e.g use "maxResults:1000" to force a
+     * restriction to the number of hits that are returned. This will override
+     * dynamic settings (through the HEADER_SEARCH_OPTIONS header property) so
+     * the user cannot override this.
+     *
+     * @param searchOptions
+     * @return
+     */
+    public JChemDBSearcher searchOptionsOverride(String searchOptions) {
+        setSearchOptionsOverride(searchOptions);
         return this;
     }
 
@@ -322,12 +359,12 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         }
     }
 
-    private String determineStructureFormat(Exchange exchange) {
-        String headerOpt = exchange.getIn().getHeader(HEADER_STRUCTURE_FORMAT, String.class);
+    private String determineStringProperty(Exchange exchange, String value, String headerProperty) {
+        String headerOpt = exchange.getIn().getHeader(headerProperty, String.class);
         if (headerOpt != null) {
             return headerOpt;
         } else {
-            return this.structureFormat;
+            return value;
         }
     }
 
@@ -351,7 +388,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
             return this.outputColumns;
         }
     }
-    
+
     private HitColoringAndAlignmentOptions determineHitColorAndAlignOptions(Exchange exchange) {
         String headerOpt = exchange.getIn().getHeader(HEADER_HIT_COLOR_ALIGN_OPTIONS, String.class);
         String opts;
@@ -364,7 +401,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
             return null;
         } else {
             LOG.log(Level.INFO, "Using hit colour alignment options of {0}", opts);
-            HitColoringAndAlignmentOptions hcao =new HitColoringAndAlignmentOptions();
+            HitColoringAndAlignmentOptions hcao = new HitColoringAndAlignmentOptions();
             HitColoringAndAlignmentOptions.setOptions(hcao, opts);
             return hcao;
         }
@@ -439,9 +476,11 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
      */
     private void handleAsText(final Exchange exchange, final JChemSearch jcs)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
-        final Molecule[] mols = loadMoleculesFromDB(exchange, jcs, jcs.getResults(), determineHitColorAndAlignOptions(exchange));
+        int[] hits = jcs.getResults();
+        float[] dissimilarities = getDissimilarities(jcs);
+        Molecule[] mols = loadMoleculesFromDB(exchange, jcs, hits, dissimilarities, determineHitColorAndAlignOptions(exchange));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final MolExporter exporter = new MolExporter(out, determineStructureFormat(exchange));
+        final MolExporter exporter = new MolExporter(out, determineStringProperty(exchange, this.structureFormat, HEADER_STRUCTURE_FORMAT));
         try {
             writeMoleculesToMolExporter(exporter, mols);
             exchange.getIn().setBody(out.toString());
@@ -479,7 +518,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
 
         final PipedInputStream pis = new PipedInputStream();
         final PipedOutputStream out = new PipedOutputStream(pis);
-        final MolExporter exporter = new MolExporter(out, determineStructureFormat(exchange));
+        final MolExporter exporter = new MolExporter(out, determineStringProperty(exchange, this.structureFormat, HEADER_STRUCTURE_FORMAT));
 
         writeMoleculeStream(exchange, jcs, new MoleculeWriter() {
             @Override
@@ -516,19 +555,21 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
                         try {
                             if (jcs.getRunMode() == JChemSearch.RUN_MODE_ASYNCH_PROGRESSIVE) {
                                 LOG.log(Level.FINE, "async mode");
-                                // async mode - this will be the norm
+                                // async mode
                                 while (jcs.hasMoreHits()) {
                                     int[] hits = jcs.getAvailableNewHits(1);
                                     // TODO - chunk this as list could be huge 
                                     LOG.log(Level.FINER, "Processing {0} async hits", hits.length);
-                                    Molecule[] mols = loadMoleculesFromDB(exchange, jcs, hits, hcao);
+                                    Molecule[] mols = loadMoleculesFromDB(exchange, jcs, hits, null, hcao);
                                     molWriter.writeMolecules(mols);
                                 }
                             } else {
                                 LOG.log(Level.FINE, "sync mode");
                                 // just in case we also handle sync mode
                                 // TODO - break into chunks
-                                Molecule[] mols = loadMoleculesFromDB(exchange, jcs, jcs.getResults(), hcao);
+                                int[] hits = jcs.getResults();
+                                float[] dissimilarities = getDissimilarities(jcs);
+                                Molecule[] mols = loadMoleculesFromDB(exchange, jcs, hits, dissimilarities, hcao);
                                 LOG.log(Level.FINER, "Processing {0} synch hits", mols.length);
                                 molWriter.writeMolecules(mols);
                             }
@@ -544,11 +585,32 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         ).start();
     }
 
-    private Molecule[] loadMoleculesFromDB(Exchange exchange, JChemSearch jcs, int[] hits, HitColoringAndAlignmentOptions hcao)
+    private float[] getDissimilarities(JChemSearch jcs) {
+        float[] dissimilarities = null;
+        if (jcs.getSearchOptions().getSearchType() == SearchConstants.SIMILARITY) {
+            // similarity search always run in sync mode
+            dissimilarities = jcs.getDissimilarity();
+        }
+        return dissimilarities;
+    }
+
+    private Molecule[] loadMoleculesFromDB(Exchange exchange, JChemSearch jcs, int[] hits, float[] dissimilarities, HitColoringAndAlignmentOptions hcao)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
         List<Object[]> props = new ArrayList<Object[]>();
         List<String> outCols = determineOutputColumns(exchange);
         Molecule[] mols = jcs.getHitsAsMolecules(hits, hcao, outCols, props);
+        if (dissimilarities != null) {
+            if (mols.length != dissimilarities.length) {
+                LOG.warning("Number of scores and molecules do not correspond. Skipping adding similarity scores");
+            } else {
+                String simProp = determineStringProperty(exchange, similarityScorePropertyName, HEADER_SIMILARITY_SCORE_PROP_NAME);
+                for (int i = 0; i < mols.length; i++) {
+                    float sim = 1.0f - dissimilarities[i];
+                    // Marvin for some reason doesn't export values correctly if they are Float so we use Double 
+                    mols[i].setPropertyObject(simProp, new Double(sim));
+                }
+            }
+        }
 
         int i = 0;
         for (Molecule mol : mols) {

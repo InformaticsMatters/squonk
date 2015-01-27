@@ -46,18 +46,6 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         count == 756
     }
     
-    //    def "check row count"() {
-    //        
-    //        when:
-    //        db.eachRow("select * from dhfr") { row ->
-    //            println row
-    //        } 
-    //        
-    //        then:
-    //        1 == 1
-    //    }
-    
-    
     def 'check with jchemsearch'() {
         setup:
         ConnectionHandler conh = new ConnectionHandler()
@@ -190,8 +178,8 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         Molecule mol
         while ((mol = importer.read()) != null) {
             count++
-            mol.getPropertyObject('name') != null
-            mol.getPropertyObject('mset') != null
+            assert mol.getPropertyObject('name') != null
+            assert mol.getPropertyObject('mset') != null
         }
         count == 237
     }
@@ -212,8 +200,9 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         Molecule mol
         while ((mol = importer.read()) != null) {
             count++
-            mol.getPropertyObject('name') != null
-            mol.getPropertyObject('mset') != null
+            assert mol.getPropertyObject('name') != null
+            assert mol.getPropertyObject('mset') != null
+            assert mol.getPropertyObject('similarity') != null
         }
         count > 0
     }

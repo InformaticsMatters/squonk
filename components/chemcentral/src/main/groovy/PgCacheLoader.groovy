@@ -15,6 +15,7 @@ ds.password = 'chemcentral'
 def con = ds.connection
             
 ConnectionHandler conh = new ConnectionHandler(con, 'chemcentral.jchemproperties')
+//ConnectionHandler conh = new ConnectionHandler(con, 'vendordbs.jchemproperties')
 CacheRegistrationUtil cru = new CacheRegistrationUtil(conh)
 cru.registerCache()
 println "cache registered"
@@ -26,6 +27,7 @@ try {
     JChemSearch searcher = new JChemSearch()
     searcher.connectionHandler = conh
     searcher.structureTable = 'chemcentral.structures'
+    //searcher.structureTable = 'vendordbs.emolecules_ordersc'
     searcher.queryStructure = 'CN1C=NC2=C1C(=O)N(C(=O)N2C)C'
  
     JChemSearchOptions searchOptions = new JChemSearchOptions(JChemSearch.FULL)

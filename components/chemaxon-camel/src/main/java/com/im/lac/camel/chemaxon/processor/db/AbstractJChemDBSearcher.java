@@ -21,6 +21,7 @@ public abstract class AbstractJChemDBSearcher extends ConnectionHandlerSupport i
 
     protected String structureTable;
     protected String searchOptions;
+    protected String searchOptionsOverride;
 
     public AbstractJChemDBSearcher() {
     }
@@ -36,6 +37,10 @@ public abstract class AbstractJChemDBSearcher extends ConnectionHandlerSupport i
 
     public void setSearchOptions(String searchOptions) {
         this.searchOptions = searchOptions;
+    }
+
+    public void setSearchOptionsOverride(String searchOptions) {
+        this.searchOptionsOverride = searchOptions;
     }
 
     private JChemSearch createJChemSearch() throws SQLException {
@@ -57,11 +62,12 @@ public abstract class AbstractJChemDBSearcher extends ConnectionHandlerSupport i
         JChemSearch jcs = createJChemSearch();
 
         LOG.fine("Processing search");
-        // TODO - evaluate whetehr creating new jcs each time is optimal
+        // TODO - evaluate whether creating new jcs each time is optimal
         LOG.finer("Initiating search");
         handleSearchParams(exchange, jcs);
-        String opts = jcs.getSearchOptions().toString();
-        LOG.log(Level.FINER, "Executing search using options: {0}", opts);
+        JChemSearchOptions opts = jcs.getSearchOptions();
+        handleSearchParamsOverride(opts);
+        LOG.log(Level.INFO, "Executing search using options: {0}", opts.toString());
         handleQueryStructure(exchange, jcs);
         LOG.finer("Starting search");
         startSearch(exchange, jcs);
@@ -100,6 +106,13 @@ public abstract class AbstractJChemDBSearcher extends ConnectionHandlerSupport i
             opts.setOptions(searchOptions);
         }
         jcs.setSearchOptions(opts);
+
+    }
+
+    private final void handleSearchParamsOverride(JChemSearchOptions opts) {
+        if (searchOptionsOverride != null) {
+            opts.setOptions(searchOptionsOverride);
+        }
     }
 
     protected abstract void handleSearchResults(Exchange exchange, JChemSearch jcs) throws Exception;
