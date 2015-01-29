@@ -1,4 +1,4 @@
-description = 'Example services'
+description = 'Demo services'
 
 apply plugin: 'groovy'
 
@@ -119,7 +119,7 @@ docker {
  * CHEMCENTRAL_DB_SERVER, CHEMCENTRAL_DB_PORT, CHEMCENTRAL_DB_USERNAME, CHEMCENTRAL_DB_PASSWORD, CHEMAXON_LICENSE_URL
  */
 task buildDocker(type: Docker, dependsOn: distZip) {
-    applicationName = "exampleservices"
+    applicationName = "demoervices"
     def zipFile = tasks.distZip.outputs.files.singleFile
     addFile(zipFile, '/data/' + zipFile.name)
     runCommand("unzip /data/" + zipFile.name)

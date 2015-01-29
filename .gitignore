@@ -29,3 +29,4 @@ components/chemcentral/users.properties
 /components/core-test/build/
 /components/cdk-lib/build/
 /components/chemaxon-services/build/
+/components/demo-services/build/
