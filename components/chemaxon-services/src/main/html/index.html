@@ -29,6 +29,12 @@
         <p>
             <a href="/rest/ping">Click here</a> to check if the examples are currently running.
         </p>
+        
+        <p>WARNING: when trying out these examples examples you should use relatively 
+            small input files as file uploads are involved and the server on which 
+            it is running is very small. Please limit the files to hundreds or at most 
+            a few thousand molecules.<br>
+            SDF or smiles formats should be OK. Results are returned in SDF format.</p>
         <hr>
 
         <a href="#dbsearch"></a>
@@ -222,9 +228,9 @@
             function determineOutputFileName(infileName, expr) {
                 var pos = infileName.lastIndexOf(".");
                 if (pos > 0) {
-                    return infileName.substr(0, pos) + "_" + expr + infileName.substr(pos);
+                    return infileName.substr(0, pos) + "_" + expr + ".sdf";
                 } else {
-                    return infileName + "_" + expr;
+                    return infileName + "_" + expr + ".sdf";
                 }
             }
         </script>

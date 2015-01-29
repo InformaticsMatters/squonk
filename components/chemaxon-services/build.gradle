@@ -1,4 +1,4 @@
-description = 'ChemAxon services'
+description = 'Example services'
 
 apply plugin: 'groovy'
 sourceCompatibility = 1.7
@@ -109,22 +109,28 @@ docker {
     maintainer 'Tim Dudgeon'
 }
 
-// run the generated image with something like this:
-// docker run -d --name services -p 80:8080 --link pg_test:db <image_id>
+/** Build a Docker image
+ * run the generated image with something like this:
+ * docker run -d --name services -p 80:8080 --link pg_test:db -v <host_dir>:/external <image_id>
+ * 
+ * Note: the host directory <host_dir> containing the ChemAxon license file needs to be specified,
+ * or some other mechanism used, probably by setting the value of the CHEMAXON_LICENSE_URL
+ * environment variable using an -e option.
+ * The following environment variables can be used to override the default settings:
+ * CHEMCENTRAL_DB_SERVER, CHEMCENTRAL_DB_PORT, CHEMCENTRAL_DB_USERNAME, CHEMCENTRAL_DB_PASSWORD, CHEMAXON_LICENSE_URL
+ */
 task buildDocker(type: Docker, dependsOn: distZip) {
-    applicationName = "chemaxon"
+    applicationName = "exampleservices"
     def zipFile = tasks.distZip.outputs.files.singleFile
     addFile(zipFile, '/data/' + zipFile.name)
     runCommand("unzip /data/" + zipFile.name)
-    addFile("../misc/private/license.cxl", '.chemaxon/license.cxl')
     addFile {
         into "pages"
         from "src/main/html" 
     }
     setEnvironment("HTML_DOC_ROOT", "/pages")
     setEnvironment("CHEMCENTRAL_DB_SERVER", "db") // assumes the db alias is used when linking. If not override with a -e argument
-    setEnvironment("CHEMCENTRAL_DB_PORT", "5432")
-    setEnvironment("CHEMAXON_LICENSE_URL", "/.chemaxon/license.cxl")
+    setEnvironment("CHEMAXON_LICENSE_URL", "/external/license.cxl")
     exposePort(8080) // do we need to configure the port?
     entryPoint(["/data/${project.name}-${version}/bin/${project.name}"])
 }

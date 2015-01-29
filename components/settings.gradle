@@ -1,6 +1,6 @@
 rootProject.name = 'components'
 
-include 'common', 'datamodel', 'datamodel:mockdatamodel', 'portal', 'chemcentral'
+include 'common', 'datamodel', 'datamodel:mockdatamodel', 'chemcentral'
 include 'chemaxon-lib', 'chemaxon-camel', 'chemaxon-services', 'core-test', 'cdk-lib'
 
 
