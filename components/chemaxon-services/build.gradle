@@ -1,7 +1,6 @@
 description = 'Example services'
 
 apply plugin: 'groovy'
-sourceCompatibility = 1.7
 
 apply plugin: 'application'
 mainClassName = "com.im.lac.services.chemaxon.Main"
