@@ -1,0 +1,15 @@
+description = 'RDKit camel extensions'
+
+
+dependencies {
+    
+    compile 'org.slf4j:slf4j-simple:1.7.7'
+    
+    compile "org.apache.camel:camel-core:$camelVersion"
+    compile "org.apache.camel:camel-script:$camelVersion"
+
+    compile "org.python:jython:2.7-b2"
+        
+    testCompile project(':core-test')
+}
+

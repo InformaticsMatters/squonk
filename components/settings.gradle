@@ -1,6 +1,6 @@
 rootProject.name = 'components'
 
-include 'common', 'datamodel', 'datamodel:mockdatamodel', 'chemcentral'
-include 'chemaxon-lib', 'chemaxon-camel', 'demo-services', 'core-test', 'cdk-lib'
-
-
+include 'common', 'core-test', 'datamodel', 'datamodel:mockdatamodel'
+include 'chemaxon-lib', 'chemaxon-camel', 'demo-services', 'chemcentral'
+include 'cdk-lib'
+include 'rdkit-camel'
