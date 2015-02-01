@@ -72,7 +72,6 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         
         cleanup:
         fis.close()
-        println "is closed"
     
     }
 

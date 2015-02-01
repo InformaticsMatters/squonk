@@ -73,7 +73,7 @@ import javax.ws.rs.core.MediaType
 @Log
 @Singleton
 @Path("/")
-class SimpleGroovyDWSearcher {
+class SimpleGroovyDWSearcher implements DWSearcher {
     
     private ConfigObject database, chemcentral, users
     private DataSource dataSource
