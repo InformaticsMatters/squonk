@@ -1,7 +1,7 @@
 package com.im.lac.chemaxon.clustering
 
 import com.im.lac.chemaxon.molecule.MoleculeIterable
-import com.im.lac.chemaxon.io.MoleculeIOUtils
+import com.im.lac.chemaxon.molecule.MoleculeUtils
 import spock.lang.Specification
 
 /**
@@ -14,7 +14,7 @@ class SphereExclusionClustererSpec extends Specification {
     void "test simple"() {
         setup:
         InputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
-        MoleculeIterable iterable = MoleculeIOUtils.moleculeIterable(is)
+        MoleculeIterable iterable = MoleculeUtils.moleculeIterable(is)
         SphereExclusionClusterer clusterer = new SphereExclusionClusterer()
         
         when:

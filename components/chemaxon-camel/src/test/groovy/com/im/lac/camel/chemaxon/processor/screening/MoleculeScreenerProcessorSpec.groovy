@@ -6,8 +6,10 @@ import chemaxon.formats.MolExporter
 import chemaxon.struc.Molecule
 import com.chemaxon.descriptors.fingerprints.ecfp.*
 import com.im.lac.camel.testsupport.CamelSpecificationBase
-import com.im.lac.chemaxon.io.InputStreamMoleculeIterable
+import com.im.lac.chemaxon.io.MoleculeIterableImpl
+import com.im.lac.chemaxon.io.MoleculeObjectIterableImpl
 import com.im.lac.chemaxon.screening.MoleculeScreener
+import com.im.lac.types.MoleculeObject
 import org.apache.camel.builder.RouteBuilder
 
 /**
@@ -23,15 +25,15 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         given:
         resultEndpoint = camelContext.getEndpoint('mock:result')
         resultEndpoint.expectedMessageCount(1)
-        def mol = MolImporter.importMol("CN(C)C1=C(Cl)C(=O)C2=C(C=CC=C2)C1=O")
+        def mol = new MoleculeObject("CN(C)C1=C(Cl)C(=O)C2=C(C=CC=C2)C1=O")
 
         when:
         template.sendBody('direct:start', mol)
 
         then:
         resultEndpoint.assertIsSatisfied()
-        Molecule result = resultEndpoint.receivedExchanges.in.body[0]
-        double similarity = result.getPropertyObject('similarity')
+        MoleculeObject result = resultEndpoint.receivedExchanges.in.body[0]
+        double similarity = result.getValue('similarity')
         similarity > 0 && similarity < 1
     }
     
@@ -40,23 +42,23 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         given:
         resultEndpoint = camelContext.getEndpoint('mock:result')
         resultEndpoint.expectedMessageCount(1)
-        def mol1 = MolImporter.importMol("NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O")
-        def mol2 = MolImporter.importMol("CCN(C)C1=C(Br)C(=O)C2=C(C=CC=C2)C1=O")
+        def mol1 = new MoleculeObject("NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O")
+        def mol2 = new MoleculeObject("CCN(C)C1=C(Br)C(=O)C2=C(C=CC=C2)C1=O")
         
         when:
         template.sendBodyAndHeader('direct:start', mol1, MoleculeScreenerProcessor.HEADER_TARGET_MOLECULE, mol2)
 
         then:
         resultEndpoint.assertIsSatisfied()
-        Molecule result = resultEndpoint.receivedExchanges.in.body[0]
-        double similarity = result.getPropertyObject('similarity')
+        MoleculeObject result = resultEndpoint.receivedExchanges.in.body[0]
+        Double similarity = result.getValue('similarity')
         similarity > 0 && similarity < 1 // if header not read then would be 1.0
     }
     
     def "screen stream"() {
         given:
         def fis = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
-        InputStreamMoleculeIterable input = new InputStreamMoleculeIterable(fis)
+        MoleculeObjectIterableImpl input = new MoleculeObjectIterableImpl(fis)
         resultEndpoint = camelContext.getEndpoint('mock:result')
         resultEndpoint.expectedMessageCount(1)
         def target = MolImporter.importMol("CCC1=NC(N)=NC(N)=C1C1=CC=C(Cl)C=C1")

@@ -1,7 +1,7 @@
 package com.im.lac.camel.chemaxon.converters;
 
 import chemaxon.marvin.io.MRecord;
-import com.im.lac.chemaxon.io.MoleculeIOUtils;
+import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import org.apache.camel.Converter;
 import org.apache.camel.Exchange;
 
@@ -15,7 +15,7 @@ public class MRecordConverter {
 
     @Converter
     public static Map<String, String> convertToMap(MRecord record, Exchange exchange) {
-        return MoleculeIOUtils.mrecordToMap(record);
+        return MoleculeUtils.mrecordToMap(record);
     }
     
     @Converter

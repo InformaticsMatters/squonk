@@ -2,8 +2,10 @@ package com.im.lac.camel.chemaxon.processor;
 
 import chemaxon.standardizer.Standardizer;
 import chemaxon.struc.Molecule;
-import com.im.lac.ClosableMoleculeQueue;
+import com.im.lac.ClosableMoleculeObjectQueue;
 import com.im.lac.ClosableQueue;
+import com.im.lac.chemaxon.molecule.MoleculeUtils;
+import com.im.lac.types.MoleculeObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,44 +50,51 @@ public class StandardizerProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        MoleculeSourcer sourcer = new MoleculeSourcer() {
+        MoleculeObjectSourcer sourcer = new MoleculeObjectSourcer() {
             @Override
-            public void handleSingle(Exchange exchange, Molecule mol) {
-                synchronized (standardizer) {
-                    standardizer.standardize(mol);
-                }
-                exchange.getIn().setBody(mol);
+            public void handleSingle(Exchange exchange, MoleculeObject mo) throws IOException {
+                MoleculeObject neu = standardizeMolecule(exchange, mo);
+                exchange.getIn().setBody(neu);
             }
 
             @Override
-            public void handleMultiple(Exchange exchange, Iterator<Molecule> mols) {
-                ClosableQueue<Molecule> q = standardizeMultiple(mols);
+            public void handleMultiple(Exchange exchange, Iterator<MoleculeObject> mols) {
+                ClosableQueue<MoleculeObject> q = standardizeMultiple(exchange, mols);
                 exchange.getIn().setBody(q);
             }
         };
         sourcer.handle(exchange);
     }
 
-    ClosableQueue<Molecule> standardizeMultiple(final Iterator<Molecule> mols) {
-        final ClosableQueue<Molecule> q = new ClosableMoleculeQueue(50);
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    while (mols.hasNext()) {
-                        Molecule mol = mols.next();
-                        try {
-                            synchronized (standardizer) {
-                                standardizer.standardize(mol);
-                            }
-                            q.add(mol);
-                        } catch (Exception ex) {
-                            LOG.log(Level.SEVERE, "Standardization failed", ex);
-                        }
+    MoleculeObject standardizeMolecule(Exchange exchange, MoleculeObject mo) throws IOException {
+        Molecule mol = MoleculeUtils.fetchMolecule(mo, false);
+        synchronized (standardizer) {
+            standardizer.standardize(mol);
+        }
+        String format = mo.getFormat();
+        if (format == null) {
+            format = "mol";
+        }
+        MoleculeObject neu = MoleculeUtils.derriveMoleculeObject(mo, mol, format);
+        
+        return neu;
+    }
+
+    ClosableQueue<MoleculeObject> standardizeMultiple(final Exchange exchange, final Iterator<MoleculeObject> mols) {
+        final ClosableQueue<MoleculeObject> q = new ClosableMoleculeObjectQueue(50);
+        Thread t = new Thread(() -> {
+            try {
+                while (mols.hasNext()) {
+                    MoleculeObject mo = mols.next();
+                    try {
+                        MoleculeObject neu = standardizeMolecule(exchange, mo);
+                        q.add(neu);
+                    } catch (Exception ex) {
+                        LOG.log(Level.SEVERE, "Standardization failed", ex);
                     }
-                } finally {
-                    q.close();
                 }
+            } finally {
+                q.close();
             }
         });
         t.start();

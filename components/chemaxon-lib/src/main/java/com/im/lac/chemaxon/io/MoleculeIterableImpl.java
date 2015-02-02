@@ -1,38 +1,33 @@
-package com.im.lac.chemaxon.molecule;
+package com.im.lac.chemaxon.io;
 
 import chemaxon.formats.MolImporter;
 import chemaxon.struc.Molecule;
-import java.io.Closeable;
+import com.im.lac.chemaxon.molecule.MoleculeIterable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 
-/**
+/** Creates Iterables of Molecules using MolImporter
  *
  * @author timbo
  */
-public class MolImporterIterable implements MoleculeIterable, Closeable {
+public class MoleculeIterableImpl implements MoleculeIterable {
 
-    final MolImporter importer;
+    private final MolImporter importer;
 
-    public MolImporterIterable(InputStream is) throws IOException {
+    public MoleculeIterableImpl(InputStream is) throws IOException {
         importer = new MolImporter(is);
     }
 
-    public MolImporterIterable(File file) throws IOException {
+    public MoleculeIterableImpl(File file) throws IOException {
         importer = new MolImporter(new FileInputStream(file));
     }
 
     @Override
     public Iterator<Molecule> iterator() {
         return new MyIteratorDecorator(importer.iterator());
-    }
-
-    @Override
-    public void close() throws IOException {
-        importer.close();
     }
     
     class MyIteratorDecorator implements Iterator<Molecule> {
@@ -49,7 +44,6 @@ public class MolImporterIterable implements MoleculeIterable, Closeable {
 
         @Override
         public Molecule next() {
-            System.out.println("next()");
             return iterator.next();
          }
 
@@ -57,8 +51,6 @@ public class MolImporterIterable implements MoleculeIterable, Closeable {
         public void remove() {
             iterator.remove();
         }
-        
-        
         
     } 
 

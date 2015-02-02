@@ -2,7 +2,9 @@ package com.im.lac;
 
 import chemaxon.formats.MolExporter;
 import chemaxon.struc.Molecule;
-import com.im.lac.chemaxon.molecule.MoleculeIterable;
+import com.im.lac.chemaxon.molecule.MoleculeUtils;
+import com.im.lac.types.MoleculeObject;
+import com.im.lac.util.MoleculeObjectIterable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -15,15 +17,15 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class ClosableMoleculeQueue extends ClosableQueue<Molecule> implements MoleculeIterable {
+public class ClosableMoleculeObjectQueue extends ClosableQueue<MoleculeObject> implements MoleculeObjectIterable {
 
-    private static final Logger LOG = Logger.getLogger(ClosableMoleculeQueue.class.getName());
+    private static final Logger LOG = Logger.getLogger(ClosableMoleculeObjectQueue.class.getName());
 
-    public ClosableMoleculeQueue(int queueSize) {
+    public ClosableMoleculeObjectQueue(int queueSize) {
         super(queueSize);
     }
 
-    public ClosableMoleculeQueue(BlockingQueue<Molecule> queue) {
+    public ClosableMoleculeObjectQueue(BlockingQueue<MoleculeObject> queue) {
         super(queue);
     }
 
@@ -41,8 +43,11 @@ public class ClosableMoleculeQueue extends ClosableQueue<Molecule> implements Mo
             public void run() {
                 LOG.fine("Starting to write molecules");
                 try {
-                    for (Molecule mol : ClosableMoleculeQueue.this) {
+                    for (MoleculeObject mo : ClosableMoleculeObjectQueue.this) {
                         try {
+                            Molecule mol = MoleculeUtils.fetchMolecule(mo, false);
+                            mol.clearProperties();
+                            MoleculeUtils.putPropertiesToMolecule(mo.getValues(), mol);
                             exporter.write(mol);
                         } catch (IOException ex) {
                             LOG.log(Level.SEVERE, "Error writing Molecule", ex);

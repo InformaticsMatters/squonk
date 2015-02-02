@@ -1,10 +1,13 @@
 package com.im.lac.chemaxon.molecule;
 
+import chemaxon.formats.MolFormatException;
 import chemaxon.jep.ChemJEP;
 import chemaxon.jep.Evaluator;
 import chemaxon.jep.context.MolContext;
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.struc.Molecule;
+import com.im.lac.types.MoleculeObject;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
@@ -86,6 +89,21 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
         context.setMolecule(mol);
         synchronized (chemJEP) { // not thread safe
             return evaluateMoleculeImpl(context);
+        }
+    }
+    
+    @Override
+    public MoleculeObject processMoleculeObject(MoleculeObject mo) throws MolFormatException, IOException {
+        Molecule mol = MoleculeUtils.fetchMolecule(mo, true);
+        mol = processMolecule(mol);
+        
+        if (mol == null) {
+            return null;
+        } else {
+            Map<String,Object> results = getResults(mol);
+            MoleculeObject neu = MoleculeUtils.derriveMoleculeObject(mo, mol, mo.getFormat("mol"));
+            neu.putValues(results);
+            return neu;
         }
     }
 

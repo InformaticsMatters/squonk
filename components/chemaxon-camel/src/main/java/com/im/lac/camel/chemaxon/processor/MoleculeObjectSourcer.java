@@ -1,7 +1,8 @@
 package com.im.lac.camel.chemaxon.processor;
 
 import chemaxon.struc.Molecule;
-import com.im.lac.chemaxon.molecule.MoleculeIterable;
+import com.im.lac.types.MoleculeObject;
+import com.im.lac.util.MoleculeObjectIterable;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,17 +12,17 @@ import org.apache.camel.Exchange;
  *
  * @author Tim Dudgeon
  */
-public abstract class MoleculeSourcer {
+public abstract class MoleculeObjectSourcer {
 
-    private static final Logger LOG = Logger.getLogger(MoleculeSourcer.class.getName());
+    private static final Logger LOG = Logger.getLogger(MoleculeObjectSourcer.class.getName());
 
     public void handle(Exchange exchange) throws Exception {
-        Molecule mol = exchange.getIn().getBody(Molecule.class);
+        MoleculeObject mol = exchange.getIn().getBody(MoleculeObject.class);
         if (mol != null) {
             handleSingle(exchange, mol);
         } else {
             // try as iterable of molecules
-            Iterable<Molecule> iterable = exchange.getIn().getBody(MoleculeIterable.class);
+            Iterable<MoleculeObject> iterable = exchange.getIn().getBody(MoleculeObjectIterable.class);
             if (iterable == null) {
                 iterable = exchange.getIn().getBody(Iterable.class);
             }
@@ -34,13 +35,13 @@ public abstract class MoleculeSourcer {
         }
     }
 
-    public abstract void handleSingle(Exchange exchange, Molecule mol) throws Exception;
+    public abstract void handleSingle(Exchange exchange, MoleculeObject mol) throws Exception;
 
-    public abstract void handleMultiple(Exchange exchange, Iterator<Molecule> mols) throws Exception;
+    public abstract void handleMultiple(Exchange exchange, Iterator<MoleculeObject> mols) throws Exception;
 
     public void handleOther(Exchange exchange, Object o) {
         LOG.log(Level.WARNING, "Can't find molecules from {0}", o.getClass().getName());
-        throw new IllegalArgumentException("No valid Molecule content could be found");
+        throw new IllegalArgumentException("No valid MoleculeObject content could be found");
     }
 
 }

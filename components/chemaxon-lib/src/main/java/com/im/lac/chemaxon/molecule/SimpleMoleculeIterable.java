@@ -1,6 +1,7 @@
 package com.im.lac.chemaxon.molecule;
 
 import chemaxon.struc.Molecule;
+import com.im.lac.chemaxon.molecule.MoleculeIterable;
 import java.util.Iterator;
 
 /**

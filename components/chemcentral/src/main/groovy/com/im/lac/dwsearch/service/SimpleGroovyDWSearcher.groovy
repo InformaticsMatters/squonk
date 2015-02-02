@@ -577,7 +577,7 @@ class SimpleGroovyDWSearcher implements DWSearcher {
         return stream
     }
     
-        /** Get property defintions
+     /** Get property defintions
      * 
      * @param filter A text tring to used to filter the property descriptions (using 
      * a LIKE '%?%' search (case insensitive) on the property_description column

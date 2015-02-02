@@ -1,20 +1,25 @@
 package com.im.lac.camel.chemaxon.processor;
 
+import chemaxon.formats.MolFormatException;
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.standardizer.Standardizer;
 import chemaxon.struc.Molecule;
-import com.im.lac.ClosableMoleculeQueue;
+import com.im.lac.ClosableMoleculeObjectQueue;
 import com.im.lac.ClosableQueue;
 import com.im.lac.ResultExtractor;
 import com.im.lac.chemaxon.molecule.ChemTermsEvaluator;
 import com.im.lac.chemaxon.molecule.MoleculeEvaluator;
+import com.im.lac.chemaxon.molecule.MoleculeUtils;
+import com.im.lac.types.MoleculeObject;
 import edu.emory.mathcs.backport.java.util.Collections;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import java.util.logging.Logger;
@@ -186,17 +191,17 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
     public void process(final Exchange exchange) throws Exception {
         LOG.fine("Processing ChemTerms");
         final List<MoleculeEvaluator> evals = getEvaluators(exchange);
-        MoleculeSourcer sourcer = new MoleculeSourcer() {
+        MoleculeObjectSourcer sourcer = new MoleculeObjectSourcer() {
             @Override
-            public void handleSingle(Exchange exchange, Molecule mol) throws Exception {
+            public void handleSingle(Exchange exchange, MoleculeObject mo) throws Exception {
                 for (MoleculeEvaluator evaluator : evals) {
-                    mol = evaluator.processMolecule(mol);
+                    mo = evaluator.processMoleculeObject(mo);
                 }
-                exchange.getIn().setBody(mol);
+                exchange.getIn().setBody(mo);
             }
 
             @Override
-            public void handleMultiple(Exchange exchange, Iterator<Molecule> mols) throws Exception {
+            public void handleMultiple(Exchange exchange, Iterator<MoleculeObject> mols) throws Exception {
                 for (MoleculeEvaluator evaluator : evals) {
                     mols = evaluateMultiple(mols, evaluator);
                 }
@@ -206,22 +211,24 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         sourcer.handle(exchange);
     }
 
-    ClosableQueue<Molecule> evaluateMultiple(final Iterator<Molecule> mols, final MoleculeEvaluator evaluator) {
-        final ClosableQueue<Molecule> q = new ClosableMoleculeQueue(50);
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    while (mols.hasNext()) {
-                        Molecule mol = mols.next();
-                        mol = evaluator.processMolecule(mol);
-                        if (mol != null) {
-                            q.add(mol);
+    ClosableQueue<MoleculeObject> evaluateMultiple(final Iterator<MoleculeObject> mols, final MoleculeEvaluator evaluator) {
+        final ClosableQueue<MoleculeObject> q = new ClosableMoleculeObjectQueue(50);
+        Thread t = new Thread(() -> {
+            try {
+                while (mols.hasNext()) {
+                    MoleculeObject mo = mols.next();
+                    try {
+                        mo = evaluator.processMoleculeObject(mo);
+                        if (mo != null) {
+                            q.add(mo);
                         }
+                    } catch (IOException ex) {
+                        LOG.log(Level.SEVERE, "Failed to evaluate molecule", ex);
                     }
-                } finally {
-                    q.close();
+
                 }
+            } finally {
+                q.close();
             }
         });
         t.start();
@@ -310,6 +317,14 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         @Override
         public Map<String, Object> getResults(Molecule mol) {
             return Collections.emptyMap();
+        }
+
+        @Override
+        public MoleculeObject processMoleculeObject(MoleculeObject mo) throws MolFormatException, IOException {
+            Molecule mol = MoleculeUtils.fetchMolecule(mo, false);
+            mol = processMolecule(mol);
+            return MoleculeUtils.derriveMoleculeObject(mo, mol, mo.getFormat("mol"));
+
         }
 
     }

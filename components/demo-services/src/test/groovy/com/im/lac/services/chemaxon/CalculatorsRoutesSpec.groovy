@@ -6,6 +6,7 @@ import chemaxon.struc.Molecule
 import chemaxon.struc.MolBond
 import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor
 import com.im.lac.camel.testsupport.CamelSpecificationBase
+import com.im.lac.types.MoleculeObject
 import org.apache.camel.builder.RouteBuilder
 
 /**
@@ -16,13 +17,13 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
     def 'logp single as Molecule'() {
 
         when:
-        def mol = MolImporter.importMol('c1ccccc1')
+        def mol = new MoleculeObject('c1ccccc1')
         def result = template.requestBody('direct:logp', mol)
 
         then:
-        result instanceof Molecule
-        result.getPropertyObject('logp') != null
-        result.getPropertyObject('logp') instanceof Number
+        result instanceof MoleculeObject
+        result.getValue('logp') != null
+        result.getValue('logp') instanceof Number
     }
     
     def 'logp multiple as String'() {
@@ -33,8 +34,8 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         then:
         results instanceof Iterator
         def result = results.next()
-        result.getPropertyObject('logp') != null
-        result.getPropertyObject('logp') instanceof Number
+        result.getValue('logp') != null
+        result.getValue('logp') instanceof Number
     }
     
     def 'logp single as String'() {
@@ -43,16 +44,16 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         def result = template.requestBody('direct:logpSingleMolecule', 'c1ccccc1')
 
         then:
-        result instanceof Molecule
-        result.getPropertyObject('logp') != null
-        result.getPropertyObject('logp') instanceof Number
+        result instanceof MoleculeObject
+        result.getValue('logp') != null
+        result.getValue('logp') instanceof Number
     }
     
     def 'logp multiple as Molecules'() {
         def mols = []
-        mols << MolImporter.importMol('C')
-        mols << MolImporter.importMol('CC')        
-        mols << MolImporter.importMol('CCC')
+        mols << new MoleculeObject('C')
+        mols << new MoleculeObject('CC')        
+        mols << new MoleculeObject('CCC')
         
         when:
         def results = template.requestBody('direct:logp', mols)
@@ -84,12 +85,9 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
     def 'filter as stream'() {
         
         when:
-        long t0 = System.currentTimeMillis()
         def results = template.requestBody('direct:filter_example', new FileInputStream("../../data/testfiles/nci1000.smiles"))
-        long t1 = System.currentTimeMillis()
         int size = results.collect().size()
-        long t2 = System.currentTimeMillis()
-        //println "filter down to $size first in ${t1-t0}ms last in ${t2-t0}ms"
+        
         then:
         size < 1000
        
@@ -106,7 +104,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         long t1 = System.currentTimeMillis()
         int size = results.collect().size()
         long t2 = System.currentTimeMillis()
-        println "dynamic filter down to $size first in ${t1-t0}ms last in ${t2-t0}ms"
+        //println "dynamic filter down to $size first in ${t1-t0}ms last in ${t2-t0}ms"
         then:
         size < 1000
         size > 0
@@ -133,25 +131,25 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
     def 'multiple props'() {
 
         when:
-        def mol = MolImporter.importMol('c1ccccc1')
+        def mol = new MoleculeObject('c1ccccc1')
         def result = template.requestBody('direct:logp_atomcount_bondcount', mol)
 
         then:
-        result instanceof Molecule
-        result.getPropertyObject('logp') != null
-        result.getPropertyObject('atom_count') != null
-        result.getPropertyObject('bond_count') != null
+        result instanceof MoleculeObject
+        result.getValue('logp') != null
+        result.getValue('atom_count') != null
+        result.getValue('bond_count') != null
     } 
     
     def 'standardize molecule'() {
 
         when:
-        def mol = MolImporter.importMol('C1=CC=CC=C1')
+        def mol = new MoleculeObject('C1=CC=CC=C1')
         def result = template.requestBody('direct:standardize', mol)
 
         then:
-        result instanceof Molecule
-        result.getBond(0).getType() == MolBond.AROMATIC
+        result instanceof MoleculeObject
+        result.getRepresentation(Molecule.class.getName()).getBond(0).getType() == MolBond.AROMATIC
     }
 
     @Override

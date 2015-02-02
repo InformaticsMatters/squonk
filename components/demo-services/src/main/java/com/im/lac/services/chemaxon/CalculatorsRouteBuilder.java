@@ -1,15 +1,15 @@
 package com.im.lac.services.chemaxon;
 
-import chemaxon.struc.Molecule;
 import com.chemaxon.descriptors.fingerprints.ecfp.EcfpGenerator;
 import com.chemaxon.descriptors.fingerprints.ecfp.EcfpParameters;
 import com.chemaxon.descriptors.fingerprints.pf2d.PfGenerator;
 import com.chemaxon.descriptors.fingerprints.pf2d.PfParameters;
 import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 import com.im.lac.camel.chemaxon.processor.HeaderPropertySetterProcessor;
-import com.im.lac.camel.chemaxon.processor.MoleculeConverterProcessor;
+import com.im.lac.camel.chemaxon.processor.MoleculeObjectConverterProcessor;
 import com.im.lac.camel.chemaxon.processor.screening.MoleculeScreenerProcessor;
 import com.im.lac.chemaxon.screening.MoleculeScreener;
+import com.im.lac.types.MoleculeObject;
 import java.io.File;
 import java.io.InputStream;
 import org.apache.camel.builder.RouteBuilder;
@@ -35,24 +35,24 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
         // 3. A String representation of a single molecule (output will be a Molecule)
         // simple route that calculates a hard coded property
         from("direct:logp")
-                .process(new MoleculeConverterProcessor())
+                .process(new MoleculeObjectConverterProcessor())
                 .process(new ChemAxonMoleculeProcessor()
                         .calculate("logp", "logP()"));
 
         from("direct:logpSingleMolecule")
-                .convertBodyTo(Molecule.class)
+                .convertBodyTo(MoleculeObject.class)
                 .process(new ChemAxonMoleculeProcessor()
                         .calculate("logp", "logP()"));
 
         from("direct:atomcount")
-                .process(new MoleculeConverterProcessor())
+                .process(new MoleculeObjectConverterProcessor())
                 .log("atomcount body is ${body}")
                 .process(new ChemAxonMoleculeProcessor()
                         .calculate("atom_count", "atomCount()"));
 
         // simple routes that calculates multiple hard coded properties
         from("direct:logp_atomcount_bondcount")
-                .process(new MoleculeConverterProcessor())
+                .process(new MoleculeObjectConverterProcessor())
                 .process(new ChemAxonMoleculeProcessor()
                         .calculate("logp", "logP()")
                         .calculate("atom_count", "atomCount()")
@@ -60,7 +60,7 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
                 );
         
         from("direct:lipinski")
-                .process(new MoleculeConverterProcessor())
+                .process(new MoleculeObjectConverterProcessor())
                 .process(new ChemAxonMoleculeProcessor()
                         .calculate("mol_weight", "mass()")
                         .calculate("logp", "logP()")
@@ -70,7 +70,7 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
 
         // simple route that exemplifies filtering
         from("direct:filter_example")
-                .process(new MoleculeConverterProcessor())
+                .process(new MoleculeObjectConverterProcessor())
                 .process(new ChemAxonMoleculeProcessor()
                         .filter("mass()<400")
                         .filter("ringCount()>0")
@@ -95,15 +95,15 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
         // as an Iterable<Molecule> or InputStream that can be converted to Iterable<Molecule>
         // get get optimum performance
         from("direct:chemTerms")
-                .process(new MoleculeConverterProcessor())
+                .process(new MoleculeObjectConverterProcessor())
                 .process(new ChemAxonMoleculeProcessor());
 
         from("direct:chemTermsSingleMolecule")
-                .convertBodyTo(Molecule.class)
+                .convertBodyTo(MoleculeObject.class)
                 .process(new ChemAxonMoleculeProcessor());
 
         from("direct:standardize")
-                .convertBodyTo(Molecule.class)
+                .convertBodyTo(MoleculeObject.class)
                 .process(new ChemAxonMoleculeProcessor()
                         .standardize("aromatize")
                 );
@@ -114,7 +114,7 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
         MoleculeScreener ecfpScreener = new MoleculeScreener(ecfpGenerator, ecfpGenerator.getDefaultComparator());
 
         from("direct:screening/ecfp")
-                .process(new MoleculeConverterProcessor())
+                .process(new MoleculeObjectConverterProcessor())
                 .process(new MoleculeScreenerProcessor(ecfpScreener)
                 );
 
@@ -132,7 +132,7 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
         MoleculeScreener pfScreener = new MoleculeScreener(pfGenerator, pfGenerator.getDefaultComparator());
 
         from("direct:screening/pharmacophore")
-                .process(new MoleculeConverterProcessor())
+                .process(new MoleculeObjectConverterProcessor())
                 .process(new MoleculeScreenerProcessor(pfScreener)
                 );
 
