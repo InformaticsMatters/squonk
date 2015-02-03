@@ -1,11 +1,15 @@
 package com.im.lac.services.chemaxon;
 
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sql.DataSource;
 import org.apache.camel.CamelContext;
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.SimpleRegistry;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.util.resource.Resource;
 import org.postgresql.ds.PGSimpleDataSource;
 
 /**
@@ -18,19 +22,24 @@ public class Main {
     private static final Logger LOG = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) throws Exception {
-//        Integer port = ExampleRouteBuilder.DEFAULT_PORT;
-//        if (args.length > 0) {
-//            port = new Integer(args[0]);
-//        }
+
         DataSource ds = createDataSource();
-        SimpleRegistry reg = new SimpleRegistry();
-        final CamelContext camelContext = new DefaultCamelContext(reg);
+        SimpleRegistry registry = new SimpleRegistry();
+        registry.put("contextHandler", getContextHandler());
+        final CamelContext camelContext = new DefaultCamelContext(registry);
+        camelContext.addRoutes(new RouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+
+                from("jetty://http://0.0.0.0:8080/jetty/ping?handlers=#contextHandler")
+                        .log("Testing Jetty")
+                        .transform().constant("Jetty Running\n");;
+            }
+        });
         camelContext.addRoutes(new CalculatorsRouteBuilder());
         camelContext.addRoutes(new DescriptorsRouteBuilder());
         camelContext.addRoutes(new DatabaseRouteBuilder(ds));
-        camelContext.addRoutes(new RestRouteBuilder(reg));
-        LOG.log(Level.INFO, "Starting CamelContext");
-        camelContext.start();
+        camelContext.addRoutes(new RestRouteBuilder());
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -44,11 +53,23 @@ public class Main {
             }
         });
 
-        while (true) {
-            Thread.sleep(1000);
-        }
+        LOG.log(Level.INFO, "Starting CamelContext");
+        Thread t = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    camelContext.start();
+                } catch (Exception ex) {
+                    LOG.log(Level.SEVERE, "Failed to start Camel", ex);
+                }
+            }
+        };
+        t.start();
+
+        t.join();
     }
-    
+
     private static DataSource createDataSource() {
         PGSimpleDataSource ds = new PGSimpleDataSource();
         String server = System.getenv("CHEMCENTRAL_DB_SERVER");
@@ -63,6 +84,17 @@ public class Main {
         String password = System.getenv("CHEMCENTRAL_DB_PASSWORD");
         ds.setPassword(password != null ? password : "chemcentral");
         return ds;
+    }
+
+    private static ResourceHandler getContextHandler() throws IOException {
+        ResourceHandler rh = new ResourceHandler();
+        String root = System.getenv("HTML_DOC_ROOT");
+        if (root == null) {
+            root = "src/main/html/";
+        }
+        LOG.log(Level.INFO, "Document path is {0}", root);
+        rh.setBaseResource(Resource.newResource(root));
+        return rh;
     }
 
 }

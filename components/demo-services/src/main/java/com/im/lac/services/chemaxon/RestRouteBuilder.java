@@ -1,7 +1,6 @@
 package com.im.lac.services.chemaxon;
 
 import chemaxon.jchem.db.cache.CacheManager;
-import com.im.lac.services.processor.StaticContentProcessor;
 import com.im.lac.camel.dataformat.MoleculeObjectIteratorDataFormat;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
@@ -26,10 +25,8 @@ public class RestRouteBuilder extends RouteBuilder {
     public final String host;
     public final Integer port;
     public final String docRoot;
-    Map<String, Object> registry;
 
-    public RestRouteBuilder(Map<String, Object> registry, String host, Integer port) {
-        this.registry = registry;
+    public RestRouteBuilder(String host, Integer port) {
         this.host = host;
         this.port = port;
         String root = System.getenv("HTML_DOC_ROOT");
@@ -40,12 +37,12 @@ public class RestRouteBuilder extends RouteBuilder {
         docRoot = root;
     }
 
-    public RestRouteBuilder(Map<String, Object> registry, Integer port) {
-        this(registry, "localhost", DEFAULT_PORT);
+    public RestRouteBuilder(Integer port) {
+        this("localhost", DEFAULT_PORT);
     }
 
-    public RestRouteBuilder(Map<String, Object> registry) {
-        this(registry, "localhost", DEFAULT_PORT);
+    public RestRouteBuilder() {
+        this("localhost", DEFAULT_PORT);
     }
 
     @Override
@@ -54,9 +51,6 @@ public class RestRouteBuilder extends RouteBuilder {
         MoleculeObjectIteratorDataFormat molDataFormat = new MoleculeObjectIteratorDataFormat();
 
         restConfiguration().component("jetty").host("0.0.0.0").port(port);
-
-        from("jetty:http://0.0.0.0:8080/static?matchOnUriPrefix=true")
-                .process(new StaticContentProcessor(docRoot));
 
         // simplest example
         rest("/rest/ping").get()
@@ -186,4 +180,5 @@ public class RestRouteBuilder extends RouteBuilder {
                 .to("file:logs?fileName=usage_log.txt&fileExist=Append");
 
     }
+
 }

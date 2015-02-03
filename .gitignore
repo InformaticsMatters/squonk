@@ -33,3 +33,4 @@ components/chemcentral/users.properties
 /components/chemcentral/build/
 /components/chemaxon-camel/build/
 /components/chemaxon-lib/build/
+components/demo-services/logs
