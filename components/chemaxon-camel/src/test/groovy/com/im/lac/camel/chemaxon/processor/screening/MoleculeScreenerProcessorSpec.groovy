@@ -6,10 +6,10 @@ import chemaxon.formats.MolExporter
 import chemaxon.struc.Molecule
 import com.chemaxon.descriptors.fingerprints.ecfp.*
 import com.im.lac.camel.testsupport.CamelSpecificationBase
-import com.im.lac.chemaxon.io.MoleculeIterableImpl
-import com.im.lac.chemaxon.io.MoleculeObjectIterableImpl
 import com.im.lac.chemaxon.screening.MoleculeScreener
+import com.im.lac.chemaxon.molecule.MoleculeObjectFactory;
 import com.im.lac.types.MoleculeObject
+import com.im.lac.types.MoleculeObjectIterable
 import org.apache.camel.builder.RouteBuilder
 
 /**
@@ -58,7 +58,7 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
     def "screen stream"() {
         given:
         def fis = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
-        MoleculeObjectIterableImpl input = new MoleculeObjectIterableImpl(fis)
+        MoleculeObjectIterable input = MoleculeObjectFactory.createIterable(fis)
         resultEndpoint = camelContext.getEndpoint('mock:result')
         resultEndpoint.expectedMessageCount(1)
         def target = MolImporter.importMol("CCC1=NC(N)=NC(N)=C1C1=CC=C(Cl)C=C1")

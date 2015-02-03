@@ -29,7 +29,7 @@
         <p>
             <a href="/rest/ping">Click here</a> to check if the examples are currently running.
         </p>
-        
+
         <p>WARNING: when trying out these examples examples you should use relatively 
             small input files as file uploads are involved and the server on which 
             it is running is very small. Please limit the files to hundreds or at most 
@@ -60,37 +60,6 @@
             <input type="submit" value="Submit">
             &nbsp;&nbsp;&nbsp;&nbsp;
             <span id="structureSearchResults"></span>
-        </form>
-        <hr>
-
-        <a href="#filter"></a>
-        <h2>Lead like molecule filtering example</h2>
-        <p>Submit SD file and return SD file filtered to only those molecules with molecular weight less than 400,
-            one or more rings, less than 5 rotatable bonds, 5 or fewer hydrogen bond donors,
-            10 or fewer hydrogen bond acceptors and a logP less than 4.
-        </p>
-
-        <form id="filter">
-            <input type="file" id="filterInput">
-            <br>
-            <br>
-            <input type="submit" value="Submit">
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <span id="filterResults"></span>
-        </form>
-        <hr>
-
-        <a href="#lipinski"></a>
-        <h2>Lipinski properties example</h2>
-        <p>Submit SD file and return SD file with Lipinski properties added.</p>
-
-        <form id="lipinski">
-            <input type="file" id="lipinskiInput">
-            <br>
-            <br>
-            <input type="submit" value="Submit">
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <span id="lipinskiResults"></span>
         </form>
         <hr>
 
@@ -139,6 +108,19 @@
             }
         </script>
 
+        <a href="#lipinski"></a>
+        <h2>Lipinski properties example</h2>
+        <p>Submit SD file and return SD file with Lipinski properties added.</p>
+
+        <form id="lipinski">
+            <input type="file" id="lipinskiInput">
+            <br>
+            <br>
+            <input type="submit" value="Submit">
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span id="lipinskiResults"></span>
+        </form>
+        <hr>
 
         <script>
             var form = document.getElementById('lipinski');
@@ -182,6 +164,23 @@
             }
         </script>
 
+        <a href="#filter"></a>
+        <h2>Lead like molecule filtering example</h2>
+        <p>Submit SD file and return SD file filtered to only those molecules with molecular weight less than 400,
+            one or more rings, less than 5 rotatable bonds, 5 or fewer hydrogen bond donors,
+            10 or fewer hydrogen bond acceptors and a logP less than 4.
+        </p>
+
+        <form id="filter">
+            <input type="file" id="filterInput">
+            <br>
+            <br>
+            <input type="submit" value="Submit">
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span id="filterResults"></span>
+        </form>
+        <hr>
+
         <script>
             var form = document.getElementById('filter');
             form.onsubmit = function (event) {
@@ -224,6 +223,151 @@
             }
         </script>
 
+        <a href="#spherex"></a>
+        <h2>Sphere exclusion clustering example</h2>
+        <p>Submit SD file and return SD file cluster identifiers added. Clustering uses 
+            adaptive sphere exclusion clustering with ECFP4 fingerprints with default 
+            parameters.</p>
+
+        <form id="spherex">
+            <table cellpadding="3">
+                <tr><td>Input file:</td><td><input type="file" id="spherexInput"></td><td></td></tr>
+                <tr><td>Min cluster count:</td><td><input type="text" id="minClusterCount" size="5" value="5"></td></tr>
+                <tr><td>Max cluster count:</td><td><input type="text" id="maxClusterCount" size="5" value="10"></td></tr>
+            </table>
+            <br>
+            <input type="submit" value="Submit">
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span id="spherexResults"></span>
+        </form>
+        <hr>
+
+        <script>
+            var form = document.getElementById('spherex');
+            form.onsubmit = function (event) {
+                event.preventDefault();
+                var results = document.getElementById('spherexResults');
+                results.innerHTML = "";
+                var file = document.getElementById('spherexInput').files[0];
+                if (file === undefined) {
+                    alert("Please specify a file");
+                    return;
+                }
+
+                var minClusterCountEl = document.getElementById('minClusterCount');
+                var minClusterCount = minClusterCountEl.value;
+                var maxClusterCountEl = document.getElementById('maxClusterCount');
+                var maxClusterCount = maxClusterCountEl.value;
+
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/rest/clustering/spherex/ecfp4", true);
+                xhr.responseType = "blob";
+                xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
+                xhr.onload = function (oEvent) {
+                    var status = xhr.status;
+                    if (status === 200) {
+                        var blob = xhr.response;
+                        var reader = new FileReader();
+                        reader.addEventListener("loadend", function () {
+                            results.innerHTML = "Handling results ...";
+                            var url = window.URL || window.webkitURL;
+                            var link = document.createElement("a");
+                            link.href = url.createObjectURL(blob);
+                            var outfileName = determineOutputFileName(file.name, "clustered");
+                            link.download = outfileName;
+                            link.innerHTML = "Download results";
+                            results.removeChild(results.firstChild);
+                            results.appendChild(link);
+                        });
+                        reader.readAsArrayBuffer(blob);
+                    } else {
+                        results.innerHTML = status + " [" + xhr.statusText + "]";
+                    }
+                };
+                results.innerHTML = "Sending data ...";
+                xhr.setRequestHeader("MinClusterCount", minClusterCount);
+                xhr.setRequestHeader("MaxClusterCount", maxClusterCount);
+                xhr.send(file);
+                results.innerHTML = "Processing ...";
+            }
+        </script>
+
+        <a href="#screening"></a>
+        <h2>2D pharmacophore screening example</h2>
+        <p>Screen the input SD file using a 2D pharmacophore.
+        </p>
+
+        <form id="screening">
+
+            <table cellpadding="3">
+                <tr><td>Input file:</td><td><input type="file" id="screenInput"></td></tr>
+                <tr><td>Target structure:</td><td><input type="text" id="screenStructure" size="50" value="NC1=CC=CC(NC2=NC=CC=N2)=C1"></td>
+                    <td>Paste structure e.g. as smiles or smarts</td>
+                </tr>
+                <tr><td>Similarity threshold:</td>
+                    <td><input type="text" id="screenThreshold" size="5" value="0.8"></td>
+                </tr>
+
+            </table>
+            <br>
+            <input type="submit" value="Submit">
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span id="screenResults"></span>
+        </form>
+        <hr>
+
+        <script>
+            var form = document.getElementById('screening');
+            form.onsubmit = function (event) {
+                event.preventDefault();
+                var results = document.getElementById('screenResults');
+                results.innerHTML = "";
+                var file = document.getElementById('screenInput').files[0];
+                if (file === undefined) {
+                    alert("Please specify a file");
+                    return;
+                }
+                var query = document.getElementById('screenStructure').value;
+                if (query === undefined) {
+                    alert("Please specify a structure to screen against");
+                    return;
+                }
+
+                var screenThreshold = document.getElementById('screenThreshold').value;
+
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/rest/screening/pharmacophore", true);
+                xhr.responseType = "blob";
+                xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
+                xhr.onload = function (oEvent) {
+                    var status = xhr.status;
+                    if (status === 200) {
+                        var blob = xhr.response;
+                        var reader = new FileReader();
+                        reader.addEventListener("loadend", function () {
+                            results.innerHTML = "Handling results ...";
+                            var url = window.URL || window.webkitURL;
+                            var link = document.createElement("a");
+                            link.href = url.createObjectURL(blob);
+                            var outfileName = determineOutputFileName(file.name, "screened");
+                            link.download = outfileName;
+                            link.innerHTML = "Download results";
+                            results.removeChild(results.firstChild);
+                            results.appendChild(link);
+                        });
+                        reader.readAsArrayBuffer(blob);
+                    } else {
+                        results.innerHTML = status + " [" + xhr.statusText + "]";
+                    }
+                };
+                results.innerHTML = "Sending data ...";
+                xhr.setRequestHeader("TargetMolecule", query);
+                xhr.setRequestHeader("Threshold", screenThreshold);
+                xhr.send(file);
+                results.innerHTML = "Processing ...";
+            }
+        </script>
+
         <script>
             function determineOutputFileName(infileName, expr) {
                 var pos = infileName.lastIndexOf(".");
@@ -233,7 +377,10 @@
                     return infileName + "_" + expr + ".sdf";
                 }
             }
+
         </script>
+
+        <br><br>
 
     </body>
 </html>

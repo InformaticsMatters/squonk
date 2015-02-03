@@ -2,9 +2,10 @@ package com.im.lac.camel.dataformat;
 
 import chemaxon.formats.MolExporter;
 import chemaxon.struc.Molecule;
+import com.im.lac.chemaxon.molecule.MoleculeObjectFactory;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.MoleculeObjectIterable;
+import com.im.lac.types.MoleculeObjectIterable;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -47,8 +48,8 @@ public class MoleculeObjectIteratorDataFormat implements DataFormat {
     }
 
     @Override
-    public Object unmarshal(Exchange exchange, InputStream in) throws Exception {
-        Iterable it = MoleculeUtils.moleculeObjectIterable(in);
+    public Object unmarshal(Exchange exchange, InputStream is) throws Exception {
+        Iterable it = MoleculeObjectFactory.createIterable(is);
         return it.iterator();
     }
 

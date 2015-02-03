@@ -1,4 +1,4 @@
-package com.im.lac.util;
+package com.im.lac.types;
 
 import com.im.lac.types.MoleculeObject;
 

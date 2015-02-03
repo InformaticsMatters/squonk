@@ -1,7 +1,16 @@
 package com.im.lac.chemaxon.clustering
 
 import com.im.lac.chemaxon.molecule.MoleculeIterable
+import com.chemaxon.descriptors.fingerprints.ecfp.EcfpComparator
+import com.chemaxon.descriptors.fingerprints.ecfp.EcfpGenerator
+import com.chemaxon.descriptors.fingerprints.ecfp.EcfpParameters
+import com.chemaxon.descriptors.metrics.BinaryMetrics
 import com.im.lac.chemaxon.molecule.MoleculeUtils
+import com.im.lac.types.MoleculeObject
+import com.im.lac.types.MoleculeObjectIterable
+import com.im.lac.chemaxon.molecule.MoleculeFactory
+import com.im.lac.chemaxon.molecule.MoleculeObjectFactory
+
 import spock.lang.Specification
 
 /**
@@ -11,14 +20,17 @@ import spock.lang.Specification
 class SphereExclusionClustererSpec extends Specification {
 	
     
-    void "test simple"() {
+    void "test molecules"() {
         setup:
         InputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
-        MoleculeIterable iterable = MoleculeUtils.moleculeIterable(is)
-        SphereExclusionClusterer clusterer = new SphereExclusionClusterer()
+        MoleculeIterable iterable = MoleculeFactory.createIterable(is)
+        EcfpGenerator gen = (new EcfpParameters()).getDescriptorGenerator()
+        EcfpComparator comp = gen.getBinaryMetricsComparator(BinaryMetrics.BINARY_TANIMOTO)
+        SphereExclusionClusterer clusterer = new SphereExclusionClusterer(gen, comp, 5, 10)
+
         
         when:
-        MoleculeIterable results = clusterer.cluster(iterable)
+        def results = clusterer.clusterMolecules(iterable)
         def mols = results.collect()
         
         then:
@@ -27,7 +39,32 @@ class SphereExclusionClustererSpec extends Specification {
         int max = 0
         mols.each {
            Integer cluster = it.getPropertyObject('cluster')
-           cluster != null
+           assert cluster != null
+           if (cluster > max) { max = cluster }
+        }
+        max > 0
+    }
+    
+    void "test molecule objects"() {
+        setup:
+        InputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
+        MoleculeObjectIterable iterable = MoleculeObjectFactory.createIterable(is)
+        EcfpGenerator gen = (new EcfpParameters()).getDescriptorGenerator()
+        EcfpComparator comp = gen.getBinaryMetricsComparator(BinaryMetrics.BINARY_TANIMOTO)
+        SphereExclusionClusterer clusterer = new SphereExclusionClusterer(gen, comp, 5, 10)
+
+        
+        when:
+        def results = clusterer.clusterMoleculeObjects(iterable)
+        def mols = results.collect()
+        
+        then:
+        
+        mols.size() == 756
+        int max = 0
+        mols.each {
+           Integer cluster = it.getValue('cluster')
+           assert cluster != null
            if (cluster > max) { max = cluster }
         }
         max > 0

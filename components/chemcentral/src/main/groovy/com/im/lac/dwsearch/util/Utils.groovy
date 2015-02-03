@@ -2,6 +2,7 @@ package com.im.lac.dwsearch.util
 
 
 import groovy.sql.Sql
+import groovy.util.logging.Log
 import java.sql.SQLException
 import javax.sql.DataSource
 import org.postgresql.ds.PGSimpleDataSource
@@ -10,6 +11,7 @@ import org.postgresql.ds.PGSimpleDataSource
  *
  * @author timbo
  */
+@Log
 class Utils {
     
     static ConfigObject createConfig(String path) {
@@ -43,6 +45,7 @@ class Utils {
         ds.databaseName = database.database
         ds.user = System.getenv("CHEMCENTRAL_DB_USERNAME") ?: username
         ds.password = System.getenv("CHEMCENTRAL_DB_PASSWORD") ?: password
+        log.info("Creating datasource. server:${ds.serverName} port:${ds.portNumber} user:${ds.user}")
         return ds
     }
     

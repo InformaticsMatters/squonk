@@ -26,6 +26,7 @@ public class Main {
         SimpleRegistry reg = new SimpleRegistry();
         final CamelContext camelContext = new DefaultCamelContext(reg);
         camelContext.addRoutes(new CalculatorsRouteBuilder());
+        camelContext.addRoutes(new DescriptorsRouteBuilder());
         camelContext.addRoutes(new DatabaseRouteBuilder(ds));
         camelContext.addRoutes(new RestRouteBuilder(reg));
         LOG.log(Level.INFO, "Starting CamelContext");

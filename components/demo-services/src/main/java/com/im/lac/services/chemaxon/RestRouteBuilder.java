@@ -3,20 +3,17 @@ package com.im.lac.services.chemaxon;
 import chemaxon.jchem.db.cache.CacheManager;
 import com.im.lac.services.processor.StaticContentProcessor;
 import com.im.lac.camel.dataformat.MoleculeObjectIteratorDataFormat;
-import java.io.File;
 import java.nio.charset.Charset;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.model.rest.RestBindingMode;
 import org.apache.camel.util.URISupport;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.util.resource.Resource;
 
 /**
  * Camel REST web service
@@ -63,7 +60,9 @@ public class RestRouteBuilder extends RouteBuilder {
 
         // simplest example
         rest("/rest/ping").get()
-                .route().transform().constant("Service Running\n");
+                .route()
+                .wireTap("direct:logger")
+                .transform().constant("Service Running\n");
 
         // info on the JChem structure cache
         rest("/rest/cache").get()
@@ -79,26 +78,49 @@ public class RestRouteBuilder extends RouteBuilder {
         // This receives a POST request, processes it and returns the result
         rest("/rest/atomCount").post()
                 .route()
+                .wireTap("direct:logger")
                 .to("direct:atomcount")
                 .marshal(molDataFormat);
 
         rest("/rest/lipinski").post()
                 .route()
+                .wireTap("direct:logger")
                 .to("direct:lipinski")
                 .marshal(molDataFormat);
 
         rest("/rest/filter").post()
                 .route()
+                .wireTap("direct:logger")
                 .to("direct:filter_example")
                 .marshal(molDataFormat);
 
         rest("/rest/chemterms").post()
                 .route()
+                .wireTap("direct:logger")
                 .to("direct:chemTerms")
+                .marshal(molDataFormat);
+
+        rest("/rest/screening/ecfp").post()
+                .route()
+                .wireTap("direct:logger")
+                .to("direct:screening/ecfp")
+                .marshal(molDataFormat);
+
+        rest("/rest/screening/pharmacophore").post()
+                .route()
+                .wireTap("direct:logger")
+                .to("direct:screening/pharmacophore")
+                .marshal(molDataFormat);
+
+        rest("/rest/clustering/spherex/ecfp4").post()
+                .route()
+                .wireTap("direct:logger")
+                .to("direct:clustering/spherex/ecfp4")
                 .marshal(molDataFormat);
 
         rest("/rest/chemsearch/emolecules_sc").post()
                 .route()
+                .wireTap("direct:logger")
                 .to("direct:chemsearch/emolecules_sc")
                 .marshal(molDataFormat);
 
@@ -106,31 +128,62 @@ public class RestRouteBuilder extends RouteBuilder {
                 .to("direct:dump");
 
         from("direct:dump")
-                .process((Exchange exchange) -> {
-                    StringBuilder buf = new StringBuilder();
-                    Map<String, Object> headers = exchange.getIn().getHeaders();
-                    buf.append("------ Headers ------\n");
-                    headers.entrySet().stream().forEach((e) -> {
-                        buf.append(e.getKey()).append(" -> ").append(e.getValue()).append("\n");
-                    });
+                .process(new Processor() {
+                    @Override
+                    public void process(Exchange exchange) throws Exception {
+                        StringBuilder buf = new StringBuilder();
 
-                    String uri = headers.get("CamelHttpUri").toString();
-                    String query = headers.get("CamelHttpQuery").toString();
-                    Map<String, Object> params = URISupport.parseQuery(query);
-                    buf.append("------ Query params Camel ------\n");
-                    params.entrySet().stream().forEach((e) -> {
-                        buf.append(e.getKey()).append(" -> ").append(e.getValue()).append("\n");
-                    });
+                        HttpServletRequest req = exchange.getIn().getHeader(Exchange.HTTP_SERVLET_REQUEST, HttpServletRequest.class);
+                        if (req != null) {
+                            buf.append("------ HttpServletRequest properties ------\n");
 
-                    List<NameValuePair> params2 = URLEncodedUtils.parse(query, Charset.forName("UTF-8"));
-                    buf.append("------ Query params Apache HTTP ------\n");
-                    params2.stream().forEach((nvp) -> {
-                        buf.append(nvp.getName()).append(" -> ").append(nvp.getValue()).append("\n");
-                    });
+                            buf.append("Remote Address: ").append(req.getRemoteAddr()).append("\n");
+                            buf.append("Remote Host: ").append(req.getRemoteHost()).append("\n");
 
-                    System.out.println(buf.toString());
-                    exchange.getIn().setBody(buf.toString());
-                });
+                            buf.append("------ HttpServletRequest Headers ------\n");
+
+                            Enumeration<String> headers = req.getHeaderNames();
+                            while (headers.hasMoreElements()) {
+                                String name = headers.nextElement();
+                                Enumeration<String> values = req.getHeaders(name);
+                                while (values.hasMoreElements()) {
+                                    String value = values.nextElement();
+                                    buf.append(name).append(" -> ").append(value).append("\n");
+                                }
+                            }
+                        }
+
+                        Map<String, Object> headers = exchange.getIn().getHeaders();
+                        buf.append("------ Headers ------\n");
+                        for (Map.Entry<String, Object> e : headers.entrySet()) {
+                            buf.append(e.getKey()).append(" -> ").append(e.getValue()).append("\n");
+                        }
+
+                        String uri = headers.get("CamelHttpUri").toString();
+                        String query = (String) headers.get("CamelHttpQuery");
+                        Map<String, Object> params = URISupport.parseQuery(query);
+                        buf.append("------ Query params Camel ------\n");
+                        for (Map.Entry<String, Object> e : params.entrySet()) {
+                            buf.append(e.getKey()).append(" -> ").append(e.getValue()).append("\n");
+                        }
+
+                        List<NameValuePair> params2 = URLEncodedUtils.parse(query, Charset.forName("UTF-8"));
+                        buf.append("------ Query params Apache HTTP ------\n");
+                        for (NameValuePair nvp : params2) {
+                            buf.append(nvp.getName()).append(" -> ").append(nvp.getValue()).append("\n");
+                        }
+
+                        System.out.println(buf.toString());
+                        exchange.getIn().setBody(buf.toString());
+                    }
+
+                }
+                );
+
+        from("direct:logger")
+                .transform().simple("${date:now:yyyy.MM.dd}\t${date:now:HH:mm:ss}\t${header.CamelHttpServletRequest?.remoteAddr}\t${header.CamelHttpUri}")
+                .transform(body().append('\n'))
+                .to("file:logs?fileName=usage_log.txt&fileExist=Append");
 
     }
 }

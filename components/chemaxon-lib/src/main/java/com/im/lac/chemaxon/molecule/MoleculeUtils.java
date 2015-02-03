@@ -11,12 +11,9 @@ import chemaxon.struc.MProp;
 import chemaxon.struc.MolAtom;
 import chemaxon.struc.Molecule;
 import chemaxon.struc.MoleculeGraph;
-import com.im.lac.chemaxon.io.MRecordIterator;
-import com.im.lac.chemaxon.io.MoleculeIterableImpl;
-import com.im.lac.chemaxon.io.MoleculeObjectIterableImpl;
 import static com.im.lac.chemaxon.molecule.MoleculeConstants.STRUCTURE_FIELD_NAME;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.MoleculeObjectIterable;
+import com.im.lac.types.MoleculeObjectIterable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
@@ -159,12 +156,15 @@ public class MoleculeUtils {
      * @param mo
      * @param store
      * @return
-     * @throws MolFormatException
      */
-    public static Molecule fetchMolecule(MoleculeObject mo, boolean store) throws MolFormatException {
+    public static Molecule fetchMolecule(MoleculeObject mo, boolean store) {
         Molecule mol = mo.getRepresentation(Molecule.class, Molecule.class);
         if (mol == null) {
-            mol = convertToMolecule(mo.getSourceAsBytes());
+            try {
+                mol = convertToMolecule(mo.getSourceAsBytes());
+            } catch (MolFormatException ex) {
+                throw new RuntimeException("Bad format for Molecule", ex);
+            }
             if (store) {
                 mo.putRepresentation(Molecule.class.getName(), mol);
             }
@@ -217,27 +217,6 @@ public class MoleculeUtils {
         return new MRecordIterator(is);
     }
 
-    /**
-     * Creates an Iterator of Molecules from the InputStream Can be used as a
-     * Camel splitter.
-     * <code>split().method(MoleculeIOUtils.class, "moleculeIterator")</code>
-     *
-     * @param is The input molecules in any format that Marvin recognises
-     * @return Iterator of Molecules
-     * @throws IOException
-     */
-    public static Iterator<Molecule> moleculeIterator(final InputStream is) throws IOException {
-        MolImporter importer = new MolImporter(is);
-        return importer.iterator();
-    }
-
-    public static MoleculeIterable moleculeIterable(final InputStream is) throws IOException {
-        return new MoleculeIterableImpl(is);
-    }
-
-    public static MoleculeObjectIterable moleculeObjectIterable(final InputStream is) throws IOException {
-        return new MoleculeObjectIterableImpl(is);
-    }
 
     public static Map<String, String> mrecordToMap(MRecord record) {
         Map<String, String> vals = new HashMap<>();

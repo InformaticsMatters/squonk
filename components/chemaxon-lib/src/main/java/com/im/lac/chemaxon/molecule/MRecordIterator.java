@@ -1,4 +1,4 @@
-package com.im.lac.chemaxon.io;
+package com.im.lac.chemaxon.molecule;
 
 import chemaxon.formats.MFileFormatUtil;
 import chemaxon.marvin.io.MRecord;

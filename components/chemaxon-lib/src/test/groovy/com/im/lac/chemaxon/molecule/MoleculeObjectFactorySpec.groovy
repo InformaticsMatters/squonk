@@ -1,30 +1,34 @@
-package com.im.lac.chemaxon.io
+package com.im.lac.chemaxon.molecule
 
+import com.im.lac.types.MoleculeObjectIterable
 import spock.lang.Specification
 
 /**
  *
  * @author timbo
  */
-class MoleculeObjectIteratorImplSpec extends Specification {
+class MoleculeObjectFactorySpec extends Specification {
     
     def "read smiles"() {
         setup:
         File file = new File("../../data/testfiles/nci1000.smiles")
-        MoleculeObjectIterableImpl impl = new MoleculeObjectIterableImpl(file)
+        MoleculeObjectIterable impl = MoleculeObjectFactory.createIterable(file)
         
         when:
         def mols = impl.collect()
         
         then:
         mols.size() == 1000
+        mols.each { mo ->
+            assert "smiles" == mo.format
+        }
         
     }
     
     def "read sdf"() {
         setup:
         File file = new File("../../data/testfiles/dhfr_standardized.sdf.gz")
-        MoleculeObjectIterableImpl impl = new MoleculeObjectIterableImpl(file)
+        MoleculeObjectIterable impl = MoleculeObjectFactory.createIterable(file)
         
         when:
         def mols = impl.collect()

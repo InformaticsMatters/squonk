@@ -12,8 +12,10 @@ import chemaxon.util.ConnectionHandler;
 import chemaxon.util.HitColoringAndAlignmentOptions;
 import com.im.lac.ClosableMoleculeObjectQueue;
 import com.im.lac.ClosableQueue;
+import com.im.lac.camel.chemaxon.processor.ProcessorUtils;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
+
 import com.im.lac.util.CollectionUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -362,15 +364,6 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         }
     }
 
-    private String determineStringProperty(Exchange exchange, String value, String headerProperty) {
-        String headerOpt = exchange.getIn().getHeader(headerProperty, String.class);
-        if (headerOpt != null) {
-            return headerOpt;
-        } else {
-            return value;
-        }
-    }
-
     private List<String> determineOutputColumns(Exchange exchange) {
         Object headerOpt = exchange.getIn().getHeader(HEADER_OUTPUT_MODE);
         if (headerOpt != null) {
@@ -487,9 +480,9 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         float[] dissimilarities = getDissimilarities(jcs);
         Molecule[] mols = loadMoleculesFromDB(exchange, jcs, hits, dissimilarities, determineHitColorAndAlignOptions(exchange));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final MolExporter exporter = new MolExporter(out, determineStringProperty(exchange, this.structureFormat, HEADER_STRUCTURE_FORMAT));
+        final MolExporter exporter = new MolExporter(out, ProcessorUtils.determineStringProperty(exchange, this.structureFormat, HEADER_STRUCTURE_FORMAT));
         try {
-            writeMoleculesToMolExporter(exporter, mols);
+            ProcessorUtils.writeMoleculesToMolExporter(exporter, mols);
             exchange.getIn().setBody(out.toString());
         } finally {
             exporter.close();
@@ -539,13 +532,13 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
 
         final PipedInputStream pis = new PipedInputStream();
         final PipedOutputStream out = new PipedOutputStream(pis);
-        final MolExporter exporter = new MolExporter(out, determineStringProperty(exchange, this.structureFormat, HEADER_STRUCTURE_FORMAT));
+        final MolExporter exporter = new MolExporter(out, ProcessorUtils.determineStringProperty(exchange, this.structureFormat, HEADER_STRUCTURE_FORMAT));
 
         writeMoleculeStream(exchange, jcs, new MoleculeWriter() {
             @Override
             public void writeMolecules(Molecule[] mols) {
                 try {
-                    writeMoleculesToMolExporter(exporter, mols);
+                    ProcessorUtils.writeMoleculesToMolExporter(exporter, mols);
                 } catch (IOException ex) {
                     // TODO - how to handle?
                     LOG.log(Level.SEVERE, "Failed to write molecules", ex);
@@ -624,7 +617,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
             if (mols.length != dissimilarities.length) {
                 LOG.warning("Number of scores and molecules do not correspond. Skipping adding similarity scores");
             } else {
-                String simProp = determineStringProperty(exchange, similarityScorePropertyName, HEADER_SIMILARITY_SCORE_PROP_NAME);
+                String simProp = ProcessorUtils.determineStringProperty(exchange, similarityScorePropertyName, HEADER_SIMILARITY_SCORE_PROP_NAME);
                 for (int i = 0; i < mols.length; i++) {
                     float sim = 1.0f - dissimilarities[i];
                     // Marvin for some reason doesn't export values correctly if they are Float so we use Double 
@@ -657,6 +650,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
             q.add(mol);
         }
     }
+
 
     private void writeMoleculesToQueueAsMoleculeObjects(final ClosableQueue q, final Molecule[] mols) {
         for (Molecule mol : mols) {

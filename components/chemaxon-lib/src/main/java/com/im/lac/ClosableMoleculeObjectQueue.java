@@ -4,7 +4,7 @@ import chemaxon.formats.MolExporter;
 import chemaxon.struc.Molecule;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.MoleculeObjectIterable;
+import com.im.lac.types.MoleculeObjectIterable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;

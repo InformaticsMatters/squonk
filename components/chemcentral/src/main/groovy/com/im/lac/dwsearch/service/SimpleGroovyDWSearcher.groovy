@@ -4,6 +4,7 @@ import chemaxon.jchem.db.CacheRegistrationUtil
 import chemaxon.jchem.db.JChemSearch
 import chemaxon.util.ConnectionHandler
 import chemaxon.sss.search.JChemSearchOptions
+import chemaxon.jchem.db.cache.CacheManager
 
 import com.im.lac.dwsearch.model.SubsetInfo
 import com.im.lac.dwsearch.util.Utils
@@ -151,6 +152,11 @@ class SimpleGroovyDWSearcher implements DWSearcher {
         .append(new Date())
         if (structureCacheLoaded) {
             builder.append("\nStructure cache loaded in ${structureCacheLoadTime}ms")
+            builder.append("\nCache details:\n");
+            Hashtable<String, Long> tables = CacheManager.INSTANCE.getCachedTables();
+            for (Map.Entry<String, Long> e : tables.entrySet()) {
+                builder.append(e.getKey()).append(" -> ").append(e.getValue()).append("\n");
+            }
         } else {
             builder.append("\nStructure cache still loading")
         }
@@ -162,6 +168,8 @@ class SimpleGroovyDWSearcher implements DWSearcher {
         .append("\nMax memory: ")
         .append(Runtime.getRuntime().maxMemory())
         .append("\n")
+        
+        
         return Response.ok(builder.toString()).build()
     }
     

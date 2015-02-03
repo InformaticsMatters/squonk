@@ -2,10 +2,13 @@ package com.im.lac.camel.chemaxon.converters;
 
 import chemaxon.formats.MolFormatException;
 import chemaxon.struc.Molecule;
+import com.im.lac.chemaxon.molecule.MoleculeFactory;
 import com.im.lac.chemaxon.molecule.MoleculeIterable;
+import com.im.lac.chemaxon.molecule.MoleculeObjectFactory;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.MoleculeObjectIterable;
+import com.im.lac.types.MoleculeObjectIterable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
@@ -53,16 +56,17 @@ public class MoleculeConvertor {
         return MoleculeUtils.convertToMolecule(clob);
     }
 
+
     @Converter
     public static Iterator<Molecule> createMoleculeIterator(InputStream is, Exchange exchange)
             throws IOException {
-        return MoleculeUtils.moleculeIterator(is);
+        return createMoleculeIterable(is, exchange).iterator();
     }
 
     @Converter
     public static MoleculeIterable createMoleculeIterable(InputStream is, Exchange exchange)
             throws IOException {
-        return MoleculeUtils.moleculeIterable(is);
+        return MoleculeFactory.createIterable(is);
     }
 
     /**
@@ -78,7 +82,14 @@ public class MoleculeConvertor {
     @Converter
     public static MoleculeObjectIterable createMoleculeObjectIterable(InputStream is, Exchange exchange)
             throws IOException {
-        return MoleculeUtils.moleculeObjectIterable(is);
+        return MoleculeObjectFactory.createIterable(is);
     }
+    
+    @Converter
+    public static MoleculeObjectIterable createMoleculeObjectIterable(File file, Exchange exchange)
+            throws IOException {
+        return MoleculeObjectFactory.createIterable(file);
+    }
+
 
 }

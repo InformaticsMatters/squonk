@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Drag and Drop examples</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                background-color: whitesmoke;
+            }
+            
+            #outer {
+                display: block;
+            }
+
+            div.framed {
+                background-color: linen;
+                border-style: solid;
+                border-color: grey;
+                border-width: 2px;
+                border-radius: 10px;
+                margin: 5px 5px 5px 5px;
+                overflow:hidden;
+            }
+            div.component {
+                margin: 4px 4px 4px 4px;
+                float: left;
+                border-style: solid;
+                border-width: 1px;
+                border-radius: 10px;
+                border-color: grey;
+            }
+            
+            div.label {
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>More Wizzo Examples</h1>
+        <div id="outer">
+            <h2>Available files</h2>
+            <div id="files" class="framed">
+
+            </div>
+
+            <h2>Available services</h2>
+            <div id="services" class="framed">
+            </div>
+        </div>
+
+        <script>
+            var dataItems = [
+                {id: "DataItem1", name: "SDF 1", icon: "icons/Chemical-5-icon.png"},
+                {id: "DataItem2", name: "SDF 2", icon: "icons/Cube-Molecule-2-icon.png"},
+                {id: "DataItem3", name: "Document 23"},
+                {id: "DataItem4", name: "Document 5"},
+                {id: "DataItem5", name: "SDF 6", icon: "icons/Cube-Molecule-icon.png"},
+                {id: "DataItem6", name: "ABCD"},
+                {id: "DataItem7", name: "XYZ 1234"},
+                {id: "DataItem8", name: "Big file", icon: "icons/Chemical-5-icon.png"},
+                {id: "DataItem9", name: "Small file", icon: "icons/Chemical-5-icon.png"},
+                {id: "DataItem10", name: "Tiny file"},
+                {id: "DataItem11", name: "Green file"},
+                {id: "DataItem12", name: "Orange file"},
+                {id: "DataItem13", name: "Red file"},
+                {id: "DataItem14", name: "Yellow file"}
+            ];
+
+            var servicesItems = [
+                {id: "Service1", icon: "icons/Misc-Database-3-icon.png"},
+                {id: "Service2"},
+                {id: "Service3"},
+                {id: "Service4", icon: "icons/Misc-Database-3-icon.png"},
+                {id: "Service5"},
+                {id: "Service6"}
+            ];
+
+
+            var filesDiv = document.getElementById("files");
+            for (var i = 0; i < dataItems.length; i++) {
+                var item = dataItems[i];
+                var div = document.createElement("div");
+                div.id = item.id;
+                div.draggable = true;
+                div.className = "component";
+                var img = document.createElement("img");
+                img.src = findIcon(item, "icons/Document-icon.png");
+                img.draggable = false;
+                div.appendChild(img);
+                div.appendChild(document.createElement("br"));
+                var label = document.createElement("div");
+                label.className = "label"
+                label.innerHTML = item.name;
+                div.appendChild(label);
+                filesDiv.appendChild(div);
+                div.addEventListener('dragstart', dragstart, false)
+            }
+
+            var servicesDiv = document.getElementById("services");
+            for (var i = 0; i < servicesItems.length; i++) {
+                var item = servicesItems[i];
+                var div = document.createElement("div");
+                div.id = item.id;
+                div.className = "component droptarget";
+                var img = document.createElement("img");
+                img.src = findIcon(item, "icons/Very-Basic-Services-icon.png");
+                img.draggable = false;
+                div.appendChild(img);
+                div.appendChild(document.createElement("br"));
+                var label = document.createElement("div");
+                label.className = "label"
+                label.innerHTML = item.id;
+                div.appendChild(label);
+                servicesDiv.appendChild(div);
+                div.addEventListener("dragenter", dragenter, false);
+                div.addEventListener("dragover", dragover, false);
+                div.addEventListener("drop", drop, false);
+            }
+            
+            function findIcon(obj, defaultIcon) {
+                var src = obj.icon;
+                if (src === undefined) {
+                    return defaultIcon;
+                } else {
+                    return src;
+                }
+            }
+
+            function dragstart(e) {
+                // store the ID of the element, and collect it on the drop later on
+                console.log("drag start for " + e.target.id)
+                e.dataTransfer.setData('Text', e.target.id);
+            }
+
+            function dragenter(e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+
+            function dragover(e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+
+            function drop(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                var dt = e.dataTransfer;
+                var serviceDiv = findDropDiv(e.target, "droptarget")
+
+                alert("Dropped " + dt.getData('Text') + " onto " + serviceDiv.id);
+                return false;
+            }
+
+            function findDropDiv(target, cls) {
+                if (target.classList.contains(cls)) {
+                    return target;
+                } else if (target.parentNode === undefined) {
+                    return null;
+                } else {
+                    return findDropDiv(target.parentNode, cls);
+                }
+            }
+        </script>
+    </body>
+</html>

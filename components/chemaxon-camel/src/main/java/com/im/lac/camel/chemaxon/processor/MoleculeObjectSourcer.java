@@ -2,7 +2,7 @@ package com.im.lac.camel.chemaxon.processor;
 
 import chemaxon.struc.Molecule;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.MoleculeObjectIterable;
+import com.im.lac.types.MoleculeObjectIterable;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;

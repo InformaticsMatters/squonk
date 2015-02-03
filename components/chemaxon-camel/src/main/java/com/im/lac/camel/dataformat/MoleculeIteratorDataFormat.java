@@ -2,6 +2,7 @@ package com.im.lac.camel.dataformat;
 
 import chemaxon.formats.MolExporter;
 import chemaxon.struc.Molecule;
+import com.im.lac.chemaxon.molecule.MoleculeFactory;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,8 +39,7 @@ public class MoleculeIteratorDataFormat implements DataFormat {
 
     @Override
     public Object unmarshal(Exchange exchange, InputStream in) throws Exception {
-        Iterator it = MoleculeUtils.moleculeIterator(in);
-        System.out.println("Iterator is " + it);
+        Iterator it = MoleculeFactory.createIterable(in).iterator();
         return it;
     }
 
