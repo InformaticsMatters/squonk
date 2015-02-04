@@ -30,16 +30,19 @@ public class Main {
         camelContext.addRoutes(new RouteBuilder() {
             @Override
             public void configure() throws Exception {
+                
+                restConfiguration().component("jetty").host("0.0.0.0").port(8080);
 
                 from("jetty://http://0.0.0.0:8080/jetty/ping?handlers=#contextHandler")
                         .log("Testing Jetty")
-                        .transform().constant("Jetty Running\n");;
+                        .transform().constant("Jetty Running\n");
             }
         });
         camelContext.addRoutes(new CalculatorsRouteBuilder());
         camelContext.addRoutes(new DescriptorsRouteBuilder());
         camelContext.addRoutes(new DatabaseRouteBuilder(ds));
         camelContext.addRoutes(new RestRouteBuilder());
+        camelContext.addRoutes(new FileServicesRouteBuilder(ds));
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override

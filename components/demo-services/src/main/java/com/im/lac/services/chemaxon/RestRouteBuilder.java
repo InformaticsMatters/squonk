@@ -21,14 +21,9 @@ import org.apache.http.client.utils.URLEncodedUtils;
  */
 public class RestRouteBuilder extends RouteBuilder {
 
-    public static final Integer DEFAULT_PORT = 8080;
-    public final String host;
-    public final Integer port;
     public final String docRoot;
 
-    public RestRouteBuilder(String host, Integer port) {
-        this.host = host;
-        this.port = port;
+    public RestRouteBuilder() {
         String root = System.getenv("HTML_DOC_ROOT");
         if (root == null) {
             root = "src/main/html/";
@@ -37,20 +32,10 @@ public class RestRouteBuilder extends RouteBuilder {
         docRoot = root;
     }
 
-    public RestRouteBuilder(Integer port) {
-        this("localhost", DEFAULT_PORT);
-    }
-
-    public RestRouteBuilder() {
-        this("localhost", DEFAULT_PORT);
-    }
-
     @Override
     public void configure() throws Exception {
 
         MoleculeObjectIteratorDataFormat molDataFormat = new MoleculeObjectIteratorDataFormat();
-
-        restConfiguration().component("jetty").host("0.0.0.0").port(port);
 
         // simplest example
         rest("/rest/ping").get()

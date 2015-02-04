@@ -10,7 +10,6 @@
 package test.compress;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 
 import chemaxon.util.ConnectionHandler;
