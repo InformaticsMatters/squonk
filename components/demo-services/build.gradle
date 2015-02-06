@@ -3,7 +3,7 @@ description = 'Demo services'
 apply plugin: 'groovy'
 
 apply plugin: 'application'
-mainClassName = "com.im.lac.services.chemaxon.Main"
+mainClassName = "com.im.lac.demo.routes.Main"
 applicationDefaultJvmArgs = ["-Xmx1200m"]
 
 apply plugin: 'docker'

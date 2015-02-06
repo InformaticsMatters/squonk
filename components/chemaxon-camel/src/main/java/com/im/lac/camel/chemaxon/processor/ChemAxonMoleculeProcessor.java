@@ -4,14 +4,15 @@ import chemaxon.formats.MolFormatException;
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.standardizer.Standardizer;
 import chemaxon.struc.Molecule;
-import com.im.lac.ClosableMoleculeObjectQueue;
-import com.im.lac.ClosableQueue;
-import com.im.lac.ResultExtractor;
+import com.im.lac.util.CloseableMoleculeObjectQueue;
+import com.im.lac.util.CloseableQueue;
+import com.im.lac.util.ResultExtractor;
 import com.im.lac.chemaxon.molecule.ChemTermsEvaluator;
 import com.im.lac.chemaxon.molecule.MoleculeEvaluator;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
 import edu.emory.mathcs.backport.java.util.Collections;
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -208,11 +209,14 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
                 exchange.getIn().setBody(mols);
             }
         };
+
         sourcer.handle(exchange);
     }
 
-    ClosableQueue<MoleculeObject> evaluateMultiple(final Iterator<MoleculeObject> mols, final MoleculeEvaluator evaluator) {
-        final ClosableQueue<MoleculeObject> q = new ClosableMoleculeObjectQueue(50);
+    CloseableQueue<MoleculeObject> evaluateMultiple(
+            final Iterator<MoleculeObject> mols,
+            final MoleculeEvaluator evaluator) {
+        final CloseableQueue<MoleculeObject> q = new CloseableMoleculeObjectQueue(50);
         Thread t = new Thread(() -> {
             try {
                 while (mols.hasNext()) {
@@ -229,6 +233,13 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
                 }
             } finally {
                 q.close();
+                if (mols instanceof Closeable) {
+                    try {
+                        ((Closeable) mols).close();
+                    } catch (IOException e) {
+
+                    }
+                }
             }
         });
         t.start();
@@ -272,7 +283,8 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
      * @return
      */
     @Override
-    public Map<String, Object> extractResults(Molecule mol) {
+    public Map<String, Object> extractResults(Molecule mol
+    ) {
         Map<String, Object> results = new HashMap<String, Object>();
         for (MoleculeEvaluator evaluator : evaluators) {
             Map<String, Object> data = evaluator.getResults(mol);

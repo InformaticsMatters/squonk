@@ -1,6 +1,6 @@
 package com.im.lac.camel.chemaxon.processor;
 
-import com.im.lac.chemaxon.molecule.MoleculeObjectFactory;
+import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
 import java.io.InputStream;
@@ -34,7 +34,7 @@ public class MoleculeObjectConverterProcessor implements Processor {
         }
         InputStream is = exchange.getContext().getTypeConverter().tryConvertTo(InputStream.class, exchange, body);
         if (is != null) {
-            MoleculeObjectIterable mols = MoleculeObjectFactory.createIterable(is);
+            MoleculeObjectIterable mols = MoleculeObjectUtils.createIterable(is);
             exchange.getIn().setBody(mols);
             LOG.log(Level.FINE, "Returning body as iterator {0}", mols);
             return;

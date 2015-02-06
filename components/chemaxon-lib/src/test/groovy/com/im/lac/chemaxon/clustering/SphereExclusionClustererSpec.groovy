@@ -8,8 +8,7 @@ import com.chemaxon.descriptors.metrics.BinaryMetrics
 import com.im.lac.chemaxon.molecule.MoleculeUtils
 import com.im.lac.types.MoleculeObject
 import com.im.lac.types.MoleculeObjectIterable
-import com.im.lac.chemaxon.molecule.MoleculeFactory
-import com.im.lac.chemaxon.molecule.MoleculeObjectFactory
+import com.im.lac.chemaxon.molecule.MoleculeObjectUtils
 
 import spock.lang.Specification
 
@@ -23,7 +22,7 @@ class SphereExclusionClustererSpec extends Specification {
     void "test molecules"() {
         setup:
         InputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
-        MoleculeIterable iterable = MoleculeFactory.createIterable(is)
+        MoleculeIterable iterable = MoleculeUtils.createIterable(is)
         EcfpGenerator gen = (new EcfpParameters()).getDescriptorGenerator()
         EcfpComparator comp = gen.getBinaryMetricsComparator(BinaryMetrics.BINARY_TANIMOTO)
         SphereExclusionClusterer clusterer = new SphereExclusionClusterer(gen, comp, 5, 10)
@@ -48,7 +47,7 @@ class SphereExclusionClustererSpec extends Specification {
     void "test molecule objects"() {
         setup:
         InputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
-        MoleculeObjectIterable iterable = MoleculeObjectFactory.createIterable(is)
+        MoleculeObjectIterable iterable = MoleculeObjectUtils.createIterable(is)
         EcfpGenerator gen = (new EcfpParameters()).getDescriptorGenerator()
         EcfpComparator comp = gen.getBinaryMetricsComparator(BinaryMetrics.BINARY_TANIMOTO)
         SphereExclusionClusterer clusterer = new SphereExclusionClusterer(gen, comp, 5, 10)

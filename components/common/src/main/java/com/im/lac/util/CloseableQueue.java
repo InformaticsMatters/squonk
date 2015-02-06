@@ -1,39 +1,50 @@
-package com.im.lac;
+package com.im.lac.util;
 
 import java.util.Iterator;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * A blocking queue that can be closed to signify that no new elements will be
- * added.
- * The #close() method MUST be called to signify there will be no more items or the 
- * #hasNext() method will block forever.
+ * added. The #close() method MUST be called to signify there will be no more
+ * items or the #hasNext() method will block forever.
  *
  * @author Tim Dudgeon
  */
-public class ClosableQueue<T> implements Iterator<T>, Iterable<T> {
+public class CloseableQueue<T> implements Iterator<T>, Iterable<T> {
 
-    private static final Logger LOG = Logger.getLogger(ClosableQueue.class.getName());
+    private static final Logger LOG = Logger.getLogger(CloseableQueue.class.getName());
 
     private final BlockingQueue<T> queue;
     private boolean closed = false;
 
-    /** Constructor that uses an ArrayBlockingQueue of the specified size
-     * 
-     * @param queueSize The size at which adding new items to the queue blocks 
+    /**
+     * The number of items received by the queue
      */
-    public ClosableQueue(int queueSize) {
+    private final AtomicInteger received = new AtomicInteger(0);
+    /**
+     * The number of items taken from the queue
+     */
+    private final AtomicInteger taken = new AtomicInteger(0);
+
+    /**
+     * Constructor that uses an ArrayBlockingQueue of the specified size
+     *
+     * @param queueSize The size at which adding new items to the queue blocks
+     */
+    public CloseableQueue(int queueSize) {
         queue = new ArrayBlockingQueue(queueSize);
     }
-    
-    /** Constructor if you need to use your own BlockingQueue implementation
-     * 
-     * @param queue 
+
+    /**
+     * Constructor if you need to use your own BlockingQueue implementation
+     *
+     * @param queue
      */
-    public ClosableQueue(BlockingQueue<T> queue) {
+    public CloseableQueue(BlockingQueue<T> queue) {
         this.queue = queue;
     }
 
@@ -69,6 +80,7 @@ public class ClosableQueue<T> implements Iterator<T>, Iterable<T> {
         }
         try {
             queue.put(item);
+            received.incrementAndGet();
         } catch (InterruptedException ex) {
             throw new RuntimeException("Interuped", ex);
         }
@@ -114,6 +126,7 @@ public class ClosableQueue<T> implements Iterator<T>, Iterable<T> {
         try {
             T item = queue.take();
             LOG.log(Level.FINER, "took item {0} queue now of size {1}", new Object[]{item, queue.size()});
+            taken.incrementAndGet();
             return item;
         } catch (InterruptedException ex) {
             throw new RuntimeException("Interuped", ex);
@@ -122,16 +135,26 @@ public class ClosableQueue<T> implements Iterator<T>, Iterable<T> {
 
     @Override
     public void remove() {
-        throw new UnsupportedOperationException("Remove() not supported");
+        throw new UnsupportedOperationException("remove() not supported");
     }
 
-    /** Will only give the full set of items if used before the first item is retrieved 
-     * 
-     * @return 
+    /**
+     * Will only give the full set of items if used before the first item is
+     * retrieved
+     *
+     * @return
      */
     @Override
     public Iterator iterator() {
         return this;
+    }
+
+    public int getReceivedCount() {
+        return received.intValue();
+    }
+
+    public int getTakenCount() {
+        return taken.intValue();
     }
 
 }

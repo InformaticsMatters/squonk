@@ -13,13 +13,14 @@ import chemaxon.struc.Molecule;
 import chemaxon.struc.MoleculeGraph;
 import static com.im.lac.chemaxon.molecule.MoleculeConstants.STRUCTURE_FIELD_NAME;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.types.MoleculeObjectIterable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -286,5 +287,17 @@ public class MoleculeUtils {
         }
 
         return mol;
+    }
+    
+    public static MoleculeIterable createIterable(InputStream is) throws IOException {
+        return new MoleculeFactory(new MolImporter(is));
+    }
+
+    public static MoleculeIterable createIterable(File file) throws IOException {
+        return new MoleculeFactory(new MolImporter(file));
+    }
+
+    public static MoleculeIterable createIterable(Collection<Molecule> mols) {
+        return new MoleculeCollectionIterableAdapter(mols);
     }
 }

@@ -1,4 +1,4 @@
-package com.im.lac.services.chemaxon;
+package com.im.lac.demo.routes;
 
 import chemaxon.jchem.db.cache.CacheManager;
 import com.im.lac.camel.dataformat.MoleculeObjectIteratorDataFormat;
@@ -40,6 +40,7 @@ public class RestRouteBuilder extends RouteBuilder {
         // simplest example
         rest("/rest/ping").get()
                 .route()
+                .log("pinged")
                 .wireTap("direct:logger")
                 .transform().constant("Service Running\n");
 

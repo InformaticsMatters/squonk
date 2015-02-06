@@ -2,7 +2,7 @@ package com.im.lac.camel.chemaxon.processor;
 
 import chemaxon.formats.MolExporter;
 import chemaxon.struc.Molecule;
-import com.im.lac.ClosableQueue;
+import com.im.lac.util.CloseableQueue;
 import java.io.IOException;
 import org.apache.camel.Exchange;
 
@@ -36,7 +36,7 @@ public class ProcessorUtils {
         }
     }
 
-    public static void writeMoleculesToQueue(final ClosableQueue q, final Molecule[] mols) throws IOException {
+    public static void writeMoleculesToQueue(final CloseableQueue q, final Molecule[] mols) throws IOException {
         for (Molecule mol : mols) {
             q.add(mol);
         }

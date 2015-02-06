@@ -6,7 +6,7 @@ import com.chemaxon.descriptors.fingerprints.ecfp.*
 import com.chemaxon.descriptors.metrics.BinaryMetrics
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import com.im.lac.chemaxon.screening.MoleculeScreener
-import com.im.lac.chemaxon.molecule.MoleculeObjectFactory
+import com.im.lac.chemaxon.molecule.MoleculeObjectUtils
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable
 import org.apache.camel.builder.RouteBuilder
@@ -20,7 +20,7 @@ class SphereExclusionClusteringProcessorSpec extends CamelSpecificationBase {
     def "cluster stream"() {
         given:
         def fis = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
-        MoleculeObjectIterable input = MoleculeObjectFactory.createIterable(fis)
+        MoleculeObjectIterable input = MoleculeObjectUtils.createIterable(fis)
         def resultEndpoint = camelContext.getEndpoint('mock:result')
         resultEndpoint.expectedMessageCount(1)
             

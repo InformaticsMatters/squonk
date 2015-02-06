@@ -2,9 +2,10 @@ package com.im.lac.camel.chemaxon.converters;
 
 import chemaxon.formats.MolFormatException;
 import chemaxon.struc.Molecule;
-import com.im.lac.chemaxon.molecule.MoleculeFactory;
+import com.im.lac.util.OutputGenerator;
 import com.im.lac.chemaxon.molecule.MoleculeIterable;
-import com.im.lac.chemaxon.molecule.MoleculeObjectFactory;
+import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
+import com.im.lac.chemaxon.molecule.MoleculeObjectWriter;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
@@ -66,7 +67,7 @@ public class MoleculeConvertor {
     @Converter
     public static MoleculeIterable createMoleculeIterable(InputStream is, Exchange exchange)
             throws IOException {
-        return MoleculeFactory.createIterable(is);
+        return MoleculeUtils.createIterable(is);
     }
 
     /**
@@ -82,13 +83,18 @@ public class MoleculeConvertor {
     @Converter
     public static MoleculeObjectIterable createMoleculeObjectIterable(InputStream is, Exchange exchange)
             throws IOException {
-        return MoleculeObjectFactory.createIterable(is);
+        return MoleculeObjectUtils.createIterable(is);
     }
     
     @Converter
     public static MoleculeObjectIterable createMoleculeObjectIterable(File file, Exchange exchange)
             throws IOException {
-        return MoleculeObjectFactory.createIterable(file);
+        return MoleculeObjectUtils.createIterable(file);
+    }
+    
+    @Converter
+    public static OutputGenerator createOutputGeneratorFromMoleculeObjectIterable(MoleculeObjectIterable moi) {
+        return new MoleculeObjectWriter(moi);
     }
 
 

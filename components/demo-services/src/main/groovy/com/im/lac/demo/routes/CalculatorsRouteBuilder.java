@@ -1,16 +1,8 @@
-package com.im.lac.services.chemaxon;
+package com.im.lac.demo.routes;
 
-import com.chemaxon.descriptors.fingerprints.ecfp.EcfpGenerator;
-import com.chemaxon.descriptors.fingerprints.ecfp.EcfpParameters;
-import com.chemaxon.descriptors.fingerprints.pf2d.PfGenerator;
-import com.chemaxon.descriptors.fingerprints.pf2d.PfParameters;
 import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
-import com.im.lac.camel.chemaxon.processor.HeaderPropertySetterProcessor;
 import com.im.lac.camel.chemaxon.processor.MoleculeObjectConverterProcessor;
-import com.im.lac.camel.chemaxon.processor.screening.MoleculeScreenerProcessor;
-import com.im.lac.chemaxon.screening.MoleculeScreener;
 import com.im.lac.types.MoleculeObject;
-import java.io.File;
 
 import java.io.InputStream;
 import org.apache.camel.builder.RouteBuilder;
@@ -38,7 +30,8 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
         from("direct:logp")
                 .process(new MoleculeObjectConverterProcessor())
                 .process(new ChemAxonMoleculeProcessor()
-                        .calculate("logp", "logP()"));
+                        .calculate("logp", "logP()"))
+                .log("logp finished");
 
         from("direct:logpSingleMolecule")
                 .convertBodyTo(MoleculeObject.class)
@@ -108,42 +101,6 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
                 .process(new ChemAxonMoleculeProcessor()
                         .standardize("aromatize")
                 );
-
-//        // virtual screening using ECFP similarity
-//        EcfpParameters ecfpParams = EcfpParameters.createNewBuilder().build();
-//        EcfpGenerator ecfpGenerator = ecfpParams.getDescriptorGenerator();
-//        MoleculeScreener ecfpScreener = new MoleculeScreener(ecfpGenerator, ecfpGenerator.getDefaultComparator());
-//
-//        from("direct:screening/ecfp")
-//                .process(new MoleculeObjectConverterProcessor())
-//                .process(new MoleculeScreenerProcessor(ecfpScreener)
-//                );
-//
-//        from("file:" + base + "screening/ecfp?antInclude=*.sdf&preMove=processing&move=../in")
-//                .log("running ecfp screening")
-//                .process(new HeaderPropertySetterProcessor(new File(base + "/screening/ecfp/headers.properties")))
-//                .to("direct:screening/ecfp")
-//                .convertBodyTo(InputStream.class)
-//                .to("file:" + base + "screening/ecfp/out?fileName=${file:name.noext}.sdf")
-//                .log("ecfp screening complete");
-//
-//        // virtual screening using pharmacophore similarity
-//        PfParameters pfParams = PfParameters.createNewBuilder().build();
-//        PfGenerator pfGenerator = pfParams.getDescriptorGenerator();
-//        MoleculeScreener pfScreener = new MoleculeScreener(pfGenerator, pfGenerator.getDefaultComparator());
-//
-//        from("direct:screening/pharmacophore")
-//                .process(new MoleculeObjectConverterProcessor())
-//                .process(new MoleculeScreenerProcessor(pfScreener)
-//                );
-//
-//        from("file:" + base + "screening/pharmacophore?antInclude=*.sdf&preMove=processing&move=../in")
-//                .log("running pharmacophore screening")
-//                .process(new HeaderPropertySetterProcessor(new File(base + "/screening/pharmacophore/headers.properties")))
-//                .to("direct:screening/pharmacophore")
-//                .convertBodyTo(InputStream.class)
-//                .to("file:" + base + "screening/pharmacophore/out?fileName=${file:name.noext}.sdf")
-//                .log("pharmacophore screening complete");
 
         from("direct:gunzip")
                 .unmarshal().gzip();

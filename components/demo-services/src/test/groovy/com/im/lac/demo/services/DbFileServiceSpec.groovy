@@ -52,6 +52,7 @@ class DbFileServiceSpec extends Specification {
         
     }
     
+    
     def "2 add dataitem"() {
         setup:
         DataItem data = new DataItem(name: 'test1', size: 100)
@@ -73,9 +74,7 @@ class DbFileServiceSpec extends Specification {
     def "3 read large object"() {
         setup:
         def loid = item[0].loid
-        LargeObjectReader reader = service.createLargeObjectReader(loid)
-        InputStream is = reader.getInputStream()
-
+        InputStream is = service.createLargeObjectReader(loid)
         
         when:
         byte[] bytes = is.getBytes()
@@ -84,9 +83,7 @@ class DbFileServiceSpec extends Specification {
         new String(bytes) == 'hello world!'
         
         cleanup:
-        is?.close()
-        reader?.close()
-        
+        is?.close()        
     }
     
     def "4 load data item"() {
@@ -141,8 +138,7 @@ class DbFileServiceSpec extends Specification {
         
         when:
         DataItem neu = service.updateDataItem(data, is1)
-        LargeObjectReader reader = service.createLargeObjectReader(neu.loid)
-        InputStream is2 = reader.getInputStream()
+        InputStream is2 = service.createLargeObjectReader(neu.loid)
         byte[] bytes = is2.getBytes()
         
         then:
@@ -155,18 +151,17 @@ class DbFileServiceSpec extends Specification {
         new String(bytes) == 'another planet!'
     }
     
-//    def "8 delete data item"() {
-//        setup:
-//        def id = item[0].id
-//        DataItem data = service.loadDataItem(id)
-//        println "deleting item ${data.id} loid ${data.loid}"
-//        
-//        when:
-//        service.deleteDataItem(data)
-//        
-//        then:
-//        1 == 1
-//    }
-	
+    def "8 delete data item"() {
+        setup:
+        def id = item[0].id
+        DataItem data = service.loadDataItem(id)
+        println "deleting item ${data.id} loid ${data.loid}"
+        
+        when:
+        service.deleteDataItem(data)
+        
+        then:
+        1 == 1
+    }
 }
 

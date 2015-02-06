@@ -1,4 +1,4 @@
-package com.im.lac.services.chemaxon;
+package com.im.lac.demo.routes;
 
 import com.im.lac.camel.chemaxon.processor.HeaderPropertySetterProcessor;
 import com.im.lac.camel.chemaxon.processor.db.JChemDBSearcher;

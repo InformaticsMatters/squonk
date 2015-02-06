@@ -1,4 +1,4 @@
-package com.im.lac.services.chemaxon;
+package com.im.lac.demo.routes;
 
 import java.io.IOException;
 import java.util.logging.Level;

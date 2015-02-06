@@ -1,7 +1,6 @@
 package com.im.lac.demo.services
 
 import com.im.lac.demo.model.DataItem
-import com.im.lac.demo.model.LargeObjectReader
 import groovy.sql.Sql
 import groovy.util.logging.Log
 import java.sql.Connection
@@ -10,6 +9,7 @@ import java.sql.SQLException
 import javax.sql.DataSource
 import org.postgresql.largeobject.LargeObject
 import org.postgresql.largeobject.LargeObjectManager
+import org.apache.camel.util.IOHelper
 
 
 /**
@@ -175,27 +175,16 @@ class DbFileService {
         lobj.delete(loid)
     }
     
-    LargeObjectReader createLargeObjectReader(final long loid) {
+    InputStream createLargeObjectReader(final long loid) {
         
         log.info("createLargeObjectReader(${loid})")
         final Connection con = dataSource.connection
         con.setAutoCommit(false)
         // Get the Large Object Manager to perform operations with
-        final LargeObjectManager lobj = ((org.postgresql.PGConnection)con).getLargeObjectAPI()
-        final LargeObject obj = lobj.open(loid, LargeObjectManager.READ)
+        LargeObjectManager lobj = ((org.postgresql.PGConnection)con).getLargeObjectAPI()
+        LargeObject obj = lobj.open(loid, LargeObjectManager.READ)
 
-        return new LargeObjectReader() {
-            InputStream getInputStream() {
-               
-                InputStream is = obj.getInputStream()
-                return is
-            }
-                
-            void close() {
-                obj.close()
-                con.commit()
-            }
-        };      
+        return obj.getInputStream();     
     }
 
 }

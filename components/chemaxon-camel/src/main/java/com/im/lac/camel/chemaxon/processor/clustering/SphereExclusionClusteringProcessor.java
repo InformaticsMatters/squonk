@@ -6,9 +6,11 @@ import com.chemaxon.descriptors.common.DescriptorComparator;
 import com.chemaxon.descriptors.common.DescriptorGenerator;
 import com.im.lac.camel.chemaxon.processor.ProcessorUtils;
 import com.im.lac.chemaxon.clustering.SphereExclusionClusterer;
-import com.im.lac.chemaxon.molecule.MoleculeIterable;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -70,6 +72,13 @@ public class SphereExclusionClusteringProcessor<T extends Descriptor> implements
         }
         SphereExclusionClusterer clusterer = createClusterer(exchange);
         Iterable<Molecule> results = clusterer.clusterMoleculeObjects(molIter);
+        if (molIter instanceof Closeable) {
+            try {
+                ((Closeable) molIter).close();
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, "Failed to close iterator", ioe);
+            }
+        }
         exchange.getIn().setBody(results);
     }
 

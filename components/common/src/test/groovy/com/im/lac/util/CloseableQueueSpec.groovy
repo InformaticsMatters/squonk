@@ -1,4 +1,4 @@
-package com.im.lac
+package com.im.lac.util
 
 import spock.lang.Specification
 
@@ -6,12 +6,12 @@ import spock.lang.Specification
  *
  * @author timbo
  */
-class ClosableQueueSpec extends Specification {
+class CloseableQueueSpec extends Specification {
     
     def 'simple iterator'() {
 
         given:
-        ClosableQueue q = new ClosableQueue(20)
+        CloseableQueue q = new CloseableQueue(20)
         
         when:
         (1..10).each {
@@ -29,7 +29,7 @@ class ClosableQueueSpec extends Specification {
     def 'slow producer'() {
 
         given:
-        ClosableQueue q = new ClosableQueue(5)
+        CloseableQueue q = new CloseableQueue(5)
         def output = []
         
         when:
@@ -56,7 +56,7 @@ class ClosableQueueSpec extends Specification {
     def 'slow consumer'() {
 
         given:
-        ClosableQueue q = new ClosableQueue(5)
+        CloseableQueue q = new CloseableQueue(5)
         def output = []
         
         when:
@@ -78,8 +78,6 @@ class ClosableQueueSpec extends Specification {
 
         then:
         output.size() == 100
-    }
-    
-	
+    }	
 }
 

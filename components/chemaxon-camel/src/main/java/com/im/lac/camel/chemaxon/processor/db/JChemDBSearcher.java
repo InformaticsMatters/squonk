@@ -10,8 +10,8 @@ import chemaxon.sss.search.SearchException;
 import chemaxon.struc.Molecule;
 import chemaxon.util.ConnectionHandler;
 import chemaxon.util.HitColoringAndAlignmentOptions;
-import com.im.lac.ClosableMoleculeObjectQueue;
-import com.im.lac.ClosableQueue;
+import com.im.lac.util.CloseableMoleculeObjectQueue;
+import com.im.lac.util.CloseableQueue;
 import com.im.lac.camel.chemaxon.processor.ProcessorUtils;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
@@ -492,7 +492,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     private void handleAsMoleculeStream(final Exchange exchange, final JChemSearch jcs)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
 
-        final ClosableQueue<Molecule> q = new ClosableQueue<>(100);
+        final CloseableQueue<Molecule> q = new CloseableQueue<>(100);
 
         writeMoleculeStream(exchange, jcs, new MoleculeWriter() {
             @Override
@@ -511,7 +511,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     private void handleAsMoleculeObjectStream(final Exchange exchange, final JChemSearch jcs)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
 
-        final ClosableQueue q = new ClosableMoleculeObjectQueue(100);
+        final CloseableQueue q = new CloseableMoleculeObjectQueue(100);
 
         writeMoleculeStream(exchange, jcs, new MoleculeWriter() {
             @Override
@@ -645,14 +645,14 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         }
     }
 
-    private void writeMoleculesToQueue(final ClosableQueue q, final Molecule[] mols) {
+    private void writeMoleculesToQueue(final CloseableQueue q, final Molecule[] mols) {
         for (Molecule mol : mols) {
             q.add(mol);
         }
     }
 
 
-    private void writeMoleculesToQueueAsMoleculeObjects(final ClosableQueue q, final Molecule[] mols) {
+    private void writeMoleculesToQueueAsMoleculeObjects(final CloseableQueue q, final Molecule[] mols) {
         for (Molecule mol : mols) {
             MoleculeObject mo;
             try {

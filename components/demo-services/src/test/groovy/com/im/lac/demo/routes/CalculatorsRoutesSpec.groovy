@@ -1,4 +1,4 @@
-package com.im.lac.services.chemaxon
+package com.im.lac.demo.routes
 
 import spock.lang.Specification
 import chemaxon.formats.MolImporter

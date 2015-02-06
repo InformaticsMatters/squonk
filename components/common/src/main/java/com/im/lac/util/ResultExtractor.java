@@ -1,4 +1,4 @@
-package com.im.lac;
+package com.im.lac.util;
 
 import java.util.Map;
 

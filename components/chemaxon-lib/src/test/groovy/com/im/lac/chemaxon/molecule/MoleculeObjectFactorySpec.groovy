@@ -12,7 +12,7 @@ class MoleculeObjectFactorySpec extends Specification {
     def "read smiles"() {
         setup:
         File file = new File("../../data/testfiles/nci1000.smiles")
-        MoleculeObjectIterable impl = MoleculeObjectFactory.createIterable(file)
+        MoleculeObjectIterable impl = MoleculeObjectUtils.createIterable(file)
         
         when:
         def mols = impl.collect()
@@ -28,7 +28,7 @@ class MoleculeObjectFactorySpec extends Specification {
     def "read sdf"() {
         setup:
         File file = new File("../../data/testfiles/dhfr_standardized.sdf.gz")
-        MoleculeObjectIterable impl = MoleculeObjectFactory.createIterable(file)
+        MoleculeObjectIterable impl = MoleculeObjectUtils.createIterable(file)
         
         when:
         def mols = impl.collect()

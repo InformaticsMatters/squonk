@@ -2,10 +2,11 @@ package com.im.lac.camel.chemaxon.processor;
 
 import chemaxon.standardizer.Standardizer;
 import chemaxon.struc.Molecule;
-import com.im.lac.ClosableMoleculeObjectQueue;
-import com.im.lac.ClosableQueue;
+import com.im.lac.util.CloseableMoleculeObjectQueue;
+import com.im.lac.util.CloseableQueue;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
+import java.io.Closeable;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +60,7 @@ public class StandardizerProcessor implements Processor {
 
             @Override
             public void handleMultiple(Exchange exchange, Iterator<MoleculeObject> mols) {
-                ClosableQueue<MoleculeObject> q = standardizeMultiple(exchange, mols);
+                CloseableQueue<MoleculeObject> q = standardizeMultiple(exchange, mols);
                 exchange.getIn().setBody(q);
             }
         };
@@ -76,12 +77,12 @@ public class StandardizerProcessor implements Processor {
             format = "mol";
         }
         MoleculeObject neu = MoleculeUtils.derriveMoleculeObject(mo, mol, format);
-        
+
         return neu;
     }
 
-    ClosableQueue<MoleculeObject> standardizeMultiple(final Exchange exchange, final Iterator<MoleculeObject> mols) {
-        final ClosableQueue<MoleculeObject> q = new ClosableMoleculeObjectQueue(50);
+    CloseableQueue<MoleculeObject> standardizeMultiple(final Exchange exchange, final Iterator<MoleculeObject> mols) {
+        final CloseableQueue<MoleculeObject> q = new CloseableMoleculeObjectQueue(50);
         Thread t = new Thread(() -> {
             try {
                 while (mols.hasNext()) {
@@ -95,6 +96,13 @@ public class StandardizerProcessor implements Processor {
                 }
             } finally {
                 q.close();
+                if (mols instanceof Closeable) {
+                    try {
+                        ((Closeable) mols).close();
+                    } catch (IOException ioe) {
+                        LOG.log(Level.WARNING, "Failed to close iterator", ioe);
+                    }
+                }
             }
         });
         t.start();

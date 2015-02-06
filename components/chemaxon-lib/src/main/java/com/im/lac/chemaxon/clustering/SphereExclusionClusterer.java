@@ -10,8 +10,8 @@ import com.chemaxon.clustering.sphex.SphereExclusion;
 import com.chemaxon.descriptors.common.Descriptor;
 import com.chemaxon.descriptors.common.DescriptorComparator;
 import com.chemaxon.descriptors.common.DescriptorGenerator;
-import com.im.lac.ClosableMoleculeObjectQueue;
-import com.im.lac.ClosableQueue;
+import com.im.lac.util.CloseableMoleculeObjectQueue;
+import com.im.lac.util.CloseableQueue;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
 import java.util.logging.Level;
@@ -184,7 +184,7 @@ public class SphereExclusionClusterer<T extends Descriptor> {
 
 
     Iterable<Molecule> generateMoleculeOutput(MolInput input, IDBasedSingleLevelClustering clus) {
-        final ClosableQueue<Molecule> q = new ClosableQueue<>(50);
+        final CloseableQueue<Molecule> q = new CloseableQueue<>(50);
         Thread t = new Thread(() -> {
             try {
                 for (int i = 0; i < input.size(); i++) {
@@ -204,7 +204,7 @@ public class SphereExclusionClusterer<T extends Descriptor> {
     }
     
     Iterable<MoleculeObject> generateMoleculeObjectOutput(MolInput input, IDBasedSingleLevelClustering clus) {
-        final ClosableQueue<MoleculeObject> q = new ClosableMoleculeObjectQueue(50);
+        final CloseableQueue<MoleculeObject> q = new CloseableMoleculeObjectQueue(50);
         Thread t = new Thread(() -> {
             try {
                 for (int i = 0; i < input.size(); i++) {

@@ -1,4 +1,4 @@
-package com.im.lac.services.chemaxon;
+package com.im.lac.demo.routes;
 
 import com.chemaxon.descriptors.fingerprints.ecfp.EcfpGenerator;
 import com.chemaxon.descriptors.fingerprints.ecfp.EcfpParameters;

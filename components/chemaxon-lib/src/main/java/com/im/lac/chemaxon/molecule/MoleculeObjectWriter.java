@@ -1,15 +1,15 @@
-package com.im.lac;
+package com.im.lac.chemaxon.molecule;
 
 import chemaxon.formats.MolExporter;
 import chemaxon.struc.Molecule;
-import com.im.lac.chemaxon.molecule.MoleculeUtils;
+import com.im.lac.util.OutputGenerator;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.types.MoleculeObjectIterable;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.concurrent.BlockingQueue;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,20 +17,19 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class ClosableMoleculeObjectQueue extends ClosableQueue<MoleculeObject> implements MoleculeObjectIterable {
+public class MoleculeObjectWriter implements OutputGenerator {
 
-    private static final Logger LOG = Logger.getLogger(ClosableMoleculeObjectQueue.class.getName());
+    private static final Logger LOG = Logger.getLogger(MoleculeObjectWriter.class.getName());
+    private final Iterable<MoleculeObject> mols;
+    private int count = 0;
+    private int errors = 0;
 
-    public ClosableMoleculeObjectQueue(int queueSize) {
-        super(queueSize);
-    }
-
-    public ClosableMoleculeObjectQueue(BlockingQueue<MoleculeObject> queue) {
-        super(queue);
+    public MoleculeObjectWriter(Iterable<MoleculeObject> mols) {
+        this.mols = mols;
     }
 
     public InputStream getTextStream(String format) throws IOException {
-        
+
         LOG.fine("Creating Text stream");
 
         final PipedInputStream pis = new PipedInputStream();
@@ -43,13 +42,17 @@ public class ClosableMoleculeObjectQueue extends ClosableQueue<MoleculeObject> i
             public void run() {
                 LOG.fine("Starting to write molecules");
                 try {
-                    for (MoleculeObject mo : ClosableMoleculeObjectQueue.this) {
+                    Iterator<MoleculeObject> it = mols.iterator();
+                    while (it.hasNext()) {
+                        MoleculeObject mo = it.next();
                         try {
                             Molecule mol = MoleculeUtils.fetchMolecule(mo, false);
                             mol.clearProperties();
                             MoleculeUtils.putPropertiesToMolecule(mo.getValues(), mol);
                             exporter.write(mol);
+                            count++;
                         } catch (IOException ex) {
+                            errors++;
                             LOG.log(Level.SEVERE, "Error writing Molecule", ex);
                         }
                     }
@@ -57,6 +60,9 @@ public class ClosableMoleculeObjectQueue extends ClosableQueue<MoleculeObject> i
                 } finally {
                     try {
                         exporter.close();
+                        if (mols instanceof Closeable) {
+                            ((Closeable) mols).close();
+                        }
                     } catch (IOException ex) {
                         LOG.log(Level.SEVERE, "Failed to close MolExporter", ex);
                     }
@@ -68,4 +74,19 @@ public class ClosableMoleculeObjectQueue extends ClosableQueue<MoleculeObject> i
         return pis;
 
     }
+
+    /**
+     * @return the count
+     */
+    public int getCount() {
+        return count;
+    }
+
+    /**
+     * @return the errors
+     */
+    public int getErrors() {
+        return errors;
+    }
+
 }

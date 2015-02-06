@@ -4,13 +4,15 @@ import chemaxon.formats.MolFormatException;
 import chemaxon.standardizer.Standardizer;
 import chemaxon.struc.Molecule;
 import com.chemaxon.descriptors.common.Descriptor;
-import com.im.lac.ClosableMoleculeObjectQueue;
-import com.im.lac.ClosableQueue;
+import com.im.lac.util.CloseableMoleculeObjectQueue;
+import com.im.lac.util.CloseableQueue;
 import com.im.lac.camel.chemaxon.processor.MoleculeObjectSourcer;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.chemaxon.screening.MoleculeScreener;
 import com.im.lac.types.MoleculeObject;
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -98,7 +100,7 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
 
             @Override
             public void handleMultiple(Exchange exchange, Iterator<MoleculeObject> mols) {
-                ClosableQueue<MoleculeObject> q = compareMultiple(mols, targetFp, thresh);
+                CloseableQueue<MoleculeObject> q = compareMultiple(mols, targetFp, thresh);
                 exchange.getIn().setBody(q);
             }
         };
@@ -114,8 +116,8 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
         return sim;
     }
 
-    ClosableQueue<MoleculeObject> compareMultiple(final Iterator<MoleculeObject> mols, final T targetFp, final double thresh) {
-        final ClosableQueue<MoleculeObject> q = new ClosableMoleculeObjectQueue(50);
+    CloseableQueue<MoleculeObject> compareMultiple(final Iterator<MoleculeObject> mols, final T targetFp, final double thresh) {
+        final CloseableQueue<MoleculeObject> q = new CloseableMoleculeObjectQueue(50);
         Thread t = new Thread(() -> {
             try {
                 while (mols.hasNext()) {
@@ -133,8 +135,16 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
                 }
             } finally {
                 q.close();
+                if (mols instanceof Closeable) {
+                    try {
+                        ((Closeable) mols).close();
+                    } catch (IOException ioe) {
+                        LOG.log(Level.WARNING, "Failed to close iterator", ioe);
+                    }
+                }
             }
-        });
+        }
+        );
         t.start();
 
         return q;
@@ -145,14 +155,18 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
             return screener.compare(query);
         } else {
             return screener.compare(query, targetFp);
+
         }
     }
 
     private T findTargetFromHeader(Exchange exchange) {
-        Molecule header = exchange.getIn().getHeader(HEADER_TARGET_MOLECULE, Molecule.class);
-        if (header != null) {
+        Molecule header = exchange.getIn().getHeader(HEADER_TARGET_MOLECULE, Molecule.class
+        );
+        if (header
+                != null) {
             return screener.generateDescriptor(header);
         }
+
         return null;
     }
 
