@@ -24,8 +24,9 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
         def result = resultEndpoint.receivedExchanges.in.body[0]
         result == 1000
     }
+
     
-    @Override
+   @Override
     RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {

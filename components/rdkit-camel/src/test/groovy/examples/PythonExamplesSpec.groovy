@@ -80,8 +80,48 @@ C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3'''
         cleanup:
         gzip.close()
     }
-   
-    @Override
+
+
+    def 'InputStream to molecules to props'() {
+        setup:
+        def resultEndpoint = camelContext.getEndpoint('mock:result')
+        resultEndpoint.expectedMessageCount(1)
+        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz"))
+
+        when:
+        template.sendBody('direct:convertToMolsGetProps', gzip)
+
+        then:
+        resultEndpoint.assertIsSatisfied()
+        def result = resultEndpoint.receivedExchanges.in.body[0]
+        result == 756 // should be 756
+
+        cleanup:
+        gzip.close()
+    }
+
+
+    def 'InputStream to molecule filter'() {
+        setup:
+        def resultEndpoint = camelContext.getEndpoint('mock:result')
+        resultEndpoint.expectedMessageCount(1)
+        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz"))
+
+        when:
+        template.sendBody('direct:convertToMolsFilter', gzip)
+
+        then:
+        resultEndpoint.assertIsSatisfied()
+        def result = resultEndpoint.receivedExchanges.in.body[0]
+        result == 508 // should be 756
+
+        cleanup:
+        gzip.close()
+    }
+
+
+
+  @Override
     RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
@@ -92,6 +132,20 @@ C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3'''
                 from("direct:convertToMols")
                 .to("language:python:file:src/main/python/convert_to_molecules.py?transform=false")
                 .to('mock:result')
+// Third camel route to test property calculation
+                from("direct:convertToMolsGetProps")
+                .to("language:python:file:src/main/python/convert_to_molecules.py?transform=false")
+                .setHeader('FUNCTION', constant("num_hba"))
+                .to("language:python:file:src/main/python/calc_props.py?transform=false")
+                .to('mock:result')
+
+                from("direct:convertToMolsFilter")
+                .to("language:python:file:src/main/python/convert_to_molecules.py?transform=false")
+                .setHeader('FUNCTION', constant("2<num_hba<7"))
+                .to("language:python:file:src/main/python/filter_props.py?transform=false")
+                .to('mock:result')
+
+
 
             }
         }

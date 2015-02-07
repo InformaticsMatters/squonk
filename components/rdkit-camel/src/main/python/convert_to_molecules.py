@@ -1,4 +1,5 @@
 
+from com.im.lac.types import MoleculeObject, MoleculeObjectIterable
 from java import lang
 import sys
 sys.path.append("/RDKit/rdkit/Code/JavaWrappers/gmwrapper/org.RDKitDoc.jar")
@@ -12,10 +13,6 @@ from java.lang import Class
 lang.System.loadLibrary('GraphMolWrap')
 # Pull it in as a stream of string
 from org.RDKit import *
-
-
-
-
 
 
 def check_stream_type(in_stream):
@@ -75,6 +72,7 @@ def check_stream_type(in_stream):
          else:
              return file_flag, delim, rdmol[0], False
     elif rdmol is None:
+
         pass
     # Needed to get the InChI reading correctly
     my_vals = ExtraInchiReturnValues()
