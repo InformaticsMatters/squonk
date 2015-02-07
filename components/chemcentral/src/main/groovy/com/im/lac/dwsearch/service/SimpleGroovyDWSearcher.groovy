@@ -4,6 +4,7 @@ import chemaxon.jchem.db.CacheRegistrationUtil
 import chemaxon.jchem.db.JChemSearch
 import chemaxon.util.ConnectionHandler
 import chemaxon.sss.search.JChemSearchOptions
+import chemaxon.jchem.db.cache.CacheManager
 
 import com.im.lac.dwsearch.model.SubsetInfo
 import com.im.lac.dwsearch.util.Utils
@@ -73,7 +74,7 @@ import javax.ws.rs.core.MediaType
 @Log
 @Singleton
 @Path("/")
-class SimpleGroovyDWSearcher {
+class SimpleGroovyDWSearcher implements DWSearcher {
     
     private ConfigObject database, chemcentral, users
     private DataSource dataSource
@@ -151,6 +152,11 @@ class SimpleGroovyDWSearcher {
         .append(new Date())
         if (structureCacheLoaded) {
             builder.append("\nStructure cache loaded in ${structureCacheLoadTime}ms")
+            builder.append("\nCache details:\n");
+            Hashtable<String, Long> tables = CacheManager.INSTANCE.getCachedTables();
+            for (Map.Entry<String, Long> e : tables.entrySet()) {
+                builder.append(e.getKey()).append(" -> ").append(e.getValue()).append("\n");
+            }
         } else {
             builder.append("\nStructure cache still loading")
         }
@@ -162,6 +168,8 @@ class SimpleGroovyDWSearcher {
         .append("\nMax memory: ")
         .append(Runtime.getRuntime().maxMemory())
         .append("\n")
+        
+        
         return Response.ok(builder.toString()).build()
     }
     
@@ -577,7 +585,7 @@ class SimpleGroovyDWSearcher {
         return stream
     }
     
-        /** Get property defintions
+     /** Get property defintions
      * 
      * @param filter A text tring to used to filter the property descriptions (using 
      * a LIKE '%?%' search (case insensitive) on the property_description column

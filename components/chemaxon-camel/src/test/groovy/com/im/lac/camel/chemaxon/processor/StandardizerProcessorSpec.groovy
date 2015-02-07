@@ -5,6 +5,7 @@ import chemaxon.formats.MolImporter
 import chemaxon.formats.MolExporter
 import chemaxon.struc.Molecule
 import com.im.lac.camel.testsupport.CamelSpecificationBase
+import com.im.lac.types.MoleculeObject
 import org.apache.camel.builder.RouteBuilder
 
 /**
@@ -24,14 +25,15 @@ class StandardizerProcessorSpec extends CamelSpecificationBase {
 
         when:
         def mols = []
-        mols << MolImporter.importMol('c1ccccc1')
+        mols << new MoleculeObject('c1ccccc1')
         template.sendBody('direct:start', mols)
 
         then:
         resultEndpoint.assertIsSatisfied()
         def result = resultEndpoint.receivedExchanges.in.body[0].collect()
         result.size() == 1
-        result[0].atomCount == 12
+        result[0].getRepresentation(Molecule.class.getName()) != null
+        result[0].getRepresentation(Molecule.class.getName()).atomCount == 12
         
     }
     
@@ -43,13 +45,14 @@ class StandardizerProcessorSpec extends CamelSpecificationBase {
         
 
         when:
-        def mol = MolImporter.importMol('c1ccccc1')
+        def mol = new MoleculeObject('c1ccccc1')
         template.sendBody('direct:start', mol)
 
         then:
         resultEndpoint.assertIsSatisfied()
-        Molecule result = resultEndpoint.receivedExchanges.in.body[0]
-        result.atomCount == 12
+        MoleculeObject result = resultEndpoint.receivedExchanges.in.body[0]
+        result.getRepresentation(Molecule.class.getName()) != null
+        result.getRepresentation(Molecule.class.getName()).atomCount == 12
         
     }
 

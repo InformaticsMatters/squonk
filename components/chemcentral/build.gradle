@@ -6,6 +6,9 @@ jettyRun {
     reload = "automatic"
     scanIntervalSeconds = 1
 }
+sourceCompatibility = 1.7
+
+sourceCompatibility = 1.7
 
 apply plugin: 'docker'
 //apply plugin: 'com.bmuschko.docker-remote-api'
@@ -112,7 +115,7 @@ docker {
  * 
  * To run it linking to a postgres db also running in docker do something like this:
  * ./gradlew chemcentral:dockerBuild
- * docker run -d -P --link pg_db:db -name chemcentral <image-id-from-docker-build>
+ * docker run -d -p 80:8080 -name chemcentral --link <name_of_postgres_db_image>:db -v <host_dir>:/external <image-id-from-docker-build>
  * (where pg_db is the name of the postgres docker instance)
  * 
  * If running against postgres outside of docker then omit the "--link pg_db:db" bit
@@ -120,10 +123,13 @@ docker {
  * syntax (can be specified multiple times to specifing the following variables:
  * CHEMCENTRAL_DB_SERVER CHEMCENTRAL_DB_PORT CHEMCENTRAL_DB_USERNAME CHEMCENTRAL_DB_PASSWORD
 */
-task dockerBuild(type: Docker, dependsOn: war) {
+task buildDocker(type: Docker, dependsOn: war) {
     applicationName = "chemcentral"
     setEnvironment('CHEMCENTRAL_DB_SERVER', 'db') // assumes the db alias is used when linking. If not override with a -e argument
     setEnvironment('CHEMCENTRAL_DB_PORT', '5432')
+    setEnvironment("CHEMAXON_LICENSE_URL", "/external/license.cxl")
+    setEnvironment("JAVA_OPTIONS", "-Xmx2400m")
+    
     addFile(tasks.war.outputs.files.singleFile)
     // TODO add chemaxon license file
     runCommand 'mkdir /maven'

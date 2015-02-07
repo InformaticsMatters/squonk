@@ -1,10 +1,13 @@
 package com.im.lac.chemaxon.molecule;
 
+import chemaxon.formats.MolFormatException;
 import chemaxon.jep.ChemJEP;
 import chemaxon.jep.Evaluator;
 import chemaxon.jep.context.MolContext;
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.struc.Molecule;
+import com.im.lac.types.MoleculeObject;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
@@ -15,6 +18,8 @@ import java.util.logging.Logger;
  * @author timbo
  */
 public class ChemTermsEvaluator implements MoleculeEvaluator {
+
+    private static final Logger LOG = Logger.getLogger(ChemTermsEvaluator.class.getName());
 
     public enum Mode {
 
@@ -89,15 +94,36 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
         }
     }
 
+    @Override
+    public MoleculeObject processMoleculeObject(MoleculeObject mo) throws MolFormatException, IOException {
+        Molecule mol = MoleculeUtils.fetchMolecule(mo, true);
+        mol = processMolecule(mol);
+
+        if (mol == null) {
+            return null;
+        } else {
+            Map<String, Object> results = getResults(mol);
+            MoleculeObject neu = MoleculeUtils.derriveMoleculeObject(mo, mol, mo.getFormat("mol"));
+            neu.putValues(results);
+            return neu;
+        }
+    }
+
     private Molecule evaluateMoleculeImpl(MolContext context) {
-        try {
-            if (mode == Mode.Filter) {
+
+        if (mode == Mode.Filter) {
+            try {
                 boolean b = chemJEP.evaluate_boolean(context);
                 if (b) {
                     return context.getMolecule();
                 }
-            } else if (mode == Mode.Transform) {
-                Molecule oldMol = context.getMolecule();
+            } catch (ParseException ex) {
+                LOG.log(Level.WARNING, "Failed to evaluate chem terms expression. Molecule is filtered out.", ex);
+            }
+
+        } else if (mode == Mode.Transform) {
+            Molecule oldMol = context.getMolecule();
+            try {
                 Molecule newMol = (Molecule) chemJEP.evaluate(context);
                 newMol.clearProperties();
                 for (int i = 0; i < oldMol.getPropertyCount(); i++) {
@@ -106,15 +132,18 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
                     newMol.setPropertyObject(key, val);
                 }
                 return newMol;
-            } else {
-                Object result = chemJEP.evaluate(context);
-                Molecule mol = context.getMolecule();
-                mol.setPropertyObject(propName, result);
-                return mol;
+            } catch (ParseException ex) {
+                LOG.log(Level.WARNING, "Failed to evaluate chem terms expression. Molecule is excluded.", ex);
             }
-        } catch (ParseException ex) {
-            Logger.getLogger(ChemTermsEvaluator.class.getName())
-                    .log(Level.WARNING, "Failed to evaluate chem terms expression", ex);
+        } else if (mode == Mode.Calculate) {
+            Molecule mol = context.getMolecule();
+            try {
+                Object result = chemJEP.evaluate(context);
+                mol.setPropertyObject(propName, result);
+            } catch (ParseException ex) {
+                LOG.log(Level.WARNING, "Failed to evaluate chem terms expression. Property will be missing.", ex);
+            }
+            return mol;
         }
         return null;
     }

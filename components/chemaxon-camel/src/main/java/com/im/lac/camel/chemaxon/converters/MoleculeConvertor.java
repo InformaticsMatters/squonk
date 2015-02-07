@@ -2,9 +2,14 @@ package com.im.lac.camel.chemaxon.converters;
 
 import chemaxon.formats.MolFormatException;
 import chemaxon.struc.Molecule;
-import com.im.lac.ClosableMoleculeQueue;
-import com.im.lac.chemaxon.io.MoleculeIOUtils;
+import com.im.lac.util.OutputGenerator;
 import com.im.lac.chemaxon.molecule.MoleculeIterable;
+import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
+import com.im.lac.chemaxon.molecule.MoleculeObjectWriter;
+import com.im.lac.chemaxon.molecule.MoleculeUtils;
+import com.im.lac.types.MoleculeObject;
+import com.im.lac.types.MoleculeObjectIterable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
@@ -21,44 +26,76 @@ import org.apache.camel.Exchange;
 public class MoleculeConvertor {
 
     @Converter
-    public static Molecule convert(String s, Exchange exchange) throws MolFormatException {
-        return MoleculeIOUtils.convertToMolecule(s);
+    public static Molecule convertToMolecule(MoleculeObject mo, Exchange exchange) throws MolFormatException {
+        return MoleculeUtils.fetchMolecule(mo, false);
+    }
+    
+    @Converter
+    public static MoleculeObject convertToMoleculeObject(String s, Exchange exchange) {
+        return new MoleculeObject(s);
     }
 
     @Converter
-    public static Molecule convert(byte[] bytes, Exchange exchange) throws MolFormatException {
-        return MoleculeIOUtils.convertToMolecule(bytes);
+    public static Molecule convertToMolecule(String s, Exchange exchange) throws MolFormatException {
+        return MoleculeUtils.convertToMolecule(s);
+    }
+    
+    @Converter
+    public static Molecule convertToMolecule(byte[] bytes, Exchange exchange) throws MolFormatException {
+        return MoleculeUtils.convertToMolecule(bytes);
     }
 
     @Converter
-    public static Molecule convert(Blob blob, Exchange exchange)
+    public static Molecule convertToMolecule(Blob blob, Exchange exchange)
             throws MolFormatException, SQLException {
-        return MoleculeIOUtils.convertToMolecule(blob);
+        return MoleculeUtils.convertToMolecule(blob);
     }
 
     @Converter
-    public static Molecule convert(Clob clob, Exchange exchange)
+    public static Molecule convertToMolecule(Clob clob, Exchange exchange)
             throws MolFormatException, SQLException {
-        return MoleculeIOUtils.convertToMolecule(clob);
+        return MoleculeUtils.convertToMolecule(clob);
     }
-     @Converter
-    public static InputStream convert(ClosableMoleculeQueue mols, Exchange exchange)
+
+
+    @Converter
+    public static Iterator<Molecule> createMoleculeIterator(InputStream is, Exchange exchange)
             throws IOException {
-        // TODO - handle format
-        return mols.getTextStream("sdf");
+        return createMoleculeIterable(is, exchange).iterator();
     }
-    
+
+    @Converter
+    public static MoleculeIterable createMoleculeIterable(InputStream is, Exchange exchange)
+            throws IOException {
+        return MoleculeUtils.createIterable(is);
+    }
+
+    /**
+     * Create an Iterable of MoleculeObjects.
+     * Ideally we should have an implementation that is independent of Marvin as 
+     * other chemistry implementations will need to depend on ChemAxon even if this 
+     * is the only thing they need. 
+     * @param is
+     * @param exchange
+     * @return
+     * @throws IOException 
+     */
+    @Converter
+    public static MoleculeObjectIterable createMoleculeObjectIterable(InputStream is, Exchange exchange)
+            throws IOException {
+        return MoleculeObjectUtils.createIterable(is);
+    }
     
     @Converter
-    public static Iterator<Molecule> createIterator(InputStream is, Exchange exchange) 
+    public static MoleculeObjectIterable createMoleculeObjectIterable(File file, Exchange exchange)
             throws IOException {
-        return MoleculeIOUtils.moleculeIterator(is);
+        return MoleculeObjectUtils.createIterable(file);
     }
     
     @Converter
-    public static MoleculeIterable createIterable(InputStream is, Exchange exchange) 
-            throws IOException {
-        return MoleculeIOUtils.moleculeIterable(is);
+    public static OutputGenerator createOutputGeneratorFromMoleculeObjectIterable(MoleculeObjectIterable moi) {
+        return new MoleculeObjectWriter(moi);
     }
+
 
 }

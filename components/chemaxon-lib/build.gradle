@@ -3,6 +3,8 @@ description = 'ChemAxon lib'
 apply plugin: 'groovy'
 
 dependencies {
+    
+    compile project(':common')
 
     compile 'org.slf4j:slf4j-simple:1.7.7'
     

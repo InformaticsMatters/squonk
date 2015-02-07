@@ -109,7 +109,7 @@ public abstract class AbstractJChemDBSearcher extends ConnectionHandlerSupport i
 
     }
 
-    private final void handleSearchParamsOverride(JChemSearchOptions opts) {
+    private void handleSearchParamsOverride(JChemSearchOptions opts) {
         if (searchOptionsOverride != null) {
             opts.setOptions(searchOptionsOverride);
         }

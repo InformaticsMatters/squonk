@@ -10,8 +10,12 @@ import chemaxon.sss.search.SearchException;
 import chemaxon.struc.Molecule;
 import chemaxon.util.ConnectionHandler;
 import chemaxon.util.HitColoringAndAlignmentOptions;
-import com.im.lac.ClosableMoleculeQueue;
-import com.im.lac.ClosableQueue;
+import com.im.lac.util.CloseableMoleculeObjectQueue;
+import com.im.lac.util.CloseableQueue;
+import com.im.lac.camel.chemaxon.processor.ProcessorUtils;
+import com.im.lac.chemaxon.molecule.MoleculeUtils;
+import com.im.lac.types.MoleculeObject;
+
 import com.im.lac.util.CollectionUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -120,6 +124,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         RAW,
         CD_IDS,
         MOLECULES,
+        MOLECULE_OBJECTS,
         TEXT,
         STREAM
     }
@@ -359,15 +364,6 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         }
     }
 
-    private String determineStringProperty(Exchange exchange, String value, String headerProperty) {
-        String headerOpt = exchange.getIn().getHeader(headerProperty, String.class);
-        if (headerOpt != null) {
-            return headerOpt;
-        } else {
-            return value;
-        }
-    }
-
     private List<String> determineOutputColumns(Exchange exchange) {
         Object headerOpt = exchange.getIn().getHeader(HEADER_OUTPUT_MODE);
         if (headerOpt != null) {
@@ -375,7 +371,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
                 return (List<String>) headerOpt;
             } else {
                 String[] cols = headerOpt.toString().split(",");
-                List<String> result = new ArrayList<String>();
+                List<String> result = new ArrayList<>();
                 for (String col : cols) {
                     String c = col.trim();
                     if (c.length() > 0) {
@@ -419,6 +415,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
             switch (determineOutputMode(exchange)) {
                 case STREAM:
                 case MOLECULES:
+                case MOLECULE_OBJECTS:
                     // ordering may need some attention in edge cases
                     jcs.setOrder(JChemSearch.NO_ORDERING);
                     jcs.setRunMode(JChemSearch.RUN_MODE_ASYNCH_PROGRESSIVE);
@@ -444,6 +441,9 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
                 break;
             case MOLECULES:
                 handleAsMoleculeStream(exchange, jcs);
+                break;
+            case MOLECULE_OBJECTS:
+                handleAsMoleculeObjectStream(exchange, jcs);
                 break;
             case TEXT:
                 handleAsText(exchange, jcs);
@@ -480,9 +480,9 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         float[] dissimilarities = getDissimilarities(jcs);
         Molecule[] mols = loadMoleculesFromDB(exchange, jcs, hits, dissimilarities, determineHitColorAndAlignOptions(exchange));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final MolExporter exporter = new MolExporter(out, determineStringProperty(exchange, this.structureFormat, HEADER_STRUCTURE_FORMAT));
+        final MolExporter exporter = new MolExporter(out, ProcessorUtils.determineStringProperty(exchange, this.structureFormat, HEADER_STRUCTURE_FORMAT));
         try {
-            writeMoleculesToMolExporter(exporter, mols);
+            ProcessorUtils.writeMoleculesToMolExporter(exporter, mols);
             exchange.getIn().setBody(out.toString());
         } finally {
             exporter.close();
@@ -492,17 +492,31 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     private void handleAsMoleculeStream(final Exchange exchange, final JChemSearch jcs)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
 
-        final ClosableQueue q = new ClosableMoleculeQueue(100);
+        final CloseableQueue<Molecule> q = new CloseableQueue<>(100);
 
         writeMoleculeStream(exchange, jcs, new MoleculeWriter() {
             @Override
             public void writeMolecules(Molecule[] mols) {
-                try {
-                    writeMoleculesToQueue(q, mols);
-                } catch (IOException ex) {
-                    // TODO - how to handle?
-                    LOG.log(Level.SEVERE, "Failed to write molecules", ex);
-                }
+                writeMoleculesToQueue(q, mols);
+            }
+
+            @Override
+            public void close() {
+                q.close();
+            }
+        });
+        exchange.getIn().setBody(q);
+    }
+
+    private void handleAsMoleculeObjectStream(final Exchange exchange, final JChemSearch jcs)
+            throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
+
+        final CloseableQueue q = new CloseableMoleculeObjectQueue(100);
+
+        writeMoleculeStream(exchange, jcs, new MoleculeWriter() {
+            @Override
+            public void writeMolecules(Molecule[] mols) {
+                writeMoleculesToQueueAsMoleculeObjects(q, mols);
             }
 
             @Override
@@ -518,13 +532,13 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
 
         final PipedInputStream pis = new PipedInputStream();
         final PipedOutputStream out = new PipedOutputStream(pis);
-        final MolExporter exporter = new MolExporter(out, determineStringProperty(exchange, this.structureFormat, HEADER_STRUCTURE_FORMAT));
+        final MolExporter exporter = new MolExporter(out, ProcessorUtils.determineStringProperty(exchange, this.structureFormat, HEADER_STRUCTURE_FORMAT));
 
         writeMoleculeStream(exchange, jcs, new MoleculeWriter() {
             @Override
             public void writeMolecules(Molecule[] mols) {
                 try {
-                    writeMoleculesToMolExporter(exporter, mols);
+                    ProcessorUtils.writeMoleculesToMolExporter(exporter, mols);
                 } catch (IOException ex) {
                     // TODO - how to handle?
                     LOG.log(Level.SEVERE, "Failed to write molecules", ex);
@@ -596,14 +610,14 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
 
     private Molecule[] loadMoleculesFromDB(Exchange exchange, JChemSearch jcs, int[] hits, float[] dissimilarities, HitColoringAndAlignmentOptions hcao)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
-        List<Object[]> props = new ArrayList<Object[]>();
+        List<Object[]> props = new ArrayList<>();
         List<String> outCols = determineOutputColumns(exchange);
         Molecule[] mols = jcs.getHitsAsMolecules(hits, hcao, outCols, props);
         if (dissimilarities != null) {
             if (mols.length != dissimilarities.length) {
                 LOG.warning("Number of scores and molecules do not correspond. Skipping adding similarity scores");
             } else {
-                String simProp = determineStringProperty(exchange, similarityScorePropertyName, HEADER_SIMILARITY_SCORE_PROP_NAME);
+                String simProp = ProcessorUtils.determineStringProperty(exchange, similarityScorePropertyName, HEADER_SIMILARITY_SCORE_PROP_NAME);
                 for (int i = 0; i < mols.length; i++) {
                     float sim = 1.0f - dissimilarities[i];
                     // Marvin for some reason doesn't export values correctly if they are Float so we use Double 
@@ -631,9 +645,23 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         }
     }
 
-    private void writeMoleculesToQueue(final ClosableQueue q, final Molecule[] mols) throws IOException {
+    private void writeMoleculesToQueue(final CloseableQueue q, final Molecule[] mols) {
         for (Molecule mol : mols) {
             q.add(mol);
+        }
+    }
+
+
+    private void writeMoleculesToQueueAsMoleculeObjects(final CloseableQueue q, final Molecule[] mols) {
+        for (Molecule mol : mols) {
+            MoleculeObject mo;
+            try {
+                mo = MoleculeUtils.createMoleculeObject(mol, structureFormat);
+                q.add(mo);
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, "Failed to write MoleculeObject to queue", ex);
+            }
+
         }
     }
 

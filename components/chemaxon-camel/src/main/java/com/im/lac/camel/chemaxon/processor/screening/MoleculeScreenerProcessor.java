@@ -1,13 +1,18 @@
 package com.im.lac.camel.chemaxon.processor.screening;
 
+import chemaxon.formats.MolFormatException;
 import chemaxon.standardizer.Standardizer;
 import chemaxon.struc.Molecule;
 import com.chemaxon.descriptors.common.Descriptor;
-import com.im.lac.ClosableMoleculeQueue;
-import com.im.lac.ClosableQueue;
-import com.im.lac.camel.chemaxon.processor.MoleculeSourcer;
+import com.im.lac.util.CloseableMoleculeObjectQueue;
+import com.im.lac.util.CloseableQueue;
+import com.im.lac.camel.chemaxon.processor.MoleculeObjectSourcer;
+import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.chemaxon.screening.MoleculeScreener;
+import com.im.lac.types.MoleculeObject;
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,17 +70,17 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
         screener.setStandardizer(new Standardizer(szr));
         return this;
     }
-    
+
     public MoleculeScreenerProcessor standardizer(File szr) {
         screener.setStandardizer(new Standardizer(szr));
         return this;
     }
-    
+
     public MoleculeScreenerProcessor clearStandardizer() {
         screener.setStandardizer(null);
         return this;
     }
-    
+
     @Override
     public void process(Exchange exchange) throws Exception {
 
@@ -85,50 +90,61 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
         }
         final double thresh = exchange.getIn().getHeader(HEADER_THRESHOLD, threshold, Double.class);
 
-        MoleculeSourcer sourcer = new MoleculeSourcer() {
+        MoleculeObjectSourcer sourcer = new MoleculeObjectSourcer() {
             @Override
-            public void handleSingle(Exchange exchange, Molecule mol) {
-                compareMolecule(mol, targetFp);
-                exchange.getIn().setBody(mol);
+            public void handleSingle(Exchange exchange, MoleculeObject mo) throws MolFormatException {
+
+                compareMolecule(mo, targetFp);
+                exchange.getIn().setBody(mo);
             }
 
             @Override
-            public void handleMultiple(Exchange exchange, Iterator<Molecule> mols) {
-                ClosableQueue<Molecule> q = compareMultiple(mols, targetFp, thresh);
+            public void handleMultiple(Exchange exchange, Iterator<MoleculeObject> mols) {
+                CloseableQueue<MoleculeObject> q = compareMultiple(mols, targetFp, thresh);
                 exchange.getIn().setBody(q);
             }
         };
         sourcer.handle(exchange);
     }
 
-    double compareMolecule(Molecule query, T targetFp) {
-
-        double sim = doCompare(query, targetFp);
+    double compareMolecule(MoleculeObject query, T targetFp) throws MolFormatException {
+        Molecule mol = MoleculeUtils.fetchMolecule(query, true);
+        double sim = doCompare(mol, targetFp);
         if (similarityPropName != null) {
-            query.setPropertyObject(similarityPropName, sim);
+            query.putValue(similarityPropName, sim);
         }
         return sim;
     }
 
-    ClosableQueue<Molecule> compareMultiple(final Iterator<Molecule> mols, final T targetFp, final double thresh) {
-        final ClosableQueue<Molecule> q = new ClosableMoleculeQueue(50);
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    while (mols.hasNext()) {
-                        Molecule mol = mols.next();
-                        double sim = compareMolecule(mol, targetFp);
+    CloseableQueue<MoleculeObject> compareMultiple(final Iterator<MoleculeObject> mols, final T targetFp, final double thresh) {
+        final CloseableQueue<MoleculeObject> q = new CloseableMoleculeObjectQueue(50);
+        Thread t = new Thread(() -> {
+            try {
+                while (mols.hasNext()) {
+                    MoleculeObject mo = mols.next();
+                    double sim;
+                    try {
+                        sim = compareMolecule(mo, targetFp);
                         LOG.log(Level.FINER, "Similarity score = {0}", sim);
                         if (sim > thresh) {
-                            q.add(mol);
+                            q.add(mo);
                         }
+                    } catch (MolFormatException ex) {
+                        LOG.log(Level.SEVERE, "Bad molecule format", ex);
                     }
-                } finally {
-                    q.close();
+                }
+            } finally {
+                q.close();
+                if (mols instanceof Closeable) {
+                    try {
+                        ((Closeable) mols).close();
+                    } catch (IOException ioe) {
+                        LOG.log(Level.WARNING, "Failed to close iterator", ioe);
+                    }
                 }
             }
-        });
+        }
+        );
         t.start();
 
         return q;
@@ -139,14 +155,18 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
             return screener.compare(query);
         } else {
             return screener.compare(query, targetFp);
+
         }
     }
 
     private T findTargetFromHeader(Exchange exchange) {
-        Molecule header = exchange.getIn().getHeader(HEADER_TARGET_MOLECULE, Molecule.class);
-        if (header != null) {
+        Molecule header = exchange.getIn().getHeader(HEADER_TARGET_MOLECULE, Molecule.class
+        );
+        if (header
+                != null) {
             return screener.generateDescriptor(header);
         }
+
         return null;
     }
 

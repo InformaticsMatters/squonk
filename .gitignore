@@ -5,7 +5,6 @@
 java/.idea/workspace.xml
 java/out
 java/*.log.*
-/components/gradle.properties
 /lacfiledrop
 **/build
 **/.idea
@@ -31,3 +30,7 @@ components/chemcentral/users.properties
 /components/chemaxon-services/build/
 /components/demo-services/build/
 /components/rdkit-camel/build/
+/components/chemcentral/build/
+/components/chemaxon-camel/build/
+/components/chemaxon-lib/build/
+components/demo-services/logs

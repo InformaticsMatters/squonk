@@ -5,6 +5,7 @@ import chemaxon.formats.MolImporter
 import chemaxon.formats.MolExporter
 import chemaxon.struc.Molecule
 import com.im.lac.chemaxon.molecule.ChemTermsEvaluator
+import com.im.lac.types.MoleculeObject
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
 
@@ -23,21 +24,21 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
 
         when:
         def mols = []
-        mols << MolImporter.importMol('C')
-        mols << MolImporter.importMol('CC')        
-        mols << MolImporter.importMol('CCC')
+        mols << new MoleculeObject('C')
+        mols << new MoleculeObject('CC')        
+        mols << new MoleculeObject('CCC')
         template.sendBody('direct:static', mols)
 
         then:
         resultEndpoint.assertIsSatisfied()
         Iterator iter = resultEndpoint.receivedExchanges.in.body[0]
         def list = iter.collect()
-        list[0].getPropertyObject('atom_count') == 5
-        list[1].getPropertyObject('atom_count') == 8
-        list[2].getPropertyObject('atom_count') == 11
-        list[0].getPropertyObject('bond_count') == 4
-        list[1].getPropertyObject('bond_count') == 7
-        list[2].getPropertyObject('bond_count') == 10
+        list[0].getValue('atom_count') == 5
+        list[1].getValue('atom_count') == 8
+        list[2].getValue('atom_count') == 11
+        list[0].getValue('bond_count') == 4
+        list[1].getValue('bond_count') == 7
+        list[2].getValue('bond_count') == 10
     }
     
     def 'ChemTerms processor for Molecule'() {
@@ -48,18 +49,18 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         
 
         when:
-        def mol0 = MolImporter.importMol('C')
-        def mol1 = MolImporter.importMol('CC')  
+        def mol0 = new MoleculeObject('C')
+        def mol1 = new MoleculeObject('CC')  
         template.sendBody('direct:static', mol0)
         template.sendBody('direct:static', mol1)
         
 
         then:
         resultEndpoint.assertIsSatisfied()
-        Molecule result0 = resultEndpoint.receivedExchanges.in.body[0]
-        Molecule result1 = resultEndpoint.receivedExchanges.in.body[1]
-        result0.getPropertyObject('atom_count') == 5
-        result1.getPropertyObject('atom_count') == 8
+        def result0 = resultEndpoint.receivedExchanges.in.body[0]
+        def result1 = resultEndpoint.receivedExchanges.in.body[1]
+        result0.getValue('atom_count') == 5
+        result1.getValue('atom_count') == 8
         
     }
     
@@ -71,16 +72,17 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         
 
         when:
-        def mol0 = MolImporter.importMol('C') 
+        def mol0 = new MoleculeObject('C') 
         template.sendBodyAndHeader('direct:dynamic', mol0, 
-            ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION, 'atom_Count=atomCount();bond_count=bondCount()')
+            ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION, 'atom_count=atomCount();bond_count=bondCount()')
         
 
         then:
         resultEndpoint.assertIsSatisfied()
-        Molecule result0 = resultEndpoint.receivedExchanges.in.body[0]
-        result0.getPropertyObject('atom_count') == 5
-        result0.getPropertyObject('bond_count') == 4
+        def result0 = resultEndpoint.receivedExchanges.in.body[0]
+        println "props: " + result0.getValues()
+        result0.getValue('atom_count') == 5
+        result0.getValue('bond_count') == 4
 
     }
     
@@ -92,18 +94,17 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         
 
         when:
-        def mol0 = MolImporter.importMol('OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O')
-        mol0.setPropertyObject('foo', 'bar')
+        def mol0 = new MoleculeObject('OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O')
+        mol0.putValue('foo', 'bar')
         template.sendBodyAndHeader('direct:dynamic', mol0, 
             ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION, 'transform=leconformer();energy=mmff94Energy')
         
         then:
         resultEndpoint.assertIsSatisfied()
-        Molecule result0 = resultEndpoint.receivedExchanges.in.body[0]
-        result0.dim == 3
-        result0.getPropertyObject('foo') == 'bar'
-        result0.getPropertyObject('energy') != null
-        println "Energy = " + result0.getPropertyObject('energy')
+        def result0 = resultEndpoint.receivedExchanges.in.body[0]
+        result0.getRepresentation(Molecule.class.getName()).dim == 3
+        result0.getValue('foo') == 'bar'
+        result0.getValue('energy') != null
     }
     
     def "simple query param parsing"() {
