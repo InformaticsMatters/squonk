@@ -35,7 +35,7 @@ allprojects {
         // The production code uses the SLF4J logging API at compile time
         compile 'org.slf4j:slf4j-api:1.7.7'
         compile "org.codehaus.groovy:groovy-all:2.3.6"
-
+        compile files("/RDKit/rdkit/Code/JavaWrappers/gmwrapper/org.RDKitDoc.jar", "/RDKit/rdkit/Code/JavaWrappers/gmwrapper/org.RDKit.jar","/RDKit/rdkit/Code/JavaWrappers/gmwrapper/libGraphMolWrap.so")
         // Spock for unit testing
         testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
     }

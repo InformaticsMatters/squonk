@@ -45,7 +45,7 @@ C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3'''
         then:
         resultEndpoint.assertIsSatisfied()
         def result = resultEndpoint.receivedExchanges.in.body[0]
-        result.size() == 0 // should be 10
+        result.size() == 10 // should be 10
     }
     
     def 'smiles file to molecules'() {
@@ -60,7 +60,7 @@ C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3'''
         then:
         resultEndpoint.assertIsSatisfied()
         def result = resultEndpoint.receivedExchanges.in.body[0]
-        result.size() == 0 // should be 1000
+        result.size() == 1000 // should be 1000
     }
 
     def 'InputStream to molecules'() {
@@ -75,12 +75,12 @@ C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3'''
         then:
         resultEndpoint.assertIsSatisfied()
         def result = resultEndpoint.receivedExchanges.in.body[0]
-        result.size() == 0 // should be 756
+        result.size() == 756 // should be 756
         
         cleanup:
         gzip.close()
     }
-    
+   
     @Override
     RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
