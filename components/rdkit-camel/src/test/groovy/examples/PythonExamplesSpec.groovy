@@ -20,19 +20,6 @@ CC1=C(C2=C(C=C1)C(=O)C3=CC=CC=C3C2=O)[N+]([O-])=O
 CC(=NO)C(C)=NO
 C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3'''
     
-    def 'count smiles'() {
-        setup:
-        def resultEndpoint = camelContext.getEndpoint('mock:result')
-        resultEndpoint.expectedMessageCount(1)
-        
-        when:
-        template.sendBody('direct:count', smiles10)
-
-        then:
-        resultEndpoint.assertIsSatisfied()
-        def result = resultEndpoint.receivedExchanges.in.body[0]
-        result == 10
-    }
 
     def 'smiles to molecules'() {
         setup:
@@ -45,7 +32,7 @@ C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3'''
         then:
         resultEndpoint.assertIsSatisfied()
         def result = resultEndpoint.receivedExchanges.in.body[0]
-        result.size() == 10 // should be 10
+        result == 10 // should be 10
     }
     
     def 'smiles file to molecules'() {
@@ -60,7 +47,7 @@ C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3'''
         then:
         resultEndpoint.assertIsSatisfied()
         def result = resultEndpoint.receivedExchanges.in.body[0]
-        result.size() == 1000 // should be 1000
+        result == 1000 // should be 1000
     }
 
     def 'InputStream to molecules'() {
@@ -75,7 +62,7 @@ C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3'''
         then:
         resultEndpoint.assertIsSatisfied()
         def result = resultEndpoint.receivedExchanges.in.body[0]
-        result.size() == 756 // should be 756
+        result == 756 // should be 756
         
         cleanup:
         gzip.close()
@@ -131,6 +118,7 @@ C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3'''
                 
                 from("direct:convertToMols")
                 .to("language:python:file:src/main/python/convert_to_molecules.py?transform=false")
+                .to("language:python:file:src/main/python/counter.py?transform=false")
                 .to('mock:result')
 // Third camel route to test property calculation
                 from("direct:convertToMolsGetProps")

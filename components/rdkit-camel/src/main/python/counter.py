@@ -1,6 +1,20 @@
 from java.lang import Class
+from com.im.lac.types import MoleculeObject, MoleculeObjectIterable
 
-txt = request.getBody(Class.forName("java.lang.String"))
+
 # TODO - count the lines in txt
-count = 10
-request.body = count
+#txt = request.getBody(Class.forName("java.lang.String"))
+
+#mols = request.getBody(MoleculeObjectIterable)
+
+counter = 0
+for item in request.body:
+    counter += 1
+
+# Now count the number of mols
+#while mols.hasNext():
+#    molobj = mols.next()
+#    counter +=1
+
+
+request.body = counter

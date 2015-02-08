@@ -25,6 +25,23 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
         result == 1000
     }
 
+    def 'InputStream to molecules'() {
+        setup:
+        def resultEndpoint = camelContext.getEndpoint('mock:result')
+        resultEndpoint.expectedMessageCount(1)
+        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz"))
+
+        when:
+        template.sendBody('direct:handleMoleculeObjects', gzip)
+
+        then:
+        resultEndpoint.assertIsSatisfied()
+        def result = resultEndpoint.receivedExchanges.in.body[0]
+        result == 756 // should be 756
+
+        cleanup:
+        gzip.close()
+    }
     
    @Override
     RouteBuilder createRouteBuilder() {

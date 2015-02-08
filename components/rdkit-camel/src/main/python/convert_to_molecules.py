@@ -82,6 +82,12 @@ def check_stream_type(in_stream):
             return file_flag, delim, rdmol[0], False
     elif rdmol is None:
         pass
+
+    rdmol = RWMol.MolFromMolBlock(in_stream.strip())
+    if rdmol:
+        file_flag = "sdf"
+        delim = ""
+        return file_flag, delim, 0, False
     print "UNKNOWN FILE TYPE"
     return None, None, None, None
 
@@ -142,7 +148,48 @@ def parse_mols(in_stream):# Make the request
     # Now read the files and pass out as a stream of molecule
     out_mols = read_mols(file_flag, delim, col_ind, header, in_stream)
     return out_mols
-# Just replace this with parse_mols and pss in the request and we've got it
-txt = request.getBody(Class.forName("java.lang.String"))
-out_mols = parse_mols(txt)
+
+
+
+def parse_mol_simple(my_type, txt):
+    """Function to parse individual mols given a type"""
+    if my_type == "mol":
+        mol = RWMol.MolFromMolBlock(txt.strip())
+    elif my_type == "smiles":
+        # Assumes that smiles is the first column
+        mol = RWMol.MolFromSmiles(txt.split()[0])
+    elif my_type == "inchi":
+        # Assumes that INCHI is the first column
+        my_vals = ExtraInchiReturnValues()
+        mol = RDKFuncs.InchiToMol(my_txt.split()[0], my_vals)
+    return mol
+
+
+# this gets the body converted to a MoleculeObjectIterable
+#mols = request.getBody(MoleculeObjectIterable)
+# If it can't be input as a moleculeobjectiterablw
+in_stream = request.getBody(Class.forName("java.lang.String"))
+out_mols = parse_mols(in_stream)
 request.body = out_mols
+
+# Define the type list
+#type_list = ["mol", "smiles", "inchi"]
+#counter = 0
+#while mols.hasNext():
+#    molobj = mols.next()
+    # gets as string and is usually OK, but potentially could be a binary format 
+    # such as cdx so getSourceAsBytes() which returns a byte array is safer, but 
+    # as long as we only handle smiles, inchi, sdf, mol then strings are OK
+#    molstr = molobj.getSourceAsString()
+    # Get the format and use this as a starting poitn to work out 
+#    molformat = molobj.getFormat()
+# TODO make a function to make the rd_mol
+#    rd_mol = parse_mol_simple(molformat, molstr)
+#    if not rd_mol:
+#        for my_format  in [x for x in type_list if x != molformat]:
+#            rd_mol = parse_mol_simple(molformat, molstr)
+#            if rd_mol:
+#                break
+ #   out_mols = parse_mols(molstr)
+ #   rd_mol = out_mols[0]
+#    molobj.putRepresentation("rdkit.mol", rd_mol)

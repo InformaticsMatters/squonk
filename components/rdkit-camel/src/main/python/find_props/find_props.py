@@ -1,6 +1,7 @@
 # File to calculate properties for a molecule and add these properties back to the molecules
 # property to be calculate will be put in using a request.header string
 from java import lang
+from com.im.lac.types import MoleculeObject, MoleculeObjectIterable
 lang.System.loadLibrary('GraphMolWrap')
 from org.RDKit import *
 
@@ -36,9 +37,11 @@ funct_dict = {"num_hba": num_hba,
 
 
 def calc_props(request, function):
-    for mol in request.body:
-        val = funct_dict[function](mol)
-        mol.setProp(function, str(val))
+    mols = request.body
+    for rdmol in mols:
+        val = funct_dict[function](rdmol)
+        rdmol.setProp(function, str(val))
+    return mols
 # Request will comprise two parts
 ## 1) Stream of molecuels
 ## 2) String relating to property
