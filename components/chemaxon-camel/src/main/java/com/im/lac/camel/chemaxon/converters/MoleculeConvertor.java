@@ -69,33 +69,4 @@ public class MoleculeConvertor {
             throws IOException {
         return MoleculeUtils.createIterable(is);
     }
-
-    /**
-     * Create an Iterable of MoleculeObjects.
-     * Ideally we should have an implementation that is independent of Marvin as 
-     * other chemistry implementations will need to depend on ChemAxon even if this 
-     * is the only thing they need. 
-     * @param is
-     * @param exchange
-     * @return
-     * @throws IOException 
-     */
-    @Converter
-    public static MoleculeObjectIterable createMoleculeObjectIterable(InputStream is, Exchange exchange)
-            throws IOException {
-        return MoleculeObjectUtils.createIterable(is);
-    }
-    
-    @Converter
-    public static MoleculeObjectIterable createMoleculeObjectIterable(File file, Exchange exchange)
-            throws IOException {
-        return MoleculeObjectUtils.createIterable(file);
-    }
-    
-    @Converter
-    public static OutputGenerator createOutputGeneratorFromMoleculeObjectIterable(MoleculeObjectIterable moi) {
-        return new MoleculeObjectWriter(moi);
-    }
-
-
 }
