@@ -57,7 +57,7 @@ public class MRecordIterator implements Iterator<MRecord>, Closeable {
         } else {
             LOG.fine("Stream seems completed");
             nextRecord = null;
-            close(recordReader);
+            //close(recordReader);
             return false;
         }
     }
@@ -74,7 +74,7 @@ public class MRecordIterator implements Iterator<MRecord>, Closeable {
             }
 
             if (!success) {
-                close(recordReader);
+                //close(recordReader);
                 throw new NoSuchElementException("No more records");
             }
         }
@@ -91,7 +91,7 @@ public class MRecordIterator implements Iterator<MRecord>, Closeable {
         super.finalize();
         // ensure always closed. Whole file may not be read.
         if (recordReader != null) {
-            LOG.warning("Reader not closed. Doing this in finalize() instead.");
+            LOG.warning("******* Reader not closed. Doing this in finalize() instead *******");
             close(recordReader);
         }
     }
@@ -99,6 +99,8 @@ public class MRecordIterator implements Iterator<MRecord>, Closeable {
     private void close(MRecordReader reader) {
         if (reader != null) {
             try {
+                LOG.info("Closing MRecordReader");
+                //new Exception("Test only").printStackTrace();
                 reader.close();
             } catch (IOException ioe) {
                 throw new RuntimeException("IOException closing MRecordReader", ioe);
