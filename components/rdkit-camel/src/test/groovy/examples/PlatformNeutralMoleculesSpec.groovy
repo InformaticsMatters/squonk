@@ -39,8 +39,6 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
         def result = resultEndpoint.receivedExchanges.in.body[0]
         result == 756 // should be 756
 
-        cleanup:
-        gzip.close()
     }
     
    @Override
