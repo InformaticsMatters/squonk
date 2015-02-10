@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -19,12 +20,14 @@ public class MRecordIterator implements Iterator<MRecord>, Closeable {
 
     private static final Logger LOG = Logger.getLogger(MRecordIterator.class.getName());
 
-    private final MRecordReader recordReader;
+    private MRecordReader recordReader;
     private MRecord nextRecord;
     private int count = 0;
+    private StackTraceElement[] initiatorStackTrace;
 
     public MRecordIterator(InputStream is) throws IOException {
         recordReader = MFileFormatUtil.createRecordReader(is, null, null, null);
+        initiatorStackTrace = Thread.currentThread().getStackTrace();
     }
 
     /**
@@ -91,26 +94,33 @@ public class MRecordIterator implements Iterator<MRecord>, Closeable {
         super.finalize();
         // ensure always closed. Whole file may not be read.
         if (recordReader != null) {
-            LOG.warning("******* Reader not closed. Doing this in finalize() instead *******");
             close(recordReader);
+            LOG.log(Level.WARNING, "******* MRecordIterator {0} not closed. Doing this in finalize() instead *******", toString());
+            
+            StringBuilder b = new StringBuilder();
+            for (StackTraceElement el :initiatorStackTrace) {
+                b.append("\t").append(el.toString()).append("\n");
+            }
+            LOG.log(Level.WARNING, "Call stack of constructor was:\n{0}", b.toString());
         }
     }
 
     private void close(MRecordReader reader) {
         if (reader != null) {
             try {
-                LOG.info("Closing MRecordReader");
-                //new Exception("Test only").printStackTrace();
                 reader.close();
+                LOG.log(Level.FINE, "MRecordReader closed for {0}", toString());
             } catch (IOException ioe) {
                 throw new RuntimeException("IOException closing MRecordReader", ioe);
             }
         }
-        reader = null;
+        this.recordReader = null;
     }
 
     @Override
     public void close() throws IOException {
+        LOG.log(Level.FINE, "Closing MRecordReader {0}", toString());
+        //new Exception("StackTrace").printStackTrace();
         close(recordReader);
     }
 

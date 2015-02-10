@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>File based Examples</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <h1>File based Examples!</h1>
+        <p>This is a very simple web page to illustrate the ease in which services 
+            can be built that implement steps of workflows, or even complete workflows. 
+            The user interface is deliberately kept very simple, in these cases just
+            involving uploading a file to process and downloading the results. More
+            sophisticated drag-and-drop examples can be found <a href="drag-and-drop-examples.html">here</a>.</p>
+        <p>Each workflow is implemented as "route" that performs the processing. 
+            This route can then be accessed by a whatever means you choose to use.
+            For these examples we use a RESTful web service as that is suitable for 
+            a simple web page, but lots of other mechanisms could be used. The web 
+            service is called directly from Javascript, in the web page, but again 
+            this is for simplicity, and we would not necessarily use this approach 
+            for real world applications.
+            <br>
+            Technical details of how these are implemented can be  
+            <a href="descriptions.html">found here</a>.
+        </p>
+       
+        <hr>
+
+        <a href="#dbsearch"></a>
+        <h2>Structure search example</h2>
+        <p>Search the eMolecules screening compounds and get back SD file of the 
+            resulting structures. Note: results are limited to 5000 structures and
+            30 seconds.
+        </p>
+
+        <form id="structureSearch">
+            <table cellpadding="3">
+                <tr><td>Query structure:</td><td><input type="text" id="queryStructure" size="50" value="NC1=CC=CC(NC2=NC=CC=N2)=C1"></td>
+                    <td>Paste structure e.g. as smiles or smarts</td>
+                <tr><td>Search type:</td><td>
+                        <select id="searchOptions">
+                            <option value="t:s">Substructure</option>
+                            <option value="t:i dissimilarityThreshold:0.1">90% Similarity</option>
+                            <option value="t:i dissimilarityThreshold:0.2">80% Similarity</option>
+                            <option value="t:i dissimilarityThreshold:0.3">70% Similarity</option>
+                        </select></td><td></td></tr>
+            </table>
+            <br>
+            <input type="submit" value="Submit">
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span id="structureSearchResults"></span>
+        </form>
+        <hr>
+
+        <script>
+            var form = document.getElementById('structureSearch');
+            form.onsubmit = function (event) {
+                event.preventDefault();
+                var results = document.getElementById('structureSearchResults');
+                results.innerHTML = "";
+                var query = document.getElementById('queryStructure').value;
+                if (query === undefined) {
+                    alert("Please specify a query structure");
+                    return;
+                }
+                var optionsEl = document.getElementById('searchOptions');
+                var searchOptions = optionsEl.options[optionsEl.selectedIndex].value
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/rest/chemsearch/emolecules_sc", true);
+                xhr.responseType = "blob";
+                xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
+                xhr.onload = function (oEvent) {
+                    var status = xhr.status;
+                    if (status === 200) {
+                        var blob = xhr.response;
+                        var reader = new FileReader();
+                        reader.addEventListener("loadend", function () {
+                            results.innerHTML = "Handling results ...";
+                            var url = window.URL || window.webkitURL;
+                            var link = document.createElement("a");
+                            link.href = url.createObjectURL(blob);
+                            var outfileName = "search_results.sdf";
+                            link.download = outfileName;
+                            link.innerHTML = "Download results";
+                            results.removeChild(results.firstChild);
+                            results.appendChild(link);
+                        });
+                        reader.readAsArrayBuffer(blob);
+                    } else {
+                        results.innerHTML = status + " [" + xhr.statusText + "]";
+                    }
+                };
+                results.innerHTML = "Sending data ...";
+                xhr.setRequestHeader("JChemSearchOptions", searchOptions);
+                xhr.send(query);
+                results.innerHTML = "Processing ...";
+            }
+        </script>
+
+        <a href="#lipinski"></a>
+        <h2>Lipinski properties example</h2>
+        <p>Submit SD file and return SD file with Lipinski properties added.</p>
+
+        <form id="lipinski">
+            <input type="file" id="lipinskiInput">
+            <br>
+            <br>
+            <input type="submit" value="Submit">
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span id="lipinskiResults"></span>
+        </form>
+        <hr>
+
+        <script>
+            var form = document.getElementById('lipinski');
+            form.onsubmit = function (event) {
+                event.preventDefault();
+                var results = document.getElementById('lipinskiResults');
+                results.innerHTML = "";
+                var file = document.getElementById('lipinskiInput').files[0];
+                if (file === undefined) {
+                    alert("Please specify a file");
+                    return;
+                }
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/rest/lipinski", true);
+                xhr.responseType = "blob";
+                xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
+                xhr.onload = function (oEvent) {
+                    var status = xhr.status;
+                    if (status === 200) {
+                        var blob = xhr.response;
+                        var reader = new FileReader();
+                        reader.addEventListener("loadend", function () {
+                            results.innerHTML = "Handling results ...";
+                            var url = window.URL || window.webkitURL;
+                            var link = document.createElement("a");
+                            link.href = url.createObjectURL(blob);
+                            var outfileName = determineOutputFileName(file.name, "lipinski");
+                            link.download = outfileName;
+                            link.innerHTML = "Download results";
+                            results.removeChild(results.firstChild);
+                            results.appendChild(link);
+                        });
+                        reader.readAsArrayBuffer(blob);
+                    } else {
+                        results.innerHTML = status + " [" + xhr.statusText + "]";
+                    }
+                };
+                results.innerHTML = "Sending data ...";
+                xhr.send(file);
+                results.innerHTML = "Processing ...";
+            }
+        </script>
+
+        <a href="#filter"></a>
+        <h2>Lead like molecule filtering example</h2>
+        <p>Submit SD file and return SD file filtered to only those molecules with molecular weight less than 400,
+            one or more rings, less than 5 rotatable bonds, 5 or fewer hydrogen bond donors,
+            10 or fewer hydrogen bond acceptors and a logP less than 4.
+        </p>
+
+        <form id="filter">
+            <input type="file" id="filterInput">
+            <br>
+            <br>
+            <input type="submit" value="Submit">
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span id="filterResults"></span>
+        </form>
+        <hr>
+
+        <script>
+            var form = document.getElementById('filter');
+            form.onsubmit = function (event) {
+                event.preventDefault();
+                var results = document.getElementById('filterResults');
+                results.innerHTML = "";
+                var file = document.getElementById('filterInput').files[0];
+                if (file === undefined) {
+                    alert("Please specify a file");
+                    return;
+                }
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/rest/filter", true);
+                xhr.responseType = "blob";
+                xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
+                xhr.onload = function (oEvent) {
+                    var status = xhr.status;
+                    if (status === 200) {
+                        var blob = xhr.response;
+                        var reader = new FileReader();
+                        reader.addEventListener("loadend", function () {
+                            results.innerHTML = "Handling results ...";
+                            var url = window.URL || window.webkitURL;
+                            var link = document.createElement("a");
+                            link.href = url.createObjectURL(blob);
+                            var outfileName = determineOutputFileName(file.name, "filtered");
+                            link.download = outfileName;
+                            link.innerHTML = "Download results";
+                            results.removeChild(results.firstChild);
+                            results.appendChild(link);
+                        });
+                        reader.readAsArrayBuffer(blob);
+                    } else {
+                        results.innerHTML = status + " [" + xhr.statusText + "]";
+                    }
+                };
+                results.innerHTML = "Sending data ...";
+                xhr.send(file);
+                results.innerHTML = "Processing ...";
+            }
+        </script>
+
+        <a href="#spherex"></a>
+        <h2>Sphere exclusion clustering example</h2>
+        <p>Submit SD file and return SD file cluster identifiers added. Clustering uses 
+            adaptive sphere exclusion clustering with ECFP4 fingerprints with default 
+            parameters.</p>
+
+        <form id="spherex">
+            <table cellpadding="3">
+                <tr><td>Input file:</td><td><input type="file" id="spherexInput"></td><td></td></tr>
+                <tr><td>Min cluster count:</td><td><input type="text" id="minClusterCount" size="5" value="5"></td></tr>
+                <tr><td>Max cluster count:</td><td><input type="text" id="maxClusterCount" size="5" value="10"></td></tr>
+            </table>
+            <br>
+            <input type="submit" value="Submit">
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span id="spherexResults"></span>
+        </form>
+        <hr>
+
+        <script>
+            var form = document.getElementById('spherex');
+            form.onsubmit = function (event) {
+                event.preventDefault();
+                var results = document.getElementById('spherexResults');
+                results.innerHTML = "";
+                var file = document.getElementById('spherexInput').files[0];
+                if (file === undefined) {
+                    alert("Please specify a file");
+                    return;
+                }
+
+                var minClusterCountEl = document.getElementById('minClusterCount');
+                var minClusterCount = minClusterCountEl.value;
+                var maxClusterCountEl = document.getElementById('maxClusterCount');
+                var maxClusterCount = maxClusterCountEl.value;
+
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/rest/clustering/spherex/ecfp4", true);
+                xhr.responseType = "blob";
+                xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
+                xhr.onload = function (oEvent) {
+                    var status = xhr.status;
+                    if (status === 200) {
+                        var blob = xhr.response;
+                        var reader = new FileReader();
+                        reader.addEventListener("loadend", function () {
+                            results.innerHTML = "Handling results ...";
+                            var url = window.URL || window.webkitURL;
+                            var link = document.createElement("a");
+                            link.href = url.createObjectURL(blob);
+                            var outfileName = determineOutputFileName(file.name, "clustered");
+                            link.download = outfileName;
+                            link.innerHTML = "Download results";
+                            results.removeChild(results.firstChild);
+                            results.appendChild(link);
+                        });
+                        reader.readAsArrayBuffer(blob);
+                    } else {
+                        results.innerHTML = status + " [" + xhr.statusText + "]";
+                    }
+                };
+                results.innerHTML = "Sending data ...";
+                xhr.setRequestHeader("MinClusterCount", minClusterCount);
+                xhr.setRequestHeader("MaxClusterCount", maxClusterCount);
+                xhr.send(file);
+                results.innerHTML = "Processing ...";
+            }
+        </script>
+
+        <a href="#screening"></a>
+        <h2>2D pharmacophore screening example</h2>
+        <p>Screen the input SD file using a 2D pharmacophore.
+        </p>
+
+        <form id="screening">
+
+            <table cellpadding="3">
+                <tr><td>Input file:</td><td><input type="file" id="screenInput"></td></tr>
+                <tr><td>Target structure:</td><td><input type="text" id="screenStructure" size="50" value="NC1=CC=CC(NC2=NC=CC=N2)=C1"></td>
+                    <td>Paste structure e.g. as smiles or smarts</td>
+                </tr>
+                <tr><td>Similarity threshold:</td>
+                    <td><input type="text" id="screenThreshold" size="5" value="0.8"></td>
+                </tr>
+
+            </table>
+            <br>
+            <input type="submit" value="Submit">
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span id="screenResults"></span>
+        </form>
+        <hr>
+
+        <script>
+            var form = document.getElementById('screening');
+            form.onsubmit = function (event) {
+                event.preventDefault();
+                var results = document.getElementById('screenResults');
+                results.innerHTML = "";
+                var file = document.getElementById('screenInput').files[0];
+                if (file === undefined) {
+                    alert("Please specify a file");
+                    return;
+                }
+                var query = document.getElementById('screenStructure').value;
+                if (query === undefined) {
+                    alert("Please specify a structure to screen against");
+                    return;
+                }
+
+                var screenThreshold = document.getElementById('screenThreshold').value;
+
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/rest/screening/pharmacophore", true);
+                xhr.responseType = "blob";
+                xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
+                xhr.onload = function (oEvent) {
+                    var status = xhr.status;
+                    if (status === 200) {
+                        var blob = xhr.response;
+                        var reader = new FileReader();
+                        reader.addEventListener("loadend", function () {
+                            results.innerHTML = "Handling results ...";
+                            var url = window.URL || window.webkitURL;
+                            var link = document.createElement("a");
+                            link.href = url.createObjectURL(blob);
+                            var outfileName = determineOutputFileName(file.name, "screened");
+                            link.download = outfileName;
+                            link.innerHTML = "Download results";
+                            results.removeChild(results.firstChild);
+                            results.appendChild(link);
+                        });
+                        reader.readAsArrayBuffer(blob);
+                    } else {
+                        results.innerHTML = status + " [" + xhr.statusText + "]";
+                    }
+                };
+                results.innerHTML = "Sending data ...";
+                xhr.setRequestHeader("TargetMolecule", query);
+                xhr.setRequestHeader("Threshold", screenThreshold);
+                xhr.send(file);
+                results.innerHTML = "Processing ...";
+            }
+        </script>
+
+        <script>
+            function determineOutputFileName(infileName, expr) {
+                var pos = infileName.lastIndexOf(".");
+                if (pos > 0) {
+                    return infileName.substr(0, pos) + "_" + expr + ".sdf";
+                } else {
+                    return infileName + "_" + expr + ".sdf";
+                }
+            }
+
+        </script>
+
+        <br><br>
+
+    </body>
+</html>

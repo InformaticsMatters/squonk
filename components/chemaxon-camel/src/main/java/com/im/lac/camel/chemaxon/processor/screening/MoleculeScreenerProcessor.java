@@ -160,13 +160,12 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
     }
 
     private T findTargetFromHeader(Exchange exchange) {
-        Molecule header = exchange.getIn().getHeader(HEADER_TARGET_MOLECULE, Molecule.class
-        );
-        if (header
-                != null) {
+        Object h = exchange.getIn().getHeader(HEADER_TARGET_MOLECULE);
+        LOG.info("HEADER_TARGET_MOLECULE: " + h);
+        Molecule header = exchange.getIn().getHeader(HEADER_TARGET_MOLECULE, Molecule.class);
+        if (header != null) {
             return screener.generateDescriptor(header);
         }
-
         return null;
     }
 
