@@ -1,7 +1,7 @@
 package com.im.lac.demo.routes;
 
 import chemaxon.jchem.db.cache.CacheManager;
-import com.im.lac.camel.dataformat.MoleculeObjectIteratorDataFormat;
+import com.im.lac.camel.chemaxon.dataformat.MoleculeObjectIteratorDataFormat;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.List;

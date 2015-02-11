@@ -171,8 +171,7 @@
                 function hide(div) {
                     document.getElementById(div).style.display = 'none';
                 }
-
-                };</script>
+            </script>
 
             <script>
                 var mock = false;
@@ -263,7 +262,12 @@
                         path: "/process",
                         endpoint: "direct:logp",
                         icon: "icons/Programming-Add-Property-icon.png"},
-                    {id: "Lipinski props", popup: "basic-params-service-submit", form: "basic-service-submit-form", path: "/process", endpoint: "direct:lipinski", icon: "icons/Programming-Add-Property-icon.png"},
+                    {id: "Lipinski props",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:lipinski",
+                        icon: "icons/Programming-Add-Property-icon.png"},
                     {id: "Drug like filter",
                         popup: "basic-params-service-submit",
                         form: "basic-service-submit-form",
@@ -319,7 +323,7 @@
 
                 var otherActionItems = [
                     {id: "Delete", path: "/files/delete", icon: "icons/Household-Waste-icon.png"},
-                    {id: "Export", icon: "icons/export-icon.png"},
+                    {id: "Export", path: "/files/download", handler: handleFileDownload, icon: "icons/export-icon.png"},
                     {id: "View", icon: "icons/spreadsheet-icon.png"}
                 ];
                 var servicesDiv = document.getElementById("otheractions");
@@ -344,7 +348,11 @@
                     div.addEventListener("dragenter", handleDragEnter, false);
                     div.addEventListener("dragleave", handleDragLeave, false);
                     div.addEventListener("dragover", doNotHandle, false);
-                    div.addEventListener("drop", dropOntoService, false);
+                    var dropHandler = service.handler;
+                    if (dropHandler === undefined) {
+                        dropHandler = dropOntoService;
+                    }
+                    div.addEventListener("drop", dropHandler, false);
                 }
 
                 function findIcon(obj, defaultIcon) {
@@ -384,7 +392,6 @@
                         var dataId = dt.getData('dataItemID');
                         handleWorkflowDataItem(dataId);
                     }
-
                 }
 
                 function handleWorkflowDataItem(dataItemID) {
@@ -462,6 +469,25 @@
                     console.log("Data item is " + dataItemDiv.item);
                     console.log("Service is " + serviceDiv.service);
                     handleDataItemServiceDrop(dataItemDiv.item, serviceDiv.service);
+                    return false;
+                }
+
+                function handleFileDownload(e) {
+                    console.log("Handling File Download");
+                    e.stopPropagation();
+                    e.preventDefault();
+                    this.classList.remove('over');
+                  
+                    var dt = e.dataTransfer;
+                    var dataId = dt.getData('DataItemID');
+                    if (dataId === undefined) {
+                        console.log("No DataItem defined")
+                        return;
+                    }
+                    
+                    window.open("/files/download?item=" + dataId);
+
+                    
                     return false;
                 }
 
