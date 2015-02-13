@@ -7,10 +7,11 @@ from com.im.lac.types import MoleculeObject, MoleculeObjectIterable
 
 #mols = request.getBody(MoleculeObjectIterable)
 
+mols = request.body
 counter = 0
-for item in request.body:
-    counter += 1
 
+for mol in mols:
+    counter += 1
 # Now count the number of mols
 #while mols.hasNext():
 #    molobj = mols.next()

@@ -36,16 +36,7 @@ funct_dict = {"num_hba": num_hba,
 "mol_logp": mol_logp}
 
 
-def calc_props(request, function):
-    mols = request.body
-    for rdmol in mols:
-        val = funct_dict[function](rdmol)
-        rdmol.setProp(function, str(val))
-    return mols
-# Request will comprise two parts
+def calc_props(rdmol, function):
+    return funct_dict[function](rdmol)
 ## 1) Stream of molecuels
 ## 2) String relating to property
-
-if __name__ == "__main__":
-    print "calculating properties"
-    calc_props(request)
