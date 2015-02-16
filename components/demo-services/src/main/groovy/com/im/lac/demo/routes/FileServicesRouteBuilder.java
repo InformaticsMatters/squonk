@@ -62,8 +62,37 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                 .log("Debug params")
                 .to("direct:/dump/exchange");
 
+        from("jetty://http://0.0.0.0:8080/chemsearch")
+                .log("Processing query")
+                //.to("direct:/dump/exchange")
+                .process((Exchange exchange) -> {
+
+                    String endpoint = exchange.getIn().getHeader("endpoint", String.class);
+                    String newName = exchange.getIn().getHeader("itemName", String.class);
+                    String query = exchange.getIn().getHeader("QueryStructure", String.class);
+
+                    ProducerTemplate t = exchange.getContext().createProducerTemplate();
+                    exchange.getIn().setBody(query);
+                    Exchange exchResult = t.send(endpoint, exchange);
+                    if (exchResult.getException() != null) {
+                        throw exchResult.getException();
+                    }
+
+                    MoleculeObjectIterable mols = exchResult.getIn().getBody(MoleculeObjectIterable.class);
+                    DataItem result = createDataItem(mols, newName);
+                    List<DataItem> created = new ArrayList<>();
+                    if (result != null) {
+                        created.add(result);
+                        LOG.log(Level.INFO, " Result: ID = {0} Name = {1} LOID = {2}",
+                                new Object[]{result.getId(), result.getName(), result.getLoid()});
+                    }
+                    exchange.getOut().setBody(created);
+                })
+                .marshal().json(JsonLibrary.Jackson)
+                .log("Response sent");
+
         from("jetty://http://0.0.0.0:8080/process")
-                .log("Processing file")
+                .log("Processing ...")
                 //.to("direct:/dump/exchange")
                 .process((Exchange exchange) -> {
                     Long dataId = exchange.getIn().getHeader("item", Long.class);
@@ -137,6 +166,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                     exchange.getIn().setBody(out);
                 });
 
+        /* this should be a DELETE REST operation */
         from("jetty://http://0.0.0.0:8080/files/delete")
                 .log("deleting file")
                 .process((Exchange exchange) -> {

@@ -1,8 +1,9 @@
+<!DOCTYPE html>
 <html>
     <head>
-        <title>More Wizzo Examples</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Workflow examples</title>
 
         <style>
             .glasspane {
@@ -38,6 +39,7 @@
                 left: 0%;
 
             </style>
+
             <script type="text/javascript">
                 function pop(div) {
                     document.getElementById(div).style.display = 'block';
@@ -47,155 +49,357 @@
                 }
             </script>
 
-            <style>
+            <style type="text/css">
 
-                .content .right {
-                    float: right;
-                    width: 170px;
-                    height: 100%;
-                    border-style: solid;
-                    border-color: white;
-                    border-width: 1px;
-                }
-                .content .left {
-                    margin-right: 170px;
-                    height: 100%;
-                    border-style: solid;
-                    border-color: white;
-                    border-width: 1px;
+                body {
+                    margin:0;
+                    padding:0;
+                    background: whitesmoke;
                 }
 
-                div.framed {
-                    background-color: whitesmoke;
+                #topsection {
+                    height: 50px; /*Height of top section*/
+                }
+
+                #topsection h1 {
+                    margin: 0;
+                    padding-top: 15px;
+                }
+
+                #contentwrapper {
+                    float: left;
+                    width: 100%;
+                }
+
+                #contentcolumn {
+                    margin: 0 180px 0 120px; /*Margins for content column. Should be "0 RightColumnWidth 0 LeftColumnWidth*/
+                    padding: 5px;
+                }
+
+                #leftcolumn {
+                    float: left;
+                    width: 110px; /*Width of left column*/
+                    margin-left: -100%;
+                    padding: 5px;
+                }
+
+                #workflowcolumn {
+                    float: left;
+                    width: 170px; /*Width of right column*/
+                    margin-left: -180px; /*Set left marginto -(RightColumnWidth)*/
+                    padding: 5px;
+                }
+
+                #leftcontent {
+                    min-height: 500px;
+                }
+
+                #workflowcontent {
+                    min-height: 500px;
+                }
+
+                #queries {
+                    min-height: 100px;
+                } 
+
+                #files {
+                    min-height: 100px;
+                } 
+
+                #services {
+                    min-height: 100px;
+                } 
+
+                .boxed {
+                    background-color: white;
                     border-style: solid;
                     border-color: grey;
                     border-width: 2px;
-                    //border-radius: 10px;
-                    margin: 5px 5px 5px 5px;
-                    min-height: 100px;
-                    overflow:hidden;
+                    padding: 2px 2px 2px 2px;
+                    overflow: scroll;
                 }
 
-                .boxtitle {
-                    margin: 15px 2px 2px 20px;
+                #footer{
+                    //position: fixed;
+                    //bottom: 0px;
+                    clear: left;
+                    width: 100%;
+                    //background: black;
+                    //color: #FFF;
+                    text-align: center;
+                    padding: 4px 0px;
+                }
+
+                .innertube {
+                    margin: 10px; /*Margins for inner DIV inside each column (to provide padding)*/
+                    margin-top: 0;
                 }
 
                 div.component {
-                    background-color: linen;
-                    margin: 4px 4px 4px 4px;
-                    float: left;
+                    display: block;
+                    margin: 2px 2px 2px 2px;
+                    padding: 0px;
                     border-style: solid;
-                    border-width: 1px;
-                    border-radius: 10px;
-                    border-color: grey;
+                    border-width: 2px;
+                    border-radius: 6px;
                     font-size: smaller;
-                    width: 130px;
                 }
 
-                .component.over {
-                    border-width: 4px;
-                    margin: 1px 1px 1px 1px;
+                div.info {
+                    font-size: smaller;
+                    text-align: right;
+                    color: grey;
                 }
 
-                .workflow {
+                //div.content img {
+                //    float:left;
+                //}
+
+                div.palette div.component {
+                    float: left;
+                }
+
+                div.workflowcontent div {
                     display: block;
                     margin-top: 0px;
                     margin-bottom: 0px;
                     margin-left: auto;
                     margin-right: auto;
-                    max-width: 130px;
+                    overflow: hidden;
+
                 }
 
-                div.workflowcomponent {
+                div.query {
+                    background-color: lightcyan;
+                    border-color: cyan;
+                    width: 100px;
+                }
+
+                div.query div.title {
+                    background: cyan;
+                    color: black;
+                }
+
+                div.dataitem {
+                    background-color: lavender;
+                    border-color: cornflowerblue;
+                    width: 100px;
+                }
+
+                div.dataitem div.title {
+                    background: cornflowerblue;
+                    color: white;
+                }
+
+                div.service {
                     background-color: linen;
-                    border-style: solid;
-                    border-width: 1px;
-                    border-radius: 10px;
-                    border-color: grey;
-                    font-size: smaller;
-
+                    border-color: orange;
+                    width: 100px;
                 }
 
-                #workflow {
-                    min-height: 500px;
-                    padding-top: 5px;
-                    padding-bottom: 5px;
+                div.service div.title {
+                    background: orange;
+                    color: white;
                 }
 
-                div.label {
+                div.action {
+                    background-color: whitesmoke;
+                    border-color: black;
+                    width: 85px;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+
+                div.action div.title {
+                    background: black;
+                    color: white;
+                }
+
+                .component.over {
+                    border-width: 4px;
+                    margin: 0px;
+                }
+
+                .workflowarrow {
+                    display: block;
+                    margin-top: 0px;
+                    margin-bottom: 0px;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+
+                div.title {
                     text-align: center;
                     white-space: nowrap; 
                     overflow: hidden;
                     text-overflow: ellipsis;
+                    margin: 0px;
+                    padding: 0px;
+                    font-size: small;               
                 }
 
-                div.centre
-                {
-                    //width: 200px;
-                    display: block;
+                div.content {
+                    margin: 1px;
                 }
-
-
 
             </style>
 
         </head>
         <body>
+            <div id="maincontainer">
 
-            <div class="content">
-                <div class="right">
-                    <h3 class="boxtitle">Workflow</h3>
-                    <div id="workflow" class="framed">
+                <div id="topsection"><div class="innertube"><h1>Workflow examples</h1></div></div>
+
+                <div id="contentwrapper">
+                    <div id="contentcolumn">
+                        <div class="innertube boxed"><b>Queries</b>
+                            <div id="queries" class="palette">
+                            </div>
+                        </div>
+                        <div class="innertube boxed"><b>Data sets</b>
+                            <div id="files" class="palette" title="Drop files here to load">
+                            </div>
+                        </div>
+                        <div class="innertube boxed"><b>Services</b> 
+                            <div id="services" class="palette">
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div id="leftcolumn">
+                    <div id="leftcontent" class="boxed">
+                        <div><b>Actions</b> </div>
+                        <div id="actions">
+                        </div>
                     </div>
                 </div>
-                <div class="left">
-                    <h3 class="boxtitle">Available datasets</h3>
-                    <div id="files" class="framed" title="Drop files here to load">
-                    </div>
 
-                    <h3 class="boxtitle">Calculation services</h3>
-                    <div id="services" class="framed">
+                <div id="workflowcolumn">
+                    <div id="workflow" class="boxed">
+                        <div><b>Workflow</b></div>
+                        <div id="workflowcontent" class="workflowcontent">
+                        </div>
                     </div>
-
-                    <h3 class="boxtitle">Other actions</h3>
-                    <div id="otheractions" class="framed">
-                    </div>
-
                 </div>
+
+                <!--div id="footer">Footer here</div-->
+
             </div>
 
-            <script type="text/javascript">
-                function pop(div) {
-                    document.getElementById(div).style.display = 'block';
-                }
-                function hide(div) {
-                    document.getElementById(div).style.display = 'none';
-                }
-            </script>
-
             <script>
-                var mock = false;
-                var mockDataItems = [
-                    {id: 1, name: "SDF 1", icon: "icons/Chemical-5-icon.png"},
-                    {id: 2, name: "SDF 2", icon: "icons/Cube-Molecule-2-icon.png"},
-                    {id: 3, name: "Document 23", icon: "icons/Document-icon.png"},
-                    {id: 4, name: "Document 501"},
-                    {id: 5, name: "SDF 6", icon: "icons/Cube-Molecule-icon.png"}
-                ];
+
+
+
+                function createComponentDiv(item, icon, desc) {
+                    var div = document.createElement("div");
+                    div.id = item.id;
+                    div.draggable = true;
+
+                    var img = document.createElement("img");
+                    img.src = icon;
+                    img.draggable = false;
+                    img.width = 48;
+                    img.height = 48;
+                    img.align = "left";
+
+                    var title = document.createElement("div");
+                    title.className = "title";
+                    title.innerHTML = item.name;
+
+                    var content = document.createElement("div");
+                    content.className = "content";
+                    var info = document.createElement("div");
+                    info.className = "info";
+                    if (desc !== undefined) {
+                        info.innerHTML = desc;
+                    }
+                    content.appendChild(img);
+                    content.appendChild(info);
+                    div.appendChild(title);
+                    div.appendChild(content);
+                    return div;
+                }
+
+                function createActionDiv(item, icon) {
+                    var div = document.createElement("div");
+                    div.id = item.id;
+                    div.draggable = false;
+
+                    var img = document.createElement("img");
+                    img.src = icon;
+                    img.draggable = false;
+                    img.width = 48;
+                    img.height = 48;
+
+                    var title = document.createElement("div");
+                    title.className = "title";
+                    title.innerHTML = item.name;
+                    div.appendChild(title);
+                    div.appendChild(img);
+                    return div;
+                }
+
+
                 var filesDiv = document.getElementById("files");
-                var workflowDiv = document.getElementById("workflow");
+                var workflowDiv = document.getElementById("workflowcontent");
                 filesDiv.addEventListener("dragenter", doNotHandle, false);
                 filesDiv.addEventListener("dragover", doNotHandle, false);
-                filesDiv.addEventListener("drop", dropFile, false);
+                filesDiv.addEventListener("drop", handleDropOntoDataItems, false);
                 workflowDiv.addEventListener("dragenter", doNotHandle, false);
                 workflowDiv.addEventListener("dragover", doNotHandle, false);
                 workflowDiv.addEventListener("drop", dropOntoWorkflow, false);
                 window.addEventListener("load", reLoadDataItems, false);
                 window.addEventListener("dragover", doNotHandle, false);
                 window.addEventListener("drop", doNotHandle, false);
+
+
+                var queriesItems = [
+//                    {id: "emols_sc",
+//                        name: "eMols screening cpds",
+//                        info: "6056409",
+//                        popup: "structure-query-submit",
+//                        form: "structure-query-submit-form",
+//                        path: "/chemsearch",
+//                        endpoint: "direct:chemsearch/emolecules_sc"},
+                    {id: "emols_bb",
+                        name: "eMols building blocks",
+                        info: "818887",
+                        popup: "structure-query-submit",
+                        form: "structure-query-submit-form",
+                        path: "/chemsearch",
+                        endpoint: "direct:chemsearch/emolecules_bb"},
+                    {id: "drugbank",
+                        name: "DrugBank",
+                        info: "3401",
+                        popup: "structure-query-submit",
+                        form: "structure-query-submit-form",
+                        path: "/chemsearch",
+                        endpoint: "direct:chemsearch/drugbank"}
+                ];
+
+                var queriesDiv = document.getElementById("queries");
+                for (var i = 0; i < queriesItems.length; i++) {
+                    var query = queriesItems[i];
+
+                    var div = createComponentDiv(query, findIcon(query, "icons/Misc-Database-3-icon.png"), query.info);
+                    div.query = query;
+                    div.className = "component query";
+
+                    queriesDiv.appendChild(div);
+
+                    div.addEventListener("dragenter", handleDragEnter, false);
+                    div.addEventListener("dragleave", handleDragLeave, false);
+                    div.addEventListener("dragover", doNotHandle, false);
+                    div.addEventListener('dragstart', function (e) {
+                        e.dataTransfer.setData('QueryID', e.target.id);
+                    }, false);
+                }
+
+
                 function reLoadDataItems() {
-
-
                     while (filesDiv.hasChildNodes()) {
                         filesDiv.removeChild(filesDiv.lastChild);
                     }
@@ -225,25 +429,15 @@
                 }
 
                 function addDataItem(item) {
-                    console.log("Ading data item " + item);
-                    console.log("ID= " + item.id + " name=" + item.name);
-                    var div = document.createElement("div");
-                    div.id = item.id;
+                    console.log("Adding data item ID= " + item.id + " name=" + item.name);
+
+                    var info = item.size;
+
+                    var div = createComponentDiv(item, findIcon(item, "icons/Chemical-5-icon.png"), info);
+
                     div.item = item;
-                    div.draggable = true;
-                    div.className = "component droptarget";
-                    div.title = item.name;
-                    var img = document.createElement("img");
-                    img.src = findIcon(item, "icons/Chemical-5-icon.png");
-                    img.width = 72;
-                    img.height = 72;
-                    img.draggable = false;
-                    div.appendChild(img);
-                    div.appendChild(document.createElement("br"));
-                    var label = document.createElement("div");
-                    label.className = "label";
-                    label.innerHTML = item.name;
-                    div.appendChild(label);
+                    div.className = "component dataitem droptarget";
+
                     filesDiv.appendChild(div);
                     console.log("Item added");
                     div.addEventListener("dragenter", handleDragEnter, false);
@@ -256,62 +450,59 @@
 
 
                 var servicesItems = [
-                    {id: "Calculate LogP",
+                    {id: "calcLogP",
+                        name: "Calculate LogP",
                         popup: "basic-params-service-submit",
                         form: "basic-service-submit-form",
                         path: "/process",
                         endpoint: "direct:logp",
                         icon: "icons/Programming-Add-Property-icon.png"},
-                    {id: "Lipinski props",
+                    {id: "calcLipinski",
+                        name: "Lipinski props",
                         popup: "basic-params-service-submit",
                         form: "basic-service-submit-form",
                         path: "/process",
                         endpoint: "direct:lipinski",
                         icon: "icons/Programming-Add-Property-icon.png"},
-                    {id: "Drug like filter",
+                    {id: "drugLikeFilter",
+                        name: "Drug like filter",
                         popup: "basic-params-service-submit",
                         form: "basic-service-submit-form",
                         path: "/process",
                         endpoint: "direct:filter_example",
                         icon: "icons/Filter-List-icon.png"},
-                    {id: "ECFP4 screen",
+                    {id: "ecfpScreen",
+                        name: "ECFP4 screen",
                         popup: "screening-service-submit",
                         form: "screening-service-submit-form",
                         path: "/process",
                         endpoint: "direct:screening/ecfp",
                         icon: "icons/Filter-List-icon.png"},
-                    {id: "Pharmacophore screen",
+                    {id: "pharmacophoreScreen",
+                        name: "Pharmacophore screen",
                         popup: "screening-service-submit",
                         form: "screening-service-submit-form",
                         path: "/process",
                         endpoint: "direct:screening/pharmacophore",
                         icon: "icons/Filter-List-icon.png"},
-                    {id: "Spherex Clustering",
+                    {id: "spherexClust",
+                        name: "Spherex Clustering",
                         popup: "spherex-clustering-service-submit",
                         form: "spherex-clustering-service-submit-form",
                         path: "/process",
                         endpoint: "direct:clustering/spherex/ecfp4"}
                 ];
+
                 var servicesDiv = document.getElementById("services");
                 for (var i = 0; i < servicesItems.length; i++) {
                     var service = servicesItems[i];
-                    var div = document.createElement("div");
-                    div.id = service.id;
+
+                    var div = createComponentDiv(service, findIcon(service, "icons/Very-Basic-Services-icon.png"));
                     div.service = service;
-                    div.className = "component droptarget";
-                    div.draggable = true;
-                    var img = document.createElement("img");
-                    img.src = findIcon(service, "icons/Very-Basic-Services-icon.png");
-                    img.draggable = false;
-                    img.width = 72;
-                    img.height = 72;
-                    div.appendChild(img);
-                    div.appendChild(document.createElement("br"));
-                    var label = document.createElement("div");
-                    label.className = "label";
-                    label.innerHTML = service.id;
-                    div.appendChild(label);
+                    div.className = "component service droptarget";
+
                     servicesDiv.appendChild(div);
+
                     div.addEventListener("dragenter", handleDragEnter, false);
                     div.addEventListener("dragleave", handleDragLeave, false);
                     div.addEventListener("dragover", doNotHandle, false);
@@ -321,30 +512,32 @@
                     }, false);
                 }
 
+
                 var otherActionItems = [
-                    {id: "Delete", path: "/files/delete", icon: "icons/Household-Waste-icon.png"},
-                    {id: "Export", path: "/files/download", handler: handleFileDownload, icon: "icons/export-icon.png"},
-                    {id: "View", icon: "icons/spreadsheet-icon.png"}
+                    {id: "delete",
+                        name: "Delete",
+                        handler: handleFileDelete,
+                        icon: "icons/Household-Waste-icon.png"},
+                    {id: "export",
+                        name: "Export",
+                        path: "/files/download",
+                        handler: handleFileDownload,
+                        icon: "icons/export-icon.png"},
+                    {id: "view",
+                        name: "View",
+                        icon: "icons/spreadsheet-icon.png"}
                 ];
-                var servicesDiv = document.getElementById("otheractions");
+
+                var actionsDiv = document.getElementById("actions");
                 for (var i = 0; i < otherActionItems.length; i++) {
                     var service = otherActionItems[i];
-                    var div = document.createElement("div");
-                    div.id = service.id;
+
+                    var div = createActionDiv(service, findIcon(service, "icons/Very-Basic-Services-icon.png"));
                     div.service = service;
-                    div.className = "component droptarget";
-                    var img = document.createElement("img");
-                    img.src = findIcon(service, "icons/Very-Basic-Services-icon.png");
-                    img.draggable = false;
-                    img.width = 72;
-                    img.height = 72;
-                    div.appendChild(img);
-                    div.appendChild(document.createElement("br"));
-                    var label = document.createElement("div");
-                    label.className = "label"
-                    label.innerHTML = service.id;
-                    div.appendChild(label);
-                    servicesDiv.appendChild(div);
+                    div.className = "component action droptarget";
+                    div.draggable = false;
+
+                    actionsDiv.appendChild(div);
                     div.addEventListener("dragenter", handleDragEnter, false);
                     div.addEventListener("dragleave", handleDragLeave, false);
                     div.addEventListener("dragover", doNotHandle, false);
@@ -384,37 +577,42 @@
                     var dt = e.dataTransfer;
                     var serviceID = dt.getData('ServiceID');
                     var dataItemID = dt.getData('DataItemID');
+                    var queryID = dt.getData('QueryID');
                     if (serviceID.length > 0) {
                         console.log("Handling service " + serviceID);
                         handleWorkflowDropService(serviceID);
                     } else if (dataItemID.length > 0) {
-                        console.log("handling data item");
-                        var dataId = dt.getData('dataItemID');
-                        handleWorkflowDataItem(dataId);
+                        console.log("handling data item " + dataItemID);
+                        handleWorkflowDataItem(dataItemID);
+                    } else if (queryID.length > 0) {
+                        console.log("handling query ") + queryID;
+                        handleWorkflowQuery(queryID);
                     }
+                }
+
+                function handleWorkflowQuery(queryID) {
+                    console.log("Handling workflow query " + queryID);
+                    var queryDiv = document.getElementById(queryID);
+                    var query = queryDiv.query;
+
+                    var div = createComponentDiv(query, findIcon(query, "icons/Misc-Database-3-icon.png"), query.info);
+                    div.query = query;
+                    div.className = "component query";
+                    div.draggable = false; // this need to change to allow rearrangement                    
+
+                    workflowDiv.appendChild(div);
                 }
 
                 function handleWorkflowDataItem(dataItemID) {
                     console.log("Handling workflow data item " + dataItemID);
                     var dataItemDiv = document.getElementById(dataItemID);
                     var dataItem = dataItemDiv.item;
-                    var div = document.createElement("div");
-                    div.id = dataItem.id;
+
+                    var div = createComponentDiv(dataItem, findIcon(dataItem, "icons/Chemical-5-icon.png"), dataItem.size);
                     div.item = dataItem;
-                    div.draggable = false;
-                    div.className = "workflow workflowcomponent";
-                    div.title = dataItem.name;
-                    var img = document.createElement("img");
-                    img.src = dataItemDiv.childNodes[0].src;
-                    img.draggable = false;
-                    img.width = 72;
-                    img.height = 72;
-                    div.appendChild(img);
-                    div.appendChild(document.createElement("br"));
-                    var label = document.createElement("div");
-                    label.className = "label";
-                    label.innerHTML = dataItem.name;
-                    div.appendChild(label);
+                    div.className = "component dataitem";
+                    div.draggable = false; // this need to change to allow rearrangement                    
+
                     workflowDiv.appendChild(div);
                 }
 
@@ -427,25 +625,17 @@
                     arrow.width = 32;
                     arrow.height = 32;
                     arrow.align = "middle";
-                    arrow.className = "workflow";
-                    workflowDiv.appendChild(arrow);
-                    var div = document.createElement("div");
-                    div.id = serviceDiv.id;
-                    div.service = serviceDiv.service;
-                    div.draggable = false;
-                    div.className = "workflow workflowcomponent";
-                    div.title = serviceDiv.name;
-                    var img = document.createElement("img");
-                    img.src = serviceDiv.childNodes[0].src;
-                    img.draggable = false;
-                    img.width = 72;
-                    img.height = 72;
-                    div.appendChild(img);
-                    div.appendChild(document.createElement("br"));
-                    var label = document.createElement("div");
-                    label.className = "label";
-                    label.innerHTML = serviceDiv.id;
-                    div.appendChild(label);
+                    arrow.className = "workflowarrow";
+                    var arrowDiv = document.createElement("div");
+                    arrowDiv.appendChild(arrow);
+                    workflowDiv.appendChild(arrowDiv);
+
+                    var service = serviceDiv.service;
+                    var div = createComponentDiv(service, findIcon(service, "icons/Very-Basic-Services-icon.png"));
+                    div.service = service;
+                    div.className = "component service ";
+                    div.draggable = false; // this need to change to allow rearrangement
+
                     workflowDiv.appendChild(div);
                 }
 
@@ -472,22 +662,52 @@
                     return false;
                 }
 
+                /*
+                 * This needs handling better.
+                 */
                 function handleFileDownload(e) {
-                    console.log("Handling File Download");
+                    console.log("Handling file download");
                     e.stopPropagation();
                     e.preventDefault();
                     this.classList.remove('over');
-                  
+
                     var dt = e.dataTransfer;
                     var dataId = dt.getData('DataItemID');
                     if (dataId === undefined) {
-                        console.log("No DataItem defined")
+                        console.log("No DataItem defined");
                         return;
                     }
-                    
                     window.open("/files/download?item=" + dataId);
+                    return false;
+                }
 
-                    
+
+                function handleFileDelete(e) {
+                    console.log("Handling file delete");
+                    e.stopPropagation();
+                    e.preventDefault();
+                    this.classList.remove('over');
+
+                    var dt = e.dataTransfer;
+                    var dataId = dt.getData('DataItemID');
+                    if (dataId === undefined) {
+                        console.log("No DataItem defined");
+                        return;
+                    }
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", "/files/delete?item=" + dataId, true);
+                    xhr.onload = function () {
+                        hide("progress");
+                        var status = xhr.status;
+                        if (status === 200) {
+                            console.log("Processing OK");
+                            var div = document.getElementById(dataId);
+                            div.parentNode.removeChild(div);
+                        } else {
+                            alert("Delete failed");
+                        }
+                    };
+                    xhr.send();
                     return false;
                 }
 
@@ -562,34 +782,34 @@
                     var xhr = new XMLHttpRequest();
                     xhr.open("POST", path, true);
                     xhr.onload = function () {
-                        hide("progress");
-                        var status = xhr.status;
-                        if (status === 200) {
-                            console.log("Processing OK");
-                            var json = xhr.response;
-                            console.log("JSON: " + json);
-                            if (json === undefined || json.length === 0) {
-                                // delete should have its own handler. This is messy.
-                                console.log("Reloading");
-                                reLoadDataItems();
-                            } else {
-                                console.log("We have some JSON: " + json);
-                                var items = JSON.parse(json);
-                                if (items.length > 0) {
-                                    console.log("Adding items");
-                                    addDataItems(items);
-                                } else {
-                                    alert("No results!");
-                                }
-                            }
-                        } else {
-                            alert("Processing failed");
-                        }
+                        handlePostForDataItems(xhr);
                     };
                     console.log("Posting request to " + path);
-                    //alert("Posting");
                     xhr.send(formData);
-                    //alert("Posted");
+                }
+
+                function handlePostForDataItems(xhr) {
+                    hide("progress");
+                    var status = xhr.status;
+                    if (status === 200) {
+                        console.log("Processing OK");
+                        var json = xhr.response;
+                        console.log("JSON: " + json);
+                        if (json === undefined || json.length === 0) {
+                            // no response so nothing to do
+                        } else {
+                            console.log("Response JSON: " + json);
+                            var items = JSON.parse(json);
+                            if (items.length > 0) {
+                                console.log("Adding items");
+                                addDataItems(items);
+                            } else {
+                                alert("No results!");
+                            }
+                        }
+                    } else {
+                        alert("Processing failed");
+                    }
                 }
 
                 function createProgress(name, max) {
@@ -609,15 +829,70 @@
                     return prog;
                 }
 
-                function dropFile(e) {
-                    console.log("File dropped?");
+                function handleDropOntoDataItems(e) {
+
                     e.stopPropagation();
                     e.preventDefault();
-                    var prog = createProgress("File upload", 100);
+                    if (e.dataTransfer.files !== undefined && e.dataTransfer.files.length > 0) {
+                        console.log("File dropped");
+                        handleDropFiles(e);
+                    } else if (e.dataTransfer.getData('QueryID') !== undefined) {
+                        console.log("Query dropped");
+                        handleDropQueryOntoDataItems(e);
+                    } else {
+                        console.log("Unrecognised drop");
+                    }
+                }
+
+                function handleDropQueryOntoDataItems(e) {
+                    var dt = e.dataTransfer;
+                    var queryId = dt.getData('QueryID');
+                    var queryDiv = document.getElementById(queryId);
+                    var query = queryDiv.query;
+                    var form = document.getElementById(query.form);
+                    setFormProperty(form, "queryName", query.name);
+                    setFormProperty(form, "queryId", query.id);
+                    setFormProperty(form, "outputName", "");
+                    pop(query.popup);
+
+                }
+
+                function handleQueryRequest(formId) {
+                    var form = document.getElementById(formId);
+                    console.log("Form ID " + formId + " is " + form);
+                    var formData = new FormData();
+
+                    //serviceEndpoint path queryStructure searchOptions outputName
+                    var els = form.elements;
+                    var queryId = els['queryId'].value;
+                    var query = document.getElementById(queryId).query;
+
+                    var path = query.path;
+                    formData.append("endpoint", query.endpoint);
+                    formData.append("QueryStructure", els['queryStructure'].value);
+                    formData.append("JChemSearchOptions", els['searchOptions'].value);
+                    formData.append("itemName", els['outputName'].value);
+
+                    createProgress("Processing");
                     pop("progress");
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", path, true);
+                    xhr.onload = function () {
+                        hide("progress");
+                        handlePostForDataItems(xhr);
+                    };
+                    console.log("Posting request to " + path);
+                    xhr.send(formData);
+
+                }
+
+                function handleDropFiles(e) {
+
                     var files = e.dataTransfer.files; // Array of all files
-                    //for (var i = 0, file; file = files[i]; i++) {
                     for (var i = 0; i < files.length; i++) {
+                        var prog = createProgress("File upload", 100);
+                        pop("progress");
                         var file = files[i];
                         var name = file.name;
                         console.log("Dropped file 1 " + name + " - " + file);
@@ -767,6 +1042,37 @@
                 </div>
             </div>
 
+
+            <div id="structure-query-submit" class="glasspane">
+                <div class="popup" style="width: 400px; height: 200px; margin-top: -100px; margin-left: -200px;">
+                    <div style="text-align: right;">
+                        <a href="#" onClick="hide('structure-query-submit')">X</a>
+                    </div>
+                    <div>
+                        <form id="structure-query-submit-form">
+                            <input type="text" name="queryId" hidden disabled>
+                            <div>
+                                <table cellpadding="3">
+                                    <tr><td>Database:</td><td><input type="text" name="queryName" size="40" disabled value=""></td></tr>
+                                    <tr><td>Query structure:</td><td><input type="text" name="queryStructure" size="40" value="NC1=CC=CC(NC2=NC=CC=N2)=C1"></td>     
+                                    <tr><td>Search type:</td><td>
+                                            <select name="searchOptions">
+                                                <option value="t:s">Substructure</option>
+                                                <option value="t:i dissimilarityThreshold:0.1">90% Similarity</option>
+                                                <option value="t:i dissimilarityThreshold:0.2">80% Similarity</option>
+                                                <option value="t:i dissimilarityThreshold:0.3">70% Similarity</option>
+                                            </select></td></tr>
+                                    <tr><td>Name of output:</td><td><input type="text" name="outputName" size="20" value="" autofocus></td></tr>
+                                </table>
+                            </div>
+                            <div style="position:absolute; right: 10px; bottom: 10px;">
+                                <button type="button" onclick="hide('structure-query-submit');
+                                        handleQueryRequest('structure-query-submit-form');">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
             <div style="display: none;">
                 <form id="no-params-service-submit">
