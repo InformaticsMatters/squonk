@@ -103,6 +103,12 @@ public class RestRouteBuilder extends RouteBuilder {
                 .wireTap("direct:logger")
                 .to("direct:chemsearch/emolecules_sc")
                 .marshal(molDataFormat);
+        
+        rest("/rest/chemsearch/emolecules_bb").post()
+                .route()
+                .wireTap("direct:logger")
+                .to("direct:chemsearch/emolecules_bb")
+                .marshal(molDataFormat);
 
         rest("/rest/dump").get()
                 .to("direct:dump");

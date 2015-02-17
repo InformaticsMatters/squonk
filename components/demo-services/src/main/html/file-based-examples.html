@@ -28,7 +28,7 @@
 
         <a href="#dbsearch"></a>
         <h2>Structure search example</h2>
-        <p>Search the eMolecules screening compounds and get back SD file of the 
+        <p>Search the eMolecules building blocks database and get back SD file of the 
             resulting structures. Note: results are limited to 5000 structures and
             30 seconds.
         </p>
@@ -66,7 +66,7 @@
                 var optionsEl = document.getElementById('searchOptions');
                 var searchOptions = optionsEl.options[optionsEl.selectedIndex].value
                 var xhr = new XMLHttpRequest();
-                xhr.open("POST", "/rest/chemsearch/emolecules_sc", true);
+                xhr.open("POST", "/rest/chemsearch/emolecules_bb", true);
                 xhr.responseType = "blob";
                 xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
                 xhr.onload = function (oEvent) {
