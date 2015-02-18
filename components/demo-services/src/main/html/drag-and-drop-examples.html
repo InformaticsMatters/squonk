@@ -406,7 +406,7 @@
 
                     console.log("Requesting data items");
                     var xhr = new XMLHttpRequest();
-                    xhr.open("GET", "/rest/files/list", true);
+                    xhr.open("GET", "/rest/files", true);
                     xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
                     xhr.onload = function (oEvent) {
                         console.log("xhr.onload()");
@@ -677,7 +677,7 @@
                         console.log("No DataItem defined");
                         return;
                     }
-                    window.open("/files/download?item=" + dataId);
+                    window.open("/rest/files/" + dataId);
                     return false;
                 }
 
@@ -695,7 +695,7 @@
                         return;
                     }
                     var xhr = new XMLHttpRequest();
-                    xhr.open("POST", "/files/delete?item=" + dataId, true);
+                    xhr.open("DELETE", "/rest/files/" + dataId, true);
                     xhr.onload = function () {
                         hide("progress");
                         var status = xhr.status;

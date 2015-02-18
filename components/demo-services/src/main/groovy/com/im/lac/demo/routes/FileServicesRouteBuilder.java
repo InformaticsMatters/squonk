@@ -21,10 +21,10 @@ import java.util.logging.Logger;
 import javax.activation.DataHandler;
 import javax.sql.DataSource;
 import org.apache.camel.Exchange;
-import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
+import org.apache.camel.spi.Synchronization;
 import org.apache.camel.util.IOHelper;
 
 /**
@@ -79,44 +79,13 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                 .log("Processing ...")
                 //.to("direct:/dump/exchange"
                 .process((Exchange exchange) -> {
-                    // 1. grab item id from header and load its DataItem from the service
-                    Long dataId = exchange.getIn().getHeader("item", Long.class);
-                    DataItem sourceData = service.loadDataItem(dataId);
-                    LOG.log(Level.INFO, " Source: Data ID = {0} | ID = {1} Name = {2} LOID = {3}",
-                            new Object[]{dataId, sourceData.getId(), sourceData.getName(), sourceData.getLoid()});
-
-                    String endpoint = exchange.getIn().getHeader("endpoint", String.class);
-                    String newName = exchange.getIn().getHeader("itemName", String.class);
-
-                    // 2. crete a MoleculeObjectIterable from the InputStream of the item's large object
-                    InputStream input = service.createLargeObjectReader(sourceData.getLoid());
-                    MoleculeObjectIterable moit = createMoleculeObjectIterable(input);
-
-                    // 3. send the MoleculeObjectIterable to the target endpoint
-                    try {
-                        ProducerTemplate t = exchange.getContext().createProducerTemplate();
-                        exchange.getIn().setBody(moit);
-                        Exchange exchResult = t.send(endpoint, exchange);
-                        if (exchResult.getException() != null) {
-                            throw exchResult.getException();
-                        }
-
-                        // 4. get the resulting output and create a new DataItem from it, and it to the results
-                        MoleculeObjectIterable mols = exchResult.getIn().getBody(MoleculeObjectIterable.class);
-                        DataItem result = createDataItem(mols, newName);
-                        List<DataItem> created = new ArrayList<>();
-                        if (result != null) {
-                            created.add(result);
-                            LOG.log(Level.INFO, " Result: Data ID = {0} | ID = {1} Name = {2} LOID = {3}",
-                                    new Object[]{dataId, result.getId(), result.getName(), result.getLoid()});
-                        }
-
-                        // 5. set the body to the results
-                        exchange.getOut().setBody(created);
-                    } finally {
-                        // 6. close the large object
-                        IOHelper.close(input);
-                    }
+                    createMoleculeObjectIterableForDataItem(exchange);
+                })
+                // send the Molecules to the desired endpoint
+                .routingSlip(header("endpoint"))
+                // save the molecules as a new DataItem
+                .process((Exchange exchange) -> {
+                    createDataItems(exchange);
                 })
                 .marshal().json(JsonLibrary.Jackson)
                 .log("Response sent");
@@ -142,25 +111,31 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                 })
                 .marshal().json(JsonLibrary.Jackson);
 
-        from("jetty://http://0.0.0.0:8080/files/download")
-                .log("Downloading file")
-                //.to("direct:/dump/exchange")
+        rest("/rest/files")
+                .get()
+                .bindingMode(RestBindingMode.json)
+                .outType(DataItem.class)
+                .route()
+                .wireTap("direct:logger")
+                .to("direct:/files/list")
+                .endRest()
+                .delete("/{item}")
+                .route()
+                .wireTap("direct:logger")
+                .to("direct:/files/delete")
+                .endRest()
+                .get("/{item}")
+                .route()
+                .wireTap("direct:logger")
+                .to("direct:/files/get")
+                .endRest();
+
+        from("direct:/files/list")
                 .process((Exchange exchange) -> {
-                    Long dataId = exchange.getIn().getHeader("item", Long.class);
-                    DataItem data = service.loadDataItem(dataId);
-                    if (data == null) {
-                        exchange.getIn().setBody(null);
-                        throw new IllegalArgumentException("Item ID " + dataId + " not found");
-                    }
-                    InputStream input = service.createLargeObjectReader(data.getLoid());
-                    MoleculeObjectIterable mols = createMoleculeObjectIterable(input);
-                    MoleculeObjectWriter writer = new MoleculeObjectWriter(mols);
-                    InputStream out = writer.getTextStream("sdf"); // TODO format
-                    exchange.getIn().setBody(out);
+                    exchange.getIn().setBody(service.loadDataItems());
                 });
 
-        /* this should be a DELETE REST operation */
-        from("jetty://http://0.0.0.0:8080/files/delete")
+        from("direct:/files/delete")
                 .log("deleting file")
                 .process((Exchange exchange) -> {
                     Long dataId = exchange.getIn().getHeader("item", Long.class);
@@ -173,17 +148,17 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                     exchange.getIn().setBody(null);
                 });
 
-        rest("/rest/files/list")
-                .bindingMode(RestBindingMode.json)
-                .get()
-                .outType(DataItem.class)
-                .route()
-                .wireTap("direct:logger")
-                .to("direct:/files/list");
-
-        from("direct:/files/list")
+        from("direct:/files/get")
+                .log("Getting file ${headers.item}")
+                //.to("direct:/dump/exchange")
                 .process((Exchange exchange) -> {
-                    exchange.getIn().setBody(service.loadDataItems());
+                    createMoleculeObjectIterableForDataItem(exchange);
+                })
+                .process((Exchange exchange) -> {
+                    MoleculeObjectIterable mols = exchange.getIn().getBody(MoleculeObjectIterable.class);
+                    MoleculeObjectWriter writer = new MoleculeObjectWriter(mols);
+                    InputStream out = writer.getTextStream("sdf"); // TODO format
+                    exchange.getIn().setBody(out);
                 });
 
         from("direct:/dump/exchange")
@@ -210,6 +185,8 @@ public class FileServicesRouteBuilder extends RouteBuilder {
 
     }
 
+    // these methods could be moved out to a java bean to simplify things
+    //
     protected void createDataItems(Exchange exchange) throws IOException, SQLException {
         MoleculeObjectIterable mols = exchange.getIn().getBody(MoleculeObjectIterable.class);
         String newName = exchange.getIn().getHeader("itemName", String.class);
@@ -249,6 +226,11 @@ public class FileServicesRouteBuilder extends RouteBuilder {
             throw ex;
         } finally {
             con.setAutoCommit(ac);
+            try {
+                con.close();
+            } catch (SQLException se) {
+                LOG.log(Level.SEVERE, "Failed to close connection", se);
+            }
         }
     }
 
@@ -298,4 +280,52 @@ public class FileServicesRouteBuilder extends RouteBuilder {
         final MoleculeObjectDataFormat modf = new MoleculeObjectDataFormat();
         return (MoleculeObjectIterable) modf.unmarshal(gunzip);
     }
+
+    private void createMoleculeObjectIterableForDataItem(Exchange exchange) throws SQLException, IOException {
+        // 1. grab item id from header and load its DataItem from the service
+        Long dataId = exchange.getIn().getHeader("item", Long.class);
+        DataItem sourceData = service.loadDataItem(dataId);
+        LOG.log(Level.INFO, " Source: Data ID = {0} | ID = {1} Name = {2} LOID = {3}",
+                new Object[]{dataId, sourceData.getId(), sourceData.getName(), sourceData.getLoid()});
+
+        // 2. create a MoleculeObjectIterable from the InputStream of the item's large object
+        Connection con = service.getConnection();
+        boolean ac = con.getAutoCommit();
+        if (ac) {
+            con.setAutoCommit(false);
+        }
+
+        final InputStream input = service.createLargeObjectReader(con, sourceData.getLoid());
+        // this closes the input once the route finishes
+        exchange.addOnCompletion(new Synchronization() {
+            @Override
+            public void onComplete(Exchange exch) {
+                cleanup();
+            }
+
+            @Override
+            public void onFailure(Exchange exch) {
+                cleanup();
+            }
+
+            private void cleanup() {
+                IOHelper.close(input);
+                try {
+                    con.rollback(); // we only read
+                } catch (SQLException ex) {
+                    LOG.log(Level.SEVERE, "Failed to commit", ex);
+                }
+                try {
+                    con.close();
+                } catch (SQLException ex) {
+                    LOG.log(Level.SEVERE, "Failed to close connection", ex);
+                }
+                LOG.info("Input closed");
+            }
+        });
+
+        MoleculeObjectIterable moit = createMoleculeObjectIterable(input);
+        exchange.getIn().setBody(moit);
+    }
+
 }

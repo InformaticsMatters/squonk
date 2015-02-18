@@ -242,16 +242,16 @@ class DbFileService {
         lobj.delete(loid)
     }
     
-    InputStream createLargeObjectReader(final long loid) {
-        
-        log.info("createLargeObjectReader(${loid})")
-        final Connection con = dataSource.connection
-        con.setAutoCommit(false)
+    /**
+     * Create an InputStream that reads the large object. The connection must be 
+     * in a transaction (autoCommit = false) and the InputStream MUST be closed when 
+     * finished with
+     */
+    InputStream createLargeObjectReader(Connection con, long loid) {
         // Get the Large Object Manager to perform operations with
         LargeObjectManager lobj = ((org.postgresql.PGConnection)con).getLargeObjectAPI()
         LargeObject obj = lobj.open(loid, LargeObjectManager.READ)
-
-        return obj.getInputStream();     
+        return obj.getInputStream();        
     }
-
+    
 }

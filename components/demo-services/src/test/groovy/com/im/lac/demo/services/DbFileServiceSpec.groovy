@@ -92,6 +92,9 @@ class DbFileServiceSpec extends Specification {
         neu.created != null
         neu.updated != null
         neu.loid != null
+        
+        cleanup:
+        con?.close()
     }
     
     def "2.3 add update dataitem tx"() {
@@ -118,7 +121,9 @@ class DbFileServiceSpec extends Specification {
     def "3 read large object"() {
         setup:
         def loid = item[0].loid
-        InputStream is = service.createLargeObjectReader(loid)
+        Connection con = service.connection
+        con.autoCommit = false
+        InputStream is = service.createLargeObjectReader(con, loid)
         
         when:
         byte[] bytes = is.getBytes()
@@ -127,7 +132,8 @@ class DbFileServiceSpec extends Specification {
         new String(bytes) == 'hello world!'
         
         cleanup:
-        is?.close()        
+        is?.close()
+        con?.close()
     }
     
     def "4 load data item"() {
@@ -171,7 +177,7 @@ class DbFileServiceSpec extends Specification {
         neu.loid != null
     }
     
-    def "6.2 update data item"() {
+    def "6.2 update data item tx"() {
         
         setup:
         DataItem data = item[0]
@@ -189,6 +195,9 @@ class DbFileServiceSpec extends Specification {
         neu.updated != null
         neu.created < neu.updated
         neu.loid != null
+        
+        cleanup:
+        con?.close()
     }
     
     def "7 update file content"() {
@@ -202,7 +211,9 @@ class DbFileServiceSpec extends Specification {
         
         when:
         DataItem neu = service.updateDataItem(data, is1)
-        InputStream is2 = service.createLargeObjectReader(neu.loid)
+        Connection con = service.connection
+        con.autoCommit = false
+        InputStream is2 = service.createLargeObjectReader(con, neu.loid)
         byte[] bytes = is2.getBytes()
         
         then:
@@ -213,6 +224,10 @@ class DbFileServiceSpec extends Specification {
         oldUpdated < neu.updated
         neu.loid != oldLoid
         new String(bytes) == 'another planet!'
+        
+        cleanup:
+        is2?.close()
+        con?.close()
     }
     
     def "8 delete data item"() {
