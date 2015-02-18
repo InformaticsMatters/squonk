@@ -50,66 +50,121 @@ class DbFileService {
             |)""".stripMargin()
     }
     
+    /**
+     * Get a connection for externally managed transactions
+     */
+    public Connection getConnection() {
+        return dataSource.getConnection();
+    } 
+    
+    /** 
+     * Add a new data item within a new transaction
+     */
     DataItem addDataItem(DataItem data, InputStream is) {
-        
-        Connection con = dataSource.connection
-        Sql db = new Sql(con)
-        Long id
+        Sql db = new Sql(dataSource.connection)
+        DataItem item
         db.withTransaction {
-            Long loid = createLargeObject(is, con)
-            def gen = db.executeInsert("""\
+            item = doAddDataItem(db, data, is)
+        }
+        return item
+    }
+    
+    /**
+     * Add a new data item within a transaction that is managed externally.
+     */
+    DataItem addDataItem(Connection con, DataItem data, InputStream is) {
+        Sql db = new Sql(con)
+        return  doAddDataItem(db, data, is)
+    }
+    
+    private DataItem doAddDataItem(Sql db, DataItem data, InputStream is) {
+        
+        Long loid = createLargeObject(db.connection, is)
+        def gen = db.executeInsert("""\
             |INSERT INTO $DEMO_FILES_TABLE_NAME (name, size, loid)
             |  VALUES (?,?,?)""".stripMargin(), [data.name, data.size, loid]) 
-            id = gen[0][0]
+        Long id = gen[0][0]
             
-            log.info("Created data item with id $id using loid $loid")
-        }
-        return loadDataItem(id)
+        log.info("Created data item with id $id using loid $loid")
+        return doLoadDataItem(db, id)
     }
     
     DataItem updateDataItem(DataItem data) {
-        
         Connection con = dataSource.connection
         Sql db = new Sql(con)
-        Long id = data.id
+        DataItem neu
         db.withTransaction {
-            db.executeUpdate("""\
+            neu = doUpdateDataItem(db, data)
+        }
+        return neu
+    }
+    
+    DataItem updateDataItem(Connection con, DataItem data) {
+        Sql db = new Sql(con)
+        return doUpdateDataItem(db, data)
+    }
+    
+    private DataItem doUpdateDataItem(Sql db, DataItem data) {
+        
+        Long id = data.id
+        db.executeUpdate("""\
             |UPDATE $DEMO_FILES_TABLE_NAME set name = ?, size = ?, last_updated = NOW()
             |  WHERE id = ?""".stripMargin(), [data.name, data.size, id]) 
 
-            log.info("Updated data item with id $id")
-        }
-        return loadDataItem(id)
+        log.info("Updated data item with id $id")
+        return doLoadDataItem(db, id)
     }
     
+    
     DataItem updateDataItem(DataItem data, InputStream is) {
-        
         Connection con = dataSource.connection
         Sql db = new Sql(con)
-        Long id = data.id
+        DataItem neu
         db.withTransaction {
-            deleteLargeObject(data.loid, con)
-            Long loid = createLargeObject(is, con)
-            db.executeUpdate("""\
+            neu = doUpdateDataItem(db, data, is)
+        }
+        return neu
+    }
+    
+    DataItem updateDataItem(Connection con, DataItem data, InputStream is) {
+        Sql db = new Sql(con)
+        return doUpdateDataItem(db, data, is)
+    }
+    
+    private DataItem doUpdateDataItem(Sql db, DataItem data, InputStream is) {
+
+        Long id = data.id
+        Connection con = db.connection
+        deleteLargeObject(data.loid, con)
+        Long loid = createLargeObject(con, is)
+        db.executeUpdate("""\
             |UPDATE $DEMO_FILES_TABLE_NAME set loid = ?, last_updated = NOW()
             |  WHERE id = ?""".stripMargin(), [loid, id]) 
             
-            log.info("Created data item with id $id using loid $loid")
-        }
-        return loadDataItem(id)
+        log.info("Created data item with id $id using loid $loid")
+        return doLoadDataItem(db, data.id)
     }
     
     DataItem loadDataItem(Long id) {
-        log.fine("loadDataItem($id)")
-        DataItem data = new DataItem()
-        Sql db = new Sql(dataSource)
+        Sql db = new Sql(dataSource.connection)
+        DataItem data = null
         db.withTransaction {
-            def row = db.firstRow('SELECT * FROM ' + DbFileService.DEMO_FILES_TABLE_NAME + ' WHERE id = ?', [id])
-            if (!row) {
-                throw new IllegalArgumentException("Item with ID $id not found")
-            }
-            data = buildDataItem(row)
+            data = doLoadDataItem(db, id)
         }
+        return data
+    }
+    
+    DataItem loadDataItem(Connection con, Long id) {        
+        return doLoadDataItem(new Sql(connection), id)
+    }
+    
+    private DataItem doLoadDataItem(Sql db, Long id) {
+        log.fine("loadDataItem($id)")
+        def row = db.firstRow('SELECT * FROM ' + DbFileService.DEMO_FILES_TABLE_NAME + ' WHERE id = ?', [id])
+        if (!row) {
+            throw new IllegalArgumentException("Item with ID $id not found")
+        }
+        DataItem data = buildDataItem(row)
         return data
     }
     
@@ -136,19 +191,28 @@ class DbFileService {
         return data
     }
     
-    void deleteDataItem(DataItem data) {
-        final Connection con = dataSource.connection
-        con.setAutoCommit(false);
-        try {
-            deleteLargeObject(data.loid, con)
-            Sql db = new Sql(con)
-            db.executeUpdate("DELETE FROM " + DEMO_FILES_TABLE_NAME + " WHERE id = ?", [data.id])
-        } finally {
-            con.commit()
-        }
+    /** Delete data item within an externally managed transaction
+     */
+    void deleteDataItem(Connection con, DataItem data) {
+        doDeleteDataItem(new Sql(con), data)    
     }
     
-    private long createLargeObject(InputStream is, Connection con) {
+    /** Delete data item within a new transaction
+     */
+    void deleteDataItem(DataItem data) {
+        final Connection con = dataSource.connection
+        Sql db = new Sql(con)
+        db.withTransaction {
+            doDeleteDataItem(db, data)
+        } 
+    }
+    
+    private void doDeleteDataItem(Sql db, DataItem data) {
+        deleteLargeObject(data.loid, db.connection)
+        db.executeUpdate("DELETE FROM " + DEMO_FILES_TABLE_NAME + " WHERE id = ?", [data.id])    
+    }
+    
+    private long createLargeObject(Connection con, InputStream is) {
         
         // Get the Large Object Manager to perform operations with
         LargeObjectManager lobj = ((org.postgresql.PGConnection)con).getLargeObjectAPI();

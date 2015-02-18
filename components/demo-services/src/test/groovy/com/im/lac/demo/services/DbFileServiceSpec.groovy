@@ -1,12 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package com.im.lac.demo.services
 
 import groovy.sql.Sql
+import java.sql.Connection
 import javax.sql.DataSource
 import org.postgresql.ds.PGSimpleDataSource
 import spock.lang.Shared
@@ -37,6 +32,7 @@ class DbFileServiceSpec extends Specification {
     }
     
     def "1 create table"() {
+        println "create table()"
         setup:
         
         try {
@@ -47,13 +43,16 @@ class DbFileServiceSpec extends Specification {
         when:
         service.createTables()
         
+        
         then:
         db.firstRow('select count(*) from ' + DbFileService.DEMO_FILES_TABLE_NAME)[0] == 0
         
     }
     
     
-    def "2 add dataitem"() {
+    def "2.1 add dataitem"() {
+        println "add dataitem()"
+        
         setup:
         DataItem data = new DataItem(name: 'test1', size: 100)
           
@@ -69,6 +68,51 @@ class DbFileServiceSpec extends Specification {
         neu.created != null
         neu.updated != null
         neu.loid != null
+    }
+    
+    def "2.2 add dataitem tx"() {
+        println "add dataitem tx()"
+        
+        setup:
+        DataItem data = new DataItem(name: 'test1', size: 100)
+        
+          
+        when:
+        Connection con = service.connection
+        con.autoCommit = false
+        DataItem neu = service.addDataItem(con, data, new ByteArrayInputStream('hello world!'.getBytes()))
+        con.commit()
+        println "added data item with id ${neu.id}"
+        item[0] = neu
+        
+        then:
+        neu.id != null
+        neu.name == 'test1'
+        neu.size == 100
+        neu.created != null
+        neu.updated != null
+        neu.loid != null
+    }
+    
+    def "2.3 add update dataitem tx"() {
+        println "add update dataitem tx()"
+        
+        setup:
+        DataItem data = new DataItem(name: 'test1', size: 100)
+        
+          
+        when:
+        Connection con = service.connection
+        con.autoCommit = false
+        DataItem item1 = service.addDataItem(con, data, new ByteArrayInputStream('hello world!'.getBytes()))
+        item1.size = 10000
+        DataItem item2 = service.updateDataItem(con, item1);
+        con.commit()
+        
+        
+        then:
+        item1 != null
+        item2 != null
     }
     
     def "3 read large object"() {
@@ -110,7 +154,7 @@ class DbFileServiceSpec extends Specification {
         items.size() > 0
     }
     
-    def "6 update data item"() {
+    def "6.1 update data item"() {
         
         setup:
         DataItem data = item[0]
@@ -118,6 +162,26 @@ class DbFileServiceSpec extends Specification {
         
         when:
         DataItem neu = service.updateDataItem(data)
+        
+        then:
+        neu.name == "I've changed"
+        neu.created != null
+        neu.updated != null
+        neu.created < neu.updated
+        neu.loid != null
+    }
+    
+    def "6.2 update data item"() {
+        
+        setup:
+        DataItem data = item[0]
+        data.name = "I've changed"
+        
+        when:
+        Connection con = service.connection
+        con.autoCommit = false
+        DataItem neu = service.updateDataItem(con, data)
+        con.commit()
         
         then:
         neu.name == "I've changed"

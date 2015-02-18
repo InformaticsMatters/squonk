@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +36,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
     private static final Logger LOG = Logger.getLogger(FileServicesRouteBuilder.class.getName());
 
     private DataSource dataSource;
-    private DbFileService service;
+    private final DbFileService service;
 
     public FileServicesRouteBuilder(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -64,45 +66,33 @@ public class FileServicesRouteBuilder extends RouteBuilder {
 
         from("jetty://http://0.0.0.0:8080/chemsearch")
                 .log("Processing query")
-                //.to("direct:/dump/exchange")
+                .transform(header("QueryStructure"))
+                .log("Routing query to ${headers.endpoint}")
+                .routingSlip(header("endpoint"))
                 .process((Exchange exchange) -> {
-
-                    String endpoint = exchange.getIn().getHeader("endpoint", String.class);
-                    String newName = exchange.getIn().getHeader("itemName", String.class);
-                    String query = exchange.getIn().getHeader("QueryStructure", String.class);
-
-                    ProducerTemplate t = exchange.getContext().createProducerTemplate();
-                    exchange.getIn().setBody(query);
-                    Exchange exchResult = t.send(endpoint, exchange);
-                    if (exchResult.getException() != null) {
-                        throw exchResult.getException();
-                    }
-
-                    MoleculeObjectIterable mols = exchResult.getIn().getBody(MoleculeObjectIterable.class);
-                    DataItem result = createDataItem(mols, newName);
-                    List<DataItem> created = new ArrayList<>();
-                    if (result != null) {
-                        created.add(result);
-                        LOG.log(Level.INFO, " Result: ID = {0} Name = {1} LOID = {2}",
-                                new Object[]{result.getId(), result.getName(), result.getLoid()});
-                    }
-                    exchange.getOut().setBody(created);
+                    createDataItems(exchange);
                 })
                 .marshal().json(JsonLibrary.Jackson)
-                .log("Response sent");
+                .log("Query response sent");
 
         from("jetty://http://0.0.0.0:8080/process")
                 .log("Processing ...")
-                //.to("direct:/dump/exchange")
+                //.to("direct:/dump/exchange"
                 .process((Exchange exchange) -> {
+                    // 1. grab item id from header and load its DataItem from the service
                     Long dataId = exchange.getIn().getHeader("item", Long.class);
-                    String endpoint = exchange.getIn().getHeader("endpoint", String.class);
-                    String newName = exchange.getIn().getHeader("itemName", String.class);
                     DataItem sourceData = service.loadDataItem(dataId);
                     LOG.log(Level.INFO, " Source: Data ID = {0} | ID = {1} Name = {2} LOID = {3}",
                             new Object[]{dataId, sourceData.getId(), sourceData.getName(), sourceData.getLoid()});
+
+                    String endpoint = exchange.getIn().getHeader("endpoint", String.class);
+                    String newName = exchange.getIn().getHeader("itemName", String.class);
+
+                    // 2. crete a MoleculeObjectIterable from the InputStream of the item's large object
                     InputStream input = service.createLargeObjectReader(sourceData.getLoid());
                     MoleculeObjectIterable moit = createMoleculeObjectIterable(input);
+
+                    // 3. send the MoleculeObjectIterable to the target endpoint
                     try {
                         ProducerTemplate t = exchange.getContext().createProducerTemplate();
                         exchange.getIn().setBody(moit);
@@ -111,6 +101,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                             throw exchResult.getException();
                         }
 
+                        // 4. get the resulting output and create a new DataItem from it, and it to the results
                         MoleculeObjectIterable mols = exchResult.getIn().getBody(MoleculeObjectIterable.class);
                         DataItem result = createDataItem(mols, newName);
                         List<DataItem> created = new ArrayList<>();
@@ -118,10 +109,12 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                             created.add(result);
                             LOG.log(Level.INFO, " Result: Data ID = {0} | ID = {1} Name = {2} LOID = {3}",
                                     new Object[]{dataId, result.getId(), result.getName(), result.getLoid()});
-
                         }
+
+                        // 5. set the body to the results
                         exchange.getOut().setBody(created);
                     } finally {
+                        // 6. close the large object
                         IOHelper.close(input);
                     }
                 })
@@ -217,31 +210,49 @@ public class FileServicesRouteBuilder extends RouteBuilder {
 
     }
 
-//    protected DataItem createDataItem(MoleculeObjectIterable mols, String name) throws IOException {
-//
-//        long t0 = System.currentTimeMillis();
-//        MoleculeObjectWriter writer = new MoleculeObjectWriter(mols);
-//        InputStream out = writer.getTextStream("sdf"); // TODO format
-//        DataItem item = new DataItem();
-//        item.setName(name);
-//        item.setSize(0); // this will be updated later
-//        DataItem result;
-//        result = service.addDataItem(item, out);
-//        long t1 = System.currentTimeMillis();
-//        LOG.log(Level.INFO, "Writing data took {0}ms", (t1-t0));
-//        int count = writer.getMarshalCount();
-//        if (count == 0) {
-//            LOG.info("No results found");
-//            service.deleteDataItem(result);
-//            return null;
-//        } else {
-//            result.setSize(count);
-//            LOG.log(Level.INFO, "Updating Item: ID={0} Name={1} Size={2} LOID={3}",
-//                    new Object[]{result.getId(), result.getName(), result.getSize(), result.getLoid()});
-//            return service.updateDataItem(result);
-//        }
-//    }
-    protected DataItem createDataItem(MoleculeObjectIterable mols, String name) throws IOException {
+    protected void createDataItems(Exchange exchange) throws IOException, SQLException {
+        MoleculeObjectIterable mols = exchange.getIn().getBody(MoleculeObjectIterable.class);
+        String newName = exchange.getIn().getHeader("itemName", String.class);
+        Connection con = service.getConnection();
+        boolean ac = con.getAutoCommit();
+        if (ac) {
+            con.setAutoCommit(false);
+        }
+        List<DataItem> created = new ArrayList<>();
+        try {
+            DataItem result = createDataItem(con, mols, newName);
+            if (result != null) {
+                created.add(result);
+                LOG.log(Level.INFO, " Result: ID = {0} Name = {1} LOID = {2}",
+                        new Object[]{result.getId(), result.getName(), result.getLoid()});
+            }
+            con.commit();
+        } catch (IOException | SQLException ex) {
+            con.rollback();
+            throw ex;
+        } finally {
+            con.setAutoCommit(ac);
+        }
+        exchange.getIn().setBody(created);
+    }
+
+    protected DataItem createDataItem(MoleculeObjectIterable mols, String name) throws IOException, SQLException {
+        Connection con = service.getConnection();
+        boolean ac = con.getAutoCommit();
+        if (ac) {
+            con.setAutoCommit(false);
+        }
+        try {
+            return createDataItem(con, mols, name);
+        } catch (IOException ex) {
+            con.rollback();
+            throw ex;
+        } finally {
+            con.setAutoCommit(ac);
+        }
+    }
+
+    protected DataItem createDataItem(Connection con, MoleculeObjectIterable mols, String name) throws IOException {
 
         long t0 = System.currentTimeMillis();
 
@@ -258,18 +269,18 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                     try {
                         modf.marshal(mols, out);
                     } catch (Exception ex) {
-                        throw new RuntimeException("Failed to write MolecuelObjects", ex);
+                        throw new RuntimeException("Failed to write MoleculeObjects", ex);
                     }
                 });
         t.start();
 
-        result = service.addDataItem(item, pis);
+        result = service.addDataItem(con, item, pis);
         long t1 = System.currentTimeMillis();
         LOG.log(Level.INFO, "Writing data took {0}ms", (t1 - t0));
         int count = modf.getMarshalCount();
         if (count == 0) {
             LOG.info("No results found");
-            service.deleteDataItem(result);
+            service.deleteDataItem(con, result);
             return null;
         } else {
             result.setSize(count);
@@ -278,7 +289,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
             }
             LOG.log(Level.INFO, "Updating Item: ID={0} Name={1} Size={2} LOID={3}",
                     new Object[]{result.getId(), result.getName(), result.getSize(), result.getLoid()});
-            return service.updateDataItem(result);
+            return service.updateDataItem(con, result);
         }
     }
 
