@@ -25,6 +25,23 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
         result == 1000
     }
 
+    def 'smiles to molecules lipinski'() {
+
+        setup:
+        def resultEndpoint = camelContext.getEndpoint('mock:result')
+        resultEndpoint.expectedMessageCount(1)
+        File file = new File("../../data/testfiles/nci1000.smiles")
+
+        when:
+        template.sendBody('direct:convertToMolsFilter', file)
+
+        then:
+        resultEndpoint.assertIsSatisfied()
+        def result = resultEndpoint.receivedExchanges.in.body[0]
+        result == 93
+    }
+
+
     def 'InputStream to molecules'() {
         setup:
         def resultEndpoint = camelContext.getEndpoint('mock:result')
@@ -53,7 +70,7 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
         then:
         resultEndpoint.assertIsSatisfied()
         def result = resultEndpoint.receivedExchanges.in.body[0]
-        result == 508 // FOR NOW -> SHOULD 508 // was756
+        result == 15 // FOR NOW -> SHOULD 508 // was756
 
         cleanup:
         gzip.close()
@@ -71,10 +88,15 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
                 .to("language:python:file:src/main/python/molecule_counter.py?transform=false")
                 .to('mock:result')
 
-
                 from("direct:convertToMolsFilter")
                 .to("language:python:file:src/main/python/molecule_objects.py?transform=false")
-                .setHeader('FUNCTION', constant("2<num_hba<7"))
+                .setHeader('FUNCTION', constant("-1<num_hbd<6"))
+                .to("language:python:file:src/main/python/filter_props_thread.py?transform=false")
+                .setHeader('FUNCTION', constant("-1<num_hba<11"))
+                .to("language:python:file:src/main/python/filter_props_thread.py?transform=false")
+                .setHeader('FUNCTION', constant("5<mol_logp<100"))
+                .to("language:python:file:src/main/python/filter_props_thread.py?transform=false")                
+                .setHeader('FUNCTION', constant("0<mol_mr<500"))
                 .to("language:python:file:src/main/python/filter_props_thread.py?transform=false")
                 .to("language:python:file:src/main/python/molecule_counter.py?transform=false")
                 .to('mock:result')

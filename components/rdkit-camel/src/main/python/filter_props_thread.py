@@ -33,7 +33,7 @@ def filter_props():
         # Now to make sure it's been through the test
         java_mol.putValue("my_test", "true")
         filter_mols.add(java_mol)
-# Now close this body
+    # Now close this body
     filter_mols.close()
 
 
@@ -55,7 +55,11 @@ else:
     min_ans = float(my_head[0])
     max_ans = float(my_head[2])
 
+# Create the closeable qeuue to leave
 filter_mols = CloseableMoleculeObjectQueue(100)
+# Set filter mols to the body
 request.body = filter_mols
+# Create the thread
 my_thread = ObjFiltThread()
+# Star the thread
 my_thread.start()

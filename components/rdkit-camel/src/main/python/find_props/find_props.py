@@ -23,17 +23,23 @@ def num_rings(mol):
     Returns an int"""
     return RDKFuncs.calcNumRings(mol)
 
-def mol_logp(mol, ret_val=False):
+def mol_logp(mol):
     """Function for calculating mol log p
     Takes an RDKit molecule
     Returns a int"""
     return RDKFuncs.calcMolLogP(mol)
 
+def mol_mr(mol):
+    """Function to find the mass of a molecule
+    Takes an RDKit molecule
+    Returns a float"""
+    return RDKFuncs.calcMolMR(mol)
 # A dictionary to relate functioons tostrings
 funct_dict = {"num_hba": num_hba,
 "num_hbd": num_hbd,
 "num_rings": num_rings,
-"mol_logp": mol_logp}
+"mol_logp": mol_logp,
+"mol_mr": mol_mr}
 
 
 def calc_props(rdmol, function):
