@@ -34,7 +34,7 @@ def read_in():
     # gets as string and is usually OK, but potentially could be a binary format 
     # such as cdx so getSourceAsBytes() which returns a byte array is safer, but 
     # as long as we only handle smiles, inchi, sdf, mol then strings are OK
-        molstr = molobj.getSourceAsString()
+        molstr = molobj.getSource()
     # Get the format and use this as a starting poitn to work out 
         molformat = molobj.getFormat()
         rdmol = parse_mol_simple(molformat, molstr)
