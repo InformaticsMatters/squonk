@@ -62,6 +62,19 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                         .outputMode(JChemDBSearcher.OutputMode.MOLECULE_OBJECTS)
                         .structureFormat("mol")
                 );
+        
+        from("direct:chemsearch/emolecules_bb")
+                .convertBodyTo(String.class)
+                .process(new JChemDBSearcher()
+                        .dataSource(dataSource)
+                        .structureTable("vendordbs.emolecules_orderbb")
+                        .propertyTable("vendordbs.jchemproperties")
+                        .searchOptions("t:d")
+                        .searchOptionsOverride("maxResults:5000 maxTime:30000")
+                        .outputColumn("version_id")
+                        .outputMode(JChemDBSearcher.OutputMode.MOLECULE_OBJECTS)
+                        .structureFormat("mol")
+                );
 
         // filedrop service for searching eMolecules screening compounds
         String emolsbase = "../../lacfiledrop/dbsearch/emolecules_sc";

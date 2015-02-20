@@ -1,4 +1,4 @@
-package com.im.lac.camel.dataformat;
+package com.im.lac.camel.chemaxon.dataformat;
 
 import chemaxon.formats.MolExporter;
 import chemaxon.struc.Molecule;

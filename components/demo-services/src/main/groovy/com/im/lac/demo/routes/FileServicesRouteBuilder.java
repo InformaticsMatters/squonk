@@ -1,14 +1,16 @@
 package com.im.lac.demo.routes;
 
+import com.im.lac.camel.dataformat.MoleculeObjectDataFormat;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.chemaxon.molecule.MoleculeObjectWriter;
-import com.im.lac.util.OutputGenerator;
 import com.im.lac.demo.services.DbFileService;
 import com.im.lac.demo.model.*;
 import com.im.lac.types.MoleculeObjectIterable;
 import com.im.lac.util.IOUtils;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.PushbackInputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -60,38 +62,75 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                 .log("Debug params")
                 .to("direct:/dump/exchange");
 
+        from("jetty://http://0.0.0.0:8080/chemsearch")
+                .log("Processing query")
+                //.to("direct:/dump/exchange")
+                .process((Exchange exchange) -> {
+
+                    String endpoint = exchange.getIn().getHeader("endpoint", String.class);
+                    String newName = exchange.getIn().getHeader("itemName", String.class);
+                    String query = exchange.getIn().getHeader("QueryStructure", String.class);
+
+                    ProducerTemplate t = exchange.getContext().createProducerTemplate();
+                    exchange.getIn().setBody(query);
+                    Exchange exchResult = t.send(endpoint, exchange);
+                    if (exchResult.getException() != null) {
+                        throw exchResult.getException();
+                    }
+
+                    MoleculeObjectIterable mols = exchResult.getIn().getBody(MoleculeObjectIterable.class);
+                    DataItem result = createDataItem(mols, newName);
+                    List<DataItem> created = new ArrayList<>();
+                    if (result != null) {
+                        created.add(result);
+                        LOG.log(Level.INFO, " Result: ID = {0} Name = {1} LOID = {2}",
+                                new Object[]{result.getId(), result.getName(), result.getLoid()});
+                    }
+                    exchange.getOut().setBody(created);
+                })
+                .marshal().json(JsonLibrary.Jackson)
+                .log("Response sent");
+
         from("jetty://http://0.0.0.0:8080/process")
-                .log("Processing")
+                .log("Processing ...")
                 //.to("direct:/dump/exchange")
                 .process((Exchange exchange) -> {
                     Long dataId = exchange.getIn().getHeader("item", Long.class);
                     String endpoint = exchange.getIn().getHeader("endpoint", String.class);
-                    DataItem data = service.loadDataItem(dataId);
-                    LOG.log(Level.INFO, "ID = {0} Data ID = {1} Data LOID = {2}", new Object[]{dataId, data.getId(), data.getLoid()});
-                    InputStream input = service.createLargeObjectReader(data.getLoid());
-                    InputStream gunzip = IOUtils.getGunzippedInputStream(input);
-                    InputStream output = null;
+                    String newName = exchange.getIn().getHeader("itemName", String.class);
+                    DataItem sourceData = service.loadDataItem(dataId);
+                    LOG.log(Level.INFO, " Source: Data ID = {0} | ID = {1} Name = {2} LOID = {3}",
+                            new Object[]{dataId, sourceData.getId(), sourceData.getName(), sourceData.getLoid()});
+                    InputStream input = service.createLargeObjectReader(sourceData.getLoid());
+                    MoleculeObjectIterable moit = createMoleculeObjectIterable(input);
                     try {
                         ProducerTemplate t = exchange.getContext().createProducerTemplate();
-                        OutputGenerator body = t.requestBody(endpoint, gunzip, OutputGenerator.class);
-                        LOG.log(Level.INFO, "Got output: {0}", body);
-                        output = body.getTextStream("sdf");
-                        DataItem result = service.addDataItem(data, output);
-                        LOG.log(Level.INFO, "Got result from processing: {0}", result);
+                        exchange.getIn().setBody(moit);
+                        Exchange exchResult = t.send(endpoint, exchange);
+                        if (exchResult.getException() != null) {
+                            throw exchResult.getException();
+                        }
+
+                        MoleculeObjectIterable mols = exchResult.getIn().getBody(MoleculeObjectIterable.class);
+                        DataItem result = createDataItem(mols, newName);
+                        List<DataItem> created = new ArrayList<>();
+                        if (result != null) {
+                            created.add(result);
+                            LOG.log(Level.INFO, " Result: Data ID = {0} | ID = {1} Name = {2} LOID = {3}",
+                                    new Object[]{dataId, result.getId(), result.getName(), result.getLoid()});
+
+                        }
+                        exchange.getOut().setBody(created);
                     } finally {
                         IOHelper.close(input);
-                        if (output != null) {
-                            IOHelper.close(output);
-                        }
                     }
-
-                    exchange.getIn().setBody(data);
                 })
-                .marshal().json(JsonLibrary.Jackson);
+                .marshal().json(JsonLibrary.Jackson)
+                .log("Response sent");
 
         from("jetty://http://0.0.0.0:8080/files/upload")
                 .log("Uploading file")
-                .to("direct:/dump/exchange")
+                //.to("direct:/dump/exchange")
                 .process((Exchange exchange) -> {
                     Map<String, DataHandler> attachements = exchange.getIn().getAttachments();
                     List<DataItem> created = new ArrayList<>();
@@ -99,28 +138,35 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                         for (DataHandler dh : attachements.values()) {
                             InputStream is = dh.getInputStream();
                             InputStream gunzip = IOUtils.getGunzippedInputStream(is);
-
                             MoleculeObjectIterable mols = MoleculeObjectUtils.createIterable(gunzip);
-                            MoleculeObjectWriter writer = new MoleculeObjectWriter(mols);
-                            InputStream out = writer.getTextStream("sdf"); // TODO format
-                            DataItem item = new DataItem();
-                            item.setName(dh.getName());
-                            item.setSize(0); // this will be updated later
-                            DataItem result;
-                            try {
-                                result = service.addDataItem(item, out);
-                                result.setSize(writer.getCount());
-                            } finally {
-                                IOHelper.close(is);
+                            DataItem result = createDataItem(mols, dh.getName());
+                            if (result != null) {
+                                created.add(result);
                             }
-                            DataItem finalResult = service.updateDataItem(result);
-                            created.add(finalResult);
                         }
                     }
                     exchange.getIn().setBody(created);
                 })
                 .marshal().json(JsonLibrary.Jackson);
 
+        from("jetty://http://0.0.0.0:8080/files/download")
+                .log("Downloading file")
+                //.to("direct:/dump/exchange")
+                .process((Exchange exchange) -> {
+                    Long dataId = exchange.getIn().getHeader("item", Long.class);
+                    DataItem data = service.loadDataItem(dataId);
+                    if (data == null) {
+                        exchange.getIn().setBody(null);
+                        throw new IllegalArgumentException("Item ID " + dataId + " not found");
+                    }
+                    InputStream input = service.createLargeObjectReader(data.getLoid());
+                    MoleculeObjectIterable mols = createMoleculeObjectIterable(input);
+                    MoleculeObjectWriter writer = new MoleculeObjectWriter(mols);
+                    InputStream out = writer.getTextStream("sdf"); // TODO format
+                    exchange.getIn().setBody(out);
+                });
+
+        /* this should be a DELETE REST operation */
         from("jetty://http://0.0.0.0:8080/files/delete")
                 .log("deleting file")
                 .process((Exchange exchange) -> {
@@ -171,4 +217,74 @@ public class FileServicesRouteBuilder extends RouteBuilder {
 
     }
 
+//    protected DataItem createDataItem(MoleculeObjectIterable mols, String name) throws IOException {
+//
+//        long t0 = System.currentTimeMillis();
+//        MoleculeObjectWriter writer = new MoleculeObjectWriter(mols);
+//        InputStream out = writer.getTextStream("sdf"); // TODO format
+//        DataItem item = new DataItem();
+//        item.setName(name);
+//        item.setSize(0); // this will be updated later
+//        DataItem result;
+//        result = service.addDataItem(item, out);
+//        long t1 = System.currentTimeMillis();
+//        LOG.log(Level.INFO, "Writing data took {0}ms", (t1-t0));
+//        int count = writer.getMarshalCount();
+//        if (count == 0) {
+//            LOG.info("No results found");
+//            service.deleteDataItem(result);
+//            return null;
+//        } else {
+//            result.setSize(count);
+//            LOG.log(Level.INFO, "Updating Item: ID={0} Name={1} Size={2} LOID={3}",
+//                    new Object[]{result.getId(), result.getName(), result.getSize(), result.getLoid()});
+//            return service.updateDataItem(result);
+//        }
+//    }
+    protected DataItem createDataItem(MoleculeObjectIterable mols, String name) throws IOException {
+
+        long t0 = System.currentTimeMillis();
+
+        DataItem item = new DataItem();
+        item.setName(name);
+        item.setSize(0); // this will be updated later
+        DataItem result;
+
+        final PipedInputStream pis = new PipedInputStream();
+        final PipedOutputStream out = new PipedOutputStream(pis);
+        final MoleculeObjectDataFormat modf = new MoleculeObjectDataFormat();
+        Thread t = new Thread(
+                () -> {
+                    try {
+                        modf.marshal(mols, out);
+                    } catch (Exception ex) {
+                        throw new RuntimeException("Failed to write MolecuelObjects", ex);
+                    }
+                });
+        t.start();
+
+        result = service.addDataItem(item, pis);
+        long t1 = System.currentTimeMillis();
+        LOG.log(Level.INFO, "Writing data took {0}ms", (t1 - t0));
+        int count = modf.getMarshalCount();
+        if (count == 0) {
+            LOG.info("No results found");
+            service.deleteDataItem(result);
+            return null;
+        } else {
+            result.setSize(count);
+            if (result.getName() == null) {
+                result.setName("DataItem " + result.getId());
+            }
+            LOG.log(Level.INFO, "Updating Item: ID={0} Name={1} Size={2} LOID={3}",
+                    new Object[]{result.getId(), result.getName(), result.getSize(), result.getLoid()});
+            return service.updateDataItem(result);
+        }
+    }
+
+    private MoleculeObjectIterable createMoleculeObjectIterable(InputStream is) throws IOException {
+        InputStream gunzip = IOUtils.getGunzippedInputStream(is);
+        final MoleculeObjectDataFormat modf = new MoleculeObjectDataFormat();
+        return (MoleculeObjectIterable) modf.unmarshal(gunzip);
+    }
 }

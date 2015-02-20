@@ -1,0 +1,17 @@
+
+
+repositories {
+    jcenter()
+}
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+    
+    compile project(':common')
+    
+    compile "org.apache.camel:camel-core:$camelVersion"
+    compile "org.apache.camel:camel-jackson:$camelVersion"
+
+    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
+    testCompile 'junit:junit:4.11'
+}

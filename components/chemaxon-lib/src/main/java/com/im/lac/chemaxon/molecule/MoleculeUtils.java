@@ -162,7 +162,7 @@ public class MoleculeUtils {
         Molecule mol = mo.getRepresentation(Molecule.class, Molecule.class);
         if (mol == null) {
             try {
-                mol = convertToMolecule(mo.getSourceAsBytes());
+                mol = convertToMolecule(mo.getSource());
             } catch (MolFormatException ex) {
                 throw new RuntimeException("Bad format for Molecule", ex);
             }

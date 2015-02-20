@@ -1,7 +1,7 @@
 package com.im.lac.demo.routes;
 
 import chemaxon.jchem.db.cache.CacheManager;
-import com.im.lac.camel.dataformat.MoleculeObjectIteratorDataFormat;
+import com.im.lac.camel.chemaxon.dataformat.MoleculeObjectIteratorDataFormat;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.List;
@@ -102,6 +102,12 @@ public class RestRouteBuilder extends RouteBuilder {
                 .route()
                 .wireTap("direct:logger")
                 .to("direct:chemsearch/emolecules_sc")
+                .marshal(molDataFormat);
+        
+        rest("/rest/chemsearch/emolecules_bb").post()
+                .route()
+                .wireTap("direct:logger")
+                .to("direct:chemsearch/emolecules_bb")
                 .marshal(molDataFormat);
 
         rest("/rest/dump").get()

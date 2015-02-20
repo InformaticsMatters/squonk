@@ -28,6 +28,7 @@ public class MoleculeObjectWriter implements OutputGenerator {
         this.mols = mols;
     }
 
+    @Override
     public InputStream getTextStream(String format) throws IOException {
 
         LOG.fine("Creating Text stream");

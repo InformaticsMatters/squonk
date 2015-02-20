@@ -105,6 +105,9 @@ class DbFileService {
         Sql db = new Sql(dataSource)
         db.withTransaction {
             def row = db.firstRow('SELECT * FROM ' + DbFileService.DEMO_FILES_TABLE_NAME + ' WHERE id = ?', [id])
+            if (!row) {
+                throw new IllegalArgumentException("Item with ID $id not found")
+            }
             data = buildDataItem(row)
         }
         return data
@@ -115,7 +118,7 @@ class DbFileService {
         List<DataItem> items = []
         Sql db = new Sql(dataSource)
         db.withTransaction {
-            db.eachRow('SELECT * FROM ' + DbFileService.DEMO_FILES_TABLE_NAME) { row ->
+            db.eachRow('SELECT * FROM ' + DbFileService.DEMO_FILES_TABLE_NAME + '  ORDER BY id') { row ->
                 items << buildDataItem(row)
             }
         }

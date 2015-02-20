@@ -1,8 +1,10 @@
 package com.im.lac.util;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
@@ -11,17 +13,17 @@ import java.util.zip.GZIPInputStream;
  * @author timbo
  */
 public class IOUtils {
-    
+
     private static final Logger LOG = Logger.getLogger(IOUtils.class.getName());
 
     /**
-     * Utility for checking if an InputStream is gzipped.
-     * Returns a GZIPInputStream if the stream is in gzip format, otherwise the original
+     * Utility for checking if an InputStream is gzipped. Returns a
+     * GZIPInputStream if the stream is in gzip format, otherwise the original
      * InputStream (actually a wrapper around it).
-     * 
+     *
      * @param is An InputStream that provides the data gunzipped.
-     * @return 
-     * @throws IOException 
+     * @return
+     * @throws IOException
      */
     public static InputStream getGunzippedInputStream(InputStream is) throws IOException {
         PushbackInputStream pb = new PushbackInputStream(is, 2);
@@ -34,6 +36,23 @@ public class IOUtils {
         } else {
             LOG.finer("Stream is not gzipped");
             return pb;
+        }
+    }
+
+    /**
+     * Convenience method to close the object if it implements the Closeable
+     * interface.
+     * If the close() fails then the exception is logged, but not thrown.
+     *
+     * @param o
+     */
+    public static void closeIfCloseable(Object o) {
+        if (o instanceof Closeable) {
+            try {
+                ((Closeable) o).close();
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, "Failed to close " + o, ex);
+            }
         }
     }
 

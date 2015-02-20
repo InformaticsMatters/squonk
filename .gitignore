@@ -34,3 +34,6 @@ components/chemcentral/users.properties
 /components/chemaxon-camel/build/
 /components/chemaxon-lib/build/
 components/demo-services/logs
+/components/common-camel/.nb-gradle/private/
+/components/common-camel/build/
+/components/datamodel/mockdatamodel/build/

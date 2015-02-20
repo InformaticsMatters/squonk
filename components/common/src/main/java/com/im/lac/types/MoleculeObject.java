@@ -5,6 +5,9 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 /**
  * Represents a molecule in a platform neutral way allowing instances to be
@@ -15,6 +18,8 @@ import java.util.Map;
  *
  * @author timbo
  */
+@JsonIgnoreProperties({"representations", "representation", "value"})
+@JsonInclude(Include.NON_EMPTY)
 public class MoleculeObject implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -25,15 +30,13 @@ public class MoleculeObject implements Serializable {
 
     /**
      * The source of the molecule in its original form. Usually this will be
-     * String containing smiles, InCHI or Molfile, but some formats like CDX are
-     * binary formats so we handle as a byte array to allow those formats to be
-     * supported.
+     * String containing smiles, InCHI or Molfile.
      */
-    private byte[] source;
+    private String source;
 
     /**
      * The input format e.g. smiles, sdf. Some constants are defined to assist
-     * with this.
+     * with this. Note that this field may not always be set.
      */
     private String format;
 
@@ -59,34 +62,25 @@ public class MoleculeObject implements Serializable {
     /**
      * Properties of the molecule. These are shared across all chemistry
      * implementations allowing different implementations to be interoperable.
-     * Note that the keys and values must be Serializable so that these
-     * properties can be used in remote implementations. The properties are set
-     * and read using the getValue(), putValue() and related methods.
+     * Note that the keys must be Strings and values must be writable as simple JSON 
+     * types so that these properties can be used in remote implementations. The 
+     * properties are set and read using the getValue(), putValue() and related methods.
      */
-    private Map<Serializable, Serializable> properties;
+    private Map<String, Object> values;
 
     /**
      * For serialization only.
      */
     public MoleculeObject() {
         representations = new HashMap<>();
-        properties = new HashMap<>();
+        values = new HashMap<>();
     }
 
     public MoleculeObject(String source) {
-        this(source.getBytes());
+        this(source, null);
     }
 
     public MoleculeObject(String source, String format) {
-        this(source.getBytes(), format);
-    }
-
-    public MoleculeObject(byte[] source) {
-        this();
-        this.source = source;
-    }
-
-    public MoleculeObject(byte[] source, String format) {
         this();
         this.source = source;
         this.format = format;
@@ -97,12 +91,8 @@ public class MoleculeObject implements Serializable {
         representations = new HashMap<>();
     }
 
-    public byte[] getSourceAsBytes() {
+    public String getSource() {
         return source;
-    }
-
-    public String getSourceAsString() {
-        return new String(source);
     }
 
     public String getFormat() {
@@ -112,14 +102,14 @@ public class MoleculeObject implements Serializable {
     /**
      * Get the format if defined, or else the supplied default
      *
-     * @param def
+     * @param defaultValue
      * @return
      */
-    public String getFormat(String def) {
+    public String getFormat(String defaultValue) {
         if (format != null) {
             return format;
         } else {
-            return def;
+            return defaultValue;
         }
     }
 
@@ -143,51 +133,32 @@ public class MoleculeObject implements Serializable {
         return representations.put(key, value);
     }
 
-    public Object getValue(Serializable key) {
-        return properties.get(key);
+    public Object getValue(String key) {
+        return values.get(key);
     }
 
-    public Map<Serializable, Serializable> getValues() {
-        return properties;
+    public Map<String, Object> getValues() {
+        return values;
     }
 
-    public <T> T getValue(Serializable key, Class<T> type) {
-        return (T) properties.get(key);
+    public void setValues(Map<String, Object> values) {
+        this.values = values;
     }
 
-    public boolean hasValue(Serializable key) {
-        return properties.containsKey(key);
+    public <T> T getValue(String key, Class<T> type) {
+        return (T) values.get(key);
     }
 
-    /**
-     * Put this property. The key and the value should be Serializable, but we
-     * allow any Objects here. If they are not Serializable then the .toString()
-     * representation is used.
-     *
-     * @param key
-     * @param value
-     * @return
-     */
-    public Serializable putValue(Object key, Object value) {
-        Serializable k, v;
-        if (key instanceof Serializable) {
-            k = (Serializable) key;
-        } else {
-            k = key.toString();
-        }
-        if (value instanceof Serializable) {
-            v = (Serializable) value;
-        } else {
-            v = value.toString();
-        }
-        Serializable o = properties.put(k, v);
-        return o;
+    public boolean hasValue(String key) {
+        return values.containsKey(key);
     }
 
-    public void putValues(Map<? extends Object, ? extends Object> values) {
-        for (Map.Entry<? extends Object, ? extends Object> e : values.entrySet()) {
-            putValue(e.getKey(), e.getValue());
-        }
+    public Object putValue(String key, Object value) {
+        return values.put(key, value);
+    }
+
+    public void putValues(Map<String, Object> values) {
+        this.values.putAll(values);
     }
 
 }
