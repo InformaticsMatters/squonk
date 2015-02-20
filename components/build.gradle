@@ -12,6 +12,7 @@ allprojects {
     version = '0.2-SNAPSHOT'
     
     project.ext.set('camelVersion', '2.14.1')
+    project.ext.set('jacksonVersion', '2.4.1')
 
 
     // In this section you declare where to find the dependencies of your project

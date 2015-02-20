@@ -2,6 +2,8 @@ package com.im.lac.types
 
 import spock.lang.Specification
 
+import com.fasterxml.jackson.databind.ObjectMapper
+
 /**
  *
  * @author timbo
@@ -30,11 +32,10 @@ class MoleculeObjectSpec extends Specification {
         then:
         m1.hasValue("foo")
         m1.hasRepresentation("donald")
-        m2.getSourceAsString() == molStr
+        m2.getSource() == molStr
         m2.hasValue("foo")
         m2.format == MoleculeObject.FORMAT_SMILES
-        !m2.hasRepresentation("donald")
-            
+        !m2.hasRepresentation("donald") 
     }
     
     def "test serialization list"() {
@@ -66,13 +67,52 @@ class MoleculeObjectSpec extends Specification {
         then:
         mols2.size() == 2
         mols2[0].getValue("foo") == "bar"
-        mols2[0].getSourceAsString() == molStr1
+        mols2[0].getSource() == molStr1
         mols2[0].format == MoleculeObject.FORMAT_SMILES
         
         mols2[1].hasValue("crazy")
-        mols2[1].getSourceAsString() == molStr2
+        mols2[1].getSource() == molStr2
         mols2[1].format == MoleculeObject.FORMAT_SMILES
             
+    }
+    
+    void "serialization speed"() {
+        
+    }
+    
+    
+    void "marshal to json"() {
+        
+        setup:
+        MoleculeObject mo = new MoleculeObject('CCC')
+        mo.putValue('tim', 'tom')
+            
+        ObjectMapper mapper = new ObjectMapper()
+        
+        when:
+        String json = mapper.writeValueAsString(mo)
+        println "JSON: " + json
+        
+        then:
+        json.indexOf('representations') == -1
+        json.indexOf('values') > 0
+    }
+    
+    void "unmarshal from json"() {
+        
+        setup:
+        def json = '''{"source":"CCCCCC","values":{"name":"tom","age":99}}'''
+            
+        ObjectMapper mapper = new ObjectMapper()
+        
+        when:
+        MoleculeObject mo = mapper.readValue(json, MoleculeObject.class)
+        println "MO: " + mo
+        
+        then:
+        mo.getSource() == "CCCCCC"
+        mo.getValue('name') == 'tom'
+        mo.getValue('age') == 99
     }
 	
 }

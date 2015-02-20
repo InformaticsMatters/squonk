@@ -19,11 +19,16 @@ import org.apache.camel.Exchange;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.util.IOHelper;
 
+
+// TODO This class should be moved to the common-camel module, but currently it can't 
+// as the test requires the MoleculeObjectUtils class that is from this module.
+
+
 /**
- * WARNING - this class is incomplete. Do not use.
- *
- * TODO - move this out of the chemaxon-camel module as it has nothing to do
- * with ChemAxon, but currently doesn't have a better place to live.
+ * DataFormat that handles marshaling and unmarshaling of MoleculeObjects using Java
+ * serialization.
+ * Note: this will likely be replaced by (un)marshalling to JSON as that is faster 
+ * and more compact.
  *
  * @author timbo
  */
@@ -48,6 +53,14 @@ public class MoleculeObjectDataFormat implements DataFormat {
         marshal(o, out);
     }
 
+    /**
+     * Marshal the MoleculeObjects (as Iterator or Iterable) to the OutputStream
+     * using Java serialization
+     * 
+     * @param o
+     * @param out
+     * @throws IOException 
+     */
     public void marshal(Object o, OutputStream out) throws IOException {
 
         Iterator<MoleculeObject> mols = null;
@@ -87,6 +100,15 @@ public class MoleculeObjectDataFormat implements DataFormat {
         return unmarshal(is);
     }
 
+    /**
+     * Creates a CloseableMoleculeObjectQueue and writes the deserialized MoleculeObjects
+     * to this. Note the queue is returned immediately as soon as deserialization is 
+     * started.
+     * 
+     * @param is
+     * @return
+     * @throws IOException 
+     */
     public Object unmarshal(InputStream is) throws IOException {
 
         final ObjectInputStream ois = new ObjectInputStream(is);

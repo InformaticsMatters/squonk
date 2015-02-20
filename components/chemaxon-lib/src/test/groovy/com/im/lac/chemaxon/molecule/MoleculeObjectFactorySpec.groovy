@@ -36,7 +36,7 @@ class MoleculeObjectFactorySpec extends Specification {
         then:
         mols.size() == 756
         mols.each { mo ->
-            assert mo.getSourceAsString() != null
+            assert mo.getSource() != null
             assert mo.getValue('set') != null
         }
         
