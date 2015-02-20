@@ -13,22 +13,25 @@ lang.System.loadLibrary('GraphMolWrap')
 # Pull it in as a stream of string
 from org.RDKit import *
 
+from mol_parsing.rdkit_parse import get_or_create_rdmol
 
 def filter_props():
     """Function to caluclate properties on a molecule"""
     while mols.hasNext():
         java_mol = mols.next()
-        rdmol = java_mol.getRepresentation("rdkit.mol")
-        if not rdmol:
-            # Need a function here to recreate the RDMol if needed
-            continue
+        # Get or make the RDKit molecule
+        rdmol, java_mol = get_or_create_rdmol(java_mol)
+        # Work out the function
         val = calc_props(rdmol, my_funct)
+        # Dp the logic and go past if it passes the test
         if val < min_ans or val > max_ans:
-            java_mol.putValue("my_test", "fail")
+            continue
         else:
-            rdmol.setProp(my_funct, str(val))
-            java_mol.putValue("my_test", "true")
-        java_mol.putValue(my_funct, val) 
+            pass
+        # Now add the value
+        java_mol.putValue(my_funct, val)
+        # Now to make sure it's been through the test
+        java_mol.putValue("my_test", "true")
         filter_mols.add(java_mol)
 # Now close this body
     filter_mols.close()
