@@ -45,7 +45,7 @@ def read_in():
         molobj.putValue("me", counter)
     ### Make an RDKit mol
 # Add to the queuw
-        request.body.add(molobj)
+        out_mols_here.add(molobj)
     # here we simulate storing a molecule representation so that we do not need
     # to regenerate it later
 #    molobj.putRepresentation("rdkit.mol", rdmol)
@@ -54,15 +54,18 @@ def read_in():
     # or
     # molobj.getRepresention("some.key", ClassName)
 # Close the queue to stop the blocking 
-    request.body.close()
+    out_mols_here.close()
 
 class ObjReadThread(Thread):
     def run(self):
         read_in()
         self.stop()
 
+# Get the prvevious body and set the next one
 mols = request.getBody(MoleculeObjectIterable)
-request.body = CloseableMoleculeObjectQueue(40)
+out_mols_here = CloseableMoleculeObjectQueue(40)
+request.setBody(out_mols_here)
+#read_in()
 my_thread = ObjReadThread()
 my_thread.start()
 #import threading

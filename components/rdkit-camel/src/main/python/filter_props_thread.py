@@ -22,21 +22,23 @@ def filter_props():
         if not rdmol:
             # Need a function here to recreate the RDMol if needed
             continue
-        #val = calc_props(rdmol, my_funct)
-        if 1==1:#val <= min_ans or val >= max_ans:
-            pass
+        val = calc_props(rdmol, my_funct)
+        if val < min_ans or val > max_ans:
+            java_mol.putValue("my_test", "fail")
         else:
-            #rdmol.setProp(my_funct, str(val))
-            #java_mol.putValue(my_funct, val)
-            request.body.add(java_mol)
+            rdmol.setProp(my_funct, str(val))
+            java_mol.putValue("my_test", "true")
+        java_mol.putValue(my_funct, val) 
+        filter_mols.add(java_mol)
 # Now close this body
-    request.body.close()
+    filter_mols.close()
 
 
 class ObjFiltThread(Thread):
     def run(self):
         filter_props()
         self.stop()
+
 
 mols = request.getBody(MoleculeObjectIterable)
 my_head = request.getHeader("function").split("<")
@@ -50,6 +52,7 @@ else:
     min_ans = float(my_head[0])
     max_ans = float(my_head[2])
 
-request.body = CloseableMoleculeObjectQueue(10000)
+filter_mols = CloseableMoleculeObjectQueue(100)
+request.body = filter_mols
 my_thread = ObjFiltThread()
 my_thread.start()

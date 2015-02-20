@@ -1,4 +1,4 @@
-package examples
+package example
 
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import java.util.zip.GZIPInputStream
@@ -53,7 +53,7 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
         then:
         resultEndpoint.assertIsSatisfied()
         def result = resultEndpoint.receivedExchanges.in.body[0]
-        result == 756 // FOR NOW -> SHOULD 508 // was756
+        result == 508 // FOR NOW -> SHOULD 508 // was756
 
         cleanup:
         gzip.close()
@@ -74,7 +74,7 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
 
                 from("direct:convertToMolsFilter")
                 .to("language:python:file:src/main/python/molecule_objects.py?transform=false")
-                .setHeader('FUNCTION', constant("2<num_hba<2"))
+                .setHeader('FUNCTION', constant("2<num_hba<7"))
                 .to("language:python:file:src/main/python/filter_props_thread.py?transform=false")
                 .to("language:python:file:src/main/python/molecule_counter.py?transform=false")
                 .to('mock:result')
