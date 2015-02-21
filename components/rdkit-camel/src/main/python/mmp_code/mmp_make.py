@@ -49,46 +49,44 @@ def find_correct(f_array):
 
     #cansmi the side chains
     temp = RWMol.MolFromSmiles(side_chains)
-    side_chains = RWMol.MolToSmiles( temp, isomericSmiles=True )
+    side_chains = RWMol.MolToSmiles( temp, True )
 
     #and cansmi the core
     temp = RWMol.MolFromSmiles(core)
-    core = RWMol.MolToSmiles( temp, isomericSmiles=True )
+    core = RWMol.MolToSmiles( temp, True )
 
     return core,side_chains
 
 def delete_bonds(smi,id,mol,bonds,out):
-
-
     #use the same parent mol object and create editable mol
 # In jython a mol is editable...
-    em = mol
+    em = RWMol.MolFromSmiles(RWMol.MolToSmiles(mol, True))
     #loop through the bonds to delete
     isotope = 0
     isotope_track = {};
-    for i in bonds:
+    for my_vect in bonds:
         isotope += 1
         #remove the bond
-        em.removeBond(i.get(0),i.get(1))
-        #now add attachement points
-        newAtomA = em.AddAtom(Atom(0))
-        em.addBond(i.get(0),newAtomA,Bond.BondType.SINGLE)
+        i = my_vect
 
-        newAtomB = em.AddAtom(Atom(0))
-        em.addBond(i.get(1),newAtomB,Bond.BondType.SINGLE)
-
-        #keep track of where to put isotopes
+        em.removeBond(i.get(0).second,i.get(1).second)
+        # Now add attachement points
+        newAtomA = em.addAtom(Atom(0))
+        em.addBond(i.get(0).second,newAtomA,Bond.BondType.SINGLE)
+        # Now add the atom
+        newAtomB = em.addAtom(Atom(0))
+        em.addBond(i.get(1).second,newAtomB,Bond.BondType.SINGLE)
+        # Keep track of where to put isotopes
         isotope_track[newAtomA] = isotope
         isotope_track[newAtomB] = isotope
 
 
     #should be able to get away without sanitising mol
     #as the existing valencies/atoms not changed
-    modifiedMol = em #em.GetMol()
-
+    modifiedMol = em #RWMol.MolFromSmiles(RWMol.MolToSmiles(em, True))
     #canonical smiles can be different with and without the isotopes
     #hence to keep track of duplicates use fragmented_smi_noIsotopes
-    fragmented_smi_noIsotopes = RWMol.MolToSmiles(modifiedMol,isomericSmiles=True)
+    fragmented_smi_noIsotopes = RWMol.MolToSmiles(modifiedMol,True)
 
     valid = True
     fragments = fragmented_smi_noIsotopes.split(".")
@@ -113,7 +111,7 @@ def delete_bonds(smi,id,mol,bonds,out):
             s2 = RWMol.MolFromSmiles(fragments[1])
 
             #need to cansmi again as smiles can be different
-            output = '%s,%s,,%s.%s' % (smi,id,RWMol.MolToSmiles(s1,isomericSmiles=True),RWMol.MolToSmiles(s2,isomericSmiles=True) )
+            output = '%s,%s,,%s.%s' % (smi,id,RWMol.MolToSmiles(s1,True),RWMol.MolToSmiles(s2,True) )
             if( (output in out) == False):
                 out.add(output)
 
@@ -122,7 +120,7 @@ def delete_bonds(smi,id,mol,bonds,out):
             for key in isotope_track:
                 #to add isotope lables
                 modifiedMol.getAtomWithIdx(key).setIsotope(isotope_track[key])
-            fragmented_smi = RWMol.MolToSmiles(modifiedMol,isomericSmiles=True)
+            fragmented_smi = RWMol.MolToSmiles(modifiedMol,True)
 
             #change the isotopes into labels - currently can't add SMARTS or labels to mol
             fragmented_smi = re.sub('\[1\*\]', '[*:1]', fragmented_smi)
@@ -200,19 +198,17 @@ def fragment_mol(smi,id):
         bonds_selected = []
 
         #loop to generate every single, double and triple cut in the molecule
-        for x in xrange( total ):
+        for x in xrange(total):
             #print matches[x]
             bonds_selected.append(matching_atoms.get(x))
             delete_bonds(smi,id,mol,bonds_selected,outlines)
             bonds_selected = []
-
             for y in xrange(x+1,total):
                 #print matching_atoms[x],matching_atoms[y]
                 bonds_selected.append(matching_atoms.get(x))
                 bonds_selected.append(matching_atoms.get(y))
                 delete_bonds(smi,id,mol,bonds_selected,outlines)
                 bonds_selected = []
-
                 for z in xrange(y+1, total):
                     #print matching_atoms[x],matching_atoms[y],matching_atoms[z]
                     bonds_selected.append(matching_atoms.get(x))
@@ -220,9 +216,7 @@ def fragment_mol(smi,id):
                     bonds_selected.append(matching_atoms.get(z))
                     delete_bonds(smi,id,mol,bonds_selected,outlines)
                     bonds_selected = []
-
             #right, we are done.
-
     return outlines
 
 def find_mmps(mols):
@@ -235,4 +229,4 @@ def find_mmps(mols):
         o = fragment_mol(smiles,cmpd_id)
         for l in o:
            out_mols.append(l)
-        return out_mols
+    return out_mols

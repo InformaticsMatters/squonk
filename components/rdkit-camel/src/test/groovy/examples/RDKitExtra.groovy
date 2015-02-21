@@ -55,7 +55,7 @@ class RDKitExtraTest extends CamelSpecificationBase {
         resultEndpoint.assertIsSatisfied()
         def result = resultEndpoint.receivedExchanges.in.body[0]
         // For now we just find the size of the dist matrix because clustering doesn't work
-        result == 286146
+        result == 130
     }
     
    @Override
