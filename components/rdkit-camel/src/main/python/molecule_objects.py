@@ -18,26 +18,16 @@ def read_in():
     while mols.hasNext():
         counter +=1
         molobj = mols.next()
-    # gets as string and is usually OK, but potentially could be a binary format 
-    # such as cdx so getSourceAsBytes() which returns a byte array is safer, but 
-    # as long as we only handle smiles, inchi, sdf, mol then strings are OK
+        # Now get the molecule
         rdmol = parse_mol_obj(molobj)
         if not rdmol:
             continue 
-   # here we simulate setting a property
-#        molobj.putRepresentation("rdkit.mol", rdmol)
+        # Put this representation to the function
+        molobj.putRepresentation("rdkit.mol", rdmol)
         molobj.putValue("me", counter)
-    ### Make an RDKit mol
-# Add to the queuw
+        # Add to the queue
         out_mols_here.add(molobj)
-    # here we simulate storing a molecule representation so that we do not need
-    # to regenerate it later
-#    molobj.putRepresentation("rdkit.mol", rdmol)
-    # once stored it can be retrieved later using
-    #my_mol = molobj.getRepresention("rdkit.mol")
-    # or
-    # molobj.getRepresention("some.key", ClassName)
-# Close the queue to stop the blocking 
+    # Close the queue to stop the blocking 
     out_mols_here.close()
 
 class ObjReadThread(Thread):
