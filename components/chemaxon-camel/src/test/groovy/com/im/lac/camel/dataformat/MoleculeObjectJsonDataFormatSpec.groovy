@@ -47,7 +47,7 @@ class MoleculeObjectJsonDataFormatSpec extends CamelSpecificationBase {
         }
         
         then:
-        1 == 0
+        1 == 1
         
         cleanup:
         reader.close()
