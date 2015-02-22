@@ -1,4 +1,4 @@
-
+description = 'Common Camel utilities'
 
 repositories {
     jcenter()

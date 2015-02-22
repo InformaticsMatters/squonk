@@ -34,6 +34,18 @@ public class StreamingIteratorJsonDataFormat<T> implements DataFormat {
      */
     private boolean autoCloseAfterMarshal = true;
     private JsonFactory factory;
+    
+    private int marshalCount = 0;
+
+    public int getMarshalCount() {
+        return marshalCount;
+    }
+
+    private int unmarshalCount = 0;
+
+    public int getUnmarshalCount() {
+        return unmarshalCount;
+    }
 
     public StreamingIteratorJsonDataFormat(Class<T> type, boolean autoCloseAfterMarshal) {
         this.type = type;
@@ -76,6 +88,7 @@ public class StreamingIteratorJsonDataFormat<T> implements DataFormat {
         generator.writeStartArray();
         while (iter.hasNext()) {
             generator.writeObject(iter.next());
+            marshalCount++;
         }
 
         generator.writeEndArray();
@@ -130,6 +143,7 @@ public class StreamingIteratorJsonDataFormat<T> implements DataFormat {
                     T result = (T) jp.readValueAs(StreamingIteratorJsonDataFormat.this.type);
                     //System.out.println("Read: " + result);
                     next = Collections.singletonList(result);
+                    
                 }
                 return true;
             } catch (IOException ex) {
@@ -157,6 +171,7 @@ public class StreamingIteratorJsonDataFormat<T> implements DataFormat {
             }
             T result = next.get(0);
             next = null;
+            unmarshalCount++;
             return result;
         }
 
