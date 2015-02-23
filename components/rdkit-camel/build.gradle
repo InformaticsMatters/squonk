@@ -21,6 +21,7 @@ sourceSets {
     main {
         resources {
             srcDirs += 'src/main/python'
+            srcDirs += '/usr/lib/python2.7'
         }
     }
     

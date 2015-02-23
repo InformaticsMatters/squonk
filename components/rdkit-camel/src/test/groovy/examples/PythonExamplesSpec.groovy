@@ -113,24 +113,24 @@ C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3'''
         return new RouteBuilder() {
             public void configure() {
                 from("direct:count")
-                .to("language:python:file:src/main/python/counter.py?transform=false")
+                .to("language:python:classpath:counter.py?transform=false")
                 .to('mock:result')
                 
                 from("direct:convertToMols")
-                .to("language:python:file:src/main/python/convert_to_molecules.py?transform=false")
-                .to("language:python:file:src/main/python/counter.py?transform=false")
+                .to("language:python:classpath:convert_to_molecules.py?transform=false")
+                .to("language:python:classpath:counter.py?transform=false")
                 .to('mock:result')
 // Third camel route to test property calculation
                 from("direct:convertToMolsGetProps")
-                .to("language:python:file:src/main/python/convert_to_molecules.py?transform=false")
+                .to("language:python:classpath:convert_to_molecules.py?transform=false")
                 .setHeader('FUNCTION', constant("num_hba"))
-                .to("language:python:file:src/main/python/calc_props.py?transform=false")
+                .to("language:python:classpath:calc_props.py?transform=false")
                 .to('mock:result')
 
                 from("direct:convertToMolsFilter")
-                .to("language:python:file:src/main/python/convert_to_molecules.py?transform=false")
+                .to("language:python:classpath:convert_to_molecules.py?transform=false")
                 .setHeader('FUNCTION', constant("2<num_hba<7"))
-                .to("language:python:file:src/main/python/filter_props.py?transform=false")
+                .to("language:python:classpath:filter_props.py?transform=false")
                 .to('mock:result')
 
 

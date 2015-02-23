@@ -30,7 +30,7 @@ from java.lang import Class
 lang.System.loadLibrary('GraphMolWrap')
 # Pull it in as a stream of string
 from org.RDKit import *
-sys.path.append("/usr/lib/python2.7/")
+#sys.path.append("/usr/lib/python2.7/")
 import re
 
 def find_correct(f_array):

@@ -13,11 +13,11 @@ from mmp_code.mmp_make import fragment_mol
 from mol_parsing.rdkit_parse import get_or_create_rdmol
 from mmp_code.index import index_out_lines
 
-def find_mmps(mols):
+def find_mmps(my_mols):
     out_mols = []
     counter = 0
     #read the mo
-    for line in mols:
+    for line in my_mols:
         smiles = line[0]
         cmpd_id = line[1]
         #returns a set containing the output

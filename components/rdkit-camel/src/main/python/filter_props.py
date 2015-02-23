@@ -3,12 +3,12 @@ from com.im.lac.types import MoleculeObject, MoleculeObjectIterable
 from java import lang
 import sys
 
-sys.path.append('/lac/components/rdkit-camel/src/main/python')
-sys.path.append("/RDKit/rdkit/Code/JavaWrappers/gmwrapper/org.RDKitDoc.jar")
-sys.path.append("/RDKit/rdkit/Code/JavaWrappers/gmwrapper/libGraphMolWrap.so")
-sys.path.append("/RDKit/rdkit/Code/JavaWrappers/gmwrapper/org.RDKit.jar")
-sys.path.append("/RDKit/rdkit/lib")
-sys.path.append("/RDKit/rdkit/Code/JavaWrappers/gmwrapper")
+#sys.path.append('/lac/components/rdkit-camel/src/main/python')
+#sys.path.append("/RDKit/rdkit/Code/JavaWrappers/gmwrapper/org.RDKitDoc.jar")
+#sys.path.append("/RDKit/rdkit/Code/JavaWrappers/gmwrapper/libGraphMolWrap.so")
+#sys.path.append("/RDKit/rdkit/Code/JavaWrappers/gmwrapper/org.RDKit.jar")
+#sys.path.append("/RDKit/rdkit/lib")
+#sys.path.append("/RDKit/rdkit/Code/JavaWrappers/gmwrapper")
 from java.util import ArrayList
 from find_props.find_props import calc_props
 from find_props.filter_props import filter_prop

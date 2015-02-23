@@ -82,23 +82,23 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:handleMoleculeObjects")
-                .to("language:python:file:src/main/python/molecule_objects.py?transform=false")
+                .to("language:python:classpath:molecule_objects.py?transform=false")
                 .setHeader('FUNCTION', constant("num_hba"))
-                .to("language:python:file:src/main/python/calc_props_thread.py?transform=false")
-                .to("language:python:file:src/main/python/molecule_counter.py?transform=false")
+                .to("language:python:classpath:calc_props_thread.py?transform=false")
+                .to("language:python:classpath:molecule_counter.py?transform=false")
                 .to('mock:result')
 
                 from("direct:convertToMolsFilter")
-                .to("language:python:file:src/main/python/molecule_objects.py?transform=false")
+                .to("language:python:classpath:molecule_objects.py?transform=false")
                 .setHeader('FUNCTION', constant("-1<num_hbd<6"))
-                .to("language:python:file:src/main/python/filter_props_thread.py?transform=false")
+                .to("language:python:classpath:filter_props_thread.py?transform=false")
                 .setHeader('FUNCTION', constant("-1<num_hba<11"))
-                .to("language:python:file:src/main/python/filter_props_thread.py?transform=false")
+                .to("language:python:classpath:filter_props_thread.py?transform=false")
                 .setHeader('FUNCTION', constant("5<mol_logp<100"))
-                .to("language:python:file:src/main/python/filter_props_thread.py?transform=false")                
+                .to("language:python:classpath:filter_props_thread.py?transform=false")                
                 .setHeader('FUNCTION', constant("0<mol_mr<500"))
-                .to("language:python:file:src/main/python/filter_props_thread.py?transform=false")
-                .to("language:python:file:src/main/python/molecule_counter.py?transform=false")
+                .to("language:python:classpath:filter_props_thread.py?transform=false")
+                .to("language:python:classpath:molecule_counter.py?transform=false")
                 .to('mock:result')
                 
             }

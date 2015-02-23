@@ -4,7 +4,7 @@ from com.im.lac.util import CloseableMoleculeObjectQueue
 from java import lang
 import sys
 #Place the python module on the path
-sys.path.append('/lac/components/rdkit-camel/src/main/python')
+#sys.path.append('/lac/components/rdkit-camel/src/main/python')
 from java.util import ArrayList
 from find_props.find_props import calc_props
 from java.lang import Thread, InterruptedException

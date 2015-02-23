@@ -63,21 +63,21 @@ class RDKitExtraTest extends CamelSpecificationBase {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:findMCS")
-                .to("language:python:file:src/main/python/molecule_objects.py?transform=false")
-                .to("language:python:file:src/main/python/find_mcs.py?transform=false")
+                .to("language:python:classpath:molecule_objects.py?transform=false")
+                .to("language:python:classpath:find_mcs.py?transform=false")
                 .to('mock:result')
 
                  from("direct:findclusts")
-                .to("language:python:file:src/main/python/molecule_objects.py?transform=false")
+                .to("language:python:classpath:molecule_objects.py?transform=false")
                 .setHeader('FINGERPRINT', constant("morgan"))
                 .setHeader('CLUSTERING', constant("butina"))
                 .setHeader('SIMILARITY', constant("dice"))
-                .to("language:python:file:src/main/python/cluster_mols.py?transform=false")
+                .to("language:python:classpath:cluster_mols.py?transform=false")
                 .to('mock:result')
 
                  from("direct:findmmps")
-                .to("language:python:file:src/main/python/molecule_objects.py?transform=false")
-                .to("language:python:file:src/main/python/find_mmps.py?transform=false")
+                .to("language:python:classpath:molecule_objects.py?transform=false")
+                .to("language:python:classpath:find_mmps.py?transform=false")
                 .to('mock:result')               
                
             }
