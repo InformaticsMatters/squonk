@@ -1,5 +1,6 @@
 package com.im.lac.camel.chemaxon.processor;
 
+import com.im.lac.camel.processor.MoleculeObjectSourcer;
 import chemaxon.standardizer.Standardizer;
 import chemaxon.struc.Molecule;
 import com.im.lac.util.CloseableMoleculeObjectQueue;

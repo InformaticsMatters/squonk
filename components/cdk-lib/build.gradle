@@ -3,6 +3,8 @@ description = 'CDK lib'
 
 dependencies {
     
+    compile project(':common')
+    
     compile 'org.openscience.cdk:cdk-bundle:1.5.10'
 
 }

@@ -1,4 +1,4 @@
-package com.im.lac.camel.chemaxon.processor;
+package com.im.lac.camel.processor;
 
 import java.io.File;
 import java.util.logging.Level;

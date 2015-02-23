@@ -1,5 +1,6 @@
 package com.im.lac.cdk.molecule
 
+import com.im.lac.types.MoleculeObject
 import java.util.zip.GZIPInputStream
 import org.openscience.cdk.interfaces.IAtomContainer
 import org.openscience.cdk.smiles.SmilesParser
@@ -16,65 +17,64 @@ class MolecularDescriptorsSpec extends Specification {
     void "wiener index"() {
         
         setup:
-        String smiles = 'S(SC1=NC2=CC=CC=C2S1)C3=NC4=C(S3)C=CC=C4'
-        SmilesParser smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance());
-        IAtomContainer mol = smilesParser.parseSmiles(smiles);
+        MoleculeObject mo = new MoleculeObject('S(SC1=NC2=CC=CC=C2S1)C3=NC4=C(S3)C=CC=C4')
 
         when:
-        def result = MoleculeDescriptors.wienerNumbers(mol)
+        MolecularDescriptors.wienerNumbers(mo)
         
         then:
-        result.getProperty(MoleculeDescriptors.WIENER_PATH) != null
-        result.getProperty(MoleculeDescriptors.WIENER_POLARITY) != null
+        mo.getValue(MolecularDescriptors.WIENER_PATH) != null
+        mo.getValue(MolecularDescriptors.WIENER_POLARITY) != null
     }
     
     void "alogp"() {
         
         setup:
-        String smiles = 'S(SC1=NC2=CC=CC=C2S1)C3=NC4=C(S3)C=CC=C4'
-        SmilesParser smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance());
-        IAtomContainer mol = smilesParser.parseSmiles(smiles);
+        MoleculeObject mo = new MoleculeObject('S(SC1=NC2=CC=CC=C2S1)C3=NC4=C(S3)C=CC=C4')
 
         when:
-        def result = MoleculeDescriptors.aLogP(mol)
+        MolecularDescriptors.aLogP(mo)
         
         then:
-        result != null
-        result.getProperty(MoleculeDescriptors.ALOGP_ALOPG) != null
-        result.getProperty(MoleculeDescriptors.ALOGP_ALOPG2) != null
-        result.getProperty(MoleculeDescriptors.ALOGP_AMR) != null
+        mo.getValue(MolecularDescriptors.ALOGP_ALOPG) != null
+        mo.getValue(MolecularDescriptors.ALOGP_ALOPG2) != null
+        mo.getValue(MolecularDescriptors.ALOGP_AMR) != null
+    }
+    
+    void "xlogp"() {
+        
+        setup:
+        MoleculeObject mo = new MoleculeObject('S(SC1=NC2=CC=CC=C2S1)C3=NC4=C(S3)C=CC=C4')
 
+        when:
+        MolecularDescriptors.xLogP(mo)
+        
+        then:
+        mo.getValue(MolecularDescriptors.XLOGP_XLOGP) != null
     }
     
     void "hbond acceptor count"() {
         
         setup:
-        String smiles = 'S(SC1=NC2=CC=CC=C2S1)C3=NC4=C(S3)C=CC=C4'
-        SmilesParser smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance());
-        IAtomContainer mol = smilesParser.parseSmiles(smiles);
+        MoleculeObject mo = new MoleculeObject('S(SC1=NC2=CC=CC=C2S1)C3=NC4=C(S3)C=CC=C4')
 
         when:
-        def result = MoleculeDescriptors.hbondAcceptorCount(mol)
+        MolecularDescriptors.hbondAcceptorCount(mo)
         
         then:
-        result != null
-        result.getProperty(MoleculeDescriptors.HBOND_ACCEPTOR_COUNT) != null
-
+        mo.getValue(MolecularDescriptors.HBOND_ACCEPTOR_COUNT) != null
     }
+    
     void "hbond donor count"() {
         
         setup:
-        String smiles = 'S(SC1=NC2=CC=CC=C2S1)C3=NC4=C(S3)C=CC=C4'
-        SmilesParser smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance());
-        IAtomContainer mol = smilesParser.parseSmiles(smiles);
+        MoleculeObject mo = new MoleculeObject('S(SC1=NC2=CC=CC=C2S1)C3=NC4=C(S3)C=CC=C4')
 
         when:
-        def result = MoleculeDescriptors.hbondDonorCount(mol)
+        MolecularDescriptors.hbondDonorCount(mo)
         
         then:
-        result != null
-        result.getProperty(MoleculeDescriptors.HBOND_DONOR_COUNT) != null
-
+        mo.getValue(MolecularDescriptors.HBOND_DONOR_COUNT) != null
     }
     
 }

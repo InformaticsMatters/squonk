@@ -6,7 +6,7 @@ import chemaxon.struc.Molecule;
 import com.chemaxon.descriptors.common.Descriptor;
 import com.im.lac.util.CloseableMoleculeObjectQueue;
 import com.im.lac.util.CloseableQueue;
-import com.im.lac.camel.chemaxon.processor.MoleculeObjectSourcer;
+import com.im.lac.camel.processor.MoleculeObjectSourcer;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.chemaxon.screening.MoleculeScreener;
 import com.im.lac.types.MoleculeObject;
