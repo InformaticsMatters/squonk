@@ -62,10 +62,11 @@ public class MoleculeObjectWriter implements OutputGenerator {
                     try {
                         exporter.close();
                         if (mols instanceof Closeable) {
+                            LOG.finer("Closing mols: " + mols);
                             ((Closeable) mols).close();
                         }
                     } catch (IOException ex) {
-                        LOG.log(Level.SEVERE, "Failed to close MolExporter", ex);
+                        LOG.log(Level.SEVERE, "Failed to close input", ex);
                     }
                 }
             }
