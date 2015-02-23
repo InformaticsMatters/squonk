@@ -19,7 +19,7 @@ dependencies {
 
 sourceSets {
     main {
-        java {
+        resources {
             srcDirs += 'src/main/python'
         }
     }
