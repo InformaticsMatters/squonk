@@ -1,4 +1,4 @@
-description = 'Demo services'
+
 
 apply plugin: 'groovy'
 
@@ -117,7 +117,7 @@ docker {
  * docker run -d --name services -p 80:8080 --link <name_of_postgres_db_image>:db -v <host_dir>:/external <image_id>
  * 
  * Note: the host directory <host_dir> containing the ChemAxon license file needs to be specified,
- * or some other mechanism used, probably by setting the value of the CHEMAXON_LICENSE_URL
+// * or some other mechanism used, probably by setting the value of the CHEMAXON_LICENSE_URL
  * environment variable using an -e option.
  * The following environment variables can be used to override the default settings:
  * CHEMCENTRAL_DB_SERVER, CHEMCENTRAL_DB_PORT, CHEMCENTRAL_DB_USERNAME, CHEMCENTRAL_DB_PASSWORD, CHEMAXON_LICENSE_URL

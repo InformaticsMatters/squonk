@@ -235,6 +235,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
                 q.close();
                 if (mols instanceof Closeable) {
                     try {
+                        LOG.log(Level.FINER, "Closing mols:{0}", mols);
                         ((Closeable) mols).close();
                     } catch (IOException e) {
 
