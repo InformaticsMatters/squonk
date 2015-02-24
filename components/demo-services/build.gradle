@@ -19,11 +19,14 @@ buildscript {
 
 dependencies {
 
+
     compile project(':chemaxon-camel')
     compile project(':chemaxon-lib')
+    compile project(':cdk-camel')
+    compile project(':cdk-lib')
     compile project(':common')
 
-    compile 'org.slf4j:slf4j-simple:1.7.7'
+    //compile 'org.slf4j:slf4j-simple:1.7.7'
     
     compile "org.postgresql:postgresql:9.3-1102-jdbc4"
     
@@ -34,73 +37,8 @@ dependencies {
     
     compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     compile 'org.glassfish.jersey.core:jersey-server:2.6'
-    
-    compile("com.chemaxon:jchem:6.3.4") {
-        // probably other things should be excluded too - jchem is not at all modular
-        exclude group:'chemaxonlib',module:'batik-core'
-        exclude group:'chemaxonlib',module:'dom4j'
-        exclude group:'chemaxonlib',module:'xercesImpl'
-        exclude group:'chemaxonlib',module:'castor-core'
-        exclude group:'chemaxonlib',module:'castor-xml'
-        exclude group:'chemaxonlib',module:'runtime12'
-        exclude group:'chemaxonlib',module:'classes12'
-        exclude group:'chemaxonlib',module:'macosx-application-bundle'
-        exclude group:'chemaxonlib',module:'OSXPasteBoardWrapper'
-        exclude group:'chemaxonlib',module:'tesseract-data'
-        exclude group:'chemaxonlib',module:'tesseract-windows'
-        exclude group:'chemaxonlib',module:'tesseract-linux-x32'
-        exclude group:'chemaxonlib',module:'tesseract-linux-x64'
-        exclude group:'chemaxonlib',module:'tesseract-macosx'
-        exclude group:'chemaxonlib',module:'gluegen-rt-natives-linux-amd64'
-        exclude group:'chemaxonlib',module:'gluegen-rt-natives-linux-i586'
-        exclude group:'chemaxonlib',module:'gluegen-rt-natives-macosx-universal'
-        exclude group:'chemaxonlib',module:'gluegen-rt-natives-solaris-amd64'
-        exclude group:'chemaxonlib',module:'gluegen-rt-natives-solaris-i586'
-        exclude group:'chemaxonlib',module:'gluegen-rt-natives-windows-amd64'
-        exclude group:'chemaxonlib',module:'gluegen-rt-natives-windows-i586'
-        exclude group:'chemaxonlib',module:'gluegen-rt'
-        exclude group:'chemaxonlib',module:'jogl-all-natives-linux-amd64'
-        exclude group:'chemaxonlib',module:'jogl-all-natives-linux-i586'
-        exclude group:'chemaxonlib',module:'jogl-all-natives-macosx-universal'
-        exclude group:'chemaxonlib',module:'jogl-all-natives-solaris-amd64'
-        exclude group:'chemaxonlib',module:'jogl-all-natives-solaris-i586'
-        exclude group:'chemaxonlib',module:'jogl-all-natives-windows-amd64'
-        exclude group:'chemaxonlib',module:'jogl-all-natives-windows-i586'
-        exclude group:'chemaxonlib',module:'jogl-all'
-        exclude group:'chemaxonlib',module:''
 
-        exclude group:'org.postgresql',module:'postgresql'
-        exclude group:'org.apache.derby',module:'derby'
-        exclude group:'org.apache.derby',module:'derbyclient'
-        exclude group:'org.apache.derby',module:'derbynet'
-        exclude group:'org.apache.derby',module:'derbyrun'
-        exclude group:'org.apache.derby',module:'derbytools'
-        exclude group:'org.apache.derby',module:'derbyLocale_cs'
-        exclude group:'org.apache.derby',module:'derbyLocale_de_DE'
-        exclude group:'org.apache.derby',module:'derbyLocale_es'
-        exclude group:'org.apache.derby',module:'derbyLocale_fr'
-        exclude group:'org.apache.derby',module:'derbyLocale_hu'
-        exclude group:'org.apache.derby',module:'derbyLocale_it'
-        exclude group:'org.apache.derby',module:'derbyLocale_ja_JP'
-        exclude group:'org.apache.derby',module:'derbyLocale_ko_KR'
-        exclude group:'org.apache.derby',module:'derbyLocale_pl'
-        exclude group:'org.apache.derby',module:'derbyLocale_pt_BR'
-        exclude group:'org.apache.derby',module:'derbyLocale_ru'
-        exclude group:'org.apache.derby',module:'derbyLocale_zh_CN'
-        exclude group:'org.apache.derby',module:'derbyLocale_zh_TW'
-        exclude group:'mysql',module:'mysql-connector-java'
-        //exclude group:'com.oracle',module:'ojdbc6' // needed in JChem 6.3.4
-        exclude group:'org.hsqldb',module:'hsqldb'
-        exclude group:'net.sf.jacob-project',module:'jacob-native-x86'
-        exclude group:'net.sf.jacob-project',module:'jacob-native-x64'
-        exclude group:'net.sf.jacob-project',module:'jacob'
-        exclude group:'com.lowagie',module:'itext'
-        exclude group:'com.lowagie',module:'itext-rtf'
-        exclude group:'gov.nih.nci.cactus',module:'osra-linux-x64'
-        exclude group:'org.swinglabs',module:'swingx'
-    }
-
-    testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+    //testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
     //testCompile "org.apache.derby:derby:10.11.1.1"
     testCompile project(':core-test')
 }

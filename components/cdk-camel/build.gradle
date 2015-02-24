@@ -1,0 +1,13 @@
+description = 'CDK Camel'
+
+
+dependencies {
+    compile project(':common')
+    compile project(':common-camel')
+    compile project(':cdk-lib')
+    
+    compile "org.apache.camel:camel-core:$camelVersion"
+    
+    
+    testCompile project(':core-test')
+}

@@ -1,5 +1,6 @@
 package com.im.lac.camel.chemaxon.processor;
 
+import com.im.lac.camel.processor.MoleculeObjectSourcer;
 import chemaxon.formats.MolFormatException;
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.standardizer.Standardizer;
@@ -11,11 +12,11 @@ import com.im.lac.chemaxon.molecule.ChemTermsEvaluator;
 import com.im.lac.chemaxon.molecule.MoleculeEvaluator;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
-import edu.emory.mathcs.backport.java.util.Collections;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;

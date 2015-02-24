@@ -1,6 +1,5 @@
-package com.im.lac.camel.chemaxon.processor;
+package com.im.lac.camel.processor;
 
-import chemaxon.struc.Molecule;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
 import java.util.Iterator;

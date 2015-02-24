@@ -1,6 +1,6 @@
 package com.im.lac.demo.routes;
 
-import com.im.lac.camel.chemaxon.processor.HeaderPropertySetterProcessor;
+import com.im.lac.camel.processor.HeaderPropertySetterProcessor;
 import com.im.lac.camel.chemaxon.processor.db.JChemDBSearcher;
 import java.io.File;
 import java.io.InputStream;
