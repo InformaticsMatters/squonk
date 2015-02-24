@@ -22,8 +22,8 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
 
         then:
         result instanceof MoleculeObject
-        result.getValue('logp') != null
-        result.getValue('logp') instanceof Number
+        result.getValue('CXN_LogP') != null
+        result.getValue('CXN_LogP') instanceof Number
     }
     
     def 'logp multiple as String'() {
@@ -34,8 +34,8 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         then:
         results instanceof Iterator
         def result = results.next()
-        result.getValue('logp') != null
-        result.getValue('logp') instanceof Number
+        result.getValue('CXN_LogP') != null
+        result.getValue('CXN_LogP') instanceof Number
     }
     
     def 'logp single as String'() {

@@ -67,7 +67,7 @@ public class MolecularDescriptors {
             IAtomContainer mol = getMolecule(mo, save);
             result = CDKMoleculeUtils.moleculeWithExlicitHydrogens(mol);
             if (save) {
-                mo.putValue(CDK_MOLECULE_WITH_ALL_EXPLICIT_HYDROGENS, result);
+                mo.putRepresentation(CDK_MOLECULE_WITH_ALL_EXPLICIT_HYDROGENS, result);
             }
         }
         return result;
@@ -95,7 +95,7 @@ public class MolecularDescriptors {
                 AROMATICITY.apply(mol);
                 result = mol;
                 if (save) {
-                    mo.putValue(CDK_MOLECULE_WITH_ALL_IMPLICIT_HYDROGENS, result);
+                    mo.putRepresentation(CDK_MOLECULE_WITH_ALL_IMPLICIT_HYDROGENS, result);
                 }
             } else {
                 throw new IOException("Failed to read molecule");

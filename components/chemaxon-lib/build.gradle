@@ -5,8 +5,6 @@ apply plugin: 'groovy'
 dependencies {
     
     compile project(':common')
-
-    compile 'org.slf4j:slf4j-simple:1.7.7'
     
     compile("com.chemaxon:jchem:6.3.4") {
         // probably other things should be excluded too - jchem is not at all modular
@@ -73,7 +71,6 @@ dependencies {
         exclude group:'org.swinglabs',module:'swingx'
     }
 
-    testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
     testCompile "org.apache.derby:derby:10.11.1.1"
 }
 

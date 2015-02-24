@@ -451,7 +451,8 @@
 
                 var servicesItems = [
                     {id: "calcLogP",
-                        name: "Calculate LogP",
+                        name: "LogP Calculators",
+                        description: "LogP calculations from\nChemAxon and CDK",
                         popup: "basic-params-service-submit",
                         form: "basic-service-submit-form",
                         path: "/process",
@@ -459,6 +460,7 @@
                         icon: "icons/Programming-Add-Property-icon.png"},
                     {id: "calcLipinski",
                         name: "Lipinski props",
+                        description: "Lipinski Rule of Five properties",
                         popup: "basic-params-service-submit",
                         form: "basic-service-submit-form",
                         path: "/process",
@@ -466,6 +468,7 @@
                         icon: "icons/Programming-Add-Property-icon.png"},
                     {id: "drugLikeFilter",
                         name: "Drug like filter",
+                        description: "mw < 400\nrings >0\nrotatable bonds <5\ndonors<=5\nacceptors<=10\nlogp<4",
                         popup: "basic-params-service-submit",
                         form: "basic-service-submit-form",
                         path: "/process",
@@ -473,6 +476,7 @@
                         icon: "icons/Filter-List-icon.png"},
                     {id: "ecfpScreen",
                         name: "ECFP4 screen",
+                        description: "Screen using ECFP4 fingerprints",
                         popup: "screening-service-submit",
                         form: "screening-service-submit-form",
                         path: "/process",
@@ -480,6 +484,7 @@
                         icon: "icons/Filter-List-icon.png"},
                     {id: "pharmacophoreScreen",
                         name: "Pharmacophore screen",
+                        description: "Screen using 2D pharmacophore fingerprints",
                         popup: "screening-service-submit",
                         form: "screening-service-submit-form",
                         path: "/process",
@@ -487,6 +492,7 @@
                         icon: "icons/Filter-List-icon.png"},
                     {id: "spherexClust",
                         name: "Spherex Clustering",
+                        description: "1-level clustering using\nadaptive sphere exclusion clustering",
                         popup: "spherex-clustering-service-submit",
                         form: "spherex-clustering-service-submit-form",
                         path: "/process",
@@ -500,6 +506,7 @@
                     var div = createComponentDiv(service, findIcon(service, "icons/Very-Basic-Services-icon.png"));
                     div.service = service;
                     div.className = "component service droptarget";
+                    div.title = service.description;
 
                     servicesDiv.appendChild(div);
 

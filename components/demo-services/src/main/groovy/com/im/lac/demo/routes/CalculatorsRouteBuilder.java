@@ -1,7 +1,9 @@
 package com.im.lac.demo.routes;
 
+import com.im.lac.camel.cdk.processor.CDKMolecularDescriptorProcessor;
 import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 import com.im.lac.camel.chemaxon.processor.MoleculeObjectConverterProcessor;
+import com.im.lac.cdk.molecule.MolecularDescriptors;
 import com.im.lac.types.MoleculeObject;
 
 import java.io.InputStream;
@@ -30,7 +32,10 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
         from("direct:logp")
                 .process(new MoleculeObjectConverterProcessor())
                 .process(new ChemAxonMoleculeProcessor()
-                        .calculate("logp", "logP()"))
+                        .calculate("CXN_LogP", "logP()"))
+                .process(new CDKMolecularDescriptorProcessor()
+                    .calculate(MolecularDescriptors.Descriptor.XLogP)
+                    .calculate(MolecularDescriptors.Descriptor.ALogP))
                 .log("logp finished");
 
         from("direct:logpSingleMolecule")
