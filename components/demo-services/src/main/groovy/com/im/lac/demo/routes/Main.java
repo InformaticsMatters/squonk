@@ -38,6 +38,12 @@ public class Main {
                         .transform().constant("Jetty Running\n");
             }
         });
+        if (System.getenv("RDBASE") != null) {
+            LOG.info("Adding RDKit based routes");
+            camelContext.addRoutes(new RDKitRouteBuilder());
+        } else {
+            LOG.info("Skipping RDKit based routes");
+        }
         camelContext.addRoutes(new CalculatorsRouteBuilder());
         camelContext.addRoutes(new DescriptorsRouteBuilder());
         camelContext.addRoutes(new DatabaseRouteBuilder(ds));

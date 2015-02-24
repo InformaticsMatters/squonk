@@ -19,34 +19,30 @@ buildscript {
 
 dependencies {
 
-
+    compile project(':common')
     compile project(':chemaxon-camel')
     compile project(':chemaxon-lib')
     compile project(':cdk-camel')
     compile project(':cdk-lib')
-    compile project(':common')
+    compile project(':rdkit-camel')
 
-    //compile 'org.slf4j:slf4j-simple:1.7.7'
-    
     compile "org.postgresql:postgresql:9.3-1102-jdbc4"
     
     compile "org.apache.camel:camel-core:$camelVersion"
-    //compile "org.apache.camel:camel-restlet:$camelVersion"
     compile "org.apache.camel:camel-jetty:$camelVersion"
     compile "org.apache.camel:camel-jackson:$camelVersion"
     
     compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     compile 'org.glassfish.jersey.core:jersey-server:2.6'
 
-    //testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
-    //testCompile "org.apache.derby:derby:10.11.1.1"
     testCompile project(':core-test')
 }
 
 
 
 docker {
-    baseImage "dockerfile/java:oracle-java8"
+    //baseImage "dockerfile/java:oracle-java8"
+    baseImage "abradle/rdjython"
     maintainer 'Tim Dudgeon'
 }
 
@@ -73,6 +69,18 @@ task buildDocker(type: Docker, dependsOn: distZip) {
     setEnvironment("CHEMCENTRAL_DB_SERVER", "db") // assumes the db alias is used when linking. If not override with a -e argument
     setEnvironment('CHEMCENTRAL_DB_PORT', '5432')
     setEnvironment("CHEMAXON_LICENSE_URL", "/external/license.cxl")
+    
+    setEnvironment('RDBASE', '/RDKit/rdkit')
+    setEnvironment('LD_LIBRARY_PATH', '$RDBASE/lib:$RDBASE/Code/JavaWrappers/gmwrapper:$LD_LIBRARY_PATH')
+    setEnvironment('PYTHONPATH', '$RDBASE/lib:$RDBASE:$PYTHONPATH')  
+   
+    // this is a bit of a hack that's needed to to put the RDKit jars onto the classpath 
+    runCommand("cp \$RDBASE/Code/JavaWrappers/gmwrapper/org.RDKit.jar /data/${project.name}-${version}/lib/")
+    runCommand("cp \$RDBASE/Code/JavaWrappers/gmwrapper/org.RDKitDoc.jar /data/${project.name}-${version}/lib/")
+    runCommand("cp \$RDBASE/Code/JavaWrappers/gmwrapper/libGraphMolWrap.so /data/${project.name}-${version}/lib/")
+    
     exposePort(8080) // do we need to configure the port?
     entryPoint(["/data/${project.name}-${version}/bin/${project.name}"])
 }
+
+
