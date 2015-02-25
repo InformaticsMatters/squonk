@@ -72,13 +72,13 @@
                 }
 
                 #contentcolumn {
-                    margin: 0 180px 0 120px; /*Margins for content column. Should be "0 RightColumnWidth 0 LeftColumnWidth*/
+                    margin: 0 180px 0 80px; /*Margins for content column. Should be "0 RightColumnWidth 0 LeftColumnWidth*/
                     padding: 5px;
                 }
 
                 #leftcolumn {
                     float: left;
-                    width: 110px; /*Width of left column*/
+                    width: 70px; /*Width of left column*/
                     margin-left: -100%;
                     padding: 5px;
                 }
@@ -143,6 +143,7 @@
                     border-width: 2px;
                     border-radius: 6px;
                     font-size: smaller;
+                    pointer-events: all;
                 }
 
                 div.info {
@@ -150,10 +151,6 @@
                     text-align: right;
                     color: grey;
                 }
-
-                //div.content img {
-                //    float:left;
-                //}
 
                 div.palette div.component {
                     float: left;
@@ -203,11 +200,13 @@
                 }
 
                 div.action {
+                    margin: 2px 2px 2px 2px;
+                    padding: 0px;
                     background-color: whitesmoke;
                     border-color: black;
-                    width: 85px;
-                    margin-left: auto;
-                    margin-right: auto;
+                    width: 50px;
+                    //margin-left: auto;
+                    //margin-right: auto;
                 }
 
                 div.action div.title {
@@ -215,9 +214,16 @@
                     color: white;
                 }
 
-                .component.over {
+                div.component.over {
                     border-width: 4px;
+                    border-style: dotted;
                     margin: 0px;
+                }
+
+                div.boxed.over {
+                    border-width: 4px;
+                    border-style: dashed;
+                    padding: 0px;
                 }
 
                 .workflowarrow {
@@ -242,25 +248,28 @@
                     margin: 1px;
                 }
 
+                .internal-element {
+                    pointer-events: none;
+                }
+
             </style>
 
         </head>
         <body>
             <div id="maincontainer">
-
                 <div id="topsection"><div class="innertube"><h1>Workflow examples</h1></div></div>
 
                 <div id="contentwrapper">
                     <div id="contentcolumn">
-                        <div class="innertube boxed"><b>Queries</b>
+                        <div id="queriesBox" class="innertube boxed"><b>Queries</b>
                             <div id="queries" class="palette">
                             </div>
                         </div>
-                        <div class="innertube boxed"><b>Data sets</b>
-                            <div id="files" class="palette" title="Drop files here to load">
+                        <div id="filesBox" class="innertube boxed"><b>Data sets</b>
+                            <div id="files" class="palette internal-element" title="Drop files here to load">
                             </div>
                         </div>
-                        <div class="innertube boxed"><b>Services</b> 
+                        <div id="servicesBox" class="innertube boxed"><b>Services</b> 
                             <div id="services" class="palette">
                             </div>
                         </div>
@@ -280,7 +289,7 @@
                 <div id="workflowcolumn">
                     <div id="workflow" class="boxed">
                         <div><b>Workflow</b></div>
-                        <div id="workflowcontent" class="workflowcontent">
+                        <div id="workflowcontent" class="workflowcontent internal-element">
                         </div>
                     </div>
                 </div>
@@ -291,7 +300,14 @@
 
             <script>
 
-
+                function indexOf(array_values, value) {
+                    for (var i = 0; i < array_values.length; i++) {
+                        if (value === array_values[i]) {
+                            return i;
+                        }
+                    }
+                    return -1;
+                }
 
                 function createComponentDiv(item, icon, desc) {
                     var div = document.createElement("div");
@@ -304,15 +320,16 @@
                     img.width = 48;
                     img.height = 48;
                     img.align = "left";
+                    img.className = 'internal-element';
 
                     var title = document.createElement("div");
-                    title.className = "title";
+                    title.className = "title internal-element";
                     title.innerHTML = item.name;
 
                     var content = document.createElement("div");
-                    content.className = "content";
+                    content.className = "content internal-element";
                     var info = document.createElement("div");
-                    info.className = "info";
+                    info.className = "info internal-element";
                     if (desc !== undefined) {
                         info.innerHTML = desc;
                     }
@@ -333,9 +350,10 @@
                     img.draggable = false;
                     img.width = 48;
                     img.height = 48;
+                    img.className = 'internal-element';
 
                     var title = document.createElement("div");
-                    title.className = "title";
+                    title.className = "title internal-element";
                     title.innerHTML = item.name;
                     div.appendChild(title);
                     div.appendChild(img);
@@ -344,16 +362,63 @@
 
 
                 var filesDiv = document.getElementById("files");
+                var filesBoxDiv = document.getElementById("filesBox");
+                filesBoxDiv.addEventListener("dragenter", handleDataItemsBoxDragEnter, false);
+                filesBoxDiv.addEventListener("dragleave", handleDragLeave, false);
+                filesBoxDiv.addEventListener("dragover", preventDefaultEventHandling, false);
+                filesBoxDiv.addEventListener("drop", handleDropOntoDataItems, false);
+
+                function handleDataItemsBoxDragEnter(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (dataItemBoxCanHandleDrop(e)) {
+                        this.classList.add('over');
+                    }
+                    return false;
+                }
+
+                function dataItemBoxCanHandleDrop(e) {
+                    var dt = e.dataTransfer;
+                    if (indexOf(dt.types, 'queryid') >= 0) {
+                        return true;
+                    } else if (indexOf(dt.types, 'Files') >= 0) {
+                        return true;
+                    }
+                    return false;
+                }
+
                 var workflowDiv = document.getElementById("workflowcontent");
-                filesDiv.addEventListener("dragenter", doNotHandle, false);
-                filesDiv.addEventListener("dragover", doNotHandle, false);
-                filesDiv.addEventListener("drop", handleDropOntoDataItems, false);
-                workflowDiv.addEventListener("dragenter", doNotHandle, false);
-                workflowDiv.addEventListener("dragover", doNotHandle, false);
-                workflowDiv.addEventListener("drop", dropOntoWorkflow, false);
+                var workflowBoxDiv = document.getElementById("workflow");
+
+                workflowBoxDiv.addEventListener("dragenter", handleWorkflowBoxDragEnter, false);
+                workflowBoxDiv.addEventListener("dragover", preventDefaultEventHandling, false);
+                workflowBoxDiv.addEventListener("dragleave", handleDragLeave, false);
+                workflowBoxDiv.addEventListener("drop", dropOntoWorkflow, false);
+
+                function handleWorkflowBoxDragEnter(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (workflowBoxCanHandleDrop(e)) {
+                        this.classList.add('over');
+                    }
+                    return false;
+                }
+
+                function workflowBoxCanHandleDrop(e) {
+                    var dt = e.dataTransfer;
+                    if (indexOf(dt.types, 'queryid') >= 0) {
+                        return true;
+                    } else if (indexOf(dt.types, 'dataitemid') >= 0) {
+                        return true;
+                    } else if (indexOf(dt.types, 'serviceid') >= 0) {
+                        return true;
+                    }
+                    return false;
+                }
+
                 window.addEventListener("load", reLoadDataItems, false);
-                window.addEventListener("dragover", doNotHandle, false);
-                window.addEventListener("drop", doNotHandle, false);
+                window.addEventListener("dragover", preventDefaultEventHandling, false);
+                window.addEventListener("drop", preventDefaultEventHandling, false);
 
 
                 var queriesItems = [
@@ -390,11 +455,12 @@
 
                     queriesDiv.appendChild(div);
 
-                    div.addEventListener("dragenter", handleDragEnter, false);
-                    div.addEventListener("dragleave", handleDragLeave, false);
-                    div.addEventListener("dragover", doNotHandle, false);
+                    div.addEventListener("dragenter", preventDefaultEventHandling, false);
+                    div.addEventListener("dragleave", preventDefaultEventHandling, false);
+                    div.addEventListener("dragover", preventDefaultEventHandling, false);
                     div.addEventListener('dragstart', function (e) {
-                        e.dataTransfer.setData('QueryID', e.target.id);
+                        e.dataTransfer.setData('queryid', e.target.id);
+                        e.dataTransfer.setData('id', e.target.id);
                     }, false);
                 }
 
@@ -440,14 +506,39 @@
 
                     filesDiv.appendChild(div);
                     console.log("Item added");
-                    div.addEventListener("dragenter", handleDragEnter, false);
+                    div.addEventListener("dragenter", handleDataItemDragEnter, false);
                     div.addEventListener("dragleave", handleDragLeave, false);
+                    div.addEventListener("dragover", dataItemCanHandleDrop, false);
                     div.addEventListener('dragstart', function (e) {
-                        e.dataTransfer.setData('DataItemID', e.target.id);
+                        e.dataTransfer.setData('dataitemid', e.target.id);
+                        e.dataTransfer.setData('id', e.target.id);
                     }, false);
                     div.addEventListener("drop", dropOntoDataItem, false);
                 }
 
+                function handleDragLeave(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    this.classList.remove('over');
+                    return false;
+                }
+
+                function handleDataItemDragEnter(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (dataItemCanHandleDrop(e)) {
+                        this.classList.add('over');
+                    }
+                    return false;
+                }
+
+                function dataItemCanHandleDrop(e) {
+                    var dt = e.dataTransfer;
+                    if (indexOf(dt.types, 'serviceid') >= 0) {
+                        return true;
+                    }
+                    return false;
+                }
 
                 var servicesItems = [
                     {id: "calcLogP",
@@ -524,13 +615,32 @@
 
                     servicesDiv.appendChild(div);
 
-                    div.addEventListener("dragenter", handleDragEnter, false);
+                    div.addEventListener("dragenter", handleServiceDragEnter, false);
                     div.addEventListener("dragleave", handleDragLeave, false);
-                    div.addEventListener("dragover", doNotHandle, false);
+                    div.addEventListener("dragover", serviceCanHandleDrop, false);
                     div.addEventListener("drop", dropOntoService, false);
                     div.addEventListener('dragstart', function (e) {
-                        e.dataTransfer.setData('ServiceID', e.target.id);
+                        console.log("Dragging " + e.target.id)
+                        e.dataTransfer.setData('serviceid', e.target.id);
+                        e.dataTransfer.setData('id', e.target.id);
                     }, false);
+                }
+
+                function handleServiceDragEnter(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (serviceCanHandleDrop(e)) {
+                        this.classList.add('over');
+                    }
+                    return false;
+                }
+
+                function serviceCanHandleDrop(e) {
+                    var dt = e.dataTransfer;
+                    if (indexOf(dt.types, 'dataitemid') >= 0) {
+                        return true;
+                    }
+                    return false;
                 }
 
 
@@ -559,14 +669,39 @@
                     div.draggable = false;
 
                     actionsDiv.appendChild(div);
-                    div.addEventListener("dragenter", handleDragEnter, false);
+                    div.addEventListener("dragenter", handleServiceDragEnter, false);
                     div.addEventListener("dragleave", handleDragLeave, false);
-                    div.addEventListener("dragover", doNotHandle, false);
+                    div.addEventListener("dragover", handleActionDragOver, false);
                     var dropHandler = service.handler;
                     if (dropHandler === undefined) {
                         dropHandler = dropOntoService;
                     }
                     div.addEventListener("drop", dropHandler, false);
+                }
+
+                function handleActionDragEnter(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (serviceCanHandleDrop(e)) {
+                        this.classList.add('over');
+                    }
+                    return false;
+                }
+
+                function handleActionDragOver(e) {
+                    if (actionCanHandleDrop(e)) {
+                        preventDefaultEventHandling(e);
+                        return false;
+                    }
+                    return true;
+                }
+
+                function actionCanHandleDrop(e) {
+                    var dt = e.dataTransfer;
+                    if (indexOf(dt.types, 'dataitemid') >= 0) {
+                        return true;
+                    }
+                    return false;
                 }
 
                 function findIcon(obj, defaultIcon) {
@@ -578,27 +713,22 @@
                     }
                 }
 
-                function doNotHandle(e) {
+                function preventDefaultEventHandling(e) {
                     e.stopPropagation();
                     e.preventDefault();
                 }
 
-                function handleDragEnter(e) {
-                    this.classList.add('over');
-                }
 
-                function handleDragLeave(e) {
-                    this.classList.remove('over');
-                }
 
                 function dropOntoWorkflow(e) {
                     console.log("Item dropped onto workflow");
                     e.stopPropagation();
                     e.preventDefault();
+                    this.classList.remove('over');
                     var dt = e.dataTransfer;
-                    var serviceID = dt.getData('ServiceID');
-                    var dataItemID = dt.getData('DataItemID');
-                    var queryID = dt.getData('QueryID');
+                    var serviceID = dt.getData('serviceid');
+                    var dataItemID = dt.getData('dataitemid');
+                    var queryID = dt.getData('queryid');
                     if (serviceID.length > 0) {
                         console.log("Handling service " + serviceID);
                         handleWorkflowDropService(serviceID);
@@ -664,13 +794,18 @@
                     e.stopPropagation();
                     e.preventDefault();
                     this.classList.remove('over');
+
+                    if (!dataItemCanHandleDrop(e)) {
+                        return;
+                    }
+
                     var dataItemDiv = findDropDiv(e.target, "droptarget");
                     if (dataItemDiv === undefined) {
                         console.log("Data item not found");
                         return;
                     }
                     var dt = e.dataTransfer;
-                    var serviceId = dt.getData('ServiceID');
+                    var serviceId = dt.getData('serviceid');
                     var serviceDiv = document.getElementById(serviceId);
                     if (serviceDiv === undefined) {
                         console.log("Service not found");
@@ -693,7 +828,7 @@
                     this.classList.remove('over');
 
                     var dt = e.dataTransfer;
-                    var dataId = dt.getData('DataItemID');
+                    var dataId = dt.getData('dataitemid');
                     if (dataId === undefined) {
                         console.log("No DataItem defined");
                         return;
@@ -710,7 +845,7 @@
                     this.classList.remove('over');
 
                     var dt = e.dataTransfer;
-                    var dataId = dt.getData('DataItemID');
+                    var dataId = dt.getData('dataitemid');
                     if (dataId === undefined) {
                         console.log("No DataItem defined");
                         return;
@@ -733,12 +868,16 @@
                 }
 
                 function dropOntoService(e) {
+                    console.log("Drop event: " + e + " Drop onto " + this.id + " Dropped item: " + e.dataTransfer.getData("id"));
                     e.stopPropagation();
                     e.preventDefault();
                     this.classList.remove('over');
+                    if (!serviceCanHandleDrop(e)) {
+                        return;
+                    }
                     var serviceDiv = findDropDiv(e.target, "droptarget");
                     var dt = e.dataTransfer;
-                    var dataId = dt.getData('DataItemID');
+                    var dataId = dt.getData('dataitemid');
                     var itemDiv = document.getElementById(dataId);
                     handleDataItemServiceDrop(itemDiv.item, serviceDiv.service);
                     return false;
@@ -854,10 +993,11 @@
 
                     e.stopPropagation();
                     e.preventDefault();
+                    this.classList.remove('over');
                     if (e.dataTransfer.files !== undefined && e.dataTransfer.files.length > 0) {
                         console.log("File dropped");
                         handleDropFiles(e);
-                    } else if (e.dataTransfer.getData('QueryID') !== undefined) {
+                    } else if (e.dataTransfer.getData('queryid') !== undefined) {
                         console.log("Query dropped");
                         handleDropQueryOntoDataItems(e);
                     } else {
@@ -867,7 +1007,10 @@
 
                 function handleDropQueryOntoDataItems(e) {
                     var dt = e.dataTransfer;
-                    var queryId = dt.getData('QueryID');
+                    var queryId = dt.getData('queryid');
+                    if (queryId.length === 0) {
+                        return;
+                    }
                     var queryDiv = document.getElementById(queryId);
                     var query = queryDiv.query;
                     var form = document.getElementById(query.form);
@@ -982,7 +1125,7 @@
             </script>
 
             <div id="basic-params-service-submit" class="glasspane">
-                <div class="popup" style="width: 300px; height: 200px; margin-top: -100px; margin-left: -150px;">
+                <div class="popup" style="width: 400px; height: 200px; margin-top: -100px; margin-left: -200px;">
                     <div style="text-align: right;">
                         <a href="#" onClick="hide('basic-params-service-submit')">X</a>
                     </div>
@@ -1008,7 +1151,7 @@
             </div>
 
             <div id="spherex-clustering-service-submit" class="glasspane">
-                <div class="popup" style="width: 300px; height: 200px; margin-top: -100px; margin-left: -150px;">
+                <div class="popup" style="width: 500px; height: 240px; margin-top: -120px; margin-left: -250px;">
                     <div style="text-align: right;">
                         <a href="#" onClick="hide('spherex-clustering-service-submit')">X</a>
                     </div>
@@ -1019,9 +1162,9 @@
                             <input type="text" name="path" hidden disabled>
                             <div>
                                 <table cellpadding="3">
-                                    <tr><td>Service:</td><td><input type="text" name="serviceName" size="20" disabled value=""></td></tr>
-                                    <tr><td>Name of input:</td><td><input type="text" name="inputName" size="20" disabled value=""></td></tr>
-                                    <tr><td>Name of output:</td><td><input type="text" name="outputName" size="20" value="" autofocus></td></tr>
+                                    <tr><td>Service:</td><td><input type="text" name="serviceName" size="30" disabled value=""></td></tr>
+                                    <tr><td>Name of input:</td><td><input type="text" name="inputName" size="30" disabled value=""></td></tr>
+                                    <tr><td>Name of output:</td><td><input type="text" name="outputName" size="30" value="" autofocus></td></tr>
                                     <tr><td>Min clusters:</td><td><input type="text" name="MinClusterCount" size="5" value="5"></td></tr>
                                     <tr><td>Max clusters:</td><td><input type="text" name="MaxClusterCount" size="5" value="10"></td></tr>
                                 </table>
@@ -1036,7 +1179,7 @@
             </div>
 
             <div id="screening-service-submit" class="glasspane">
-                <div class="popup" style="width: 440px; height: 220px; margin-top: -110px; margin-left: -220px;">
+                <div class="popup" style="width: 500px; height: 240px; margin-top: -120px; margin-left: -250px;">
                     <div style="text-align: right;">
                         <a href="#" onClick="hide('screening-service-submit')">X</a>
                     </div>
@@ -1047,10 +1190,10 @@
                             <input type="text" name="path" hidden disabled>
                             <div>
                                 <table cellpadding="3">
-                                    <tr><td>Service:</td><td><input type="text" name="serviceName" size="20" disabled value=""></td></tr>
-                                    <tr><td>Name of input:</td><td><input type="text" name="inputName" size="20" disabled value=""></td></tr>
-                                    <tr><td>Name of output:</td><td><input type="text" name="outputName" size="20" value="" autofocus></td></tr>
-                                    <tr><td>Target structure:</td><td><input type="text" name="TargetMolecule" size="35" value="NC1=CC=CC(NC2=NC=CC=N2)=C1"></td></tr>
+                                    <tr><td>Service:</td><td><input type="text" name="serviceName" size="30" disabled value=""></td></tr>
+                                    <tr><td>Name of input:</td><td><input type="text" name="inputName" size="30" disabled value=""></td></tr>
+                                    <tr><td>Name of output:</td><td><input type="text" name="outputName" size="30" value="" autofocus></td></tr>
+                                    <tr><td>Target structure:</td><td><input type="text" name="TargetMolecule" size="30" value="NC1=CC=CC(NC2=NC=CC=N2)=C1"></td></tr>
                                     <tr><td>Threshold:</td><td><input type="text" name="Threshold" size="5" value="0.8"></td></tr>
                                 </table>
                             </div>
@@ -1065,7 +1208,7 @@
 
 
             <div id="structure-query-submit" class="glasspane">
-                <div class="popup" style="width: 400px; height: 200px; margin-top: -100px; margin-left: -200px;">
+                <div class="popup" style="width: 500px; height: 200px; margin-top: -100px; margin-left: -250px;">
                     <div style="text-align: right;">
                         <a href="#" onClick="hide('structure-query-submit')">X</a>
                     </div>
@@ -1074,8 +1217,8 @@
                             <input type="text" name="queryId" hidden disabled>
                             <div>
                                 <table cellpadding="3">
-                                    <tr><td>Database:</td><td><input type="text" name="queryName" size="35" disabled value=""></td></tr>
-                                    <tr><td>Query structure:</td><td><input type="text" name="queryStructure" size="35" value="NC1=CC=CC(NC2=NC=CC=N2)=C1"></td>     
+                                    <tr><td>Database:</td><td><input type="text" name="queryName" size="30" disabled value=""></td></tr>
+                                    <tr><td>Query structure:</td><td><input type="text" name="queryStructure" size="30" value="NC1=CC=CC(NC2=NC=CC=N2)=C1"></td>     
                                     <tr><td>Search type:</td><td>
                                             <select name="searchOptions">
                                                 <option value="t:s">Substructure</option>
@@ -1103,7 +1246,6 @@
             </div>
 
             <div id="progress" class="popup" style="display: none; position: absolute;">
-
             </div>
 
         </body>
