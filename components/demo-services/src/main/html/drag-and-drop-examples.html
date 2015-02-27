@@ -51,6 +51,10 @@
 
             <style type="text/css">
 
+                a:hover {
+                    text-decoration: underline;
+                }
+
                 body {
                     margin:0;
                     padding:0;
@@ -59,11 +63,26 @@
 
                 #topsection {
                     height: 50px; /*Height of top section*/
+                    background: black;
+                    color: white;
+                }
+
+                #links {
+                    padding-top: 5px;
+                    float: right;
                 }
 
                 #topsection h1 {
                     margin: 0;
-                    padding-top: 15px;
+                    padding-top: 5px;
+                }
+
+                #helpcontent {
+                    padding: 5px;
+                }
+
+                #help li {
+                    font-size: small;
                 }
 
                 #contentwrapper {
@@ -119,15 +138,16 @@
                     overflow: auto;
                 }
 
-                #footer{
-                    //position: fixed;
-                    //bottom: 0px;
+                #footer {
+                    position: fixed;
+                    bottom: 0px;
                     clear: left;
                     width: 100%;
-                    //background: black;
-                    //color: #FFF;
+                    background: black;
+                    color: white;
                     text-align: center;
                     padding: 4px 0px;
+                    font-size: small;
                 }
 
                 .innertube {
@@ -143,7 +163,7 @@
                     border-width: 2px;
                     border-radius: 6px;
                     font-size: smaller;
-                    pointer-events: all;
+                    pointer-events: all; //TODO
                 }
 
                 div.info {
@@ -257,7 +277,11 @@
         </head>
         <body>
             <div id="maincontainer">
-                <div id="topsection"><div class="innertube"><h1>Workflow examples</h1></div></div>
+                <div id="topsection"><div class="innertube">
+                        <div id="links"><a onclick="pop('help')">Help</a></div>
+                        <div><h1>Workflow examples</h1></div>
+                    </div>
+                </div>
 
                 <div id="contentwrapper">
                     <div id="contentcolumn">
@@ -294,8 +318,9 @@
                     </div>
                 </div>
 
-                <!--div id="footer">Footer here</div-->
-
+                <div id="footer">This site is for illustration purposes only -
+                    you are requested not to use it for real work. 
+                    Data loaded to the site is visible to all.</div>
             </div>
 
             <script>
@@ -422,13 +447,13 @@
 
 
                 var queriesItems = [
-//                    {id: "emols_sc",
-//                        name: "eMols screening cpds",
-//                        info: "6056409",
-//                        popup: "structure-query-submit",
-//                        form: "structure-query-submit-form",
-//                        path: "/chemsearch",
-//                        endpoint: "direct:chemsearch/emolecules_sc"},
+                    //                    {id: "emols_sc",
+                    //                        name: "eMols screening cpds",
+                    //                        info: "6056409",
+                    //                        popup: "structure-query-submit",
+                    //                        form: "structure-query-submit-form",
+                    //                        path: "/chemsearch",
+                    //                        endpoint: "direct:chemsearch/emolecules_sc"},
                     {id: "emols_bb",
                         name: "eMols building blocks",
                         info: "818887",
@@ -1246,6 +1271,28 @@
             </div>
 
             <div id="progress" class="popup" style="display: none; position: absolute;">
+            </div>
+
+            <div id="help" class="glasspane">
+                <div class="popup" style="width: 500px; height: 300px; margin-top: -150px; margin-left: -250px;">
+                    <div style="text-align: right;">
+                        <a onClick="hide('help')">X</a>
+                    </div>
+                    <div id="helpcontent">
+                        <p><b>Usage guide</b></p>
+                        <ol>
+                            <li>Drag a file (SD or smiles) onto Data sets to create a new dataset with the contents of that file 
+                                (please limit yourself to relatively small files).</li>
+                            <li>Drop Query onto Data sets to create a new dataset based on a query of the database</li>
+                            <li>Drop a data set onto a service to send the data to the service and create 
+                                a new data set with the results. Drop a service onto a data set does the same.</li>
+                            <li>Drop a data set onto an action on the left hand side to perform the action on 
+                                the data set (View is not yet implemented)</li>
+                            <li>Drop query, data set or service onto the workflow area to build a workflow 
+                                (workflows cannot yet be executed)</li>
+                        </ol>
+                    </div>
+                </div>
             </div>
 
         </body>
