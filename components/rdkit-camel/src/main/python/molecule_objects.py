@@ -32,8 +32,12 @@ def read_in():
 
 class ObjReadThread(Thread):
     def run(self):
-        read_in()
-        self.stop()
+        try:
+            read_in()
+            self.stop()
+        except:
+            out_mols_here.close()
+            self.stop()
 
 # Get the prvevious body and set the next one
 mols = request.getBody(MoleculeObjectIterable)

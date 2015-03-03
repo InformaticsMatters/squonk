@@ -39,8 +39,12 @@ def filter_props():
 
 class ObjFiltThread(Thread):
     def run(self):
-        filter_props()
-        self.stop()
+        try:
+            filter_props()
+            self.stop()
+        except:
+            out_mols.close()
+            self.stop()
 
 
 mols = request.getBody(MoleculeObjectIterable)
@@ -56,7 +60,7 @@ else:
     max_ans = float(my_head[2])
 
 # Create the closeable qeuue to leave
-filter_mols = CloseableMoleculeObjectQueue(100)
+filter_mols = CloseableMoleculeObjectQueue(40)
 # Set filter mols to the body
 request.body = filter_mols
 # Create the thread

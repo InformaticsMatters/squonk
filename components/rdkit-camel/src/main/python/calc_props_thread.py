@@ -40,8 +40,12 @@ def calc_my_props():
 class ObjPropThread(Thread):
     """Thread to calculate molecule properties"""
     def run(self):
-        calc_my_props()
-
+        try:
+            calc_my_props()
+            self.stop()
+        except:
+            out_mols.close()
+            self.stop()
 
 # Get the mols from the previous process 
 mols = request.getBody(MoleculeObjectIterable)
