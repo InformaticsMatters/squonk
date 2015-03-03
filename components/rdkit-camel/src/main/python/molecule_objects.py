@@ -43,8 +43,8 @@ class ObjReadThread(Thread):
 mols = request.getBody(MoleculeObjectIterable)
 out_mols_here = CloseableMoleculeObjectQueue(40)
 request.setBody(out_mols_here)
-#read_in()
 my_thread = ObjReadThread()
+#read_in()
 my_thread.start()
 #import threading
 #t = threading.Thread(target=read_in,)
