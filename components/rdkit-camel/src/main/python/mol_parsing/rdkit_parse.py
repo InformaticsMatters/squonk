@@ -1,5 +1,5 @@
 #Series of functions to parse molecules based on RDKit
-
+import sys
 from java import lang
 lang.System.loadLibrary('GraphMolWrap')
 # Pull it in as a stream of string
@@ -9,10 +9,10 @@ from org.RDKit import *
 def parse_mol_simple(my_type, txt):
     """Function to parse individual mols given a type"""
     if my_type == "mol":
-        #try:
-        mol = RWMol.MolFromMolBlock(txt.strip())
-        #except:
-        #    mol = RWMol.MolFromMolBlock(txt)
+        try:
+            mol = RWMol.MolFromMolBlock(txt.strip())
+        except:
+            mol = RWMol.MolFromMolBlock(txt)
     elif my_type == "smiles":
         # Assumes that smiles is the first column
         mol = RWMol.MolFromSmiles(txt.split()[0])
@@ -37,8 +37,12 @@ def get_or_create_rdmol(molobj):
     # First check if it exists
     rdmol = molobj.getRepresentation("rdkit.mol")
     if not rdmol:
-        rdmol = parse_mol_obj(molobj)
-        molobj.putRepresentation(rdmol, "rdkit.mol")
+        try:
+            rdmol = parse_mol_obj(molobj)
+            molobj.putRepresentation(rdmol, "rdkit.mol")
+        except:
+            sys.stderr.write("ERROR PARSNG MOL -> \n"+molobj.getSource())
+            rdmol = None
     else:
         pass
     return rdmol, molobj

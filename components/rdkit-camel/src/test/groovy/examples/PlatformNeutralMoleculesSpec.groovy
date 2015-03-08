@@ -62,7 +62,7 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
         setup:
         def resultEndpoint = camelContext.getEndpoint('mock:result')
         resultEndpoint.expectedMessageCount(1)
-        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("/root/lac/components/Kinase_inhibs.sdf.gz"))
+        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz"))
 
         when:
         template.sendBody('direct:handleMoleculeObjects', gzip)
@@ -70,7 +70,7 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
         then:
         resultEndpoint.assertIsSatisfied()
         def result = resultEndpoint.receivedExchanges.in.body[0]
-        result == 15 // FOR NOW -> SHOULD 508 // was756
+        result == 36
 
         cleanup:
         gzip.close()

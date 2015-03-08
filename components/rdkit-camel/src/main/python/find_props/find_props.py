@@ -4,6 +4,8 @@ from java import lang
 from com.im.lac.types import MoleculeObject, MoleculeObjectIterable
 lang.System.loadLibrary('GraphMolWrap')
 from org.RDKit import *
+import sys
+
 
 def num_hba(mol):
     """Function for calculating number of H-bond acceptors
@@ -43,6 +45,11 @@ funct_dict = {"num_hba": num_hba,
 
 
 def calc_props(rdmol, function):
-    return funct_dict[function](rdmol)
+    try:
+        val = funct_dict[function](rdmol)
+    except:
+        val = None
+        sys.stderr.write("ERROR  CALCULATNG PROPERTY -> " + function)
+    return val
 ## 1) Stream of molecuels
 ## 2) String relating to property

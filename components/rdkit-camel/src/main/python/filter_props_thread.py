@@ -7,7 +7,7 @@ from find_props.find_props import calc_props
 from find_props.filter_props import filter_prop
 from com.im.lac.util import CloseableMoleculeObjectQueue
 from java.lang import Thread, InterruptedException
-
+import sys
 from java.lang import Class
 lang.System.loadLibrary('GraphMolWrap')
 # Pull it in as a stream of string
@@ -20,15 +20,14 @@ def filter_props():
     while mols.hasNext():
         java_mol = mols.next()
         # Get or make the RDKit molecule
-        try:
-            rdmol, java_mol = get_or_create_rdmol(java_mol)
-        except:
-            print "ERROR CREATING MOL"
+        rdmol, java_mol = get_or_create_rdmol(java_mol)
+        if rdmol is None:
+            print java_mol.getSource()
+            continue
         # Work out the function
-        try:
-            val = calc_props(rdmol, my_funct)
-        except:
-            print "ERROR GETING PROPERTY"
+        val = calc_props(rdmol, my_funct)
+        if val is None:
+            continue
         # Dp the logic and go past if it passes the test
         if val < min_ans or val > max_ans:
             continue
@@ -49,7 +48,8 @@ class ObjFiltThread(Thread):
             filter_props()
             self.stop()
         except:
-            out_mols.close()
+            sys.stderr.write("Exception in molecule filtering")
+            filter_mols.close()
             self.stop()
 
 
