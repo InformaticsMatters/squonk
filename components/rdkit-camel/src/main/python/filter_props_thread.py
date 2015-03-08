@@ -20,9 +20,15 @@ def filter_props():
     while mols.hasNext():
         java_mol = mols.next()
         # Get or make the RDKit molecule
-        rdmol, java_mol = get_or_create_rdmol(java_mol)
+        try:
+            rdmol, java_mol = get_or_create_rdmol(java_mol)
+        except:
+            print "ERROR CREATING MOL"
         # Work out the function
-        val = calc_props(rdmol, my_funct)
+        try:
+            val = calc_props(rdmol, my_funct)
+        except:
+            print "ERROR GETING PROPERTY"
         # Dp the logic and go past if it passes the test
         if val < min_ans or val > max_ans:
             continue

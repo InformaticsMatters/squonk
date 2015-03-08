@@ -19,7 +19,10 @@ def read_in():
         counter +=1
         molobj = mols.next()
         # Now get the molecule
-        rdmol = parse_mol_obj(molobj)
+        try:
+            rdmol = parse_mol_obj(molobj)
+        except:
+            print "ERROR PARSING MOL"
         if not rdmol:
             continue 
         # Put this representation to the function
@@ -38,14 +41,11 @@ class ObjReadThread(Thread):
         except:
             out_mols_here.close()
             self.stop()
+#            raise
 
 # Get the prvevious body and set the next one
 mols = request.getBody(MoleculeObjectIterable)
 out_mols_here = CloseableMoleculeObjectQueue(40)
 request.setBody(out_mols_here)
 my_thread = ObjReadThread()
-#read_in()
 my_thread.start()
-#import threading
-#t = threading.Thread(target=read_in,)
-#t.start()

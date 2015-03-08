@@ -24,9 +24,16 @@ def calc_my_props():
     while mols.hasNext():
         java_mol = mols.next()
         # Now get the RDMol and the java_mol  updated
-        rdmol, java_mol = get_or_create_rdmol(java_mol)
+        try:
+            rdmol, java_mol = get_or_create_rdmol(java_mol)
+        except:
+            print "ERROR CREATING MOL"
+            continue
         # Now calculate the prop
-        val = calc_props(rdmol, my_funct)
+        try:
+            val = calc_props(rdmol, my_funct)
+        except:
+            print "ERROR CALCULATING PROPERTY"
         # Set the value of this function to the molecule object
         java_mol.putValue(my_funct, val)
         # To make sure the molecules in the end viewer have been through this stage
@@ -40,6 +47,7 @@ def calc_my_props():
 class ObjPropThread(Thread):
     """Thread to calculate molecule properties"""
     def run(self):
+        # Try and catch this exception - if we get it just to kill the thread
         try:
             calc_my_props()
             self.stop()
