@@ -3,6 +3,7 @@ package com.im.lac.camel.chemaxon.enumeration;
 import chemaxon.struc.Molecule;
 import com.im.lac.chemaxon.enumeration.ReactorExecutor;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
+import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -34,7 +36,7 @@ public class ReactorProcessor implements Processor {
         if (reaction == null) {
             throw new IllegalStateException("Could not read reaction. Must be set as body or as header property named 'Reaction'");
         }
-        MoleculeObjectIterable[] reactants = readReactants(exchange);
+        Molecule[][] reactants = readReactants(exchange);
         if (reactants == null || reactants.length == 0) {
             throw new IllegalStateException("Could not read reactants. Must be set as header property named 'Reactants1', 'Reactants2' ...'");
         }
@@ -44,17 +46,23 @@ public class ReactorProcessor implements Processor {
         exchange.getIn().setBody(results);
     }
 
-    MoleculeObjectIterable[] readReactants(Exchange exchange) throws MalformedURLException, IOException {
+    Molecule[][] readReactants(Exchange exchange) throws MalformedURLException, IOException {
         String header;
-        List<MoleculeObjectIterable> reactants = new ArrayList<>();
+        List<Molecule[]> reactants = new ArrayList<>();
         int i = 1;
         while ((header = exchange.getIn().getHeader("Reactants" + i, String.class)) != null) {
             URL url = new URL(header);
             InputStream is = url.openStream();
-            reactants.add(MoleculeObjectUtils.createIterable(is));
-            i++;
+            try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStream(is)) {
+                Molecule[] mols = stream
+                        .map(mo -> MoleculeUtils.cloneMolecule(mo, true))
+                        .collect(Collectors.toList()).toArray(new Molecule[0]);
+
+                reactants.add(mols);
+                i++;
+            }
         }
-        return reactants.toArray(new MoleculeObjectIterable[reactants.size()]);
+        return reactants.toArray(new Molecule[0][0]);
     }
 
     ReactorExecutor.Output readOutputType(Exchange exchange) {

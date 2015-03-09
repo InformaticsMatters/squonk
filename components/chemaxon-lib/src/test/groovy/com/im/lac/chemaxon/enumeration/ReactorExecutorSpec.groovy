@@ -10,8 +10,10 @@ import com.im.lac.chemaxon.molecule.MoleculeObjectUtils
 import com.im.lac.types.MoleculeObjectIterable
 import com.im.lac.util.CollectionUtils
 import com.im.lac.chemaxon.molecule.MoleculeUtils
+import com.im.lac.types.MoleculeObject
 import java.util.stream.StreamSupport
 import java.util.stream.Collectors
+import java.util.stream.Stream
 
 /**
  *
@@ -22,13 +24,25 @@ class ReactorExecutorSpec extends Specification {
     String reactants = "../../data/testfiles/nci100.smiles"
     String reaction = "../../data/testfiles/amine-acylation.mrv"
     
+    Molecule[] getMoleculeAraryFromFile(FileInputStream fis) {
+        Stream<MoleculeObject> stream = MoleculeObjectUtils.createStream(fis)
+        try {
+            return stream
+            .map() { mo -> MoleculeUtils.cloneMolecule(mo, true) }
+            .collect(Collectors.toList()).toArray(new Molecule[0]);
+        } finally {
+            stream.close()   
+        }
+    }
+        
+    
     void "simple enumerate"() {
         
         setup:
         println "simple enumerate"
         Molecule rxn = MolImporter.importMol(new File(reaction).text)
-        MoleculeObjectIterable r1 = MoleculeObjectUtils.createIterable(new File(reactants))
-        MoleculeObjectIterable r2 = MoleculeObjectUtils.createIterable(new File(reactants))
+        Molecule[] r1 = getMoleculeAraryFromFile(new FileInputStream(reactants))     
+        Molecule[] r2 = getMoleculeAraryFromFile(new FileInputStream(reactants))
         ReactorExecutor exec = new ReactorExecutor()
         
         when:
@@ -42,10 +56,6 @@ class ReactorExecutorSpec extends Specification {
                 
         then:
         list.size() > 0
-        
-        cleanup:
-        r1?.close()
-        r2?.close()
     }
     
     void "chemaxon concurrent reactor"() {
@@ -79,28 +89,28 @@ class ReactorExecutorSpec extends Specification {
         importers.each { it.close() }
     }
     
-//    void "combinatorialIterator speed"() {
-//        
-//        setup:
-//        println "combinatorialIterator speed"
-//        MoleculeObjectIterable r1 = MoleculeObjectUtils.createIterable(new File("../../data/testfiles/nci100.smiles"))
-//        MoleculeObjectIterable r2 = MoleculeObjectUtils.createIterable(new File("../../data/testfiles/nci100.smiles"))
-//        
-//        when:
-//        long t0 = System.currentTimeMillis()
-//        def it = CollectionUtils.combinatorialIterator(25, r1, r2);
-//        def list = it.collect()
-//        long t1 = System.currentTimeMillis()
-//        
-//        then:
-//        println "Number of products: ${list.size()} generated in ${t1-t0}ms"
-//        list.size() == 10000
-//        
-//        cleanup:
-//        r1?.close()
-//        r2?.close()
-//    
-//    }
+    //    void "combinatorialIterator speed"() {
+    //        
+    //        setup:
+    //        println "combinatorialIterator speed"
+    //        MoleculeObjectIterable r1 = MoleculeObjectUtils.createIterable(new File("../../data/testfiles/nci100.smiles"))
+    //        MoleculeObjectIterable r2 = MoleculeObjectUtils.createIterable(new File("../../data/testfiles/nci100.smiles"))
+    //        
+    //        when:
+    //        long t0 = System.currentTimeMillis()
+    //        def it = CollectionUtils.combinatorialIterator(25, r1, r2);
+    //        def list = it.collect()
+    //        long t1 = System.currentTimeMillis()
+    //        
+    //        then:
+    //        println "Number of products: ${list.size()} generated in ${t1-t0}ms"
+    //        list.size() == 10000
+    //        
+    //        cleanup:
+    //        r1?.close()
+    //        r2?.close()
+    //    
+    //    }
     
 }
 

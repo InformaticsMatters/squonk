@@ -16,38 +16,40 @@ import org.apache.camel.Exchange;
  */
 @Converter
 public class MoleculeObjectConvertor {
-    
+
     @Converter
     public static MoleculeObject createMoleculeObjectFromString(String mol, Exchange exchange) {
         return new MoleculeObject(mol);
     }
 
     /**
-     * Create an Iterable of MoleculeObjects from an InputStream.
-     * IMPORTANT: whilst the implementation type is not defined here it is certain that 
-     * the underlying stream will need to be closed. To do this check whether the
-     * MoleculeObjectIterable that is returned implements the Closeable interface and
-     * if so call the close method once you have finished iterating. 
-     * Ideally we should have an implementation that is independent of Marvin as 
-     * other chemistry implementations will need to depend on ChemAxon even if this 
-     * is the only thing they need. 
+     * Create an Iterable of MoleculeObjects from an InputStream. IMPORTANT:
+     * whilst the implementation type is not defined here it is certain that the
+     * underlying stream will need to be closed. To do this check whether the
+     * MoleculeObjectIterable that is returned implements the Closeable
+     * interface and if so call the close method once you have finished
+     * iterating. Ideally we should have an implementation that is independent
+     * of Marvin as other chemistry implementations will need to depend on
+     * ChemAxon even if this is the only thing they need.
+     *
      * @param is
      * @param exchange
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     @Converter
     public static MoleculeObjectIterable createMoleculeObjectIterable(InputStream is, Exchange exchange)
             throws IOException {
         return MoleculeObjectUtils.createIterable(is);
     }
-    
+
     /**
-     * Create an Iterable of MoleculeObjects from an File.
-     * See the InputStream variant for more details.
+     * Create an Iterable of MoleculeObjects from an File. See the InputStream
+     * variant for more details.
+     *
      * @param file
      * @param exchange
-     * @return 
+     * @return
      * @throws java.io.IOException
      */
     @Converter
@@ -55,7 +57,7 @@ public class MoleculeObjectConvertor {
             throws IOException {
         return MoleculeObjectUtils.createIterable(file);
     }
-    
+
     /**
      *
      * @param moi
@@ -65,6 +67,5 @@ public class MoleculeObjectConvertor {
     public static OutputGenerator createOutputGeneratorFromMoleculeObjectIterable(MoleculeObjectIterable moi) {
         return new MoleculeObjectWriter(moi);
     }
-
 
 }

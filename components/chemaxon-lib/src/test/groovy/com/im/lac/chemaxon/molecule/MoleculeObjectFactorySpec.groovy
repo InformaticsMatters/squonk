@@ -11,14 +11,14 @@ class MoleculeObjectFactorySpec extends Specification {
     
     def "read smiles"() {
         setup:
-        File file = new File("../../data/testfiles/nci1000.smiles")
+        File file = new File("../../data/testfiles/nci100.smiles")
         MoleculeObjectIterable impl = MoleculeObjectUtils.createIterable(file)
         
         when:
         def mols = impl.collect()
         
         then:
-        mols.size() == 1000
+        mols.size() == 100
         mols.each { mo ->
             assert "smiles" == mo.format
         }

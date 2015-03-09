@@ -5,16 +5,16 @@ import chemaxon.reaction.ReactionException;
 import chemaxon.reaction.Reactor;
 import chemaxon.struc.Molecule;
 import chemaxon.util.iterator.MoleculeIterator;
+import chemaxon.util.iterator.MoleculeIteratorFactory;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.IOUtils;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -49,7 +49,7 @@ public class ReactorExecutor {
         return reactor;
     }
 
-    public Stream<MoleculeObject> enumerate(Molecule reaction, Output output, int ignoreRules, Iterable<MoleculeObject>... sources) throws ReactionException, IOException {
+    public Stream<MoleculeObject> enumerate(Molecule reaction, Output output, int ignoreRules, Molecule[][] sources) throws ReactionException, IOException {
         
         Spliterator spliterator = new ReactorSpliterator(reaction, output, ignoreRules, sources);
         return StreamSupport.stream(spliterator, true);
@@ -60,7 +60,7 @@ public class ReactorExecutor {
         final Reactor reactor;
         final ConcurrentReactorProcessor crp;
 
-        ReactorSpliterator(Molecule reaction, Output output, int ignoreRules, Iterable<MoleculeObject>... sources) throws ReactionException, IOException {
+        ReactorSpliterator(Molecule reaction, Output output, int ignoreRules, Molecule[][] sources) throws ReactionException, IOException {
             super(Long.MAX_VALUE, Spliterator.NONNULL);
             reactor = createReactor(reaction, output, ignoreRules);
             crp = new ConcurrentReactorProcessor();
@@ -88,54 +88,55 @@ public class ReactorExecutor {
         }
     }
 
-    private MoleculeIterator[] createReactantIterators(Iterable<MoleculeObject>... sources) {
+    private MoleculeIterator[] createReactantIterators(Molecule[]... sources) {
         MoleculeIterator[] iterators = new MoleculeIterator[sources.length];
         int i = 0;
-        for (Iterable<MoleculeObject> source : sources) {
-            iterators[i++] = new MoleculeIteratorAdapter(source);
+        for (Molecule[] mols : sources) {   
+            iterators[i] = MoleculeIteratorFactory.createMoleculeIterator(mols);
+            i++;
         }
         return iterators;
     }
 
-    private class MoleculeIteratorAdapter implements MoleculeIterator {
-
-        Iterator<MoleculeObject> iterator;
-        Iterable<MoleculeObject> iterable;
-
-        MoleculeIteratorAdapter(Iterable<MoleculeObject> iterable) {
-            this.iterable = iterable;
-            this.iterator = iterable.iterator();
-        }
-
-        @Override
-        public Molecule next() {
-            MoleculeObject mo = iterator.next();
-            if (mo != null) {
-                return MoleculeUtils.cloneMolecule(mo, true);
-            } else {
-                throw new NoSuchElementException("No more Molecules");
-            }
-        }
-
-        @Override
-        public boolean hasNext() {
-            return iterator.hasNext();
-        }
-
-        @Override
-        public Throwable getThrowable() {
-            return null;
-        }
-
-        @Override
-        public double estimateProgress() {
-            return 0;
-        }
-
-        void close() {
-            IOUtils.closeIfCloseable(iterable);
-        }
-
-    }
+//    private class MoleculeIteratorAdapter implements MoleculeIterator {
+//
+//        Iterator<MoleculeObject> iterator;
+//        Iterable<MoleculeObject> iterable;
+//
+//        MoleculeIteratorAdapter(Iterable<MoleculeObject> iterable) {
+//            this.iterable = iterable;
+//            this.iterator = iterable.iterator();
+//        }
+//
+//        @Override
+//        public Molecule next() {
+//            MoleculeObject mo = iterator.next();
+//            if (mo != null) {
+//                return MoleculeUtils.cloneMolecule(mo, true);
+//            } else {
+//                throw new NoSuchElementException("No more Molecules");
+//            }
+//        }
+//
+//        @Override
+//        public boolean hasNext() {
+//            return iterator.hasNext();
+//        }
+//
+//        @Override
+//        public Throwable getThrowable() {
+//            return null;
+//        }
+//
+//        @Override
+//        public double estimateProgress() {
+//            return 0;
+//        }
+//
+//        void close() {
+//            IOUtils.closeIfCloseable(iterable);
+//        }
+//
+//    }
 
 }

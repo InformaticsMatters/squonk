@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import org.apache.camel.Exchange;
 import org.apache.camel.spi.DataFormat;
 
@@ -62,7 +63,7 @@ public class MoleculeObjectIteratorDataFormat implements DataFormat {
 
     @Override
     public Object unmarshal(Exchange exchange, InputStream is) throws Exception {
-        Iterable it = MoleculeObjectUtils.createIterable(is);
+        Stream it = MoleculeObjectUtils.createStream(is);
         return it.iterator();
     }
 

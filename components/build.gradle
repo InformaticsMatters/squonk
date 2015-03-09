@@ -55,3 +55,8 @@ subprojects {
         }
     }
 }
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.3'
+    jarFile = 'wrapper/wrapper.jar'
+}
