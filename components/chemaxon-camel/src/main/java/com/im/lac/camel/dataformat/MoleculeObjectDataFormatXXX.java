@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import org.apache.camel.Exchange;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.util.IOHelper;
@@ -32,9 +33,9 @@ import org.apache.camel.util.IOHelper;
  *
  * @author timbo
  */
-public class MoleculeObjectDataFormat implements DataFormat {
+public class MoleculeObjectDataFormatXXX implements DataFormat {
 
-    private static final Logger LOG = Logger.getLogger(MoleculeObjectDataFormat.class.getName());
+    private static final Logger LOG = Logger.getLogger(MoleculeObjectDataFormatXXX.class.getName());
 
     private int marshalCount = 0;
 
@@ -66,6 +67,8 @@ public class MoleculeObjectDataFormat implements DataFormat {
         Iterator<MoleculeObject> mols = null;
         if (o instanceof MoleculeObjectIterable) {
             mols = ((MoleculeObjectIterable) o).iterator();
+        } else if (o instanceof Stream) {
+            mols = ((Stream<MoleculeObject>) o).iterator();
         } else if (o instanceof Iterator) {
             mols = (Iterator<MoleculeObject>) o;
         } else if (o instanceof Iterable) {

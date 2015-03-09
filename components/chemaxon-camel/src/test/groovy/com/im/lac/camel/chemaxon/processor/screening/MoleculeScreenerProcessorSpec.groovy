@@ -11,7 +11,6 @@ import com.im.lac.camel.testsupport.CamelSpecificationBase
 import com.im.lac.chemaxon.screening.MoleculeScreener
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.types.MoleculeObject
-import com.im.lac.types.MoleculeObjectIterable
 import com.im.lac.stream.FixedBatchSpliterator
 import org.apache.camel.builder.RouteBuilder
 import java.util.stream.*
@@ -21,9 +20,9 @@ import java.util.stream.*
  */
 class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
 
-    String infile = "../../data/testfiles/dhfr_standardized.sdf.gz"
+    String file = "../../data/testfiles/dhfr_standardized.sdf.gz"
     int resultCount = 4
-    //String infile = "../../data/testfiles/Building_blocks_GBP.sdf.gz"
+    //String file = "../../data/testfiles/Building_blocks_GBP.sdf.gz"
     //int resultCount = 235
     
     String target = "CCN(C)C1=C(Br)C(=O)C2=C(C=CC=C2)C1=O"
@@ -62,14 +61,35 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
     void "pharmacophore sequential streaming"() {
         setup:
         println "pharmacophore sequential streaming"
-        File file = new File(infile)
-        MoleculeObjectIterable mols = MoleculeObjectUtils.createIterable(file)
-        Stream stream = StreamSupport.stream(mols.spliterator(), false);
+        InputStream input = new FileInputStream(file)
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStream(input, false)
         def mol2 = new MoleculeObject(target)
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBodyAndHeader('direct:pharmacophore/streaming', stream, MoleculeScreenerProcessor.HEADER_TARGET_MOLECULE, mol2)
+        Stream results = template.requestBodyAndHeader('direct:pharmacophore/streaming', mols, MoleculeScreenerProcessor.HEADER_TARGET_MOLECULE, mol2)
+        long count = results.count()
+        long t1 = System.currentTimeMillis()
+        println "...done"
+        
+        then:
+        println "Number of mols: $count generated in ${t1-t0}ms"
+        count == resultCount
+        
+        cleanup: 
+        input.close()
+    }
+    
+    void "pharmacophore parallel streaming"() {
+        setup:
+        println "pharmacophore parallel streaming"
+        InputStream input = new FileInputStream(file)
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStream(input, true)
+        def mol2 = new MoleculeObject(target)
+        
+        when:
+        long t0 = System.currentTimeMillis()
+        Stream results = template.requestBodyAndHeader('direct:pharmacophore/streaming', mols, MoleculeScreenerProcessor.HEADER_TARGET_MOLECULE, mol2)
         long count = results.count()
         long t1 = System.currentTimeMillis()
         println "...done"
@@ -78,33 +98,14 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
 
         println "Number of mols: $count generated in ${t1-t0}ms"
         count == resultCount
-    }
-    
-    void "pharmacophore parallel streaming"() {
-        setup:
-        println "pharmacophore parallel streaming"
-        File file = new File(infile)
-        MoleculeObjectIterable mols = MoleculeObjectUtils.createIterable(file)
-        Stream stream = StreamSupport.stream(FixedBatchSpliterator.batchedSpliterator(mols.spliterator(), 10), true);
-        def mol2 = new MoleculeObject(target)
         
-        when:
-        long t0 = System.currentTimeMillis()
-        long count = template.requestBodyAndHeader('direct:pharmacophore/streaming', stream, MoleculeScreenerProcessor.HEADER_TARGET_MOLECULE, mol2).count()
-        long t1 = System.currentTimeMillis()
-        println "...done"
-        
-        then:
-
-        println "Number of mols: $count generated in ${t1-t0}ms"
-        count == resultCount
+        cleanup:
+        input.close()
     }
     
     @Override
     RouteBuilder createRouteBuilder() {
         
-        
-       
         PfParameters pfParams = PfParameters.createNewBuilder().build();
         PfGenerator pfGenerator = pfParams.getDescriptorGenerator();
         MoleculeScreener pfScreener = new MoleculeScreener(pfGenerator, pfGenerator.getDefaultComparator());

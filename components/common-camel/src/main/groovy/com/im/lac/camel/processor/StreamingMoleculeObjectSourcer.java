@@ -46,6 +46,7 @@ public abstract class StreamingMoleculeObjectSourcer {
                 return StreamSupport.stream(spliterator, false);
             } else {
                 if (body instanceof InputStream) {
+                    // TODO - rework this as it depends on a converter that is in the chemaxon-camel module
                     MoleculeObjectIterable moliter = exchange.getContext().getTypeConverter().convertTo(MoleculeObjectIterable.class, body);
                     Spliterator spliterator = Spliterators.spliteratorUnknownSize(moliter.iterator(), Spliterator.NONNULL | Spliterator.ORDERED);
                     return StreamSupport.stream(spliterator, false);

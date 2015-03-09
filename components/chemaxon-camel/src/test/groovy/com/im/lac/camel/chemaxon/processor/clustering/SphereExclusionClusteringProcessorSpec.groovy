@@ -8,8 +8,8 @@ import com.im.lac.camel.testsupport.CamelSpecificationBase
 import com.im.lac.chemaxon.screening.MoleculeScreener
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.types.MoleculeObjectIterable
 import org.apache.camel.builder.RouteBuilder
+import java.util.stream.Stream
 
 /**
  * Created by timbo on 14/04/2014.
@@ -19,13 +19,13 @@ class SphereExclusionClusteringProcessorSpec extends CamelSpecificationBase {
     
     def "cluster stream"() {
         given:
-        def fis = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
-        MoleculeObjectIterable input = MoleculeObjectUtils.createIterable(fis)
+        def input = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStream(input, false)
         def resultEndpoint = camelContext.getEndpoint('mock:result')
         resultEndpoint.expectedMessageCount(1)
             
         when:
-        template.sendBody('direct:simple', input)
+        template.sendBody('direct:simple', mols)
 
         then:
         resultEndpoint.assertIsSatisfied()
@@ -40,7 +40,7 @@ class SphereExclusionClusteringProcessorSpec extends CamelSpecificationBase {
         max > 0
         
         cleanup:
-        fis.close()
+        input.close()
 
     }
     

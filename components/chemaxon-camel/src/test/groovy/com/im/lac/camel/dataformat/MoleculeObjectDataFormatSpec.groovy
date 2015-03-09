@@ -4,7 +4,7 @@ import org.apache.camel.spi.DataFormat
 import spock.lang.Specification
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils
 import com.im.lac.types.MoleculeObject
-import com.im.lac.types.MoleculeObjectIterable
+import java.util.stream.Stream
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import com.im.lac.camel.dataformat.StreamingIteratorJsonDataFormat
@@ -23,69 +23,67 @@ class MoleculeObjectDataFormatSpec extends Specification {
     //int count = 7003 
 
     
-    def 'read molecules'() {
-
-        setup:
-        File file = new File("../../data/testfiles/nci100.smiles")
-        MoleculeObjectIterable mols = MoleculeObjectUtils.createIterable(file)
-        MoleculeObjectDataFormat modf = new MoleculeObjectDataFormat()
-        OutputStream out = new ByteArrayOutputStream()
-        
-        when:
-        modf.marshal(mols, out)
-        InputStream is = new ByteArrayInputStream(out.toByteArray())
-        def moiter = modf.unmarshal(is)
-        def mols2 = moiter.collect()
-        
-        then:
-        mols2.size() == 100
-    }
+//    def 'read molecules'() {
+//
+//        setup:
+//        File file = new File("../../data/testfiles/nci100.smiles")
+//        MoleculeObjectIterable mols = MoleculeObjectUtils.createIterable(file)
+//        MoleculeObjectDataFormatXXX modf = new MoleculeObjectDataFormatXXX()
+//        OutputStream out = new ByteArrayOutputStream()
+//        
+//        when:
+//        modf.marshal(mols, out)
+//        InputStream is = new ByteArrayInputStream(out.toByteArray())
+//        def moiter = modf.unmarshal(is)
+//        def mols2 = moiter.collect()
+//        
+//        then:
+//        mols2.size() == 100
+//    }
     
 	
-    def 'serialization speed and size'() {
-
-        setup:
-        File file = new File(file)
-        MoleculeObjectIterable mols = MoleculeObjectUtils.createIterable(file)
-        List<MoleculeObject> molsList = mols.collect()
-        MoleculeObjectDataFormat modf = new MoleculeObjectDataFormat()
-        
-        ByteArrayOutputStream out = new ByteArrayOutputStream()
-        
-        when:
-        long t0 = System.currentTimeMillis() 
-        modf.marshal(molsList, out)
-        long t1 = System.currentTimeMillis()
-        byte[] bytes =  out.toByteArray()
-        def size = bytes.length
-        
-        ByteArrayInputStream is = new ByteArrayInputStream(bytes)
-        long t2 = System.currentTimeMillis() 
-        def moiter = modf.unmarshal(is)
-        def mols2 = moiter.collect()
-        is.close()
-        long t3 = System.currentTimeMillis()
-        println "Serializing took ${t1-t0}ms, Deserializing took ${t3-t2}ms. Serialized size is $size bytes"
-        
-        then:
-        mols2.size() == count
-        
-        
-    }
+//    def 'serialization speed and size'() {
+//
+//        setup:
+//        File file = new File(file)
+//        MoleculeObjectIterable mols = MoleculeObjectUtils.createIterable(file)
+//        List<MoleculeObject> molsList = mols.collect()
+//        MoleculeObjectDataFormatXXX modf = new MoleculeObjectDataFormatXXX()
+//        
+//        ByteArrayOutputStream out = new ByteArrayOutputStream()
+//        
+//        when:
+//        long t0 = System.currentTimeMillis() 
+//        modf.marshal(molsList, out)
+//        long t1 = System.currentTimeMillis()
+//        byte[] bytes =  out.toByteArray()
+//        def size = bytes.length
+//        
+//        ByteArrayInputStream is = new ByteArrayInputStream(bytes)
+//        long t2 = System.currentTimeMillis() 
+//        def moiter = modf.unmarshal(is)
+//        def mols2 = moiter.collect()
+//        is.close()
+//        long t3 = System.currentTimeMillis()
+//        println "Serializing took ${t1-t0}ms, Deserializing took ${t3-t2}ms. Serialized size is $size bytes"
+//        
+//        then:
+//        mols2.size() == count     
+//    }
     
     def 'marshaling/unmarshaling speed and size'() {
 
         setup:
-        File file = new File(file)
-        MoleculeObjectIterable mols = MoleculeObjectUtils.createIterable(file)
-        List<MoleculeObject> molsList = mols.collect()
+        println 'marshaling/unmarshaling speed and size'
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStream(new FileInputStream(file))
+        println "mols: " + mols
         def dataFormat = new StreamingIteratorJsonDataFormat<MoleculeObject>(MoleculeObject.class)
         
         ByteArrayOutputStream out = new ByteArrayOutputStream()
         
         when:
         long t0 = System.currentTimeMillis() 
-        dataFormat.marshal(null, molsList, out)
+        dataFormat.marshal(null, mols, out)
         long t1 = System.currentTimeMillis()
         byte[] bytes =  out.toByteArray()
         def size = bytes.length
@@ -101,14 +99,15 @@ class MoleculeObjectDataFormatSpec extends Specification {
         then:
         mols2.size() == count
         
+        cleanup:
+        mols.close()
+        
     }
     
     def 'gzipped marshaling/unmarshaling speed and size'() {
 
         setup:
-        File file = new File(file)
-        MoleculeObjectIterable mols = MoleculeObjectUtils.createIterable(file)
-        List<MoleculeObject> molsList = mols.collect()
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStream(new FileInputStream(file))
         def dataFormat = new StreamingIteratorJsonDataFormat<MoleculeObject>(MoleculeObject.class)
         
         ByteArrayOutputStream out = new ByteArrayOutputStream()
@@ -116,7 +115,7 @@ class MoleculeObjectDataFormatSpec extends Specification {
         
         when:
         long t0 = System.currentTimeMillis() 
-        dataFormat.marshal(null, molsList, gzip)
+        dataFormat.marshal(null, mols, gzip)
         long t1 = System.currentTimeMillis()
         gzip.flush()
         gzip.finish()
@@ -135,6 +134,9 @@ class MoleculeObjectDataFormatSpec extends Specification {
         
         then:
         mols2.size() == count
+        
+        cleanup:
+        mols.close()
         
     }
     

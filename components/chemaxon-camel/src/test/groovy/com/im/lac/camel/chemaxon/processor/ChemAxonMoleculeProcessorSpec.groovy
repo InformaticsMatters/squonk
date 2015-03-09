@@ -8,7 +8,6 @@ import com.im.lac.camel.chemaxon.processor.screening.MoleculeScreenerProcessor
 import com.im.lac.camel.chemaxon.processor.screening.MoleculeScreenerProcessor
 import com.im.lac.chemaxon.molecule.ChemTermsEvaluator
 import com.im.lac.types.MoleculeObject
-import com.im.lac.types.MoleculeObjectIterable
 import java.util.stream.*
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils
 import com.im.lac.chemaxon.screening.MoleculeScreener
@@ -21,11 +20,11 @@ import com.im.lac.util.IOUtils
  */
 class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
     
-//    String f = "../../data/testfiles/Building_blocks_GBP.sdf.gz"
+//    String file = "../../data/testfiles/Building_blocks_GBP.sdf.gz"
 //    int count = 7003
 //    int filterCount = 235
     
-    String f = "../../data/testfiles/nci100.smiles"
+    String file = "../../data/testfiles/nci100.smiles"
     int count = 100
     int filterCount = 2
     
@@ -37,14 +36,13 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         setup:
         Thread.sleep(sleep)
         println "propcalc sequential streaming"
-        File file = new File(f)
-        MoleculeObjectIterable mols = MoleculeObjectUtils.createIterable(file)
-        Stream stream = StreamSupport.stream(mols.spliterator(), false);
+        InputStream input = new FileInputStream(file)
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStream(input)
         
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:streaming', stream)
+        Stream results = template.requestBody('direct:streaming', mols)
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
         println "...done"
@@ -56,7 +54,7 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         
         
         cleanup: 
-        IOUtils.closeIfCloseable(mols)
+        input.close()
         
     }
     
@@ -64,14 +62,13 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         setup:
         Thread.sleep(sleep)
         println "propcalc parallel streaming"
-        File file = new File(f)
-        MoleculeObjectIterable mols = MoleculeObjectUtils.createIterable(file)
-        Stream stream = StreamSupport.stream(mols.spliterator(), true);
+        InputStream input = new FileInputStream(file)
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStream(input, true)
         
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:streaming', stream)
+        Stream results = template.requestBody('direct:streaming', mols)
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
         println "...done"
@@ -83,7 +80,7 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         
         
         cleanup: 
-        IOUtils.closeIfCloseable(mols)
+        input.close()
 
     }
     

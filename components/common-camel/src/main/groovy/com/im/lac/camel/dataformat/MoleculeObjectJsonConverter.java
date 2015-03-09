@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.types.MoleculeObjectIterable;
 import com.im.lac.util.IOUtils;
 import java.io.Closeable;
 import java.io.IOException;
@@ -94,11 +93,11 @@ public class MoleculeObjectJsonConverter {
      * @return An Iterable of MoleculeObjects that also implements java.ioCloseable
      * @throws IOException
      */
-    public MoleculeObjectIterable unmarshal(InputStream stream) throws IOException {
+    public Iterable<MoleculeObject> unmarshal(InputStream stream) throws IOException {
         return new JsonIterator(stream);
     }
 
-    class JsonIterator implements MoleculeObjectIterable, Iterator<MoleculeObject>, Closeable {
+    class JsonIterator implements Iterable<MoleculeObject>, Iterator<MoleculeObject>, Closeable {
 
         List<MoleculeObject> next;
         JsonParser jp;

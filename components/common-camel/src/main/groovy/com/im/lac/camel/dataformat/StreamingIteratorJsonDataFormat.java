@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import org.apache.camel.Exchange;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.util.IOHelper;
@@ -63,7 +64,7 @@ public class StreamingIteratorJsonDataFormat<T> implements DataFormat {
     }
 
     /**
-     * Takes an input that must be a an Iterable<T> or an Iterable<T> and writes
+     * Takes an input that must be a an Iterable<T>, an Iterable<T> or a Stream<T> and writes
      * it to the OutputStream. The Input and OutputStream are closed once
      * processing is complete if the autoCloseAfterMarshal field is set to true,
      * otherwise both must be closed by the caller.
@@ -80,6 +81,8 @@ public class StreamingIteratorJsonDataFormat<T> implements DataFormat {
             iter = (Iterator<T>) obj;
         } else if (obj instanceof Iterable) {
             iter = ((Iterable<T>) obj).iterator();
+        } else if (obj instanceof Stream) {
+            iter = ((Stream<T>) obj).iterator();
         } else {
             throw new IllegalArgumentException("Can't handle type of " + obj.getClass().getName());
         }
