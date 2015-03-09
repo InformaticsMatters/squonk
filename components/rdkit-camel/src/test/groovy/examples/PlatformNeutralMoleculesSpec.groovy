@@ -62,15 +62,15 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
         setup:
         def resultEndpoint = camelContext.getEndpoint('mock:result')
         resultEndpoint.expectedMessageCount(1)
-        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz"))
+        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz"))
 
         when:
-        template.sendBody('direct:convertToMolsFilter', gzip)
+        template.sendBody('direct:handleMoleculeObjects', gzip)
 
         then:
         resultEndpoint.assertIsSatisfied()
         def result = resultEndpoint.receivedExchanges.in.body[0]
-        result == 15 // FOR NOW -> SHOULD 508 // was756
+        result == 36
 
         cleanup:
         gzip.close()
@@ -87,6 +87,7 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
                 .to("language:python:classpath:calc_props_thread.py?transform=false")
                 .to("language:python:classpath:molecule_counter.py?transform=false")
                 .to('mock:result')
+
 
                 from("direct:convertToMolsFilter")
                 .to("language:python:classpath:molecule_objects.py?transform=false")

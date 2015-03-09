@@ -35,6 +35,8 @@ def make_mmps():
         molobj = mols.next()
         counter += 1
         rdmol, molobj = get_or_create_rdmol(molobj)
+        if rdmol is None:
+            continue
         my_mols.append([RWMol.MolToSmiles(rdmol, True), counter])
         if counter == 20:
             break

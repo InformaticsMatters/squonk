@@ -21,7 +21,7 @@ def find_mcs(mols):
         out_mols.add(rdmol)
     # Now find the MCS
     mcs=RDKFuncs.findMCS(out_mols)#,True,1,60,False,False,False,False,AtomComparator.AtomCompareElements,BondComparator.BondCompareAny)
-    # Now just retoun the count
+    # Now just return the count
     return mcs.getSmartsString()
 # Now just call this function as the last one
 
