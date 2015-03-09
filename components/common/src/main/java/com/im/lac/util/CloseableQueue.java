@@ -66,6 +66,10 @@ public class CloseableQueue<T> implements Iterator<T>, Iterable<T> {
             closed = true;
         }
     }
+    
+    public int currentQueueSize() {
+        return queue.size();
+    }
 
     /**
      * Add the item to the queue
@@ -105,7 +109,7 @@ public class CloseableQueue<T> implements Iterator<T>, Iterable<T> {
                         }
                     }
                     LOG.finest("waiting ..");
-                    Thread.sleep(50);
+                    Thread.sleep(10);
                     LOG.finest("wait over");
                 } catch (InterruptedException ex) {
                     LOG.log(Level.SEVERE, "Operation interupted", ex);

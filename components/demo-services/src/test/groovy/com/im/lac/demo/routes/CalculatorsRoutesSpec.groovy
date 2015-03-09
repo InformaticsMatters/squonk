@@ -7,6 +7,7 @@ import chemaxon.struc.MolBond
 import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import com.im.lac.types.MoleculeObject
+import java.util.stream.*
 import org.apache.camel.builder.RouteBuilder
 
 /**
@@ -14,7 +15,7 @@ import org.apache.camel.builder.RouteBuilder
  */
 class CalculatorsRoutesSpec extends CamelSpecificationBase {
 
-    def 'logp single as Molecule'() {
+    def 'logp single as MoleculeObject'() {
 
         when:
         def mol = new MoleculeObject('c1ccccc1')
@@ -29,11 +30,10 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
     def 'logp multiple as String'() {
 
         when:
-        def results = template.requestBody('direct:logp', 'c1ccccc1')
+        def result = template.requestBody('direct:logp', 'c1ccccc1')
 
         then:
-        results instanceof Iterator
-        def result = results.next()
+        result instanceof MoleculeObject
         result.getValue('CXN_LogP') != null
         result.getValue('CXN_LogP') instanceof Number
     }
@@ -59,8 +59,8 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         def results = template.requestBody('direct:logp', mols)
 
         then:
-        results instanceof Iterator
-        results.collect().size() == 3
+        results instanceof Stream
+        results.count() == 3
     }
     
     def 'logp multiple as stream'() {
@@ -70,26 +70,25 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         def results = template.requestBody('direct:logp', new ByteArrayInputStream(mols.getBytes()))
 
         then:
-        results.collect().size() == 3
+        results.count() == 3
     }
     
     def 'logp as stream'() {
         
         when:
-        def results = template.requestBody('direct:logp', new FileInputStream("../../data/testfiles/nci1000.smiles"))
+        def results = template.requestBody('direct:logp', new FileInputStream("../../data/testfiles/nci100.smiles"))
 
         then:
-        results.collect().size() >100
+        results.count() == 100
     }
     
     def 'filter as stream'() {
         
         when:
-        def results = template.requestBody('direct:filter_example', new FileInputStream("../../data/testfiles/nci1000.smiles"))
-        int size = results.collect().size()
-        
+        def results = template.requestBody('direct:filter_example', new FileInputStream("../../data/testfiles/nci100.smiles"))
+                
         then:
-        size < 1000
+        results.count() < 100
        
     }
     
@@ -98,34 +97,38 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         when:
         long t0 = System.currentTimeMillis()
         def results = template.requestBodyAndHeader(
-            'direct:chemTerms', new FileInputStream("../../data/testfiles/nci1000.smiles"),
+            'direct:chemTerms', new FileInputStream("../../data/testfiles/nci100.smiles"),
             ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION, "filter=mass()<250"
         )
         long t1 = System.currentTimeMillis()
-        int size = results.collect().size()
+        long size = results.count()
         long t2 = System.currentTimeMillis()
         //println "dynamic filter down to $size first in ${t1-t0}ms last in ${t2-t0}ms"
         then:
-        size < 1000
+        size < 100
         size > 0
        
     }
     
     def 'filter as stream concurrent'() {
+        println "filter as stream concurrent()"
         
         when:
         def results = []
         (1..10).each {
-            results << template.requestBody('direct:filter_example', new FileInputStream("../../data/testfiles/nci1000.smiles"))
+            // asyncRequestBody() returns a Future
+            results << template.asyncRequestBody('direct:filter_example', new FileInputStream("../../data/testfiles/nci100.smiles"))
         }
-        int size = results.size()
+        
         then:
-        size == 10
-        int s0 = results[0].collect().size()
-        (2..10).each {
-            results[it].collect().size() == s0
+        results.size() == 10
+        int s0 = results[0].get().count()
+        (1..9).each {
+            def result = results[it].get()
+            long count = result.count()
+            //println "result $it count is $count"
+            assert count == s0
         }
-       
     }
     
     def 'multiple props'() {

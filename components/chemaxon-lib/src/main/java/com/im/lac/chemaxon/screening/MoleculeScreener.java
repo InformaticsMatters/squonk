@@ -1,10 +1,10 @@
 package com.im.lac.chemaxon.screening;
 
-import chemaxon.standardizer.Standardizer;
 import chemaxon.struc.Molecule;
 import com.chemaxon.descriptors.common.Descriptor;
 import com.chemaxon.descriptors.common.DescriptorComparator;
 import com.chemaxon.descriptors.common.DescriptorGenerator;
+import com.im.lac.chemaxon.molecule.StandardizerEvaluator;
 
 /**
  * Allows molecules to be screened based on similarity using a variety of
@@ -25,14 +25,16 @@ import com.chemaxon.descriptors.common.DescriptorGenerator;
  * with its generator and comparator usage should be straight forward.
  * <br>
  * Standardization of the molecules is an important aspect. This is done using a
- * @{link chemaxon.standardizer.Standardizer}. By default the following configuration 
- * (in action string syntax) is used: removefragment:method=keeplargest..aromatize
- * 
+ *
+ * @{link chemaxon.standardizer.Standardizer}. By default the following
+ * configuration (in action string syntax) is used:
+ * removefragment:method=keeplargest..aromatize
+ *
  * <br>
- * You can specify your own standardizer, or set it to null to not standardize (in
- * which case you almost certainly need to prepare the molecules before screening).
- * Note: standardization is performed on a clone of the molecule, leaving the original 
- * un-modified.
+ * You can specify your own standardizer, or set it to null to not standardize
+ * (in which case you almost certainly need to prepare the molecules before
+ * screening). Note: standardization is performed on a clone of the molecule,
+ * leaving the original un-modified.
  * <br>
  * Note: the ChemAxon API that is used for this class is not yet stable, so this
  * class may change in the future.
@@ -45,12 +47,13 @@ public class MoleculeScreener<T extends Descriptor> {
     private final DescriptorGenerator<T> generator;
     private final DescriptorComparator<T> comparator;
     private T targetFp;
-    private Standardizer standardizer;
+    public static final String DEFAULT_STANDARDIZER = "removefragment:method=keeplargest..aromatize";
+    private StandardizerEvaluator szr;
 
     public MoleculeScreener(DescriptorGenerator<T> generator, DescriptorComparator<T> comparator) {
         this.generator = generator;
         this.comparator = comparator;
-        this.standardizer = new Standardizer("removefragment:method=keeplargest..aromatize");
+        this.szr = new StandardizerEvaluator(DEFAULT_STANDARDIZER, 25);
     }
 
     /**
@@ -66,13 +69,13 @@ public class MoleculeScreener<T extends Descriptor> {
     public T getTargetDescriptor() {
         return targetFp;
     }
-    
-    public Standardizer getStandardizer() {
-        return standardizer;
-    }
-    
-    public void setStandardizer(Standardizer standardizer) {
-        this.standardizer = standardizer;
+
+    public void setStandardizer(String standardizer) {
+        if (standardizer == null || standardizer.trim().length() == 0) {
+            szr = null;
+        } else {
+            this.szr = new StandardizerEvaluator(standardizer, 25);
+        }
     }
 
     public T generateDescriptor(Molecule mol) {
@@ -113,21 +116,21 @@ public class MoleculeScreener<T extends Descriptor> {
     }
 
     /**
-     * Prepares the molecule for descriptor generation. 
-     * The standardizer tat is used can be specified. If standardizer is null then
-     * the molecule is used "as is". If standardizer is present a clone of the molecule
-     * is standardized so that the original molecule is not changed.
+     * Prepares the molecule for descriptor generation. The standardizer that is
+     * used can be specified. If standardizer is null then the molecule is used
+     * "as is". If standardizer is present a clone of the molecule is
+     * standardized so that the original molecule is not changed.
      *
      *
      * @param mol
      * @return
      */
     Molecule standardizeMolecule(Molecule mol) {
-        if (standardizer == null) {
+        if (szr == null) {
             return mol;
         } else {
             Molecule clone = mol.cloneMolecule();
-            standardizer.standardize(clone);
+            szr.processMolecule(clone);
             return clone;
         }
     }

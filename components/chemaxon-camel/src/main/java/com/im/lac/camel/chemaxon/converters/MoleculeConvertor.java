@@ -2,14 +2,9 @@ package com.im.lac.camel.chemaxon.converters;
 
 import chemaxon.formats.MolFormatException;
 import chemaxon.struc.Molecule;
-import com.im.lac.util.OutputGenerator;
 import com.im.lac.chemaxon.molecule.MoleculeIterable;
-import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
-import com.im.lac.chemaxon.molecule.MoleculeObjectWriter;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.types.MoleculeObjectIterable;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
@@ -29,7 +24,7 @@ public class MoleculeConvertor {
     public static Molecule convertToMolecule(MoleculeObject mo, Exchange exchange) throws MolFormatException {
         return MoleculeUtils.fetchMolecule(mo, false);
     }
-    
+
     @Converter
     public static MoleculeObject convertToMoleculeObject(String s, Exchange exchange) {
         return new MoleculeObject(s);
@@ -39,7 +34,7 @@ public class MoleculeConvertor {
     public static Molecule convertToMolecule(String s, Exchange exchange) throws MolFormatException {
         return MoleculeUtils.convertToMolecule(s);
     }
-    
+
     @Converter
     public static Molecule convertToMolecule(byte[] bytes, Exchange exchange) throws MolFormatException {
         return MoleculeUtils.convertToMolecule(bytes);
@@ -57,6 +52,17 @@ public class MoleculeConvertor {
         return MoleculeUtils.convertToMolecule(clob);
     }
 
+    @Converter
+    public static Molecule convertToMolecule(InputStream is, Exchange exchange)
+            throws IOException {
+        try (InputStream input = is) {
+            Iterator<Molecule> mols = createMoleculeIterator(input, exchange);
+            if (mols != null && mols.hasNext()) {
+                return mols.next();
+            }
+            return null;
+        }
+    }
 
     @Converter
     public static Iterator<Molecule> createMoleculeIterator(InputStream is, Exchange exchange)

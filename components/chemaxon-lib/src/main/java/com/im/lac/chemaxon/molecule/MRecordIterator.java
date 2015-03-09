@@ -23,7 +23,7 @@ public class MRecordIterator implements Iterator<MRecord>, Closeable {
     private MRecordReader recordReader;
     private MRecord nextRecord;
     private int count = 0;
-    private StackTraceElement[] initiatorStackTrace;
+    private final StackTraceElement[] initiatorStackTrace;
 
     public MRecordIterator(InputStream is) throws IOException {
         recordReader = MFileFormatUtil.createRecordReader(is, null, null, null);

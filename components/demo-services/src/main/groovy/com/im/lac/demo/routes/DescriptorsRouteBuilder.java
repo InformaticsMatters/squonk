@@ -6,7 +6,6 @@ import com.chemaxon.descriptors.fingerprints.pf2d.PfGenerator;
 import com.chemaxon.descriptors.fingerprints.pf2d.PfParameters;
 import com.chemaxon.descriptors.metrics.BinaryMetrics;
 import com.im.lac.camel.processor.HeaderPropertySetterProcessor;
-import com.im.lac.camel.chemaxon.processor.MoleculeObjectConverterProcessor;
 import com.im.lac.camel.chemaxon.processor.clustering.SphereExclusionClusteringProcessor;
 import com.im.lac.camel.chemaxon.processor.screening.MoleculeScreenerProcessor;
 import com.im.lac.chemaxon.screening.MoleculeScreener;
@@ -33,7 +32,7 @@ public class DescriptorsRouteBuilder extends RouteBuilder {
         MoleculeScreener ecfpScreener = new MoleculeScreener(ecfpGenerator, ecfpGenerator.getDefaultComparator());
 
         from("direct:screening/ecfp")
-                .process(new MoleculeObjectConverterProcessor())
+                //.process(new MoleculeObjectConverterProcessor())
                 .process(new MoleculeScreenerProcessor(ecfpScreener)
                 );
 
@@ -51,7 +50,7 @@ public class DescriptorsRouteBuilder extends RouteBuilder {
         MoleculeScreener pfScreener = new MoleculeScreener(pfGenerator, pfGenerator.getDefaultComparator());
 
         from("direct:screening/pharmacophore")
-                .process(new MoleculeObjectConverterProcessor())
+                //.process(new MoleculeObjectConverterProcessor())
                 .process(new MoleculeScreenerProcessor(pfScreener)
                 );
 
@@ -67,7 +66,7 @@ public class DescriptorsRouteBuilder extends RouteBuilder {
         EcfpGenerator gen = new EcfpParameters().getDescriptorGenerator(); // default ECFP
 
         from("direct:clustering/spherex/ecfp4")
-                .process(new MoleculeObjectConverterProcessor())
+                //.process(new MoleculeObjectConverterProcessor())
                 .process(new SphereExclusionClusteringProcessor(
                                 gen, gen.getBinaryMetricsComparator(BinaryMetrics.BINARY_TANIMOTO)));
 

@@ -33,7 +33,7 @@ import java.util.logging.Logger;
  * @author timbo
  */
 public class MoleculeUtils {
-    
+
     static Logger LOG = Logger.getLogger(MoleculeUtils.class.getName());
 
     public String cleanOpts = null;
@@ -173,6 +173,23 @@ public class MoleculeUtils {
         return mol;
     }
 
+    /**
+     * Generates a clone of the Molecule (creating it if necessary) and optionally
+     * copying the properties
+     * @param mo
+     * @param copyProps
+     * @return 
+     */
+    public static Molecule cloneMolecule(MoleculeObject mo, boolean copyProps) {
+        final Molecule mol = fetchMolecule(mo, false);
+        if (copyProps) {
+            for (Map.Entry<String,Object> e : mo.getValues().entrySet()) {
+                mol.setPropertyObject(e.getKey(), e.getValue());
+            }
+        }
+        return mol;
+    }
+
     public static MoleculeObject derriveMoleculeObject(MoleculeObject old, Molecule neu, String format)
             throws IOException {
         String s = MoleculeUtils.exportAsString(neu, format);
@@ -182,12 +199,12 @@ public class MoleculeUtils {
 
         return mo;
     }
-    
+
     public static MoleculeObject createMoleculeObject(Molecule mol, String format)
             throws IOException {
         String s = MoleculeUtils.exportAsString(mol, format);
         MoleculeObject mo = new MoleculeObject(s, format);
-        for (String key: mol.properties().getKeys()) {
+        for (String key : mol.properties().getKeys()) {
             Object val = mol.getPropertyObject(key);
             mo.putValue(key, val);
         }
@@ -196,14 +213,14 @@ public class MoleculeUtils {
         return mo;
     }
 
-    public static void putPropertiesToMolecule(Map<? extends Object,? extends Object> props, Molecule mol) {
+    public static void putPropertiesToMolecule(Map<? extends Object, ? extends Object> props, Molecule mol) {
 
         for (Map.Entry e : props.entrySet()) {
             mol.setPropertyObject(e.getKey().toString(), e.getValue());
         }
     }
-    
-     /**
+
+    /**
      * Creates an Iterator of MRecords from the InputStream Designed for
      * splitting a file or stream into individual records without generating a
      * molecule instance. Can be used as a Camel splitter.
@@ -218,7 +235,6 @@ public class MoleculeUtils {
         return new MRecordIterator(is);
     }
 
-
     public static Map<String, String> mrecordToMap(MRecord record) {
         Map<String, String> vals = new HashMap<>();
         vals.put(STRUCTURE_FIELD_NAME, record.getString());
@@ -229,7 +245,6 @@ public class MoleculeUtils {
         }
         return vals;
     }
-
 
     public static Molecule convertToMolecule(String s) throws MolFormatException {
         return MolImporter.importMol(s);
@@ -288,7 +303,7 @@ public class MoleculeUtils {
 
         return mol;
     }
-    
+
     public static MoleculeIterable createIterable(InputStream is) throws IOException {
         return new MoleculeFactory(new MolImporter(is));
     }

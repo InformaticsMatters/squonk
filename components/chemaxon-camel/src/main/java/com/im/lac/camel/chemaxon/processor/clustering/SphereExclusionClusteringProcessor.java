@@ -5,13 +5,14 @@ import com.chemaxon.descriptors.common.Descriptor;
 import com.chemaxon.descriptors.common.DescriptorComparator;
 import com.chemaxon.descriptors.common.DescriptorGenerator;
 import com.im.lac.camel.chemaxon.processor.ProcessorUtils;
+import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.chemaxon.clustering.SphereExclusionClusterer;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.types.MoleculeObjectIterable;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
@@ -66,18 +67,11 @@ public class SphereExclusionClusteringProcessor<T extends Descriptor> implements
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        Iterable<MoleculeObject> molIter = exchange.getIn().getBody(MoleculeObjectIterable.class);
-        if (molIter == null) {
-            molIter = exchange.getIn().getBody(Iterable.class);
-        }
+
         SphereExclusionClusterer clusterer = createClusterer(exchange);
-        Iterable<Molecule> results = clusterer.clusterMoleculeObjects(molIter);
-        if (molIter instanceof Closeable) {
-            try {
-                ((Closeable) molIter).close();
-            } catch (IOException ioe) {
-                LOG.log(Level.WARNING, "Failed to close iterator", ioe);
-            }
+        Stream<Molecule> results = null;
+        try (Stream<MoleculeObject> stream = StreamingMoleculeObjectSourcer.bodyAsMoleculeObjectStream(exchange)) {
+            results = clusterer.clusterMoleculeObjects(stream);
         }
         exchange.getIn().setBody(results);
     }

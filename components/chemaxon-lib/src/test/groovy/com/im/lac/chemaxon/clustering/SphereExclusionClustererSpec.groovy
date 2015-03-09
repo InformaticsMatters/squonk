@@ -9,6 +9,7 @@ import com.im.lac.chemaxon.molecule.MoleculeUtils
 import com.im.lac.types.MoleculeObject
 import com.im.lac.types.MoleculeObjectIterable
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils
+import com.im.lac.util.IOUtils
 
 import spock.lang.Specification
 
@@ -42,6 +43,9 @@ class SphereExclusionClustererSpec extends Specification {
            if (cluster > max) { max = cluster }
         }
         max > 0
+        
+        cleanup:
+        IOUtils.closeIfCloseable(iterable)
     }
     
     void "test molecule objects"() {
@@ -67,6 +71,9 @@ class SphereExclusionClustererSpec extends Specification {
            if (cluster > max) { max = cluster }
         }
         max > 0
+        
+        cleanup:
+        IOUtils.closeIfCloseable(iterable)
     }
 }
 

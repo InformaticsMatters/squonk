@@ -1,11 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.im.lac.chemaxon.molecule;
 
-import chemaxon.marvin.io.MPropHandler;
 import chemaxon.marvin.io.MRecord;
 import chemaxon.struc.MProp;
 import chemaxon.struc.MPropertyContainer;
@@ -14,7 +8,6 @@ import com.im.lac.types.MoleculeObjectIterable;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.Iterator;
 
 /**
@@ -37,6 +30,7 @@ class MoleculeObjectFactory implements MoleculeObjectIterable, Iterator<Molecule
 
     @Override
     public MoleculeObject next() {
+        //long t0 = System.nanoTime();
         MRecord rec = iter.next();
         String mol = rec.getString();
         String format = rec.getInputFormat();
@@ -72,15 +66,10 @@ class MoleculeObjectFactory implements MoleculeObjectIterable, Iterator<Molecule
         for (int x = 0; x < keys.length; x++) {
             String key = keys[x];
             MProp prop = pc.get(key);
-            Serializable ser = null;
-            Object o = prop.getPropValue();
-            if (o instanceof Serializable) {
-                ser = (Serializable) o;
-            } else {
-                ser = MPropHandler.convertToString(prop, format);
-            }
-            mo.putValue(key, ser);
+            mo.putValue(key, prop.getPropValue());
         }
+        //long t1 = System.nanoTime();
+        //System.out.println("Reading took: " + (t1-t0));
         return mo;
     }
 

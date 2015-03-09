@@ -16,17 +16,17 @@ public abstract class MoleculeObjectSourcer {
     private static final Logger LOG = Logger.getLogger(MoleculeObjectSourcer.class.getName());
 
     public void handle(Exchange exchange) throws Exception {
-        MoleculeObject mol = exchange.getIn().getBody(MoleculeObject.class);
-        if (mol != null) {
-            handleSingle(exchange, mol);
+        // try as iterable of molecules
+        Iterable<MoleculeObject> iterable = exchange.getIn().getBody(MoleculeObjectIterable.class);
+        if (iterable == null) {
+            iterable = exchange.getIn().getBody(Iterable.class);
+        }
+        if (iterable != null) {
+            handleMultiple(exchange, iterable.iterator());
         } else {
-            // try as iterable of molecules
-            Iterable<MoleculeObject> iterable = exchange.getIn().getBody(MoleculeObjectIterable.class);
-            if (iterable == null) {
-                iterable = exchange.getIn().getBody(Iterable.class);
-            }
-            if (iterable != null) {
-                handleMultiple(exchange, iterable.iterator());
+            MoleculeObject mol = exchange.getIn().getBody(MoleculeObject.class);
+            if (mol != null) {
+                handleSingle(exchange, mol);
             } else {
                 // give up
                 handleOther(exchange, exchange.getIn().getBody());

@@ -1,23 +1,20 @@
 package com.im.lac.camel.chemaxon.processor;
 
-import com.im.lac.camel.processor.MoleculeObjectSourcer;
-import chemaxon.standardizer.Standardizer;
-import chemaxon.struc.Molecule;
-import com.im.lac.util.CloseableMoleculeObjectQueue;
-import com.im.lac.util.CloseableQueue;
-import com.im.lac.chemaxon.molecule.MoleculeUtils;
+import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
+import com.im.lac.chemaxon.molecule.StandardizerEvaluator;
 import com.im.lac.types.MoleculeObject;
-import java.io.Closeable;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Iterator;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.util.IOHelper;
 
 /**
  *
@@ -27,32 +24,27 @@ public class StandardizerProcessor implements Processor {
 
     private static final Logger LOG = Logger.getLogger(StandardizerProcessor.class.getName());
 
-    private final Standardizer standardizer;
+    private final StandardizerEvaluator evaluator;
 
     public StandardizerProcessor(String config) {
-        standardizer = new Standardizer(config);
+        evaluator = new StandardizerEvaluator(config, 25);
     }
 
-    public StandardizerProcessor(File file) {
-        standardizer = new Standardizer(file);
+    public StandardizerProcessor(InputStream input) throws IOException {
+        this(IOHelper.loadText(input));
     }
 
-    public StandardizerProcessor(InputStream input) {
-        standardizer = new Standardizer(input);
+    public StandardizerProcessor(File file) throws FileNotFoundException, IOException {
+        this(new FileInputStream(file));
     }
 
     public StandardizerProcessor(URL url) throws IOException {
-        InputStream is = url.openStream();
-        try {
-            standardizer = new Standardizer(is);
-        } finally {
-            is.close();
-        }
+        this(url.openStream());
     }
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        MoleculeObjectSourcer sourcer = new MoleculeObjectSourcer() {
+        StreamingMoleculeObjectSourcer sourcer = new StreamingMoleculeObjectSourcer() {
             @Override
             public void handleSingle(Exchange exchange, MoleculeObject mo) throws IOException {
                 MoleculeObject neu = standardizeMolecule(exchange, mo);
@@ -60,55 +52,26 @@ public class StandardizerProcessor implements Processor {
             }
 
             @Override
-            public void handleMultiple(Exchange exchange, Iterator<MoleculeObject> mols) {
-                CloseableQueue<MoleculeObject> q = standardizeMultiple(exchange, mols);
-                exchange.getIn().setBody(q);
+            public void handleMultiple(Exchange exchange, Stream<MoleculeObject> mols) {
+                Stream<MoleculeObject> s = standardizeMultiple(exchange, mols);
+                exchange.getIn().setBody(s);
             }
         };
         sourcer.handle(exchange);
     }
 
     MoleculeObject standardizeMolecule(Exchange exchange, MoleculeObject mo) throws IOException {
-        Molecule mol = MoleculeUtils.fetchMolecule(mo, false);
-        synchronized (standardizer) {
-            standardizer.standardize(mol);
-        }
-        String format = mo.getFormat();
-        if (format == null) {
-            format = "mol";
-        }
-        MoleculeObject neu = MoleculeUtils.derriveMoleculeObject(mo, mol, format);
-
-        return neu;
+        return evaluator.processMoleculeObject(mo);
     }
 
-    CloseableQueue<MoleculeObject> standardizeMultiple(final Exchange exchange, final Iterator<MoleculeObject> mols) {
-        final CloseableQueue<MoleculeObject> q = new CloseableMoleculeObjectQueue(50);
-        Thread t = new Thread(() -> {
+    Stream<MoleculeObject> standardizeMultiple(final Exchange exchange, final Stream<MoleculeObject> mols) {
+        return mols.map((mo) -> {
             try {
-                while (mols.hasNext()) {
-                    MoleculeObject mo = mols.next();
-                    try {
-                        MoleculeObject neu = standardizeMolecule(exchange, mo);
-                        q.add(neu);
-                    } catch (Exception ex) {
-                        LOG.log(Level.SEVERE, "Standardization failed", ex);
-                    }
-                }
-            } finally {
-                q.close();
-                if (mols instanceof Closeable) {
-                    try {
-                        ((Closeable) mols).close();
-                    } catch (IOException ioe) {
-                        LOG.log(Level.WARNING, "Failed to close iterator", ioe);
-                    }
-                }
+                return standardizeMolecule(exchange, mo);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
         });
-        t.start();
-
-        return q;
     }
 
 }

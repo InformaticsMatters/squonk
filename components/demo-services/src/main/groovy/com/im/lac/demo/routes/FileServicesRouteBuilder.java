@@ -5,6 +5,7 @@ import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.chemaxon.molecule.MoleculeObjectWriter;
 import com.im.lac.demo.services.DbFileService;
 import com.im.lac.demo.model.*;
+import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
 import com.im.lac.util.IOUtils;
 import java.io.IOException;
@@ -14,18 +15,21 @@ import java.io.PipedOutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.activation.DataHandler;
 import javax.sql.DataSource;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
-import org.apache.camel.spi.Synchronization;
-import org.apache.camel.util.IOHelper;
 
 /**
  *
@@ -101,7 +105,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                             InputStream is = dh.getInputStream();
                             InputStream gunzip = IOUtils.getGunzippedInputStream(is);
                             MoleculeObjectIterable mols = MoleculeObjectUtils.createIterable(gunzip);
-                            DataItem result = createDataItem(mols, dh.getName());
+                            DataItem result = createDataItem(mols.iterator(), dh.getName());
                             if (result != null) {
                                 created.add(result);
                             }
@@ -188,7 +192,14 @@ public class FileServicesRouteBuilder extends RouteBuilder {
     // these methods could be moved out to a java bean to simplify things
     //
     protected void createDataItems(Exchange exchange) throws IOException, SQLException {
-        MoleculeObjectIterable mols = exchange.getIn().getBody(MoleculeObjectIterable.class);
+        Object body = exchange.getIn().getBody();
+        Iterator<MoleculeObject> mols = null;
+        if (body instanceof Iterator) {
+            mols = (Iterator<MoleculeObject>) body;
+        } else if (body instanceof Stream) {
+            mols = ((Stream) body).iterator();
+        }
+
         String newName = exchange.getIn().getHeader("itemName", String.class);
         Connection con = service.getConnection();
         boolean ac = con.getAutoCommit();
@@ -213,7 +224,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
         exchange.getIn().setBody(created);
     }
 
-    protected DataItem createDataItem(MoleculeObjectIterable mols, String name) throws IOException, SQLException {
+    protected DataItem createDataItem(Iterator<MoleculeObject> mols, String name) throws IOException, SQLException {
         Connection con = service.getConnection();
         boolean ac = con.getAutoCommit();
         if (ac) {
@@ -234,7 +245,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
         }
     }
 
-    protected DataItem createDataItem(Connection con, MoleculeObjectIterable mols, String name) throws IOException {
+    protected DataItem createDataItem(Connection con, Iterator<MoleculeObject> mols, String name) throws IOException {
 
         long t0 = System.currentTimeMillis();
 
@@ -249,7 +260,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
         Thread t = new Thread(
                 () -> {
                     try {
-                        dataFormat.marshal(mols.iterator(), out);
+                        dataFormat.marshal(mols, out);
                     } catch (Exception ex) {
                         throw new RuntimeException("Failed to write MoleculeObjects", ex);
                     }

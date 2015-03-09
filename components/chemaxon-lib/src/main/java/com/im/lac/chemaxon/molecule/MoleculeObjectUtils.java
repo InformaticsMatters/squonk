@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Logger;
 
 /**
  * Utilities for MoleculeObjects
@@ -12,6 +13,8 @@ import java.io.InputStream;
  * @author timbo
  */
 public class MoleculeObjectUtils {
+
+    private static final Logger LOG = Logger.getLogger(MoleculeObjectUtils.class.getName());
 
     /**
      * Uses MRecordReader. Does not create any chemaxon.struc.Molecule instances
@@ -34,6 +37,5 @@ public class MoleculeObjectUtils {
     public static MoleculeObjectIterable createIterable(File file) throws IOException {
         return new MoleculeObjectFactory(new FileInputStream(file));
     }
-
 
 }

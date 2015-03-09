@@ -72,7 +72,7 @@ class MoleculeScreenerSpec extends Specification {
         EcfpParameters params = EcfpParameters.createNewBuilder().build();
         EcfpGenerator generator = params.getDescriptorGenerator();
         MoleculeScreener screener = new MoleculeScreener(generator, generator.getDefaultComparator());
-        screener.setStandardizer(new Standardizer("clearisotopes")) // no aromatize
+        screener.setStandardizer("clearisotopes") // no aromatize
         Molecule mol0 = MolImporter.importMol(mols[1])
         Molecule mol1 = MolImporter.importMol(mols[1])
         mol1.aromatize(MoleculeGraph.AROM_GENERAL)

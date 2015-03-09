@@ -20,12 +20,6 @@ import java.util.logging.Logger;
 public class ChemTermsEvaluator implements MoleculeEvaluator {
 
     private static final Logger LOG = Logger.getLogger(ChemTermsEvaluator.class.getName());
-
-    public enum Mode {
-
-        Calculate, Filter, Transform
-    }
-
     private final String propName;
     private final ChemJEP chemJEP;
     private final Mode mode;
@@ -71,6 +65,7 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
         return chemTermsFunction;
     }
 
+    @Override
     public Mode getMode() {
         return mode;
     }

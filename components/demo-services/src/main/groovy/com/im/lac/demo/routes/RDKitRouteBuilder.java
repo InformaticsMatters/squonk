@@ -1,12 +1,5 @@
 package com.im.lac.demo.routes;
 
-import com.im.lac.camel.cdk.processor.CDKMolecularDescriptorProcessor;
-import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
-import com.im.lac.camel.chemaxon.processor.MoleculeObjectConverterProcessor;
-import com.im.lac.cdk.molecule.MolecularDescriptors;
-import com.im.lac.types.MoleculeObject;
-
-import java.io.InputStream;
 import org.apache.camel.builder.RouteBuilder;
 
 /**

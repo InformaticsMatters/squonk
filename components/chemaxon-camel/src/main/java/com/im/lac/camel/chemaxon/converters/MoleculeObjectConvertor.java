@@ -3,6 +3,7 @@ package com.im.lac.camel.chemaxon.converters;
 import com.im.lac.util.OutputGenerator;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.chemaxon.molecule.MoleculeObjectWriter;
+import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +16,11 @@ import org.apache.camel.Exchange;
  */
 @Converter
 public class MoleculeObjectConvertor {
+    
+    @Converter
+    public static MoleculeObject createMoleculeObjectFromString(String mol, Exchange exchange) {
+        return new MoleculeObject(mol);
+    }
 
     /**
      * Create an Iterable of MoleculeObjects from an InputStream.

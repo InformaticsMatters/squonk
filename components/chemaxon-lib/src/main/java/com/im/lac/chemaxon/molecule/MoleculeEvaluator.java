@@ -12,10 +12,18 @@ import java.util.Map;
  */
 public interface MoleculeEvaluator {
     
+    public enum Mode {
+
+        Calculate, Filter, Transform
+    }
+
+    
     public Molecule processMolecule(Molecule mol);
     
     public MoleculeObject processMoleculeObject(MoleculeObject mol) throws MolFormatException, IOException;
     
     public Map<String,Object> getResults(Molecule mol);
+    
+    public Mode getMode();
     
 }

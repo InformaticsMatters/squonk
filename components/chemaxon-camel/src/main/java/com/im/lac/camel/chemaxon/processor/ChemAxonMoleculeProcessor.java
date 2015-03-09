@@ -1,30 +1,24 @@
 package com.im.lac.camel.chemaxon.processor;
 
-import com.im.lac.camel.processor.MoleculeObjectSourcer;
-import chemaxon.formats.MolFormatException;
 import chemaxon.nfunk.jep.ParseException;
-import chemaxon.standardizer.Standardizer;
 import chemaxon.struc.Molecule;
-import com.im.lac.util.CloseableMoleculeObjectQueue;
-import com.im.lac.util.CloseableQueue;
+import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.util.ResultExtractor;
 import com.im.lac.chemaxon.molecule.ChemTermsEvaluator;
 import com.im.lac.chemaxon.molecule.MoleculeEvaluator;
-import com.im.lac.chemaxon.molecule.MoleculeUtils;
+import com.im.lac.chemaxon.molecule.StandardizerEvaluator;
 import com.im.lac.types.MoleculeObject;
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 
@@ -137,7 +131,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
     private static final Logger LOG = Logger.getLogger(ChemAxonMoleculeProcessor.class.getName());
     public static final String PROP_EVALUATORS_DEFINTION = "ChemTermsProcessor_EvaluatorsDefintion";
 
-    private final List<MoleculeEvaluator> evaluators = new ArrayList<MoleculeEvaluator>();
+    private final List<MoleculeEvaluator> evaluators = new ArrayList<>();
 
     /**
      * Add a new calculation using a chemical terms expression. If no terms are
@@ -185,15 +179,15 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
     }
 
     public ChemAxonMoleculeProcessor standardize(String szrExpression) {
-        evaluators.add(new StandardizerProcessor(szrExpression));
+        evaluators.add(new StandardizerEvaluator(szrExpression, 25));
         return this;
     }
 
     @Override
     public void process(final Exchange exchange) throws Exception {
         LOG.fine("Processing ChemTerms");
-        final List<MoleculeEvaluator> evals = getEvaluators(exchange);
-        MoleculeObjectSourcer sourcer = new MoleculeObjectSourcer() {
+        final List<MoleculeEvaluator> evals = createEvaluators(exchange);
+        StreamingMoleculeObjectSourcer sourcer = new StreamingMoleculeObjectSourcer() {
             @Override
             public void handleSingle(Exchange exchange, MoleculeObject mo) throws Exception {
                 for (MoleculeEvaluator evaluator : evals) {
@@ -203,62 +197,48 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
             }
 
             @Override
-            public void handleMultiple(Exchange exchange, Iterator<MoleculeObject> mols) throws Exception {
+            public void handleMultiple(Exchange exchange, Stream<MoleculeObject> input) throws Exception {
+
                 for (MoleculeEvaluator evaluator : evals) {
-                    mols = evaluateMultiple(mols, evaluator);
+                    switch (evaluator.getMode()) {
+                        case Filter:
+                            input = input.filter((mo) -> {
+                                try {
+                                    return evaluator.processMoleculeObject(mo) != null;
+                                } catch (IOException ex) {
+                                    LOG.log(Level.SEVERE, "Failed to evaluate molecule", ex);
+                                }
+                                return false;
+                            });
+                            break;
+                        default:
+                            input = input.peek((mo) -> {
+                                try {
+                                    evaluator.processMoleculeObject(mo);
+                                } catch (IOException ex) {
+                                    LOG.log(Level.SEVERE, "Failed to evaluate molecule", ex);
+                                }
+                            });
+                    }
+                    exchange.getIn().setBody(input);
                 }
-                exchange.getIn().setBody(mols);
             }
         };
 
         sourcer.handle(exchange);
     }
 
-    CloseableQueue<MoleculeObject> evaluateMultiple(
-            final Iterator<MoleculeObject> mols,
-            final MoleculeEvaluator evaluator) {
-        final CloseableQueue<MoleculeObject> q = new CloseableMoleculeObjectQueue(50);
-        Thread t = new Thread(() -> {
-            try {
-                while (mols.hasNext()) {
-                    MoleculeObject mo = mols.next();
-                    try {
-                        mo = evaluator.processMoleculeObject(mo);
-                        if (mo != null) {
-                            q.add(mo);
-                        }
-                    } catch (IOException ex) {
-                        LOG.log(Level.SEVERE, "Failed to evaluate molecule", ex);
-                    }
-
-                }
-            } finally {
-                q.close();
-                if (mols instanceof Closeable) {
-                    try {
-                        LOG.log(Level.FINER, "Closing mols:{0}", mols);
-                        ((Closeable) mols).close();
-                    } catch (IOException e) {
-
-                    }
-                }
-            }
-        });
-        t.start();
-
-        return q;
-    }
-
     /**
      * Get or create the evaluators by whatever means we can. If these have been
-     * defined using the #calculate() method then those are used. If not we try
-     * to create ones specific for this Exchange based on header parameters.
+     * defined using the #calculate() or related methods then those are used. If
+     * not we try to create ones specific for this Exchange based on header
+     * parameters.
      *
      * @param exchange
      * @return
      * @throws ParseException
      */
-    List<MoleculeEvaluator> getEvaluators(Exchange exchange) throws ParseException {
+    List<MoleculeEvaluator> createEvaluators(Exchange exchange) throws ParseException {
         List<MoleculeEvaluator> result = null;
         if (evaluators != null && !evaluators.isEmpty()) {
             result = evaluators;
@@ -287,7 +267,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
     @Override
     public Map<String, Object> extractResults(Molecule mol
     ) {
-        Map<String, Object> results = new HashMap<String, Object>();
+        Map<String, Object> results = new HashMap<>();
         for (MoleculeEvaluator evaluator : evaluators) {
             Map<String, Object> data = evaluator.getResults(mol);
             results.putAll(data);
@@ -297,49 +277,26 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
 
     static List<MoleculeEvaluator> parseParamString(String query) throws ParseException {
         List<NameValuePair> params = URLEncodedUtils.parse(query, Charset.forName("UTF-8"));
-        List<MoleculeEvaluator> evals = new ArrayList<MoleculeEvaluator>();
+        List<MoleculeEvaluator> evals = new ArrayList<>();
         for (NameValuePair nvp : params) {
-            if ("filter".equals(nvp.getName())) {
-                evals.add(new ChemTermsEvaluator(nvp.getValue(), ChemTermsEvaluator.Mode.Filter));
-            } else if ("transform".equals(nvp.getName())) {
-                evals.add(new ChemTermsEvaluator(nvp.getValue(), ChemTermsEvaluator.Mode.Transform));
-            } else if ("standardize".equals(nvp.getName())) {
-                evals.add(new StandardizerProcessor(nvp.getValue()));
-            } else {
-                evals.add(new ChemTermsEvaluator(nvp.getName(), nvp.getValue()));
+            if (null != nvp.getName()) {
+                switch (nvp.getName()) {
+                    case "filter":
+                        evals.add(new ChemTermsEvaluator(nvp.getValue(), ChemTermsEvaluator.Mode.Filter));
+                        break;
+                    case "transform":
+                        evals.add(new ChemTermsEvaluator(nvp.getValue(), ChemTermsEvaluator.Mode.Transform));
+                        break;
+                    case "standardize":
+                        evals.add(new StandardizerEvaluator(nvp.getValue(), 25));
+                        break;
+                    default:
+                        evals.add(new ChemTermsEvaluator(nvp.getName(), nvp.getValue()));
+                        break;
+                }
             }
         }
         return evals;
     }
 
-    static class StandardizerProcessor implements MoleculeEvaluator {
-
-        Standardizer standardizer;
-
-        StandardizerProcessor(String szr) {
-            standardizer = new Standardizer(szr);
-        }
-
-        @Override
-        public Molecule processMolecule(Molecule mol) {
-            synchronized (standardizer) { // not thread safe
-                standardizer.standardize(mol);
-            }
-            return mol;
-        }
-
-        @Override
-        public Map<String, Object> getResults(Molecule mol) {
-            return Collections.emptyMap();
-        }
-
-        @Override
-        public MoleculeObject processMoleculeObject(MoleculeObject mo) throws MolFormatException, IOException {
-            Molecule mol = MoleculeUtils.fetchMolecule(mo, false);
-            mol = processMolecule(mol);
-            return MoleculeUtils.derriveMoleculeObject(mo, mol, mo.getFormat("mol"));
-
-        }
-
-    }
 }
