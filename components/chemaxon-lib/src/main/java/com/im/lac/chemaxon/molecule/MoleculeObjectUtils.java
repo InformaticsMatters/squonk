@@ -1,6 +1,5 @@
 package com.im.lac.chemaxon.molecule;
 
-import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
 import com.im.lac.util.MoleculeObjectStreamProvider;
 import java.io.File;
@@ -8,7 +7,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 /**
  * Utilities for MoleculeObjects
@@ -20,7 +18,7 @@ public class MoleculeObjectUtils {
     private static final Logger LOG = Logger.getLogger(MoleculeObjectUtils.class.getName());
 
     /**
-     * Uses MRecordReader. Does not create any chemaxon.struc.Molecule instances
+     * Uses MRecordReader. Does not create any {@link chemaxon.struc.Molecule} instances
      *
      * @param is
      * @return
@@ -31,7 +29,7 @@ public class MoleculeObjectUtils {
     }
 
     /**
-     * Uses MRecordReader. Does not create any chemaxon.struc.Molecule instances
+     * Uses MRecordReader. Does not create any {@link chemaxon.struc.Molecule} instances
      *
      * @param file
      * @return
@@ -41,28 +39,15 @@ public class MoleculeObjectUtils {
         return new MoleculeObjectFactory(new FileInputStream(file));
     }
 
-//    public static Stream<MoleculeObject> createStream(InputStream is, boolean parallel) throws IOException {
-//        return new MoleculeObjectSpliterator(is).asStream(parallel);
-//
-//    }
-//    
-//     public static Stream<MoleculeObject> createStream(InputStream is, boolean parallel, int batchSize) throws IOException {
-//        return new MoleculeObjectSpliterator(is, batchSize).asStream(parallel);
-//    }
-
+    /**
+     * Generates a provider of Stream&lt;MoleculeObject&gt;.
+     * Uses MRecordReader. Does not create any {@link chemaxon.struc.Molecule} instances
+     * 
+     * @param is The input stream. Either close this or the Stream once finished.
+     * @return
+     * @throws IOException 
+     */
     public static MoleculeObjectStreamProvider createStreamProvider(InputStream is) throws IOException {
         return new MoleculeObjectStreamProviderImpl(is);
     }
-
-//    /**
-//     * Sequential stream with default batch size
-//     *
-//     * @param is
-//     * @return
-//     * @throws IOException
-//     */
-//    public static Stream<MoleculeObject> createStream(InputStream is) throws IOException {
-//        return new MoleculeObjectSpliterator(is).asStream(false);
-//    }
-
 }
