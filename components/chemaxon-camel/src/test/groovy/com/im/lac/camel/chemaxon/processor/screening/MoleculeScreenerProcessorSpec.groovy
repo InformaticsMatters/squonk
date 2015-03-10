@@ -62,7 +62,7 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         setup:
         println "pharmacophore sequential streaming"
         InputStream input = new FileInputStream(file)
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStream(input, false)
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamProvider(input).getStream(false);
         def mol2 = new MoleculeObject(target)
         
         when:
@@ -84,7 +84,7 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         setup:
         println "pharmacophore parallel streaming"
         InputStream input = new FileInputStream(file)
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStream(input, true)
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamProvider(input).getStream(true);
         def mol2 = new MoleculeObject(target)
         
         when:

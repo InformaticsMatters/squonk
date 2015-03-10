@@ -25,7 +25,7 @@ class ReactorExecutorSpec extends Specification {
     String reaction = "../../data/testfiles/amine-acylation.mrv"
     
     Molecule[] getMoleculeAraryFromFile(FileInputStream fis) {
-        Stream<MoleculeObject> stream = MoleculeObjectUtils.createStream(fis)
+        Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamProvider(fis).getStream(true);
         try {
             return stream
             .map() { mo -> MoleculeUtils.cloneMolecule(mo, true) }

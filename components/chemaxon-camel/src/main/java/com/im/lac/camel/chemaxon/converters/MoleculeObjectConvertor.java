@@ -1,11 +1,11 @@
 package com.im.lac.camel.chemaxon.converters;
 
-import com.im.lac.util.OutputGenerator;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
-import com.im.lac.chemaxon.molecule.MoleculeObjectWriter;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
+import com.im.lac.util.MoleculeObjectStreamProvider;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import org.apache.camel.Converter;
@@ -57,15 +57,18 @@ public class MoleculeObjectConvertor {
             throws IOException {
         return MoleculeObjectUtils.createIterable(file);
     }
-
-    /**
-     *
-     * @param moi
-     * @return
-     */
+    
     @Converter
-    public static OutputGenerator createOutputGeneratorFromMoleculeObjectIterable(MoleculeObjectIterable moi) {
-        return new MoleculeObjectWriter(moi);
+    public static MoleculeObjectStreamProvider createMoleculeObjectStream(InputStream is, Exchange exchange)
+            throws IOException {
+        return MoleculeObjectUtils.createStreamProvider(is);
     }
+    
+    @Converter
+    public static MoleculeObjectStreamProvider createMoleculeObjectStream(File file, Exchange exchange)
+            throws IOException {
+        return MoleculeObjectUtils.createStreamProvider(new FileInputStream(file));
+    }
+
 
 }

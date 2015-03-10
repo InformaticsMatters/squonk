@@ -15,11 +15,18 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.apache.camel.util.IOHelper;
 
 /**
- * DataFormat that handles marshaling/unmarshaling of MoleculeObjects to/from JSON.
+ * DataFormat that handles marshaling/unmarshaling of MoleculeObjects to/from
+ * JSON.
+ *
  * @author timbo
  */
 public class MoleculeObjectJsonConverter {
@@ -32,7 +39,7 @@ public class MoleculeObjectJsonConverter {
      */
     private boolean autoCloseAfterMarshal = true;
     private final JsonFactory factory;
-    
+
     private int marshalCount = 0;
 
     public int getMarshalCount() {
@@ -44,7 +51,7 @@ public class MoleculeObjectJsonConverter {
     public int getUnmarshalCount() {
         return unmarshalCount;
     }
-    
+
     public MoleculeObjectJsonConverter() {
         this(true);
     }
@@ -53,20 +60,24 @@ public class MoleculeObjectJsonConverter {
         this.autoCloseAfterMarshal = autoCloseAfterMarshal;
         this.factory = new MappingJsonFactory();
     }
+    
+    public void marshal(Stream<MoleculeObject> mols, OutputStream outputStream) throws IOException {
+        marshal(mols.iterator(), outputStream);
+    }
 
     /**
-     * Takes an Iterator of MoleculeObjects and writes
-     * it to the OutputStream. The Input and OutputStream are closed once
-     * processing is complete if the autoCloseAfterMarshal field is set to true,
-     * otherwise both must be closed by the caller.
+     * Takes an Iterator of MoleculeObjects and writes it to the OutputStream.
+     * The Input and OutputStream are closed once processing is complete if the
+     * autoCloseAfterMarshal field is set to true, otherwise both must be closed
+     * by the caller.
      *
      * @param mols
-     * @param stream
+     * @param outputStream
      * @throws IOException
      */
-    public void marshal(Iterator<MoleculeObject> mols, OutputStream stream) throws IOException {
+    public void marshal(Iterator<MoleculeObject> mols, OutputStream outputStream) throws IOException {
 
-        JsonGenerator generator = factory.createGenerator(stream);
+        JsonGenerator generator = factory.createGenerator(outputStream);
         generator.writeStartArray();
         while (mols.hasNext()) {
             generator.writeObject(mols.next());
@@ -75,42 +86,72 @@ public class MoleculeObjectJsonConverter {
 
         generator.writeEndArray();
         generator.flush();
-        
+
         if (autoCloseAfterMarshal) {
-            IOHelper.close(stream);
+            IOHelper.close(outputStream);
             IOUtils.closeIfCloseable(mols);
         }
     }
 
     /**
-     * Generate an Iterator of MoleculeObjects from the JSON stream. NOTE: as
-     * we can't tell when the processing is finished the Iterator that is
-     * returned implements Closeable so that it can be closed by the caller when
-     * finished to ensure the underlying stream is closed. Alternatively the
-     * caller can close the InputStream directly.
+     * Generate an Stream of MoleculeObjects from the JSON input. NOTE: to ensure 
+     * the InputStream is closed you should either close the returned stream or
+     * close the InputStream once processing is finished.
      *
      * @param stream
-     * @return An Iterable of MoleculeObjects that also implements java.ioCloseable
+     * @return An Stream of MoleculeObjects that also implements
+     * java.ioCloseable
      * @throws IOException
      */
-    public Iterable<MoleculeObject> unmarshal(InputStream stream) throws IOException {
-        return new JsonIterator(stream);
+    public Stream<MoleculeObject> unmarshal(InputStream stream) throws IOException {
+        JsonSpliterator s = new JsonSpliterator(stream);
+        return s.asStream();
     }
 
-    class JsonIterator implements Iterable<MoleculeObject>, Iterator<MoleculeObject>, Closeable {
+    class JsonSpliterator extends Spliterators.AbstractSpliterator<MoleculeObject> implements Closeable {
 
         List<MoleculeObject> next;
         JsonParser jp;
-        InputStream stream;
+        InputStream input;
         boolean finished = false;
 
-        JsonIterator(InputStream stream) throws IOException {
-            this.stream = stream;
-            this.jp = factory.createParser(stream);
+        JsonSpliterator(InputStream input) throws IOException {
+            super(Long.MAX_VALUE, Spliterator.ORDERED | Spliterator.NONNULL);
+            this.input = input;
+            this.jp = factory.createParser(input);
             JsonToken current = jp.nextToken();
             if (current != JsonToken.START_ARRAY) {
                 throw new IllegalStateException("Error: root should be array: quiting.");
             }
+        }
+
+        Stream asStream() {
+
+            Stream<MoleculeObject> stream = StreamSupport.stream(this, false);
+            return stream.onClose(() -> {
+                try {
+                    this.close();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+        }
+
+        @Override
+        public void close() throws IOException {
+            LOG.finer("Closing stream " + input);
+            input.close();
+            jp.close();
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super MoleculeObject> action
+        ) {
+            if (hasNext()) {
+                action.accept(next());
+                return true;
+            }
+            return false;
         }
 
         private boolean readNext() {
@@ -123,7 +164,7 @@ public class MoleculeObjectJsonConverter {
                     MoleculeObject result = jp.readValueAs(MoleculeObject.class);
                     //System.out.println("Read: " + result);
                     next = Collections.singletonList(result);
-                    
+
                 }
                 return true;
             } catch (IOException ex) {
@@ -131,8 +172,7 @@ public class MoleculeObjectJsonConverter {
             }
         }
 
-        @Override
-        public boolean hasNext() {
+        private boolean hasNext() {
             if (finished == true) {
                 return false;
             } else if (next != null) {
@@ -142,8 +182,7 @@ public class MoleculeObjectJsonConverter {
             }
         }
 
-        @Override
-        public MoleculeObject next() {
+        private MoleculeObject next() {
             if (next == null) {
                 if (!hasNext()) {
                     throw new NoSuchElementException("No more data");
@@ -153,18 +192,6 @@ public class MoleculeObjectJsonConverter {
             next = null;
             unmarshalCount++;
             return result;
-        }
-
-        @Override
-        public void close() throws IOException {
-            LOG.finer("Closing stream " + stream);
-            stream.close();
-            jp.close();
-        }
-
-        @Override
-        public Iterator<MoleculeObject> iterator() {
-            return this;
         }
 
     }

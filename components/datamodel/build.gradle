@@ -1,5 +1,0 @@
-description = 'DataModel components'
-
-dependencies {
-    compile project(':common')
-}

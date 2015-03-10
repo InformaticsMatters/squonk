@@ -20,7 +20,7 @@ class SphereExclusionClusteringProcessorSpec extends CamelSpecificationBase {
     def "cluster stream"() {
         given:
         def input = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStream(input, false)
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamProvider(input).getStream(false);
         def resultEndpoint = camelContext.getEndpoint('mock:result')
         resultEndpoint.expectedMessageCount(1)
             

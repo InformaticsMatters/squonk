@@ -64,14 +64,13 @@ public class MoleculeObjectSpliterator extends FixedBatchSpliteratorBase<Molecul
      */
     public Stream<MoleculeObject> asStream(boolean parallel) {
         Stream<MoleculeObject> stream = StreamSupport.stream(this, parallel);
-        stream.onClose(() -> {
+        return stream.onClose(() -> {
             try {
                 this.close();
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
         });
-        return stream;
     }
 
     MoleculeObject next() {

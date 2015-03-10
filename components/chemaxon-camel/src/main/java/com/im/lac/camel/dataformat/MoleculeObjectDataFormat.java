@@ -33,9 +33,9 @@ import org.apache.camel.util.IOHelper;
  *
  * @author timbo
  */
-public class MoleculeObjectDataFormatXXX implements DataFormat {
+public class MoleculeObjectDataFormat implements DataFormat {
 
-    private static final Logger LOG = Logger.getLogger(MoleculeObjectDataFormatXXX.class.getName());
+    private static final Logger LOG = Logger.getLogger(MoleculeObjectDataFormat.class.getName());
 
     private int marshalCount = 0;
 

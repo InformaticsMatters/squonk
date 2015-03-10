@@ -2,7 +2,8 @@ package com.im.lac.camel.processor;
 
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
-import java.io.InputStream;
+import com.im.lac.util.MoleculeObjectStreamProvider;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -27,32 +28,39 @@ public abstract class StreamingMoleculeObjectSourcer {
 
     private static final Logger LOG = Logger.getLogger(StreamingMoleculeObjectSourcer.class.getName());
 
-    public static Stream<MoleculeObject> bodyAsMoleculeObjectStream(Exchange exchange) {
+    public static Stream<MoleculeObject> bodyAsMoleculeObjectStream(Exchange exchange) throws IOException {
 
-        Object body = exchange.getIn().getBody();
-        LOG.log(Level.FINE, "Body is {0}", body.getClass().getName());
+        LOG.log(Level.FINE, "Body is {0}", exchange.getIn().getBody().getClass().getName());
 
-        if (body instanceof Stream) {
-            return (Stream<MoleculeObject>) body;
+        MoleculeObjectStreamProvider sp = exchange.getIn().getBody(MoleculeObjectStreamProvider.class);
+        if (sp != null) {
+            return sp.getStream(true);
         }
-        if (body instanceof Iterable) {
-            Iterable<MoleculeObject> moliter = (Iterable<MoleculeObject>) body;
-            Spliterator spliterator = Spliterators.spliteratorUnknownSize(moliter.iterator(), Spliterator.NONNULL | Spliterator.ORDERED);
-            return StreamSupport.stream(spliterator, false);
+        Stream stream = exchange.getIn().getBody(Stream.class);
+        if (stream != null) {
+            return stream;
+        }
+
+        Iterator<MoleculeObject> moiterator = null;
+        MoleculeObjectIterable moi = exchange.getIn().getBody(MoleculeObjectIterable.class);
+        if (moi != null) {
+            moiterator = moi.iterator();
         } else {
-            if (body instanceof Iterator) {
-                Iterator<MoleculeObject> iterator = (Iterator<MoleculeObject>) body;
-                Spliterator spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.NONNULL | Spliterator.ORDERED);
-                return StreamSupport.stream(spliterator, false);
+            Iterator it = exchange.getIn().getBody(Iterator.class);
+            if (it != null) {
+                moiterator = it;
             } else {
-                if (body instanceof InputStream) {
-                    // TODO - rework this as it depends on a converter that is in the chemaxon-camel module
-                    MoleculeObjectIterable moliter = exchange.getContext().getTypeConverter().convertTo(MoleculeObjectIterable.class, body);
-                    Spliterator spliterator = Spliterators.spliteratorUnknownSize(moliter.iterator(), Spliterator.NONNULL | Spliterator.ORDERED);
-                    return StreamSupport.stream(spliterator, false);
+                Iterable itb = exchange.getIn().getBody(Iterable.class);
+                if (itb != null) {
+                    moiterator = itb.iterator();
                 }
             }
         }
+        if (moiterator != null) {
+            Spliterator spliterator = Spliterators.spliteratorUnknownSize(moiterator, Spliterator.NONNULL | Spliterator.ORDERED);
+            return StreamSupport.stream(spliterator, true);
+        }
+
         return null;
     }
 

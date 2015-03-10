@@ -52,7 +52,7 @@ public class ReactorProcessor implements Processor {
         while ((header = exchange.getIn().getHeader("Reactants" + i, String.class)) != null) {
             URL url = new URL(header);
             InputStream is = url.openStream();
-            try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStream(is)) {
+            try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamProvider(is).getStream(true)) {
                 Molecule[] mols = stream
                         .map(mo -> MoleculeUtils.cloneMolecule(mo, true))
                         .collect(Collectors.toList()).toArray(new Molecule[0]);

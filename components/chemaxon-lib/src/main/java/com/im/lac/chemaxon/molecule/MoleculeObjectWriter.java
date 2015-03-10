@@ -4,14 +4,13 @@ import chemaxon.formats.MolExporter;
 import chemaxon.struc.Molecule;
 import com.im.lac.util.OutputGenerator;
 import com.im.lac.types.MoleculeObject;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  *
@@ -20,11 +19,11 @@ import java.util.logging.Logger;
 public class MoleculeObjectWriter implements OutputGenerator {
 
     private static final Logger LOG = Logger.getLogger(MoleculeObjectWriter.class.getName());
-    private final Iterable<MoleculeObject> mols;
+    private final Stream<MoleculeObject> mols;
     private int count = 0;
     private int errors = 0;
 
-    public MoleculeObjectWriter(Iterable<MoleculeObject> mols) {
+    public MoleculeObjectWriter(Stream<MoleculeObject> mols) {
         this.mols = mols;
     }
 
@@ -43,9 +42,7 @@ public class MoleculeObjectWriter implements OutputGenerator {
             public void run() {
                 LOG.fine("Starting to write molecules");
                 try {
-                    Iterator<MoleculeObject> it = mols.iterator();
-                    while (it.hasNext()) {
-                        MoleculeObject mo = it.next();
+                    mols.sequential().forEachOrdered(mo -> {
                         try {
                             Molecule mol = MoleculeUtils.fetchMolecule(mo, false);
                             mol.clearProperties();
@@ -56,15 +53,12 @@ public class MoleculeObjectWriter implements OutputGenerator {
                             errors++;
                             LOG.log(Level.SEVERE, "Error writing Molecule", ex);
                         }
-                    }
-                    LOG.fine("Finished to write molecules");
+                    });
+                    LOG.fine("Finished writing molecules");
                 } finally {
+                    mols.close();
                     try {
                         exporter.close();
-                        if (mols instanceof Closeable) {
-                            LOG.finer("Closing mols: " + mols);
-                            ((Closeable) mols).close();
-                        }
                     } catch (IOException ex) {
                         LOG.log(Level.SEVERE, "Failed to close input", ex);
                     }

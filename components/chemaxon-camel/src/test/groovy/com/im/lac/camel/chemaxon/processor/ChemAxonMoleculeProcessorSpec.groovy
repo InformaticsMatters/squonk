@@ -37,7 +37,7 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         Thread.sleep(sleep)
         println "propcalc sequential streaming"
         InputStream input = new FileInputStream(file)
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStream(input)
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamProvider(input).getStream(false);
         
         
         when:
@@ -63,7 +63,7 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         Thread.sleep(sleep)
         println "propcalc parallel streaming"
         InputStream input = new FileInputStream(file)
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStream(input, true)
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamProvider(input).getStream(true);
         
         
         when:

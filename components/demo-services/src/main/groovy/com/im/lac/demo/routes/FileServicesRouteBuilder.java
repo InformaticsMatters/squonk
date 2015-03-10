@@ -6,7 +6,6 @@ import com.im.lac.chemaxon.molecule.MoleculeObjectWriter;
 import com.im.lac.demo.services.DbFileService;
 import com.im.lac.demo.model.*;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.types.MoleculeObjectIterable;
 import com.im.lac.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,12 +17,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import javax.activation.DataHandler;
 import javax.sql.DataSource;
 import org.apache.camel.Exchange;
@@ -83,7 +79,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                 .log("Processing ...")
                 //.to("direct:/dump/exchange"
                 .process((Exchange exchange) -> {
-                    createMoleculeObjectIterableForDataItem(exchange);
+                    createMoleculeObjectStreamForDataItem(exchange);
                 })
                 // send the Molecules to the desired endpoint
                 .routingSlip(header("endpoint"))
@@ -104,10 +100,11 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                         for (DataHandler dh : attachements.values()) {
                             InputStream is = dh.getInputStream();
                             InputStream gunzip = IOUtils.getGunzippedInputStream(is);
-                            Stream<MoleculeObject> mols = MoleculeObjectUtils.createStream(gunzip);
-                            DataItem result = createDataItem(mols.iterator(), dh.getName());
-                            if (result != null) {
-                                created.add(result);
+                            try (Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamProvider(gunzip).getStream(false)) {
+                                DataItem result = createDataItem(mols.iterator(), dh.getName());
+                                if (result != null) {
+                                    created.add(result);
+                                }
                             }
                         }
                     }
@@ -156,14 +153,16 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                 .log("Getting file ${headers.item}")
                 //.to("direct:/dump/exchange")
                 .process((Exchange exchange) -> {
-                    createMoleculeObjectIterableForDataItem(exchange);
+                    createMoleculeObjectStreamForDataItem(exchange);
                 })
-                .process((Exchange exchange) -> {
-                    MoleculeObjectIterable mols = exchange.getIn().getBody(MoleculeObjectIterable.class);
-                    MoleculeObjectWriter writer = new MoleculeObjectWriter(mols);
-                    InputStream out = writer.getTextStream("sdf"); // TODO format
-                    exchange.getIn().setBody(out);
-                });
+                .process(
+                        (Exchange exchange) -> {
+                            Stream<MoleculeObject> mols = exchange.getIn().getBody(Stream.class);
+                            MoleculeObjectWriter writer = new MoleculeObjectWriter(mols);
+                            InputStream out = writer.getTextStream("sdf"); // TODO format
+                            exchange.getIn().setBody(out);
+                        }
+                );
 
         from("direct:/dump/exchange")
                 .process((Exchange exchange) -> {
@@ -257,14 +256,13 @@ public class FileServicesRouteBuilder extends RouteBuilder {
         final PipedInputStream pis = new PipedInputStream();
         final PipedOutputStream out = new PipedOutputStream(pis);
         final MoleculeObjectJsonConverter dataFormat = new MoleculeObjectJsonConverter();
-        Thread t = new Thread(
-                () -> {
-                    try {
-                        dataFormat.marshal(mols, out);
-                    } catch (Exception ex) {
-                        throw new RuntimeException("Failed to write MoleculeObjects", ex);
-                    }
-                });
+        Thread t = new Thread(() -> {
+            try {
+                dataFormat.marshal(mols, out);
+            } catch (Exception ex) {
+                throw new RuntimeException("Failed to write MoleculeObjects", ex);
+            }
+        });
         t.start();
 
         result = service.addDataItem(con, item, pis);
@@ -286,20 +284,14 @@ public class FileServicesRouteBuilder extends RouteBuilder {
         }
     }
 
-    private MoleculeObjectIterable createMoleculeObjectIterable(InputStream is) throws IOException {
-        InputStream gunzip = IOUtils.getGunzippedInputStream(is);
-        final MoleculeObjectJsonConverter dataFormat = new MoleculeObjectJsonConverter();
-        return dataFormat.unmarshal(gunzip);
-    }
-
-    private void createMoleculeObjectIterableForDataItem(Exchange exchange) throws SQLException, IOException {
+    private void createMoleculeObjectStreamForDataItem(Exchange exchange) throws SQLException, IOException {
         // 1. grab item id from header and load its DataItem from the service
         Long dataId = exchange.getIn().getHeader("item", Long.class);
         DataItem sourceData = service.loadDataItem(dataId);
         LOG.log(Level.INFO, " Source: Data ID = {0} | ID = {1} Name = {2} LOID = {3}",
                 new Object[]{dataId, sourceData.getId(), sourceData.getName(), sourceData.getLoid()});
 
-        // 2. create a MoleculeObjectIterable from the InputStream of the item's large object
+        // 2. create a Steam<MoleculeObject> from the InputStream of the item's large object
         Connection con = service.getConnection();
         boolean ac = con.getAutoCommit();
         if (ac) {
@@ -307,36 +299,15 @@ public class FileServicesRouteBuilder extends RouteBuilder {
         }
 
         final InputStream input = service.createLargeObjectReader(con, sourceData.getLoid());
-        // this closes the input once the route finishes
-//        exchange.addOnCompletion(new Synchronization() {
-//            @Override
-//            public void onComplete(Exchange exch) {
-//                cleanup();
-//            }
-//
-//            @Override
-//            public void onFailure(Exchange exch) {
-//                cleanup();
-//            }
-//
-//            private void cleanup() {
-//                IOHelper.close(input);
-//                try {
-//                    con.rollback(); // we only read
-//                } catch (SQLException ex) {
-//                    LOG.log(Level.SEVERE, "Failed to commit", ex);
-//                }
-//                try {
-//                    con.close();
-//                } catch (SQLException ex) {
-//                    LOG.log(Level.SEVERE, "Failed to close connection", ex);
-//                }
-//                LOG.info("Input closed");
-//            }
-//        });
 
-        MoleculeObjectIterable moit = createMoleculeObjectIterable(input);
-        exchange.getIn().setBody(moit);
+        Stream<MoleculeObject> stream = createMoleculeObjectStream(input);
+        exchange.getIn().setBody(stream);
+    }
+
+    private Stream<MoleculeObject> createMoleculeObjectStream(InputStream is) throws IOException {
+        InputStream gunzip = IOUtils.getGunzippedInputStream(is);
+        final MoleculeObjectJsonConverter dataFormat = new MoleculeObjectJsonConverter();
+        return dataFormat.unmarshal(gunzip);
     }
 
 }
