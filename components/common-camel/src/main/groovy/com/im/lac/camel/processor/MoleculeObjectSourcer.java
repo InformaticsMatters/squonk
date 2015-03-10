@@ -2,9 +2,11 @@ package com.im.lac.camel.processor;
 
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
+import com.im.lac.util.MoleculeObjectStreamProvider;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import org.apache.camel.Exchange;
 
 /**
@@ -16,13 +18,28 @@ public abstract class MoleculeObjectSourcer {
     private static final Logger LOG = Logger.getLogger(MoleculeObjectSourcer.class.getName());
 
     public void handle(Exchange exchange) throws Exception {
-        // try as iterable of molecules
+        
+        MoleculeObjectStreamProvider sp = exchange.getIn().getBody(MoleculeObjectStreamProvider.class);
+        if (sp != null) {
+            handleMultiple(exchange, sp.getStream(false).iterator());
+            return;
+        }
+        Stream<MoleculeObject> stream = exchange.getIn().getBody(Stream.class);
+        if (stream != null) {
+            handleMultiple(exchange, stream.iterator());
+            return;
+        }
         Iterable<MoleculeObject> iterable = exchange.getIn().getBody(MoleculeObjectIterable.class);
         if (iterable == null) {
-            iterable = exchange.getIn().getBody(Iterable.class);
+            iterable =  exchange.getIn().getBody(Iterable.class);
         }
         if (iterable != null) {
             handleMultiple(exchange, iterable.iterator());
+            return;
+        }
+        Iterator<MoleculeObject> iterator = exchange.getIn().getBody(Iterator.class);
+        if (iterator != null) {
+            handleMultiple(exchange, iterator);
         } else {
             MoleculeObject mol = exchange.getIn().getBody(MoleculeObject.class);
             if (mol != null) {

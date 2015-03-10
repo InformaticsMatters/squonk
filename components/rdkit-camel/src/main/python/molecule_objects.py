@@ -1,9 +1,11 @@
 from com.im.lac.types import MoleculeObjectIterable
+from com.im.lac.util import MoleculeObjectStreamProvider
 from com.im.lac.util import CloseableMoleculeObjectQueue
 from com.im.lac.types import MoleculeObject
 from java import lang
 import sys
 from java.util import ArrayList
+from java.util.stream import Stream
 from java.lang import Thread, InterruptedException
 from java.lang import Class
 lang.System.loadLibrary('GraphMolWrap')
@@ -11,7 +13,7 @@ lang.System.loadLibrary('GraphMolWrap')
 from org.RDKit import *
 
 from mol_parsing.rdkit_parse import get_or_create_rdmol, parse_mol_obj
-# this gets the body converted to a MoleculeObjectIterable
+# this gets the body converted to a Iterator of MoleculeObjects
 def read_in():
     counter = 0
     while mols.hasNext():
@@ -39,8 +41,12 @@ class ObjReadThread(Thread):
             self.stop()
 #            raise
 
-# Get the prvevious body and set the next one
-mols = request.getBody(MoleculeObjectIterable)
+# Get the previous body and set the next one
+stream = request.getBody(Stream)
+if stream:
+    mols = stream.iterator()
+else:
+    mols = request.getBody(MoleculeObjectItearable)
 out_mols_here = CloseableMoleculeObjectQueue(40)
 request.setBody(out_mols_here)
 my_thread = ObjReadThread()
