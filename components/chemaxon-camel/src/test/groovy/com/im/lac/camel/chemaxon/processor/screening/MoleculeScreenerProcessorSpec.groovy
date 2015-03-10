@@ -62,12 +62,12 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         setup:
         println "pharmacophore sequential streaming"
         InputStream input = new FileInputStream(file)
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamProvider(input).getStream(false);
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(false);
         def mol2 = new MoleculeObject(target)
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBodyAndHeader('direct:pharmacophore/streaming', mols, MoleculeScreenerProcessor.HEADER_TARGET_MOLECULE, mol2)
+        Stream results = template.requestBodyAndHeader('direct:pharmacophore/streaming', mols, MoleculeScreenerProcessor.HEADER_TARGET_MOLECULE, mol2).getStream()
         long count = results.count()
         long t1 = System.currentTimeMillis()
         println "...done"
@@ -84,12 +84,12 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         setup:
         println "pharmacophore parallel streaming"
         InputStream input = new FileInputStream(file)
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamProvider(input).getStream(true);
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(true);
         def mol2 = new MoleculeObject(target)
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBodyAndHeader('direct:pharmacophore/streaming', mols, MoleculeScreenerProcessor.HEADER_TARGET_MOLECULE, mol2)
+        Stream results = template.requestBodyAndHeader('direct:pharmacophore/streaming', mols, MoleculeScreenerProcessor.HEADER_TARGET_MOLECULE, mol2)getStream()
         long count = results.count()
         long t1 = System.currentTimeMillis()
         println "...done"

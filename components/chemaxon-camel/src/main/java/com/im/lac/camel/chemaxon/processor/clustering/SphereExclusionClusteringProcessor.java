@@ -8,9 +8,7 @@ import com.im.lac.camel.chemaxon.processor.ProcessorUtils;
 import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.chemaxon.clustering.SphereExclusionClusterer;
 import com.im.lac.types.MoleculeObject;
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.logging.Level;
+import com.im.lac.util.SimpleMoleculeObjectStreamProvider;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.apache.camel.Exchange;
@@ -69,11 +67,11 @@ public class SphereExclusionClusteringProcessor<T extends Descriptor> implements
     public void process(Exchange exchange) throws Exception {
 
         SphereExclusionClusterer clusterer = createClusterer(exchange);
-        Stream<Molecule> results = null;
+        Stream<MoleculeObject> results = null;
         try (Stream<MoleculeObject> stream = StreamingMoleculeObjectSourcer.bodyAsMoleculeObjectStream(exchange)) {
             results = clusterer.clusterMoleculeObjects(stream);
         }
-        exchange.getIn().setBody(results);
+        exchange.getIn().setBody(new SimpleMoleculeObjectStreamProvider(results));
     }
 
     SphereExclusionClusterer createClusterer(Exchange exchange) {

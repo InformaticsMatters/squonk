@@ -100,7 +100,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                         for (DataHandler dh : attachements.values()) {
                             InputStream is = dh.getInputStream();
                             InputStream gunzip = IOUtils.getGunzippedInputStream(is);
-                            try (Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamProvider(gunzip).getStream(false)) {
+                            try (Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(gunzip).getStream(false)) {
                                 DataItem result = createDataItem(mols.iterator(), dh.getName());
                                 if (result != null) {
                                     created.add(result);

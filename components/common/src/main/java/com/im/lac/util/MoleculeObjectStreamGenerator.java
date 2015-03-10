@@ -14,8 +14,10 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public interface MoleculeObjectStreamProvider {
+public interface MoleculeObjectStreamGenerator extends MoleculeObjectStreamProvider {
+        
+    Stream<MoleculeObject> getStream(boolean parallel, int batchSize) throws IOException;
     
-    Stream<MoleculeObject> getStream() throws IOException;
+    Stream<MoleculeObject> getStream(boolean parallel) throws IOException;
     
 }

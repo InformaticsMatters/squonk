@@ -34,7 +34,7 @@ public abstract class StreamingMoleculeObjectSourcer {
 
         MoleculeObjectStreamProvider sp = exchange.getIn().getBody(MoleculeObjectStreamProvider.class);
         if (sp != null) {
-            return sp.getStream(true);
+            return sp.getStream();
         }
         Stream stream = exchange.getIn().getBody(Stream.class);
         if (stream != null) {

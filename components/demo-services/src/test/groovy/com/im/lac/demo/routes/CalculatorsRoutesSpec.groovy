@@ -88,7 +88,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         def results = template.requestBody('direct:filter_example', new FileInputStream("../../data/testfiles/nci100.smiles"))
                 
         then:
-        results.count() < 100
+        results.getStream().count() < 100
        
     }
     
@@ -101,7 +101,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
             ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION, "filter=mass()<250"
         )
         long t1 = System.currentTimeMillis()
-        long size = results.count()
+        long size = results.getStream().count()
         long t2 = System.currentTimeMillis()
         //println "dynamic filter down to $size first in ${t1-t0}ms last in ${t2-t0}ms"
         then:
@@ -122,10 +122,10 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         
         then:
         results.size() == 10
-        int s0 = results[0].get().count()
+        int s0 = results[0].get().getStream().count()
         (1..9).each {
             def result = results[it].get()
-            long count = result.count()
+            long count = result.getStream().count()
             //println "result $it count is $count"
             assert count == s0
         }

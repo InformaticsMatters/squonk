@@ -37,12 +37,12 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         Thread.sleep(sleep)
         println "propcalc sequential streaming"
         InputStream input = new FileInputStream(file)
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamProvider(input).getStream(false);
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(false);
         
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:streaming', mols)
+        Stream results = template.requestBody('direct:streaming', mols).getStream()
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
         println "...done"
@@ -63,12 +63,12 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         Thread.sleep(sleep)
         println "propcalc parallel streaming"
         InputStream input = new FileInputStream(file)
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamProvider(input).getStream(true);
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(true);
         
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:streaming', mols)
+        Stream results = template.requestBody('direct:streaming', mols).getStream()
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
         println "...done"

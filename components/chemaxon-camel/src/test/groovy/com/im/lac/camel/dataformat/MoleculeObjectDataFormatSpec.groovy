@@ -28,7 +28,7 @@ class MoleculeObjectDataFormatSpec extends Specification {
 
         setup:
         FileInputStream fis = new FileInputStream("../../data/testfiles/nci100.smiles")
-        Stream stream = MoleculeObjectUtils.createStreamProvider(fis).getStream(false)
+        Stream stream = MoleculeObjectUtils.createStreamGenerator(fis).getStream(false)
         Iterator<MoleculeObject> mols = stream.iterator()
         MoleculeObjectDataFormat modf = new MoleculeObjectDataFormat()
         OutputStream out = new ByteArrayOutputStream()
@@ -51,7 +51,7 @@ class MoleculeObjectDataFormatSpec extends Specification {
 
         setup:
         FileInputStream fis = new FileInputStream(file)
-        Stream mols = MoleculeObjectUtils.createStreamProvider(fis).getStream(false)
+        Stream mols = MoleculeObjectUtils.createStreamGenerator(fis).getStream(false)
         List<MoleculeObject> molsList = mols.collect(Collectors.toList())
         MoleculeObjectDataFormat modf = new MoleculeObjectDataFormat()
         
@@ -83,7 +83,7 @@ class MoleculeObjectDataFormatSpec extends Specification {
 
         setup:
         println 'marshaling/unmarshaling speed and size'
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamProvider(new FileInputStream(file)).getStream(false);
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(file)).getStream(false);
         println "mols: " + mols
         def dataFormat = new StreamingIteratorJsonDataFormat<MoleculeObject>(MoleculeObject.class)
         
@@ -115,7 +115,7 @@ class MoleculeObjectDataFormatSpec extends Specification {
     def 'gzipped marshaling/unmarshaling speed and size'() {
 
         setup:
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamProvider(new FileInputStream(file)).getStream(false);
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(file)).getStream(false);
         def dataFormat = new StreamingIteratorJsonDataFormat<MoleculeObject>(MoleculeObject.class)
         
         ByteArrayOutputStream out = new ByteArrayOutputStream()

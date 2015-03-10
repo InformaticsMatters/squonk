@@ -7,6 +7,7 @@ import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.chemaxon.screening.MoleculeScreener;
 import com.im.lac.types.MoleculeObject;
+import com.im.lac.util.SimpleMoleculeObjectStreamProvider;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -99,8 +100,8 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
 
             @Override
             public void handleMultiple(Exchange exchange, Stream<MoleculeObject> mols) {
-                Stream<MoleculeObject> q = compareMultiple(mols, targetFp, thresh);
-                exchange.getIn().setBody(q);
+                Stream<MoleculeObject> stream = compareMultiple(mols, targetFp, thresh);
+                exchange.getIn().setBody(new SimpleMoleculeObjectStreamProvider(stream));
             }
         };
         sourcer.handle(exchange);

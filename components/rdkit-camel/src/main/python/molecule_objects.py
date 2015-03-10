@@ -42,12 +42,20 @@ class ObjReadThread(Thread):
 #            raise
 
 # Get the previous body and set the next one
-stream = request.getBody(Stream)
-if stream:
-    mols = stream.iterator()
+provider = request.getBody(MoleculeObjectStreamProvider)
+if provider:
+    print "found a provider"
+    mols = provider.getStream().iterator()
 else:
-    mols = request.getBody(MoleculeObjectItearable)
-out_mols_here = CloseableMoleculeObjectQueue(40)
-request.setBody(out_mols_here)
-my_thread = ObjReadThread()
-my_thread.start()
+    mols = request.getBody(MoleculeObjectIterable)
+if not mols:
+    provider = request.getBody(Stream)
+if provider:
+    mols = provider.iterator()
+if mols:
+    out_mols_here = CloseableMoleculeObjectQueue(40)
+    request.setBody(out_mols_here)
+    my_thread = ObjReadThread()
+    my_thread.start()
+else:
+    print "can't convert. found " + request.getBody().getClass().getName()

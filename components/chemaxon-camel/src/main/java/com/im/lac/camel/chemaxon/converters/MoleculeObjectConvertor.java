@@ -61,13 +61,13 @@ public class MoleculeObjectConvertor {
     @Converter
     public static MoleculeObjectStreamProvider createMoleculeObjectStream(InputStream is, Exchange exchange)
             throws IOException {
-        return MoleculeObjectUtils.createStreamProvider(is);
+        return MoleculeObjectUtils.createStreamGenerator(is);
     }
     
     @Converter
     public static MoleculeObjectStreamProvider createMoleculeObjectStream(File file, Exchange exchange)
             throws IOException {
-        return MoleculeObjectUtils.createStreamProvider(new FileInputStream(file));
+        return MoleculeObjectUtils.createStreamGenerator(new FileInputStream(file));
     }
 
 

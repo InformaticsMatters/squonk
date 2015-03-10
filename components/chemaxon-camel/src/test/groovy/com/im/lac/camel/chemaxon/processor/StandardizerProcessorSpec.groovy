@@ -30,7 +30,7 @@ class StandardizerProcessorSpec extends CamelSpecificationBase {
 
         then:
         resultEndpoint.assertIsSatisfied()
-        def result = resultEndpoint.receivedExchanges.in.body[0].collect()
+        def result = resultEndpoint.receivedExchanges.in.body[0].getStream().collect()
         result.size() == 1
         result[0].getRepresentation(Molecule.class.getName()) != null
         result[0].getRepresentation(Molecule.class.getName()).atomCount == 12

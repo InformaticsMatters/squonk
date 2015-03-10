@@ -64,7 +64,7 @@ public class MoleculeObjectIteratorDataFormat implements DataFormat {
     @Override
     public Object unmarshal(Exchange exchange, InputStream is) throws Exception {
         // TODO - switch to stream
-        Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamProvider(is).getStream(false);
+        Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(is).getStream();
         return stream.iterator();
     }
 

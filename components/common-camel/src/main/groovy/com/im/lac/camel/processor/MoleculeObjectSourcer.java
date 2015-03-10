@@ -21,7 +21,7 @@ public abstract class MoleculeObjectSourcer {
         
         MoleculeObjectStreamProvider sp = exchange.getIn().getBody(MoleculeObjectStreamProvider.class);
         if (sp != null) {
-            handleMultiple(exchange, sp.getStream(false).iterator());
+            handleMultiple(exchange, sp.getStream().iterator());
             return;
         }
         Stream<MoleculeObject> stream = exchange.getIn().getBody(Stream.class);

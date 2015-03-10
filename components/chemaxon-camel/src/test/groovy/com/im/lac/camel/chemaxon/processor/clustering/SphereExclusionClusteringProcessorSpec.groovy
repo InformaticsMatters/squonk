@@ -20,7 +20,7 @@ class SphereExclusionClusteringProcessorSpec extends CamelSpecificationBase {
     def "cluster stream"() {
         given:
         def input = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamProvider(input).getStream(false);
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(false);
         def resultEndpoint = camelContext.getEndpoint('mock:result')
         resultEndpoint.expectedMessageCount(1)
             
@@ -29,7 +29,7 @@ class SphereExclusionClusteringProcessorSpec extends CamelSpecificationBase {
 
         then:
         resultEndpoint.assertIsSatisfied()
-        def result = resultEndpoint.receivedExchanges.in.body[0].collect()
+        def result = resultEndpoint.receivedExchanges.in.body[0].getStream().collect()
         result.size() == 756
         int max = 0
         result.each {
@@ -67,7 +67,7 @@ class SphereExclusionClusteringProcessorSpec extends CamelSpecificationBase {
 
         then:
         resultEndpoint.assertIsSatisfied()
-        def result = resultEndpoint.receivedExchanges.in.body[0].collect()
+        def result = resultEndpoint.receivedExchanges.in.body[0].getStream().collect()
         result.size() == 10
         result.each {
             Integer cluster = it.getValue('abcd')

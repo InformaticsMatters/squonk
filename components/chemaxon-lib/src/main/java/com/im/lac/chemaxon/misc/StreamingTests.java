@@ -63,7 +63,7 @@ public class StreamingTests {
 
     static void noMolCreation() throws IOException {
         System.out.println("noMolCreation");
-        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamProvider(new FileInputStream(f)).getStream(false)) {
+        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(f)).getStream(false)) {
             long t0 = System.currentTimeMillis();
             long results = stream.count();
             long t1 = System.currentTimeMillis();
@@ -73,7 +73,7 @@ public class StreamingTests {
 
     static void simpleSequential() throws IOException {
         System.out.println("simpleSequential");
-        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamProvider(new FileInputStream(f)).getStream(false)) {
+        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(f)).getStream(false)) {
             long t0 = System.currentTimeMillis();
             long results = stream
                     .map(mo -> MoleculeUtils.fetchMolecule(mo, false))
@@ -85,7 +85,7 @@ public class StreamingTests {
 
     static void simpleParallel() throws IOException {
         System.out.println("simpleParallel");
-        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamProvider(new FileInputStream(f)).getStream(true)) {
+        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(f)).getStream(true)) {
             long t0 = System.currentTimeMillis();
             long results = stream
                     .map(mo -> MoleculeUtils.fetchMolecule(mo, false))
@@ -98,7 +98,7 @@ public class StreamingTests {
     static void calculateSequential() throws Exception {
         System.out.println("calculateSequential");
         ChemTermsEvaluator cte = new ChemTermsEvaluator("logd", "logD('7.4')");
-        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamProvider(new FileInputStream(f)).getStream(false)) {
+        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(f)).getStream(false)) {
             long t0 = System.currentTimeMillis();
             long results = stream
                     .map(mo -> MoleculeUtils.fetchMolecule(mo, false))
@@ -114,7 +114,7 @@ public class StreamingTests {
     static void calculateSequentialPool() throws Exception {
         System.out.println("calculateSequentialPool");
         EvaluatorPool pool = new EvaluatorPool(25);
-        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamProvider(new FileInputStream(f)).getStream(false)) {
+        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(f)).getStream(false)) {
             long t0 = System.currentTimeMillis();
             long results = stream
                     .map(mo -> MoleculeUtils.fetchMolecule(mo, false))
@@ -135,7 +135,7 @@ public class StreamingTests {
     static void calculateParallelPool() throws Exception {
         System.out.println("calculateParallelPool");
         EvaluatorPool pool = new EvaluatorPool(25);
-        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamProvider(new FileInputStream(f)).getStream(true)) {
+        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(f)).getStream(true)) {
             long t0 = System.currentTimeMillis();
             long results = stream
                     .map(mo -> MoleculeUtils.fetchMolecule(mo, false))
@@ -157,7 +157,7 @@ public class StreamingTests {
         System.out.println("calculateParallelCustomPool " + poolSize);
         ForkJoinPool forkJoinPool = new ForkJoinPool(poolSize);
         EvaluatorPool pool = new EvaluatorPool(25);
-        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamProvider(new FileInputStream(f)).getStream(true)) {
+        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(f)).getStream(true)) {
             long t0 = System.currentTimeMillis();
             System.out.println("Submitting");
             ForkJoinTask<Long> task = forkJoinPool.submit(()
@@ -191,7 +191,7 @@ public class StreamingTests {
         System.out.println("calculateParallelCustomPoolWithFixedBatchSize " + poolSize + "," + batchSize);
         ForkJoinPool forkJoinPool = new ForkJoinPool(poolSize);
         EvaluatorPool pool = new EvaluatorPool(25);
-        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamProvider(new FileInputStream(f)).getStream(true)) {
+        try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(f)).getStream(true)) {
             long t0 = System.currentTimeMillis();
 
             ForkJoinTask<Long> task = forkJoinPool.submit(()
