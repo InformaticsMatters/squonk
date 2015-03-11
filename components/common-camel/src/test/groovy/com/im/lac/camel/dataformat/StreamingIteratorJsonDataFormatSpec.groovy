@@ -92,6 +92,23 @@ class StreamingIteratorJsonDataFormatSpec extends Specification {
         json.indexOf('representations') == -1
     }
     
+    void "marshal moleculeobjects with props"() {
+        
+        setup:
+        def input = [
+            new MoleculeObject('CCC', 'smiles', [prop1: 'hello', prop2: 'banana', prop3: 999]),
+            new MoleculeObject('c1ccccc', 'smiles', [prop1: 'goodbye', prop2: 'orange', prop3: 666])]
+            
+        ObjectMapper mapper = new ObjectMapper()
+        
+        when:
+        String json = mapper.writeValueAsString(input)
+        println "JSON: " + json
+        
+        then:
+        json.indexOf('banana') > 0
+    }
+    
     void "unmarshal moleculeobjects"() {
             
         setup:

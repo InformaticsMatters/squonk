@@ -47,6 +47,7 @@ public class Main {
         camelContext.addRoutes(new CalculatorsRouteBuilder());
         camelContext.addRoutes(new DescriptorsRouteBuilder());
         camelContext.addRoutes(new DatabaseRouteBuilder(ds));
+        camelContext.addRoutes(new ReactorRouteBuilder());
         camelContext.addRoutes(new RestRouteBuilder());
         camelContext.addRoutes(new FileServicesRouteBuilder(ds));
 

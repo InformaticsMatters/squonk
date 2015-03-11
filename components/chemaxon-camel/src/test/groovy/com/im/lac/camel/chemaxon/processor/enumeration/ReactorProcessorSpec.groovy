@@ -1,4 +1,4 @@
-package com.im.lac.camel.chemaxon.enumeration
+package com.im.lac.camel.chemaxon.processor.enumeration
 
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder

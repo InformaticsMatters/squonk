@@ -199,11 +199,11 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
 
             @Override
             public void handleMultiple(Exchange exchange, Stream<MoleculeObject> input) throws Exception {
-
+                Stream<MoleculeObject> result = input;
                 for (MoleculeEvaluator evaluator : evals) {
                     switch (evaluator.getMode()) {
                         case Filter:
-                            input = input.filter((mo) -> {
+                            result = result.filter((mo) -> {
                                 try {
                                     return evaluator.processMoleculeObject(mo) != null;
                                 } catch (IOException ex) {
@@ -213,16 +213,17 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
                             });
                             break;
                         default:
-                            input = input.peek((mo) -> {
+                            result = result.map((mo) -> {
                                 try {
-                                    evaluator.processMoleculeObject(mo);
+                                    return evaluator.processMoleculeObject(mo);
                                 } catch (IOException ex) {
                                     LOG.log(Level.SEVERE, "Failed to evaluate molecule", ex);
                                 }
+                                return mo;
                             });
                     }
-                    exchange.getIn().setBody(new SimpleStreamProvider(input, MoleculeObject.class));
                 }
+                exchange.getIn().setBody(new SimpleStreamProvider(result, MoleculeObject.class));
             }
         };
 

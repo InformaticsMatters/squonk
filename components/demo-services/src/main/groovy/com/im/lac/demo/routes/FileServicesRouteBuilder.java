@@ -1,12 +1,16 @@
 package com.im.lac.demo.routes;
 
 import com.im.lac.camel.dataformat.MoleculeObjectJsonConverter;
+import com.im.lac.camel.processor.MoleculeObjectSourcer;
+import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.chemaxon.molecule.MoleculeObjectWriter;
 import com.im.lac.demo.services.DbFileService;
 import com.im.lac.demo.model.*;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.IOUtils;
+import com.im.lac.util.SimpleStreamProvider;
+import com.im.lac.util.StreamProvider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -79,7 +83,8 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                 .log("Processing ...")
                 //.to("direct:/dump/exchange"
                 .process((Exchange exchange) -> {
-                    createMoleculeObjectStreamForDataItem(exchange);
+                    Stream<MoleculeObject> stream = createMoleculeObjectStreamForDataItem(exchange);
+                    exchange.getIn().setBody(new SimpleStreamProvider(stream, MoleculeObject.class));
                 })
                 // send the Molecules to the desired endpoint
                 .routingSlip(header("endpoint"))
@@ -129,6 +134,11 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                 .route()
                 .wireTap("direct:logger")
                 .to("direct:/files/get")
+                .endRest()
+                .get("/json/{item}")
+                .route()
+                .wireTap("direct:logger")
+                .to("direct:/files/json/get")
                 .endRest();
 
         from("direct:/files/list")
@@ -153,15 +163,26 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                 .log("Getting file ${headers.item}")
                 //.to("direct:/dump/exchange")
                 .process((Exchange exchange) -> {
-                    createMoleculeObjectStreamForDataItem(exchange);
-                })
-                .process(
-                        (Exchange exchange) -> {
-                            Stream<MoleculeObject> mols = exchange.getIn().getBody(Stream.class);
-                            MoleculeObjectWriter writer = new MoleculeObjectWriter(mols);
-                            InputStream out = writer.getTextStream("sdf"); // TODO format
-                            exchange.getIn().setBody(out);
-                        }
+                    Stream<MoleculeObject> mols = createMoleculeObjectStreamForDataItem(exchange);
+                    MoleculeObjectWriter writer = new MoleculeObjectWriter(mols);
+                    InputStream out = writer.getTextStream("sdf"); // TODO format
+                    exchange.getIn().setBody(out);
+                }
+                );
+
+        /* this is just for testing/debugging 
+        would be better to handle in the files/get route using the mime type that was requested 
+        */
+        from("direct:/files/json/get")
+                .log("Getting file ${headers.item}")
+                //.to("direct:/dump/exchange")
+                .process((Exchange exchange) -> {
+                    Stream<MoleculeObject> stream = createMoleculeObjectStreamForDataItem(exchange);
+                    Iterator<MoleculeObject> mols = stream.iterator();
+                    MoleculeObjectJsonConverter dataFormat = new MoleculeObjectJsonConverter();
+                    InputStream in = createJsonInputStream(mols, dataFormat);
+                    exchange.getIn().setBody(in);
+                }
                 );
 
         from("direct:/dump/exchange")
@@ -191,13 +212,8 @@ public class FileServicesRouteBuilder extends RouteBuilder {
     // these methods could be moved out to a java bean to simplify things
     //
     protected void createDataItems(Exchange exchange) throws IOException, SQLException {
-        Object body = exchange.getIn().getBody();
-        Iterator<MoleculeObject> mols = null;
-        if (body instanceof Iterator) {
-            mols = (Iterator<MoleculeObject>) body;
-        } else if (body instanceof Stream) {
-            mols = ((Stream) body).iterator();
-        }
+
+        Iterator<MoleculeObject> mols = MoleculeObjectSourcer.bodyAsMoleculeObjectIterator(exchange);
 
         String newName = exchange.getIn().getHeader("itemName", String.class);
         Connection con = service.getConnection();
@@ -244,6 +260,20 @@ public class FileServicesRouteBuilder extends RouteBuilder {
         }
     }
 
+    protected InputStream createJsonInputStream(final Iterator<MoleculeObject> mols, final MoleculeObjectJsonConverter dataFormat) throws IOException {
+        final PipedInputStream pis = new PipedInputStream();
+        final PipedOutputStream out = new PipedOutputStream(pis);
+        Thread t = new Thread(() -> {
+            try {
+                dataFormat.marshal(mols, out);
+            } catch (Exception ex) {
+                throw new RuntimeException("Failed to write MoleculeObjects", ex);
+            }
+        });
+        t.start();
+        return pis;
+    }
+
     protected DataItem createDataItem(Connection con, Iterator<MoleculeObject> mols, String name) throws IOException {
 
         long t0 = System.currentTimeMillis();
@@ -253,17 +283,8 @@ public class FileServicesRouteBuilder extends RouteBuilder {
         item.setSize(0); // this will be updated later
         DataItem result;
 
-        final PipedInputStream pis = new PipedInputStream();
-        final PipedOutputStream out = new PipedOutputStream(pis);
-        final MoleculeObjectJsonConverter dataFormat = new MoleculeObjectJsonConverter();
-        Thread t = new Thread(() -> {
-            try {
-                dataFormat.marshal(mols, out);
-            } catch (Exception ex) {
-                throw new RuntimeException("Failed to write MoleculeObjects", ex);
-            }
-        });
-        t.start();
+        MoleculeObjectJsonConverter dataFormat = new MoleculeObjectJsonConverter();
+        final InputStream pis = createJsonInputStream(mols, dataFormat);
 
         result = service.addDataItem(con, item, pis);
         long t1 = System.currentTimeMillis();
@@ -284,7 +305,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
         }
     }
 
-    private void createMoleculeObjectStreamForDataItem(Exchange exchange) throws SQLException, IOException {
+    private Stream<MoleculeObject> createMoleculeObjectStreamForDataItem(Exchange exchange) throws SQLException, IOException {
         // 1. grab item id from header and load its DataItem from the service
         Long dataId = exchange.getIn().getHeader("item", Long.class);
         DataItem sourceData = service.loadDataItem(dataId);
@@ -299,15 +320,14 @@ public class FileServicesRouteBuilder extends RouteBuilder {
         }
 
         final InputStream input = service.createLargeObjectReader(con, sourceData.getLoid());
-
-        Stream<MoleculeObject> stream = createMoleculeObjectStream(input);
-        exchange.getIn().setBody(stream);
+        return createMoleculeObjectStreamFromJson(input);
     }
 
-    private Stream<MoleculeObject> createMoleculeObjectStream(InputStream is) throws IOException {
+    private Stream<MoleculeObject> createMoleculeObjectStreamFromJson(InputStream is) throws IOException {
         InputStream gunzip = IOUtils.getGunzippedInputStream(is);
         final MoleculeObjectJsonConverter dataFormat = new MoleculeObjectJsonConverter();
-        return dataFormat.unmarshal(gunzip);
+        Stream<MoleculeObject> stream = dataFormat.unmarshal(gunzip);
+        return stream;
     }
 
 }

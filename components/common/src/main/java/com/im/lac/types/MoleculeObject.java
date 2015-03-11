@@ -85,6 +85,13 @@ public class MoleculeObject implements Serializable {
         this.source = source;
         this.format = format;
     }
+    
+    public MoleculeObject(String source, String format, Map<String,Object> props) {
+        this();
+        this.source = source;
+        this.format = format;
+        this.values.putAll(props);
+    }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

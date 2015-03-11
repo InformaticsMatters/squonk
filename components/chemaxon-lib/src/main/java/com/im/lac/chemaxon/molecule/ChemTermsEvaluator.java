@@ -7,6 +7,7 @@ import chemaxon.jep.context.MolContext;
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.struc.Molecule;
 import com.im.lac.types.MoleculeObject;
+import com.im.lac.util.Pool;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
@@ -21,7 +22,7 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
 
     private static final Logger LOG = Logger.getLogger(ChemTermsEvaluator.class.getName());
     private final String propName;
-    private final ChemJEP chemJEP;
+    private final ChemJEPPool pool;
     private final Mode mode;
     private final String chemTermsFunction;
 
@@ -53,8 +54,8 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
         this.propName = propName;
         this.chemTermsFunction = chemTermsFunction;
         this.mode = mode;
-        // create ChemJEP, compile the Chemical Terms expression
-        chemJEP = new Evaluator().compile(chemTermsFunction, MolContext.class);
+        // create ChemJEP pool, compile the Chemical Terms expression
+        this.pool = new ChemJEPPool(chemTermsFunction, 25);
     }
 
     public String getPropName() {
@@ -84,9 +85,7 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
     public Molecule processMolecule(Molecule mol) {
         MolContext context = new MolContext();
         context.setMolecule(mol);
-        synchronized (chemJEP) { // not thread safe
-            return evaluateMoleculeImpl(context);
-        }
+        return evaluateMoleculeImpl(context);
     }
 
     @Override
@@ -105,42 +104,45 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
     }
 
     private Molecule evaluateMoleculeImpl(MolContext context) {
-
-        if (mode == Mode.Filter) {
-            try {
-                boolean b = chemJEP.evaluate_boolean(context);
-                if (b) {
-                    return context.getMolecule();
+        final ChemJEP chemJEP = pool.checkout();
+        try {
+            if (mode == Mode.Filter) {
+                try {
+                    boolean b = chemJEP.evaluate_boolean(context);
+                    if (b) {
+                        return context.getMolecule();
+                    }
+                } catch (ParseException ex) {
+                    LOG.log(Level.WARNING, "Failed to evaluate chem terms expression. Molecule is filtered out.", ex);
                 }
-            } catch (ParseException ex) {
-                LOG.log(Level.WARNING, "Failed to evaluate chem terms expression. Molecule is filtered out.", ex);
-            }
 
-        } else if (mode == Mode.Transform) {
-            Molecule oldMol = context.getMolecule();
-            try {
-                Molecule newMol = (Molecule) chemJEP.evaluate(context);
-                newMol.clearProperties();
-                for (int i = 0; i < oldMol.getPropertyCount(); i++) {
-                    String key = oldMol.getPropertyKey(i);
-                    Object val = oldMol.getPropertyObject(key);
-                    newMol.setPropertyObject(key, val);
+            } else if (mode == Mode.Transform) {
+                Molecule oldMol = context.getMolecule();
+                try {
+                    Molecule newMol = (Molecule) chemJEP.evaluate(context);
+                    newMol.clearProperties();
+                    for (int i = 0; i < oldMol.getPropertyCount(); i++) {
+                        String key = oldMol.getPropertyKey(i);
+                        Object val = oldMol.getPropertyObject(key);
+                        newMol.setPropertyObject(key, val);
+                    }
+                    return newMol;
+                } catch (ParseException ex) {
+                    LOG.log(Level.WARNING, "Failed to evaluate chem terms expression. Molecule is excluded.", ex);
                 }
-                return newMol;
-            } catch (ParseException ex) {
-                LOG.log(Level.WARNING, "Failed to evaluate chem terms expression. Molecule is excluded.", ex);
+            } else if (mode == Mode.Calculate) {
+                try {
+                    Object result = chemJEP.evaluate(context);
+                    context.getMolecule().setPropertyObject(propName, result);
+                } catch (ParseException ex) {
+                    LOG.log(Level.WARNING, "Failed to evaluate chem terms expression. Property will be missing.", ex);
+                }
+                return context.getMolecule();
             }
-        } else if (mode == Mode.Calculate) {
-            Molecule mol = context.getMolecule();
-            try {
-                Object result = chemJEP.evaluate(context);
-                mol.setPropertyObject(propName, result);
-            } catch (ParseException ex) {
-                LOG.log(Level.WARNING, "Failed to evaluate chem terms expression. Property will be missing.", ex);
-            }
-            return mol;
+            return null;
+        } finally {
+            pool.checkin(chemJEP);
         }
-        return null;
     }
 
     /**
@@ -157,6 +159,32 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
             return Collections.singletonMap(propName, value);
         } else {
             return Collections.emptyMap();
+        }
+    }
+
+    class ChemJEPPool extends Pool<ChemJEP> {
+
+        final String chemTermsFunction;
+        final Evaluator evaluator;
+
+        ChemJEPPool(String chemTermsFunction, int size) throws ParseException {
+            super(size);
+            this.chemTermsFunction = chemTermsFunction;
+            this.evaluator = new Evaluator();
+            checkin(doCreate());
+        }
+
+        @Override
+        protected ChemJEP create() {
+            try {
+                return doCreate();
+            } catch (ParseException ex) {
+                throw new RuntimeException("Failed to create ChemJEP", ex);
+            }
+        }
+
+        private ChemJEP doCreate() throws ParseException {
+            return evaluator.compile(chemTermsFunction, MolContext.class);
         }
     }
 }

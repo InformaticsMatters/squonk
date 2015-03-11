@@ -3,6 +3,7 @@ package com.im.lac.camel.processor;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
 import com.im.lac.util.StreamProvider;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,30 +18,31 @@ public abstract class MoleculeObjectSourcer {
 
     private static final Logger LOG = Logger.getLogger(MoleculeObjectSourcer.class.getName());
 
-    public void handle(Exchange exchange) throws Exception {
-        
+    public static Iterator<MoleculeObject> bodyAsMoleculeObjectIterator(Exchange exchange) throws IOException {
         StreamProvider sp = exchange.getIn().getBody(StreamProvider.class);
         if (sp != null) {
             if (sp.getType() != MoleculeObject.class) {
                 throw new IllegalStateException("Stream doesn't contain MoleculeObjects");
             }
-            handleMultiple(exchange, sp.getStream().iterator());
-            return;
+            return sp.getStream().iterator();
         }
         Stream<MoleculeObject> stream = exchange.getIn().getBody(Stream.class);
         if (stream != null) {
-            handleMultiple(exchange, stream.iterator());
-            return;
+            return stream.iterator();
         }
         Iterable<MoleculeObject> iterable = exchange.getIn().getBody(MoleculeObjectIterable.class);
         if (iterable == null) {
-            iterable =  exchange.getIn().getBody(Iterable.class);
+            iterable = exchange.getIn().getBody(Iterable.class);
         }
         if (iterable != null) {
-            handleMultiple(exchange, iterable.iterator());
-            return;
+            return iterable.iterator();
         }
         Iterator<MoleculeObject> iterator = exchange.getIn().getBody(Iterator.class);
+        return iterator;
+    }
+
+    public void handle(Exchange exchange) throws Exception {
+        Iterator<MoleculeObject> iterator = bodyAsMoleculeObjectIterator(exchange);
         if (iterator != null) {
             handleMultiple(exchange, iterator);
         } else {

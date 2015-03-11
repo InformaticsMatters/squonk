@@ -1,4 +1,4 @@
-package com.im.lac.camel.chemaxon.enumeration;
+package com.im.lac.camel.chemaxon.processor.enumeration;
 
 import chemaxon.struc.Molecule;
 import com.im.lac.chemaxon.enumeration.ReactorExecutor;
