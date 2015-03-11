@@ -1,7 +1,7 @@
 package com.im.lac.chemaxon.molecule;
 
 import com.im.lac.types.MoleculeObjectIterable;
-import com.im.lac.util.MoleculeObjectStreamGenerator;
+import com.im.lac.util.StreamGenerator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class MoleculeObjectUtils {
      * @return
      * @throws IOException 
      */
-    public static MoleculeObjectStreamGenerator createStreamGenerator(InputStream is) throws IOException {
+    public static StreamGenerator createStreamGenerator(InputStream is) throws IOException {
         return new MoleculeObjectStreamProviderImpl(is);
     }
 }

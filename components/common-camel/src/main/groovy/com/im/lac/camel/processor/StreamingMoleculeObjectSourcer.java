@@ -2,7 +2,7 @@ package com.im.lac.camel.processor;
 
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
-import com.im.lac.util.MoleculeObjectStreamProvider;
+import com.im.lac.util.StreamProvider;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Spliterator;
@@ -32,12 +32,18 @@ public abstract class StreamingMoleculeObjectSourcer {
 
         LOG.log(Level.FINE, "Body is {0}", exchange.getIn().getBody().getClass().getName());
 
-        MoleculeObjectStreamProvider sp = exchange.getIn().getBody(MoleculeObjectStreamProvider.class);
+        StreamProvider sp = exchange.getIn().getBody(StreamProvider.class);
         if (sp != null) {
+            if (sp.getType() != MoleculeObject.class) {
+                throw new IllegalStateException("Stream doesn't contain MoleculeObjects");
+            }
             return sp.getStream();
         }
-        Stream stream = exchange.getIn().getBody(Stream.class);
+        Stream<MoleculeObject> stream = exchange.getIn().getBody(Stream.class);
+        // this is not really safe as it could be a Stream of bananas. 
+        // advise to use StreamProvider
         if (stream != null) {
+            LOG.info("Unsafe use of raw stream. Better to use StreamProvider");
             return stream;
         }
 
@@ -57,6 +63,7 @@ public abstract class StreamingMoleculeObjectSourcer {
             }
         }
         if (moiterator != null) {
+            LOG.info("Unsafe or deprecated use of Iterable/Iterator. Better to use StreamProvider");
             Spliterator spliterator = Spliterators.spliteratorUnknownSize(moiterator, Spliterator.NONNULL | Spliterator.ORDERED);
             return StreamSupport.stream(spliterator, true);
         }

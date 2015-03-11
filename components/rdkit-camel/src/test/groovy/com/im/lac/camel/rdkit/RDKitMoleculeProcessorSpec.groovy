@@ -1,7 +1,9 @@
 package com.im.lac.camel.rdkit
 
 import com.im.lac.types.MoleculeObject
+import java.util.stream.Stream
 import spock.lang.Specification
+
 
 /**
  *
@@ -13,14 +15,14 @@ class RDKitMoleculeProcessorSpec extends Specification {
         setup:
         RDKitMoleculeProcessor p = new RDKitMoleculeProcessor()
         p.calculate('logp', 'logP()')
-        def mols = [new MoleculeObject("C"), new MoleculeObject("CC")]
+        def mols = Stream.of(new MoleculeObject("C"), new MoleculeObject("CC"))
         
         
         when: 
-        Iterator<MoleculeObject> result = p.evaluate(null, mols.iterator(), p.definitions)
+        Stream<MoleculeObject> result = p.evaluate(null, mols, p.definitions)
         
         then:
-        result.collect().size() == 2
+        result.count() == 2
         
     }
 	

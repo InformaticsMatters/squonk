@@ -1,6 +1,5 @@
 package com.im.lac.util;
 
-import com.im.lac.types.MoleculeObject;
 import java.io.IOException;
 import java.util.stream.Stream;
 
@@ -14,10 +13,10 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public interface MoleculeObjectStreamGenerator extends MoleculeObjectStreamProvider {
+public interface StreamGenerator<T> extends StreamProvider<T> {
         
-    Stream<MoleculeObject> getStream(boolean parallel, int batchSize) throws IOException;
+    Stream<T> getStream(boolean parallel, int batchSize) throws IOException;
     
-    Stream<MoleculeObject> getStream(boolean parallel) throws IOException;
+    Stream<T> getStream(boolean parallel) throws IOException;
     
 }

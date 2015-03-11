@@ -1,17 +1,17 @@
 package com.im.lac.camel.rdkit;
 
-import com.im.lac.camel.processor.MoleculeObjectSourcer;
+import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.types.MoleculeObject;
-import edu.emory.mathcs.backport.java.util.Collections;
+import com.im.lac.util.SimpleStreamProvider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -35,30 +35,26 @@ public class RDKitMoleculeProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        MoleculeObjectSourcer sourcer = new MoleculeObjectSourcer() {
+        StreamingMoleculeObjectSourcer sourcer = new StreamingMoleculeObjectSourcer() {
             @Override
             public void handleSingle(Exchange exchange, MoleculeObject mo) throws Exception {
-                Iterator<MoleculeObject> results = evaluate(exchange, Collections.singletonList(mo).iterator(), definitions);
-                if (results.hasNext()) {
-                    exchange.getIn().setBody(results.next());
-                } else {
-                    // this can happen when filtering. May not to consitent with how
-                    // ChemAxon equivalent handles things. Need to investigate.
-                    exchange.getIn().setBody(null);
-                }
+                Stream<MoleculeObject> stream = evaluate(exchange, Stream.of(mo), definitions);
+                MoleculeObject mol = stream.findFirst().orElse(null);
+                exchange.getIn().setBody(mol);
             }
 
             @Override
-            public void handleMultiple(Exchange exchange, Iterator<MoleculeObject> mols) throws Exception {
-                Iterator<MoleculeObject> results = evaluate(exchange, mols, definitions);
-                exchange.getIn().setBody(results);
+
+            public void handleMultiple(Exchange exchange, Stream<MoleculeObject> mols) throws Exception {
+                Stream<MoleculeObject> results = evaluate(exchange, mols, definitions);
+                exchange.getIn().setBody(new SimpleStreamProvider<>(results, MoleculeObject.class));
             }
         };
         sourcer.handle(exchange);
     }
 
-    Iterator<MoleculeObject> evaluate(
-            Exchange exchange, Iterator<MoleculeObject> mols, List<Definition> definitions) throws ScriptException {
+    Stream<MoleculeObject> evaluate(Exchange exchange, Stream<MoleculeObject> mols, List<Definition> definitions)
+            throws ScriptException {
         /* TODO 
          Work out how to generate the result
          The definitions of what needs doing are in the definitions List.
@@ -75,13 +71,14 @@ public class RDKitMoleculeProcessor implements Processor {
          */
 
         ScriptEngine engine = new ScriptEngineManager().getEngineByName("python");
-        engine.put("mols", mols);
+        engine.put("exchange", exchange);
+        engine.put("stream", mols);
         engine.put("definitions", definitions);
         Reader script = getScriptReader("echo.py"); // TODO need the read script
-        Iterator<MoleculeObject> result = null;
+        Stream<MoleculeObject> result = null;
         try {
             LOG.info("Executing script");
-            result = (Iterator<MoleculeObject>) engine.eval(script);
+            result = (Stream<MoleculeObject>) engine.eval(script);
             LOG.info("Execution complete");
         } finally {
             try {
@@ -126,6 +123,7 @@ public class RDKitMoleculeProcessor implements Processor {
     public RDKitMoleculeProcessor filter(String expression) {
         definitions.add(Definition.filter(expression));
         return this;
+
     }
 
     /**

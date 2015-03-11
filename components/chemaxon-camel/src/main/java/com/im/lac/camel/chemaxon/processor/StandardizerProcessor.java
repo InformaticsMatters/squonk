@@ -3,7 +3,7 @@ package com.im.lac.camel.chemaxon.processor;
 import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.chemaxon.molecule.StandardizerEvaluator;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.SimpleMoleculeObjectStreamProvider;
+import com.im.lac.util.SimpleStreamProvider;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,7 +55,7 @@ public class StandardizerProcessor implements Processor {
             @Override
             public void handleMultiple(Exchange exchange, Stream<MoleculeObject> mols) {
                 Stream<MoleculeObject> s = standardizeMultiple(exchange, mols);
-                exchange.getIn().setBody(new SimpleMoleculeObjectStreamProvider(s));
+                exchange.getIn().setBody(new SimpleStreamProvider(s, MoleculeObject.class));
             }
         };
         sourcer.handle(exchange);

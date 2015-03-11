@@ -2,7 +2,7 @@ package com.im.lac.camel.processor;
 
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
-import com.im.lac.util.MoleculeObjectStreamProvider;
+import com.im.lac.util.StreamProvider;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,8 +19,11 @@ public abstract class MoleculeObjectSourcer {
 
     public void handle(Exchange exchange) throws Exception {
         
-        MoleculeObjectStreamProvider sp = exchange.getIn().getBody(MoleculeObjectStreamProvider.class);
+        StreamProvider sp = exchange.getIn().getBody(StreamProvider.class);
         if (sp != null) {
+            if (sp.getType() != MoleculeObject.class) {
+                throw new IllegalStateException("Stream doesn't contain MoleculeObjects");
+            }
             handleMultiple(exchange, sp.getStream().iterator());
             return;
         }

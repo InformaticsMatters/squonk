@@ -14,8 +14,10 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public interface MoleculeObjectStreamProvider {
+public interface StreamProvider<T> {
     
     Stream<MoleculeObject> getStream() throws IOException;
+    
+    Class<T> getType();
     
 }

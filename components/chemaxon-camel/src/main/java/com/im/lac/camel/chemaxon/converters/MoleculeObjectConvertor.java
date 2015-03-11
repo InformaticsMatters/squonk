@@ -3,7 +3,7 @@ package com.im.lac.camel.chemaxon.converters;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
-import com.im.lac.util.MoleculeObjectStreamProvider;
+import com.im.lac.util.StreamProvider;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -59,13 +59,13 @@ public class MoleculeObjectConvertor {
     }
     
     @Converter
-    public static MoleculeObjectStreamProvider createMoleculeObjectStream(InputStream is, Exchange exchange)
+    public static StreamProvider createMoleculeObjectStream(InputStream is, Exchange exchange)
             throws IOException {
         return MoleculeObjectUtils.createStreamGenerator(is);
     }
     
     @Converter
-    public static MoleculeObjectStreamProvider createMoleculeObjectStream(File file, Exchange exchange)
+    public static StreamProvider createMoleculeObjectStream(File file, Exchange exchange)
             throws IOException {
         return MoleculeObjectUtils.createStreamGenerator(new FileInputStream(file));
     }

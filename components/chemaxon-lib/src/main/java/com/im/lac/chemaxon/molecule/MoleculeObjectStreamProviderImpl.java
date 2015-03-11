@@ -1,7 +1,7 @@
 package com.im.lac.chemaxon.molecule;
 
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.MoleculeObjectStreamGenerator;
+import com.im.lac.util.StreamGenerator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Spliterator;
@@ -13,13 +13,19 @@ import java.util.stream.StreamSupport;
  *
  * @author timbo
  */
-public class MoleculeObjectStreamProviderImpl implements MoleculeObjectStreamGenerator {
+public class MoleculeObjectStreamProviderImpl implements StreamGenerator<MoleculeObject> {
 
     private final InputStream input;
 
     public MoleculeObjectStreamProviderImpl(InputStream input) {
         this.input = input;
     }
+    
+     @Override
+    public Class<MoleculeObject> getType() {
+        return MoleculeObject.class;
+    }
+
 
     @Override
     public Stream<MoleculeObject> getStream() throws IOException {
@@ -48,5 +54,5 @@ public class MoleculeObjectStreamProviderImpl implements MoleculeObjectStreamGen
             }
         });
     }
-
+   
 }

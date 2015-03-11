@@ -5,7 +5,7 @@ import com.im.lac.chemaxon.enumeration.ReactorExecutor;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.SimpleMoleculeObjectStreamProvider;
+import com.im.lac.util.SimpleStreamProvider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -43,7 +43,7 @@ public class ReactorProcessor implements Processor {
         ReactorExecutor.Output output = readOutputType(exchange);
         ReactorExecutor exec = new ReactorExecutor();
         Stream<MoleculeObject> results = exec.enumerate(reaction, output, ignoreRules, reactants);
-        exchange.getIn().setBody(new SimpleMoleculeObjectStreamProvider(results));
+        exchange.getIn().setBody(new SimpleStreamProvider(results, MoleculeObject.class));
     }
 
     Molecule[][] readReactants(Exchange exchange) throws MalformedURLException, IOException {
