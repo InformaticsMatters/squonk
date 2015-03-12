@@ -525,7 +525,7 @@
                     var info = item.size;
 
                     var div = createComponentDiv(item, findIcon(item, "icons/Chemical-5-icon.png"), info);
-
+                    div.title = "[" + item.id + "] " + item.name; 
                     div.item = item;
                     div.className = "component dataitem droptarget";
 
@@ -626,7 +626,21 @@
                         popup: "basic-params-service-submit",
                         form: "basic-service-submit-form",
                         path: "/process",
-                        endpoint: "direct:rdkit/filter"}
+                        endpoint: "direct:rdkit/filter"},
+                    {id: "Reactor",
+                        name: "1 step reactor",
+                        description: "ChemAxon Reactor (1 step)",
+                        popup: "reactor-service-submit",
+                        form: "reactor-service-submit-form",
+                        path: "/react",
+                        endpoint: "direct:reactor"},
+                    {id: "React and Screen",
+                        name: "Reactor and Screen",
+                        description: "ChemAxon Reactor followed by drug-like filter and property prediction",
+                        popup: "reactor-service-submit",
+                        form: "reactor-service-submit-form",
+                        path: "/react_filter_predict",
+                        endpoint: "direct:reactor"}
                 ];
 
                 var servicesDiv = document.getElementById("services");
@@ -925,7 +939,6 @@
                         populateServiceRequestForm(form, dataItem, service);
                         console.log("Showing popup");
                         pop(service.popup);
-                        console.log("Popup handled");
                     }
                 }
 
@@ -1120,6 +1133,34 @@
                     return false;
                 }
 
+                function handleReactorRequest(formId) {
+                    var form = document.getElementById(formId);
+                    console.log("Form ID is " + formId + ", form is " + form);
+                    var formData = new FormData();
+                    var path;
+                    for (var i = 0; i < form.elements.length; i++) {
+                        var el = form.elements[i];
+                        console.log("Handling element " + el.name);
+                        if (el.name === "path") {
+                            path = el.value;
+                            console.log("Path set to " + el.value);
+                        } else if (el.name !== undefined) {
+                            formData.append(el.name, el.value);
+                            console.log(el.name + " set to " + el.value);
+                        }
+                    }
+                    var prog = createProgress("Processing");
+                    pop("progress");
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", path, true);
+                    xhr.onload = function () {
+                        handlePostForDataItems(xhr);
+                    };
+                    console.log("Posting request to " + path);
+                    xhr.send(formData);
+                }
+
                 function findDropDiv(target, cls) {
                     if (target === undefined) {
                         return null;
@@ -1231,6 +1272,37 @@
                 </div>
             </div>
 
+            <div id="reactor-service-submit" class="glasspane">
+                <div class="popup" style="width: 500px; height: 240px; margin-top: -120px; margin-left: -250px;">
+                    <div style="text-align: right;">
+                        <a href="#" onClick="hide('reactor-service-submit')">X</a>
+                    </div>
+                    <div>
+                        <form id="reactor-service-submit-form">
+                            <input type="text" name="path" hidden disabled>
+                            <div>
+                                <table cellpadding="3">
+                                    <tr><td>Service:</td><td><input type="text" name="serviceName" size="30" disabled value=""></td></tr>
+                                    <tr><td>Reaction:</td><td><select name="Reaction">
+                                                <option value="http://localhost:8080/reactions/amine-acylation.mrv">Amine acylation</option>
+                                                <option value="http://localhost:8080/reactions/pyrimidine-formation-diketone-guanidine.mrv">Pyrimidine formation</option>
+                                                <option value="http://localhost:8080/reactions/alkylation-of-amines.mrv">Alkylation of amines</option>
+                                            </select></td></tr>
+
+
+                                    <tr><td>Reactants1:</td><td><input type="text" name="Reactants1" size="30" value="http://localhost:8080/rest/files/4"></td></tr>
+                                    <tr><td>Reactants2:</td><td><input type="text" name="Reactants2" size="30" value="http://localhost:8080/rest/files/4"></td></tr>
+                                    <tr><td>Name of output:</td><td><input type="text" name="itemName" size="30" value="" autofocus></td></tr>
+                                </table>
+                            </div>
+                            <div style="position:absolute; right: 10px; bottom: 10px;">
+                                <button type="button" onclick="hide('reactor-service-submit');
+                                        handleReactorRequest('reactor-service-submit-form');">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
             <div id="structure-query-submit" class="glasspane">
                 <div class="popup" style="width: 500px; height: 200px; margin-top: -100px; margin-left: -250px;">

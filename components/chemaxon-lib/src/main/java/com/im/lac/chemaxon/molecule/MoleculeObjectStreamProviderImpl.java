@@ -34,21 +34,21 @@ public class MoleculeObjectStreamProviderImpl implements StreamGenerator<Molecul
 
     @Override
     public Stream<MoleculeObject> getStream(boolean parallel, int batchSize) throws IOException {
-        Spliterator spliterator = new MoleculeObjectSpliterator(input, batchSize);
+        MoleculeObjectSpliterator spliterator = new MoleculeObjectSpliterator(input, batchSize);
         return createStream(spliterator, parallel);
     }
 
     @Override
     public Stream<MoleculeObject> getStream(boolean parallel) throws IOException {
-        Spliterator spliterator = new MoleculeObjectSpliterator(input);
+        MoleculeObjectSpliterator spliterator = new MoleculeObjectSpliterator(input);
         return createStream(spliterator, parallel);
     }
 
-    private Stream<MoleculeObject> createStream(Spliterator spliterator, boolean parallel) {
+    private Stream<MoleculeObject> createStream(MoleculeObjectSpliterator spliterator, boolean parallel) {
         Stream<MoleculeObject> stream = StreamSupport.stream(spliterator, parallel);
         return stream.onClose(() -> {
             try {
-                input.close();
+                spliterator.close();
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }

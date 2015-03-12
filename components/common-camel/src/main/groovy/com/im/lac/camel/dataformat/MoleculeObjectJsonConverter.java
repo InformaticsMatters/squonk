@@ -80,8 +80,8 @@ public class MoleculeObjectJsonConverter {
         JsonGenerator generator = factory.createGenerator(outputStream);
         generator.writeStartArray();
         while (mols.hasNext()) {
-            MoleculeObject mo = mols.next();
-            generator.writeObject(mo);
+            Object mo = mols.next();
+            generator.writeObject((MoleculeObject)mo);
             marshalCount++;
         }
 

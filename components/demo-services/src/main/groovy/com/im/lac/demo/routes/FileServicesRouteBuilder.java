@@ -1,8 +1,8 @@
 package com.im.lac.demo.routes;
 
+import com.im.lac.camel.chemaxon.processor.enumeration.ReactorProcessor;
 import com.im.lac.camel.dataformat.MoleculeObjectJsonConverter;
 import com.im.lac.camel.processor.MoleculeObjectSourcer;
-import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.chemaxon.molecule.MoleculeObjectWriter;
 import com.im.lac.demo.services.DbFileService;
@@ -90,6 +90,32 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                 .routingSlip(header("endpoint"))
                 // save the molecules as a new DataItem
                 .process((Exchange exchange) -> {
+                    createDataItems(exchange);
+                })
+                .marshal().json(JsonLibrary.Jackson)
+                .log("Response sent");
+        
+        from("jetty://http://0.0.0.0:8080/react")
+                .log("Processing ...")
+                .to("direct:/dump/exchange")
+                .to("direct:reactor")
+                .process((Exchange exchange) -> {
+                    Stream<MoleculeObject> stream = exchange.getIn().getBody(StreamProvider.class).getStream();
+                    exchange.getIn().setBody(stream.limit(5000));
+                    createDataItems(exchange);
+                })
+                .marshal().json(JsonLibrary.Jackson)
+                .log("Response sent");
+        
+        from("jetty://http://0.0.0.0:8080/react_filter_predict")
+                .log("Processing ...")
+                .to("direct:/dump/exchange")
+                .to("direct:reactor")
+                .to("direct:filter_example")
+                .to("direct:lipinski")
+                .process((Exchange exchange) -> {
+                    Stream<MoleculeObject> stream = exchange.getIn().getBody(StreamProvider.class).getStream();
+                    exchange.getIn().setBody(stream.limit(5000));
                     createDataItems(exchange);
                 })
                 .marshal().json(JsonLibrary.Jackson)

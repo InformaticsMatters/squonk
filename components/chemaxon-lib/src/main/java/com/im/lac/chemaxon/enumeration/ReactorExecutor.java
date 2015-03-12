@@ -9,12 +9,11 @@ import chemaxon.util.iterator.MoleculeIteratorFactory;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
 import java.io.IOException;
-import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -50,7 +49,7 @@ public class ReactorExecutor {
     }
 
     public Stream<MoleculeObject> enumerate(Molecule reaction, Output output, int ignoreRules, Molecule[][] sources) throws ReactionException, IOException {
-        
+
         Spliterator spliterator = new ReactorSpliterator(reaction, output, ignoreRules, sources);
         return StreamSupport.stream(spliterator, true);
     }
@@ -73,14 +72,29 @@ public class ReactorExecutor {
         public boolean tryAdvance(Consumer action) {
 
             Molecule[] products;
+            Molecule[] reactants;
             try {
                 products = crp.react();
+                reactants = crp.getReactants();
             } catch (ReactionException ex) {
                 throw new RuntimeException(ex);
             }
             if (products != null) {
                 for (Molecule product : products) {
-                    action.accept(product);
+                    try {
+                        MoleculeObject mo = MoleculeUtils.createMoleculeObject(product, "mol");
+                        int i = 1;
+                        for (Molecule reactant : reactants) {
+                            for (String key : reactant.properties().getKeys()) {
+                                Object val = reactant.getPropertyObject(key);
+                                mo.putValue("R" + i + "_" + key, val);
+                                i++;
+                            }
+                        }
+                        action.accept(mo);
+                    } catch (IOException ex) {
+                        LOG.log(Level.SEVERE, "Failed to write molecule", ex);
+                    }
                 }
                 return true;
             }
@@ -91,52 +105,11 @@ public class ReactorExecutor {
     private MoleculeIterator[] createReactantIterators(Molecule[]... sources) {
         MoleculeIterator[] iterators = new MoleculeIterator[sources.length];
         int i = 0;
-        for (Molecule[] mols : sources) {   
+        for (Molecule[] mols : sources) {
             iterators[i] = MoleculeIteratorFactory.createMoleculeIterator(mols);
             i++;
         }
         return iterators;
     }
-
-//    private class MoleculeIteratorAdapter implements MoleculeIterator {
-//
-//        Iterator<MoleculeObject> iterator;
-//        Iterable<MoleculeObject> iterable;
-//
-//        MoleculeIteratorAdapter(Iterable<MoleculeObject> iterable) {
-//            this.iterable = iterable;
-//            this.iterator = iterable.iterator();
-//        }
-//
-//        @Override
-//        public Molecule next() {
-//            MoleculeObject mo = iterator.next();
-//            if (mo != null) {
-//                return MoleculeUtils.cloneMolecule(mo, true);
-//            } else {
-//                throw new NoSuchElementException("No more Molecules");
-//            }
-//        }
-//
-//        @Override
-//        public boolean hasNext() {
-//            return iterator.hasNext();
-//        }
-//
-//        @Override
-//        public Throwable getThrowable() {
-//            return null;
-//        }
-//
-//        @Override
-//        public double estimateProgress() {
-//            return 0;
-//        }
-//
-//        void close() {
-//            IOUtils.closeIfCloseable(iterable);
-//        }
-//
-//    }
 
 }

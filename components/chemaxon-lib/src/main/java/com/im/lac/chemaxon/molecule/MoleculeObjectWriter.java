@@ -51,7 +51,7 @@ public class MoleculeObjectWriter implements OutputGenerator {
                             count++;
                         } catch (IOException ex) {
                             errors++;
-                            LOG.log(Level.SEVERE, "Error writing Molecule", ex);
+                            throw new RuntimeException("Error writing Molecule", ex);
                         }
                     });
                     LOG.fine("Finished writing molecules");
