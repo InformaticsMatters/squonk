@@ -103,7 +103,7 @@ public class RestRouteBuilder extends RouteBuilder {
                 .wireTap("direct:logger")
                 .to("direct:chemsearch/emolecules_sc")
                 .marshal(molDataFormat);
-        
+
         rest("/rest/chemsearch/emolecules_bb").post()
                 .route()
                 .wireTap("direct:logger")
@@ -167,10 +167,9 @@ public class RestRouteBuilder extends RouteBuilder {
                 );
 
         from("direct:logger")
-                .transform().simple("${date:now:yyyy.MM.dd}\t${date:now:HH:mm:ss}\t${header.CamelHttpServletRequest?.remoteAddr}\t${header.CamelHttpUri}")
+                .transform().simple("${date:now:yyyy.MM.dd}\t${date:now:HH:mm:ss}\t${header.CamelHttpServletRequest?.remoteAddr}\t${header.CamelHttpServletRequest?.method}\t${header.CamelHttpUri}\t${header.endpoint}")
                 .transform(body().append('\n'))
                 .to("file:logs?fileName=usage_log.txt&fileExist=Append");
-
     }
 
 }

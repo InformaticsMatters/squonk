@@ -187,14 +187,14 @@
                 }
 
                 div.query {
-                    background-color: lightcyan;
-                    border-color: cyan;
+                    background-color: #bdffbd;
+                    border-color: limegreen;
                     width: 100px;
                 }
 
                 div.query div.title {
-                    background: cyan;
-                    color: black;
+                    background: limegreen;
+                    color: white;
                 }
 
                 div.dataitem {
@@ -453,35 +453,38 @@
                     //                        popup: "structure-query-submit",
                     //                        form: "structure-query-submit-form",
                     //                        path: "/chemsearch",
-                    //                        endpoint: "direct:chemsearch/emolecules_sc"},
+                    //                        endpoint: "direct:chemsearch/emolecules_sc",
+                    //    icon: "icons/databasemolecule.png"},
                     {id: "emols_bb",
                         name: "eMols building blocks",
                         info: "818887",
                         popup: "structure-query-submit",
                         form: "structure-query-submit-form",
                         path: "/chemsearch",
-                        endpoint: "direct:chemsearch/emolecules_bb"},
+                        endpoint: "direct:chemsearch/emolecules_bb",
+                        icon: "icons/databasemolecule.png"},
                     {id: "drugbank",
                         name: "DrugBank",
                         info: "3401",
                         popup: "structure-query-submit",
                         form: "structure-query-submit-form",
                         path: "/chemsearch",
-                        endpoint: "direct:chemsearch/drugbank"},
+                        endpoint: "direct:chemsearch/drugbank",
+                        icon: "icons/databasemolecule.png"},
                     {id: "Reactor",
                         name: "1 step reactor",
                         description: "ChemAxon Reactor (1 step)",
                         popup: "reactor-service-submit",
                         form: "reactor-service-submit-form",
                         path: "/react",
-                        icon: "icons/Chemical-icon.png"},
+                        icon: "icons/chemicalreaction.png"},
                     {id: "React and Screen",
                         name: "React and filter",
                         description: "ChemAxon Reactor followed by drug-like filter and property prediction",
                         popup: "reactor-service-submit",
                         form: "reactor-service-submit-form",
                         path: "/react_filter_predict",
-                        icon: "icons/Chemical-icon.png"}
+                        icon: "icons/chemicalreaction.png"}
                 ];
 
                 var queriesDiv = document.getElementById("queries");
@@ -538,7 +541,7 @@
 
                     var info = item.size;
 
-                    var div = createComponentDiv(item, findIcon(item, "icons/Chemical-5-icon.png"), info);
+                    var div = createComponentDiv(item, findIcon(item, "icons/moleculesmany.png"), info);
                     div.title = "[" + item.id + "] " + item.name;
                     div.item = item;
                     div.className = "component dataitem droptarget";
@@ -587,7 +590,7 @@
                         form: "basic-service-submit-form",
                         path: "/process",
                         endpoint: "direct:logp",
-                        icon: "icons/Programming-Add-Property-icon.png"},
+                        icon: "icons/propertiesadd.png"},
                     {id: "calcLipinski",
                         name: "Lipinski props",
                         description: "Lipinski Rule of Five properties",
@@ -595,7 +598,7 @@
                         form: "basic-service-submit-form",
                         path: "/process",
                         endpoint: "direct:lipinski",
-                        icon: "icons/Programming-Add-Property-icon.png"},
+                        icon: "icons/propertiesadd.png"},
                     {id: "drugLikeFilter",
                         name: "Drug like filter",
                         description: "mw < 400\nrings >0\nrotatable bonds <5\ndonors<=5\nacceptors<=10\nlogp<4",
@@ -603,7 +606,7 @@
                         form: "basic-service-submit-form",
                         path: "/process",
                         endpoint: "direct:filter_example",
-                        icon: "icons/Filter-List-icon.png"},
+                        icon: "icons/propertiesfilter.png"},
                     {id: "ecfpScreen",
                         name: "ECFP4 screen",
                         description: "Screen using ECFP4 fingerprints",
@@ -611,7 +614,7 @@
                         form: "screening-service-submit-form",
                         path: "/process",
                         endpoint: "direct:screening/ecfp",
-                        icon: "icons/Filter-List-icon.png"},
+                        icon: "icons/propertiesfilter.png"},
                     {id: "pharmacophoreScreen",
                         name: "Pharmacophore screen",
                         description: "Screen using 2D pharmacophore fingerprints",
@@ -619,28 +622,31 @@
                         form: "screening-service-submit-form",
                         path: "/process",
                         endpoint: "direct:screening/pharmacophore",
-                        icon: "icons/Filter-List-icon.png"},
+                        icon: "icons/propertiesfilter.png"},
                     {id: "spherexClust",
                         name: "Spherex Clustering",
                         description: "1-level clustering using\nadaptive sphere exclusion clustering",
                         popup: "spherex-clustering-service-submit",
                         form: "spherex-clustering-service-submit-form",
                         path: "/process",
-                        endpoint: "direct:clustering/spherex/ecfp4"},
+                        endpoint: "direct:clustering/spherex/ecfp4",
+                        icon: "icons/clustering.png"},
                     {id: "RDKitPredict",
                         name: "RDKit prop predict",
                         description: "Property prediction using RDKit",
                         popup: "basic-params-service-submit",
                         form: "basic-service-submit-form",
                         path: "/process",
-                        endpoint: "direct:rdkit/predict"},
+                        endpoint: "direct:rdkit/predict",
+                        icon: "icons/propertiesadd.png"},
                     {id: "RDKitFilter",
                         name: "RDKit filter",
                         description: "Molecule filtering using RDKit",
                         popup: "basic-params-service-submit",
                         form: "basic-service-submit-form",
                         path: "/process",
-                        endpoint: "direct:rdkit/filter"}
+                        endpoint: "direct:rdkit/filter",
+                        icon: "icons/propertiesfilter.png"}
                 ];
 
                 var servicesDiv = document.getElementById("services");
@@ -687,15 +693,15 @@
                     {id: "delete",
                         name: "Delete",
                         handler: handleFileDelete,
-                        icon: "icons/Household-Waste-icon.png"},
+                        icon: "icons/bin.png"},
                     {id: "export",
                         name: "Export",
                         path: "/files/download",
                         handler: handleFileDownload,
-                        icon: "icons/export-icon.png"},
+                        icon: "icons/export.png"},
                     {id: "view",
                         name: "View",
-                        icon: "icons/spreadsheet-icon.png"}
+                        icon: "icons/view.png"}
                 ];
 
                 var actionsDiv = document.getElementById("actions");

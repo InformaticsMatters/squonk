@@ -1,6 +1,5 @@
 package com.im.lac.demo.routes;
 
-import com.im.lac.camel.chemaxon.processor.enumeration.ReactorProcessor;
 import com.im.lac.camel.dataformat.MoleculeObjectJsonConverter;
 import com.im.lac.camel.processor.MoleculeObjectSourcer;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
@@ -11,6 +10,7 @@ import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.IOUtils;
 import com.im.lac.util.SimpleStreamProvider;
 import com.im.lac.util.StreamProvider;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -70,6 +70,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
 
         from("jetty://http://0.0.0.0:8080/chemsearch")
                 .log("Processing query")
+                .wireTap("direct:logger")
                 .transform(header("QueryStructure"))
                 .log("Routing query to ${headers.endpoint}")
                 .routingSlip(header("endpoint"))
@@ -81,6 +82,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
 
         from("jetty://http://0.0.0.0:8080/process")
                 .log("Processing ...")
+                .wireTap("direct:logger")
                 //.to("direct:/dump/exchange"
                 .process((Exchange exchange) -> {
                     Stream<MoleculeObject> stream = createMoleculeObjectStreamForDataItem(exchange);
@@ -94,9 +96,10 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                 })
                 .marshal().json(JsonLibrary.Jackson)
                 .log("Response sent");
-        
+
         from("jetty://http://0.0.0.0:8080/react")
                 .log("Processing ...")
+                .wireTap("direct:logger")
                 .to("direct:/dump/exchange")
                 .to("direct:reactor")
                 .process((Exchange exchange) -> {
@@ -106,9 +109,10 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                 })
                 .marshal().json(JsonLibrary.Jackson)
                 .log("Response sent");
-        
+
         from("jetty://http://0.0.0.0:8080/react_filter_predict")
                 .log("Processing ...")
+                .wireTap("direct:logger")
                 .to("direct:/dump/exchange")
                 .to("direct:reactor")
                 .to("direct:filter_example")
@@ -123,6 +127,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
 
         from("jetty://http://0.0.0.0:8080/files/upload")
                 .log("Uploading file")
+                .wireTap("direct:logger")
                 //.to("direct:/dump/exchange")
                 .process((Exchange exchange) -> {
                     Map<String, DataHandler> attachements = exchange.getIn().getAttachments();
@@ -142,6 +147,13 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                     exchange.getIn().setBody(created);
                 })
                 .marshal().json(JsonLibrary.Jackson);
+
+        rest("/rest/logs")
+                .get()
+                .route()
+                .process((Exchange exchng) -> {
+                    exchng.getIn().setBody(new File("logs/usage_log.txt"));
+                });
 
         rest("/rest/files")
                 .get()
@@ -197,8 +209,8 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                 );
 
         /* this is just for testing/debugging 
-        would be better to handle in the files/get route using the mime type that was requested 
-        */
+         would be better to handle in the files/get route using the mime type that was requested 
+         */
         from("direct:/files/json/get")
                 .log("Getting file ${headers.item}")
                 //.to("direct:/dump/exchange")
