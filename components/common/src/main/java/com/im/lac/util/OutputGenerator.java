@@ -11,4 +11,6 @@ public interface OutputGenerator {
     
     public InputStream getTextStream(String format) throws IOException;
     
+    public InputStream getTextStream(String format, boolean gzip) throws IOException;
+    
 }
