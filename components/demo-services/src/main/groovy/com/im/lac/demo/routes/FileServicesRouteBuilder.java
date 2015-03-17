@@ -172,7 +172,6 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                 .endRest()
                 .get("/{item}")
                 .route()
-                .to("direct:/dump/exchange")
                 .wireTap("direct:logger")
                 .to("direct:/files/get")
                 .endRest()
