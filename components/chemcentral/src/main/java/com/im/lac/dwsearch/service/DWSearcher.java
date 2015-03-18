@@ -94,6 +94,6 @@ public interface DWSearcher {
      * column
      * @param limit retrieve this many rows.
      */
-    Response fetchPropertyDefintions(String filter, Integer limit);
+    Response fetchPropertyDefinitions(String filter, Integer limit);
 
 }

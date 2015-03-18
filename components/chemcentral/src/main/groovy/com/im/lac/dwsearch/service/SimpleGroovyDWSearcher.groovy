@@ -370,14 +370,16 @@ class SimpleGroovyDWSearcher implements DWSearcher {
         def arr = db.connection.createArrayOf("text", propDefOriginalIds.toArray())
         try {
             log.info("Executing query for source $sourceId and props $arr")
-            long t0 = System.currentTimeMillis()
-            db.executeInsert("""\
+            String sql ="""\
                 |INSERT INTO ${users.hitListDataTable} (id_item, hit_list_id) (
                 |  SELECT distinct(s.cd_id), ? from ${chemcentral.structuresTable} s 
                 |    JOIN ${chemcentral.structurePropsTable} sp ON s.cd_id = sp.structure_id
                 |    JOIN ${chemcentral.propertyDefinitionsTable} pd ON pd.property_id = sp.property_id
                 |    WHERE pd.source_id = ? AND pd.original_id = ANY (?))"""
-                .stripMargin(), [hitListId, sourceId, arr])
+                .stripMargin()
+            log.finer("SQL: $sql")
+            long t0 = System.currentTimeMillis()
+            db.executeInsert(sql, [hitListId, sourceId, arr])
             long t1 = System.currentTimeMillis()
             log.info("Query complete in ${t1-t0}ms")
             updateHitListStatus(db, hitListId, SubsetInfo.Status.OK)
@@ -593,8 +595,8 @@ class SimpleGroovyDWSearcher implements DWSearcher {
      */
     @GET
     @Produces("application/json")
-    @Path("/propertyDefintions")
-    Response fetchPropertyDefintions(
+    @Path("/propertyDefinitions")
+    Response fetchPropertyDefinitions(
         @QueryParam("filter") String filter, 
         @QueryParam("limit") Integer limit) {
         def params = []

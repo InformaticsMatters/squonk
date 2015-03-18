@@ -121,7 +121,11 @@ docker {
  * If running against postgres outside of docker then omit the "--link pg_db:db" bit
  * and instead provide the necessary environment variables using the -e "name=value" 
  * syntax (can be specified multiple times to specifing the following variables:
- * CHEMCENTRAL_DB_SERVER CHEMCENTRAL_DB_PORT CHEMCENTRAL_DB_USERNAME CHEMCENTRAL_DB_PASSWORD
+ * CHEMCENTRAL_DATABASE (default chemcentral)
+ * CHEMCENTRAL_DB_SERVER (default localhost)
+ * CHEMCENTRAL_DB_PORT (default 49153)
+ * CHEMCENTRAL_DB_USERNAME (default chemcentral)
+ * CHEMCENTRAL_DB_PASSWORD (default chemcentral)
 */
 task buildDocker(type: Docker, dependsOn: war) {
     applicationName = "chemcentral"
