@@ -646,7 +646,15 @@
                         form: "basic-service-submit-form",
                         path: "/process",
                         endpoint: "direct:rdkit/filter",
-                        icon: "icons/propertiesfilter.png"}
+                        icon: "icons/propertiesfilter.png"},
+                    {id: "RDKitServerCluster",
+                        name: "RDKit cluster",
+                        description: "Molecule clustering using RDKit",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:rdkitserver/cluster",
+                        icon: "icons/clustering.png"}
                 ];
 
                 var servicesDiv = document.getElementById("services");

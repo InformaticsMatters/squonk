@@ -31,6 +31,7 @@ dependencies {
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-jetty:$camelVersion"
     compile "org.apache.camel:camel-jackson:$camelVersion"
+    compile "org.apache.camel:camel-http4:$camelVersion"
     
     compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     compile 'org.glassfish.jersey.core:jersey-server:2.6'

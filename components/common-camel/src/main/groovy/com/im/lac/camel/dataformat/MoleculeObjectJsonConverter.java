@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.im.lac.camel.processor.MoleculeObjectSourcer;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.IOUtils;
 import java.io.Closeable;
@@ -21,6 +22,8 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.apache.camel.Exchange;
+import org.apache.camel.spi.DataFormat;
 import org.apache.camel.util.IOHelper;
 
 /**
@@ -29,7 +32,7 @@ import org.apache.camel.util.IOHelper;
  *
  * @author timbo
  */
-public class MoleculeObjectJsonConverter {
+public class MoleculeObjectJsonConverter implements DataFormat {
 
     private static final Logger LOG = Logger.getLogger(MoleculeObjectJsonConverter.class.getName());
 
@@ -93,6 +96,15 @@ public class MoleculeObjectJsonConverter {
             IOUtils.closeIfCloseable(mols);
         }
     }
+    
+    @Override
+    public void marshal(Exchange exchange, Object o, OutputStream out) throws Exception {
+        Iterator<MoleculeObject> mols = MoleculeObjectSourcer.bodyAsMoleculeObjectIterator(exchange);
+        if (mols == null) {
+            throw new IllegalStateException("Can't find MoleculeObjects from Exchange body");
+        }
+        marshal(mols, out);
+    }
 
     /**
      * Generate an Stream of MoleculeObjects from the JSON input. NOTE: to ensure 
@@ -100,13 +112,21 @@ public class MoleculeObjectJsonConverter {
      * close the InputStream once processing is finished.
      *
      * @param stream
-     * @return An Stream of MoleculeObjects that also implements
-     * java.ioCloseable
+     * @return An Stream of MoleculeObjects 
      * @throws IOException
      */
     public Stream<MoleculeObject> unmarshal(InputStream stream) throws IOException {
         JsonSpliterator s = new JsonSpliterator(stream);
         return s.asStream();
+    }
+
+    
+
+    @Override
+    public Object unmarshal(Exchange exchng, InputStream in) throws Exception {
+        // TODO - look at this. Should be StreamProvider? Should handle onClose()?
+        Stream<MoleculeObject> stream = unmarshal(in);
+        return stream;
     }
 
     class JsonSpliterator extends Spliterators.AbstractSpliterator<MoleculeObject> implements Closeable {
