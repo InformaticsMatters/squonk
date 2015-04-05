@@ -601,7 +601,7 @@ class SimpleGroovyDWSearcher implements DWSearcher {
         @QueryParam("limit") Integer limit) {
         def params = []
         if (!limit) limit = 100 // apply a default to prevent the whole lot being loaded
-        String sql = "SELECT property_id, property_description, est_size FROM ${chemcentral.propertyDefinitionsTable}"
+        String sql = "SELECT property_id, original_id, property_description, est_size FROM ${chemcentral.propertyDefinitionsTable}"
         if (filter) {
             sql += "\n  WHERE lower(property_description) LIKE ?"
             params << '%' + filter.toLowerCase() + '%'
@@ -628,6 +628,7 @@ class SimpleGroovyDWSearcher implements DWSearcher {
                         }
                         def data = [
                             property_id: it['property_id'], 
+                            original_id: it['original_id'], 
                             property_description: it['property_description'],
                             est_size: it['est_size']
                         ]
