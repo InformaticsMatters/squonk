@@ -142,7 +142,7 @@ public class MoleculeObjectJsonConverter implements DataFormat {
             this.jp = factory.createParser(input);
             JsonToken current = jp.nextToken();
             if (current != JsonToken.START_ARRAY) {
-                throw new IllegalStateException("Error: root should be array: quiting.");
+                throw new IllegalStateException("Error: root should be array, found " + current + ": quiting.");
             }
         }
 

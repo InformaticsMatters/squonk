@@ -4,7 +4,6 @@ import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.StreamGenerator;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 

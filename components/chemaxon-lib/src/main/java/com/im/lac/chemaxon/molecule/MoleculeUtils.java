@@ -203,7 +203,9 @@ public class MoleculeUtils {
     public static MoleculeObject createMoleculeObject(Molecule mol, String format)
             throws IOException {
         String s = MoleculeUtils.exportAsString(mol, format);
-        MoleculeObject mo = new MoleculeObject(s, format);
+        String base = getBaseFormat(format);
+        //LOG.finer(Level.INFO, "Mol in format {0} [{1}] is {2}", new Object[]{format, base, s});
+        MoleculeObject mo = new MoleculeObject(s, base);
         for (String key : mol.properties().getKeys()) {
             Object val = mol.getPropertyObject(key);
             mo.putValue(key, val);
@@ -211,6 +213,21 @@ public class MoleculeUtils {
         mol.clearProperties();
         mo.putRepresentation(Molecule.class.getName(), mol);
         return mo;
+    }
+    
+   /**
+     * Get the base format from a format string.
+     * e.g. if the full format is smiles:a-H then return smiles
+     * @param full
+     * @return 
+     */
+    public static String getBaseFormat(String full) {
+        int pos = full.indexOf(":");
+        if (pos == -1) {
+            return full;
+        } else {
+            return full.substring(0, pos);
+        }
     }
 
     public static void putPropertiesToMolecule(Map<? extends Object, ? extends Object> props, Molecule mol) {

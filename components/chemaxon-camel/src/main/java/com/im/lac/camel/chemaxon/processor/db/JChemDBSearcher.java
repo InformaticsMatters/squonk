@@ -10,13 +10,13 @@ import chemaxon.sss.search.SearchException;
 import chemaxon.struc.Molecule;
 import chemaxon.util.ConnectionHandler;
 import chemaxon.util.HitColoringAndAlignmentOptions;
-import com.im.lac.util.CloseableMoleculeObjectQueue;
-import com.im.lac.util.CloseableQueue;
 import com.im.lac.camel.chemaxon.processor.ProcessorUtils;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
 
 import com.im.lac.util.CollectionUtils;
+import com.im.lac.util.SimpleStreamProvider;
+import com.im.lac.util.StreamProvider;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -25,8 +25,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.sql.DataSource;
 import org.apache.camel.Exchange;
 
@@ -97,9 +102,15 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
      * <br>
      * CD_IDS generates an Iterable<Integer> containing the CD_ID values
      * <br>
-     * MOLECULES generates an Iterable<Molecule> with additional properties
+     * MOLECULES generates an StreamProvider&lt;Molecule&gt;with additional properties
      * added according the value of the outputColumns field. This is most
      * suitable if the results are to be passed to another ChemAxon component.
+     * This format generally is streamed, with the first results being available
+     * immediately.
+     * <br>
+     * MOLECULE_OBJECTS generates an StreamProvider&lt;MoleculeObject&gt;with additional 
+     * properties added according the value of the outputColumns field. This is most
+     * suitable if the results are to be passed to non-ChemAxon components.
      * This format generally is streamed, with the first results being available
      * immediately.
      * <br>
@@ -190,7 +201,8 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Add this column to the list of columns that are retrieved
+     * Add this column to the list of columns that are retrieved TODO: allow the
+     * data type to be specified
      *
      * @param outputColumn
      * @return
@@ -436,7 +448,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
                 exchange.getIn().setBody(hits);
                 break;
             case CD_IDS:
-                // TODO - stream this
+                // TODO - stream this?
                 exchange.getIn().setBody(getHitsAsList(jcs));
                 break;
             case MOLECULES:
@@ -492,40 +504,33 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     private void handleAsMoleculeStream(final Exchange exchange, final JChemSearch jcs)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
 
-        final CloseableQueue<Molecule> q = new CloseableQueue<>(100);
-
-        writeMoleculeStream(exchange, jcs, new MoleculeWriter() {
-            @Override
-            public void writeMolecules(Molecule[] mols) {
-                writeMoleculesToQueue(q, mols);
-            }
-
-            @Override
-            public void close() {
-                q.close();
-            }
-        });
-        exchange.getIn().setBody(q);
+        Stream<Molecule> molStream = createMoleculeStream(exchange, jcs);
+        StreamProvider<Molecule> p = new SimpleStreamProvider(molStream, Molecule.class);
+        exchange.getIn().setBody(p);
     }
 
     private void handleAsMoleculeObjectStream(final Exchange exchange, final JChemSearch jcs)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
-
-        final CloseableQueue q = new CloseableMoleculeObjectQueue(100);
-
-        writeMoleculeStream(exchange, jcs, new MoleculeWriter() {
-            @Override
-            public void writeMolecules(Molecule[] mols) {
-                writeMoleculesToQueueAsMoleculeObjects(q, mols);
-            }
-
-            @Override
-            public void close() {
-                q.close();
+        Stream<Molecule> molStream = createMoleculeStream(exchange, jcs);
+        Stream<MoleculeObject> molObjStream = molStream.map(mol -> {
+            try {
+                return MoleculeUtils.createMoleculeObject(mol, structureFormat);
+            } catch (IOException ex) {
+                throw new RuntimeException("Unable to create MoleculeObject", ex);
             }
         });
-        exchange.getIn().setBody(q);
+        StreamProvider<MoleculeObject> p = new SimpleStreamProvider(molObjStream, MoleculeObject.class);
+        exchange.getIn().setBody(p);
     }
+
+    private Stream<Molecule> createMoleculeStream(final Exchange exchange, final JChemSearch jcs) {
+        HitColoringAndAlignmentOptions hcao = determineHitColorAndAlignOptions(exchange);
+
+        Spliterator spliterator = jcs.getRunMode() == JChemSearch.RUN_MODE_ASYNCH_PROGRESSIVE
+                ? new AsyncJChemSearchSpliterator(exchange, jcs, hcao) : new SyncJChemSearchSpliterator(exchange, jcs, hcao);
+        return StreamSupport.stream(spliterator, false);
+    }
+
 
     private void handleAsTextStream(final Exchange exchange, final JChemSearch jcs)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
@@ -534,69 +539,27 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         final PipedOutputStream out = new PipedOutputStream(pis);
         final MolExporter exporter = new MolExporter(out, ProcessorUtils.determineStringProperty(exchange, this.structureFormat, HEADER_STRUCTURE_FORMAT));
 
-        writeMoleculeStream(exchange, jcs, new MoleculeWriter() {
-            @Override
-            public void writeMolecules(Molecule[] mols) {
-                try {
-                    ProcessorUtils.writeMoleculesToMolExporter(exporter, mols);
-                } catch (IOException ex) {
-                    // TODO - how to handle?
-                    LOG.log(Level.SEVERE, "Failed to write molecules", ex);
-                }
-            }
-
-            @Override
-            public void close() {
-                try {
-                    exporter.close();
-                } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "Failed to close MolExporter", ex);
-                }
-            }
-        });
-        exchange.getIn().setBody(pis);
-    }
-
-    private void writeMoleculeStream(final Exchange exchange, final JChemSearch jcs, final MoleculeWriter molWriter)
-            throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
-
+        final Stream<Molecule> stream = createMoleculeStream(exchange, jcs);
         new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        LOG.log(Level.FINE, "Processing hits");
-                        HitColoringAndAlignmentOptions hcao = determineHitColorAndAlignOptions(exchange);
-                        try {
-                            if (jcs.getRunMode() == JChemSearch.RUN_MODE_ASYNCH_PROGRESSIVE) {
-                                LOG.log(Level.FINE, "async mode");
-                                // async mode
-                                while (jcs.hasMoreHits()) {
-                                    int[] hits = jcs.getAvailableNewHits(1);
-                                    // TODO - chunk this as list could be huge 
-                                    LOG.log(Level.FINER, "Processing {0} async hits", hits.length);
-                                    Molecule[] mols = loadMoleculesFromDB(exchange, jcs, hits, null, hcao);
-                                    molWriter.writeMolecules(mols);
-                                }
-                            } else {
-                                LOG.log(Level.FINE, "sync mode");
-                                // just in case we also handle sync mode
-                                // TODO - break into chunks
-                                int[] hits = jcs.getResults();
-                                float[] dissimilarities = getDissimilarities(jcs);
-                                Molecule[] mols = loadMoleculesFromDB(exchange, jcs, hits, dissimilarities, hcao);
-                                LOG.log(Level.FINER, "Processing {0} synch hits", mols.length);
-                                molWriter.writeMolecules(mols);
+                () -> {
+                    try {
+                        stream.forEachOrdered(mol -> {
+                            try {
+                                exporter.write(mol);
+                            } catch (IOException ex) {
+                                throw new RuntimeException("Failed to export Molecule", ex);
                             }
-                            //} catch (InterruptedException | DatabaseSearchException | SQLException | IOException | SearchException | SupergraphException e) {
-                        } catch (Exception e) {
-                            LOG.log(Level.SEVERE, "Error writing molecules", e);
-                        } finally {
-                            molWriter.close();
+                        });
+                    } finally {
+                        try {
+                            exporter.close();
+                        } catch (IOException ex) {
+                            LOG.log(Level.SEVERE, "Failed to close MolExporter", ex);
                         }
                     }
+                }).start();
 
-                }
-        ).start();
+        exchange.getIn().setBody(pis);
     }
 
     private float[] getDissimilarities(JChemSearch jcs) {
@@ -639,36 +602,102 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         return mols;
     }
 
-    private void writeMoleculesToMolExporter(final MolExporter exporter, final Molecule[] mols) throws IOException {
-        for (Molecule mol : mols) {
-            exporter.write(mol);
-        }
-    }
-
-    private void writeMoleculesToQueue(final CloseableQueue q, final Molecule[] mols) {
-        for (Molecule mol : mols) {
-            q.add(mol);
-        }
-    }
-
-
-    private void writeMoleculesToQueueAsMoleculeObjects(final CloseableQueue q, final Molecule[] mols) {
-        for (Molecule mol : mols) {
-            MoleculeObject mo;
-            try {
-                mo = MoleculeUtils.createMoleculeObject(mol, structureFormat);
-                q.add(mo);
-            } catch (IOException ex) {
-                LOG.log(Level.SEVERE, "Failed to write MoleculeObject to queue", ex);
-            }
-
-        }
-    }
-
     interface MoleculeWriter {
 
         void writeMolecules(Molecule[] mols);
 
         void close();
+    }
+
+    abstract class AbstractJChemSearchSpliterator extends Spliterators.AbstractSpliterator<Molecule> {
+
+        protected final Exchange exchange;
+        protected final JChemSearch jcs;
+        protected final HitColoringAndAlignmentOptions hcao;
+        protected Molecule[] mols;
+        protected int index;
+        protected int total = 0;
+
+        AbstractJChemSearchSpliterator(Exchange exchange, JChemSearch jcs, HitColoringAndAlignmentOptions hcao) {
+            super(Long.MAX_VALUE, Spliterator.ORDERED | Spliterator.NONNULL);
+            this.exchange = exchange;
+            this.jcs = jcs;
+            this.hcao = hcao;
+        }
+
+        boolean tryNext(Consumer<? super Molecule> action) throws IOException {
+            if (index >= mols.length) {
+                return false;
+            } else {
+                action.accept(mols[index]);
+                total++;
+                index++;
+                return true;
+            }
+        }
+    }
+
+    class AsyncJChemSearchSpliterator extends AbstractJChemSearchSpliterator {
+
+        AsyncJChemSearchSpliterator(Exchange exchange, JChemSearch jcs, HitColoringAndAlignmentOptions hcao) {
+            super(exchange, jcs, hcao);
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super Molecule> action) {
+            try {
+                if (mols == null || index >= mols.length) {
+                    if (!readNextMols()) {
+                        return false;
+                    }
+                }
+                return tryNext(action);
+
+            } catch (InterruptedException | DatabaseSearchException | SQLException | IOException | SearchException | SupergraphException e) {
+                throw new RuntimeException("Failed to read search results", e);
+            }
+        }
+
+        boolean readNextMols() throws InterruptedException, DatabaseSearchException, SQLException, IOException, SearchException, SupergraphException {
+            index = 0;
+            if (!jcs.hasMoreHits()) {
+                return false;
+            } else {
+                int[] hits = jcs.getAvailableNewHits(50);
+                // TODO - chunk this as list could be huge 
+                LOG.log(Level.INFO, "Processing {0} async hits", hits.length);
+                mols = loadMoleculesFromDB(exchange, jcs, hits, null, hcao);
+                return true;
+            }
+        }
+    }
+
+    class SyncJChemSearchSpliterator extends AbstractJChemSearchSpliterator {
+
+        SyncJChemSearchSpliterator(Exchange exchange, JChemSearch jcs, HitColoringAndAlignmentOptions hcao) {
+            super(exchange, jcs, hcao);
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super Molecule> action) {
+            try {
+                if (mols == null) {
+                    int[] hits = jcs.getResults();
+                    if (hits.length == 0) {
+                        return false;
+                    } else {
+                        LOG.log(Level.INFO, "Obtained {0} hits", hits.length);
+                        // TODO - break into chunks
+                        float[] dissimilarities = getDissimilarities(jcs);
+                        mols = loadMoleculesFromDB(exchange, jcs, hits, dissimilarities, hcao);
+                    }
+                }
+                return tryNext(action);
+
+            } catch (DatabaseSearchException | SQLException | IOException | SearchException | SupergraphException e) {
+                throw new RuntimeException("Failed to read search results", e);
+            }
+        }
+
     }
 }

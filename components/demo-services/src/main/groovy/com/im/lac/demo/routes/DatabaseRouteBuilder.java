@@ -45,6 +45,8 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                         .structureTable("vendordbs.drugbank_feb_2014")
                         .propertyTable("vendordbs.jchemproperties")
                         .searchOptions("t:d")
+                        .outputColumn("drugbank_id")
+                        .outputColumn("generic_name")
                         .outputMode(JChemDBSearcher.OutputMode.MOLECULE_OBJECTS)
                         .structureFormat("mol")
                 );
@@ -60,7 +62,7 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                         .searchOptionsOverride("maxResults:5000 maxTime:30000")
                         .outputColumn("version_id")
                         .outputMode(JChemDBSearcher.OutputMode.MOLECULE_OBJECTS)
-                        .structureFormat("mol")
+                        .structureFormat("smiles:-a")
                 );
         
         from("direct:chemsearch/emolecules_bb")
@@ -73,7 +75,7 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                         .searchOptionsOverride("maxResults:5000 maxTime:30000")
                         .outputColumn("version_id")
                         .outputMode(JChemDBSearcher.OutputMode.MOLECULE_OBJECTS)
-                        .structureFormat("mol")
+                        .structureFormat("smiles:-a")
                 );
 
         // filedrop service for searching eMolecules screening compounds

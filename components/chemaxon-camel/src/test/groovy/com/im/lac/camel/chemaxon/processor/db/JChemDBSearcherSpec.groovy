@@ -12,6 +12,7 @@ import com.im.lac.camel.testsupport.CamelSpecificationBase
 
 import groovy.sql.Sql
 import java.sql.*
+import java.util.stream.Collectors
 import org.apache.camel.builder.RouteBuilder
 import spock.lang.Shared
 import spock.lang.Specification
@@ -78,8 +79,8 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         then:
         resultEndpoint.assertIsSatisfied()
         def body = resultEndpoint.receivedExchanges.in.body[0]
-        body instanceof Iterable
-        def mols = body.iterator().collect()
+        body.type == Molecule.class
+        def mols = body.stream.collect(Collectors.toList())
         mols.size() == 237
         mols[0] instanceof Molecule
         mols[0].getPropertyObject('name') != null
@@ -97,8 +98,8 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         then:
         resultEndpoint.assertIsSatisfied()
         def body = resultEndpoint.receivedExchanges.in.body[0]
-        body instanceof Iterable
-        def mols = body.iterator().collect()
+        body.type == Molecule.class
+        def mols = body.stream.collect(Collectors.toList())
         mols.size() > 0
         mols[0] instanceof Molecule
         mols[0].getPropertyObject('name') != null
