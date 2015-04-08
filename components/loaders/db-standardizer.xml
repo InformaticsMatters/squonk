@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--This file is created with ChemAxon's Configuration Builder-->
+<!--This is a configuration file for ChemAxon's Standardizer-->
+<StandardizerConfiguration>
+  <Actions>
+    <RemoveExplicitH ID="RemoveExplicitH" Groups="target"/>
+    <AliasToGroup ID="AliasToGroup"/>
+    <Sgroups ID="Ungroup" Act="Ungroup"/>
+    <Mesomerize ID="Mesomerize"/>
+    <Neutralize ID="Neutralize"/>
+    <Aromatize ID="Aromatize" Type="general"/>
+  </Actions>
+</StandardizerConfiguration>

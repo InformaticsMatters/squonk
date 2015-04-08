@@ -94,7 +94,7 @@ public class ConnectionHandlerSupport {
 
     }
 
-    public void stop() {
+    public void stop() throws Exception {
         if (conh != null) {
             conh.setConnection(null);
         }

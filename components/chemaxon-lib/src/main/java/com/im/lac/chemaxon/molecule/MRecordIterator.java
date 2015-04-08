@@ -42,6 +42,9 @@ public class MRecordIterator implements Iterator<MRecord>, Closeable {
 
     @Override
     public boolean hasNext() {
+        if (nextRecord != null) {
+            return true;
+        }
         try {
             return read();
         } catch (IOException | MRecordParseException e) {
@@ -68,7 +71,6 @@ public class MRecordIterator implements Iterator<MRecord>, Closeable {
     @Override
     public MRecord next() {
         if (nextRecord == null) {
-
             boolean success;
             try {
                 success = read();
@@ -81,7 +83,9 @@ public class MRecordIterator implements Iterator<MRecord>, Closeable {
                 throw new NoSuchElementException("No more records");
             }
         }
-        return nextRecord;
+        MRecord next = nextRecord;
+        nextRecord = null;
+        return next;
     }
 
     @Override

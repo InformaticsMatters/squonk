@@ -1,0 +1,54 @@
+// Apply the groovy plugin to add support for Groovy
+apply plugin: 'groovy'
+
+// In this section you declare where to find the dependencies of your project
+repositories {
+    // Use 'jcenter' for resolving your dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
+}
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+    
+    compile project(':common')
+    compile project(':common-camel')
+    compile project(':chemaxon-lib')
+    compile project(':chemaxon-camel')
+    
+    compile "org.postgresql:postgresql:9.3-1102-jdbc4"
+    
+    compile "org.apache.camel:camel-core:$camelVersion"
+    
+    // We use the latest groovy 2.x version for building this library
+    compile 'org.codehaus.groovy:groovy-all:2.3.7'
+
+    // We use the awesome Spock testing and specification framework
+    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
+    testCompile 'junit:junit:4.11'
+}
+
+
+task drugbankCreateTables(dependsOn: 'classes', type: JavaExec) {
+    main = 'DrugbankLoader'
+    args = ['createTables']
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task drugbankDropTables(dependsOn: 'classes', type: JavaExec) {
+    main = 'DrugbankLoader'
+    args = ['dropTables']
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task drugbankLoadData(dependsOn: 'classes', type: JavaExec) {
+    main = 'DrugbankLoader'
+    args = ['loadData']
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task drugbankReload(dependsOn: 'classes', type: JavaExec) {
+    main = 'DrugbankLoader'
+    args = ['dropTables', 'createTables', 'loadData']
+    classpath = sourceSets.main.runtimeClasspath
+}
