@@ -59,7 +59,6 @@ class MRecordIteratorSpec extends Specification {
         while  (count < 756) {
             impl.next()
             count++
-            println count
         }
         
         then:
