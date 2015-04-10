@@ -28,7 +28,7 @@ import org.apache.camel.util.IOHelper;
 public class MoleculeScreenerProcessor<T extends Descriptor> implements Processor {
 
     private static final Logger LOG = Logger.getLogger(MoleculeScreenerProcessor.class.getName());
-    public static final String HEADER_TARGET_MOLECULE = "TargetMolecule";
+    public static final String HEADER_QUERY_MOLECULE = "QueryMolecule";
     public static final String HEADER_THRESHOLD = "Threshold";
 
     private final MoleculeScreener<T> screener;
@@ -141,9 +141,9 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
     }
 
     private T findTargetFromHeader(Exchange exchange) {
-        Object h = exchange.getIn().getHeader(HEADER_TARGET_MOLECULE);
+        Object h = exchange.getIn().getHeader(HEADER_QUERY_MOLECULE);
         LOG.log(Level.FINE, "HEADER_TARGET_MOLECULE: {0}", h);
-        Molecule header = exchange.getIn().getHeader(HEADER_TARGET_MOLECULE, Molecule.class
+        Molecule header = exchange.getIn().getHeader(HEADER_QUERY_MOLECULE, Molecule.class
         );
         if (header
                 != null) {

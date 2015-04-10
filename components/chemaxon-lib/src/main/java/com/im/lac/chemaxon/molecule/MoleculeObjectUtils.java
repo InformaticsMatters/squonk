@@ -50,4 +50,5 @@ public class MoleculeObjectUtils {
     public static StreamGenerator createStreamGenerator(InputStream is) throws IOException {
         return new MoleculeObjectStreamProviderImpl(is);
     }
+   
 }

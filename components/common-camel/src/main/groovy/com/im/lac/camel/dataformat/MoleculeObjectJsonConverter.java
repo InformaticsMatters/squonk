@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.im.lac.camel.processor.MoleculeObjectSourcer;
+import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.IOUtils;
 import java.io.Closeable;
@@ -19,6 +20,7 @@ import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -64,12 +66,8 @@ public class MoleculeObjectJsonConverter implements DataFormat {
         this.factory = new MappingJsonFactory();
     }
     
-    public void marshal(Stream<MoleculeObject> mols, OutputStream outputStream) throws IOException {
-        marshal(mols.iterator(), outputStream);
-    }
-
     /**
-     * Takes an Iterator of MoleculeObjects and writes it to the OutputStream.
+     * Takes an Stream of MoleculeObjects and writes it to the OutputStream.
      * The Input and OutputStream are closed once processing is complete if the
      * autoCloseAfterMarshal field is set to true, otherwise both must be closed
      * by the caller.
@@ -78,15 +76,18 @@ public class MoleculeObjectJsonConverter implements DataFormat {
      * @param outputStream
      * @throws IOException
      */
-    public void marshal(Iterator<MoleculeObject> mols, OutputStream outputStream) throws IOException {
-
+    public void marshal(Stream<MoleculeObject> mols, OutputStream outputStream) throws IOException {
+        
         JsonGenerator generator = factory.createGenerator(outputStream);
         generator.writeStartArray();
-        while (mols.hasNext()) {
-            Object mo = mols.next();
-            generator.writeObject((MoleculeObject)mo);
+        mols.forEachOrdered(mo -> {
+            try {
+                generator.writeObject(mo);
+            } catch (IOException ex) {
+                throw new RuntimeException("Error generarting JSON", ex);
+            }
             marshalCount++;
-        }
+        });
 
         generator.writeEndArray();
         generator.flush();
@@ -99,7 +100,7 @@ public class MoleculeObjectJsonConverter implements DataFormat {
     
     @Override
     public void marshal(Exchange exchange, Object o, OutputStream out) throws Exception {
-        Iterator<MoleculeObject> mols = MoleculeObjectSourcer.bodyAsMoleculeObjectIterator(exchange);
+        Stream<MoleculeObject> mols = StreamingMoleculeObjectSourcer.bodyAsMoleculeObjectStream(exchange);
         if (mols == null) {
             throw new IllegalStateException("Can't find MoleculeObjects from Exchange body");
         }
@@ -112,12 +113,12 @@ public class MoleculeObjectJsonConverter implements DataFormat {
      * close the InputStream once processing is finished.
      *
      * @param stream
-     * @return An Stream of MoleculeObjects 
+     * @return An Stream of MoleculeObjects
      * @throws IOException
      */
     public Stream<MoleculeObject> unmarshal(InputStream stream) throws IOException {
         JsonSpliterator s = new JsonSpliterator(stream);
-        return s.asStream();
+        return s.asStream(true);
     }
 
     
@@ -146,9 +147,9 @@ public class MoleculeObjectJsonConverter implements DataFormat {
             }
         }
 
-        Stream asStream() {
+        Stream asStream(boolean parallel) {
 
-            Stream<MoleculeObject> stream = StreamSupport.stream(this, false);
+            Stream<MoleculeObject> stream = StreamSupport.stream(this, parallel);
             return stream.onClose(() -> {
                 try {
                     this.close();
@@ -160,7 +161,7 @@ public class MoleculeObjectJsonConverter implements DataFormat {
 
         @Override
         public void close() throws IOException {
-            LOG.finer("Closing stream " + input);
+            LOG.log(Level.FINER, "Closing stream {0}", input);
             input.close();
             jp.close();
         }
@@ -175,6 +176,13 @@ public class MoleculeObjectJsonConverter implements DataFormat {
             return false;
         }
 
+        @Override
+        public Spliterator<MoleculeObject> trySplit() {
+            return super.trySplit();
+        }
+        
+        
+
         private boolean readNext() {
             try {
                 if (jp.nextToken() == JsonToken.END_ARRAY) {
@@ -183,7 +191,6 @@ public class MoleculeObjectJsonConverter implements DataFormat {
                     return false;
                 } else {
                     MoleculeObject result = jp.readValueAs(MoleculeObject.class);
-                    //System.out.println("Read: " + result);
                     next = Collections.singletonList(result);
 
                 }

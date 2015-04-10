@@ -137,4 +137,10 @@ public class MoleculeObjectSpliterator extends FixedBatchSpliteratorBase<Molecul
         return false;
     }
 
+    @Override
+    public Spliterator<MoleculeObject> trySplit() {
+        System.out.println("trySplit()");
+        return super.trySplit();
+    }
+
 }
