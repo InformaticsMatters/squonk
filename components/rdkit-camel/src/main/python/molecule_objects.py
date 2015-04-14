@@ -1,5 +1,5 @@
 from com.im.lac.types import MoleculeObjectIterable
-from com.im.lac.util import MoleculeObjectStreamProvider
+from com.im.lac.util import StreamProvider
 from com.im.lac.util import CloseableMoleculeObjectQueue
 from com.im.lac.types import MoleculeObject
 from java import lang
@@ -42,7 +42,7 @@ class ObjReadThread(Thread):
 #            raise
 
 # Get the previous body and set the next one
-provider = request.getBody(MoleculeObjectStreamProvider)
+provider = request.getBody(StreamProvider)
 if provider:
     print "found a provider"
     mols = provider.getStream().iterator()
@@ -51,7 +51,7 @@ else:
 if not mols:
     provider = request.getBody(Stream)
 if provider:
-    mols = provider.iterator()
+    mols = provider.getStream().iterator()
 if mols:
     out_mols_here = CloseableMoleculeObjectQueue(40)
     request.setBody(out_mols_here)

@@ -46,9 +46,14 @@ public class MoleculeUtilsRouteBuilder extends RouteBuilder {
                 .process(new StandardizerProcessor("removeexplicith"))
                 .log("removeexplicith finished");
         
+        from("direct:clearisotopes")
+                .process(new StandardizerProcessor("clearisotopes"))
+                .log("clearisotopes finished");
+        
         from("direct:removesolvents")
                 .process(new StandardizerProcessor("removesolvents"))
                 .log("removesolvents finished");
+
         
         from("direct:expandsgroups")
                 .process(new StandardizerProcessor("expandsgroups"))
