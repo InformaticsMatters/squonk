@@ -6,7 +6,6 @@ import com.im.lac.camel.processor.ChunkBasedReporter
 import com.im.lac.chemaxon.molecule.MoleculeUtils
 import groovy.sql.Sql
 import java.sql.*
-import javax.sql.DataSource
 import org.apache.camel.CamelContext
 import org.apache.camel.Exchange
 import org.apache.camel.ProducerTemplate
@@ -39,7 +38,7 @@ class DrugbankLoader extends AbstractLoader {
         println "Finished loading"
                               
         Sql db = new Sql(dataSource.getConnection())
-        int rows = db.firstRow('select count(*) from ' + props.schema + '.' + props.table)[0]
+        int rows = db.firstRow('select count(*) from ' + database.vendordbs.schema + '.' + props.table)[0]
         println "Table ${props.table} now has $rows rows"
     }
     
@@ -48,9 +47,9 @@ class DrugbankLoader extends AbstractLoader {
         //println "extracols = $cols"
 
         DefaultJChemInserter updateHandlerProcessor = new DefaultJChemInserter(
-            props.schema + '.' + props.table, cols, props.fields)
+            database.vendordbs.schema + '.' + props.table, cols, props.fields)
 
-        ConnectionHandler conh = new ConnectionHandler(dataSource.getConnection(), props.schema + '.jchemproperties')
+        ConnectionHandler conh = new ConnectionHandler(dataSource.getConnection(), database.vendordbs.schema + '.jchemproperties')
         updateHandlerProcessor.connectionHandler = conh
         
         camelContext.addRoutes(new RouteBuilder() {
@@ -67,9 +66,9 @@ class DrugbankLoader extends AbstractLoader {
             
                     from('direct:errors')
                     .log('Error: ${exception.message}')
-                    .log('Error: ${exception.stacktrace}')
+                    //.log('Error: ${exception.stacktrace}')
                     .transform(body().append('\n'))
-                    .to('file:' + props.path + '?fileExist=Append&fileName=' + props.file + '_errrors')
+                    .to('file:' + props.path + '?fileExist=Append&fileName=' + props.file + '_errors')
                 }
             })
     }

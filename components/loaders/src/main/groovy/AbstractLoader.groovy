@@ -15,23 +15,21 @@ import groovy.sql.Sql
  */
 class AbstractLoader {
     
-    ConfigObject database;
-    ConfigObject props;
+    ConfigObject database, props
   
     DataSource dataSource
     String tableName
     
     AbstractLoader(URL config) {
-        
         database = Utils.createConfig('database.properties')
         props = Utils.createConfig(config)
         validate()
         dataSource = createDataSource()
-        tableName = props.schema + '.' + props.table
+        tableName = database.vendordbs.schema + '.' + props.table
     }
     
     protected DataSource createDataSource() {     
-        return Utils.createDataSource(database, props.user, props.password)
+        return Utils.createDataSource(database, database.vendordbs.username, database.vendordbs.password)
     }
     
     protected void validate() {
@@ -61,7 +59,7 @@ class AbstractLoader {
     }
 
     protected ConnectionHandler createConnectionHandler() {
-        return new ConnectionHandler(dataSource.getConnection(), props.schema + '.jchemproperties')
+        return new ConnectionHandler(dataSource.getConnection(), database.vendordbs.schema + '.jchemproperties')
     }
     
     

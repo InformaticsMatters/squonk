@@ -33,9 +33,16 @@ class Utils {
     }
     
     static DataSource createDataSource(ConfigObject database, String user, String password) {
+        println """Creating datasource:
+  server: ${database.server}
+  port: ${database.port}
+  database: ${database.database}
+  user: $user
+  password: $password
+"""
         PGSimpleDataSource ds = new PGSimpleDataSource()
         ds.serverName = database.server
-        ds.portNumber = database.port
+        ds.portNumber = new Integer(database.port)
         ds.databaseName = database.database
         ds.user = user
         ds.password = password

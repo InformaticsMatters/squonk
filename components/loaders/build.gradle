@@ -34,21 +34,41 @@ task drugbankCreateTables(dependsOn: 'classes', type: JavaExec) {
     args = ['createTables']
     classpath = sourceSets.main.runtimeClasspath
 }
-
 task drugbankDropTables(dependsOn: 'classes', type: JavaExec) {
     main = 'DrugbankLoader'
     args = ['dropTables']
     classpath = sourceSets.main.runtimeClasspath
 }
-
 task drugbankLoadData(dependsOn: 'classes', type: JavaExec) {
     main = 'DrugbankLoader'
     args = ['loadData']
     classpath = sourceSets.main.runtimeClasspath
 }
-
 task drugbankReload(dependsOn: 'classes', type: JavaExec) {
     main = 'DrugbankLoader'
+    args = ['dropTables', 'createTables', 'loadData']
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+
+
+task emoleculesCreateTables(dependsOn: 'classes', type: JavaExec) {
+    main = 'EMoleculesLoader'
+    args = ['createTables']
+    classpath = sourceSets.main.runtimeClasspath
+}
+task emoleculesDropTables(dependsOn: 'classes', type: JavaExec) {
+    main = 'EMoleculesLoader'
+    args = ['dropTables']
+    classpath = sourceSets.main.runtimeClasspath
+}
+task emoleculesLoadData(dependsOn: 'classes', type: JavaExec) {
+    main = 'EMoleculesLoader'
+    args = ['loadData']
+    classpath = sourceSets.main.runtimeClasspath
+}
+task emoleculesReload(dependsOn: 'classes', type: JavaExec) {
+    main = 'EMoleculesLoader'
     args = ['dropTables', 'createTables', 'loadData']
     classpath = sourceSets.main.runtimeClasspath
 }
