@@ -28,6 +28,12 @@ dependencies {
     testCompile 'junit:junit:4.11'
 }
 
+task chemcentralCreate(dependsOn: 'classes', type: JavaExec) {
+    main = 'ChemcentralCreate'
+    args = ['dropTables', 'createTables']
+    classpath = sourceSets.main.runtimeClasspath
+}
+
 
 task drugbankCreateTables(dependsOn: 'classes', type: JavaExec) {
     main = 'DrugbankLoader'
@@ -49,7 +55,10 @@ task drugbankReload(dependsOn: 'classes', type: JavaExec) {
     args = ['dropTables', 'createTables', 'loadData']
     classpath = sourceSets.main.runtimeClasspath
 }
-
+task drugbankETL(dependsOn: 'classes', type: JavaExec) {
+    main = 'DrugBankETL'
+    classpath = sourceSets.main.runtimeClasspath
+}
 
 
 task emoleculesCreateTables(dependsOn: 'classes', type: JavaExec) {
@@ -70,5 +79,9 @@ task emoleculesLoadData(dependsOn: 'classes', type: JavaExec) {
 task emoleculesReload(dependsOn: 'classes', type: JavaExec) {
     main = 'EMoleculesLoader'
     args = ['dropTables', 'createTables', 'loadData']
+    classpath = sourceSets.main.runtimeClasspath
+}
+task emoleculesETL(dependsOn: 'classes', type: JavaExec) {
+    main = 'EMoleculesETL'
     classpath = sourceSets.main.runtimeClasspath
 }
