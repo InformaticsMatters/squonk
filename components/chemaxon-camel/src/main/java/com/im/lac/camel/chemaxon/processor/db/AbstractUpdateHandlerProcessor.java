@@ -14,7 +14,7 @@
  * configure it before it is used for inserts or updates.
  *
  * A minimalist implementation could look like this:  <code>
- * Processor p = new JCBTableInserterUpdater(UpdateHandler.INSERT, 'TEST', null) {
+ * Processor p = new AbstractUpdateHandlerProcessor(UpdateHandler.INSERT, 'TEST', null) {
  *
  * @Override
  * protected void setValues(Exchange exchange, UpdateHandler updateHandler) {
@@ -81,7 +81,7 @@ public abstract class AbstractUpdateHandlerProcessor extends ConnectionHandlerSu
     }
 
     private UpdateHandler createUpdateHandler() throws SQLException {
-        LOG.log(Level.INFO, "Creating UpdateHandler for table %s", tableName);
+        LOG.log(Level.INFO, "Creating UpdateHandler for table {0}", tableName);
         UpdateHandler uh = new UpdateHandler(getConnectionHandler(), mode, tableName, additionalColumns);
         configure(uh);
         return uh;

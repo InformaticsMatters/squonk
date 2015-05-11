@@ -1,3 +1,4 @@
+
 import groovy.sql.Sql
 import java.sql.Connection
 import javax.sql.DataSource
@@ -6,29 +7,29 @@ import javax.sql.DataSource
  *
  * @author timbo
  */
-class EMoleculesETL extends AbstractETL {
+class PdbLigandETL extends AbstractETL {
     
-    ConfigObject emolecules
-    String emoleculesTable, concordanceTable
+    ConfigObject props
+    String sourceTable, concordanceTable
     
     int limit, offset
     int fetchSize = 500
-
-    
+       
     static void main(String[] args) {
         println "Running with $args"
-        def instance = new EMoleculesETL()
+        def instance = new PdbLigandETL()
+        
         instance.run()
     }
     
-    EMoleculesETL() {
-        emolecules = Utils.createConfig('emolecules.properties')
+    PdbLigandETL() {
+        props = Utils.createConfig('pdb_ligand.properties')
         
-        this.emoleculesTable = database.vendordbs.schema + '.' + emolecules.table
-        this.concordanceTable = database.chemcentral.schema + '.' + emolecules.table + '_concordance'
+        this.sourceTable = database.vendordbs.schema + '.' + props.table
+        this.concordanceTable = database.chemcentral.schema + '.' + props.table + '_concordance'
                 
-        this.offset = emolecules.offset
-        this.limit = emolecules.limit
+        this.offset = props.offset
+        this.limit = props.limit
         
         generateSqls()
     }
@@ -39,10 +40,10 @@ class EMoleculesETL extends AbstractETL {
             |  structure_id INTEGER NOT NULL,
             |  cd_id INTEGER NOT NULL,
             |  CONSTRAINT fk_con2stuctures FOREIGN KEY (structure_id) references $chemcentralStructureTable (cd_id) ON DELETE CASCADE,
-            |  CONSTRAINT fk_con2cdid FOREIGN KEY (cd_id) references $emoleculesTable (cd_id) ON DELETE CASCADE
+            |  CONSTRAINT fk_con2cdid FOREIGN KEY (cd_id) references $sourceTable (cd_id) ON DELETE CASCADE
             |)""".stripMargin()
         
-        readStructuresSql = "SELECT cd_id, cd_structure FROM $emoleculesTable".toString()
+        readStructuresSql = "SELECT cd_id, cd_structure FROM $sourceTable".toString()
         limit && (readStructuresSql += " LIMIT $limit")
         offset && (readStructuresSql += " OFFSET $offset")
         
@@ -50,29 +51,29 @@ class EMoleculesETL extends AbstractETL {
         
         countConcordanceSql = "SELECT count(*) FROM $concordanceTable".toString()
         
-        createStructureIdIndexSql = "CREATE INDEX idx_con_emol${emolecules.section}_structure_id on $concordanceTable (structure_id)"
-        createDBCdidIndexSql = "CREATE INDEX idx_con_emol${emolecules.section}_cd_id on $concordanceTable (cd_id)"
-        
-        deleteAliasesSql = "DELETE FROM $chemcentralStructureAliasesTable WHERE source_id = ?"
+        createStructureIdIndexSql = "CREATE INDEX idx_con_pdbligand_structure_id on $concordanceTable (structure_id)"
+        createDBCdidIndexSql = "CREATE INDEX idx_con_pdbligand_cd_id on $concordanceTable (cd_id)"
         
         deleteSourceSql = "DELETE FROM $chemcentralSourcesTable WHERE source_name = ?"
         
-        insertAliasesSql = """\
-            |INSERT INTO $chemcentralStructureAliasesTable (structure_id, source_id, alias_value)
-            |  SELECT con.structure_id, ?, e.version_id
-            |    FROM $concordanceTable con
-            |    JOIN $emoleculesTable e ON e.cd_id = con.cd_id""".stripMargin()
-        
         insertPropertyDefinitionsSql = """\
                 |INSERT INTO $chemcentralPropertyDefintionsTable (source_id, property_description, est_size)
-                |  VALUES (?, 'eMolecules building blocks record', ?)""".stripMargin()
+                |  VALUES (?, 'PDB ligand 3D structure', ?)""".stripMargin()
+        
+        insertInstancesSql = """\
+                |INSERT INTO $chemcentralInstancesTable
+                |  (source_id, structure_id, structure_definition, description, external_id)
+                |    SELECT ?, con.structure_id, db.cd_structure, 'Structure from PDB entry ' || db.pdb_code, db.full_code
+                |      FROM (SELECT cd_id, cd_structure, pdb_code, full_code FROM $sourceTable) db
+                |      JOIN $concordanceTable con ON con.cd_id = db.cd_id""".stripMargin()
         
         insertStructurePropsSql = """\
                 |INSERT INTO $chemcentralStructurePropertiesTable
-                |  (structure_id, property_def_id, property_data)
-                |  SELECT con.structure_id, ?, row_to_json(e)::jsonb
-                |    FROM (SELECT cd_id, version_id, parent_id FROM $emoleculesTable) e
-                |    JOIN $concordanceTable con ON con.cd_id = e.cd_id""".stripMargin()
+                |  (structure_id, property_def_id, instance_id, property_data)
+                |  SELECT con.structure_id, ?, inst.id, row_to_json(db)::jsonb
+                |    FROM (SELECT cd_id, pdb_code, full_code FROM $sourceTable) db
+                |    JOIN $concordanceTable con ON con.cd_id = db.cd_id
+                |    JOIN $chemcentralInstancesTable inst ON inst.external_id = db.full_code""".stripMargin()
     }
     
     void run() {
@@ -100,8 +101,10 @@ class EMoleculesETL extends AbstractETL {
             int count = db1.firstRow(countConcordanceSql)[0]
             println "Number of structures is $count"
             
-            int sourceId = Utils.createSourceDefinition(dataSource, database.chemcentral.schema, 1, emolecules.name, emolecules.version, emolecules.description, 'P', emolecules.owner, emolecules.maintainer, false)
-            insertAliases(db1, sourceId)
+            int sourceId = Utils.createSourceDefinition(dataSource, database.chemcentral.schema, 1, props.name, props.version, props.description, 'P', props.owner, props.maintainer, false)
+            
+            generateInstancesValues(db1, [sourceId])
+            
             int propertyDefId = generatePropertyDefinition(db1, sourceId, count)
             generatePropertyValues(db1, [propertyDefId])
             
@@ -127,7 +130,7 @@ class EMoleculesETL extends AbstractETL {
     }
     
     void loadData(Sql reader, Sql writer, StructureLoader loader) {
-        println "Loading data from $emoleculesTable"
+        println "Loading data from $sourceTable"
         
         int count = 0
         reader.eachRow(readStructuresSql) { row ->
@@ -136,16 +139,17 @@ class EMoleculesETL extends AbstractETL {
                 int cdid = loader.execute(new String(row['cd_structure']))
                 //println cdid
                 writer.executeInsert(insertConcordanceSql, [Math.abs(cdid), row['cd_id']])
-     
             } catch (Exception ex) {
                 println "WARNING: failed to process row $count"
                 ex.printStackTrace()
             }
-            if (count % 10000 == 0) {
+
+            if (count % 1000 == 0) {
                 println "Handled $count rows"
             }
         }
         println "Handled $count structures"
+        
     }
     
     void createConcordanceIndexes(Sql db) {
@@ -153,5 +157,7 @@ class EMoleculesETL extends AbstractETL {
         db.execute(createStructureIdIndexSql)
         db.execute(createDBCdidIndexSql)
         println "Indexes created"
-    }    
+    } 
+    
 }
+

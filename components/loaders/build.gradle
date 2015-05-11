@@ -19,6 +19,8 @@ dependencies {
     compile "org.postgresql:postgresql:9.3-1102-jdbc4"
     
     compile "org.apache.camel:camel-core:$camelVersion"
+    compile "org.apache.camel:camel-script:$camelVersion"
+    compile "org.apache.camel:camel-groovy:$camelVersion"
     
     // We use the latest groovy 2.x version for building this library
     compile 'org.codehaus.groovy:groovy-all:2.3.7'
@@ -34,6 +36,10 @@ task chemcentralCreate(dependsOn: 'classes', type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 }
 
+task chemblETL(dependsOn: 'classes', type: JavaExec) {
+    main = 'ChemblETL'
+    classpath = sourceSets.main.runtimeClasspath
+}
 
 task drugbankCreateTables(dependsOn: 'classes', type: JavaExec) {
     main = 'DrugbankLoader'
@@ -83,5 +89,15 @@ task emoleculesReload(dependsOn: 'classes', type: JavaExec) {
 }
 task emoleculesETL(dependsOn: 'classes', type: JavaExec) {
     main = 'EMoleculesETL'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task pdbLigandReload(dependsOn: 'classes', type: JavaExec) {
+    main = 'PdbLigandLoader'
+    args = ['dropTables', 'createTables', 'loadData']
+    classpath = sourceSets.main.runtimeClasspath
+}
+task pdbLigandETL(dependsOn: 'classes', type: JavaExec) {
+    main = 'PdbLigandETL'
     classpath = sourceSets.main.runtimeClasspath
 }

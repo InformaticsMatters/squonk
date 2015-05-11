@@ -12,7 +12,7 @@ import org.postgresql.ds.PGSimpleDataSource
  */
 class ChemcentralCreate  {
     
-    ConfigObject props, database
+    ConfigObject database
     private String structureTable
     DataSource dataSource
 
@@ -20,28 +20,27 @@ class ChemcentralCreate  {
     static void main(String[] args) {
         println "Running with $args"
         
-        def instance = new ChemcentralCreate('chemcentral.properties')
+        def instance = new ChemcentralCreate()
         //instance.run(args)
         instance.run(['dropTables', 'createTables'] as String[])
         //instance.run(['dropTables'] as String[])
     }
     
-    ChemcentralCreate(String config) {
-        props = new ConfigSlurper().parse(new File(config).toURL()) 
+    ChemcentralCreate() {
         database = Utils.createConfig('database.properties')
-        this.structureTable = props.schema + '.structures'
-        dataSource = Utils.createDataSource(database, props.username, props.password)
+        this.structureTable = database.chemcentral.schema + '.structures'
+        dataSource = Utils.createDataSource(database, database.chemcentral.username, database.chemcentral.password)
     }
     
     void run(String[] args) {
-        if (!props.allowRecreate) {
+        if (!database.allowRecreate) {
             println "Will not modify. Please set allowRecreate property in chemcentral.properties to true to permit this"
         } else {
             args.each { action ->
                 if (action == 'createTables') {
-                    createTables(props)
+                    createTables(database.chemcentral)
                 } else if (action == 'dropTables') {
-                    dropTables(props)
+                    dropTables(database.chemcentral)
                 } else {
                     println "Unrecognised action: $action"
                 }
@@ -50,7 +49,7 @@ class ChemcentralCreate  {
     }
     
     ConnectionHandler createConnectionHandler() {
-        new ConnectionHandler(dataSource.getConnection(), props.schema + '.jchemproperties')
+        new ConnectionHandler(dataSource.getConnection(), database.chemcentral.schema + '.jchemproperties')
     }
 
     void dropTables(def props) {
@@ -60,9 +59,9 @@ class ChemcentralCreate  {
             executeMayFail(db, "drop table ${props.schema}.structure_props", 'DROP TABLE ' + props.schema + '.structure_props')
             executeMayFail(db, "drop table ${props.schema}.instances", 'DROP TABLE ' + props.schema + '.instances')
             executeMayFail(db, "drop table ${props.schema}.property_definitions", 'DROP TABLE ' + props.schema + '.property_definitions')
+            executeMayFail(db, "drop table ${props.schema}.structure_aliases", 'DROP TABLE ' + props.schema + '.structure_aliases')
             executeMayFail(db, "drop table ${props.schema}.sources", 'DROP TABLE ' + props.schema + '.sources')
             executeMayFail(db, "drop table ${props.schema}.categories", 'DROP TABLE ' + props.schema + '.categories')
-            executeMayFail(db, "drop table ${props.schema}.structure_aliases", 'DROP TABLE ' + props.schema + '.structure_aliases')
         }
         if (UpdateHandler.isStructureTable(conh, structureTable)) {
             println "dropping structure table $structureTable"
@@ -83,6 +82,7 @@ class ChemcentralCreate  {
             println "creating structure table $structureTable"
             StructureTableOptions opts = new StructureTableOptions(structureTable, TableTypeConstants.TABLE_TYPE_MOLECULES)
             opts.extraColumnDefinitions = 'parent_id INTEGER, frag_count SMALLINT'
+            //opts.structureColumnType = 
             //,psa FLOAT, logp FLOAT, hba SMALLINT, hbd SMALLINT, rot_bond_count SMALLINT
 
             opts.chemTermColsConfig = [
@@ -103,32 +103,34 @@ class ChemcentralCreate  {
                     |  CONSTRAINT uq_category_name UNIQUE (category_name)
                     |)""".stripMargin())
                 
-                execute(db, "create table ${props.schema}.structure_aliases", """\
-                    |CREATE TABLE ${props.schema}.structure_aliases (
-                    |  id SERIAL PRIMARY KEY,
-                    |  structure_id INTEGER NOT NULL,
-                    |  alias_type VARCHAR(16) NOT NULL,
-                    |  alias_value VARCHAR(32) NOT NULL,
-                    |  CONSTRAINT fk_sa2structures FOREIGN KEY (structure_id) REFERENCES ${props.schema}.structures(cd_id) ON DELETE CASCADE
-                    |)""".stripMargin())
-                execute(db, 'add index idx_sa_structure_id',   'CREATE INDEX idx_sa_structure_id on ' + props.schema + '.structure_aliases(structure_id)')
-                execute(db, 'add index idx_sa_alias_type',     'CREATE INDEX idx_sa_structure_alias_type on ' + props.schema + '.structure_aliases(alias_type)')
-                execute(db, 'add index idx_sa_alias_value',    'CREATE INDEX idx_sa_structure_alias_value on ' + props.schema + '.structure_aliases(alias_value)')
-                
                 execute(db, "create table ${props.schema}.sources",  """\
                     |CREATE TABLE ${props.schema}.sources (
                     |  id SERIAL PRIMARY KEY,
                     |  category_id integer NOT NULL,
                     |  source_name TEXT,
+                    |  source_version TEXT,
                     |  source_description TEXT,
                     |  source_uri TEXT,
                     |  type CHAR(1) NOT NULL,
                     |  owner VARCHAR(50) NOT NULL,
                     |  maintainer VARCHAR(50) NOT NULL,
-                    |  active BOOLEAN  DEFAULT TRUE,
+                    |  active BOOLEAN DEFAULT TRUE,
                     |  CONSTRAINT fk_sources2categories FOREIGN KEY (category_id) REFERENCES ${props.schema}.categories(id),
-                    |  CONSTRAINT uq_source_name UNIQUE (source_name)
+                    |  CONSTRAINT uq_source_name_version UNIQUE (source_name, source_version)
                     |)""".stripMargin())
+                
+                execute(db, "create table ${props.schema}.structure_aliases", """\
+                    |CREATE TABLE ${props.schema}.structure_aliases (
+                    |  id SERIAL PRIMARY KEY,
+                    |  structure_id INTEGER NOT NULL,
+                    |  source_id INTEGER NOT NULL,
+                    |  alias_value VARCHAR(32) NOT NULL,
+                    |  CONSTRAINT fk_sa2sources FOREIGN KEY (source_id) REFERENCES ${props.schema}.sources(id) ON DELETE CASCADE,
+                    |  CONSTRAINT fk_sa2structures FOREIGN KEY (structure_id) REFERENCES ${props.schema}.structures(cd_id) ON DELETE CASCADE
+                    |)""".stripMargin())
+                execute(db, 'add index idx_sa_structure_id',  'CREATE INDEX idx_sa_structure_id ON ' + props.schema + '.structure_aliases(structure_id)')
+                execute(db, 'add index idx_sa_source_id',     'CREATE INDEX idx_sa_structure_source_id ON ' + props.schema + '.structure_aliases(source_id)')
+                execute(db, 'add index idx_sa_alias_value',   'CREATE INDEX idx_sa_structure_alias_value ON ' + props.schema + '.structure_aliases(alias_value)')
                 
                 execute(db, "create table ${props.schema}.property_definitions",  """\
                     |CREATE TABLE ${props.schema}.property_definitions (
@@ -151,6 +153,8 @@ class ChemcentralCreate  {
                     |  id SERIAL PRIMARY KEY,
                     |  source_id INTEGER NOT NULL,
                     |  structure_id INTEGER NOT NULL,
+                    |  structure_definition TEXT,
+                    |  description TEXT,
                     |  external_id TEXT,
                     |  instance_uri TEXT,
                     |  CONSTRAINT fk_inst2sources FOREIGN KEY (source_id) REFERENCES ${props.schema}.sources(id) ON DELETE CASCADE,
@@ -172,7 +176,7 @@ class ChemcentralCreate  {
                     |)""".stripMargin())
                 execute(db, 'add index idx_sp_instance_id',     'CREATE INDEX idx_sp_instance_id on ' + props.schema + '.structure_props(id)')
                 execute(db, 'add index idx_sp_property_def_id',  'CREATE INDEX idx_sp_property_def_id on ' + props.schema + '.structure_props(property_def_id)')
-                execute(db, 'add index idx_sp_property_data', 'CREATE INDEX idx_sp_property_data ON ' + props.schema + '.structure_props USING gin (property_data jsonb_ops)')
+                //execute(db, 'add index idx_sp_property_data', 'CREATE INDEX idx_sp_property_data ON ' + props.schema + '.structure_props USING gin (property_data jsonb_ops)')
             }
             println "seeding ${props.schema}.categories"
             db.executeInsert('INSERT INTO ' + props.schema + '''.categories (category_name) VALUES

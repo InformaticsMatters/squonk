@@ -5,6 +5,7 @@ import chemaxon.standardizer.Standardizer
 import chemaxon.struc.Molecule
 import chemaxon.formats.MolImporter
 import chemaxon.formats.MolExporter
+import chemaxon.calculations.clean.Cleaner
 import groovy.sql.Sql
 import com.im.lac.chemaxon.molecule.MoleculeUtils
 
@@ -68,6 +69,9 @@ class StructureLoader {
             m = mol
         } else {
             m = MolImporter.importMol(mol)
+        }
+        if (m.getDim() != 2) {
+            Cleaner.clean(m, 2, "t1000")
         }
         cleaner.standardize(m)
         return m

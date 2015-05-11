@@ -6,42 +6,36 @@ import groovy.sql.Sql
  */
 class AbstractETL {
     
-    ConfigObject chemcentral, database
+    ConfigObject database
     
     protected String chemcentralStructureAliasesTable, chemcentralPropertyDefintionsTable,
     chemcentralStructurePropertiesTable, chemcentralStructureTable, chemcentralSourcesTable,
-    chemcentralPropertyTable
+    chemcentralPropertyTable, chemcentralInstancesTable
     
-    protected String deleteAliasesSql, insertAliasesSql 
-    protected String createConcordanceTableSql, readStructuresSql, insertConcordanceSql, 
+    protected String deleteAliasesSql, insertAliasesSql, insertInstancesSql,
+    createConcordanceTableSql, readStructuresSql, insertConcordanceSql, countConcordanceSql, 
     createStructureIdIndexSql, createDBCdidIndexSql,
     insertPropertyDefinitionsSql, insertStructurePropsSql, deleteSourceSql
     
     
     AbstractETL() {
-        chemcentral = Utils.createConfig('chemcentral.properties')
         database = Utils.createConfig('database.properties')
         
-        this.chemcentralStructureTable = chemcentral.schema + '.structures'
-        this.chemcentralStructureAliasesTable = chemcentral.schema + '.structure_aliases'
-        this.chemcentralPropertyDefintionsTable = chemcentral.schema + '.property_definitions'
-        this.chemcentralStructurePropertiesTable = chemcentral.schema + '.structure_props'
-        this.chemcentralSourcesTable = chemcentral.schema + '.sources'
-        this.chemcentralPropertyTable = chemcentral.schema + '.jchemproperties'        
+        this.chemcentralInstancesTable = database.chemcentral.schema + '.instances'
+        this.chemcentralStructureTable = database.chemcentral.schema + '.structures'
+        this.chemcentralStructureAliasesTable = database.chemcentral.schema + '.structure_aliases'
+        this.chemcentralPropertyDefintionsTable = database.chemcentral.schema + '.property_definitions'
+        this.chemcentralStructurePropertiesTable = database.chemcentral.schema + '.structure_props'
+        this.chemcentralSourcesTable = database.chemcentral.schema + '.sources'
+        this.chemcentralPropertyTable = database.chemcentral.schema + '.jchemproperties'        
     }
     
-    void insertAliases(Sql db, String sourceName) {
-        println "Deleting alises for $sourceName"
-        db.execute(deleteAliasesSql, [sourceName])
-        println "Inserting alises for $sourceName"
-        db.execute(insertAliasesSql)
-        println "Alises for $sourceName generated"
-    }
-    
-    void deleteSource(Sql db, String sourceName) {
-        println "Deleting source $sourceName"
-        db.execute(deleteSourceSql, [sourceName])
-        println "$sourceName deleted"
+    void insertAliases(Sql db, int sourceId) {
+        println "Deleting aliases for $sourceId"
+        db.execute(deleteAliasesSql, [sourceId])
+        println "Inserting aliases for $sourceId"
+        db.execute(insertAliasesSql, [sourceId])
+        println "Aliases for $sourceId generated"
     }
     
     void generatePropertyDefinitions(Sql db, int sourceId) {
@@ -55,6 +49,13 @@ class AbstractETL {
         db.execute(insertStructurePropsSql, params)
         println "structure_props values generated"
     }
+    
+    void generateInstancesValues(Sql db, List params) {
+        println "Inserting instances"
+        db.execute(insertInstancesSql, params)
+        println "instances values generated"
+    }
+        
 	
 }
 

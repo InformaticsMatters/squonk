@@ -15,12 +15,6 @@ class DrugBankETL extends AbstractETL {
     int limit, offset
     int fetchSize = 500
     
-    static final String DATASET_NAME = 'DrugBank'
-    
-//    protected String createConcordanceTableSql, readStructuresSql, insertConcordanceSql, 
-//    createStructureIdIndexSql, createDBCdidIndexSql,
-//    insertPropertyDefinitionsSql, insertStructurePropsSql, deleteSourceSql
-//    
     static void main(String[] args) {
         println "Running with $args"
         def instance = new DrugBankETL()
@@ -32,7 +26,7 @@ class DrugBankETL extends AbstractETL {
         drugbank = Utils.createConfig('drugbank.properties')
         
         this.drugBankTable = database.vendordbs.schema + '.' + drugbank.table
-        this.concordanceTable = this.drugBankTable + '_concordance'
+        this.concordanceTable = database.chemcentral.schema + '.' + drugbank.table + '_concordance'
                 
         this.offset = drugbank.offset
         this.limit = drugbank.limit
@@ -55,35 +49,36 @@ class DrugBankETL extends AbstractETL {
         
         insertConcordanceSql = "INSERT INTO $concordanceTable (structure_id, cd_id) VALUES (?, ?)".toString()
         
+        countConcordanceSql = "SELECT count(*) FROM $concordanceTable".toString()
+        
         createStructureIdIndexSql = "CREATE INDEX idx_con_drugbank_structure_id on $concordanceTable (structure_id)"
         createDBCdidIndexSql = "CREATE INDEX idx_con_drugbank_cd_id on $concordanceTable (cd_id)"
         
-        deleteAliasesSql = "DELETE FROM $chemcentralStructureAliasesTable WHERE alias_type = ?"
+        deleteAliasesSql = "DELETE FROM $chemcentralStructureAliasesTable WHERE source_id = ?"
         
         deleteSourceSql = "DELETE FROM $chemcentralSourcesTable WHERE source_name = ?"
         
         insertAliasesSql = """\
-            |INSERT INTO $chemcentralStructureAliasesTable (structure_id, alias_type, alias_value)
-            |  SELECT con.structure_id, '$DATASET_NAME', db.drugbank_id
+            |INSERT INTO $chemcentralStructureAliasesTable (structure_id, source_id, alias_value)
+            |  SELECT con.structure_id, ?, db.drugbank_id
             |    FROM $concordanceTable con
             |    JOIN $drugBankTable db ON db.cd_id = con.cd_id""".stripMargin()
         
         insertPropertyDefinitionsSql = """\
-                |INSERT INTO $chemcentralPropertyDefintionsTable (source_id, property_description, original_id, est_size)
-                |  VALUES (?, 'DrugBank record', null, ${drugbank.estSize})""".stripMargin()
+                |INSERT INTO $chemcentralPropertyDefintionsTable (source_id, property_description, est_size)
+                |  VALUES (?, 'DrugBank record', ?)""".stripMargin()
         
         insertStructurePropsSql = """\
                 |INSERT INTO $chemcentralStructurePropertiesTable
-                |  (structure_id, source_id, batch_id, property_id, property_data)
-                |  SELECT con.structure_id, ?, db.drugbank_id, ?, row_to_json(db)::jsonb
+                |  (structure_id, property_def_id, property_data)
+                |  SELECT con.structure_id, ?, row_to_json(db)::jsonb
                 |    FROM (SELECT cd_id, drugbank_id, drug_groups, generic_name, brands FROM $drugBankTable) db
                 |    JOIN $concordanceTable con ON con.cd_id = db.cd_id""".stripMargin()
-
     }
     
     void run() {
 
-        DataSource dataSource = Utils.createDataSource(database, chemcentral.username, chemcentral.password)
+        DataSource dataSource = Utils.createDataSource(database, database.chemcentral.username, database.chemcentral.password)
         Sql db1, db2, db3
         db1 = new Sql(dataSource.connection)
         StructureLoader loader
@@ -103,11 +98,13 @@ class DrugBankETL extends AbstractETL {
             
             createConcordanceIndexes(db1)
             
-            deleteSource(db1, DATASET_NAME)
-            int sourceId = Utils.createSourceDefinition(dataSource, chemcentral.schema, 1, drugbank.name, drugbank.description, 'P', drugbank.owner, drugbank.maintainer, true)
-            insertAliases(db1, DATASET_NAME)
-            int propertyId = generatePropertyDefinition(db1, sourceId)
-            generatePropertyValues(db1, [sourceId, propertyId])
+            int count = db1.firstRow(countConcordanceSql)[0]
+            println "Number of structures is $count"
+            
+            int sourceId = Utils.createSourceDefinition(dataSource, database.chemcentral.schema, 1, drugbank.name, drugbank.version, drugbank.description, 'P', drugbank.owner, drugbank.maintainer, false)
+            insertAliases(db1, sourceId)
+            int propertyDefId = generatePropertyDefinition(db1, sourceId, count)
+            generatePropertyValues(db1, [propertyDefId])
             
         } finally {
             loader?.close()
@@ -117,17 +114,17 @@ class DrugBankETL extends AbstractETL {
         }
     }
     
-    int generatePropertyDefinition(Sql db, int sourceId) {
+    int generatePropertyDefinition(Sql db, int sourceId, int count) {
         println "Inserting property defintion for $sourceId"
-        def keys = db.executeInsert(insertPropertyDefinitionsSql, [sourceId])
+        def keys = db.executeInsert(insertPropertyDefinitionsSql, [sourceId, count])
         int id = keys[0][0]
         println "Property definition generated. ID = $id"
         return id
     }
     
     void createConcordanceTable(Sql db) {
-        Utils.executeMayFail(db, 'drop concordance table $concordanceTable', 'DROP TABLE ' + concordanceTable)
-        Utils.execute(db, 'create concordance table $concordanceTable', createConcordanceTableSql)
+        Utils.executeMayFail(db, "drop concordance table $concordanceTable", 'DROP TABLE ' + concordanceTable)
+        Utils.execute(db, "create concordance table $concordanceTable", createConcordanceTableSql)
     }
     
     void loadData(Sql reader, Sql writer, StructureLoader loader) {

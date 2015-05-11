@@ -50,20 +50,20 @@ class Utils {
         return ds
     }
     
-    static int createSourceDefinition(DataSource dataSource, String schema, int categoryId, String name, String desc, String type, String owner, String maintainer, boolean active) {
+    static int createSourceDefinition(DataSource dataSource, String schema, int categoryId, String name, String version, String desc, String type, String owner, String maintainer, boolean active) {
    
         Sql db = new Sql(dataSource)
         int id = 0 
         try {
             def rows = db.executeUpdate("""DELETE FROM ${Sql.expand(schema)}.sources WHERE
-                category_id = $categoryId and source_name = $name""")
+                category_id = $categoryId AND source_name = $name AND source_version = $version""")
              if (rows) {
                  println "Deleted old $name"
              }
             
             def keys = db.executeInsert("""INSERT INTO ${Sql.expand(schema)}.sources
-(category_id, source_name, source_description, type, owner, maintainer, active) 
-values ($categoryId, $name, $desc, $type, $owner, $maintainer, $active)""")
+(category_id, source_name, source_version, source_description, type, owner, maintainer, active) 
+values ($categoryId, $name, $version, $desc, $type, $owner, $maintainer, $active)""")
             id = keys[0][0]
             println "Source ID is $id"
         

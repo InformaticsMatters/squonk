@@ -49,8 +49,16 @@ public class MoleculeUtils {
         }
         return count;
     }
+    
+    static public int heavyAtomCount(String mol) throws MolFormatException {
+        return heavyAtomCount(MolImporter.importMol(mol));
+    }
 
-    public MoleculeGraph clean(MoleculeGraph mol, int dim, String opts) {
+    static public int heavyAtomCount(MRecord rec) throws MolFormatException {
+        return heavyAtomCount(rec.getString());
+    }
+    
+    public static MoleculeGraph clean(MoleculeGraph mol, int dim, String opts) {
         Cleaner.clean(mol, dim, opts);
         return mol;
     }
@@ -331,5 +339,21 @@ public class MoleculeUtils {
 
     public static MoleculeIterable createIterable(Collection<Molecule> mols) {
         return new MoleculeCollectionIterableAdapter(mols);
+    }
+    
+    public static boolean isEmpty(String s) throws MolFormatException {
+        return MolImporter.importMol(s).isEmpty();
+    }
+    
+    public static boolean isNotEmpty(String s) throws MolFormatException {
+        return !isEmpty(s);
+    }
+    
+    public static boolean isEmpty(MRecord r) throws MolFormatException {
+        return isEmpty(r.getString());
+    }
+    
+    public static boolean isNotEmpty(MRecord r) throws MolFormatException {
+        return !isEmpty(r);
     }
 }

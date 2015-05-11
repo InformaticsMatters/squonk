@@ -86,6 +86,12 @@ class AbstractLoader {
         opts.extraColumnDefinitions = props.extraColumnDefs.join(',')
         opts.standardizerConfig = szr
         UpdateHandler.createStructureTable(conh, opts)
+        
+        createStructureTableIndexes(new Sql(conh.connection))
+    }
+    
+    protected void createStructureTableIndexes(Sql db) {
+        // noop
     }
     
         
