@@ -16,7 +16,7 @@ dependencies {
     compile project(':chemaxon-lib')
     compile project(':chemaxon-camel')
     
-    compile "org.postgresql:postgresql:9.3-1102-jdbc4"
+    compile "org.postgresql:postgresql:9.4-1201-jdbc41"
     
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-script:$camelVersion"
