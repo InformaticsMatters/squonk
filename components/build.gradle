@@ -11,8 +11,8 @@ allprojects {
     sourceCompatibility = 1.8
     version = '0.2-SNAPSHOT'
     
-    project.ext.set('camelVersion', '2.14.1')
-    project.ext.set('jacksonVersion', '2.4.1')
+    project.ext.set('camelVersion', '2.15.2')
+    project.ext.set('jacksonVersion', '2.4.3')
     project.ext.set('cdkVersion', '1.5.10')
 
 
