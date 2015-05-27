@@ -39,3 +39,4 @@ components/demo-services/logs
 /components/datamodel/mockdatamodel/build/
 /components/cdk-camel/.nb-gradle/private/
 /components/cdk-camel/build/
+/components/loaders/files

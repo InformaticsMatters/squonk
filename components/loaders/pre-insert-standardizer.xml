@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <StandardizerConfiguration>
   <Actions>
-    <RemoveExplicitH ID="RemoveExplicitH" Groups="target"/>
+    <ClearIsotopes ID="ClearIsotopes"/>
     <AliasToGroup ID="AliasToGroup"/>
     <Sgroups ID="Ungroup" Act="Ungroup"/>
-    <ClearIsotopes ID="ClearIsotopes"/>
+    <RemoveExplicitH ID="RemoveExplicitH" Groups="target"/>
     <Dearomatize ID="Dearomatize"/>
     <Mesomerize ID="Mesomerize"/>
     <Neutralize ID="Neutralize"/>
