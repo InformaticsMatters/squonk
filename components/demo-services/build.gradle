@@ -59,6 +59,7 @@ docker {
  */
 task buildDocker(type: Docker, dependsOn: distZip) {
     applicationName = "demoservices"
+    runCommand("apt-get update")
     def zipFile = tasks.distZip.outputs.files.singleFile
     addFile(zipFile, '/data/' + zipFile.name)
     runCommand("unzip /data/" + zipFile.name)

@@ -1,0 +1,17 @@
+demoservices:
+    image: "im.lac.components/demoservices:0.2-SNAPSHOT"
+    ports: 
+        - "80:8080"
+    volumes:
+        - ~/docker_external:external:ro
+    links:
+        - rdkitserver
+    external_links:
+        - pg_test:db
+        
+rdkitserver:
+    image: "abradle/rdkitserver"
+    ports:
+        - "8000"
+    environment:
+        SERVER_PORT: 8000
