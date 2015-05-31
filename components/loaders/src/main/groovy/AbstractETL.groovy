@@ -1,0 +1,61 @@
+import groovy.sql.Sql
+
+/**
+ *
+ * @author timbo
+ */
+class AbstractETL {
+    
+    ConfigObject database
+    
+    protected String chemcentralStructureAliasesTable, chemcentralPropertyDefintionsTable,
+    chemcentralStructurePropertiesTable, chemcentralStructureTable, chemcentralSourcesTable,
+    chemcentralPropertyTable, chemcentralInstancesTable
+    
+    protected String deleteAliasesSql, insertAliasesSql, insertInstancesSql,
+    createConcordanceTableSql, readStructuresSql, insertConcordanceSql, countConcordanceSql, 
+    createStructureIdIndexSql, createDBCdidIndexSql,
+    insertPropertyDefinitionsSql, insertStructurePropsSql, deleteSourceSql
+    
+    
+    AbstractETL() {
+        database = Utils.createConfig('database.properties')
+        
+        this.chemcentralInstancesTable = database.chemcentral.schema + '.instances'
+        this.chemcentralStructureTable = database.chemcentral.schema + '.structures'
+        this.chemcentralStructureAliasesTable = database.chemcentral.schema + '.structure_aliases'
+        this.chemcentralPropertyDefintionsTable = database.chemcentral.schema + '.property_definitions'
+        this.chemcentralStructurePropertiesTable = database.chemcentral.schema + '.structure_props'
+        this.chemcentralSourcesTable = database.chemcentral.schema + '.sources'
+        this.chemcentralPropertyTable = database.chemcentral.schema + '.jchemproperties'        
+    }
+    
+    void insertAliases(Sql db, int sourceId) {
+        println "Deleting aliases for $sourceId"
+        db.execute(deleteAliasesSql, [sourceId])
+        println "Inserting aliases for $sourceId"
+        db.execute(insertAliasesSql, [sourceId])
+        println "Aliases for $sourceId generated"
+    }
+    
+    void generatePropertyDefinitions(Sql db, int sourceId) {
+        println "Inserting property defintions for $sourceId"
+        db.execute(insertPropertyDefinitionsSql, [sourceId])
+        println "Property definitions generated"
+    }
+	
+    void generatePropertyValues(Sql db, List params) {
+        println "Inserting structure_props"
+        db.execute(insertStructurePropsSql, params)
+        println "structure_props values generated"
+    }
+    
+    void generateInstancesValues(Sql db, List params) {
+        println "Inserting instances"
+        db.execute(insertInstancesSql, params)
+        println "instances values generated"
+    }
+        
+	
+}
+

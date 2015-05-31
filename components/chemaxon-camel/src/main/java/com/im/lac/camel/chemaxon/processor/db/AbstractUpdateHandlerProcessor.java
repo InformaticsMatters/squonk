@@ -14,7 +14,7 @@
  * configure it before it is used for inserts or updates.
  *
  * A minimalist implementation could look like this:  <code>
- * Processor p = new JCBTableInserterUpdater(UpdateHandler.INSERT, 'TEST', null) {
+ * Processor p = new AbstractUpdateHandlerProcessor(UpdateHandler.INSERT, 'TEST', null) {
  *
  * @Override
  * protected void setValues(Exchange exchange, UpdateHandler updateHandler) {
@@ -47,7 +47,7 @@ import org.apache.camel.Service;
 /**
  * Created by timbo on 26/04/2014.
  */
-public abstract class AbstractUpdateHandlerProcessor extends ConnectionHandlerSupport implements Processor, Service {
+public abstract class AbstractUpdateHandlerProcessor extends ConnectionHandlerSupport implements Service, Processor {
 
     private static final Logger LOG = Logger.getLogger(AbstractUpdateHandlerProcessor.class.getName());
 
@@ -75,13 +75,13 @@ public abstract class AbstractUpdateHandlerProcessor extends ConnectionHandlerSu
 
     @Override
     public void start() throws Exception {
-        LOG.log(Level.FINE, "Starting JCBTableInserterUpdater {0}", this.toString());
+        LOG.log(Level.INFO, "Starting AbstractUpdateHandlerProcessor {0}", this.toString());
         super.start();
         updateHandler = createUpdateHandler();
     }
 
     private UpdateHandler createUpdateHandler() throws SQLException {
-        LOG.log(Level.FINE, "Creating UpdateHandler for table %s", tableName);
+        LOG.log(Level.INFO, "Creating UpdateHandler for table {0}", tableName);
         UpdateHandler uh = new UpdateHandler(getConnectionHandler(), mode, tableName, additionalColumns);
         configure(uh);
         return uh;
@@ -89,7 +89,8 @@ public abstract class AbstractUpdateHandlerProcessor extends ConnectionHandlerSu
 
     @Override
     public void stop() throws Exception {
-        LOG.log(Level.FINE, "Stopping JCBTableInserterUpdater {0}", this.toString());
+        LOG.log(Level.INFO, "Stopping AbstractUpdateHandlerProcessor {0}", this.toString());
+
         if (updateHandler != null) {
             updateHandler.close();
         }
@@ -98,12 +99,16 @@ public abstract class AbstractUpdateHandlerProcessor extends ConnectionHandlerSu
 
     @Override
     public void process(Exchange exchange) throws Exception {
+        LOG.finer("process()");
         setValues(exchange, updateHandler);
-        LOG.fine("Inserting structure");
+        execute(exchange);
+    }
+
+    protected void execute(Exchange exchange) throws SQLException {
         try {
             executionCount++;
             int cdid = updateHandler.execute(true);
-            handleCdId(cdid, exchange);
+            extractValues(exchange, updateHandler, cdid);
         } catch (SQLException e) {
             errorCount++;
             throw e;
@@ -111,19 +116,7 @@ public abstract class AbstractUpdateHandlerProcessor extends ConnectionHandlerSu
     }
 
     /**
-     * Callback to allow the generated CD_ID value to be handled. Default is to
-     * do nothing. the value will be negative if the duplicate filtering is in
-     * place and a the structure is already present
-     *
-     * @param cdid The generated value for the CD_ID column.
-     * @param exchange The exchange so values can be set to it (body or headers)
-     */
-    protected void handleCdId(int cdid, Exchange exchange) {
-        // noop
-    }
-
-    /**
-     * Call back to allow the UpdateHandler to be configured once it is
+     * Call back to allow the compound_structures to be configured once it is
      * created. Default is to do nothing.
      *
      * @param uh The UpdateHandler to configure
@@ -145,13 +138,15 @@ public abstract class AbstractUpdateHandlerProcessor extends ConnectionHandlerSu
 
     /**
      * Callback to allow values to be extracted from the UpdateHandler after the
-     * structure is inserted. Typically used to retrieve the generated CD_ID
+     * structure is inserted. Typically used to handle the generated CD_ID
      * value. Default is to do nothing.
      *
      * @param exchange
      * @param updateHandler
+     * @param cdid The generated value for the CD_ID column. Value will be negative 
+     * if duplicate filtering is in place and a the structure is already present
      */
-    protected void extractValues(Exchange exchange, UpdateHandler updateHandler) {
+    protected void extractValues(Exchange exchange, UpdateHandler updateHandler, int cdid) {
 
     }
 

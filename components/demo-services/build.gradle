@@ -26,7 +26,7 @@ dependencies {
     compile project(':cdk-lib')
     compile project(':rdkit-camel')
 
-    compile "org.postgresql:postgresql:9.3-1102-jdbc4"
+    compile "org.postgresql:postgresql:9.4-1201-jdbc41"
     
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-jetty:$camelVersion"
@@ -59,6 +59,7 @@ docker {
  */
 task buildDocker(type: Docker, dependsOn: distZip) {
     applicationName = "demoservices"
+    runCommand("apt-get update")
     def zipFile = tasks.distZip.outputs.files.singleFile
     addFile(zipFile, '/data/' + zipFile.name)
     runCommand("unzip /data/" + zipFile.name)

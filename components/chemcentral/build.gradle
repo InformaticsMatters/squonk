@@ -28,7 +28,7 @@ tasks.withType(JavaCompile) {
 
 dependencies {
     
-    compile "org.postgresql:postgresql:9.3-1102-jdbc4"
+    compile "org.postgresql:postgresql:9.4-1201-jdbc41"
     
     //compile "org.slf4j:slf4j-simple:1.7.7"
     

@@ -29,7 +29,6 @@ public class CalculatorsRouteBuilder extends RouteBuilder {
         // 3. A String representation of a single molecule (output will be a Molecule)
         // simple route that calculates a hard coded property
         from("direct:logp")
-                //.process(new MoleculeObjectConverterProcessor())
                 .process(new ChemAxonMoleculeProcessor()
                         .calculate("CXN_LogP", "logP()"))
                 .process(new CDKMolecularDescriptorProcessor()

@@ -187,7 +187,7 @@
                 }
 
                 div.query {
-                    background-color: #bdffbd;
+                    background-color: #ddffdd;
                     border-color: limegreen;
                     width: 100px;
                 }
@@ -484,7 +484,7 @@
                         popup: "reactor-service-submit",
                         form: "reactor-service-submit-form",
                         path: "/react_filter_predict",
-                        icon: "icons/chemicalreaction.png"}
+                        icon: "icons/chemreaction_filtered.png"}
                 ];
 
                 var queriesDiv = document.getElementById("queries");
@@ -631,30 +631,159 @@
                         path: "/process",
                         endpoint: "direct:clustering/spherex/ecfp4",
                         icon: "icons/clustering.png"},
-                    {id: "RDKitPredict",
-                        name: "RDKit prop predict",
-                        description: "Property prediction using RDKit",
-                        popup: "basic-params-service-submit",
-                        form: "basic-service-submit-form",
-                        path: "/process",
-                        endpoint: "direct:rdkit/predict",
-                        icon: "icons/propertiesadd.png"},
-                    {id: "RDKitFilter",
-                        name: "RDKit filter",
-                        description: "Molecule filtering using RDKit",
-                        popup: "basic-params-service-submit",
-                        form: "basic-service-submit-form",
-                        path: "/process",
-                        endpoint: "direct:rdkit/filter",
-                        icon: "icons/propertiesfilter.png"},
+//                    {id: "RDKitPredict",
+//                        name: "RDKit prop predict",
+//                        description: "Property prediction using RDKit",
+//                        popup: "basic-params-service-submit",
+//                        form: "basic-service-submit-form",
+//                        path: "/process",
+//                        endpoint: "direct:rdkit/predict",
+//                        icon: "icons/propertiesadd.png"},
+//                    {id: "RDKitFilter",
+//                        name: "RDKit filter",
+//                        description: "Molecule filtering using RDKit",
+//                        popup: "basic-params-service-submit",
+//                        form: "basic-service-submit-form",
+//                        path: "/process",
+//                        endpoint: "direct:rdkit/filter",
+//                        icon: "icons/propertiesfilter.png"},
                     {id: "RDKitServerCluster",
                         name: "RDKit cluster",
                         description: "Molecule clustering using RDKit",
+                        popup: "rdkit-screen-service-submit",
+                        form: "rdkit-screen-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:rdkitserver/cluster",
+                        icon: "icons/clustering.png"},
+                    {id: "RDKitServerScreen",
+                        name: "RDKit screen",
+                        description: "Virtual screening using RDKit",
+                        popup: "rdkit-screen-service-submit",
+                        form: "rdkit-screen-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:rdkitserver/screen",
+                        icon: "icons/propertiesfilter.png"},
+                    {id: "removeFragmentsKeepLargest",
+                        name: "Remove fragments",
+                        description: "Remove fragments (keep largest)",
                         popup: "basic-params-service-submit",
                         form: "basic-service-submit-form",
                         path: "/process",
-                        endpoint: "direct:rdkitserver/cluster",
-                        icon: "icons/clustering.png"}
+                        endpoint: "direct:removeFragmentsKeepLargest",
+                        icon: "icons/transform.png"},
+                    {id: "removesolvents",
+                        name: "Remove solvents",
+                        description: "Remove solvents",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:removesolvents",
+                        icon: "icons/transform.png"},
+                    {id: "aromatizeGeneral",
+                        name: "Aromatize (general)",
+                        description: "Aromatize (Daylight style)",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:aromatizeGeneral",
+                        icon: "icons/transform.png"},
+                    {id: "aromatizeBasic",
+                        name: "Aromatize (ChemAxon style)",
+                        description: "Aromatize (basic)",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:aromatizeBasic",
+                        icon: "icons/transform.png"},
+                    {id: "aromatizeLoose",
+                        name: "aromatize (loose)",
+                        description: "aromatize (loose)",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:aromatizeLoose",
+                        icon: "icons/transform.png"},
+                    {id: "dearomatize",
+                        name: "De-aromatize",
+                        description: "De-aromatize",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:dearomatize",
+                        icon: "icons/transform.png"},
+                    {id: "neutralize",
+                        name: "Neutralize",
+                        description: "Neutralize charged molecules by adjusting hydrogens",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:neutralize",
+                        icon: "icons/transform.png"},
+                    {id: "addexplicith",
+                        name: "Add explicit H",
+                        description: "Add explicit hydrogens",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:addexplicith",
+                        icon: "icons/transform.png"},
+                    {id: "removeexplicith",
+                        name: "Remove explicit H",
+                        description: "Remove explicit hydrogens",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:removeexplicith",
+                        icon: "icons/transform.png"},
+                    {id: "clearisotopes",
+                        name: "Clear isotopes",
+                        description: "Clear isotope definitions",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:clearisotopes",
+                        icon: "icons/transform.png"},
+                    {id: "expandsgroups",
+                        name: "Expand S-groups",
+                        description: "Expand S-groups",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:expandsgroups",
+                        icon: "icons/transform.png"},
+                    {id: "contractsgroups",
+                        name: "Contract S-groups",
+                        description: "Contract S-groups",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:contractsgroups",
+                        icon: "icons/transform.png"},
+                    {id: "ungroupsgroups",
+                        name: "Ungroup S-groups",
+                        description: "Ungroup S-groups",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:ungroupsgroups",
+                        icon: "icons/transform.png"},
+                    {id: "tautomerize",
+                        name: "Tautomerize",
+                        description: "Generate a cannonical tautomer",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:tautomerize",
+                        icon: "icons/transform.png"},
+                    {id: "mesomerize",
+                        name: "Mesomerize",
+                        description: "Generate a cannonical resonant structure",
+                        popup: "basic-params-service-submit",
+                        form: "basic-service-submit-form",
+                        path: "/process",
+                        endpoint: "direct:mesomerize",
+                        icon: "icons/transform.png"}
+
                 ];
 
                 var servicesDiv = document.getElementById("services");
@@ -1310,13 +1439,97 @@
                                     <tr><td>Service:</td><td><input type="text" name="serviceName" size="30" disabled value=""></td></tr>
                                     <tr><td>Name of input:</td><td><input type="text" name="inputName" size="30" disabled value=""></td></tr>
                                     <tr><td>Name of output:</td><td><input type="text" name="outputName" size="30" value="" autofocus></td></tr>
-                                    <tr><td>Target structure:</td><td><input type="text" name="TargetMolecule" size="30" value="NC1=CC=CC(NC2=NC=CC=N2)=C1"></td></tr>
+                                    <tr><td>Query structure:</td><td><input type="text" name="QueryMolecule" size="30" value="NC1=CC=CC(NC2=NC=CC=N2)=C1"></td></tr>
                                     <tr><td>Threshold:</td><td><input type="text" name="Threshold" size="5" value="0.8"></td></tr>
                                 </table>
                             </div>
                             <div style="position:absolute; right: 10px; bottom: 10px;">
                                 <button type="button" onclick="hide('screening-service-submit');
                                         handleServiceRequest('screening-service-submit-form');">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="rdkit-screen-service-submit" class="glasspane">
+                <div class="popup" style="width: 500px; height: 280px; margin-top: -140px; margin-left: -250px;">
+                    <div style="text-align: right;">
+                        <a href="#" onClick="hide('rdkit-screen-service-submit')">X</a>
+                    </div>
+                    <div>
+                        <form id="rdkit-screen-service-submit-form">
+                            <input type="text" name="itemId" hidden disabled>
+                            <input type="text" name="serviceEndpoint" hidden disabled>
+                            <input type="text" name="path" hidden disabled>
+                            <div>
+                                <table cellpadding="3">
+                                    <tr><td>Service:</td><td><input type="text" name="serviceName" size="30" disabled value=""></td></tr>
+                                    <tr><td>Name of input:</td><td><input type="text" name="inputName" size="30" disabled value=""></td></tr>
+                                    <tr><td>Name of output:</td><td><input type="text" name="outputName" size="30" value="" autofocus></td></tr>
+                                    <tr><td>Descriptor:</td><td>
+                                            <select name="fp_method">
+                                                <option value="atom_pairs">Atom pairs</option>
+                                                <option value="maccs">MACCS keys</option>
+                                                <option value="morgan" selected>Morgan fingerprints</option>
+                                                <option value="rdkit_topo">RDKit topological fp</option>
+                                            </select></td></tr>
+                                    <tr><td>Metric:</td><td>
+                                            <select name="sim_method">
+                                                <option value="cosine">Cosine</option>
+                                                <option value="dice">Dice</option>
+                                                <option value="tanimoto" selected>Tanimoto</option>
+                                                <option value="tversky">Tversky</option>
+
+                                            </select></td></tr>
+                                    <tr><td>Query structure:</td><td><input type="text" name="smiles" size="30" value="NC1=CC=CC(NC2=NC=CC=N2)=C1"></td></tr>
+                                    <tr><td>Threshold:</td><td><input type="text" name="threshold" size="5" value="0.8"></td></tr>
+                                </table>
+                            </div>
+                            <div style="position:absolute; right: 10px; bottom: 10px;">
+                                <button type="button" onclick="hide('rdkit-screen-service-submit');
+                                        handleServiceRequest('rdkit-screen-service-submit-form');">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="rdkit-cluster-service-submit" class="glasspane">
+                <div class="popup" style="width: 500px; height: 280px; margin-top: -140px; margin-left: -250px;">
+                    <div style="text-align: right;">
+                        <a href="#" onClick="hide('rdkit-cluster-service-submit')">X</a>
+                    </div>
+                    <div>
+                        <form id="rdkit-cluster-service-submit-form">
+                            <input type="text" name="itemId" hidden disabled>
+                            <input type="text" name="serviceEndpoint" hidden disabled>
+                            <input type="text" name="path" hidden disabled>
+                            <div>
+                                <table cellpadding="3">
+                                    <tr><td>Service:</td><td><input type="text" name="serviceName" size="30" disabled value=""></td></tr>
+                                    <tr><td>Name of input:</td><td><input type="text" name="inputName" size="30" disabled value=""></td></tr>
+                                    <tr><td>Name of output:</td><td><input type="text" name="outputName" size="30" value="" autofocus></td></tr>
+                                    <tr><td>Descriptor:</td><td>
+                                            <select name="fp_method">
+                                                <option value="atom_pairs">Atom pairs</option>
+                                                <option value="maccs">MACCS keys</option>
+                                                <option value="morgan" selected>Morgan fingerprints</option>
+                                                <option value="rdkit_topo">RDKit topological fp</option>
+                                            </select></td></tr>
+                                    <tr><td>Metric:</td><td>
+                                            <select name="sim_method">
+                                                <option value="cosine">Cosine</option>
+                                                <option value="dice">Dice</option>
+                                                <option value="tanimoto" selected>Tanimoto</option>
+                                                <option value="tversky">Tversky</option>
+                                            </select></td></tr>
+                                    <tr><td>Threshold:</td><td><input type="text" name="threshold" size="5" value="0.8"></td></tr>
+                                </table>
+                            </div>
+                            <div style="position:absolute; right: 10px; bottom: 10px;">
+                                <button type="button" onclick="hide('rdkit-cluster-service-submit');
+                                        handleServiceRequest('rdkit-cluster-service-submit-form');">Submit</button>
                             </div>
                         </form>
                     </div>

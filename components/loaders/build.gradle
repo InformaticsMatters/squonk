@@ -1,0 +1,103 @@
+// Apply the groovy plugin to add support for Groovy
+apply plugin: 'groovy'
+
+// In this section you declare where to find the dependencies of your project
+repositories {
+    // Use 'jcenter' for resolving your dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
+}
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+    
+    compile project(':common')
+    compile project(':common-camel')
+    compile project(':chemaxon-lib')
+    compile project(':chemaxon-camel')
+    
+    compile "org.postgresql:postgresql:9.4-1201-jdbc41"
+    
+    compile "org.apache.camel:camel-core:$camelVersion"
+    compile "org.apache.camel:camel-script:$camelVersion"
+    compile "org.apache.camel:camel-groovy:$camelVersion"
+    
+    // We use the latest groovy 2.x version for building this library
+    compile 'org.codehaus.groovy:groovy-all:2.3.7'
+
+    // We use the awesome Spock testing and specification framework
+    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
+    testCompile 'junit:junit:4.11'
+}
+
+task chemcentralCreate(dependsOn: 'classes', type: JavaExec) {
+    main = 'ChemcentralCreate'
+    args = ['dropTables', 'createTables']
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task chemblETL(dependsOn: 'classes', type: JavaExec) {
+    main = 'ChemblETL'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task drugbankCreateTables(dependsOn: 'classes', type: JavaExec) {
+    main = 'DrugbankLoader'
+    args = ['createTables']
+    classpath = sourceSets.main.runtimeClasspath
+}
+task drugbankDropTables(dependsOn: 'classes', type: JavaExec) {
+    main = 'DrugbankLoader'
+    args = ['dropTables']
+    classpath = sourceSets.main.runtimeClasspath
+}
+task drugbankLoadData(dependsOn: 'classes', type: JavaExec) {
+    main = 'DrugbankLoader'
+    args = ['loadData']
+    classpath = sourceSets.main.runtimeClasspath
+}
+task drugbankReload(dependsOn: 'classes', type: JavaExec) {
+    main = 'DrugbankLoader'
+    args = ['dropTables', 'createTables', 'loadData']
+    classpath = sourceSets.main.runtimeClasspath
+}
+task drugbankETL(dependsOn: 'classes', type: JavaExec) {
+    main = 'DrugBankETL'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+
+task emoleculesCreateTables(dependsOn: 'classes', type: JavaExec) {
+    main = 'EMoleculesLoader'
+    args = ['createTables']
+    classpath = sourceSets.main.runtimeClasspath
+}
+task emoleculesDropTables(dependsOn: 'classes', type: JavaExec) {
+    main = 'EMoleculesLoader'
+    args = ['dropTables']
+    classpath = sourceSets.main.runtimeClasspath
+}
+task emoleculesLoadData(dependsOn: 'classes', type: JavaExec) {
+    main = 'EMoleculesLoader'
+    args = ['loadData']
+    classpath = sourceSets.main.runtimeClasspath
+}
+task emoleculesReload(dependsOn: 'classes', type: JavaExec) {
+    main = 'EMoleculesLoader'
+    args = ['dropTables', 'createTables', 'loadData']
+    classpath = sourceSets.main.runtimeClasspath
+}
+task emoleculesETL(dependsOn: 'classes', type: JavaExec) {
+    main = 'EMoleculesETL'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task pdbLigandReload(dependsOn: 'classes', type: JavaExec) {
+    main = 'PdbLigandLoader'
+    args = ['dropTables', 'createTables', 'loadData']
+    classpath = sourceSets.main.runtimeClasspath
+}
+task pdbLigandETL(dependsOn: 'classes', type: JavaExec) {
+    main = 'PdbLigandETL'
+    classpath = sourceSets.main.runtimeClasspath
+}

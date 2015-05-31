@@ -44,6 +44,7 @@ public class Main {
         } else {
             LOG.info("Skipping RDKit based routes");
         }
+        camelContext.addRoutes(new MoleculeUtilsRouteBuilder());
         camelContext.addRoutes(new RDKitServerRouteBuilder());
         camelContext.addRoutes(new CalculatorsRouteBuilder());
         camelContext.addRoutes(new DescriptorsRouteBuilder());

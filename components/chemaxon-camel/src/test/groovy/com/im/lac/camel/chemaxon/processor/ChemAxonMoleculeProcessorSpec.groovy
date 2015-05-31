@@ -20,12 +20,16 @@ import com.im.lac.util.IOUtils
  */
 class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
     
-//    String file = "../../data/testfiles/Building_blocks_GBP.sdf.gz"
-//    int count = 7003
-//    int filterCount = 235
+    //    String file = "../../data/testfiles/Building_blocks_GBP.sdf.gz"
+    //    int count = 7003
+    //    int filterCount = 235
     
-    String file = "../../data/testfiles/nci100.smiles"
-    int count = 100
+    //    String file = "../../data/testfiles/nci100.smiles"
+    //    int count = 100
+    //    int filterCount = 2
+    
+    String file = "../../data/testfiles/dhfr_standardized.sdf.gz"
+    int count = 756
     int filterCount = 2
     
     long sleep = 10
@@ -45,11 +49,11 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         Stream results = template.requestBody('direct:streaming', mols).getStream()
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
-        println "...done"
+        println "  ...done"
         Thread.sleep(sleep)
         
         then:
-        println "Number of mols: ${all.size()} generated in ${t1-t0}ms"
+        println "  number of mols: ${all.size()} generated in ${t1-t0}ms"
         all.size() == count
         
         
@@ -65,23 +69,43 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         InputStream input = new FileInputStream(file)
         Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(true);
         
-        
         when:
         long t0 = System.currentTimeMillis()
         Stream results = template.requestBody('direct:streaming', mols).getStream()
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
-        println "...done"
+        println "  ...done"
         Thread.sleep(sleep)
         
         then:
-        println "Number of mols: ${all.size()} generated in ${t1-t0}ms"
+        println "  number of mols: ${all.size()} generated in ${t1-t0}ms"
         all.size() == count
-        
         
         cleanup: 
         input.close()
-
+    }
+    
+    void "noop parallel streaming"() {
+        setup:
+        Thread.sleep(sleep)
+        println "noop parallel streaming"
+        InputStream input = new FileInputStream(file)
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(true);
+        
+        when:
+        long t0 = System.currentTimeMillis()
+        Stream results = template.requestBody('direct:noop', mols).getStream()
+        List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
+        long t1 = System.currentTimeMillis()
+        println "  ...done"
+        Thread.sleep(sleep)
+        
+        then:
+        println "  number of mols: ${all.size()} generated in ${t1-t0}ms"
+        all.size() == count
+        
+        cleanup: 
+        input.close()
     }
     
     
@@ -98,11 +122,16 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
                     .calculate("logp", "logP()")
                     .calculate("hbd_count", "donorCount()")
                     .calculate("hba_count", "acceptorCount()")
-                    .calculate("logd", "logD('7.4')")
+                    //.calculate("logd", "logD('7.4')")
                     .calculate("rings", "ringCount()")
                     .calculate("rot_bonds", "rotatableBondCount()")
                     //.transform("leconformer()")
-                )               
+                )       
+                
+                from("direct:noop")
+                .process(new ChemAxonMoleculeProcessor()
+                    .calculate("atoms", "atomCount()")
+                )
             }
         }
     }

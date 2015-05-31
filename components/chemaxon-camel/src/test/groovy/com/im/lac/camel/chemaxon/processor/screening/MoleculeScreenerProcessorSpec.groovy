@@ -50,7 +50,7 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         def mol2 = new MoleculeObject(target)
         
         when:
-        MoleculeObject result = template.requestBodyAndHeader('direct:pharmacophore/streaming', mol1, MoleculeScreenerProcessor.HEADER_TARGET_MOLECULE, mol2)
+        MoleculeObject result = template.requestBodyAndHeader('direct:pharmacophore/streaming', mol1, MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE, mol2)
 
         then:
         Double similarity = result.getValue('similarity')
@@ -67,7 +67,7 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBodyAndHeader('direct:pharmacophore/streaming', mols, MoleculeScreenerProcessor.HEADER_TARGET_MOLECULE, mol2).getStream()
+        Stream results = template.requestBodyAndHeader('direct:pharmacophore/streaming', mols, MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE, mol2).getStream()
         long count = results.count()
         long t1 = System.currentTimeMillis()
         println "...done"
@@ -89,7 +89,7 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBodyAndHeader('direct:pharmacophore/streaming', mols, MoleculeScreenerProcessor.HEADER_TARGET_MOLECULE, mol2)getStream()
+        Stream results = template.requestBodyAndHeader('direct:pharmacophore/streaming', mols, MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE, mol2)getStream()
         long count = results.count()
         long t1 = System.currentTimeMillis()
         println "...done"

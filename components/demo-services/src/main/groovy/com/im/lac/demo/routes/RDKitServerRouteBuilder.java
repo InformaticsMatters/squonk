@@ -13,15 +13,32 @@ public class RDKitServerRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+        
+        String rdkitserver = System.getenv("RDKIT_SERVER");
+        if (rdkitserver == null) {
+            rdkitserver = "localhost:8000";
+        }
+        System.out.println("Using " + rdkitserver + " for RDKit services");
 
         from("direct:rdkitserver/cluster")
                 .log("rdkitserver/cluster starting")
                 .marshal(new MoleculeObjectJsonConverter())
                 .removeHeader(Exchange.HTTP_URI)
-                .setHeader(Exchange.HTTP_QUERY, constant("fp_method=morgan&sim_method=tanimoto&threshold=0.5"))
+                .setHeader(Exchange.HTTP_QUERY, simple("fp_method=${header.fp_method}&sim_method=${header.sim_method}&threshold=${header.threshold}"))
                 .setHeader(Exchange.HTTP_METHOD, constant("POST"))
                 .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
-                .inOut("http4://localhost:8000/rdkit_cluster/cluster_simple/")
+                .inOut("http4://" + rdkitserver + "/rdkit_cluster/cluster_simple/")
+                .unmarshal(new MoleculeObjectJsonConverter())
+                .log("rdkitserver/screen finished");
+        
+        from("direct:rdkitserver/screen")
+                .log("rdkitserver/screen starting")
+                .marshal(new MoleculeObjectJsonConverter())
+                .removeHeader(Exchange.HTTP_URI)
+                .setHeader(Exchange.HTTP_QUERY, simple("fp_method=${header.fp_method}&sim_method=${header.sim_method}&threshold=${header.threshold}&smiles=${header.smiles}"))
+                .setHeader(Exchange.HTTP_METHOD, constant("POST"))
+                .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
+                .inOut("http4://" + rdkitserver + "/rdkit_screen/screen_simple/")
                 .unmarshal(new MoleculeObjectJsonConverter())
                 .log("rdkitserver/screen finished");
 

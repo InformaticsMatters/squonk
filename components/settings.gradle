@@ -4,3 +4,5 @@ include 'common', 'core-test', 'common-camel'
 include 'chemaxon-lib', 'chemaxon-camel', 'demo-services', 'chemcentral'
 include 'cdk-lib', 'cdk-camel'
 include 'rdkit-camel'
+include 'loaders'
+
