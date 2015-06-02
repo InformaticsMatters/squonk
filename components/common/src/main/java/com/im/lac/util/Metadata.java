@@ -1,4 +1,4 @@
-package com.im.lac.camel.dataformat;
+package com.im.lac.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Holds metadata about a set of MoleculeObjects
+ * Holds metadata about a set of objects.
  *
  * @author timbo
  */
@@ -15,10 +15,21 @@ public class Metadata {
 
     public static final String FORMAT = "format";
 
+    /**
+     * The number of records present
+     */
     @JsonProperty
     int size = 0;
+    
+    /**
+     * The names and types (java class) of the properties
+     */
     @JsonProperty
     Map<String, Class> propertyTypes = new HashMap<>();
+    
+    /**
+     * metadata describing the dataset
+     */
     @JsonProperty
     Map<String, Object> metaProps = new HashMap<>();
 
@@ -43,7 +54,7 @@ public class Metadata {
         StringBuilder b = new StringBuilder();
         b.append("Metadata [")
                 .append("size=").append(size)
-                .append("#propertyTypes=").append(propertyTypes.size())
+                .append(", #propertyTypes=").append(propertyTypes.size())
                 .append(", #metaProps=").append(metaProps.size())
                 .append("]");
         return b.toString();

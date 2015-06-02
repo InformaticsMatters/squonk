@@ -62,9 +62,10 @@ public class MoleculeObject implements Serializable {
     /**
      * Properties of the molecule. These are shared across all chemistry
      * implementations allowing different implementations to be interoperable.
-     * Note that the keys must be Strings and values must be writable as simple JSON 
-     * types so that these properties can be used in remote implementations. The 
-     * properties are set and read using the getValue(), putValue() and related methods.
+     * Note that the keys must be Strings and values must be writable as simple
+     * JSON types so that these properties can be used in remote
+     * implementations. The properties are set and read using the getValue(),
+     * putValue() and related methods.
      */
     private Map<String, Object> values;
 
@@ -85,8 +86,8 @@ public class MoleculeObject implements Serializable {
         this.source = source;
         this.format = format;
     }
-    
-    public MoleculeObject(String source, String format, Map<String,Object> props) {
+
+    public MoleculeObject(String source, String format, Map<String, Object> props) {
         this();
         this.source = source;
         this.format = format;
@@ -166,6 +167,25 @@ public class MoleculeObject implements Serializable {
 
     public void putValues(Map<String, Object> values) {
         this.values.putAll(values);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append("MoleculeObject source: ")
+                .append(source)
+                .append(" format: ")
+                .append(format)
+                .append(" values: [");
+        for (Map.Entry<String, Object> e : values.entrySet()) {
+            b.append(e.getKey())
+                    .append(": ")
+                    .append(e.getValue())
+                    .append(" ");
+        }
+        b.append("]");
+
+        return b.toString();
     }
 
 }
