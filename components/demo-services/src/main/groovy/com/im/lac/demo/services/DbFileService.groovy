@@ -1,6 +1,8 @@
 package com.im.lac.demo.services
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.im.lac.demo.model.DataItem
+import com.im.lac.types.io.Metadata
 import groovy.sql.Sql
 import groovy.util.logging.Log
 import java.sql.Connection
@@ -20,17 +22,28 @@ import org.apache.camel.util.IOHelper
 class DbFileService {
     
     DataSource dataSource
-    static final String DEMO_FILES_TABLE_NAME = 'users.demo_files'
+    static final String DEFAULT_TABLE_NAME = 'users.demo_files'
+    private final String tableName;
+    private final ObjectMapper objectMapper;
     
     DbFileService(DataSource dataSource) {
+        this(dataSource, DEFAULT_TABLE_NAME);
+    }
+    
+    /** Alternative constructor allowing the table name to be specified, primarily 
+     * for testing purposes.
+     */
+    DbFileService(DataSource dataSource, String tableName) {
         this.dataSource = dataSource
+        this.tableName = tableName;
+        this.objectMapper = new ObjectMapper();
     }
     
     void createTables() {
         
         Sql db = new Sql(dataSource)
         try {
-            db.firstRow('select count(*) from ' + DEMO_FILES_TABLE_NAME)
+            db.firstRow('select count(*) from ' + tableName)
         } catch (SQLException se) {
             createTable(db)
         }
@@ -40,12 +53,13 @@ class DbFileService {
     private void createTable(Sql db) {
         log.info("Creating table")
         db.execute """\
-            |CREATE TABLE $DEMO_FILES_TABLE_NAME (
+            |CREATE TABLE $tableName (
             |  id SERIAL PRIMARY KEY,
             |  name TEXT NOT NULL,
             |  time_created TIMESTAMP NOT NULL DEFAULT NOW(),
             |  last_updated TIMESTAMP NOT NULL DEFAULT NOW(),
             |  size INTEGER,
+            |  metadata JSONB,
             |  loid BIGINT NOT NULL
             |)""".stripMargin()
     }
@@ -78,11 +92,11 @@ class DbFileService {
     }
     
     private DataItem doAddDataItem(Sql db, DataItem data, InputStream is) {
-        
+        String metaJson = marshalMetadata(data.metadata);
         Long loid = createLargeObject(db.connection, is)
         def gen = db.executeInsert("""\
-            |INSERT INTO $DEMO_FILES_TABLE_NAME (name, size, loid)
-            |  VALUES (?,?,?)""".stripMargin(), [data.name, data.size, loid]) 
+            |INSERT INTO $tableName (name, size, metadata, loid)
+            |  VALUES (?,?,?::jsonb,?)""".stripMargin(), [data.name, data.size, metaJson, loid]) 
         Long id = gen[0][0]
             
         log.info("Created data item with id $id using loid $loid")
@@ -107,9 +121,10 @@ class DbFileService {
     private DataItem doUpdateDataItem(Sql db, DataItem data) {
         
         Long id = data.id
+        String metaJson = marshalMetadata(data.metadata);
         db.executeUpdate("""\
-            |UPDATE $DEMO_FILES_TABLE_NAME set name = ?, size = ?, last_updated = NOW()
-            |  WHERE id = ?""".stripMargin(), [data.name, data.size, id]) 
+            |UPDATE $tableName set name = ?, size = ?, metadata = ?::jsonb, last_updated = NOW()
+            |  WHERE id = ?""".stripMargin(), [data.name, data.size, metaJson, id]) 
 
         log.info("Updated data item with id $id")
         return doLoadDataItem(db, id)
@@ -138,7 +153,7 @@ class DbFileService {
         deleteLargeObject(data.loid, con)
         Long loid = createLargeObject(con, is)
         db.executeUpdate("""\
-            |UPDATE $DEMO_FILES_TABLE_NAME set loid = ?, last_updated = NOW()
+            |UPDATE $tableName set loid = ?, last_updated = NOW()
             |  WHERE id = ?""".stripMargin(), [loid, id]) 
             
         log.info("Created data item with id $id using loid $loid")
@@ -160,7 +175,8 @@ class DbFileService {
     
     private DataItem doLoadDataItem(Sql db, Long id) {
         log.fine("loadDataItem($id)")
-        def row = db.firstRow('SELECT * FROM ' + DbFileService.DEMO_FILES_TABLE_NAME + ' WHERE id = ?', [id])
+        def row = db.firstRow('SELECT id, name, time_created, last_updated, size, metadata::text, loid FROM ' 
+            + tableName + ' WHERE id = ?', [id])
         if (!row) {
             throw new IllegalArgumentException("Item with ID $id not found")
         }
@@ -173,7 +189,8 @@ class DbFileService {
         List<DataItem> items = []
         Sql db = new Sql(dataSource)
         db.withTransaction {
-            db.eachRow('SELECT * FROM ' + DbFileService.DEMO_FILES_TABLE_NAME + '  ORDER BY id') { row ->
+            db.eachRow('SELECT id, name, time_created, last_updated, size, metadata::text, loid FROM ' 
+                + tableName + '  ORDER BY id') { row ->
                 items << buildDataItem(row)
             }
         }
@@ -185,6 +202,7 @@ class DbFileService {
         data.id = row.id
         data.name = row.name
         data.size = row.size
+        data.metadata = unmarshalMetadata(row.metadata)
         data.created = row.time_created
         data.updated = row.last_updated
         data.loid = row.loid
@@ -209,7 +227,7 @@ class DbFileService {
     
     private void doDeleteDataItem(Sql db, DataItem data) {
         deleteLargeObject(data.loid, db.connection)
-        db.executeUpdate("DELETE FROM " + DEMO_FILES_TABLE_NAME + " WHERE id = ?", [data.id])    
+        db.executeUpdate("DELETE FROM " + tableName + " WHERE id = ?", [data.id])    
     }
     
     private long createLargeObject(Connection con, InputStream is) {
@@ -252,6 +270,18 @@ class DbFileService {
         LargeObjectManager lobj = ((org.postgresql.PGConnection)con).getLargeObjectAPI()
         LargeObject obj = lobj.open(loid, LargeObjectManager.READ)
         return obj.getInputStream();        
+    }
+    
+    private String marshalMetadata(Metadata meta) {
+        return objectMapper.writeValueAsString(meta);
+    }
+    
+    private Metadata unmarshalMetadata(String json) {
+        if (json != null) {
+            return objectMapper.readValue(json, Metadata.class);
+        } else {
+            return new Metadata();
+        }
     }
     
 }

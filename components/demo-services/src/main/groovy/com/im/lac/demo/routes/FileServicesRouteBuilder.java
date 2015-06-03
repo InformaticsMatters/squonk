@@ -1,6 +1,6 @@
 package com.im.lac.demo.routes;
 
-import com.im.lac.util.MoleculeObjectJsonConverter;
+import com.im.lac.types.io.MoleculeObjectJsonConverter;
 import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.chemaxon.molecule.MoleculeObjectWriter;
@@ -8,7 +8,7 @@ import com.im.lac.demo.services.DbFileService;
 import com.im.lac.demo.model.*;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.IOUtils;
-import com.im.lac.util.Metadata;
+import com.im.lac.types.io.Metadata;
 import com.im.lac.util.SimpleStreamProvider;
 import com.im.lac.util.StreamProvider;
 import java.io.File;
@@ -351,6 +351,8 @@ public class FileServicesRouteBuilder extends RouteBuilder {
             return null;
         } else {
             result.setSize(count);
+            result.setMetadata(meta[0]);
+            LOG.log(Level.INFO, "Metadata: {0}", meta[0]);
             if (result.getName() == null) {
                 result.setName("DataItem " + result.getId());
             }
@@ -380,13 +382,13 @@ public class FileServicesRouteBuilder extends RouteBuilder {
 
         final InputStream input = service.createLargeObjectReader(con, sourceData.getLoid());
 
-        return createMoleculeObjectStreamFromJson(input);
+        return createMoleculeObjectStreamFromJson(sourceData.getMetadata(), input);
     }
 
-    private Stream<MoleculeObject> createMoleculeObjectStreamFromJson(InputStream is) throws IOException {
+    private Stream<MoleculeObject> createMoleculeObjectStreamFromJson(Metadata meta, InputStream is) throws IOException {
         InputStream gunzip = IOUtils.getGunzippedInputStream(is);
-        final MoleculeObjectJsonConverter dataFormat = new MoleculeObjectJsonConverter();
-        Stream<MoleculeObject> stream = dataFormat.unmarshal(gunzip);
+        final MoleculeObjectJsonConverter converter = new MoleculeObjectJsonConverter();
+        Stream<MoleculeObject> stream = converter.unmarshal(meta, gunzip);
         return stream;
     }
 

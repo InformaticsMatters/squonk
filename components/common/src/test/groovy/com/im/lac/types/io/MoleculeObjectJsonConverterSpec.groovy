@@ -1,4 +1,4 @@
-package com.im.lac.util
+package com.im.lac.types.io
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.im.lac.types.MoleculeObject
@@ -139,18 +139,22 @@ class MoleculeObjectJsonConverterSpec extends Specification {
             
         setup:
         String input = '''[
-    {"format":"smiles","source":"c1ccccc1","values":{"field_0":"1"}},
-    {"format":"smiles","source":"CCC","values":{"field_0":"2"}}
+    {"format":"smiles","source":"c1ccccc1","values":{"field_0":1}},
+    {"format":"smiles","source":"CCC","values":{"field_0":2}}
     ]'''
+        Metadata meta = new Metadata()
+        meta.size = 2
+        meta.propertyTypes.put("field_0", Integer.class)
         def convertor = new MoleculeObjectJsonConverter()
             
         when:
-        def result = convertor.unmarshal(new ByteArrayInputStream(input.getBytes()))
+        def result = convertor.unmarshal(meta, new ByteArrayInputStream(input.getBytes()))
         def mols = result.collect()
             
         then:
         mols.size() == 2
         mols[0].source == 'c1ccccc1'
+        mols[0].values["field_0"] == 1
     }
     	
 }

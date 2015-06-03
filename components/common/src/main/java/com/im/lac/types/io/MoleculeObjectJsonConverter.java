@@ -1,9 +1,10 @@
-package com.im.lac.util;
+package com.im.lac.types.io;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.im.lac.types.MoleculeObject;
+import com.im.lac.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -12,8 +13,10 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
- * DataFormat that handles marshaling/unmarshaling of MoleculeObjects to/from
+ * Handlesmetadata driven marshaling/unmarshaling of MoleculeObjects to/from
  * JSON.
+ * The metadata among other things defines the Java classes of the MoleculeObject's 
+ * values so that those can be handled as the correct Java types.
  *
  * @author timbo
  */
@@ -111,22 +114,18 @@ public class MoleculeObjectJsonConverter {
     }
 
     /**
-     * Generate an Stream of MoleculeObjects from the JSON input. NOTE: to
-     * ensure the InputStream is closed you should either close the returned
-     * stream or close the InputStream once processing is finished.
+     * Generate an Stream of MoleculeObjects from the JSON input. 
+     * NOTE: to ensure the InputStream is closed you should either close the 
+     * returned stream or close the InputStream once processing is finished.
      *
+     * @param meta
      * @param in
      * @return A Stream of MoleculeObjects
      * @throws IOException
      */
-    public Stream<MoleculeObject> unmarshal(InputStream in) throws IOException {
-        MoleculeObjectUnmarshaler unmarshaller = new MoleculeObjectUnmarshaler(null);
-        return unmarshaller.read(in);
-    }
-    
     public Stream<MoleculeObject> unmarshal(Metadata meta, InputStream in) throws IOException {
         MoleculeObjectUnmarshaler unmarshaller = new MoleculeObjectUnmarshaler(meta);
-        return unmarshaller.read(in);
+        return unmarshaller.streamFromJson(in);
     }
 
 }

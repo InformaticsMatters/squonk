@@ -1,4 +1,4 @@
-package com.im.lac.util;
+package com.im.lac.types.io;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Holds metadata about a set of objects.
+ * Holds metadata about a set of data items.
  *
  * @author timbo
  */
@@ -32,6 +32,16 @@ public class Metadata {
      */
     @JsonProperty
     Map<String, Object> metaProps = new HashMap<>();
+    
+    public Metadata() {
+        
+    }
+    
+    public Metadata(int size, Map<String, Object> metaProps, Map<String, Class> propertyTypes) {
+        this.size = size;
+        this.metaProps = metaProps;
+        this.propertyTypes = propertyTypes;
+    }
 
     public int getSize() {
         return size;
