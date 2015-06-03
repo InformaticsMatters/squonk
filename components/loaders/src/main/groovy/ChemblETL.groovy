@@ -26,7 +26,7 @@ class ChemblETL extends AbstractETL {
     ChemblETL() {
         chembl = Utils.createConfig('chembl.properties')
         
-        this.concordanceTable = database.chemcentral.schema + '.chembl_' + chembl.version + '_concordance'
+        this.concordanceTable = database.chemcentral.schema + '.concordance_chembl_' + chembl.version
         this.chemblIdLookupTable = chembl.schema + '.chembl_id_lookup'
         this.chemblActivitiesTable = chembl.schema + '.activities'
         this.chemblAssaysTable = chembl.schema + '.assays'
@@ -82,15 +82,66 @@ class ChemblETL extends AbstractETL {
                 |  JOIN $chemblIdLookupTable l ON ass.assay_id = l.entity_id
                 |    AND l.entity_type = 'ASSAY'""".stripMargin()
         
+        //        insertStructurePropsSql = """\
+        //                |INSERT INTO $chemcentralStructurePropertiesTable
+        //                |  (structure_id, property_def_id, property_data)
+        //                |  SELECT con.structure_id, p.id, ('{' ||
+        //                |    '"activity_id":' || activity_id ||
+        //                |    ',"assay_id":' || assay_id ||
+        //                |    ',"doc_id":' || doc_id ||
+        //                |    ',"record_id":' || record_id ||
+        //                |    ',"molregno":' || act.molregno ||
+        //                |    CASE WHEN act.standard_relation IS NULL THEN '' ELSE ',"standard_relation":"' || act.standard_relation || '"' END ||
+        //                |    CASE WHEN act.standard_value IS NULL THEN '' ELSE ',"standard_value":' || act.standard_value END ||
+        //                |    CASE WHEN act.standard_units IS NULL THEN '' ELSE ',"standard_units":"' || act.standard_units || '"' END ||
+        //                |    CASE WHEN act.standard_flag IS NULL THEN '' ELSE ',"standard_flag":' || act.standard_flag END ||
+        //                |    CASE WHEN act.standard_type IS NULL THEN '' ELSE ',"standard_type":"' || act.standard_type || '"' END ||
+        //                |    CASE WHEN act.data_validity_comment IS NULL THEN '' ELSE ',"data_validity_comment":"' || act.data_validity_comment || '"' END ||
+        //                |    CASE WHEN act.potential_duplicate IS NULL THEN '' ELSE ',"potential_duplicate":"' || act.potential_duplicate || '"' END ||
+        //                |    CASE WHEN act.pchembl_value IS NULL THEN '' ELSE ',"pchembl_value":' || act.pchembl_value END ||
+        //                |    CASE WHEN act.activity_comment IS NULL THEN '' ELSE ',"activity_comment":' || to_json(act.activity_comment) END ||
+        //                |    '}')::jsonb
+        //                |    FROM $chemblActivitiesTable act
+        //                |    JOIN $chemblIdLookupTable la ON la.entity_id = act.assay_id AND la.entity_type = 'ASSAY'
+        //                |    JOIN $chemblIdLookupTable lc ON lc.entity_id = act.molregno AND lc.entity_type = 'COMPOUND'
+        //                |    JOIN $concordanceTable con ON con.molregno = act.molregno
+        //                |    JOIN $chemcentralPropertyDefintionsTable p ON p.external_id = la.chembl_id""".stripMargin()
+    
         insertStructurePropsSql = """\
-                |INSERT INTO $chemcentralStructurePropertiesTable
-                |  (structure_id, property_def_id, property_data)
-                |  SELECT con.structure_id, p.id, row_to_json(act)::jsonb
-                |    FROM $chemblActivitiesTable act
-                |    JOIN $chemblIdLookupTable la ON la.entity_id = act.assay_id AND la.entity_type = 'ASSAY'
-                |    JOIN $chemblIdLookupTable lc ON lc.entity_id = act.molregno AND lc.entity_type = 'COMPOUND'
-                |    JOIN $concordanceTable con ON con.molregno = act.molregno
-                |    JOIN $chemcentralPropertyDefintionsTable p ON p.external_id = la.chembl_id""".stripMargin()
+        |INSERT INTO $chemcentralStructurePropertiesTable
+        |  (structure_id, property_def_id, property_data)
+        |  SELECT con.structure_id, p.id, data.json FROM (
+        |    SELECT act.molregno, act.assay_id, act.doc_id, ('[' || (string_agg('{' ||
+        |      '"activity_id":' || activity_id ||
+        |      ',"assay_id":'   || assay_id ||
+        |      ',"doc_id":'     || doc_id ||
+        |      ',"record_id":'  || record_id ||
+        |      ',"molregno":'   || act.molregno ||
+        |      CASE WHEN act.standard_relation     IS NULL THEN '' ELSE ',"standard_relation":"'     || act.standard_relation || '"' END ||
+        |      CASE WHEN act.standard_value        IS NULL THEN '' ELSE ',"standard_value":'         || act.standard_value END ||
+        |      CASE WHEN act.standard_units        IS NULL THEN '' ELSE ',"standard_units":"'        || act.standard_units || '"' END ||
+        |      CASE WHEN act.standard_flag         IS NULL THEN '' ELSE ',"standard_flag":'          || act.standard_flag END ||
+        |      CASE WHEN act.standard_type         IS NULL THEN '' ELSE ',"standard_type":"'         || act.standard_type || '"' END ||
+        |      CASE WHEN act.data_validity_comment IS NULL THEN '' ELSE ',"data_validity_comment":'  || to_json(act.data_validity_comment) END ||
+        |      CASE WHEN act.potential_duplicate   IS NULL THEN '' ELSE ',"potential_duplicate":"'   || act.potential_duplicate || '"' END ||
+        |      CASE WHEN act.pchembl_value         IS NULL THEN '' ELSE ',"pchembl_value":'          || act.pchembl_value END ||
+        |      CASE WHEN act.activity_comment      IS NULL THEN '' ELSE ',"activity_comment":'       || to_json(act.activity_comment) END ||
+        |      '}',',')) || ']')::jsonb AS json
+        |      FROM $chemblActivitiesTable act
+        |      GROUP BY act.molregno, act.assay_id, act.doc_id
+        |    ) data
+        |    JOIN $chemblIdLookupTable la ON la.entity_id = data.assay_id AND la.entity_type = 'ASSAY'
+        |    JOIN $chemblIdLookupTable lc ON lc.entity_id = data.molregno AND lc.entity_type = 'COMPOUND'
+        |    JOIN $concordanceTable con ON con.molregno = data.molregno
+        |    JOIN $chemcentralPropertyDefintionsTable p ON p.external_id = la.chembl_id""".stripMargin()
+    
+        //                |    CASE WHEN act.published_relation IS NULL THEN '' ELSE ',"published_relation":"' || act.published_relation || '"' END ||
+        //                |    CASE WHEN act.published_value IS NULL THEN '' ELSE ',"published_value":' || act.published_value END ||
+        //                |    CASE WHEN act.published_units IS NULL THEN '' ELSE ',"published_units":"' || act.published_units || '"' END ||
+        //                |    CASE WHEN act.published_type IS NULL THEN '' ELSE ',"published_type":"' || act.published_type || '"' END ||
+        //                |    CASE WHEN act.bao_endpoint IS NULL THEN '' ELSE ',"bao_endpoint":"' || act.bao_endpoint || '"' END ||
+        //                |    CASE WHEN act.uo_units IS NULL THEN '' ELSE ',"uo_units":"' || act.uo_units || '"' END ||
+        //                |    CASE WHEN act.qudt_units IS NULL THEN '' ELSE ',"qudt_units":"' || act.qudt_units || '"' END ||
     }
     
     void run() {

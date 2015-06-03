@@ -26,7 +26,7 @@ class PdbLigandETL extends AbstractETL {
         props = Utils.createConfig('pdb_ligand.properties')
         
         this.sourceTable = database.vendordbs.schema + '.' + props.table
-        this.concordanceTable = database.chemcentral.schema + '.' + props.table + '_concordance'
+        this.concordanceTable = database.chemcentral.schema + '.concordance_' + props.table
                 
         this.offset = props.offset
         this.limit = props.limit

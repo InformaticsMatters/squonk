@@ -34,24 +34,28 @@ class AbstractETL {
         println "Deleting aliases for $sourceId"
         db.execute(deleteAliasesSql, [sourceId])
         println "Inserting aliases for $sourceId"
+        println "SQL: " + insertAliasesSql
         db.execute(insertAliasesSql, [sourceId])
         println "Aliases for $sourceId generated"
     }
     
     void generatePropertyDefinitions(Sql db, int sourceId) {
         println "Inserting property defintions for $sourceId"
+        println "SQL: " + insertPropertyDefinitionsSql
         db.execute(insertPropertyDefinitionsSql, [sourceId])
         println "Property definitions generated"
     }
 	
     void generatePropertyValues(Sql db, List params) {
         println "Inserting structure_props"
+        println "SQL: " + insertStructurePropsSql
         db.execute(insertStructurePropsSql, params)
         println "structure_props values generated"
     }
     
     void generateInstancesValues(Sql db, List params) {
         println "Inserting instances"
+        println "SQL: " + insertInstancesSql
         db.execute(insertInstancesSql, params)
         println "instances values generated"
     }

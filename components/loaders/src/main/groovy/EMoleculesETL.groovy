@@ -25,7 +25,7 @@ class EMoleculesETL extends AbstractETL {
         emolecules = Utils.createConfig('emolecules.properties')
         
         this.emoleculesTable = database.vendordbs.schema + '.' + emolecules.table
-        this.concordanceTable = database.chemcentral.schema + '.' + emolecules.table + '_concordance'
+        this.concordanceTable = database.chemcentral.schema + '.concordance_' + emolecules.table
                 
         this.offset = emolecules.offset
         this.limit = emolecules.limit

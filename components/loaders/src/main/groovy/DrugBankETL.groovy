@@ -26,7 +26,7 @@ class DrugBankETL extends AbstractETL {
         drugbank = Utils.createConfig('drugbank.properties')
         
         this.drugBankTable = database.vendordbs.schema + '.' + drugbank.table
-        this.concordanceTable = database.chemcentral.schema + '.' + drugbank.table + '_concordance'
+        this.concordanceTable = database.chemcentral.schema + '.concordance_' + drugbank.table
                 
         this.offset = drugbank.offset
         this.limit = drugbank.limit
