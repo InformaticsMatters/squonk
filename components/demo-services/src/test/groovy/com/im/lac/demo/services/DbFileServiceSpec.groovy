@@ -15,7 +15,7 @@ import com.im.lac.demo.model.*
 class DbFileServiceSpec extends Specification {
     
     @Shared DataSource dataSource = createDataSource()
-    @Shared DbFileService service = new DbFileService(dataSource)
+    @Shared DbFileService service = new DbFileService(dataSource, DbFileService.DEFAULT_TABLE_NAME + "_test")
     @Shared Sql db = new Sql(dataSource)
     @Shared DataItem[] item = new DataItem[1] 
     
@@ -30,27 +30,24 @@ class DbFileServiceSpec extends Specification {
 
         return ds;
     }
-    
-    def "1 create table"() {
-        println "create table()"
-        setup:
-        
+    // run before the first feature method
+    def setupSpec() {
         try {
-            db.execute 'drop table ' + DbFileService.DEMO_FILES_TABLE_NAME
+            db.execute 'DROP TABLE ' + service.tableName
         } catch (Exception e) { }// expected   
-        DbFileService service = new DbFileService(dataSource)
-        
-        when:
         service.createTables()
-        
-        
-        then:
-        db.firstRow('select count(*) from ' + DbFileService.DEMO_FILES_TABLE_NAME)[0] == 0
-        
-    }
+    }     
+    
+    // run after the last feature method
+    def cleanupSpec() {
+        // first delete so that our LOBs get deleted
+        db.execute 'DELETE FROM ' + service.tableName
+        db.execute 'DROP TABLE ' + service.tableName
+    }   
     
     
-    def "2.1 add dataitem"() {
+    
+    def "1.1 add dataitem"() {
         println "add dataitem()"
         
         setup:
@@ -70,7 +67,7 @@ class DbFileServiceSpec extends Specification {
         neu.loid != null
     }
     
-    def "2.2 add dataitem tx"() {
+    def "1.2 add dataitem tx"() {
         println "add dataitem tx()"
         
         setup:
@@ -97,7 +94,7 @@ class DbFileServiceSpec extends Specification {
         con?.close()
     }
     
-    def "2.3 add update dataitem tx"() {
+    def "1.3 add update dataitem tx"() {
         println "add update dataitem tx()"
         
         setup:
@@ -118,7 +115,7 @@ class DbFileServiceSpec extends Specification {
         item2 != null
     }
     
-    def "3 read large object"() {
+    def "2 read large object"() {
         setup:
         def loid = item[0].loid
         Connection con = service.connection
@@ -136,7 +133,7 @@ class DbFileServiceSpec extends Specification {
         con?.close()
     }
     
-    def "4 load data item"() {
+    def "3 load data item"() {
         
         setup:
         def id = item[0].id
@@ -151,7 +148,7 @@ class DbFileServiceSpec extends Specification {
         data.loid != null
     }
     
-    def "5 load data items"() {
+    def "4 load data items"() {
         
         when:
         def items = service.loadDataItems()
@@ -160,7 +157,7 @@ class DbFileServiceSpec extends Specification {
         items.size() > 0
     }
     
-    def "6.1 update data item"() {
+    def "5.1 update data item"() {
         
         setup:
         DataItem data = item[0]
@@ -177,7 +174,7 @@ class DbFileServiceSpec extends Specification {
         neu.loid != null
     }
     
-    def "6.2 update data item tx"() {
+    def "5.2 update data item tx"() {
         
         setup:
         DataItem data = item[0]
@@ -200,7 +197,7 @@ class DbFileServiceSpec extends Specification {
         con?.close()
     }
     
-    def "7 update file content"() {
+    def "6 update file content"() {
         
         setup:
         DataItem data = item[0]
@@ -230,7 +227,7 @@ class DbFileServiceSpec extends Specification {
         con?.close()
     }
     
-    def "8 delete data item"() {
+    def "7 delete data item"() {
         setup:
         def id = item[0].id
         DataItem data = service.loadDataItem(id)

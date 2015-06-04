@@ -31,10 +31,10 @@ public class IOUtils {
         pb.read(signature); //read the signature
         pb.unread(signature); //push back the signature to the stream
         if (signature[0] == (byte) 0x1f && signature[1] == (byte) 0x8b) {//check if matches standard gzip magic number
-            LOG.finer("Stream is gzipped");
+            LOG.info("Stream is gzipped");
             return new GZIPInputStream(pb);
         } else {
-            LOG.finer("Stream is not gzipped");
+            LOG.info("Stream is not gzipped");
             return pb;
         }
     }

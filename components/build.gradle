@@ -14,7 +14,8 @@ allprojects {
     project.ext.set('camelVersion', '2.15.2')
     // look at the jackson2-version property here to get the right Jackson version
     // https://github.com/apache/camel/blob/master/parent/pom.xml
-    project.ext.set('jacksonVersion', '2.4.3')
+    // note: version used by camel is 2.4.3 - trying later version to use "Attributes"
+    project.ext.set('jacksonVersion', '2.5.3')
     project.ext.set('cdkVersion', '1.5.10')
 
 
