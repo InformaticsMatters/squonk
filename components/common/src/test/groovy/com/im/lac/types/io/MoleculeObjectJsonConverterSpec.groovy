@@ -3,6 +3,7 @@ package com.im.lac.types.io
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.im.lac.types.MoleculeObject
 import spock.lang.Specification
+import java.util.stream.Collectors
 
 /**
  *
@@ -11,70 +12,6 @@ import spock.lang.Specification
 class MoleculeObjectJsonConverterSpec extends Specification {
     
     
-    //    void "binary data"() {
-    //        
-    //        setup:
-    //        String txt = "Hello World!"
-    //        def b = new BinaryClass()
-    //        b.bytes = txt.getBytes()
-    //        def dataFormat = new MoleculeObjectJsonConverter<SimpleClass>(BinaryClass.class)
-    //        ByteArrayOutputStream out = new ByteArrayOutputStream()
-    //        
-    //        
-    //        when:
-    //        dataFormat.marshal(null, [b], out)
-    //        def json = new String(out.toByteArray())
-    //        println "JSON binary: " + json
-    //        def xxx = dataFormat.unmarshal(null, new ByteArrayInputStream(json.getBytes()))
-    //        println "reconverted: $xxx"
-    //        def cols = xxx.collect()
-    //        println "magic: ${cols[0].bytes}"
-    //        String s = new String(cols[0].bytes)
-    //        println "string: $s"
-    //        
-    //        then: 
-    //        json != null
-    //        xxx != null
-    //        cols.size() == 1
-    //        s == txt
-    //        
-    //        
-    //    }
-    
-    //    void "unmarshal simple"() {
-    //        
-    //        setup:
-    //        String input = '''[
-    //{"name" : "tim", "age": 18},
-    //{"name" : "tom", "age": 99}
-    //]'''
-    //        def dataFormat = new StreamingIteratorJsonDataFormat<SimpleClass>(SimpleClass.class)
-    //        
-    //        when:
-    //        def result = dataFormat.unmarshal(null, new ByteArrayInputStream(input.getBytes()))
-    //        int size = 0
-    //        result.each { size++ }
-    //        
-    //        then:
-    //        size == 2
-    //    }
-    //    
-    //    void "marshal simple"() {
-    //        
-    //        setup:
-    //        def input = [new SimpleClass("tim", 18),new SimpleClass("tom", 99)]
-    //            
-    //        def dataFormat = new StreamingIteratorJsonDataFormat<SimpleClass>(SimpleClass.class)
-    //        ByteArrayOutputStream out = new ByteArrayOutputStream()
-    //        
-    //        when:
-    //        dataFormat.marshal(null, input, out)
-    //        def result = new String(out.toByteArray())
-    //        println "JSON: " + result
-    //        
-    //        then:
-    //        result.split('name').length == 3
-    //    }
     
     void "marshal moleculeobjects"() {
         
@@ -155,6 +92,32 @@ class MoleculeObjectJsonConverterSpec extends Specification {
         mols.size() == 2
         mols[0].source == 'c1ccccc1'
         mols[0].values["field_0"] == 1
+    }
+    
+     void "marshal unmarshal MoleculeObjects with props"() {
+        
+        setup:
+        def input = [
+            new MoleculeObject('CCC', 'smiles', [prop1: 'hello', prop2: 'banana', prop3: new BigInteger(999)]),
+            new MoleculeObject('c1ccccc', 'smiles', [prop1: 'goodbye', prop2: 'orange', prop3: new BigInteger(666)])]
+            
+        def convertor = new MoleculeObjectJsonConverter()
+        
+        when:
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        def meta = convertor.marshal(input.stream(), out)
+        String json = out.toString()
+        def results = convertor.unmarshal(meta, new ByteArrayInputStream(json.bytes)).collect(Collectors.toList())
+        
+        
+        then:
+        json.indexOf('banana') > 0
+        results.size() == 2
+        results[0].source == 'CCC'
+        results[0].getValue('prop3') instanceof BigInteger
+        results[0].getValue('prop3') == 999
+        results[1].getValue('prop3') == 666
+        
     }
     	
 }
