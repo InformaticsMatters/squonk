@@ -10,6 +10,7 @@ import com.im.lac.util.JacksonUtils;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +29,7 @@ public class MoleculeObjectJsonDeserializer extends StdDeserializer<MoleculeObje
     
     private static final Logger LOG = Logger.getLogger(MoleculeObjectJsonDeserializer.class.getName());
 
+    private static final String PROP_UUID = "uuid";
     private static final String PROP_SOURCE = "source";
     private static final String PROP_FORMAT = "format";
     private static final String PROP_VALUES = "values";
@@ -64,6 +66,7 @@ public class MoleculeObjectJsonDeserializer extends StdDeserializer<MoleculeObje
 
         String source = null;
         String format = null;
+        UUID uuid = null;
         Map<String, Object> values = new HashMap<>();
         JsonToken currentToken;
         int depth = 0;
@@ -87,6 +90,10 @@ public class MoleculeObjectJsonDeserializer extends StdDeserializer<MoleculeObje
                 case FIELD_NAME:
                     String name = jp.getCurrentName();
                     switch (name) {
+                        case PROP_UUID:
+                            jp.nextToken();
+                            uuid = jp.readValueAs(UUID.class);
+                            break;
                         case PROP_SOURCE:
                             jp.nextToken();
                             source = jp.readValueAs(String.class);
@@ -111,8 +118,10 @@ public class MoleculeObjectJsonDeserializer extends StdDeserializer<MoleculeObje
             }
 
         }
-
-        MoleculeObject mo = new MoleculeObject(source, format);
+        if (uuid == null) {
+            uuid = UUID.randomUUID();
+        }
+        MoleculeObject mo = new MoleculeObject(uuid, source, format);
         if (values.size() > 0) {
             mo.putValues(values);
         }

@@ -104,15 +104,19 @@ class MoleculeObjectJsonConverterSpec extends Specification {
         def convertor = new MoleculeObjectJsonConverter()
         
         when:
+        UUID uuid1 = input[0].UUID
         ByteArrayOutputStream out = new ByteArrayOutputStream()
         def meta = convertor.marshal(input.stream(), out)
         String json = out.toString()
+        println "JSON: $json"
         def results = convertor.unmarshal(meta, new ByteArrayInputStream(json.bytes)).collect(Collectors.toList())
         
         
         then:
         json.indexOf('banana') > 0
         results.size() == 2
+        results[0].UUID == uuid1
+        println "UUID = ${results[0].UUID}"
         results[0].source == 'CCC'
         results[0].getValue('prop3') instanceof BigInteger
         results[0].getValue('prop3') == 999
