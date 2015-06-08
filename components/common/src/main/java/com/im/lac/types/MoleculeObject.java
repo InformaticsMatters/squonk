@@ -1,13 +1,11 @@
 package com.im.lac.types;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import java.util.UUID;
 
 /**
  * Represents a molecule in a platform neutral way allowing instances to be
@@ -20,16 +18,18 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  */
 @JsonIgnoreProperties({"representations", "representation", "value"})
 @JsonInclude(Include.NON_EMPTY)
-public class MoleculeObject implements Serializable {
+public class MoleculeObject {
 
     private static final long serialVersionUID = 1L;
 
     public static final String FORMAT_SMILES = "smiles";
     public static final String FORMAT_MOLFILE = "mol";
     public static final String FORMAT_INCHI = "inchi";
+    
+    private final UUID uuid;
 
     /**
-     * The source of the molecule in its original form. Usually this will be
+     * The source of the molecule in its original form. This will be
      * String containing smiles, InCHI or Molfile.
      */
     private String source;
@@ -62,40 +62,104 @@ public class MoleculeObject implements Serializable {
     /**
      * Properties of the molecule. These are shared across all chemistry
      * implementations allowing different implementations to be interoperable.
-     * Note that the keys must be Strings and values must be writable as simple JSON 
-     * types so that these properties can be used in remote implementations. The 
-     * properties are set and read using the getValue(), putValue() and related methods.
+     * Note that the keys must be Strings and values must be writable as simple
+     * JSON types so that these properties can be used in remote
+     * implementations. The properties are set and read using the getValue(),
+     * putValue() and related methods.
      */
     private Map<String, Object> values;
 
-    /**
-     * For serialization only.
+
+    /** Base constructor that creates a MoleculeObject with the specified UUID
+     * 
+     * @param uuid Unique and persistent identifier for this MoleculeObject
+     */
+    public MoleculeObject(UUID uuid) {
+        this.representations = new HashMap<>();
+        this.values = new HashMap<>();
+        this.uuid = uuid;
+    }
+    
+    /** Default constructor for now instance, with random UUID generated.
+     * 
      */
     public MoleculeObject() {
-        representations = new HashMap<>();
-        values = new HashMap<>();
+        this(UUID.randomUUID());
     }
 
+    /** Constructor for now instance with structure source
+     * 
+     * @param source The molecule in some recognised but unspecified format
+     */
     public MoleculeObject(String source) {
         this(source, null);
     }
 
+    /** Constructor for now instance with structure source and format
+     * 
+     * @param source The molecule in some recognised and specified format
+     * @param format smiles, mol etc.
+     */
     public MoleculeObject(String source, String format) {
         this();
         this.source = source;
         this.format = format;
     }
-    
-    public MoleculeObject(String source, String format, Map<String,Object> props) {
+
+    /** Constructor for now instance with additional properties
+     * 
+     * @param source The molecule in some recognised format
+     * @param format smiles, mol etc.
+     * @param values Properties for the molecule
+     */
+    public MoleculeObject(String source, String format, Map<String, Object> values) {
         this();
+        this.source = source;
+        this.format = format;
+        this.values.putAll(values);
+    }
+    
+    /**
+     * Constructor for re-generating a MoleculeObject with an existing UUID
+     * 
+     * 
+     * @param uuid
+     * @param source 
+     */
+    public MoleculeObject(UUID uuid, String source) {
+        this(uuid, source, null);
+    }
+
+    /**
+     * Constructor for re-generating a MoleculeObject with an existing UUID
+     * 
+     * @param uuid
+     * @param source 
+     * @param format 
+     */
+    public MoleculeObject(UUID uuid, String source, String format) {
+        this(uuid);
+        this.source = source;
+        this.format = format;
+    }
+
+    /**
+     * Constructor for re-generating a MoleculeObject with an existing UUID
+     * 
+     * @param uuid
+     * @param source 
+     * @param format 
+     * @param props 
+     */
+    public MoleculeObject(UUID uuid, String source, String format, Map<String, Object> props) {
+        this(uuid);
         this.source = source;
         this.format = format;
         this.values.putAll(props);
     }
 
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        representations = new HashMap<>();
+    public UUID getUUID() {
+        return uuid;
     }
 
     public String getSource() {
@@ -166,6 +230,25 @@ public class MoleculeObject implements Serializable {
 
     public void putValues(Map<String, Object> values) {
         this.values.putAll(values);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append("MoleculeObject source: ")
+                .append(source)
+                .append(" format: ")
+                .append(format)
+                .append(" values: [");
+        for (Map.Entry<String, Object> e : values.entrySet()) {
+            b.append(e.getKey())
+                    .append(": ")
+                    .append(e.getValue())
+                    .append(" ");
+        }
+        b.append("]");
+
+        return b.toString();
     }
 
 }
