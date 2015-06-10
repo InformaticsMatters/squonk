@@ -3,7 +3,7 @@
 apply plugin: 'groovy'
 
 apply plugin: 'application'
-mainClassName = "com.im.lac.demo.routes.Main"
+mainClassName = "com.im.lac.demo.routes.Jms"
 applicationDefaultJvmArgs = ["-Xmx1200m"]
 
 apply plugin: 'docker'

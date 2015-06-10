@@ -31,6 +31,7 @@ public class Main {
         
         // setup ActiveMQ
         //camelContext.addComponent("activemq", activeMQComponent("vm://localhost?broker.persistent=false"));
+        //camelContext.addComponent("activemq", activeMQComponent("tcp://localhost:61616?broker.persistent=false"));
         
         // add the routes
                 

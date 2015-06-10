@@ -14,27 +14,30 @@ public class Jms {
         final CamelContext camelContext = new DefaultCamelContext();
 
         // setup ActiveMQ
-        camelContext.addComponent("jms", activeMQComponent("vm://localhost?broker.persistent=false"));
+        //camelContext.addComponent("activemq", activeMQComponent("vm://localhost?broker.persistent=false"));
+        camelContext.addComponent("activemq", activeMQComponent("tcp://localhost:61616"));
 
         // add the routes
         camelContext.addRoutes(new RouteBuilder() {
 
             @Override
             public void configure() throws Exception {
-                from("timer://foo?period=1000")
+                from("timer://foo?period=20&repeatCount=100")
                         .setBody(constant("Hello World!"))
                         .log("sending")
-                        .to("jms:queue:incoming");
+                        .to("activemq:queue:submit");
 
-                from("jms:queue:incoming")
-                        .log("received ${body}");
+                from("activemq:queue:submit")
+                        .log("received ${body}")
+                        .delay(1000)
+                        .to("activemq:queue:results");
             }
            
         });
         
         
         camelContext.start();
-        Thread.sleep(10000);
+        Thread.sleep(200000);
         camelContext.stop();
 
     }

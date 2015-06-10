@@ -11,7 +11,7 @@ public class JmsRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        from("timer://foo?period=5000")
+        from("timer://foo?period=2000")
                 .setBody(constant("Hello World!"))
                 .log("sending")
                 .to("activemq:queue:incoming");
