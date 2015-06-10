@@ -1,0 +1,20 @@
+apply plugin: 'groovy'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    
+    compile "org.apache.camel:camel-core:$camelVersion"
+    compile "org.apache.camel:camel-jetty:$camelVersion"
+    compile "org.apache.camel:camel-jackson:$camelVersion"
+    compile "org.apache.camel:camel-http4:$camelVersion"
+    compile "org.apache.camel:camel-jms:$camelVersion"
+
+    compile "org.apache.activemq:activemq-camel:5.6.0"
+
+    // We use the awesome Spock testing and specification framework
+    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
+    testCompile 'junit:junit:4.11'
+}

@@ -11,6 +11,7 @@ import org.apache.camel.impl.SimpleRegistry;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.resource.Resource;
 import org.postgresql.ds.PGSimpleDataSource;
+import static org.apache.activemq.camel.component.ActiveMQComponent.activeMQComponent;
 
 /**
  * Launcher for the Camel context
@@ -27,6 +28,13 @@ public class Main {
         SimpleRegistry registry = new SimpleRegistry();
         registry.put("contextHandler", getContextHandler());
         final CamelContext camelContext = new DefaultCamelContext(registry);
+        
+        // setup ActiveMQ
+        //camelContext.addComponent("activemq", activeMQComponent("vm://localhost?broker.persistent=false"));
+        //camelContext.addComponent("activemq", activeMQComponent("tcp://localhost:61616?broker.persistent=false"));
+        
+        // add the routes
+                
         camelContext.addRoutes(new RouteBuilder() {
             @Override
             public void configure() throws Exception {
@@ -52,6 +60,7 @@ public class Main {
         camelContext.addRoutes(new ReactorRouteBuilder());
         camelContext.addRoutes(new RestRouteBuilder());
         camelContext.addRoutes(new FileServicesRouteBuilder(ds));
+        //camelContext.addRoutes(new JmsRouteBuilder());
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
