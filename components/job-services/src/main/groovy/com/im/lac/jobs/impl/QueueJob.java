@@ -1,11 +1,10 @@
 package com.im.lac.jobs.impl;
 
-import com.im.lac.jobs.AbstractJob;
 import com.im.lac.jobs.CancellableJob;
 import com.im.lac.service.Environment;
 import com.im.lac.jobs.JobStatus;
 import com.im.lac.jobs.UpdatableJob;
-import com.im.lac.service.ExecutorService;
+import com.im.lac.model.JobDefinition;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -60,7 +59,7 @@ import org.apache.camel.spi.UnitOfWork;
  *
  * @author timbo
  */
-public class QueueJob<T> extends AbstractJob<T> implements UpdatableJob, CancellableJob {
+public class QueueJob<T extends JobDefinition> extends AbstractJob<T> implements UpdatableJob, CancellableJob {
 
     private static final Logger LOG = Logger.getLogger(QueueJob.class.getName());
 
@@ -69,8 +68,8 @@ public class QueueJob<T> extends AbstractJob<T> implements UpdatableJob, Cancell
     private transient JmsQueueEndpoint jms;
     private final transient AtomicBoolean cancelled = new AtomicBoolean(false);
 
-    public QueueJob(Object inputDataSetId, Class<T> resultType, String queueName) {
-        super(inputDataSetId, resultType, ExecutorService.DatasetMode.CREATE);
+    public QueueJob(T jobdef, String queueName) {
+        super(jobdef);
         this.queueName = queueName;
     }
 
@@ -78,16 +77,14 @@ public class QueueJob<T> extends AbstractJob<T> implements UpdatableJob, Cancell
      * Constructor for re-hydrating a "parked" job
      *
      * @param jobId
-     * @param inputDatasetId
      * @param outputDatasetId
-     * @param resultType
      * @param queueName
      * @param totalCount
      * @param processedCount
      * @param started
      */
-    public QueueJob(String jobId, Object inputDatasetId, Class<T> resultType, Object outputDatasetId, String queueName, int totalCount, int processedCount, Date started) {
-        super(jobId, inputDatasetId, resultType, outputDatasetId, ExecutorService.DatasetMode.CREATE, totalCount, processedCount);
+    public QueueJob(String jobId, T jobdef, String queueName, int totalCount, int processedCount, Date started) {
+        super(jobId, jobdef, totalCount, processedCount);
         this.queueName = queueName;
     }
 
@@ -96,20 +93,19 @@ public class QueueJob<T> extends AbstractJob<T> implements UpdatableJob, Cancell
     }
 
     protected String getResponseQueueUri() {
-        return ExecutorService.JMS_BROKER_NAME + ":queue:" + getResponseQueueName();
+        return CamelExecutor.JMS_BROKER_NAME + ":queue:" + getResponseQueueName();
     }
 
     @Override
     protected void doExecute(Environment env) throws CamelExecutionException {
-        LOG.log(Level.FINE, "QueueJob.execute() Sending dataset id {0} to queue {1}", new Object[]{inputDatasetId, queueName});
-        Object dataset = env.getDatasetService().get(inputDatasetId);
-        Map<String, Object> headers = new HashMap<>();
-
-        headers.put("CamelJmsDestinationName", queueName);
-        headers.put("JMSReplyTo", getResponseQueueName());
-        headers.put("JobId", getJobId());
-        totalCount = env.getExecutorService().getProducerTemplate().requestBodyAndHeaders(
-                ExecutorService.ENDPOINT_SPLIT_AND_SUBMIT, dataset, headers, Integer.class);
+        LOG.log(Level.FINE, "QueueJob.execute() Submitting job {0} to queue {1}", new Object[]{jobdef, queueName});
+//        Object dataset = null; ////env.getDatasetService().get(inputDatasetId);
+//        Map<String, Object> headers = new HashMap<>();
+//
+//        headers.put("CamelJmsDestinationName", queueName);
+//        headers.put("JMSReplyTo", getResponseQueueName());
+//        headers.put("JobId", getJobId());
+//        totalCount = env.getExecutorService().getProducerTemplate().requestBodyAndHeaders(CamelExecutor.ENDPOINT_SPLIT_AND_SUBMIT, dataset, headers, Integer.class);
     }
 
     @Override
@@ -150,12 +146,12 @@ public class QueueJob<T> extends AbstractJob<T> implements UpdatableJob, Cancell
     }
 
     protected JobStatus handleResults(Environment env) throws Exception {
-        List currentResults;
-        if (outputDatasetId == null) {
-            currentResults = new ArrayList();
-        } else {
-            currentResults = (List) env.getDatasetService().get(outputDatasetId);
-        }
+        List currentResults = null;
+//        if (outputDatasetId == null) {
+//            currentResults = new ArrayList();
+//        } else {
+//            currentResults = null; ////(List) env.getDatasetService().get(outputDatasetId);
+//        }
         LOG.log(Level.FINE, "Found {0} previous results", currentResults.size());
         consumeResults(env, currentResults);
         processedCount = currentResults.size();
@@ -167,13 +163,13 @@ public class QueueJob<T> extends AbstractJob<T> implements UpdatableJob, Cancell
                 completed = new Date();
             }
         }
-        if (processedCount > 0) {
-            if (outputDatasetId == null) {
-                outputDatasetId = env.getDatasetService().put(currentResults);
-            } else {
-                env.getDatasetService().update(outputDatasetId, currentResults);
-            }
-        }
+//        if (processedCount > 0) {
+//            if (outputDatasetId == null) {
+//                outputDatasetId = null; ////env.getDatasetService().put(currentResults);
+//            } else {
+//                ////env.getDatasetService().update(outputDatasetId, currentResults);
+//            }
+//        }
         return buildStatus();
     }
 

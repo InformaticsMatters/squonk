@@ -1,7 +1,10 @@
-package com.im.lac.jobs;
+package com.im.lac.jobs.impl;
 
+import com.im.lac.jobs.Job;
+import com.im.lac.jobs.JobStatus;
+import com.im.lac.model.DataItem;
+import com.im.lac.model.JobDefinition;
 import com.im.lac.service.Environment;
-import com.im.lac.service.ExecutorService;
 import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -11,44 +14,35 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public abstract class AbstractJob<T> implements Job {
+public abstract class AbstractJob<T extends JobDefinition> implements Job {
 
     private static final Logger LOG = Logger.getLogger(AbstractJob.class.getName());
 
     protected final String jobId;
-    protected final Class<T> resultType;
+    
     protected JobStatus.Status status = JobStatus.Status.PENDING;
+    protected DataItem result;
     protected int totalCount;
     protected int processedCount;
     protected int pendingCount;
     protected Date started;
     protected Date completed;
-    protected final Object inputDatasetId;
-    protected Object outputDatasetId;
-    protected ExecutorService.DatasetMode mode;
+    protected T jobdef;
     protected Exception exception;
 
-    protected AbstractJob(Object inputDataSetId, Class resultType, ExecutorService.DatasetMode mode) {
+    protected AbstractJob(T jobdef) {
         jobId = UUID.randomUUID().toString();
-        this.inputDatasetId = inputDataSetId;
-        this.resultType = resultType;
-        this.mode = mode;
+        this.jobdef = jobdef;
 
     }
 
     protected AbstractJob(
             String jobId, 
-            Object inputDatasetId,
-            Class resultType,
-            Object outputDatasetId,
-            ExecutorService.DatasetMode mode,
+            T jobdef,
             int totalCount,
             int processedCount) {
         this.jobId = jobId;
-        this.resultType = resultType;
-        this.inputDatasetId = inputDatasetId;
-        this.outputDatasetId = outputDatasetId;
-        this.mode = mode;
+        this.jobdef = jobdef;;
         this.totalCount = totalCount;
         this.processedCount = processedCount;
     }
@@ -76,7 +70,7 @@ public abstract class AbstractJob<T> implements Job {
      * @return
      */
     public JobStatus buildStatus() {
-        return new JobStatus(jobId, status, totalCount, processedCount, pendingCount, started, completed, inputDatasetId, outputDatasetId);
+        return new JobStatus(jobId, status, totalCount, processedCount, pendingCount, started, completed, jobdef, result);
     }
 
     protected void updateStatus(Environment env) {

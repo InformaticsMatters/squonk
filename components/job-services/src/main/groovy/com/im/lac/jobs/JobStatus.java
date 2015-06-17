@@ -1,12 +1,14 @@
 package com.im.lac.jobs;
 
+import com.im.lac.model.DataItem;
+import com.im.lac.model.JobDefinition;
 import java.util.Date;
 
 /**
  *
  * @author timbo
  */
-public class JobStatus {
+public class JobStatus<T extends JobDefinition> {
 
     public enum Status {
 
@@ -19,8 +21,8 @@ public class JobStatus {
     private final int pendingCount;
     private final Date started;
     private final Date completed;
-    private final Object inputDatasetId;
-    private final Object outputDatasetId;
+    private final T jobdef;
+    private final DataItem result;
 
     public JobStatus(
             String jobId,
@@ -30,8 +32,8 @@ public class JobStatus {
             int pendingCount,
             Date started,
             Date completed,
-            Object inputDatasetId,
-            Object outputDatasetId) {
+            T jobdef,
+            DataItem result) {
         this.jobId = jobId;
         this.status = status;
         this.totalCount = totalCount;
@@ -39,8 +41,8 @@ public class JobStatus {
         this.pendingCount = pendingCount;
         this.started = started;
         this.completed = completed;
-        this.inputDatasetId = inputDatasetId;
-        this.outputDatasetId = outputDatasetId;
+        this.jobdef = jobdef;
+        this.result = result;
     }
 
     public String getJobId() {
@@ -71,12 +73,12 @@ public class JobStatus {
         return completed;
     }
 
-    public Object getInputDatasetId() {
-        return inputDatasetId;
+    public T getJobDefinition() {
+        return jobdef;
     }
 
-    public Object getOutputDatasetId() {
-        return outputDatasetId;
+    public DataItem getResult() {
+        return result;
     }
 
     @Override
@@ -86,7 +88,8 @@ public class JobStatus {
                 .append(" JobId=").append(jobId)
                 .append(" TotalCount=").append(totalCount)
                 .append(" ProcessedCount=").append(processedCount)
-                .append(" PendingCount=").append(pendingCount);
+                .append(" PendingCount=").append(pendingCount)
+                .append(" Job Definition=").append(jobdef);
         return b.toString();
     }
 

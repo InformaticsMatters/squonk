@@ -1,4 +1,4 @@
-package com.im.lac.service;
+package com.im.lac.service.impl;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author timbo
  */
-public class DatasetService {
+public class MockDatasetService {
 
     private final AtomicLong currentId = new AtomicLong(0);
     private final Map<Object, Object> datasets = new LinkedHashMap<>();

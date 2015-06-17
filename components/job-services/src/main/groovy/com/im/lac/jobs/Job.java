@@ -8,8 +8,15 @@ import com.im.lac.service.Environment;
  */
 public interface Job {
     
-   public JobStatus execute(Environment env);
+    public enum DatasetMode {
+
+        UPDATE, CREATE
+    }
+    
+    String getJobId();
+    
+   JobStatus execute(Environment env);
    
-   public JobStatus getStatus(Environment env);
+   JobStatus getStatus(Environment env);
     
 }

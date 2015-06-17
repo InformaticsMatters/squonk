@@ -1,5 +1,8 @@
 package com.im.lac.service;
 
+import com.im.lac.jobs.impl.CamelExecutor;
+
+
 /**
  *
  * @author timbo
@@ -7,18 +10,18 @@ package com.im.lac.service;
 public class Environment {
 
     private final DatasetService datasetService;
-    private final ExecutorService executorService;
+    private final CamelExecutor executorService;
 
-    Environment(DatasetService datasetService, ExecutorService executorService) {
+    Environment(DatasetService datasetService, CamelExecutor executorService) {
         this.datasetService = datasetService;
         this.executorService = executorService;
     }
     
-    public static Environment create(DatasetService datasetService, ExecutorService executorService) {
+    public static Environment create(DatasetService datasetService, CamelExecutor executorService) {
         return new Environment(datasetService, executorService);
     }
     
-    public static Environment createAndStart(DatasetService datasetService, ExecutorService executorService) throws Exception {
+    public static Environment createAndStart(DatasetService datasetService, CamelExecutor executorService) throws Exception {
         Environment env = Environment.create(datasetService, executorService);
         env.executorService.start();
         return env;
@@ -28,7 +31,7 @@ public class Environment {
         return datasetService;
     }
 
-    public ExecutorService getExecutorService() {
+    public CamelExecutor getExecutorService() {
         return executorService;
     }
 }

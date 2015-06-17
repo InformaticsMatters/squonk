@@ -3,7 +3,10 @@ package com.im.lac.util;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PushbackInputStream;
+import java.io.Reader;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -17,9 +20,8 @@ public class IOUtils {
     private static final Logger LOG = Logger.getLogger(IOUtils.class.getName());
 
     /**
-     * Utility for checking if an InputStream is gzipped. Returns a
-     * GZIPInputStream if the stream is in gzip format, otherwise the original
-     * InputStream (actually a wrapper around it).
+     * Utility for checking if an InputStream is gzipped. Returns a GZIPInputStream if the stream is
+     * in gzip format, otherwise the original InputStream (actually a wrapper around it).
      *
      * @param is An InputStream that provides the data gunzipped.
      * @return
@@ -40,9 +42,8 @@ public class IOUtils {
     }
 
     /**
-     * Convenience method to close the object if it implements the Closeable
-     * interface.
-     * If the close() fails then the exception is logged, but not thrown.
+     * Convenience method to close the object if it implements the Closeable interface. If the
+     * close() fails then the exception is logged, but not thrown.
      *
      * @param o
      */
@@ -54,6 +55,21 @@ public class IOUtils {
                 LOG.log(Level.SEVERE, "Failed to close " + o, ex);
             }
         }
+    }
+
+    public static String convertStreamToString(final InputStream is, final int bufferSize) throws IOException {
+        final char[] buffer = new char[bufferSize];
+        final StringBuilder out = new StringBuilder();
+        Reader in = new InputStreamReader(is);
+
+        while (true) {
+            int rsz = in.read(buffer, 0, buffer.length);
+            if (rsz < 0) {
+                break;
+            }
+            out.append(buffer, 0, rsz);
+        }
+        return out.toString();
     }
 
 }
