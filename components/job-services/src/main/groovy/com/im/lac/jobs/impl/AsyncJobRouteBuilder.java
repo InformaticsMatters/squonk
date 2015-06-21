@@ -51,7 +51,7 @@ public class AsyncJobRouteBuilder extends RouteBuilder {
         from(ROUTE_HANDLE_RESULTS)
                 // body is the result of the execution
                 .log("Handling results for job ${header.JobId}: ${body}")
-                .beanRef(CamelExecutor.DATASET_HANDLER, "saveDataset");
+                .beanRef(CamelExecutor.DATASET_HANDLER, "saveDatasetForJob");
 
         // A mock route that does nothing except for adding a delay for testing purposes
         from(ROUTE_DUMMY)

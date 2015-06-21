@@ -7,6 +7,7 @@ repositories {
 dependencies {
     
     compile project(':common')
+    compile project(':chemaxon-lib')
     
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-jetty:$camelVersion"

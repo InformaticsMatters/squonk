@@ -28,15 +28,15 @@ import org.apache.camel.util.toolbox.AggregationStrategies;
  * @author timbo
  */
 public class CamelExecutor {
-    
+
     private static final Logger LOG = Logger.getLogger(CamelExecutor.class.getName());
-    
+
     public static final String DATASET_HANDLER = "DataSetHandler";
     public static final String JOB_STORE = "JobStore";
     public static final String ENDPOINT_SPLIT_AND_SUBMIT = "seda:splitAndSubmit";
     public static final String JMS_BROKER_NAME = "activemq";
     private final String brokerUri;
-    
+
     final protected CamelContext camelContext;
     final private SimpleRegistry registry;
     final protected ProducerTemplate producerTemplate;
@@ -52,38 +52,38 @@ public class CamelExecutor {
         this.registry = new SimpleRegistry();
         registry.put(DATASET_HANDLER, new DatasetHandler(datasetService, "/tmp/datasetcache"));
         registry.put(JOB_STORE, new SimpleJobStore());
-        
+
         this.camelContext = new DefaultCamelContext(registry);
-        
+
         producerTemplate = camelContext.createProducerTemplate();
     }
-    
+
     public ProducerTemplate getProducerTemplate() {
         return producerTemplate;
     }
-    
+
     public CamelContext getCamelContext() {
         return camelContext;
     }
-    
+
     public <T> Future<T> submitTask(Callable<T> task) {
         return defaultExecutor.submit(task);
     }
-    
+
     public Future<?> submitTask(Runnable task) {
         return defaultExecutor.submit(task);
     }
-    
+
     public <T> Future<T> submitTask(Runnable task, T result) {
         return defaultExecutor.submit(task, result);
     }
-    
+
     public JobStatus submitJob(Job job, String endpoint) {
         return getProducerTemplate().requestBody(endpoint, job, JobStatus.class);
     }
-    
+
     public void start() throws Exception {
-        
+
         LOG.log(Level.INFO, "Starting using {0} as JMS broker name with URI of {1}", new Object[]{JMS_BROKER_NAME, brokerUri});
 
         // setup ActiveMQ
@@ -93,7 +93,7 @@ public class CamelExecutor {
         // add the routes
         camelContext.addRoutes(new AsyncJobRouteBuilder());
         camelContext.addRoutes(new RouteBuilder() {
-            
+
             @Override
             public void configure() throws Exception {
 
@@ -117,10 +117,10 @@ public class CamelExecutor {
                             .collect(Collectors.toList());
                             exchange.getIn().setBody(result);
                         });
-                
+
                 from("direct:helloToString")
                         .transform(simple("Hello ${body}"));
-                
+
                 from("seda:processDataset")
                         // input is the jobdef
                         .log("Processing ...")
@@ -136,27 +136,31 @@ public class CamelExecutor {
                         })
                         .marshal().json(JsonLibrary.Jackson) // body is now the JSON for the JobStatus
                         .log("Response sent");
-                
+
                 from("seda:submit")
                         // send  to the desired endpoint async
                         // when execution is complete results are send to seday:handleResults
                         .routingSlip(header("endpoint"));
-                
+
                 from("seda:handleResults")
                         .log("Handling results");
             }
-            
+
         });
-        
+
         camelContext.start();
-        
+
         defaultExecutor = camelContext.getExecutorServiceManager().newThreadPool(this, "DefaultJobPool", 5, 25);
     }
-    
+
     public void stop() throws Exception {
         LOG.info("stopping");
         camelContext.getExecutorServiceManager().shutdownGraceful(defaultExecutor);
         camelContext.stop();
     }
-    
+
+    public static DatasetHandler getDatasetHandler(Exchange exch) {
+        return exch.getContext().getRegistry().lookupByNameAndType(CamelExecutor.DATASET_HANDLER, DatasetHandler.class);
+    }
+
 }

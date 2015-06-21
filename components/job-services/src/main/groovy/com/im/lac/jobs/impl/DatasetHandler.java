@@ -10,7 +10,6 @@ import com.im.lac.types.io.Metadata;
 import com.im.lac.util.IOUtils;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.GZIPOutputStream;
 import org.apache.camel.Exchange;
+import org.apache.camel.util.IOHelper;
 
 /**
  *
@@ -42,7 +42,11 @@ public class DatasetHandler {
         DataItem dataItem = service.doInTransactionWithResult(DataItem.class, (sql) -> {
             DataItem di = service.getDataItem(sql, datasetId);
             if (di != null) {
-                service.deleteDataItem(sql, di);
+                try {
+                    service.deleteDataItem(sql, di);
+                } catch (Exception ioe) {
+                    throw new RuntimeException("Failed fetching dataset", ioe);
+                }
             }
             return di;
         });
@@ -65,7 +69,7 @@ public class DatasetHandler {
             if (f == null) {
                 try (InputStream in = service.createLargeObjectReader(sql, di.getLoid())) {
                     f = cache.addFileToCache(di.getLoid(), in);
-                } catch (IOException ioe) {
+                } catch (Exception ioe) {
                     throw new RuntimeException("Failed fetching dataset", ioe);
                 }
             }
@@ -78,42 +82,60 @@ public class DatasetHandler {
         return holder;
     }
 
-    public JobStatus saveDataset(Object results, Exchange exchange) throws Exception {
+    public JobStatus saveDatasetForJob(Object results, Exchange exchange) throws Exception {
         String jobId = exchange.getIn().getHeader("JobId", String.class);
         AbstractDatasetJob job = (AbstractDatasetJob) exchange.getContext().getRegistry().lookupByNameAndType(CamelExecutor.JOB_STORE, JobStore.class).getJob(jobId);
         job.status = JobStatus.Status.RESULTS_READY;
-        JsonProcessingHolder marshalResults = generateJsonForItem(results, true);
 
-        DataItem dataItem = service.doInTransactionWithResult(DataItem.class, (sql) -> {
-            try {
-                DataItem orig = service.getDataItem(sql, job.getJobDefinition().getDatasetId());
-                orig.setMetadata(marshalResults.metadata);
-                deleteFileFromCache(orig);
-                DataItem neu;
-                switch (job.getJobDefinition().getMode()) {
-                    case UPDATE:
-                        neu = service.updateDataItem(sql, orig, marshalResults.inputStream);
-                        break;
-                    case CREATE:
-                        DataItem di = new DataItem();
-                        di.setName(job.getJobDefinition().getDatasetName() == null ? "undefined" : job.getJobDefinition().getDatasetName());
-                        di.setSize(1);
-                        di.setMetadata(marshalResults.metadata);
-                        neu = service.addDataItem(sql, di, marshalResults.inputStream);
-                        break;
-                    default:
-                        throw new IllegalStateException("Unexpected mode " + job.getJobDefinition().getMode());
-                }
-                marshalResults.inputStream.close();
-                return neu;
-            } catch (IOException ex) {
-                throw new RuntimeException("Failed to write dataset", ex);
-            }
-        });
-
+        DataItem dataItem;
+        switch (job.getJobDefinition().getMode()) {
+            case UPDATE:
+                dataItem = updateDataset(results, job.getJobDefinition().getDatasetId());
+                break;
+            case CREATE:
+                String name = job.getJobDefinition().getDatasetName();
+                dataItem = createDataset(results, name == null ? "undefined" : name);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected mode " + job.getJobDefinition().getMode());
+        }
         job.status = JobStatus.Status.COMPLETED;
         job.result = dataItem;
         return job.buildStatus();
+    }
+
+    public DataItem updateDataset(final Object data, final Long datsetId) throws Exception {
+        final JsonProcessingHolder marshalResults = generateJsonForItem(data, true);
+        DataItem dataItem = service.doInTransactionWithResult(DataItem.class, (sql) -> {
+            try {
+                DataItem orig = service.getDataItem(sql, datsetId);
+                orig.setMetadata(marshalResults.metadata);
+                deleteFileFromCache(orig);
+                return service.updateDataItem(sql, orig, marshalResults.inputStream);
+            } catch (Exception ex) {
+                throw new RuntimeException("Failed to write dataset", ex);
+            } finally {
+                IOHelper.close(marshalResults.inputStream);
+            }
+        });
+        return dataItem;
+    }
+
+    public DataItem createDataset(final Object newData, final String datasetName) throws Exception {
+        final JsonProcessingHolder marshalResults = generateJsonForItem(newData, true);
+        final DataItem neu = new DataItem();
+        neu.setName(datasetName);
+        neu.setMetadata(marshalResults.metadata);
+        DataItem dataItem = service.doInTransactionWithResult(DataItem.class, (sql) -> {
+            try {
+                return service.addDataItem(sql, neu, marshalResults.inputStream);
+            } catch (Exception ex) {
+                throw new RuntimeException("Failed to create dataset", ex);
+            } finally {
+                IOHelper.close(marshalResults.inputStream);
+            }
+        });
+        return dataItem;
     }
 
     private void deleteFileFromCache(DataItem dataItem) {
@@ -166,6 +188,7 @@ public class DatasetHandler {
         };
         executor.submit(c);
         return new JsonProcessingHolder(pis, meta);
+
     }
 
     public static class JsonProcessingHolder {

@@ -105,14 +105,14 @@ class DatasetService {
         }
     }
     
-    DataItem addDataItem(final DataItem data, final InputStream is) {
+    DataItem addDataItem(final DataItem data, final InputStream is) throws Exception {
         return doInTransactionWithResult(DataItem.class) { addDataItem(it, data, is) }
     }
     
     /**
      * Add a new data item with content.
      */
-    DataItem addDataItem(final Sql db, final DataItem data, final InputStream is) {
+    DataItem addDataItem(final Sql db, final DataItem data, final InputStream is) throws Exception {
         
         Long loid = createLargeObject(db, is)
         String metaJson = marshalMetadata(data.metadata);
@@ -125,11 +125,11 @@ class DatasetService {
         return getDataItem(db, id)
     }
     
-    DataItem updateDataItem(final DataItem data) {
+    DataItem updateDataItem(final DataItem data) throws Exception {
         return doInTransactionWithResult(DataItem.class) { updateDataItem(it, data) }
     }
     
-    DataItem updateDataItem(final Sql db, final DataItem data) {     
+    DataItem updateDataItem(final Sql db, final DataItem data) throws Exception {     
         Long id = data.id
         String metaJson = marshalMetadata(data.metadata)
         db.executeUpdate("""\
@@ -140,11 +140,11 @@ class DatasetService {
         return getDataItem(db, id)
     }
     
-    DataItem updateDataItem(final DataItem data, final InputStream is) {
+    DataItem updateDataItem(final DataItem data, final InputStream is) throws Exception {
         return doInTransactionWithResult(DataItem.class) { updateDataItem(it, data, is) }
     }
     
-    DataItem updateDataItem(final Sql db, final DataItem data, final InputStream is) {
+    DataItem updateDataItem(final Sql db, final DataItem data, final InputStream is) throws Exception {
         Long id = data.id
         deleteLargeObject(db, data.loid)
         Long loid = createLargeObject(db, is)
@@ -157,7 +157,7 @@ class DatasetService {
         return getDataItem(db, data.id)
     }
     
-    DataItem getDataItem(final Long id) { 
+    DataItem getDataItem(final Long id) throws Exception { 
         return doInTransactionWithResult(DataItem.class) { getDataItem(it, id) }
     }
     
@@ -172,11 +172,11 @@ class DatasetService {
         return data
     }
     
-    List<DataItem> getDataItems() {
+    List<DataItem> getDataItems() throws Exception {
         return doInTransactionWithResult(List.class) { getDataItems(it) }
     }
     
-    List<DataItem> getDataItems(final Sql db) {
+    List<DataItem> getDataItems(final Sql db) throws Exception {
         log.fine("getDataItems()")
         List<DataItem> items = []
         long t0 = System.currentTimeMillis()
@@ -201,13 +201,13 @@ class DatasetService {
         return data
     }
     
-    void deleteDataItem(final DataItem data) {
+    void deleteDataItem(final DataItem data) throws Exception {
         doInTransaction() { deleteDataItem(it, data) }
     }
     
     /** Delete data item within a new transaction
      */
-    void deleteDataItem(final Sql db, final DataItem data) {
+    void deleteDataItem(final Sql db, final DataItem data) throws Exception {
         deleteLargeObject(db, data.loid)
         db.executeUpdate("DELETE FROM " + tableName + " WHERE id = ?", [data.id])    
     }
@@ -255,7 +255,7 @@ class DatasetService {
      * in a transaction (autoCommit = false) and the InputStream MUST be closed when 
      * finished with
      */
-    InputStream createLargeObjectReader(final Sql db, final long loid) {
+    InputStream createLargeObjectReader(final Sql db, final long loid) throws Exception {
         // Get the Large Object Manager to perform operations with
         LargeObjectManager lobj = ((org.postgresql.PGConnection)db.connection).getLargeObjectAPI()
         LargeObject obj = lobj.open(loid, LargeObjectManager.READ)

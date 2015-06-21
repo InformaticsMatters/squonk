@@ -17,6 +17,11 @@ import java.util.List;
  * @author timbo
  */
 public class JobService {
+    
+    /**
+     * Constant defining the header name for the name of a new data item 
+     */
+    public static final String HEADER_DATA_ITEM_NAME = "DataItemName";
 
     private final Environment env;
 
