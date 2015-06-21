@@ -14,6 +14,7 @@ import spock.lang.Specification
 import org.apache.camel.Exchange
 import org.apache.camel.processor.aggregate.AbstractListAggregationStrategy
 import org.apache.camel.util.IOHelper
+import com.fasterxml.jackson.databind.ObjectMapper
 
 /**
  *
@@ -28,14 +29,17 @@ class JobExecutorSpec extends Specification {
     @Shared JobService jobService
     
     void setupSpec() {
+        DatasetService datasetService = new DatasetService(dataSource,  DatasetService.DEFAULT_TABLE_NAME + "_test_jobexecutorspec")
         env = Environment.createAndStart(
-            new DatasetService(dataSource,  DatasetService.DEFAULT_TABLE_NAME + "_test_executorservicespec"), 
-            new CamelExecutor("vm://localhost?broker.persistent=false"))
+            datasetService, 
+            new CamelExecutor("vm://localhost?broker.persistent=false", datasetService))
         this.executorService = env.executorService
         this.datasetService = env.datasetService
         this.datasetService.createTables()
         this.jobService = new JobService(env)
     }
+    
+    
     	
     def cleanupSpec() {
 //        Sql db = new Sql(dataSource.connection)
@@ -45,41 +49,82 @@ class JobExecutorSpec extends Specification {
     }   
     
     
-    void "simple sync update"() {
-        setup:
-        List<Long> ids = datasetService.createTestData()
-        def item1 = datasetService.getDataItem(ids[0])
-        //println "Old item: " + item1
-        def id = ids[0]
-        def jobdef = new ProcessDatasetJobDefinition(
-            id, 
-            "direct:helloToString", 
-            Job.DatasetMode.UPDATE, 
-            String.class, 
-            "a new name")
-            
-        when:
-        JobStatus status = jobService.submitProcessDatasetJob(jobdef)
-        println status
-        sleep(2000)
-        String str = datasetService.doInTransactionWithResult(String.class) { sql ->
-            DataItem di = datasetService.getDataItem(sql, id)
-            println "LOID = $di.loid"
-            InputStream is = datasetService.createLargeObjectReader(sql, di.loid)
-            String res = is.text
-            is.close()
-            return res
-        }
-         
-            
-        then:
-        status != null
-        status.jobDefinition != null
-        status.jobDefinition.datasetId == id
-        status.status == JobStatus.Status.RUNNING
-        str == "Hello World"
-        
-    }
+//    void "simple sync create"() {
+//        setup:
+//        List<Long> ids = datasetService.createTestData()
+//        def item1 = datasetService.getDataItem(ids[0])
+//        def id = ids[0]
+//        def jobdef = new ProcessDatasetJobDefinition(
+//            id, 
+//            "direct:helloToString", 
+//            Job.DatasetMode.UPDATE, 
+//            String.class, 
+//            "a new name")
+//        
+//        def bananaDI = new DataItem()
+//        bananaDI.setName("banana")
+//        def fruit = new Fruit(type:'banana', colour:'yellow')
+//        def json = toJson(fruit)
+//        datasetService.addDataItem(bananaDI, new ByteArrayInputStream(json))
+//            
+//        when:
+//        JobStatus status = jobService.submitProcessDatasetJob(jobdef)
+//        println status
+//        sleep(2000)
+//        String str = datasetService.doInTransactionWithResult(String.class) { sql ->
+//            DataItem di = datasetService.getDataItem(sql, id)
+//            println "LOID = $di.loid"
+//            InputStream is = datasetService.createLargeObjectReader(sql, di.loid)
+//            String res = is.text
+//            is.close()
+//            return res
+//        }
+//         
+//            
+//        then:
+//        status != null
+//        status.jobDefinition != null
+//        status.jobDefinition.datasetId == id
+//        status.status == JobStatus.Status.RUNNING
+//        str == "Hello World"
+//        
+//    }
+    
+//    void "simple sync update"() {
+//        setup:
+//        List<Long> ids = datasetService.createTestData()
+//        def item1 = datasetService.getDataItem(ids[0])
+//        //println "Old item: " + item1
+//        def id = ids[0]
+//        def jobdef = new ProcessDatasetJobDefinition(
+//            id, 
+//            "direct:helloToString", 
+//            Job.DatasetMode.UPDATE, 
+//            String.class, 
+//            "a new name")
+//            
+//        when:
+//        JobStatus status = jobService.submitProcessDatasetJob(jobdef)
+//        println status
+//        sleep(2000)
+//        String str = datasetService.doInTransactionWithResult(String.class) { sql ->
+//            DataItem di = datasetService.getDataItem(sql, id)
+//            println "LOID = $di.loid"
+//            InputStream is = datasetService.createLargeObjectReader(sql, di.loid)
+//            String res = is.text
+//            is.close()
+//            return res
+//        }
+//         
+//            
+//        then:
+//        status != null
+//        status.jobDefinition != null
+//        status.jobDefinition.datasetId == id
+//        status.status == JobStatus.Status.RUNNING
+//        str == "Hello World"
+//        
+//    }
         
         
 //    void "simple sync create"() {

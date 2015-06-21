@@ -1,7 +1,8 @@
 package com.im.lac.jobs.impl;
 
+import com.im.lac.jobs.JobStatus;
+import com.im.lac.model.DatasetJobDefinition;
 import com.im.lac.service.Environment;
-import com.im.lac.model.JobDefinition;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.camel.CamelExecutionException;
@@ -16,7 +17,7 @@ import org.apache.camel.CamelExecutionException;
  *
  * @author timbo
  */
-public class AsynchronousStreamingJob<T extends JobDefinition> extends AbstractJob<T> {
+public class AsynchronousStreamingJob<T extends DatasetJobDefinition> extends AbstractDatasetJob<T> {
 
     private static final Logger LOG = Logger.getLogger(AsynchronousStreamingJob.class.getName());
 
@@ -39,7 +40,7 @@ public class AsynchronousStreamingJob<T extends JobDefinition> extends AbstractJ
     }
 
     @Override
-    public void doExecute(Environment env) throws CamelExecutionException {
+    public JobStatus doExecute(Environment env) throws CamelExecutionException {
         LOG.log(Level.FINE, "QueueJob.execute() submitting job {0} to queue {1}", new Object[]{jobdef, queueName});
 //        Object dataset = null; ////env.getDatasetService().get(inputDatasetId);
 //        Future<Object> results = env.getExecutorService().getProducerTemplate().asyncRequestBody(getRequestQueueUri(), dataset);
@@ -51,6 +52,7 @@ public class AsynchronousStreamingJob<T extends JobDefinition> extends AbstractJ
 //            }
 //        };
 //        t.start();
+        return null;
     }
 
 //    protected JobStatus handleResults(Environment env, Future<Object> result) {

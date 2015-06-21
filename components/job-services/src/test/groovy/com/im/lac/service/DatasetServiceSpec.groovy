@@ -7,6 +7,8 @@ import org.postgresql.ds.PGSimpleDataSource
 import spock.lang.Shared
 import spock.lang.Specification
 import com.im.lac.model.DataItem
+import com.im.lac.types.io.Metadata
+import com.im.lac.jobs.impl.Fruit
 
 /**
  *
@@ -23,6 +25,7 @@ class DatasetServiceSpec extends Specification {
     // run before the first feature method
     def setupSpec() {
         try {
+            db.execute 'DELETE FROM ' + service.tableName
             db.execute 'DROP TABLE ' + service.tableName
         } catch (Exception e) { }// expected   
         service.createTables()
@@ -31,8 +34,8 @@ class DatasetServiceSpec extends Specification {
     // run after the last feature method
     def cleanupSpec() {
         // first delete so that our LOBs get deleted
-        db.execute 'DELETE FROM ' + service.tableName
-        db.execute 'DROP TABLE ' + service.tableName
+        //db.execute 'DELETE FROM ' + service.tableName
+        //db.execute 'DROP TABLE ' + service.tableName
     }   
     
     
@@ -179,6 +182,41 @@ class DatasetServiceSpec extends Specification {
         
         then:
         1 == 1
+    }
+    
+    
+    def "8 write json"() {
+        setup:
+        def fruit = new Fruit(type:'banana', colour:'yellow')
+        def json = Utils.toJson(fruit)
+        def meta = new Metadata(Fruit.class.getName(), Metadata.Type.ITEM, 1)
+        
+        when:
+        DataItem di = service.addDataItem(new DataItem(name:'banana', size:1, metadata: meta), new ByteArrayInputStream(json.bytes))
+        item[0] = di
+        
+        then:
+        di.name == 'banana'
+        di.id > 0
+        di.loid > 0
+        
+    }
+    
+    def "9 read json"() {
+        
+        when:
+        DataItem di = service.getDataItem(item[0].id)
+        Fruit fruit = service.doInTransactionWithResult(Fruit.class) { sql ->
+            InputStream is = service.createLargeObjectReader(sql, di.loid)
+            return Utils.fromJson(is, Fruit.class)
+        }
+        
+        then:
+        di != null
+        di.metadata != null
+        fruit != null
+        fruit.type == 'banana'
+        fruit.colour == 'yellow'
     }
 }
 

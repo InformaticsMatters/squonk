@@ -13,36 +13,67 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Metadata {
 
+    public enum Type {
+
+        ITEM, ARRAY, TEXT
+    }
+
     public static final String FORMAT = "format";
 
     /**
-     * The number of records present
+     * The type of record
+     */
+    @JsonProperty
+    Type type;
+
+    /**
+     * The java class for the item, or the items in the array.
+     */
+    @JsonProperty
+    String className;
+
+    /**
+     * The number of records present (if Type is ARRAY)
      */
     @JsonProperty
     int size = 0;
-    
+
     /**
      * The names and types (java class) of the properties
      */
     @JsonProperty
     Map<String, Class> propertyTypes = new HashMap<>();
-    
+
     /**
      * metadata describing the dataset
      */
     @JsonProperty
     Map<String, Object> metaProps = new HashMap<>();
-    
+
     public Metadata() {
-        
+
     }
-    
-    public Metadata(int size, Map<String, Object> metaProps, Map<String, Class> propertyTypes) {
-        this.size = size;
+
+    public Metadata(String className, Type type, int size, Map<String, Object> metaProps, Map<String, Class> propertyTypes) {
+        this(className, type, size);
         this.metaProps = metaProps;
         this.propertyTypes = propertyTypes;
     }
 
+    public Metadata(String className, Type type, int size) {
+        this.className = className;
+        this.type = type;
+        this.size = size;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+    
     public int getSize() {
         return size;
     }
@@ -58,7 +89,7 @@ public class Metadata {
     public <T> T getMetadata(String key, Class<T> cls) {
         return (T) metaProps.get(key);
     }
-    
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();

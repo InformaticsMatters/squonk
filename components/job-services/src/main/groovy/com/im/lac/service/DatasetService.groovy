@@ -24,7 +24,7 @@ import org.apache.camel.util.IOHelper
 class DatasetService {
     
     DataSource dataSource
-    static final String DEFAULT_TABLE_NAME = 'users.demo_files'
+    static public final String DEFAULT_TABLE_NAME = 'users.demo_files'
     private final String tableName;
     private final ObjectMapper objectMapper;
     
@@ -35,7 +35,7 @@ class DatasetService {
     /** Alternative constructor allowing the table name to be specified, primarily 
      * for testing purposes.
      */
-    protected DatasetService(DataSource dataSource, String tableName) {
+    DatasetService(DataSource dataSource, String tableName) {
         this.dataSource = dataSource
         this.tableName = tableName;
         this.objectMapper = new ObjectMapper();
@@ -49,10 +49,10 @@ class DatasetService {
         def ids = []
         doInTransaction { db ->
             db.execute 'DELETE FROM ' + tableName
-            ids << addDataItem(db, new DataItem(name: 'test0', size: 1), new ByteArrayInputStream('World'.bytes)).id
-            ids << addDataItem(db, new DataItem(name: 'test1', size: 3), new ByteArrayInputStream('''["one", "two", "three"]'''.bytes)).id
-            ids << addDataItem(db, new DataItem(name: 'test2', size: 4), new ByteArrayInputStream('''["red", "yellow", "green", "blue"]'''.bytes)).id
-            ids << addDataItem(db, new DataItem(name: 'test3', size: 5), new ByteArrayInputStream('''["banana", "pineapple", "orange", "apple", "pear"]'''.bytes)).id
+            ids << addDataItem(db, new DataItem(name: 'test0', size: 1, metadata:new Metadata(type:Metadata.Type.TEXT,size:1,className:"java.lang.String")), new ByteArrayInputStream('World'.bytes)).id
+            ids << addDataItem(db, new DataItem(name: 'test1', size: 3, metadata:new Metadata(type:Metadata.Type.ARRAY,size:3,className:"java.lang.String")), new ByteArrayInputStream('''["one", "two", "three"]'''.bytes)).id
+            ids << addDataItem(db, new DataItem(name: 'test2', size: 4, metadata:new Metadata(type:Metadata.Type.ARRAY,size:4,className:"java.lang.String")), new ByteArrayInputStream('''["red", "yellow", "green", "blue"]'''.bytes)).id
+            ids << addDataItem(db, new DataItem(name: 'test3', size: 5, metadata:new Metadata(type:Metadata.Type.ARRAY,size:5,className:"java.lang.String")), new ByteArrayInputStream('''["banana", "pineapple", "orange", "apple", "pear"]'''.bytes)).id
         }
         return ids
     }
@@ -89,7 +89,7 @@ class DatasetService {
     
     /** This is the entry point for getting a Sql instance
      */
-    public <R> R doInTransactionWithResult(Class<R> type, Function<Sql,R> executable) {
+    public <R> R doInTransactionWithResult(Class<R> type, Function<Sql,R> executable) throws Exception {
         Sql db = new Sql(dataSource.connection)
         R result
         db.withTransaction {
@@ -98,7 +98,7 @@ class DatasetService {
         return result
     }
     
-    public void doInTransaction(Consumer<Sql> executable) {
+    public void doInTransaction(Consumer<Sql> executable) throws Exception {
         Sql db = new Sql(dataSource.connection)
         db.withTransaction {
             executable.accept(db)
@@ -113,8 +113,9 @@ class DatasetService {
      * Add a new data item with content.
      */
     DataItem addDataItem(final Sql db, final DataItem data, final InputStream is) {
-        String metaJson = marshalMetadata(data.metadata);
+        
         Long loid = createLargeObject(db, is)
+        String metaJson = marshalMetadata(data.metadata);
         def gen = db.executeInsert("""\
             |INSERT INTO $tableName (name, size, metadata, loid)
             |  VALUES (?,?,?::jsonb,?)""".stripMargin(), [data.name, data.size, metaJson, loid]) 
@@ -147,15 +148,16 @@ class DatasetService {
         Long id = data.id
         deleteLargeObject(db, data.loid)
         Long loid = createLargeObject(db, is)
+        String metaJson = marshalMetadata(data.metadata);
         db.executeUpdate("""\
-            |UPDATE $tableName set loid = ?, last_updated = NOW()
-            |  WHERE id = ?""".stripMargin(), [loid, id]) 
+            |UPDATE $tableName set loid = ?, last_updated = NOW(), metadata = ?::jsonb
+            |  WHERE id = ?""".stripMargin(), [loid, metaJson, id]) 
             
         log.info("Created data item with id $id using loid $loid")
         return getDataItem(db, data.id)
     }
     
-    DataItem getDataItem(final Long id) {  
+    DataItem getDataItem(final Long id) { 
         return doInTransactionWithResult(DataItem.class) { getDataItem(it, id) }
     }
     

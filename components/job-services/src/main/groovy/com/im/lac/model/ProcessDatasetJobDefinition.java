@@ -6,7 +6,7 @@ import com.im.lac.jobs.Job;
  *
  * @author timbo
  */
-public class ProcessDatasetJobDefinition implements JobDefinition {
+public class ProcessDatasetJobDefinition implements DatasetJobDefinition {
 
     private final Long datasetId;
 
@@ -43,18 +43,22 @@ public class ProcessDatasetJobDefinition implements JobDefinition {
         this.datasetName = null;
     }
     
+    @Override
     public ExecutionMode getExecutionMode() {
         return ExecutionMode.ASYNC_SIMPLE;
     }
 
+    @Override
     public Long getDatasetId() {
         return datasetId;
     }
 
+    @Override
     public String getDestination() {
         return destination;
     }
 
+    @Override
     public Job.DatasetMode getMode() {
         return mode;
     }

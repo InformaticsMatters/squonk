@@ -4,12 +4,9 @@ import com.im.lac.jobs.CancellableJob;
 import com.im.lac.service.Environment;
 import com.im.lac.jobs.JobStatus;
 import com.im.lac.jobs.UpdatableJob;
-import com.im.lac.model.JobDefinition;
-import java.util.ArrayList;
+import com.im.lac.model.DatasetJobDefinition;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,46 +17,43 @@ import org.apache.camel.component.jms.JmsQueueEndpoint;
 import org.apache.camel.spi.UnitOfWork;
 
 /**
- * Queue based executor for slow jobs that can be split into parts and submitted
- * to a queue for execution.
+ * Queue based executor for slow jobs that can be split into parts and submitted to a queue for
+ * execution.
  * <p>
- * Each queue would have a corresponding consumer that takes from the queue,
- * processes the item and sends the response (if any) to a second queue that is
- * dedicated for the results of this job. The service consuming the request
- * queue can be auto-scaled as needed to increase throughput (auto-scaling on
- * the number of unprocessed messages).</p>
+ * Each queue would have a corresponding consumer that takes from the queue, processes the item and
+ * sends the response (if any) to a second queue that is dedicated for the results of this job. The
+ * service consuming the request queue can be auto-scaled as needed to increase throughput
+ * (auto-scaling on the number of unprocessed messages).</p>
  *
  * <p>
  * Assumptions:
  * <ol>
  * <li>the submitted messages have fields for Job ID, response queue name</li>
- * <li>the submitted message bodies are JSON and the consuming service knows
- * what class to instantiate from that JSON</li>
- * <li>the response bodies are JSON and need no further processing other than
- * being written as a new dataset as an Array JSON objects (note: potentially we
- * could add a post-processing step if this is too restrictive?)
+ * <li>the submitted message bodies are JSON and the consuming service knows what class to
+ * instantiate from that JSON</li>
+ * <li>the response bodies are JSON and need no further processing other than being written as a new
+ * dataset as an Array JSON objects (note: potentially we could add a post-processing step if this
+ * is too restrictive?)
  * </ol>
  * </p>
  * <p>
  * The process for execution is:
  * <ol>
  * <li>retrieve dataset</li>
- * <li>split dataset - assume it's a Collection, Stream or similar - something
- * that we know how to split</li>
+ * <li>split dataset - assume it's a Collection, Stream or similar - something that we know how to
+ * split</li>
  * <li>create a new queue for the response (dedicated to this job)</li>
- * <li>submit each item to request queue, specifying the queue name for the
- * responses</li>
+ * <li>submit each item to request queue, specifying the queue name for the responses</li>
  * <li>monitor items from response queue</li>
  * <li>create/update dataset when requested</li>
- * <li>when response queue has expected totalCount then update dataset with
- * final results</li>
+ * <li>when response queue has expected totalCount then update dataset with final results</li>
  * <li>delete the response queue</li>
  * </ol>
  * </p>
  *
  * @author timbo
  */
-public class QueueJob<T extends JobDefinition> extends AbstractJob<T> implements UpdatableJob, CancellableJob {
+public class QueueJob<T extends DatasetJobDefinition> extends AbstractDatasetJob implements UpdatableJob, CancellableJob {
 
     private static final Logger LOG = Logger.getLogger(QueueJob.class.getName());
 
@@ -77,7 +71,6 @@ public class QueueJob<T extends JobDefinition> extends AbstractJob<T> implements
      * Constructor for re-hydrating a "parked" job
      *
      * @param jobId
-     * @param outputDatasetId
      * @param queueName
      * @param totalCount
      * @param processedCount
@@ -97,7 +90,7 @@ public class QueueJob<T extends JobDefinition> extends AbstractJob<T> implements
     }
 
     @Override
-    protected void doExecute(Environment env) throws CamelExecutionException {
+    protected JobStatus doExecute(Environment env) throws CamelExecutionException {
         LOG.log(Level.FINE, "QueueJob.execute() Submitting job {0} to queue {1}", new Object[]{jobdef, queueName});
 //        Object dataset = null; ////env.getDatasetService().get(inputDatasetId);
 //        Map<String, Object> headers = new HashMap<>();
@@ -106,6 +99,7 @@ public class QueueJob<T extends JobDefinition> extends AbstractJob<T> implements
 //        headers.put("JMSReplyTo", getResponseQueueName());
 //        headers.put("JobId", getJobId());
 //        totalCount = env.getExecutorService().getProducerTemplate().requestBodyAndHeaders(CamelExecutor.ENDPOINT_SPLIT_AND_SUBMIT, dataset, headers, Integer.class);
+        return null;
     }
 
     @Override

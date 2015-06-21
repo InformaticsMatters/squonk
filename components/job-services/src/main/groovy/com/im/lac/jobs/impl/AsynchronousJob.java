@@ -32,7 +32,7 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class AsynchronousJob extends AbstractJob<ProcessDatasetJobDefinition> {
+public class AsynchronousJob extends AbstractDatasetJob<ProcessDatasetJobDefinition> {
 
     private static final Logger LOG = Logger.getLogger(AsynchronousJob.class.getName());
 
@@ -47,10 +47,9 @@ public class AsynchronousJob extends AbstractJob<ProcessDatasetJobDefinition> {
 
 
     @Override
-    public void doExecute(Environment env) throws Exception {
+    public JobStatus doExecute(Environment env) throws Exception {
         LOG.log(Level.FINE, "QueueJob.execute() {0}", jobdef);
-        JobExecutor.submitProcessDatasetJob(env, this, jobdef);
-        this.status = JobStatus.Status.RUNNING;
+        return env.getExecutorService().submitJob(this, AsyncJobRouteBuilder.ROUTE_SUBMIT);
     }
 
 }

@@ -3,7 +3,7 @@ package com.im.lac.jobs.impl;
 import com.im.lac.service.*;
 import com.im.lac.jobs.JobStatus;
 import com.im.lac.model.DataItem;
-import com.im.lac.model.JobDefinition;
+import com.im.lac.model.DatasetJobDefinition;
 import com.im.lac.model.ProcessDatasetJobDefinition;
 import java.util.Date;
 import java.util.logging.Level;
@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class SynchronousJob<T extends JobDefinition> extends AbstractJob<T> {
+public class SynchronousJob<T extends DatasetJobDefinition> extends AbstractDatasetJob<T> {
 
     private static final Logger LOG = Logger.getLogger(SynchronousJob.class.getName());
 
@@ -29,12 +29,13 @@ public class SynchronousJob<T extends JobDefinition> extends AbstractJob<T> {
      *
      */
     @Override
-    protected void doExecute(Environment env) throws Exception {      
-        LOG.log(Level.FINE, "SynchronousJob.execute() {0}", jobdef);
-        DataItem result = JobExecutor.submitAndWait(env, (ProcessDatasetJobDefinition)jobdef);
-        this.processedCount = 1;
-        this.completed = new Date();
-        this.status = JobStatus.Status.COMPLETED;
+    protected JobStatus doExecute(Environment env) throws Exception {      
+//        LOG.log(Level.FINE, "SynchronousJob.execute() {0}", jobdef);
+//        DataItem result = JobExecutor.submitAndWait(env, (ProcessDatasetJobDefinition)jobdef);
+//        this.processedCount = 1;
+//        this.completed = new Date();
+//        this.status = JobStatus.Status.COMPLETED;
+        return null;
     }
 
 }

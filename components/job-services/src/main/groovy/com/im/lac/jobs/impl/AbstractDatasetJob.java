@@ -3,7 +3,7 @@ package com.im.lac.jobs.impl;
 import com.im.lac.jobs.Job;
 import com.im.lac.jobs.JobStatus;
 import com.im.lac.model.DataItem;
-import com.im.lac.model.JobDefinition;
+import com.im.lac.model.DatasetJobDefinition;
 import com.im.lac.service.Environment;
 import java.util.Date;
 import java.util.UUID;
@@ -14,9 +14,9 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public abstract class AbstractJob<T extends JobDefinition> implements Job {
+public abstract class AbstractDatasetJob<T extends DatasetJobDefinition> implements Job<T> {
 
-    private static final Logger LOG = Logger.getLogger(AbstractJob.class.getName());
+    private static final Logger LOG = Logger.getLogger(AbstractDatasetJob.class.getName());
 
     protected final String jobId;
     
@@ -30,13 +30,13 @@ public abstract class AbstractJob<T extends JobDefinition> implements Job {
     protected T jobdef;
     protected Exception exception;
 
-    protected AbstractJob(T jobdef) {
+    protected AbstractDatasetJob(T jobdef) {
         jobId = UUID.randomUUID().toString();
         this.jobdef = jobdef;
 
     }
 
-    protected AbstractJob(
+    protected AbstractDatasetJob(
             String jobId, 
             T jobdef,
             int totalCount,
@@ -47,8 +47,13 @@ public abstract class AbstractJob<T extends JobDefinition> implements Job {
         this.processedCount = processedCount;
     }
 
+    @Override
     public String getJobId() {
         return jobId;
+    }
+    
+    public T getJobDefinition() {
+        return jobdef;
     }
 
     /**
@@ -90,15 +95,17 @@ public abstract class AbstractJob<T extends JobDefinition> implements Job {
         started = new Date();
         status = JobStatus.Status.RUNNING;
         try {
-            doExecute(env);
-
+            JobStatus status = doExecute(env);
+            if (status != null) {
+                return status;
+            }
         } catch (Exception ex) {
             LOG.log(Level.WARNING, "Failed to run job " + getJobId(), ex);
             status = JobStatus.Status.FAILED;
             exception = ex;
         }
 
-        return getStatus(env);
+        return buildStatus();
     }
 
     /**
@@ -107,6 +114,6 @@ public abstract class AbstractJob<T extends JobDefinition> implements Job {
      * @param env
      * @throws java.lang.Exception
      */
-    protected abstract void doExecute(Environment env) throws Exception;
+    protected abstract JobStatus doExecute(Environment env) throws Exception;
 
 }
