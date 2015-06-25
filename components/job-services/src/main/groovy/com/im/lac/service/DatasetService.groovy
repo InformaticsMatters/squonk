@@ -24,7 +24,7 @@ import org.apache.camel.util.IOHelper
 class DatasetService {
     
     DataSource dataSource
-    static public final String DEFAULT_TABLE_NAME = 'users.demo_files'
+    static public final String DEFAULT_TABLE_NAME = 'users.datasets'
     private final String tableName;
     private final ObjectMapper objectMapper;
     
@@ -41,6 +41,15 @@ class DatasetService {
         this.objectMapper = new ObjectMapper();
     }
     
+    /** for use in testing only */
+    protected void deleteAllLobs() {
+        Sql db = new Sql(dataSource)
+        db.eachRow("SELECT loid FROM " + tableName) {
+            println "deleting lob ${it[0]}" 
+            deleteLargeObject(it[0])
+        }
+    }
+    
     /** Deletes all data and sets up some test data. FOR TESTING PURPOSES ONLY.
      * 
      */
@@ -49,10 +58,10 @@ class DatasetService {
         def ids = []
         doInTransaction { db ->
             db.execute 'DELETE FROM ' + tableName
-            ids << addDataItem(db, new DataItem(name: 'test0', size: 1, metadata:new Metadata(type:Metadata.Type.TEXT,size:1,className:"java.lang.String")), new ByteArrayInputStream('World'.bytes)).id
-            ids << addDataItem(db, new DataItem(name: 'test1', size: 3, metadata:new Metadata(type:Metadata.Type.ARRAY,size:3,className:"java.lang.String")), new ByteArrayInputStream('''["one", "two", "three"]'''.bytes)).id
-            ids << addDataItem(db, new DataItem(name: 'test2', size: 4, metadata:new Metadata(type:Metadata.Type.ARRAY,size:4,className:"java.lang.String")), new ByteArrayInputStream('''["red", "yellow", "green", "blue"]'''.bytes)).id
-            ids << addDataItem(db, new DataItem(name: 'test3', size: 5, metadata:new Metadata(type:Metadata.Type.ARRAY,size:5,className:"java.lang.String")), new ByteArrayInputStream('''["banana", "pineapple", "orange", "apple", "pear"]'''.bytes)).id
+            ids << addDataItem(db, new DataItem(name: 'test0', metadata:new Metadata(type:Metadata.Type.TEXT,size:1,className:"java.lang.String")), new ByteArrayInputStream('World'.bytes)).id
+            ids << addDataItem(db, new DataItem(name: 'test1', metadata:new Metadata(type:Metadata.Type.ARRAY,size:3,className:"java.lang.String")), new ByteArrayInputStream('''["one", "two", "three"]'''.bytes)).id
+            ids << addDataItem(db, new DataItem(name: 'test2', metadata:new Metadata(type:Metadata.Type.ARRAY,size:4,className:"java.lang.String")), new ByteArrayInputStream('''["red", "yellow", "green", "blue"]'''.bytes)).id
+            ids << addDataItem(db, new DataItem(name: 'test3', metadata:new Metadata(type:Metadata.Type.ARRAY,size:5,className:"java.lang.String")), new ByteArrayInputStream('''["banana", "pineapple", "orange", "apple", "pear"]'''.bytes)).id
         }
         return ids
     }
@@ -74,7 +83,6 @@ class DatasetService {
             |  name TEXT NOT NULL,
             |  time_created TIMESTAMP NOT NULL DEFAULT NOW(),
             |  last_updated TIMESTAMP NOT NULL DEFAULT NOW(),
-            |  size INTEGER,
             |  metadata JSONB,
             |  loid BIGINT NOT NULL
             |)""".stripMargin()
@@ -106,6 +114,7 @@ class DatasetService {
     }
     
     DataItem addDataItem(final DataItem data, final InputStream is) throws Exception {
+        println "addDataItem"
         return doInTransactionWithResult(DataItem.class) { addDataItem(it, data, is) }
     }
     
@@ -117,8 +126,8 @@ class DatasetService {
         Long loid = createLargeObject(db, is)
         String metaJson = marshalMetadata(data.metadata);
         def gen = db.executeInsert("""\
-            |INSERT INTO $tableName (name, size, metadata, loid)
-            |  VALUES (?,?,?::jsonb,?)""".stripMargin(), [data.name, data.size, metaJson, loid]) 
+            |INSERT INTO $tableName (name, metadata, loid)
+            |  VALUES (?,?::jsonb,?)""".stripMargin(), [data.name, metaJson, loid]) 
         Long id = gen[0][0]
             
         log.info("Created data item with id $id using loid $loid")
@@ -133,8 +142,8 @@ class DatasetService {
         Long id = data.id
         String metaJson = marshalMetadata(data.metadata)
         db.executeUpdate("""\
-            |UPDATE $tableName set name = ?, size = ?, metadata = ?::jsonb, last_updated = NOW()
-            |  WHERE id = ?""".stripMargin(), [data.name, data.size, metaJson, id]) 
+            |UPDATE $tableName set name = ?, metadata = ?::jsonb, last_updated = NOW()
+            |  WHERE id = ?""".stripMargin(), [data.name, metaJson, id]) 
 
         log.info("Updated data item with id $id")
         return getDataItem(db, id)
@@ -163,7 +172,7 @@ class DatasetService {
     
     DataItem getDataItem(final Sql db, final Long id) {
         log.fine("getDataItem($id)")
-        def row = db.firstRow('SELECT id, name, time_created, last_updated, size, metadata::text, loid FROM ' 
+        def row = db.firstRow('SELECT id, name, time_created, last_updated, metadata::text, loid FROM ' 
             + tableName + ' WHERE id = ?', [id])
         if (!row) {
             throw new IllegalArgumentException("Item with ID $id not found")
@@ -182,7 +191,7 @@ class DatasetService {
         long t0 = System.currentTimeMillis()
         long t1 = System.currentTimeMillis()
         println "Creating Sql took " + (t1-t0)
-        db.eachRow('SELECT id, name, time_created, last_updated, size, metadata::text, loid FROM ' 
+        db.eachRow('SELECT id, name, time_created, last_updated, metadata::text, loid FROM ' 
             + tableName + '  ORDER BY id') { row ->
             items << buildDataItem(row)
         }
@@ -193,7 +202,6 @@ class DatasetService {
         DataItem data = new DataItem()
         data.id = row.id
         data.name = row.name
-        data.size = row.size
         data.metadata = unmarshalMetadata(row.metadata)
         data.created = row.time_created
         data.updated = row.last_updated

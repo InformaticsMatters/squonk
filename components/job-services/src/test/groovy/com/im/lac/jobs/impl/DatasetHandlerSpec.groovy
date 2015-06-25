@@ -20,7 +20,7 @@ class DatasetHandlerSpec extends Specification {
     def setupSpec() {
         Sql db = new Sql(dataSource)
         try {
-            db.execute 'DELETE FROM ' + service.tableName
+            service.deleteAllLobs()
             db.execute 'DROP TABLE ' + service.tableName
         } catch (Exception e) { }// expected   
         service.createTables()
@@ -31,14 +31,14 @@ class DatasetHandlerSpec extends Specification {
     def cleanupSpec() {
         Sql db = new Sql(dataSource)
         // first delete so that our LOBs get deleted
-        db.execute 'DELETE FROM ' + service.tableName
+        service.deleteAllLobs()
         db.execute 'DROP TABLE ' + service.tableName
     }   
     
     void "test read large object as text"() {
         
         when:
-        Object r = handler.fetchDatasetObjectsForId(1l)
+        Object r = handler.fetchObjectsForDataset(1l)
         
         then:
         r instanceof String
@@ -48,7 +48,7 @@ class DatasetHandlerSpec extends Specification {
     void "test read large object as stream"() {
         
         when:
-        Object r = handler.fetchDatasetObjectsForId(2l)
+        Object r = handler.fetchObjectsForDataset(2l)
         
         then:
         r instanceof Stream

@@ -19,7 +19,7 @@ public abstract class AbstractDatasetJob<T extends DatasetJobDefinition> impleme
     private static final Logger LOG = Logger.getLogger(AbstractDatasetJob.class.getName());
 
     protected final String jobId;
-    
+
     protected JobStatus.Status status = JobStatus.Status.PENDING;
     protected DataItem result;
     protected int totalCount;
@@ -37,7 +37,7 @@ public abstract class AbstractDatasetJob<T extends DatasetJobDefinition> impleme
     }
 
     protected AbstractDatasetJob(
-            String jobId, 
+            String jobId,
             T jobdef,
             int totalCount,
             int processedCount) {
@@ -51,7 +51,7 @@ public abstract class AbstractDatasetJob<T extends DatasetJobDefinition> impleme
     public String getJobId() {
         return jobId;
     }
-    
+
     public T getJobDefinition() {
         return jobdef;
     }
@@ -63,14 +63,22 @@ public abstract class AbstractDatasetJob<T extends DatasetJobDefinition> impleme
      * @return
      */
     @Override
-    public JobStatus getStatus(Environment env) {
+    public JobStatus getJobStatus(Environment env) {
         updateStatus(env);
         return buildStatus();
     }
 
+    public JobStatus.Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(JobStatus.Status neu) {
+        System.out.println("Updating status of job " + jobId + " to " + neu);
+        this.status = neu;
+    }
+
     /**
-     * Get the status based on the last updated stats. Does NOT do anything to
-     * update the stats.
+     * Get the status based on the last updated stats. Does NOT do anything to update the stats.
      *
      * @return
      */
@@ -83,8 +91,8 @@ public abstract class AbstractDatasetJob<T extends DatasetJobDefinition> impleme
     }
 
     /**
-     * Executes the job. The actual execution is handled by the doExecute()
-     * method which you need to override.
+     * Executes the job. The actual execution is handled by the doExecute() method which you need to
+     * override.
      *
      * @param env
      * @return The status after completion

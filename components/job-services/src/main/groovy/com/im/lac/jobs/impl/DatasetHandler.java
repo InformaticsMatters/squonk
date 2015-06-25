@@ -1,5 +1,6 @@
 package com.im.lac.jobs.impl;
 
+import com.im.lac.service.impl.SimpleFileCacheService;
 import com.im.lac.jobs.JobStatus;
 import com.im.lac.model.DataItem;
 import com.im.lac.model.DatasetJobDefinition;
@@ -15,9 +16,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 import org.apache.camel.Exchange;
 import org.apache.camel.util.IOHelper;
@@ -28,14 +31,23 @@ import org.apache.camel.util.IOHelper;
  */
 public class DatasetHandler {
 
-    private final FileCache cache;
+    private final SimpleFileCacheService cache;
     private final JsonHandler jsonHandler = new JsonHandler();
     private final DatasetService service;
 
     public DatasetHandler(DatasetService service, String cachePath) throws IOException {
         this.service = service;
-        cache = new FileCache(cachePath);
+        cache = new SimpleFileCacheService(cachePath);
         cache.init();
+    }
+
+    public List<DataItem> listDataItems(Object body) throws Exception {
+        // body is ignored, but it could be a filter?
+        return service.getDataItems();
+    }
+
+    public DataItem getDataItem(final Long id) throws Exception {
+        return service.getDataItem(id);
     }
 
     public void deleteDataset(Long datasetId) throws Exception {
@@ -53,16 +65,21 @@ public class DatasetHandler {
         deleteFileFromCache(dataItem);
     }
 
-    public Object fetchDatasetObjectsForJob(final AbstractDatasetJob job) throws Exception {
+    public Object fetchObjectsForJob(final AbstractDatasetJob job) throws Exception {
         DatasetJobDefinition jobdef = job.getJobDefinition();
-        return fetchDatasetObjectsForId(jobdef.getDatasetId());
+        return fetchObjectsForDataset(jobdef.getDatasetId());
     }
 
-    public Object fetchDatasetObjectsForId(Long datasetId) throws Exception {
-        return generateObjectFromJson(fetchDatasetJsonForId(datasetId));
+    public Object fetchObjectsForDataset(Long datasetId) throws Exception {
+        return generateObjectFromJson(fetchJsonForDataset(datasetId));
+    }
+    
+    public Object fetchObjectsForId(Long datasetId) throws Exception {
+        JsonProcessingHolder holder = fetchJsonForDataset(datasetId);
+        return generateObjectFromJson(holder);
     }
 
-    public JsonProcessingHolder fetchDatasetJsonForId(Long datasetId) throws Exception {
+    public JsonProcessingHolder fetchJsonForDataset(Long datasetId) throws Exception {
         JsonProcessingHolder holder = service.doInTransactionWithResult(JsonProcessingHolder.class, (sql) -> {
             DataItem di = service.getDataItem(sql, datasetId);
             File f = cache.getFileFromCache(di.getLoid());
@@ -85,7 +102,7 @@ public class DatasetHandler {
     public JobStatus saveDatasetForJob(Object results, Exchange exchange) throws Exception {
         String jobId = exchange.getIn().getHeader("JobId", String.class);
         AbstractDatasetJob job = (AbstractDatasetJob) exchange.getContext().getRegistry().lookupByNameAndType(CamelExecutor.JOB_STORE, JobStore.class).getJob(jobId);
-        job.status = JobStatus.Status.RESULTS_READY;
+        job.setStatus(JobStatus.Status.RESULTS_READY);
 
         DataItem dataItem;
         switch (job.getJobDefinition().getMode()) {
@@ -99,7 +116,7 @@ public class DatasetHandler {
             default:
                 throw new IllegalStateException("Unexpected mode " + job.getJobDefinition().getMode());
         }
-        job.status = JobStatus.Status.COMPLETED;
+        job.setStatus(JobStatus.Status.COMPLETED);
         job.result = dataItem;
         return job.buildStatus();
     }
@@ -182,7 +199,11 @@ public class DatasetHandler {
 
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable c = (Callable) () -> {
-            jsonHandler.marshalItem(item, meta, gzip ? new GZIPOutputStream(out) : out);
+            if (item instanceof Stream) {
+                jsonHandler.marshalItems((Stream)item, meta, gzip ? new GZIPOutputStream(out) : out);
+            } else {
+                jsonHandler.marshalItem(item, meta, gzip ? new GZIPOutputStream(out) : out);
+            }
             executor.shutdown();
             return true;
         };
@@ -193,13 +214,22 @@ public class DatasetHandler {
 
     public static class JsonProcessingHolder {
 
-        InputStream inputStream;
-        Metadata metadata;
+        final InputStream inputStream;
+        final Metadata metadata;
 
         JsonProcessingHolder(InputStream inputStream, Metadata metadata) {
             this.inputStream = inputStream;
             this.metadata = metadata;
         }
+        
+        public InputStream getInputStream() {
+            return inputStream;
+        }
+        
+        public Metadata getMetadata() {
+            return metadata;
+        }
+        
     }
 
 }

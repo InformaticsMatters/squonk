@@ -25,7 +25,7 @@ class DatasetServiceSpec extends Specification {
     // run before the first feature method
     def setupSpec() {
         try {
-            db.execute 'DELETE FROM ' + service.tableName
+            service.deleteAllLobs()
             db.execute 'DROP TABLE ' + service.tableName
         } catch (Exception e) { }// expected   
         service.createTables()
@@ -34,17 +34,16 @@ class DatasetServiceSpec extends Specification {
     // run after the last feature method
     def cleanupSpec() {
         // first delete so that our LOBs get deleted
-        //db.execute 'DELETE FROM ' + service.tableName
-        //db.execute 'DROP TABLE ' + service.tableName
+        service.deleteAllLobs()
+        db.execute 'DROP TABLE ' + service.tableName
     }   
-    
     
     
     def "1.1 add dataitem"() {
         println "add dataitem()"
         
         setup:
-        DataItem data = new DataItem(name: 'test1', size: 100)
+        DataItem data = new DataItem(name: 'test1')
           
         when:
         DataItem neu = service.addDataItem(data, new ByteArrayInputStream('hello world!'.getBytes()))
@@ -55,7 +54,6 @@ class DatasetServiceSpec extends Specification {
         then:
         neu.id != null
         neu.name == 'test1'
-        neu.size == 100
         neu.created != null
         neu.updated != null
         neu.loid != null
@@ -65,14 +63,13 @@ class DatasetServiceSpec extends Specification {
         println "add update dataitem()"
         
         setup:
-        DataItem data = new DataItem(name: 'test1', size: 100)
+        DataItem data = new DataItem(name: 'test1')
         
         when:
         DataItem item1
         DataItem item2
         service.doInTransactionWithResult(DataItem.class) { sql ->
             item1 = service.addDataItem(sql, data, new ByteArrayInputStream('hello world!'.getBytes()))
-            item1.size = 10000
             item2 = service.updateDataItem(sql, item1);
         }
         
@@ -192,7 +189,7 @@ class DatasetServiceSpec extends Specification {
         def meta = new Metadata(Fruit.class.getName(), Metadata.Type.ITEM, 1)
         
         when:
-        DataItem di = service.addDataItem(new DataItem(name:'banana', size:1, metadata: meta), new ByteArrayInputStream(json.bytes))
+        DataItem di = service.addDataItem(new DataItem(name:'banana', metadata: meta), new ByteArrayInputStream(json.bytes))
         item[0] = di
         
         then:

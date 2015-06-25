@@ -30,12 +30,14 @@ class MoleculeObjectJsonDeserializerSpec extends Specification {
     void "deserialize single"() {
         
         setup:
+        Metadata meta = new Metadata(MoleculeObject.class.name, Metadata.Type.ITEM, 1)
+        meta.propertyTypes.putAll(mappings)
         ObjectMapper mapper = new ObjectMapper()
         SimpleModule module = new SimpleModule()
         module.addDeserializer(MoleculeObject.class, new MoleculeObjectJsonDeserializer())
         mapper.registerModule(module)
         
-        ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute("mappings", mappings)
+        ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute(JsonHandler.ATTR_METADATA, meta)
         ObjectReader reader = mapper.reader(MoleculeObject.class).with(attrs)
         
         when:
@@ -56,8 +58,10 @@ class MoleculeObjectJsonDeserializerSpec extends Specification {
         SimpleModule module = new SimpleModule()
         module.addDeserializer(MoleculeObject.class, new MoleculeObjectJsonDeserializer())
         mapper.registerModule(module)
+        Metadata meta = new Metadata(MoleculeObject.class.name, Metadata.Type.ARRAY, 6)
+        meta.propertyTypes.putAll(mappings)
         
-        ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute("mappings", mappings)
+        ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute(JsonHandler.ATTR_METADATA, meta)
         ObjectReader reader = mapper.reader(MoleculeObject.class).with(attrs)
         
         when:

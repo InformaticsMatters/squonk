@@ -11,7 +11,6 @@ public class DataItem {
 
     private Long id;
     private String name;
-    private Integer size;
     private Metadata metadata;
     private Timestamp created;
     private Timestamp updated;
@@ -24,14 +23,12 @@ public class DataItem {
     public DataItem(
             Long id,
             String name,
-            Integer size,
             Metadata metadata,
             Timestamp created,
             Timestamp updated,
             Long loid) {
         this.id = id;
         this.name = name;
-        this.size = size;
         this.metadata = metadata;
         this.created = created;
         this.updated = updated;
@@ -51,14 +48,6 @@ public class DataItem {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Integer getSize() {
-        return size;
-    }
-
-    public void setSize(Integer size) {
-        this.size = size;
     }
 
     public Metadata getMetadata() {

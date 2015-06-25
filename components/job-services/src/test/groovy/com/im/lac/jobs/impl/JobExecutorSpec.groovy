@@ -35,6 +35,10 @@ class JobExecutorSpec extends Specification {
             new CamelExecutor("vm://localhost?broker.persistent=false", datasetService))
         this.executorService = env.executorService
         this.datasetService = env.datasetService
+        try {
+            datasetService.deleteAllLobs()
+            db.execute 'DROP TABLE ' + datasetService.tableName
+        } catch (Exception e) { }// expected   
         this.datasetService.createTables()
         this.jobService = new JobService(env)
     }
@@ -42,10 +46,10 @@ class JobExecutorSpec extends Specification {
     
     	
     def cleanupSpec() {
-//        Sql db = new Sql(dataSource.connection)
-//        // first delete so that our LOBs get deleted
-//        db.execute 'DELETE FROM ' + datasetService.tableName
-//        db.execute 'DROP TABLE ' + datasetService.tableName
+        Sql db = new Sql(dataSource.connection)
+        // first delete so that our LOBs get deleted
+        datasetService.deleteAllLobs()
+        db.execute 'DROP TABLE ' + datasetService.tableName
     }   
     
     

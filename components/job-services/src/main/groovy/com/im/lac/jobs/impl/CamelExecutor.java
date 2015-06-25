@@ -2,6 +2,7 @@ package com.im.lac.jobs.impl;
 
 import com.im.lac.jobs.Job;
 import com.im.lac.jobs.JobStatus;
+import com.im.lac.service.impl.DatasetRouteBuilder;
 import com.im.lac.service.DatasetService;
 import com.im.lac.service.impl.SimpleJobStore;
 import java.io.IOException;
@@ -52,6 +53,8 @@ public class CamelExecutor {
         this.registry = new SimpleRegistry();
         registry.put(DATASET_HANDLER, new DatasetHandler(datasetService, "/tmp/datasetcache"));
         registry.put(JOB_STORE, new SimpleJobStore());
+        //registry.put("SwaggerServlet", createServletHandler());
+        //registry.put("HelloServlet", createHelloServletHandler());
 
         this.camelContext = new DefaultCamelContext(registry);
 
@@ -91,11 +94,22 @@ public class CamelExecutor {
         camelContext.addComponent(JMS_BROKER_NAME, activeMQComponent(brokerUri));
 
         // add the routes
-        camelContext.addRoutes(new AsyncJobRouteBuilder());
         camelContext.addRoutes(new RouteBuilder() {
 
             @Override
             public void configure() throws Exception {
+
+                restConfiguration().component("jetty").host("0.0.0.0").port(8000);
+
+                rest("/rest/ping")
+                        .get()
+                        .route()
+                        .log("I've been pinged")
+                        .transform(constant("REST running\n"));
+
+                from("jetty://http://0.0.0.0:8000/jetty/ping")
+                        .log("Testing Jetty")
+                        .transform().constant("Jetty Running\n");
 
                 // splits the body and sends each item to the JMS queue specified by the CamelJmsDestinationName header
                 // returns the number of items split/posted as the body
@@ -148,6 +162,9 @@ public class CamelExecutor {
 
         });
 
+        camelContext.addRoutes(new AsyncJobRouteBuilder());
+        camelContext.addRoutes(new DatasetRouteBuilder());
+
         camelContext.start();
 
         defaultExecutor = camelContext.getExecutorServiceManager().newThreadPool(this, "DefaultJobPool", 5, 25);
@@ -162,5 +179,50 @@ public class CamelExecutor {
     public static DatasetHandler getDatasetHandler(Exchange exch) {
         return exch.getContext().getRegistry().lookupByNameAndType(CamelExecutor.DATASET_HANDLER, DatasetHandler.class);
     }
+
+//    private ServletHandler createSwaggerServletHandler() {
+//        ServletHandler handler = new ServletHandler();
+//
+//        ServletHolder h = new ServletHolder(new DefaultCamelSwaggerServlet());
+//        h.setName("ApiDeclarationServlet");
+//        h.setInitParameter("base.path", "rest");
+//        h.setInitParameter("api.path", "api-docs");
+//        h.setInitParameter("api.version", "1.0");
+//        h.setInitParameter("api.title", "Dataset services");
+//        h.setInitParameter("api.description", "Dataset services with Swagger documentation");
+//        h.setInitOrder(2);
+//        h.setServletHandler(handler);
+//        handler.addServletWithMapping(h, "/api-docs/*");
+//
+//        FilterHolder filterHolder = new FilterHolder(new RestSwaggerCorsFilter());
+//        filterHolder.setName("RestSwaggerCorsFilter");
+//        filterHolder.setServletHandler(handler);
+//        FilterMapping filterMapping = new FilterMapping();
+//        filterMapping.setFilterName(filterHolder.getName());
+//        filterMapping.setPathSpecs(new String[]{"/api-docs/*", "/rest/*"});
+//        handler.addFilter(filterHolder, filterMapping);
+//
+//        return handler;
+//    }
+//
+//    private ServletHandler createHelloServletHandler() {
+//        ServletHandler handler = new ServletHandler();
+//        //server.setHandler(handler);
+//
+//        handler.addServletWithMapping(HelloServlet.class, "/hello/*");
+//        return handler;
+//    }
+//
+//    public static class HelloServlet extends HttpServlet {
+//
+//        @Override
+//        protected void doGet(HttpServletRequest request,
+//                HttpServletResponse response) throws ServletException,
+//                IOException {
+//            response.setContentType("text/html");
+//            response.setStatus(HttpServletResponse.SC_OK);
+//            response.getWriter().println("<h1>Hello from HelloServlet</h1>");
+//        }
+//    }
 
 }

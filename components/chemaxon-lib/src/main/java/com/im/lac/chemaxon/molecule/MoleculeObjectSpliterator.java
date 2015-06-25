@@ -119,7 +119,6 @@ public class MoleculeObjectSpliterator extends FixedBatchSpliteratorBase<Molecul
 
     @Override
     public void close() throws IOException {
-        System.out.println("Closing spliterator");
         closed = true;
         iter.close();
     }

@@ -79,8 +79,7 @@ class MoleculeObjectJsonConverterSpec extends Specification {
     {"format":"smiles","source":"c1ccccc1","values":{"field_0":1}},
     {"format":"smiles","source":"CCC","values":{"field_0":2}}
     ]'''
-        Metadata meta = new Metadata()
-        meta.size = 2
+        Metadata meta = new Metadata(MoleculeObject.class.getName(), Metadata.Type.ARRAY, 2)
         meta.propertyTypes.put("field_0", Integer.class)
         def convertor = new MoleculeObjectJsonConverter()
             
@@ -97,6 +96,7 @@ class MoleculeObjectJsonConverterSpec extends Specification {
      void "marshal unmarshal MoleculeObjects with props"() {
         
         setup:
+        println "marshal unmarshal MoleculeObjects with props"
         def input = [
             new MoleculeObject('CCC', 'smiles', [prop1: 'hello', prop2: 'banana', prop3: new BigInteger(999)]),
             new MoleculeObject('c1ccccc', 'smiles', [prop1: 'goodbye', prop2: 'orange', prop3: new BigInteger(666)])]
@@ -107,6 +107,7 @@ class MoleculeObjectJsonConverterSpec extends Specification {
         UUID uuid1 = input[0].UUID
         ByteArrayOutputStream out = new ByteArrayOutputStream()
         def meta = convertor.marshal(input.stream(), out)
+        println "META: " + meta
         String json = out.toString()
         println "JSON: $json"
         def results = convertor.unmarshal(meta, new ByteArrayInputStream(json.bytes)).collect(Collectors.toList())

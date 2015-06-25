@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -22,6 +24,8 @@ import java.util.stream.StreamSupport;
  * @author timbo
  */
 public class JsonHandler {
+
+    private static final Logger LOG = Logger.getLogger(JsonHandler.class.getName());
 
     public static final String ATTR_METADATA = "metadata";
 
@@ -33,6 +37,7 @@ public class JsonHandler {
         SimpleModule module = new SimpleModule();
         // TODO - better way to register custom deserializers
         module.addDeserializer(MoleculeObject.class, new MoleculeObjectJsonDeserializer());
+        module.addSerializer(MoleculeObject.class, new MoleculeObjectJsonSerializer());
         mapper.registerModule(module);
     }
 
@@ -70,23 +75,27 @@ public class JsonHandler {
     }
 
     public void marshalItem(Object item, Metadata meta, OutputStream outputStream) throws IOException {
+        LOG.fine("marshalling item to JSON");
         meta.className = item.getClass().getName();
         meta.type = Metadata.Type.ITEM;
-        meta.size= 1;
+        meta.size = 1;
         ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute(ATTR_METADATA, meta);
         ObjectWriter writer = mapper.writerFor(item.getClass()).with(attrs);
         writer.writeValue(outputStream, item);
     }
 
     public void marshalItems(Stream items, Metadata meta, OutputStream outputStream) throws IOException {
+        LOG.fine("marshalling items to JSON");
         meta.type = Metadata.Type.ARRAY;
         ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute("metadata", meta);
         ObjectWriter ow = mapper.writer().with(attrs);
-        SequenceWriter sw = ow.writeValues(outputStream);
+        SequenceWriter sw = ow.writeValuesAsArray(outputStream);
+        
         final AtomicReference<Class> classNameRef = new AtomicReference<>();
         long count = items.peek((i) -> {
             try {
                 if (classNameRef.get() == null) {
+                    LOG.log(Level.FINE, "Setting type to {0}", i.getClass());
                     classNameRef.set(i.getClass());
                 } else {
                     if (classNameRef.get() != i.getClass()) {

@@ -363,7 +363,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
         }
     }
 
-    private Stream<MoleculeObject> createMoleculeObjectStreamForDataItem(Exchange exchange) throws SQLException, IOException {
+    private Stream<MoleculeObject> createMoleculeObjectStreamForDataItem(Exchange exchange) throws Exception {
         // 1. grab item id from header and load its DataItem from the service
         Long dataId = exchange.getIn().getHeader("item", Long.class);
         DataItem sourceData = service.loadDataItem(dataId);
@@ -385,7 +385,7 @@ public class FileServicesRouteBuilder extends RouteBuilder {
         return createMoleculeObjectStreamFromJson(sourceData.getMetadata(), input);
     }
 
-    private Stream<MoleculeObject> createMoleculeObjectStreamFromJson(Metadata meta, InputStream is) throws IOException {
+    private Stream<MoleculeObject> createMoleculeObjectStreamFromJson(Metadata meta, InputStream is) throws Exception {
         InputStream gunzip = IOUtils.getGunzippedInputStream(is);
         final MoleculeObjectJsonConverter converter = new MoleculeObjectJsonConverter();
         Stream<MoleculeObject> stream = converter.unmarshal(meta, gunzip);

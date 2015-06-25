@@ -25,8 +25,6 @@ import java.util.logging.Logger;
  */
 public class MoleculeObjectJsonDeserializer extends StdDeserializer<MoleculeObject> {
     
-    public static final String ATTR_MAPPINGS = "mappings";
-    
     private static final Logger LOG = Logger.getLogger(MoleculeObjectJsonDeserializer.class.getName());
 
     private static final String PROP_UUID = "uuid";
@@ -106,7 +104,8 @@ public class MoleculeObjectJsonDeserializer extends StdDeserializer<MoleculeObje
                         case PROP_VALUES:
                             jp.nextToken();
                             //readValues(jp, dc, values);
-                            Map<String, Class> mappings = (Map<String, Class>) dc.getAttribute(ATTR_MAPPINGS);
+                            Metadata metadata = (Metadata)dc.getAttribute(JsonHandler.ATTR_METADATA);
+                            Map<String, Class> mappings = metadata.getPropertyTypes();
                             JacksonUtils.buildTypedMap(jp, mappings, values);
                             break;
                         default:

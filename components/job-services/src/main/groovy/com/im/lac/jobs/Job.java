@@ -18,7 +18,7 @@ public interface Job<T extends JobDefinition> {
     
    JobStatus execute(Environment env);
    
-   JobStatus getStatus(Environment env);
+   JobStatus getJobStatus(Environment env);
    
    //T getJobDefinition();
     

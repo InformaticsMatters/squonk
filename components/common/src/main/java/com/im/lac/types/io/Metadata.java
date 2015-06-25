@@ -95,6 +95,7 @@ public class Metadata {
         StringBuilder b = new StringBuilder();
         b.append("Metadata [")
                 .append("size=").append(size)
+                .append(", type=").append(type)
                 .append(", #propertyTypes=").append(propertyTypes.size())
                 .append(", #metaProps=").append(metaProps.size())
                 .append("]");

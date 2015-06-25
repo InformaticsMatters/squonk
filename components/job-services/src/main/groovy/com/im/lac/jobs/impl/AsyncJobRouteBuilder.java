@@ -28,7 +28,7 @@ public class AsyncJobRouteBuilder extends RouteBuilder {
                 .process((Exchange exchange) -> {
                     // set the updated status as the body
                     AbstractDatasetJob job = (AbstractDatasetJob) exchange.getIn().getBody(AbstractDatasetJob.class);
-                    job.status = JobStatus.Status.RUNNING;
+                    job.setStatus(JobStatus.Status.RUNNING);
                     exchange.getIn().setBody(job.buildStatus());
                 })
                 .log("asyncProcessDatasetStart complete");
@@ -40,7 +40,7 @@ public class AsyncJobRouteBuilder extends RouteBuilder {
                 .setExchangePattern(ExchangePattern.InOut)
                 .log("submit to endpoint ${header.endpoint}")
                 // fetch the dataset to process
-                .beanRef(CamelExecutor.DATASET_HANDLER, "fetchDatasetObjectsForJob")
+                .beanRef(CamelExecutor.DATASET_HANDLER, "fetchObjectsForJob")
                 // send  to the desired endpoint async
                 .routingSlip(header("endpoint"))
                 // now handle the results
