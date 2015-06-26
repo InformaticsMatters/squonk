@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.SequenceWriter
 import com.fasterxml.jackson.databind.cfg.ContextAttributes
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.im.lac.types.MoleculeObject
+import com.im.lac.dataset.Metadata
 import spock.lang.Specification
 
 /**

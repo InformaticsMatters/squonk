@@ -1,5 +1,6 @@
 package com.im.lac.types.io;
 
+import com.im.lac.dataset.Metadata;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;

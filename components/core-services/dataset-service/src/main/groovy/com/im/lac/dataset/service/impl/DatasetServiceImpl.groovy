@@ -1,7 +1,7 @@
-package com.im.lac.service
+package com.im.lac.dataset.service.impl
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.im.lac.model.DataItem
+import com.im.lac.dataset.DataItem
 import com.im.lac.dataset.Metadata
 import groovy.sql.Sql
 import groovy.util.logging.Log
@@ -21,21 +21,22 @@ import org.apache.camel.util.IOHelper
  * @author timbo
  */
 @Log
-class DatasetService {
+class DatasetServiceImpl {
     
-    DataSource dataSource
-    static public final String DEFAULT_TABLE_NAME = 'users.datasets'
+    static final String DEFAULT_TABLE_NAME = 'users.datasets'
+    
+    private DataSource dataSource
     private final String tableName;
     private final ObjectMapper objectMapper;
     
-    DatasetService(DataSource dataSource) {
+    DatasetServiceImpl(DataSource dataSource) {
         this(dataSource, DEFAULT_TABLE_NAME);
     }
     
     /** Alternative constructor allowing the table name to be specified, primarily 
      * for testing purposes.
      */
-    DatasetService(DataSource dataSource, String tableName) {
+    DatasetServiceImpl(DataSource dataSource, String tableName) {
         this.dataSource = dataSource
         this.tableName = tableName;
         this.objectMapper = new ObjectMapper();
@@ -188,9 +189,6 @@ class DatasetService {
     List<DataItem> getDataItems(final Sql db) throws Exception {
         log.fine("getDataItems()")
         List<DataItem> items = []
-        long t0 = System.currentTimeMillis()
-        long t1 = System.currentTimeMillis()
-        println "Creating Sql took " + (t1-t0)
         db.eachRow('SELECT id, name, time_created, last_updated, metadata::text, loid FROM ' 
             + tableName + '  ORDER BY id') { row ->
             items << buildDataItem(row)
@@ -254,9 +252,9 @@ class DatasetService {
         lobj.delete(loid)
     }
     
-//    InputStream createLargeObjectReader(final long loid) {
-//        return doInTransactionWithResult(List.class) { createLargeObjectReader(it, loid) }
-//    }
+    //    InputStream createLargeObjectReader(final long loid) {
+    //        return doInTransactionWithResult(List.class) { createLargeObjectReader(it, loid) }
+    //    }
     
     /**
      * Create an InputStream that reads the large object. The connection must be 

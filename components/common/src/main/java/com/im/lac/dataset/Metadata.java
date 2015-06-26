@@ -1,4 +1,4 @@
-package com.im.lac.types.io;
+package com.im.lac.dataset;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -70,12 +70,24 @@ public class Metadata {
         return type;
     }
 
+    public void setType(Type type) {
+        this.type = type;
+    }
+
     public String getClassName() {
         return className;
     }
-    
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
     public int getSize() {
         return size;
+    }
+    
+    public void setSize(int size) {
+        this.size = size;
     }
 
     public Map<String, Class> getPropertyTypes() {

@@ -1,5 +1,6 @@
 package com.im.lac.types.io;
 
+import com.im.lac.dataset.Metadata;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;

@@ -1,11 +1,6 @@
-package com.im.lac.jobs.impl;
+package com.im.lac.dataset.service.impl;
 
-import com.im.lac.service.impl.SimpleFileCacheService;
-import com.im.lac.jobs.JobStatus;
-import com.im.lac.model.DataItem;
-import com.im.lac.model.DatasetJobDefinition;
-import com.im.lac.service.DatasetService;
-import com.im.lac.service.JobStore;
+import com.im.lac.dataset.DataItem;
 import com.im.lac.types.io.JsonHandler;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.util.IOUtils;
@@ -22,7 +17,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
-import org.apache.camel.Exchange;
 import org.apache.camel.util.IOHelper;
 
 /**
@@ -33,9 +27,9 @@ public class DatasetHandler {
 
     private final SimpleFileCacheService cache;
     private final JsonHandler jsonHandler = new JsonHandler();
-    private final DatasetService service;
+    private final DatasetServiceImpl service;
 
-    public DatasetHandler(DatasetService service, String cachePath) throws IOException {
+    public DatasetHandler(DatasetServiceImpl service, String cachePath) throws IOException {
         this.service = service;
         cache = new SimpleFileCacheService(cachePath);
         cache.init();
@@ -65,10 +59,10 @@ public class DatasetHandler {
         deleteFileFromCache(dataItem);
     }
 
-    public Object fetchObjectsForJob(final AbstractDatasetJob job) throws Exception {
-        DatasetJobDefinition jobdef = job.getJobDefinition();
-        return fetchObjectsForDataset(jobdef.getDatasetId());
-    }
+//    public Object fetchObjectsForJob(final AbstractDatasetJob job) throws Exception {
+//        DatasetJobDefinition jobdef = job.getJobDefinition();
+//        return fetchObjectsForDataset(jobdef.getDatasetId());
+//    }
 
     public Object fetchObjectsForDataset(Long datasetId) throws Exception {
         return generateObjectFromJson(fetchJsonForDataset(datasetId));
@@ -99,27 +93,27 @@ public class DatasetHandler {
         return holder;
     }
 
-    public JobStatus saveDatasetForJob(Object results, Exchange exchange) throws Exception {
-        String jobId = exchange.getIn().getHeader("JobId", String.class);
-        AbstractDatasetJob job = (AbstractDatasetJob) exchange.getContext().getRegistry().lookupByNameAndType(CamelExecutor.JOB_STORE, JobStore.class).getJob(jobId);
-        job.setStatus(JobStatus.Status.RESULTS_READY);
-
-        DataItem dataItem;
-        switch (job.getJobDefinition().getMode()) {
-            case UPDATE:
-                dataItem = updateDataset(results, job.getJobDefinition().getDatasetId());
-                break;
-            case CREATE:
-                String name = job.getJobDefinition().getDatasetName();
-                dataItem = createDataset(results, name == null ? "undefined" : name);
-                break;
-            default:
-                throw new IllegalStateException("Unexpected mode " + job.getJobDefinition().getMode());
-        }
-        job.setStatus(JobStatus.Status.COMPLETED);
-        job.result = dataItem;
-        return job.buildStatus();
-    }
+//    public JobStatus saveDatasetForJob(Object results, Exchange exchange) throws Exception {
+//        String jobId = exchange.getIn().getHeader("JobId", String.class);
+//        AbstractDatasetJob job = (AbstractDatasetJob) exchange.getContext().getRegistry().lookupByNameAndType(CamelExecutor.JOB_STORE, JobStore.class).getJob(jobId);
+//        job.setStatus(JobStatus.Status.RESULTS_READY);
+//
+//        DataItem dataItem;
+//        switch (job.getJobDefinition().getMode()) {
+//            case UPDATE:
+//                dataItem = updateDataset(results, job.getJobDefinition().getDatasetId());
+//                break;
+//            case CREATE:
+//                String name = job.getJobDefinition().getDatasetName();
+//                dataItem = createDataset(results, name == null ? "undefined" : name);
+//                break;
+//            default:
+//                throw new IllegalStateException("Unexpected mode " + job.getJobDefinition().getMode());
+//        }
+//        job.setStatus(JobStatus.Status.COMPLETED);
+//        job.result = dataItem;
+//        return job.buildStatus();
+//    }
 
     public DataItem updateDataset(final Object data, final Long datsetId) throws Exception {
         final JsonProcessingHolder marshalResults = generateJsonForItem(data, true);

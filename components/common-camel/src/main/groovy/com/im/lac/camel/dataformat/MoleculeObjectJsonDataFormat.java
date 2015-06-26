@@ -1,7 +1,7 @@
 
 package com.im.lac.camel.dataformat;
 
-import com.im.lac.types.io.Metadata;
+import com.im.lac.dataset.Metadata;
 import com.im.lac.types.io.MoleculeObjectJsonConverter;
 import com.im.lac.util.StreamProvider;
 import java.io.InputStream;

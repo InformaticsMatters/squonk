@@ -2,7 +2,7 @@ package com.im.lac.demo.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.im.lac.demo.model.DataItem
-import com.im.lac.types.io.Metadata
+import com.im.lac.dataset.Metadata
 import groovy.sql.Sql
 import groovy.util.logging.Log
 import java.sql.Connection

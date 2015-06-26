@@ -1,5 +1,6 @@
 package com.im.lac.types.io;
 
+import com.im.lac.dataset.Metadata;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -76,9 +77,9 @@ public class JsonHandler {
 
     public void marshalItem(Object item, Metadata meta, OutputStream outputStream) throws IOException {
         LOG.fine("marshalling item to JSON");
-        meta.className = item.getClass().getName();
-        meta.type = Metadata.Type.ITEM;
-        meta.size = 1;
+        meta.setClassName(item.getClass().getName());
+        meta.setType(Metadata.Type.ITEM);
+        meta.setSize(1);
         ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute(ATTR_METADATA, meta);
         ObjectWriter writer = mapper.writerFor(item.getClass()).with(attrs);
         writer.writeValue(outputStream, item);
@@ -86,7 +87,7 @@ public class JsonHandler {
 
     public void marshalItems(Stream items, Metadata meta, OutputStream outputStream) throws IOException {
         LOG.fine("marshalling items to JSON");
-        meta.type = Metadata.Type.ARRAY;
+        meta.setType(Metadata.Type.ARRAY);
         ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute("metadata", meta);
         ObjectWriter ow = mapper.writer().with(attrs);
         SequenceWriter sw = ow.writeValuesAsArray(outputStream);
@@ -110,9 +111,9 @@ public class JsonHandler {
 
         sw.close();
 
-        meta.size = (count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count);
+        meta.setSize(count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count);
         if (count > 0) {
-            meta.className = classNameRef.get().getName();
+            meta.setClassName(classNameRef.get().getName());
         }
     }
 

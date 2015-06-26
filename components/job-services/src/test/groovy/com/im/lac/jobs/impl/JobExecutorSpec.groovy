@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
  */
 class JobExecutorSpec extends Specification {
     
-    @Shared DataSource dataSource = Utils.createDataSource()
+    @Shared DataSource dataSource = com.im.lac.service.impl.Utils.createDataSource()
     @Shared CamelExecutor executorService
     @Shared DatasetService datasetService
     @Shared Environment env

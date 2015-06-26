@@ -1,6 +1,5 @@
-package com.im.lac.model;
+package com.im.lac.dataset;
 
-import com.im.lac.dataset.Metadata;
 import java.sql.Timestamp;
 
 /**
@@ -8,6 +7,8 @@ import java.sql.Timestamp;
  * @author timbo
  */
 public class DataItem {
+    
+    public static final String HEADER_DATA_ITEM_NAME = "DataItemName";
 
     private Long id;
     private String name;

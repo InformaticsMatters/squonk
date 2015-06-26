@@ -1,7 +1,7 @@
 package com.im.lac.demo.model
 
 import java.sql.Timestamp
-import com.im.lac.types.io.Metadata
+import com.im.lac.dataset.Metadata
 import groovy.transform.Canonical
 
 

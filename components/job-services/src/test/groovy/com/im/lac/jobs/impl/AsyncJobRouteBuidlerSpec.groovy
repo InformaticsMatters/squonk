@@ -21,7 +21,7 @@ import groovy.sql.Sql
  */
 class AsyncJobRouteBuidlerSpec extends Specification {
     
-    @Shared DataSource dataSource = com.im.lac.service.Utils.createDataSource()
+    @Shared DataSource dataSource = com.im.lac.service.impl.Utils.createDataSource()
     @Shared DatasetService datasetService
     @Shared CamelContext camelContext
     @Shared ProducerTemplate producerTemplate

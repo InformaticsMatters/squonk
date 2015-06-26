@@ -1,5 +1,6 @@
 package com.im.lac.types.io;
 
+import com.im.lac.dataset.Metadata;
 import com.im.lac.types.MoleculeObject;
 import java.io.IOException;
 import java.io.InputStream;

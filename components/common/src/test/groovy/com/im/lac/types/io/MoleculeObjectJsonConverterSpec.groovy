@@ -2,8 +2,10 @@ package com.im.lac.types.io
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.im.lac.types.MoleculeObject
+import com.im.lac.dataset.Metadata
 import spock.lang.Specification
 import java.util.stream.Collectors
+
 
 /**
  *

@@ -1,4 +1,4 @@
-package com.im.lac.service
+package com.im.lac.dataset.service.impl
 
 import groovy.sql.Sql
 import java.sql.Connection
@@ -6,18 +6,17 @@ import javax.sql.DataSource
 import org.postgresql.ds.PGSimpleDataSource
 import spock.lang.Shared
 import spock.lang.Specification
-import com.im.lac.model.DataItem
-import com.im.lac.types.io.Metadata
-import com.im.lac.jobs.impl.Fruit
+import com.im.lac.dataset.DataItem
+import com.im.lac.dataset.Metadata
 
 /**
  *
  * @author timbo
  */
-class DatasetServiceSpec extends Specification {
+class DatasetServiceImplSpec extends Specification {
     
     @Shared DataSource dataSource = Utils.createDataSource()
-    @Shared DatasetService service = new DatasetService(dataSource, DatasetService.DEFAULT_TABLE_NAME + "_test_datasetservicespec")
+    @Shared DatasetServiceImpl service = new DatasetServiceImpl(dataSource, DatasetServiceImpl.DEFAULT_TABLE_NAME + "_test_datasetservicespec")
     @Shared Sql db = new Sql(dataSource)
     @Shared DataItem[] item = new DataItem[1] 
     
