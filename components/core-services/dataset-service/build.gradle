@@ -60,6 +60,20 @@ dependencies {
 tomcat {
     enableSSL = true
     contextPath = contextName
+    
+    users {
+        user {
+            username = 'admin'
+            password = 'lacrocks!'
+            roles = ['developers', 'admin']
+        }
+
+        user {
+            username = 'manager'
+            password = 'lacrocks!'
+            roles = ['manager']
+        }
+    }
 }
 
 docker {
@@ -70,7 +84,7 @@ docker {
 /** Build a Docker image
  * run the generated image with something like this:
  * 
- * docker run -d --name dataet-services -p 80:8000 --link <name_of_postgres_db_image>:db -v <host_dir>:/external <image id>
+ * docker run -d --name dataset-services -p 80:8000 --link <name_of_postgres_db_image>:db -v <host_dir>:/external <image id>
  * 
  * Note: the host directory <host_dir> containing the ChemAxon license file needs to be specified,
  * or some other mechanism used, probably by setting the value of the CHEMAXON_LICENSE_URL
@@ -84,6 +98,8 @@ task buildDocker(type: Docker, dependsOn: war) {
     setEnvironment("CHEMCENTRAL_DB_SERVER", "db") // assumes the db alias is used when linking. If not override with a -e argument
     setEnvironment('CHEMCENTRAL_DB_PORT', '5432')
     setEnvironment("CHEMAXON_LICENSE_URL", "/external/license.cxl")
+    
+    runCommand("rm -rf /usr/local/tomcat/webapps/*")
     
     def warFile = tasks.war.outputs.files.singleFile
     addFile(warFile, "/usr/local/tomcat/webapps/${contextName}.war")
