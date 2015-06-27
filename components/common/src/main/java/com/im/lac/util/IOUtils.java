@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PushbackInputStream;
 import java.io.Reader;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -54,6 +53,18 @@ public class IOUtils {
             } catch (IOException ex) {
                 LOG.log(Level.SEVERE, "Failed to close " + o, ex);
             }
+        }
+    }
+
+    /**
+     * Close and log any exception, but don't throw.
+     * @param o 
+     */
+    public static void close(Closeable o) {
+        try {
+            o.close();
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, "Failed to close " + o, ex);
         }
     }
 

@@ -100,23 +100,33 @@ class DatasetServiceImpl {
      */
     public <R> R doInTransactionWithResult(Class<R> type, Function<Sql,R> executable) throws Exception {
         Sql db = new Sql(dataSource.connection)
-        R result
-        db.withTransaction {
-            result = executable.apply(db)
-        }
-        return result
+        try {
+            R result
+            db.withTransaction {
+                result = executable.apply(db)
+            }
+            return result
+        } finally {
+            db.close()
+        }  
     }
     
     public void doInTransaction(Consumer<Sql> executable) throws Exception {
         Sql db = new Sql(dataSource.connection)
-        db.withTransaction {
-            executable.accept(db)
-        }
+        try {
+            db.withTransaction {
+                executable.accept(db)
+            } 
+        } finally {
+            db.close()
+        }  
     }
     
     DataItem addDataItem(final DataItem data, final InputStream is) throws Exception {
         println "addDataItem"
-        return doInTransactionWithResult(DataItem.class) { addDataItem(it, data, is) }
+        return doInTransactionWithResult(DataItem.class) { 
+            addDataItem(it, data, is) 
+        }
     }
     
     /**

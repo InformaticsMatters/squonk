@@ -1,5 +1,6 @@
 package com.im.lac.types.io;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.im.lac.dataset.Metadata;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -8,6 +9,7 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.databind.cfg.ContextAttributes;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.im.lac.types.MoleculeObject;
+import com.im.lac.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -91,7 +93,7 @@ public class JsonHandler {
         ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute("metadata", meta);
         ObjectWriter ow = mapper.writer().with(attrs);
         SequenceWriter sw = ow.writeValuesAsArray(outputStream);
-        
+
         final AtomicReference<Class> classNameRef = new AtomicReference<>();
         long count = items.peek((i) -> {
             try {
@@ -114,6 +116,66 @@ public class JsonHandler {
         meta.setSize(count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count);
         if (count > 0) {
             meta.setClassName(classNameRef.get().getName());
+        }
+    }
+
+    public String objectToJson(Object o) throws JsonProcessingException {
+        return mapper.writeValueAsString(o);
+    }
+
+    public <T> T objectFromJson(InputStream is, Class<T> type) throws IOException {
+        return mapper.readValue(is, type);
+    }
+
+    public <T> T objectFromJson(InputStream is, Class<T> type, Metadata meta) throws IOException {
+        ObjectReader reader = mapper.reader(type).withAttribute(ATTR_METADATA, meta);
+        return reader.readValue(is);
+    }
+
+    public <T> T objectFromJson(String s, Class<T> type) throws IOException {
+        return mapper.readValue(s, type);
+    }
+
+    public <T> T objectFromJson(String s, Class<T> type, Metadata meta) throws IOException {
+        ObjectReader reader = mapper.reader(type).withAttribute(ATTR_METADATA, meta);
+        return reader.readValue(s);
+    }
+
+    public <T> Iterator<T> iteratorFromJson(String s, Class<T> type) throws IOException {
+        ObjectReader reader = mapper.reader(type);
+        return reader.readValues(s);
+    }
+
+    public <T> Iterator<T> iteratorFromJson(String s, Class<T> type, Metadata meta) throws IOException {
+        ObjectReader reader = mapper.reader(type).withAttribute(ATTR_METADATA, meta);
+        return reader.readValues(s);
+    }
+
+    public <T> Iterator<T> iteratorFromJson(InputStream is, Class<T> type, Metadata meta) throws IOException {
+        ObjectReader reader = mapper.reader(type).withAttribute(ATTR_METADATA, meta);
+        return reader.readValues(is);
+    }
+
+    public <T> Iterator<T> iteratorFromJson(InputStream is, Class<T> type) throws IOException {
+        ObjectReader reader = mapper.reader(type);
+        return reader.readValues(is);
+    }
+
+    public <T> Stream<T> streamFromJson(final InputStream is, final Class<T> type, final boolean autoClose) throws IOException {
+        return streamFromJson(is, type, null, autoClose);
+    }
+
+    public <T> Stream<T> streamFromJson(final InputStream is, final Class<T> type, Metadata meta, final boolean autoClose) throws IOException {
+        ObjectReader reader = mapper.reader(type);
+        if (meta != null)
+            reader = reader.withAttribute(ATTR_METADATA, meta);
+        Iterator<T> iter = reader.readValues(is);
+        Spliterator spliterator = Spliterators.spliteratorUnknownSize(iter, Spliterator.NONNULL | Spliterator.ORDERED);
+        Stream<T> stream = StreamSupport.stream(spliterator, true);
+        if (autoClose) {
+            return stream.onClose(() -> IOUtils.close(is));
+        } else {
+            return stream;
         }
     }
 

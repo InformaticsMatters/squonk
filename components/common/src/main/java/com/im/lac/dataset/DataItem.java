@@ -83,4 +83,11 @@ public class DataItem {
         this.loid = loid;
     }
 
+    @Override
+    public String toString() {
+        return "DataItem{" + "id=" + id + ", name=" + name + ", created=" + created + ", updated=" + updated + ", loid=" + loid + ", metadata=" + metadata + '}';
+    }
+    
+    
+
 }
