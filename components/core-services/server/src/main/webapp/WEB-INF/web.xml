@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+  
+    
+    <display-name>LAC Dataset services</display-name>
+    
+    <!-- Camel stuff follows -->
+    
+    <!-- you can configure any of the properties on CamelContext, eg setName will be configured as below -->
+    <!--context-param>
+        <param-name>name</param-name>
+        <param-value>MyCamelContext</param-value>
+    </context-param-->
+
+    
+    <context-param>
+        <param-name>routeBuilder-Routes</param-name>
+        <!-- define the routes as a resource from the classpath by prefixing the value with classpath: -->
+        <!-- note: instead of using a XML file we can also define the routes in Java code in a RouteBuilder class -->
+        <!--param-value>com.im.lac.demo.SimpleRouteBuilder</param-value-->
+        <param-value>packagescan:com.im.lac.dataset.service.impl</param-value>
+    </context-param>
+    
+     <context-param>
+        <!-- define a lifecycle which could help user to setup the registry which could be use as a reference in camel route -->
+        <!-- If you use org.apache.camel.component.servletlistener.JndiCamelServletContextListener then the CamelContextLifecycle
+        must use the JndiRegistry as well. And likewise if the servlet is org.apache.camel.component.servletlistener.SimpleCamelServletContextListener 
+        then the CamelContextLifecycle must use the SimpleRegistry -->
+        <param-name>CamelContextLifecycle</param-name>
+        <param-value>com.im.lac.dataset.service.camel.ServletCamelLifeCycle</param-value>
+    </context-param>
+
+    
+    <!-- the listener that kick-starts Camel -->
+    <listener>
+        <listener-class>org.apache.camel.component.servletlistener.SimpleCamelServletContextListener</listener-class>
+    </listener>
+
+    <!-- Camel servlet used in the Camel application -->
+    <servlet>
+        <servlet-name>CamelServlet</servlet-name>
+        <servlet-class>org.apache.camel.component.servlet.CamelHttpTransportServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <!-- Camel servlet mapping -->
+    <servlet-mapping>
+        <servlet-name>CamelServlet</servlet-name>
+        <url-pattern>/rest/*</url-pattern>
+    </servlet-mapping>
+    
+    
+    <!-- to setup Camel Swagger api servlet -->
+    <servlet>
+        <servlet-name>ApiDeclarationServlet</servlet-name>
+        <servlet-class>org.apache.camel.component.swagger.DefaultCamelSwaggerServlet</servlet-class>
+        <init-param>
+            <!-- we specify the base.path using relative notation, that means the actual path will be calculated at runtime as
+            http://server:port/contextpath/rest -->
+            <param-name>base.path</param-name>
+            <param-value>rest</param-value>
+        </init-param>
+        <init-param>
+            <!-- we specify the api.path using relative notation, that means the actual path will be calculated at runtime as
+            http://server:port/contextpath/api-docs -->
+            <param-name>api.path</param-name>
+            <param-value>api-docs</param-value>
+        </init-param>
+        <init-param>
+            <param-name>api.version</param-name>
+            <param-value>0.2</param-value>
+        </init-param>
+        <init-param>
+            <param-name>api.title</param-name>
+            <param-value>LAC dataset services</param-value>
+        </init-param>
+        <init-param>
+            <param-name>api.description</param-name>
+            <param-value>LAC dataset services allowing creation, updating, deleting and getting datasets</param-value>
+        </init-param>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+
+    <!-- swagger api declaration -->
+    <servlet-mapping>
+        <servlet-name>ApiDeclarationServlet</servlet-name>
+        <url-pattern>/api-docs/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- enable CORS filter so people can use swagger ui to browse and test the apis -->
+    <filter>
+        <filter-name>RestSwaggerCorsFilter</filter-name>
+        <filter-class>org.apache.camel.component.swagger.RestSwaggerCorsFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>RestSwaggerCorsFilter</filter-name>
+        <url-pattern>/api-docs/*</url-pattern>
+        <url-pattern>/rest/*</url-pattern>
+    </filter-mapping>
+
+  
+</web-app>

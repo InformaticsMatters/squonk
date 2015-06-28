@@ -5,7 +5,6 @@ include 'chemaxon-lib', 'chemaxon-camel', 'demo-services', 'chemcentral'
 include 'cdk-lib', 'cdk-camel'
 include 'rdkit-camel'
 include 'loaders'
-include 'core-services/dataset-client'
-include 'core-services/dataset-service', 'core-services/job-service'
+include 'core-services/common', 'core-services/server', 'core-services/client'
 
 
