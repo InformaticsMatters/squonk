@@ -1,0 +1,21 @@
+
+apply plugin: 'groovy'
+
+
+repositories {
+    jcenter()
+}
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+    compile project(':common')
+    compile project(':core-services/core-services-common')
+    
+    compile 'org.slf4j:slf4j-simple:1.7.7'
+    compile 'org.apache.httpcomponents:httpclient:4.5'
+    compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+
+    // We use the awesome Spock testing and specification framework
+    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
+    testCompile 'junit:junit:4.11'
+}

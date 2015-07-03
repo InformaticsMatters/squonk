@@ -92,31 +92,31 @@ public class JsonHandler {
         meta.setType(Metadata.Type.ARRAY);
         ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute("metadata", meta);
         ObjectWriter ow = mapper.writer().with(attrs);
-        SequenceWriter sw = ow.writeValuesAsArray(outputStream);
+        try (SequenceWriter sw = ow.writeValuesAsArray(outputStream)) {
 
-        final AtomicReference<Class> classNameRef = new AtomicReference<>();
-        long count = items.peek((i) -> {
-            try {
-                if (classNameRef.get() == null) {
-                    LOG.log(Level.FINE, "Setting type to {0}", i.getClass());
-                    classNameRef.set(i.getClass());
-                } else {
-                    if (classNameRef.get() != i.getClass()) {
-                        throw new IllegalStateException("Items must all be of the same type. Previous: " + classNameRef.get().getName() + " Current: " + i.getClass().getName());
+            final AtomicReference<Class> classNameRef = new AtomicReference<>();
+            long count = ((Stream)items.sequential()).peek((i) -> {
+                try {
+                    if (classNameRef.get() == null) {
+                        LOG.log(Level.FINE, "Setting type to {0}", i.getClass());
+                        classNameRef.set(i.getClass());
+                    } else {
+                        if (classNameRef.get() != i.getClass()) {
+                            throw new IllegalStateException("Items must all be of the same type. Previous: " + classNameRef.get().getName() + " Current: " + i.getClass().getName());
+                        }
                     }
+                    sw.write(i);
+                } catch (IOException ex) {
+                    throw new RuntimeException("Failed to write object: " + i, ex);
                 }
-                sw.write(i);
-            } catch (IOException ex) {
-                throw new RuntimeException("Failed to write object: " + i, ex);
+            }).count();
+            meta.setSize(count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count);
+            if (count > 0) {
+                meta.setClassName(classNameRef.get().getName());
             }
-        }).count();
 
-        sw.close();
-
-        meta.setSize(count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count);
-        if (count > 0) {
-            meta.setClassName(classNameRef.get().getName());
         }
+
     }
 
     public String objectToJson(Object o) throws JsonProcessingException {
@@ -167,8 +167,9 @@ public class JsonHandler {
 
     public <T> Stream<T> streamFromJson(final InputStream is, final Class<T> type, Metadata meta, final boolean autoClose) throws IOException {
         ObjectReader reader = mapper.reader(type);
-        if (meta != null)
+        if (meta != null) {
             reader = reader.withAttribute(ATTR_METADATA, meta);
+        }
         Iterator<T> iter = reader.readValues(is);
         Spliterator spliterator = Spliterators.spliteratorUnknownSize(iter, Spliterator.NONNULL | Spliterator.ORDERED);
         Stream<T> stream = StreamSupport.stream(spliterator, true);
