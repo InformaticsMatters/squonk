@@ -15,18 +15,24 @@ import com.im.lac.demo.model.*
 class DbFileServiceSpec extends Specification {
     
     @Shared DataSource dataSource = createDataSource()
-    @Shared DbFileService service = new DbFileService(dataSource, DbFileService.DEFAULT_TABLE_NAME + "_test")
+    @Shared DbFileService service = new DbFileService(dataSource, 'users_test.demo_files')
     @Shared Sql db = new Sql(dataSource)
-    @Shared DataItem[] item = new DataItem[1] 
+    @Shared DataItem[] item = new DataItem[1]
     
     DataSource createDataSource() {
+        
+        String pw = System.getenv('LAC_TESTUSER_PASSWORD')
+        if (pw == null) {
+            throw new IllegalStateException("Environment variable LAC_TESTUSER_PASSWORD not defined")
+        }
+        
         PGSimpleDataSource ds = new PGSimpleDataSource()
         
         ds.serverName = System.getenv("CHEMCENTRAL_DB_SERVER") ?: 'localhost'
         ds.portNumber =  new Integer(System.getenv("CHEMCENTRAL_DB_PORT") ?: '5432')
         ds.databaseName = System.getenv("CHEMCENTRAL_DB_NAME") ?: 'chemcentral'
-        ds.user = System.getenv("CHEMCENTRAL_DB_USERNAME") ?: 'chemcentral'
-        ds.password =  System.getenv("CHEMCENTRAL_DB_PASSWORD") ?:  'chemcentral'
+        ds.user = 'tester'
+        ds.password =  pw
 
         return ds;
     }
