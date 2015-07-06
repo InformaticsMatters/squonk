@@ -21,93 +21,93 @@ CC(=NO)C(C)=NO
 C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3'''
     
 
-    def 'smiles to molecules'() {
-        setup:
-        def resultEndpoint = camelContext.getEndpoint('mock:result')
-        resultEndpoint.expectedMessageCount(1)
-        
-        when:
-        template.sendBody('direct:convertToMols', smiles10)
-
-        then:
-        resultEndpoint.assertIsSatisfied()
-        def result = resultEndpoint.receivedExchanges.in.body[0]
-        result == 10 // should be 10
-    }
-    
-    def 'smiles file to molecules'() {
-        setup:
-        def resultEndpoint = camelContext.getEndpoint('mock:result')
-        resultEndpoint.expectedMessageCount(1)
-        File file = new File("../../data/testfiles/nci1000.smiles")
-        
-        when:
-        template.sendBody('direct:convertToMols', file)
-
-        then:
-        resultEndpoint.assertIsSatisfied()
-        def result = resultEndpoint.receivedExchanges.in.body[0]
-        result == 1000 // should be 1000
-    }
-
-    def 'InputStream to molecules'() {
-        setup:
-        def resultEndpoint = camelContext.getEndpoint('mock:result')
-        resultEndpoint.expectedMessageCount(1)
-        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz"))
-        
-        when:
-        template.sendBody('direct:convertToMols', gzip)
-
-        then:
-        resultEndpoint.assertIsSatisfied()
-        def result = resultEndpoint.receivedExchanges.in.body[0]
-        result == 756 // should be 756
-        
-        cleanup:
-        gzip.close()
-    }
-
-
-//    def 'InputStream to molecules to props'() {
+//    def 'smiles to molecules'() {
+//        setup:
+//        def resultEndpoint = camelContext.getEndpoint('mock:result')
+//        resultEndpoint.expectedMessageCount(1)
+//        
+//        when:
+//        template.sendBody('direct:convertToMols', smiles10)
+//
+//        then:
+//        resultEndpoint.assertIsSatisfied()
+//        def result = resultEndpoint.receivedExchanges.in.body[0]
+//        result == 10 // should be 10
+//    }
+//    
+//    def 'smiles file to molecules'() {
+//        setup:
+//        def resultEndpoint = camelContext.getEndpoint('mock:result')
+//        resultEndpoint.expectedMessageCount(1)
+//        File file = new File("../../data/testfiles/nci1000.smiles")
+//        
+//        when:
+//        template.sendBody('direct:convertToMols', file)
+//
+//        then:
+//        resultEndpoint.assertIsSatisfied()
+//        def result = resultEndpoint.receivedExchanges.in.body[0]
+//        result == 1000 // should be 1000
+//    }
+//
+//    def 'InputStream to molecules'() {
+//        setup:
+//        def resultEndpoint = camelContext.getEndpoint('mock:result')
+//        resultEndpoint.expectedMessageCount(1)
+//        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz"))
+//        
+//        when:
+//        template.sendBody('direct:convertToMols', gzip)
+//
+//        then:
+//        resultEndpoint.assertIsSatisfied()
+//        def result = resultEndpoint.receivedExchanges.in.body[0]
+//        result == 756 // should be 756
+//        
+//        cleanup:
+//        gzip.close()
+//    }
+//
+//
+////    def 'InputStream to molecules to props'() {
+////        setup:
+////        def resultEndpoint = camelContext.getEndpoint('mock:result')
+////        resultEndpoint.expectedMessageCount(1)
+////        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz"))
+////
+////        when:
+////        template.sendBody('direct:convertToMolsGetProps', gzip)
+////
+////        then:
+////        resultEndpoint.assertIsSatisfied()
+////        def result = resultEndpoint.receivedExchanges.in.body[0]
+////        result == 756 // should be 756
+////
+////        cleanup:
+////        gzip.close()
+////    }
+//
+//
+//    def 'InputStream to molecule filter'() {
 //        setup:
 //        def resultEndpoint = camelContext.getEndpoint('mock:result')
 //        resultEndpoint.expectedMessageCount(1)
 //        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz"))
 //
 //        when:
-//        template.sendBody('direct:convertToMolsGetProps', gzip)
+//        template.sendBody('direct:convertToMolsFilter', gzip)
 //
 //        then:
 //        resultEndpoint.assertIsSatisfied()
 //        def result = resultEndpoint.receivedExchanges.in.body[0]
-//        result == 756 // should be 756
+//        result == 508 // was756
 //
 //        cleanup:
 //        gzip.close()
 //    }
-
-
-    def 'InputStream to molecule filter'() {
-        setup:
-        def resultEndpoint = camelContext.getEndpoint('mock:result')
-        resultEndpoint.expectedMessageCount(1)
-        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz"))
-
-        when:
-        template.sendBody('direct:convertToMolsFilter', gzip)
-
-        then:
-        resultEndpoint.assertIsSatisfied()
-        def result = resultEndpoint.receivedExchanges.in.body[0]
-        result == 508 // was756
-
-        cleanup:
-        gzip.close()
-    }
-
-
-
+//
+//
+//
   @Override
     RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {

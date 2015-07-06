@@ -27,6 +27,10 @@ class JobServiceRouteBuilderSpec extends DatasetSpecificationBase {
         camelContext.addRoutes(new AsyncJobRouteBuilder())
         camelContext.addRoutes(new JobServiceRouteBuilder())
     }
+    
+    protected String getTableName() {
+         "users_test.users_test_JobServiceRouteBuilderSpec"
+    }
         
     void "test submit ProcessDatasetJobDefinition"() {
         setup:

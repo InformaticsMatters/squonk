@@ -9,72 +9,72 @@ import spock.lang.Shared
 class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
     
     
-    def 'smiles to molecules'() {
-        
-        setup:
-        def resultEndpoint = camelContext.getEndpoint('mock:result')
-        resultEndpoint.expectedMessageCount(1)
-        File file = new File("../../data/testfiles/nci1000.smiles")
-        
-        when:
-        template.sendBody('direct:handleMoleculeObjects', file)
-
-        then:
-        resultEndpoint.assertIsSatisfied()
-        def result = resultEndpoint.receivedExchanges.in.body[0]
-        result == 1000
-    }
-
-    def 'smiles to molecules lipinski'() {
-
-        setup:
-        def resultEndpoint = camelContext.getEndpoint('mock:result')
-        resultEndpoint.expectedMessageCount(1)
-        File file = new File("../../data/testfiles/nci1000.smiles")
-
-        when:
-        template.sendBody('direct:convertToMolsFilter', file)
-
-        then:
-        resultEndpoint.assertIsSatisfied()
-        def result = resultEndpoint.receivedExchanges.in.body[0]
-        result == 93
-    }
-
-
-    def 'InputStream to molecules'() {
-        setup:
-        def resultEndpoint = camelContext.getEndpoint('mock:result')
-        resultEndpoint.expectedMessageCount(1)
-        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz"))
-
-       when:
-        template.sendBody('direct:handleMoleculeObjects', gzip)
-
-        then:
-        resultEndpoint.assertIsSatisfied()
-        def result = resultEndpoint.receivedExchanges.in.body[0]
-        result == 756 // should be 756
-
-    }
-
-    def 'InputStream to threaded molecule filter'() {
-        setup:
-        def resultEndpoint = camelContext.getEndpoint('mock:result')
-        resultEndpoint.expectedMessageCount(1)
-        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz"))
-
-        when:
-        template.sendBody('direct:handleMoleculeObjects', gzip)
-
-        then:
-        resultEndpoint.assertIsSatisfied()
-        def result = resultEndpoint.receivedExchanges.in.body[0]
-        result == 36
-
-        cleanup:
-        gzip.close()
-    }
+//    def 'smiles to molecules'() {
+//        
+//        setup:
+//        def resultEndpoint = camelContext.getEndpoint('mock:result')
+//        resultEndpoint.expectedMessageCount(1)
+//        File file = new File("../../data/testfiles/nci1000.smiles")
+//        
+//        when:
+//        template.sendBody('direct:handleMoleculeObjects', file)
+//
+//        then:
+//        resultEndpoint.assertIsSatisfied()
+//        def result = resultEndpoint.receivedExchanges.in.body[0]
+//        result == 1000
+//    }
+//
+//    def 'smiles to molecules lipinski'() {
+//
+//        setup:
+//        def resultEndpoint = camelContext.getEndpoint('mock:result')
+//        resultEndpoint.expectedMessageCount(1)
+//        File file = new File("../../data/testfiles/nci1000.smiles")
+//
+//        when:
+//        template.sendBody('direct:convertToMolsFilter', file)
+//
+//        then:
+//        resultEndpoint.assertIsSatisfied()
+//        def result = resultEndpoint.receivedExchanges.in.body[0]
+//        result == 93
+//    }
+//
+//
+//    def 'InputStream to molecules'() {
+//        setup:
+//        def resultEndpoint = camelContext.getEndpoint('mock:result')
+//        resultEndpoint.expectedMessageCount(1)
+//        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz"))
+//
+//       when:
+//        template.sendBody('direct:handleMoleculeObjects', gzip)
+//
+//        then:
+//        resultEndpoint.assertIsSatisfied()
+//        def result = resultEndpoint.receivedExchanges.in.body[0]
+//        result == 756 // should be 756
+//
+//    }
+//
+//    def 'InputStream to threaded molecule filter'() {
+//        setup:
+//        def resultEndpoint = camelContext.getEndpoint('mock:result')
+//        resultEndpoint.expectedMessageCount(1)
+//        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz"))
+//
+//        when:
+//        template.sendBody('direct:handleMoleculeObjects', gzip)
+//
+//        then:
+//        resultEndpoint.assertIsSatisfied()
+//        def result = resultEndpoint.receivedExchanges.in.body[0]
+//        result == 36
+//
+//        cleanup:
+//        gzip.close()
+//    }
 
     
    @Override

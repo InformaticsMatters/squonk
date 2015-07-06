@@ -23,7 +23,9 @@ import groovy.sql.Sql
  */
 class SplitAndQueueJobRouteBuilderSpec extends DatasetSpecificationBase {
      
-    
+    protected String getTableName() {
+         "users_test.users_test_SplitAndQueueJobRouteBuilderSpec"
+    }
     
     void doAddRoutes() {
         camelContext.addRoutes(new SplitAndQueueJobRouteBuilder())

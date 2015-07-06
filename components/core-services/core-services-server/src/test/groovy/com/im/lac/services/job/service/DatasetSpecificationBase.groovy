@@ -23,8 +23,10 @@ abstract class DatasetSpecificationBase extends Specification {
     @Shared ProducerTemplate producerTemplate
     
     void setupSpec() {
-        doSetup("users_test.users_test_JobServiceRouteBuilderSpec")
+        doSetup(getTableName())
     }
+    
+    protected abstract String getTableName()
     
     void doSetup(String datasetsTableName) {
         lifeCycle = new CamelLifeCycle(TestUtils.createTestDataSource())

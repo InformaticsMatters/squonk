@@ -27,6 +27,10 @@ class AsyncJobRouteBuilderSpec extends DatasetSpecificationBase {
     void doAddRoutes() {
         camelContext.addRoutes(new AsyncJobRouteBuilder())
     }
+    
+    protected String getTableName() {
+         "users_test.users_test_AsyncJobRouteBuilderSpec"
+    }
 	
     
     void "simple 1"() {

@@ -16,8 +16,10 @@ import com.im.lac.services.util.*
  */
 class DatasetServiceImplSpec extends Specification {
     
-    @Shared tableName = "users_test.users_test_datasetservicespec"
-    @Shared DatasetServiceImpl service = new DatasetServiceImpl(TestUtils.createTestDataSource(), tableName, true, true)
+    @Shared DatasetServiceImpl service = new DatasetServiceImpl(
+        TestUtils.createTestDataSource(), 
+            "users_test.users_test_datasetservicespec", 
+            true, true)
     @Shared DataItem[] item = new DataItem[1] 
     
     
