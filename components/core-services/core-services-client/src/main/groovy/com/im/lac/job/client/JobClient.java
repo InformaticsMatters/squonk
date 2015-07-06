@@ -3,8 +3,11 @@ package com.im.lac.job.client;
 
 import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
+import com.im.lac.types.io.JsonHandler;
 import java.util.Date;
 import java.util.List;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 /**
  * Client to manage submission and management of jobs.
@@ -16,6 +19,20 @@ import java.util.List;
  * @author timbo
  */
 public class JobClient {
+    
+    private static final String DEFAULT_BASE_URL = "http://demos.informaticsmatters.com:8080/coreservices/rest/v1/jobs";
+
+    private final String base;
+    private final CloseableHttpClient httpclient = HttpClients.createDefault();
+    private final JsonHandler jsonHandler = new JsonHandler();
+
+    public JobClient(String baseUrl) {
+        this.base = baseUrl;
+    }
+
+    public JobClient() {
+        base = DEFAULT_BASE_URL;
+    }
 
 
     /**

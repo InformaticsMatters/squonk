@@ -10,10 +10,12 @@ import spock.lang.Specification
  * @author timbo
  */
 class DatasetClientSpec extends Specification {
+    
+    String url = "http://demos.informaticsmatters.com:8080/dataset-service/rest/v1/datasets"
 	
     void "test list items"() {
         setup:
-        def client = new DatasetClient()
+        def client = new DatasetClient(url)
         
         when:
         Stream stream = client.getAll()
@@ -25,7 +27,7 @@ class DatasetClientSpec extends Specification {
     
     void "test get data item"() {
         setup:
-        def client = new DatasetClient()
+        def client = new DatasetClient(url)
         
         when:
         DataItem item1 = client.getAll().findFirst().get()
@@ -40,7 +42,7 @@ class DatasetClientSpec extends Specification {
     
     void "test get content"() {
         setup:
-        def client = new DatasetClient()
+        def client = new DatasetClient(url)
         
         when:
         DataItem item1 = client.getAll().findFirst().get()
@@ -55,7 +57,7 @@ class DatasetClientSpec extends Specification {
     
     void "test post content"() {
         setup:
-        def client = new DatasetClient()
+        def client = new DatasetClient(url)
         String smiles = 'c1ccccc1\nc1ccncc1\nCC\nCCC'
         String name = 'Random smiles'
         
@@ -73,7 +75,7 @@ class DatasetClientSpec extends Specification {
     
     void "test delete content"() {
         setup:
-        def client = new DatasetClient()
+        def client = new DatasetClient(url)
         String smiles = 'c1ccccc1\nc1ccncc1\nCC\nCCC'
         String name = 'Random smiles'
         

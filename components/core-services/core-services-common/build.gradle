@@ -14,9 +14,6 @@ dependencies {
     
     compile project(':common')
     
-    // We use the latest groovy 2.x version for building this library
-    compile 'org.codehaus.groovy:groovy-all:2.3.7'
-    
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
 

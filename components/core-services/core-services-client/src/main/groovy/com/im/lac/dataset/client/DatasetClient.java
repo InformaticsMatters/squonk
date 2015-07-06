@@ -33,7 +33,7 @@ import org.apache.http.impl.client.HttpClients;
 public class DatasetClient {
 
     private static final Logger LOG = Logger.getLogger(DatasetClient.class.getName());
-    private static final String DEFAULT_BASE_URL = "http://demos.informaticsmatters.com:8080/dataset-service/rest/v1/datasets";
+    private static final String DEFAULT_BASE_URL = "http://demos.informaticsmatters.com:8080/coreservices/rest/v1/datasets";
 
     private final String base;
     private final CloseableHttpClient httpclient = HttpClients.createDefault();
