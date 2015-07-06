@@ -23,11 +23,11 @@ abstract class DatasetSpecificationBase extends Specification {
     @Shared ProducerTemplate producerTemplate
     
     void setupSpec() {
-        doSetup(DatasetServiceImpl.DEFAULT_TABLE_NAME + "_test_JobServiceRouteBuilderSpec")
+        doSetup("users_test.users_test_JobServiceRouteBuilderSpec")
     }
     
     void doSetup(String datasetsTableName) {
-        lifeCycle = new CamelLifeCycle(Utils.createDataSource())
+        lifeCycle = new CamelLifeCycle(TestUtils.createTestDataSource())
         lifeCycle.datasetsTableName = datasetsTableName
         lifeCycle.createTables = true
         lifeCycle.dropTables = true

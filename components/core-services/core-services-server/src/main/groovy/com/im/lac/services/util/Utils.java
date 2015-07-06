@@ -19,21 +19,35 @@ public class Utils {
     private static ObjectMapper mapper = new ObjectMapper();
 
     public static DataSource createDataSource() {
+
+
+        DataSource ds = createDataSource(null, null, null, null, null);
+        return ds;
+    }
+
+    public static DataSource createDataSource(String server, String port, String dbName, String user, String password) {
         PGSimpleDataSource ds = new PGSimpleDataSource();
 
-        String server = System.getenv("CHEMCENTRAL_DB_SERVER");
+        if (server == null) {
+            server = System.getenv("CHEMCENTRAL_DB_SERVER");
+        }
+        if (port == null) {
+            port = System.getenv("CHEMCENTRAL_DB_PORT");
+        }
+        if (dbName == null) {
+            dbName = System.getenv("CHEMCENTRAL_DB_NAME");
+        }
+        if (user == null) {
+            user = System.getenv("CHEMCENTRAL_DB_USERNAME");
+        }
+        if (password == null) {
+            password = System.getenv("CHEMCENTRAL_DB_PASSWORD");
+        }
         ds.setServerName(server == null ? "localhost" : server);
-        String port = System.getenv("CHEMCENTRAL_DB_PORT");
         ds.setPortNumber(new Integer(port == null ? "5432" : port));
-        String dbname = System.getenv("CHEMCENTRAL_DB_NAME");
-        ds.setDatabaseName(dbname == null ? "chemcentral" : dbname);
-        String user = System.getenv("CHEMCENTRAL_DB_USERNAME");
+        ds.setDatabaseName(dbName == null ? "chemcentral" : dbName);
         ds.setUser(user == null ? "chemcentral" : user);
-        String password = System.getenv("CHEMCENTRAL_DB_PASSWORD");
         ds.setPassword(password == null ? "chemcentral" : password);
-
-        user = null;
-        password = null;
 
         return ds;
     }
