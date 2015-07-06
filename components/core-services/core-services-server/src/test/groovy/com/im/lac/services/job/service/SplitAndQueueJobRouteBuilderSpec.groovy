@@ -24,19 +24,11 @@ import groovy.sql.Sql
 class SplitAndQueueJobRouteBuilderSpec extends DatasetSpecificationBase {
      
     protected String getTableName() {
-         "users_test.users_test_SplitAndQueueJobRouteBuilderSpec"
+         "users.users_test_SplitAndQueueJobRouteBuilderSpec"
     }
     
     void doAddRoutes() {
         camelContext.addRoutes(new SplitAndQueueJobRouteBuilder())
-    }
-    
-    void doProcessCamelContext() {
-        // setup ActiveMQ
-        //def brokerUri = "vm://localhost?broker.persistent=false"
-        //def brokerUri = "tcp://localhost:61616";
-        //println "ActiveMQ being set up using " + brokerUri
-        //camelContext.addComponent(JobServiceRouteBuilder.JMS_BROKER_NAME, activeMQComponent(brokerUri));
     }
 	
     

@@ -29,7 +29,7 @@ class JobServiceRouteBuilderSpec extends DatasetSpecificationBase {
     }
     
     protected String getTableName() {
-         "users_test.users_test_JobServiceRouteBuilderSpec"
+         "users.users_test_JobServiceRouteBuilderSpec"
     }
         
     void "test submit ProcessDatasetJobDefinition"() {

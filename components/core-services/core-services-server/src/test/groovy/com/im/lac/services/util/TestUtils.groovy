@@ -33,7 +33,7 @@ class TestUtils {
         if (pw == null) {
             throw new IllegalStateException("Environment variable LAC_TESTUSER_PASSWORD not defined")
         }
-        return Utils.createDataSource(null, null, null, "tester", pw)
+        return Utils.createDataSource(null, null, 'unittest', "tester", pw)
     }
 	
 }

@@ -18,7 +18,7 @@ class DatasetServiceImplSpec extends Specification {
     
     @Shared DatasetServiceImpl service = new DatasetServiceImpl(
         TestUtils.createTestDataSource(), 
-            "users_test.users_test_datasetservicespec", 
+            "users.users_test_DatasetServiceImplSpec", 
             true, true)
     @Shared DataItem[] item = new DataItem[1] 
     

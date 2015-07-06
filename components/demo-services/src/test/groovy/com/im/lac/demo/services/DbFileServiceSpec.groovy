@@ -15,7 +15,7 @@ import com.im.lac.demo.model.*
 class DbFileServiceSpec extends Specification {
     
     @Shared DataSource dataSource = createDataSource()
-    @Shared DbFileService service = new DbFileService(dataSource, 'users_test.demo_files')
+    @Shared DbFileService service = new DbFileService(dataSource, 'users.demo_files')
     @Shared Sql db = new Sql(dataSource)
     @Shared DataItem[] item = new DataItem[1]
     
@@ -30,7 +30,7 @@ class DbFileServiceSpec extends Specification {
         
         ds.serverName = System.getenv("CHEMCENTRAL_DB_SERVER") ?: 'localhost'
         ds.portNumber =  new Integer(System.getenv("CHEMCENTRAL_DB_PORT") ?: '5432')
-        ds.databaseName = System.getenv("CHEMCENTRAL_DB_NAME") ?: 'chemcentral'
+        ds.databaseName = 'unittest'
         ds.user = 'tester'
         ds.password =  pw
 

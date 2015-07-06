@@ -29,7 +29,7 @@ class AsyncJobRouteBuilderSpec extends DatasetSpecificationBase {
     }
     
     protected String getTableName() {
-         "users_test.users_test_AsyncJobRouteBuilderSpec"
+         "users.users_test_AsyncJobRouteBuilderSpec"
     }
 	
     
