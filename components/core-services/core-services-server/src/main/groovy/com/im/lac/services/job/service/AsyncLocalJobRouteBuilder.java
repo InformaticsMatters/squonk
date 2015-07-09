@@ -19,8 +19,6 @@ public class AsyncLocalJobRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        
-        from("direct:foo").
 
         // For ProcessDatasetJobDefinition
         from(ROUTE_ASYNC_SUBMIT)
