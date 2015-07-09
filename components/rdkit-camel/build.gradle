@@ -1,5 +1,6 @@
 description = 'RDKit camel extensions'
 
+def RDBASE = System.getenv('RDBASE')
 
 dependencies {
     
@@ -13,7 +14,11 @@ dependencies {
     compile "org.apache.camel:camel-script:$camelVersion"
 
     compile "org.python:jython:2.7-b2"
-        
+    
+    if (RDBASE) {
+        compile files("$RDBASE/Code/JavaWrappers/gmwrapper/org.RDKit.jar")
+    }
+    
     testCompile project(':core-test')
 }
 

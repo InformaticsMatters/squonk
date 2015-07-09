@@ -14,17 +14,34 @@ import org.apache.camel.util.toolbox.AggregationStrategies;
 
 public class SplitAndQueueJobRouteBuilder extends RouteBuilder {
 
+    private String mqVirtualHost = null;
+    private String mqUsername = null;
+    private String mqPassword = null;
+    
+
     private static final Logger LOG = Logger.getLogger(SplitAndQueueJobRouteBuilder.class.getName());
 
     public static final String ROUTE_SPLIT_AND_QUEUE_SUBMIT = ROUTE_SUBMIT_PREFIX + SplitAndQueueProcessDatasetJobDefinition.class.getName();
     public static final String ROUTE_FETCH_AND_DISPATCH = "seda:queueProcessDatasetSubmit";
     public static final String ENDPOINT_SPLIT_AND_SUBMIT = "seda:splitAndSubmit";
     public static final String DUMMY_MESSAGE_QUEUE = "rabbitmq";
-
+    
+    
+    SplitAndQueueJobRouteBuilder() {
+        
+    }
+    
+    
+   SplitAndQueueJobRouteBuilder(String mqVirtualHost, String mqUsername, String mqPassword) {
+        this.mqVirtualHost = mqVirtualHost;
+        this.mqUsername = mqUsername;
+        this.mqPassword = mqPassword;
+    }
+    
     @Override
     public void configure() throws Exception {
 
-        MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials();
+        MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials(null, mqUsername, mqPassword, mqVirtualHost, null);
         String mqueueUrl = getRabbitMQUrl(rabbitmqCredentials);
         LOG.log(Level.INFO, "Using RabbitMQ URL of {0}", mqueueUrl);
 
@@ -99,20 +116,20 @@ public class SplitAndQueueJobRouteBuilder extends RouteBuilder {
 
         // a dummy queue for testing
         from(mqueueUrl + "&autoDelete=false&routingKey=queue1")
-                .log("queue1 received ${body}")
+                .log("queue1 received ${body}, sending to " + mqueueUrl + "&autoDelete=false")
                 .delay(1000)
                 .setHeader("rabbitmq.ROUTING_KEY", header("rabbitmq.REPLY_TO"))
                 .removeHeader("rabbitmq.REPLY_TO")
                 .to(mqueueUrl + "&autoDelete=false")
-                .log("Message ${body} processed and sent to ${header[rabbitmq.ROUTING_KEY]}");
+                .log("Message ${body} processed and sent to ${headers[rabbitmq.ROUTING_KEY]}");
 
     }
 
     String getRabbitMQUrl(MessageQueueCredentials rabbitmqCredentials) {
         return "rabbitmq://" + rabbitmqCredentials.getHostname()
-                + "/" + rabbitmqCredentials.getExchange() 
-                + "?username=" + rabbitmqCredentials.getUsername()
-                + "&password=" + rabbitmqCredentials.getPassword()
-                ;
+                + "/" + rabbitmqCredentials.getExchange()
+                + "?vhost=" + rabbitmqCredentials.getVirtualHost()
+                + "&username=" + rabbitmqCredentials.getUsername()
+                + "&password=" + rabbitmqCredentials.getPassword();
     }
 }

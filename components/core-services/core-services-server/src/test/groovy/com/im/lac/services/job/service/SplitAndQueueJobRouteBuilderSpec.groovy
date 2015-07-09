@@ -28,7 +28,11 @@ class SplitAndQueueJobRouteBuilderSpec extends DatasetSpecificationBase {
     }
     
     void doAddRoutes() {
-        camelContext.addRoutes(new SplitAndQueueJobRouteBuilder())
+        String pw = System.getenv("LAC_TESTUSER_PASSWORD")
+        if (pw == null) {
+            throw new IllegalStateException("Environment variable LAC_TESTUSER_PASSWORD must be defined")
+        }
+        camelContext.addRoutes(new SplitAndQueueJobRouteBuilder("unittest", "tester", pw))
     }
 	
     
@@ -54,11 +58,8 @@ class SplitAndQueueJobRouteBuilderSpec extends DatasetSpecificationBase {
         then:
         status1.status != null
         status2.totalCount == 5
-
-        
         
     }
-    
-    
+        
 }
 
