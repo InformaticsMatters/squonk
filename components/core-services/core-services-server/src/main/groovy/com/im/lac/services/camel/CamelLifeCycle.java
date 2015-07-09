@@ -12,6 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
+import org.apache.camel.builder.ThreadPoolProfileBuilder;
+import org.apache.camel.spi.ThreadPoolProfile;
 
 /**
  *
@@ -20,6 +22,8 @@ import javax.sql.DataSource;
 public class CamelLifeCycle {
 
     private static final Logger LOG = Logger.getLogger(CamelLifeCycle.class.getName());
+    
+    public static final String CUSTOM_THREAD_POOL_NAME = "CustomThreadPool";
 
     private final DataSource dataSource;
     private DatasetServiceImpl datasetService;
@@ -38,7 +42,8 @@ public class CamelLifeCycle {
     public void beforeStart(CamelContext context, SimpleRegistry r) throws Exception {
         //context.getShutdownStrategy().setTimeout(10);
         LOG.fine("beforeStart()");
-        // noop
+        ThreadPoolProfile profile = new ThreadPoolProfileBuilder(CUSTOM_THREAD_POOL_NAME).poolSize(4).maxPoolSize(50).build();
+        context.getExecutorServiceManager().registerThreadPoolProfile(profile);
     }
 
     public void afterStart(CamelContext context, SimpleRegistry r) throws Exception {

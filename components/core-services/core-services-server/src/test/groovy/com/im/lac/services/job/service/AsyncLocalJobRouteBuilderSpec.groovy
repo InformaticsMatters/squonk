@@ -21,11 +21,11 @@ import groovy.sql.Sql
  *
  * @author timbo
  */
-class AsyncJobRouteBuilderSpec extends DatasetSpecificationBase {
+class AsyncLocalJobRouteBuilderSpec extends DatasetSpecificationBase {
      
 
     void doAddRoutes() {
-        camelContext.addRoutes(new AsyncJobRouteBuilder())
+        camelContext.addRoutes(new AsyncLocalJobRouteBuilder())
     }
     
     protected String getTableName() {
@@ -37,13 +37,13 @@ class AsyncJobRouteBuilderSpec extends DatasetSpecificationBase {
         setup:
         TestUtils.createTestData(getDatasetHandler())
         AsyncProcessDatasetJobDefinition jobdef = new AsyncProcessDatasetJobDefinition(1l,
-            AsyncJobRouteBuilder.ROUTE_DUMMY,
+            AsyncLocalJobRouteBuilder.ROUTE_DUMMY,
             DatasetJobDefinition.DatasetMode.CREATE,
             String.class,
                 "new name");
 
         when:
-        JobStatus status1 = producerTemplate.requestBody(AsyncJobRouteBuilder.ROUTE_ASYNC_SUBMIT, jobdef);
+        JobStatus status1 = producerTemplate.requestBody(AsyncLocalJobRouteBuilder.ROUTE_ASYNC_SUBMIT, jobdef);
         
         System.out.println("Status 1.1: " + status1);
         //Thread.sleep(3000);
@@ -62,13 +62,13 @@ class AsyncJobRouteBuilderSpec extends DatasetSpecificationBase {
         setup:
         TestUtils.createTestData(getDatasetHandler())
         AsyncProcessDatasetJobDefinition jobdef = new AsyncProcessDatasetJobDefinition(4l,
-            AsyncJobRouteBuilder.ROUTE_DUMMY,
+            AsyncLocalJobRouteBuilder.ROUTE_DUMMY,
             DatasetJobDefinition.DatasetMode.CREATE,
             String.class,
                 "new name");
 
         when:
-        JobStatus status1 = producerTemplate.requestBody(AsyncJobRouteBuilder.ROUTE_ASYNC_SUBMIT, jobdef);
+        JobStatus status1 = producerTemplate.requestBody(AsyncLocalJobRouteBuilder.ROUTE_ASYNC_SUBMIT, jobdef);
         
         System.out.println("Status 1.1: " + status1);
         //Thread.sleep(3000);

@@ -7,6 +7,7 @@ import com.im.lac.services.job.service.*
 import com.im.lac.services.dataset.service.*
 import com.im.lac.services.util.*
 import groovy.sql.Sql
+import java.util.concurrent.ExecutorService
 import javax.activation.DataSource
 import org.apache.camel.CamelContext
 import org.apache.camel.ProducerTemplate
@@ -24,38 +25,39 @@ class JobServiceRouteBuilderSpec extends DatasetSpecificationBase {
     
     
     void doAddRoutes() {
-        camelContext.addRoutes(new AsyncJobRouteBuilder())
+        camelContext.addRoutes(new AsyncLocalJobRouteBuilder())
         camelContext.addRoutes(new JobServiceRouteBuilder())
     }
     
     protected String getTableName() {
          "users.users_test_JobServiceRouteBuilderSpec"
     }
+
         
     void "test submit ProcessDatasetJobDefinition"() {
         setup:
         def ids = TestUtils.createTestData(getDatasetHandler())
-        
+            
         when:
         def result = producerTemplate.requestBody(
             JobServiceRouteBuilder.ROUTE_SUBMIT_JOB, 
             new AsyncProcessDatasetJobDefinition(ids[0], 
-                AsyncJobRouteBuilder.ROUTE_DUMMY, 
+                AsyncLocalJobRouteBuilder.ROUTE_DUMMY, 
                 DatasetJobDefinition.DatasetMode.CREATE, 
                 String.class, 
-                "newDataSet1")
+                    "newDataSet1")
         );
         println "Result: " + result
         sleep(2000)
         def jobs = JobHandler.getJobStore(camelContext).getJobs()
         def dataItems = DatasetHandler.getDatasetHandler(camelContext).listDataItems()
-
+    
         then:
         result != null
         jobs.size() == 1
         jobs[0].status == JobStatus.Status.COMPLETED
         ids.size == dataItems.size() -1
-        
+            
     }
 	
 }
