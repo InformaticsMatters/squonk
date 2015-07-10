@@ -8,7 +8,9 @@ dependencies {
 
 }
 
+
 task copyDependencies(type: Copy) {
+    
     from configurations.compile
     into 'lib'
 }
