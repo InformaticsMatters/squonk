@@ -24,12 +24,13 @@ class ReactorExecutorSpec extends Specification {
     String reactants = "../../data/testfiles/nci100.smiles"
     String reaction = "../../data/testfiles/amine-acylation.mrv"
     
-    Molecule[] getMoleculeAraryFromFile(FileInputStream fis) {
+    Molecule[] getMoleculeArrayFromFile(FileInputStream fis) {
         Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(fis).getStream(true);
-        try {
-            return stream
-            .map() { mo -> MoleculeUtils.cloneMolecule(mo, true) }
-            .collect(Collectors.toList()).toArray(new Molecule[0]);
+        try {          
+            List<Molecule> mols = stream.collect {
+                MoleculeUtils.cloneMolecule(it, true)
+            }
+            return mols.toArray(new Molecule[0]);
         } finally {
             stream.close()   
         }
@@ -41,8 +42,8 @@ class ReactorExecutorSpec extends Specification {
         setup:
         println "simple enumerate"
         Molecule rxn = MolImporter.importMol(new File(reaction).text)
-        Molecule[] r1 = getMoleculeAraryFromFile(new FileInputStream(reactants))     
-        Molecule[] r2 = getMoleculeAraryFromFile(new FileInputStream(reactants))
+        Molecule[] r1 = getMoleculeArrayFromFile(new FileInputStream(reactants))     
+        Molecule[] r2 = getMoleculeArrayFromFile(new FileInputStream(reactants))
         ReactorExecutor exec = new ReactorExecutor()
         
         when:

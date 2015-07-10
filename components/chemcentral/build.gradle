@@ -6,9 +6,8 @@ jettyRun {
     reload = "automatic"
     scanIntervalSeconds = 1
 }
-sourceCompatibility = 1.7
 
-sourceCompatibility = 1.7
+//sourceCompatibility = 1.7
 
 apply plugin: 'docker'
 //apply plugin: 'com.bmuschko.docker-remote-api'
@@ -30,7 +29,7 @@ dependencies {
     
     compile "org.postgresql:postgresql:9.4-1201-jdbc41"
     
-    //compile "org.slf4j:slf4j-simple:1.7.7"
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
     
     compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     compile 'org.glassfish.jersey.core:jersey-server:2.6'
@@ -126,7 +125,7 @@ docker {
  * CHEMCENTRAL_DB_PORT (default 49153)
  * CHEMCENTRAL_DB_USERNAME (default chemcentral)
  * CHEMCENTRAL_DB_PASSWORD (default chemcentral)
-*/
+ */
 task buildDocker(type: Docker, dependsOn: war) {
     applicationName = "chemcentral"
     setEnvironment('CHEMCENTRAL_DB_SERVER', 'db') // assumes the db alias is used when linking. If not override with a -e argument

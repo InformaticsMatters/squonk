@@ -5,7 +5,6 @@ allprojects {
     group = 'im.lac.components'
     
     apply plugin: 'groovy' // Apply the groovy plugin (also adds support for Java)
-    apply plugin: 'idea'   // can be used to generate Idea project files using ./gradlew idea
     apply plugin: 'maven'  // Maven repo stuff
 
     sourceCompatibility = 1.8
@@ -17,6 +16,7 @@ allprojects {
     // note: version used by camel is 2.4.3 - trying later version to use "Attributes"
     project.ext.set('jacksonVersion', '2.5.3')
     project.ext.set('cdkVersion', '1.5.10')
+    project.ext.set('groovyVersion', '2.4.3')
 
 
     // In this section you declare where to find the dependencies of your project
@@ -39,9 +39,10 @@ allprojects {
     dependencies {
         // The production code uses the SLF4J logging API at compile time
         compile 'org.slf4j:slf4j-simple:1.7.7'
-        compile "org.codehaus.groovy:groovy-all:2.3.9"
-        compile files("/RDKit/rdkit/Code/JavaWrappers/gmwrapper/org.RDKitDoc.jar", "/RDKit/rdkit/Code/JavaWrappers/gmwrapper/org.RDKit.jar","/RDKit/rdkit/Code/JavaWrappers/gmwrapper/libGraphMolWrap.so")
+
+        //compile files("/RDKit/rdkit/Code/JavaWrappers/gmwrapper/org.RDKitDoc.jar", "/RDKit/rdkit/Code/JavaWrappers/gmwrapper/org.RDKit.jar","/RDKit/rdkit/Code/JavaWrappers/gmwrapper/libGraphMolWrap.so")
         // Spock for unit testing
+        testCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
         testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
     }
 }

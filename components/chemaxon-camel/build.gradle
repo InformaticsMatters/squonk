@@ -1,13 +1,13 @@
 description = 'ChemAxon Camel components'
 
-apply plugin: 'groovy'
-
 
 dependencies {
 
     compile project(':chemaxon-lib')
     compile project(':common')
     compile project(':common-camel')
+    
+    
     
     compile "org.postgresql:postgresql:9.4-1201-jdbc41"
     

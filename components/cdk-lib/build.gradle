@@ -5,6 +5,8 @@ dependencies {
     
     compile project(':common')
     
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+    
     //compile 'org.openscience.cdk:cdk-bundle:1.5.10'
     
     compile "org.openscience.cdk:cdk-core:$cdkVersion"

@@ -17,19 +17,6 @@ buildscript {
     }
 }
 
-repositories {
-    jcenter()
-}
-
-//dependencies {
-//    // We use the latest groovy 2.x version for building this library
-//    compile 'org.codehaus.groovy:groovy-all:2.3.7'
-//
-//    // We use the awesome Spock testing and specification framework
-//    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
-//    testCompile 'junit:junit:4.11'
-//}
-
 
 dependencies {
     
@@ -37,9 +24,9 @@ dependencies {
     compile project(':chemaxon-lib')
     compile project(':core-services/core-services-common')
     
-    providedCompile 'javax.servlet:servlet-api:2.5'
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
     
-    compile 'org.slf4j:slf4j-simple:1.7.7'
+    providedCompile 'javax.servlet:servlet-api:2.5'
 
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-jackson:$camelVersion"
@@ -54,9 +41,7 @@ dependencies {
            "org.apache.tomcat:jasper:${tomcatVersion}"
     
     compile "org.postgresql:postgresql:9.4-1201-jdbc41"
-    
-    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
-    testCompile 'junit:junit:4.11'
+  
 }
 
 tomcat {
