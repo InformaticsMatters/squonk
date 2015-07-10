@@ -12,3 +12,5 @@ task copyDependencies(type: Copy) {
     from configurations.compile
     into 'lib'
 }
+
+tasks.test.enabled = false
