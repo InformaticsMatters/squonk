@@ -1,0 +1,9 @@
+db:
+    build: postgres/
+    ports: 
+    - "5432:5432"
+mq:
+    image: rabbitmq-mgt
+    ports:
+        - "5672:5672"
+        - "15672:15672"
