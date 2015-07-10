@@ -1,36 +1,38 @@
 package com.im.lac.job.jobdef;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  *
  * @author timbo
  */
-public class SplitAndQueueProcessDatasetJobDefinition extends AbstractProcessDatasetJobDefinition {
+public class AsyncLocalProcessDatasetJobDefinition extends AbstractProcessDatasetJobDefinition {
 
-    private final String queuename;
+    private final String endpoint;
 
-    public SplitAndQueueProcessDatasetJobDefinition(
+    @JsonCreator
+    public AsyncLocalProcessDatasetJobDefinition(
             @JsonProperty("datasetId") Long datasetId,
-            @JsonProperty("queuename") String queuename,
+            @JsonProperty("endpoint") String endpoint,
             @JsonProperty("mode") DatasetMode mode,
             @JsonProperty("resultType") Class resultType,
             @JsonProperty("datasetName") String datasetName) {
         super(datasetId, mode, resultType, datasetName);
-        this.queuename = queuename;
+        this.endpoint = endpoint;
     }
 
-    public SplitAndQueueProcessDatasetJobDefinition(
+    public AsyncLocalProcessDatasetJobDefinition(
             Long datasetId,
-            String queuename,
+            String endpoint,
             DatasetMode mode,
             Class resultType) {
         super(datasetId, mode, resultType);
-        this.queuename = queuename;
+        this.endpoint = endpoint;
     }
 
-    public String getQueuename() {
-        return queuename;
+    public String getEndpoint() {
+        return endpoint;
     }
 
 }

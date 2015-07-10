@@ -7,11 +7,11 @@ import spock.lang.Specification
  *
  * @author timbo
  */
-class AsyncProcessDatasetJobDefinitionSpec extends Specification {
+class AsyncLocalProcessDatasetJobDefinitionSpec extends Specification {
     
     void "test generate json"() {
         setup:
-        def jobdef = new AsyncProcessDatasetJobDefinition(99,
+        def jobdef = new AsyncLocalProcessDatasetJobDefinition(99,
             "some.where",
             DatasetJobDefinition.DatasetMode.UPDATE,
             String.class,
@@ -31,14 +31,14 @@ class AsyncProcessDatasetJobDefinitionSpec extends Specification {
     void "test read json"() {
         setup:
         String json = '''{"datasetId":99,
-"destination":"some.where",
+"endpoint":"some.where",
 "mode":"UPDATE",
 "resultType":"java.lang.String",
 "datasetName":"holy cow"}'''
         ObjectMapper mapper = new ObjectMapper()
         
         when:
-        AsyncProcessDatasetJobDefinition jobdef = mapper.readValue(json, AsyncProcessDatasetJobDefinition.class)
+        AsyncLocalProcessDatasetJobDefinition jobdef = mapper.readValue(json, AsyncLocalProcessDatasetJobDefinition.class)
         
         then:
         jobdef != null
@@ -50,13 +50,13 @@ class AsyncProcessDatasetJobDefinitionSpec extends Specification {
      void "test read json no dataset name"() {
         setup:
         String json = '''{"datasetId":99,
-"destination":"some.where",
+"endpoint":"some.where",
 "mode":"UPDATE",
 "resultType":"java.lang.String"}'''
         ObjectMapper mapper = new ObjectMapper()
         
         when:
-        AsyncProcessDatasetJobDefinition jobdef = mapper.readValue(json, AsyncProcessDatasetJobDefinition.class)
+        AsyncLocalProcessDatasetJobDefinition jobdef = mapper.readValue(json, AsyncLocalProcessDatasetJobDefinition.class)
         
         then:
         jobdef != null

@@ -1,6 +1,6 @@
 package com.im.lac.rdkit.mol
 
-import java.util.stream.Stream
+import java.util.stream.*
 import org.RDKit.ROMol
 import org.RDKit.SmilesMolSupplier
 import spock.lang.Specification
@@ -20,14 +20,15 @@ class MolReaderSpec extends Specification {
     }
     
     void "test read smiles file"() {
-        setup:
-        
         when:
-        Stream<ROMol> mols = MolReader.readSmiles('../../data/testfiles/nci100.smiles', "\t", 1, 2, false, true)
-        long count = mols.count()
+        List<ROMol> mols = MolReader.readSmiles('../../data/testfiles/nci100.smiles', "\t", 0, 1, false, true)
+            .collect(Collectors.toList())
         
         then:
-        count == 100
+        mols.size() == 100
+        mols.each {
+            assert it != null
+        }
         
     }
 	

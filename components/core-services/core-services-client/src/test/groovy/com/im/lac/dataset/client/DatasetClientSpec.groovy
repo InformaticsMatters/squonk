@@ -11,7 +11,8 @@ import spock.lang.Specification
  */
 class DatasetClientSpec extends Specification {
     
-    String url = "http://demos.informaticsmatters.com:8080/dataset-service/rest/v1/datasets"
+    String url = "http://localhost/coreservices/rest/v1/datasets"
+    //String url = "http://demos.informaticsmatters.com:8080/coreservices/rest/v1/datasets"
 	
     void "test list items"() {
         setup:

@@ -5,7 +5,7 @@ import com.im.lac.dataset.DataItem;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.IOUtils;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
-import com.im.lac.job.jobdef.AsyncProcessDatasetJobDefinition;
+import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.SplitAndQueueProcessDatasetJobDefinition;
 import com.im.lac.services.dataset.service.DatasetHandler;
@@ -40,6 +40,9 @@ public class RestRouteBuilder extends RouteBuilder {
                 .produces("text/plain")
                 .route()
                 .transform(constant("Ping\n")).endRest();
+
+//        rest("/echo")
+//                .post().description("Simple echo service for testing");
 
         rest("/v1/datasets").description("Dataset management services")
                 // POST
@@ -91,9 +94,11 @@ public class RestRouteBuilder extends RouteBuilder {
                 .endRest()
                 //
                 // POST new async process dataset job
+                // can be testing by posing JSON like this: 
+                // {"endpoint": "direct:simpleroute", "datasetId": 44, "mode": "CREATE", "datasetName": "holy cow","resultType": "com.im.lac.types.MoleculeObject"}
                 .post("/asyncProcessDataset").description("Submit a new async process dataset job")
                 .bindingMode(RestBindingMode.json)
-                .consumes("application/json").type(AsyncProcessDatasetJobDefinition.class)
+                .consumes("application/json").type(AsyncLocalProcessDatasetJobDefinition.class)
                 .produces("application/json").outType(JobStatus.class)
                 .route()
                 .log("REST POST asyncProcessDataset ${body}")
@@ -105,8 +110,7 @@ public class RestRouteBuilder extends RouteBuilder {
                 .bindingMode(RestBindingMode.json)
                 .consumes("application/json").type(SplitAndQueueProcessDatasetJobDefinition.class)
                 .produces("application/json").outType(JobStatus.class)
-                .to(JobServiceRouteBuilder.ROUTE_SUBMIT_JOB)
-                ;
+                .to(JobServiceRouteBuilder.ROUTE_SUBMIT_JOB);
 
         /* These are the implementation endpoints - not accessible directly from "outside"
          */

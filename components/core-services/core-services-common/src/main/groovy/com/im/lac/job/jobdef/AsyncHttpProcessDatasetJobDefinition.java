@@ -7,24 +7,31 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author timbo
  */
-public class AsyncProcessDatasetJobDefinition extends ProcessDatasetJobDefinition {
+public class AsyncHttpProcessDatasetJobDefinition extends AbstractProcessDatasetJobDefinition {
+
+    private final String destination;
 
     @JsonCreator
-    public AsyncProcessDatasetJobDefinition(
+    public AsyncHttpProcessDatasetJobDefinition(
             @JsonProperty("datasetId") Long datasetId,
             @JsonProperty("destination") String destination,
             @JsonProperty("mode") DatasetMode mode,
             @JsonProperty("resultType") Class resultType,
             @JsonProperty("datasetName") String datasetName) {
-        super(datasetId, destination, mode, resultType, datasetName);
+        super(datasetId, mode, resultType, datasetName);
+        this.destination = destination;
     }
 
-    
-    public AsyncProcessDatasetJobDefinition(
+    public AsyncHttpProcessDatasetJobDefinition(
             Long datasetId,
             String destination,
             DatasetMode mode,
             Class resultType) {
-        super(datasetId, destination, mode, resultType);
+        super(datasetId, mode, resultType);
+        this.destination = destination;
+    }
+
+    public String getDestination() {
+        return destination;
     }
 }

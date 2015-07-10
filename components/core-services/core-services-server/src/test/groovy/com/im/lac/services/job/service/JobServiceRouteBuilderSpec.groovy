@@ -41,7 +41,7 @@ class JobServiceRouteBuilderSpec extends DatasetSpecificationBase {
         when:
         def result = producerTemplate.requestBody(
             JobServiceRouteBuilder.ROUTE_SUBMIT_JOB, 
-            new AsyncProcessDatasetJobDefinition(ids[0], 
+            new AsyncLocalProcessDatasetJobDefinition(ids[0], 
                 AsyncLocalJobRouteBuilder.ROUTE_DUMMY, 
                 DatasetJobDefinition.DatasetMode.CREATE, 
                 String.class, 

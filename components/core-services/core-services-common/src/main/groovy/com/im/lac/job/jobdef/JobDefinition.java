@@ -12,6 +12,4 @@ public interface JobDefinition {
         ASYNC_SPLIT_AND_QUEUE
     }
     
-    String getDestination();
-    
 }

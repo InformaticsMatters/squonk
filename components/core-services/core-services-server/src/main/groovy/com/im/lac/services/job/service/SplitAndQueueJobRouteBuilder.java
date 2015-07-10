@@ -95,9 +95,9 @@ public class SplitAndQueueJobRouteBuilder extends RouteBuilder {
                 .process((Exchange exch) -> {
                     SplitAndQueueJob job = JobHandler.getJob(exch, SplitAndQueueJob.class);
                     JobHandler.setJobStatus(exch, JobStatus.Status.SUBMITTING);
-                    LOG.log(Level.INFO, "Setting ROUTING_KEY to {0}", job.getJobDefinition().getDestination());
+                    LOG.log(Level.INFO, "Setting ROUTING_KEY to {0}", job.getJobDefinition().getQueuename());
                     LOG.log(Level.INFO, "Setting REPLY_TO to {0}", job.getResponseQueueName());
-                    exch.getIn().setHeader("rabbitmq.ROUTING_KEY", job.getJobDefinition().getDestination());
+                    exch.getIn().setHeader("rabbitmq.ROUTING_KEY", job.getJobDefinition().getQueuename());
                     exch.getIn().setHeader("rabbitmq.REPLY_TO", job.getResponseQueueName());
                 })
                 .split(body(), AggregationStrategies.useLatest()).streaming()

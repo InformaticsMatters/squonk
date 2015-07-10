@@ -1,6 +1,7 @@
 package com.im.lac.services.job.service;
 
-import com.im.lac.job.jobdef.ProcessDatasetJobDefinition;
+import com.im.lac.job.jobdef.AbstractProcessDatasetJobDefinition;
+import com.im.lac.job.jobdef.SplitAndQueueProcessDatasetJobDefinition;
 import java.util.logging.Logger;
 
 /**
@@ -40,7 +41,7 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class SplitAndQueueJob extends AbstractDatasetJob<ProcessDatasetJobDefinition> {
+public class SplitAndQueueJob extends AbstractDatasetJob<SplitAndQueueProcessDatasetJobDefinition> {
 
     private static final Logger LOG = Logger.getLogger(SplitAndQueueJob.class.getName());
     private static final String RESPONSE_QUEUE_PREFIX = "QueueJob_";
@@ -49,7 +50,7 @@ public class SplitAndQueueJob extends AbstractDatasetJob<ProcessDatasetJobDefini
      *
      * @param jobdef The job definition
      */
-    public SplitAndQueueJob(ProcessDatasetJobDefinition jobdef) {
+    public SplitAndQueueJob(SplitAndQueueProcessDatasetJobDefinition jobdef) {
         super(jobdef);
     }
 

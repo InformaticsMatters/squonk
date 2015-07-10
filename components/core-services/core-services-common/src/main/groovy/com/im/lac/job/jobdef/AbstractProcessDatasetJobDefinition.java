@@ -5,11 +5,10 @@ package com.im.lac.job.jobdef;
  *
  * @author timbo
  */
-public abstract class ProcessDatasetJobDefinition implements DatasetJobDefinition {
+public abstract class AbstractProcessDatasetJobDefinition implements DatasetJobDefinition {
 
     private final Long datasetId;
 
-    private final String destination;
 
     private final DatasetMode mode;
     
@@ -17,26 +16,22 @@ public abstract class ProcessDatasetJobDefinition implements DatasetJobDefinitio
     
     private final String datasetName;
 
-    public ProcessDatasetJobDefinition(
+    public AbstractProcessDatasetJobDefinition(
             Long datasetId, 
-            String destination, 
             DatasetMode mode, 
             Class resultType, 
             String datasetName) {
         this.datasetId = datasetId;
-        this.destination = destination;
         this.mode = mode;
         this.resultType = resultType;
         this.datasetName = datasetName;
     }
     
-    public ProcessDatasetJobDefinition(
+    public AbstractProcessDatasetJobDefinition(
             Long datasetId, 
-            String destination, 
             DatasetMode mode, 
             Class resultType) {
         this.datasetId = datasetId;
-        this.destination = destination;
         this.mode = mode;
         this.resultType = resultType;
         this.datasetName = null;
@@ -45,11 +40,6 @@ public abstract class ProcessDatasetJobDefinition implements DatasetJobDefinitio
     @Override
     public Long getDatasetId() {
         return datasetId;
-    }
-
-    @Override
-    public String getDestination() {
-        return destination;
     }
 
     @Override

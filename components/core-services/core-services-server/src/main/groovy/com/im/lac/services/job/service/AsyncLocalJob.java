@@ -1,6 +1,7 @@
 package com.im.lac.services.job.service;
 
-import com.im.lac.job.jobdef.ProcessDatasetJobDefinition;
+import com.im.lac.job.jobdef.AbstractProcessDatasetJobDefinition;
+import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition;
 import java.util.logging.Logger;
 
 /**
@@ -29,16 +30,16 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class AsyncJob extends AbstractDatasetJob<ProcessDatasetJobDefinition> {
+public class AsyncLocalJob extends AbstractDatasetJob<AsyncLocalProcessDatasetJobDefinition> {
 
-    private static final Logger LOG = Logger.getLogger(AsyncJob.class.getName());
+    private static final Logger LOG = Logger.getLogger(AsyncLocalJob.class.getName());
 
 
     /**
      *
      * @param jobdef The job definition
      */
-    public AsyncJob(ProcessDatasetJobDefinition jobdef) {
+    public AsyncLocalJob(AsyncLocalProcessDatasetJobDefinition jobdef) {
         super(jobdef);
     }
 
