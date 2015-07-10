@@ -14,8 +14,13 @@ dependencies {
     compile "org.python:jython:2.7-b2"
     
     if (RDBASE) {
+        println "$RDBASE defined - using that location for RDkit"
         compile files("$RDBASE/Code/JavaWrappers/gmwrapper/org.RDKit.jar")
+    } else {
+        println "Using local org.RDKit.jar"
+        compile files("lib/org.RDKit.jar")
     }
+        
     
     testCompile project(':core-test')
 }
