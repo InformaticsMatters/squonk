@@ -38,6 +38,7 @@ dependencies {
     compile "org.apache.camel:camel-servletlistener:$camelVersion"
     compile "org.apache.camel:camel-servlet:$camelVersion"
     compile "org.apache.camel:camel-swagger:$camelVersion"
+    compile "org.apache.camel:camel-http4:$camelVersion"
     compile "org.apache.camel:camel-rabbitmq:$camelVersion"
      
     def tomcatVersion = '6.0.43'

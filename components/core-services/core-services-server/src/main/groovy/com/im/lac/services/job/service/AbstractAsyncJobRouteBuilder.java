@@ -23,18 +23,16 @@ public abstract class AbstractAsyncJobRouteBuilder extends RouteBuilder {
 
         // For ProcessDatasetJobDefinition
         from(ROUTE_ASYNC_SUBMIT)
+                .log("ROUTE_ASYNC_SUBMIT")
+                // body is job
+                .log("Async submit. Body: ${body}")
                 .threads().executorServiceRef(CamelLifeCycle.CUSTOM_THREAD_POOL_NAME)
                 .setExchangePattern(ExchangePattern.InOnly)
-                // body is jobdef
-                .log("Async submit. Body: ${body}")
-                .setHeader(ServerConstants.HEADER_DATASET_ID, simple("${body.datasetId}"))
-                // create the job
                 .process((Exchange exch) -> {
-                    AsyncLocalProcessDatasetJobDefinition jobdef = exch.getIn().getBody(AsyncLocalProcessDatasetJobDefinition.class);
-                    AsyncLocalJob job = new AsyncLocalJob(jobdef);
+                    AbstractDatasetJob job = exch.getIn().getBody(AbstractDatasetJob.class);
                     job.status = JobStatus.Status.PENDING;
                     JobHandler.getJobStore(exch).putJob(job);
-                    exch.getIn().setBody(job);
+                    exch.getIn().setHeader(ServerConstants.HEADER_DATASET_ID, job.getJobDefinition().getDatasetId());
                     exch.getIn().setHeader(CommonConstants.HEADER_JOB_ID, job.getJobId());
                 })
                 // body is now the job
@@ -68,7 +66,7 @@ public abstract class AbstractAsyncJobRouteBuilder extends RouteBuilder {
                 .log("Handling results for job ${header." + ServerConstants.HEADER_JOB_ID + "}")
                 .process((Exchange exch) -> JobHandler.saveDatasetForJob(exch))
                 .log("Results handled");
-                // body is now the job status
+        // body is now the job status
 
         from(ROUTE_DUMMY).
                 log("Dummy received ${body}")

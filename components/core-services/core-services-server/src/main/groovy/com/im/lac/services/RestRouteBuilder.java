@@ -41,8 +41,18 @@ public class RestRouteBuilder extends RouteBuilder {
                 .route()
                 .transform(constant("Ping\n")).endRest();
 
-//        rest("/echo")
-//                .post().description("Simple echo service for testing");
+        rest("/echo")
+                .post().description("Simple echo service for testing")
+                .bindingMode(RestBindingMode.off)
+                .consumes("application/json")
+                .produces("application/json")
+                .route()
+                .process((Exchange exch) -> {
+                    String s = exch.getIn().getBody(String.class);
+                    exch.getIn().setBody(s);
+                })
+                .log("Echoing: ${body}")
+                .endRest();
 
         rest("/v1/datasets").description("Dataset management services")
                 // POST

@@ -80,7 +80,7 @@ public class JobClient {
     /**
      * Submit this as a new Job for asynchronously processing a dataset using a local route
      *
-     * @param jobdef The defintion of the job
+     * @param jobdef The definition of the job
      * @return The status of the submitted job, which includes the job ID that can be used to
      * further monitor and handle the job.
      * @throws java.lang.Exception

@@ -68,7 +68,7 @@ class AsyncLocalJobRouteBuilderSpec extends DatasetSpecificationBase {
                 "new name");
 
         when:
-        JobStatus status1 = producerTemplate.requestBody(AsyncLocalJobRouteBuilder.ROUTE_ASYNC_SUBMIT, jobdef);
+        JobStatus status1 = producerTemplate.requestBody(AsyncLocalJobRouteBuilder.ROUTE_ASYNC_LOCAL_SUBMIT, jobdef);
         
         System.out.println("Status 1.1: " + status1);
         //Thread.sleep(3000);
