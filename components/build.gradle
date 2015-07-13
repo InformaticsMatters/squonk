@@ -63,3 +63,19 @@ task wrapper(type: Wrapper) {
     jarFile = 'wrapper/wrapper.jar'
 }
 
+task integrationTestEnvPrepare(type:Exec) {
+    dependsOn "core-services/core-services-server:dockerFile"
+    
+    workingDir '../docker'
+    commandLine 'bash', 'int-test-env-prepare.sh'
+}
+
+task integrationTestEnvShutdown(type:Exec) { 
+    workingDir '../docker'
+    commandLine 'bash', 'int-test-env-shutdown.sh'
+}
+
+task integrationTestEnvClean(type:Exec) { 
+    commandLine 'bash', '../docker/int-test-env-clean.sh'
+}
+

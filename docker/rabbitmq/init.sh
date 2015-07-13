@@ -6,8 +6,11 @@
 # docker exec <image_name> bash init.sh
 
 rabbitmqctl delete_vhost /unittest
+rabbitmqctl delete_vhost /prod
 rabbitmqctl delete_user tester
 
 rabbitmqctl add_vhost /unittest
+rabbitmqctl add_vhost /prod
 rabbitmqctl add_user tester lacrocks
 rabbitmqctl set_permissions -p /unittest tester ".*" ".*" ".*"
+rabbitmqctl set_permissions -p /prod tester ".*" ".*" ".*"
