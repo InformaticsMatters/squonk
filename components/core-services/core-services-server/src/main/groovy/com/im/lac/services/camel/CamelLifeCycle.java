@@ -28,8 +28,8 @@ public class CamelLifeCycle {
     private final DataSource dataSource;
     private DatasetServiceImpl datasetService;
     private String datasetsTableName = DatasetServiceImpl.DEFAULT_TABLE_NAME;
-    private boolean createTables = false;
-    private boolean dropTables = false;
+    private boolean createTables = "true".equals(System.getenv("CHEMCENTRAL_AUTO_CREATE"));
+    private boolean dropTables = "true".equals(System.getenv("CHEMCENTRAL_AUTO_CREATE"));
 
     public CamelLifeCycle() {
         this(Utils.createDataSource());
@@ -66,7 +66,8 @@ public class CamelLifeCycle {
 
     public void beforeAddRoutes(CamelContext context, SimpleRegistry r) throws Exception {
         LOG.fine("beforeAddRoutes()");
-        LOG.fine("Creating DatasetService");
+        LOG.log(Level.INFO, "CHEMCENTRAL_AUTO_CREATE: {0}", System.getenv("CHEMCENTRAL_AUTO_CREATE"));
+        LOG.log(Level.INFO, "Creating DatasetService: {0} {1} {2}", new Object[]{datasetsTableName, createTables, dropTables});
         datasetService = new DatasetServiceImpl(dataSource, datasetsTableName, createTables, dropTables);
         if (dropTables) {
             datasetService.dropTables();

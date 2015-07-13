@@ -69,7 +69,12 @@ public class MessageQueueCredentials {
         if (virtualHost != null) {
             this.virtualHost = virtualHost;
         } else {
-            this.virtualHost = "prod";
+            virtualHost = System.getenv("RABBITMQ_VHOST");
+            if (virtualHost == null) {
+                this.virtualHost = "/prod";
+            } else {
+                this.virtualHost = virtualHost;
+            }
         }
 
         if (exchange != null) {

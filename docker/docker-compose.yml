@@ -2,8 +2,36 @@ db:
     build: postgres/
     ports: 
     - "5432:5432"
+
 mq:
-    image: rabbitmq-mgt
+    build: rabbitmq/
     ports:
-        - "5672:5672"
-        - "15672:15672"
+    - "5672:5672"
+    - "15672:15672"
+    hostname: rabbitmq
+    environment: 
+        RABBITMQ_ERLANG_COOKIE: topsecret
+
+cs:
+    build: ../components/core-services/core-services-server/build
+    ports:
+    - 80:8080
+    links:
+    - db:db
+    - mq:rabbitmq
+    environment:
+        RABBITMQ_HOST: rabbitmq
+        RABBITMQ_VHOST: unittest
+        CHEMCENTRAL_DB_NAME: unittest
+        CHEMCENTRAL_DB_USERNAME: tester
+        CHEMCENTRAL_DB_PASSWORD: "lacrocks"
+        CHEMCENTRAL_AUTO_CREATE: "true"
+
+swagger:
+    image: sjeandeaux/docker-swagger-ui
+    ports:
+        - "8888:8888"
+    environment: 
+        API_URL: http://localhost/coreservices/api-docs
+        
+

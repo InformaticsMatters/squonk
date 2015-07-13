@@ -28,11 +28,7 @@ class SplitAndQueueJobRouteBuilderSpec extends DatasetSpecificationBase {
     }
     
     void doAddRoutes() {
-        String pw = System.getenv("LAC_TESTUSER_PASSWORD")
-        if (pw == null) {
-            throw new IllegalStateException("Environment variable LAC_TESTUSER_PASSWORD must be defined")
-        }
-        camelContext.addRoutes(new SplitAndQueueJobRouteBuilder("unittest", "tester", pw))
+        camelContext.addRoutes(new SplitAndQueueJobRouteBuilder("localhost", "/unittest", "tester", TestUtils.LAC_PASSWORD))
     }
 	
     

@@ -15,4 +15,4 @@ task copyDependencies(type: Copy) {
     into 'lib'
 }
 
-tasks.test.enabled = false
+tasks.test.enabled = true

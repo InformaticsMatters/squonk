@@ -4,7 +4,11 @@ def contextName = 'coreservices'
 apply plugin: 'groovy'
 apply plugin: 'war'
 apply plugin: 'com.bmuschko.tomcat'
-apply plugin: 'docker'
+apply plugin: 'com.bmuschko.docker-remote-api'
+//apply plugin: 'docker'
+
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 buildscript {
     repositories {
@@ -13,7 +17,8 @@ buildscript {
 
     dependencies {
         classpath 'com.bmuschko:gradle-tomcat-plugin:2.2.2'
-        classpath 'se.transmode.gradle:gradle-docker:1.2'
+        classpath 'com.bmuschko:gradle-docker-plugin:2.4.1'
+        //classpath 'se.transmode.gradle:gradle-docker:1.2'
     }
 }
 
@@ -51,22 +56,22 @@ tomcat {
     users {
         user {
             username = 'admin'
-            password = 'lacrocks!'
+            password = 'lacrocks'
             roles = ['developers', 'admin']
         }
 
         user {
             username = 'manager'
-            password = 'lacrocks!'
+            password = 'lacrocks'
             roles = ['manager']
         }
     }
 }
 
-docker {
-    baseImage "tomcat:7-jre8"
-    maintainer 'Tim Dudgeon'
-}
+//docker {
+//    baseImage "tomcat:7-jre8"
+//    maintainer 'Tim Dudgeon'
+//}
 
 /** Build a Docker image
  * run the generated image with something like this:
@@ -79,20 +84,41 @@ docker {
  * The following environment variables can be used to override the default settings:
  * CHEMCENTRAL_DB_SERVER, CHEMCENTRAL_DB_PORT, CHEMCENTRAL_DB_USERNAME, CHEMCENTRAL_DB_PASSWORD, CHEMAXON_LICENSE_URL
  */
-task buildDocker(type: Docker, dependsOn: war) {
-    applicationName = contextName
+
+docker {
+    url = 'http://localhost:2376'
+    certPath = new File(System.properties['user.home'], '.docker')
+}
+
+task dockerFile(type: Dockerfile, dependsOn: war) {
     
-    setEnvironment("CHEMCENTRAL_DB_SERVER", "db") // assumes the db alias is used when linking. If not override with a -e argument
-    setEnvironment("RABBITMQ_HOST", "rabbitmq")   // assumes the rabbitmq alias is used when linking. If not override with a -e argument
-    setEnvironment('CHEMCENTRAL_DB_PORT', '5432')
-    setEnvironment("CHEMAXON_LICENSE_URL", "/external/license.cxl")
+    copy{
+        from "../../../data/licenses/license.cxl"
+        into 'build'
+    }
+    
+    destFile = project.file('build/Dockerfile')
+    from "tomcat:7-jre8"
+    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
+    
+    addFile('license.cxl', 'license.cxl')
+    environmentVariable("CHEMCENTRAL_DB_SERVER", "db") // assumes the db alias is used when linking. If not override with a -e argument
+    environmentVariable("RABBITMQ_HOST", "rabbitmq")   // assumes the rabbitmq alias is used when linking. If not override with a -e argument
+    environmentVariable('CHEMCENTRAL_DB_PORT', '5432')
+    environmentVariable("CHEMAXON_LICENSE_URL", "/license.cxl")
     
     runCommand("rm -rf /usr/local/tomcat/webapps/*")
     
     def warFile = tasks.war.outputs.files.singleFile
-    addFile(warFile, "/usr/local/tomcat/webapps/${contextName}.war")
+    addFile('libs/core-services/' + warFile.name, "/usr/local/tomcat/webapps/${contextName}.war")
     
     exposePort(8080)
+}
+
+task dockerImage(type: DockerBuildImage) {
+    dependsOn war, dockerFile
+    inputDir = dockerFile.destFile.parentFile
+    tag = "timdudgeon/" + contextName
 }
 
 

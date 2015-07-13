@@ -19,15 +19,11 @@ RUN apt-get update && apt-get install -y postgresql-9.4 postgresql-client-9.4 po
 # Run the rest of the commands as the ``postgres`` user created by the ``postgres-9.4`` package when it was ``apt-get installed``
 USER postgres
 
-# Create a PostgreSQL role named ``docker`` with ``docker`` as the password and
-# then create a database `docker` owned by the ``docker`` role.
-# Note: here we use ``&&\`` to run commands one after the other - the ``\``
-#       allows the RUN command to span multiple lines.
-RUN    /etc/init.d/postgresql start &&\
-    psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
-    psql --command "CREATE USER tester WITH PASSWORD 'lacrocks!';" &&\
-    createdb -O docker docker &&\
-    createdb -O tester unittest
+# Create a PostgreSQL role named ``tester`` with ``lacrocks`` as the password
+RUN /etc/init.d/postgresql start &&\
+  psql --command "CREATE USER tester WITH PASSWORD 'lacrocks';" &&\
+  createdb -O tester unittest &&\
+  psql -d unittest --command "CREATE SCHEMA users AUTHORIZATION tester;"
 
 
 # Adjust PostgreSQL configuration so that remote connections to the

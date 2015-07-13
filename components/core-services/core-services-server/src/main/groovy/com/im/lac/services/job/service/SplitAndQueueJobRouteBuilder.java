@@ -14,10 +14,10 @@ import org.apache.camel.util.toolbox.AggregationStrategies;
 
 public class SplitAndQueueJobRouteBuilder extends RouteBuilder {
 
+    private String mqHostname = null;
     private String mqVirtualHost = null;
     private String mqUsername = null;
     private String mqPassword = null;
-    
 
     private static final Logger LOG = Logger.getLogger(SplitAndQueueJobRouteBuilder.class.getName());
 
@@ -25,23 +25,22 @@ public class SplitAndQueueJobRouteBuilder extends RouteBuilder {
     public static final String ROUTE_FETCH_AND_DISPATCH = "seda:queueProcessDatasetSubmit";
     public static final String ENDPOINT_SPLIT_AND_SUBMIT = "seda:splitAndSubmit";
     public static final String DUMMY_MESSAGE_QUEUE = "rabbitmq";
-    
-    
+
     SplitAndQueueJobRouteBuilder() {
-        
+
     }
-    
-    
-   SplitAndQueueJobRouteBuilder(String mqVirtualHost, String mqUsername, String mqPassword) {
+
+    SplitAndQueueJobRouteBuilder(String mqHostname, String mqVirtualHost, String mqUsername, String mqPassword) {
+        this.mqHostname = mqHostname;
         this.mqVirtualHost = mqVirtualHost;
         this.mqUsername = mqUsername;
         this.mqPassword = mqPassword;
     }
-    
+
     @Override
     public void configure() throws Exception {
 
-        MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials(null, mqUsername, mqPassword, mqVirtualHost, null);
+        MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials(mqHostname, mqUsername, mqPassword, mqVirtualHost, null);
         String mqueueUrl = getRabbitMQUrl(rabbitmqCredentials);
         LOG.log(Level.INFO, "Using RabbitMQ URL of {0}", mqueueUrl);
 

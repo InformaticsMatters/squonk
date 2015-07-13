@@ -1,0 +1,712 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--PLEASE DO NOT MODIFY THIS FILE AND BE AWARE THAT THE FILE CONTAINS CONFIDENTIAL INFORMATION.-->
+<ChemAxon>
+<License>
+<Field Name="Software" Value="Marvin Applets"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC4CFQCT5d0UAinvBvaFi5zkDX7f/cRE7AIVAIa6toWuCyTNy2CwJL25RaafEz3+"/>
+</License>
+<License>
+<Field Name="Software" Value="Marvin Beans"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFF50eJTb9w9l8OZXSNreEV+q0Ic6AhQvQjzz9bCCt8PfBDO5GxVyITxfqA=="/>
+</License>
+<License>
+<Field Name="Software" Value="Instant JChem"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="B/S/P/E" Value="Enterprise"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFC65Ymn5P9NPJ3onQBxIV65QvF/GAhRJBrPCVSrdXqvfy1DRO0zbpi0eQw=="/>
+</License>
+<License>
+<Field Name="Software" Value="JChem Base"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Restriction Name="Search/Min" Value="Unlimited"/>
+<Signature Value="MCwCFEF7oqBDpH5b1r+a8CHEfQAG8CtkAhQD2vZz3Nt63+KDR7zaxfxeD7q1+g=="/>
+</License>
+<License>
+<Field Name="Software" Value="JChem Cartridge"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFFhPQ5Cowzg46K5fwrVaIIDgqzbAAhQeDlFxU/MG6kjj6T2lEaygMxy/NA=="/>
+</License>
+<License>
+<Field Name="Software" Value="Standardizer"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="B/S/P/E" Value="Standard"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFQCNNmD3wXSaeSA6FdfxYi2JmeJpGgIUNp5UmjvRako2fsAMhbLc4LIt6B0="/>
+</License>
+<License>
+<Field Name="Software" Value="Screen"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFCwlFIu4SisyslRiC7Rc97cWgcoLAhQypxw35NvJ0xVNrjWBOuqWk4Z6Sw=="/>
+</License>
+<License>
+<Field Name="Software" Value="Reactor"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFADF9j4Tbgnyr7VZNMYb5it4XV3kAhQp14cDl6HTkCGTrFct/3kj94BYPA=="/>
+</License>
+<License>
+<Field Name="Software" Value="Fragmenter"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFQCE2DN/E1urB7E03nS0JDBdSLBtugIUa5JLv9eJ1xQpjSkepPYYPSJ39Iw="/>
+</License>
+<License>
+<Field Name="Software" Value="JKlustor"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="B/S/P/E" Value="Standard"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFQCU0sFSgcKPGcJF1eeHF0Pm7ds3uQIUU8CgRqIEgONfTiEV5Psz9KUBZzc="/>
+</License>
+<License>
+<Field Name="Software" Value="Metabolizer"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFAoRe6GpOVNV+OqgVUzgniNHlShmAhQ5L/CQ2L7Sg+LupIf5SD5LHRLWoA=="/>
+</License>
+<License>
+<Field Name="Software" Value="Markush Search"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFHs9U88gtkLCKQ/q++maXTqUvvbbAhRvT2ZZqj4YnwUYTUt2Aan5yERtkg=="/>
+</License>
+<License>
+<Field Name="Software" Value="Protonation Plugin Group"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFG3DkWYl1QOsqQ+XQ6mYhELOcH+oAhUAkDYP0cS6CFElNgIqTpeuP1d7xpU="/>
+</License>
+<License>
+<Field Name="Software" Value="Partitioning Plugin Group"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFAfty8IqbXfESBXhnNB5tw1ZSXehAhQrTETUNgOGzJpdWPlk7u+guVxukg=="/>
+</License>
+<License>
+<Field Name="Software" Value="Charge Plugin Group"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFCHQzJt+tAHN+D/TVMqbneyNlPo1AhUAhuycbCAYH6r/kJuh23+yqO2C5sk="/>
+</License>
+<License>
+<Field Name="Software" Value="Isomers Plugin Group"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFB5xATaXdXRKBgPprJMRd8+4tFQJAhQTff5wiYDak5rGtf/0m9oADl8xVw=="/>
+</License>
+<License>
+<Field Name="Software" Value="Conformation Plugin Group"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFC6pcfja4ZKZyOdMaQUrjWmonOVUAhQLDix2BvIMtOtu4agj8mu2bp5HqA=="/>
+</License>
+<License>
+<Field Name="Software" Value="Geometry Plugin Group"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFQCHAZmxdsy6Z9oQgTXYY8MEuQ1JCAIUKeQQlz+3xMtE7NffCF5rWtL0fDk="/>
+</License>
+<License>
+<Field Name="Software" Value="Huckel Analysis Plugin"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFCi4UQHyVHuww05JwFI8P7IDCvmiAhUAgnvObeV37H/tHby9PeGXIvfnJGc="/>
+</License>
+<License>
+<Field Name="Software" Value="Refractivity Plugin"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFGZqx9DB0HJUbVEGCHHTK8eMuve5AhUAkVnxbPd2pTm2bJLdEyPjITUrSiQ="/>
+</License>
+<License>
+<Field Name="Software" Value="HBDA Plugin"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFG8qTVnX+nvJ8vxWXsqqzm8CkPVkAhR3EblvGDoVgOLULzOoHHcikyQvyA=="/>
+</License>
+<License>
+<Field Name="Software" Value="Markush Enumeration Plugin"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFBSsiH1EunubYl/tn05c1AQ8e6K0AhQmgGTjbL3CJy1LQFeVt/jhLHIICQ=="/>
+</License>
+<License>
+<Field Name="Software" Value="Structure to Name Plugin"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="5"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFQCAvGoQYAD/lFr/+65zvG2TKwrpyAIUWjoiciDpCIWqGysBsSVUDzyFRro="/>
+</License>
+<License>
+<Field Name="Software" Value="Name to Structure"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFGLNxXW66syAxJX0BxLMw6m0/xA3AhRVLMGF9H38gUldAhk8kcKGR0NhzA=="/>
+</License>
+<License>
+<Field Name="Software" Value="JChem for Excel"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFArvmV5uhdVniO8bMthKeyFvcG8gAhQLCAIx2jIm6v9FYmkhqRbmlQQ5Lw=="/>
+</License>
+<License>
+<Field Name="Software" Value="Structure Search"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCsCFC4dEMu9GScLrCIaocHrGygkGaD7AhN671TEMv/T2PZ2OhOJD514y255"/>
+</License>
+<License>
+<Field Name="Software" Value="IUPAC naming plugin"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFD9iD/TNzxMVn4pKs7mtgOdjHw8TAhUAkcReTdGr+SRPCQQLD9IcIbFKJeE="/>
+</License>
+<License>
+<Field Name="Software" Value="Calculations Pack"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFEHBSgkwncdyOowV1xX+aqNasTrTAhRl1Kc6pdjjtoejyHmt8sGu3aB5+g=="/>
+</License>
+<License>
+<Field Name="Software" Value="Web Services Server"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFEmRXv9HUyNLhS+6IlTCDwgBMKjSAhUAjcT3vyXjrO3FXMGnl+sopo66mYg="/>
+</License>
+<License>
+<Field Name="Software" Value="Structural Frameworks Plugin"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFAIfeRlwPUMZKN63w4hoTgL+OvDbAhRN8mDE3NrbSyul9U30SQjm++52kA=="/>
+</License>
+<License>
+<Field Name="Software" Value="Structure Checker"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFBR9B7Lo2dXq1qok8wMn22q5SuvHAhQGKWYIROkzX2JuVOnWOXGeY7Jj8A=="/>
+</License>
+<License>
+<Field Name="Software" Value="Predictor Plugin"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFQCBGZ24GUyHCyTEslxpq0g7crHsMAIUCTc7wmRby55Hab76QqS6W8xPPcM="/>
+</License>
+<License>
+<Field Name="Software" Value="MCES"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFQCUL+QLVXq2MYuo6rx+IiS31md5+gIUCaMjr9gy8FaQfEI7924UwUQ69h4="/>
+</License>
+<License>
+<Field Name="Software" Value="3D Alignment"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFFLQYRUSle4aT39bkImn2ZCfoQrAAhQyH6y1sY7V6soCeDJF0z1QXUESHQ=="/>
+</License>
+<License>
+<Field Name="Software" Value="3D Screen"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFD2rF/5Zhs9qzYFhJdLCICJ59KsFAhRZECmoZ1XfxEZlFvB8eyeMdxoVlw=="/>
+</License>
+<License>
+<Field Name="Software" Value="Molecular Descriptors"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFQCPthdvcv2Hqi0SknDivxgvwGgrSwIUPeB1B8LeJFWTWzMfeWh2KtEKpxg="/>
+</License>
+<License>
+<Field Name="Software" Value="Instant JChem VIZ"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFFibJp7YFCe4Y3tPDYZhSUarJbK6AhRASiV0To8mD3iYTpRg1drlOL+MKQ=="/>
+</License>
+<License>
+<Field Name="Software" Value="ECFP/FCFP"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFCbBSmdTf2oz9t30MUXs9Z9a7rzAAhQYGlOACNUycED3m+qv1rWEpd79Uw=="/>
+</License>
+<License>
+<Field Name="Software" Value="SharePoint"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFCpNNYsquKwDFe0AyVLQTjBCGNZgAhUAhTIIXhKgP5RKtUIPMi3+nDdp6a0="/>
+</License>
+<License>
+<Field Name="Software" Value="Document to Structure"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFCU9zZbhtOsW3+lBWeN/ET/ivKsGAhRzjxiuUrYnpU/u8ZDsh7lnZJtnnw=="/>
+</License>
+<License>
+<Field Name="Software" Value="Registration System"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFCcOC66a+Mty6W9L+v2VUXj9xn9xAhQXSn1WtFm0mpdjjIOSGfraPsexVQ=="/>
+</License>
+<License>
+<Field Name="Software" Value="Structure to Name"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFQCNAKzP18CkerZnkk7cqGWVFhc9vwIUMVznH3HrEKkYzOTzUI/HRjMnQk8="/>
+</License>
+<License>
+<Field Name="Software" Value="NMR Predictor"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFGhj82SdOsAn+3lgbmsE004kvbBTAhQ9gCU2SE/jFRMhppkdjgoYZHqNpA=="/>
+</License>
+<License>
+<Field Name="Software" Value="JChem for SharePoint"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFQCR6/+8qh4fb3eUfU3Vz2DI8ex6ZgIULFREE4ZAUEo6EZ5auOvcKWW9AqM="/>
+</License>
+<License>
+<Field Name="Software" Value="JChem for SharePoint Search"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFBa0V5tgo6O0g2R6wzehZNZw/wsRAhR2iSWreb8D/zhzoWIJGNQSRvojjA=="/>
+</License>
+<License>
+<Field Name="Software" Value="Chinese Name to Structure"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFH+dIJZyxcj1bxqH7GemgrGw1ys2AhR6QKk4gd0fn5Qj7mHOY7mPE85a2w=="/>
+</License>
+<License>
+<Field Name="Software" Value="Plexus"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFQCS73LiX8akNjZYgqW5pXNULPM0TwIUarzB++5i4H4iWy2TWaAIFa04sQg="/>
+</License>
+<License>
+<Field Name="Software" Value="Instant JChem Server"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFGxtYNBp2IfGXVtjQeO2H1PTrRG0AhRRXzoiTnb7thKULSKDot7k1afSnQ=="/>
+</License>
+<License>
+<Field Name="Software" Value="JChem for Office"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFBPewgnYDLiSA91XX1StUwMslrkIAhRvcbS7vjZOo9T8aO7WgP7QMP1B0Q=="/>
+</License>
+<License>
+<Field Name="Software" Value="Document to Database"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFF2LGXzRrd3Z22l821q6Ndphx++9AhQLV8vVau07t0jZDO4yM+kSwvbTxQ=="/>
+</License>
+<License>
+<Field Name="Software" Value="Markush Editor"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFAWRW/qflWk/UQX0hQpCCTBmNljcAhRu8AT94SGTOvDZp2Bh8rSLxhApcg=="/>
+</License>
+<License>
+<Field Name="Software" Value="ChemCurator Full"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFAMrEse+78UJXznNrb1jBMhxiv9JAhRzHwLd07T3hYDvUE7zj0/uODyXHA=="/>
+</License>
+<License>
+<Field Name="Software" Value="Japanese Name to Structure"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFBY4OZaxWMMFEip1YmBRgKHZfKtDAhUAlfdzdWEz3k/MMDrGvy8fRWXEktE="/>
+</License>
+<License>
+<Field Name="Software" Value="Solubility Plugin"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFQCOxnGs895kT47j82r4Rgf0RwjhBAIUZbyxfXNkpWl4jnD4ieKCZMAmCnQ="/>
+</License>
+<License>
+<Field Name="Software" Value="Overlap"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFQCNTd2kk5n+dEaMEey/+4NxwCz+TQIUahFhVcQyFKAr9FmYogUdChz5q1U="/>
+</License>
+<License>
+<Field Name="Software" Value="Biomolecule Toolkit"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MC0CFQCOnTTxFlQjAvSLi/T5yaiYFdFbzAIUPwltGBGqMDFECWkxebyZPU5nR14="/>
+</License>
+<License>
+<Field Name="Software" Value="Plexus Connect"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFGlGPwAGgWCtPHthkSAzhVhD8VHXAhR+CXNJ5SGiMsRPwYsAvaeBgfjPeA=="/>
+</License>
+<License>
+<Field Name="Software" Value="Plexus Design"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFB16MGPe+HI8XgxgvscKvjBDtkXzAhR+ogvXY7EKpAAJ/JZpCFKE1c7KjA=="/>
+</License>
+<License>
+<Field Name="Software" Value="Plexus Analysis"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFA7i60bch84H6kQ8jcqEE1SNh+S/AhRfL929k/2b0lwZnvo5/70ay8X8VQ=="/>
+</License>
+<License>
+<Field Name="Software" Value="Plexus Registration"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFBZctDgha3HOuxDnI5DWEr0F6Nn+AhQEfyQygFouHI+roXzRhKEOnwDBKQ=="/>
+</License>
+<License>
+<Field Name="Software" Value="ChemCurator Compound"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFBR2eCO4utFksVED4PZy5H19saVkAhRgO71URyDmtaOZD1B6aD3m1y90/Q=="/>
+</License>
+<License>
+<Field Name="Software" Value="ChemCurator Viewer"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFGNR4xxyCuAqdMO23NKR5FcbOMiyAhQEYaQLWto8kHPs6fA9rlWp5tngvw=="/>
+</License>
+<License>
+<Field Name="Software" Value="Marvin Live"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFCIYBPdMSISA+S41L8ykZuR65ysrAhQx5WIpCPQwkucWBQGpRskLcv4qmA=="/>
+</License>
+<License>
+<Field Name="Software" Value="Postgres Cartridge"/>
+<Field Name="License Term" Value="VAR Developer License"/>
+<Field Name="Licensee" Value="Informatics Matters"/>
+<Field Name="Number of Users" Value="Unlimited"/>
+<Field Name="Expiration Date" Value="2016-03-11"/>
+<Field Name="Support Expiration Date" Value="2016-03-11"/>
+<Field Name="Comment" Value="null"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFAR5rBj18qQB4agZJ7NMxdJBTForAhRWFiHlvwRSQuSgnExs12QAWzyVYg=="/>
+</License>
+</ChemAxon>

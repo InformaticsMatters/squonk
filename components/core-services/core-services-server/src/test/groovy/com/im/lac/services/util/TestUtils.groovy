@@ -13,6 +13,8 @@ import com.im.lac.services.dataset.service.*
  * @author timbo
  */
 class TestUtils {
+    
+    public final static String LAC_PASSWORD = 'lacrocks' 
         
     static List<Long> createTestData(DatasetHandler handler) {
 
@@ -28,12 +30,7 @@ class TestUtils {
     }
     
     static DataSource createTestDataSource() {
-        
-        String pw = System.getenv('LAC_TESTUSER_PASSWORD')
-        if (pw == null) {
-            throw new IllegalStateException("Environment variable LAC_TESTUSER_PASSWORD not defined")
-        }
-        return Utils.createDataSource(null, null, 'unittest', "tester", pw)
+        return Utils.createDataSource(null, null, 'unittest', "tester", LAC_PASSWORD)
     }
 	
 }
