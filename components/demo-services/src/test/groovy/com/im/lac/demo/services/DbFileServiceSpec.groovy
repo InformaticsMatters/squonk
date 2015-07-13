@@ -21,18 +21,14 @@ class DbFileServiceSpec extends Specification {
     
     DataSource createDataSource() {
         
-        String pw = System.getenv('LAC_TESTUSER_PASSWORD')
-        if (pw == null) {
-            throw new IllegalStateException("Environment variable LAC_TESTUSER_PASSWORD not defined")
-        }
         
         PGSimpleDataSource ds = new PGSimpleDataSource()
         
-        ds.serverName = System.getenv("CHEMCENTRAL_DB_SERVER") ?: 'localhost'
-        ds.portNumber =  new Integer(System.getenv("CHEMCENTRAL_DB_PORT") ?: '5432')
+        ds.serverName = 'localhost'
+        ds.portNumber =  5432
         ds.databaseName = 'unittest'
         ds.user = 'tester'
-        ds.password =  pw
+        ds.password = 'lacrocks'
 
         return ds;
     }
