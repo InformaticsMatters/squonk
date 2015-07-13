@@ -14,3 +14,9 @@ task copyDependencies(type: Copy) {
     from configurations.compile
     into 'lib'
 }
+
+test {
+    dependsOn rootProject.tasks.dbTestEnvPrepare
+    finalizedBy rootProject.tasks.dbTestEnvShutdown
+}
+

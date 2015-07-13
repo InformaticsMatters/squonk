@@ -70,6 +70,11 @@ task integrationTestEnvPrepare(type:Exec) {
     commandLine 'bash', 'int-test-env-prepare.sh'
 }
 
+task integrationTestEnvPrepareAndClean(type:Exec) {
+    dependsOn integrationTestEnvPrepare
+    commandLine 'bash', '../docker/int-test-env-clean.sh'
+}
+
 task integrationTestEnvShutdown(type:Exec) { 
     workingDir '../docker'
     commandLine 'bash', 'int-test-env-shutdown.sh'
@@ -78,4 +83,18 @@ task integrationTestEnvShutdown(type:Exec) {
 task integrationTestEnvClean(type:Exec) { 
     commandLine 'bash', '../docker/int-test-env-clean.sh'
 }
+
+
+task dbTestEnvPrepare(type:Exec) {
+    dependsOn "core-services/core-services-server:dockerFile"
+    workingDir '../docker'
+    commandLine 'bash', 'db-test-env-prepare.sh'
+}
+
+task dbTestEnvShutdown(type:Exec) {
+    dependsOn "core-services/core-services-server:dockerFile"
+    workingDir '../docker'
+    commandLine 'bash', 'db-test-env-shutdown.sh'
+}
+
 

@@ -121,5 +121,8 @@ task dockerImage(type: DockerBuildImage) {
     tag = "timdudgeon/" + contextName
 }
 
-
+test {
+    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean
+    finalizedBy rootProject.tasks.integrationTestEnvShutdown
+}
 
