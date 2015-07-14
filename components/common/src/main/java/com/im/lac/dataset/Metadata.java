@@ -2,6 +2,7 @@ package com.im.lac.dataset;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +12,7 @@ import java.util.Map;
  * @author timbo
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class Metadata {
+public class Metadata implements Serializable {
 
     public enum Type {
 

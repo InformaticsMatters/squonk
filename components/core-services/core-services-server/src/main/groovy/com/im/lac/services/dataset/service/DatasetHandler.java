@@ -27,7 +27,7 @@ import org.apache.camel.util.IOHelper;
  *
  * @author timbo
  */
-public class DatasetHandler {
+public class DatasetHandler implements ServerConstants {
 
     private static final Logger LOG = Logger.getLogger(DatasetHandler.class.getName());
 
@@ -46,7 +46,7 @@ public class DatasetHandler {
     }
 
     static DatasetHandler getDatasetHandler(CamelContext context) {
-        return context.getRegistry().lookupByNameAndType(ServerConstants.DATASET_HANDLER, DatasetHandler.class);
+        return context.getRegistry().lookupByNameAndType(DATASET_HANDLER, DatasetHandler.class);
     }
 
     public static void putDataItems(Exchange exchange) throws Exception {
@@ -60,9 +60,9 @@ public class DatasetHandler {
 
     public static void putDataItem(Exchange exchange) throws Exception {
         DatasetHandler dh = getDatasetHandler(exchange);
-        Long datasetId = exchange.getIn().getHeader(ServerConstants.REST_DATASET_ID, Long.class);
+        Long datasetId = exchange.getIn().getHeader(REST_DATASET_ID, Long.class);
         if (datasetId == null) {
-            throw new IllegalArgumentException("Header " + ServerConstants.REST_DATASET_ID + " not defined. Don't know which dataset to fetch.");
+            throw new IllegalArgumentException("Header " + REST_DATASET_ID + " not defined. Don't know which dataset to fetch.");
         }
         DataItem dataItem = dh.fetchDataItem(datasetId);
         if (dataItem == null) {
@@ -77,7 +77,7 @@ public class DatasetHandler {
 
     public static void deleteDataset(Exchange exchange) throws Exception {
         DatasetHandler dh = getDatasetHandler(exchange);
-        Long datasetId = exchange.getIn().getHeader(ServerConstants.REST_DATASET_ID, Long.class);
+        Long datasetId = exchange.getIn().getHeader(REST_DATASET_ID, Long.class);
         dh.deleteDataset(datasetId);
     }
 
@@ -107,7 +107,7 @@ public class DatasetHandler {
 
     public static void putJsonForDataset(Exchange exchange) throws Exception {
         DatasetHandler dh = getDatasetHandler(exchange);
-        Long datasetId = exchange.getIn().getHeader(ServerConstants.REST_DATASET_ID, Long.class);
+        Long datasetId = exchange.getIn().getHeader(REST_DATASET_ID, Long.class);
         JsonProcessingHolder holder = dh.fetchJsonForDataset(datasetId);
         exchange.getIn().setBody(holder);
     }

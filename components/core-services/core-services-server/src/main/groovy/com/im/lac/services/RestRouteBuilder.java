@@ -6,9 +6,12 @@ import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.IOUtils;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition;
+import com.im.lac.job.jobdef.DoNothingJobDefinition;
+import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.SplitAndQueueProcessDatasetJobDefinition;
 import com.im.lac.services.dataset.service.DatasetHandler;
+import com.im.lac.services.job.service.DoNothingJob;
 import com.im.lac.services.job.service.JobHandler;
 import com.im.lac.services.job.service.JobServiceRouteBuilder;
 import java.io.InputStream;
@@ -24,7 +27,7 @@ import org.apache.camel.model.rest.RestBindingMode;
  *
  * @author timbo
  */
-public class RestRouteBuilder extends RouteBuilder {
+public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
 
     private static final Logger LOG = Logger.getLogger(RestRouteBuilder.class.getName());
 
@@ -63,7 +66,7 @@ public class RestRouteBuilder extends RouteBuilder {
                 .to("direct:datasets/upload")
                 // 
                 // DELETE
-                .delete("/{item}").description("Deletes the dataset specified by the ID")
+                .delete("/{" + REST_DATASET_ID + "}").description("Deletes the dataset specified by the ID")
                 .route()
                 .process((Exchange exch) -> DatasetHandler.deleteDataset(exch))
                 .transform(constant("OK"))
@@ -78,7 +81,7 @@ public class RestRouteBuilder extends RouteBuilder {
                 .endRest()
                 //
                 // GET DataItem for one
-                .get("/{item}/dataitem").description("Gets a description of the dataset specified by the ID as JSON")
+                .get("/{" + REST_DATASET_ID + "}/dataitem").description("Gets a description of the dataset specified by the ID as JSON")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(DataItem.class)
                 .route()
@@ -86,7 +89,7 @@ public class RestRouteBuilder extends RouteBuilder {
                 .endRest()
                 //
                 // GET content for item
-                .get("/{item}/content").description("Gets the actual data content specified by the ID as JSON")
+                .get("/{" + REST_DATASET_ID + "}/content").description("Gets the actual data content specified by the ID as JSON")
                 .bindingMode(RestBindingMode.off).produces("application/json")
                 .route()
                 .process((Exchange exch) -> DatasetHandler.putJsonForDataset(exch))
@@ -96,6 +99,7 @@ public class RestRouteBuilder extends RouteBuilder {
         rest("/v1/jobs").description("Job submission and management services")
                 //
                 // GET statuses
+                // TODO - handle filter criteria
                 .get("/").description("Get the statuses of jobs")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(JobStatus.class)
@@ -103,24 +107,40 @@ public class RestRouteBuilder extends RouteBuilder {
                 .process((Exchange exch) -> JobHandler.putJobStatuses(exch))
                 .endRest()
                 //
+                // GET status
+                .get("/{" + REST_JOB_ID + "}").description("Get the latest status of an individual job")
+                .bindingMode(RestBindingMode.json).produces("application/json")
+                .outType(JobStatus.class)
+                .route()
+                .process((Exchange exch) -> JobHandler.putUpdatedJobStatus(exch))
+                .endRest()
+                //
                 // POST new async process dataset job
                 // can be testing by posing JSON like this: 
                 // {"endpoint": "direct:simpleroute", "datasetId": 44, "mode": "CREATE", "datasetName": "holy cow","resultType": "com.im.lac.types.MoleculeObject"}
-                .post("/asyncProcessDataset").description("Submit a new async process dataset job")
+                .post().description("Submit a new job defined the by the supplied JobDefinition")
                 .bindingMode(RestBindingMode.json)
-                .consumes("application/json").type(AsyncLocalProcessDatasetJobDefinition.class)
+                .consumes("application/json").type(JobDefinition.class)
                 .produces("application/json").outType(JobStatus.class)
                 .route()
-                .log("REST POST asyncProcessDataset ${body}")
+                .log("REST POST jobdef: ${body}")
                 .to(JobServiceRouteBuilder.ROUTE_SUBMIT_JOB)
-                .endRest()
-                //
-                // POST new split and queue job
-                .post("/splitAndQueueProcessDataset").description("Submit a new split and queue job")
-                .bindingMode(RestBindingMode.json)
-                .consumes("application/json").type(SplitAndQueueProcessDatasetJobDefinition.class)
-                .produces("application/json").outType(JobStatus.class)
-                .to(JobServiceRouteBuilder.ROUTE_SUBMIT_JOB);
+                .endRest();
+//                //
+//                // POST new split and queue job
+//                .post("/splitAndQueueProcessDataset").description("Submit a new split and queue job")
+//                .bindingMode(RestBindingMode.json)
+//                .consumes("application/json").type(SplitAndQueueProcessDatasetJobDefinition.class)
+//                .produces("application/json").outType(JobStatus.class)
+//                .to(JobServiceRouteBuilder.ROUTE_SUBMIT_JOB)
+//                //
+//                // POST new DoNothingJobDefintion
+//                .post("/doNothingJob").description("Noop job for testing. Does nothing but returns a status")
+//                .bindingMode(RestBindingMode.json)
+//                .consumes("application/json").type(DoNothingJobDefinition.class)
+//                .produces("application/json").outType(JobStatus.class)
+//                .to(JobServiceRouteBuilder.ROUTE_DO_NOTHING);
+
 
         /* These are the implementation endpoints - not accessible directly from "outside"
          */

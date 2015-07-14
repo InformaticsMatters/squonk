@@ -1,13 +1,13 @@
 package com.im.lac.job.client;
 
-import com.im.lac.dataset.DataItem;
-import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition;
+import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.types.io.JsonHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.apache.http.HttpEntity;
@@ -78,21 +78,21 @@ public class JobClient {
     }
 
     /**
-     * Submit this as a new Job for asynchronously processing a dataset using a local route
+     * Submit this as a new Job
      *
      * @param jobdef The definition of the job
      * @return The status of the submitted job, which includes the job ID that can be used to
      * further monitor and handle the job.
-     * @throws java.lang.Exception
+     * @throws java.io.IOException
      */
-    public JobStatus submitJob(AsyncLocalProcessDatasetJobDefinition jobdef) throws Exception {
+    public JobStatus submitJob(JobDefinition jobdef) throws IOException {
 
         String json = jsonHandler.objectToJson(jobdef);
         HttpPost httpPost = new HttpPost(base);
         httpPost.setEntity(new StringEntity(json));
-
+        LOG.log(Level.INFO, "submitting job {0} to {1}", new Object[]{jobdef, base} );
         try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
-            LOG.fine(response.getStatusLine().toString());
+            LOG.info(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
             InputStream is = entity.getContent();
             return jsonHandler.objectFromJson(is, JobStatus.class);
@@ -104,9 +104,16 @@ public class JobClient {
      *
      * @param jobId
      * @return
+     * @throws java.io.IOException
      */
-    public JobStatus getStatus(String jobId) {
-        throw new UnsupportedOperationException("NYI");
+    public JobStatus getJobStatus(String jobId) throws IOException {
+       HttpGet httpGet = new HttpGet(base + "/" + jobId);
+        try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
+            LOG.fine(response.getStatusLine().toString());
+            HttpEntity entity = response.getEntity();
+            InputStream is = entity.getContent();
+            return jsonHandler.objectFromJson(is, JobStatus.class);
+        }
     }
 
     /**
@@ -116,7 +123,7 @@ public class JobClient {
      * @param jobId
      * @return
      */
-    public JobStatus cancel(String jobId) {
+    public JobStatus cancel(String jobId) throws Exception {
         throw new UnsupportedOperationException("NYI");
     }
 

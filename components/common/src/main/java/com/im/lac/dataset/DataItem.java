@@ -1,12 +1,13 @@
 package com.im.lac.dataset;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 /**
  *
  * @author timbo
  */
-public class DataItem {
+public class DataItem implements Serializable {
     
     public static final String HEADER_DATA_ITEM_NAME = "DataItemName";
 

@@ -3,9 +3,7 @@ package com.im.lac.services.job.service;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.dataset.DataItem;
 import com.im.lac.job.jobdef.DatasetJobDefinition;
-import com.im.lac.services.job.Job;
 import java.util.Date;
-import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
@@ -13,11 +11,11 @@ import java.util.logging.Logger;
  * @author timbo
  * @param <T>
  */
-public abstract class AbstractDatasetJob<T extends DatasetJobDefinition> implements Job<T> {
+public abstract class AbstractDatasetJob<T extends DatasetJobDefinition> extends AbstractJob<T> {
 
     private static final Logger LOG = Logger.getLogger(AbstractDatasetJob.class.getName());
 
-    protected final String jobId;
+    private final T jobdef;
 
     protected JobStatus.Status status = JobStatus.Status.PENDING;
     protected DataItem result;
@@ -26,31 +24,14 @@ public abstract class AbstractDatasetJob<T extends DatasetJobDefinition> impleme
     protected int pendingCount;
     protected Date started;
     protected Date completed;
-    protected T jobdef;
     protected Exception exception;
 
     protected AbstractDatasetJob(T jobdef) {
-        jobId = UUID.randomUUID().toString();
+        super();
         this.jobdef = jobdef;
-
-    }
-
-    protected AbstractDatasetJob(
-            String jobId,
-            T jobdef,
-            int totalCount,
-            int processedCount) {
-        this.jobId = jobId;
-        this.jobdef = jobdef;;
-        this.totalCount = totalCount;
-        this.processedCount = processedCount;
     }
 
     @Override
-    public String getJobId() {
-        return jobId;
-    }
-
     public T getJobDefinition() {
         return jobdef;
     }
@@ -92,6 +73,5 @@ public abstract class AbstractDatasetJob<T extends DatasetJobDefinition> impleme
     public DataItem getResult() {
         return result;
     }
-
 
 }

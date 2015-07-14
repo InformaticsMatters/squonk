@@ -17,5 +17,7 @@ public interface Job<T extends JobDefinition> {
     JobStatus getUpdatedJobStatus();
 
     JobStatus.Status getStatus();
+    
+    T getJobDefinition();
 
 }

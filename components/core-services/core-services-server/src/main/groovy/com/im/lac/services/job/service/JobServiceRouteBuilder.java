@@ -1,6 +1,10 @@
 package com.im.lac.services.job.service;
 
+import com.im.lac.job.jobdef.DoNothingJobDefinition;
+import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.services.camel.CamelLifeCycle;
+import com.im.lac.services.job.Job;
+import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 
@@ -13,6 +17,7 @@ public class JobServiceRouteBuilder extends RouteBuilder {
     protected static final String ROUTE_ROUTING_SLIP_HEADER = "JobSubmitRoutingSlip";
     public static final String ROUTE_SUBMIT_JOB = "seda:submitJob";
     protected static final String ROUTE_SUBMIT_PREFIX = "seda:job_submit_";
+    public static final String ROUTE_DO_NOTHING = ROUTE_SUBMIT_PREFIX + DoNothingJobDefinition.class.getName();
 
     @Override
     public void configure() throws Exception {
@@ -20,6 +25,7 @@ public class JobServiceRouteBuilder extends RouteBuilder {
         // This is the entrypoint. Send your JobDefintion here to be executed.
         // Sends the job for execution and returns immediately with the appropriate JobStatus
         from(ROUTE_SUBMIT_JOB)
+                .log("ROUTE_SUBMIT_JOB")
                 .threads().executorServiceRef(CamelLifeCycle.CUSTOM_THREAD_POOL_NAME)
                 .setExchangePattern(ExchangePattern.InOut)
                 // body is the JobDefintion
@@ -29,6 +35,16 @@ public class JobServiceRouteBuilder extends RouteBuilder {
                 .routingSlip(header(ROUTE_ROUTING_SLIP_HEADER))
                 // body is now JobStatus
                 .log("Job submitted. Current status is ${body}");
+
+        from(ROUTE_DO_NOTHING)
+                .log("ROUTE_DO_NOTHING")
+                .process((Exchange exch) -> {
+                    DoNothingJobDefinition jobdef = exch.getIn().getBody(DoNothingJobDefinition.class);
+                    Job job = new DoNothingJob(jobdef);
+                    JobHandler.getJobStore(exch).putJob(job);
+                    JobStatus status = job.getCurrentJobStatus();
+                    exch.getIn().setBody(status);
+                });
 
     }
 }

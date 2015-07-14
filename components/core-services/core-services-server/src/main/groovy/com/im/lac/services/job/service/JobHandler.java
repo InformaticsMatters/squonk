@@ -5,7 +5,6 @@ import com.im.lac.dataset.DataItem;
 import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.DatasetJobDefinition;
-import com.im.lac.services.CommonConstants;
 import com.im.lac.services.job.Job;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,32 +17,32 @@ import org.apache.camel.Exchange;
  *
  * @author timbo
  */
-public class JobHandler {
-    
+public class JobHandler implements ServerConstants {
+
     private static final Logger LOG = Logger.getLogger(JobHandler.class.getName());
-    
+
     public static JobHandler getJobHandler(Exchange exch) {
         return getJobHandler(exch.getContext());
     }
-    
+
     public static JobHandler getJobHandler(CamelContext camelContext) {
-        return camelContext.getRegistry().lookupByNameAndType(ServerConstants.JOB_HANDLER, JobHandler.class);
+        return camelContext.getRegistry().lookupByNameAndType(JOB_HANDLER, JobHandler.class);
     }
-    
+
     public static DatasetHandler getDatasetHandler(Exchange exch) {
         return getDatasetHandler(exch.getContext());
     }
-    
+
     public static DatasetHandler getDatasetHandler(CamelContext camelContext) {
-        return camelContext.getRegistry().lookupByNameAndType(ServerConstants.DATASET_HANDLER, DatasetHandler.class);
+        return camelContext.getRegistry().lookupByNameAndType(DATASET_HANDLER, DatasetHandler.class);
     }
-    
+
     public static JobStore getJobStore(Exchange exchange) {
         return getJobStore(exchange.getContext());
     }
-    
+
     public static JobStore getJobStore(CamelContext camelContext) {
-        return camelContext.getRegistry().lookupByNameAndType(ServerConstants.JOB_STORE, JobStore.class);
+        return camelContext.getRegistry().lookupByNameAndType(JOB_STORE, JobStore.class);
     }
 
     /**
@@ -63,7 +62,7 @@ public class JobHandler {
             throw new NullPointerException("No AbstractDatasetJob found as body");
         }
         DatasetJobDefinition jobdef = job.getJobDefinition();
-        exchange.getIn().setHeader(ServerConstants.HEADER_JOB_ID, job.getJobId());
+        exchange.getIn().setHeader(REST_JOB_ID, job.getJobId());
         Object objects = datasetHandler.fetchObjectsForDataset(jobdef.getDatasetId());
         exchange.getIn().setBody(objects);
     }
@@ -78,7 +77,7 @@ public class JobHandler {
      */
     public static void saveDatasetForJob(Exchange exchange) throws Exception {
         DatasetHandler datasetHandler = getDatasetHandler(exchange);
-        String jobId = exchange.getIn().getHeader(ServerConstants.HEADER_JOB_ID, String.class);
+        String jobId = exchange.getIn().getHeader(REST_JOB_ID, String.class);
         JobStore jobStore = getJobStore(exchange);
         AbstractDatasetJob job = (AbstractDatasetJob) jobStore.getJob(jobId);
         LOG.log(Level.FINE, "Saving dataset for job {0}", jobId);
@@ -102,7 +101,7 @@ public class JobHandler {
         JobStatus status = job.buildStatus();
         exchange.getIn().setBody(status);
     }
-    
+
     public static void putJobStatuses(Exchange exchange) throws Exception {
         JobStore store = getJobStore(exchange);
         List<JobStatus> results = new ArrayList<>();
@@ -111,10 +110,12 @@ public class JobHandler {
         }
         exchange.getIn().setBody(results);
     }
-    
+
     public static void setJobStatus(Exchange exchange, JobStatus.Status status) {
         AbstractDatasetJob job = getJob(exchange, AbstractDatasetJob.class);
-        job.status = status;
+        if (job != null) {
+            job.status = status;
+        }
     }
 
     /**
@@ -124,7 +125,11 @@ public class JobHandler {
      */
     public static void putCurrentJobStatus(Exchange exchange) {
         Job job = getJob(exchange);
-        exchange.getIn().setBody(job.getCurrentJobStatus());
+        if (job == null) {
+            exchange.getIn().setBody(null);
+        } else {
+            exchange.getIn().setBody(job.getCurrentJobStatus());
+        }
     }
 
     /**
@@ -134,24 +139,26 @@ public class JobHandler {
      */
     public static void putUpdatedJobStatus(Exchange exchange) {
         Job job = getJob(exchange);
-        exchange.getIn().setBody(job.getUpdatedJobStatus());
+        if (job == null) {
+            exchange.getIn().setBody(null);
+        } else {
+            exchange.getIn().setBody(job.getUpdatedJobStatus());
+        }
     }
-    
+
     public static Job getJob(CamelContext context, String jobId) {
         JobStore store = getJobStore(context);
         return store.getJob(jobId);
     }
-    
+
     public static Job getJob(Exchange exchange) {
-        String jobId = exchange.getIn().getHeader(CommonConstants.HEADER_JOB_ID, String.class);
         JobStore store = getJobStore(exchange);
-        return store.getJob(jobId);
+        return store.getJob(exchange.getIn().getHeader(REST_JOB_ID, String.class));
     }
-    
+
     public static <T> T getJob(Exchange exchange, Class<T> type) {
-        String jobId = exchange.getIn().getHeader(CommonConstants.HEADER_JOB_ID, String.class);
         JobStore store = getJobStore(exchange);
-        return (T) store.getJob(jobId);
+        return (T) store.getJob(exchange.getIn().getHeader(REST_JOB_ID, String.class));
     }
-    
+
 }

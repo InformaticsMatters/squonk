@@ -3,7 +3,6 @@ package com.im.lac.services.job.service;
 import com.im.lac.services.ServerConstants;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.SplitAndQueueProcessDatasetJobDefinition;
-import com.im.lac.services.CommonConstants;
 import static com.im.lac.services.job.service.JobServiceRouteBuilder.ROUTE_SUBMIT_PREFIX;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,7 +11,7 @@ import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.util.toolbox.AggregationStrategies;
 
-public class SplitAndQueueJobRouteBuilder extends RouteBuilder {
+public class SplitAndQueueJobRouteBuilder extends RouteBuilder implements ServerConstants {
 
     private String mqHostname = null;
     private String mqVirtualHost = null;
@@ -49,7 +48,7 @@ public class SplitAndQueueJobRouteBuilder extends RouteBuilder {
         from(ROUTE_SPLIT_AND_QUEUE_SUBMIT)
                 // body is the jobdef
                 .log("ROUTE_SPLIT_AND_QUEUE_SUBMIT Processing dataset using queue submit ... ${body}")
-                .setHeader(ServerConstants.HEADER_DATASET_ID, simple("${body.datasetId}"))
+                .setHeader(HEADER_DATASET_ID, simple("${body.datasetId}"))
                 // create the job
                 .process((Exchange exch) -> {
                     SplitAndQueueProcessDatasetJobDefinition jobdef = exch.getIn().getBody(SplitAndQueueProcessDatasetJobDefinition.class);
@@ -57,7 +56,7 @@ public class SplitAndQueueJobRouteBuilder extends RouteBuilder {
                     job.status = JobStatus.Status.PENDING;
                     JobHandler.getJobStore(exch).putJob(job);
                     exch.getIn().setBody(job);
-                    exch.getIn().setHeader(CommonConstants.HEADER_JOB_ID, job.getJobId());
+                    exch.getIn().setHeader(REST_JOB_ID, job.getJobId());
                 })
                 // send for execution
                 .to(ExchangePattern.InOnly, ROUTE_FETCH_AND_DISPATCH)
@@ -68,7 +67,7 @@ public class SplitAndQueueJobRouteBuilder extends RouteBuilder {
                     job.status = JobStatus.Status.PENDING;
                     JobHandler.getJobStore(exch).putJob(job);
                     exch.getIn().setBody(job.buildStatus());
-                    exch.getIn().setHeader(CommonConstants.HEADER_JOB_ID, job.getJobId());
+                    exch.getIn().setHeader(REST_JOB_ID, job.getJobId());
                 })
                 // body is now JobStatus
                 .log("Queue submit complete");

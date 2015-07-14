@@ -1,5 +1,6 @@
 package com.im.lac.job.jobdef;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.im.lac.dataset.DataItem;
 import java.util.Date;
 
@@ -21,19 +22,19 @@ public class JobStatus<T extends JobDefinition> {
     private final int pendingCount;
     private final Date started;
     private final Date completed;
-    private final T jobdef;
+    private final T jobDefinition;
     private final DataItem result;
 
     public JobStatus(
-            String jobId,
-            Status status,
-            int totalCount,
-            int processedCount,
-            int pendingCount,
-            Date started,
-            Date completed,
-            T jobdef,
-            DataItem result) {
+            @JsonProperty("jobId") String jobId,
+            @JsonProperty("status") Status status,
+            @JsonProperty("totalCount") int totalCount,
+            @JsonProperty("processedCount") int processedCount,
+            @JsonProperty("pendingCount") int pendingCount,
+            @JsonProperty("started") Date started,
+            @JsonProperty("completed") Date completed,
+            @JsonProperty("jobDefinition") T jobDefinition,
+            @JsonProperty("result") DataItem result) {
         this.jobId = jobId;
         this.status = status;
         this.totalCount = totalCount;
@@ -41,7 +42,7 @@ public class JobStatus<T extends JobDefinition> {
         this.pendingCount = pendingCount;
         this.started = started;
         this.completed = completed;
-        this.jobdef = jobdef;
+        this.jobDefinition = jobDefinition;
         this.result = result;
     }
 
@@ -60,7 +61,7 @@ public class JobStatus<T extends JobDefinition> {
     public int getProcessedCount() {
         return processedCount;
     }
-    
+
     public int getPendingCount() {
         return pendingCount;
     }
@@ -74,7 +75,7 @@ public class JobStatus<T extends JobDefinition> {
     }
 
     public T getJobDefinition() {
-        return jobdef;
+        return jobDefinition;
     }
 
     public DataItem getResult() {
@@ -89,7 +90,7 @@ public class JobStatus<T extends JobDefinition> {
                 .append(" TotalCount=").append(totalCount)
                 .append(" ProcessedCount=").append(processedCount)
                 .append(" PendingCount=").append(pendingCount)
-                .append(" Job Definition=").append(jobdef);
+                .append(" Job Definition=").append(jobDefinition);
         return b.toString();
     }
 

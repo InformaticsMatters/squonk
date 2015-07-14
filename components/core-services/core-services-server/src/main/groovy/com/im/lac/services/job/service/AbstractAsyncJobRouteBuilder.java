@@ -1,15 +1,13 @@
 package com.im.lac.services.job.service;
 
-import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition;
 import com.im.lac.services.ServerConstants;
 import com.im.lac.job.jobdef.JobStatus;
-import com.im.lac.services.CommonConstants;
 import com.im.lac.services.camel.CamelLifeCycle;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 
-public abstract class AbstractAsyncJobRouteBuilder extends RouteBuilder {
+public abstract class AbstractAsyncJobRouteBuilder extends RouteBuilder implements ServerConstants {
 
     protected static final String ROUTE_ASYNC_SUBMIT = "direct:asyncSubmit";
     public static final String ROUTE_FETCH_AND_DISPATCH = "direct:asyncProcessDatasetSubmit";
@@ -32,8 +30,8 @@ public abstract class AbstractAsyncJobRouteBuilder extends RouteBuilder {
                     AbstractDatasetJob job = exch.getIn().getBody(AbstractDatasetJob.class);
                     job.status = JobStatus.Status.PENDING;
                     JobHandler.getJobStore(exch).putJob(job);
-                    exch.getIn().setHeader(ServerConstants.HEADER_DATASET_ID, job.getJobDefinition().getDatasetId());
-                    exch.getIn().setHeader(CommonConstants.HEADER_JOB_ID, job.getJobId());
+                    exch.getIn().setHeader(HEADER_DATASET_ID, job.getJobDefinition().getDatasetId());
+                    exch.getIn().setHeader(REST_JOB_ID, job.getJobId());
                 })
                 // body is now the job
                 // send for async execution
@@ -50,7 +48,7 @@ public abstract class AbstractAsyncJobRouteBuilder extends RouteBuilder {
                 // body is the job
                 .setExchangePattern(ExchangePattern.InOut)
                 .process((Exchange exch) -> JobHandler.setJobStatus(exch, JobStatus.Status.RUNNING))
-                .log("submit to endpoint ${header." + ServerConstants.HEADER_DESTINATION + "}")
+                .log("submit to endpoint ${header." + HEADER_DESTINATION + "}")
                 // fetch the dataset to process
                 .process((Exchange exch) -> JobHandler.setBodyAsObjectsForDataset(exch))
                 // send  to the desired endpoint async
@@ -63,7 +61,7 @@ public abstract class AbstractAsyncJobRouteBuilder extends RouteBuilder {
         from(ROUTE_HANDLE_RESULTS)
                 .threads().executorServiceRef(CamelLifeCycle.CUSTOM_THREAD_POOL_NAME)
                 // body is the result of the execution - a stream - do not log it or it will be consumed
-                .log("Handling results for job ${header." + ServerConstants.HEADER_JOB_ID + "}")
+                .log("Handling results for job ${header." + REST_JOB_ID + "}")
                 .process((Exchange exch) -> JobHandler.saveDatasetForJob(exch))
                 .log("Results handled");
         // body is now the job status
