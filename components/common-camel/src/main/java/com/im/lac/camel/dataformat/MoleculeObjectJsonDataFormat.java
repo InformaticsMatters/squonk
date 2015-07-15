@@ -2,6 +2,7 @@
 package com.im.lac.camel.dataformat;
 
 import com.im.lac.dataset.Metadata;
+import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.io.MoleculeObjectJsonConverter;
 import com.im.lac.util.StreamProvider;
 import java.io.InputStream;
@@ -41,6 +42,8 @@ public class MoleculeObjectJsonDataFormat implements DataFormat {
         Metadata meta = exchange.getIn().getHeader("metadata", Metadata.class);
         if (meta == null) {
             meta = new Metadata();
+            meta.setClassName(MoleculeObject.class.getName());
+            meta.setType(Metadata.Type.ARRAY);
         }
         return unmarshaler.unmarshal(meta, in);
     }

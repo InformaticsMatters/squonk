@@ -2,6 +2,7 @@ package com.im.lac.services.camel;
 
 import com.im.lac.services.ServerConstants;
 import com.im.lac.services.dataset.service.DatasetHandler;
+import com.im.lac.camel.CamelCommonConstants;
 import com.im.lac.services.dataset.service.DatasetServiceImpl;
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.SimpleRegistry;
@@ -23,7 +24,6 @@ public class CamelLifeCycle {
 
     private static final Logger LOG = Logger.getLogger(CamelLifeCycle.class.getName());
     
-    public static final String CUSTOM_THREAD_POOL_NAME = "CustomThreadPool";
 
     private final DataSource dataSource;
     private DatasetServiceImpl datasetService;
@@ -42,7 +42,7 @@ public class CamelLifeCycle {
     public void beforeStart(CamelContext context, SimpleRegistry r) throws Exception {
         //context.getShutdownStrategy().setTimeout(10);
         LOG.fine("beforeStart()");
-        ThreadPoolProfile profile = new ThreadPoolProfileBuilder(CUSTOM_THREAD_POOL_NAME).poolSize(4).maxPoolSize(50).build();
+        ThreadPoolProfile profile = new ThreadPoolProfileBuilder(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME).poolSize(4).maxPoolSize(50).build();
         context.getExecutorServiceManager().registerThreadPoolProfile(profile);
     }
 

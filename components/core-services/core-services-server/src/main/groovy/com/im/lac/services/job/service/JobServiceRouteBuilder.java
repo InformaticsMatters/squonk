@@ -2,8 +2,8 @@ package com.im.lac.services.job.service;
 
 import com.im.lac.job.jobdef.DoNothingJobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
-import com.im.lac.services.camel.CamelLifeCycle;
 import com.im.lac.services.job.Job;
+import com.im.lac.camel.CamelCommonConstants;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
@@ -26,7 +26,7 @@ public class JobServiceRouteBuilder extends RouteBuilder {
         // Sends the job for execution and returns immediately with the appropriate JobStatus
         from(ROUTE_SUBMIT_JOB)
                 .log("ROUTE_SUBMIT_JOB")
-                .threads().executorServiceRef(CamelLifeCycle.CUSTOM_THREAD_POOL_NAME)
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .setExchangePattern(ExchangePattern.InOut)
                 // body is the JobDefintion
                 .log("Job defintion ${body} received")

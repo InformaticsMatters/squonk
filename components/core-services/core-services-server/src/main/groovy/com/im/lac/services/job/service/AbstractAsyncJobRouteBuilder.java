@@ -2,7 +2,7 @@ package com.im.lac.services.job.service;
 
 import com.im.lac.services.ServerConstants;
 import com.im.lac.job.jobdef.JobStatus;
-import com.im.lac.services.camel.CamelLifeCycle;
+import com.im.lac.camel.CamelCommonConstants;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
@@ -24,7 +24,7 @@ public abstract class AbstractAsyncJobRouteBuilder extends RouteBuilder implemen
                 .log("ROUTE_ASYNC_SUBMIT")
                 // body is job
                 .log("Async submit. Body: ${body}")
-                .threads().executorServiceRef(CamelLifeCycle.CUSTOM_THREAD_POOL_NAME)
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .setExchangePattern(ExchangePattern.InOnly)
                 .process((Exchange exch) -> {
                     AbstractDatasetJob job = exch.getIn().getBody(AbstractDatasetJob.class);
@@ -44,7 +44,7 @@ public abstract class AbstractAsyncJobRouteBuilder extends RouteBuilder implemen
         // This is where most of the work is done. The dataset is retreived and then forwarded to the
         // specified endpoint. the endpoint returns the results and these are then forwarded on to be saved. 
         from(ROUTE_FETCH_AND_DISPATCH)
-                .threads().executorServiceRef(CamelLifeCycle.CUSTOM_THREAD_POOL_NAME)
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 // body is the job
                 .setExchangePattern(ExchangePattern.InOut)
                 .process((Exchange exch) -> JobHandler.setJobStatus(exch, JobStatus.Status.RUNNING))
@@ -59,7 +59,7 @@ public abstract class AbstractAsyncJobRouteBuilder extends RouteBuilder implemen
 
         // Save the results to the database
         from(ROUTE_HANDLE_RESULTS)
-                .threads().executorServiceRef(CamelLifeCycle.CUSTOM_THREAD_POOL_NAME)
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 // body is the result of the execution - a stream - do not log it or it will be consumed
                 .log("Handling results for job ${header." + REST_JOB_ID + "}")
                 .process((Exchange exch) -> JobHandler.saveDatasetForJob(exch))

@@ -68,7 +68,7 @@ public class JsonHandler {
                 Spliterator.NONNULL | Spliterator.ORDERED);
         return StreamSupport.stream(spliterator, true);
     }
-
+    
     private <T> Iterator<T> doUnmarshalItemsAsIterator(Class<T> cls, Metadata meta, InputStream in) throws IOException {
         ContextAttributes attrs = ContextAttributes.getEmpty()
                 .withSharedAttribute(ATTR_METADATA, meta);
