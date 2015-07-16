@@ -8,7 +8,10 @@ import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import com.im.lac.types.MoleculeObject
 import java.util.stream.*
+import org.apache.camel.CamelContext
 import org.apache.camel.builder.RouteBuilder
+import org.apache.camel.builder.ThreadPoolProfileBuilder
+import org.apache.camel.spi.ThreadPoolProfile
 
 /**
  * Created by timbo on 14/04/2014.
@@ -154,6 +157,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         result instanceof MoleculeObject
         result.getRepresentation(Molecule.class.getName()).getBond(0).getType() == MolBond.AROMATIC
     }
+    
 
     @Override
     RouteBuilder createRouteBuilder() {

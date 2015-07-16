@@ -1,11 +1,14 @@
 package com.im.lac.services.chemaxon;
 
+import com.im.lac.camel.CamelCommonConstants;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.builder.ThreadPoolProfileBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.SimpleRegistry;
+import org.apache.camel.spi.ThreadPoolProfile;
 
 /**
  * Launcher for the Camel context
@@ -19,7 +22,9 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         SimpleRegistry registry = new SimpleRegistry();
-        final CamelContext camelContext = new DefaultCamelContext(registry);
+        CamelContext camelContext = new DefaultCamelContext(registry);
+        ThreadPoolProfile profile = new ThreadPoolProfileBuilder(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME).poolSize(4).maxPoolSize(50).build();
+        camelContext.getExecutorServiceManager().registerThreadPoolProfile(profile);
 
         camelContext.addRoutes(new RouteBuilder() {
             @Override
@@ -34,7 +39,7 @@ public class Main {
         });
         //camelContext.addRoutes(new MoleculeUtilsRouteBuilder());
         camelContext.addRoutes(new CalculatorsRouteBuilder());
-        //camelContext.addRoutes(new DescriptorsRouteBuilder());
+        camelContext.addRoutes(new DescriptorsRouteBuilder());
         //camelContext.addRoutes(new ReactorRouteBuilder());
         camelContext.addRoutes(new RestRouteBuilder());
 
