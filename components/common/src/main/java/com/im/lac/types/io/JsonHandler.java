@@ -86,6 +86,26 @@ public class JsonHandler {
         ObjectWriter writer = mapper.writerFor(item.getClass()).with(attrs);
         writer.writeValue(outputStream, item);
     }
+    
+    public String marshalItemAsString(Object item, Metadata meta) throws IOException {
+        LOG.fine("marshalling item to JSON");
+        meta.setClassName(item.getClass().getName());
+        meta.setType(Metadata.Type.ITEM);
+        meta.setSize(1);
+        ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute(ATTR_METADATA, meta);
+        ObjectWriter writer = mapper.writerFor(item.getClass()).with(attrs);
+        return writer.writeValueAsString(item);
+    }
+    
+    public byte[] marshalItemAsBytes(Object item, Metadata meta) throws IOException {
+        LOG.fine("marshalling item to JSON");
+        meta.setClassName(item.getClass().getName());
+        meta.setType(Metadata.Type.ITEM);
+        meta.setSize(1);
+        ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute(ATTR_METADATA, meta);
+        ObjectWriter writer = mapper.writerFor(item.getClass()).with(attrs);
+        return writer.writeValueAsBytes(item);
+    }
 
     public void marshalItems(Stream items, Metadata meta, OutputStream outputStream) throws IOException {
         LOG.fine("marshalling items to JSON");

@@ -2,6 +2,7 @@ package com.im.lac.job.jobdef;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.im.lac.dataset.DataItem;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -9,7 +10,7 @@ import java.util.Date;
  * @author timbo
  * @param <T>
  */
-public class JobStatus<T extends JobDefinition> {
+public class JobStatus<T extends JobDefinition> implements Serializable {
 
     public enum Status {
 

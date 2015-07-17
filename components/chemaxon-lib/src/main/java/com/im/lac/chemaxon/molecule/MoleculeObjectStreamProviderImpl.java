@@ -27,18 +27,18 @@ public class MoleculeObjectStreamProviderImpl implements StreamGenerator<Molecul
 
 
     @Override
-    public Stream<MoleculeObject> getStream() throws IOException {
+    public Stream<MoleculeObject> getStream() {
         return getStream(true);
     }
 
     @Override
-    public Stream<MoleculeObject> getStream(boolean parallel, int batchSize) throws IOException {
+    public Stream<MoleculeObject> getStream(boolean parallel, int batchSize) {
         MoleculeObjectSpliterator spliterator = new MoleculeObjectSpliterator(input, batchSize);
         return createStream(spliterator, parallel);
     }
 
     @Override
-    public Stream<MoleculeObject> getStream(boolean parallel) throws IOException {
+    public Stream<MoleculeObject> getStream(boolean parallel) {
         MoleculeObjectSpliterator spliterator = new MoleculeObjectSpliterator(input);
         return createStream(spliterator, parallel);
     }

@@ -1,7 +1,6 @@
 package com.im.lac.util;
 
 import com.im.lac.types.MoleculeObject;
-import java.io.IOException;
 import java.util.stream.Stream;
 
 
@@ -16,7 +15,7 @@ import java.util.stream.Stream;
  */
 public interface StreamProvider<T> {
     
-    Stream<MoleculeObject> getStream() throws IOException;
+    Stream<MoleculeObject> getStream();
     
     Class<T> getType();
     

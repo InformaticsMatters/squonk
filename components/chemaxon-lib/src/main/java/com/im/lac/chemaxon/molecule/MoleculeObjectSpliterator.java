@@ -38,9 +38,8 @@ public class MoleculeObjectSpliterator extends FixedBatchSpliteratorBase<Molecul
      *
      * @param is The input containing molecules
      * @param batchSize Batch size
-     * @throws IOException
      */
-    public MoleculeObjectSpliterator(InputStream is, int batchSize) throws IOException {
+    public MoleculeObjectSpliterator(InputStream is, int batchSize) {
         super(Spliterator.ORDERED | Spliterator.NONNULL, batchSize, Long.MAX_VALUE);
         this.iter = new MRecordIterator(is);
     }
@@ -49,9 +48,8 @@ public class MoleculeObjectSpliterator extends FixedBatchSpliteratorBase<Molecul
      * Create spliterator with default batch size of 32
      *
      * @param is
-     * @throws IOException
      */
-    public MoleculeObjectSpliterator(InputStream is) throws IOException {
+    public MoleculeObjectSpliterator(InputStream is) {
         this(is, 32);
     }
 

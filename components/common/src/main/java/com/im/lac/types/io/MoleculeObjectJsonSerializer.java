@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.im.lac.types.MoleculeObject;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,8 +27,13 @@ public class MoleculeObjectJsonSerializer extends StdSerializer<MoleculeObject> 
     @Override
     public void serialize(MoleculeObject mo, JsonGenerator jg, SerializerProvider sp) throws IOException, JsonGenerationException {
         Metadata meta = (Metadata) sp.getAttribute(JsonHandler.ATTR_METADATA);
-        Map<String, Class> propTypes = meta.getPropertyTypes();
-        //sp.defaultSerializeValue(mo, jg);
+        Map<String, Class> propTypes;
+        if (meta == null) {
+            LOG.fine("Serializing MoleculeObject without metadata - complex types will not be handled");
+            propTypes = Collections.emptyMap();
+        } else {
+            propTypes = meta.getPropertyTypes();
+        }
         jg.writeStartObject();
 
         if (mo.getUUID() != null) {
@@ -60,7 +66,6 @@ public class MoleculeObjectJsonSerializer extends StdSerializer<MoleculeObject> 
             jg.writeEndObject();
         }
         jg.writeEndObject();
-
     }
 
 }

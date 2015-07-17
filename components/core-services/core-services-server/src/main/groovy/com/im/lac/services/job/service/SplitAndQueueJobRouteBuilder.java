@@ -1,9 +1,14 @@
 package com.im.lac.services.job.service;
 
+import com.im.lac.camel.CamelCommonConstants;
+import com.im.lac.camel.dataformat.MoleculeObjectJsonDataFormat;
+import com.im.lac.dataset.Metadata;
 import com.im.lac.services.ServerConstants;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.SplitAndQueueProcessDatasetJobDefinition;
 import static com.im.lac.services.job.service.JobServiceRouteBuilder.ROUTE_SUBMIT_PREFIX;
+import com.im.lac.types.io.JsonHandler;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.camel.Exchange;
@@ -25,11 +30,14 @@ public class SplitAndQueueJobRouteBuilder extends RouteBuilder implements Server
     public static final String ENDPOINT_SPLIT_AND_SUBMIT = "seda:splitAndSubmit";
     public static final String DUMMY_MESSAGE_QUEUE = "rabbitmq";
 
-    SplitAndQueueJobRouteBuilder() {
+    JsonHandler jsonHandler = new JsonHandler();
+    MoleculeObjectJsonDataFormat moDataFormat = new MoleculeObjectJsonDataFormat();
+
+    public SplitAndQueueJobRouteBuilder() {
 
     }
 
-    SplitAndQueueJobRouteBuilder(String mqHostname, String mqVirtualHost, String mqUsername, String mqPassword) {
+    public SplitAndQueueJobRouteBuilder(String mqHostname, String mqVirtualHost, String mqUsername, String mqPassword) {
         this.mqHostname = mqHostname;
         this.mqVirtualHost = mqVirtualHost;
         this.mqUsername = mqUsername;
@@ -91,21 +99,31 @@ public class SplitAndQueueJobRouteBuilder extends RouteBuilder implements Server
         from(ENDPOINT_SPLIT_AND_SUBMIT)
                 .log("ENDPOINT_SPLIT_AND_SUBMIT Splitting and submitting ${body}")
                 .process((Exchange exch) -> {
-                    SplitAndQueueJob job = JobHandler.getJob(exch, SplitAndQueueJob.class);
-                    JobHandler.setJobStatus(exch, JobStatus.Status.SUBMITTING);
+                    SplitAndQueueJob job = JobHandler.getJobFromHeader(exch, SplitAndQueueJob.class);
+                    job.status = JobStatus.Status.SUBMITTING;
                     LOG.log(Level.INFO, "Setting ROUTING_KEY to {0}", job.getJobDefinition().getQueuename());
                     LOG.log(Level.INFO, "Setting REPLY_TO to {0}", job.getResponseQueueName());
                     exch.getIn().setHeader("rabbitmq.ROUTING_KEY", job.getJobDefinition().getQueuename());
                     exch.getIn().setHeader("rabbitmq.REPLY_TO", job.getResponseQueueName());
                 })
+                .log("About to split ${body.class.name}")
+                .convertBodyTo(Iterator.class)
                 .split(body(), AggregationStrategies.useLatest()).streaming()
-                //.log("Submitting ${body}")
-                .to(ExchangePattern.InOnly, mqueueUrl + "&autoDelete=false")
+                .process((Exchange exch) -> {
+                    Object body = exch.getIn().getBody();
+                    Metadata meta = new Metadata();
+                    String json = jsonHandler.marshalItemAsString(body, meta);
+                    exch.getIn().setBody(json);
+                    String metaJson = jsonHandler.objectToJson(meta);
+                    exch.getIn().setHeader(CamelCommonConstants.HEADER_METADATA, metaJson);
+                })
+                .log("Submitting ${body}")
+                .to(ExchangePattern.InOnly, mqueueUrl + "&autoDelete=false&durable=true")
                 .end()
                 .setBody(header("CamelSplitSize"))
                 .process((Exchange exch) -> {
                     int count = exch.getIn().getBody(Integer.class);
-                    AbstractDatasetJob job = JobHandler.getJob(exch, AbstractDatasetJob.class);
+                    AbstractDatasetJob job = JobHandler.getJobFromHeader(exch, AbstractDatasetJob.class);
                     job.status = JobStatus.Status.RUNNING;
                     job.totalCount = count;
                     exch.getIn().setBody(count);
@@ -113,13 +131,8 @@ public class SplitAndQueueJobRouteBuilder extends RouteBuilder implements Server
                 .log("Split and sent ${body} items");
 
         // a dummy queue for testing
-        from(mqueueUrl + "&autoDelete=false&routingKey=queue1")
-                .log("queue1 received ${body}, sending to " + mqueueUrl + "&autoDelete=false")
-                .delay(1000)
-                .setHeader("rabbitmq.ROUTING_KEY", header("rabbitmq.REPLY_TO"))
-                .removeHeader("rabbitmq.REPLY_TO")
-                .to(mqueueUrl + "&autoDelete=false")
-                .log("Message ${body} processed and sent to ${headers[rabbitmq.ROUTING_KEY]}");
+        from(mqueueUrl + "&autoDelete=false&queue=devnull")
+                .log("devnull received ${body}, with rabbitmq.REPLY_TO of ${header[rabbitmq.REPLY_TO]}");
 
     }
 

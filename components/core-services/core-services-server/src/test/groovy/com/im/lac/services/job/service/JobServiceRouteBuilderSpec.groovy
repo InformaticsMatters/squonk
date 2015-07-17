@@ -25,7 +25,7 @@ class JobServiceRouteBuilderSpec extends DatasetSpecificationBase {
     
     
     void doAddRoutes() {
-        camelContext.addRoutes(new AsyncLocalJobRouteBuilder())
+        camelContext.addRoutes(new AsyncJobRouteBuilder())
         camelContext.addRoutes(new JobServiceRouteBuilder())
     }
     
@@ -42,7 +42,7 @@ class JobServiceRouteBuilderSpec extends DatasetSpecificationBase {
         def result = producerTemplate.requestBody(
             JobServiceRouteBuilder.ROUTE_SUBMIT_JOB, 
             new AsyncLocalProcessDatasetJobDefinition(ids[0], 
-                AsyncLocalJobRouteBuilder.ROUTE_DUMMY, 
+                AsyncJobRouteBuilder.ROUTE_DUMMY, 
                 DatasetJobDefinition.DatasetMode.CREATE, 
                 String.class, 
                     "newDataSet1")

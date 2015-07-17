@@ -21,29 +21,29 @@ import groovy.sql.Sql
  *
  * @author timbo
  */
-class AsyncLocalJobRouteBuilderSpec extends DatasetSpecificationBase {
+class AsyncJobRouteBuilderSpec extends DatasetSpecificationBase {
     
   
     void doAddRoutes() {
-        camelContext.addRoutes(new AsyncLocalJobRouteBuilder())
+        camelContext.addRoutes(new AsyncJobRouteBuilder())
     }
     
     protected String getTableName() {
-         "users.users_test_AsyncLocalJobRouteBuilderSpec"
+         "users.users_test_AsyncJobRouteBuilderSpec"
     }
 	
     
-    void "simple 1"() {
+    void "simple local 1"() {
         setup:
         TestUtils.createTestData(getDatasetHandler())
         AsyncLocalProcessDatasetJobDefinition jobdef = new AsyncLocalProcessDatasetJobDefinition(1l,
-            AsyncLocalJobRouteBuilder.ROUTE_DUMMY,
+            AsyncJobRouteBuilder.ROUTE_DUMMY,
             DatasetJobDefinition.DatasetMode.CREATE,
             String.class,
                 "new name");
 
         when:
-        JobStatus status1 = producerTemplate.requestBody(AsyncLocalJobRouteBuilder.ROUTE_ASYNC_LOCAL_SUBMIT, jobdef);
+        JobStatus status1 = producerTemplate.requestBody(AsyncJobRouteBuilder.ROUTE_ASYNC_LOCAL_SUBMIT, jobdef);
         
         System.out.println("Status 1.1: " + status1);
         //Thread.sleep(3000);
@@ -53,22 +53,19 @@ class AsyncLocalJobRouteBuilderSpec extends DatasetSpecificationBase {
         then:
         status1.status != null
         //status2.status == JobStatus.Status.COMPLETED
-
-        
-        
     }
     
-     void "simple 5"() {
+     void "simple local 5"() {
         setup:
         TestUtils.createTestData(getDatasetHandler())
         AsyncLocalProcessDatasetJobDefinition jobdef = new AsyncLocalProcessDatasetJobDefinition(4l,
-            AsyncLocalJobRouteBuilder.ROUTE_DUMMY,
+            AsyncJobRouteBuilder.ROUTE_DUMMY,
             DatasetJobDefinition.DatasetMode.CREATE,
             String.class,
                 "new name");
 
         when:
-        JobStatus status1 = producerTemplate.requestBody(AsyncLocalJobRouteBuilder.ROUTE_ASYNC_LOCAL_SUBMIT, jobdef);
+        JobStatus status1 = producerTemplate.requestBody(AsyncJobRouteBuilder.ROUTE_ASYNC_LOCAL_SUBMIT, jobdef);
         
         System.out.println("Status 1.1: " + status1);
         //Thread.sleep(3000);
@@ -78,9 +75,29 @@ class AsyncLocalJobRouteBuilderSpec extends DatasetSpecificationBase {
         then:
         status1.status != null
         //status2.status == JobStatus.Status.COMPLETED
+    }
+    
+    
+    void "simple http 1"() {
+        setup:
+        TestUtils.createTestData(getDatasetHandler())
+        AsyncHttpProcessDatasetJobDefinition jobdef = new AsyncHttpProcessDatasetJobDefinition(1l,
+            "http://localhost/coreservices/rest/echo",
+            DatasetJobDefinition.DatasetMode.CREATE,
+            String.class,
+                "new name");
 
+        when:
+        JobStatus status1 = producerTemplate.requestBody(AsyncJobRouteBuilder.ROUTE_ASYNC_HTTP_SUBMIT, jobdef);
         
-        
+        System.out.println("Status 1.1: " + status1);
+        //Thread.sleep(3000);
+        //def status2 = job1.buildStatus()
+        //System.out.println("Status 1.2: " + status2);
+
+        then:
+        status1.status != null
+        //status2.status == JobStatus.Status.COMPLETED
     }
     
     

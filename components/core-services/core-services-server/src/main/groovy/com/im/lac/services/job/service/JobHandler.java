@@ -112,7 +112,7 @@ public class JobHandler implements ServerConstants {
     }
 
     public static void setJobStatus(Exchange exchange, JobStatus.Status status) {
-        AbstractDatasetJob job = getJob(exchange, AbstractDatasetJob.class);
+        AbstractDatasetJob job = JobHandler.getJobFromHeader(exchange, AbstractDatasetJob.class);
         if (job != null) {
             job.status = status;
         }
@@ -124,7 +124,7 @@ public class JobHandler implements ServerConstants {
      * @param exchange
      */
     public static void putCurrentJobStatus(Exchange exchange) {
-        Job job = getJob(exchange);
+        Job job = getJobFromHeader(exchange);
         if (job == null) {
             exchange.getIn().setBody(null);
         } else {
@@ -138,7 +138,7 @@ public class JobHandler implements ServerConstants {
      * @param exchange
      */
     public static void putUpdatedJobStatus(Exchange exchange) {
-        Job job = getJob(exchange);
+        Job job = getJobFromHeader(exchange);
         if (job == null) {
             exchange.getIn().setBody(null);
         } else {
@@ -151,12 +151,12 @@ public class JobHandler implements ServerConstants {
         return store.getJob(jobId);
     }
 
-    public static Job getJob(Exchange exchange) {
+    public static Job getJobFromHeader(Exchange exchange) {
         JobStore store = getJobStore(exchange);
         return store.getJob(exchange.getIn().getHeader(REST_JOB_ID, String.class));
     }
 
-    public static <T> T getJob(Exchange exchange, Class<T> type) {
+    public static <T> T getJobFromHeader(Exchange exchange, Class<T> type) {
         JobStore store = getJobStore(exchange);
         return (T) store.getJob(exchange.getIn().getHeader(REST_JOB_ID, String.class));
     }

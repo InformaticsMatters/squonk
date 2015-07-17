@@ -25,8 +25,12 @@ public class MRecordIterator implements Iterator<MRecord>, Closeable {
     private int count = 0;
     private final StackTraceElement[] initiatorStackTrace;
 
-    public MRecordIterator(InputStream is) throws IOException {
-        recordReader = MFileFormatUtil.createRecordReader(is, null, null, null);
+    public MRecordIterator(InputStream is)  {
+        try {
+            recordReader = MFileFormatUtil.createRecordReader(is, null, null, null);
+        } catch (IOException ex) {
+            Logger.getLogger(MRecordIterator.class.getName()).log(Level.SEVERE, null, ex);
+        }
         initiatorStackTrace = Thread.currentThread().getStackTrace();
     }
 

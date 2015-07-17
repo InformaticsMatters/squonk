@@ -30,6 +30,7 @@ public class JobServiceRouteBuilder extends RouteBuilder {
                 .setExchangePattern(ExchangePattern.InOut)
                 // body is the JobDefintion
                 .log("Job defintion ${body} received")
+                .log("Routing to " + ROUTE_SUBMIT_PREFIX + "${body.class.name}")
                 .setHeader(ROUTE_ROUTING_SLIP_HEADER, simple(ROUTE_SUBMIT_PREFIX + "${body.class.name}"))
                 .log("Routing to ${header." + ROUTE_ROUTING_SLIP_HEADER + "}")
                 .routingSlip(header(ROUTE_ROUTING_SLIP_HEADER))

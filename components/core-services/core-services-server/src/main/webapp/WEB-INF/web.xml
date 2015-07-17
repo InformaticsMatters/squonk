@@ -19,7 +19,8 @@
         <!-- note: instead of using a XML file we can also define the routes in Java code in a RouteBuilder class -->
         <!--param-value>com.im.lac.demo.SimpleRouteBuilder</param-value-->
         <param-value>
-            com.im.lac.services.job.service.AsyncLocalJobRouteBuilder,
+            com.im.lac.services.job.service.AsyncJobRouteBuilder,
+            com.im.lac.services.job.service.SplitAndQueueJobRouteBuilder,
             com.im.lac.services.job.service.JobServiceRouteBuilder,
             com.im.lac.services.RestRouteBuilder</param-value>
     </context-param>

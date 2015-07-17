@@ -1,6 +1,5 @@
 package com.im.lac.util;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -12,7 +11,7 @@ import java.util.stream.StreamSupport;
  *
  * @author timbo
  */
-public class SimpleStreamProvider<T> implements StreamProvider {
+public class SimpleStreamProvider<T> implements StreamProvider, Iterable {
 
     final private Stream<T> stream;
     final private Class<T> type;
@@ -40,13 +39,18 @@ public class SimpleStreamProvider<T> implements StreamProvider {
     }
 
     @Override
-    public Stream<T> getStream() throws IOException {
+    public Stream<T> getStream() {
         return stream;
     }
 
     @Override
     public Class getType() {
         return type;
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return getStream().iterator();
     }
 
 }
