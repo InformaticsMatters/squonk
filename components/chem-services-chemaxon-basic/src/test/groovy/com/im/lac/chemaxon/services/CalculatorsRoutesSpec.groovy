@@ -1,4 +1,4 @@
-package com.im.lac.services.chemaxon
+package com.im.lac.chemaxon.services
 
 import spock.lang.Specification
 import chemaxon.formats.MolImporter
@@ -20,7 +20,7 @@ import org.apache.camel.spi.ThreadPoolProfile
  */
 class CalculatorsRoutesSpec extends CamelSpecificationBase {
     
-    static final String FILE_SMILES_100 = "../../../data/testfiles/nci100.smiles";
+    static final String FILE_SMILES_100 = "../../data/testfiles/nci100.smiles";
     
     def 'logp single as MoleculeObject'() {
 

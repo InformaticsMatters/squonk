@@ -3,9 +3,8 @@ package com.im.lac.chemaxon.services;
 import com.im.lac.camel.util.CamelUtils;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
+import com.im.lac.services.AccessMode;
 import com.im.lac.services.ServiceDescriptor;
-import com.im.lac.services.impl.ModeImpl;
-import com.im.lac.services.impl.ServiceDescriptorImpl;
 import com.im.lac.types.MoleculeObject;
 import java.util.logging.Logger;
 import org.apache.camel.Exchange;
@@ -21,7 +20,7 @@ public class RestRouteBuilder extends RouteBuilder {
     private static final Logger LOG = Logger.getLogger(RestRouteBuilder.class.getName());
 
     private static final ServiceDescriptor[] calculatorsServiceDescriptor
-            = new ServiceDescriptor[]{new ServiceDescriptorImpl(
+            = new ServiceDescriptor[]{new ServiceDescriptor(
                         "ChemAxon LogP",
                         "ChemAxon LogP. See https://www.chemaxon.com/products/calculator-plugins/property-predictors/#logp_logd",
                         new String[]{"logp", "partitioning", "chemaxon"},
@@ -34,14 +33,15 @@ public class RestRouteBuilder extends RouteBuilder {
                         new Class[]{MoleculeObject.class}, // outputClasses
                         new Metadata.Type[]{Metadata.Type.ARRAY}, // inputTypes
                         new Metadata.Type[]{Metadata.Type.ARRAY}, // outputTypes
-                        new ServiceDescriptor.Mode[]{
-                            new ModeImpl(
+                        new AccessMode[]{
+                            new AccessMode(
                                     "Immediate execution",
                                     "Execute as an asynchronous REST web service",
                                     "logp", // a URL relative to this URL?
                                     AsyncHttpProcessDatasetJobDefinition.class,
                                     0, Integer.MAX_VALUE, 0.001f,
-                                    new ServiceDescriptor.LicenseToken[]{ServiceDescriptor.LicenseToken.CHEMAXON})
+                                    new ServiceDescriptor.LicenseToken[]{ServiceDescriptor.LicenseToken.CHEMAXON},
+                            null)
                         }
                 )
             };
@@ -53,13 +53,13 @@ public class RestRouteBuilder extends RouteBuilder {
 
         /* These are the REST endpoints - exposed as public web services 
          */
-        rest("/rest/ping")
+        rest("ping")
                 .get().description("Simple ping service to check things are running")
                 .produces("text/plain")
                 .route()
                 .transform(constant("Ping\n")).endRest();
 
-        rest("/rest/v1/calculators").description("Property calculation services using ChemAxon")
+        rest("v1/calculators").description("Property calculation services using ChemAxon")
                 .bindingMode(RestBindingMode.off)
                 .consumes("application/json")
                 .produces("application/json")
@@ -109,7 +109,7 @@ public class RestRouteBuilder extends RouteBuilder {
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
                 .endRest();
 
-        rest("/rest/v1/descriptors").description("Screening and clustering services using ChemAxon")
+        rest("v1/descriptors").description("Screening and clustering services using ChemAxon")
                 .bindingMode(RestBindingMode.off)
                 .consumes("application/json")
                 .produces("application/json")

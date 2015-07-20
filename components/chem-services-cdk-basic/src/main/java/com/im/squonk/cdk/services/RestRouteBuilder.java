@@ -3,9 +3,8 @@ package com.im.squonk.cdk.services;
 import com.im.lac.camel.util.CamelUtils;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
+import com.im.lac.services.AccessMode;
 import com.im.lac.services.ServiceDescriptor;
-import com.im.lac.services.impl.ModeImpl;
-import com.im.lac.services.impl.ServiceDescriptorImpl;
 import com.im.lac.types.MoleculeObject;
 import java.util.logging.Logger;
 import org.apache.camel.Exchange;
@@ -21,7 +20,7 @@ public class RestRouteBuilder extends RouteBuilder {
     private static final Logger LOG = Logger.getLogger(RestRouteBuilder.class.getName());
 
     private static final ServiceDescriptor[] calculatorsServiceDescriptor
-            = new ServiceDescriptor[]{new ServiceDescriptorImpl(
+            = new ServiceDescriptor[]{new ServiceDescriptor(
                         "CDK LogP",
                         "CDK LogP predictions for XLogP and ALogP",
                         new String[]{"logp", "partitioning", "cdk"},
@@ -34,14 +33,15 @@ public class RestRouteBuilder extends RouteBuilder {
                         new Class[]{MoleculeObject.class}, // outputClasses
                         new Metadata.Type[]{Metadata.Type.ARRAY}, // inputTypes
                         new Metadata.Type[]{Metadata.Type.ARRAY}, // outputTypes
-                        new ServiceDescriptor.Mode[]{
-                            new ModeImpl(
+                        new AccessMode[]{
+                            new AccessMode(
                                     "Immediate execution",
                                     "Execute as an asynchronous REST web service",
                                     "logp", // a URL relative to this URL?
                                     AsyncHttpProcessDatasetJobDefinition.class,
                                     0, Integer.MAX_VALUE, 0.001f,
-                                    new ServiceDescriptor.LicenseToken[]{ServiceDescriptor.LicenseToken.CHEMAXON})
+                                    new ServiceDescriptor.LicenseToken[]{ServiceDescriptor.LicenseToken.CHEMAXON},
+                            null)
                         }
                 )
             };

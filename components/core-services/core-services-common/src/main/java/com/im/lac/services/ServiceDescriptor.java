@@ -1,7 +1,7 @@
 package com.im.lac.services;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.im.lac.dataset.Metadata;
-import com.im.lac.job.jobdef.JobDefinition;
 
 /**
  * Descriptor of a service that can be used to parameterise a request to this service. The basic
@@ -22,7 +22,7 @@ import com.im.lac.job.jobdef.JobDefinition;
  *
  * @author timbo
  */
-public interface ServiceDescriptor {
+public class ServiceDescriptor {
 
     /**
      * A license token the user must have to be able to use the service. Should this really be an
@@ -35,12 +35,67 @@ public interface ServiceDescriptor {
         CHEMAXON
     }
 
+    private final String name;
+    private final String description;
+    private final String[] tags;
+    private final String resourceUrl;
+    private final String[] paths;
+    private final String owner;
+    private final String ownerUrl;
+    private final String[] layers;
+    private final Class[] inputClasses;
+    private final Class[] outputClasses;
+    private final Metadata.Type[] inputTypes;
+    private final Metadata.Type[] outputTypes;
+    private final AccessMode[] accessModes;
+
+    public ServiceDescriptor(
+            @JsonProperty("name") String name,
+            @JsonProperty("description") String description,
+            @JsonProperty("tags") String[] tags,
+            @JsonProperty("resourceUrl") String resourceUrl,
+            @JsonProperty("paths") String[] paths,
+            @JsonProperty("owner") String owner,
+            @JsonProperty("ownerUrl") String ownerUrl,
+            @JsonProperty("layers") String[] layers,
+            @JsonProperty("inputClasses") Class[] inputClasses,
+            @JsonProperty("outputClasses") Class[] outputClasses,
+            @JsonProperty("inputTypes") Metadata.Type[] inputTypes,
+            @JsonProperty("outputTypes") Metadata.Type[] outputTypes,
+            @JsonProperty("accessModes") AccessMode[] accessModes
+    ) {
+        this.name = name;
+        this.description = description;
+        this.tags = tags;
+        this.resourceUrl = resourceUrl;
+        this.paths = paths;
+        this.owner = owner;
+        this.ownerUrl = ownerUrl;
+        this.layers = layers;
+        this.inputClasses = inputClasses;
+        this.outputClasses = outputClasses;
+        this.inputTypes = inputTypes;
+        this.outputTypes = outputTypes;
+        this.accessModes = accessModes;
+    }
+
     /**
      * The short name of this service
      *
      * @return
      */
-    String getName();
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * A meaningful description of the service
+     *
+     * @return
+     */
+    public String getDescription() {
+        return description;
+    }
 
     /**
      * Get the location(s) where this service will appear in the UI. The path is modelled as a
@@ -48,164 +103,99 @@ public interface ServiceDescriptor {
      *
      * @return
      */
-    String[] getPaths();
+    public String[] getPaths() {
+        return paths;
+    }
 
     /**
      * The owner of this service
      *
      * @return
      */
-    String getOwner();
-
-    /**
-     * A meaningful description of the service
-     *
-     * @return
-     */
-    String getDescription();
+    public String getOwner() {
+        return owner;
+    }
 
     /**
      * A set of tags that describe the service and can be used for searching/discovery
      *
      * @return
      */
-    String[] getTags();
+    public String[] getTags() {
+        return tags;
+    }
 
     /**
      * The URL to call to get documentation on the service. e.g. the services "home page"
      *
      * @return
      */
-    String getResourceUrl();
+    public String getResourceUrl() {
+        return resourceUrl;
+    }
 
     /**
      * The URL of the owner of this service. e.g. the owners "home page"
      *
      * @return
      */
-    String getOwnerUrl();
-    
+    public String getOwnerUrl() {
+        return ownerUrl;
+    }
+
     /**
-     * The layers this service should belong to 
+     * The layers this service should belong to
      *
      * @return
      */
-    String[] getLayers();
+    public String[] getLayers() {
+        return layers;
+    }
 
     /**
      * The type(s) of object this service can process. e.g. MoleculeObject
      *
      * @return
      */
-    Class[] getInputClasses();
+    public Class[] getInputClasses() {
+        return inputClasses;
+    }
 
     /**
      * Often the same as the inputClass, but not always
      *
      * @return
      */
-    Class[] getOutputClasses();
+    public Class[] getOutputClasses() {
+        return outputClasses;
+    }
 
     /**
      * Single Item or Stream of multiple Items
      *
      * @return
      */
-    Metadata.Type[] getInputTypes();
+    public Metadata.Type[] getInputTypes() {
+        return inputTypes;
+    }
 
     /**
      * Usually the same as the inputType, but not always
      *
      * @return
      */
-    Metadata.Type[] getOutputTypes();
+    public Metadata.Type[] getOutputTypes() {
+        return outputTypes;
+    }
 
     /**
-     * One of mode modes through which this service can be accessed. e.g. a service can support
+     * One of more modes through which this service can be accessed. e.g. a service can support
      * direct and batch modes.
      *
      * @return
      */
-    Mode[] getModes();
-
-    interface Mode {
-
-        /**
-         * The short name of this mode
-         *
-         * @return
-         */
-        String getName();
-
-        /**
-         * A meaningful description of the mode
-         *
-         * @return
-         */
-        String getDescription();
-
-        /**
-         * The endpoint (often a URL) to call to execute the service
-         *
-         * @return
-         */
-        String getExecutionEndpoint();
-
-        /**
-         * The JobDefinition class for this mode. This is used to submit a job to this service.
-         *
-         * @return
-         */
-        Class<? extends JobDefinition> getJobType();
-
-        /**
-         * The minimum number of items that can be sent to this service mode. Usually this would be
-         * 1.
-         *
-         * @return
-         */
-        int getMinSize();
-
-        /**
-         * The maximum number of items that can be sent to this service mode. Usually this would be
-         * Integer.MAX_VALUE, but this allows certain service modes to be limited in terms of input
-         * e.g. for slow running jobs only a small number of records can be sent in "direct" mode
-         * with a batch mode supporting larger, or unlimited number of records.
-         *
-         * @return
-         */
-        int getMaxSize();
-
-        /**
-         * The cost of using this service for a single item. e.g. for processing 1000 items is costs
-         * 1000 * cost. Many services will have a cost of zero. Cost is in arbitrary units and
-         * deducted from the users account.
-         * <p>
-         * <b>Important</b>: ensure negative costs are not permitted!
-         *
-         * @return
-         */
-        float getCost();
-
-        /**
-         * To use this service mode you must possess ALL of these tokens.
-         *
-         * @return
-         */
-        LicenseToken[] getRequiredLienceTokens();
-
-        /**
-         * Get the parameters accepted by this service mode. This is used to build the UI for the
-         * user to fill, and those parameters submitted with the JobDefintion. These should be
-         * modelled as name/value pairs that can handled as HTTP header parameters (not a Map as
-         * HTTP supports multiple parameters with the same name)
-         * <b>
-         * TODO - spec this out in more detail
-         *
-         * @return
-         */
-        Object[] getParameters();
-
+    public AccessMode[] getAccessModes() {
+        return accessModes;
     }
 
 }

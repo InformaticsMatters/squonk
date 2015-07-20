@@ -10,7 +10,6 @@ dependencies {
         exclude group:'chemaxonlib',module:'castor-core'
         exclude group:'chemaxonlib',module:'castor-xml'
         exclude group:'chemaxonlib',module:'classes12'
-        exclude group:'chemaxonlib',module:'dom4j'
         exclude group:'chemaxonlib',module:'gluegen-rt-natives-linux-amd64'
         exclude group:'chemaxonlib',module:'gluegen-rt-natives-linux-i586'
         exclude group:'chemaxonlib',module:'gluegen-rt-natives-macosx-universal'
