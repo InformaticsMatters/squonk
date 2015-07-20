@@ -7,19 +7,10 @@ dependencies {
     compile("com.chemaxon:jchem:6.3.4") {
         // probably other things should be excluded too - jchem is not at all modular
         exclude group:'chemaxonlib',module:'batik-core'
-        exclude group:'chemaxonlib',module:'dom4j'
-        exclude group:'chemaxonlib',module:'xercesImpl'
         exclude group:'chemaxonlib',module:'castor-core'
         exclude group:'chemaxonlib',module:'castor-xml'
-        exclude group:'chemaxonlib',module:'runtime12'
         exclude group:'chemaxonlib',module:'classes12'
-        exclude group:'chemaxonlib',module:'macosx-application-bundle'
-        exclude group:'chemaxonlib',module:'OSXPasteBoardWrapper'
-        exclude group:'chemaxonlib',module:'tesseract-data'
-        exclude group:'chemaxonlib',module:'tesseract-windows'
-        exclude group:'chemaxonlib',module:'tesseract-linux-x32'
-        exclude group:'chemaxonlib',module:'tesseract-linux-x64'
-        exclude group:'chemaxonlib',module:'tesseract-macosx'
+        exclude group:'chemaxonlib',module:'dom4j'
         exclude group:'chemaxonlib',module:'gluegen-rt-natives-linux-amd64'
         exclude group:'chemaxonlib',module:'gluegen-rt-natives-linux-i586'
         exclude group:'chemaxonlib',module:'gluegen-rt-natives-macosx-universal'
@@ -36,9 +27,26 @@ dependencies {
         exclude group:'chemaxonlib',module:'jogl-all-natives-windows-amd64'
         exclude group:'chemaxonlib',module:'jogl-all-natives-windows-i586'
         exclude group:'chemaxonlib',module:'jogl-all'
-        exclude group:'chemaxonlib',module:''
+        exclude group:'chemaxonlib',module:'macosx-application-bundle'
+        exclude group:'chemaxonlib',module:'runtime12'
+        exclude group:'chemaxonlib',module:'tesseract-data'
+        exclude group:'chemaxonlib',module:'tesseract-windows'
+        exclude group:'chemaxonlib',module:'tesseract-linux-x32'
+        exclude group:'chemaxonlib',module:'tesseract-linux-x64'
+        exclude group:'chemaxonlib',module:'tesseract-macosx'
+        exclude group:'chemaxonlib',module:'OSXPasteBoardWrapper'
+        exclude group:'chemaxonlib',module:'ws-commons-util'
+        exclude group:'chemaxonlib',module:'xercesImpl'
+        
+        exclude group:'org.apache.httpcomponents',module:'httpclient'
+        exclude group:'org.apache.httpcomponents',module:'httpcore'
+        
+        exclude group:'mysql',module:'mysql-connector-java'
 
         exclude group:'org.postgresql',module:'postgresql'
+        
+        exclude group:'org.apache.axis2',module:'axis2-kernel'
+        
         exclude group:'org.apache.derby',module:'derby'
         exclude group:'org.apache.derby',module:'derbyclient'
         exclude group:'org.apache.derby',module:'derbynet'
@@ -57,7 +65,7 @@ dependencies {
         exclude group:'org.apache.derby',module:'derbyLocale_ru'
         exclude group:'org.apache.derby',module:'derbyLocale_zh_CN'
         exclude group:'org.apache.derby',module:'derbyLocale_zh_TW'
-        exclude group:'mysql',module:'mysql-connector-java'
+
         //exclude group:'com.oracle',module:'ojdbc6' // needed in JChem 6.3.4
         exclude group:'org.hsqldb',module:'hsqldb'
         exclude group:'net.sf.jacob-project',module:'jacob-native-x86'

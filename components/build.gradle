@@ -97,4 +97,31 @@ task dbTestEnvShutdown(type:Exec) {
     commandLine 'bash', 'db-test-env-shutdown.sh'
 }
 
+task createEbsBackendServicesRootZip(type: Zip) {
+    archiveName = 'ROOT.war'
+    destinationDir = file('build/ebs/')
+    from 'chem-services-root/src/main/html'
+}
+
+task createEbsBackendServicesZip(type: Zip) {
+    
+    dependsOn = [
+       createEbsBackendServicesRootZip, 
+       'chem-services-cdk-basic:war',
+        'chem-services-chemaxon-basic:war'
+    ]
+    archiveName = 'ebs.zip'
+    destinationDir = file('build/ebs/')
+    from files(
+        'chem-services-cdk-basic/build/libs/chem-services-cdk-basic-' + version + '.war',
+        'chem-services-chemaxon-basic/build/libs/chem-services-chemaxon-basic-' + version + '.war',
+        'build/ebs/ROOT.war',
+    
+    )
+    rename { String fileName ->
+        fileName.replace('-' + version, '')
+    }
+        
+}
+
 

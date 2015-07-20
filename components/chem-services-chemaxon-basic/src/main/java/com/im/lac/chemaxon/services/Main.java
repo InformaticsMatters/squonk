@@ -1,4 +1,4 @@
-package com.im.lac.services.chemaxon;
+package com.im.lac.chemaxon.services;
 
 import com.im.lac.camel.CamelCommonConstants;
 import java.util.logging.Level;

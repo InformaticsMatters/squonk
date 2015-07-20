@@ -1,0 +1,37 @@
+apply plugin: 'war'
+apply plugin: 'com.bmuschko.tomcat'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.2.2'
+    }
+}
+
+dependencies {
+    compile project(':common')
+    compile project(':common-camel')
+    compile project(':core-services/core-services-common')
+    compile project(':cdk-lib')
+    compile project(':cdk-camel')
+    
+    compile "org.apache.camel:camel-core:$camelVersion"
+    compile "org.apache.camel:camel-jackson:$camelVersion"
+    compile "org.apache.camel:camel-servletlistener:$camelVersion"
+    compile "org.apache.camel:camel-servlet:$camelVersion"
+    compile "org.apache.camel:camel-swagger:$camelVersion"
+    
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    
+    def tomcatVersion = '7.0.59'
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+           "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
+           "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+}
+
+tomcat {
+    enableSSL = false
+}

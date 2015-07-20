@@ -21,7 +21,9 @@ cs:
     - mq:rabbitmq
     environment:
         RABBITMQ_HOST: rabbitmq
-        RABBITMQ_VHOST: unittest
+        RABBITMQ_VHOST: "/unittest"
+        RABBITMQ_USER: tester
+        RABBITMQ_PASSWORD: lacrocks
         CHEMCENTRAL_DB_NAME: unittest
         CHEMCENTRAL_DB_USERNAME: tester
         CHEMCENTRAL_DB_PASSWORD: "lacrocks"

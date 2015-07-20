@@ -1,5 +1,10 @@
 description = 'ChemAxon Camel components'
 
+//configurations.all {
+//    resolutionStrategy {
+//        failOnVersionConflict()
+//    }
+//}
 
 dependencies {
 
@@ -12,10 +17,8 @@ dependencies {
     compile "org.postgresql:postgresql:9.4-1201-jdbc41"
     
     compile "org.apache.camel:camel-core:$camelVersion"
-    compile "org.apache.camel:camel-restlet:$camelVersion"
-    
-    compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
-    compile 'org.glassfish.jersey.core:jersey-server:2.6'
+
+    compile 'org.apache.httpcomponents:httpclient:4.5'
     
     testCompile "org.apache.derby:derby:10.11.1.1"
     testCompile project(':core-test')

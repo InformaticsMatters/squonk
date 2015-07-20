@@ -22,7 +22,7 @@ import com.im.lac.job.jobdef.JobDefinition;
  *
  * @author timbo
  */
-interface ServiceDescriptor {
+public interface ServiceDescriptor {
 
     /**
      * A license token the user must have to be able to use the service. Should this really be an
@@ -43,6 +43,14 @@ interface ServiceDescriptor {
     String getName();
 
     /**
+     * Get the location(s) where this service will appear in the UI. The path is modelled as a
+     * absolute unix path. e.g. "/services/rdkit/clustering/my cluster service"
+     *
+     * @return
+     */
+    String[] getPaths();
+
+    /**
      * The owner of this service
      *
      * @return
@@ -57,11 +65,11 @@ interface ServiceDescriptor {
     String getDescription();
 
     /**
-     * The URL to call to execute the service
+     * A set of tags that describe the service and can be used for searching/discovery
      *
      * @return
      */
-    String getExecutionUrl();
+    String[] getTags();
 
     /**
      * The URL to call to get documentation on the service. e.g. the services "home page"
@@ -76,20 +84,27 @@ interface ServiceDescriptor {
      * @return
      */
     String getOwnerUrl();
+    
+    /**
+     * The layers this service should belong to 
+     *
+     * @return
+     */
+    String[] getLayers();
 
     /**
      * The type(s) of object this service can process. e.g. MoleculeObject
      *
      * @return
      */
-    Class[] getInputClass();
+    Class[] getInputClasses();
 
     /**
      * Often the same as the inputClass, but not always
      *
      * @return
      */
-    Class[] getOutputClass();
+    Class[] getOutputClasses();
 
     /**
      * Single Item or Stream of multiple Items
@@ -128,6 +143,13 @@ interface ServiceDescriptor {
          * @return
          */
         String getDescription();
+
+        /**
+         * The endpoint (often a URL) to call to execute the service
+         *
+         * @return
+         */
+        String getExecutionEndpoint();
 
         /**
          * The JobDefinition class for this mode. This is used to submit a job to this service.
