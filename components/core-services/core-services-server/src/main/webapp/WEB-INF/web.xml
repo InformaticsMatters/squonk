@@ -22,6 +22,7 @@
             com.im.lac.services.job.service.AsyncJobRouteBuilder,
             com.im.lac.services.job.service.SplitAndQueueJobRouteBuilder,
             com.im.lac.services.job.service.JobServiceRouteBuilder,
+            com.im.lac.services.discovery.service.ServiceDiscoveryRouteBuilder,
             com.im.lac.services.RestRouteBuilder</param-value>
     </context-param>
     

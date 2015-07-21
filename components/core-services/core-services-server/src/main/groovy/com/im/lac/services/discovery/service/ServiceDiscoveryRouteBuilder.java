@@ -1,5 +1,6 @@
 package com.im.lac.services.discovery.service;
 
+import com.im.lac.services.ServiceDescriptorSet;
 import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.types.io.JsonHandler;
 import java.util.ArrayList;
@@ -39,15 +40,18 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-cdk-basic/rest/v1/calculators"
     });
 
-    protected Map<String, ServiceDefintion> serviceDefintions = Collections.synchronizedMap(new HashMap<>());
+    protected Map<String, ServiceDescriptorSet> serviceDefintions = Collections.synchronizedMap(new HashMap<>());
 
     @Override
     public void configure() throws Exception {
+        
+        
 
         from(ROUTE_REQUEST)
                 .log("ROUTE_REQUEST")
                 .process((Exchange exch) -> exch.getIn().setBody(serviceDefintions.values()));
 
+        // This updates the currently available services on a scheduled basis
         from("timer:discover?period=" + timerDelay + "&repeatCount=" + timerRepeats)
                 .process((Exchange exch) -> exch.getIn().setBody(locations))
                 .split(body())
@@ -66,7 +70,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                         while (iter.hasNext()) {
                             list.add(iter.next());
                         }
-                        ServiceDefintion defn = new ServiceDefintion(url, list.toArray(new ServiceDescriptor[list.size()]));
+                        ServiceDescriptorSet defn = new ServiceDescriptorSet(url, list.toArray(new ServiceDescriptor[list.size()]));
                         serviceDefintions.put(url, defn);
                     }
                 })

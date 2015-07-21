@@ -37,6 +37,7 @@ class ServiceDescriptorJsonSpec extends Specification {
                 "Immediate execution",
                 "Execute as an asynchronous REST web service",
                 "logp", // a URL relative to this URL?
+                true,
                 AsyncHttpProcessDatasetJobDefinition.class,
                 0, Integer.MAX_VALUE, 0.001f,
                 [ServiceDescriptor.LicenseToken.CHEMAXON] as ServiceDescriptor.LicenseToken[])

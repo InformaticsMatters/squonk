@@ -23,7 +23,7 @@ public class RestRouteBuilder extends RouteBuilder {
             = new ServiceDescriptor[]{new ServiceDescriptor(
                         "CDK LogP",
                         "CDK LogP predictions for XLogP and ALogP",
-                        new String[]{"logp", "partitioning", "cdk"},
+                        new String[]{"logp", "partitioning", "molecularproperties", "cdk"},
                         null,
                         new String[]{"/Chemistry/Toolkits/CDK/Calculators", "Chemistry/Calculators/Partioning"},
                         "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
@@ -37,11 +37,14 @@ public class RestRouteBuilder extends RouteBuilder {
                             new AccessMode(
                                     "Immediate execution",
                                     "Execute as an asynchronous REST web service",
-                                    "logp", // a URL relative to this URL?
+                                    "logp", // endpoint
+                                    true, // URL is relative
                                     AsyncHttpProcessDatasetJobDefinition.class,
-                                    0, Integer.MAX_VALUE, 0.001f,
+                                    0, 
+                                    Integer.MAX_VALUE, 
+                                    0f,
                                     new ServiceDescriptor.LicenseToken[]{ServiceDescriptor.LicenseToken.CHEMAXON},
-                            null)
+                                    null)
                         }
                 )
             };

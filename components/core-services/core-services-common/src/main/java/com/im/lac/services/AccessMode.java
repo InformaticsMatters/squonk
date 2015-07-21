@@ -13,6 +13,7 @@ public class AccessMode {
     final String name;
     final String description;
     final String executionEndpoint;
+    final boolean endpointRelative;
     final Class<? extends JobDefinition> jobType;
     final int minSize;
     final int maxSize;
@@ -24,6 +25,7 @@ public class AccessMode {
             @JsonProperty("name") String name,
             @JsonProperty("description") String description,
             @JsonProperty("executionEndpoint") String executionEndpoint,
+            @JsonProperty("endpointRelative") boolean endpointRelative,
             @JsonProperty("jobType") Class<? extends JobDefinition> jobType,
             @JsonProperty("minSize") int minSize,
             @JsonProperty("maxSize") int maxSize,
@@ -36,6 +38,7 @@ public class AccessMode {
         this.name = name;
         this.description = description;
         this.executionEndpoint = executionEndpoint;
+        this.endpointRelative = endpointRelative;
         this.jobType = jobType;
         this.minSize = minSize;
         this.maxSize = maxSize;
@@ -69,6 +72,14 @@ public class AccessMode {
      */
     public String getExecutionEndpoint() {
         return executionEndpoint;
+    }
+    
+    /**
+     * Is the definition of the endpoint relative to the URL from which the ServiceDescriptor was obtained 
+     * @return 
+     */
+    public boolean isEndpointRelative() {
+        return endpointRelative;
     }
 
     /**

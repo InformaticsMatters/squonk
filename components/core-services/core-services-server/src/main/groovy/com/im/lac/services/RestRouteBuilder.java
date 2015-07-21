@@ -8,6 +8,7 @@ import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.services.dataset.service.DatasetHandler;
+import com.im.lac.services.discovery.service.ServiceDiscoveryRouteBuilder;
 import com.im.lac.services.job.service.JobHandler;
 import com.im.lac.services.job.service.JobServiceRouteBuilder;
 import java.io.InputStream;
@@ -52,6 +53,13 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 })
                 .log("Echoing: ${body}")
                 .endRest();
+
+        rest("/v1/services")
+                .get().description("Get service definitions for the available services")
+                .bindingMode(RestBindingMode.json)
+                .outType(ServiceDescriptorSet.class)
+                .produces("application/json")
+                .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST);
 
         rest("/v1/datasets").description("Dataset management services")
                 // POST

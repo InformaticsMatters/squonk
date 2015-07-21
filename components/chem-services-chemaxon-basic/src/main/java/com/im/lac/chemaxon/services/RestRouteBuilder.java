@@ -19,32 +19,99 @@ public class RestRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(RestRouteBuilder.class.getName());
 
-    private static final ServiceDescriptor[] calculatorsServiceDescriptor
-            = new ServiceDescriptor[]{new ServiceDescriptor(
+    private static final ServiceDescriptor[] SERVICE_DESCRIPTOR_CALCULATORS
+            = new ServiceDescriptor[]{
+                createServiceDescriptor(
                         "ChemAxon LogP",
-                        "ChemAxon LogP. See https://www.chemaxon.com/products/calculator-plugins/property-predictors/#logp_logd",
-                        new String[]{"logp", "partitioning", "chemaxon"},
-                        null,
+                        "LogP using ChemAxon calculators. See http://www.chemaxon.com/products/calculator-plugins/property-predictors/#logp_logd",
+                        new String[]{"logp", "partitioning", "molecularproperties", "chemaxon"},
                         new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Partioning"},
-                        "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
-                        null,
-                        new String[]{"public"},
-                        new Class[]{MoleculeObject.class}, // inputClasses
-                        new Class[]{MoleculeObject.class}, // outputClasses
-                        new Metadata.Type[]{Metadata.Type.ARRAY}, // inputTypes
-                        new Metadata.Type[]{Metadata.Type.ARRAY}, // outputTypes
-                        new AccessMode[]{
-                            new AccessMode(
-                                    "Immediate execution",
-                                    "Execute as an asynchronous REST web service",
-                                    "logp", // a URL relative to this URL?
-                                    AsyncHttpProcessDatasetJobDefinition.class,
-                                    0, Integer.MAX_VALUE, 0.001f,
-                                    new ServiceDescriptor.LicenseToken[]{ServiceDescriptor.LicenseToken.CHEMAXON},
-                            null)
-                        }
-                )
+                        "logp",
+                        0.001f),
+                createServiceDescriptor(
+                        "ChemAxon Atom Count",
+                        "Atom Count using ChemAxon calculators. See http://www.chemaxon.com/products/calculator-plugins/property-calculations/#topology_analysis",
+                        new String[]{"atomcount", "topology", "molecularproperties", "chemaxon"},
+                        new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Topological"},
+                        "atomCount",
+                        0f),
+                createServiceDescriptor(
+                        "ChemAxon Lipinski Properties",
+                        "Lipinski properties using ChemAxon calculators",
+                        new String[]{"lipinski", "druglike", "molecularproperties", "chemaxon"},
+                        new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/DrugLike"},
+                        "lipinski",
+                        0.002f),
+                createServiceDescriptor(
+                        "ChemAxon Drug-like Filter",
+                        "Drug-like filter using ChemAxon calculators. mass() < 400 and ringCount > 0 and rotatableBondCount() < 5 and acceptorCount <= 10 and LogP < 5",
+                        new String[]{"druglike", "molecularproperties", "chemaxon"},
+                        new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/DrugLike"},
+                        "drugLikeFilter",
+                        0.0025f),
+                createServiceDescriptor(
+                        "ChemAxon Chemical Terms",
+                        "Property prediction using a user definable Chemical Terms experssion. See http://docs.chemaxon.com/display/chemicalterms/Chemical+Terms+Home",
+                        new String[]{"molecularproperties", "chemaxon"},
+                        new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/General"},
+                        "chemTerms",
+                        0.01f)
             };
+
+    private static final ServiceDescriptor[] SERVICE_DESCRIPTOR_DESCRIPTORS
+            = new ServiceDescriptor[]{
+                createServiceDescriptor( // TODO this needs parameters
+                        "ChemAxon ECFP4 Screening",
+                        "Virtual screening using ChemAxon ECFP4 fingerprints. See http://www.chemaxon.com/products/screen/",
+                        new String[]{"virtualscreening", "screening", "ecfp", "ecfp4", "moleculardescriptors", "fingerprints", "chemaxon"},
+                        new String[]{"/Vendors/ChemAxon/Screening", "Chemistry/Screening"},
+                        "screening/ecfp4",
+                        0.001f),
+                createServiceDescriptor( // TODO this needs parameters
+                        "ChemAxon Pharmacophore Screening",
+                        "Virtual screening using ChemAxon 2D pharmacophore fingerprints. See http://www.chemaxon.com/products/screen/",
+                        new String[]{"virtualscreening", "screening", "parmacophore", "moleculardescriptors", "fingerprints", "chemaxon"},
+                        new String[]{"/Vendors/ChemAxon/Screening", "Chemistry/Screening"},
+                        "screening/pharmacophore",
+                        0.004f),
+                createServiceDescriptor( // TODO this needs parameters
+                        "ChemAxon SpereEx Clustering",
+                        "Sphere exclusion clustering using ChemAxon ECFP4 fingerprints. See http://www.chemaxon.com/products/jkulstor/",
+                        new String[]{"clustering", "ecfp", "ecfp4", "chemaxon"},
+                        new String[]{"/Vendors/ChemAxon/Clustering", "Chemistry/Clustering"},
+                        "clustering/spherex/ecfp4",
+                        0.002f)
+            };
+
+    static ServiceDescriptor createServiceDescriptor(String name, String desc, String[] tags, String[] paths, String endpoint, float cost) {
+        return new ServiceDescriptor(
+                name,
+                desc,
+                tags,
+                null,
+                paths,
+                "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
+                null,
+                new String[]{"public"},
+                new Class[]{MoleculeObject.class}, // inputClasses
+                new Class[]{MoleculeObject.class}, // outputClasses
+                new Metadata.Type[]{Metadata.Type.ARRAY}, // inputTypes
+                new Metadata.Type[]{Metadata.Type.ARRAY}, // outputTypes
+                new AccessMode[]{
+                    new AccessMode(
+                            "Immediate execution",
+                            "Execute as an asynchronous REST web service",
+                            endpoint,
+                            true, // a relative URL
+                            AsyncHttpProcessDatasetJobDefinition.class,
+                            0,
+                            Integer.MAX_VALUE,
+                            cost,
+                            new ServiceDescriptor.LicenseToken[]{ServiceDescriptor.LicenseToken.CHEMAXON},
+                            null)
+                }
+        );
+    }
 
     @Override
     public void configure() throws Exception {
@@ -70,7 +137,7 @@ public class RestRouteBuilder extends RouteBuilder {
                 .produces("application/json")
                 .route()
                 .process((Exchange exch) -> {
-                    exch.getIn().setBody(calculatorsServiceDescriptor);
+                    exch.getIn().setBody(SERVICE_DESCRIPTOR_CALCULATORS);
                 })
                 .endRest()
                 //
@@ -113,6 +180,16 @@ public class RestRouteBuilder extends RouteBuilder {
                 .bindingMode(RestBindingMode.off)
                 .consumes("application/json")
                 .produces("application/json")
+                //
+                // service descriptor
+                .get().description("ServiceDescriptors for ChemAxon descriptors")
+                .bindingMode(RestBindingMode.json)
+                .produces("application/json")
+                .route()
+                .process((Exchange exch) -> {
+                    exch.getIn().setBody(SERVICE_DESCRIPTOR_DESCRIPTORS);
+                })
+                .endRest()
                 //
                 .post("screening/ecfp4").description("Screen using ECFP4 fingerprints")
                 .route()
