@@ -88,8 +88,9 @@ tomcat {
  */
 
 docker {
-    url = 'http://localhost:2376'
-    certPath = new File(System.properties['user.home'], '.docker')
+    url = 'http://localhost:2375'
+    //certPath = new File(System.properties['user.home'], '.docker')
+    certPath = null
 }
 
 task dockerFile(type: Dockerfile, dependsOn: war) {
