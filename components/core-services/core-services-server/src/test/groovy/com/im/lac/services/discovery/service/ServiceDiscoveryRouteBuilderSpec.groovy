@@ -1,6 +1,7 @@
 package com.im.lac.services.discovery.service
 
 import org.apache.camel.impl.DefaultCamelContext
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
@@ -9,6 +10,7 @@ import spock.lang.Specification
  */
 class ServiceDiscoveryRouteBuilderSpec extends Specification {
 	
+    @Ignore
     void "test service discovery"() {
         setup:        
         DefaultCamelContext context = new DefaultCamelContext()
@@ -22,8 +24,8 @@ class ServiceDiscoveryRouteBuilderSpec extends Specification {
         sleep(5000)
         
         then:
-        println "Discovered ${rb.serviceDefintions.size()} active service definitions"
-        rb.serviceDefintions.size() > 0
+        println "Discovered ${rb.serviceDefinitions.size()} active service definitions"
+        rb.serviceDefinitions.size() > 0
                 
         cleanup:
         context.stop()

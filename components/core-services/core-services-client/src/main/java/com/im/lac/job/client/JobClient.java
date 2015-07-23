@@ -22,8 +22,6 @@ import org.apache.http.impl.client.HttpClients;
  * Client to manage submission and management of jobs. The client only knows about
  * {@link JobDefintion}s and {@link JobStatus}es, not about how jobs are executed.
  *
- * WARNING: this class is currently just a skeleton - nothing is implemented.
- *
  * @author timbo
  */
 public class JobClient {
@@ -70,11 +68,12 @@ public class JobClient {
             Date completionTimeEnd) throws IOException {
 
         HttpGet httpGet = new HttpGet(base);
-        CloseableHttpResponse response = httpclient.execute(httpGet);
-        LOG.fine(response.getStatusLine().toString());
-        HttpEntity entity1 = response.getEntity();
-        InputStream is = entity1.getContent();
-        return jsonHandler.streamFromJson(is, JobStatus.class, true).collect(Collectors.toList());
+        try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
+            LOG.fine(response.getStatusLine().toString());
+            HttpEntity entity1 = response.getEntity();
+            InputStream is = entity1.getContent();
+            return jsonHandler.streamFromJson(is, JobStatus.class, true).collect(Collectors.toList());
+        }
     }
 
     /**
@@ -90,7 +89,7 @@ public class JobClient {
         String json = jsonHandler.objectToJson(jobdef);
         HttpPost httpPost = new HttpPost(base);
         httpPost.setEntity(new StringEntity(json));
-        LOG.log(Level.INFO, "submitting job {0} to {1}", new Object[]{jobdef, base} );
+        LOG.log(Level.INFO, "submitting job {0} to {1}", new Object[]{jobdef, base});
         try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
             LOG.info(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
@@ -107,7 +106,7 @@ public class JobClient {
      * @throws java.io.IOException
      */
     public JobStatus getJobStatus(String jobId) throws IOException {
-       HttpGet httpGet = new HttpGet(base + "/" + jobId);
+        HttpGet httpGet = new HttpGet(base + "/" + jobId);
         try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             LOG.fine(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();

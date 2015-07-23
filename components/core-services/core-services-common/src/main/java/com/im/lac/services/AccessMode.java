@@ -18,7 +18,7 @@ public class AccessMode {
     final int minSize;
     final int maxSize;
     final float cost;
-    final ServiceDescriptor.LicenseToken[] requiredLienceTokens;
+    final ServiceDescriptor.LicenseToken[] requiredLicenseTokens;
     final Object[] parameters;
 
     public AccessMode(
@@ -30,7 +30,7 @@ public class AccessMode {
             @JsonProperty("minSize") int minSize,
             @JsonProperty("maxSize") int maxSize,
             @JsonProperty("cost") float cost,
-            @JsonProperty("requiredLienceTokens") ServiceDescriptor.LicenseToken[] requiredLienceTokens,
+            @JsonProperty("requiredLicenseTokens") ServiceDescriptor.LicenseToken[] requiredLicenseTokens,
             @JsonProperty("parameters") Object[] parameters) {
 
         assert cost >= 0;
@@ -43,7 +43,7 @@ public class AccessMode {
         this.minSize = minSize;
         this.maxSize = maxSize;
         this.cost = cost;
-        this.requiredLienceTokens = requiredLienceTokens;
+        this.requiredLicenseTokens = requiredLicenseTokens;
         this.parameters = parameters;
     }
 
@@ -130,8 +130,8 @@ public class AccessMode {
      *
      * @return
      */
-    public ServiceDescriptor.LicenseToken[] getRequiredLienceTokens() {
-        return requiredLienceTokens;
+    public ServiceDescriptor.LicenseToken[] getRequiredLicenseTokens() {
+        return requiredLicenseTokens;
     }
 
     /**

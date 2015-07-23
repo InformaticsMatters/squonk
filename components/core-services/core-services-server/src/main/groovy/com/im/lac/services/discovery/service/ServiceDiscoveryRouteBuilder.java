@@ -40,7 +40,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-cdk-basic/rest/v1/calculators"
     });
 
-    protected Map<String, ServiceDescriptorSet> serviceDefintions = Collections.synchronizedMap(new HashMap<>());
+    protected Map<String, ServiceDescriptorSet> serviceDefinitions = Collections.synchronizedMap(new HashMap<>());
 
     @Override
     public void configure() throws Exception {
@@ -49,7 +49,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 
         from(ROUTE_REQUEST)
                 .log("ROUTE_REQUEST")
-                .process((Exchange exch) -> exch.getIn().setBody(serviceDefintions.values()));
+                .process((Exchange exch) -> exch.getIn().setBody(serviceDefinitions.values()));
 
         // This updates the currently available services on a scheduled basis
         from("timer:discover?period=" + timerDelay + "&repeatCount=" + timerRepeats)
@@ -71,7 +71,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                             list.add(iter.next());
                         }
                         ServiceDescriptorSet defn = new ServiceDescriptorSet(url, list.toArray(new ServiceDescriptor[list.size()]));
-                        serviceDefintions.put(url, defn);
+                        serviceDefinitions.put(url, defn);
                     }
                 })
                 .log(LoggingLevel.DEBUG, "Site ${header[" + Exchange.HTTP_URI + "]} updated.")
@@ -80,7 +80,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                 .log(LoggingLevel.INFO, "Site ${header[" + Exchange.HTTP_URI + "]} not responding. Removing from available services.")
                 .process((Exchange exch) -> {
                     String url = exch.getIn().getHeader(Exchange.HTTP_URI, String.class);
-                    serviceDefintions.remove(url);
+                    serviceDefinitions.remove(url);
                 })
                 .end();
 
