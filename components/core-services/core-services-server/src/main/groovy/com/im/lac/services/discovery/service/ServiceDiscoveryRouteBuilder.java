@@ -1,7 +1,13 @@
 package com.im.lac.services.discovery.service;
 
+import com.im.lac.dataset.Metadata;
+import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition;
+import com.im.lac.job.jobdef.DoNothingJobDefinition;
+import com.im.lac.services.AccessMode;
 import com.im.lac.services.ServiceDescriptorSet;
 import com.im.lac.services.ServiceDescriptor;
+import com.im.lac.services.job.service.AsyncJobRouteBuilder;
+import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.io.JsonHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,10 +48,69 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 
     protected Map<String, ServiceDescriptorSet> serviceDefinitions = Collections.synchronizedMap(new HashMap<>());
 
+    private static final ServiceDescriptor[] testServiceDescriptors = new ServiceDescriptor[]{
+        new ServiceDescriptor(
+        "NOOP Service",
+        "Does nothing other than create a JOB",
+        new String[]{"testing"},
+        null,
+        new String[]{"/Testing"},
+        "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
+        null,
+        new String[]{"testing"},
+        new Class[0], // inputClasses
+        new Class[0], // outputClasses
+        new Metadata.Type[0], // inputTypes
+        new Metadata.Type[0], // outputTypes
+        new AccessMode[]{
+            new AccessMode(
+            "Immediate execution",
+            "Execute as an asynchronous REST web service",
+            "valueIsIgnored", // endpoint
+            false, // URL is relative
+            DoNothingJobDefinition.class,
+            0,
+            Integer.MAX_VALUE,
+            0f,
+            null,
+            null)
+        }
+        ),
+        new ServiceDescriptor(
+        "Echo Service",
+        "Reads a dataset and writes it back as a new dataset",
+        new String[]{"testing"},
+        null,
+        new String[]{"/Testing"},
+        "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
+        null,
+        new String[]{"testing"},
+        new Class[]{MoleculeObject.class}, // inputClasses
+        new Class[]{MoleculeObject.class}, // outputClasses
+        new Metadata.Type[]{Metadata.Type.ARRAY}, // inputTypes
+        new Metadata.Type[]{Metadata.Type.ARRAY}, // outputTypes
+        new AccessMode[]{
+            new AccessMode(
+            "Immediate execution",
+            "Execute as an asynchronous REST web service",
+            AsyncJobRouteBuilder.ROUTE_DUMMY, // the direct:simpleroute endpoint
+            false, // URL is relative
+            AsyncLocalProcessDatasetJobDefinition.class,
+            0,
+            Integer.MAX_VALUE,
+            0f,
+            null,
+            null)
+        }
+        )
+    };
+
+    public ServiceDiscoveryRouteBuilder() {
+        serviceDefinitions.put("testing_only", new ServiceDescriptorSet("testing_only", testServiceDescriptors));
+    }
+
     @Override
     public void configure() throws Exception {
-        
-        
 
         from(ROUTE_REQUEST)
                 .log("ROUTE_REQUEST")

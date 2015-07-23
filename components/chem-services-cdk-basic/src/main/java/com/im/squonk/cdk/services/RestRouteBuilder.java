@@ -40,10 +40,10 @@ public class RestRouteBuilder extends RouteBuilder {
                                     "logp", // endpoint
                                     true, // URL is relative
                                     AsyncHttpProcessDatasetJobDefinition.class,
-                                    0, 
-                                    Integer.MAX_VALUE, 
+                                    0,
+                                    Integer.MAX_VALUE,
                                     0f,
-                                    new ServiceDescriptor.LicenseToken[]{ServiceDescriptor.LicenseToken.CHEMAXON},
+                                    null,
                                     null)
                         }
                 )

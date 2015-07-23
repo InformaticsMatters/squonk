@@ -19,7 +19,7 @@ public class AccessMode {
     final int maxSize;
     final float cost;
     final ServiceDescriptor.LicenseToken[] requiredLicenseTokens;
-    final Object[] parameters;
+    final ServicePropertyDescriptor[] parameters;
 
     public AccessMode(
             @JsonProperty("name") String name,
@@ -31,7 +31,7 @@ public class AccessMode {
             @JsonProperty("maxSize") int maxSize,
             @JsonProperty("cost") float cost,
             @JsonProperty("requiredLicenseTokens") ServiceDescriptor.LicenseToken[] requiredLicenseTokens,
-            @JsonProperty("parameters") Object[] parameters) {
+            @JsonProperty("parameters") ServicePropertyDescriptor[] parameters) {
 
         assert cost >= 0;
 
@@ -144,7 +144,7 @@ public class AccessMode {
      *
      * @return
      */
-    public Object[] getParameters() {
+    public ServicePropertyDescriptor[] getParameters() {
         return parameters;
     }
 
