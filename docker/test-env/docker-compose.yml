@@ -1,0 +1,35 @@
+# docker-compose.yml file for test environment
+db:
+    build: postgres/
+    ports: 
+        - "5432:5432"
+
+kc:
+    image: jboss/keycloak-postgres
+    links:
+        - db:postgres
+    environment:
+        POSTGRES_DATABASE: keycloak
+        POSTGRES_user: keycloak
+        POSTGRES_PASSWORD: lacrocks
+    volumes:
+        - /opt/jboss/keycloak
+    ports:
+        - "9999:8080"
+
+cs:
+    build: ../../components/core-services/core-services-server/build
+    ports:
+    - 80:8080
+    links:
+    - db:db
+    #- mq:rabbitmq
+    environment:
+        #RABBITMQ_HOST: rabbitmq
+        #RABBITMQ_VHOST: "/unittest"
+        #RABBITMQ_USER: tester
+        #RABBITMQ_PASSWORD: lacrocks
+        CHEMCENTRAL_DB_NAME: unittest
+        CHEMCENTRAL_DB_USERNAME: tester
+        CHEMCENTRAL_DB_PASSWORD: "lacrocks"
+        CHEMCENTRAL_AUTO_CREATE: "true"

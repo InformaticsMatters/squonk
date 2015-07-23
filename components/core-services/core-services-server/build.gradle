@@ -31,8 +31,6 @@ dependencies {
     compile project(':core-services/core-services-common')
     
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
-    
-    providedCompile 'javax.servlet:servlet-api:2.5'
 
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-jackson:$camelVersion"
@@ -42,10 +40,12 @@ dependencies {
     compile "org.apache.camel:camel-http4:$camelVersion"
     compile "org.apache.camel:camel-rabbitmq:$camelVersion"
      
-    def tomcatVersion = '6.0.43'
-    tomcat "org.apache.tomcat:catalina:${tomcatVersion}",
-           "org.apache.tomcat:coyote:${tomcatVersion}",
-           "org.apache.tomcat:jasper:${tomcatVersion}"
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+    
+    def tomcatVersion = '7.0.59'
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+           "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
+           "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
     
     compile "org.postgresql:postgresql:9.4-1201-jdbc41"
   
