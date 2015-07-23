@@ -10,7 +10,6 @@ import spock.lang.Specification
  */
 class ServiceDiscoveryRouteBuilderSpec extends Specification {
 	
-    @Ignore
     void "test service discovery"() {
         setup:        
         DefaultCamelContext context = new DefaultCamelContext()

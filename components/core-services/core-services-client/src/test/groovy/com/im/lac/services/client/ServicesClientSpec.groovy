@@ -15,7 +15,6 @@ import spock.lang.Specification
  */
 class ServicesClientSpec extends Specification {   
     
-    @Ignore
     void "list services"() {
         
         setup:
