@@ -83,7 +83,7 @@ public class RestRouteBuilder extends RouteBuilder {
                         "screening/ecfp4",
                         0.001f,
                         new ServicePropertyDescriptor[]{
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, NAME_QMOL, DESC_QMOL),
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRUCTURE, NAME_QMOL, DESC_QMOL),
                             new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
                         }),
                 createServiceDescriptor(
@@ -94,7 +94,7 @@ public class RestRouteBuilder extends RouteBuilder {
                         "screening/pharmacophore",
                         0.004f,
                         new ServicePropertyDescriptor[]{
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, NAME_QMOL, DESC_QMOL),
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRUCTURE, NAME_QMOL, DESC_QMOL),
                             new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
                         }),
                 createServiceDescriptor(
