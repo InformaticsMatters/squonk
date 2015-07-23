@@ -134,7 +134,7 @@ public class RestRouteBuilder extends RouteBuilder {
                             Integer.MAX_VALUE,
                             cost,
                             new ServiceDescriptor.LicenseToken[]{ServiceDescriptor.LicenseToken.CHEMAXON},
-                            null)
+                            props)
                 }
         );
     }
