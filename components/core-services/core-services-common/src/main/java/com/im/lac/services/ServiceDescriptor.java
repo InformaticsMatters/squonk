@@ -2,6 +2,7 @@ package com.im.lac.services;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.im.lac.dataset.Metadata;
+import java.io.Serializable;
 
 /**
  * Descriptor of a service that can be used to parameterise a request to this service. The basic
@@ -22,7 +23,7 @@ import com.im.lac.dataset.Metadata;
  *
  * @author timbo
  */
-public class ServiceDescriptor {
+public class ServiceDescriptor implements Serializable {
 
     /**
      * A license token the user must have to be able to use the service. Should this really be an
@@ -35,6 +36,7 @@ public class ServiceDescriptor {
         CHEMAXON
     }
 
+    private final String id;
     private final String name;
     private final String description;
     private final String[] tags;
@@ -50,6 +52,7 @@ public class ServiceDescriptor {
     private final AccessMode[] accessModes;
 
     public ServiceDescriptor(
+            @JsonProperty("id") String id,
             @JsonProperty("name") String name,
             @JsonProperty("description") String description,
             @JsonProperty("tags") String[] tags,
@@ -64,6 +67,7 @@ public class ServiceDescriptor {
             @JsonProperty("outputTypes") Metadata.Type[] outputTypes,
             @JsonProperty("accessModes") AccessMode[] accessModes
     ) {
+        this.id = id;
         this.name = name;
         this.description = description;
         this.tags = tags;
@@ -79,6 +83,15 @@ public class ServiceDescriptor {
         this.accessModes = accessModes;
     }
 
+    /**
+     * The ID of this service
+     *
+     * @return
+     */
+    public String getId() {
+        return id;
+    }
+    
     /**
      * The short name of this service
      *

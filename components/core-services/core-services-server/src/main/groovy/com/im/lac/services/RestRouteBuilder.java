@@ -57,7 +57,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
         rest("/v1/services")
                 .get().description("Get service definitions for the available services")
                 .bindingMode(RestBindingMode.json)
-                .outType(ServiceDescriptorSet.class)
+                .outType(ServiceDescriptor.class)
                 .produces("application/json")
                 .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST);
 

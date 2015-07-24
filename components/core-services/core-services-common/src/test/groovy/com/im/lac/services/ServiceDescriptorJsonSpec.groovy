@@ -21,6 +21,7 @@ class ServiceDescriptorJsonSpec extends Specification {
         println "ServiceDescriptor json()"
         ObjectMapper mapper = new ObjectMapper()
         def descriptor = new ServiceDescriptor(
+            "cdk/logp",
             "CDK LogP",
             "CDK LogP predictions for XLogP and ALogP",
             ["logp", "partitioning", "cdk"] as String[],
@@ -34,6 +35,7 @@ class ServiceDescriptorJsonSpec extends Specification {
             [Metadata.Type.ARRAY] as Metadata.Type[], // inputTypes
             [Metadata.Type.ARRAY] as Metadata.Type[], // outputTypes
             [new AccessMode(
+                "async",
                 "Immediate execution",
                 "Execute as an asynchronous REST web service",
                 "logp", // a URL relative to this URL?

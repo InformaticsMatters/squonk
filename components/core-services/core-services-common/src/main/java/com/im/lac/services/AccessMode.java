@@ -2,14 +2,16 @@ package com.im.lac.services;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.im.lac.job.jobdef.JobDefinition;
+import java.io.Serializable;
 
 /**
  * Defines a way to access a service
  *
  * @author timbo
  */
-public class AccessMode {
+public class AccessMode implements Serializable {
 
+    final String id;
     final String name;
     final String description;
     final String executionEndpoint;
@@ -22,6 +24,7 @@ public class AccessMode {
     final ServicePropertyDescriptor[] parameters;
 
     public AccessMode(
+            @JsonProperty("id") String id,
             @JsonProperty("name") String name,
             @JsonProperty("description") String description,
             @JsonProperty("executionEndpoint") String executionEndpoint,
@@ -35,6 +38,7 @@ public class AccessMode {
 
         assert cost >= 0;
 
+        this.id = id;
         this.name = name;
         this.description = description;
         this.executionEndpoint = executionEndpoint;
@@ -45,6 +49,15 @@ public class AccessMode {
         this.cost = cost;
         this.requiredLicenseTokens = requiredLicenseTokens;
         this.parameters = parameters;
+    }
+
+    /**
+     * The ID of this mode
+     *
+     * @return
+     */
+    public String getId() {
+        return id;
     }
 
     /**
@@ -73,10 +86,12 @@ public class AccessMode {
     public String getExecutionEndpoint() {
         return executionEndpoint;
     }
-    
+
     /**
-     * Is the definition of the endpoint relative to the URL from which the ServiceDescriptor was obtained 
-     * @return 
+     * Is the definition of the endpoint relative to the URL from which the ServiceDescriptor was
+     * obtained
+     *
+     * @return
      */
     public boolean isEndpointRelative() {
         return endpointRelative;

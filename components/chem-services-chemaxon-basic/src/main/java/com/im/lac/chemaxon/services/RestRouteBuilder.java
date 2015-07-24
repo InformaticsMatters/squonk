@@ -30,42 +30,52 @@ public class RestRouteBuilder extends RouteBuilder {
     private static final ServiceDescriptor[] SERVICE_DESCRIPTOR_CALCULATORS
             = new ServiceDescriptor[]{
                 createServiceDescriptor(
-                        "ChemAxon LogP",
+                        "chemaxon/calculators/logp",
+                        "CXN LogP",
                         "LogP using ChemAxon calculators. See http://www.chemaxon.com/products/calculator-plugins/property-predictors/#logp_logd",
                         new String[]{"logp", "partitioning", "molecularproperties", "chemaxon"},
                         new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Partioning"},
+                        "asyncHttp",
                         "logp",
                         0.001f,
                         null),
                 createServiceDescriptor(
-                        "ChemAxon Atom Count",
+                        "chemaxon/calculators/atomcount",
+                        "CXN Atom Count",
                         "Atom Count using ChemAxon calculators. See http://www.chemaxon.com/products/calculator-plugins/property-calculations/#topology_analysis",
                         new String[]{"atomcount", "topology", "molecularproperties", "chemaxon"},
                         new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Topological"},
+                        "asyncHttp",
                         "atomCount",
                         0f,
                         null),
                 createServiceDescriptor(
-                        "ChemAxon Lipinski Properties",
+                        "chemaxon/calculators/lipinski",
+                        "CXN Lipinski Properties",
                         "Lipinski properties using ChemAxon calculators",
                         new String[]{"lipinski", "druglike", "molecularproperties", "chemaxon"},
                         new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/DrugLike"},
+                        "asyncHttp",
                         "lipinski",
                         0.002f,
                         null),
                 createServiceDescriptor(
-                        "ChemAxon Drug-like Filter",
+                        "chemaxon/calculators/druglikefilter",
+                        "CXN Drug-like Filter",
                         "Drug-like filter using ChemAxon calculators. mass() < 400 and ringCount > 0 and rotatableBondCount() < 5 and acceptorCount <= 10 and LogP < 5",
                         new String[]{"druglike", "molecularproperties", "chemaxon"},
                         new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/DrugLike"},
+                        "asyncHttp",
                         "drugLikeFilter",
                         0.0025f,
                         null),
                 createServiceDescriptor(
-                        "ChemAxon Chemical Terms",
+                        "chemaxon/calculators/chemterms",
+                        "CXN Chemical Terms",
                         "Property prediction using a user definable Chemical Terms experssion. See http://docs.chemaxon.com/display/chemicalterms/Chemical+Terms+Home",
                         new String[]{"molecularproperties", "chemaxon"},
                         new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/General"},
+                        "asyncHttp",
                         "chemTerms",
                         0.01f,
                         new ServicePropertyDescriptor[]{
@@ -76,10 +86,12 @@ public class RestRouteBuilder extends RouteBuilder {
     private static final ServiceDescriptor[] SERVICE_DESCRIPTOR_DESCRIPTORS
             = new ServiceDescriptor[]{
                 createServiceDescriptor(
-                        "ChemAxon ECFP4 Screening",
+                        "chemaxon/screening/ecpf4",
+                        "CXN ECFP4 Screening",
                         "Virtual screening using ChemAxon ECFP4 fingerprints. See http://www.chemaxon.com/products/screen/",
                         new String[]{"virtualscreening", "screening", "ecfp", "ecfp4", "moleculardescriptors", "fingerprints", "chemaxon"},
                         new String[]{"/Vendors/ChemAxon/Screening", "Chemistry/Screening"},
+                        "asyncHttp",
                         "screening/ecfp4",
                         0.001f,
                         new ServicePropertyDescriptor[]{
@@ -87,10 +99,12 @@ public class RestRouteBuilder extends RouteBuilder {
                             new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
                         }),
                 createServiceDescriptor(
-                        "ChemAxon Pharmacophore Screening",
+                        "chemaxon/screening/pharmacophore",
+                        "CXN Pharmacophore Screening",
                         "Virtual screening using ChemAxon 2D pharmacophore fingerprints. See http://www.chemaxon.com/products/screen/",
                         new String[]{"virtualscreening", "screening", "parmacophore", "moleculardescriptors", "fingerprints", "chemaxon"},
                         new String[]{"/Vendors/ChemAxon/Screening", "Chemistry/Screening"},
+                        "asyncHttp",
                         "screening/pharmacophore",
                         0.004f,
                         new ServicePropertyDescriptor[]{
@@ -98,10 +112,12 @@ public class RestRouteBuilder extends RouteBuilder {
                             new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
                         }),
                 createServiceDescriptor(
-                        "ChemAxon SpereEx Clustering",
+                        "chemaxon/clustering/sperex",
+                        "CXN SpereEx Clustering",
                         "Sphere exclusion clustering using ChemAxon ECFP4 fingerprints. See http://www.chemaxon.com/products/jkulstor/",
                         new String[]{"clustering", "ecfp", "ecfp4", "chemaxon"},
                         new String[]{"/Vendors/ChemAxon/Clustering", "Chemistry/Clustering"},
+                        "asyncHttp",
                         "clustering/spherex/ecfp4",
                         0.002f,
                         new ServicePropertyDescriptor[]{
@@ -109,8 +125,9 @@ public class RestRouteBuilder extends RouteBuilder {
                         })
             };
 
-    static ServiceDescriptor createServiceDescriptor(String name, String desc, String[] tags, String[] paths, String endpoint, float cost, ServicePropertyDescriptor[] props) {
+    static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String[] paths, String modeId, String endpoint, float cost, ServicePropertyDescriptor[] props) {
         return new ServiceDescriptor(
+                serviceDescriptorId,
                 name,
                 desc,
                 tags,
@@ -125,6 +142,7 @@ public class RestRouteBuilder extends RouteBuilder {
                 new Metadata.Type[]{Metadata.Type.ARRAY}, // outputTypes
                 new AccessMode[]{
                     new AccessMode(
+                            modeId,
                             "Immediate execution",
                             "Execute as an asynchronous REST web service",
                             endpoint,

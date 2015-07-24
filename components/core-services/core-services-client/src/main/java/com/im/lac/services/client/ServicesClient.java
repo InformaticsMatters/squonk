@@ -1,6 +1,6 @@
 package com.im.lac.services.client;
 
-import com.im.lac.services.ServiceDescriptorSet;
+import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.types.io.JsonHandler;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,13 +42,13 @@ public class ServicesClient {
      * @return A list of job statuses matching the filters
      * @throws java.io.IOException
      */
-    public List<ServiceDescriptorSet> getServiceDefinitions() throws IOException {
+    public List<ServiceDescriptor> getServiceDefinitions() throws IOException {
         HttpGet httpGet = new HttpGet(base);
         try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             LOG.fine(response.getStatusLine().toString());
             HttpEntity entity1 = response.getEntity();
             InputStream is = entity1.getContent();
-            return jsonHandler.streamFromJson(is, ServiceDescriptorSet.class, true).collect(Collectors.toList());
+            return jsonHandler.streamFromJson(is, ServiceDescriptor.class, true).collect(Collectors.toList());
         }
     }
 

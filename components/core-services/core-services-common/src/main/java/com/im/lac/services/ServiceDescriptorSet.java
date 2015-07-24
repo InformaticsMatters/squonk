@@ -1,6 +1,7 @@
 package com.im.lac.services;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 
 /**
  * Definition of set of ServiceDescriptors. Each set is defined at a specific URL, with the
@@ -12,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author timbo
  */
-public class ServiceDescriptorSet {
+public class ServiceDescriptorSet implements Serializable {
 
     private final String baseUrl;
     private final ServiceDescriptor[] serviceDescriptors;

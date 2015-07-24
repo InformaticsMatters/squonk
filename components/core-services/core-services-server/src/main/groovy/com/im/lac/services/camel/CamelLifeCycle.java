@@ -4,6 +4,7 @@ import com.im.lac.services.ServerConstants;
 import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.camel.CamelCommonConstants;
 import com.im.lac.services.dataset.service.DatasetServiceImpl;
+import com.im.lac.services.discovery.service.ServiceDescriptorStore;
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.SimpleRegistry;
 import com.im.lac.services.util.Utils;
@@ -80,6 +81,7 @@ public class CamelLifeCycle {
         r.put(ServerConstants.DATASET_HANDLER, new DatasetHandler(datasetService, "/tmp/datasetcache"));
         r.put(ServerConstants.JOB_HANDLER, new JobHandler());
         r.put(ServerConstants.JOB_STORE, new SimpleJobStore());
+        r.put(ServerConstants.SERVICE_DESCRIPTOR_STORE, new ServiceDescriptorStore());        
     }
 
     public void afterAddRoutes(CamelContext context, SimpleRegistry r) throws Exception {

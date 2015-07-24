@@ -21,6 +21,7 @@ public class RestRouteBuilder extends RouteBuilder {
 
     private static final ServiceDescriptor[] calculatorsServiceDescriptor
             = new ServiceDescriptor[]{new ServiceDescriptor(
+                        "cdk/calculators",
                         "CDK LogP",
                         "CDK LogP predictions for XLogP and ALogP",
                         new String[]{"logp", "partitioning", "molecularproperties", "cdk"},
@@ -35,6 +36,7 @@ public class RestRouteBuilder extends RouteBuilder {
                         new Metadata.Type[]{Metadata.Type.ARRAY}, // outputTypes
                         new AccessMode[]{
                             new AccessMode(
+                                    "asyncHttp",
                                     "Immediate execution",
                                     "Execute as an asynchronous REST web service",
                                     "logp", // endpoint
