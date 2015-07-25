@@ -130,20 +130,6 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .log("REST POST jobdef: ${body}")
                 .to(JobServiceRouteBuilder.ROUTE_SUBMIT_JOB)
                 .endRest();
-//                //
-//                // POST new split and queue job
-//                .post("/splitAndQueueProcessDataset").description("Submit a new split and queue job")
-//                .bindingMode(RestBindingMode.json)
-//                .consumes("application/json").type(SplitAndQueueProcessDatasetJobDefinition.class)
-//                .produces("application/json").outType(JobStatus.class)
-//                .to(JobServiceRouteBuilder.ROUTE_SUBMIT_JOB)
-//                //
-//                // POST new DoNothingJobDefintion
-//                .post("/doNothingJob").description("Noop job for testing. Does nothing but returns a status")
-//                .bindingMode(RestBindingMode.json)
-//                .consumes("application/json").type(DoNothingJobDefinition.class)
-//                .produces("application/json").outType(JobStatus.class)
-//                .to(JobServiceRouteBuilder.ROUTE_DO_NOTHING);
 
 
         /* These are the implementation endpoints - not accessible directly from "outside"

@@ -16,5 +16,7 @@ public interface DatasetJobDefinition extends JobDefinition {
     DatasetMode getMode();
 
     String getDatasetName();
+    
+    //void configureDataset(Long datasetId, DatasetMode datasetMode, String newDatasetName);
 
 }

@@ -45,7 +45,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     
     private static final ServiceDescriptor[] testServiceDescriptors = new ServiceDescriptor[]{
         new ServiceDescriptor(
-        "test/noop",
+        "test.noop",
         "NOOP Service",
         "Does nothing other than create a Job",
         new String[]{"testing"},
@@ -54,10 +54,10 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
         null,
         new String[]{"testing"},
-        new Class[0], // inputClasses
-        new Class[0], // outputClasses
-        new Metadata.Type[0], // inputTypes
-        new Metadata.Type[0], // outputTypes
+        Object.class, // inputClass
+        Object.class, // outputClass
+        Metadata.Type.ITEM, // inputType
+        Metadata.Type.ITEM, // outputType
         new AccessMode[]{
             new AccessMode(
             "donothing",
@@ -74,7 +74,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         }
         ),
         new ServiceDescriptor(
-        "test/echo",
+        "test.echo",
         "Echo Service",
         "Reads a dataset and writes it back as a new dataset",
         new String[]{"testing"
@@ -85,10 +85,10 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
         null,
         new String[]{"testing"},
-        new Class[]{MoleculeObject.class}, // inputClasses
-        new Class[]{MoleculeObject.class}, // outputClasses
-        new Metadata.Type[]{Metadata.Type.ARRAY}, // inputTypes
-        new Metadata.Type[]{Metadata.Type.ARRAY}, // outputTypes
+        MoleculeObject.class, // inputClass
+        MoleculeObject.class, // outputClass
+        Metadata.Type.ARRAY, // inputType
+        Metadata.Type.ARRAY, // outputType
         new AccessMode[]{
             new AccessMode(
             "asyncLocal",

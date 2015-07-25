@@ -1,5 +1,6 @@
 package com.im.lac.services;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.im.lac.job.jobdef.JobDefinition;
 import java.io.Serializable;
@@ -23,6 +24,7 @@ public class AccessMode implements Serializable {
     final ServiceDescriptor.LicenseToken[] requiredLicenseTokens;
     final ServicePropertyDescriptor[] parameters;
 
+    @JsonCreator
     public AccessMode(
             @JsonProperty("id") String id,
             @JsonProperty("name") String name,

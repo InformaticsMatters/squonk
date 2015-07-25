@@ -19,9 +19,9 @@
         <!-- note: instead of using a XML file we can also define the routes in Java code in a RouteBuilder class -->
         <!--param-value>com.im.lac.demo.SimpleRouteBuilder</param-value-->
         <param-value>
-            com.im.lac.chemaxon.services.CalculatorsRouteBuilder,
-            com.im.lac.chemaxon.services.DescriptorsRouteBuilder,
-            com.im.lac.chemaxon.services.RestRouteBuilder
+            com.im.lac.chemaxon.services.ChemaxonCalculatorsRouteBuilder,
+            com.im.lac.chemaxon.services.ChemaxonDescriptorsRouteBuilder,
+            com.im.lac.chemaxon.services.ChemaxonRestRouteBuilder
           </param-value>
     </context-param>
     

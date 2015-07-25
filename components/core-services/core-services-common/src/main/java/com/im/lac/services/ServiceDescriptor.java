@@ -1,5 +1,6 @@
 package com.im.lac.services;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.im.lac.dataset.Metadata;
 import java.io.Serializable;
@@ -45,12 +46,13 @@ public class ServiceDescriptor implements Serializable {
     private final String owner;
     private final String ownerUrl;
     private final String[] layers;
-    private final Class[] inputClasses;
-    private final Class[] outputClasses;
-    private final Metadata.Type[] inputTypes;
-    private final Metadata.Type[] outputTypes;
+    private final Class inputClass;
+    private final Class outputClass;
+    private final Metadata.Type inputType;
+    private final Metadata.Type outputType;
     private final AccessMode[] accessModes;
 
+    @JsonCreator
     public ServiceDescriptor(
             @JsonProperty("id") String id,
             @JsonProperty("name") String name,
@@ -61,10 +63,10 @@ public class ServiceDescriptor implements Serializable {
             @JsonProperty("owner") String owner,
             @JsonProperty("ownerUrl") String ownerUrl,
             @JsonProperty("layers") String[] layers,
-            @JsonProperty("inputClasses") Class[] inputClasses,
-            @JsonProperty("outputClasses") Class[] outputClasses,
-            @JsonProperty("inputTypes") Metadata.Type[] inputTypes,
-            @JsonProperty("outputTypes") Metadata.Type[] outputTypes,
+            @JsonProperty("inputClass") Class inputClass,
+            @JsonProperty("outputClass") Class outputClass,
+            @JsonProperty("inputType") Metadata.Type inputType,
+            @JsonProperty("outputType") Metadata.Type outputType,
             @JsonProperty("accessModes") AccessMode[] accessModes
     ) {
         this.id = id;
@@ -76,10 +78,10 @@ public class ServiceDescriptor implements Serializable {
         this.owner = owner;
         this.ownerUrl = ownerUrl;
         this.layers = layers;
-        this.inputClasses = inputClasses;
-        this.outputClasses = outputClasses;
-        this.inputTypes = inputTypes;
-        this.outputTypes = outputTypes;
+        this.inputClass = inputClass;
+        this.outputClass = outputClass;
+        this.inputType = inputType;
+        this.outputType = outputType;
         this.accessModes = accessModes;
     }
 
@@ -170,8 +172,8 @@ public class ServiceDescriptor implements Serializable {
      *
      * @return
      */
-    public Class[] getInputClasses() {
-        return inputClasses;
+    public Class getInputClass() {
+        return inputClass;
     }
 
     /**
@@ -179,8 +181,8 @@ public class ServiceDescriptor implements Serializable {
      *
      * @return
      */
-    public Class[] getOutputClasses() {
-        return outputClasses;
+    public Class getOutputClass() {
+        return outputClass;
     }
 
     /**
@@ -188,8 +190,8 @@ public class ServiceDescriptor implements Serializable {
      *
      * @return
      */
-    public Metadata.Type[] getInputTypes() {
-        return inputTypes;
+    public Metadata.Type getInputType() {
+        return inputType;
     }
 
     /**
@@ -197,8 +199,8 @@ public class ServiceDescriptor implements Serializable {
      *
      * @return
      */
-    public Metadata.Type[] getOutputTypes() {
-        return outputTypes;
+    public Metadata.Type getOutputType() {
+        return outputType;
     }
 
     /**

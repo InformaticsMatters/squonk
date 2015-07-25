@@ -38,10 +38,10 @@ public class Main {
             }
         });
         //camelContext.addRoutes(new MoleculeUtilsRouteBuilder());
-        camelContext.addRoutes(new CalculatorsRouteBuilder());
-        camelContext.addRoutes(new DescriptorsRouteBuilder());
+        camelContext.addRoutes(new ChemaxonCalculatorsRouteBuilder());
+        camelContext.addRoutes(new ChemaxonDescriptorsRouteBuilder());
         //camelContext.addRoutes(new ReactorRouteBuilder());
-        camelContext.addRoutes(new RestRouteBuilder());
+        camelContext.addRoutes(new ChemaxonRestRouteBuilder());
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override

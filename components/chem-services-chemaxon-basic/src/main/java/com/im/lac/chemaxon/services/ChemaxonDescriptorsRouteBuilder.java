@@ -16,7 +16,7 @@ import org.apache.camel.builder.RouteBuilder;
  *
  * @author timbo
  */
-public class DescriptorsRouteBuilder extends RouteBuilder {
+public class ChemaxonDescriptorsRouteBuilder extends RouteBuilder {
 
     public static final String CHEMAXON_SCREENING_ECFP4 = "direct:screening/ecfp4";
     public static final String CHEMAXON_SCREENING_PHARMACOPHORE = "direct:screening/pharmacophore";

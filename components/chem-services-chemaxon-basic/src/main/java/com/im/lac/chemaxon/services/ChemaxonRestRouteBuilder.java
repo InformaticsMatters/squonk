@@ -16,9 +16,9 @@ import org.apache.camel.model.rest.RestBindingMode;
  *
  * @author timbo
  */
-public class RestRouteBuilder extends RouteBuilder {
+public class ChemaxonRestRouteBuilder extends RouteBuilder {
 
-    private static final Logger LOG = Logger.getLogger(RestRouteBuilder.class.getName());
+    private static final Logger LOG = Logger.getLogger(ChemaxonRestRouteBuilder.class.getName());
 
     private static final String NAME_SIM_CUTTOFF = "Similarity Cuttoff";
     private static final String DESC_SIM_CUTTOFF = "Similarity score cuttoff between 0 and 1 (1 means identical";
@@ -30,7 +30,7 @@ public class RestRouteBuilder extends RouteBuilder {
     private static final ServiceDescriptor[] SERVICE_DESCRIPTOR_CALCULATORS
             = new ServiceDescriptor[]{
                 createServiceDescriptor(
-                        "chemaxon/calculators/logp",
+                        "chemaxon.calculators.logp",
                         "CXN LogP",
                         "LogP using ChemAxon calculators. See http://www.chemaxon.com/products/calculator-plugins/property-predictors/#logp_logd",
                         new String[]{"logp", "partitioning", "molecularproperties", "chemaxon"},
@@ -40,7 +40,7 @@ public class RestRouteBuilder extends RouteBuilder {
                         0.001f,
                         null),
                 createServiceDescriptor(
-                        "chemaxon/calculators/atomcount",
+                        "chemaxon.calculators.atomcount",
                         "CXN Atom Count",
                         "Atom Count using ChemAxon calculators. See http://www.chemaxon.com/products/calculator-plugins/property-calculations/#topology_analysis",
                         new String[]{"atomcount", "topology", "molecularproperties", "chemaxon"},
@@ -50,7 +50,7 @@ public class RestRouteBuilder extends RouteBuilder {
                         0f,
                         null),
                 createServiceDescriptor(
-                        "chemaxon/calculators/lipinski",
+                        "chemaxon.calculators.lipinski",
                         "CXN Lipinski Properties",
                         "Lipinski properties using ChemAxon calculators",
                         new String[]{"lipinski", "druglike", "molecularproperties", "chemaxon"},
@@ -60,7 +60,7 @@ public class RestRouteBuilder extends RouteBuilder {
                         0.002f,
                         null),
                 createServiceDescriptor(
-                        "chemaxon/calculators/druglikefilter",
+                        "chemaxon.calculators.druglikefilter",
                         "CXN Drug-like Filter",
                         "Drug-like filter using ChemAxon calculators. mass() < 400 and ringCount > 0 and rotatableBondCount() < 5 and acceptorCount <= 10 and LogP < 5",
                         new String[]{"druglike", "molecularproperties", "chemaxon"},
@@ -70,7 +70,7 @@ public class RestRouteBuilder extends RouteBuilder {
                         0.0025f,
                         null),
                 createServiceDescriptor(
-                        "chemaxon/calculators/chemterms",
+                        "chemaxon.calculators.chemterms",
                         "CXN Chemical Terms",
                         "Property prediction using a user definable Chemical Terms experssion. See http://docs.chemaxon.com/display/chemicalterms/Chemical+Terms+Home",
                         new String[]{"molecularproperties", "chemaxon"},
@@ -86,7 +86,7 @@ public class RestRouteBuilder extends RouteBuilder {
     private static final ServiceDescriptor[] SERVICE_DESCRIPTOR_DESCRIPTORS
             = new ServiceDescriptor[]{
                 createServiceDescriptor(
-                        "chemaxon/screening/ecpf4",
+                        "chemaxon.screening.ecpf4",
                         "CXN ECFP4 Screening",
                         "Virtual screening using ChemAxon ECFP4 fingerprints. See http://www.chemaxon.com/products/screen/",
                         new String[]{"virtualscreening", "screening", "ecfp", "ecfp4", "moleculardescriptors", "fingerprints", "chemaxon"},
@@ -99,7 +99,7 @@ public class RestRouteBuilder extends RouteBuilder {
                             new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
                         }),
                 createServiceDescriptor(
-                        "chemaxon/screening/pharmacophore",
+                        "chemaxon.screening.pharmacophore",
                         "CXN Pharmacophore Screening",
                         "Virtual screening using ChemAxon 2D pharmacophore fingerprints. See http://www.chemaxon.com/products/screen/",
                         new String[]{"virtualscreening", "screening", "parmacophore", "moleculardescriptors", "fingerprints", "chemaxon"},
@@ -112,7 +112,7 @@ public class RestRouteBuilder extends RouteBuilder {
                             new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
                         }),
                 createServiceDescriptor(
-                        "chemaxon/clustering/sperex",
+                        "chemaxon.clustering.sperex",
                         "CXN SpereEx Clustering",
                         "Sphere exclusion clustering using ChemAxon ECFP4 fingerprints. See http://www.chemaxon.com/products/jkulstor/",
                         new String[]{"clustering", "ecfp", "ecfp4", "chemaxon"},
@@ -136,10 +136,10 @@ public class RestRouteBuilder extends RouteBuilder {
                 "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
                 null,
                 new String[]{"public"},
-                new Class[]{MoleculeObject.class}, // inputClasses
-                new Class[]{MoleculeObject.class}, // outputClasses
-                new Metadata.Type[]{Metadata.Type.ARRAY}, // inputTypes
-                new Metadata.Type[]{Metadata.Type.ARRAY}, // outputTypes
+                MoleculeObject.class, // inputClass
+                MoleculeObject.class, // outputClass
+                Metadata.Type.ARRAY, // inputType
+                Metadata.Type.ARRAY, // outputType
                 new AccessMode[]{
                     new AccessMode(
                             modeId,
@@ -188,35 +188,35 @@ public class RestRouteBuilder extends RouteBuilder {
                 .post("logp").description("Calculate the calculated logP for the supplied MoleculeObjects")
                 .route()
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamInput(exch))
-                .to(CalculatorsRouteBuilder.CHEMAXON_LOGP)
+                .to(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP)
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
                 .endRest()
                 //
                 .post("atomCount").description("Calculate the atom count for the supplied MoleculeObjects")
                 .route()
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamInput(exch))
-                .to(CalculatorsRouteBuilder.CHEMAXON_ATOM_COUNT)
+                .to(ChemaxonCalculatorsRouteBuilder.CHEMAXON_ATOM_COUNT)
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
                 .endRest()
                 //
                 .post("lipinski").description("Calculate the Lipinski properties for the supplied MoleculeObjects")
                 .route()
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamInput(exch))
-                .to(CalculatorsRouteBuilder.CHEMAXON_LIPINSKI)
+                .to(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LIPINSKI)
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
                 .endRest()
                 //
                 .post("drugLikeFilter").description("Apply a drug like filter to the supplied MoleculeObjects")
                 .route()
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamInput(exch))
-                .to(CalculatorsRouteBuilder.CHEMAXON_DRUG_LIKE_FILTER)
+                .to(ChemaxonCalculatorsRouteBuilder.CHEMAXON_DRUG_LIKE_FILTER)
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
                 .endRest()
                 //
                 .post("chemTerms").description("Calculate a chemical terms expression for the supplied MoleculeObjects")
                 .route()
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamInput(exch))
-                .to(CalculatorsRouteBuilder.CHEMAXON_CHEMTERMS)
+                .to(ChemaxonCalculatorsRouteBuilder.CHEMAXON_CHEMTERMS)
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
                 .endRest();
 
@@ -238,21 +238,21 @@ public class RestRouteBuilder extends RouteBuilder {
                 .post("screening/ecfp4").description("Screen using ECFP4 fingerprints")
                 .route()
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamInput(exch))
-                .to(DescriptorsRouteBuilder.CHEMAXON_SCREENING_ECFP4)
+                .to(ChemaxonDescriptorsRouteBuilder.CHEMAXON_SCREENING_ECFP4)
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
                 .endRest()
                 //
                 .post("screening/pharmacophore").description("Screen using pharmacophore fingerprints")
                 .route()
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamInput(exch))
-                .to(DescriptorsRouteBuilder.CHEMAXON_SCREENING_PHARMACOPHORE)
+                .to(ChemaxonDescriptorsRouteBuilder.CHEMAXON_SCREENING_PHARMACOPHORE)
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
                 .endRest()
                 //
                 .post("clustering/spherex/ecfp4").description("Sphere exclusion clustering using ECFP4 fingerprints")
                 .route()
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamInput(exch))
-                .to(DescriptorsRouteBuilder.CHEMAXON_CLUSTERING_SPHEREX_ECFP4)
+                .to(ChemaxonDescriptorsRouteBuilder.CHEMAXON_CLUSTERING_SPHEREX_ECFP4)
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
                 .endRest();
 

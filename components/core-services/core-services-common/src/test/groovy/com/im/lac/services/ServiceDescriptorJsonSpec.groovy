@@ -30,10 +30,10 @@ class ServiceDescriptorJsonSpec extends Specification {
             "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
             null,
             ["public"] as String[],
-            [MoleculeObject.class] as Class[], // inputClasses
-            [MoleculeObject.class] as Class[], // outputClasses
-            [Metadata.Type.ARRAY] as Metadata.Type[], // inputTypes
-            [Metadata.Type.ARRAY] as Metadata.Type[], // outputTypes
+            MoleculeObject.class, // inputClass
+            MoleculeObject.class, // outputClass
+            Metadata.Type.ARRAY, // inputTypes
+            Metadata.Type.ARRAY, // outputTypes
             [new AccessMode(
                 "async",
                 "Immediate execution",

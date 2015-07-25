@@ -15,13 +15,13 @@ import org.apache.camel.model.rest.RestBindingMode;
  *
  * @author timbo
  */
-public class RestRouteBuilder extends RouteBuilder {
+public class CdkRestRouteBuilder extends RouteBuilder {
 
-    private static final Logger LOG = Logger.getLogger(RestRouteBuilder.class.getName());
+    private static final Logger LOG = Logger.getLogger(CdkRestRouteBuilder.class.getName());
 
     private static final ServiceDescriptor[] calculatorsServiceDescriptor
             = new ServiceDescriptor[]{new ServiceDescriptor(
-                        "cdk/calculators",
+                        "cdk.calculators",
                         "CDK LogP",
                         "CDK LogP predictions for XLogP and ALogP",
                         new String[]{"logp", "partitioning", "molecularproperties", "cdk"},
@@ -30,10 +30,10 @@ public class RestRouteBuilder extends RouteBuilder {
                         "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
                         null,
                         new String[]{"public"},
-                        new Class[]{MoleculeObject.class}, // inputClasses
-                        new Class[]{MoleculeObject.class}, // outputClasses
-                        new Metadata.Type[]{Metadata.Type.ARRAY}, // inputTypes
-                        new Metadata.Type[]{Metadata.Type.ARRAY}, // outputTypes
+                        MoleculeObject.class, // inputClass
+                        MoleculeObject.class, // outputClass
+                        Metadata.Type.ARRAY, // inputTypes
+                        Metadata.Type.ARRAY, // outputTypes
                         new AccessMode[]{
                             new AccessMode(
                                     "asyncHttp",
@@ -82,7 +82,7 @@ public class RestRouteBuilder extends RouteBuilder {
                 .post("logp").description("Calculate the logP for the supplied MoleculeObjects")
                 .route()
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamInput(exch))
-                .to(CalculatorsRouteBuilder.CDK_LOGP)
+                .to(CdkCalculatorsRouteBuilder.CDK_LOGP)
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
                 .endRest();
 

@@ -15,7 +15,7 @@ import org.apache.camel.builder.RouteBuilder;
  *
  * @author timbo
  */
-public class CalculatorsRouteBuilder extends RouteBuilder {
+public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
 
     public static final String CHEMAXON_LOGP = "direct:logp";
     public static final String CHEMAXON_ATOM_COUNT = "direct:atomcount";
