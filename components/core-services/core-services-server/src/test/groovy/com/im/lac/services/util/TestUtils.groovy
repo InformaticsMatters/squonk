@@ -6,7 +6,9 @@ import javax.sql.DataSource
 
 import com.im.lac.dataset.DataItem
 import com.im.lac.dataset.Metadata
+import com.im.lac.job.jobdef.JobStatus
 import com.im.lac.services.dataset.service.*
+import com.im.lac.services.job.Job
 
 /**
  *
@@ -31,6 +33,22 @@ class TestUtils {
     static DataSource createTestDataSource() {
         return Utils.createDataSource(null, null, 'unittest', "tester", LAC_PASSWORD)
     }
+    
+    static void waitForJobToComplete(Job job, long timeOutMillis) {
+        long t0 = System.currentTimeMillis()
+        long t1 = t0
+        JobStatus status = job.getCurrentJobStatus()
+        while (!(status.status == JobStatus.Status.COMPLETED || status.status == JobStatus.Status.ERROR)) {
+            t1 = System.currentTimeMillis()
+            if ((t1 - t0) > timeOutMillis) {
+                break
+            }
+            sleep(100)
+            status = job.getCurrentJobStatus()
+        }
+        //println "Completed in " + (t1 - t0) + " millis"
+    }
+    
 	
 }
 

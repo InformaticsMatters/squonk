@@ -1,14 +1,11 @@
 package com.im.lac.services.job.service
 
-import spock.lang.Specification
 import com.im.lac.job.jobdef.*
 import com.im.lac.services.discovery.service.ServiceDescriptorStore
 import com.im.lac.services.job.*
 import com.im.lac.services.discovery.service.ServiceDiscoveryRouteBuilder
 import com.im.lac.services.util.*
 import com.im.lac.services.ServerConstants
-
-import com.im.lac.util.IOUtils;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -83,7 +80,7 @@ class AsyncHttpJob2Spec extends DatasetSpecificationBase {
         TestUtils.createTestData(getDatasetHandler())
         AsyncHttpProcessDatasetJobDefinition2 jobdef = new AsyncHttpProcessDatasetJobDefinition2(
                 "test.echo.http",
-                "asyncLocal",
+                "asyncHttp",
             null, // params
             2l, // dataset id
             DatasetJobDefinition.DatasetMode.CREATE,
@@ -95,7 +92,7 @@ class AsyncHttpJob2Spec extends DatasetSpecificationBase {
         JobStatus status1 = job.start(camelContext)
             
         println("Status 1.1: " + status1);
-        waitForJobToComplete(job, 2500)
+        TestUtils.waitForJobToComplete(job, 2500)
         def status2 = job.buildStatus()
         println("Status 1.2: " + status2);
         println "DataItem: " + status2.getResult()
@@ -104,21 +101,6 @@ class AsyncHttpJob2Spec extends DatasetSpecificationBase {
         status1.status == JobStatus.Status.RUNNING
         status2.status == JobStatus.Status.COMPLETED
         status2.result.metadata.size > 0
-    }
-        
-    void waitForJobToComplete(Job job, long timeOutMillis) {
-        long t0 = System.currentTimeMillis()
-        long t1 = t0
-        JobStatus status = job.getCurrentJobStatus()
-        while (!(status.status == JobStatus.Status.COMPLETED || status.status == JobStatus.Status.ERROR)) {
-            t1 = System.currentTimeMillis()
-            if ((t1 - t0) > timeOutMillis) {
-                break
-            }
-            sleep(100)
-            status = job.getCurrentJobStatus()
-        }
-        //println "Completed in " + (t1 - t0) + " millis"
     }
 	
 }

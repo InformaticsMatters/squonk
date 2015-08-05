@@ -2,9 +2,13 @@ package com.im.lac.services.job.service;
 
 import com.im.lac.services.ServerConstants;
 import com.im.lac.dataset.DataItem;
+import com.im.lac.dataset.JsonMetadataPair;
+import com.im.lac.dataset.Metadata;
 import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.DatasetJobDefinition;
+import com.im.lac.services.IncompatibleDataException;
+import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.services.discovery.service.ServiceDescriptorStore;
 import com.im.lac.services.job.Job;
 import com.im.lac.util.IOUtils;
@@ -20,7 +24,6 @@ import org.apache.camel.Exchange;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -67,15 +70,14 @@ public class JobHandler implements ServerConstants {
     }
 
     /**
-     * Given a AbstractDatasetJob as the current body finds the dataset
-     * specified by the job and sets its contents as the body. Also sets headers
-     * {@link Constants.HEADER_JOB_ID} to the appropriate property.
+     * Given a AbstractDatasetJob as the current body finds the dataset specified by the job and
+     * sets its contents as the body. Also sets headers {@link Constants.HEADER_JOB_ID} to the
+     * appropriate property.
      *
      * @param exchange
      * @throws java.io.IOException
      * @throws java.lang.ClassNotFoundException
-     * @throws java.lang.NullPointerException If AbstractDatasetJob not present
-     * as Exchange body
+     * @throws java.lang.NullPointerException If AbstractDatasetJob not present as Exchange body
      */
     public static void setBodyAsObjectsForDataset(Exchange exchange) throws Exception {
         DatasetHandler datasetHandler = getDatasetHandler(exchange);
@@ -90,9 +92,9 @@ public class JobHandler implements ServerConstants {
     }
 
     /**
-     * Sets the body of the exchange as the new or updated dataset (as defined
-     * by the JobDefintion). The DataItem of the new dataset is set as the body
-     * of the exchange. The job status is set accordingly.
+     * Sets the body of the exchange as the new or updated dataset (as defined by the JobDefintion).
+     * The DataItem of the new dataset is set as the body of the exchange. The job status is set
+     * accordingly.
      *
      * @param exchange
      * @throws Exception
@@ -184,12 +186,30 @@ public class JobHandler implements ServerConstants {
     }
     
     
-    public static String postRequestAsString(String uri, String content) throws IOException {
+    public static InputStream convertData(ServiceDescriptor sd, JsonMetadataPair holder) throws ClassNotFoundException, IncompatibleDataException {
+        LOG.info("convertData()");
+        Class datasetClass = Class.forName(holder.getMetadata().getClassName());
+        Metadata.Type datasetType = holder.getMetadata().getType();
+        // handle conversion if necessary
+        if (sd.getInputClass().isAssignableFrom(datasetClass) && datasetType == sd.getInputType()) {
+            return holder.getInputStream();
+        } else {
+            // TODO - handle conversions
+            // convert from json to objects, convert types, convert to json, get InputStream 
+            throw new IncompatibleDataException("Incompatible data: given: "
+                    + datasetClass.getName() + "[" + datasetType + "] requires: "
+                    + sd.getInputClass() + "[" + sd.getInputType() + "]"
+            );
+        }
+    }
+
+    public static InputStream postRequest(String uri, InputStream content) throws IOException {
         // TODO - handle using InputStream but HttpComponents seems to screw up here
-        // so using String as temp measure
+        // so converting to String as temp measure
         LOG.log(Level.INFO, "POSTing to {0}", uri);
+        String jsonIn = IOUtils.convertStreamToString(content, 200);
         HttpPost httpPost = new HttpPost(uri);
-        httpPost.setEntity(new StringEntity(content));
+        httpPost.setEntity(new StringEntity(jsonIn));
         CloseableHttpClient httpclient = HttpClients.createDefault();
         try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
             LOG.info(response.getStatusLine().toString());
@@ -199,8 +219,32 @@ public class JobHandler implements ServerConstants {
             HttpEntity entity = response.getEntity();
             String json = EntityUtils.toString(entity);
             LOG.log(Level.INFO, "JSON HTTP: {0}", json);
-            return json;
+            return new ByteArrayInputStream(json.getBytes());
         }
     }
+
+    public static DataItem createResults(DatasetHandler datasetHandler, InputStream results, Metadata metadata, String datasetName)
+            throws Exception {
+        LOG.info("saveResults()");
+        // convert from json to objects
+        Object objects = datasetHandler.generateObjectFromJson(results, metadata);
+        LOG.log(Level.INFO, "Converted JSON to {0}", objects.getClass().getName());
+
+        DataItem dataItem = datasetHandler.createDataset(results, datasetName == null ? "undefined" : datasetName);
+
+        LOG.log(Level.INFO, "Metadata size: {0}", metadata.getSize());
+        return dataItem;
+    }
+    
+    public static DataItem updateResultsFrom(DatasetHandler datasetHandler, InputStream results, Metadata metadata, Long datasetId)
+            throws Exception {
+        LOG.info("saveResults()");
+        // convert from json to objects
+        Object objects = datasetHandler.generateObjectFromJson(results, metadata);
+        DataItem dataItem = datasetHandler.updateDataset(objects, datasetId);
+        LOG.log(Level.INFO, "Metadata size: {0}", metadata.getSize());
+        return dataItem;
+    }
+
 
 }

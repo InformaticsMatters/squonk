@@ -92,7 +92,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         Metadata.Type.ARRAY, // outputType
         new AccessMode[]{
             new AccessMode(
-            "asyncLocal",
+            "asyncHttp",
             "Immediate execution",
             "Execute as an asynchronous REST web service",
             "http://" + DOCKER_IP + "/coreservices/rest/echo", // the  endpoint

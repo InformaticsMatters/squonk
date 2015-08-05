@@ -4,6 +4,9 @@ import com.im.lac.job.jobdef.DoNothingJobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.services.job.Job;
 import com.im.lac.camel.CamelCommonConstants;
+import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition2;
+import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition2;
+import com.im.lac.job.jobdef.JobDefinition;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
@@ -36,6 +39,21 @@ public class JobServiceRouteBuilder extends RouteBuilder {
                 .routingSlip(header(ROUTE_ROUTING_SLIP_HEADER))
                 // body is now JobStatus
                 .log("Job submitted. Current status is ${body}");
+
+        from("seda:submitJobNew")
+                .log("ROUTE_SUBMIT_JOB")
+                .process((Exchange exch) -> {
+                    JobDefinition jobdef = exch.getIn().getBody(JobDefinition.class);
+                    AbstractJob job = null;
+                    if (jobdef instanceof AsyncHttpProcessDatasetJobDefinition2) {
+                        job = new AsyncHttpJob2((AsyncHttpProcessDatasetJobDefinition2)jobdef);
+                    } else if (jobdef instanceof AsyncLocalProcessDatasetJobDefinition2) {
+                        job = new AsyncLocalJob2((AsyncLocalProcessDatasetJobDefinition2)jobdef);
+                    } else {
+                        throw new IllegalStateException("Job definition type " + jobdef.getClass().getName() + " not currently supported");
+                    }
+                    job.start(exch.getContext());
+                });
 
         from(ROUTE_DO_NOTHING)
                 .log("ROUTE_DO_NOTHING")

@@ -1,8 +1,10 @@
 package com.im.lac.services.job.service;
 
 import com.im.lac.job.jobdef.JobDefinition;
+import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.services.job.Job;
 import java.util.UUID;
+import org.apache.camel.CamelContext;
 
 /**
  *
@@ -24,6 +26,11 @@ public abstract class AbstractJob<T extends JobDefinition> implements Job<T> {
     @Override
     public String getJobId() {
         return jobId;
+    }
+    
+    public JobStatus start(CamelContext context) throws Exception {
+        //TODO - convert to abstract method once old job classes have been migrated
+        throw new IllegalStateException("Subclasses must override");
     }
 
 }

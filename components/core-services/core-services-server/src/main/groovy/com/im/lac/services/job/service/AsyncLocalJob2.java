@@ -1,19 +1,16 @@
 package com.im.lac.services.job.service;
 
 import com.im.lac.dataset.DataItem;
-import com.im.lac.dataset.Metadata;
-import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition2;
 import com.im.lac.job.jobdef.JobStatus;
-import com.im.lac.services.IncompatibleDataException;
 import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.dataset.JsonMetadataPair;
+import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition2;
 import com.im.lac.services.discovery.service.ServiceDescriptorStore;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.camel.CamelContext;
+import org.apache.camel.ProducerTemplate;
 
 /**
  * Asynchronous executor for jobs that typically take a few seconds or minutes to complete.
@@ -25,8 +22,8 @@ import org.apache.camel.CamelContext;
  * <p>
  * The job is executed along these lines:
  * <ol>
- * <li>Retrieving the dataset from the MockDatasetService</li>
- * <li>Sending the dataset to the specified HTTP service in an asynchronous request-response
+ * <li>Retrieving the dataset from the DatasetService</li>
+ * <li>Sending the dataset to the specified Camel route service in an asynchronous request-response
  * manner</li>
  * <li>Returning to the caller as soon as the message is sent</li>
  * <li>Saving the result to the dataset service according to the specified result mode.</li>
@@ -36,36 +33,29 @@ import org.apache.camel.CamelContext;
  *
  * @author timbo
  */
-public class AsyncHttpJob2 extends AbstractDatasetJob<AsyncHttpProcessDatasetJobDefinition2> {
+public class AsyncLocalJob2 extends AbstractDatasetJob<AsyncLocalProcessDatasetJobDefinition2> {
 
-    private static final Logger LOG = Logger.getLogger(AsyncHttpJob2.class.getName());
+    private static final Logger LOG = Logger.getLogger(AsyncLocalJob2.class.getName());
 
     /**
      *
      * @param jobdef The job definition
      */
-    public AsyncHttpJob2(AsyncHttpProcessDatasetJobDefinition2 jobdef) {
+    public AsyncLocalJob2(AsyncLocalProcessDatasetJobDefinition2 jobdef) {
         super(jobdef);
     }
 
-    public AsyncHttpJob2(JobStatus<AsyncHttpProcessDatasetJobDefinition2> jobStatus) {
+    public AsyncLocalJob2(JobStatus<AsyncLocalProcessDatasetJobDefinition2> jobStatus) {
         super(jobStatus);
     }
 
     public JobStatus start(CamelContext context) throws Exception {
+        LOG.info("start()");
+
         JobStore jobStore = JobHandler.getJobStore(context);
         DatasetHandler datasetHandler = JobHandler.getDatasetHandler(context);
         ServiceDescriptorStore serviceDescriptorStore = JobHandler.getServiceDescriptorStore(context);
 
-        return start(jobStore, datasetHandler, serviceDescriptorStore);
-    }
-
-    public JobStatus start(
-            JobStore jobStore,
-            DatasetHandler datasetHandler,
-            ServiceDescriptorStore serviceDescriptorStore)
-            throws Exception {
-        LOG.info("start()");
         // add to jobStore
         jobStore.putJob(this);
 
@@ -77,28 +67,22 @@ public class AsyncHttpJob2 extends AbstractDatasetJob<AsyncHttpProcessDatasetJob
         if (sd == null) {
             throw new IllegalStateException("Service " + serviceId + " cannot be found");
         }
-        String uri = serviceDescriptorStore.resolveEndpoint(serviceId, accessModeId);
-        if (uri == null) {
-            this.status = JobStatus.Status.ERROR;
-            this.exception = new NullPointerException("Service endpoint could not be resolved. Check the service configuration.");
-            return getCurrentJobStatus();
-        }
+        String endpoint = serviceDescriptorStore.getEndpoint(serviceId, accessModeId);
 
         Thread t = new Thread() {
             @Override
             public void run() {
 
-                executeJob(datasetHandler, sd, uri);
+                executeJob(context, datasetHandler, sd, endpoint);
             }
         };
         this.status = JobStatus.Status.RUNNING;
-
         JobStatus st = getCurrentJobStatus();
         t.start();
         return st;
     }
 
-    void executeJob(DatasetHandler datasetHandler, ServiceDescriptor sd, String uri) {
+    void executeJob(CamelContext context, DatasetHandler datasetHandler, ServiceDescriptor sd, String endpoint) {
         LOG.info("executeJob()");
         JsonMetadataPair holder = null;
         try {
@@ -114,38 +98,32 @@ public class AsyncHttpJob2 extends AbstractDatasetJob<AsyncHttpProcessDatasetJob
             LOG.log(Level.SEVERE, "Failed to fetch dataset", ex);
         }
 
-        InputStream converted = null;
+        Object results = null;
         try {
-            // next step is to convert
-            converted = JobHandler.convertData(sd, holder);
-        } catch (Exception ex) {
-            this.status = JobStatus.Status.ERROR;
-            this.exception = ex;
-            LOG.log(Level.SEVERE, "Failed to convert data to required type", ex);
-        }
+            //convert from json to objects
+            Object objects = datasetHandler.generateObjectFromJson(holder.getInputStream(), holder.getMetadata());
 
-        InputStream results = null;
-        try {
-            results = JobHandler.postRequest(uri, converted);
+            // we don't worry about converstions as these types of jobs are jsut for test purposes
+            ProducerTemplate pt = context.createProducerTemplate();
+            // TODO - handle params
+            results = pt.requestBody(endpoint, objects);
             this.status = JobStatus.Status.RESULTS_READY;
         } catch (Exception ex) {
             this.status = JobStatus.Status.ERROR;
             this.exception = ex;
-            LOG.log(Level.SEVERE, "Failed to post request to " + uri, ex);
+            LOG.log(Level.SEVERE, "Failed to post request to " + endpoint, ex);
         }
 
         // handle results
         try {
-            // TODO - handle metadata in smart way. All we have is JSON so we don't 
-            // know about any complex datatypes. Should the service return the metadata we can use?
-            Metadata metadata = new Metadata(sd.getOutputClass().getName(), sd.getOutputType(), 0);
             DataItem dataItem;
             switch (getJobDefinition().getMode()) {
                 case UPDATE:
-                    dataItem = JobHandler.updateResultsFrom(datasetHandler, results, metadata, getJobDefinition().getDatasetId());
+                    dataItem = datasetHandler.updateDataset(results, getJobDefinition().getDatasetId());
                     break;
                 case CREATE:
-                    dataItem = JobHandler.createResults(datasetHandler, results, metadata, getJobDefinition().getDatasetName());
+                    String datasetName = getJobDefinition().getDatasetName();
+                    dataItem = datasetHandler.createDataset(results, datasetName == null ? "undefined" : datasetName);
                     break;
                 default:
                     throw new IllegalStateException("Unexpected mode " + getJobDefinition().getMode());

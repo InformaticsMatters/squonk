@@ -130,7 +130,8 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .route()
                 .log("REST POST jobdef: ${body}")
                 .to(JobServiceRouteBuilder.ROUTE_SUBMIT_JOB)
-                .endRest();
+                .endRest()
+                ;
 
 
         /* These are the implementation endpoints - not accessible directly from "outside"

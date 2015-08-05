@@ -25,6 +25,12 @@ public class ServiceDescriptorStore {
         return list;
     }
 
+    /** Resolve the endpoint, converting to an absolute URL if necessary
+     * 
+     * @param serviceDescId
+     * @param accessModeId
+     * @return 
+     */
     public String resolveEndpoint(String serviceDescId, String accessModeId) {
         Item item = items.get(serviceDescId);
         if (item == null) {
@@ -33,6 +39,29 @@ public class ServiceDescriptorStore {
             for (AccessMode mode : item.serviceDescriptor.getAccessModes()) {
                 if (accessModeId.equals(mode.getId())) {
                     return ServiceDescriptorUtils.getAbsoluteUrl(item.baseUrl, mode);
+                }
+            }
+        }
+        return null;
+    }
+    
+    /** Get the endpoint as it is, assuming it is an absolute URL
+     * 
+     * @param serviceDescId
+     * @param accessModeId
+     * @return 
+     */
+    public String getEndpoint(String serviceDescId, String accessModeId) {
+        Item item = items.get(serviceDescId);
+        if (item == null) {
+            return null;
+        } else {
+            for (AccessMode mode : item.serviceDescriptor.getAccessModes()) {
+                if (accessModeId.equals(mode.getId())) {
+                    if (mode.isEndpointRelative()) {
+                        throw new IllegalStateException("Endpoint is relative - must be resolved agaisnt a base URL");
+                    }
+                    return mode.getExecutionEndpoint();
                 }
             }
         }
