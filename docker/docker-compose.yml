@@ -1,8 +1,3 @@
-db:
-    build: postgres/
-    ports: 
-    - "5432:5432"
-
 mq:
     build: rabbitmq/
     ports:
@@ -11,6 +6,11 @@ mq:
     hostname: rabbitmq
     environment: 
         RABBITMQ_ERLANG_COOKIE: topsecret
+
+db:
+    build: postgres/
+    ports: 
+    - "5432:5432"
 
 cs:
     build: ../components/core-services/core-services-server/build

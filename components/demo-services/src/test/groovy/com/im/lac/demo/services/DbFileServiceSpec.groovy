@@ -24,7 +24,7 @@ class DbFileServiceSpec extends Specification {
         
         PGSimpleDataSource ds = new PGSimpleDataSource()
         
-        ds.serverName = 'localhost'
+        ds.serverName = System.getenv('DOCKER_IP') ?: 'localhost'
         ds.portNumber =  5432
         ds.databaseName = 'unittest'
         ds.user = 'tester'

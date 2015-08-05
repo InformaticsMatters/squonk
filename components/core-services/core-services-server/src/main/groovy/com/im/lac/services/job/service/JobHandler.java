@@ -5,13 +5,26 @@ import com.im.lac.dataset.DataItem;
 import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.DatasetJobDefinition;
+import com.im.lac.services.discovery.service.ServiceDescriptorStore;
 import com.im.lac.services.job.Job;
+import com.im.lac.util.IOUtils;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 /**
  *
@@ -45,15 +58,24 @@ public class JobHandler implements ServerConstants {
         return camelContext.getRegistry().lookupByNameAndType(JOB_STORE, JobStore.class);
     }
 
+    public static ServiceDescriptorStore getServiceDescriptorStore(Exchange exchange) {
+        return getServiceDescriptorStore(exchange.getContext());
+    }
+
+    public static ServiceDescriptorStore getServiceDescriptorStore(CamelContext camelContext) {
+        return camelContext.getRegistry().lookupByNameAndType(SERVICE_DESCRIPTOR_STORE, ServiceDescriptorStore.class);
+    }
+
     /**
-     * Given a AbstractDatasetJob as the current body finds the dataset specified by the job and
-     * sets its contents as the body. Also sets headers {@link Constants.HEADER_JOB_ID} to the
-     * appropriate property.
+     * Given a AbstractDatasetJob as the current body finds the dataset
+     * specified by the job and sets its contents as the body. Also sets headers
+     * {@link Constants.HEADER_JOB_ID} to the appropriate property.
      *
      * @param exchange
      * @throws java.io.IOException
      * @throws java.lang.ClassNotFoundException
-     * @throws java.lang.NullPointerException If AbstractDatasetJob not present as Exchange body
+     * @throws java.lang.NullPointerException If AbstractDatasetJob not present
+     * as Exchange body
      */
     public static void setBodyAsObjectsForDataset(Exchange exchange) throws Exception {
         DatasetHandler datasetHandler = getDatasetHandler(exchange);
@@ -68,9 +90,9 @@ public class JobHandler implements ServerConstants {
     }
 
     /**
-     * Sets the body of the exchange as the new or updated dataset (as defined by the JobDefintion).
-     * The DataItem of the new dataset is set as the body of the exchange. The job status is set
-     * accordingly.
+     * Sets the body of the exchange as the new or updated dataset (as defined
+     * by the JobDefintion). The DataItem of the new dataset is set as the body
+     * of the exchange. The job status is set accordingly.
      *
      * @param exchange
      * @throws Exception
@@ -159,6 +181,26 @@ public class JobHandler implements ServerConstants {
     public static <T> T getJobFromHeader(Exchange exchange, Class<T> type) {
         JobStore store = getJobStore(exchange);
         return (T) store.getJob(exchange.getIn().getHeader(REST_JOB_ID, String.class));
+    }
+    
+    
+    public static String postRequestAsString(String uri, String content) throws IOException {
+        // TODO - handle using InputStream but HttpComponents seems to screw up here
+        // so using String as temp measure
+        LOG.log(Level.INFO, "POSTing to {0}", uri);
+        HttpPost httpPost = new HttpPost(uri);
+        httpPost.setEntity(new StringEntity(content));
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
+            LOG.info(response.getStatusLine().toString());
+            if (response.getStatusLine().getStatusCode() != 200) {
+                throw new IOException("HTTP POST failed: " + response.getStatusLine().toString());
+            }
+            HttpEntity entity = response.getEntity();
+            String json = EntityUtils.toString(entity);
+            LOG.log(Level.INFO, "JSON HTTP: {0}", json);
+            return json;
+        }
     }
 
 }

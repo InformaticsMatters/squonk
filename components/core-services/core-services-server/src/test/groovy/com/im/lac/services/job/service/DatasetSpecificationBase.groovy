@@ -17,6 +17,8 @@ import spock.lang.Specification
  */
 abstract class DatasetSpecificationBase extends Specification {
     
+    protected static String DOCKER_IP = System.getenv('DOCKER_IP') ?: 'localhost'
+    
     @Shared SimpleRegistry registry
     @Shared CamelContext camelContext
     @Shared CamelLifeCycle lifeCycle

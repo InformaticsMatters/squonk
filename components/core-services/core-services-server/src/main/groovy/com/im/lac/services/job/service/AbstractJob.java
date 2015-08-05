@@ -16,6 +16,10 @@ public abstract class AbstractJob<T extends JobDefinition> implements Job<T> {
     protected AbstractJob() {
         jobId = UUID.randomUUID().toString();
     }
+    
+    protected AbstractJob(String jobId) {
+        this.jobId = jobId;
+    }
 
     @Override
     public String getJobId() {

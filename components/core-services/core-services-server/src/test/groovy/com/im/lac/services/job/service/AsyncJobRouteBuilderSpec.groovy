@@ -9,6 +9,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 import com.im.lac.job.jobdef.*
+import com.im.lac.services.*
 import com.im.lac.services.util.*
 import com.im.lac.services.job.*
 import com.im.lac.services.job.service.*
@@ -26,6 +27,7 @@ class AsyncJobRouteBuilderSpec extends DatasetSpecificationBase {
   
     void doAddRoutes() {
         camelContext.addRoutes(new AsyncJobRouteBuilder())
+        camelContext.addRoutes(new RestRouteBuilder())
     }
     
     protected String getTableName() {
@@ -55,7 +57,7 @@ class AsyncJobRouteBuilderSpec extends DatasetSpecificationBase {
         //status2.status == JobStatus.Status.COMPLETED
     }
     
-     void "simple local 5"() {
+    void "simple local 5"() {
         setup:
         TestUtils.createTestData(getDatasetHandler())
         AsyncLocalProcessDatasetJobDefinition jobdef = new AsyncLocalProcessDatasetJobDefinition(4l,
@@ -80,12 +82,14 @@ class AsyncJobRouteBuilderSpec extends DatasetSpecificationBase {
     
     void "simple http 1"() {
         setup:
+        String url = "http://$DOCKER_IP/coreservices/rest/echo"
+        println "Posting to $url"
         TestUtils.createTestData(getDatasetHandler())
         AsyncHttpProcessDatasetJobDefinition jobdef = new AsyncHttpProcessDatasetJobDefinition(1l,
-            "http://localhost/coreservices/rest/echo",
+            url,
             DatasetJobDefinition.DatasetMode.CREATE,
             String.class,
-                "new name");
+            "new name");
 
         when:
         JobStatus status1 = producerTemplate.requestBody(AsyncJobRouteBuilder.ROUTE_ASYNC_HTTP_SUBMIT, jobdef);

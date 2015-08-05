@@ -7,12 +7,12 @@ import com.im.lac.services.AccessMode;
 import com.im.lac.services.ServerConstants;
 import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.services.job.service.AsyncJobRouteBuilder;
-import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.io.JsonHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -22,28 +22,29 @@ import org.apache.camel.builder.RouteBuilder;
  * @author timbo
  */
 public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
-    
+
     public static final String ROUTE_REQUEST = "direct:request";
-    
+    private static final String DOCKER_IP = System.getenv("DOCKER_IP") != null ? System.getenv("DOCKER_IP") : "localhost";
+
     private final JsonHandler jsonHandler = new JsonHandler();
 
     /**
-     * This allows the timer to be turned off or set to only run a certain number of times,
-     * primarily to allow easy testing
+     * This allows the timer to be turned off or set to only run a certain
+     * number of times, primarily to allow easy testing
      */
     protected int timerRepeats = 0;
     /**
      * This allows the timer delay to be set, primarily to allow easy testing
      */
     protected int timerDelay = 60000;
-    
+
     List<String> locations = Arrays.asList(new String[]{
-        "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-chemaxon-basic/rest/v1/calculators",
-        "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-chemaxon-basic/rest/v1/descriptors",
-        "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-cdk-basic/rest/v1/calculators"
+//        "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-chemaxon-basic/rest/v1/calculators",
+//        "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-chemaxon-basic/rest/v1/descriptors",
+//        "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-cdk-basic/rest/v1/calculators"
     });
-    
-    private static final ServiceDescriptor[] testServiceDescriptors = new ServiceDescriptor[]{
+
+    public static final ServiceDescriptor[] TEST_SERVICE_DESCRIPTORS = new ServiceDescriptor[]{
         new ServiceDescriptor(
         "test.noop",
         "NOOP Service",
@@ -74,8 +75,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         }
         ),
         new ServiceDescriptor(
-        "test.echo",
-        "Echo Service",
+        "test.echo.http",
+        "Echo Service (HTTP)",
         "Reads a dataset and writes it back as a new dataset",
         new String[]{"testing"
         },
@@ -85,8 +86,39 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
         null,
         new String[]{"testing"},
-        MoleculeObject.class, // inputClass
-        MoleculeObject.class, // outputClass
+        Object.class, // inputClass
+        Object.class, // outputClass
+        Metadata.Type.ARRAY, // inputType
+        Metadata.Type.ARRAY, // outputType
+        new AccessMode[]{
+            new AccessMode(
+            "asyncLocal",
+            "Immediate execution",
+            "Execute as an asynchronous REST web service",
+            "http://" + DOCKER_IP + "/coreservices/rest/echo", // the  endpoint
+            false, // URL is relative
+            AsyncLocalProcessDatasetJobDefinition.class,
+            0,
+            Integer.MAX_VALUE,
+            0f,
+            null,
+            null)
+        }
+        ),
+        new ServiceDescriptor(
+        "test.echo.local",
+        "Echo Service (local)",
+        "Reads a dataset and writes it back as a new dataset",
+        new String[]{"testing"
+        },
+        null,
+        new String[]{"/Testing"
+        },
+        "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
+        null,
+        new String[]{"testing"},
+        Object.class, // inputClass
+        Object.class, // outputClass
         Metadata.Type.ARRAY, // inputType
         Metadata.Type.ARRAY, // outputType
         new AccessMode[]{
@@ -105,16 +137,16 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         }
         )
     };
-    
+
     @Override
     public void configure() throws Exception {
-        
+
         from(ROUTE_REQUEST)
                 .log("ROUTE_REQUEST")
                 .process((Exchange exch) -> {
                     List<ServiceDescriptor> list = new ArrayList<>();
-                    list.addAll(Arrays.asList(testServiceDescriptors));
-                    list.addAll(getServiceDescriptorStore(exch).getServiceDescriptors());
+                    //list.addAll(Arrays.asList(TEST_SERVICE_DESCRIPTORS));
+                    list.addAll(getServiceDescriptorStore(exch.getContext()).getServiceDescriptors());
                     exch.getIn().setBody(list);
                 });
 
@@ -129,7 +161,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                 .choice()
                 .when(header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(200)) // we got a valid response
                 .process((Exchange exch) -> {
-                    ServiceDescriptorStore store = getServiceDescriptorStore(exch);
+                    ServiceDescriptorStore store = getServiceDescriptorStore(exch.getContext());
                     String url = exch.getIn().getHeader(Exchange.HTTP_URI, String.class);
                     String json = exch.getIn().getBody(String.class);
                     if (json != null) {
@@ -145,16 +177,16 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                 .otherwise() // anything else and we remove the service descriptor defintions from the store
                 .log(LoggingLevel.INFO, "Site ${header[" + Exchange.HTTP_URI + "]} not responding. Removing from available services.")
                 .process((Exchange exch) -> {
-                    ServiceDescriptorStore store = getServiceDescriptorStore(exch);
+                    ServiceDescriptorStore store = getServiceDescriptorStore(exch.getContext());
                     String url = exch.getIn().getHeader(Exchange.HTTP_URI, String.class);
                     store.removeServiceDescriptors(url);
                 })
                 .end();
-        
+
     }
-    
-    ServiceDescriptorStore getServiceDescriptorStore(Exchange exch) {
-        return exch.getContext().getRegistry().lookupByNameAndType(ServerConstants.SERVICE_DESCRIPTOR_STORE, ServiceDescriptorStore.class);
+
+    final ServiceDescriptorStore getServiceDescriptorStore(CamelContext context) {
+        return context.getRegistry().lookupByNameAndType(ServerConstants.SERVICE_DESCRIPTOR_STORE, ServiceDescriptorStore.class);
     }
-    
+
 }

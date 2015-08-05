@@ -28,7 +28,7 @@ class SplitAndQueueJobRouteBuilderSpec extends DatasetSpecificationBase {
     }
     
     void doAddRoutes() {
-        camelContext.addRoutes(new SplitAndQueueJobRouteBuilder("localhost", "/unittest", "tester", TestUtils.LAC_PASSWORD))
+        camelContext.addRoutes(new SplitAndQueueJobRouteBuilder(System.getenv("RABBITMQ_HOST") ?: "localhost", "/unittest", "tester", TestUtils.LAC_PASSWORD))
     }
 	
     

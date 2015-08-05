@@ -13,6 +13,7 @@ import spock.lang.Specification
  */
 class ServiceDiscoveryRouteBuilderSpec extends Specification {
 	
+    @Ignore
     void "test service discovery"() {
         setup:     
         SimpleRegistry registry = new SimpleRegistry()

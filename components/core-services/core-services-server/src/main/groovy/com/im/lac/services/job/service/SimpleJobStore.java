@@ -1,8 +1,9 @@
 package com.im.lac.services.job.service;
 
+import com.im.lac.job.jobdef.JobQuery;
+import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.services.job.Job;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,6 +36,22 @@ public class SimpleJobStore implements JobStore {
     public List<Job> getJobs() {
         List list = new ArrayList();
         list.addAll(jobs.values());
+        return list;
+    }
+
+    @Override
+    public void updateJob(Job job) {
+        // TODO - check that this is a valid job ID?
+        jobs.put(job.getJobId(), job);
+    }
+
+    @Override
+    public List<JobStatus> listJobs(JobQuery query) {
+        // query is ignored
+        List<JobStatus> list = new ArrayList<>();
+        for (Job job : getJobs()) {
+            list.add(job.getCurrentJobStatus());
+        }
         return list;
     }
 

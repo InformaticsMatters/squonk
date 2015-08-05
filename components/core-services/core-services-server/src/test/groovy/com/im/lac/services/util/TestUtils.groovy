@@ -24,7 +24,6 @@ class TestUtils {
         ids << handler.createDataset(["one", "two", "three"],'test1').id
         ids << handler.createDataset(["red", "yellow", "green", "blue"],'test2').id
         ids << handler.createDataset(["banana", "pineapple", "orange", "apple", "pear"], 'test3').id
-        ids << handler.createDataset(["banana", "pineapple", "orange", "apple", "pear"], 'test3').id
         
         return ids
     }

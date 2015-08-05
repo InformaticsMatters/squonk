@@ -5,6 +5,7 @@ import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.camel.CamelCommonConstants;
 import com.im.lac.services.dataset.service.DatasetServiceImpl;
 import com.im.lac.services.discovery.service.ServiceDescriptorStore;
+import static com.im.lac.services.discovery.service.ServiceDiscoveryRouteBuilder.TEST_SERVICE_DESCRIPTORS;
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.SimpleRegistry;
 import com.im.lac.services.util.Utils;
@@ -78,10 +79,14 @@ public class CamelLifeCycle {
             datasetService.createTables();
             LOG.log(Level.INFO, "Tables created: {0}", datasetsTableName);
         }
+        
+        ServiceDescriptorStore serviceDescriptorStore = new ServiceDescriptorStore();
+        serviceDescriptorStore.addServiceDescriptors("ignored", TEST_SERVICE_DESCRIPTORS);
+        r.put(ServerConstants.SERVICE_DESCRIPTOR_STORE, serviceDescriptorStore);         
         r.put(ServerConstants.DATASET_HANDLER, new DatasetHandler(datasetService, "/tmp/datasetcache"));
         r.put(ServerConstants.JOB_HANDLER, new JobHandler());
         r.put(ServerConstants.JOB_STORE, new SimpleJobStore());
-        r.put(ServerConstants.SERVICE_DESCRIPTOR_STORE, new ServiceDescriptorStore());        
+       
     }
 
     public void afterAddRoutes(CamelContext context, SimpleRegistry r) throws Exception {

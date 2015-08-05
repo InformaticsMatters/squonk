@@ -10,6 +10,7 @@ import spock.lang.Specification
 class DatasetHandlerSpec extends Specification {
     
     void "test json generation"() {
+        println "test json generation()"
         setup:
         DatasetHandler dh = new DatasetHandler(null, '/tmp/foo')
         def mols = [new MoleculeObject('C'), new MoleculeObject('CC')]
@@ -17,7 +18,7 @@ class DatasetHandlerSpec extends Specification {
         when:
         def holder = dh.generateJsonForItem(mols.stream(), false)
         def json = holder.inputStream.text
-        //holder.inputStream.close()
+        println "JSON: $json"
         
         then:
         holder.metadata.size == 2

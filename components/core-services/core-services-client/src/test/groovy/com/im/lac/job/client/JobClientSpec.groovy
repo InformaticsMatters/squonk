@@ -13,7 +13,7 @@ import spock.lang.Specification
  */
 class JobClientSpec extends Specification {
     
-    String url = "http://localhost/coreservices/rest/v1/jobs"
+    String url = "http://" + (System.getenv("DOCKER_IP") ?: "localhost") + "/coreservices/rest/v1/jobs"
     
     void "1. test post do nothing job"() {
         

@@ -28,8 +28,8 @@ allprojects {
         maven {
             credentials {
                 // define username and password as environment variables 
-                username System.getenv('CHEMAXON_REPO_USERNAME')
-                password System.getenv('CHEMAXON_REPO_PASSWORD')
+                username System.getenv('CHEMAXON_REPO_USERNAME') ?: 'tdudgeon'
+                password System.getenv('CHEMAXON_REPO_PASSWORD') ?: 'tdudgeon'
             }
             url "https://repository.chemaxon.com/artifactory/libs-release"
         }
@@ -72,6 +72,7 @@ task integrationTestEnvPrepare(type:Exec) {
 
 task integrationTestEnvPrepareAndClean(type:Exec) {
     dependsOn integrationTestEnvPrepare
+    //sleep 1000
     commandLine 'bash', '../docker/int-test-env-clean.sh'
 }
 

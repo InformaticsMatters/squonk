@@ -30,6 +30,18 @@ public abstract class AbstractDatasetJob<T extends DatasetJobDefinition> extends
         super();
         this.jobdef = jobdef;
     }
+    
+    protected AbstractDatasetJob(JobStatus<T> jobStatus) {
+        super(jobStatus.getJobId());
+        this.jobdef = jobStatus.getJobDefinition();
+        this.status = jobStatus.getStatus();
+        this.started = jobStatus.getStarted();
+        this.completed = jobStatus.getCompleted();
+        this.processedCount = jobStatus.getProcessedCount();
+        this.totalCount = jobStatus.getTotalCount();
+        this.pendingCount = jobStatus.getPendingCount();
+        this.result = jobStatus.getResult();
+    }
 
     @Override
     public T getJobDefinition() {

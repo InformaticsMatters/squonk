@@ -1,5 +1,6 @@
 package com.im.lac.services.dataset.service;
 
+import com.im.lac.dataset.JsonMetadataPair;
 import com.im.lac.dataset.DataItem;
 import com.im.lac.types.io.JsonHandler;
 import com.im.lac.dataset.Metadata;
@@ -97,23 +98,19 @@ public class DatasetHandler implements ServerConstants {
     }
 
     public Object fetchObjectsForDataset(Long datasetId) throws Exception {
-        return generateObjectFromJson(fetchJsonForDataset(datasetId));
-    }
-
-    public Object fetchObjectsForId(Long datasetId) throws Exception {
-        JsonProcessingHolder holder = fetchJsonForDataset(datasetId);
-        return generateObjectFromJson(holder);
+        JsonMetadataPair holder = fetchJsonForDataset(datasetId);
+        return generateObjectFromJson(holder.getInputStream(), holder.getMetadata());
     }
 
     public static void putJsonForDataset(Exchange exchange) throws Exception {
         DatasetHandler dh = getDatasetHandler(exchange);
         Long datasetId = exchange.getIn().getHeader(REST_DATASET_ID, Long.class);
-        JsonProcessingHolder holder = dh.fetchJsonForDataset(datasetId);
+        JsonMetadataPair holder = dh.fetchJsonForDataset(datasetId);
         exchange.getIn().setBody(holder);
     }
 
-    public JsonProcessingHolder fetchJsonForDataset(Long datasetId) throws Exception {
-        JsonProcessingHolder holder = service.doInTransactionWithResult(JsonProcessingHolder.class, (sql) -> {
+    public JsonMetadataPair fetchJsonForDataset(Long datasetId) throws Exception {
+        JsonMetadataPair holder = service.doInTransactionWithResult(JsonMetadataPair.class, (sql) -> {
             DataItem di = service.getDataItem(sql, datasetId);
             File f = cache.getFileFromCache(di.getLoid());
             if (f == null) {
@@ -124,7 +121,7 @@ public class DatasetHandler implements ServerConstants {
                 }
             }
             try {
-                return new JsonProcessingHolder(IOUtils.getGunzippedInputStream(new FileInputStream(f)), di.getMetadata());
+                return new JsonMetadataPair(IOUtils.getGunzippedInputStream(new FileInputStream(f)), di.getMetadata());
             } catch (IOException ex) {
                 throw new RuntimeException("Failed fetching cached file for dataset", ex);
             }
@@ -132,41 +129,50 @@ public class DatasetHandler implements ServerConstants {
         return holder;
     }
 
+    /**
+     * Update the dataset with these Object(s)
+     *
+     * @param data
+     * @param datsetId
+     * @return
+     * @throws Exception
+     */
     public DataItem updateDataset(final Object data, final Long datsetId) throws Exception {
-        final JsonProcessingHolder marshalResults = generateJsonForItem(data, true);
+        final JsonMetadataPair marshalResults = generateJsonForItem(data, true);
         DataItem dataItem = service.doInTransactionWithResult(DataItem.class, (sql) -> {
             try {
                 DataItem orig = service.getDataItem(sql, datsetId);
 
-                orig.setMetadata(marshalResults.metadata);
+                orig.setMetadata(marshalResults.getMetadata());
                 deleteFileFromCache(orig);
-                return service.updateDataItem(sql, orig, marshalResults.inputStream);
+                return service.updateDataItem(sql, orig, marshalResults.getInputStream());
             } catch (Exception ex) {
                 throw new RuntimeException("Failed to write dataset", ex);
             } finally {
-                IOHelper.close(marshalResults.inputStream);
+                IOHelper.close(marshalResults.getInputStream());
             }
         });
         return dataItem;
     }
 
     public DataItem createDataset(final Object newData, final String datasetName) throws Exception {
-        final JsonProcessingHolder marshalResults = generateJsonForItem(newData, true);
+        final JsonMetadataPair marshalResults = generateJsonForItem(newData, true);
 
         final DataItem neu = new DataItem();
         neu.setName(datasetName);
-        neu.setMetadata(marshalResults.metadata);
+        neu.setMetadata(marshalResults.getMetadata());
 
         DataItem dataItem = service.doInTransactionWithResult(DataItem.class, (sql) -> {
             try {
-                DataItem di = service.addDataItem(sql, neu, marshalResults.inputStream);
+                DataItem di = service.addDataItem(sql, neu, marshalResults.getInputStream());
                 return di;
             } catch (Exception ex) {
                 throw new RuntimeException("Failed to create dataset", ex);
             } finally {
-                IOHelper.close(marshalResults.inputStream);
+                IOHelper.close(marshalResults.getInputStream());
             }
         });
+        LOG.info("Created dataset with dataitem:" + dataItem);
         return dataItem;
     }
 
@@ -177,23 +183,25 @@ public class DatasetHandler implements ServerConstants {
     }
 
     /**
-     * Reads JSON from the InputStream and generates object(s) according to the metadata definition
+     * Reads JSON from the InputStream and generates object(s) according to the
+     * metadata definition
      *
-     * @param holder
+     * @param inputStream
+     * @param metadata
      * @return
      * @throws Exception
      */
-    Object generateObjectFromJson(JsonProcessingHolder holder) throws Exception {
+    public Object generateObjectFromJson(InputStream inputStream, Metadata metadata) throws Exception {
 
-        switch (holder.metadata.getType()) {
+        switch (metadata.getType()) {
             case TEXT:
-                return IOUtils.convertStreamToString(holder.inputStream, 100);
+                return IOUtils.convertStreamToString(inputStream, 100);
             case ITEM:
-                return jsonHandler.unmarshalItem(holder.metadata, holder.inputStream);
+                return jsonHandler.unmarshalItem(metadata, inputStream);
             case ARRAY:
-                return jsonHandler.unmarshalItemsAsStream(holder.metadata, holder.inputStream);
+                return jsonHandler.unmarshalItemsAsStream(metadata, inputStream);
             default:
-                throw new IllegalStateException("Unimplemented dataset type: " + holder.metadata.getType());
+                throw new IllegalStateException("Unimplemented dataset type: " + metadata.getType());
         }
     }
 
@@ -201,12 +209,13 @@ public class DatasetHandler implements ServerConstants {
      * Takes the object(s) and generates JSON and corresponding metadata.
      *
      * @param item The Object, Stream or Iterable to marshal to JSON.
-     * @param gzip Whether to gzip the stream. Usually this inputStream best as it reduces IO.
-     * @return the marshal results, with the metadata complete once the InputStream has been fully
-     * read.
+     * @param gzip Whether to gzip the stream. Usually this inputStream best as
+     * it reduces IO.
+     * @return the marshal results, with the metadata complete once the
+     * InputStream has been fully read.
      * @throws IOException
      */
-    JsonProcessingHolder generateJsonForItem(Object item, boolean gzip) throws IOException {
+    JsonMetadataPair generateJsonForItem(Object item, boolean gzip) throws IOException {
         final PipedInputStream pis = new PipedInputStream();
         final OutputStream out = new PipedOutputStream(pis);
         final Metadata meta = new Metadata();
@@ -215,6 +224,8 @@ public class DatasetHandler implements ServerConstants {
         Callable c = (Callable) () -> {
             if (item instanceof Stream) {
                 jsonHandler.marshalItems((Stream) item, meta, gzip ? new GZIPOutputStream(out) : out);
+            } else if (item instanceof List) {
+                jsonHandler.marshalItems(((List) item).stream(), meta, gzip ? new GZIPOutputStream(out) : out);
             } else {
                 jsonHandler.marshalItem(item, meta, gzip ? new GZIPOutputStream(out) : out);
             }
@@ -222,27 +233,7 @@ public class DatasetHandler implements ServerConstants {
             return true;
         };
         executor.submit(c);
-        return new JsonProcessingHolder(pis, meta);
-
-    }
-
-    public static class JsonProcessingHolder {
-
-        final InputStream inputStream;
-        final Metadata metadata;
-
-        JsonProcessingHolder(InputStream inputStream, Metadata metadata) {
-            this.inputStream = inputStream;
-            this.metadata = metadata;
-        }
-
-        public InputStream getInputStream() {
-            return inputStream;
-        }
-
-        public Metadata getMetadata() {
-            return metadata;
-        }
+        return new JsonMetadataPair(pis, meta);
 
     }
 

@@ -64,14 +64,18 @@ public class JsonHandler {
 
     public Stream<? extends Object> unmarshalItemsAsStream(Metadata meta, InputStream in) throws IOException, ClassNotFoundException {
         Iterator<? extends Object> iter = unmarshalItemsAsIterator(meta, in);
-        Spliterator<? extends Object> spliterator = Spliterators.spliterator(iter, meta.getSize(),
-                Spliterator.NONNULL | Spliterator.ORDERED);
+        int size = meta.getSize();
+        Spliterator<? extends Object> spliterator;
+        if (size == 0) {
+            spliterator = Spliterators.spliteratorUnknownSize(iter, Spliterator.NONNULL | Spliterator.ORDERED);
+        } else {
+            spliterator = Spliterators.spliterator(iter, size, Spliterator.NONNULL | Spliterator.ORDERED);
+        }
         return StreamSupport.stream(spliterator, true);
     }
-    
+
     private <T> Iterator<T> doUnmarshalItemsAsIterator(Class<T> cls, Metadata meta, InputStream in) throws IOException {
-        ContextAttributes attrs = ContextAttributes.getEmpty()
-                .withSharedAttribute(ATTR_METADATA, meta);
+        ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute(ATTR_METADATA, meta);
         ObjectReader reader = mapper.reader(cls).with(attrs);
         Iterator<T> result = reader.readValues(in);
         return result;
@@ -86,7 +90,7 @@ public class JsonHandler {
         ObjectWriter writer = mapper.writerFor(item.getClass()).with(attrs);
         writer.writeValue(outputStream, item);
     }
-    
+
     public String marshalItemAsString(Object item, Metadata meta) throws IOException {
         LOG.fine("marshalling item to JSON");
         meta.setClassName(item.getClass().getName());
@@ -96,7 +100,7 @@ public class JsonHandler {
         ObjectWriter writer = mapper.writerFor(item.getClass()).with(attrs);
         return writer.writeValueAsString(item);
     }
-    
+
     public byte[] marshalItemAsBytes(Object item, Metadata meta) throws IOException {
         LOG.fine("marshalling item to JSON");
         meta.setClassName(item.getClass().getName());
@@ -115,7 +119,7 @@ public class JsonHandler {
         try (SequenceWriter sw = ow.writeValuesAsArray(outputStream)) {
 
             final AtomicReference<Class> classNameRef = new AtomicReference<>();
-            long count = ((Stream)items.sequential()).peek((i) -> {
+            long count = ((Stream) items.sequential()).peek((i) -> {
                 try {
                     if (classNameRef.get() == null) {
                         LOG.log(Level.FINE, "Setting type to {0}", i.getClass());
@@ -135,6 +139,8 @@ public class JsonHandler {
                 meta.setClassName(classNameRef.get().getName());
             }
 
+        } finally {
+            outputStream.close();
         }
 
     }
