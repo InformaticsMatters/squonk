@@ -4,8 +4,8 @@ import com.im.lac.job.jobdef.DoNothingJobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.services.job.Job;
 import com.im.lac.camel.CamelCommonConstants;
-import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition2;
-import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition2;
+import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
+import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition;
 import com.im.lac.job.jobdef.JobDefinition;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
@@ -27,32 +27,33 @@ public class JobServiceRouteBuilder extends RouteBuilder {
 
         // This is the entrypoint. Send your JobDefintion here to be executed.
         // Sends the job for execution and returns immediately with the appropriate JobStatus
-        from(ROUTE_SUBMIT_JOB)
-                .log("ROUTE_SUBMIT_JOB")
-                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .setExchangePattern(ExchangePattern.InOut)
-                // body is the JobDefintion
-                .log("Job defintion ${body} received")
-                .log("Routing to " + ROUTE_SUBMIT_PREFIX + "${body.class.name}")
-                .setHeader(ROUTE_ROUTING_SLIP_HEADER, simple(ROUTE_SUBMIT_PREFIX + "${body.class.name}"))
-                .log("Routing to ${header." + ROUTE_ROUTING_SLIP_HEADER + "}")
-                .routingSlip(header(ROUTE_ROUTING_SLIP_HEADER))
-                // body is now JobStatus
-                .log("Job submitted. Current status is ${body}");
+//        from(ROUTE_SUBMIT_JOB)
+//                .log("ROUTE_SUBMIT_JOB")
+//                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+//                .setExchangePattern(ExchangePattern.InOut)
+//                // body is the JobDefintion
+//                .log("Job defintion ${body} received")
+//                .log("Routing to " + ROUTE_SUBMIT_PREFIX + "${body.class.name}")
+//                .setHeader(ROUTE_ROUTING_SLIP_HEADER, simple(ROUTE_SUBMIT_PREFIX + "${body.class.name}"))
+//                .log("Routing to ${header." + ROUTE_ROUTING_SLIP_HEADER + "}")
+//                .routingSlip(header(ROUTE_ROUTING_SLIP_HEADER))
+//                // body is now JobStatus
+//                .log("Job submitted. Current status is ${body}");
 
-        from("seda:submitJobNew")
+        from(ROUTE_SUBMIT_JOB)
                 .log("ROUTE_SUBMIT_JOB")
                 .process((Exchange exch) -> {
                     JobDefinition jobdef = exch.getIn().getBody(JobDefinition.class);
                     AbstractJob job = null;
-                    if (jobdef instanceof AsyncHttpProcessDatasetJobDefinition2) {
-                        job = new AsyncHttpJob2((AsyncHttpProcessDatasetJobDefinition2)jobdef);
-                    } else if (jobdef instanceof AsyncLocalProcessDatasetJobDefinition2) {
-                        job = new AsyncLocalJob2((AsyncLocalProcessDatasetJobDefinition2)jobdef);
+                    if (jobdef instanceof AsyncHttpProcessDatasetJobDefinition) {
+                        job = new AsyncHttpJob((AsyncHttpProcessDatasetJobDefinition)jobdef);
+                    } else if (jobdef instanceof AsyncLocalProcessDatasetJobDefinition) {
+                        job = new AsyncLocalJob((AsyncLocalProcessDatasetJobDefinition)jobdef);
                     } else {
                         throw new IllegalStateException("Job definition type " + jobdef.getClass().getName() + " not currently supported");
                     }
-                    job.start(exch.getContext());
+                    JobStatus status = job.start(exch.getContext());
+                    exch.getIn().setBody(status);
                 });
 
         from(ROUTE_DO_NOTHING)

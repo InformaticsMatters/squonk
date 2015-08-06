@@ -41,11 +41,13 @@ class JobServiceRouteBuilderSpec extends DatasetSpecificationBase {
         when:
         def result = producerTemplate.requestBody(
             JobServiceRouteBuilder.ROUTE_SUBMIT_JOB, 
-            new AsyncLocalProcessDatasetJobDefinition(ids[0], 
-                AsyncJobRouteBuilder.ROUTE_DUMMY, 
-                DatasetJobDefinition.DatasetMode.CREATE, 
-                String.class, 
-                    "newDataSet1")
+            new AsyncLocalProcessDatasetJobDefinition(
+                "test.echo.local",
+                "asyncLocal",
+                null, // params
+                ids[0], // dataset id
+                DatasetJobDefinition.DatasetMode.CREATE,
+                "new name")
         );
         println "Result: " + result
         sleep(2000)

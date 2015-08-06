@@ -16,11 +16,14 @@ class JobDefinitionJsonSpec extends Specification {
         println "AsyncLocalProcessDatasetJobDefinition()"
         ObjectMapper mapper = new ObjectMapper()
         def jobdef = new AsyncLocalProcessDatasetJobDefinition(
+            "serviceId",
+            "accessModeId",
+            null,
             1,
-            "foo",
             DatasetJobDefinition.DatasetMode.CREATE,
-            String.class,
             null)
+            
+
         
         when:
         def json = mapper.writeValueAsString(jobdef)
@@ -39,10 +42,11 @@ class JobDefinitionJsonSpec extends Specification {
         println "AsyncHttpProcessDatasetJobDefinition()"
         ObjectMapper mapper = new ObjectMapper()
         def jobdef = new AsyncHttpProcessDatasetJobDefinition(
+            "serviceId",
+            "accessModeId",
+            null,
             1,
-            "foo",
             DatasetJobDefinition.DatasetMode.CREATE,
-            String.class,
             null)
         
         when:

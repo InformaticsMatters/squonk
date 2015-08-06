@@ -121,6 +121,7 @@ public class JobClient {
      *
      * @param jobId
      * @return
+     * @throws java.lang.Exception
      */
     public JobStatus cancel(String jobId) throws Exception {
         throw new UnsupportedOperationException("NYI");

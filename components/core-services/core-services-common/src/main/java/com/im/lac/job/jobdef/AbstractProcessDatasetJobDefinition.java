@@ -10,7 +10,7 @@ public abstract class AbstractProcessDatasetJobDefinition implements DatasetJobD
     private final Long datasetId;
 
 
-    private final DatasetMode mode;
+    private final DatasetMode datasetMode;
     
     private final Class resultType;
     
@@ -18,21 +18,21 @@ public abstract class AbstractProcessDatasetJobDefinition implements DatasetJobD
 
     public AbstractProcessDatasetJobDefinition(
             Long datasetId, 
-            DatasetMode mode, 
+            DatasetMode datasetMode, 
             Class resultType, 
             String datasetName) {
         this.datasetId = datasetId;
-        this.mode = mode;
+        this.datasetMode = datasetMode;
         this.resultType = resultType;
         this.datasetName = datasetName;
     }
     
     public AbstractProcessDatasetJobDefinition(
             Long datasetId, 
-            DatasetMode mode, 
+            DatasetMode datasetMode, 
             Class resultType) {
         this.datasetId = datasetId;
-        this.mode = mode;
+        this.datasetMode = datasetMode;
         this.resultType = resultType;
         this.datasetName = null;
     }
@@ -43,8 +43,8 @@ public abstract class AbstractProcessDatasetJobDefinition implements DatasetJobD
     }
 
     @Override
-    public DatasetMode getMode() {
-        return mode;
+    public DatasetMode getDatasetMode() {
+        return datasetMode;
     }
 
     public Class getResultType() {

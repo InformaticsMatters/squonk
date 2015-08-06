@@ -13,10 +13,10 @@ public class SplitAndQueueProcessDatasetJobDefinition extends AbstractProcessDat
     public SplitAndQueueProcessDatasetJobDefinition(
             @JsonProperty("datasetId") Long datasetId,
             @JsonProperty("queuename") String queuename,
-            @JsonProperty("mode") DatasetMode mode,
+            @JsonProperty("datasetMode") DatasetMode datasetMode,
             @JsonProperty("resultType") Class resultType,
             @JsonProperty("datasetName") String datasetName) {
-        super(datasetId, mode, resultType, datasetName);
+        super(datasetId, datasetMode, resultType, datasetName);
         this.queuename = queuename;
     }
 
@@ -31,6 +31,11 @@ public class SplitAndQueueProcessDatasetJobDefinition extends AbstractProcessDat
 
     public String getQueuename() {
         return queuename;
+    }
+
+    @Override
+    public void configureDataset(Long datasetId, DatasetMode datasetMode, String newDatasetName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

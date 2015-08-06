@@ -108,7 +108,7 @@ public class JobHandler implements ServerConstants {
         job.status = JobStatus.Status.RESULTS_READY;
         Object results = exchange.getIn().getBody();
         DataItem result;
-        switch (job.getJobDefinition().getMode()) {
+        switch (job.getJobDefinition().getDatasetMode()) {
             case UPDATE:
                 result = datasetHandler.updateDataset(results, job.getJobDefinition().getDatasetId());
                 break;
@@ -117,7 +117,7 @@ public class JobHandler implements ServerConstants {
                 result = datasetHandler.createDataset(results, name == null ? "undefined" : name);
                 break;
             default:
-                throw new IllegalStateException("Unexpected mode " + job.getJobDefinition().getMode());
+                throw new IllegalStateException("Unexpected mode " + job.getJobDefinition().getDatasetMode());
         }
         LOG.log(Level.FINE, "saving data complete. Result: {0}", result);
         job.status = JobStatus.Status.COMPLETED;

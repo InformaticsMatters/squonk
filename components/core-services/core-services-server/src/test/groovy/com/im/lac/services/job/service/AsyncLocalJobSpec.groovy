@@ -12,7 +12,7 @@ import com.im.lac.services.ServerConstants
  *
  * @author timbo
  */
-class AsyncLocalJob2Spec extends DatasetSpecificationBase {
+class AsyncLocalJobSpec extends DatasetSpecificationBase {
     
     void doAddRoutes() {
         ServiceDescriptorStore serviceDescriptorStore = new ServiceDescriptorStore()
@@ -30,7 +30,7 @@ class AsyncLocalJob2Spec extends DatasetSpecificationBase {
     void "simple local 1"() {
         setup:
         TestUtils.createTestData(getDatasetHandler())
-        AsyncLocalProcessDatasetJobDefinition2 jobdef = new AsyncLocalProcessDatasetJobDefinition2(
+        AsyncLocalProcessDatasetJobDefinition jobdef = new AsyncLocalProcessDatasetJobDefinition(
                 "test.echo.local",
                 "asyncLocal",
             null, // params
@@ -38,7 +38,7 @@ class AsyncLocalJob2Spec extends DatasetSpecificationBase {
             DatasetJobDefinition.DatasetMode.CREATE,
             "new name")
                 
-        AsyncLocalJob2 job = new AsyncLocalJob2(jobdef)
+        AsyncLocalJob job = new AsyncLocalJob(jobdef)
     
         when:
         JobStatus status1 = job.start(camelContext)

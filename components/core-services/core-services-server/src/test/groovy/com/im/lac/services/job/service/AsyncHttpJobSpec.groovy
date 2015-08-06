@@ -19,7 +19,7 @@ import org.apache.http.util.EntityUtils
  *
  * @author timbo
  */
-class AsyncHttpJob2Spec extends DatasetSpecificationBase {
+class AsyncHttpJobSpec extends DatasetSpecificationBase {
     
     void doAddRoutes() {
         ServiceDescriptorStore serviceDescriptorStore = new ServiceDescriptorStore()
@@ -78,7 +78,7 @@ class AsyncHttpJob2Spec extends DatasetSpecificationBase {
     void "simple http 1"() {
         setup:
         TestUtils.createTestData(getDatasetHandler())
-        AsyncHttpProcessDatasetJobDefinition2 jobdef = new AsyncHttpProcessDatasetJobDefinition2(
+        AsyncHttpProcessDatasetJobDefinition jobdef = new AsyncHttpProcessDatasetJobDefinition(
                 "test.echo.http",
                 "asyncHttp",
             null, // params
@@ -86,7 +86,7 @@ class AsyncHttpJob2Spec extends DatasetSpecificationBase {
             DatasetJobDefinition.DatasetMode.CREATE,
                 "new name")
                 
-        AsyncHttpJob2 job = new AsyncHttpJob2(jobdef)
+        AsyncHttpJob job = new AsyncHttpJob(jobdef)
     
         when:
         JobStatus status1 = job.start(camelContext)
