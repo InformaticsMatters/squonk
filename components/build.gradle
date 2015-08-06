@@ -92,13 +92,19 @@ task dbTestEnvPrepare(type:Exec) {
     commandLine 'bash', 'db-test-env-prepare.sh'
 }
 
-task dbTestEnvShutdown(type:Exec) {
+task dbTestEnvShutdown(type:Exec) {    
     dependsOn "core-services/core-services-server:dockerFile"
     workingDir '../docker'
     commandLine 'bash', 'db-test-env-shutdown.sh'
 }
 
 task createEbsBackendServicesRootZip(type: Zip) {
+    
+    copy {
+        from '../data/licenses/license.cxl'
+        into 'chem-services-root/src/main/html/licenses'
+    }
+    
     archiveName = 'ROOT.war'
     destinationDir = file('build/ebs/')
     from 'chem-services-root/src/main/html'
