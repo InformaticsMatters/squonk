@@ -6,7 +6,7 @@ package com.im.lac.rdkit.mol;
  */
 public class EvaluatorDefintion {
 
-    public enum Functions {
+    public enum Function {
 
         EXACT_MW, FRACTION_C_SP3, LIPINSKI_HBA, LIPINSKI_HBD, LOGP, MOLECULAR_FORMULA, MOLAR_REFRACTIVITY, 
         NUM_HBA, NUM_HBD, NUM_HETEROATOMS, NUM_RINGS, NUM_AROMATIC_RINGS, NUM_ROTATABLE_BONDS,
@@ -50,4 +50,11 @@ public class EvaluatorDefintion {
     public static EvaluatorDefintion filter(String expression) {
         return new EvaluatorDefintion(Mode.Filter, null, expression);
     }
+
+    @Override
+    public String toString() {
+        return "EvaluatorDefinition: mode=" + mode + " propName=" + propName + " expression=" + expression; 
+    }
+    
+    
 }

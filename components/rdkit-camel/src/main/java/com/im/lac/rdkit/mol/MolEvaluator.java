@@ -1,6 +1,7 @@
 package com.im.lac.rdkit.mol;
 
 import com.im.lac.types.MoleculeObject;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.RDKit.RDKFuncs;
 import org.RDKit.ROMol;
@@ -17,10 +18,9 @@ public class MolEvaluator {
 
     private static final Logger LOG = Logger.getLogger(MolEvaluator.class.getName());
 
-
     public static void evaluate(MoleculeObject mo, ROMol rdkitMol, EvaluatorDefintion definition) {
-
-        EvaluatorDefintion.Functions func = EvaluatorDefintion.Functions.valueOf(definition.expression);
+        LOG.log(Level.INFO, "Evaluating {0}", definition);
+        EvaluatorDefintion.Function func = EvaluatorDefintion.Function.valueOf(definition.expression);
         Object result = calculate(rdkitMol, func);
         switch (definition.mode) {
             case Calculate:
@@ -31,7 +31,7 @@ public class MolEvaluator {
         }
     }
 
-    public static Object calculate(ROMol rdkitMol, EvaluatorDefintion.Functions function) {
+    public static Object calculate(ROMol rdkitMol, EvaluatorDefintion.Function function) {
 
         switch (function) {
             case LOGP:
@@ -60,9 +60,10 @@ public class MolEvaluator {
                 return RDKFuncs.calcNumAromaticRings(rdkitMol);
             case NUM_ROTATABLE_BONDS:
                 return RDKFuncs.calcNumRotatableBonds(rdkitMol);
-                case TPSA:
+            case TPSA:
                 return RDKFuncs.calcTPSA(rdkitMol);
         }
+        LOG.warning("Function " + function + " not handled");
         return null;
     }
 }

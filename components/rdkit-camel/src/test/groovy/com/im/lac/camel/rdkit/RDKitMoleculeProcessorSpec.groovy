@@ -1,8 +1,10 @@
 package com.im.lac.camel.rdkit
 
 import com.im.lac.types.MoleculeObject
-import java.util.stream.Stream
+import java.util.stream.*
 import spock.lang.Specification
+
+import static com.im.lac.rdkit.mol.EvaluatorDefintion.Function.*
 
 
 /**
@@ -11,18 +13,23 @@ import spock.lang.Specification
  */
 class RDKitMoleculeProcessorSpec extends Specification {
     
-    void "simple echo"() {
+    void "simple calc logp"() {
+        
         setup:
+        println "simple calc logp()"
         RDKitMoleculeProcessor p = new RDKitMoleculeProcessor()
-        p.calculate('logp', 'logP()')
-        def mols = Stream.of(new MoleculeObject("C"), new MoleculeObject("CC"))
+        p.calculate('logp', LOGP)
+        def mols = Stream.of(new MoleculeObject("C", "smiles"), new MoleculeObject("CC", "smiles"))
         
         
         when: 
         Stream<MoleculeObject> result = p.evaluate(null, mols, p.definitions)
+        def list = result.collect(Collectors.toList())
         
         then:
-        result.count() == 2
+        list.size() == 2
+        list[0].getValue("logp") != null
+        list[1].getValue("logp") != null
         
     }
 	

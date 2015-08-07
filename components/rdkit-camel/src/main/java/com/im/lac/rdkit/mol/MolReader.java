@@ -18,11 +18,12 @@ public class MolReader {
     static {
         System.loadLibrary("GraphMolWrap");
     }
-    
+
     /**
      * Looks up or creates (and sets) the ROMol for this MoleculeObject
+     *
      * @param mo
-     * @return 
+     * @return
      */
     public static ROMol findROMol(MoleculeObject mo) {
         ROMol rdkitMol = mo.getRepresentation(ROMol.class.getName(), ROMol.class);
@@ -47,19 +48,26 @@ public class MolReader {
                 return RWMol.MolFromSmiles(source);
             } else if (format.startsWith("mol")) {
                 RWMol mol = RWMol.MolFromMolBlock(source);
-                LOG.info("Generated mol " + mol);
                 return mol;
             }
         } else {
             try {
-                return RWMol.MolFromMolBlock(source);
-            } catch (Exception ex1) {
-                try {
-                    RWMol.MolFromSmiles(source);
-                } catch (Exception ex2) {
-                    // no joy
+                LOG.info("Trying as Molfile");
+                RWMol mol = RWMol.MolFromMolBlock(source);
+                if (mol != null) {
+                    return null;
                 }
+            } catch (Exception ex1) {
+
             }
+            try {
+                LOG.info("Trying as Smiles");
+                return RWMol.MolFromSmiles(source);
+            } catch (Exception ex2) {
+                // no joy
+                LOG.log(Level.INFO, "Failed to generate Mol: {0}", ex2);
+            }
+
         }
         throw new IllegalArgumentException("Cannot determine format");
     }

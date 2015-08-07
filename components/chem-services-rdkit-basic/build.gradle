@@ -1,11 +1,10 @@
-description = 'Dataset services'
-def contextName = 'coreservices'
+description = 'RDKit java services'
+def contextName = 'rdkitjava'
 
-apply plugin: 'groovy'
+
 apply plugin: 'war'
 apply plugin: 'com.bmuschko.tomcat'
 apply plugin: 'com.bmuschko.docker-remote-api'
-//apply plugin: 'docker'
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
@@ -18,62 +17,32 @@ buildscript {
     dependencies {
         classpath 'com.bmuschko:gradle-tomcat-plugin:2.2.2'
         classpath 'com.bmuschko:gradle-docker-plugin:2.4.1'
-        //classpath 'se.transmode.gradle:gradle-docker:1.2'
     }
 }
 
-
 dependencies {
-    
     compile project(':common')
     compile project(':common-camel')
-    compile project(':chemaxon-lib')
     compile project(':core-services/core-services-common')
+    compile project(':rdkit-camel')
     
-    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
-
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-jackson:$camelVersion"
     compile "org.apache.camel:camel-servletlistener:$camelVersion"
     compile "org.apache.camel:camel-servlet:$camelVersion"
     compile "org.apache.camel:camel-swagger:$camelVersion"
-    compile "org.apache.camel:camel-http4:$camelVersion"
-    compile "org.apache.camel:camel-rabbitmq:$camelVersion"
-     
+    
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
     
     def tomcatVersion = '7.0.59'
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
            "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
-    
-    compile "org.postgresql:postgresql:9.4-1201-jdbc41"
-  
 }
 
 tomcat {
-    enableSSL = true
-    contextPath = contextName
-    
-    users {
-        user {
-            username = 'admin'
-            password = 'lacrocks'
-            roles = ['developers', 'admin']
-        }
-
-        user {
-            username = 'manager'
-            password = 'lacrocks'
-            roles = ['manager']
-        }
-    }
+    enableSSL = false
 }
-
-//docker {
-//    baseImage "tomcat:7-jre8"
-//    maintainer 'Tim Dudgeon'
-//}
 
 /** Build a Docker image
  * run the generated image with something like this:
@@ -95,25 +64,14 @@ docker {
 
 task dockerFile(type: Dockerfile, dependsOn: war) {
     
-    copy{
-        from "../../../data/licenses/license.cxl"
-        into 'build'
-    }
-    
     destFile = project.file('build/Dockerfile')
-    from "tomcat:7-jre8"
+    from "timdudgeon/rdkit_java_tomcat7"
     maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
-    
-    addFile('license.cxl', 'license.cxl')
-    environmentVariable("CHEMCENTRAL_DB_SERVER", "db") // assumes the db alias is used when linking. If not override with a -e argument
-    environmentVariable("RABBITMQ_HOST", "rabbitmq")   // assumes the rabbitmq alias is used when linking. If not override with a -e argument
-    environmentVariable('CHEMCENTRAL_DB_PORT', '5432')
-    environmentVariable("CHEMAXON_LICENSE_URL", "/license.cxl")
     
     runCommand("rm -rf /usr/local/tomcat/webapps/*")
     
     def warFile = tasks.war.outputs.files.singleFile
-    addFile('libs/core-services/' + warFile.name, "/usr/local/tomcat/webapps/${contextName}.war")
+    addFile('libs/' + warFile.name, "/usr/local/tomcat/webapps/${contextName}.war")
     
     exposePort(8080)
 }
@@ -121,11 +79,5 @@ task dockerFile(type: Dockerfile, dependsOn: war) {
 task dockerImage(type: DockerBuildImage) {
     dependsOn war, dockerFile
     inputDir = dockerFile.destFile.parentFile
-    tag = "timdudgeon/" + contextName
+    tag = "timdudgeon/rdkit_java_tomcat7"
 }
-
-test {
-    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean
-    finalizedBy rootProject.tasks.integrationTestEnvShutdown
-}
-

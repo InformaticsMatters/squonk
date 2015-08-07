@@ -56,6 +56,8 @@ public class RDKitMoleculeProcessor implements Processor {
                 definitions.stream().forEach((definition) -> {
                     MolEvaluator.evaluate(mo, rdkitMol, definition);
                 });
+            } else {
+                LOG.warning("No molecule found to process");
             }
         });
     }
@@ -74,6 +76,11 @@ public class RDKitMoleculeProcessor implements Processor {
      */
     public RDKitMoleculeProcessor calculate(String name, String expression) {
         definitions.add(EvaluatorDefintion.calculate(name, expression));
+        return this;
+    }
+    
+    public RDKitMoleculeProcessor calculate(String name, EvaluatorDefintion.Function function) {
+        definitions.add(EvaluatorDefintion.calculate(name, function.toString()));
         return this;
     }
 
