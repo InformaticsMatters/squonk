@@ -13,6 +13,7 @@ import com.im.lac.services.job.service.JobHandler;
 import com.im.lac.services.job.service.JobServiceRouteBuilder;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.apache.camel.Exchange;
@@ -44,15 +45,14 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
         rest("/echo")
                 .post().description("Simple echo service for testing")
                 .bindingMode(RestBindingMode.off)
-                .consumes("application/json")
-                .produces("application/json")
+                //.consumes("application/json")
+                //.produces("application/json")
                 .route()
                 .process((Exchange exch) -> {
                     String s = exch.getIn().getBody(String.class);
-                    LOG.info("Echoing: " + s);
+                    LOG.log(Level.INFO, "Echoing: {0}", s);
                     exch.getIn().setBody(s);
                 })
-                .log("Echoing: ${body}")
                 .endRest();
 
         rest("/v1/services")

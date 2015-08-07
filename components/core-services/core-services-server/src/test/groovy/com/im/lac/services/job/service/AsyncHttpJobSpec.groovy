@@ -57,6 +57,7 @@ class AsyncHttpJobSpec extends DatasetSpecificationBase {
         HttpPost httpPost = new HttpPost(uri);
         //httpPost.setEntity(new InputStreamEntity(content));
         httpPost.setEntity(new StringEntity(source))
+        //httpPost.addHeader("Content-Type", "text/plain");
         
         String json
         CloseableHttpResponse response

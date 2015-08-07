@@ -70,6 +70,9 @@ public class CamelLifeCycle {
         LOG.fine("beforeAddRoutes()");
         LOG.log(Level.INFO, "CHEMCENTRAL_AUTO_CREATE: {0}", System.getenv("CHEMCENTRAL_AUTO_CREATE"));
         LOG.log(Level.INFO, "Creating DatasetService: {0} {1} {2}", new Object[]{datasetsTableName, createTables, dropTables});
+        
+        //context.setStreamCaching(true);
+        
         datasetService = new DatasetServiceImpl(dataSource, datasetsTableName, createTables, dropTables);
         if (dropTables) {
             datasetService.dropTables();
