@@ -46,7 +46,7 @@ class JobServiceRouteBuilderSpec extends DatasetSpecificationBase {
                 "asyncLocal",
                 null, // params
                 ids[0], // dataset id
-                DatasetJobDefinition.DatasetMode.CREATE,
+                ProcessDatasetJobDefinition.DatasetMode.CREATE,
                 "new name")
         );
         println "Result: " + result

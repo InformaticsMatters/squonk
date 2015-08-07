@@ -49,6 +49,8 @@ public class JobServiceRouteBuilder extends RouteBuilder {
                         job = new AsyncHttpJob((AsyncHttpProcessDatasetJobDefinition)jobdef);
                     } else if (jobdef instanceof AsyncLocalProcessDatasetJobDefinition) {
                         job = new AsyncLocalJob((AsyncLocalProcessDatasetJobDefinition)jobdef);
+                    } else if (jobdef instanceof DoNothingJobDefinition) {
+                        job = new DoNothingJob((DoNothingJobDefinition)jobdef);
                     } else {
                         throw new IllegalStateException("Job definition type " + jobdef.getClass().getName() + " not currently supported");
                     }

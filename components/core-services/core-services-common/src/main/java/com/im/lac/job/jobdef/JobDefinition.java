@@ -10,10 +10,10 @@ import java.io.Serializable;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public interface JobDefinition extends Serializable {
     
-    enum ExecutionMode {
-        ASYNC_SIMPLE,
-        ASYNC_STREAMING,
-        ASYNC_SPLIT_AND_QUEUE
-    }
+//    enum ExecutionMode {
+//        ASYNC_SIMPLE,
+//        ASYNC_STREAMING,
+//        ASYNC_SPLIT_AND_QUEUE
+//    }
     
 }

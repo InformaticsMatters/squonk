@@ -2,7 +2,7 @@ package com.im.lac.services.job.service;
 
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.dataset.DataItem;
-import com.im.lac.job.jobdef.DatasetJobDefinition;
+import com.im.lac.job.jobdef.ProcessDatasetJobDefinition;
 import java.util.Date;
 import java.util.logging.Logger;
 
@@ -11,7 +11,7 @@ import java.util.logging.Logger;
  * @author timbo
  * @param <T>
  */
-public abstract class AbstractDatasetJob<T extends DatasetJobDefinition> extends AbstractJob<T> {
+public abstract class AbstractDatasetJob<T extends ProcessDatasetJobDefinition> extends AbstractJob<T> {
 
     private static final Logger LOG = Logger.getLogger(AbstractDatasetJob.class.getName());
 

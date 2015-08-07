@@ -38,7 +38,7 @@ class SplitAndQueueJobRouteBuilderSpec extends DatasetSpecificationBase {
         SplitAndQueueProcessDatasetJobDefinition jobdef = new SplitAndQueueProcessDatasetJobDefinition(
             ids[3],
             "queue1",
-            DatasetJobDefinition.DatasetMode.CREATE,
+            ProcessDatasetJobDefinition.DatasetMode.CREATE,
             String.class,
             "new name");
 

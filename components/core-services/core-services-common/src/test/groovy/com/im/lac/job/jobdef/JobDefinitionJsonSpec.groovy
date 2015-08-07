@@ -20,7 +20,7 @@ class JobDefinitionJsonSpec extends Specification {
             "accessModeId",
             null,
             1,
-            DatasetJobDefinition.DatasetMode.CREATE,
+            ProcessDatasetJobDefinition.DatasetMode.CREATE,
             null)
             
 
@@ -46,7 +46,7 @@ class JobDefinitionJsonSpec extends Specification {
             "accessModeId",
             null,
             1,
-            DatasetJobDefinition.DatasetMode.CREATE,
+            ProcessDatasetJobDefinition.DatasetMode.CREATE,
             null)
         
         when:
@@ -68,7 +68,7 @@ class JobDefinitionJsonSpec extends Specification {
         def jobdef = new SplitAndQueueProcessDatasetJobDefinition(
             1,
             "foo",
-            DatasetJobDefinition.DatasetMode.CREATE,
+            ProcessDatasetJobDefinition.DatasetMode.CREATE,
             String.class,
             null)
         

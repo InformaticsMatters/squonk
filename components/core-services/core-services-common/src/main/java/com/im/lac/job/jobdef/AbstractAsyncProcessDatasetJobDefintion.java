@@ -12,7 +12,7 @@ import java.util.Map;
  * <li>The {@link AccessMode.getJobType()} method defines the type of JobDefinition that is needed</li>
  * <li>Create a new instance of the JobDefinition class using the zero arg constructor.</li>
  * <li>Based of your context there will be a limited number of interfaces that the JobDefinition
- * might implement. In this case it will implement {@link ServiceExecutionJobDefinition} and {@link DatasetJobDefinition}</li>
+ * might implement. In this case it will implement {@link ServiceExecutionJobDefinition} and {@link ProcessDatasetJobDefinition}</li>
  * <li>For each of these possible interfaces check whether the JobDefintion implements the appropriate interface and if so 
  * call the corresponding method in the interface. e.g. if it implements ServiceExecutionJobDefinition then call
  * {@link ServiceExecutionJobDefinition.configureService(ServiceDescriptor serviceDescriptor, AccessMode accessMode, Map<String,Object>
@@ -25,7 +25,7 @@ import java.util.Map;
  * @author timbo
  */
 public abstract class AbstractAsyncProcessDatasetJobDefintion
-        implements ServiceExecutionJobDefinition, DatasetJobDefinition {
+        implements ServiceExecutionJobDefinition, ProcessDatasetJobDefinition {
 
     private String serviceId;
     private String accessModeId;

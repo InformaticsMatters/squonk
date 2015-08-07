@@ -5,7 +5,7 @@ package com.im.lac.job.jobdef;
  *
  * @author timbo
  */
-public abstract class AbstractProcessDatasetJobDefinition implements DatasetJobDefinition {
+public abstract class AbstractProcessDatasetJobDefinition implements ProcessDatasetJobDefinition {
 
     private final Long datasetId;
 

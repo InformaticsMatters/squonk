@@ -80,12 +80,12 @@ class AsyncHttpJobSpec extends DatasetSpecificationBase {
         setup:
         TestUtils.createTestData(getDatasetHandler())
         AsyncHttpProcessDatasetJobDefinition jobdef = new AsyncHttpProcessDatasetJobDefinition(
-                "test.echo.http",
-                "asyncHttp",
+            "test.echo.http",
+            "asyncHttp",
             null, // params
             2l, // dataset id
-            DatasetJobDefinition.DatasetMode.CREATE,
-                "new name")
+            ProcessDatasetJobDefinition.DatasetMode.CREATE,
+            "new name")
                 
         AsyncHttpJob job = new AsyncHttpJob(jobdef)
     

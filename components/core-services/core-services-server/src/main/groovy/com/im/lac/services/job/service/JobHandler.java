@@ -6,7 +6,7 @@ import com.im.lac.dataset.JsonMetadataPair;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.job.jobdef.JobStatus;
-import com.im.lac.job.jobdef.DatasetJobDefinition;
+import com.im.lac.job.jobdef.ProcessDatasetJobDefinition;
 import com.im.lac.services.IncompatibleDataException;
 import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.services.discovery.service.ServiceDescriptorStore;
@@ -85,7 +85,7 @@ public class JobHandler implements ServerConstants {
         if (job == null) {
             throw new NullPointerException("No AbstractDatasetJob found as body");
         }
-        DatasetJobDefinition jobdef = job.getJobDefinition();
+        ProcessDatasetJobDefinition jobdef = job.getJobDefinition();
         exchange.getIn().setHeader(REST_JOB_ID, job.getJobId());
         Object objects = datasetHandler.fetchObjectsForDataset(jobdef.getDatasetId());
         exchange.getIn().setBody(objects);

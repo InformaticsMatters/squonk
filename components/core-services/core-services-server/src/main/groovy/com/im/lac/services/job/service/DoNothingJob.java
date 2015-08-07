@@ -8,6 +8,7 @@ package com.im.lac.services.job.service;
 import com.im.lac.job.jobdef.DoNothingJobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
 import java.util.Date;
+import org.apache.camel.CamelContext;
 
 /**
  *
@@ -46,4 +47,11 @@ public class DoNothingJob<T extends DoNothingJobDefinition> extends AbstractJob<
         return jobStatus.getStatus();
     }
 
+    @Override
+    public JobStatus start(CamelContext context) throws Exception {
+        JobStore jobStore = JobHandler.getJobStore(context);
+        jobStore.putJob(this);
+        return getCurrentJobStatus();
+    }
+    
 }
