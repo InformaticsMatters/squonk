@@ -93,7 +93,7 @@ public class ServiceDescriptor implements Serializable {
     public String getId() {
         return id;
     }
-    
+
     /**
      * The short name of this service
      *
@@ -211,6 +211,15 @@ public class ServiceDescriptor implements Serializable {
      */
     public AccessMode[] getAccessModes() {
         return accessModes;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder("ServiceDescriptor[")
+                .append("id:").append(id)
+                .append(" name:").append(name)
+                .append("]");
+        return b.toString();
     }
 
 }

@@ -79,8 +79,8 @@ public class AsyncJobRouteBuilder extends RouteBuilder implements ServerConstant
                 // body is now the job status
                 .log("Results handled");
 
-        from(ROUTE_DUMMY).
-                log("Dummy received ${body}")
+        from(ROUTE_DUMMY)
+                .log("Dummy received ${body.class.name}")
                 .delay(500);
 
         //////////////////////////////////////////////////////////////////////////////////////////////

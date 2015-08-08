@@ -24,7 +24,7 @@ import java.util.Map;
  *
  * @author timbo
  */
-public abstract class AbstractAsyncProcessDatasetJobDefintion
+public abstract class AbstractAsyncProcessDatasetJobDefinition
         implements ServiceExecutionJobDefinition, ProcessDatasetJobDefinition {
 
     private String serviceId;
@@ -35,10 +35,10 @@ public abstract class AbstractAsyncProcessDatasetJobDefintion
     private DatasetMode datasetMode;
     private String datasetName;
 
-    public AbstractAsyncProcessDatasetJobDefintion() {
+    public AbstractAsyncProcessDatasetJobDefinition() {
     }
 
-    public AbstractAsyncProcessDatasetJobDefintion(
+    public AbstractAsyncProcessDatasetJobDefinition(
             String serviceId,
             String accessModeId,
             Map<String, Object> parameters,

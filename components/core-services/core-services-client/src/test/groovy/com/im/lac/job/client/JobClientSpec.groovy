@@ -15,10 +15,10 @@ class JobClientSpec extends Specification {
     
     String url = "http://" + (System.getenv("DOCKER_IP") ?: "localhost") + "/coreservices/rest/v1/jobs"
     
-    void "1. test post do nothing job"() {
+    void "1.1. test post do nothing job"() {
         
         setup:
-        println "1. test post do nothing job()"
+        println "1.1. test post do nothing job()"
         def client = new JobClient(url)
         def jobdef = new DoNothingJobDefinition()
         
@@ -31,6 +31,7 @@ class JobClientSpec extends Specification {
         status != null
         status.status == JobStatus.Status.COMPLETED
     }
+    
     
     void "2. list jobs"() {
         

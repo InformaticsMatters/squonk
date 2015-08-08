@@ -99,7 +99,7 @@ public class AsyncHttpJob extends AbstractDatasetJob<AsyncHttpProcessDatasetJobD
     }
 
     void executeJob(DatasetHandler datasetHandler, ServiceDescriptor sd, String uri) {
-        LOG.info("executeJob()");
+        LOG.log(Level.INFO, "executeJob() {0}", uri);
         JsonMetadataPair holder = null;
         try {
             // fetch dataset
@@ -112,6 +112,7 @@ public class AsyncHttpJob extends AbstractDatasetJob<AsyncHttpProcessDatasetJobD
             this.status = JobStatus.Status.ERROR;
             this.exception = ex;
             LOG.log(Level.SEVERE, "Failed to fetch dataset", ex);
+            return;
         }
 
         InputStream converted = null;
@@ -122,6 +123,7 @@ public class AsyncHttpJob extends AbstractDatasetJob<AsyncHttpProcessDatasetJobD
             this.status = JobStatus.Status.ERROR;
             this.exception = ex;
             LOG.log(Level.SEVERE, "Failed to convert data to required type", ex);
+            return;
         }
 
         InputStream results = null;
@@ -132,6 +134,7 @@ public class AsyncHttpJob extends AbstractDatasetJob<AsyncHttpProcessDatasetJobD
             this.status = JobStatus.Status.ERROR;
             this.exception = ex;
             LOG.log(Level.SEVERE, "Failed to post request to " + uri, ex);
+            return;
         }
 
         // handle results
@@ -158,6 +161,7 @@ public class AsyncHttpJob extends AbstractDatasetJob<AsyncHttpProcessDatasetJobD
             this.status = JobStatus.Status.ERROR;
             this.exception = ex;
             LOG.log(Level.SEVERE, "Failed to save results", ex);
+            return;
         }
 
     }

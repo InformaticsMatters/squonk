@@ -85,7 +85,7 @@ class AsyncHttpJobSpec extends DatasetSpecificationBase {
             null, // params
             2l, // dataset id
             ProcessDatasetJobDefinition.DatasetMode.CREATE,
-            "new name")
+            "AsyncHttpJobSpec.simpleHttp")
                 
         AsyncHttpJob job = new AsyncHttpJob(jobdef)
     

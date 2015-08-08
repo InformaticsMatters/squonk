@@ -36,7 +36,7 @@ class AsyncLocalJobSpec extends DatasetSpecificationBase {
             null, // params
             2l, // dataset id
             ProcessDatasetJobDefinition.DatasetMode.CREATE,
-            "new name")
+            "AsyncLocalJobSpec.simpleLocal")
                 
         AsyncLocalJob job = new AsyncLocalJob(jobdef)
     

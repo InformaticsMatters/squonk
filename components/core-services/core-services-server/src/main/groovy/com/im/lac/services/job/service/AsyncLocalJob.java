@@ -83,7 +83,7 @@ public class AsyncLocalJob extends AbstractDatasetJob<AsyncLocalProcessDatasetJo
     }
 
     void executeJob(CamelContext context, DatasetHandler datasetHandler, ServiceDescriptor sd, String endpoint) {
-        LOG.info("executeJob()");
+        LOG.log(Level.INFO, "executeJob() {0}", endpoint);
         JsonMetadataPair holder = null;
         try {
             // fetch dataset
@@ -96,6 +96,7 @@ public class AsyncLocalJob extends AbstractDatasetJob<AsyncLocalProcessDatasetJo
             this.status = JobStatus.Status.ERROR;
             this.exception = ex;
             LOG.log(Level.SEVERE, "Failed to fetch dataset", ex);
+            return;
         }
 
         Object results = null;
@@ -112,6 +113,7 @@ public class AsyncLocalJob extends AbstractDatasetJob<AsyncLocalProcessDatasetJo
             this.status = JobStatus.Status.ERROR;
             this.exception = ex;
             LOG.log(Level.SEVERE, "Failed to post request to " + endpoint, ex);
+            return;
         }
 
         // handle results
@@ -136,6 +138,7 @@ public class AsyncLocalJob extends AbstractDatasetJob<AsyncLocalProcessDatasetJo
             this.status = JobStatus.Status.ERROR;
             this.exception = ex;
             LOG.log(Level.SEVERE, "Failed to save results", ex);
+            return;
         }
 
     }

@@ -49,9 +49,9 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 //.produces("application/json")
                 .route()
                 .process((Exchange exch) -> {
-                    String s = exch.getIn().getBody(String.class);
-                    LOG.log(Level.INFO, "Echoing: {0}", s);
-                    exch.getIn().setBody(s);
+                    Object body = exch.getIn().getBody();
+                    LOG.log(Level.INFO, "Echoing: {0}", (body == null ? "null" : body.getClass().getName()));
+                    exch.getIn().setBody(body);
                 })
                 .endRest();
 

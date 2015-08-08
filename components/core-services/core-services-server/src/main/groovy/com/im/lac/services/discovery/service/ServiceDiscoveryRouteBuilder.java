@@ -1,6 +1,7 @@
 package com.im.lac.services.discovery.service;
 
 import com.im.lac.dataset.Metadata;
+import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
 import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition;
 import com.im.lac.job.jobdef.DoNothingJobDefinition;
 import com.im.lac.services.AccessMode;
@@ -97,7 +98,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             "Execute as an asynchronous REST web service",
             "http://" + DOCKER_IP + "/coreservices/rest/echo", // the  endpoint
             false, // URL is relative
-            AsyncLocalProcessDatasetJobDefinition.class,
+            AsyncHttpProcessDatasetJobDefinition.class,
             0,
             Integer.MAX_VALUE,
             0f,

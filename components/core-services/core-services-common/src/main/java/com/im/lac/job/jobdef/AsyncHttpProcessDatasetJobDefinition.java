@@ -9,7 +9,7 @@ import java.util.Map;
  * @author timbo
  */
 public class AsyncHttpProcessDatasetJobDefinition
-        extends AbstractAsyncProcessDatasetJobDefintion {
+        extends AbstractAsyncProcessDatasetJobDefinition {
 
     /**
      * Constructor for JSON deserialization
