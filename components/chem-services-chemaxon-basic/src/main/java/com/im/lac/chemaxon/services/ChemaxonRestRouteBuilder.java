@@ -21,14 +21,20 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     private static final Logger LOG = Logger.getLogger(ChemaxonRestRouteBuilder.class.getName());
 
     private static final String KEY_SIM_CUTTOFF = "threshold";
-    private static final String NAME_SIM_CUTTOFF = "Similarity Cuttoff";
+    private static final String LABEL_SIM_CUTTOFF = "Similarity Cuttoff";
     private static final String DESC_SIM_CUTTOFF = "Similarity score cuttoff between 0 and 1 (1 means identical";
     private static final String KEY_QMOL = "query_structure";
-    private static final String NAME_QMOL = "Query Structure";
+    private static final String LABEL_QMOL = "Query Structure";
     private static final String DESC_QMOL = "Structure to us as the query";
     private static final String KEY_CT_EXPR = "ct_expr";
-    private static final String NAME_CT_EXPR = "ChemTerms Expression";
+    private static final String LABEL_CT_EXPR = "ChemTerms Expression";
     private static final String DESC_CT_EXPR = "Expression using  the Chemical Terms language";
+    private static final String KEY_MIN_CLUSTERS = "min_clusters";
+    private static final String LABEL_MIN_CLUSTERS = "Min clusters";
+    private static final String DESC_MIN_CLUSTERS = "Minimum number of clusters to generate";
+    private static final String KEY_MAX_CLUSTERS = "max_clusters";
+    private static final String LABEL_MAX_CLUSTERS = "Max clusters";
+    private static final String DESC_MAX_CLUSTERS = "Target maximum number of clusters to generate";
 
     private static final ServiceDescriptor[] SERVICE_DESCRIPTOR_CALCULATORS
             = new ServiceDescriptor[]{
@@ -82,7 +88,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "chemTerms",
                         0.01f,
                         new ServicePropertyDescriptor[]{
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRING, KEY_CT_EXPR, NAME_CT_EXPR, DESC_CT_EXPR)
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRING, KEY_CT_EXPR, LABEL_CT_EXPR, DESC_CT_EXPR)
                         })
             };
 
@@ -98,8 +104,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "screening/ecfp4",
                         0.001f,
                         new ServicePropertyDescriptor[]{
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRUCTURE, KEY_QMOL, NAME_QMOL, DESC_QMOL),
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, KEY_SIM_CUTTOFF, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRUCTURE, KEY_QMOL, LABEL_QMOL, DESC_QMOL),
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
                         }),
                 createServiceDescriptor(
                         "chemaxon.screening.pharmacophore",
@@ -111,8 +117,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "screening/pharmacophore",
                         0.004f,
                         new ServicePropertyDescriptor[]{
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRUCTURE, KEY_QMOL, NAME_QMOL, DESC_QMOL),
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, KEY_SIM_CUTTOFF, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRUCTURE, KEY_QMOL, LABEL_QMOL, DESC_QMOL),
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
                         }),
                 createServiceDescriptor(
                         "chemaxon.clustering.sperex",
@@ -124,7 +130,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "clustering/spherex/ecfp4",
                         0.002f,
                         new ServicePropertyDescriptor[]{
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, KEY_SIM_CUTTOFF, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.INTEGER, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS),
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.INTEGER, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS)
                         })
             };
 

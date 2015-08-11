@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
 /**
- * Describes a property that needs to be defined in order to execute the service. 
+ * Describes a property that needs to be defined in order to execute the
+ * service.
  * <br>e.g. the threshold for a similarity search
  * <br>e.g. the query structure for a structure search
  *
@@ -18,18 +19,34 @@ public class ServicePropertyDescriptor implements Serializable {
     private String key;
     private String label;
     private String description;
+    private Object[] values;
 
     public ServicePropertyDescriptor(
             @JsonProperty("type") Type type,
             @JsonProperty("key") String key,
             @JsonProperty("label") String label,
-            @JsonProperty("description") String description) {
+            @JsonProperty("description") String description,
+            @JsonProperty("values") Object[] values
+    ) {
+        this.type = type;
+        this.key = key;
+        this.label = label;
+        this.description = description;
+        this.values = values;
+    }
+
+    public ServicePropertyDescriptor(
+            Type type,
+            String key,
+            String label,
+            String description
+    ) {
         this.type = type;
         this.key = key;
         this.label = label;
         this.description = description;
     }
-    
+
     public String getkey() {
         return key;
     }
@@ -70,5 +87,9 @@ public class ServicePropertyDescriptor implements Serializable {
         BOOLEAN,
         STRUCTURE
 
+    }
+
+    public Object[] getValues() {
+        return values;
     }
 }
