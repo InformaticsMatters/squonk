@@ -40,7 +40,9 @@ public class AccessMode implements Serializable {
             @JsonProperty("requiredLicenseTokens") ServiceDescriptor.LicenseToken[] requiredLicenseTokens,
             @JsonProperty("parameters") ServicePropertyDescriptor[] parameters) {
 
-        assert cost >= 0;
+        if (cost != null && cost < 0) {
+            throw new IllegalStateException("Cannot specify negative cost");
+        }
 
         this.id = id;
         this.name = name;

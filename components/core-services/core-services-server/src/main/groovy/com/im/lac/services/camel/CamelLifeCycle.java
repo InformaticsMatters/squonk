@@ -3,7 +3,7 @@ package com.im.lac.services.camel;
 import com.im.lac.services.ServerConstants;
 import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.camel.CamelCommonConstants;
-import com.im.lac.services.dataset.service.DatasetServiceImpl;
+import com.im.lac.services.dataset.service.DatasetService;
 import com.im.lac.services.discovery.service.ServiceDescriptorStore;
 import static com.im.lac.services.discovery.service.ServiceDiscoveryRouteBuilder.TEST_SERVICE_DESCRIPTORS;
 import org.apache.camel.CamelContext;
@@ -28,8 +28,8 @@ public class CamelLifeCycle {
     
 
     private final DataSource dataSource;
-    private DatasetServiceImpl datasetService;
-    private String datasetsTableName = DatasetServiceImpl.DEFAULT_TABLE_NAME;
+    private DatasetService datasetService;
+    private String datasetsTableName = DatasetService.DEFAULT_TABLE_NAME;
     private boolean createTables = "true".equals(System.getenv("CHEMCENTRAL_AUTO_CREATE"));
     private boolean dropTables = "true".equals(System.getenv("CHEMCENTRAL_AUTO_CREATE"));
 
@@ -73,7 +73,7 @@ public class CamelLifeCycle {
         
         //context.setStreamCaching(true);
         
-        datasetService = new DatasetServiceImpl(dataSource, datasetsTableName, createTables, dropTables);
+        datasetService = new DatasetService(dataSource, datasetsTableName, createTables, dropTables);
         if (dropTables) {
             datasetService.dropTables();
             LOG.log(Level.INFO, "Tables dropped: {0}", datasetsTableName);

@@ -34,9 +34,9 @@ public class DatasetHandler implements ServerConstants {
 
     protected final SimpleFileCacheService cache;
     protected final JsonHandler jsonHandler = new JsonHandler();
-    protected final DatasetServiceImpl service;
+    protected final DatasetService service;
 
-    public DatasetHandler(DatasetServiceImpl service, String cachePath) throws IOException {
+    public DatasetHandler(DatasetService service, String cachePath) throws IOException {
         this.service = service;
         cache = new SimpleFileCacheService(cachePath);
         cache.init();

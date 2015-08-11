@@ -14,11 +14,11 @@ import com.im.lac.services.util.*
  *
  * @author timbo
  */
-class DatasetServiceImplSpec extends Specification {
+class DatasetServiceSpec extends Specification {
     
-    @Shared DatasetServiceImpl service = new DatasetServiceImpl(
+    @Shared DatasetService service = new DatasetService(
         TestUtils.createTestDataSource(), 
-            "users.users_test_DatasetServiceImplSpec", 
+            "users.users_test_DatasetServiceSpec", 
             true, true)
     @Shared DataItem[] item = new DataItem[1] 
     

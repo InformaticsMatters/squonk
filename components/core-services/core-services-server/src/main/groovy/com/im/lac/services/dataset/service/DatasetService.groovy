@@ -22,7 +22,7 @@ import com.im.lac.util.IOUtils
  * @author timbo
  */
 @Log
-class DatasetServiceImpl {
+class DatasetService {
     
     static public final String DEFAULT_TABLE_NAME = 'users.datasets'
     
@@ -33,14 +33,14 @@ class DatasetServiceImpl {
     private allowDropTables = false;
     
     
-    DatasetServiceImpl(DataSource dataSource) {
+    DatasetService(DataSource dataSource) {
         this(dataSource, DEFAULT_TABLE_NAME, false);
     }
     
     /** Alternative constructor allowing the table name to be specified, primarily 
      * for testing purposes.
      */
-    DatasetServiceImpl(DataSource dataSource, String tableName, boolean allowCreateTables, boolean allowDropTables) {
+    DatasetService(DataSource dataSource, String tableName, boolean allowCreateTables, boolean allowDropTables) {
         this.dataSource = dataSource
         this.tableName = tableName
         this.allowCreateTables = allowCreateTables
