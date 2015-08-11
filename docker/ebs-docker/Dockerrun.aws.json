@@ -4,7 +4,7 @@
   "containerDefinitions": [
     {
       "name": "rdkitserver",
-      "image": "abradle/rdkitserver",
+      "image": "timdudgeon/rdkitserver",
       "environment": [
         {
           "name": "SERVER_NAME",

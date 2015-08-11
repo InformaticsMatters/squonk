@@ -19,7 +19,7 @@ public class MolEvaluator {
     private static final Logger LOG = Logger.getLogger(MolEvaluator.class.getName());
 
     public static void evaluate(MoleculeObject mo, ROMol rdkitMol, EvaluatorDefintion definition) {
-        LOG.log(Level.INFO, "Evaluating {0}", definition);
+        LOG.log(Level.FINER, "Evaluating {0}", definition);
         EvaluatorDefintion.Function func = EvaluatorDefintion.Function.valueOf(definition.expression);
         Object result = calculate(rdkitMol, func);
         switch (definition.mode) {
@@ -63,7 +63,7 @@ public class MolEvaluator {
             case TPSA:
                 return RDKFuncs.calcTPSA(rdkitMol);
         }
-        LOG.warning("Function " + function + " not handled");
+        LOG.log(Level.WARNING, "Function {0} not handled", function);
         return null;
     }
 }

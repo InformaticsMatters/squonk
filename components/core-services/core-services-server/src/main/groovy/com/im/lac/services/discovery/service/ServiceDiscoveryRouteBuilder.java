@@ -42,7 +42,9 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     List<String> locations = Arrays.asList(new String[]{
         "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-chemaxon-basic/rest/v1/calculators",
         "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-chemaxon-basic/rest/v1/descriptors",
-        "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-cdk-basic/rest/v1/calculators"
+        "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-cdk-basic/rest/v1/calculators",
+        "http://192.168.1.68:8000/rdkit_cluster",
+        "http://192.168.1.68:8000/rdkit_screen"
     });
 
     public static final ServiceDescriptor[] TEST_SERVICE_DESCRIPTORS = new ServiceDescriptor[]{
@@ -68,9 +70,9 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             "valueIsIgnored", // endpoint
             false, // URL is relative
             DoNothingJobDefinition.class,
-            0,
-            Integer.MAX_VALUE,
-            0f,
+            null,
+            null,
+            null,
             null,
             null)
         }
@@ -99,9 +101,9 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             "http://" + DOCKER_IP + "/coreservices/rest/echo", // the  endpoint
             false, // URL is relative
             AsyncHttpProcessDatasetJobDefinition.class,
-            0,
-            Integer.MAX_VALUE,
-            0f,
+            null,
+            null,
+            null,
             null,
             null)
         }
@@ -130,9 +132,9 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             AsyncJobRouteBuilder.ROUTE_DUMMY, // the direct:simpleroute endpoint
             false, // URL is relative
             AsyncLocalProcessDatasetJobDefinition.class,
-            0,
-            Integer.MAX_VALUE,
-            0f,
+            null,
+            null,
+            null,
             null,
             null)
         }

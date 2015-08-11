@@ -1,6 +1,7 @@
 package com.im.lac.services;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.im.lac.job.jobdef.JobDefinition;
 import java.io.Serializable;
@@ -10,6 +11,7 @@ import java.io.Serializable;
  *
  * @author timbo
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class AccessMode implements Serializable {
 
     final String id;
@@ -18,9 +20,9 @@ public class AccessMode implements Serializable {
     final String executionEndpoint;
     final boolean endpointRelative;
     final Class<? extends JobDefinition> jobType;
-    final int minSize;
-    final int maxSize;
-    final float cost;
+    final Integer minSize;
+    final Integer maxSize;
+    final Float cost;
     final ServiceDescriptor.LicenseToken[] requiredLicenseTokens;
     final ServicePropertyDescriptor[] parameters;
 
@@ -32,9 +34,9 @@ public class AccessMode implements Serializable {
             @JsonProperty("executionEndpoint") String executionEndpoint,
             @JsonProperty("endpointRelative") boolean endpointRelative,
             @JsonProperty("jobType") Class<? extends JobDefinition> jobType,
-            @JsonProperty("minSize") int minSize,
-            @JsonProperty("maxSize") int maxSize,
-            @JsonProperty("cost") float cost,
+            @JsonProperty("minSize") Integer minSize,
+            @JsonProperty("maxSize") Integer maxSize,
+            @JsonProperty("cost") Float cost,
             @JsonProperty("requiredLicenseTokens") ServiceDescriptor.LicenseToken[] requiredLicenseTokens,
             @JsonProperty("parameters") ServicePropertyDescriptor[] parameters) {
 
@@ -113,7 +115,7 @@ public class AccessMode implements Serializable {
      *
      * @return
      */
-    public int getMinSize() {
+    public Integer getMinSize() {
         return minSize;
     }
 
@@ -125,7 +127,7 @@ public class AccessMode implements Serializable {
      *
      * @return
      */
-    public int getMaxSize() {
+    public Integer getMaxSize() {
         return maxSize;
     }
 
@@ -138,7 +140,7 @@ public class AccessMode implements Serializable {
      *
      * @return
      */
-    public float getCost() {
+    public Float getCost() {
         return cost;
     }
 

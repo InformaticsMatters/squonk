@@ -218,7 +218,7 @@ public class JobHandler implements ServerConstants {
             }
             HttpEntity entity = response.getEntity();
             String json = EntityUtils.toString(entity);
-            LOG.log(Level.INFO, "JSON HTTP: {0}", json);
+            //LOG.log(Level.INFO, "JSON HTTP: {0}", json);
             return new ByteArrayInputStream(json.getBytes());
         }
     }

@@ -42,34 +42,27 @@ public class MolReader {
     }
 
     public static RWMol generateMolFromString(String source, String format) {
+        RWMol mol = null;
         if (format != null) {
             format = format.toLowerCase();
             if (format.startsWith("smiles") || format.startsWith("cxsmiles")) {
-                return RWMol.MolFromSmiles(source);
+                mol = RWMol.MolFromSmiles(source);
             } else if (format.startsWith("mol")) {
-                RWMol mol = RWMol.MolFromMolBlock(source);
-                return mol;
+                mol = RWMol.MolFromMolBlock(source, true, false);
             }
         } else {
-            try {
-                LOG.info("Trying as Molfile");
-                RWMol mol = RWMol.MolFromMolBlock(source);
-                if (mol != null) {
-                    return null;
-                }
-            } catch (Exception ex1) {
-
+            //LOG.fine("Trying as Molfile");
+            mol = RWMol.MolFromMolBlock(source, true, false);
+            if (mol == null) {
+                //LOG.fine("Trying as Smiles");
+                mol = RWMol.MolFromSmiles(source);
             }
-            try {
-                LOG.info("Trying as Smiles");
-                return RWMol.MolFromSmiles(source);
-            } catch (Exception ex2) {
-                // no joy
-                LOG.log(Level.INFO, "Failed to generate Mol: {0}", ex2);
-            }
-
         }
-        throw new IllegalArgumentException("Cannot determine format");
+        if (mol != null) {
+            return mol;
+        } else {
+            throw new IllegalArgumentException("RDKit cannot read molecule");
+        }
     }
 
     public static Stream<ROMol> readSmiles(String file, String delimiter, int smilesCol, int nameCol, boolean hasTitleLine, boolean sanitize) {

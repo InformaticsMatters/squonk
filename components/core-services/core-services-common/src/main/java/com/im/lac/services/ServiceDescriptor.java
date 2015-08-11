@@ -1,6 +1,7 @@
 package com.im.lac.services;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.im.lac.dataset.Metadata;
 import java.io.Serializable;
@@ -24,6 +25,7 @@ import java.io.Serializable;
  *
  * @author timbo
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ServiceDescriptor implements Serializable {
 
     /**

@@ -20,10 +20,13 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(ChemaxonRestRouteBuilder.class.getName());
 
+    private static final String KEY_SIM_CUTTOFF = "threshold";
     private static final String NAME_SIM_CUTTOFF = "Similarity Cuttoff";
     private static final String DESC_SIM_CUTTOFF = "Similarity score cuttoff between 0 and 1 (1 means identical";
+    private static final String KEY_QMOL = "query_structure";
     private static final String NAME_QMOL = "Query Structure";
     private static final String DESC_QMOL = "Structure to us as the query";
+    private static final String KEY_CT_EXPR = "ct_expr";
     private static final String NAME_CT_EXPR = "ChemTerms Expression";
     private static final String DESC_CT_EXPR = "Expression using  the Chemical Terms language";
 
@@ -79,7 +82,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "chemTerms",
                         0.01f,
                         new ServicePropertyDescriptor[]{
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRING, NAME_CT_EXPR, DESC_CT_EXPR)
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRING, KEY_CT_EXPR, NAME_CT_EXPR, DESC_CT_EXPR)
                         })
             };
 
@@ -95,8 +98,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "screening/ecfp4",
                         0.001f,
                         new ServicePropertyDescriptor[]{
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRUCTURE, NAME_QMOL, DESC_QMOL),
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRUCTURE, KEY_QMOL, NAME_QMOL, DESC_QMOL),
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, KEY_SIM_CUTTOFF, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
                         }),
                 createServiceDescriptor(
                         "chemaxon.screening.pharmacophore",
@@ -108,8 +111,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "screening/pharmacophore",
                         0.004f,
                         new ServicePropertyDescriptor[]{
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRUCTURE, NAME_QMOL, DESC_QMOL),
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRUCTURE, KEY_QMOL, NAME_QMOL, DESC_QMOL),
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, KEY_SIM_CUTTOFF, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
                         }),
                 createServiceDescriptor(
                         "chemaxon.clustering.sperex",
@@ -121,7 +124,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "clustering/spherex/ecfp4",
                         0.002f,
                         new ServicePropertyDescriptor[]{
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
+                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, KEY_SIM_CUTTOFF, NAME_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
                         })
             };
 
@@ -148,8 +151,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                             endpoint,
                             true, // a relative URL
                             AsyncHttpProcessDatasetJobDefinition.class,
-                            0,
-                            Integer.MAX_VALUE,
+                            null,
+                            null,
                             cost,
                             new ServiceDescriptor.LicenseToken[]{ServiceDescriptor.LicenseToken.CHEMAXON},
                             props)

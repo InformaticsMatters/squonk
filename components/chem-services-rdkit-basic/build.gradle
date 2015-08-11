@@ -79,5 +79,5 @@ task dockerFile(type: Dockerfile, dependsOn: war) {
 task dockerImage(type: DockerBuildImage) {
     dependsOn war, dockerFile
     inputDir = dockerFile.destFile.parentFile
-    tag = "timdudgeon/rdkit_java_tomcat7"
+    tag = "squonk/rdkit_basic_services"
 }

@@ -1,5 +1,6 @@
 package com.im.lac.services;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
@@ -10,19 +11,31 @@ import java.io.Serializable;
  *
  * @author simetrias
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ServicePropertyDescriptor implements Serializable {
 
     private Type type = Type.STRING;
+    private String key;
     private String label;
     private String description;
 
     public ServicePropertyDescriptor(
             @JsonProperty("type") Type type,
+            @JsonProperty("key") String key,
             @JsonProperty("label") String label,
             @JsonProperty("description") String description) {
         this.type = type;
+        this.key = key;
         this.label = label;
         this.description = description;
+    }
+    
+    public String getkey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
     }
 
     public String getLabel() {

@@ -42,9 +42,9 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                                     "logp", // endpoint
                                     true, // URL is relative
                                     AsyncHttpProcessDatasetJobDefinition.class,
-                                    0,
-                                    Integer.MAX_VALUE,
-                                    0f,
+                                    null,
+                                    null,
+                                    null,
                                     null,
                                     null)
                         }
