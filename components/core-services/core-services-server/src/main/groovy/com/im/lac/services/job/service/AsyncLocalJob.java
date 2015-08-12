@@ -6,10 +6,13 @@ import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.dataset.JsonMetadataPair;
 import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition;
+import com.im.lac.services.CommonConstants;
 import com.im.lac.services.discovery.service.ServiceDescriptorStore;
+import com.im.lac.services.util.Utils;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 
 /**
@@ -49,9 +52,13 @@ public class AsyncLocalJob extends AbstractDatasetJob<AsyncLocalProcessDatasetJo
         super(jobStatus);
     }
 
-    public JobStatus start(CamelContext context) throws Exception {
-        LOG.info("start()");
+    public JobStatus start(Exchange exchange) throws Exception {
+        String username = Utils.fetchUsername(exchange);
+        return start(exchange.getContext(), username);
+    }
 
+    public JobStatus start(CamelContext context, String username) throws Exception {
+        LOG.info("start()");
         JobStore jobStore = JobHandler.getJobStore(context);
         DatasetHandler datasetHandler = JobHandler.getDatasetHandler(context);
         ServiceDescriptorStore serviceDescriptorStore = JobHandler.getServiceDescriptorStore(context);
@@ -73,7 +80,7 @@ public class AsyncLocalJob extends AbstractDatasetJob<AsyncLocalProcessDatasetJo
             @Override
             public void run() {
 
-                executeJob(context, datasetHandler, sd, endpoint);
+                executeJob(context, username, datasetHandler, sd, endpoint);
             }
         };
         this.status = JobStatus.Status.RUNNING;
@@ -82,12 +89,13 @@ public class AsyncLocalJob extends AbstractDatasetJob<AsyncLocalProcessDatasetJo
         return st;
     }
 
-    void executeJob(CamelContext context, DatasetHandler datasetHandler, ServiceDescriptor sd, String endpoint) {
+    void executeJob(CamelContext context, String username, DatasetHandler datasetHandler, ServiceDescriptor sd, String endpoint) {
+
         LOG.log(Level.INFO, "executeJob() {0}", endpoint);
         JsonMetadataPair holder = null;
         try {
             // fetch dataset
-            holder = datasetHandler.fetchJsonForDataset(getJobDefinition().getDatasetId());
+            holder = datasetHandler.fetchJsonForDataset(username, getJobDefinition().getDatasetId());
             LOG.log(Level.INFO, "Retrieved dataset: {0}", holder.getMetadata());
             this.totalCount = holder.getMetadata().getSize();
             LOG.log(Level.INFO, "data fetched. Found {0} items", this.totalCount);
@@ -121,11 +129,11 @@ public class AsyncLocalJob extends AbstractDatasetJob<AsyncLocalProcessDatasetJo
             DataItem dataItem;
             switch (getJobDefinition().getDatasetMode()) {
                 case UPDATE:
-                    dataItem = datasetHandler.updateDataset(results, getJobDefinition().getDatasetId());
+                    dataItem = datasetHandler.updateDataset(username, results, getJobDefinition().getDatasetId());
                     break;
                 case CREATE:
                     String datasetName = getJobDefinition().getDatasetName();
-                    dataItem = datasetHandler.createDataset(results, datasetName == null ? "undefined" : datasetName);
+                    dataItem = datasetHandler.createDataset(username, results, datasetName == null ? "undefined" : datasetName);
                     break;
                 default:
                     throw new IllegalStateException("Unexpected mode " + getJobDefinition().getDatasetMode());

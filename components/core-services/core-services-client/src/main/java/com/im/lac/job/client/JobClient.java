@@ -2,6 +2,7 @@ package com.im.lac.job.client;
 
 import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
+import com.im.lac.services.CommonConstants;
 import com.im.lac.types.io.JsonHandler;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +18,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 /**
  * Client to manage submission and management of jobs. The client only knows about
@@ -49,6 +51,7 @@ public class JobClient {
      *
      * NOTE: all parameters are currently ignored.
      *
+     * @param username Username of the authenticated user
      * @param max The maximum number of jobs to retrieve. If less than 1 all jobs matching the other
      * filters are retrieved.
      * @param status One or more status filters. Can be null if no filter.
@@ -60,14 +63,18 @@ public class JobClient {
      * @throws java.io.IOException
      */
     public List<JobStatus> getJobStatuses(
+            String username,
             int max,
             List<JobStatus> status,
             Date submissionTimeStart,
             Date submissionTimeEnd,
             Date completionTimeStart,
             Date completionTimeEnd) throws IOException {
-
+        if (username == null) {
+            throw new IllegalStateException("Username must be specified");
+        }
         HttpGet httpGet = new HttpGet(base);
+        httpGet.setHeader(CommonConstants.HEADER_SQUONK_USERNAME, username);
         try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             LOG.fine(response.getStatusLine().toString());
             HttpEntity entity1 = response.getEntity();
@@ -79,39 +86,50 @@ public class JobClient {
     /**
      * Submit this as a new Job
      *
+     * @param username Username of the authenticated user
      * @param jobdef The definition of the job
      * @return The status of the submitted job, which includes the job ID that can be used to
      * further monitor and handle the job.
      * @throws java.io.IOException
      */
-    public JobStatus submitJob(JobDefinition jobdef) throws IOException {
-
+    public JobStatus submitJob(String username, JobDefinition jobdef) throws IOException {
+        if (username == null) {
+            throw new IllegalStateException("Username must be specified");
+        }
         String json = jsonHandler.objectToJson(jobdef);
         HttpPost httpPost = new HttpPost(base);
+        httpPost.setHeader(CommonConstants.HEADER_SQUONK_USERNAME, username);
         httpPost.setEntity(new StringEntity(json));
         LOG.log(Level.INFO, "submitting job {0} to {1}", new Object[]{jobdef, base});
         try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
             LOG.info(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
-            InputStream is = entity.getContent();
-            return jsonHandler.objectFromJson(is, JobStatus.class);
+            String status = EntityUtils.toString(entity);
+            LOG.log(Level.INFO, "JobStatus JSON = {0}", status);
+            return jsonHandler.objectFromJson(status, JobStatus.class);
         }
     }
 
     /**
      * Get the current status of the job.
      *
+     * @param username Username of the authenticated user
      * @param jobId
      * @return
      * @throws java.io.IOException
      */
-    public JobStatus getJobStatus(String jobId) throws IOException {
+    public JobStatus getJobStatus(String username, String jobId) throws IOException {
+        if (username == null) {
+            throw new IllegalStateException("Username must be specified");
+        }
         HttpGet httpGet = new HttpGet(base + "/" + jobId);
+        httpGet.setHeader(CommonConstants.HEADER_SQUONK_USERNAME, username);
         try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             LOG.fine(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
-            InputStream is = entity.getContent();
-            return jsonHandler.objectFromJson(is, JobStatus.class);
+            String json = EntityUtils.toString(entity);
+            LOG.log(Level.INFO, "Job JSON = {0}", json);
+            return jsonHandler.objectFromJson(json, JobStatus.class);
         }
     }
 
@@ -119,11 +137,12 @@ public class JobClient {
      * Cancel the job if it is still running. Note: implementation details are unclear, but it needs
      * to be possible to cancel long running jobs.
      *
+     * @param username Username of the authenticated user
      * @param jobId
      * @return
      * @throws java.lang.Exception
      */
-    public JobStatus cancel(String jobId) throws Exception {
+    public JobStatus cancel(String username, String jobId) throws Exception {
         throw new UnsupportedOperationException("NYI");
     }
 
@@ -133,10 +152,11 @@ public class JobClient {
      * once the return status is {@link JobStatus.Status.COMPLETE}. Note: this only works for
      * certain types of Job. For others it is equivalent to {@link getStatus()}
      *
+     * @param username Username of the authenticated user
      * @param jobId
      * @return
      */
-    public JobStatus processResults(String jobId) {
+    public JobStatus processResults(String username, String jobId) {
         throw new UnsupportedOperationException("NYI");
     }
 

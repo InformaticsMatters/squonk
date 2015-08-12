@@ -65,7 +65,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
         rest("/v1/datasets").description("Dataset management services")
                 // POST
                 .post()
-                .description("Upload file to create new dataset. File is the body and dataset name is given by the header named " + DataItem.HEADER_DATA_ITEM_NAME)
+                .description("Upload file to create new dataset. File is the body and dataset name is given by the header named " + CommonConstants.HEADER_DATAITEM_NAME)
                 .bindingMode(RestBindingMode.off)
                 .produces("application/json")
                 .to("direct:datasets/upload")
@@ -130,15 +130,18 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .route()
                 .log("REST POST jobdef: ${body}")
                 .to(JobServiceRouteBuilder.ROUTE_SUBMIT_JOB)
-                .endRest()
-                ;
+                .endRest();
 
 
         /* These are the implementation endpoints - not accessible directly from "outside"
          */
         from("direct:datasets/upload")
                 .process((Exchange exchange) -> {
-                    String specifiedName = exchange.getIn().getHeader(DataItem.HEADER_DATA_ITEM_NAME, String.class);
+                    String specifiedName = exchange.getIn().getHeader(CommonConstants.HEADER_DATAITEM_NAME, String.class);
+                    String username = exchange.getIn().getHeader(CommonConstants.HEADER_SQUONK_USERNAME, String.class);
+                    if (username == null) {
+                        throw new IllegalStateException("Validated username not specified");
+                    }
                     DataItem created = null;
                     InputStream body = exchange.getIn().getBody(InputStream.class);
                     if (body != null) {
@@ -147,6 +150,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                         // TODO - allow this to handle things other than molecules.
                         try (Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(gunzip).getStream(false)) {
                             DataItem result = datasetHandler.createDataset(
+                                    username,
                                     mols,
                                     specifiedName == null ? "File uploaded on " + new Date().toString() : specifiedName);
                             if (result != null) {

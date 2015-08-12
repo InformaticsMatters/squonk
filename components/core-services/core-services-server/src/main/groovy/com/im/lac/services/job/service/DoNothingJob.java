@@ -48,7 +48,7 @@ public class DoNothingJob<T extends DoNothingJobDefinition> extends AbstractJob<
     }
 
     @Override
-    public JobStatus start(CamelContext context) throws Exception {
+    public JobStatus start(CamelContext context, String username) throws Exception {
         JobStore jobStore = JobHandler.getJobStore(context);
         jobStore.putJob(this);
         return getCurrentJobStatus();

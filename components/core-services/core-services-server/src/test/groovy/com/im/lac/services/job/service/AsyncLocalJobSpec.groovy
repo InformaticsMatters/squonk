@@ -29,19 +29,19 @@ class AsyncLocalJobSpec extends DatasetSpecificationBase {
     
     void "simple local 1"() {
         setup:
-        TestUtils.createTestData(getDatasetHandler())
+        def ids = createTestData()
         AsyncLocalProcessDatasetJobDefinition jobdef = new AsyncLocalProcessDatasetJobDefinition(
                 "test.echo.local",
                 "asyncLocal",
             null, // params
-            2l, // dataset id
+            ids[1], // dataset id
             ProcessDatasetJobDefinition.DatasetMode.CREATE,
             "AsyncLocalJobSpec.simpleLocal")
                 
         AsyncLocalJob job = new AsyncLocalJob(jobdef)
     
         when:
-        JobStatus status1 = job.start(camelContext)
+        JobStatus status1 = job.start(camelContext, TestUtils.TEST_USERNAME)
             
         println("Status 1.1: " + status1);
         TestUtils.waitForJobToComplete(job, 2500)

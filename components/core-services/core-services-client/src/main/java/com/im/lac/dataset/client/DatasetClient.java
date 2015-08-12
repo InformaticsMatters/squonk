@@ -1,6 +1,7 @@
 package com.im.lac.dataset.client;
 
 import com.im.lac.dataset.DataItem;
+import com.im.lac.services.CommonConstants;
 import com.im.lac.types.io.JsonHandler;
 import com.im.lac.util.IOUtils;
 import java.io.IOException;
@@ -50,12 +51,16 @@ public class DatasetClient {
     /**
      * Get all the DataItems of the dataset that are present
      *
+     * @param username Username of the authenticated user
      * @return Stream of the DataItems
      * @throws IOException
      */
-    public Stream<DataItem> getAll() throws IOException {
-
+    public Stream<DataItem> getAll(String username) throws IOException {
+        if (username == null) {
+            throw new IllegalStateException("Username must be specified");
+        }
         HttpGet httpGet = new HttpGet(base);
+        httpGet.setHeader(CommonConstants.HEADER_SQUONK_USERNAME, username);
         CloseableHttpResponse response = httpclient.execute(httpGet);
         LOG.fine(response.getStatusLine().toString());
         HttpEntity entity1 = response.getEntity();
@@ -69,19 +74,27 @@ public class DatasetClient {
      * specified that allows the content to be converted into a Stream of whatever objects are
      * supported.
      *
-     * @param name the name for the new dataset
+     * @param username Username of the authenticated user
+     * @param datasetname the name for the new dataset
      * @param content The contents
      * @return A description of the new dataset
      * @throws java.io.IOException
      */
-    public DataItem create(String name, InputStream content) throws IOException {
+    public DataItem create(String username, String datasetname, InputStream content) throws IOException {
+        if (username == null) {
+            throw new IllegalStateException("Username must be specified");
+        }
+
         HttpPost httpPost = new HttpPost(base);
-        httpPost.setHeader(DataItem.HEADER_DATA_ITEM_NAME, name);
+        httpPost.setHeader(CommonConstants.HEADER_SQUONK_USERNAME, username);
+        httpPost.setHeader(CommonConstants.HEADER_DATAITEM_NAME, datasetname);
+
         httpPost.setEntity(new InputStreamEntity(content));
         try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
             LOG.fine(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
             InputStream is = entity.getContent();
+
             return jsonHandler.objectFromJson(is, DataItem.class);
         }
     }
@@ -89,12 +102,17 @@ public class DatasetClient {
     /**
      * Get a descriptor of the specified dataset
      *
+     * @param username Username of the authenticated user
      * @param id The dataset ID
      * @return
      * @throws java.io.IOException
      */
-    public DataItem get(Long id) throws IOException {
+    public DataItem get(String username, Long id) throws IOException {
+        if (username == null) {
+            throw new IllegalStateException("Username must be specified");
+        }
         HttpGet httpGet = new HttpGet(base + "/" + id + "/dataitem");
+        httpGet.setHeader(CommonConstants.HEADER_SQUONK_USERNAME, username);
         try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             LOG.fine(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
@@ -106,12 +124,17 @@ public class DatasetClient {
     /**
      * Delete the specified dataset
      *
+     * @param username Username of the authenticated user
      * @param id The dataset ID
      * @return The HTTP status code. Hopefully 200.
      * @throws java.io.IOException
      */
-    public int delete(Long id) throws IOException {
+    public int delete(String username, Long id) throws IOException {
+        if (username == null) {
+            throw new IllegalStateException("Username must be specified");
+        }
         HttpDelete httpDelete = new HttpDelete(base + "/" + id);
+        httpDelete.setHeader(CommonConstants.HEADER_SQUONK_USERNAME, username);
         try (CloseableHttpResponse response = httpclient.execute(httpDelete)) {
             LOG.fine(response.getStatusLine().toString());
             return response.getStatusLine().getStatusCode();
@@ -134,21 +157,26 @@ public class DatasetClient {
      * Note: the type parameter is defined in the DataItem metadata property - possibly we could
      * replace this by handling DataItem as a generic type (but see next note).
      * <p>
- Note: it is deliberate that this method takes a Class as its type argument whilst the
- Metadata class handles the class name as a string. This because we cannot guarantee that the
- client will have access to all the classes that the server can supply as JSON. If not then
- its an error, but this approach at least allows the client to fail gracefully. See the (
- private getContentsAsObjects() to get an idea of what the problem is (the need to throw a
- ClassNotFoundException).
+     * Note: it is deliberate that this method takes a Class as its type argument whilst the
+     * Metadata class handles the class name as a string. This because we cannot guarantee that the
+     * client will have access to all the classes that the server can supply as JSON. If not then
+     * its an error, but this approach at least allows the client to fail gracefully. See the (
+     * private getContentsAsObjects() to get an idea of what the problem is (the need to throw a
+     * ClassNotFoundException).
      *
      * @param <T> The type of object to be created
+     * @param username Username of the authenticated user
      * @param item Descriptor of the dataset
      * @param type The type of object
      * @return An Stream of objects for the dataset
      * @throws java.io.IOException
      */
-    public <T> Stream<T> getContentsAsObjects(DataItem item, Class<T> type) throws IOException {
+    public <T> Stream<T> getContentsAsObjects(String username, DataItem item, Class<T> type) throws IOException {
+        if (username == null) {
+            throw new IllegalStateException("Username must be specified");
+        }
         HttpGet httpGet = new HttpGet(base + "/" + item.getId() + "/content");
+        httpGet.setHeader(CommonConstants.HEADER_SQUONK_USERNAME, username);
         final CloseableHttpResponse response = httpclient.execute(httpGet);
         LOG.fine(response.getStatusLine().toString());
         HttpEntity entity1 = response.getEntity();
@@ -160,9 +188,9 @@ public class DatasetClient {
         });
     }
 
-    private Stream getContentsAsObjects(DataItem item) throws ClassNotFoundException, IOException {
+    private Stream getContentsAsObjects(String username, DataItem item) throws ClassNotFoundException, IOException {
         Class cls = Class.forName(item.getMetadata().getClassName());
-        return getContentsAsObjects(item, cls);
+        return getContentsAsObjects(username, item, cls);
     }
 
 }

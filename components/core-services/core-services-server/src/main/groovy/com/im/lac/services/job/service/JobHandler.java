@@ -7,10 +7,12 @@ import com.im.lac.dataset.Metadata;
 import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.ProcessDatasetJobDefinition;
+import com.im.lac.services.CommonConstants;
 import com.im.lac.services.IncompatibleDataException;
 import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.services.discovery.service.ServiceDescriptorStore;
 import com.im.lac.services.job.Job;
+import com.im.lac.services.util.Utils;
 import com.im.lac.util.IOUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -87,7 +89,7 @@ public class JobHandler implements ServerConstants {
         }
         ProcessDatasetJobDefinition jobdef = job.getJobDefinition();
         exchange.getIn().setHeader(REST_JOB_ID, job.getJobId());
-        Object objects = datasetHandler.fetchObjectsForDataset(jobdef.getDatasetId());
+        Object objects = datasetHandler.fetchObjectsForDataset(Utils.fetchUsername(exchange), jobdef.getDatasetId());
         exchange.getIn().setBody(objects);
     }
 
@@ -101,6 +103,10 @@ public class JobHandler implements ServerConstants {
      */
     public static void saveDatasetForJob(Exchange exchange) throws Exception {
         DatasetHandler datasetHandler = getDatasetHandler(exchange);
+        String username = exchange.getIn().getHeader(CommonConstants.HEADER_SQUONK_USERNAME, String.class);
+        if (username == null) {
+            throw new IllegalStateException("Validated username not specified");
+        }
         String jobId = exchange.getIn().getHeader(REST_JOB_ID, String.class);
         JobStore jobStore = getJobStore(exchange);
         AbstractDatasetJob job = (AbstractDatasetJob) jobStore.getJob(jobId);
@@ -110,11 +116,11 @@ public class JobHandler implements ServerConstants {
         DataItem result;
         switch (job.getJobDefinition().getDatasetMode()) {
             case UPDATE:
-                result = datasetHandler.updateDataset(results, job.getJobDefinition().getDatasetId());
+                result = datasetHandler.updateDataset(username, results, job.getJobDefinition().getDatasetId());
                 break;
             case CREATE:
                 String name = job.getJobDefinition().getDatasetName();
-                result = datasetHandler.createDataset(results, name == null ? "undefined" : name);
+                result = datasetHandler.createDataset(username, results, name == null ? "undefined" : name);
                 break;
             default:
                 throw new IllegalStateException("Unexpected mode " + job.getJobDefinition().getDatasetMode());
@@ -223,25 +229,25 @@ public class JobHandler implements ServerConstants {
         }
     }
 
-    public static DataItem createResults(DatasetHandler datasetHandler, InputStream results, Metadata metadata, String datasetName)
+    public static DataItem createResults(String username, DatasetHandler datasetHandler, InputStream results, Metadata metadata, String datasetName)
             throws Exception {
         LOG.info("saveResults()");
         // convert from json to objects
         Object objects = datasetHandler.generateObjectFromJson(results, metadata);
         LOG.log(Level.INFO, "Converted JSON to {0}", objects.getClass().getName());
 
-        DataItem dataItem = datasetHandler.createDataset(results, datasetName == null ? "undefined" : datasetName);
+        DataItem dataItem = datasetHandler.createDataset(username, results, datasetName == null ? "undefined" : datasetName);
 
         LOG.log(Level.INFO, "Metadata size: {0}", metadata.getSize());
         return dataItem;
     }
     
-    public static DataItem updateResultsFrom(DatasetHandler datasetHandler, InputStream results, Metadata metadata, Long datasetId)
+    public static DataItem updateResults(String username, DatasetHandler datasetHandler, InputStream results, Metadata metadata, Long datasetId)
             throws Exception {
         LOG.info("saveResults()");
         // convert from json to objects
         Object objects = datasetHandler.generateObjectFromJson(results, metadata);
-        DataItem dataItem = datasetHandler.updateDataset(objects, datasetId);
+        DataItem dataItem = datasetHandler.updateDataset(username, objects, datasetId);
         LOG.log(Level.INFO, "Metadata size: {0}", metadata.getSize());
         return dataItem;
     }

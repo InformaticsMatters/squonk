@@ -16,24 +16,24 @@ import com.im.lac.services.util.*
  */
 class DatasetServiceSpec extends Specification {
     
-    @Shared DatasetService service = new DatasetService(
-        TestUtils.createTestDataSource(), 
-            "users.users_test_DatasetServiceSpec", 
-            true, true)
+    
+    
+    @Shared DatasetService service = new DatasetService(TestUtils.createTestDataSource())
     @Shared DataItem[] item = new DataItem[1] 
     
     
     // run before the first feature method
     def setupSpec() {
-        try {
-            service.dropTables()
-        } catch (Exception e) { }// expected   
-        service.createTables()
+//        try {
+//            service.dropTables()
+//        } catch (Exception e) { }// expected   
+//        service.createTables()
+        service.deleteDataForUser(TestUtils.TEST_USERNAME)
     }
     
     // run after the last feature method
     def cleanupSpec() {
-        service.dropTables()
+        //service.dropTables()
     }
     
     
@@ -44,7 +44,7 @@ class DatasetServiceSpec extends Specification {
         DataItem data = new DataItem(name: 'test1')
           
         when:
-        DataItem neu = service.addDataItem(data, new ByteArrayInputStream('hello world!'.getBytes()))
+        DataItem neu = service.addDataItem(TestUtils.TEST_USERNAME, data, new ByteArrayInputStream('hello world!'.getBytes()))
         
         println "added data item with id ${neu.id}"
         item[0] = neu
@@ -67,8 +67,8 @@ class DatasetServiceSpec extends Specification {
         DataItem item1
         DataItem item2
         service.doInTransactionWithResult(DataItem.class) { sql ->
-            item1 = service.addDataItem(sql, data, new ByteArrayInputStream('hello world!'.getBytes()))
-            item2 = service.updateDataItem(sql, item1);
+            item1 = service.addDataItem(sql, TestUtils.TEST_USERNAME, data, new ByteArrayInputStream('hello world!'.getBytes()))
+            item2 = service.updateDataItem(sql, TestUtils.TEST_USERNAME, item1);
         }
         
         
@@ -99,7 +99,7 @@ class DatasetServiceSpec extends Specification {
         def id = item[0].id
         
         when:
-        DataItem data = service.getDataItem(id)
+        DataItem data = service.getDataItem(TestUtils.TEST_USERNAME, id)
         
         then:
         data.name == 'test1'
@@ -111,7 +111,7 @@ class DatasetServiceSpec extends Specification {
     def "4 get data items"() {
         
         when:
-        def items = service.getDataItems()
+        def items = service.getDataItems(TestUtils.TEST_USERNAME)
         
         then:
         items.size() > 0
@@ -124,7 +124,7 @@ class DatasetServiceSpec extends Specification {
         data.name = "I've changed"
         
         when:
-        DataItem neu = service.updateDataItem(data)
+        DataItem neu = service.updateDataItem(TestUtils.TEST_USERNAME, data)
         
         then:
         neu.name == "I've changed"
@@ -145,7 +145,7 @@ class DatasetServiceSpec extends Specification {
         InputStream is1 = new ByteArrayInputStream('another planet!'.getBytes())
         
         when:
-        DataItem neu = service.updateDataItem(data, is1)
+        DataItem neu = service.updateDataItem(TestUtils.TEST_USERNAME, data, is1)
         
         byte[] bytes
         service.doInTransaction() { sql ->
@@ -168,7 +168,7 @@ class DatasetServiceSpec extends Specification {
     def "7 delete data item"() {
         setup:
         def id = item[0].id
-        DataItem data = service.getDataItem(id)
+        DataItem data = service.getDataItem(TestUtils.TEST_USERNAME, id)
         println "deleting item ${data.id} loid ${data.loid}"
         
         when:
@@ -187,7 +187,7 @@ class DatasetServiceSpec extends Specification {
         def meta = new Metadata(Fruit.class.getName(), Metadata.Type.ITEM, 1)
         
         when:
-        DataItem di = service.addDataItem(new DataItem(name:'banana', metadata: meta), new ByteArrayInputStream(json.bytes))
+        DataItem di = service.addDataItem(TestUtils.TEST_USERNAME, new DataItem(name:'banana', metadata: meta), new ByteArrayInputStream(json.bytes))
         item[0] = di
         
         then:
@@ -200,7 +200,7 @@ class DatasetServiceSpec extends Specification {
     def "9 read json"() {
         
         when:
-        DataItem di = service.getDataItem(item[0].id)
+        DataItem di = service.getDataItem(TestUtils.TEST_USERNAME, item[0].id)
         Fruit fruit = service.doInTransactionWithResult(Fruit.class) { sql ->
             InputStream is = service.createLargeObjectReader(sql, di.loid)
             return Utils.fromJson(is, Fruit.class)

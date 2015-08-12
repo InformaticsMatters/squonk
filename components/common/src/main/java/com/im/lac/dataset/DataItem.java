@@ -8,11 +8,11 @@ import java.sql.Timestamp;
  * @author timbo
  */
 public class DataItem implements Serializable {
-    
-    public static final String HEADER_DATA_ITEM_NAME = "DataItemName";
 
     private Long id;
     private String name;
+    private Long ownerId;
+    private String ownerUsername;
     private Metadata metadata;
     private Timestamp created;
     private Timestamp updated;
@@ -25,15 +25,20 @@ public class DataItem implements Serializable {
     public DataItem(
             Long id,
             String name,
+            Long ownerId,
+            String ownerUsername,
             Metadata metadata,
             Timestamp created,
             Timestamp updated,
             Long loid) {
         this.id = id;
         this.name = name;
+        this.ownerId = ownerId;
+        this.ownerUsername = ownerUsername;
         this.metadata = metadata;
         this.created = created;
         this.updated = updated;
+        this.loid = loid;
     }
 
     public Long getId() {
@@ -46,6 +51,14 @@ public class DataItem implements Serializable {
 
     public String getName() {
         return name;
+    }
+    
+    public Long getOwnerId() {
+        return ownerId;
+    }
+    
+    public String getOwnerUsername() {
+        return ownerUsername;
     }
 
     public void setName(String name) {
@@ -86,9 +99,7 @@ public class DataItem implements Serializable {
 
     @Override
     public String toString() {
-        return "DataItem{" + "id=" + id + ", name=" + name + ", created=" + created + ", updated=" + updated + ", loid=" + loid + ", metadata=" + metadata + '}';
+        return "DataItem{" + "id=" + id + ", name=" + name + ", owner=" + ownerUsername + ", created=" + created + ", updated=" + updated + ", loid=" + loid + ", metadata=" + metadata + '}';
     }
-    
-    
 
 }

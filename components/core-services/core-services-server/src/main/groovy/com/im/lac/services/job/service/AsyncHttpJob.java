@@ -4,16 +4,16 @@ import com.im.lac.dataset.DataItem;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
-import com.im.lac.services.IncompatibleDataException;
 import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.dataset.JsonMetadataPair;
 import com.im.lac.services.discovery.service.ServiceDescriptorStore;
-import java.io.IOException;
+import com.im.lac.services.util.Utils;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
 
 /**
  * Asynchronous executor for jobs that typically take a few seconds or minutes to complete.
@@ -52,15 +52,20 @@ public class AsyncHttpJob extends AbstractDatasetJob<AsyncHttpProcessDatasetJobD
         super(jobStatus);
     }
 
-    public JobStatus start(CamelContext context) throws Exception {
+    public JobStatus start(Exchange exchange) throws Exception {
+        String username = Utils.fetchUsername(exchange);
+        return start(exchange.getContext(),username);
+    }
+    
+    public JobStatus start(CamelContext context, String username) throws Exception {
         JobStore jobStore = JobHandler.getJobStore(context);
         DatasetHandler datasetHandler = JobHandler.getDatasetHandler(context);
         ServiceDescriptorStore serviceDescriptorStore = JobHandler.getServiceDescriptorStore(context);
-
-        return start(jobStore, datasetHandler, serviceDescriptorStore);
+        return start(username, jobStore, datasetHandler, serviceDescriptorStore);
     }
 
     public JobStatus start(
+            String username,
             JobStore jobStore,
             DatasetHandler datasetHandler,
             ServiceDescriptorStore serviceDescriptorStore)
@@ -88,7 +93,7 @@ public class AsyncHttpJob extends AbstractDatasetJob<AsyncHttpProcessDatasetJobD
             @Override
             public void run() {
 
-                executeJob(datasetHandler, sd, uri);
+                executeJob(username, datasetHandler, sd, uri);
             }
         };
         this.status = JobStatus.Status.RUNNING;
@@ -98,12 +103,12 @@ public class AsyncHttpJob extends AbstractDatasetJob<AsyncHttpProcessDatasetJobD
         return st;
     }
 
-    void executeJob(DatasetHandler datasetHandler, ServiceDescriptor sd, String uri) {
+    void executeJob(String username, DatasetHandler datasetHandler, ServiceDescriptor sd, String uri) {
         LOG.log(Level.INFO, "executeJob() {0}", uri);
         JsonMetadataPair holder = null;
         try {
             // fetch dataset
-            holder = datasetHandler.fetchJsonForDataset(getJobDefinition().getDatasetId());
+            holder = datasetHandler.fetchJsonForDataset(username, getJobDefinition().getDatasetId());
             LOG.log(Level.INFO, "Retrieved dataset: {0}", holder.getMetadata());
             this.totalCount = holder.getMetadata().getSize();
             LOG.log(Level.INFO, "data fetched. Found {0} items", this.totalCount);
@@ -145,10 +150,10 @@ public class AsyncHttpJob extends AbstractDatasetJob<AsyncHttpProcessDatasetJobD
             DataItem dataItem;
             switch (getJobDefinition().getDatasetMode()) {
                 case UPDATE:
-                    dataItem = JobHandler.updateResultsFrom(datasetHandler, results, metadata, getJobDefinition().getDatasetId());
+                    dataItem = JobHandler.updateResults(username, datasetHandler, results, metadata, getJobDefinition().getDatasetId());
                     break;
                 case CREATE:
-                    dataItem = JobHandler.createResults(datasetHandler, results, metadata, getJobDefinition().getDatasetName());
+                    dataItem = JobHandler.createResults(username, datasetHandler, results, metadata, getJobDefinition().getDatasetName());
                     break;
                 default:
                     throw new IllegalStateException("Unexpected mode " + getJobDefinition().getDatasetMode());

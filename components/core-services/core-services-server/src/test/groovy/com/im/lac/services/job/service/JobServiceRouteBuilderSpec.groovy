@@ -36,10 +36,10 @@ class JobServiceRouteBuilderSpec extends DatasetSpecificationBase {
         
     void "test submit ProcessDatasetJobDefinition"() {
         setup:
-        def ids = TestUtils.createTestData(getDatasetHandler())
+        def ids = createTestData()
             
         when:
-        def result = producerTemplate.requestBody(
+        def result = producerTemplate.requestBodyAndHeader(
             JobServiceRouteBuilder.ROUTE_SUBMIT_JOB, 
             new AsyncLocalProcessDatasetJobDefinition(
                 "test.echo.local",
@@ -47,7 +47,8 @@ class JobServiceRouteBuilderSpec extends DatasetSpecificationBase {
                 null, // params
                 ids[0], // dataset id
                 ProcessDatasetJobDefinition.DatasetMode.CREATE,
-                "new name")
+                "new name"),
+            CommonConstants.HEADER_SQUONK_USERNAME, TestUtils.TEST_USERNAME
         );
         println "Result: " + result
         sleep(2000)

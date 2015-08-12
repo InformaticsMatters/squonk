@@ -4,10 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import javax.sql.DataSource;
 import org.postgresql.ds.PGSimpleDataSource;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.im.lac.services.CommonConstants;
 import com.im.lac.services.ServerConstants;
 import com.im.lac.services.dataset.service.DatasetHandler;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.camel.Exchange;
 
 /**
@@ -15,39 +18,54 @@ import org.apache.camel.Exchange;
  * @author timbo
  */
 public class Utils {
+    
+    private static final Logger LOG = Logger.getLogger(Utils.class.getName());
 
     private static ObjectMapper mapper = new ObjectMapper();
 
     public static DataSource createDataSource() {
-
-
         DataSource ds = createDataSource(null, null, null, null, null);
         return ds;
     }
 
     public static DataSource createDataSource(String server, String port, String dbName, String user, String password) {
+        
         PGSimpleDataSource ds = new PGSimpleDataSource();
 
         if (server == null) {
-            server = System.getenv("CHEMCENTRAL_DB_SERVER");
+            server = System.getenv("SQUONK_DB_SERVER");
+        }
+        if (server == null) {
+            server = "localhost";
         }
         if (port == null) {
-            port = System.getenv("CHEMCENTRAL_DB_PORT");
+            port = System.getenv("SQUONK_DB_PORT");
+        }
+        if (port == null) {
+            port = "5432";
         }
         if (dbName == null) {
-            dbName = System.getenv("CHEMCENTRAL_DB_NAME");
+            dbName = System.getenv("SQUONK_DB_NAME");
+        }
+        if (dbName == null) {
+            dbName = "squonk";
         }
         if (user == null) {
-            user = System.getenv("CHEMCENTRAL_DB_USERNAME");
+            user = System.getenv("SQUONK_DB_USERNAME");
+        }
+        if (user == null) {
+            user = "tester";
         }
         if (password == null) {
-            password = System.getenv("CHEMCENTRAL_DB_PASSWORD");
+            password = System.getenv("SQUONK_DB_PASSWORD");
         }
-        ds.setServerName(server == null ? "localhost" : server);
-        ds.setPortNumber(new Integer(port == null ? "5432" : port));
-        ds.setDatabaseName(dbName == null ? "chemcentral" : dbName);
-        ds.setUser(user == null ? "chemcentral" : user);
-        ds.setPassword(password == null ? "chemcentral" : password);
+        ds.setServerName(server);
+        ds.setPortNumber(new Integer(port));
+        ds.setDatabaseName(dbName);
+        ds.setUser(user);
+        ds.setPassword(password == null ? "lacrocks" : password);
+        
+        LOG.log(Level.INFO, "Created datasource for server {0}@{1}:{2}/{3}", new Object[]{user, server, port, dbName});
 
         return ds;
     }
@@ -66,6 +84,14 @@ public class Utils {
 
     public static DatasetHandler getDatasetHandler(Exchange exch) {
         return exch.getContext().getRegistry().lookupByNameAndType(ServerConstants.DATASET_HANDLER, DatasetHandler.class);
+    }
+
+    public static String fetchUsername(Exchange exchange) {
+        String username = exchange.getIn().getHeader(CommonConstants.HEADER_SQUONK_USERNAME, String.class);
+        if (username == null) {
+            throw new IllegalStateException("Validated username not specified");
+        }
+        return username;
     }
 
 }

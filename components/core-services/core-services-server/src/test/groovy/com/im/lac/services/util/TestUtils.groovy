@@ -17,21 +17,22 @@ import com.im.lac.services.job.Job
 class TestUtils {
     
     public final static String LAC_PASSWORD = 'lacrocks' 
+    public final static String TEST_USERNAME = "testuser"
         
-    static List<Long> createTestData(DatasetHandler handler) {
-
-        def ids = []
-
-        ids << handler.createDataset('World', 'test0').id
-        ids << handler.createDataset(["one", "two", "three"],'test1').id
-        ids << handler.createDataset(["red", "yellow", "green", "blue"],'test2').id
-        ids << handler.createDataset(["banana", "pineapple", "orange", "apple", "pear"], 'test3').id
-        
-        return ids
-    }
+//    static List<Long> createTestData(DatasetHandler handler) {
+//
+//        def ids = []
+//
+//        ids << handler.createDataset('World', 'test0').id
+//        ids << handler.createDataset(["one", "two", "three"],'test1').id
+//        ids << handler.createDataset(["red", "yellow", "green", "blue"],'test2').id
+//        ids << handler.createDataset(["banana", "pineapple", "orange", "apple", "pear"], 'test3').id
+//        
+//        return ids
+//    }
     
     static DataSource createTestDataSource() {
-        return Utils.createDataSource(null, null, 'unittest', "tester", LAC_PASSWORD)
+        return Utils.createDataSource(null, null, 'squonk', "tester", LAC_PASSWORD)
     }
     
     static void waitForJobToComplete(Job job, long timeOutMillis) {

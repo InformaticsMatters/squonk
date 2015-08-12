@@ -28,7 +28,7 @@ public abstract class AbstractJob<T extends JobDefinition> implements Job<T> {
         return jobId;
     }
     
-    public JobStatus start(CamelContext context) throws Exception {
+    public JobStatus start(CamelContext context, String username) throws Exception {
         //TODO - convert to abstract method once old job classes have been migrated
         throw new IllegalStateException("Subclasses must override");
     }

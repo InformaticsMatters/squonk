@@ -4,6 +4,7 @@ import com.im.lac.dataset.DataItem
 import com.im.lac.job.client.JobClient
 import com.im.lac.job.jobdef.*
 import java.util.stream.Stream
+import spock.lang.Shared
 import java.util.stream.Collectors
 import spock.lang.Specification
 
@@ -13,7 +14,10 @@ import spock.lang.Specification
  */
 class JobClientSpec extends Specification {
     
+    String username = "testuser"
+    
     String url = "http://" + (System.getenv("DOCKER_IP") ?: "localhost") + "/coreservices/rest/v1/jobs"
+    @Shared List jobStatuses = []
     
     void "1.1. test post do nothing job"() {
         
@@ -24,7 +28,8 @@ class JobClientSpec extends Specification {
         
         
         when:
-        def status = client.submitJob(jobdef)
+        def status = client.submitJob(username, jobdef)
+        jobStatuses<< status
         println "received status " + status
         
         then: 
@@ -39,17 +44,16 @@ class JobClientSpec extends Specification {
         println "2. list jobs()"
         def client = new JobClient(url)
         
-        
         when:
-        def statuses = client.getJobStatuses(1, null, null, null, null, null)
+        def statuses = client.getJobStatuses(username, 1, null, null, null, null, null)
         println "received statuses " + statuses
         
         then: 
         statuses != null
-        statuses.size() == 1
+        statuses.last().jobId == jobStatuses.last().jobId
     }
     
-     void "3. get job status"() {
+    void "3. get job status"() {
         
         setup:
         println "3. get job status()"
@@ -57,8 +61,8 @@ class JobClientSpec extends Specification {
         
         
         when:
-        def statuses = client.getJobStatuses(1, null, null, null, null, null)
-        def status = client.getJobStatus(statuses[0].jobId)
+        def statuses = client.getJobStatuses(username, 1, null, null, null, null, null)
+        def status = client.getJobStatus(username, statuses[0].jobId)
         
         then: 
         status != null

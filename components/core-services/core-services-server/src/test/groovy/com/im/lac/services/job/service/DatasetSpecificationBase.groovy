@@ -32,9 +32,9 @@ abstract class DatasetSpecificationBase extends Specification {
     
     void doSetup(String datasetsTableName) {
         lifeCycle = new CamelLifeCycle(TestUtils.createTestDataSource())
-        lifeCycle.datasetsTableName = datasetsTableName
-        lifeCycle.createTables = true
-        lifeCycle.dropTables = true
+        //lifeCycle.datasetsTableName = datasetsTableName
+        //lifeCycle.createTables = true
+        //lifeCycle.dropTables = true
         registry = new SimpleRegistry()
         camelContext = new DefaultCamelContext(registry)
         doProcessCamelContext()
@@ -62,6 +62,10 @@ abstract class DatasetSpecificationBase extends Specification {
     
     DatasetHandler getDatasetHandler() {
         return registry.lookupByNameAndType(ServerConstants.DATASET_HANDLER, DatasetHandler.class)
+    }
+    
+    List<Long> createTestData() {
+        return getDatasetHandler().createTestData(TestUtils.TEST_USERNAME);
     }
     
    

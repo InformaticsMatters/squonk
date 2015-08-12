@@ -29,91 +29,77 @@ class DatasetService {
     protected DataSource dataSource
     protected final String tableName;
     protected final ObjectMapper objectMapper;
-    private allowCreateTables = false;
-    private allowDropTables = false;
     
     
     DatasetService(DataSource dataSource) {
-        this(dataSource, DEFAULT_TABLE_NAME, false);
-    }
-    
-    /** Alternative constructor allowing the table name to be specified, primarily 
-     * for testing purposes.
-     */
-    DatasetService(DataSource dataSource, String tableName, boolean allowCreateTables, boolean allowDropTables) {
         this.dataSource = dataSource
-        this.tableName = tableName
-        this.allowCreateTables = allowCreateTables
-        this.allowDropTables = allowDropTables
+        this.tableName = DEFAULT_TABLE_NAME
         this.objectMapper = new ObjectMapper()
-    }
-    
-   
+    }  
     
     /** Deletes all data and sets up some test data. FOR TESTING PURPOSES ONLY.
      * 
      */
-    protected List<Long> createTestData() {
+    protected List<Long> createTestData(String username) {
 
         def ids = []
         doInTransaction { db ->
-            db.execute 'DELETE FROM ' + tableName
-            ids << addDataItem(db, new DataItem(name: 'test0', metadata:new Metadata(type:Metadata.Type.TEXT,size:1,className:"java.lang.String")), new ByteArrayInputStream('World'.bytes)).id
-            ids << addDataItem(db, new DataItem(name: 'test1', metadata:new Metadata(type:Metadata.Type.ARRAY,size:3,className:"java.lang.String")), new ByteArrayInputStream('''["one", "two", "three"]'''.bytes)).id
-            ids << addDataItem(db, new DataItem(name: 'test2', metadata:new Metadata(type:Metadata.Type.ARRAY,size:4,className:"java.lang.String")), new ByteArrayInputStream('''["red", "yellow", "green", "blue"]'''.bytes)).id
-            ids << addDataItem(db, new DataItem(name: 'test3', metadata:new Metadata(type:Metadata.Type.ARRAY,size:5,className:"java.lang.String")), new ByteArrayInputStream('''["banana", "pineapple", "orange", "apple", "pear"]'''.bytes)).id
+            ids << addDataItem(db, username, new DataItem(name: 'test0', ownerUsername: username, metadata:new Metadata(type:Metadata.Type.TEXT,size:1,className:"java.lang.String")), new ByteArrayInputStream('World'.bytes)).id
+            ids << addDataItem(db, username, new DataItem(name: 'test1', ownerUsername: username, metadata:new Metadata(type:Metadata.Type.ARRAY,size:3,className:"java.lang.String")), new ByteArrayInputStream('''["one", "two", "three"]'''.bytes)).id
+            ids << addDataItem(db, username, new DataItem(name: 'test2', ownerUsername: username, metadata:new Metadata(type:Metadata.Type.ARRAY,size:4,className:"java.lang.String")), new ByteArrayInputStream('''["red", "yellow", "green", "blue"]'''.bytes)).id
+            ids << addDataItem(db, username, new DataItem(name: 'test3', ownerUsername: username, metadata:new Metadata(type:Metadata.Type.ARRAY,size:5,className:"java.lang.String")), new ByteArrayInputStream('''["banana", "pineapple", "orange", "apple", "pear"]'''.bytes)).id
         }
         return ids
     }
     
-    void createTables() {
-        if (allowCreateTables) {
-            Sql db = new Sql(dataSource)
-            try {
-                db.firstRow('select count(*) from ' + tableName)
-                log.warning("Table " + tableName + " exsits - will not create")
-            } catch (SQLException se) {
-                createTable(db)
-            }
-            db.close()
-        } else {
-            log.warning("Asked to create tables when allowCreateDeleteTables set to false. Will not perform operation.")
-        }
-    }
-    
-    private void createTable(Sql db) {
-        log.info("Creating table")
-        db.execute """\
-            |CREATE TABLE $tableName (
-            |  id SERIAL PRIMARY KEY,
-            |  name TEXT NOT NULL,
-            |  time_created TIMESTAMP NOT NULL DEFAULT NOW(),
-            |  last_updated TIMESTAMP NOT NULL DEFAULT NOW(),
-            |  metadata JSONB,
-            |  loid BIGINT NOT NULL
-            |)""".stripMargin()
-    }
-    
-    void dropTables() {
-        if (allowDropTables) {
-            Sql db = new Sql(dataSource.connection)
-            try {
-                doDeleteAllLobs(db)
-                db.execute("DROP TABLE " + tableName)
-            } catch (Exception ex) {
-                log.warning("Failed to drop tables")
-            } finally {
-                db.close()
-            }
-        } else {
-            log.warning("Asked to delete tables when allowCreateDeleteTables set to false. Will not perform operation.")
-        }
-    }
+    //    void createTables() {
+    //        Sql db = new Sql(dataSource)
+    //        try {
+    //            db.firstRow('select count(*) from ' + tableName)
+    //            log.warning("Table " + tableName + " exsits - will not create")
+    //        } catch (SQLException se) {
+    //            createTable(db)
+    //        }
+    //        db.close()
+    //    }
+    //        
+    //    private void createTable(Sql db) {
+    //        log.info("Creating table")
+    //        db.execute """\
+    //                |CREATE TABLE $tableName (
+    //                |  id SERIAL PRIMARY KEY,
+    //                |  name TEXT NOT NULL,
+    //                |  time_created TIMESTAMP NOT NULL DEFAULT NOW(),
+    //                |  last_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+    //                |  metadata JSONB,
+    //                |  loid BIGINT NOT NULL
+    //                |)""".stripMargin()
+    //    }
+    //        
+    //    void dropTables() {
+    //        Sql db = new Sql(dataSource.connection)
+    //        try {
+    //            doDeleteAllLobs(db)
+    //            db.execute("DROP TABLE " + tableName)
+    //        } catch (Exception ex) {
+    //            log.warning("Failed to drop tables")
+    //        } finally {
+    //            db.close()
+    //        }
+    //    }
         
+    protected void deleteDataForUser(String username) {
+        doInTransaction { db ->
+            deleteLobsForUser(db, username)
+            db.execute('DELETE FROM ' + tableName +
+            ' WHERE owner_id IN (SELECT id FROM users.users WHERE username = ?)', 
+                [username])
+        }
+    }
     
     /** for use in testing only */
-    private void doDeleteAllLobs(Sql db) {
-        db.eachRow("SELECT loid FROM " + tableName) {
+    protected void deleteLobsForUser(Sql db, String username) {
+        db.eachRow("SELECT d.loid FROM " + tableName + " d JOIN users.users u ON u.id = d.owner_id WHERE u.username = ?", [username]) {
             try {
                 ((org.postgresql.PGConnection)db.connection).getLargeObjectAPI().delete(it[0])
                 println "deleted lob ${it[0]}" 
@@ -121,15 +107,7 @@ class DatasetService {
                 println "loid ${it[0]} does not seem to exist"
             }
         }
-
     }
-    
-    //    /**
-    //     * Get a connection for externally managed transactions
-    //     */
-    //    private Connection getConnection() {
-    //        return dataSource.getConnection();
-    //    } 
     
     /** This is the entry point for getting a Sql instance
      */
@@ -157,36 +135,50 @@ class DatasetService {
         }  
     }
     
-    DataItem addDataItem(final DataItem data, final InputStream is) throws Exception {
+    private Long fetchUserId(Sql db, String username) {
+        def row = db.firstRow("SELECT id FROM users.users WHERE username = ?".toString(), [username])
+        if (row == null) {
+            throw new IllegalStateException("Username $username not present")
+        }
+        return row[0]
+    }
+    
+    DataItem addDataItem(final String username, final DataItem data, final InputStream is) throws Exception {
         return doInTransactionWithResult(DataItem.class) { 
-            addDataItem(it, data, is) 
+            addDataItem(it, username, data, is) 
         }
     }
     
     /**
      * Add a new data item with content.
      */
-    DataItem addDataItem(final Sql db, final DataItem data, final InputStream is) throws Exception {
-        log.info("Adding data item for $data" )
-        //log.info("IS: $is")
-        //String text = is.text
-        //log("InputStream contained " + text)
+    DataItem addDataItem(final Sql db, final String username, final DataItem data, final InputStream is) throws Exception {
+        if (data.getOwnerUsername() != null && data.getOwnerUsername() != username) {
+            throw new IllegalStateException("Username does not match that of the DataItem")
+        }
+        Long userid = fetchUserId(db, username)
+        if (data.getOwnerId() != null && userid != data.getOwnerId()) {
+            throw new IllegalStateException("Username does not correspond to userid")
+        }
+        
+        log.info("Adding data item for $data")
+        
         Long loid = createLargeObject(db, is)
         String metaJson = marshalMetadata(data.metadata);
         def gen = db.executeInsert("""\
-            |INSERT INTO $tableName (name, metadata, loid)
-            |  VALUES (?,?::jsonb,?)""".stripMargin(), [data.name, metaJson, loid]) 
+            |INSERT INTO $tableName (name, owner_id, metadata, loid)
+            |  VALUES (?,?,?::jsonb,?)""".stripMargin(), [data.name, userid, metaJson, loid]) 
         Long id = gen[0][0]
             
         log.info("added data item with id $id using loid $loid")
-        return getDataItem(db, id)
+        return getDataItem(db, username, id)
     }
     
-    DataItem updateDataItem(final DataItem data) throws Exception {
-        return doInTransactionWithResult(DataItem.class) { updateDataItem(it, data) }
+    DataItem updateDataItem(final String username, final DataItem data) throws Exception {
+        return doInTransactionWithResult(DataItem.class) { updateDataItem(it, username, data) }
     }
     
-    DataItem updateDataItem(final Sql db, final DataItem data) throws Exception {     
+    DataItem updateDataItem(final Sql db, final String username, final DataItem data) throws Exception {     
         Long id = data.id
         String metaJson = marshalMetadata(data.metadata)
         db.executeUpdate("""\
@@ -194,14 +186,14 @@ class DatasetService {
             |  WHERE id = ?""".stripMargin(), [data.name, metaJson, id]) 
 
         log.info("Updated data item with id $id")
-        return getDataItem(db, id)
+        return getDataItem(db, username, id)
     }
     
-    DataItem updateDataItem(final DataItem data, final InputStream is) throws Exception {
-        return doInTransactionWithResult(DataItem.class) { updateDataItem(it, data, is) }
+    DataItem updateDataItem(final String username, final DataItem data, final InputStream is) throws Exception {
+        return doInTransactionWithResult(DataItem.class) { updateDataItem(it, username, data, is, ) }
     }
     
-    DataItem updateDataItem(final Sql db, final DataItem data, final InputStream is) throws Exception {
+    DataItem updateDataItem(final Sql db, final String username, final DataItem data, final InputStream is) throws Exception {
         Long id = data.id
         deleteLargeObject(db, data.loid)
         Long loid = createLargeObject(db, is)
@@ -211,17 +203,17 @@ class DatasetService {
             |  WHERE id = ?""".stripMargin(), [loid, metaJson, id]) 
             
         log.info("Created data item with id $id using loid $loid")
-        return getDataItem(db, data.id)
+        return getDataItem(db, username, data.id)
     }
     
-    DataItem getDataItem(final Long id) throws Exception { 
-        return doInTransactionWithResult(DataItem.class) { getDataItem(it, id) }
+    DataItem getDataItem(final String username, final Long id) throws Exception { 
+        return doInTransactionWithResult(DataItem.class) { getDataItem(it, username, id) }
     }
     
-    DataItem getDataItem(final Sql db, final Long id) {
+    DataItem getDataItem(final Sql db, final String username, final Long id) {
         log.fine("getDataItem($id)")
-        def row = db.firstRow('SELECT id, name, time_created, last_updated, metadata::text, loid FROM ' 
-            + tableName + ' WHERE id = ?', [id])
+        def row = db.firstRow('SELECT d.id, d.name, d.time_created, d.last_updated, d.metadata::text, d.loid, u.id AS owner_id, u.username FROM ' 
+            + tableName + ' d JOIN users.users u ON u.id = d.owner_id WHERE d.id = ?', [id])
         if (!row) {
             throw new IllegalArgumentException("Item with ID $id not found")
         }
@@ -229,15 +221,15 @@ class DatasetService {
         return data
     }
     
-    List<DataItem> getDataItems() throws Exception {
-        return doInTransactionWithResult(List.class) { getDataItems(it) }
+    List<DataItem> getDataItems(final String username) throws Exception {
+        return doInTransactionWithResult(List.class) { getDataItems(it, username) }
     }
     
-    List<DataItem> getDataItems(final Sql db) throws Exception {
+    List<DataItem> getDataItems(final Sql db, final String username) throws Exception {
         log.fine("getDataItems()")
         List<DataItem> items = []
-        db.eachRow('SELECT id, name, time_created, last_updated, metadata::text, loid FROM ' 
-            + tableName + ' ORDER BY id') { row ->
+        db.eachRow('SELECT d.id, d.name, d.time_created, d.last_updated, d.metadata::text, d.loid, u.id AS owner_id, u.username FROM ' 
+            + tableName + ' d JOIN users.users u ON u.id = d.owner_id ORDER BY d.id') { row ->
             items << buildDataItem(row)
         }
         log.fine("found ${items.size()} items")
@@ -245,13 +237,11 @@ class DatasetService {
     }
     
     private DataItem buildDataItem(def row) {
-        DataItem data = new DataItem()
-        data.id = row.id
-        data.name = row.name
-        data.metadata = unmarshalMetadata(row.metadata)
-        data.created = row.time_created
-        data.updated = row.last_updated
-        data.loid = row.loid
+        
+        DataItem data = new DataItem(
+            row.id, row.name, row.owner_id, row.username,
+            unmarshalMetadata(row.metadata),
+            row.time_created, row.last_updated, row.loid)
         return data
     }
     

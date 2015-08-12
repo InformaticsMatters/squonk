@@ -9,6 +9,8 @@ import spock.lang.Specification
  */
 class ServicesClientSpec extends Specification {   
     
+    String username = "testuser"
+    
     @Ignore
     void "list services"() {
         
@@ -17,7 +19,7 @@ class ServicesClientSpec extends Specification {
         def client = new ServicesClient()
         
         when:
-        def definitions = client.getServiceDefinitions()
+        def definitions = client.getServiceDefinitions(username)
         println "received definitions " + definitions
         
         then: 

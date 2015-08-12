@@ -1,5 +1,6 @@
 package com.im.lac.services.client;
 
+import com.im.lac.services.CommonConstants;
 import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.types.io.JsonHandler;
 import java.io.IOException;
@@ -39,11 +40,16 @@ public class ServicesClient {
     /**
      * Get an List all the known ServiceDescriptorSets
      *
+     * @param username Username of the authenticated user
      * @return A list of job statuses matching the filters
      * @throws java.io.IOException
      */
-    public List<ServiceDescriptor> getServiceDefinitions() throws IOException {
+    public List<ServiceDescriptor> getServiceDefinitions(String username) throws IOException {
+        if (username == null) {
+            throw new IllegalStateException("Username must be specified");
+        }
         HttpGet httpGet = new HttpGet(base);
+        httpGet.setHeader(CommonConstants.HEADER_SQUONK_USERNAME, username);
         try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             LOG.fine(response.getStatusLine().toString());
             HttpEntity entity1 = response.getEntity();

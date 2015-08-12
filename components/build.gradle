@@ -83,6 +83,7 @@ task integrationTestEnvShutdown(type:Exec) {
 
 task integrationTestEnvClean(type:Exec) { 
     commandLine 'bash', '../docker/int-test-env-clean.sh'
+    
 }
 
 

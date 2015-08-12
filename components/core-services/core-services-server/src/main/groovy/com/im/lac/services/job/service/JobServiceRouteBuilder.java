@@ -7,6 +7,7 @@ import com.im.lac.camel.CamelCommonConstants;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
 import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition;
 import com.im.lac.job.jobdef.JobDefinition;
+import com.im.lac.services.util.Utils;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
@@ -54,7 +55,7 @@ public class JobServiceRouteBuilder extends RouteBuilder {
                     } else {
                         throw new IllegalStateException("Job definition type " + jobdef.getClass().getName() + " not currently supported");
                     }
-                    JobStatus status = job.start(exch.getContext());
+                    JobStatus status = job.start(exch.getContext(), Utils.fetchUsername(exch));
                     exch.getIn().setBody(status);
                 });
 

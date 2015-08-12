@@ -22,8 +22,8 @@ USER postgres
 # Create a PostgreSQL role named ``tester`` with ``lacrocks`` as the password
 RUN /etc/init.d/postgresql start &&\
   psql --command "CREATE USER tester WITH PASSWORD 'lacrocks';" &&\
-  createdb -O tester unittest &&\
-  psql -d unittest --command "CREATE SCHEMA users AUTHORIZATION tester;"
+  createdb -O tester squonk &&\
+  psql -d squonk --command "CREATE SCHEMA users AUTHORIZATION tester;"
 
 
 # Adjust PostgreSQL configuration so that remote connections to the

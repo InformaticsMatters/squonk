@@ -5,6 +5,7 @@ import com.im.lac.dataset.DataItem;
 import com.im.lac.types.io.JsonHandler;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.services.ServerConstants;
+import com.im.lac.services.util.Utils;
 import com.im.lac.util.IOUtils;
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
@@ -42,6 +44,17 @@ public class DatasetHandler implements ServerConstants {
         cache.init();
     }
 
+    /**
+     * Deletes all data and sets up some test data. FOR TESTING PURPOSES ONLY.
+     *
+     * @param username
+     * @return 
+     */
+    public List<Long> createTestData(String username) {
+        service.deleteDataForUser(username);
+        return service.createTestData(username);
+    }
+
     static DatasetHandler getDatasetHandler(Exchange exchange) {
         return getDatasetHandler(exchange.getContext());
     }
@@ -52,11 +65,11 @@ public class DatasetHandler implements ServerConstants {
 
     public static void putDataItems(Exchange exchange) throws Exception {
         DatasetHandler dh = getDatasetHandler(exchange);
-        exchange.getIn().setBody(dh.listDataItems());
+        exchange.getIn().setBody(dh.listDataItems(Utils.fetchUsername(exchange)));
     }
 
-    public List<DataItem> listDataItems() throws Exception {
-        return service.getDataItems();
+    public List<DataItem> listDataItems(String username) throws Exception {
+        return service.getDataItems(username);
     }
 
     public static void putDataItem(Exchange exchange) throws Exception {
@@ -65,26 +78,30 @@ public class DatasetHandler implements ServerConstants {
         if (datasetId == null) {
             throw new IllegalArgumentException("Header " + REST_DATASET_ID + " not defined. Don't know which dataset to fetch.");
         }
-        DataItem dataItem = dh.fetchDataItem(datasetId);
+        DataItem dataItem = dh.fetchDataItem(Utils.fetchUsername(exchange), datasetId);
         if (dataItem == null) {
             throw new IllegalArgumentException("Dataset " + datasetId + " not found.");
         }
         exchange.getIn().setBody(dataItem);
     }
 
-    public DataItem fetchDataItem(final Long id) throws Exception {
-        return service.getDataItem(id);
+    public DataItem fetchDataItem(final String username, final Long id) throws Exception {
+        return service.getDataItem(username, id);
     }
 
     public static void deleteDataset(Exchange exchange) throws Exception {
         DatasetHandler dh = getDatasetHandler(exchange);
         Long datasetId = exchange.getIn().getHeader(REST_DATASET_ID, Long.class);
-        dh.deleteDataset(datasetId);
+        if (datasetId == null) {
+            throw new IllegalStateException("Dataset not specified");
+        }
+
+        dh.deleteDataset(Utils.fetchUsername(exchange), datasetId);
     }
 
-    public void deleteDataset(Long datasetId) throws Exception {
+    public void deleteDataset(final String username, Long datasetId) throws Exception {
         DataItem dataItem = service.doInTransactionWithResult(DataItem.class, (sql) -> {
-            DataItem di = service.getDataItem(sql, datasetId);
+            DataItem di = service.getDataItem(sql, username, datasetId);
             if (di != null) {
                 try {
                     service.deleteDataItem(sql, di);
@@ -97,21 +114,22 @@ public class DatasetHandler implements ServerConstants {
         deleteFileFromCache(dataItem);
     }
 
-    public Object fetchObjectsForDataset(Long datasetId) throws Exception {
-        JsonMetadataPair holder = fetchJsonForDataset(datasetId);
+    public Object fetchObjectsForDataset(String username, Long datasetId) throws Exception {
+        JsonMetadataPair holder = fetchJsonForDataset(username, datasetId);
         return generateObjectFromJson(holder.getInputStream(), holder.getMetadata());
     }
 
     public static void putJsonForDataset(Exchange exchange) throws Exception {
         DatasetHandler dh = getDatasetHandler(exchange);
         Long datasetId = exchange.getIn().getHeader(REST_DATASET_ID, Long.class);
-        JsonMetadataPair holder = dh.fetchJsonForDataset(datasetId);
+        JsonMetadataPair holder = dh.fetchJsonForDataset(Utils.fetchUsername(exchange), datasetId);
         exchange.getIn().setBody(holder);
     }
 
-    public JsonMetadataPair fetchJsonForDataset(Long datasetId) throws Exception {
+    public JsonMetadataPair fetchJsonForDataset(String username, Long datasetId) throws Exception {
         JsonMetadataPair holder = service.doInTransactionWithResult(JsonMetadataPair.class, (sql) -> {
-            DataItem di = service.getDataItem(sql, datasetId);
+            DataItem di = service.getDataItem(sql, username, datasetId);
+            LOG.log(Level.INFO, "DataItem for id {0} is {1}", new Object[]{datasetId, di});
             File f = cache.getFileFromCache(di.getLoid());
             if (f == null) {
                 try (InputStream in = service.createLargeObjectReader(sql, di.getLoid())) {
@@ -132,20 +150,21 @@ public class DatasetHandler implements ServerConstants {
     /**
      * Update the dataset with these Object(s)
      *
+     * @param username
      * @param data
      * @param datsetId
      * @return
      * @throws Exception
      */
-    public DataItem updateDataset(final Object data, final Long datsetId) throws Exception {
+    public DataItem updateDataset(final String username, final Object data, final Long datsetId) throws Exception {
         final JsonMetadataPair marshalResults = generateJsonForItem(data, true);
         DataItem dataItem = service.doInTransactionWithResult(DataItem.class, (sql) -> {
             try {
-                DataItem orig = service.getDataItem(sql, datsetId);
+                DataItem orig = service.getDataItem(sql, username, datsetId);
 
                 orig.setMetadata(marshalResults.getMetadata());
                 deleteFileFromCache(orig);
-                return service.updateDataItem(sql, orig, marshalResults.getInputStream());
+                return service.updateDataItem(sql, username, orig, marshalResults.getInputStream());
             } catch (Exception ex) {
                 throw new RuntimeException("Failed to write dataset", ex);
             } finally {
@@ -155,7 +174,7 @@ public class DatasetHandler implements ServerConstants {
         return dataItem;
     }
 
-    public DataItem createDataset(final Object newData, final String datasetName) throws Exception {
+    public DataItem createDataset(final String username, final Object newData, final String datasetName) throws Exception {
         final JsonMetadataPair marshalResults = generateJsonForItem(newData, true);
 
         final DataItem neu = new DataItem();
@@ -164,7 +183,7 @@ public class DatasetHandler implements ServerConstants {
 
         DataItem dataItem = service.doInTransactionWithResult(DataItem.class, (sql) -> {
             try {
-                DataItem di = service.addDataItem(sql, neu, marshalResults.getInputStream());
+                DataItem di = service.addDataItem(sql, username, neu, marshalResults.getInputStream());
                 return di;
             } catch (Exception ex) {
                 throw new RuntimeException("Failed to create dataset", ex);
@@ -183,8 +202,7 @@ public class DatasetHandler implements ServerConstants {
     }
 
     /**
-     * Reads JSON from the InputStream and generates object(s) according to the
-     * metadata definition
+     * Reads JSON from the InputStream and generates object(s) according to the metadata definition
      *
      * @param inputStream
      * @param metadata
@@ -209,10 +227,9 @@ public class DatasetHandler implements ServerConstants {
      * Takes the object(s) and generates JSON and corresponding metadata.
      *
      * @param item The Object, Stream or Iterable to marshal to JSON.
-     * @param gzip Whether to gzip the stream. Usually this inputStream best as
-     * it reduces IO.
-     * @return the marshal results, with the metadata complete once the
-     * InputStream has been fully read.
+     * @param gzip Whether to gzip the stream. Usually this inputStream best as it reduces IO.
+     * @return the marshal results, with the metadata complete once the InputStream has been fully
+     * read.
      * @throws IOException
      */
     JsonMetadataPair generateJsonForItem(Object item, boolean gzip) throws IOException {

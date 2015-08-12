@@ -3,6 +3,7 @@ package com.im.lac.services.job.service
 import com.im.lac.job.jobdef.*
 import com.im.lac.services.discovery.service.ServiceDescriptorStore
 import com.im.lac.services.job.*
+import com.im.lac.services.dataset.service.*
 import com.im.lac.services.discovery.service.ServiceDiscoveryRouteBuilder
 import com.im.lac.services.util.*
 import com.im.lac.services.ServerConstants
@@ -78,30 +79,41 @@ class AsyncHttpJobSpec extends DatasetSpecificationBase {
     
     void "simple http 1"() {
         setup:
-        TestUtils.createTestData(getDatasetHandler())
+        def ids = createTestData()
         AsyncHttpProcessDatasetJobDefinition jobdef = new AsyncHttpProcessDatasetJobDefinition(
             "test.echo.http",
             "asyncHttp",
             null, // params
-            2l, // dataset id
+            ids[1], // dataset id
             ProcessDatasetJobDefinition.DatasetMode.CREATE,
             "AsyncHttpJobSpec.simpleHttp")
                 
         AsyncHttpJob job = new AsyncHttpJob(jobdef)
     
         when:
-        JobStatus status1 = job.start(camelContext)
+        JobStatus status1 = submitJob(job)
             
         println("Status 1.1: " + status1);
         TestUtils.waitForJobToComplete(job, 2500)
         def status2 = job.buildStatus()
         println("Status 1.2: " + status2);
         println "DataItem: " + status2.getResult()
+        println "Exception: " + job.exception
     
         then:
         status1.status == JobStatus.Status.RUNNING
         status2.status == JobStatus.Status.COMPLETED
         status2.result.metadata.size > 0
+    }
+    
+    
+    private JobStatus submitJob(AsyncHttpJob job) {
+        JobStore jobStore = JobHandler.getJobStore(camelContext);
+        DatasetHandler datasetHandler = JobHandler.getDatasetHandler(camelContext);
+        ServiceDescriptorStore serviceDescriptorStore = JobHandler.getServiceDescriptorStore(camelContext);
+        
+        return job.start(TestUtils.TEST_USERNAME, jobStore, datasetHandler, serviceDescriptorStore)
+            
     }
 	
 }

@@ -85,5 +85,9 @@ public abstract class AbstractDatasetJob<T extends ProcessDatasetJobDefinition> 
     public DataItem getResult() {
         return result;
     }
+    
+    public Exception getException() {
+        return exception;
+    }
 
 }

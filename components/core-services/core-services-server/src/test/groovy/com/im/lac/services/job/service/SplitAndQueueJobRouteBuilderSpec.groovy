@@ -12,7 +12,7 @@ import com.im.lac.job.jobdef.*
 import com.im.lac.services.util.*
 import com.im.lac.services.job.*
 import com.im.lac.services.job.service.*
-import com.im.lac.services.ServerConstants
+import com.im.lac.services.*
 import com.im.lac.services.dataset.service.*
 
 import groovy.sql.Sql
@@ -34,7 +34,7 @@ class SplitAndQueueJobRouteBuilderSpec extends DatasetSpecificationBase {
     
     void "simple 1"() {
         setup:
-        def ids = TestUtils.createTestData(getDatasetHandler())
+        def ids = createTestData()
         SplitAndQueueProcessDatasetJobDefinition jobdef = new SplitAndQueueProcessDatasetJobDefinition(
             ids[3],
             "queue1",
@@ -43,7 +43,10 @@ class SplitAndQueueJobRouteBuilderSpec extends DatasetSpecificationBase {
             "new name");
 
         when:
-        JobStatus status1 = producerTemplate.requestBody(SplitAndQueueJobRouteBuilder.ROUTE_SPLIT_AND_QUEUE_SUBMIT, jobdef);
+        JobStatus status1 = producerTemplate.requestBodyAndHeader(
+            SplitAndQueueJobRouteBuilder.ROUTE_SPLIT_AND_QUEUE_SUBMIT, jobdef,
+            CommonConstants.HEADER_SQUONK_USERNAME, TestUtils.TEST_USERNAME
+        );
         def job = JobHandler.getJob(camelContext, status1.getJobId())
         
         System.out.println("Status 1: " + status1);

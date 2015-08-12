@@ -11,7 +11,6 @@ import org.apache.camel.impl.SimpleRegistry;
 import com.im.lac.services.util.Utils;
 import com.im.lac.services.job.service.JobHandler;
 import com.im.lac.services.job.service.SimpleJobStore;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
@@ -29,9 +28,9 @@ public class CamelLifeCycle {
 
     private final DataSource dataSource;
     private DatasetService datasetService;
-    private String datasetsTableName = DatasetService.DEFAULT_TABLE_NAME;
-    private boolean createTables = "true".equals(System.getenv("CHEMCENTRAL_AUTO_CREATE"));
-    private boolean dropTables = "true".equals(System.getenv("CHEMCENTRAL_AUTO_CREATE"));
+    //private String datasetsTableName = DatasetService.DEFAULT_TABLE_NAME;
+    //private boolean createTables = "true".equals(System.getenv("CHEMCENTRAL_AUTO_CREATE"));
+    //private boolean dropTables = "true".equals(System.getenv("CHEMCENTRAL_AUTO_CREATE"));
 
     public CamelLifeCycle() {
         this(Utils.createDataSource());
@@ -60,28 +59,29 @@ public class CamelLifeCycle {
 
     public void afterStop(CamelContext context, SimpleRegistry r) throws Exception {
         LOG.fine("afterStop()");
-        if (dropTables && datasetService != null) {
-            //datasetService.dropTables();
-            LOG.log(Level.INFO, "Tables dropped: {0}", datasetsTableName);
-        }
+//        if (dropTables && datasetService != null) {
+//            //datasetService.dropTables();
+//            LOG.log(Level.INFO, "Tables dropped: {0}", datasetsTableName);
+//        }
     }
 
     public void beforeAddRoutes(CamelContext context, SimpleRegistry r) throws Exception {
         LOG.fine("beforeAddRoutes()");
-        LOG.log(Level.INFO, "CHEMCENTRAL_AUTO_CREATE: {0}", System.getenv("CHEMCENTRAL_AUTO_CREATE"));
-        LOG.log(Level.INFO, "Creating DatasetService: {0} {1} {2}", new Object[]{datasetsTableName, createTables, dropTables});
+//        LOG.log(Level.INFO, "CHEMCENTRAL_AUTO_CREATE: {0}", System.getenv("CHEMCENTRAL_AUTO_CREATE"));
+//        LOG.log(Level.INFO, "Creating DatasetService: {0} {1} {2}", new Object[]{datasetsTableName, createTables, dropTables});
         
         //context.setStreamCaching(true);
         
-        datasetService = new DatasetService(dataSource, datasetsTableName, createTables, dropTables);
-        if (dropTables) {
-            datasetService.dropTables();
-            LOG.log(Level.INFO, "Tables dropped: {0}", datasetsTableName);
-        }
-        if (createTables) {
-            datasetService.createTables();
-            LOG.log(Level.INFO, "Tables created: {0}", datasetsTableName);
-        }
+        datasetService = new DatasetService(dataSource);
+//        datasetService = new DatasetService(dataSource, datasetsTableName, createTables, dropTables);
+//        if (dropTables) {
+//            datasetService.dropTables();
+//            LOG.log(Level.INFO, "Tables dropped: {0}", datasetsTableName);
+//        }
+//        if (createTables) {
+//            datasetService.createTables();
+//            LOG.log(Level.INFO, "Tables created: {0}", datasetsTableName);
+//        }
         
         ServiceDescriptorStore serviceDescriptorStore = new ServiceDescriptorStore();
         serviceDescriptorStore.addServiceDescriptors("ignored", TEST_SERVICE_DESCRIPTORS);
@@ -97,29 +97,29 @@ public class CamelLifeCycle {
         // noop
     }
 
-    public boolean isCreateTables() {
-        return createTables;
-    }
-
-    public void setCreateTables(boolean createTables) {
-        this.createTables = createTables;
-    }
-
-    public boolean isDropTables() {
-        return dropTables;
-    }
-
-    public void setDropTables(boolean dropTables) {
-        this.dropTables = dropTables;
-    }
-
-    public String getDatasetsTableName() {
-        return datasetsTableName;
-    }
-
-    public void setDatasetsTableName(String datasetsTableName) {
-        this.datasetsTableName = datasetsTableName;
-    }
+//    public boolean isCreateTables() {
+//        return createTables;
+//    }
+//
+//    public void setCreateTables(boolean createTables) {
+//        this.createTables = createTables;
+//    }
+//
+//    public boolean isDropTables() {
+//        return dropTables;
+//    }
+//
+//    public void setDropTables(boolean dropTables) {
+//        this.dropTables = dropTables;
+//    }
+//
+//    public String getDatasetsTableName() {
+//        return datasetsTableName;
+//    }
+//
+//    public void setDatasetsTableName(String datasetsTableName) {
+//        this.datasetsTableName = datasetsTableName;
+//    }
 
     public DataSource getDataSource() {
         return dataSource;

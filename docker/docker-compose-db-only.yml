@@ -10,9 +10,6 @@ cs:
     links:
     - db:db
     environment:
-        CHEMCENTRAL_DB_NAME: unittest
-        CHEMCENTRAL_DB_USERNAME: tester
-        CHEMCENTRAL_DB_PASSWORD: "lacrocks"
-        CHEMCENTRAL_AUTO_CREATE: "true"
+        SQUONK_DB_SERVER: db
 
 

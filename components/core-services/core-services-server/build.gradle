@@ -6,6 +6,7 @@ apply plugin: 'war'
 apply plugin: 'com.bmuschko.tomcat'
 apply plugin: 'com.bmuschko.docker-remote-api'
 //apply plugin: 'docker'
+apply plugin: 'org.flywaydb.flyway'
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
@@ -19,6 +20,8 @@ buildscript {
         classpath 'com.bmuschko:gradle-tomcat-plugin:2.2.2'
         classpath 'com.bmuschko:gradle-docker-plugin:2.4.1'
         //classpath 'se.transmode.gradle:gradle-docker:1.2'
+        classpath 'org.postgresql:postgresql:9.4-1201-jdbc41'
+        classpath 'org.flywaydb:flyway-gradle-plugin:3.2.1'
     }
 }
 
@@ -125,7 +128,13 @@ task dockerImage(type: DockerBuildImage) {
 }
 
 test {
-    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean
+    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean, flywayMigrate
     finalizedBy rootProject.tasks.integrationTestEnvShutdown
 }
 
+flyway {
+    url = 'jdbc:postgresql://localhost:5432/squonk'
+    user = 'tester'
+    password = 'lacrocks'
+    schemas = ['users']
+}
