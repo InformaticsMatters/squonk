@@ -77,34 +77,34 @@ class AsyncHttpJobSpec extends DatasetSpecificationBase {
         json.length() > 0 
     }
     
-    void "simple http 1"() {
-        setup:
-        def ids = createTestData()
-        AsyncHttpProcessDatasetJobDefinition jobdef = new AsyncHttpProcessDatasetJobDefinition(
-            "test.echo.http",
-            "asyncHttp",
-            null, // params
-            ids[1], // dataset id
-            ProcessDatasetJobDefinition.DatasetMode.CREATE,
-            "AsyncHttpJobSpec.simpleHttp")
-                
-        AsyncHttpJob job = new AsyncHttpJob(jobdef)
-    
-        when:
-        JobStatus status1 = submitJob(job)
-            
-        println("Status 1.1: " + status1);
-        TestUtils.waitForJobToComplete(job, 2500)
-        def status2 = job.buildStatus()
-        println("Status 1.2: " + status2);
-        println "DataItem: " + status2.getResult()
-        println "Exception: " + job.exception
-    
-        then:
-        status1.status == JobStatus.Status.RUNNING
-        status2.status == JobStatus.Status.COMPLETED
-        status2.result.metadata.size > 0
-    }
+//    void "simple http 1"() {
+//        setup:
+//        def ids = createTestData()
+//        AsyncHttpProcessDatasetJobDefinition jobdef = new AsyncHttpProcessDatasetJobDefinition(
+//            "test.echo.http",
+//            "asyncHttp",
+//            null, // params
+//            ids[1], // dataset id
+//            ProcessDatasetJobDefinition.DatasetMode.CREATE,
+//            "AsyncHttpJobSpec.simpleHttp")
+//                
+//        AsyncHttpJob job = new AsyncHttpJob(jobdef)
+//    
+//        when:
+//        JobStatus status1 = submitJob(job)
+//            
+//        println("Status 1.1: " + status1);
+//        TestUtils.waitForJobToComplete(job, 2500)
+//        def status2 = job.buildStatus()
+//        println("Status 1.2: " + status2);
+//        println "DataItem: " + status2.getResult()
+//        println "Exception: " + job.exception
+//    
+//        then:
+//        status1.status == JobStatus.Status.RUNNING
+//        status2.status == JobStatus.Status.COMPLETED
+//        status2.result.metadata.size > 0
+//    }
     
     
     private JobStatus submitJob(AsyncHttpJob job) {

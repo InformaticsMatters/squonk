@@ -77,37 +77,37 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             null)
         }
         ),
-        new ServiceDescriptor(
-        "test.echo.http",
-        "Echo Service (HTTP)",
-        "Reads a dataset and writes it back as a new dataset",
-        new String[]{"testing"
-        },
-        null,
-        new String[]{"/Testing"
-        },
-        "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
-        null,
-        new String[]{"testing"},
-        Object.class, // inputClass
-        Object.class, // outputClass
-        Metadata.Type.ARRAY, // inputType
-        Metadata.Type.ARRAY, // outputType
-        new AccessMode[]{
-            new AccessMode(
-            "asyncHttp",
-            "Immediate execution",
-            "Execute as an asynchronous REST web service",
-            "http://" + DOCKER_IP + "/coreservices/rest/echo", // the  endpoint
-            false, // URL is relative
-            AsyncHttpProcessDatasetJobDefinition.class,
-            null,
-            null,
-            null,
-            null,
-            null)
-        }
-        ),
+//        new ServiceDescriptor(
+//        "test.echo.http",
+//        "Echo Service (HTTP)",
+//        "Reads a dataset and writes it back as a new dataset",
+//        new String[]{"testing"
+//        },
+//        null,
+//        new String[]{"/Testing"
+//        },
+//        "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
+//        null,
+//        new String[]{"testing"},
+//        Object.class, // inputClass
+//        Object.class, // outputClass
+//        Metadata.Type.ARRAY, // inputType
+//        Metadata.Type.ARRAY, // outputType
+//        new AccessMode[]{
+//            new AccessMode(
+//            "asyncHttp",
+//            "Immediate execution",
+//            "Execute as an asynchronous REST web service",
+//            "http://" + DOCKER_IP + "/coreservices/rest/echo", // the  endpoint
+//            false, // URL is relative
+//            AsyncHttpProcessDatasetJobDefinition.class,
+//            null,
+//            null,
+//            null,
+//            null,
+//            null)
+//        }
+//        ),
         new ServiceDescriptor(
         "test.echo.local",
         "Echo Service (local)",

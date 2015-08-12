@@ -1,0 +1,26 @@
+cs:
+    build: ../../components/core-services/core-services-server/build
+    ports:
+    - 8080:8080
+    external_links:
+    - postgresdb:db
+    - mq:rabbitmq-mgt
+    environment:
+        RABBITMQ_HOST: rabbitmq
+        RABBITMQ_VHOST: "/prod"
+        RABBITMQ_USER: squonk
+        RABBITMQ_PASSWORD: ******
+        SQUONK_DB_SERVER: db
+        SQUONK_DB_PORT: 49153
+        SQUONK_DB_NAME: squonk
+        SQUONK_DB_USERNAME: squonk
+        SQUONK_DB_PASSWORD: ******
+
+swagger:
+    image: sjeandeaux/docker-swagger-ui
+    ports:
+        - "8888:8888"
+    environment: 
+        API_URL: http://demos.informaticsmatters.com:8080/coreservices/api-docs
+        
+
