@@ -53,7 +53,7 @@ class JobServiceRouteBuilderSpec extends DatasetSpecificationBase {
         println "Result: " + result
         sleep(2000)
         def jobs = JobHandler.getJobStore(camelContext).getJobs()
-        def dataItems = DatasetHandler.getDatasetHandler(camelContext).listDataItems()
+        def dataItems = DatasetHandler.getDatasetHandler(camelContext).listDataItems(TestUtils.TEST_USERNAME)
     
         then:
         result != null

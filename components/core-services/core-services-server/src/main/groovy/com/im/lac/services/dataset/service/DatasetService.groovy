@@ -213,7 +213,7 @@ class DatasetService {
     DataItem getDataItem(final Sql db, final String username, final Long id) {
         log.fine("getDataItem($id)")
         def row = db.firstRow('SELECT d.id, d.name, d.time_created, d.last_updated, d.metadata::text, d.loid, u.id AS owner_id, u.username FROM ' 
-            + tableName + ' d JOIN users.users u ON u.id = d.owner_id WHERE d.id = ?', [id])
+            + tableName + ' d JOIN users.users u ON u.id = d.owner_id WHERE d.id = ? AND u.username = ?', [id, username])
         if (!row) {
             throw new IllegalArgumentException("Item with ID $id not found")
         }
@@ -229,7 +229,7 @@ class DatasetService {
         log.fine("getDataItems()")
         List<DataItem> items = []
         db.eachRow('SELECT d.id, d.name, d.time_created, d.last_updated, d.metadata::text, d.loid, u.id AS owner_id, u.username FROM ' 
-            + tableName + ' d JOIN users.users u ON u.id = d.owner_id ORDER BY d.id') { row ->
+            + tableName + ' d JOIN users.users u ON u.id = d.owner_id WHERE u.username = ? ORDER BY d.id', [username]) { row ->
             items << buildDataItem(row)
         }
         log.fine("found ${items.size()} items")
