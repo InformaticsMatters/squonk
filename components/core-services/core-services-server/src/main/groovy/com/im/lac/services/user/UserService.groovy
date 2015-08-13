@@ -9,12 +9,12 @@ import javax.sql.DataSource
  * @author timbo
  */
 @Log
-class UserService {
+public class UserService {
     
     private final DataSource dataSource
 
     
-    UserService(DataSource dataSource) {
+    public UserService(DataSource dataSource) {
         this.dataSource = dataSource
     }
     

@@ -5,12 +5,14 @@ import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.camel.CamelCommonConstants;
 import com.im.lac.services.dataset.service.DatasetService;
 import com.im.lac.services.discovery.service.ServiceDescriptorStore;
+import com.im.lac.services.user.UserService;
 import static com.im.lac.services.discovery.service.ServiceDiscoveryRouteBuilder.TEST_SERVICE_DESCRIPTORS;
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.SimpleRegistry;
 import com.im.lac.services.util.Utils;
 import com.im.lac.services.job.service.JobHandler;
 import com.im.lac.services.job.service.SimpleJobStore;
+import com.im.lac.services.user.UserHandler;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
@@ -88,8 +90,8 @@ public class CamelLifeCycle {
         r.put(ServerConstants.SERVICE_DESCRIPTOR_STORE, serviceDescriptorStore);         
         r.put(ServerConstants.DATASET_HANDLER, new DatasetHandler(datasetService, "/tmp/datasetcache"));
         r.put(ServerConstants.JOB_HANDLER, new JobHandler());
-        r.put(ServerConstants.JOB_STORE, new SimpleJobStore());
-       
+        r.put(ServerConstants.USER_HANDLER, new UserHandler(new UserService(dataSource)));
+        r.put(ServerConstants.JOB_STORE, new SimpleJobStore());       
     }
 
     public void afterAddRoutes(CamelContext context, SimpleRegistry r) throws Exception {

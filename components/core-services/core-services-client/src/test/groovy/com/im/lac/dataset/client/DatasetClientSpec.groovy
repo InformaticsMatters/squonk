@@ -32,62 +32,62 @@ class DatasetClientSpec extends Specification {
         item.getMetadata().getSize() == 4
     }
 	
-//    void "2. test list items"() {
-//        setup:
-//        def client = new DatasetClient(url)
-//        
-//        when:
-//        Stream stream = client.getAll(username)
-//        def items = stream.collect(Collectors.toList())
-//        
-//        then: 
-//        items.size() > 0
-//    }
-//    
-//    void "3. test get data item"() {
-//        setup:
-//        def client = new DatasetClient(url)
-//        
-//        when:
-//        DataItem item1 = client.getAll(username).findFirst().get()
-//        println "received $item1"
-//        DataItem item2 = client.get(username, item1.id)
-//        
-//        
-//        then: 
-//        item2 != null
-//        item1.id == item2.id
-//    }
-//    
-//    void "4. test get content"() {
-//        setup:
-//        def client = new DatasetClient(url)
-//        
-//        when:
-//        DataItem item1 = client.getAll(username).findFirst().get()
-//        println "received $item1"
-//        Stream stream = client.getContentsAsObjects(username, item1)
-//        def items = stream.collect(Collectors.toList())
-//        
-//        then: 
-//        items != null
-//        items.size() > 0
-//    }
-//      
-//    void "5. test delete content"() {
-//        setup:
-//        def client = new DatasetClient(url)
-//        String smiles = 'c1ccccc1\nc1ccncc1\nCC\nCCC'
-//        String name = 'Random smiles'
-//        
-//        when:
-//        DataItem item = client.create(username, name, new ByteArrayInputStream(smiles.bytes))
-//        println "created dataset ${item.id}"
-//        int resp = client.delete(username, item.id)
-//        
-//        then: 
-//        resp == 200
-//    }
+    void "2. test list items"() {
+        setup:
+        def client = new DatasetClient(url)
+        
+        when:
+        Stream stream = client.getAll(username)
+        def items = stream.collect(Collectors.toList())
+        
+        then: 
+        items.size() > 0
+    }
+    
+    void "3. test get data item"() {
+        setup:
+        def client = new DatasetClient(url)
+        
+        when:
+        DataItem item1 = client.getAll(username).findFirst().get()
+        println "received $item1"
+        DataItem item2 = client.get(username, item1.id)
+        
+        
+        then: 
+        item2 != null
+        item1.id == item2.id
+    }
+    
+    void "4. test get content"() {
+        setup:
+        def client = new DatasetClient(url)
+        
+        when:
+        DataItem item1 = client.getAll(username).findFirst().get()
+        println "received $item1"
+        Stream stream = client.getContentsAsObjects(username, item1)
+        def items = stream.collect(Collectors.toList())
+        
+        then: 
+        items != null
+        items.size() > 0
+    }
+      
+    void "5. test delete content"() {
+        setup:
+        def client = new DatasetClient(url)
+        String smiles = 'c1ccccc1\nc1ccncc1\nCC\nCCC'
+        String name = 'Random smiles'
+        
+        when:
+        DataItem item = client.create(username, name, new ByteArrayInputStream(smiles.bytes))
+        println "created dataset ${item.id}"
+        int resp = client.delete(username, item.id)
+        
+        then: 
+        resp == 200
+    }
     
 }
 

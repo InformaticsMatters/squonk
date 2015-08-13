@@ -6,6 +6,7 @@ import com.im.lac.types.io.JsonHandler;
 import com.im.lac.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.apache.http.HttpEntity;
@@ -16,6 +17,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 /**
  * Client for datasets. Implementation user Apache HTTP client for REST calls and Jackson for JSON
@@ -63,8 +65,13 @@ public class DatasetClient {
         httpGet.setHeader(CommonConstants.HEADER_SQUONK_USERNAME, username);
         CloseableHttpResponse response = httpclient.execute(httpGet);
         LOG.fine(response.getStatusLine().toString());
-        HttpEntity entity1 = response.getEntity();
-        InputStream is = entity1.getContent();
+        HttpEntity entity = response.getEntity();
+        if (response.getStatusLine().getStatusCode() != 200) {
+            String err = EntityUtils.toString(entity);
+            LOG.log(Level.WARNING, "Request failed: {0}", err);
+            throw new IOException("Request failed: " + response.getStatusLine().toString());
+        }
+        InputStream is = entity.getContent();
         return jsonHandler.streamFromJson(is, DataItem.class, true);
     }
 
@@ -93,6 +100,11 @@ public class DatasetClient {
         try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
             LOG.fine(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
+            if (response.getStatusLine().getStatusCode() != 200) {
+                String err = EntityUtils.toString(entity);
+                LOG.log(Level.WARNING, "Request failed: {0}", err);
+                throw new IOException("Request failed: " + response.getStatusLine().toString());
+            }
             InputStream is = entity.getContent();
 
             return jsonHandler.objectFromJson(is, DataItem.class);
@@ -116,6 +128,11 @@ public class DatasetClient {
         try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             LOG.fine(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
+            if (response.getStatusLine().getStatusCode() != 200) {
+                String err = EntityUtils.toString(entity);
+                LOG.log(Level.WARNING, "Request failed: {0}", err);
+                throw new IOException("Request failed: " + response.getStatusLine().toString());
+            }
             InputStream is = entity.getContent();
             return jsonHandler.objectFromJson(is, DataItem.class);
         }
@@ -180,6 +197,12 @@ public class DatasetClient {
         final CloseableHttpResponse response = httpclient.execute(httpGet);
         LOG.fine(response.getStatusLine().toString());
         HttpEntity entity1 = response.getEntity();
+        if (response.getStatusLine().getStatusCode() != 200) {
+            String err = EntityUtils.toString(entity1);
+            LOG.log(Level.WARNING, "Request failed: {0}", err);
+            throw new IOException("Request failed: " + response.getStatusLine().toString());
+        }
+
         InputStream is = entity1.getContent();
         Stream<T> stream = jsonHandler.streamFromJson(is, type, item.getMetadata(), false);
         return stream.onClose(() -> {

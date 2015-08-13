@@ -11,6 +11,8 @@ import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.services.discovery.service.ServiceDiscoveryRouteBuilder;
 import com.im.lac.services.job.service.JobHandler;
 import com.im.lac.services.job.service.JobServiceRouteBuilder;
+import com.im.lac.services.user.User;
+import com.im.lac.services.user.UserHandler;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.logging.Level;
@@ -131,6 +133,18 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .log("REST POST jobdef: ${body}")
                 .to(JobServiceRouteBuilder.ROUTE_SUBMIT_JOB)
                 .endRest();
+        
+        
+        rest("/v1/users").description("Job submission and management services")
+                //
+                // GET statuses
+                .get("/{" + CommonConstants.HEADER_SQUONK_USERNAME + "}").description("Get the User object for this username (spceified as the query parameter named " + CommonConstants.HEADER_SQUONK_USERNAME)
+                .bindingMode(RestBindingMode.json)
+                .produces("application/json")
+                .outType(User.class)
+                .route()
+                .process((Exchange exch) -> UserHandler.putUser(exch))
+                .endRest();
 
 
         /* These are the implementation endpoints - not accessible directly from "outside"
@@ -138,10 +152,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
         from("direct:datasets/upload")
                 .process((Exchange exchange) -> {
                     String specifiedName = exchange.getIn().getHeader(CommonConstants.HEADER_DATAITEM_NAME, String.class);
-                    String username = exchange.getIn().getHeader(CommonConstants.HEADER_SQUONK_USERNAME, String.class);
-                    if (username == null) {
-                        throw new IllegalStateException("Validated username not specified");
-                    }
+                    String username = Utils.fetchUsername(exchange);
                     DataItem created = null;
                     InputStream body = exchange.getIn().getBody(InputStream.class);
                     if (body != null) {

@@ -78,6 +78,11 @@ public class JobClient {
         try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             LOG.fine(response.getStatusLine().toString());
             HttpEntity entity1 = response.getEntity();
+            if (response.getStatusLine().getStatusCode() != 200) {
+                String err = EntityUtils.toString(entity1);
+                LOG.log(Level.WARNING, "Request failed: {0}", err);
+                throw new IOException("Request failed: " + response.getStatusLine().toString());
+            }
             InputStream is = entity1.getContent();
             return jsonHandler.streamFromJson(is, JobStatus.class, true).collect(Collectors.toList());
         }
@@ -105,6 +110,10 @@ public class JobClient {
             LOG.info(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
             String status = EntityUtils.toString(entity);
+            if (response.getStatusLine().getStatusCode() != 200) {
+                LOG.log(Level.WARNING, "Request failed: {0}", status);
+                throw new IOException("Request failed: " + response.getStatusLine().toString());
+            }
             LOG.log(Level.INFO, "JobStatus JSON = {0}", status);
             return jsonHandler.objectFromJson(status, JobStatus.class);
         }
@@ -128,6 +137,10 @@ public class JobClient {
             LOG.fine(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
             String json = EntityUtils.toString(entity);
+            if (response.getStatusLine().getStatusCode() != 200) {
+                LOG.log(Level.WARNING, "Request failed: {0}", json);
+                throw new IOException("Request failed: " + response.getStatusLine().toString());
+            }
             LOG.log(Level.INFO, "Job JSON = {0}", json);
             return jsonHandler.objectFromJson(json, JobStatus.class);
         }

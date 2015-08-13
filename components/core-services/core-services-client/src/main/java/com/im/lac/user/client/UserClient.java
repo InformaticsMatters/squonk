@@ -1,13 +1,11 @@
-package com.im.lac.services.client;
+package com.im.lac.user.client;
 
 import com.im.lac.services.CommonConstants;
-import com.im.lac.services.ServiceDescriptor;
+import com.im.lac.services.user.User;
 import com.im.lac.types.io.JsonHandler;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -20,47 +18,49 @@ import org.apache.http.util.EntityUtils;
  *
  * @author timbo
  */
-public class ServicesClient {
+public class UserClient {
 
-    private static final Logger LOG = Logger.getLogger(ServicesClient.class.getName());
+    private static final Logger LOG = Logger.getLogger(UserClient.class.getName());
 
-    private static final String DEFAULT_BASE_URL = "http://demos.informaticsmatters.com:8080/coreservices/rest/v1/services";
+    private static final String DEFAULT_BASE_URL = "http://demos.informaticsmatters.com:8080/coreservices/rest/v1/users/";
 
     private final String base;
     private final CloseableHttpClient httpclient = HttpClients.createDefault();
     private final JsonHandler jsonHandler = new JsonHandler();
 
-    public ServicesClient(String baseUrl) {
+    public UserClient(String baseUrl) {
         this.base = baseUrl;
     }
 
-    public ServicesClient() {
+    public UserClient() {
         base = DEFAULT_BASE_URL;
     }
 
     /**
-     * Get an List all the known ServiceDescriptorSets
+     * Get the User object associated with this username
      *
      * @param username Username of the authenticated user
-     * @return A list of job statuses matching the filters
+     * @return The user object
      * @throws java.io.IOException
      */
-    public List<ServiceDescriptor> getServiceDefinitions(String username) throws IOException {
+    public User getUserObject(String username) throws IOException {
         if (username == null) {
             throw new IllegalStateException("Username must be specified");
         }
-        HttpGet httpGet = new HttpGet(base);
-        httpGet.setHeader(CommonConstants.HEADER_SQUONK_USERNAME, username);
+        
+        String uri = base + username;
+        LOG.log(Level.FINE, "Requesting user with {0}", uri);
+        HttpGet httpGet = new HttpGet(uri);
         try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             LOG.fine(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
+            String json = EntityUtils.toString(entity);
             if (response.getStatusLine().getStatusCode() != 200) {
-                String err = EntityUtils.toString(entity);
-                LOG.warning("Request failed: " + err);
+                LOG.log(Level.WARNING, "Request for {0} failed: {1}", new Object[]{uri,json});
                 throw new IOException("Request failed: " + response.getStatusLine().toString());
             }
-            InputStream is = entity.getContent();
-            return jsonHandler.streamFromJson(is, ServiceDescriptor.class, true).collect(Collectors.toList());
+            LOG.log(Level.FINE, "User JSON: {0}", json);
+            return jsonHandler.objectFromJson(json, User.class);
         }
     }
 
