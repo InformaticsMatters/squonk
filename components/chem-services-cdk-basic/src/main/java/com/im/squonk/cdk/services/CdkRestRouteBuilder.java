@@ -46,6 +46,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                                     null,
                                     null,
                                     null,
+                                    null,
                                     null)
                         }
                 )

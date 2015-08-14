@@ -25,6 +25,7 @@ public class AccessMode implements Serializable {
     final Float cost;
     final ServiceDescriptor.LicenseToken[] requiredLicenseTokens;
     final ServicePropertyDescriptor[] parameters;
+    final String adapterClassName;
 
     @JsonCreator
     public AccessMode(
@@ -38,7 +39,8 @@ public class AccessMode implements Serializable {
             @JsonProperty("maxSize") Integer maxSize,
             @JsonProperty("cost") Float cost,
             @JsonProperty("requiredLicenseTokens") ServiceDescriptor.LicenseToken[] requiredLicenseTokens,
-            @JsonProperty("parameters") ServicePropertyDescriptor[] parameters) {
+            @JsonProperty("parameters") ServicePropertyDescriptor[] parameters,
+            @JsonProperty("adapterClassName") String adapterClassName) {
 
         if (cost != null && cost < 0) {
             throw new IllegalStateException("Cannot specify negative cost");
@@ -55,6 +57,7 @@ public class AccessMode implements Serializable {
         this.cost = cost;
         this.requiredLicenseTokens = requiredLicenseTokens;
         this.parameters = parameters;
+        this.adapterClassName = adapterClassName;
     }
 
     /**
@@ -167,6 +170,10 @@ public class AccessMode implements Serializable {
      */
     public ServicePropertyDescriptor[] getParameters() {
         return parameters;
+    }
+
+    public String getAdapterClassName() {
+        return adapterClassName;
     }
 
 }

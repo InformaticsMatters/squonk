@@ -135,7 +135,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest();
         
         
-        rest("/v1/users").description("Job submission and management services")
+        rest("/v1/users").description("User management services")
                 //
                 // GET statuses
                 .get("/{" + CommonConstants.HEADER_SQUONK_USERNAME + "}").description("Get the User object for this username (spceified as the query parameter named " + CommonConstants.HEADER_SQUONK_USERNAME)

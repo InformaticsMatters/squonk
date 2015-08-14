@@ -1,7 +1,6 @@
 package com.im.lac.services.discovery.service;
 
 import com.im.lac.dataset.Metadata;
-import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
 import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition;
 import com.im.lac.job.jobdef.DoNothingJobDefinition;
 import com.im.lac.services.AccessMode;
@@ -74,6 +73,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             null,
             null,
             null,
+            null,
             null)
         }
         ),
@@ -132,6 +132,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             AsyncJobRouteBuilder.ROUTE_DUMMY, // the direct:simpleroute endpoint
             false, // URL is relative
             AsyncLocalProcessDatasetJobDefinition.class,
+            null,
             null,
             null,
             null,

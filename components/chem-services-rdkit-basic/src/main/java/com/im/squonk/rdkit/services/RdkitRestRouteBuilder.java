@@ -46,6 +46,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                                     Integer.MAX_VALUE,
                                     0f,
                                     null,
+                                    null,
                                     null)
                         }
                 )

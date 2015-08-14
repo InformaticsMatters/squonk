@@ -190,10 +190,8 @@ public class JobHandler implements ServerConstants {
         JobStore store = getJobStore(exchange);
         return (T) store.getJob(exchange.getIn().getHeader(REST_JOB_ID, String.class));
     }
-    
-    
+
     public static InputStream convertData(ServiceDescriptor sd, JsonMetadataPair holder) throws ClassNotFoundException, IncompatibleDataException {
-        LOG.info("convertData()");
         Class datasetClass = Class.forName(holder.getMetadata().getClassName());
         Metadata.Type datasetType = holder.getMetadata().getType();
         // handle conversion if necessary
@@ -229,28 +227,46 @@ public class JobHandler implements ServerConstants {
         }
     }
 
-    public static DataItem createResults(String username, DatasetHandler datasetHandler, InputStream results, Metadata metadata, String datasetName)
+    public static DataItem createResultsWithInputStream(String username, DatasetHandler datasetHandler, InputStream results, Metadata metadata, String datasetName)
             throws Exception {
-        LOG.info("saveResults()");
+        LOG.info("createResultsWithInputStream()");
         // convert from json to objects
         Object objects = datasetHandler.generateObjectFromJson(results, metadata);
-        LOG.log(Level.INFO, "Converted JSON to {0}", objects.getClass().getName());
+        return createResultsWithObjects(username, datasetHandler, objects, datasetName);
+    }
 
-        DataItem dataItem = datasetHandler.createDataset(username, results, datasetName == null ? "undefined" : datasetName);
+    public static DataItem createResultsWithObjects(String username, DatasetHandler datasetHandler, Object objects, String datasetName)
+            throws Exception {
+        LOG.info("createResultsWithObjects()");
 
-        LOG.log(Level.INFO, "Metadata size: {0}", metadata.getSize());
+        DataItem dataItem = datasetHandler.createDataset(username, objects, datasetName == null ? "undefined" : datasetName);
         return dataItem;
     }
-    
-    public static DataItem updateResults(String username, DatasetHandler datasetHandler, InputStream results, Metadata metadata, Long datasetId)
+
+    /**
+     * Update the dataset with the content (probably json) contained in the InputStream
+     *
+     * @param username
+     * @param datasetHandler
+     * @param results
+     * @param metadata
+     * @param datasetId
+     * @return
+     * @throws Exception
+     */
+    public static DataItem updateResultsWithInputStream(String username, DatasetHandler datasetHandler, InputStream results, Metadata metadata, Long datasetId)
             throws Exception {
-        LOG.info("saveResults()");
+        LOG.info("updateResultsWithInputStream()");
         // convert from json to objects
         Object objects = datasetHandler.generateObjectFromJson(results, metadata);
+        return updateResultsWithObjects(username, datasetHandler, objects, datasetId);
+    }
+
+    public static DataItem updateResultsWithObjects(String username, DatasetHandler datasetHandler, Object objects, Long datasetId)
+            throws Exception {
+        LOG.info("updateResultsWithObjects()");
         DataItem dataItem = datasetHandler.updateDataset(username, objects, datasetId);
-        LOG.log(Level.INFO, "Metadata size: {0}", metadata.getSize());
         return dataItem;
     }
-
 
 }

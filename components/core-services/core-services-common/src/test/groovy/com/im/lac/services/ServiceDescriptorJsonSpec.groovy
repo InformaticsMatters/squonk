@@ -42,7 +42,9 @@ class ServiceDescriptorJsonSpec extends Specification {
                 true,
                 AsyncHttpProcessDatasetJobDefinition.class,
                 0, Integer.MAX_VALUE, 0.001f,
-                [ServiceDescriptor.LicenseToken.CHEMAXON] as ServiceDescriptor.LicenseToken[])
+                [ServiceDescriptor.LicenseToken.CHEMAXON] as ServiceDescriptor.LicenseToken[],
+                null,
+                null)
             ] as AccessMode[])
         
         when:

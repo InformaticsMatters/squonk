@@ -27,9 +27,9 @@ public class ServiceDescriptorUtils {
             modes[0] = makeAbsolute(baseUrl, serviceDescriptor.getAccessModes()[i]);
         }
         return new ServiceDescriptor(serviceDescriptor.getId(), serviceDescriptor.getName(), serviceDescriptor.getDescription(),
-                serviceDescriptor.getTags(), serviceDescriptor.getResourceUrl(), serviceDescriptor.getPaths(), 
+                serviceDescriptor.getTags(), serviceDescriptor.getResourceUrl(), serviceDescriptor.getPaths(),
                 serviceDescriptor.getOwner(), serviceDescriptor.getOwnerUrl(),
-                serviceDescriptor.getLayers(), 
+                serviceDescriptor.getLayers(),
                 serviceDescriptor.getInputClass(), serviceDescriptor.getOutputClass(), serviceDescriptor.getInputType(), serviceDescriptor.getOutputType(),
                 modes
         );
@@ -44,7 +44,16 @@ public class ServiceDescriptorUtils {
         return new AccessMode(mode.getId(), mode.getName(), mode.getDescription(),
                 absoluteUrl, false, // these are new - all else are the original values
                 mode.getJobType(), mode.getMinSize(), mode.getMaxSize(), mode.getCost(),
-                mode.getRequiredLicenseTokens(), mode.getParameters()
+                mode.getRequiredLicenseTokens(), mode.getParameters(), mode.getAdapterClassName()
         );
+    }
+
+    public static AccessMode findAccessMode(ServiceDescriptor serviceDescriptor, String accessModeId) {
+        for (AccessMode mode : serviceDescriptor.getAccessModes()) {
+            if (accessModeId.equals(mode.getId())) {
+                return mode;
+            }
+        }
+        return null;
     }
 }

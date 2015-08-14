@@ -29,6 +29,8 @@ public class AsyncJobRouteBuilder extends RouteBuilder implements ServerConstant
     static final String ROUTE_DISPATCH_HTTP = "direct:dispatchHttp";
     static final String ROUTE_ASYNC_HTTP_SUBMIT = ROUTE_SUBMIT_PREFIX + AsyncHttpProcessDatasetJobDefinition.class.getName();
 
+    public static final String ROUTE_HTTP_SUBMIT = "direct:httpSubmit";
+
     @Override
     public void configure() throws Exception {
 
@@ -120,6 +122,12 @@ public class AsyncJobRouteBuilder extends RouteBuilder implements ServerConstant
                 .log("ROUTE_DISPATCH_HTTP received")
                 .setHeader(Exchange.HTTP_URI, header(ServerConstants.HEADER_DESTINATION))
                 .setHeader(Exchange.HTTP_METHOD, constant("POST"))
+                .log("Routing to ${header[" + ServerConstants.HEADER_DESTINATION + "]}")
+                .to("http4:dummy")
+                .log("HTTP response received");
+
+        from(ROUTE_HTTP_SUBMIT)
+                .log("ROUTE_HTTP_SUBMIT received")
                 .log("Routing to ${header[" + ServerConstants.HEADER_DESTINATION + "]}")
                 .to("http4:dummy")
                 .log("HTTP response received");

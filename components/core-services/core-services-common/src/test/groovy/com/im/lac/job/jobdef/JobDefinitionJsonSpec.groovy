@@ -23,8 +23,6 @@ class JobDefinitionJsonSpec extends Specification {
             ProcessDatasetJobDefinition.DatasetMode.CREATE,
             null)
             
-
-        
         when:
         def json = mapper.writeValueAsString(jobdef)
         println json
@@ -103,4 +101,3 @@ class JobDefinitionJsonSpec extends Specification {
     }
 	
 }
-

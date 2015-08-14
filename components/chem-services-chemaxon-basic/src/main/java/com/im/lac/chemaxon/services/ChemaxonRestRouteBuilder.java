@@ -20,19 +20,19 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(ChemaxonRestRouteBuilder.class.getName());
 
-    private static final String KEY_SIM_CUTTOFF = "threshold";
+    private static final String KEY_SIM_CUTTOFF = "header.threshold";
     private static final String LABEL_SIM_CUTTOFF = "Similarity Cuttoff";
-    private static final String DESC_SIM_CUTTOFF = "Similarity score cuttoff between 0 and 1 (1 means identical";
-    private static final String KEY_QMOL = "query_structure";
+    private static final String DESC_SIM_CUTTOFF = "Similarity score cuttoff between 0 and 1 (1 means identical)";
+    private static final String KEY_QMOL = "header.query_structure";
     private static final String LABEL_QMOL = "Query Structure";
     private static final String DESC_QMOL = "Structure to us as the query";
-    private static final String KEY_CT_EXPR = "ct_expr";
-    private static final String LABEL_CT_EXPR = "ChemTerms Expression";
-    private static final String DESC_CT_EXPR = "Expression using  the Chemical Terms language";
-    private static final String KEY_MIN_CLUSTERS = "min_clusters";
+//    private static final String KEY_CT_EXPR = "ct_expr";
+//    private static final String LABEL_CT_EXPR = "ChemTerms Expression";
+//    private static final String DESC_CT_EXPR = "Expression using  the Chemical Terms language";
+    private static final String KEY_MIN_CLUSTERS = "header.min_clusters";
     private static final String LABEL_MIN_CLUSTERS = "Min clusters";
     private static final String DESC_MIN_CLUSTERS = "Minimum number of clusters to generate";
-    private static final String KEY_MAX_CLUSTERS = "max_clusters";
+    private static final String KEY_MAX_CLUSTERS = "header.max_clusters";
     private static final String LABEL_MAX_CLUSTERS = "Max clusters";
     private static final String DESC_MAX_CLUSTERS = "Target maximum number of clusters to generate";
 
@@ -47,6 +47,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "asyncHttp",
                         "logp",
                         0.001f,
+                        null,
                         null),
                 createServiceDescriptor(
                         "chemaxon.calculators.atomcount",
@@ -57,6 +58,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "asyncHttp",
                         "atomCount",
                         0f,
+                        null,
                         null),
                 createServiceDescriptor(
                         "chemaxon.calculators.lipinski",
@@ -67,6 +69,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "asyncHttp",
                         "lipinski",
                         0.002f,
+                        null,
                         null),
                 createServiceDescriptor(
                         "chemaxon.calculators.druglikefilter",
@@ -77,19 +80,20 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "asyncHttp",
                         "drugLikeFilter",
                         0.0025f,
-                        null),
-                createServiceDescriptor(
-                        "chemaxon.calculators.chemterms",
-                        "CXN Chemical Terms",
-                        "Property prediction using a user definable Chemical Terms experssion. See http://docs.chemaxon.com/display/chemicalterms/Chemical+Terms+Home",
-                        new String[]{"molecularproperties", "chemaxon"},
-                        new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/General"},
-                        "asyncHttp",
-                        "chemTerms",
-                        0.01f,
-                        new ServicePropertyDescriptor[]{
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRING, KEY_CT_EXPR, LABEL_CT_EXPR, DESC_CT_EXPR)
-                        })
+                        null,
+                        null)//,
+//                createServiceDescriptor(
+//                        "chemaxon.calculators.chemterms",
+//                        "CXN Chemical Terms",
+//                        "Property prediction using a user definable Chemical Terms experssion. See http://docs.chemaxon.com/display/chemicalterms/Chemical+Terms+Home",
+//                        new String[]{"molecularproperties", "chemaxon"},
+//                        new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/General"},
+//                        "asyncHttp",
+//                        "chemTerms",
+//                        0.01f,
+//                        new ServicePropertyDescriptor[]{
+//                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRING, KEY_CT_EXPR, LABEL_CT_EXPR, DESC_CT_EXPR)
+//                        })
             };
 
     private static final ServiceDescriptor[] SERVICE_DESCRIPTOR_DESCRIPTORS
@@ -106,7 +110,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         new ServicePropertyDescriptor[]{
                             new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRUCTURE, KEY_QMOL, LABEL_QMOL, DESC_QMOL),
                             new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
-                        }),
+                        },
+                        "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
                 createServiceDescriptor(
                         "chemaxon.screening.pharmacophore",
                         "CXN Pharmacophore Screening",
@@ -119,7 +124,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         new ServicePropertyDescriptor[]{
                             new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRUCTURE, KEY_QMOL, LABEL_QMOL, DESC_QMOL),
                             new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
-                        }),
+                        },
+                        "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
                 createServiceDescriptor(
                         "chemaxon.clustering.sperex",
                         "CXN SpereEx Clustering",
@@ -132,10 +138,12 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         new ServicePropertyDescriptor[]{
                             new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.INTEGER, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS),
                             new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.INTEGER, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS)
-                        })
+                        },
+                        "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter")
             };
 
-    static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String[] paths, String modeId, String endpoint, float cost, ServicePropertyDescriptor[] props) {
+    static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags,
+            String[] paths, String modeId, String endpoint, float cost, ServicePropertyDescriptor[] props, String adapterClass) {
         return new ServiceDescriptor(
                 serviceDescriptorId,
                 name,
@@ -162,7 +170,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                             null,
                             cost,
                             new ServiceDescriptor.LicenseToken[]{ServiceDescriptor.LicenseToken.CHEMAXON},
-                            props)
+                            props,
+                            adapterClass)
                 }
         );
     }

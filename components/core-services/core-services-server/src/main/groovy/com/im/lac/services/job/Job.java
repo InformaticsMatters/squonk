@@ -18,6 +18,8 @@ public interface Job<T extends JobDefinition> {
 
     JobStatus.Status getStatus();
     
+    void setStatus(JobStatus.Status status);
+    
     T getJobDefinition();
 
 }

@@ -3,8 +3,10 @@ package com.im.lac.services.job.service;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.dataset.DataItem;
 import com.im.lac.job.jobdef.ProcessDatasetJobDefinition;
+import com.im.lac.services.util.Utils;
 import java.util.Date;
 import java.util.logging.Logger;
+import org.apache.camel.Exchange;
 
 /**
  *
@@ -17,7 +19,6 @@ public abstract class AbstractDatasetJob<T extends ProcessDatasetJobDefinition> 
 
     private final T jobdef;
 
-    protected JobStatus.Status status = JobStatus.Status.PENDING;
     protected DataItem result;
     protected int totalCount;
     protected int processedCount;
@@ -30,7 +31,7 @@ public abstract class AbstractDatasetJob<T extends ProcessDatasetJobDefinition> 
         super();
         this.jobdef = jobdef;
     }
-    
+
     protected AbstractDatasetJob(JobStatus<T> jobStatus) {
         super(jobStatus.getJobId());
         this.jobdef = jobStatus.getJobDefinition();
@@ -77,17 +78,18 @@ public abstract class AbstractDatasetJob<T extends ProcessDatasetJobDefinition> 
         return new JobStatus(jobId, status, totalCount, processedCount, pendingCount, started, completed, jobdef, result);
     }
 
-    @Override
-    public JobStatus.Status getStatus() {
-        return status;
-    }
-
     public DataItem getResult() {
         return result;
     }
-    
+
     public Exception getException() {
         return exception;
     }
 
+    public JobStatus start(Exchange exchange) throws Exception {
+        String username = Utils.fetchUsername(exchange);
+        return start(exchange.getContext(), username);
+    }
+
+   
 }
