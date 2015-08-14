@@ -32,6 +32,8 @@ dependencies {
     compile "org.apache.camel:camel-servlet:$camelVersion"
     compile "org.apache.camel:camel-swagger:$camelVersion"
     
+    testCompile project(':core-test')
+    
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
     
     def tomcatVersion = '7.0.59'
