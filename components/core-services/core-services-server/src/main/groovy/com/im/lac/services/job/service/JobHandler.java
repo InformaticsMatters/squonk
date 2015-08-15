@@ -148,7 +148,7 @@ public class JobHandler implements ServerConstants {
             // needs to be replaced by proper job management and query
             Date started = status.getStarted();
             LOG.log(Level.FINE, "Job {0} started: {1} now: {2}", new Object[]{job.getJobId(), started, now});
-            if (now.getTime() - started.getTime() > 15 * 60 * 1000) {
+            if (started != null && (now.getTime() - started.getTime() > 15 * 60 * 1000)) {
                 LOG.log(Level.INFO, "Purging job {0}", job.getJobId());
                 store.removeJob(job.getJobId());
             } else {
