@@ -42,8 +42,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-chemaxon-basic/rest/v1/calculators",
         "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-chemaxon-basic/rest/v1/descriptors",
         "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-cdk-basic/rest/v1/calculators",
-        "http://squonk-dockerchemservices.elasticbeanstalk.com/rdkit_cluster",
-        "http://squonk-dockerchemservices.elasticbeanstalk.com/rdkit_screen"
+        "http://dockerrdkitservices-env.elasticbeanstalk.com/rdkit_cluster",
+        "http://dockerrdkitservices-env.elasticbeanstalk.com/rdkit_screen"
     });
 
     public static final ServiceDescriptor[] TEST_SERVICE_DESCRIPTORS = new ServiceDescriptor[]{

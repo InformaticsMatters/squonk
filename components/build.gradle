@@ -130,7 +130,7 @@ task createEbsBackendServicesRootZip(type: Zip) {
 task createEbsBackendServicesZip(type: Zip) {
     
     dependsOn = [
-       createEbsBackendServicesRootZip, 
+        createEbsBackendServicesRootZip, 
        'chem-services-cdk-basic:war',
        'chem-services-chemaxon-basic:war',
        'chem-services-rdkit-basic:war'
@@ -159,7 +159,11 @@ docker {
 
 task dockerFileChemServices(type: Dockerfile) {
     
-    dependsOn = [tasks.getByPath(':chem-services-cdk-basic:war')]
+    dependsOn = [
+        tasks.getByPath(':chem-services-cdk-basic:war'),
+        tasks.getByPath(':chem-services-chemaxon-basic:war'),
+        tasks.getByPath(':chem-services-rdkit-basic:war')
+    ]
     
     copy{
         from "../data/licenses/license.cxl"
@@ -167,20 +171,28 @@ task dockerFileChemServices(type: Dockerfile) {
             include '*.war'
             rename '.*', 'chem-services-cdk-basic.war'
         }
-        into 'build/wars'
+        from ("chem-services-chemaxon-basic/build/libs") {
+            include '*.war'
+            rename '.*', 'chem-services-chemaxon-basic.war'
+        }
+        from ("chem-services-rdkit-basic/build/libs") {
+            include '*.war'
+            rename '.*', 'chem-services-rdkit-basic.war'
+        }
+        into 'build/chem-services-basic'
     }
     
     
-    destFile = project.file('build/Dockerfile')
-    from "tomcat:7-jre8"
+    destFile = project.file('build/chem-services-basic/Dockerfile')
+    //from "tomcat:7-jre8"
+    from "timdudgeon/rdkit_java_tomcat7"
     maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
-    
-    addFile('wars/license.cxl', 'license.cxl')
-    environmentVariable("CHEMAXON_LICENSE_URL", "/usr/local/tomcat/license.cxl")
     
     runCommand("rm -rf /usr/local/tomcat/webapps/*")
     
-    addFile('wars/*.war', "/usr/local/tomcat/webapps/")
+    addFile('*.war', "/usr/local/tomcat/webapps/")
+    addFile('license.cxl', 'license.cxl')
+    environmentVariable("CHEMAXON_LICENSE_URL", "/usr/local/tomcat/license.cxl")
     
     exposePort(8080)
 }
