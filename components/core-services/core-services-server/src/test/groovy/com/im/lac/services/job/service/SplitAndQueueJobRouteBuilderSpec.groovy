@@ -5,6 +5,7 @@ import org.apache.camel.CamelContext
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.impl.DefaultCamelContext
 import org.apache.camel.impl.SimpleRegistry
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -31,7 +32,7 @@ class SplitAndQueueJobRouteBuilderSpec extends DatasetSpecificationBase {
         camelContext.addRoutes(new SplitAndQueueJobRouteBuilder(System.getenv("RABBITMQ_HOST") ?: "localhost", "/unittest", "tester", TestUtils.LAC_PASSWORD))
     }
 	
-    
+    @Ignore
     void "simple 1"() {
         setup:
         def ids = createTestData()

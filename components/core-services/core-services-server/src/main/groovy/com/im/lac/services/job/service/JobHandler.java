@@ -18,6 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -134,11 +135,27 @@ public class JobHandler implements ServerConstants {
 
     public static void putJobStatuses(Exchange exchange) throws Exception {
         JobStore store = getJobStore(exchange);
-        List<JobStatus> results = new ArrayList<>();
-        for (Job job : store.getJobs()) {
-            results.add(job.getCurrentJobStatus());
-        }
+        List<JobStatus> results = getJobStatuses(store);
         exchange.getIn().setBody(results);
+    }
+
+    protected static List<JobStatus> getJobStatuses(JobStore store) {
+        List<JobStatus> results = new ArrayList<>();
+        Date now = new Date();
+        for (Job job : store.getJobs()) {
+            JobStatus status = job.getCurrentJobStatus();
+            // TODO - this is a temp measure to purge jobs older than 15mins
+            // needs to be replaced by proper job management and query
+            Date started = status.getStarted();
+            LOG.log(Level.FINE, "Job {0} started: {1} now: {2}", new Object[]{job.getJobId(), started, now});
+            if (now.getTime() - started.getTime() > 15 * 60 * 1000) {
+                LOG.log(Level.INFO, "Purging job {0}", job.getJobId());
+                store.removeJob(job.getJobId());
+            } else {
+                results.add(job.getCurrentJobStatus());
+            }
+        }
+        return results;
     }
 
     public static void setJobStatus(Exchange exchange, JobStatus.Status status) {
