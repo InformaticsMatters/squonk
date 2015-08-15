@@ -28,6 +28,14 @@ dependencies {
         exclude group:'chemaxonlib',module:'jogl-all'
         exclude group:'chemaxonlib',module:'macosx-application-bundle'
         exclude group:'chemaxonlib',module:'runtime12'
+        
+        // POI needs to be excluded because of a conflict with dom4j
+        exclude group:'chemaxonlib',module:'poi'
+        exclude group:'org.apache.poi',module:'poi'
+        exclude group:'org.apache.poi',module:'poi-ooxml'
+        exclude group:'org.apache.poi',module:'ooxml-schemas'
+        exclude group:'org.apache.poi',module:'poi-scratchpad'
+        
         exclude group:'chemaxonlib',module:'tesseract-data'
         exclude group:'chemaxonlib',module:'tesseract-windows'
         exclude group:'chemaxonlib',module:'tesseract-linux-x32'

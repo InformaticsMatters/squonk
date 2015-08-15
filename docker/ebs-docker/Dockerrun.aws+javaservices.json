@@ -23,6 +23,19 @@
           "containerPort": 8000
         }
       ]
+    },
+
+    {
+      "name": "chem-services-basic",
+      "image": "timdudgeon/chem-services-basic",
+      "essential": true,
+      "memory": 500,
+      "portMappings": [
+        {
+          "hostPort": 8080,
+          "containerPort": 8080
+        }
+      ]
     }
   ]
 }
