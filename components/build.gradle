@@ -1,5 +1,21 @@
 description = 'LAC tools for life sciences'
 
+apply plugin: 'com.bmuschko.docker-remote-api'
+
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.2.2'
+        classpath 'com.bmuschko:gradle-docker-plugin:2.4.1'
+    }
+}
+
 allprojects {
     
     group = 'im.lac.components'
@@ -116,13 +132,15 @@ task createEbsBackendServicesZip(type: Zip) {
     dependsOn = [
        createEbsBackendServicesRootZip, 
        'chem-services-cdk-basic:war',
-        'chem-services-chemaxon-basic:war'
+       'chem-services-chemaxon-basic:war',
+       'chem-services-rdkit-basic:war'
     ]
     archiveName = 'ebs.zip'
     destinationDir = file('build/ebs/')
     from files(
         'chem-services-cdk-basic/build/libs/chem-services-cdk-basic-' + version + '.war',
         'chem-services-chemaxon-basic/build/libs/chem-services-chemaxon-basic-' + version + '.war',
+        'chem-services-rdkit-basic/build/libs/chem-services-rdkit-basic-' + version + '.war',
         'build/ebs/ROOT.war',
     
     )
@@ -133,3 +151,42 @@ task createEbsBackendServicesZip(type: Zip) {
 }
 
 
+docker {
+    url = 'http://' + (System.getenv('DOCKER_IP') ?: 'localhost') + ':2375'
+    //certPath = new File(System.properties['user.home'], '.docker')
+    certPath = null
+}
+
+task dockerFileChemServices(type: Dockerfile) {
+    
+    dependsOn = [tasks.getByPath(':chem-services-cdk-basic:war')]
+    
+    copy{
+        from "../data/licenses/license.cxl"
+        from ("chem-services-cdk-basic/build/libs") {
+            include '*.war'
+            rename '.*', 'chem-services-cdk-basic.war'
+        }
+        into 'build/wars'
+    }
+    
+    
+    destFile = project.file('build/Dockerfile')
+    from "tomcat:7-jre8"
+    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
+    
+    addFile('wars/license.cxl', 'license.cxl')
+    environmentVariable("CHEMAXON_LICENSE_URL", "/usr/local/tomcat/license.cxl")
+    
+    runCommand("rm -rf /usr/local/tomcat/webapps/*")
+    
+    addFile('wars/*.war', "/usr/local/tomcat/webapps/")
+    
+    exposePort(8080)
+}
+
+task dockerImageChemServices(type: DockerBuildImage) {
+    dependsOn dockerFileChemServices
+    inputDir = dockerFileChemServices.destFile.parentFile
+    tag = "timdudgeon/chem-services-basic"
+}
