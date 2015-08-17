@@ -128,7 +128,7 @@ public class AsyncJobRouteBuilder extends RouteBuilder implements ServerConstant
 
         from(ROUTE_HTTP_SUBMIT)
                 .log("ROUTE_HTTP_SUBMIT received")
-                .log("Routing to ${header[" + ServerConstants.HEADER_DESTINATION + "]}")
+                .log("Routing to ${header[" + Exchange.HTTP_URI + "]}")
                 .to("http4:dummy")
                 .log("HTTP response received");
 
