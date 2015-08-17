@@ -16,14 +16,14 @@ class JobClientSpec extends Specification {
     
     String username = "testuser"
     
-    String url = "http://" + (System.getenv("DOCKER_IP") ?: "localhost") + "/coreservices/rest/v1/jobs"
+    @Shared String url = "http://" + (System.getenv("DOCKER_IP") ?: "localhost") + "/coreservices/rest/v1/jobs"
     @Shared List jobStatuses = []
+    @Shared JobClient client = new JobClient(url)
     
     void "1.1. test post do nothing job"() {
         
         setup:
         println "1.1. test post do nothing job()"
-        def client = new JobClient(url)
         def jobdef = new DoNothingJobDefinition()
         
         
@@ -42,7 +42,6 @@ class JobClientSpec extends Specification {
         
         setup:
         println "2. list jobs()"
-        def client = new JobClient(url)
         
         when:
         def statuses = client.getJobStatuses(username, 1, null, null, null, null, null)
@@ -55,10 +54,7 @@ class JobClientSpec extends Specification {
     
     void "3. get job status"() {
         
-        setup:
         println "3. get job status()"
-        def client = new JobClient(url)
-        
         
         when:
         def statuses = client.getJobStatuses(username, 1, null, null, null, null, null)

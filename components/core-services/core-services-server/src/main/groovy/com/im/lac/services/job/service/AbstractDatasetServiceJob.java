@@ -12,6 +12,7 @@ import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.services.discovery.service.ServiceDescriptorStore;
 import com.im.lac.services.discovery.service.ServiceDescriptorUtils;
+import java.util.Date;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,6 +38,7 @@ public abstract class AbstractDatasetServiceJob<T extends AbstractAsyncProcessDa
     @Override
     public JobStatus start(CamelContext context, String username) throws Exception {
         LOG.info("start()");
+        this.started = new Date();
         JobStore jobStore = JobHandler.getJobStore(context);
         DatasetHandler datasetHandler = JobHandler.getDatasetHandler(context);
         ServiceDescriptorStore serviceDescriptorStore = JobHandler.getServiceDescriptorStore(context);
@@ -120,6 +122,7 @@ public abstract class AbstractDatasetServiceJob<T extends AbstractAsyncProcessDa
             this.processedCount = dataItem.getMetadata().getSize();
             this.result = dataItem;
             this.status = JobStatus.Status.COMPLETED;
+            this.completed = new Date();   
         } catch (Exception ex) {
             this.status = JobStatus.Status.ERROR;
             this.exception = ex;

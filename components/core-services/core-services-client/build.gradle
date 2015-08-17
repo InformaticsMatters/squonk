@@ -16,7 +16,8 @@ task copyDependencies(type: Copy) {
 }
 
 test {
-    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean, tasks.getByPath(':core-services/core-services-server:flywayMigrate')
+    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean, 
+        tasks.getByPath(':core-services/core-services-server:flywayMigrate')
     finalizedBy rootProject.tasks.integrationTestEnvShutdown
 }
 

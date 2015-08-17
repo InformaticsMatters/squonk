@@ -133,7 +133,7 @@ test {
 }
 
 flyway {
-    url = 'jdbc:postgresql://localhost:5432/squonk'
+    url = 'jdbc:postgresql://' + (System.getenv('DOCKER_IP') ?: 'localhost') + ':5432/squonk'
     user = 'tester'
     password = 'lacrocks'
     schemas = ['users']

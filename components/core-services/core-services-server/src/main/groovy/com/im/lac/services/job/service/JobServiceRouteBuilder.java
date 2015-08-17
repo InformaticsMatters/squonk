@@ -3,13 +3,11 @@ package com.im.lac.services.job.service;
 import com.im.lac.job.jobdef.DoNothingJobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.services.job.Job;
-import com.im.lac.camel.CamelCommonConstants;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
 import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition;
 import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.services.util.Utils;
 import org.apache.camel.Exchange;
-import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 
 /**

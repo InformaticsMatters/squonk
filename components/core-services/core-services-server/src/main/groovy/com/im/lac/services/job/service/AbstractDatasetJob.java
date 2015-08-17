@@ -86,10 +86,10 @@ public abstract class AbstractDatasetJob<T extends ProcessDatasetJobDefinition> 
         return exception;
     }
 
-    public JobStatus start(Exchange exchange) throws Exception {
-        String username = Utils.fetchUsername(exchange);
-        return start(exchange.getContext(), username);
-    }
+//    public JobStatus start(Exchange exchange) throws Exception {
+//        String username = Utils.fetchUsername(exchange);
+//        return start(exchange.getContext(), username);
+//    }
 
    
 }

@@ -152,6 +152,7 @@ public class JobHandler implements ServerConstants {
                 LOG.log(Level.INFO, "Purging job {0}", job.getJobId());
                 store.removeJob(job.getJobId());
             } else {
+                //LOG.log(Level.FINE, "Adding job {0}", job.getJobId());
                 results.add(job.getCurrentJobStatus());
             }
         }
