@@ -18,19 +18,17 @@ import java.util.UUID;
  */
 @JsonIgnoreProperties({"representations", "representation", "value"})
 @JsonInclude(Include.NON_EMPTY)
-public class MoleculeObject {
+public class MoleculeObject extends BasicObject {
 
     private static final long serialVersionUID = 1L;
 
     public static final String FORMAT_SMILES = "smiles";
     public static final String FORMAT_MOLFILE = "mol";
     public static final String FORMAT_INCHI = "inchi";
-    
-    private final UUID uuid;
 
     /**
-     * The source of the molecule in its original form. This will be
-     * String containing smiles, InCHI or Molfile.
+     * The source of the molecule in its original form. This will be String
+     * containing smiles, InCHI or Molfile.
      */
     private String source;
 
@@ -57,46 +55,37 @@ public class MoleculeObject {
      * calls so the presence of any particular representation cannot always be
      * guaranteed.
      */
-    private transient Map<Object, Object> representations;
+    private final transient Map<Object, Object> representations = new HashMap<>();
 
     /**
-     * Properties of the molecule. These are shared across all chemistry
-     * implementations allowing different implementations to be interoperable.
-     * Note that the keys must be Strings and values must be writable as simple
-     * JSON types so that these properties can be used in remote
-     * implementations. The properties are set and read using the getValue(),
-     * putValue() and related methods.
-     */
-    private Map<String, Object> values;
-
-
-    /** Base constructor that creates a MoleculeObject with the specified UUID
-     * 
+     * Base constructor that creates a MoleculeObject with the specified UUID
+     *
      * @param uuid Unique and persistent identifier for this MoleculeObject
      */
     public MoleculeObject(UUID uuid) {
-        this.representations = new HashMap<>();
-        this.values = new HashMap<>();
-        this.uuid = uuid;
-    }
-    
-    /** Default constructor for now instance, with random UUID generated.
-     * 
-     */
-    public MoleculeObject() {
-        this(UUID.randomUUID());
+        super(uuid);
     }
 
-    /** Constructor for now instance with structure source
-     * 
+    /**
+     * Default constructor for now instance, with random UUID generated.
+     *
+     */
+    public MoleculeObject() {
+        super();
+    }
+
+    /**
+     * Constructor for now instance with structure source
+     *
      * @param source The molecule in some recognised but unspecified format
      */
     public MoleculeObject(String source) {
         this(source, null);
     }
 
-    /** Constructor for now instance with structure source and format
-     * 
+    /**
+     * Constructor for now instance with structure source and format
+     *
      * @param source The molecule in some recognised and specified format
      * @param format smiles, mol etc.
      */
@@ -106,8 +95,9 @@ public class MoleculeObject {
         this.format = format;
     }
 
-    /** Constructor for now instance with additional properties
-     * 
+    /**
+     * Constructor for now instance with additional properties
+     *
      * @param source The molecule in some recognised format
      * @param format smiles, mol etc.
      * @param values Properties for the molecule
@@ -118,13 +108,13 @@ public class MoleculeObject {
         this.format = format;
         this.values.putAll(values);
     }
-    
+
     /**
      * Constructor for re-generating a MoleculeObject with an existing UUID
-     * 
-     * 
+     *
+     *
      * @param uuid
-     * @param source 
+     * @param source
      */
     public MoleculeObject(UUID uuid, String source) {
         this(uuid, source, null);
@@ -132,10 +122,10 @@ public class MoleculeObject {
 
     /**
      * Constructor for re-generating a MoleculeObject with an existing UUID
-     * 
+     *
      * @param uuid
-     * @param source 
-     * @param format 
+     * @param source
+     * @param format
      */
     public MoleculeObject(UUID uuid, String source, String format) {
         this(uuid);
@@ -145,21 +135,17 @@ public class MoleculeObject {
 
     /**
      * Constructor for re-generating a MoleculeObject with an existing UUID
-     * 
+     *
      * @param uuid
-     * @param source 
-     * @param format 
-     * @param props 
+     * @param source
+     * @param format
+     * @param props
      */
     public MoleculeObject(UUID uuid, String source, String format, Map<String, Object> props) {
         this(uuid);
         this.source = source;
         this.format = format;
         this.values.putAll(props);
-    }
-
-    public UUID getUUID() {
-        return uuid;
     }
 
     public String getSource() {
@@ -202,34 +188,6 @@ public class MoleculeObject {
 
     public Object putRepresentation(Object key, Object value) {
         return representations.put(key, value);
-    }
-
-    public Object getValue(String key) {
-        return values.get(key);
-    }
-
-    public Map<String, Object> getValues() {
-        return values;
-    }
-
-    public void setValues(Map<String, Object> values) {
-        this.values = values;
-    }
-
-    public <T> T getValue(String key, Class<T> type) {
-        return (T) values.get(key);
-    }
-
-    public boolean hasValue(String key) {
-        return values.containsKey(key);
-    }
-
-    public Object putValue(String key, Object value) {
-        return values.put(key, value);
-    }
-
-    public void putValues(Map<String, Object> values) {
-        this.values.putAll(values);
     }
 
     @Override

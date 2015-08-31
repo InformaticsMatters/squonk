@@ -39,7 +39,7 @@ public class HttpGenericParamsJobAdapter extends SimpleHttpJobAdapter {
         Map<String, Object> headers = new HashMap<>();
         headers.put(Exchange.HTTP_METHOD, "POST");
         String url = generateUrl(endpoint, params, headers);
-        LOG.info("Geenrated URL: " + url);
+        LOG.log(Level.INFO, "Generated URL: {0}", url);
         headers.put(Exchange.HTTP_URI, url);
 
         ProducerTemplate pt = context.createProducerTemplate();

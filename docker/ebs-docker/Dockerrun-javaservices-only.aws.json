@@ -1,0 +1,19 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "volumes": [],
+  "containerDefinitions": [
+
+    {
+      "name": "chem-services-basic",
+      "image": "timdudgeon/chem-services-basic",
+      "essential": true,
+      "memory": 500,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 8080
+        }
+      ]
+    }
+  ]
+}
