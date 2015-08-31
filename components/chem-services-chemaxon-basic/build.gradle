@@ -1,5 +1,12 @@
+description = "Basic services based on ChemAxon's Marvin"
+def contextName = 'chemaxon_basic_services'
+
 apply plugin: 'war'
 apply plugin: 'com.bmuschko.tomcat'
+apply plugin: 'com.bmuschko.docker-remote-api'
+
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 buildscript {
     repositories { 
@@ -7,6 +14,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.bmuschko:gradle-tomcat-plugin:2.2.2'
+        classpath 'com.bmuschko:gradle-docker-plugin:2.4.1'
     }
 }
 
@@ -37,3 +45,28 @@ tomcat {
     enableSSL = false
 }
 
+docker {
+    url = 'http://' + (System.getenv('DOCKER_IP') ?: 'localhost') + ':2375'
+    //certPath = new File(System.properties['user.home'], '.docker')
+    certPath = null
+}
+
+task dockerFile(type: Dockerfile, dependsOn: war) {
+    
+    destFile = project.file('build/Dockerfile')
+    from "tomcat:7-jre8"
+    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
+    
+    runCommand("rm -rf /usr/local/tomcat/webapps/*")
+    
+    def warFile = tasks.war.outputs.files.singleFile
+    addFile('libs/' + warFile.name, "/usr/local/tomcat/webapps/${contextName}.war")
+    
+    exposePort(8080)
+}
+
+task dockerImage(type: DockerBuildImage) {
+    dependsOn war, dockerFile
+    inputDir = dockerFile.destFile.parentFile
+    tag = "squonk/${contextName}"
+}

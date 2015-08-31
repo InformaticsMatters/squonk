@@ -184,8 +184,7 @@ task dockerFileChemServices(type: Dockerfile) {
     
     
     destFile = project.file('build/chem-services-basic/Dockerfile')
-    //from "tomcat:7-jre8"
-    from "timdudgeon/rdkit_java_tomcat7"
+    from "informaticsmatters/rdkit_java_tomcat"
     maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
     
     runCommand("rm -rf /usr/local/tomcat/webapps/*")
@@ -200,5 +199,5 @@ task dockerFileChemServices(type: Dockerfile) {
 task dockerImageChemServices(type: DockerBuildImage) {
     dependsOn dockerFileChemServices
     inputDir = dockerFileChemServices.destFile.parentFile
-    tag = "timdudgeon/chem-services-basic"
+    tag = "squonk/chem-services-basic"
 }
