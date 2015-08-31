@@ -124,7 +124,7 @@ task dockerFile(type: Dockerfile, dependsOn: war) {
 task dockerImage(type: DockerBuildImage) {
     dependsOn war, dockerFile
     inputDir = dockerFile.destFile.parentFile
-    tag = "timdudgeon/" + contextName
+    tag = "squonk/" + contextName
 }
 
 test {
