@@ -1,14 +1,24 @@
-package com.im.lac.util;
+package com.squonk.util;
 
+import com.im.lac.dataset.Metadata;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.io.PushbackInputStream;
 import java.io.Reader;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  *
@@ -40,6 +50,40 @@ public class IOUtils {
         }
     }
 
+    public static InputStream getGzippedInputStream(InputStream is) throws IOException {
+        PushbackInputStream pb = new PushbackInputStream(is, 2);
+        byte[] signature = new byte[2];
+        pb.read(signature); //read the signature
+        pb.unread(signature); //push back the signature to the stream
+        if (signature[0] == (byte) 0x1f && signature[1] == (byte) 0x8b) {//check if matches standard gzip magic number
+            LOG.fine("Stream is gzipped");
+            return pb;
+        } else {
+            LOG.fine("Stream is not gzipped");
+
+            final PipedInputStream pis = new PipedInputStream();
+            final OutputStream out = new PipedOutputStream(pis);
+            final OutputStream gzip = new GZIPOutputStream(out);
+
+            final ExecutorService executor = Executors.newSingleThreadExecutor();
+            Callable c = (Callable) () -> {
+                byte[] bytes = new byte[100];
+                int len = 0;
+                while ((len = pb.read(bytes)) > 0) {
+                    gzip.write(bytes, 0, len);
+                }
+                pb.close();
+                gzip.close();
+
+                return true;
+            };
+            executor.submit(c);
+            executor.shutdown();
+
+            return pis;
+        }
+    }
+
     /**
      * Convenience method to close the object if it implements the Closeable interface. If the
      * close() fails then the exception is logged, but not thrown.
@@ -58,7 +102,8 @@ public class IOUtils {
 
     /**
      * Close and log any exception, but don't throw.
-     * @param o 
+     *
+     * @param o
      */
     public static void close(Closeable o) {
         try {

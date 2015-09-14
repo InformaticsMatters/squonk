@@ -14,7 +14,7 @@ import javax.sql.DataSource
 import org.postgresql.largeobject.LargeObject
 import org.postgresql.largeobject.LargeObjectManager
 import org.apache.camel.util.IOHelper
-import com.im.lac.util.IOUtils
+import com.squonk.util.IOUtils
 
 
 /**

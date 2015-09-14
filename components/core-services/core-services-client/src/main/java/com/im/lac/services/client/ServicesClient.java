@@ -2,7 +2,7 @@ package com.im.lac.services.client;
 
 import com.im.lac.services.CommonConstants;
 import com.im.lac.services.ServiceDescriptor;
-import com.im.lac.types.io.JsonHandler;
+import com.squonk.types.io.JsonHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;

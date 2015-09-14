@@ -1,6 +1,7 @@
-package com.im.lac.types.io;
+package com.squonk.types.io;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MappingIterator;
 import com.im.lac.dataset.Metadata;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -8,19 +9,31 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.databind.cfg.ContextAttributes;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.im.lac.dataset.JsonMetadataPair;
+import com.im.lac.types.BasicObject;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.IOUtils;
+import com.squonk.dataset.Dataset;
+import com.squonk.dataset.DatasetMetadata;
+import com.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import java.util.zip.GZIPOutputStream;
 
 /**
  *
@@ -30,18 +43,32 @@ public class JsonHandler {
 
     private static final Logger LOG = Logger.getLogger(JsonHandler.class.getName());
 
+    public static final String ATTR_DATASET_METADATA = "DatasetMetadata";
     public static final String ATTR_METADATA = "metadata";
+    public static final String ATTR_VALUE_MAPPINGS = "ValueMappings";
 
     private final ObjectMapper mapper;
+
+    private static final JsonHandler instance = new JsonHandler();
 
     public JsonHandler() {
 
         mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
-        // TODO - better way to register custom deserializers
+        // TODO - better way to register custom deserializers ?
         module.addDeserializer(MoleculeObject.class, new MoleculeObjectJsonDeserializer());
         module.addSerializer(MoleculeObject.class, new MoleculeObjectJsonSerializer());
+        module.addDeserializer(BasicObject.class, new BasicObjectJsonDeserializer());
+        module.addSerializer(BasicObject.class, new BasicObjectJsonSerializer());
         mapper.registerModule(module);
+    }
+
+    public static JsonHandler getInstance() {
+        return instance;
+    }
+
+    public ObjectMapper getObjectMapper() {
+        return mapper;
     }
 
     public Object unmarshalItem(Metadata meta, InputStream in) throws ClassNotFoundException, IOException {
@@ -52,7 +79,7 @@ public class JsonHandler {
     private <T> T doUnmarshalItem(Class<T> cls, Metadata meta, InputStream in) throws IOException {
         ContextAttributes attrs = ContextAttributes.getEmpty()
                 .withSharedAttribute(ATTR_METADATA, meta);
-        ObjectReader reader = mapper.reader(cls).with(attrs);
+        ObjectReader reader = mapper.readerFor(cls).with(attrs);
         T result = reader.readValue(in);
         return result;
     }
@@ -76,7 +103,7 @@ public class JsonHandler {
 
     private <T> Iterator<T> doUnmarshalItemsAsIterator(Class<T> cls, Metadata meta, InputStream in) throws IOException {
         ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute(ATTR_METADATA, meta);
-        ObjectReader reader = mapper.reader(cls).with(attrs);
+        ObjectReader reader = mapper.readerFor(cls).with(attrs);
         Iterator<T> result = reader.readValues(in);
         return result;
     }
@@ -142,7 +169,6 @@ public class JsonHandler {
         } finally {
             outputStream.close();
         }
-
     }
 
     public String objectToJson(Object o) throws JsonProcessingException {
@@ -154,7 +180,7 @@ public class JsonHandler {
     }
 
     public <T> T objectFromJson(InputStream is, Class<T> type, Metadata meta) throws IOException {
-        ObjectReader reader = mapper.reader(type).withAttribute(ATTR_METADATA, meta);
+        ObjectReader reader = mapper.readerFor(type).withAttribute(ATTR_METADATA, meta);
         return reader.readValue(is);
     }
 
@@ -163,38 +189,50 @@ public class JsonHandler {
     }
 
     public <T> T objectFromJson(String s, Class<T> type, Metadata meta) throws IOException {
-        ObjectReader reader = mapper.reader(type).withAttribute(ATTR_METADATA, meta);
+        ObjectReader reader = mapper.readerFor(type).withAttribute(ATTR_METADATA, meta);
         return reader.readValue(s);
     }
 
     public <T> Iterator<T> iteratorFromJson(String s, Class<T> type) throws IOException {
-        ObjectReader reader = mapper.reader(type);
+        ObjectReader reader = mapper.readerFor(type);
         return reader.readValues(s);
     }
 
     public <T> Iterator<T> iteratorFromJson(String s, Class<T> type, Metadata meta) throws IOException {
-        ObjectReader reader = mapper.reader(type).withAttribute(ATTR_METADATA, meta);
+        ObjectReader reader = mapper.readerFor(type).withAttribute(ATTR_METADATA, meta);
         return reader.readValues(s);
     }
 
     public <T> Iterator<T> iteratorFromJson(InputStream is, Class<T> type, Metadata meta) throws IOException {
-        ObjectReader reader = mapper.reader(type).withAttribute(ATTR_METADATA, meta);
+        ObjectReader reader = mapper.readerFor(type).withAttribute(ATTR_METADATA, meta);
         return reader.readValues(is);
     }
 
     public <T> Iterator<T> iteratorFromJson(InputStream is, Class<T> type) throws IOException {
-        ObjectReader reader = mapper.reader(type);
+        ObjectReader reader = mapper.readerFor(type);
         return reader.readValues(is);
     }
 
     public <T> Stream<T> streamFromJson(final InputStream is, final Class<T> type, final boolean autoClose) throws IOException {
-        return streamFromJson(is, type, null, autoClose);
+        return streamFromJson(is, type, (Map) null, autoClose);
     }
 
-    public <T> Stream<T> streamFromJson(final InputStream is, final Class<T> type, Metadata meta, final boolean autoClose) throws IOException {
-        ObjectReader reader = mapper.reader(type);
-        if (meta != null) {
-            reader = reader.withAttribute(ATTR_METADATA, meta);
+    /**
+     * Generate a Stream of objects of the specified type. The input stream must contain JSON
+     * containing objects of just that type.
+     *
+     * @param <T>
+     * @param is
+     * @param type
+     * @param mappings
+     * @param autoClose
+     * @return
+     * @throws IOException
+     */
+    public <T> Stream<T> streamFromJson(final InputStream is, final Class<T> type, Map<String, Class> mappings, final boolean autoClose) throws IOException {
+        ObjectReader reader = mapper.readerFor(type);
+        if (mappings != null) {
+            reader = reader.withAttribute(ATTR_VALUE_MAPPINGS, mappings);
         }
         Iterator<T> iter = reader.readValues(is);
         Spliterator spliterator = Spliterators.spliteratorUnknownSize(iter, Spliterator.NONNULL | Spliterator.ORDERED);
@@ -205,5 +243,82 @@ public class JsonHandler {
             return stream;
         }
     }
+
+    /**
+     * Takes the object(s) and generates JSON and corresponding metadata.
+     *
+     * @param item The Object, Stream or List to marshal to JSON.
+     * @param gzip Whether to gzip the stream. Usually this inputStream best as it reduces IO.
+     * @return the marshal results, with the metadata complete once the InputStream has been fully
+     * read. You are responsible for closing the InputStream when complete.
+     * @throws IOException
+     */
+    public JsonMetadataPair generateJsonForItem(Object item, boolean gzip) throws IOException {
+        final PipedInputStream pis = new PipedInputStream();
+        final OutputStream out = new PipedOutputStream(pis);
+        final Metadata meta = new Metadata();
+
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        Callable c = (Callable) () -> {
+            if (item instanceof Stream) {
+                marshalItems((Stream) item, meta, gzip ? new GZIPOutputStream(out) : out);
+            } else if (item instanceof List) {
+                marshalItems(((List) item).stream(), meta, gzip ? new GZIPOutputStream(out) : out);
+            } else {
+                marshalItem(item, meta, gzip ? new GZIPOutputStream(out) : out);
+            }
+            return true;
+        };
+        executor.submit(c);
+        executor.shutdown();
+        return new JsonMetadataPair(pis, meta);
+
+    }
+
+    public <T> InputStream marshalStreamToJsonArray(Stream<T> stream, boolean gzip) throws IOException {
+        final PipedInputStream pis = new PipedInputStream();
+        final OutputStream pout = new PipedOutputStream(pis);
+        final OutputStream out = (gzip ? new GZIPOutputStream(pout) : pout);
+
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        Callable c = (Callable) () -> {
+            ObjectWriter ow = mapper.writer();
+            try (SequenceWriter sw = ow.writeValuesAsArray(out)) {
+                stream.sequential().peek((i) -> {
+                    try {
+                        sw.write(i);
+                    } catch (IOException ex) {
+                        throw new RuntimeException("Failed to write object: " + i, ex);
+                    }
+                }).forEachOrdered((i) -> {});
+            } finally {
+                out.close();
+            }
+            return true;
+        };
+        executor.submit(c);
+        executor.shutdown();
+        return pis;
+    }
+
+    /** Use the metadata to deserialize the JSON in the InputStream to a Dataset of the right type.
+     * 
+     * @param <T> The type of objects in the Dataset
+     * @param metadata The metadata describing the Dataset
+     * @param is The JSON
+     * @return
+     * @throws IOException 
+     */
+    public <T extends BasicObject> Dataset<T> unmarshalDataset(DatasetMetadata<T> metadata, InputStream is) throws IOException {
+        ObjectReader reader = mapper.readerFor(metadata.getType()).with(ContextAttributes.getEmpty().withSharedAttribute(JsonHandler.ATTR_DATASET_METADATA, metadata));
+        MappingIterator iter = reader.readValues(is);
+        return new Dataset<>(iter, metadata);
+    }
+
+//    public <S, T extends BasicObject> S unmarshalDataseDatasetWrapper(Class<S> cls, DatasetMetadata<T> metadata, InputStream is) throws IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+//        Dataset<T> os = unmarshalDataset(metadata, is);
+//        Constructor constructor = cls.getConstructor(new Class[]{Dataset.class});
+//        return (S) constructor.newInstance(os);
+//    }
 
 }

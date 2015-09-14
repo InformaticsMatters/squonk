@@ -2,11 +2,11 @@ package com.im.lac.services.dataset.service;
 
 import com.im.lac.dataset.JsonMetadataPair;
 import com.im.lac.dataset.DataItem;
-import com.im.lac.types.io.JsonHandler;
+import com.squonk.types.io.JsonHandler;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.services.ServerConstants;
 import com.im.lac.services.util.Utils;
-import com.im.lac.util.IOUtils;
+import com.squonk.util.IOUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class DatasetHandler implements ServerConstants {
      * Deletes all data and sets up some test data. FOR TESTING PURPOSES ONLY.
      *
      * @param username
-     * @return 
+     * @return
      */
     public List<Long> createTestData(String username) {
         service.deleteDataForUser(username);
@@ -157,7 +157,7 @@ public class DatasetHandler implements ServerConstants {
      * @throws Exception
      */
     public DataItem updateDataset(final String username, final Object data, final Long datsetId) throws Exception {
-        final JsonMetadataPair marshalResults = generateJsonForItem(data, true);
+        final JsonMetadataPair marshalResults = jsonHandler.generateJsonForItem(data, true);
         DataItem dataItem = service.doInTransactionWithResult(DataItem.class, (sql) -> {
             try {
                 DataItem orig = service.getDataItem(sql, username, datsetId);
@@ -175,7 +175,7 @@ public class DatasetHandler implements ServerConstants {
     }
 
     public DataItem createDataset(final String username, final Object newData, final String datasetName) throws Exception {
-        final JsonMetadataPair marshalResults = generateJsonForItem(newData, true);
+        final JsonMetadataPair marshalResults = jsonHandler.generateJsonForItem(newData, true);
 
         final DataItem neu = new DataItem();
         neu.setName(datasetName);
@@ -223,35 +223,19 @@ public class DatasetHandler implements ServerConstants {
         }
     }
 
-    /**
-     * Takes the object(s) and generates JSON and corresponding metadata.
-     *
-     * @param item The Object, Stream or Iterable to marshal to JSON.
-     * @param gzip Whether to gzip the stream. Usually this inputStream best as it reduces IO.
-     * @return the marshal results, with the metadata complete once the InputStream has been fully
-     * read.
-     * @throws IOException
-     */
-    JsonMetadataPair generateJsonForItem(Object item, boolean gzip) throws IOException {
-        final PipedInputStream pis = new PipedInputStream();
-        final OutputStream out = new PipedOutputStream(pis);
-        final Metadata meta = new Metadata();
-
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
-        Callable c = (Callable) () -> {
-            if (item instanceof Stream) {
-                jsonHandler.marshalItems((Stream) item, meta, gzip ? new GZIPOutputStream(out) : out);
-            } else if (item instanceof List) {
-                jsonHandler.marshalItems(((List) item).stream(), meta, gzip ? new GZIPOutputStream(out) : out);
-            } else {
-                jsonHandler.marshalItem(item, meta, gzip ? new GZIPOutputStream(out) : out);
-            }
-            executor.shutdown();
-            return true;
-        };
-        executor.submit(c);
-        return new JsonMetadataPair(pis, meta);
-
-    }
+//    /**
+//     * Takes the object(s) and generates JSON and corresponding metadata.
+//     *
+//     * @param item The Object, Stream or Iterable to marshal to JSON.
+//     * @param gzip Whether to gzip the stream. Usually this inputStream best as it reduces IO.
+//     * @return the marshal results, with the metadata complete once the InputStream has been fully
+//     * read.
+//     * @throws IOException
+//     * @deprecated Use JsonHandler directly
+//     */
+//    JsonMetadataPair generateJsonForItem(Object item, boolean gzip) throws IOException {
+//        return jsonHandler.generateJsonForItem(item, gzip);
+//
+//    }
 
 }

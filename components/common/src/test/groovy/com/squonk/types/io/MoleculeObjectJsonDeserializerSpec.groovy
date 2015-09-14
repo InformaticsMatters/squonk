@@ -1,11 +1,10 @@
-package com.im.lac.types.io
+package com.squonk.types.io
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.ObjectReader
 import com.fasterxml.jackson.databind.cfg.ContextAttributes
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.im.lac.types.MoleculeObject
-import com.im.lac.dataset.Metadata
 import spock.lang.Specification
 
 /**
@@ -31,14 +30,12 @@ class MoleculeObjectJsonDeserializerSpec extends Specification {
     void "deserialize single"() {
         
         setup:
-        Metadata meta = new Metadata(MoleculeObject.class.name, Metadata.Type.ITEM, 1)
-        meta.propertyTypes.putAll(mappings)
         ObjectMapper mapper = new ObjectMapper()
         SimpleModule module = new SimpleModule()
         module.addDeserializer(MoleculeObject.class, new MoleculeObjectJsonDeserializer())
         mapper.registerModule(module)
         
-        ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute(JsonHandler.ATTR_METADATA, meta)
+        ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute(JsonHandler.ATTR_VALUE_MAPPINGS,mappings)
         ObjectReader reader = mapper.reader(MoleculeObject.class).with(attrs)
         
         when:
@@ -59,10 +56,8 @@ class MoleculeObjectJsonDeserializerSpec extends Specification {
         SimpleModule module = new SimpleModule()
         module.addDeserializer(MoleculeObject.class, new MoleculeObjectJsonDeserializer())
         mapper.registerModule(module)
-        Metadata meta = new Metadata(MoleculeObject.class.name, Metadata.Type.ARRAY, 6)
-        meta.propertyTypes.putAll(mappings)
         
-        ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute(JsonHandler.ATTR_METADATA, meta)
+        ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute(JsonHandler.ATTR_VALUE_MAPPINGS, mappings)
         ObjectReader reader = mapper.reader(MoleculeObject.class).with(attrs)
         
         when:

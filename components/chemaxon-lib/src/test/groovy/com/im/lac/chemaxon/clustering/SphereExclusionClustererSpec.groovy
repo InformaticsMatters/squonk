@@ -9,7 +9,7 @@ import com.im.lac.chemaxon.molecule.MoleculeUtils
 import com.im.lac.types.MoleculeObject
 import com.im.lac.types.MoleculeObjectIterable
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils
-import com.im.lac.util.IOUtils
+import com.squonk.util.IOUtils
 
 import spock.lang.Specification
 

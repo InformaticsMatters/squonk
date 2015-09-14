@@ -13,7 +13,7 @@ import com.im.lac.chemaxon.molecule.MoleculeObjectUtils
 import com.im.lac.chemaxon.screening.MoleculeScreener
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
-import com.im.lac.util.IOUtils
+import com.squonk.util.IOUtils
 
 /**
  * Created by timbo on 14/04/2014.

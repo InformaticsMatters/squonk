@@ -3,8 +3,9 @@ package com.im.lac.services;
 import com.im.lac.services.util.Utils;
 import com.im.lac.dataset.DataItem;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.IOUtils;
+import com.squonk.util.IOUtils;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
+import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.services.dataset.service.DatasetHandler;
@@ -70,7 +71,11 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .description("Upload file to create new dataset. File is the body and dataset name is given by the header named " + CommonConstants.HEADER_DATAITEM_NAME)
                 .bindingMode(RestBindingMode.off)
                 .produces("application/json")
+                .route()
+                // this is a temp hack - client should set Content-Type, but for now we assume SDF
+                .setHeader("Content-Type", constant("chemical/x-mdl-sdfile"))
                 .to("direct:datasets/upload")
+                .endRest()
                 // 
                 // DELETE
                 .delete("/{" + REST_DATASET_ID + "}").description("Deletes the dataset specified by the ID")
@@ -133,8 +138,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .log("REST POST jobdef: ${body}")
                 .to(JobServiceRouteBuilder.ROUTE_SUBMIT_JOB)
                 .endRest();
-        
-        
+
         rest("/v1/users").description("User management services")
                 //
                 // GET statuses
@@ -155,11 +159,19 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     String username = Utils.fetchUsername(exchange);
                     DataItem created = null;
                     InputStream body = exchange.getIn().getBody(InputStream.class);
+                    String contentType = exchange.getIn().getHeader("Content-Type", String.class);
                     if (body != null) {
                         DatasetHandler datasetHandler = Utils.getDatasetHandler(exchange);
                         InputStream gunzip = IOUtils.getGunzippedInputStream(body);
-                        // TODO - allow this to handle things other than molecules.
-                        try (Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(gunzip).getStream(false)) {
+                        Stream<MoleculeObject> mols = null;
+                        try {
+                            if (contentType != null && "chemical/x-mdl-sdfile".equals(contentType)) {
+                                mols = MoleculeObjectUtils.createStreamGenerator(gunzip).getStream(false);
+                            } else { // assume MoleculeObject JSON
+                                // need to convert to objects so that the metadata can be generated
+                                mols = (Stream<MoleculeObject>) datasetHandler.generateObjectFromJson(body, new Metadata(MoleculeObject.class.getName(), Metadata.Type.ARRAY, 0));
+                            }
+
                             DataItem result = datasetHandler.createDataset(
                                     username,
                                     mols,
@@ -167,12 +179,19 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                             if (result != null) {
                                 created = result;
                             }
+
+                        } finally {
+                            if (mols != null) {
+                                mols.close();
+                            }
                         }
 
                     }
                     exchange.getOut().setBody(created);
-                })
-                .marshal().json(JsonLibrary.Jackson);
+                }
+                )
+                .marshal()
+                .json(JsonLibrary.Jackson);
 
     }
 

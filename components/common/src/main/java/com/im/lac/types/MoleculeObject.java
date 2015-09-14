@@ -1,5 +1,6 @@
 package com.im.lac.types;
 
+import com.im.lac.types.BasicObject;
 import java.util.HashMap;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -8,9 +9,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.util.UUID;
 
 /**
- * Represents a molecule in a platform neutral way allowing instances to be
- * passed between different chemistry implementations and properties created or
- * used.
+ * Represents a molecule in a platform neutral way allowing instances to be passed between different
+ * chemistry implementations and properties created or used.
  *
  * TODO - does the Charset of the source molecule need to be handled?
  *
@@ -27,33 +27,29 @@ public class MoleculeObject extends BasicObject {
     public static final String FORMAT_INCHI = "inchi";
 
     /**
-     * The source of the molecule in its original form. This will be String
-     * containing smiles, InCHI or Molfile.
+     * The source of the molecule in its original form. This will be String containing smiles, InCHI
+     * or Molfile.
      */
     private String source;
 
     /**
-     * The input format e.g. smiles, sdf. Some constants are defined to assist
-     * with this. Note that this field may not always be set.
+     * The input format e.g. smiles, sdf. Some constants are defined to assist with this. Note that
+     * this field may not always be set.
      */
     private String format;
 
     /**
-     * A map that allows different representations of a molecule to be stored
-     * for future use, avoiding the need for unnecessary instantiation of
-     * molecules. These representations are vendor dependent and not
-     * interoperable. For instance if using ChemAxon code then you can store a
-     * chemaxon.struc.Molecule instance generated from the source as a
-     * representation that can be re-used. In addition different representations
-     * can be stored e.g. ones with implicit hydrogens added or the molecule
-     * converted to aromatic form. It is up to the caller to choose the key to
-     * use to store the representation but it is recommended to follow a
-     * convention of using the fully qualified class name for an exact
-     * representation of the source. e.g. put the ChemAxon Molecule
-     * representation of the source under the key of "chemaxon.struc.Molecule".
-     * Note that this property is transient and will not persist across remote
-     * calls so the presence of any particular representation cannot always be
-     * guaranteed.
+     * A map that allows different representations of a molecule to be stored for future use,
+     * avoiding the need for unnecessary instantiation of molecules. These representations are
+     * vendor dependent and not interoperable. For instance if using ChemAxon code then you can
+     * store a chemaxon.struc.Molecule instance generated from the source as a representation that
+     * can be re-used. In addition different representations can be stored e.g. ones with implicit
+     * hydrogens added or the molecule converted to aromatic form. It is up to the caller to choose
+     * the key to use to store the representation but it is recommended to follow a convention of
+     * using the fully qualified class name for an exact representation of the source. e.g. put the
+     * ChemAxon Molecule representation of the source under the key of "chemaxon.struc.Molecule".
+     * Note that this property is transient and will not persist across remote calls so the presence
+     * of any particular representation cannot always be guaranteed.
      */
     private final transient Map<Object, Object> representations = new HashMap<>();
 
@@ -80,7 +76,8 @@ public class MoleculeObject extends BasicObject {
      * @param source The molecule in some recognised but unspecified format
      */
     public MoleculeObject(String source) {
-        this(source, null);
+        super();
+        this.source = source;
     }
 
     /**
@@ -90,7 +87,7 @@ public class MoleculeObject extends BasicObject {
      * @param format smiles, mol etc.
      */
     public MoleculeObject(String source, String format) {
-        this();
+        super();
         this.source = source;
         this.format = format;
     }
@@ -103,10 +100,9 @@ public class MoleculeObject extends BasicObject {
      * @param values Properties for the molecule
      */
     public MoleculeObject(String source, String format, Map<String, Object> values) {
-        this();
+        super(values);
         this.source = source;
         this.format = format;
-        this.values.putAll(values);
     }
 
     /**
@@ -117,7 +113,8 @@ public class MoleculeObject extends BasicObject {
      * @param source
      */
     public MoleculeObject(UUID uuid, String source) {
-        this(uuid, source, null);
+        super(uuid);
+        this.source = source;
     }
 
     /**
@@ -128,7 +125,7 @@ public class MoleculeObject extends BasicObject {
      * @param format
      */
     public MoleculeObject(UUID uuid, String source, String format) {
-        this(uuid);
+        super(uuid);
         this.source = source;
         this.format = format;
     }
@@ -139,13 +136,12 @@ public class MoleculeObject extends BasicObject {
      * @param uuid
      * @param source
      * @param format
-     * @param props
+     * @param values
      */
-    public MoleculeObject(UUID uuid, String source, String format, Map<String, Object> props) {
-        this(uuid);
+    public MoleculeObject(UUID uuid, String source, String format, Map<String, Object> values) {
+        super(uuid, values);
         this.source = source;
         this.format = format;
-        this.values.putAll(props);
     }
 
     public String getSource() {
@@ -207,6 +203,12 @@ public class MoleculeObject extends BasicObject {
         b.append("]");
 
         return b.toString();
+    }
+
+    public static void main(String[] args) {
+        Map<String, Object> props = new HashMap<>();
+        props.put("hello", "world");
+        MoleculeObject mo = new MoleculeObject("C", "smiles", props);
     }
 
 }

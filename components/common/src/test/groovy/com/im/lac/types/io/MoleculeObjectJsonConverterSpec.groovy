@@ -95,7 +95,7 @@ class MoleculeObjectJsonConverterSpec extends Specification {
         mols[0].values["field_0"] == 1
     }
     
-     void "marshal unmarshal MoleculeObjects with props"() {
+    void "marshal unmarshal MoleculeObjects with props"() {
         
         setup:
         println "marshal unmarshal MoleculeObjects with props"

@@ -1,5 +1,6 @@
 package com.im.lac.types.io;
 
+import com.squonk.types.io.JsonHandler;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.types.MoleculeObject;
 import java.io.IOException;

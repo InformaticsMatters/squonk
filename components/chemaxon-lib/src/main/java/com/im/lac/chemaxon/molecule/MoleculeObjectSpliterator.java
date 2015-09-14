@@ -3,7 +3,7 @@ package com.im.lac.chemaxon.molecule;
 import chemaxon.marvin.io.MRecord;
 import chemaxon.struc.MProp;
 import chemaxon.struc.MPropertyContainer;
-import com.im.lac.stream.FixedBatchSpliteratorBase;
+import com.squonk.stream.FixedBatchSpliteratorBase;
 import com.im.lac.types.MoleculeObject;
 import java.io.IOException;
 import java.io.InputStream;

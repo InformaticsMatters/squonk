@@ -8,7 +8,7 @@ import com.im.lac.demo.services.DbFileService;
 import com.im.lac.demo.model.*;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.dataset.Metadata;
-import com.im.lac.util.IOUtils;
+import com.squonk.util.IOUtils;
 import com.im.lac.util.SimpleStreamProvider;
 import com.im.lac.util.StreamProvider;
 import java.io.File;
