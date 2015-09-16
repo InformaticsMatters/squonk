@@ -38,7 +38,7 @@ public abstract class StreamingMoleculeObjectSourcer {
         } else {
             Stream<MoleculeObject> stream = bodyAsMoleculeObjectStream(exchange);
             if (stream != null) {
-                return new MoleculeObjectDataset(new Dataset(stream));
+                return new MoleculeObjectDataset(new Dataset(MoleculeObject.class, stream));
             }
         }
         return null;
@@ -50,7 +50,7 @@ public abstract class StreamingMoleculeObjectSourcer {
 
         MoleculeObjectDataset mods = exchange.getIn().getBody(MoleculeObjectDataset.class);
         if (mods != null) {
-            return mods.getDataset().asStream();
+            return mods.getDataset().getStream();
         }
         StreamProvider sp = exchange.getIn().getBody(StreamProvider.class);
         if (sp != null) {
@@ -97,7 +97,7 @@ public abstract class StreamingMoleculeObjectSourcer {
             handleSingle(exchange, mol);
             return;
         }
-        Stream stream = bodyAsMoleculeObjectStream(exchange);
+        Stream<MoleculeObject> stream = bodyAsMoleculeObjectStream(exchange);
         if (stream != null) {
             handleMultiple(exchange, stream);
             return;

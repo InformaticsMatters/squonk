@@ -3,7 +3,7 @@
 apply plugin: 'groovy'
 
 apply plugin: 'application'
-mainClassName = "com.im.lac.demo.routes.Jms"
+mainClassName = "com.im.lac.demo.routes.EmolsMultiSearchRouteBuilder"
 applicationDefaultJvmArgs = ["-Xmx1200m"]
 
 apply plugin: 'docker'

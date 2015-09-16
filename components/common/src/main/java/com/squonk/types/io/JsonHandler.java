@@ -279,21 +279,9 @@ public class JsonHandler {
         final PipedInputStream pis = new PipedInputStream();
         final OutputStream pout = new PipedOutputStream(pis);
         final OutputStream out = (gzip ? new GZIPOutputStream(pout) : pout);
-
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable c = (Callable) () -> {
-            ObjectWriter ow = mapper.writer();
-            try (SequenceWriter sw = ow.writeValuesAsArray(out)) {
-                stream.sequential().peek((i) -> {
-                    try {
-                        sw.write(i);
-                    } catch (IOException ex) {
-                        throw new RuntimeException("Failed to write object: " + i, ex);
-                    }
-                }).forEachOrdered((i) -> {});
-            } finally {
-                out.close();
-            }
+            marshalStreamToJsonArray(stream, out);
             return true;
         };
         executor.submit(c);
@@ -301,18 +289,36 @@ public class JsonHandler {
         return pis;
     }
 
-    /** Use the metadata to deserialize the JSON in the InputStream to a Dataset of the right type.
-     * 
+    public <T> void marshalStreamToJsonArray(Stream<T> stream, OutputStream out) throws IOException {
+
+        ObjectWriter ow = mapper.writer();
+        try (SequenceWriter sw = ow.writeValuesAsArray(out)) {
+            stream.sequential().peek((i) -> {
+                try {
+                    sw.write(i);
+                } catch (IOException ex) {
+                    throw new RuntimeException("Failed to write object: " + i, ex);
+                }
+            }).forEachOrdered((i) -> {
+            });
+        } finally {
+            out.close();
+        }
+    }
+
+    /**
+     * Use the metadata to deserialize the JSON in the InputStream to a Dataset of the right type.
+     *
      * @param <T> The type of objects in the Dataset
      * @param metadata The metadata describing the Dataset
      * @param is The JSON
      * @return
-     * @throws IOException 
+     * @throws IOException
      */
     public <T extends BasicObject> Dataset<T> unmarshalDataset(DatasetMetadata<T> metadata, InputStream is) throws IOException {
         ObjectReader reader = mapper.readerFor(metadata.getType()).with(ContextAttributes.getEmpty().withSharedAttribute(JsonHandler.ATTR_DATASET_METADATA, metadata));
         MappingIterator iter = reader.readValues(is);
-        return new Dataset<>(iter, metadata);
+        return new Dataset<>(metadata.getType(), iter, metadata);
     }
 
 //    public <S, T extends BasicObject> S unmarshalDataseDatasetWrapper(Class<S> cls, DatasetMetadata<T> metadata, InputStream is) throws IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -320,5 +326,4 @@ public class JsonHandler {
 //        Constructor constructor = cls.getConstructor(new Class[]{Dataset.class});
 //        return (S) constructor.newInstance(os);
 //    }
-
 }

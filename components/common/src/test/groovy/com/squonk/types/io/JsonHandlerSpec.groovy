@@ -12,10 +12,10 @@ class JsonHandlerSpec extends Specification {
     
     void "generateJsonForDataset"() {
         println "generateJsonForDataset()"
-        Dataset ds = new Dataset(DatasetSpec.objects)
+        Dataset ds = new Dataset(BasicObject.class, DatasetSpec.objects)
         
         when:
-        InputStream is = JsonHandler.getInstance().marshalStreamToJsonArray(ds.asStream(), false)
+        InputStream is = JsonHandler.getInstance().marshalStreamToJsonArray(ds.getStream(), false)
         String json = is.text
         println json
         

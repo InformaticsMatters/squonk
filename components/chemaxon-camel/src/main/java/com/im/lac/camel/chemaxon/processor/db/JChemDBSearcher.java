@@ -17,6 +17,7 @@ import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.CollectionUtils;
 import com.im.lac.util.SimpleStreamProvider;
 import com.im.lac.util.StreamProvider;
+import com.squonk.dataset.MoleculeObjectDataset;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -98,9 +99,9 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     /**
      * The different types of output that can be generated.
      * <br>
-     * RAW generates the raw int[] arrray returned by JChemSearch
+     * RAW generates the raw int[] array returned by JChemSearch
      * <br>
-     * CD_IDS generates an Iterable<Integer> containing the CD_ID values
+     * CD_IDS generates an List&lt;Integer&gt; containing the CD_ID values
      * <br>
      * MOLECULES generates an StreamProvider&lt;Molecule&gt;with additional properties
      * added according the value of the outputColumns field. This is most
@@ -455,7 +456,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
                 handleAsMoleculeStream(exchange, jcs);
                 break;
             case MOLECULE_OBJECTS:
-                handleAsMoleculeObjectStream(exchange, jcs);
+                handleAsDataset(exchange, jcs);
                 break;
             case TEXT:
                 handleAsText(exchange, jcs);
@@ -509,7 +510,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         exchange.getIn().setBody(p);
     }
 
-    private void handleAsMoleculeObjectStream(final Exchange exchange, final JChemSearch jcs)
+    private void handleAsDataset(final Exchange exchange, final JChemSearch jcs)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
         Stream<Molecule> molStream = createMoleculeStream(exchange, jcs);
         Stream<MoleculeObject> molObjStream = molStream.map(mol -> {
@@ -519,7 +520,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
                 throw new RuntimeException("Unable to create MoleculeObject", ex);
             }
         });
-        StreamProvider<MoleculeObject> p = new SimpleStreamProvider(molObjStream, MoleculeObject.class);
+        StreamProvider<MoleculeObject> p = new MoleculeObjectDataset(molObjStream);
         exchange.getIn().setBody(p);
     }
 

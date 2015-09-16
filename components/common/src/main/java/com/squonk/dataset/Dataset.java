@@ -1,6 +1,7 @@
 package com.squonk.dataset;
 
 import com.im.lac.types.BasicObject;
+import com.im.lac.util.StreamProvider;
 import com.squonk.types.io.JsonHandler;
 import com.squonk.util.IOUtils;
 import java.io.IOException;
@@ -38,14 +39,14 @@ import java.util.stream.StreamSupport;
  * <li>Stream</li>
  * <li>List</li>
  * </ul>
- * Of these ONLY List and URL can be read more than once, so, for instance, if you ask for a Stream twice
- * then the second time will cause an error unless the underlying source is a List or URL. To make this
- * easier there are ways to automatically "materialize" the underlying as a List (e.g. convert a
- * InputStream/Interator/Stream into a List. For instance if the underlying data is specified as
- * InputStream/Interator/Stream and you call {@link getItems()} then the underlying source will be
- * converted to a List so that it can be read repeatedly. HOWEVER do this with care, as if the
- * dataset is large you may exhaust memory. Usually it is better to stream the data using a Stream
- * or Iterator as long as you only need to read once.
+ * Of these ONLY List and URL can be read more than once, so, for instance, if you ask for a Stream
+ * twice then the second time will cause an error unless the underlying source is a List or URL. To
+ * make this easier there are ways to automatically "materialize" the underlying as a List (e.g.
+ * convert a InputStream/Interator/Stream into a List. For instance if the underlying data is
+ * specified as InputStream/Interator/Stream and you call {@link getItems()} then the underlying
+ * source will be converted to a List so that it can be read repeatedly. HOWEVER do this with care,
+ * as if the dataset is large you may exhaust memory. Usually it is better to stream the data using
+ * a Stream or Iterator as long as you only need to read once.
  *
  * <h3>Metadata</h3>
  * The key function of the metadata is to describe what type of object is present in the underlying
@@ -55,16 +56,16 @@ import java.util.stream.StreamSupport;
  * or URL the Metadata is mandatory so that the JSON can be deserialized.
  *
  * <h3>Serialization/deserialization to JSON</h3>
- As the underlying contents are potentially very large we rely on streaming the contents to/from
- JSON. This means that the contents are stored separate from the metadata. To serialize an
- Dataset you must first serialize the items (as an array of JSON objects) - use the
- {@link JsonHandler.serializeStreamAsJsonArray(Stream, boolean)} helper method for this. You must
+ * As the underlying contents are potentially very large we rely on streaming the contents to/from
+ * JSON. This means that the contents are stored separate from the metadata. To serialize an Dataset
+ * you must first serialize the items (as an array of JSON objects) - use the
+ * {@link JsonHandler.serializeStreamAsJsonArray(Stream, boolean)} helper method for this. You must
  * then ALSO save the metadata as its separate JSON 'file'.
  * <br>
  * Similarly when reading JSON you must first read the metadata from its JSON and the use that
  * metadata to deserialize the contents (the JSON array of items). The
- * {@link JsonHandler.deserializeDataset(DatasetMetadata, InputStream)} utility method handles
- * this for you.
+ * {@link JsonHandler.deserializeDataset(DatasetMetadata, InputStream)} utility method handles this
+ * for you.
  * <p>
  * The key reason for this separation of data and metadata is that in order to read the JSON you
  * first need to have the metadata, but when writing to JSON you might only have the metadata once
@@ -77,7 +78,7 @@ import java.util.stream.StreamSupport;
  *
  * @author Tim Dudgeon &lt;tdudgeon@informaticsmatters.com&gt;
  */
-public class Dataset<T extends BasicObject> {
+public class Dataset<T extends BasicObject> implements StreamProvider<T> {
 
     private static final Logger LOG = Logger.getLogger(Dataset.class.getName());
     private static final String MSG_ALREADY_CONSUMED = "Input not defined or already consumed";
@@ -88,6 +89,7 @@ public class Dataset<T extends BasicObject> {
     protected InputStream inputStream;
     protected URL url;
     private DatasetMetadata metadata;
+    private final Class<T> type;
 
     private final Object lock = new Object();
 
@@ -96,7 +98,8 @@ public class Dataset<T extends BasicObject> {
      *
      * @param items
      */
-    public Dataset(List<T> items) {
+    public Dataset(Class<T> type, List<T> items) {
+        this.type = type;
         this.list = items;
     }
 
@@ -105,7 +108,8 @@ public class Dataset<T extends BasicObject> {
      *
      * @param objects
      */
-    public Dataset(Stream<T> objects) {
+    public Dataset(Class<T> type, Stream<T> objects) {
+        this.type = type;
         this.stream = objects;
     }
 
@@ -114,26 +118,31 @@ public class Dataset<T extends BasicObject> {
      *
      * @param iter
      */
-    public Dataset(Iterator<T> iter) {
+    public Dataset(Class<T> type, Iterator<T> iter) {
+        this.type = type;
         this.iter = iter;
     }
 
-    public Dataset(List<T> items, DatasetMetadata metadata) {
+    public Dataset(Class<T> type, List<T> items, DatasetMetadata<T> metadata) {
+        this.type = type;
         this.list = items;
         this.metadata = metadata;
     }
 
-    public Dataset(Stream<T> objects, DatasetMetadata metadata) {
+    public Dataset(Class<T> type, Stream<T> objects, DatasetMetadata<T> metadata) {
+        this.type = type;
         this.stream = objects;
         this.metadata = metadata;
     }
 
-    public Dataset(Iterator<T> iter, DatasetMetadata metadata) {
+    public Dataset(Class<T> type, Iterator<T> iter, DatasetMetadata<T> metadata) {
+        this.type = type;
         this.iter = iter;
         this.metadata = metadata;
     }
 
-    public Dataset(URL url, DatasetMetadata metadata) {
+    public Dataset(Class<T> type, URL url, DatasetMetadata<T> metadata) {
+        this.type = type;
         this.url = url;
         this.metadata = metadata;
     }
@@ -144,7 +153,8 @@ public class Dataset<T extends BasicObject> {
      * @param inputStream
      * @param metadata
      */
-    public Dataset(InputStream inputStream, DatasetMetadata metadata) {
+    public Dataset(Class<T> type, InputStream inputStream, DatasetMetadata<T> metadata) {
+        this.type = type;
         this.inputStream = inputStream;
         this.metadata = metadata;
     }
@@ -156,6 +166,10 @@ public class Dataset<T extends BasicObject> {
      */
     public DatasetMetadata getMetadata() {
         return metadata;
+    }
+
+    public Class<T> getType() {
+        return type;
     }
 
     /**
@@ -192,11 +206,13 @@ public class Dataset<T extends BasicObject> {
     public List<T> getItems() throws IOException {
         if (list == null) {
             synchronized (lock) {
-                List<T> l = doGetAsStream().collect(Collectors.toList());
-                stream = null;
-                iter = null;
-                inputStream = null;
-                list = l;
+                try (Stream<T> st = doGetAsStream()) {
+                    List<T> l = st.collect(Collectors.toList());
+                    stream = null;
+                    iter = null;
+                    inputStream = null;
+                    list = l;
+                }
             }
         }
         return list;
@@ -209,7 +225,7 @@ public class Dataset<T extends BasicObject> {
      * @return
      * @throws IOException
      */
-    public Stream<T> asStream() throws IOException {
+    public Stream<T> getStream() throws IOException {
         synchronized (lock) {
             return doGetAsStream();
         }
@@ -282,14 +298,14 @@ public class Dataset<T extends BasicObject> {
 
     /**
      * Returns the data as an InputStream. If the underlying source was InputStream it is returned.
-     * Otherwise it is obtained using as a Stream (see notes for {@link asStream()} and serialised
+     * Otherwise it is obtained using as a Stream (see notes for {@link #getStream()} and serialised
      * to JSON. You are responsible for closing the InputStream when finished.
      *
      * @param gzip Whether to gzip the input.
      * @return
      * @throws IOException
      */
-    public InputStream asInputStream(boolean gzip) throws IOException {
+    public InputStream getInputStream(boolean gzip) throws IOException {
         synchronized (lock) {
             return doGetAsInputStream(gzip);
         }
@@ -311,7 +327,7 @@ public class Dataset<T extends BasicObject> {
                 return is;
             }
         } else {
-            return JsonHandler.getInstance().marshalStreamToJsonArray(asStream(), gzip);
+            return JsonHandler.getInstance().marshalStreamToJsonArray(getStream(), gzip);
         }
     }
 
@@ -344,7 +360,7 @@ public class Dataset<T extends BasicObject> {
         if (sourceType == null) {
             throw new IllegalStateException(MSG_ALREADY_CONSUMED);
         }
-        try (Stream<T> s = createMetadataGeneratingStream(asStream())) {
+        try (Stream<T> s = createMetadataGeneratingStream(getStream())) {
             if (List.class.isAssignableFrom(sourceType)) {
                 // we have a list so we can re-use it
                 // need to consume the stream, so we count it
@@ -361,12 +377,12 @@ public class Dataset<T extends BasicObject> {
      * the stream is consumed. Once Stream.close() is called the metadata will be updated to reflect
      * the contents. This is useful as the Stream can only be read once, so if you need to generate
      * metadata and do something with the stream then you have to do it in one go. For example:      <code>
- Dataset os = new Dataset(myStream);
- try (Stream s = os.createMetadataGeneratingStream(os.asStream())) {
-     long size = s.count(); // this is your one chance to process the stream
- }
- assert os.getMetadata() != null; // you now have metadata
- </code>
+     * Dataset os = new Dataset(myStream);
+     * try (Stream s = os.createMetadataGeneratingStream(os.getStream())) {
+     * long size = s.count(); // this is your one chance to process the stream
+     * }
+     * assert os.getMetadata() != null; // you now have metadata
+     * </code>
      *
      * @param stream
      * @return

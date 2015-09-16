@@ -2,10 +2,18 @@ package com.im.lac.demo.routes;
 
 import com.im.lac.camel.processor.HeaderPropertySetterProcessor;
 import com.im.lac.camel.chemaxon.processor.db.JChemDBSearcher;
+import com.im.lac.types.MoleculeObject;
+import com.squonk.dataset.MoleculeObjectDataset;
 import java.io.File;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.sql.DataSource;
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.processor.aggregate.AggregationStrategy;
+import org.apache.camel.util.toolbox.AggregationStrategies;
 
 /**
  *
@@ -64,7 +72,7 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                         .outputMode(JChemDBSearcher.OutputMode.MOLECULE_OBJECTS)
                         .structureFormat("smiles:-a")
                 );
-        
+
         from("direct:chemsearch/emolecules_bb")
                 .convertBodyTo(String.class)
                 .process(new JChemDBSearcher()
@@ -78,6 +86,20 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                         .structureFormat("smiles:-a")
                 );
 
+        from("direct:multisearch/emolecules_bb")
+                .convertBodyTo(List.class)
+                .setHeader(JChemDBSearcher.HEADER_OUTPUT_MODE, constant(JChemDBSearcher.OutputMode.CD_IDS))
+                .split(body(), new DeduplicateAggregationStrategy()).streaming()
+                .process((exch) -> {
+                    MoleculeObject mo = exch.getIn().getBody(MoleculeObject.class);
+                    exch.getIn().setBody(mo.getSource());
+                })
+                //.log("Searching for ${body}")
+                .to("direct:chemsearch/emolecules_bb")
+                .log("Found hits: ${body}")
+                .end()
+                .log("Total hits: ${body}" );
+
         // filedrop service for searching eMolecules screening compounds
         String emolsbase = "../../lacfiledrop/dbsearch/emolecules_sc";
         from("file:" + emolsbase + "?antInclude=*.mol&preMove=processing&move=../in")
@@ -85,14 +107,34 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                 .to("direct:chemsearch/emolecules_sc")
                 .convertBodyTo(InputStream.class)
                 .to("file:" + emolsbase + "/out?fileName=${file:name.noext}.sdf");
-        
-         // filedrop service for searching drugbank
+
+        // filedrop service for searching drugbank
         String dbbase = "../../lacfiledrop/dbsearch/drugbank";
         from("file:" + dbbase + "?antInclude=*.mol&preMove=processing&move=../in")
                 .process(new HeaderPropertySetterProcessor(new File(dbbase + "/headers.properties")))
                 .to("direct:chemsearch/drugbank")
                 .convertBodyTo(InputStream.class)
                 .to("file:" + dbbase + "/out?fileName=${file:name.noext}.sdf");
+
+    }
+
+    class DeduplicateAggregationStrategy implements AggregationStrategy {
+
+        @Override
+        public Exchange aggregate(Exchange old, Exchange neu) {
+            Set items;
+            if (old == null) {
+                items = new HashSet();
+            } else {
+                items = old.getIn().getBody(Set.class);
+            }
+            List i = neu.getIn().getBody(List.class);
+            if (i != null) {
+                items.addAll(i);
+            }
+            neu.getIn().setBody(items);
+            return neu;
+        }
 
     }
 

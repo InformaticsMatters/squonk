@@ -9,6 +9,7 @@ import com.im.lac.chemaxon.molecule.MoleculeEvaluator;
 import com.im.lac.chemaxon.molecule.StandardizerEvaluator;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.SimpleStreamProvider;
+import com.squonk.dataset.MoleculeObjectDataset;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -223,7 +224,8 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
                             });
                     }
                 }
-                exchange.getIn().setBody(new SimpleStreamProvider(result, MoleculeObject.class));
+                //exchange.getIn().setBody(new SimpleStreamProvider(result, MoleculeObject.class));
+                exchange.getIn().setBody(new MoleculeObjectDataset(result));
             }
         };
 

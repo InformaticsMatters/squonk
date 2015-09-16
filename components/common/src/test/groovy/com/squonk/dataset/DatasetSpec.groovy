@@ -25,7 +25,7 @@ class DatasetSpec extends Specification {
     void "stream to list"() {
         
         setup:
-        Dataset ds = new Dataset(objects.stream())
+        Dataset ds = new Dataset(BasicObject.class,objects.stream())
         
         when:
         ds.getItems()
@@ -33,13 +33,13 @@ class DatasetSpec extends Specification {
         then:
         ds.items.size() == 3
         // getting the items will have consumed the stream and it be set to null
-        ds.stream == null
+        ds.@stream == null
     }
     
     void "inputstream to list"() {
         
         setup:
-        Dataset ds = new Dataset(
+        Dataset ds = new Dataset(BasicObject.class,
             new ByteArrayInputStream('[{"uuid":"4fe54df5-265c-4627-9a1c-69f6279944f0","values":{"two":2,"one":1}},{"uuid":"8a9478be-99bc-47bb-9273-3a54943dc1e2","values":{"two":22,"one":11}}]'.bytes),
             metadata)
         
@@ -50,8 +50,8 @@ class DatasetSpec extends Specification {
         ds.items.size() == 2
         //println ds.items
         // getting the items will have consumed the stream and it be set to null
-        ds.stream == null
-        ds.inputStream == null
+        ds.@stream == null
+        ds.@inputStream == null
     }
     
     void "json to iterator"() {
@@ -75,7 +75,7 @@ class DatasetSpec extends Specification {
     void "generate metadata from stream"() {
         
         setup:
-        Dataset ds = new Dataset(objects.stream())
+        Dataset ds = new Dataset(BasicObject.class, objects.stream())
         
         when:
         ds.generateMetadata()
@@ -84,17 +84,17 @@ class DatasetSpec extends Specification {
         ds.metadata != null
         ds.metadata.size == 3
         ds.list.size() == 3
-        ds.stream == null
+        ds.@stream == null
     }
     
     void "can't read stream twice"() {
         
         setup:
-        Dataset ds = new Dataset(objects.stream())
-        ds.asStream()
+        Dataset ds = new Dataset(BasicObject.class, objects.stream())
+        ds.getStream()
         
         when:
-        ds.asStream()
+        ds.getStream()
         
         then:
         thrown(IllegalStateException)
@@ -105,11 +105,11 @@ class DatasetSpec extends Specification {
         
         when:
         URL url = new URL("file:src/test/groovy/com/squonk/dataset/objects.json")
-        Dataset ds = new Dataset(url, metadata)
+        Dataset ds = new Dataset(BasicObject.class, url, metadata)
         
         then:
         ds.items.size() == 2
-        ds.asStream().count()
-        ds.asStream().count()
+        ds.getStream().count()
+        ds.getStream().count()
     }
 }

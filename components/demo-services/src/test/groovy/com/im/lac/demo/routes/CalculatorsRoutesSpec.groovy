@@ -7,6 +7,7 @@ import chemaxon.struc.MolBond
 import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import com.im.lac.types.MoleculeObject
+import com.squonk.dataset.MoleculeObjectDataset
 import java.util.stream.*
 import org.apache.camel.CamelContext
 import org.apache.camel.builder.RouteBuilder
@@ -62,8 +63,8 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         def results = template.requestBody('direct:logp', mols)
 
         then:
-        results instanceof Stream
-        results.count() == 3
+        results instanceof MoleculeObjectDataset
+        results.items.size() == 3
     }
     
     def 'logp multiple as stream'() {
@@ -73,7 +74,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         def results = template.requestBody('direct:logp', new ByteArrayInputStream(mols.getBytes()))
 
         then:
-        results.count() == 3
+        results.items.size() == 3
     }
     
     def 'logp as stream'() {
@@ -82,7 +83,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         def results = template.requestBody('direct:logp', new FileInputStream("../../data/testfiles/nci100.smiles"))
 
         then:
-        results.count() == 100
+        results.items.size() == 100
     }
     
     def 'filter as stream'() {
@@ -91,7 +92,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         def results = template.requestBody('direct:filter_example', new FileInputStream("../../data/testfiles/nci100.smiles"))
                 
         then:
-        results.getStream().count() < 100
+        results.items.size() < 100
        
     }
     
@@ -104,7 +105,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
             ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION, "filter=mass()<250"
         )
         long t1 = System.currentTimeMillis()
-        long size = results.getStream().count()
+        long size = results.items.size()
         long t2 = System.currentTimeMillis()
         //println "dynamic filter down to $size first in ${t1-t0}ms last in ${t2-t0}ms"
         then:
@@ -125,7 +126,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         
         then:
         results.size() == 10
-        int s0 = results[0].get().getStream().count()
+        int s0 = results[0].get().items.size()
         (1..9).each {
             def result = results[it].get()
             long count = result.getStream().count()
