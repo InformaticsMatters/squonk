@@ -6,6 +6,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.squonk.util.IOUtils;
 import java.util.UUID;
 
 /**
@@ -189,8 +190,10 @@ public class MoleculeObject extends BasicObject {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append("MoleculeObject source: ")
-                .append(source)
+        b.append("MoleculeObject uuid: ")
+                .append(uuid)
+                .append(" source: ")
+                .append(IOUtils.truncateString(source, 100))
                 .append(" format: ")
                 .append(format)
                 .append(" values: [");

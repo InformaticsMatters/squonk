@@ -2,7 +2,7 @@ package com.im.lac.types;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,7 +25,7 @@ public class BasicObject {
 
     public BasicObject(UUID uuid) {
         this.uuid = (uuid == null ? UUID.randomUUID() : uuid);
-        this.values = new HashMap<>();
+        this.values = new LinkedHashMap<>();
     }
 
     public BasicObject() {

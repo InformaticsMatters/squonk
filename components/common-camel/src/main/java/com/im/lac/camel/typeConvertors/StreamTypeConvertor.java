@@ -10,6 +10,7 @@ import com.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 import org.apache.camel.Converter;
 import org.apache.camel.Exchange;
@@ -33,8 +34,12 @@ public class StreamTypeConvertor {
     
     @Converter
     public static Stream<MoleculeObject> convertMoleculeObjectDatasetToStream(MoleculeObjectDataset mods, Exchange exchange) throws IOException {
-        System.out.println("Converting MoleculeObjectDataset to Stream<MoleculeObject>");
         return mods.getDataset().getStream();
+    }
+    
+    @Converter
+    public static List<MoleculeObject> convertMoleculeObjectDatasetToList(MoleculeObjectDataset mods, Exchange exchange) throws IOException {
+        return mods.getDataset().getItems();
     }
     
     @Converter

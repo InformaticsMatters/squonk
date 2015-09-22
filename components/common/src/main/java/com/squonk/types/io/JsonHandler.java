@@ -294,6 +294,7 @@ public class JsonHandler {
         ObjectWriter ow = mapper.writer();
         try (SequenceWriter sw = ow.writeValuesAsArray(out)) {
             stream.sequential().peek((i) -> {
+                //LOG.info("Writing to json: "  + i);
                 try {
                     sw.write(i);
                 } catch (IOException ex) {
@@ -302,7 +303,8 @@ public class JsonHandler {
             }).forEachOrdered((i) -> {
             });
         } finally {
-            out.close();
+            //out.close();
+            stream.close();
         }
     }
 

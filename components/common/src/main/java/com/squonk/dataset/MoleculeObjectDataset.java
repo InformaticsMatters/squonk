@@ -3,6 +3,7 @@ package com.squonk.dataset;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.StreamProvider;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -25,6 +26,10 @@ public class MoleculeObjectDataset implements StreamProvider {
 
     public MoleculeObjectDataset(Stream<MoleculeObject> stream) {
         this.mods = new Dataset(MoleculeObject.class, stream);
+    }
+    
+    public MoleculeObjectDataset(Collection<MoleculeObject> objs) {
+        this.mods = new Dataset(MoleculeObject.class, objs);
     }
 
     public Dataset<MoleculeObject> getDataset() {

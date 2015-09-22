@@ -3,7 +3,6 @@ package com.im.lac.demo.routes;
 import com.im.lac.camel.processor.HeaderPropertySetterProcessor;
 import com.im.lac.camel.chemaxon.processor.db.JChemDBSearcher;
 import com.im.lac.types.MoleculeObject;
-import com.squonk.dataset.MoleculeObjectDataset;
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashSet;
@@ -13,7 +12,6 @@ import javax.sql.DataSource;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.processor.aggregate.AggregationStrategy;
-import org.apache.camel.util.toolbox.AggregationStrategies;
 
 /**
  *
@@ -64,7 +62,7 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                 .convertBodyTo(String.class)
                 .process(new JChemDBSearcher()
                         .dataSource(dataSource)
-                        .structureTable("vendordbs.emolecules_ordersc")
+                        .structureTable("vendordbs.emolecules_order__sc")
                         .propertyTable("vendordbs.jchemproperties")
                         .searchOptions("t:d")
                         .searchOptionsOverride("maxResults:5000 maxTime:30000")
@@ -77,13 +75,26 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                 .convertBodyTo(String.class)
                 .process(new JChemDBSearcher()
                         .dataSource(dataSource)
-                        .structureTable("vendordbs.emolecules_orderbb")
+                        .structureTable("vendordbs.emolecules_order_bb")
                         .propertyTable("vendordbs.jchemproperties")
                         .searchOptions("t:d")
                         .searchOptionsOverride("maxResults:5000 maxTime:30000")
-                        .outputColumn("version_id")
+                        .outputColumn("cd_id").outputColumn("version_id")
                         .outputMode(JChemDBSearcher.OutputMode.MOLECULE_OBJECTS)
-                        .structureFormat("smiles:-a")
+                        .structureFormat("smiles")
+                );
+        
+        from("direct:chemsearch/emolecules_all")
+                .convertBodyTo(String.class)
+                .process(new JChemDBSearcher()
+                        .dataSource(dataSource)
+                        .structureTable("vendordbs.emolecules_order_all")
+                        .propertyTable("vendordbs.jchemproperties")
+                        .searchOptions("t:d")
+                        .searchOptionsOverride("maxResults:5000 maxTime:30000")
+                        .outputColumn("cd_id").outputColumn("version_id")
+                        .outputMode(JChemDBSearcher.OutputMode.MOLECULE_OBJECTS)
+                        .structureFormat("smiles")
                 );
 
         from("direct:multisearch/emolecules_bb")

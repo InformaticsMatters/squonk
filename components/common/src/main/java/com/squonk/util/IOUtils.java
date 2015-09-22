@@ -1,6 +1,5 @@
 package com.squonk.util;
 
-import com.im.lac.dataset.Metadata;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,13 +9,11 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PushbackInputStream;
 import java.io.Reader;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -126,6 +123,17 @@ public class IOUtils {
             out.append(buffer, 0, rsz);
         }
         return out.toString();
+    }
+    
+    public static String truncateString(String s, int maxLength) {
+        if (s == null) {
+            return null;
+        }
+        if (s.length() > maxLength) {
+            return s.substring(0, maxLength - 4) + " ...";
+        } else {
+            return s;
+        }
     }
 
 }

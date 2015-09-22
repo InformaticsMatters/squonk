@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -48,12 +50,14 @@ public class MoleculeObjectWriter implements OutputGenerator {
             @Override
             public void run() {
                 LOG.fine("Starting to write molecules");
-                try {
-                    mols.sequential().forEachOrdered(mo -> {
+                try (Stream<MoleculeObject> seq = mols.sequential()) {
+
+                    seq.forEachOrdered(mo -> {
                         try {
                             Molecule mol = MoleculeUtils.fetchMolecule(mo, false);
                             mol.clearProperties();
-                            MoleculeUtils.putPropertiesToMolecule(mo.getValues(), mol);
+                            mol.setProperty("uuid", mo.getUUID().toString());
+                            MoleculeUtils.putPropertiesToMolecule(hackValues(mo.getValues()), mol);
                             exporter.write(mol);
                             count++;
                         } catch (IOException ex) {
@@ -63,7 +67,6 @@ public class MoleculeObjectWriter implements OutputGenerator {
                     });
                     LOG.fine("Finished writing molecules");
                 } finally {
-                    mols.close();
                     try {
                         exporter.close();
                     } catch (IOException ex) {
@@ -73,9 +76,28 @@ public class MoleculeObjectWriter implements OutputGenerator {
             }
         };
         t.start();
-
         return pis;
-
+    }
+    
+    /** This hack works round the problem of MolExporter not being able to handle Float values by converting
+     * them to Doubles
+     * 
+     * @param values
+     * @return 
+     */
+    private Map<String,Object> hackValues(Map<String,Object> values) {
+        Map<String,Object> neu = new LinkedHashMap<>();
+        for (Map.Entry<String,Object> e : values.entrySet()) {
+            Object val = e.getValue();
+            if (val == null) {
+                neu.put(e.getKey(), null);
+            } else if (val instanceof Float) {
+                neu.put(e.getKey(), ((Float)val).doubleValue());
+            } else {
+                neu.put(e.getKey(), val);
+            }
+        }
+        return neu;
     }
 
     /**

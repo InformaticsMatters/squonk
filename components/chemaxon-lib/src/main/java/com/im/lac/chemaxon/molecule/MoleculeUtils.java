@@ -8,6 +8,7 @@ import chemaxon.formats.MolImporter;
 import chemaxon.marvin.io.MPropHandler;
 import chemaxon.marvin.io.MRecord;
 import chemaxon.struc.MProp;
+import chemaxon.struc.MPropertyContainer;
 import chemaxon.struc.MolAtom;
 import chemaxon.struc.Molecule;
 import chemaxon.struc.MoleculeGraph;
@@ -25,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,7 +51,7 @@ public class MoleculeUtils {
         }
         return count;
     }
-    
+
     static public int heavyAtomCount(String mol) throws MolFormatException {
         return heavyAtomCount(MolImporter.importMol(mol));
     }
@@ -57,7 +59,7 @@ public class MoleculeUtils {
     static public int heavyAtomCount(MRecord rec) throws MolFormatException {
         return heavyAtomCount(rec.getString());
     }
-    
+
     public static MoleculeGraph clean(MoleculeGraph mol, int dim, String opts) {
         Cleaner.clean(mol, dim, opts);
         return mol;
@@ -83,8 +85,8 @@ public class MoleculeUtils {
     }
 
     /**
-     * Export the molecule in text format using the formats specified. They are
-     * tried in order (left to right) and the first one that works is used.
+     * Export the molecule in text format using the formats specified. They are tried in order (left
+     * to right) and the first one that works is used.
      *
      * @param mol The molecule to convert
      * @param format The formats to try
@@ -104,12 +106,11 @@ public class MoleculeUtils {
     }
 
     /**
-     * Finds the parent structure. If there is only one fragment it returns the
-     * input molecule (same instance). If there are multiple fragments if
-     * returns the biggest by atom count. If multiple fragments have the same
-     * number of atoms then the one with the biggest mass is returned. If
-     * multiple ones have the same atom count and mass it is assumed they are
-     * the same (which is not necessarily the case) and the first is returned.
+     * Finds the parent structure. If there is only one fragment it returns the input molecule (same
+     * instance). If there are multiple fragments if returns the biggest by atom count. If multiple
+     * fragments have the same number of atoms then the one with the biggest mass is returned. If
+     * multiple ones have the same atom count and mass it is assumed they are the same (which is not
+     * necessarily the case) and the first is returned.
      *
      *
      * @param mol The molecule to examine
@@ -158,9 +159,8 @@ public class MoleculeUtils {
     }
 
     /**
-     * Fetch the Molecule stored under the name chemaxon.struc.Molecule,
-     * creating it if its not already present, and optionally putting it under
-     * that name
+     * Fetch the Molecule stored under the name chemaxon.struc.Molecule, creating it if its not
+     * already present, and optionally putting it under that name
      *
      * @param mo
      * @param store
@@ -182,16 +182,17 @@ public class MoleculeUtils {
     }
 
     /**
-     * Generates a clone of the Molecule (creating it if necessary) and optionally
-     * copying the properties
+     * Generates a clone of the Molecule (creating it if necessary) and optionally copying the
+     * properties
+     *
      * @param mo
      * @param copyProps
-     * @return 
+     * @return
      */
     public static Molecule cloneMolecule(MoleculeObject mo, boolean copyProps) {
         final Molecule mol = fetchMolecule(mo, false);
         if (copyProps) {
-            for (Map.Entry<String,Object> e : mo.getValues().entrySet()) {
+            for (Map.Entry<String, Object> e : mo.getValues().entrySet()) {
                 mol.setPropertyObject(e.getKey(), e.getValue());
             }
         }
@@ -201,7 +202,7 @@ public class MoleculeUtils {
     public static MoleculeObject derriveMoleculeObject(MoleculeObject old, Molecule neu, String format)
             throws IOException {
         String s = MoleculeUtils.exportAsString(neu, format);
-        MoleculeObject mo = new MoleculeObject(s, format);
+        MoleculeObject mo = new MoleculeObject(old.getUUID(), s, format);
         mo.putRepresentation(Molecule.class.getName(), neu);
         mo.putValues(old.getValues());
 
@@ -212,22 +213,46 @@ public class MoleculeUtils {
             throws IOException {
         String s = MoleculeUtils.exportAsString(mol, format);
         String base = getBaseFormat(format);
-        //LOG.finer(Level.INFO, "Mol in format {0} [{1}] is {2}", new Object[]{format, base, s});
-        MoleculeObject mo = new MoleculeObject(s, base);
-        for (String key : mol.properties().getKeys()) {
-            Object val = mol.getPropertyObject(key);
-            mo.putValue(key, val);
-        }
+        
+        MoleculeObject mo = createMoleculeObject(s, base, mol.getName(), mol.properties());
+        
         mol.clearProperties();
         mo.putRepresentation(Molecule.class.getName(), mol);
         return mo;
     }
-    
-   /**
-     * Get the base format from a format string.
-     * e.g. if the full format is smiles:a-H then return smiles
+
+    public static MoleculeObject createMoleculeObject(String source, String format, String name, MPropertyContainer pc) {
+
+        // the special case of a field named uuid and use that as the MoleculeObject UUID
+        MProp uuidP = pc.get("uuid");
+        MoleculeObject mo;
+        if (uuidP == null) {
+            mo = new MoleculeObject(source, format);
+        } else {
+            UUID u = UUID.fromString(MPropHandler.convertToString(uuidP, null));
+            mo = new MoleculeObject(u, source, format);
+            pc.remove(uuidP);
+        }
+        // the sepcial case of a molecule with a name
+        if (name != null && name.length() > 0) {
+            mo.putValue("name", name);
+        }
+        // finally the standard SDfile properties
+        String[] keys = pc.getKeys();
+        for (int x = 0; x < keys.length; x++) {
+            String key = keys[x];
+            MProp prop = pc.get(key);
+            mo.putValue(key, prop.getPropValue());
+        }
+        return mo;
+    }
+
+    /**
+     * Get the base format from a format string. e.g. if the full format is smiles:a-H then return
+     * smiles
+     *
      * @param full
-     * @return 
+     * @return
      */
     public static String getBaseFormat(String full) {
         int pos = full.indexOf(":");
@@ -246,10 +271,9 @@ public class MoleculeUtils {
     }
 
     /**
-     * Creates an Iterator of MRecords from the InputStream Designed for
-     * splitting a file or stream into individual records without generating a
-     * molecule instance. Can be used as a Camel splitter.
-     * <code>split().method(MoleculeIOUtils.class, "mrecordIterator")</code>
+     * Creates an Iterator of MRecords from the InputStream Designed for splitting a file or stream
+     * into individual records without generating a molecule instance. Can be used as a Camel
+     * splitter. <code>split().method(MoleculeIOUtils.class, "mrecordIterator")</code>
      *
      * @param is The input molecules in any format that Marvin recognises
      * @return Iterator or records
@@ -290,10 +314,9 @@ public class MoleculeUtils {
     }
 
     /**
-     * Takes a Map of properties, one of which is a Molecule in some form and
-     * returns a Molecule (converted as necessary) with the additional values
-     * from the Map set as properties of the Molecule (see
-     * Molecule.getProperties()).
+     * Takes a Map of properties, one of which is a Molecule in some form and returns a Molecule
+     * (converted as necessary) with the additional values from the Map set as properties of the
+     * Molecule (see Molecule.getProperties()).
      *
      * @param map The input
      * @param structureKey The key under which the structure is located
@@ -340,19 +363,19 @@ public class MoleculeUtils {
     public static MoleculeIterable createIterable(Collection<Molecule> mols) {
         return new MoleculeCollectionIterableAdapter(mols);
     }
-    
+
     public static boolean isEmpty(String s) throws MolFormatException {
         return MolImporter.importMol(s).isEmpty();
     }
-    
+
     public static boolean isNotEmpty(String s) throws MolFormatException {
         return !isEmpty(s);
     }
-    
+
     public static boolean isEmpty(MRecord r) throws MolFormatException {
         return isEmpty(r.getString());
     }
-    
+
     public static boolean isNotEmpty(MRecord r) throws MolFormatException {
         return !isEmpty(r);
     }

@@ -7,6 +7,8 @@ import com.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -98,9 +100,8 @@ public class Dataset<T extends BasicObject> implements StreamProvider<T> {
      *
      * @param items
      */
-    public Dataset(Class<T> type, List<T> items) {
-        this.type = type;
-        this.list = items;
+    public Dataset(Class<T> type, Collection<T> items) {
+        this(type, items, null);
     }
 
     /**
@@ -109,8 +110,7 @@ public class Dataset<T extends BasicObject> implements StreamProvider<T> {
      * @param objects
      */
     public Dataset(Class<T> type, Stream<T> objects) {
-        this.type = type;
-        this.stream = objects;
+        this(type, objects, null);
     }
 
     /**
@@ -119,13 +119,13 @@ public class Dataset<T extends BasicObject> implements StreamProvider<T> {
      * @param iter
      */
     public Dataset(Class<T> type, Iterator<T> iter) {
-        this.type = type;
-        this.iter = iter;
+        this(type, iter, null);
     }
 
-    public Dataset(Class<T> type, List<T> items, DatasetMetadata<T> metadata) {
+    public Dataset(Class<T> type, Collection<T> items, DatasetMetadata<T> metadata) {
         this.type = type;
-        this.list = items;
+        this.list = new ArrayList<>();
+        list.addAll(items);
         this.metadata = metadata;
     }
 
@@ -228,6 +228,19 @@ public class Dataset<T extends BasicObject> implements StreamProvider<T> {
     public Stream<T> getStream() throws IOException {
         synchronized (lock) {
             return doGetAsStream();
+        }
+    }
+
+    /** Replace the current contents with this stream, normally a stream generated from the existing one.
+     *
+     * @param stream 
+     */
+    public void replaceStream(Stream<T> stream) {
+        synchronized (lock) {
+            this.stream = stream;
+            this.list = null;
+            this.inputStream = null;
+            this.iter = null;
         }
     }
 
@@ -376,10 +389,12 @@ public class Dataset<T extends BasicObject> implements StreamProvider<T> {
      * Get as a Stream (see notes above) and add functions to the Stream to generate the metadata as
      * the stream is consumed. Once Stream.close() is called the metadata will be updated to reflect
      * the contents. This is useful as the Stream can only be read once, so if you need to generate
-     * metadata and do something with the stream then you have to do it in one go. For example:      <code>
+     * metadata and do something with the stream then you have to do it in one go. For example:
+     * <br>
+     * <code>
      * Dataset os = new Dataset(myStream);
      * try (Stream s = os.createMetadataGeneratingStream(os.getStream())) {
-     * long size = s.count(); // this is your one chance to process the stream
+     *     long size = s.count(); // this is your one chance to process the stream
      * }
      * assert os.getMetadata() != null; // you now have metadata
      * </code>

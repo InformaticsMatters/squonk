@@ -8,7 +8,6 @@ import com.im.lac.chemaxon.molecule.ChemTermsEvaluator;
 import com.im.lac.chemaxon.molecule.MoleculeEvaluator;
 import com.im.lac.chemaxon.molecule.StandardizerEvaluator;
 import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.SimpleStreamProvider;
 import com.squonk.dataset.MoleculeObjectDataset;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -187,7 +186,6 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
 
     @Override
     public void process(final Exchange exchange) throws Exception {
-        LOG.fine("Processing ChemTerms");
         final List<MoleculeEvaluator> evals = createEvaluators(exchange);
         StreamingMoleculeObjectSourcer sourcer = new StreamingMoleculeObjectSourcer() {
             @Override
@@ -200,8 +198,10 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
 
             @Override
             public void handleMultiple(Exchange exchange, Stream<MoleculeObject> input) throws Exception {
+                //LOG.info("Calculating for stream " + input);
                 Stream<MoleculeObject> result = input;
                 for (MoleculeEvaluator evaluator : evals) {
+                    //LOG.log(Level.INFO, "Handling evaluator {0}", evaluator);
                     switch (evaluator.getMode()) {
                         case Filter:
                             result = result.filter((mo) -> {
@@ -215,6 +215,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
                             break;
                         default:
                             result = result.map((mo) -> {
+                                //LOG.log(Level.INFO, "Processing molecule {0}", mo);
                                 try {
                                     return evaluator.processMoleculeObject(mo);
                                 } catch (IOException ex) {
@@ -224,7 +225,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
                             });
                     }
                 }
-                //exchange.getIn().setBody(new SimpleStreamProvider(result, MoleculeObject.class));
+                //LOG.info("Calculation results " + result);
                 exchange.getIn().setBody(new MoleculeObjectDataset(result));
             }
         };

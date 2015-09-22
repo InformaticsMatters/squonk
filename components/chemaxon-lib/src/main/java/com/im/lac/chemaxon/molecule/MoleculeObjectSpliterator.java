@@ -1,5 +1,6 @@
 package com.im.lac.chemaxon.molecule;
 
+import chemaxon.marvin.io.MPropHandler;
 import chemaxon.marvin.io.MRecord;
 import chemaxon.struc.MProp;
 import chemaxon.struc.MPropertyContainer;
@@ -8,23 +9,21 @@ import com.im.lac.types.MoleculeObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Spliterator;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * Creates a {@link java.util.Spliterator} of
- * {@link com.im.lac.types.MoleculeObjects} from an {@link java.io.InputStream}
- * (e.g. SD file, or file of smiles strings). This can then be used to create a 
- * Stream of MoleculeObjects. To do so you can use the {@link #asStream(boolean)} 
- * method which will generate a Stream that automatically closes the InputStream 
- * when the Stream is closed.
- * If you create your own stream instead of using the asStream() method make sure 
- * that the InputStream gets closed (hint: use the {@link BaseStream#onClose()} method).
+ * Creates a {@link java.util.Spliterator} of {@link com.im.lac.types.MoleculeObjects} from an
+ * {@link java.io.InputStream} (e.g. SD file, or file of smiles strings). This can then be used to
+ * create a Stream of MoleculeObjects. To do so you can use the {@link #asStream(boolean)} method
+ * which will generate a Stream that automatically closes the InputStream when the Stream is closed.
+ * If you create your own stream instead of using the asStream() method make sure that the
+ * InputStream gets closed (hint: use the {@link BaseStream#onClose()} method).
  *
- * The Spliterator has a fixed batch size (the size of any Spliterator returned
- * by the {@link java.util.Spliterator#trySplit()} method) that can be specified
- * in the constructor.
+ * The Spliterator has a fixed batch size (the size of any Spliterator returned by the
+ * {@link java.util.Spliterator#trySplit()} method) that can be specified in the constructor.
  *
  * @author timbo
  */
@@ -54,8 +53,8 @@ public class MoleculeObjectSpliterator extends FixedBatchSpliteratorBase<Molecul
     }
 
     /**
-     * Generates a Stream from this Spliterator. When the Stream is closed the
-     * underlying InputStream will automatically get closed.
+     * Generates a Stream from this Spliterator. When the Stream is closed the underlying
+     * InputStream will automatically get closed.
      *
      * @param parallel Should the returned stream be a parallel stream
      * @return
@@ -98,18 +97,10 @@ public class MoleculeObjectSpliterator extends FixedBatchSpliteratorBase<Molecul
                 format = null;
             }
         }
-        String name = rec.getMoleculeName();
-        MoleculeObject mo = new MoleculeObject(mol, format);
-        if (name != null && name.length() > 0) {
-            mo.putValue("name", name);
-        }
         MPropertyContainer pc = rec.getPropertyContainer();
-        String[] keys = pc.getKeys();
-        for (int x = 0; x < keys.length; x++) {
-            String key = keys[x];
-            MProp prop = pc.get(key);
-            mo.putValue(key, prop.getPropValue());
-        }
+        String name = rec.getMoleculeName();
+        MoleculeObject mo = MoleculeUtils.createMoleculeObject(mol, format, name, pc);
+        
         //long t1 = System.nanoTime();
         //System.out.println("Reading took: " + (t1-t0));
         return mo;
