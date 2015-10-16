@@ -2,6 +2,7 @@ package com.im.lac.types;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -15,7 +16,7 @@ import java.util.UUID;
  */
 @JsonIgnoreProperties({"value"})
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class BasicObject {
+public class BasicObject implements Serializable {
 
     protected final UUID uuid;
 
