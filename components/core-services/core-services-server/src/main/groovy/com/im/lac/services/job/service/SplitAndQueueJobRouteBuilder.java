@@ -7,7 +7,7 @@ import com.im.lac.services.ServerConstants;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.SplitAndQueueProcessDatasetJobDefinition;
 import static com.im.lac.services.job.service.JobServiceRouteBuilder.ROUTE_SUBMIT_PREFIX;
-import com.im.lac.types.io.JsonHandler;
+import com.squonk.types.io.JsonHandler;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;

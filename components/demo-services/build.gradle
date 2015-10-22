@@ -1,9 +1,10 @@
-
-
 apply plugin: 'groovy'
-
 apply plugin: 'application'
-mainClassName = "com.im.lac.demo.routes.Jms"
+
+//mainClassName = "com.im.lac.demo.routes.EmolsMultiSearchRouteBuilder"
+//applicationDefaultJvmArgs = ["-Xmx16000m"]
+
+mainClassName = "com.im.lac.demo.routes.Main"
 applicationDefaultJvmArgs = ["-Xmx1200m"]
 
 apply plugin: 'docker'
@@ -12,7 +13,6 @@ apply plugin: 'docker'
 buildscript {
     repositories { 
         jcenter() 
-        //mavenCentral()
     }
     dependencies {
         classpath 'se.transmode.gradle:gradle-docker:1.2'

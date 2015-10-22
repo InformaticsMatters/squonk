@@ -11,7 +11,7 @@ import com.im.lac.camel.testsupport.CamelSpecificationBase
 import com.im.lac.chemaxon.screening.MoleculeScreener
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.types.MoleculeObject
-import com.im.lac.stream.FixedBatchSpliterator
+import com.squonk.stream.FixedBatchSpliterator
 import org.apache.camel.builder.RouteBuilder
 import java.util.stream.*
 

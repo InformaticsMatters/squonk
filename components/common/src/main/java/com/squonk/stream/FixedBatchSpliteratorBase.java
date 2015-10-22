@@ -1,4 +1,4 @@
-package com.im.lac.stream;
+package com.squonk.stream;
 
 import static java.util.Spliterators.spliterator;
 

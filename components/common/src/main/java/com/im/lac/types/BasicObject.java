@@ -3,16 +3,15 @@ package com.im.lac.types;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
 /**
- * Simple generic object that only has properties. 
- * Specialized types can be created by sub-classing this class. For instance, 
- * see {@link MoleculeObject}.
+ * Simple generic object that only has properties. Specialized types can be created by sub-classing
+ * this class. For instance, see {@link MoleculeObject}.
  *
- * @author timbo
+ * @author Tim Dudgeon
  */
 @JsonIgnoreProperties({"value"})
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -26,12 +25,24 @@ public class BasicObject implements Serializable {
     protected Map<String, Object> values;
 
     public BasicObject(UUID uuid) {
-        this.uuid = uuid;
-        this.values = new HashMap<>();
+        this.uuid = (uuid == null ? UUID.randomUUID() : uuid);
+        this.values = new LinkedHashMap<>();
     }
 
     public BasicObject() {
         this(UUID.randomUUID());
+    }
+
+    public BasicObject(Map<String, Object> values) {
+        this(null, values);
+        
+    }
+
+    public BasicObject(UUID uuid, Map<String, Object> values) {
+        this(uuid);
+        if (values != null && !values.isEmpty()) {
+            this.values.putAll(values);
+        }
     }
 
     public UUID getUUID() {

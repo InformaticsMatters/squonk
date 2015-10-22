@@ -6,6 +6,7 @@ import com.im.lac.rdkit.mol.MolEvaluator;
 import com.im.lac.rdkit.mol.MolReader;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.SimpleStreamProvider;
+import com.squonk.dataset.MoleculeObjectDataset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -42,7 +43,7 @@ public class RDKitMoleculeProcessor implements Processor {
 
             public void handleMultiple(Exchange exchange, Stream<MoleculeObject> mols) throws Exception {
                 Stream<MoleculeObject> results = evaluate(exchange, mols, definitions);
-                exchange.getIn().setBody(new SimpleStreamProvider<>(results, MoleculeObject.class));
+                exchange.getIn().setBody(new MoleculeObjectDataset(results));
             }
         };
         sourcer.handle(exchange);

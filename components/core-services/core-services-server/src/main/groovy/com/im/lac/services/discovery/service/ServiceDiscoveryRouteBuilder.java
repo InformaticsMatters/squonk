@@ -7,7 +7,7 @@ import com.im.lac.services.AccessMode;
 import com.im.lac.services.ServerConstants;
 import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.services.job.service.AsyncJobRouteBuilder;
-import com.im.lac.types.io.JsonHandler;
+import com.squonk.types.io.JsonHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -36,14 +36,24 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     /**
      * This allows the timer delay to be set, primarily to allow easy testing
      */
-    protected int timerDelay = 60000;
+    protected int timerDelay = 5 * 60 * 1000;
 
     List<String> locations = Arrays.asList(new String[]{
-        "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-chemaxon-basic/rest/v1/calculators",
-        "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-chemaxon-basic/rest/v1/descriptors",
-        "http://squonk-javachemservices.elasticbeanstalk.com/chem-services-cdk-basic/rest/v1/calculators",
-        "http://dockerrdkitservices-env.elasticbeanstalk.com/rdkit_cluster",
-        "http://dockerrdkitservices-env.elasticbeanstalk.com/rdkit_screen"
+
+        "http://demos.informaticsmatters.com:9080/chem-services-cdk-basic/rest/v1/calculators",
+        "http://demos.informaticsmatters.com:9080/chem-services-chemaxon-basic/rest/v1/calculators",
+        "http://demos.informaticsmatters.com:9080/chem-services-chemaxon-basic/rest/v1/descriptors",
+        "http://demos.informaticsmatters.com:9080/chem-services-rdkit-basic/rest/v1/calculators",
+        "http://demos.informaticsmatters.com:8000/rdkit_screen",
+        "http://demos.informaticsmatters.com:8000/rdkit_cluster"
+            
+            
+        
+        //"http://squonk-javachemservices.elasticbeanstalk.com/chem-services-chemaxon-basic/rest/v1/calculators",
+        //"http://squonk-javachemservices.elasticbeanstalk.com/chem-services-chemaxon-basic/rest/v1/descriptors",
+        //"http://squonk-javachemservices.elasticbeanstalk.com/chem-services-cdk-basic/rest/v1/calculators",
+        //"http://dockerrdkitservices-env.elasticbeanstalk.com/rdkit_cluster",
+        //"http://dockerrdkitservices-env.elasticbeanstalk.com/rdkit_screen"
     });
 
     public static final ServiceDescriptor[] TEST_SERVICE_DESCRIPTORS = new ServiceDescriptor[]{

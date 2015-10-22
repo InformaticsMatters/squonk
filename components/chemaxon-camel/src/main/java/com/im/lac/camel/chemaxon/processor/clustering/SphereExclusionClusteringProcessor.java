@@ -1,6 +1,5 @@
 package com.im.lac.camel.chemaxon.processor.clustering;
 
-import chemaxon.struc.Molecule;
 import com.chemaxon.descriptors.common.Descriptor;
 import com.chemaxon.descriptors.common.DescriptorComparator;
 import com.chemaxon.descriptors.common.DescriptorGenerator;
@@ -9,6 +8,7 @@ import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.chemaxon.clustering.SphereExclusionClusterer;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.SimpleStreamProvider;
+import com.squonk.dataset.MoleculeObjectDataset;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.apache.camel.Exchange;
@@ -71,7 +71,7 @@ public class SphereExclusionClusteringProcessor<T extends Descriptor> implements
         try (Stream<MoleculeObject> stream = StreamingMoleculeObjectSourcer.bodyAsMoleculeObjectStream(exchange)) {
             results = clusterer.clusterMoleculeObjects(stream);
         }
-        exchange.getIn().setBody(new SimpleStreamProvider(results, MoleculeObject.class));
+        exchange.getIn().setBody(new MoleculeObjectDataset(results));
     }
 
     SphereExclusionClusterer createClusterer(Exchange exchange) {

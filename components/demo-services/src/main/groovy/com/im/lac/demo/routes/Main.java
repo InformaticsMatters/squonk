@@ -91,7 +91,7 @@ public class Main {
         t.join();
     }
 
-    private static DataSource createDataSource() {
+    public static DataSource createDataSource() {
         PGSimpleDataSource ds = new PGSimpleDataSource();
         String server = System.getenv("CHEMCENTRAL_DB_SERVER");
         ds.setServerName(server != null ? server : "localhost");

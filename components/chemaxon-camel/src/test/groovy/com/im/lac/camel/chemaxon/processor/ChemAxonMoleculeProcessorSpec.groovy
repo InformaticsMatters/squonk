@@ -8,12 +8,14 @@ import com.im.lac.camel.chemaxon.processor.screening.MoleculeScreenerProcessor
 import com.im.lac.camel.chemaxon.processor.screening.MoleculeScreenerProcessor
 import com.im.lac.chemaxon.molecule.ChemTermsEvaluator
 import com.im.lac.types.MoleculeObject
+import com.squonk.dataset.Dataset
+import com.squonk.dataset.MoleculeObjectDataset
 import java.util.stream.*
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils
 import com.im.lac.chemaxon.screening.MoleculeScreener
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
-import com.im.lac.util.IOUtils
+import com.squonk.util.IOUtils
 
 /**
  * Created by timbo on 14/04/2014.
@@ -22,18 +24,17 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
     
     //    String file = "../../data/testfiles/Building_blocks_GBP.sdf.gz"
     //    int count = 7003
-    //    int filterCount = 235
     
     //    String file = "../../data/testfiles/nci100.smiles"
     //    int count = 100
-    //    int filterCount = 2
     
-    String file = "../../data/testfiles/dhfr_standardized.sdf.gz"
-    int count = 756
-    int filterCount = 2
-    
-    long sleep = 10
+//    String file = "../../data/testfiles/dhfr_standardized.sdf.gz"
+//    int count = 756
 
+     String file = "../../data/testfiles/Kinase_inhibs.sdf.gz"
+    int count = 36
+    
+    long sleep = 0
 
     
     void "propcalc sequential streaming"() {
@@ -46,7 +47,7 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:streaming', mols).getStream()
+        Stream results = template.requestBody('direct:streaming', mols, Dataset.class).getStream()
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
         println "  ...done"
@@ -71,7 +72,7 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:streaming', mols).getStream()
+        Stream results = template.requestBody('direct:streaming', mols, Dataset.class).getStream()
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
         println "  ...done"
@@ -94,7 +95,32 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:noop', mols).getStream()
+        Stream results = template.requestBody('direct:noop', mols, Dataset.class).getStream()
+        List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
+        long t1 = System.currentTimeMillis()
+        println "  ...done"
+        Thread.sleep(sleep)
+        
+        then:
+        println "  number of mols: ${all.size()} generated in ${t1-t0}ms"
+        all.size() == count
+        
+        cleanup: 
+        input.close()
+    }
+    
+    
+    void "dataset streaming"() {
+        setup:
+        Thread.sleep(sleep)
+        println "dataset streaming"
+        InputStream input = new FileInputStream(file)
+        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(true);
+        MoleculeObjectDataset mods = new MoleculeObjectDataset(mols)
+        
+        when:
+        long t0 = System.currentTimeMillis()
+        Stream results = template.requestBody('direct:noop', mods, Dataset.class).getStream()
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
         println "  ...done"
@@ -113,8 +139,7 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
     RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
-                
-                
+
                 from("direct:streaming")
                 .process(new ChemAxonMoleculeProcessor()
                     //.standardize("removefragment:method=keeplargest..aromatize..removeexplicith")

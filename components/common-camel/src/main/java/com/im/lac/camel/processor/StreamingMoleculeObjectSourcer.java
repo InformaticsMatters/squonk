@@ -3,6 +3,8 @@ package com.im.lac.camel.processor;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
 import com.im.lac.util.StreamProvider;
+import com.squonk.dataset.Dataset;
+import com.squonk.dataset.MoleculeObjectDataset;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Spliterator;
@@ -14,13 +16,11 @@ import java.util.stream.StreamSupport;
 import org.apache.camel.Exchange;
 
 /**
- * Sources a Stream of MoleculeObjects from the exchange and dispatches them for
- * processing. Ideally the Exchanges IN message will contain a stream, but if it
- * contains an Iterator&lt;MoleculeObject&gt; or Iterable&lt;MoleculeObject&gt;
- * these are converted to a Stream using defaults (which may not be ideal).
+ * Sources a Stream of MoleculeObjects from the exchange and dispatches them for processing. Ideally
+ * the Exchanges IN message will contain a stream, but if it contains an
+ * Iterator&lt;MoleculeObject&gt; or Iterable&lt;MoleculeObject&gt; these are converted to a Stream
+ * using defaults (which may not be ideal).
  *
- * TODO - consider generalising this class to handle any instance type using
- * Generics
  *
  * @author Tim Dudgeon
  */
@@ -28,10 +28,30 @@ public abstract class StreamingMoleculeObjectSourcer {
 
     private static final Logger LOG = Logger.getLogger(StreamingMoleculeObjectSourcer.class.getName());
 
+    public static MoleculeObjectDataset bodyAsMoleculeObjectDataset(Exchange exchange) throws IOException {
+
+        LOG.log(Level.FINE, "Body is {0}", exchange.getIn().getBody().getClass().getName());
+
+        MoleculeObjectDataset mods = exchange.getIn().getBody(MoleculeObjectDataset.class);
+        if (mods != null) {
+            return mods;
+        } else {
+            Stream<MoleculeObject> stream = bodyAsMoleculeObjectStream(exchange);
+            if (stream != null) {
+                return new MoleculeObjectDataset(new Dataset(MoleculeObject.class, stream));
+            }
+        }
+        return null;
+    }
+
     public static Stream<MoleculeObject> bodyAsMoleculeObjectStream(Exchange exchange) throws IOException {
 
         LOG.log(Level.FINE, "Body is {0}", exchange.getIn().getBody().getClass().getName());
 
+        MoleculeObjectDataset mods = exchange.getIn().getBody(MoleculeObjectDataset.class);
+        if (mods != null) {
+            return mods.getDataset().getStream();
+        }
         StreamProvider sp = exchange.getIn().getBody(StreamProvider.class);
         if (sp != null) {
             if (sp.getType() != MoleculeObject.class) {
@@ -77,7 +97,7 @@ public abstract class StreamingMoleculeObjectSourcer {
             handleSingle(exchange, mol);
             return;
         }
-        Stream stream = bodyAsMoleculeObjectStream(exchange);
+        Stream<MoleculeObject> stream = bodyAsMoleculeObjectStream(exchange);
         if (stream != null) {
             handleMultiple(exchange, stream);
             return;

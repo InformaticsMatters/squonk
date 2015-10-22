@@ -5,6 +5,7 @@ import com.im.lac.cdk.molecule.MolecularDescriptors
 
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import com.im.lac.types.MoleculeObject
+import com.squonk.dataset.MoleculeObjectDataset
 import org.apache.camel.builder.RouteBuilder
 
 /**
@@ -15,7 +16,7 @@ class CDKMolecularDescriptorProcessorSpec extends CamelSpecificationBase {
     
     def resultEndpoint
     
-    void "simple xlogp"() {
+    void "simple calcs"() {
         
         setup:
         
@@ -31,16 +32,18 @@ class CDKMolecularDescriptorProcessorSpec extends CamelSpecificationBase {
         
         then:
         resultEndpoint.assertIsSatisfied()
-        def result = resultEndpoint.receivedExchanges.in.body[0].collect()
-        result.size() == 2
-        result[0].getValue(MolecularDescriptors.XLOGP_XLOGP) != null
-        result[0].getValue(MolecularDescriptors.WIENER_PATH) != null
-        result[0].getValue(MolecularDescriptors.WIENER_POLARITY) != null
-        result[0].getValue(MolecularDescriptors.ALOGP_ALOPG) != null
-        result[0].getValue(MolecularDescriptors.ALOGP_ALOPG2) != null
-        result[0].getValue(MolecularDescriptors.ALOGP_AMR) != null
-        result[0].getValue(MolecularDescriptors.HBOND_ACCEPTOR_COUNT) != null
-        result[0].getValue(MolecularDescriptors.HBOND_DONOR_COUNT) != null
+        def mods = resultEndpoint.receivedExchanges.in.body[0]
+        mods instanceof MoleculeObjectDataset
+        def results = mods.items
+        results.size() == 2
+        results[0].getValue(MolecularDescriptors.XLOGP_XLOGP) != null
+        results[0].getValue(MolecularDescriptors.WIENER_PATH) != null
+        results[0].getValue(MolecularDescriptors.WIENER_POLARITY) != null
+        results[0].getValue(MolecularDescriptors.ALOGP_ALOPG) != null
+        results[0].getValue(MolecularDescriptors.ALOGP_ALOPG2) != null
+        results[0].getValue(MolecularDescriptors.ALOGP_AMR) != null
+        results[0].getValue(MolecularDescriptors.HBOND_ACCEPTOR_COUNT) != null
+        results[0].getValue(MolecularDescriptors.HBOND_DONOR_COUNT) != null
     }
     
     

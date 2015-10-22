@@ -2,8 +2,8 @@ package com.im.lac.dataset.client;
 
 import com.im.lac.dataset.DataItem;
 import com.im.lac.services.CommonConstants;
-import com.im.lac.types.io.JsonHandler;
-import com.im.lac.util.IOUtils;
+import com.squonk.types.io.JsonHandler;
+import com.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
@@ -75,6 +75,19 @@ public class DatasetClient {
         return jsonHandler.streamFromJson(is, DataItem.class, true);
     }
 
+    /** Create dataset, assuming its a SD file
+     * 
+     * @param username
+     * @param datasetname
+     * @param content
+     * @return
+     * @throws IOException 
+     * @deprecated Use the for where you specify the contentType
+     */
+    public DataItem create(String username, String datasetname, InputStream content) throws IOException {
+        return create(username, datasetname, content, "chemical/x-mdl-sdfile");
+    }
+
     /**
      * Create a new dataset Note: currently this assumes that the content is molecules in some
      * format that can be parsed. In future we will need to extend this to allow a parser to be
@@ -84,10 +97,11 @@ public class DatasetClient {
      * @param username Username of the authenticated user
      * @param datasetname the name for the new dataset
      * @param content The contents
+     * @param contentType The Content-Type of the content. Often chemical/x-mdl-sdfile
      * @return A description of the new dataset
      * @throws java.io.IOException
      */
-    public DataItem create(String username, String datasetname, InputStream content) throws IOException {
+    public DataItem create(String username, String datasetname, InputStream content, String contentType) throws IOException {
         if (username == null) {
             throw new IllegalStateException("Username must be specified");
         }
@@ -95,6 +109,7 @@ public class DatasetClient {
         HttpPost httpPost = new HttpPost(base);
         httpPost.setHeader(CommonConstants.HEADER_SQUONK_USERNAME, username);
         httpPost.setHeader(CommonConstants.HEADER_DATAITEM_NAME, datasetname);
+        httpPost.setHeader("Content-Type", contentType);
 
         httpPost.setEntity(new InputStreamEntity(content));
         try (CloseableHttpResponse response = httpclient.execute(httpPost)) {
@@ -204,7 +219,7 @@ public class DatasetClient {
         }
 
         InputStream is = entity1.getContent();
-        Stream<T> stream = jsonHandler.streamFromJson(is, type, item.getMetadata(), false);
+        Stream<T> stream = jsonHandler.streamFromJson(is, type, item.getMetadata() == null ? null : item.getMetadata().getPropertyTypes(), false);
         return stream.onClose(() -> {
             IOUtils.close(is);
             IOUtils.close(response);

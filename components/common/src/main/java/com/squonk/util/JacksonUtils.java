@@ -1,4 +1,4 @@
-package com.im.lac.util;
+package com.squonk.util;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;

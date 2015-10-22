@@ -17,6 +17,7 @@ import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.CollectionUtils;
 import com.im.lac.util.SimpleStreamProvider;
 import com.im.lac.util.StreamProvider;
+import com.squonk.dataset.MoleculeObjectDataset;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -30,19 +31,19 @@ import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.sql.DataSource;
 import org.apache.camel.Exchange;
 
 /**
- * Processor that can execute a JChem search in a variety of ways, and with a
- * variety of outputs. Assumes the body contains the query structure as a String
- * (e.g. in molfile or smiles format, and the results are set to the body as
- * determined by the options.
+ * Processor that can execute a JChem search in a variety of ways, and with a variety of outputs.
+ * Assumes the body contains the query structure as a String (e.g. in molfile or smiles format, and
+ * the results are set to the body as determined by the options.
  * <p>
- * This processor supports the fluent builder approach, allowing it to be easily
- * configured. An example of usage would be like this:
+ * This processor supports the fluent builder approach, allowing it to be easily configured. An
+ * example of usage would be like this:
  * <br>
  * <code>
  * from("direct:dhfr/molecules")
@@ -56,27 +57,24 @@ import org.apache.camel.Exchange;
  *     );
  * </code>
  * <p>
- * In certain output modes the results are streamed providing the first results
- * as early as possible and can be passed through to other components like
- * ChemAxonMoleculeProcessor and StandardizerProcessor.
+ * In certain output modes the results are streamed providing the first results as early as possible
+ * and can be passed through to other components like ChemAxonMoleculeProcessor and
+ * StandardizerProcessor.
  * <p>
- * The following properties can be dynamically set at runtime using header
- * properties allowing a default route to be specified, but specific options set
- * as needed:
+ * The following properties can be dynamically set at runtime using header properties allowing a
+ * default route to be specified, but specific options set as needed:
  * <br>
- * <b>searchOptions</b> overridden by the header with name of the
- * HEADER_SEARCH_OPTIONS constant which must have a String value.
+ * <b>searchOptions</b> overridden by the header with name of the HEADER_SEARCH_OPTIONS constant
+ * which must have a String value.
  * <br>
- * <b>outputMode</b> overridden by the header with name of the
- * HEADER_OUTPUT_MODE constant which can have a value of the OutputMode enum or
- * its text value.
+ * <b>outputMode</b> overridden by the header with name of the HEADER_OUTPUT_MODE constant which can
+ * have a value of the OutputMode enum or its text value.
  * <br>
- * <b>outputColumns</b> overridden by the header with name of the
- * HEADER_OUTPUT_COLUMNS constant which must contain List<String> or a String of
- * comma separated column names.
+ * <b>outputColumns</b> overridden by the header with name of the HEADER_OUTPUT_COLUMNS constant
+ * which must contain List&lt;String&gt; or a String of comma separated column names.
  * <br>
- * <b>structureFormat</b> overridden by the header with name of the
- * HEADER_STRUCTURE_FORMAT constant which must have a String value.
+ * <b>structureFormat</b> overridden by the header with name of the HEADER_STRUCTURE_FORMAT constant
+ * which must have a String value.
  * <br>
  * <b>hitColorAndAlignOptions</b> overridden by the header with name of the
  * HEADER_HIT_COLOR_ALIGN_OPTIONS constant which must have a String value.
@@ -98,35 +96,30 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     /**
      * The different types of output that can be generated.
      * <br>
-     * RAW generates the raw int[] arrray returned by JChemSearch
+     * RAW generates the raw int[] array returned by JChemSearch
      * <br>
-     * CD_IDS generates an Iterable<Integer> containing the CD_ID values
+     * CD_IDS generates an List&lt;Integer&gt; containing the CD_ID values
      * <br>
-     * MOLECULES generates an StreamProvider&lt;Molecule&gt;with additional properties
-     * added according the value of the outputColumns field. This is most
-     * suitable if the results are to be passed to another ChemAxon component.
-     * This format generally is streamed, with the first results being available
-     * immediately.
+     * MOLECULES generates an StreamProvider&lt;Molecule&gt;with additional properties added
+     * according the value of the outputColumns field. This is most suitable if the results are to
+     * be passed to another ChemAxon component. This format generally is streamed, with the first
+     * results being available immediately.
      * <br>
-     * MOLECULE_OBJECTS generates an StreamProvider&lt;MoleculeObject&gt;with additional 
-     * properties added according the value of the outputColumns field. This is most
-     * suitable if the results are to be passed to non-ChemAxon components.
-     * This format generally is streamed, with the first results being available
-     * immediately.
+     * MOLECULE_OBJECTS generates an StreamProvider&lt;MoleculeObject&gt;with additional properties
+     * added according the value of the outputColumns field. This is most suitable if the results
+     * are to be passed to non-ChemAxon components. This format generally is streamed, with the
+     * first results being available immediately.
      * <br>
-     * TEXT generates a String containing the structures (as if generated using
-     * the MOLECULES options converted to a text in the format specified by the
-     * structureFormat field (or overridden using the header property with the
-     * name of the HEADER_STRUCTURE_FORMAT constant).
+     * TEXT generates a String containing the structures (as if generated using the MOLECULES
+     * options converted to a text in the format specified by the structureFormat field (or
+     * overridden using the header property with the name of the HEADER_STRUCTURE_FORMAT constant).
      * <br>
-     * NOTE: this builds the entire String in memory so is only suitable for
-     * small result sets.
+     * NOTE: this builds the entire String in memory so is only suitable for small result sets.
      * <br>
-     * STREAM allows the resulting structures to be read as an InputStream. This
-     * is similar in nature to the TEXT option but suitable for large numbers of
-     * structures. Typically SDF format would be used allowing results to be
-     * passed into non-ChemAxon components or across remote interfaces. This
-     * format generally is streamed, with the first results being available
+     * STREAM allows the resulting structures to be read as an InputStream. This is similar in
+     * nature to the TEXT option but suitable for large numbers of structures. Typically SDF format
+     * would be used allowing results to be passed into non-ChemAxon components or across remote
+     * interfaces. This format generally is streamed, with the first results being available
      * immediately.
      *
      */
@@ -141,36 +134,34 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * The type of output that is generated. One of the values of the OutputMode
-     * enum. Default is RAW as this is the cheapest in terms of processing time,
-     * but leaves you with the most work to do. This value can be overriden at
-     * runtime by the header property with the name of the HEADER_OUTPUT_MODE
-     * constant. Default is RAW.
+     * The type of output that is generated. One of the values of the OutputMode enum. Default is
+     * RAW as this is the cheapest in terms of processing time, but leaves you with the most work to
+     * do. This value can be overriden at runtime by the header property with the name of the
+     * HEADER_OUTPUT_MODE constant. Default is RAW.
      *
      */
     private OutputMode outputMode = OutputMode.RAW;
 
     /**
-     * The default output format that is used to generate textual output. This
-     * value can be overriden at runtime by the header property with the name of
-     * the HEADER_STRUCTURE_FORMAT constant. Default value is "sdf"
+     * The default output format that is used to generate textual output. This value can be
+     * overriden at runtime by the header property with the name of the HEADER_STRUCTURE_FORMAT
+     * constant. Default value is "sdf"
      *
      */
     private String structureFormat = "sdf";
 
     /**
-     * The list of columns to retrieve This value can be overriden at runtime by
-     * the header property with the name of the HEADER_OUTPUT_COLUMNS constant.
+     * The list of columns to retrieve This value can be overriden at runtime by the header property
+     * with the name of the HEADER_OUTPUT_COLUMNS constant.
      *
      */
     private List<String> outputColumns = new ArrayList();
 
     /**
-     * Options for hit alignment and coloring. If null then no alignment or
-     * coloring. The effect of this option is very dependent on the structure
-     * format being used. Coloring will only work for MRV format or for
-     * MOLECULES output, alignment will also work for file formats that support
-     * 2D coordinates, but not for smiles etc.
+     * Options for hit alignment and coloring. If null then no alignment or coloring. The effect of
+     * this option is very dependent on the structure format being used. Coloring will only work for
+     * MRV format or for MOLECULES output, alignment will also work for file formats that support 2D
+     * coordinates, but not for smiles etc.
      *
      */
     private String hitColorAndAlignOptions;
@@ -189,8 +180,8 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Include data for these database columns in the output. This only applies
-     * to MOLECULES, STREAM and TEXT outputs.
+     * Include data for these database columns in the output. This only applies to MOLECULES, STREAM
+     * and TEXT outputs.
      *
      * @param outputColumns
      * @return This instance, allowing fluent builder pattern to be used.
@@ -201,8 +192,8 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Add this column to the list of columns that are retrieved TODO: allow the
-     * data type to be specified
+     * Add this column to the list of columns that are retrieved TODO: allow the data type to be
+     * specified
      *
      * @param outputColumn
      * @return
@@ -213,9 +204,9 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Set the name for the similarity score. Only used for similarity searches.
-     * Default is "similarity". Can be overridden using the header of the name
-     * of the HEADER_SIMILARITY_SCORE_PROP_NAME constant.
+     * Set the name for the similarity score. Only used for similarity searches. Default is
+     * "similarity". Can be overridden using the header of the name of the
+     * HEADER_SIMILARITY_SCORE_PROP_NAME constant.
      *
      * @param propName
      * @return
@@ -226,8 +217,8 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Specifies the default file format when using TEXT or STREAM as the output
-     * mode. e.g. "smiles", "cxsmiles:a-H", "sdf". Default is "sdf"
+     * Specifies the default file format when using TEXT or STREAM as the output mode. e.g.
+     * "smiles", "cxsmiles:a-H", "sdf". Default is "sdf"
      *
      * @param structureFormat The format for output in Chemaxon syntax
      * @return This instance, allowing fluent builder pattern to be used.
@@ -252,8 +243,8 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Specify the name of the structure table to search. This parameter MUST be
-     * specified. If necessary include the schema name e.g. "schema.table".
+     * Specify the name of the structure table to search. This parameter MUST be specified. If
+     * necessary include the schema name e.g. "schema.table".
      *
      * @param structureTable
      * @return This instance, allowing fluent builder pattern to be used.
@@ -264,11 +255,10 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * These are the default search options and can be overridden using the
-     * HEADER_SEARCH_OPTIONS header property allowing the same table to be
-     * searched with other search types (e.g. this option might be substructure
-     * as the default but you can change that (e.g. to similarity) using the
-     * header property.
+     * These are the default search options and can be overridden using the HEADER_SEARCH_OPTIONS
+     * header property allowing the same table to be searched with other search types (e.g. this
+     * option might be substructure as the default but you can change that (e.g. to similarity)
+     * using the header property.
      *
      * @param searchOptions
      * @return This instance, allowing fluent builder pattern to be used.
@@ -279,11 +269,10 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * These options (if defined) are always set LAST so that they can be used
-     * to override or limit searches. e.g use "maxResults:1000" to force a
-     * restriction to the number of hits that are returned. This will override
-     * dynamic settings (through the HEADER_SEARCH_OPTIONS header property) so
-     * the user cannot override this.
+     * These options (if defined) are always set LAST so that they can be used to override or limit
+     * searches. e.g use "maxResults:1000" to force a restriction to the number of hits that are
+     * returned. This will override dynamic settings (through the HEADER_SEARCH_OPTIONS header
+     * property) so the user cannot override this.
      *
      * @param searchOptions
      * @return
@@ -294,8 +283,8 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Specify the database as a javax.sql.DataSource. ONE of a dataSource,
-     * connection or connectionHandler MUST be specified
+     * Specify the database as a javax.sql.DataSource. ONE of a dataSource, connection or
+     * connectionHandler MUST be specified
      *
      * @param ds
      * @return This instance, allowing fluent builder pattern to be used.
@@ -306,8 +295,8 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Specify the database as a java.sql.Connection. ONE of a dataSource,
-     * connection or connectionHandler MUST be specified
+     * Specify the database as a java.sql.Connection. ONE of a dataSource, connection or
+     * connectionHandler MUST be specified
      *
      * @param con
      * @return This instance, allowing fluent builder pattern to be used.
@@ -318,8 +307,8 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Specify the database as a ConnectionHandler. ONE of a dataSource,
-     * connection or connectionHandler MUST be specified
+     * Specify the database as a ConnectionHandler. ONE of a dataSource, connection or
+     * connectionHandler MUST be specified
      *
      * @param conh
      * @return This instance, allowing fluent builder pattern to be used.
@@ -330,8 +319,8 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Specify the property table if it is not called JCHEMPROPERTIES and/or is
-     * not in the default schema
+     * Specify the property table if it is not called JCHEMPROPERTIES and/or is not in the default
+     * schema
      *
      * @param tableName
      * @return This instance, allowing fluent builder pattern to be used.
@@ -342,9 +331,8 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Sets the search options based on what is specified in the
-     * HEADER_SEARCH_OPTIONS if present, or the defaults provided by the
-     * searchOptions property if not.
+     * Sets the search options based on what is specified in the HEADER_SEARCH_OPTIONS if present,
+     * or the defaults provided by the searchOptions property if not.
      *
      * @param exchange the Camel Exchange.
      * @param jcs the JChemSearch instance
@@ -377,7 +365,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     private List<String> determineOutputColumns(Exchange exchange) {
-        Object headerOpt = exchange.getIn().getHeader(HEADER_OUTPUT_MODE);
+        Object headerOpt = exchange.getIn().getHeader(HEADER_OUTPUT_COLUMNS);
         if (headerOpt != null) {
             if (headerOpt instanceof List) {
                 return (List<String>) headerOpt;
@@ -446,19 +434,22 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
             case RAW:
                 int[] hits = jcs.getResults();
                 exchange.getIn().setBody(hits);
+                closeConnectionNow(jcs);
                 break;
             case CD_IDS:
                 // TODO - stream this?
                 exchange.getIn().setBody(getHitsAsList(jcs));
+                closeConnectionNow(jcs);
                 break;
             case MOLECULES:
                 handleAsMoleculeStream(exchange, jcs);
                 break;
             case MOLECULE_OBJECTS:
-                handleAsMoleculeObjectStream(exchange, jcs);
+                handleAsDataset(exchange, jcs);
                 break;
             case TEXT:
                 handleAsText(exchange, jcs);
+                closeConnectionNow(jcs);
                 break;
             case STREAM:
                 handleAsTextStream(exchange, jcs);
@@ -468,14 +459,42 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
         }
     }
 
+    boolean closeConnectionNow(JChemSearch jcs) {
+        if (getDataSource() != null) {
+            try {
+                // only close if we are using a datasource
+                jcs.getConnectionHandler().close();
+            } catch (SQLException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+            jcs.getConnectionHandler().setConnection(null);
+        }
+        return false;
+    }
+
+    <T extends Object> Stream createConnectionClosingStream(Stream<T> stream, JChemSearch jcs) {
+        if (getDataSource() != null) {
+            // only close if we are using a datasource
+            return stream.onClose(() -> {
+                try {
+                    jcs.getConnectionHandler().close();
+                } catch (SQLException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
+                jcs.getConnectionHandler().setConnection(null);
+            });
+        }
+        return stream;
+    }
+
     private List<Integer> getHitsAsList(JChemSearch jcs) {
         return CollectionUtils.asIntegerList(jcs.getResults());
     }
 
     /**
-     * Create the molecules as text in the format specified by the
-     * structureFormat property. Note: this is only suitable for relatively
-     * small numbers of molecules. Use handleAsStream for large sets.
+     * Create the molecules as text in the format specified by the structureFormat property. Note:
+     * this is only suitable for relatively small numbers of molecules. Use handleAsStream for large
+     * sets.
      *
      * @param exchange
      * @param jcs
@@ -505,21 +524,24 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
 
         Stream<Molecule> molStream = createMoleculeStream(exchange, jcs);
-        StreamProvider<Molecule> p = new SimpleStreamProvider(molStream, Molecule.class);
+        Stream<Molecule> closingStream = createConnectionClosingStream(molStream, jcs);
+        StreamProvider<Molecule> p = new SimpleStreamProvider(closingStream, Molecule.class);
         exchange.getIn().setBody(p);
     }
 
-    private void handleAsMoleculeObjectStream(final Exchange exchange, final JChemSearch jcs)
+    private void handleAsDataset(final Exchange exchange, final JChemSearch jcs)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
         Stream<Molecule> molStream = createMoleculeStream(exchange, jcs);
+        String format = ProcessorUtils.determineStringProperty(exchange, this.structureFormat, HEADER_STRUCTURE_FORMAT);
         Stream<MoleculeObject> molObjStream = molStream.map(mol -> {
             try {
-                return MoleculeUtils.createMoleculeObject(mol, structureFormat);
+                return MoleculeUtils.createMoleculeObject(mol, format);
             } catch (IOException ex) {
                 throw new RuntimeException("Unable to create MoleculeObject", ex);
             }
         });
-        StreamProvider<MoleculeObject> p = new SimpleStreamProvider(molObjStream, MoleculeObject.class);
+        Stream<MoleculeObject> closingStream = createConnectionClosingStream(molObjStream, jcs);
+        StreamProvider<MoleculeObject> p = new MoleculeObjectDataset(closingStream);
         exchange.getIn().setBody(p);
     }
 
@@ -530,7 +552,6 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
                 ? new AsyncJChemSearchSpliterator(exchange, jcs, hcao) : new SyncJChemSearchSpliterator(exchange, jcs, hcao);
         return StreamSupport.stream(spliterator, false);
     }
-
 
     private void handleAsTextStream(final Exchange exchange, final JChemSearch jcs)
             throws SQLException, IOException, SearchException, SupergraphException, DatabaseSearchException {
@@ -551,11 +572,13 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
                             }
                         });
                     } finally {
+                        closeConnectionNow(jcs);
                         try {
                             exporter.close();
                         } catch (IOException ex) {
                             LOG.log(Level.SEVERE, "Failed to close MolExporter", ex);
                         }
+                        
                     }
                 }).start();
 
@@ -686,7 +709,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
                     if (hits.length == 0) {
                         return false;
                     } else {
-                        LOG.log(Level.INFO, "Obtained {0} hits", hits.length);
+                        LOG.log(Level.FINE, "Obtained {0} hits", hits.length);
                         // TODO - break into chunks
                         float[] dissimilarities = getDissimilarities(jcs);
                         mols = loadMoleculesFromDB(exchange, jcs, hits, dissimilarities, hcao);

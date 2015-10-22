@@ -4,6 +4,7 @@ import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.cdk.molecule.DescriptorCalculator;
 import com.im.lac.cdk.molecule.MolecularDescriptors;
 import com.im.lac.types.MoleculeObject;
+import com.squonk.dataset.MoleculeObjectDataset;
 import java.util.ArrayList;
 
 import java.util.List;
@@ -59,7 +60,7 @@ public class CDKMolecularDescriptorProcessor implements Processor {
                 for (DescriptorCalculator calculator : calculators) {
                     mols = calculateMultiple(mols, calculator);
                 }
-                exchange.getIn().setBody(mols);
+                exchange.getIn().setBody(new MoleculeObjectDataset(mols));
             }
         };
 

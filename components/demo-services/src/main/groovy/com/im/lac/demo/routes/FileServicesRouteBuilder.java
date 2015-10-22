@@ -8,9 +8,11 @@ import com.im.lac.demo.services.DbFileService;
 import com.im.lac.demo.model.*;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.dataset.Metadata;
-import com.im.lac.util.IOUtils;
+import com.squonk.util.IOUtils;
 import com.im.lac.util.SimpleStreamProvider;
 import com.im.lac.util.StreamProvider;
+import com.squonk.dataset.MoleculeObjectDataset;
+import com.squonk.types.io.JsonHandler;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -209,9 +211,8 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                     boolean gzip = "gzip".equals(exchange.getIn().getHeader("Accept-Encoding", String.class));
                     switch (accept) {
 
-                        case "application/json":
-                            MoleculeObjectJsonConverter dataFormat = new MoleculeObjectJsonConverter();
-                            in = createJsonInputStream(mols, dataFormat, gzip);
+                        case "application/json":                      
+                            in = JsonHandler.getInstance().marshalStreamToJsonArray(mols, gzip);
                             exchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
                             break;
 
@@ -220,6 +221,36 @@ public class FileServicesRouteBuilder extends RouteBuilder {
                             in = writer.getTextStream("sdf", gzip); // TODO format
                             exchange.getIn().setHeader(Exchange.CONTENT_TYPE, "chemical/x-mdl-sdfile");
                             break;
+                    }
+
+                    exchange.getIn().setBody(in);
+                });
+
+        from("direct:molexporter")
+                .process((Exchange exchange) -> {
+                    String accept = exchange.getIn().getHeader("Accept", String.class);
+                    String options = exchange.getIn().getHeader("MolExporterOptions", String.class);
+                    boolean gzip = "gzip".equals(exchange.getIn().getHeader("Accept-Encoding", String.class));
+
+                    MoleculeObjectDataset mods = StreamingMoleculeObjectSourcer.bodyAsMoleculeObjectDataset(exchange);
+                    if (mods == null) {
+                        Object body = exchange.getIn().getBody();
+                        if (body == null) {
+                            throw new IllegalStateException("Can't source molecules from body that is null");
+                        } else {
+                            throw new IllegalStateException("Can't source molecules. Body is of type " + body.getClass().getName());
+                        }
+                    }
+
+                    Stream<MoleculeObject> mols = mods.getStream();
+                    MoleculeObjectWriter writer = new MoleculeObjectWriter(mols);
+                    InputStream in = writer.getTextStream(options == null ? "sdf" : options, gzip); // TODO format
+                    if (accept == null) {
+                        if (options == null) {
+                            exchange.getIn().setHeader(Exchange.CONTENT_TYPE, "chemical/x-mdl-sdfile");
+                        }
+                    } else {
+                        exchange.getIn().setHeader(Exchange.CONTENT_TYPE, accept);
                     }
 
                     exchange.getIn().setBody(in);
