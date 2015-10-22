@@ -1,5 +1,6 @@
 package com.im.lac.util;
 
+import com.squonk.stream.FixedBatchSpliterator;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -32,8 +33,30 @@ public class SimpleStreamProvider<T> implements StreamProvider, Iterable {
         this(iter, type, Spliterator.NONNULL | Spliterator.ORDERED);
     }
 
+    /** Create a Stream with the specified characteristics
+     * 
+     * @param iter
+     * @param type
+     * @param characteristics 
+     */
     public SimpleStreamProvider(Iterator<T> iter, Class<T> type, int characteristics) {
         Spliterator spliterator = Spliterators.spliteratorUnknownSize(iter, characteristics);
+        stream = StreamSupport.stream(spliterator, true);
+        this.type = type;
+    }
+    
+    /** Create a Stream with the specified characteristics and batch size. The default 
+     * batch size used by Java can be quite large resulting in poor parallelization, so
+     * it can be of benefit to set this to a relatively low level.
+     * 
+     * @param iter
+     * @param type
+     * @param characteristics
+     * @param batchSize 
+     */
+    public SimpleStreamProvider(Iterator<T> iter, Class<T> type, int characteristics, int batchSize) {
+        Spliterator toWrap = Spliterators.spliteratorUnknownSize(iter, characteristics);
+        Spliterator spliterator = new FixedBatchSpliterator(toWrap, batchSize);
         stream = StreamSupport.stream(spliterator, true);
         this.type = type;
     }

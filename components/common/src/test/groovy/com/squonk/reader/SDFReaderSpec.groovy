@@ -91,7 +91,22 @@ class SDFReaderSpec extends Specification {
         reader.close()
         
     }
-
-	
+    
+    
+     void "as stream"() {
+        FileInputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
+        SDFReader reader = new SDFReader(IOUtils.getGunzippedInputStream(is))
+        
+        when:
+        long count = reader.asStream().count()
+        
+        then:
+        //println "found $count items"
+        count == 756
+        
+        cleanup:
+        reader.close()
+        
+    }	
 }
 

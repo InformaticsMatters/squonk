@@ -1,5 +1,6 @@
 package com.squonk.util;
 
+import com.im.lac.util.SimpleStreamProvider;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,11 +10,14 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PushbackInputStream;
 import java.io.Reader;
+import java.util.Iterator;
+import java.util.Spliterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -134,6 +138,36 @@ public class IOUtils {
         } else {
             return s;
         }
+    }
+    
+    /**
+     * Create an ordered Stream containing no null values from the Iterator
+     * 
+     * @see {@link com.im.lac.util.SimpleStreamProvider} for more control over this.
+     * @param <T>
+     * @param iter
+     * @param type
+     * @return 
+     */
+    public static <T> Stream<T> streamFromIterator(Iterator<T> iter, Class<T> type) {
+        SimpleStreamProvider sp = new SimpleStreamProvider(iter, type);
+        return sp.getStream();
+    }
+    
+    /**
+     * Create an ordered Stream containing no null values of the specified batch size 
+     * from the Iterator
+     * 
+     * @param batchSize
+     * @see {@link com.im.lac.util.SimpleStreamProvider} for more control over this.
+     * @param <T>
+     * @param iter
+     * @param type
+     * @return 
+     */
+    public static <T> Stream<T> streamFromIterator(Iterator<T> iter, Class<T> type, int batchSize) {
+        SimpleStreamProvider sp = new SimpleStreamProvider(iter, type, Spliterator.NONNULL | Spliterator.ORDERED, batchSize);
+        return sp.getStream();
     }
 
 }

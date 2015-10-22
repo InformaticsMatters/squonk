@@ -2,8 +2,10 @@ package com.squonk.reader;
 
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.types.MoleculeObjectIterable;
+import com.squonk.util.IOUtils;
 import java.io.*;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Lightweight SDF reader that takes SDF input and generates an
@@ -51,6 +53,22 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
     @Override
     public Iterator<MoleculeObject> iterator() {
         return this;
+    }
+    
+    /**
+     * Get the contents as a Stream
+     * @return 
+     */
+    public Stream<MoleculeObject> asStream() {
+        return IOUtils.streamFromIterator(this, MoleculeObject.class);
+    }
+    
+    /**
+     * Get the contents as a Stream of the specified batch size
+     * @return 
+     */
+    public Stream<MoleculeObject> asStream(int batchSize) {
+        return IOUtils.streamFromIterator(this, MoleculeObject.class, batchSize);
     }
 
     @Override
