@@ -16,19 +16,82 @@ class SDFReaderSpec extends Specification {
         
         when:
         int count = 0
+        int names = 0
         while (reader.hasNext()) {
             MoleculeObject mo = reader.next()
             count++
+            if (mo.getValue("name") != null) {
+                names++
+            }
         }
         
         then:
+        //println "found $count items"
         count == 756
-        println "found $count items"
+        //println "found $names names"
+        names == 756
         
         cleanup:
         reader.close()
         
     }
+    
+    void "change name field"() {
+        FileInputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
+        SDFReader reader = new SDFReader(IOUtils.getGunzippedInputStream(is))
+        reader.setNameFieldName("banana")
+        
+        when:
+        int count = 0
+        int names = 0
+        int props = 0
+        while (reader.hasNext()) {
+            MoleculeObject mo = reader.next()
+            count++
+            props += mo.getValues().size()
+            if (mo.getValue("banana") != null) {
+                names++
+            }
+        }
+        
+        then:
+        //println "found $count items"
+        count == 756
+        //println "found $names bananas"
+        names == 756
+        //println "found $props pros"
+        props == 5292
+        
+        cleanup:
+        reader.close()
+        
+    }
+    
+     void "no name field"() {
+        FileInputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
+        SDFReader reader = new SDFReader(IOUtils.getGunzippedInputStream(is))
+        reader.setNameFieldName(null)
+        
+        when:
+        int count = 0
+        int props = 0
+        while (reader.hasNext()) {
+            MoleculeObject mo = reader.next()
+            count++
+            props += mo.getValues().size()
+        }
+        
+        then:
+        //println "found $count items"
+        count == 756
+        //println "found $props props"
+        props == 4536
+        
+        cleanup:
+        reader.close()
+        
+    }
+
 	
 }
 

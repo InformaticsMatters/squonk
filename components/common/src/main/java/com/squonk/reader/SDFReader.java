@@ -5,22 +5,47 @@ import com.im.lac.types.MoleculeObjectIterable;
 import java.io.*;
 import java.util.*;
 
-/** Lightweight SDF reader that takes SDF input and generates an Iterator/Iterable of 
- * MoleculeObjects.
- * Does NOT attempt to check that the the generated molfiles are valid, so errors should
- * be expected downstream when parsing the individual molecules.
- * This class is not thread safe.
- * 
+/**
+ * Lightweight SDF reader that takes SDF input and generates an
+ * Iterator/Iterable of MoleculeObjects. Does NOT attempt to check that the the
+ * generated molfiles are valid, so errors should be expected downstream when
+ * parsing the individual molecules. This class is not thread safe.
+ *
+ * The low level file parsing logic is borrowed from here:
+ * https://github.com/qsardb/qsardb-common/blob/master/conversion/sdfile/src/main/java/org/qsardb/conversion/sdfile/CompoundIterator.java
+ *
  * @author timbo
  */
 public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObject>, AutoCloseable {
 
-    private LineNumberReader reader = null;
-    private MoleculeObject molobj = null;
+    private LineNumberReader reader;
+    private MoleculeObject molobj;
+    private boolean started = false;
+    private String nameFieldName = "name";
 
     public SDFReader(InputStream is) throws IOException {
         this.reader = new LineNumberReader(new InputStreamReader(is));
-        this.molobj = readRow();
+    }
+
+    /**
+     * Get the value of nameFieldName
+     *
+     * @return the value of nameFieldName
+     */
+    public String getNameFieldName() {
+        return nameFieldName;
+    }
+
+    /**
+     * Set the field name that will be used for the molecule name (the
+     * value of the first line in the CTAB block). This will become a value with
+     * the specified name. Default is "name". Set to null if your don't want the
+     * name to be added as a value.
+     *
+     * @param nameFieldName new value of nameFieldName
+     */
+    public void setNameFieldName(String nameFieldName) {
+        this.nameFieldName = nameFieldName;
     }
 
     @Override
@@ -30,16 +55,23 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
 
     @Override
     public boolean hasNext() {
-        return this.molobj != null;
+        return this.molobj != null || !started;
     }
 
     @Override
     public MoleculeObject next() {
+        if (!started) {
+            started = true;
+            this.molobj = readRow();
+        }
+        
         MoleculeObject row = this.molobj;
         if (row == null) {
             throw new NoSuchElementException();
         }
+        // read the next one
         this.molobj = readRow();
+        // return the current one
         return row;
     }
 
@@ -62,12 +94,12 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
 
     private MoleculeObject readMolfile() throws IOException {
 
-        LineNumberReader reader = ensureOpen();
+        LineNumberReader rdr = ensureOpen();
         StringBuilder sb = new StringBuilder();
         // Header block
-        String first = reader.readLine();
-        String second = reader.readLine();
-        String third = reader.readLine();
+        String first = rdr.readLine();
+        String second = rdr.readLine();
+        String third = rdr.readLine();
 
         if (first == null || second == null || third == null) {
             throw new EOFException();
@@ -81,7 +113,7 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
 
         // Ctab block
         while (true) {
-            String line = reader.readLine();
+            String line = rdr.readLine();
             if (line == null) {
                 throw new EOFException();
             }
@@ -94,18 +126,22 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
         }
 
         String molfile = sb.toString();
-        return new MoleculeObject(molfile, "mol");
+        MoleculeObject mo = new MoleculeObject(molfile, "mol");
+        if (nameFieldName != null && !first.trim().isEmpty()) {
+            mo.putValue(nameFieldName, first);
+        }
+        return mo;
     }
 
     private void readData(MoleculeObject mo) throws IOException {
-        LineNumberReader reader = ensureOpen();
+        LineNumberReader rdr = ensureOpen();
 
         fields:
         for (int i = 0; true; i++) {
-            String line = reader.readLine();
+            String line = rdr.readLine();
             if (line == null) {
                 throw new EOFException();
-            } // End if
+            }
 
             if (line.equals("") && i == 0) {
                 // Extra blank line between the end of the molfile and the beginning of the first data item
@@ -118,7 +154,7 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
                 String sep = "";
 
                 while (true) {
-                    line = reader.readLine();
+                    line = rdr.readLine();
                     if (line == null) {
                         throw new EOFException();
                     }
@@ -137,7 +173,7 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
             } else if (line.equals("$$$$")) {
                 break fields;
             } else {
-                throw new IOException("Error parsing at line " + String.valueOf(reader.getLineNumber() + 1));
+                throw new IOException("Error parsing at line " + String.valueOf(rdr.getLineNumber() + 1));
             }
         }
     }
