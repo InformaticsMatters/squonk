@@ -1,5 +1,6 @@
 apply plugin: 'groovy'
 apply plugin: 'application'
+apply plugin: 'org.unbroken-dome.test-sets'
 
 //mainClassName = "com.im.lac.demo.routes.EmolsMultiSearchRouteBuilder"
 //applicationDefaultJvmArgs = ["-Xmx16000m"]
@@ -16,6 +17,7 @@ buildscript {
     }
     dependencies {
         classpath 'se.transmode.gradle:gradle-docker:1.2'
+        classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.2.0'
     }
 }
 
@@ -91,8 +93,30 @@ task buildDocker(type: Docker, dependsOn: distZip) {
     entryPoint(["/data/${project.name}-${version}/bin/${project.name}"])
 }
 
+/* Integration test setup is borrowed from here:
+ * http://www.petrikainulainen.net/programming/gradle/getting-started-with-gradle-integration-testing-with-the-testsets-plugin/
+ * */
+testSets {
+    integrationTest
+}
 
-test {
+//check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+
+tasks.withType(Test) {
+    reports.html.destination = file("${reporting.baseDir}/${name}")
+}
+
+integrationTest {
     dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean
     finalizedBy rootProject.tasks.integrationTestEnvShutdown
 }
+
+project.integrationTest {
+    outputs.upToDateWhen { false }
+}
+
+//test {
+//    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean
+//    finalizedBy rootProject.tasks.integrationTestEnvShutdown
+//}
