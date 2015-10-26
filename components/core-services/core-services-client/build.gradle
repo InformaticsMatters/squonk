@@ -34,13 +34,14 @@ tasks.withType(Test) {
     reports.html.destination = file("${reporting.baseDir}/${name}")
 }
 
-integrationTest {
-    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean
-    finalizedBy rootProject.tasks.integrationTestEnvShutdown
-}
-
 project.integrationTest {
     outputs.upToDateWhen { false }
+}
+
+integrationTest {
+    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean, 
+    tasks.getByPath(':core-services/core-services-server:flywayMigrate')
+    finalizedBy rootProject.tasks.integrationTestEnvShutdown
 }
 
 task copyDependencies(type: Copy) {
@@ -49,9 +50,4 @@ task copyDependencies(type: Copy) {
     into 'lib'
 }
 
-integrationTest {
-    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean, 
-    tasks.getByPath(':core-services/core-services-server:flywayMigrate')
-    finalizedBy rootProject.tasks.integrationTestEnvShutdown
-}
 
