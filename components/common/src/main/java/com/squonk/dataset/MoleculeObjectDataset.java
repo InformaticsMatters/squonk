@@ -16,7 +16,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class MoleculeObjectDataset implements StreamProvider {
+public class MoleculeObjectDataset implements DatasetProvider, StreamProvider {
 
     private final Dataset<MoleculeObject> mods;
 
@@ -32,6 +32,7 @@ public class MoleculeObjectDataset implements StreamProvider {
         this.mods = new Dataset(MoleculeObject.class, objs);
     }
 
+    @Override
     public Dataset<MoleculeObject> getDataset() {
         return mods;
     }

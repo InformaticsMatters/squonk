@@ -1,6 +1,7 @@
 package com.squonk.util;
 
 import com.im.lac.util.SimpleStreamProvider;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -129,6 +130,19 @@ public class IOUtils {
         return out.toString();
     }
     
+    public static byte[] convertStreamToBytes(final InputStream is, final int bufferSize) throws IOException {
+        final byte[] buffer = new byte[bufferSize];
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        while (true) {
+            int rsz = is.read(buffer, 0, buffer.length);
+            if (rsz < 0) {
+                break;
+            }
+            out.write(buffer, 0, rsz);
+        }
+        return out.toByteArray();
+    }
+   
     public static String truncateString(String s, int maxLength) {
         if (s == null) {
             return null;

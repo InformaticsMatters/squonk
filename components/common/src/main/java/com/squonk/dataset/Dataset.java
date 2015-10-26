@@ -80,7 +80,7 @@ import java.util.stream.StreamSupport;
  *
  * @author Tim Dudgeon &lt;tdudgeon@informaticsmatters.com&gt;
  */
-public class Dataset<T extends BasicObject> implements StreamProvider<T> {
+public class Dataset<T extends BasicObject> implements DatasetProvider, StreamProvider<T> {
 
     private static final Logger LOG = Logger.getLogger(Dataset.class.getName());
     private static final String MSG_ALREADY_CONSUMED = "Input not defined or already consumed";
@@ -150,6 +150,7 @@ public class Dataset<T extends BasicObject> implements StreamProvider<T> {
     /**
      * Items as InputStream. Metadata must be provided otherwise we can't deserialize the JSON.
      *
+     * @param type
      * @param inputStream
      * @param metadata
      */
@@ -157,6 +158,11 @@ public class Dataset<T extends BasicObject> implements StreamProvider<T> {
         this.type = type;
         this.inputStream = inputStream;
         this.metadata = metadata;
+    }
+    
+    @Override
+    public Dataset getDataset() {
+        return this;
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.squonk.types;
 
+import com.squonk.util.IOUtils;
 import java.io.InputStream;
 
 /** Wrapper around data from an SD file to allow strong typing and type conversion
