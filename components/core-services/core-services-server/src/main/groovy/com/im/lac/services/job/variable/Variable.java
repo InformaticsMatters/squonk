@@ -9,6 +9,10 @@ public class Variable<T> {
     private final Class<T> type;
     private final String name;
     private final boolean persistent;
+    
+//    public enum PersistedType {
+//        NONE, STRING, BYTE_ARRAY
+//    }
 
     /**
      * Constructor with persistent set to true

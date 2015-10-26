@@ -42,6 +42,11 @@ public class MemoryVariableLoader implements VariableLoader {
     @Override
     public <V> void writeVariable(Variable<V> var, InputStream is) throws IOException {
         byte[] bytes = IOUtils.convertStreamToBytes(is, 1000);
-        values.put(var, bytes);
+        writeVariable(var, new String(bytes));
+    }
+    
+    @Override
+    public <V> void writeVariable(Variable<V> var, String s) throws IOException {
+        values.put(var, s);
     }
 }

@@ -38,6 +38,13 @@ public class VariableManager {
         return v;
     }
 
+    public <V> Variable<V> writeVariable(String name, Class<V> type, String s, boolean persistent) throws IOException {
+        Variable<V> v = new Variable(name, type, persistent);
+        loader.writeVariable(v, s);
+        variables.add(v);
+        return v;
+    }
+
     public Variable lookupVariable(String name) {
         for (Variable v : variables) {
             if (v.getName().equals(name)) {

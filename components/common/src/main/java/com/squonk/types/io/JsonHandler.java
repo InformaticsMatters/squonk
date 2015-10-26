@@ -218,8 +218,8 @@ public class JsonHandler {
     }
 
     /**
-     * Generate a Stream of objects of the specified type. The input stream must contain JSON
-     * containing objects of just that type.
+     * Generate a Stream of objects of the specified type. The input stream must
+     * contain JSON containing objects of just that type.
      *
      * @param <T>
      * @param is
@@ -248,9 +248,11 @@ public class JsonHandler {
      * Takes the object(s) and generates JSON and corresponding metadata.
      *
      * @param item The Object, Stream or List to marshal to JSON.
-     * @param gzip Whether to gzip the stream. Usually this inputStream best as it reduces IO.
-     * @return the marshal results, with the metadata complete once the InputStream has been fully
-     * read. You are responsible for closing the InputStream when complete.
+     * @param gzip Whether to gzip the stream. Usually this inputStream best as
+     * it reduces IO.
+     * @return the marshal results, with the metadata complete once the
+     * InputStream has been fully read. You are responsible for closing the
+     * InputStream when complete.
      * @throws IOException
      */
     public JsonMetadataPair generateJsonForItem(Object item, boolean gzip) throws IOException {
@@ -309,23 +311,25 @@ public class JsonHandler {
     }
 
     /**
-     * Use the metadata to deserialize the JSON in the InputStream to a Dataset of the right type.
+     * Use the metadata to deserialize the JSON in the InputStream to a Dataset
+     * of the right type.
      *
      * @param <T> The type of objects in the Dataset
      * @param metadata The metadata describing the Dataset
-     * @param is The JSON
+     * @param json The JSON
      * @return
      * @throws IOException
      */
-    public <T extends BasicObject> Dataset<T> unmarshalDataset(DatasetMetadata<T> metadata, InputStream is) throws IOException {
+    public <T extends BasicObject> Dataset<T> unmarshalDataset(DatasetMetadata<T> metadata, InputStream json) throws IOException {
         ObjectReader reader = mapper.readerFor(metadata.getType()).with(ContextAttributes.getEmpty().withSharedAttribute(JsonHandler.ATTR_DATASET_METADATA, metadata));
-        MappingIterator iter = reader.readValues(is);
+        MappingIterator iter = reader.readValues(json);
         return new Dataset<>(metadata.getType(), iter, metadata);
     }
 
-//    public <S, T extends BasicObject> S unmarshalDataseDatasetWrapper(Class<S> cls, DatasetMetadata<T> metadata, InputStream is) throws IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-//        Dataset<T> os = unmarshalDataset(metadata, is);
-//        Constructor constructor = cls.getConstructor(new Class[]{Dataset.class});
-//        return (S) constructor.newInstance(os);
-//    }
+    public <T extends BasicObject> Dataset<T> unmarshalDataset(DatasetMetadata<T> metadata, String json) throws IOException {
+        ObjectReader reader = mapper.readerFor(metadata.getType()).with(ContextAttributes.getEmpty().withSharedAttribute(JsonHandler.ATTR_DATASET_METADATA, metadata));
+        MappingIterator iter = reader.readValues(json);
+        return new Dataset<>(metadata.getType(), iter, metadata);
+    }
+
 }
