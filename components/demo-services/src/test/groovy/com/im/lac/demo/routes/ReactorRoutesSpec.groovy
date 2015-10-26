@@ -17,7 +17,7 @@ class ReactorRoutesSpec extends CamelSpecificationBase {
         setup:
         InputStream is = new FileInputStream("../../data/testfiles/amine-acylation.mrv")
         String rxn = IOHelper.loadText(is);
-        String url = new File("../../data/testfiles/nci1000.smiles").getCanonicalFile().toURI().toURL()
+        String url = new File("../../data/testfiles/nci100.smiles").getCanonicalFile().toURI().toURL()
 
         
         when:

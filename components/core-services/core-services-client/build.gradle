@@ -1,13 +1,48 @@
-// In this section you declare the dependencies for your production and test code
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.2.0'
+    }
+}
+
+apply plugin: 'org.unbroken-dome.test-sets'
+
+
 dependencies {
     compile project(':common')
     compile project(':core-services/core-services-common')
     
     compile 'org.apache.httpcomponents:httpclient:4.5'
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
-
+    
 }
 
+/* Integration test setup is borrowed from here:
+ * http://www.petrikainulainen.net/programming/gradle/getting-started-with-gradle-integration-testing-with-the-testsets-plugin/
+ * */
+testSets {
+    integrationTest
+}
+
+//check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+
+tasks.withType(Test) {
+    reports.html.destination = file("${reporting.baseDir}/${name}")
+}
+
+project.integrationTest {
+    outputs.upToDateWhen { false }
+}
+
+integrationTest {
+    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean, 
+    tasks.getByPath(':core-services/core-services-server:flywayMigrate')
+    finalizedBy rootProject.tasks.integrationTestEnvShutdown
+}
 
 task copyDependencies(type: Copy) {
     
@@ -15,9 +50,4 @@ task copyDependencies(type: Copy) {
     into 'lib'
 }
 
-test {
-    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean, 
-        tasks.getByPath(':core-services/core-services-server:flywayMigrate')
-    finalizedBy rootProject.tasks.integrationTestEnvShutdown
-}
 
