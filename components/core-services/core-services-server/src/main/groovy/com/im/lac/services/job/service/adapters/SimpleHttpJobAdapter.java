@@ -36,7 +36,7 @@ public class SimpleHttpJobAdapter extends ProcessDatasetJobAdapter {
         InputStream converted = convertInput(context, sd, input);
         InputStream results = null;
         try {
-            results = submit(context, job, sd, endpoint, converted, params);
+            results = submit(context, endpoint, converted, params);
             job.setStatus(JobStatus.Status.RESULTS_READY);
         } catch (Exception ex) {
             throw new JobExecutionException("Failed to post request to " + endpoint, ex);
@@ -90,21 +90,17 @@ public class SimpleHttpJobAdapter extends ProcessDatasetJobAdapter {
      * extra operations
      *
      * @param context
-     * @param job
-     * @param sd
      * @param endpoint
      * @param input
+     * @param params
      * @return
      * @throws Exception
      */
-    InputStream submit(
+    public InputStream submit(
             CamelContext context,
-            AbstractDatasetJob job,
-            ServiceDescriptor sd,
             String endpoint,
             InputStream input,
             Map<String, Object> params) throws Exception {
-        //return JobHandler.postRequest(endpoint, input);
         
         ProducerTemplate pt = context.createProducerTemplate();
         Map<String, Object> headers = new HashMap();

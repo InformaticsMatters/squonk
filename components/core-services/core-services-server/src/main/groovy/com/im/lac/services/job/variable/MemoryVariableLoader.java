@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -17,7 +18,24 @@ import java.util.Map;
  */
 public class MemoryVariableLoader implements VariableLoader {
 
-    Map<Variable, Object> values = new HashMap<>();
+    private final Map<Variable, Object> values = new HashMap<>();
+    
+    public MemoryVariableLoader() {
+        
+    }
+    
+    /**
+     * Allows to create initial values for testing
+     * @param values 
+     */
+    public MemoryVariableLoader(Map<Variable, Object> values) {
+        this.values.putAll(values);
+    }
+    
+    @Override
+    public Set<Variable> getVariables() {
+        return values.keySet();
+    }
 
     /**
      * Removes non persistent values.

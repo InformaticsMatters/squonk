@@ -25,7 +25,7 @@ class SDFReaderStepSpec extends Specification {
             Variable.PersistenceType.BYTES)
         
         when:
-        step.execute(varman)
+        step.execute(varman, null)
         Variable molsvar = varman.lookupVariable(SDFReaderStep.FIELD_DATASET_OUTPUT)
         
         then:

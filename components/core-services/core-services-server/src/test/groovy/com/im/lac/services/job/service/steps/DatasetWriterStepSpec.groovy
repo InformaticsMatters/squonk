@@ -33,7 +33,7 @@ class DatasetWriterStepSpec extends Specification {
             Variable.PersistenceType.NONE)
         
         when:
-        step.execute(varman)
+        step.execute(varman, null)
         Variable datavar = varman.lookupVariable(DatasetWriterStep.FIELD_OUTPUT_DATA)
         Variable metavar = varman.lookupVariable(DatasetWriterStep.FIELD_OUTPUT_METADATA)
         

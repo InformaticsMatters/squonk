@@ -21,7 +21,7 @@ public class Variable<T> {
      * @param type
      * @param persistenceType
      */
-    protected Variable(String name, Class<T> type, PersistenceType persistenceType) {
+    public Variable(String name, Class<T> type, PersistenceType persistenceType) {
         if (name == null) {
             throw new NullPointerException("Variable name must not be null");
         }

@@ -2,6 +2,7 @@ package com.im.lac.services.job.service.steps;
 
 import com.im.lac.services.job.variable.Variable;
 import com.im.lac.services.job.variable.VariableManager;
+import org.apache.camel.CamelContext;
 
 /** Simple step used for testing.
  *
@@ -13,7 +14,7 @@ public class ConvertToIntegerStep extends AbstractStep {
     public static final String OPTION_DESTINATION_FIELD_NAME = "DestinationFieldName";
 
     @Override
-    public void execute(VariableManager varman) throws Exception {
+    public void execute(VariableManager varman, CamelContext context) throws Exception {
         String srcFieldName = getOption(OPTION_SOURCE_FIELD_NAME, String.class);
         String dstFieldName = getOption(OPTION_DESTINATION_FIELD_NAME, String.class);
         if (srcFieldName == null) {

@@ -31,7 +31,7 @@ class DatasetReaderStepSpec extends Specification {
         Variable mv = varman.createVariable(DatasetReaderStep.FIELD_INPUT_METADATA, DatasetMetadata.class, meta, Variable.PersistenceType.JSON)
         
         when:
-        step.execute(varman)
+        step.execute(varman, null)
         Variable datasetvar = varman.lookupVariable(DatasetReaderStep.FIELD_OUTPUT_DATASET)
         
         then:

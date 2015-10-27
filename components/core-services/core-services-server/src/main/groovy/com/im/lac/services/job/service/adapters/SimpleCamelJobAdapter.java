@@ -32,7 +32,7 @@ public class SimpleCamelJobAdapter extends ProcessDatasetJobAdapter {
         // now process
         Object results;
         try {
-            results = submit(context, job, sd, endpoint, objects, params);
+            results = submit(context, sd, endpoint, objects, params);
         } catch (Exception ex) {
             throw new JobExecutionException("Failed to execute camel route " + endpoint, ex);
         }
@@ -77,16 +77,15 @@ public class SimpleCamelJobAdapter extends ProcessDatasetJobAdapter {
      * extra data conversions
      *
      * @param context
-     * @param job
      * @param sd
      * @param endpoint
+     * @param params
      * @param objects
      * @return
      * @throws Exception
      */
-    Object submit(
+    public Object submit(
             CamelContext context,
-            AbstractDatasetJob job,
             ServiceDescriptor sd,
             String endpoint,
             Object objects,

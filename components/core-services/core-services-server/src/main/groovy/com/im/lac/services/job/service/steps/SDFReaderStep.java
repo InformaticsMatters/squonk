@@ -9,6 +9,7 @@ import com.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;
+import org.apache.camel.CamelContext;
 
 /**
  * Reads a SDFile object and generates a MoleculeObjectDataset. The SDFile holds
@@ -37,7 +38,7 @@ public class SDFReaderStep extends AbstractStep {
     public static final String FIELD_DATASET_OUTPUT = "SDFOutput";
 
     @Override
-    public void execute(VariableManager varman) throws IOException {
+    public void execute(VariableManager varman, CamelContext context) throws IOException {
         InputStream is = fetchMappedValue(FIELD_SDF_INPUT, InputStream.class, varman);
         SDFReader reader = createReader(IOUtils.getGunzippedInputStream(is));
         Stream<MoleculeObject> mols = reader.asStream();

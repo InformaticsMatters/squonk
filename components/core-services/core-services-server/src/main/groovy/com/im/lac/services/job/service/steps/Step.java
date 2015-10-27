@@ -2,6 +2,7 @@ package com.im.lac.services.job.service.steps;
 
 import com.im.lac.services.job.variable.VariableManager;
 import java.util.Map;
+import org.apache.camel.CamelContext;
 
 /**
  *
@@ -26,9 +27,9 @@ public interface Step {
      * variableMappings.
      *
      * @param varman
-     * @return
+     * @param context
      * @throws java.lang.Exception
      */
-    void execute(VariableManager varman) throws Exception;
+    void execute(VariableManager varman, CamelContext context) throws Exception;
 
 }

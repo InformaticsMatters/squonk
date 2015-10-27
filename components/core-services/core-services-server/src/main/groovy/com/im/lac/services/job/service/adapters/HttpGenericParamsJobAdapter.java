@@ -1,7 +1,5 @@
 package com.im.lac.services.job.service.adapters;
 
-import com.im.lac.services.ServiceDescriptor;
-import com.im.lac.services.job.service.AbstractDatasetJob;
 import com.im.lac.services.job.service.AsyncJobRouteBuilder;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -28,10 +26,8 @@ public class HttpGenericParamsJobAdapter extends SimpleHttpJobAdapter {
     private static final Logger LOG = Logger.getLogger(HttpGenericParamsJobAdapter.class.getName());
 
     @Override
-    InputStream submit(
+    public InputStream submit(
             CamelContext context,
-            AbstractDatasetJob job,
-            ServiceDescriptor sd,
             String endpoint,
             InputStream input,
             Map<String, Object> params) throws Exception {

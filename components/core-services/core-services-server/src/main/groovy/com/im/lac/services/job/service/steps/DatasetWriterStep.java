@@ -7,6 +7,7 @@ import com.squonk.dataset.DatasetMetadata;
 import com.squonk.dataset.DatasetProvider;
 import java.io.InputStream;
 import java.util.stream.Stream;
+import org.apache.camel.CamelContext;
 
 /**
  *
@@ -19,7 +20,7 @@ public class DatasetWriterStep extends AbstractStep {
     public static final String FIELD_OUTPUT_METADATA = "OutputMetadata";
 
     @Override
-    public void execute(VariableManager varman) throws Exception {
+    public void execute(VariableManager varman, CamelContext context) throws Exception {
         DatasetProvider p = fetchMappedValue(FIELD_SOURCE_DATASET, DatasetProvider.class, varman);
         Dataset ds = p.getDataset();
 

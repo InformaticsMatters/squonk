@@ -23,7 +23,7 @@ class StepExecutorSpec extends Specification {
         StepExecutor exec = new StepExecutor(varman);
         
         when:
-        exec.execute( [step] as Step[])
+        exec.execute( [step] as Step[], null)
         Variable intvar = varman.lookupVariable("integer")
         
         then:
@@ -33,4 +33,3 @@ class StepExecutorSpec extends Specification {
     }
 	
 }
-

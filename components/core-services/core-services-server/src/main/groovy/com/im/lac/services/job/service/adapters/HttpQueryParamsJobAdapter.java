@@ -25,10 +25,8 @@ public class HttpQueryParamsJobAdapter extends SimpleHttpJobAdapter {
     private static final Logger LOG = Logger.getLogger(HttpQueryParamsJobAdapter.class.getName());
 
     @Override
-    InputStream submit(
+    public InputStream submit(
             CamelContext context,
-            AbstractDatasetJob job,
-            ServiceDescriptor sd,
             String endpoint,
             InputStream input,
             Map<String, Object> params) throws Exception {

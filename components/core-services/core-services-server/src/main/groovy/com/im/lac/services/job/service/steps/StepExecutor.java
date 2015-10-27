@@ -1,6 +1,7 @@
 package com.im.lac.services.job.service.steps;
 
 import com.im.lac.services.job.variable.VariableManager;
+import org.apache.camel.CamelContext;
 
 /**
  *
@@ -14,9 +15,9 @@ public class StepExecutor {
         this.varman = varman;
     }
     
-    public void execute(Step[] steps) throws Exception {
+    public void execute(Step[] steps, CamelContext context) throws Exception {
         for (Step step: steps) {
-            step.execute(varman);
+            step.execute(varman, context);
         }
         // VariableManager should be transactional?
         varman.save();
