@@ -13,8 +13,8 @@ class VariableManagerSpec extends Specification {
         VariableManager manager = new VariableManager(new MemoryVariableLoader());
         
         when:
-        Variable text = manager.createVariable("text", String.class,  "John Doe", true)
-        Variable age = manager.createVariable("age", Integer.class, 60, true)
+        Variable text = manager.createVariable("text", String.class,  "John Doe", Variable.PersistenceType.TEXT)
+        Variable age = manager.createVariable("age", Integer.class, 60, Variable.PersistenceType.TEXT)
         
         then:
         manager.getVariables().size() == 2

@@ -19,7 +19,7 @@ class StepExecutorSpec extends Specification {
         options.put(ConvertToIntegerStep.OPTION_SOURCE_FIELD_NAME, "text");
         options.put(ConvertToIntegerStep.OPTION_DESTINATION_FIELD_NAME, "integer");
         step.configure(options, null);
-        Variable text = varman.createVariable("text", String.class,  "99", true)
+        Variable text = varman.createVariable("text", String.class,  "99", Variable.PersistenceType.TEXT)
         StepExecutor exec = new StepExecutor(varman);
         
         when:

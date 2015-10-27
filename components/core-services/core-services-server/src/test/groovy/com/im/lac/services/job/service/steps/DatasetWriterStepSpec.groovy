@@ -5,6 +5,7 @@ import com.im.lac.services.job.variable.Variable
 import com.im.lac.services.job.variable.VariableManager
 import com.im.lac.types.MoleculeObject
 import com.squonk.dataset.Dataset
+import java.util.stream.Stream
 import spock.lang.Specification
 
 /**
@@ -22,13 +23,14 @@ class DatasetWriterStepSpec extends Specification {
         ]
         Dataset ds = new Dataset(MoleculeObject.class, mols)
         
+        
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         DatasetWriterStep step = new DatasetWriterStep()
-        Variable sdf = varman.createVariable(
+        Variable dsvar = varman.createVariable(
             DatasetWriterStep.FIELD_SOURCE_DATASET, 
             Dataset.class, 
             ds,
-            true)
+            Variable.PersistenceType.NONE)
         
         when:
         step.execute(varman)
@@ -43,6 +45,8 @@ class DatasetWriterStepSpec extends Specification {
         
         println "DATA: $data"
         println "META:  $meta"
+        
+        
 	
     }
 

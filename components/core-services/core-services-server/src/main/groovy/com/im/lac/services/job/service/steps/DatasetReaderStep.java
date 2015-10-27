@@ -4,10 +4,8 @@ import com.im.lac.services.job.variable.Variable;
 import com.im.lac.services.job.variable.VariableManager;
 import com.squonk.dataset.Dataset;
 import com.squonk.dataset.DatasetMetadata;
-import com.squonk.dataset.DatasetProvider;
 import com.squonk.types.io.JsonHandler;
 import java.io.InputStream;
-import java.util.stream.Stream;
 
 /**
  *
@@ -21,11 +19,10 @@ public class DatasetReaderStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman) throws Exception {
-        String d = fetchMappedValue(FIELD_INPUT_DATA, String.class, varman);
-        String m = fetchMappedValue(FIELD_INPUT_METADATA, String.class, varman);
-        DatasetMetadata md = JsonHandler.getInstance().objectFromJson(m, DatasetMetadata.class);
-        Dataset ds = JsonHandler.getInstance().unmarshalDataset(md, d);
-        varman.createVariable(FIELD_OUTPUT_DATASET, Dataset.class, ds, true);
+        InputStream is = fetchMappedValue(FIELD_INPUT_DATA, InputStream.class, varman);
+        DatasetMetadata md = fetchMappedValue(FIELD_INPUT_METADATA, DatasetMetadata.class, varman);
+        Dataset ds = JsonHandler.getInstance().unmarshalDataset(md, is);
+        varman.createVariable(FIELD_OUTPUT_DATASET, Dataset.class, ds, Variable.PersistenceType.NONE);
     }
 
 }

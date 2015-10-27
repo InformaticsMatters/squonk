@@ -1,11 +1,10 @@
 package com.im.lac.services.job.service.steps;
 
+import com.im.lac.services.job.variable.Variable;
 import com.im.lac.services.job.variable.VariableManager;
 import com.im.lac.types.MoleculeObject;
 import com.squonk.dataset.Dataset;
-import com.squonk.dataset.MoleculeObjectDataset;
 import com.squonk.reader.SDFReader;
-import com.squonk.types.SDFile;
 import com.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,12 +38,11 @@ public class SDFReaderStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman) throws IOException {
-        SDFile sdf = fetchMappedValue(FIELD_SDF_INPUT, SDFile.class, varman);
-        InputStream is = sdf.getInputStream();
+        InputStream is = fetchMappedValue(FIELD_SDF_INPUT, InputStream.class, varman);
         SDFReader reader = createReader(IOUtils.getGunzippedInputStream(is));
         Stream<MoleculeObject> mols = reader.asStream();
         Dataset dataset = new Dataset(MoleculeObject.class, mols);
-        varman.createVariable(FIELD_DATASET_OUTPUT, MoleculeObjectDataset.class, new MoleculeObjectDataset(dataset), false);
+        varman.createVariable(FIELD_DATASET_OUTPUT, Dataset.class, dataset, Variable.PersistenceType.NONE);
     }
 
     private SDFReader createReader(InputStream input) throws IOException {

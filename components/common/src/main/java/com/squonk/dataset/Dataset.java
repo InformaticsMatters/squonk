@@ -79,6 +79,7 @@ import java.util.stream.StreamSupport;
  *
  *
  * @author Tim Dudgeon &lt;tdudgeon@informaticsmatters.com&gt;
+ * @param <T>
  */
 public class Dataset<T extends BasicObject> implements DatasetProvider, StreamProvider<T> {
 
@@ -98,6 +99,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     /**
      * Items as list. Metadata will need to be generated
      *
+     * @param type
      * @param items
      */
     public Dataset(Class<T> type, Collection<T> items) {

@@ -8,29 +8,32 @@ public class Variable<T> {
 
     private final Class<T> type;
     private final String name;
-    private final boolean persistent;
+    private final PersistenceType persistenceType;
     
-//    public enum PersistedType {
-//        NONE, STRING, BYTE_ARRAY
-//    }
+    public enum PersistenceType {
+        NONE, TEXT, JSON, BYTES
+    }
 
     /**
      * Constructor with persistent set to true
      *
      * @param name
      * @param type
-     * @param persistent
+     * @param persistenceType
      */
-    protected Variable(String name, Class<T> type, boolean persistent) {
+    protected Variable(String name, Class<T> type, PersistenceType persistenceType) {
         if (name == null) {
             throw new NullPointerException("Variable name must not be null");
         }
         if (type == null) {
             throw new NullPointerException("Variable type must not be null");
         }
+        if (persistenceType == null) {
+            throw new NullPointerException("Variable persistence type must not be null");
+        }
         this.name = name;
         this.type = type;
-        this.persistent = persistent;
+        this.persistenceType = persistenceType;
     }
 
     public Class<T> getType() {
@@ -41,8 +44,8 @@ public class Variable<T> {
         return name;
     }
 
-    public boolean isPersistent() {
-        return persistent;
+    public PersistenceType getPersistenceType() {
+        return persistenceType;
     }
 
 }

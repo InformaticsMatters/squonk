@@ -5,6 +5,7 @@ import com.im.lac.services.job.variable.Variable
 import com.im.lac.services.job.variable.VariableManager
 import com.im.lac.types.MoleculeObject
 import com.squonk.dataset.Dataset
+import com.squonk.dataset.DatasetMetadata
 import spock.lang.Specification
 
 /**
@@ -15,13 +16,19 @@ class DatasetReaderStepSpec extends Specification {
     
     void "test read mols"() {
         
-        def data = '[{"uuid":"e783f703-725c-4cc6-9619-63920ad25e3e","source":"C","format":"smiles"},{"uuid":"ca1e8b1d-bb59-4c51-9b85-810eecc59db1","source":"CC","format":"smiles"},{"uuid":"ec4eecd5-6cd6-438f-b026-eb8add03d7f7","source":"CCC","format":"smiles"}]'
-        def meta = '{"type":"com.im.lac.types.MoleculeObject","size":3}'
+        def mols = [
+            new MoleculeObject("C", "smiles"),
+            new MoleculeObject("CC", "smiles"),
+            new MoleculeObject("CCC", "smiles")
+        ]
+        Dataset ds = new Dataset(MoleculeObject.class, mols)
+        def meta = new DatasetMetadata(MoleculeObject.class, null, 3)
         
-        VariableManager varman = new VariableManager(new MemoryVariableLoader());
+        MemoryVariableLoader loader = new MemoryVariableLoader()
+        VariableManager varman = new VariableManager(loader)
         DatasetReaderStep step = new DatasetReaderStep()
-        Variable dv = varman.createVariable(DatasetReaderStep.FIELD_INPUT_DATA, String.class, data, true)
-        Variable mv = varman.createVariable(DatasetReaderStep.FIELD_INPUT_METADATA, String.class, meta, true)
+        Variable dv = varman.createVariable(DatasetReaderStep.FIELD_INPUT_DATA, InputStream.class, ds.getInputStream(false), Variable.PersistenceType.BYTES)
+        Variable mv = varman.createVariable(DatasetReaderStep.FIELD_INPUT_METADATA, DatasetMetadata.class, meta, Variable.PersistenceType.JSON)
         
         when:
         step.execute(varman)
@@ -29,9 +36,9 @@ class DatasetReaderStepSpec extends Specification {
         
         then:
         datasetvar != null
-        def ds = varman.getValue(datasetvar)
+        def result = varman.getValue(datasetvar)
         
-        ds.items.size() == 3
+        result.items.size() == 3
 	
     }
 

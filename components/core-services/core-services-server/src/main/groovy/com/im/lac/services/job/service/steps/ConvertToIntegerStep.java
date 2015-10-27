@@ -1,8 +1,9 @@
 package com.im.lac.services.job.service.steps;
 
+import com.im.lac.services.job.variable.Variable;
 import com.im.lac.services.job.variable.VariableManager;
 
-/**
+/** Simple step used for testing.
  *
  * @author timbo
  */
@@ -23,7 +24,7 @@ public class ConvertToIntegerStep extends AbstractStep {
         }
         Object input = fetchValue(srcFieldName, Object.class, varman);
         Integer i = new Integer(input.toString());
-        varman.createVariable(dstFieldName, Integer.class, i, true);
+        varman.createVariable(dstFieldName, Integer.class, i, Variable.PersistenceType.TEXT);
     }
 
 }

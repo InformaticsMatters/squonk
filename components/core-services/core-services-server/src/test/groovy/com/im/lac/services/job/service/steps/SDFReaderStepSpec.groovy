@@ -3,7 +3,7 @@ package com.im.lac.services.job.service.steps
 import com.im.lac.services.job.variable.MemoryVariableLoader
 import com.im.lac.services.job.variable.Variable
 import com.im.lac.services.job.variable.VariableManager
-import com.squonk.dataset.MoleculeObjectDataset
+import com.squonk.dataset.Dataset
 import com.squonk.types.SDFile
 import com.squonk.util.IOUtils
 import spock.lang.Specification
@@ -20,9 +20,9 @@ class SDFReaderStepSpec extends Specification {
         FileInputStream is = new FileInputStream("../../../data/testfiles/Kinase_inhibs.sdf.gz")
         Variable sdf = varman.createVariable(
             SDFReaderStep.FIELD_SDF_INPUT, 
-            SDFile.class, 
-            new SDFile(is),
-            true)
+            InputStream.class, 
+            is,
+            Variable.PersistenceType.BYTES)
         
         when:
         step.execute(varman)
@@ -32,7 +32,7 @@ class SDFReaderStepSpec extends Specification {
         molsvar != null
         Object ds = varman.getValue(molsvar)
         ds != null
-        ds instanceof MoleculeObjectDataset
+        ds instanceof Dataset
         ds.items.size() == 36
         
         

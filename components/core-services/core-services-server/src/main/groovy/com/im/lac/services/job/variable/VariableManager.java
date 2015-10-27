@@ -23,24 +23,13 @@ public class VariableManager {
         loader.save();
     }
 
-    public <V> Variable<V> createVariable(String name, Class<V> type, V value, boolean persistent) throws IOException {
-
-        Variable<V> v = new Variable(name, type, persistent);
-        loader.saveVariable(v, value);
-        variables.add(v);
-        return v;
+    public <V> Variable<V> createVariable(String name, Class<V> type, V value, Variable.PersistenceType persistenceType) throws IOException {
+        return createVariable(name, type, value, persistenceType, null);
     }
 
-    public <V> Variable<V> writeVariable(String name, Class<V> type, InputStream is, boolean persistent) throws IOException {
-        Variable<V> v = new Variable(name, type, persistent);
-        loader.writeVariable(v, is);
-        variables.add(v);
-        return v;
-    }
-
-    public <V> Variable<V> writeVariable(String name, Class<V> type, String s, boolean persistent) throws IOException {
-        Variable<V> v = new Variable(name, type, persistent);
-        loader.writeVariable(v, s);
+    public <V> Variable<V> createVariable(String name, Class<V> type, V value, Variable.PersistenceType persistenceType, InputStream is) throws IOException {
+        Variable<V> v = new Variable(name, type, persistenceType);
+        loader.writeVariable(v, value);
         variables.add(v);
         return v;
     }
