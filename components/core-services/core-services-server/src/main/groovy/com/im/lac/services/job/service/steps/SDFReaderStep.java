@@ -43,7 +43,7 @@ public class SDFReaderStep extends AbstractStep {
         SDFReader reader = createReader(IOUtils.getGunzippedInputStream(is));
         Stream<MoleculeObject> mols = reader.asStream();
         Dataset dataset = new Dataset(MoleculeObject.class, mols);
-        varman.createVariable(FIELD_DATASET_OUTPUT, Dataset.class, dataset, Variable.PersistenceType.NONE);
+        createMappedVariable(FIELD_DATASET_OUTPUT, Dataset.class, dataset, Variable.PersistenceType.NONE, varman);
     }
 
     private SDFReader createReader(InputStream input) throws IOException {

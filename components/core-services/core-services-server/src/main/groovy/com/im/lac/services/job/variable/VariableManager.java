@@ -12,7 +12,6 @@ import java.util.Set;
  */
 public class VariableManager {
 
-    //private final List<Variable> variables = new ArrayList<>();
     private final VariableLoader loader;
 
     public VariableManager(VariableLoader loader) {
@@ -24,24 +23,13 @@ public class VariableManager {
     }
 
     public <V> Variable<V> createVariable(String name, Class<V> type, V value, Variable.PersistenceType persistenceType) throws IOException {
-        return createVariable(name, type, value, persistenceType, null);
-    }
-
-    public <V> Variable<V> createVariable(String name, Class<V> type, V value, Variable.PersistenceType persistenceType, InputStream is) throws IOException {
         Variable<V> v = new Variable(name, type, persistenceType);
         loader.writeVariable(v, value);
-        //variables.add(v);
         return v;
     }
 
     public Variable lookupVariable(String name) {
-        Set<Variable> vars = loader.getVariables();
-        for (Variable v : vars ) {
-            if (v.getName().equals(name)) {
-                return v;
-            }
-        }
-        return null;
+        return loader.lookupVariable(name);
     }
 
     public Set<Variable> getVariables() {

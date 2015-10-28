@@ -48,4 +48,15 @@ public class Variable<T> {
         return persistenceType;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Variable) {
+            Variable v = (Variable)obj;
+            return v.getName().equals(name) && v.getType() == type && v.getPersistenceType() == persistenceType;
+        }
+        return false;
+    }
+    
+    
+
 }

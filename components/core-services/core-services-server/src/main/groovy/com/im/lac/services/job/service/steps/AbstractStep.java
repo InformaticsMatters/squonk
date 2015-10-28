@@ -33,14 +33,14 @@ public abstract class AbstractStep implements Step {
      * corresponding value.
      *
      * @param <T>
-     * @param unmappedVarName
+     * @param internalName
      * @param type
      * @param varman
      * @return
      * @throws IOException
      */
-    protected <T> T fetchMappedValue(String unmappedVarName, Class<T> type, VariableManager varman) throws IOException {
-        String mappedVarName = mapVariableName(unmappedVarName);
+    protected <T> T fetchMappedValue(String internalName, Class<T> type, VariableManager varman) throws IOException {
+        String mappedVarName = mapVariableName(internalName);
         return fetchValue(mappedVarName, type, varman);
     }
 
@@ -48,20 +48,31 @@ public abstract class AbstractStep implements Step {
      * Fetch the value with this name
      *
      * @param <T>
-     * @param varName
+     * @param internalName
      * @param type
      * @param varman
      * @return
      * @throws IOException
      */
-    protected <T> T fetchValue(String varName, Class<T> type, VariableManager varman) throws IOException {
-        Variable<T> var = varman.lookupVariable(varName);
+    protected <T> T fetchValue(String internalName, Class<T> type, VariableManager varman) throws IOException {
+        Variable<T> var = varman.lookupVariable(internalName);
         if (var == null) {
-            throw new IllegalStateException("Required variable " + varName + " not present");
+            throw new IllegalStateException("Required variable " + internalName + " not present");
         }
         // TODO - use type convertor mechanism 
         T value = (T) varman.getValue(var);
         return value;
+    }
+    
+    protected <T>Variable<T> createMappedVariable(
+            String internalName, 
+            Class<T> type, 
+            T value, 
+            Variable.PersistenceType persistenceType, 
+            VariableManager varman) throws IOException {
+        
+        String mappedVarName = mapVariableName(internalName);
+        return varman.createVariable(mappedVarName, type, value, persistenceType);
     }
 
     protected <T> T getOption(String name, Class<T> type) {

@@ -28,7 +28,7 @@ public class MoleculeServiceExecutorStep extends AbstractStep {
 
         HttpGenericParamsJobAdapter adapter = new HttpGenericParamsJobAdapter();
         InputStream output = adapter.submit(context, endpoint, input, params);
-        varman.createVariable(FIELD_OUTPUT, InputStream.class, output, Variable.PersistenceType.NONE);
+        createMappedVariable(FIELD_OUTPUT, InputStream.class, output, Variable.PersistenceType.NONE, varman);
     }
 
 }

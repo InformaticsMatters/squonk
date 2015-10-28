@@ -23,7 +23,7 @@ public class DatasetReaderStep extends AbstractStep {
         InputStream is = fetchMappedValue(FIELD_INPUT_DATA, InputStream.class, varman);
         DatasetMetadata md = fetchMappedValue(FIELD_INPUT_METADATA, DatasetMetadata.class, varman);
         Dataset ds = JsonHandler.getInstance().unmarshalDataset(md, is);
-        varman.createVariable(FIELD_OUTPUT_DATASET, Dataset.class, ds, Variable.PersistenceType.NONE);
+        createMappedVariable(FIELD_OUTPUT_DATASET, Dataset.class, ds, Variable.PersistenceType.NONE, varman);
     }
 
 }

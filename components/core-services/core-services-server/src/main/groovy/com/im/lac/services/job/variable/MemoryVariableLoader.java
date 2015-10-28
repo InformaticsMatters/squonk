@@ -36,6 +36,17 @@ public class MemoryVariableLoader implements VariableLoader {
     public Set<Variable> getVariables() {
         return values.keySet();
     }
+    
+    @Override
+    public Variable lookupVariable(String name) {
+        Set<Variable> vars = getVariables();
+        for (Variable v : vars ) {
+            if (v.getName().equals(name)) {
+                return v;
+            }
+        }
+        return null;
+    }
 
     /**
      * Removes non persistent values.
@@ -92,6 +103,11 @@ public class MemoryVariableLoader implements VariableLoader {
 
     @Override
     public <V> void writeVariable(Variable<V> var, V value) throws IOException {
+        
+        if (lookupVariable(var.getName()) != null) {
+            throw new IllegalStateException("Variable named " + var.getName() + " already exists");
+        }
+        
         switch (var.getPersistenceType()) {
             case TEXT:
                 writeAsText(var, value);

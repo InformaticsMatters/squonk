@@ -25,7 +25,7 @@ public class ConvertToIntegerStep extends AbstractStep {
         }
         Object input = fetchValue(srcFieldName, Object.class, varman);
         Integer i = new Integer(input.toString());
-        varman.createVariable(dstFieldName, Integer.class, i, Variable.PersistenceType.TEXT);
+        createMappedVariable(dstFieldName, Integer.class, i, Variable.PersistenceType.TEXT, varman);
     }
 
 }

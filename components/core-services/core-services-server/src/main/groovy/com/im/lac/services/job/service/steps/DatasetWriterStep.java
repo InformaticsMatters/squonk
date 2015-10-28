@@ -32,7 +32,7 @@ public class DatasetWriterStep extends AbstractStep {
         }
 
         DatasetMetadata md = ds.getMetadata();
-        varman.createVariable(FIELD_OUTPUT_METADATA, DatasetMetadata.class, md, Variable.PersistenceType.JSON);
+        createMappedVariable(FIELD_OUTPUT_METADATA, DatasetMetadata.class, md, Variable.PersistenceType.JSON, varman);
     }
 
 }
