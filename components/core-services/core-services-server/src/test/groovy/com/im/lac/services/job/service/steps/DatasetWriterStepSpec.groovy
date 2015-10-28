@@ -27,7 +27,7 @@ class DatasetWriterStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         DatasetWriterStep step = new DatasetWriterStep()
         Variable dsvar = varman.createVariable(
-            DatasetWriterStep.FIELD_SOURCE_DATASET, 
+            DatasetWriterStep.FIELD_INPUT_DATASET, 
             Dataset.class, 
             ds,
             Variable.PersistenceType.NONE)

@@ -38,6 +38,16 @@ public class SDFReaderStep extends AbstractStep {
     public static final String FIELD_DATASET_OUTPUT = "SDFOutput";
 
     @Override
+    public String[] getInputVariableNames() {
+        return new String[]{OPTION_NAME_FIELD_NAME, FIELD_SDF_INPUT};
+    }
+
+    @Override
+    public String[] getOutputVariableNames() {
+        return new String[]{FIELD_DATASET_OUTPUT};
+    }
+
+    @Override
     public void execute(VariableManager varman, CamelContext context) throws IOException {
         InputStream is = fetchMappedValue(FIELD_SDF_INPUT, InputStream.class, varman);
         SDFReader reader = createReader(IOUtils.getGunzippedInputStream(is));

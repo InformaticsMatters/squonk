@@ -15,13 +15,23 @@ import org.apache.camel.CamelContext;
  */
 public class DatasetWriterStep extends AbstractStep {
 
-    public static final String FIELD_SOURCE_DATASET = "SourceDataset";
+    public static final String FIELD_INPUT_DATASET = "SourceDataset";
     public static final String FIELD_OUTPUT_DATA = "OutputData";
     public static final String FIELD_OUTPUT_METADATA = "OutputMetadata";
 
     @Override
+    public String[] getInputVariableNames() {
+        return new String[]{FIELD_INPUT_DATASET};
+    }
+
+    @Override
+    public String[] getOutputVariableNames() {
+        return new String[]{FIELD_OUTPUT_DATA, FIELD_OUTPUT_METADATA};
+    }
+
+    @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        DatasetProvider p = fetchMappedValue(FIELD_SOURCE_DATASET, DatasetProvider.class, varman);
+        DatasetProvider p = fetchMappedValue(FIELD_INPUT_DATASET, DatasetProvider.class, varman);
         Dataset ds = p.getDataset();
 
         Stream s = ds.createMetadataGeneratingStream(ds.getStream());

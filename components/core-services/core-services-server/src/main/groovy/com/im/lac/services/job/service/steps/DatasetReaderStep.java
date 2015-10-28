@@ -14,9 +14,19 @@ import org.apache.camel.CamelContext;
  */
 public class DatasetReaderStep extends AbstractStep {
 
-    public static final String FIELD_OUTPUT_DATASET = "OutputDataset";
     public static final String FIELD_INPUT_DATA = "InputData";
     public static final String FIELD_INPUT_METADATA = "InputMetadata";
+    public static final String FIELD_OUTPUT_DATASET = "OutputDataset";
+
+    @Override
+    public String[] getInputVariableNames() {
+        return new String[]{FIELD_INPUT_DATA, FIELD_INPUT_METADATA};
+    }
+
+    @Override
+    public String[] getOutputVariableNames() {
+        return new String[]{FIELD_OUTPUT_DATASET};
+    }
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {

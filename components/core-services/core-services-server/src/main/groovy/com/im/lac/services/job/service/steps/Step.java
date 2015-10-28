@@ -9,6 +9,20 @@ import org.apache.camel.CamelContext;
  * @author timbo
  */
 public interface Step {
+    
+    /**
+     * The names of the input variables that are used internally. The actual variable
+     * names must match these or be mapped to these.
+     * @return The input variable names
+     */
+    String[] getInputVariableNames();
+
+    /**
+     * The names of the output variables that are used internally. The actual variable
+     * names must match these or be mapped to these.
+     * @return The output variable names
+     */    
+    String[] getOutputVariableNames();
 
     /**
      * Configure the execution details of the step. 

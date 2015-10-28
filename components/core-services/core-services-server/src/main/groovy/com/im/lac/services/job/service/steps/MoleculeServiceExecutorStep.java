@@ -18,6 +18,16 @@ public class MoleculeServiceExecutorStep extends AbstractStep {
 
     public static final String FIELD_INPUT = "Input";
     public static final String FIELD_OUTPUT = "Output";
+    
+    @Override
+    public String[] getInputVariableNames() {
+        return new String[]{FIELD_INPUT};
+    }
+
+    @Override
+    public String[] getOutputVariableNames() {
+        return new String[]{FIELD_OUTPUT};
+    }
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
