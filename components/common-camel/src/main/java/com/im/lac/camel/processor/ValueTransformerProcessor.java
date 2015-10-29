@@ -2,6 +2,11 @@ package com.im.lac.camel.processor;
 
 import com.im.lac.types.BasicObject;
 import com.squonk.dataset.Dataset;
+import com.squonk.dataset.transform.AbstractTransform;
+import com.squonk.dataset.transform.ConvertFieldTransform;
+import com.squonk.dataset.transform.DeleteFieldTransform;
+import com.squonk.dataset.transform.RenameFieldTransform;
+import com.squonk.dataset.transform.TransformDefintions;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +16,8 @@ import org.apache.camel.Processor;
 import org.apache.camel.TypeConverter;
 
 /**
- * Processor that handles transforming values of{@link BasicObject}s. Follows the fluent builder
- * pattern.
+ * Processor that handles transforming values of{@link BasicObject}s. Follows
+ * the fluent builder pattern.
  *
  * @author timbo
  */
@@ -28,16 +33,17 @@ public class ValueTransformerProcessor implements Processor {
     }
 
     /**
-     * Add operations to perform the conversions, updating the dataset with the transformed stream.
-     * NOTE: this does NOT perform a terminal operation on the stream, so after calling this method
-     * the values are not yet transformed. The resulting stream must be processed by performing a
+     * Add operations to perform the conversions, updating the dataset with the
+     * transformed stream. NOTE: this does NOT perform a terminal operation on
+     * the stream, so after calling this method the values are not yet
+     * transformed. The resulting stream must be processed by performing a
      * terminal operation
      *
      * @param typeConverter
      * @param dataset
      * @throws IOException
      */
-    protected void execute(TypeConverter typeConverter, Dataset dataset) throws IOException {
+    public void execute(TypeConverter typeConverter, Dataset dataset) throws IOException {
         Stream<BasicObject> stream = addConversions(typeConverter, dataset.getStream());
         dataset.replaceStream(stream);
     }
@@ -47,6 +53,24 @@ public class ValueTransformerProcessor implements Processor {
             stream = conversion.execute(typeConverter, stream);
         }
         return stream;
+    }
+
+    public static ValueTransformerProcessor create(TransformDefintions txdefs) {
+
+        ValueTransformerProcessor vtp = new ValueTransformerProcessor();
+        for (AbstractTransform tx : txdefs.getTransforms()) {
+            if (tx instanceof DeleteFieldTransform) {
+                DeleteFieldTransform df = (DeleteFieldTransform) tx;
+                vtp.deleteValue(df.getFieldName());
+            } else if (tx instanceof RenameFieldTransform) {
+                RenameFieldTransform rf = (RenameFieldTransform) tx;
+                vtp.convertValueName(rf.getFieldName(), rf.getNewName());
+            } else if (tx instanceof ConvertFieldTransform) {
+                ConvertFieldTransform cf = (ConvertFieldTransform) tx;
+                vtp.convertValueType(cf.getFieldName(), cf.getNewType());
+            }
+        }
+        return vtp;
     }
 
     public ValueTransformerProcessor convertValueType(String fldName, Class newClass) {

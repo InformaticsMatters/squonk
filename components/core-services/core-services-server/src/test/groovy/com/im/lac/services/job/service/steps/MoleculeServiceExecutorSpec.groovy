@@ -50,7 +50,7 @@ class MoleculeServiceExecutorSpec extends Specification {
         step.execute(varman, context)
         
         then:
-        def outvar = varman.lookupVariable(MoleculeServiceExecutorStep.FIELD_OUTPUT)
+        def outvar = varman.lookupVariable(MoleculeServiceExecutorStep.FIELD_OUTPUT_DATA)
         outvar != null
         def output = varman.getValue(outvar)
         output instanceof InputStream
