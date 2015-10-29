@@ -34,11 +34,10 @@ public class DatasetWriterStep extends AbstractStep {
         DatasetProvider p = fetchMappedValue(FIELD_INPUT_DATASET, DatasetProvider.class, varman);
         Dataset ds = p.getDataset();
 
-        Stream s = ds.createMetadataGeneratingStream(ds.getStream());
-        ds.replaceStream(s);
-        try (InputStream is = ds.getInputStream(false)) {
-            Variable d = varman.createVariable(FIELD_OUTPUT_DATA, InputStream.class, is, Variable.PersistenceType.BYTES);
-            System.out.println("JSON DA: " + varman.getValue(d));
+        try (Stream s = ds.createMetadataGeneratingStream(ds.getStream())) {
+            ds.replaceStream(s);
+            InputStream is = ds.getInputStream(false);
+            Variable d = createMappedVariable(FIELD_OUTPUT_DATA, InputStream.class, is, Variable.PersistenceType.BYTES, varman);
         }
 
         DatasetMetadata md = ds.getMetadata();

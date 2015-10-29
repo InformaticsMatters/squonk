@@ -109,6 +109,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     /**
      * Items as stream. Metadata will need to be generated
      *
+     * @param type
      * @param objects
      */
     public Dataset(Class<T> type, Stream<T> objects) {
@@ -118,6 +119,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     /**
      * Items as iterator. Metadata will need to be generated
      *
+     * @param type
      * @param iter
      */
     public Dataset(Class<T> type, Iterator<T> iter) {

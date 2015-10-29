@@ -3,6 +3,8 @@ package com.im.lac.services.job.service.steps;
 import com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter;
 import com.im.lac.services.job.variable.Variable;
 import com.im.lac.services.job.variable.VariableManager;
+import com.im.lac.types.MoleculeObject;
+import com.squonk.dataset.DatasetMetadata;
 import java.io.InputStream;
 import java.util.Map;
 import org.apache.camel.CamelContext;
@@ -17,7 +19,8 @@ public class MoleculeServiceExecutorStep extends AbstractStep {
     public static final String OPTION_EXECUTION_PARAMS = "ExecutionParams";
 
     public static final String FIELD_INPUT = "Input";
-    public static final String FIELD_OUTPUT = "Output";
+    public static final String FIELD_OUTPUT_DATA = "OutputData";
+    public static final String FIELD_OUTPUT_METADATA = "OutputMetadata";
     
     @Override
     public String[] getInputVariableNames() {
@@ -26,7 +29,7 @@ public class MoleculeServiceExecutorStep extends AbstractStep {
 
     @Override
     public String[] getOutputVariableNames() {
-        return new String[]{FIELD_OUTPUT};
+        return new String[]{FIELD_OUTPUT_DATA, FIELD_OUTPUT_METADATA};
     }
 
     @Override
@@ -38,7 +41,8 @@ public class MoleculeServiceExecutorStep extends AbstractStep {
 
         HttpGenericParamsJobAdapter adapter = new HttpGenericParamsJobAdapter();
         InputStream output = adapter.submit(context, endpoint, input, params);
-        createMappedVariable(FIELD_OUTPUT, InputStream.class, output, Variable.PersistenceType.NONE, varman);
+        createMappedVariable(FIELD_OUTPUT_DATA, InputStream.class, output, Variable.PersistenceType.NONE, varman);
+        createMappedVariable(FIELD_OUTPUT_METADATA, DatasetMetadata.class, new DatasetMetadata(MoleculeObject.class), Variable.PersistenceType.NONE, varman);
     }
 
 }
