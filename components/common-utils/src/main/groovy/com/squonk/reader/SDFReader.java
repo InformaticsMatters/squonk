@@ -65,6 +65,7 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
     
     /**
      * Get the contents as a Stream of the specified batch size
+     * @param batchSize
      * @return 
      */
     public Stream<MoleculeObject> asStream(int batchSize) {

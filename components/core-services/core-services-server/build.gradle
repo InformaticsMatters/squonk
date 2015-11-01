@@ -32,6 +32,7 @@ buildscript {
 dependencies {
     
     compile project(':common')
+    compile project(':common-utils')
     compile project(':common-camel')
     compile project(':chemaxon-lib')
     compile project(':core-services/core-services-common')

@@ -1,6 +1,6 @@
 rootProject.name = 'components'
 
-include 'common', 'core-test', 'common-camel'
+include 'common', 'core-test', 'common-utils', 'common-camel'
 include 'chemaxon-lib', 'chemaxon-camel', 'demo-services', 'chemcentral'
 include 'cdk-lib', 'cdk-camel'
 include 'rdkit-camel'

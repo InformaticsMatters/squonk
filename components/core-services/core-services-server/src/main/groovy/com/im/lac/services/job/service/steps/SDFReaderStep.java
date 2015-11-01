@@ -12,12 +12,12 @@ import java.util.stream.Stream;
 import org.apache.camel.CamelContext;
 
 /**
- * Reads a SDFile object and generates a MoleculeObjectDataset. The SDFile holds
- * an InputStream with the contents of SD file (can be gzipped). By default the
- * input SDFile object is expected in the variable named by the FIELD_SDF_INPUT
+ * Reads a SDFile and generates a {@link com.squonk.dataset.Dataset} of 
+ * {@link com.im.lac.types.MoleculeObject}s. The SDFile is passed as an
+ * {@link java.io.InputStream} (can be gzipped). By default the
+ * input is expected in the variable named by the FIELD_SDF_INPUT
  * constant, though that name can be mapped to a different name. The resulting
- * MoleculeObjectDataset is contained in the variable named by the
- * FIELD_DATASET_OUTPUT constant.
+ * Dataset is contained in the variable named by the FIELD_DATASET_OUTPUT constant.
  *
  * @author timbo
  */
@@ -39,7 +39,7 @@ public class SDFReaderStep extends AbstractStep {
 
     @Override
     public String[] getInputVariableNames() {
-        return new String[]{OPTION_NAME_FIELD_NAME, FIELD_SDF_INPUT};
+        return new String[]{FIELD_SDF_INPUT};
     }
 
     @Override
