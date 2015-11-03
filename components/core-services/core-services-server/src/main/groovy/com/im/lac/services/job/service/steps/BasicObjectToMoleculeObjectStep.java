@@ -38,7 +38,7 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
     /** Optional value for the structure format. e.g. "smiles". */
     public static final String OPTION_STRUCTURE_FORMAT = "StructureFormat";
     /** Option for whether to use the UUID of BasicObject as the UUID of the new MolecuelObject.
-     * Default is true. Expects a boolan value.
+     * Default is true. Expects a boolean value.
      */  
     public static final String OPTION_PRESERVE_UUID = "PreserveUuid";
 

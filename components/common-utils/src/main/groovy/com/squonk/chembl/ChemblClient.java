@@ -9,6 +9,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Simple client allowing data to be retrieved from ChEMBL REST web services.
@@ -17,6 +19,8 @@ import java.util.Map;
  * @author timbo
  */
 public class ChemblClient {
+
+    private static final Logger LOG = Logger.getLogger(ChemblClient.class.getName());
 
     private final ObjectMapper mapper = new ObjectMapper();
     private static final String BASE_URL = "https://www.ebi.ac.uk";
@@ -40,18 +44,22 @@ public class ChemblClient {
      * from the molecule_chembl_id field.<br>
      * A value named {prefix}_validity_comment is taken from the
      * data_validity_comment field.<br>
-     * A value named {prefix}_Mod is taken from the standard_relation field if the value
-     * of that field is not =.
+     * A value named {prefix}_Mod is taken from the standard_relation field if
+     * the value of that field is not =.
      * <p>
-     * An example of data from the service can be seen 
+     * An example of data from the service can be seen
      * <a href="https://www.ebi.ac.uk/chembl/api/data/activity.json?assay_chembl_id=CHEMBL1909156&limit=10">here</a>.
      * <br>
-     * Data is retrieved in chunks (size specified by the batchSize parameter) until 
-     * the entire set of activities has been obtained.
-     * To prevent infinite recursion there is a limit of 1000 iterations. A batchSize
-     * of 100 is generally good, but if there are over 100,000 activities you will
-     * need to specify a bigger batch size.
-     * 
+     * Data is retrieved in chunks (size specified by the batchSize parameter)
+     * until the entire set of activities has been obtained. To prevent infinite
+     * recursion there is a limit of 1000 iterations. A batchSize of 100 is
+     * generally good, but if there are over 100,000 activities you will need to
+     * specify a bigger batch size.
+     * <p>
+     * NOTE: this method will not currently function correctly if there are
+     * repeated values for the same activity type. Support for aggregate values is
+     * needed for this.
+     *
      *
      * @param assayId The assay ID to retrieved e.g. CHEMBL1909156
      * @param batchSize The number of activities to retrieve in each chunk.
@@ -61,22 +69,26 @@ public class ChemblClient {
      * @throws IOException
      */
     public Dataset<MoleculeObject> fetchActivitiesForAssay(String assayId, int batchSize, String prefix) throws IOException {
+        if (assayId == null) {
+            throw new NullPointerException("Assay ID must be defined");
+        }
+
         int iteration = 0;
         if (prefix == null) {
-            prefix = "";
+            prefix = assayId;
         }
         Map<String, MoleculeObject> mols = new HashMap<>();
         String path = "/chembl/api/data/activity.json?assay_chembl_id=" + assayId + "&limit=" + batchSize;
-        System.out.println("First: " + path);
+        LOG.log(Level.FINE, "First: {0}", path);
         JsonNode meta = handleRequest(path, prefix, mols);
         iteration++;
         String next = readStringValue(meta, "next");
-        System.out.println("Next:  " + next);
+        LOG.log(Level.FINE, "Next:  {0}", next);
         while (next != null && iteration <= maxIterations) {
             meta = handleRequest(next, prefix, mols);
             iteration++;
             next = readStringValue(meta, "next");
-            System.out.println("Next:  " + next);
+            LOG.log(Level.FINE, "Next:  {0}", next);
         }
 
         return new Dataset(MoleculeObject.class, mols.values());
@@ -131,7 +143,6 @@ public class ChemblClient {
         }
 
         JsonNode pageMeta = root.get("page_meta");
-        //System.out.println("META: " + pageMeta);
         return pageMeta;
     }
 
