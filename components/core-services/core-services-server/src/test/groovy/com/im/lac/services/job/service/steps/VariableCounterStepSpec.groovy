@@ -17,6 +17,7 @@ class VariableCounterStepSpec extends Specification {
         MemoryVariableLoader loader = new MemoryVariableLoader()
         VariableManager varman = new VariableManager(loader)
         VariableCounterStep step = new VariableCounterStep()
+        step.configure([:], [(VariableCounterStep.FIELD_OUTPUT_FIELD_COUNT):"FieldCount"])
         
         StepExecutor exec = new StepExecutor(varman);
         
@@ -24,7 +25,7 @@ class VariableCounterStepSpec extends Specification {
         exec.execute( [step] as Step[], null)  
         
         then:
-        Variable var = varman.lookupVariable(VariableCounterStep.FIELD_OUTPUT_FIELD_COUNT)
+        Variable var = varman.lookupVariable("FieldCount")
         var != null
         varman.getValue(var) == 0
     }

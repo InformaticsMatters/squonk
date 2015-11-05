@@ -1,7 +1,7 @@
 package com.im.lac.services.job.variable;
 
 import java.io.IOException;
-import java.util.Set;
+import java.io.InputStream;
 
 /**
  *
@@ -9,14 +9,23 @@ import java.util.Set;
  */
 public interface VariableLoader {
 
-    public Set<Variable> getVariables();
-    
-    public Variable lookupVariable(String name);
-    
-    public <V> V loadVariable(Variable<V> var) throws IOException;
-    
-    public <V> void writeVariable(Variable<V> var, V value) throws IOException;
-
     public void save() throws IOException;
+    
+    public <V> V readFromText(String var, Class<V> type) throws IOException;
+    
+    public <V> V readFromJson(String var, Class<V> type) throws IOException;
+    
+    public InputStream readFromBytes(String var) throws IOException;
+    
+    public void writeToText(String var, Object o) throws IOException;
+    
+    public void writeToJson(String var, Object o) throws IOException;
+    
+    public void writeToBytes(String var, InputStream is) throws IOException;
+    
+    public void delete(String var) throws IOException;
+    
+    
+    
 
 }

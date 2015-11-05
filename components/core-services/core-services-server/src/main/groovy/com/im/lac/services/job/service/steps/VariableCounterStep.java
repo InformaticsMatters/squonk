@@ -6,13 +6,13 @@ import org.apache.camel.CamelContext;
 
 /**
  * Simple step used for testing. Creates a new field containing the number of fields
- * present in the VariableManager (prior to addition of the new field).
+ present in the VariableManager1 (prior to addition of the new field).
  *
  * @author timbo
  */
 public class VariableCounterStep extends AbstractStep {
 
-    public static final String FIELD_OUTPUT_FIELD_COUNT = "FieldCount";
+    public static final String FIELD_OUTPUT_FIELD_COUNT = "_VariableCounterFieldCount";
 
     @Override
     public String[] getInputVariableNames() {

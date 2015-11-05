@@ -4,6 +4,8 @@ import com.im.lac.services.job.service.AsyncJobRouteBuilder
 import com.im.lac.services.job.variable.MemoryVariableLoader
 import com.im.lac.services.job.variable.Variable
 import com.im.lac.services.job.variable.VariableManager
+import com.im.lac.types.MoleculeObject
+import com.squonk.dataset.Dataset
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.Exchange
 import org.apache.camel.impl.DefaultCamelContext
@@ -13,7 +15,7 @@ import spock.lang.Specification
  *
  * @author timbo
  */
-class MoleculeServiceExecutorSpec extends Specification {
+class MoleculeServiceFatExecutorStepSpec extends Specification {
     
     void "test simple service"() {
         
@@ -29,20 +31,23 @@ class MoleculeServiceExecutorSpec extends Specification {
         }
         context.addRoutes(rb)
         context.start()
-        
-        def molsdata = '[{"uuid":"b36c7d87-8418-4f3e-a354-65ae166c5210","source":"C","format":"smiles"},{"uuid":"4c7e6801-0af5-4292-af45-bc7a4c6bdc21","source":"CC","format":"smiles"},{"uuid":"3c37309f-15d4-453c-afee-905a8e82ea4d","source":"CCC","format":"smiles"}]'
-        def molsvar = new Variable(MoleculeServiceExecutorStep.FIELD_INPUT, InputStream.class, Variable.PersistenceType.BYTES)
                
-        VariableManager varman = new VariableManager(new MemoryVariableLoader([
-                    (molsvar): molsdata.bytes
-                ]));
+        def mols = [
+            new MoleculeObject("C", "smiles"),
+            new MoleculeObject("CC", "smiles"),
+            new MoleculeObject("CCC", "smiles")
+        ]
+        Dataset ds = new Dataset(MoleculeObject.class, mols)
+        
+        VariableManager varman = new VariableManager(new MemoryVariableLoader())
+        varman.createVariable(MoleculeServiceFatExecutorStep.FIELD_INPUT_DATASET, Dataset.class, ds, Variable.PersistenceType.NONE)
         
         def options = [
-            (MoleculeServiceExecutorStep.OPTION_SERVICE_ENDPOINT):'http://demos.informaticsmatters.com:9080/chem-services-cdk-basic/rest/v1/calculators/logp'
+            (MoleculeServiceFatExecutorStep.OPTION_SERVICE_ENDPOINT):'http://demos.informaticsmatters.com:9080/chem-services-cdk-basic/rest/v1/calculators/logp'
         ]
         def mappings = [:]
         
-        MoleculeServiceExecutorStep step = new MoleculeServiceExecutorStep()
+        MoleculeServiceFatExecutorStep step = new MoleculeServiceFatExecutorStep()
         step.configure(options, mappings)
         
         
@@ -50,13 +55,13 @@ class MoleculeServiceExecutorSpec extends Specification {
         step.execute(varman, context)
         
         then:
-        def outvar = varman.lookupVariable(MoleculeServiceExecutorStep.FIELD_OUTPUT_DATA)
+        def outvar = varman.lookupVariable(MoleculeServiceFatExecutorStep.FIELD_OUTPUT_DATASET)
         outvar != null
         def output = varman.getValue(outvar)
-        output instanceof InputStream
-        def txt = output.text
-        txt.contains('CDK_ALogP')
-        //println "TXT: $txt"
+        output instanceof Dataset
+        def items = output.items
+        items.size() == 3
+        items[0].getValue('CDK_ALogP') != null
         
         cleanup:
         context.stop()

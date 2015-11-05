@@ -111,11 +111,11 @@ public class CSVReaderStep extends AbstractStep {
     /**
      * Expected variable name for the input
      */
-    public static final String FIELD_CSV_INPUT = "CSVInput";
+    public static final String FIELD_CSV_INPUT = "_CSVReaderCSVInput";
     /**
      * Variable name for the MoleculeObjectDataset output
      */
-    public static final String FIELD_DATASET_OUTPUT = "SDFOutput";
+    public static final String FIELD_DATASET_OUTPUT = "_CSVReaderDatasetOutput";
 
     @Override
     public String[] getInputVariableNames() {
@@ -133,7 +133,7 @@ public class CSVReaderStep extends AbstractStep {
         CSVReader reader = createReader(IOUtils.getGunzippedInputStream(is));
         Stream<BasicObject> mols = reader.asStream();
         Dataset dataset = new Dataset(BasicObject.class, mols);
-        createMappedVariable(FIELD_DATASET_OUTPUT, Dataset.class, dataset, Variable.PersistenceType.NONE, varman);
+        createMappedVariable(FIELD_DATASET_OUTPUT, Dataset.class, dataset, Variable.PersistenceType.DATASET, varman);
     }
 
     private CSVReader createReader(InputStream input) throws IOException {

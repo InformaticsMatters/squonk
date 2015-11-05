@@ -22,10 +22,12 @@ public class MoleculeObjectDatasetJsonDataFormat implements DataFormat {
     private final static Logger LOG = Logger.getLogger(MoleculeObjectDatasetJsonDataFormat.class.getName());
 
     /**
-     * Writes a {@link com.squonk.dataset.Dataset} of @{link com.im.lac.types.MoleculeObject}s or a
-     * {@link com.squonk.dataset.MoleculeObjectDataset} to the OutputStream. Generates the
-     * {@link com.squonk.dataset.DatasetMetadata} as it does so, and then sets that DatasetMetadata
-     * as a header named by the value of the {@link JsonHandler.ATTR_DATASET_METADATA} constant.
+     * Writes a {@link com.squonk.dataset.Dataset} of @{link
+     * com.im.lac.types.MoleculeObject}s or a
+     * {@link com.squonk.dataset.MoleculeObjectDataset} to the OutputStream.
+     * Generates the {@link com.squonk.dataset.DatasetMetadata} as it does so,
+     * and then sets that DatasetMetadata as a header named by the value of the
+     * {@link JsonHandler.ATTR_DATASET_METADATA} constant.
      *
      * @param exch
      * @param o
@@ -34,7 +36,7 @@ public class MoleculeObjectDatasetJsonDataFormat implements DataFormat {
      */
     @Override
     public void marshal(Exchange exch, Object o, OutputStream out) throws Exception {
-        LOG.finer("Marshaling " + o);
+        LOG.log(Level.FINER, "Marshaling {0}", o);
         Dataset ds = exch.getContext().getTypeConverter().convertTo(Dataset.class, o);
         if (ds == null) {
             MoleculeObjectDataset mods = exch.getContext().getTypeConverter().convertTo(MoleculeObjectDataset.class, o);
@@ -42,20 +44,23 @@ public class MoleculeObjectDatasetJsonDataFormat implements DataFormat {
                 throw new IllegalStateException("No Dataset of MoleculeObjects found");
             }
             ds = mods.getDataset();
-        } else {
-            if (ds.getType() != MoleculeObject.class) {
-                throw new IllegalStateException("Dataset is not of type MoleculeObject");
-            }
+        } else if (ds.getType() != MoleculeObject.class) {
+            throw new IllegalStateException("Dataset is not of type MoleculeObject");
         }
-        Stream s = ds.createMetadataGeneratingStream(ds.getStream());
-        JsonHandler.getInstance().marshalStreamToJsonArray(s, out);
 
-        exch.getOut().setHeader(JsonHandler.ATTR_DATASET_METADATA, ds.getMetadata());
+        Dataset.DatasetMetadataGenerator generator = ds.createDatasetMetadataGenerator();
+        try (Stream s = generator.getAsStream()) {
+            JsonHandler.getInstance().marshalStreamToJsonArray(s, out);
+        }
+        // finally wait for the MD generation to complete
+        DatasetMetadata md = generator.getDatasetMetadata();
+        exch.getOut().setHeader(JsonHandler.ATTR_DATASET_METADATA, md);
     }
 
     /**
-     * Reads the InputStream as objects into a new {@link com.squonk.dataset.Dataset}. The
-     * DatasetMetadata MUST be defined as a header named by the value of the
+     * Reads the InputStream as objects into a new
+     * {@link com.squonk.dataset.Dataset}. The DatasetMetadata MUST be defined
+     * as a header named by the value of the
      * {@link JsonHandler.ATTR_DATASET_METADATA} constant.
      *
      * @param exch

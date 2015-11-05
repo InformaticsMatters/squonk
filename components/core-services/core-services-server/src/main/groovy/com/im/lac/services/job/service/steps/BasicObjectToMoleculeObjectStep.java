@@ -43,9 +43,9 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
     public static final String OPTION_PRESERVE_UUID = "PreserveUuid";
 
     /** The field for the source Dataset&lt;BasicObject&gt; */
-    public static final String FIELD_INPUT_DATASET = "InputDataset";
+    public static final String FIELD_INPUT_DATASET = "_BasicObjectToMoleculeObjectInputDataset";
     /** The field for the resulting Dataset&lt;MoleculeObject&gt; */
-    public static final String FIELD_OUTPUT_DATASET = "OutputDataset";
+    public static final String FIELD_OUTPUT_DATASET = "_BasicObjectToMoleculeObjectOutputDataset";
 
     public static String DEFAULT_STRUCTURE_FIELD_NAME = "structure";
 
@@ -74,7 +74,7 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
 
         Dataset<MoleculeObject> mods = new Dataset<>(MoleculeObject.class, stream2);
 
-        createMappedVariable(FIELD_OUTPUT_DATASET, Dataset.class, mods, Variable.PersistenceType.NONE, varman);
+        createMappedVariable(FIELD_OUTPUT_DATASET, Dataset.class, mods, Variable.PersistenceType.DATASET, varman);
     }
 
     private MoleculeObject convert(BasicObject bo, String structureFieldName, String format, boolean preserveUuid) {

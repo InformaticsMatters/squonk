@@ -11,7 +11,7 @@ public class Variable<T> {
     private final PersistenceType persistenceType;
     
     public enum PersistenceType {
-        NONE, TEXT, JSON, BYTES
+        NONE, TEXT, JSON, BYTES, DATASET
     }
 
     /**

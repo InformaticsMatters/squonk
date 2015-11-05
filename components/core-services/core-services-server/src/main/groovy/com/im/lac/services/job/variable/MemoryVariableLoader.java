@@ -7,10 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  *
@@ -18,7 +16,7 @@ import java.util.Set;
  */
 public class MemoryVariableLoader implements VariableLoader {
 
-    private final Map<Variable, Object> values = new HashMap<>();
+    protected final Map<String, Object> values = new LinkedHashMap<>();
     
     public MemoryVariableLoader() {
         
@@ -28,115 +26,62 @@ public class MemoryVariableLoader implements VariableLoader {
      * Allows to create initial values for testing
      * @param values 
      */
-    public MemoryVariableLoader(Map<Variable, Object> values) {
+    public MemoryVariableLoader(Map<String, Object> values) {
         this.values.putAll(values);
     }
-    
-    @Override
-    public Set<Variable> getVariables() {
-        return values.keySet();
-    }
-    
-    @Override
-    public Variable lookupVariable(String name) {
-        Set<Variable> vars = getVariables();
-        for (Variable v : vars ) {
-            if (v.getName().equals(name)) {
-                return v;
-            }
-        }
-        return null;
-    }
 
-    /**
-     * Removes non persistent values.
-     */
+   
     @Override
     public void save() {
-        Iterator<Map.Entry<Variable, Object>> it = values.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<Variable, Object> e = it.next();
-            if (e.getKey().getPersistenceType() == Variable.PersistenceType.NONE) {
-                it.remove();
-            }
-        }
+        // noop
     }
+
 
     @Override
-    public <V> V loadVariable(Variable<V> var) throws IOException {
-        switch (var.getPersistenceType()) {
-            case TEXT:
-                return readAsText(var);
-            case JSON:
-                return readAsJson(var);
-            case BYTES:
-                return readAsInputStream(var);
-            case NONE:
-                // return value as is
-                return (V) values.get(var);
-            default:
-                throw new IllegalStateException("Unexpected persistence type: " + var.getPersistenceType());
-        }
-    }
-
-    private <V> V readAsText(Variable<V> var) throws IOException {
+    public <V> V readFromText(String var, Class<V> type) throws IOException {
         // TODO - use TypeConvertor mechanism and fall back to reflection
         String s = (String) values.get(var);
         try {
-            Constructor constr = var.getType().getConstructor(String.class);
+            Constructor constr = type.getConstructor(String.class);
             return (V) constr.newInstance(s);
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
             throw new IOException("Failed to construct value", ex);
         }
     }
 
-    private <V> V readAsJson(Variable<V> var) throws IOException {
+    @Override
+    public <V> V readFromJson(String var, Class<V> type) throws IOException {
         String json = (String) values.get(var);
-        return JsonHandler.getInstance().objectFromJson(json, var.getType());
+        return JsonHandler.getInstance().objectFromJson(json, type);
     }
 
     
-    private <V> V readAsInputStream(Variable<V> var) throws IOException {
+    @Override
+    public InputStream readFromBytes(String var) throws IOException {
         byte[] bytes = (byte[])values.get(var);
-        return (V) new ByteArrayInputStream(bytes);
+        return new ByteArrayInputStream(bytes);
     }
 
     @Override
-    public <V> void writeVariable(Variable<V> var, V value) throws IOException {
-        
-        if (lookupVariable(var.getName()) != null) {
-            throw new IllegalStateException("Variable named " + var.getName() + " already exists");
-        }
-        
-        switch (var.getPersistenceType()) {
-            case TEXT:
-                writeAsText(var, value);
-                return;
-            case JSON:
-                writeAsJson(var, value);
-                return;
-            case BYTES:
-                writeAsInputStream(var, (InputStream)value);
-                return;
-            case NONE:
-                values.put(var, value);
-            default:
-            // do nothing
-        }
-    }
-
-    private void writeAsText(Variable var, Object o) {
+    public void writeToText(String var, Object o) {
         values.put(var, o.toString());
     }
 
-    private void writeAsJson(Variable var, Object o) throws IOException {
+    @Override
+    public void writeToJson(String var, Object o) throws IOException {
         String json = JsonHandler.getInstance().objectToJson(o);
         values.put(var, json);
     }
 
-    private void writeAsInputStream(Variable var, InputStream is) throws IOException {
+    @Override
+    public void writeToBytes(String var, InputStream is) throws IOException {
         byte[] bytes = IOUtils.convertStreamToBytes(is, 1000);
         values.put(var, bytes);
     }
 
+    @Override
+    public void delete(String var) {
+        values.remove(var);
+    }
+    
 }

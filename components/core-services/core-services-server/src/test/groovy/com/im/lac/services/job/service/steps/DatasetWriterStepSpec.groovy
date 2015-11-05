@@ -34,17 +34,13 @@ class DatasetWriterStepSpec extends Specification {
         
         when:
         step.execute(varman, null)
-        Variable datavar = varman.lookupVariable(DatasetWriterStep.FIELD_OUTPUT_DATA)
-        Variable metavar = varman.lookupVariable(DatasetWriterStep.FIELD_OUTPUT_METADATA)
+        Variable outvar = varman.lookupVariable(DatasetWriterStep.FIELD_OUTPUT_DATASET)
         
         then:
-        datavar != null
-        metavar != null
-        def data = varman.getValue(datavar)
-        def meta = varman.getValue(metavar)
-        
-        println "DATA: $data"
-        println "META:  $meta"
+        outvar != null
+        def dataset = varman.getValue(outvar)
+        dataset != null
+
         
         
 	

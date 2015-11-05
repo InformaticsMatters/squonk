@@ -11,6 +11,9 @@ import java.util.Map;
  */
 public abstract class AbstractStep implements Step {
 
+    private static final String DATASET_DATA_EXT = "#DATA";
+    private static final String DATASET_META_EXT = "#META";
+
     protected Map<String, Object> options;
     protected Map<String, String> variableMappings;
 
@@ -48,31 +51,20 @@ public abstract class AbstractStep implements Step {
      * Fetch the value with this name
      *
      * @param <T>
-     * @param internalName
+     * @param externalName
      * @param type
      * @param varman
      * @return
      * @throws IOException
      */
-    protected <T> T fetchValue(String internalName, Class<T> type, VariableManager varman) throws IOException {
-        Variable<T> var = varman.lookupVariable(internalName);
+    protected <T> T fetchValue(String externalName, Class<T> type, VariableManager varman) throws IOException {
+        Variable<T> var = varman.lookupVariable(externalName);
         if (var == null) {
-            throw new IllegalStateException("Required variable " + internalName + " not present");
+            return null;
         }
         // TODO - use type convertor mechanism 
         T value = (T) varman.getValue(var);
         return value;
-    }
-    
-    protected <T>Variable<T> createMappedVariable(
-            String internalName, 
-            Class<T> type, 
-            T value, 
-            Variable.PersistenceType persistenceType, 
-            VariableManager varman) throws IOException {
-        
-        String mappedVarName = mapVariableName(internalName);
-        return varman.createVariable(mappedVarName, type, value, persistenceType);
     }
 
     protected <T> T getOption(String name, Class<T> type) {
@@ -81,7 +73,7 @@ public abstract class AbstractStep implements Step {
         }
         return null;
     }
-    
+
     protected <T> T getOption(String name, Class<T> type, T defaultValue) {
         T val = getOption(name, type);
         if (val == null) {
@@ -89,6 +81,43 @@ public abstract class AbstractStep implements Step {
         } else {
             return val;
         }
+    }
+
+    /**
+     * Map the variable name and then create it. See {@link #createVariable} for 
+     * details.
+     *
+     * @param <T>
+     * @param localName
+     * @param type
+     * @param value
+     * @param persistence
+     * @param varman
+     * @return
+     * @throws IOException
+     */
+    protected <T> Variable createMappedVariable(String localName, Class<T> type, T value, Variable.PersistenceType persistence, VariableManager varman) throws IOException {
+        String outFldName = mapVariableName(localName);
+        return createVariable(outFldName, type, value, persistence, varman);
+    }
+
+    /**
+     * Creates a variable with the specified name. If the name starts with an
+     * underscore (_) then a temporary variable (PersistenceType.NONE) is
+     * created, otherwise the provided persistence type is used.
+     *
+     * @param <T>
+     * @param mappedName
+     * @param type
+     * @param value
+     * @param persistence
+     * @param varman
+     * @return
+     * @throws IOException
+     */
+    protected <T> Variable createVariable(String mappedName, Class<T> type, T value, Variable.PersistenceType persistence, VariableManager varman) throws IOException {
+        return varman.createVariable(mappedName, type, value,
+                mappedName.startsWith("_") ? Variable.PersistenceType.NONE : persistence);
     }
 
 }

@@ -151,10 +151,8 @@ public class JsonHandler {
                     if (classNameRef.get() == null) {
                         LOG.log(Level.FINE, "Setting type to {0}", i.getClass());
                         classNameRef.set(i.getClass());
-                    } else {
-                        if (classNameRef.get() != i.getClass()) {
-                            throw new IllegalStateException("Items must all be of the same type. Previous: " + classNameRef.get().getName() + " Current: " + i.getClass().getName());
-                        }
+                    } else if (classNameRef.get() != i.getClass()) {
+                        throw new IllegalStateException("Items must all be of the same type. Previous: " + classNameRef.get().getName() + " Current: " + i.getClass().getName());
                     }
                     sw.write(i);
                 } catch (IOException ex) {
@@ -295,21 +293,39 @@ public class JsonHandler {
 
         ObjectWriter ow = mapper.writer();
         try (SequenceWriter sw = ow.writeValuesAsArray(out)) {
-            stream.sequential().peek((i) -> {
+            stream.forEachOrdered((i) -> {
                 //LOG.info("Writing to json: "  + i);
                 try {
                     sw.write(i);
                 } catch (IOException ex) {
                     throw new RuntimeException("Failed to write object: " + i, ex);
                 }
-            }).forEachOrdered((i) -> {
             });
         } finally {
             //out.close();
             stream.close();
         }
     }
+    
 
+//     public <T> void marshalStreamToJsonArray(Stream<T> stream, OutputStream out) throws IOException {
+//
+//        ObjectWriter ow = mapper.writer();
+//        try (SequenceWriter sw = ow.writeValuesAsArray(out)) {
+//            stream.sequential().peek((i) -> {
+//                //LOG.info("Writing to json: "  + i);
+//                try {
+//                    sw.write(i);
+//                } catch (IOException ex) {
+//                    throw new RuntimeException("Failed to write object: " + i, ex);
+//                }
+//            }).forEachOrdered((i) -> {
+//            });
+//        } finally {
+//            //out.close();
+//            stream.close();
+//        }
+//    }
     /**
      * Use the metadata to deserialize the JSON in the InputStream to a Dataset
      * of the right type.

@@ -4,7 +4,9 @@ import com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter;
 import com.im.lac.services.job.variable.Variable;
 import com.im.lac.services.job.variable.VariableManager;
 import com.im.lac.types.MoleculeObject;
+import com.squonk.dataset.Dataset;
 import com.squonk.dataset.DatasetMetadata;
+import com.squonk.types.io.JsonHandler;
 import java.io.InputStream;
 import java.util.Map;
 import org.apache.camel.CamelContext;
@@ -13,36 +15,35 @@ import org.apache.camel.CamelContext;
  *
  * @author timbo
  */
-public class MoleculeServiceExecutorStep extends AbstractStep {
+public class MoleculeServiceFatExecutorStep extends AbstractStep {
 
     public static final String OPTION_SERVICE_ENDPOINT = "ServiceEndpoint";
     public static final String OPTION_EXECUTION_PARAMS = "ExecutionParams";
 
-    public static final String FIELD_INPUT = "Input";
-    public static final String FIELD_OUTPUT_DATA = "OutputData";
-    public static final String FIELD_OUTPUT_METADATA = "OutputMetadata";
+    public static final String FIELD_INPUT_DATASET = "_MoleculeServiceExecutorInputDataset";
+    public static final String FIELD_OUTPUT_DATASET = "_MoleculeServiceExecutorOutputDataset";
     
     @Override
     public String[] getInputVariableNames() {
-        return new String[]{FIELD_INPUT};
+        return new String[]{FIELD_INPUT_DATASET};
     }
 
     @Override
     public String[] getOutputVariableNames() {
-        return new String[]{FIELD_OUTPUT_DATA, FIELD_OUTPUT_METADATA};
+        return new String[]{FIELD_OUTPUT_DATASET};
     }
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
-        InputStream input = fetchMappedValue(FIELD_INPUT, InputStream.class, varman);
+        Dataset input = fetchMappedValue(FIELD_INPUT_DATASET, Dataset.class, varman);
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
 
         HttpGenericParamsJobAdapter adapter = new HttpGenericParamsJobAdapter();
-        InputStream output = adapter.submit(context, endpoint, input, params);
-        createMappedVariable(FIELD_OUTPUT_DATA, InputStream.class, output, Variable.PersistenceType.NONE, varman);
-        createMappedVariable(FIELD_OUTPUT_METADATA, DatasetMetadata.class, new DatasetMetadata(MoleculeObject.class), Variable.PersistenceType.NONE, varman);
-    }
+        InputStream output = adapter.submit(context, endpoint, input.getInputStream(true), params);
+        Dataset<MoleculeObject> results = JsonHandler.getInstance().unmarshalDataset(new DatasetMetadata(MoleculeObject.class), output);
+        createMappedVariable(FIELD_OUTPUT_DATASET, Dataset.class, results, Variable.PersistenceType.DATASET, varman);
+     }
 
 }

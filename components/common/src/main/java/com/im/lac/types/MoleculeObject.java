@@ -199,7 +199,7 @@ public class MoleculeObject extends BasicObject {
                 .append(" values: [");
         for (Map.Entry<String, Object> e : values.entrySet()) {
             b.append(e.getKey())
-                    .append(": ")
+                    .append(":")
                     .append(e.getValue())
                     .append(" ");
         }

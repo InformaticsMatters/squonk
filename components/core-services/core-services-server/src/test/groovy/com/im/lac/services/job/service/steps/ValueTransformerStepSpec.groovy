@@ -50,7 +50,7 @@ class ValueTransformerStepSpec extends Specification {
         datasetvar != null
         def dataset = varman.getValue(datasetvar)
         dataset != null
-        dataset.replaceStream(dataset.createMetadataGeneratingStream(dataset.getStream()))
+        dataset.generateMetadata()
         List results = dataset.getItems()
         results.size() == 3 
         DatasetMetadata md = dataset.metadata

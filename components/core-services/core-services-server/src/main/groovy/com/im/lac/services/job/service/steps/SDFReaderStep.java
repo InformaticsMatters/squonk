@@ -31,11 +31,11 @@ public class SDFReaderStep extends AbstractStep {
     /**
      * Expected variable name for the input
      */
-    public static final String FIELD_SDF_INPUT = "SDFInput";
+    public static final String FIELD_SDF_INPUT = "_SDFReaderSDFInput";
     /**
      * Variable name for the MoleculeObjectDataset output
      */
-    public static final String FIELD_DATASET_OUTPUT = "SDFOutput";
+    public static final String FIELD_DATASET_OUTPUT = "_SDFReaderDatasetOutput";
 
     @Override
     public String[] getInputVariableNames() {
@@ -53,7 +53,7 @@ public class SDFReaderStep extends AbstractStep {
         SDFReader reader = createReader(IOUtils.getGunzippedInputStream(is));
         Stream<MoleculeObject> mols = reader.asStream();
         Dataset dataset = new Dataset(MoleculeObject.class, mols);
-        createMappedVariable(FIELD_DATASET_OUTPUT, Dataset.class, dataset, Variable.PersistenceType.NONE, varman);
+        createMappedVariable(FIELD_DATASET_OUTPUT, Dataset.class, dataset, Variable.PersistenceType.DATASET, varman);
     }
 
     private SDFReader createReader(InputStream input) throws IOException {

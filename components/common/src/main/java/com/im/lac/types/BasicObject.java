@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Simple generic object that only has properties. Specialized types can be created by sub-classing
- * this class. For instance, see {@link MoleculeObject}.
+ * Simple generic object that only has values. Specialized types can be created by sub-classing
+ * this class. For instance, see {@link com.im.lac.types.MoleculeObject}.
  *
  * @author Tim Dudgeon
  */
@@ -76,5 +76,23 @@ public class BasicObject implements Serializable {
     public void putValues(Map<String, Object> values) {
         this.values.putAll(values);
     }
+
+  public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append("MoleculeObject uuid: ")
+                .append(uuid)
+                .append(" values: [");
+        for (Map.Entry<String, Object> e : values.entrySet()) {
+            b.append(e.getKey())
+                    .append(":")
+                    .append(e.getValue())
+                    .append(" ");
+        }
+        b.append("]");
+
+        return b.toString();
+    }
+    
+    
 
 }

@@ -13,8 +13,8 @@ import org.apache.camel.CamelContext;
  */
 public class ValueTransformerStep extends AbstractStep {
 
-    private static final String FIELD_INPUT_DATASET = "InputDataset";
-    private static final String FIELD_OUTPUT_DATASET = "OutputDataset";
+    private static final String FIELD_INPUT_DATASET = "_ValueTransformerInputDataset";
+    private static final String FIELD_OUTPUT_DATASET = "_ValueTransformerOutputDataset";
     private static final String OPTION_TRANSFORMS = "Transformers";
 
     @Override
@@ -53,7 +53,7 @@ public class ValueTransformerStep extends AbstractStep {
         
         String outFldName = mapVariableName(FIELD_OUTPUT_DATASET);
         if (outFldName != null) {
-            varman.createVariable(outFldName, Dataset.class, ds, Variable.PersistenceType.NONE);
+            createVariable(outFldName, Dataset.class, ds, Variable.PersistenceType.NONE, varman);
         }
     }
 
