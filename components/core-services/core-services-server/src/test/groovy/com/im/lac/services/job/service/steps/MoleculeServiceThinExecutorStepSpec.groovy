@@ -43,7 +43,7 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
         Variable dsvar = varman.createVariable(
-            MoleculeServiceThinExecutorStep.FIELD_INPUT_DATASET, 
+            MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET, 
             Dataset.class, 
             ds,
             Variable.PersistenceType.NONE)
@@ -53,7 +53,7 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        def var = varman.lookupVariable(MoleculeServiceThinExecutorStep.FIELD_OUTPUT_DATASET)
+        def var = varman.lookupVariable(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET)
         
         then:
         var != null

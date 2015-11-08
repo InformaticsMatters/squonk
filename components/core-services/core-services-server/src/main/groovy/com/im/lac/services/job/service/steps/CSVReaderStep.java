@@ -18,11 +18,11 @@ import org.apache.commons.csv.QuoteMode;
  * {@link com.squonk.dataset.Dataset} of {@link com.im.lac.types.BasicObject}s.
  * <p>
  * The SDFile is passed as an {@link java.io.InputStream} (can be gzipped). By
- * default the input is expected in the variable named by the FIELD_CSV_INPUT
- * constant, though that name can be mapped to a different name. The resulting
- * Dataset is contained in the variable named by the FIELD_DATASET_OUTPUT
- * constant, or a variable mapped to that name.
- * <p>
+ default the input is expected in the variable named by the VAR_CSV_INPUT
+ constant, though that name can be mapped to a different name. The resulting
+ Dataset is contained in the variable named by the VAR_DATASET_OUTPUT
+ constant, or a variable mapped to that name.
+ <p>
  * The parsing is implemented using the Apache Common CSV 1.1 library. Options
  * here correspond for options available from that library (the CSVFormat class
  * in particular). See <a href="http://camel.apache.org/csv.html">here</a> for
@@ -111,29 +111,29 @@ public class CSVReaderStep extends AbstractStep {
     /**
      * Expected variable name for the input
      */
-    public static final String FIELD_CSV_INPUT = "_CSVReaderCSVInput";
+    public static final String VAR_CSV_INPUT = "_CSVReaderCSVInput";
     /**
      * Variable name for the MoleculeObjectDataset output
      */
-    public static final String FIELD_DATASET_OUTPUT = "_CSVReaderDatasetOutput";
+    public static final String VAR_DATASET_OUTPUT = "_CSVReaderDatasetOutput";
 
     @Override
     public String[] getInputVariableNames() {
-        return new String[]{FIELD_CSV_INPUT};
+        return new String[]{VAR_CSV_INPUT};
     }
 
     @Override
     public String[] getOutputVariableNames() {
-        return new String[]{FIELD_DATASET_OUTPUT};
+        return new String[]{VAR_DATASET_OUTPUT};
     }
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws IOException {
-        InputStream is = fetchMappedValue(FIELD_CSV_INPUT, InputStream.class, varman);
+        InputStream is = fetchMappedValue(VAR_CSV_INPUT, InputStream.class, varman);
         CSVReader reader = createReader(IOUtils.getGunzippedInputStream(is));
         Stream<BasicObject> mols = reader.asStream();
         Dataset dataset = new Dataset(BasicObject.class, mols);
-        createMappedVariable(FIELD_DATASET_OUTPUT, Dataset.class, dataset, Variable.PersistenceType.DATASET, varman);
+        createMappedVariable(VAR_DATASET_OUTPUT, Dataset.class, dataset, Variable.PersistenceType.DATASET, varman);
     }
 
     private CSVReader createReader(InputStream input) throws IOException {

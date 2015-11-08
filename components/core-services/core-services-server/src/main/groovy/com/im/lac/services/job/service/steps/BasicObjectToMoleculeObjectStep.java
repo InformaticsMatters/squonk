@@ -42,21 +42,21 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
      */  
     public static final String OPTION_PRESERVE_UUID = "PreserveUuid";
 
-    /** The field for the source Dataset&lt;BasicObject&gt; */
-    public static final String FIELD_INPUT_DATASET = "_BasicObjectToMoleculeObjectInputDataset";
-    /** The field for the resulting Dataset&lt;MoleculeObject&gt; */
-    public static final String FIELD_OUTPUT_DATASET = "_BasicObjectToMoleculeObjectOutputDataset";
+    /** The variable for the source Dataset&lt;BasicObject&gt; */
+    public static final String VAR_INPUT_DATASET = "_BasicObjectToMoleculeObjectInputDataset";
+    /** The variable for the resulting Dataset&lt;MoleculeObject&gt; */
+    public static final String VAR_OUTPUT_DATASET = "_BasicObjectToMoleculeObjectOutputDataset";
 
     public static String DEFAULT_STRUCTURE_FIELD_NAME = "structure";
 
     @Override
     public String[] getInputVariableNames() {
-        return new String[]{FIELD_INPUT_DATASET};
+        return new String[]{VAR_INPUT_DATASET};
     }
 
     @Override
     public String[] getOutputVariableNames() {
-        return new String[]{FIELD_OUTPUT_DATASET};
+        return new String[]{VAR_OUTPUT_DATASET};
     }
 
     @Override
@@ -65,7 +65,7 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
         String structureFormat = getOption(OPTION_STRUCTURE_FORMAT, String.class);
         boolean preserveUuid = getOption(OPTION_PRESERVE_UUID, Boolean.class, true);
 
-        DatasetProvider p = fetchMappedValue(FIELD_INPUT_DATASET, DatasetProvider.class, varman);
+        DatasetProvider p = fetchMappedValue(VAR_INPUT_DATASET, DatasetProvider.class, varman);
         Dataset ds1 = p.getDataset();
         Stream<BasicObject> stream1 = ds1.getStream();
         Stream<MoleculeObject> stream2 = stream1.map((bo) -> {
@@ -74,7 +74,7 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
 
         Dataset<MoleculeObject> mods = new Dataset<>(MoleculeObject.class, stream2);
 
-        createMappedVariable(FIELD_OUTPUT_DATASET, Dataset.class, mods, Variable.PersistenceType.DATASET, varman);
+        createMappedVariable(VAR_OUTPUT_DATASET, Dataset.class, mods, Variable.PersistenceType.DATASET, varman);
     }
 
     private MoleculeObject convert(BasicObject bo, String structureFieldName, String format, boolean preserveUuid) {

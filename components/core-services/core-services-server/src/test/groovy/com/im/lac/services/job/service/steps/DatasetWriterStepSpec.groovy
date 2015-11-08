@@ -27,22 +27,19 @@ class DatasetWriterStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         DatasetWriterStep step = new DatasetWriterStep()
         Variable dsvar = varman.createVariable(
-            DatasetWriterStep.FIELD_INPUT_DATASET, 
+            DatasetWriterStep.VAR_INPUT_DATASET, 
             Dataset.class, 
             ds,
             Variable.PersistenceType.NONE)
         
         when:
         step.execute(varman, null)
-        Variable outvar = varman.lookupVariable(DatasetWriterStep.FIELD_OUTPUT_DATASET)
+        Variable outvar = varman.lookupVariable(DatasetWriterStep.VAR_OUTPUT_DATASET)
         
         then:
         outvar != null
         def dataset = varman.getValue(outvar)
         dataset != null
-
-        
-        
 	
     }
 

@@ -26,7 +26,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
         Variable invar = varman.createVariable(
-            BasicObjectToMoleculeObjectStep.FIELD_INPUT_DATASET, 
+            BasicObjectToMoleculeObjectStep.VAR_INPUT_DATASET, 
             Dataset.class, 
             ds,
             Variable.PersistenceType.NONE)
@@ -38,7 +38,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         step.execute(varman, null)
         
         then:
-        Variable outvar = varman.lookupVariable(BasicObjectToMoleculeObjectStep.FIELD_OUTPUT_DATASET)
+        Variable outvar = varman.lookupVariable(BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET)
         outvar != null
         def molsds = varman.getValue(outvar)
         molsds != null
@@ -56,7 +56,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
         Variable invar = varman.createVariable(
-            BasicObjectToMoleculeObjectStep.FIELD_INPUT_DATASET, 
+            BasicObjectToMoleculeObjectStep.VAR_INPUT_DATASET, 
             Dataset.class, 
             ds,
             Variable.PersistenceType.NONE)
@@ -72,7 +72,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         step.execute(varman, null)
         
         then:
-        Variable outvar = varman.lookupVariable(BasicObjectToMoleculeObjectStep.FIELD_OUTPUT_DATASET)
+        Variable outvar = varman.lookupVariable(BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET)
         outvar != null
         def molsds = varman.getValue(outvar)
         molsds != null

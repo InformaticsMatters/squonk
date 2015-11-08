@@ -17,7 +17,7 @@ class VariableCounterStepSpec extends Specification {
         MemoryVariableLoader loader = new MemoryVariableLoader()
         VariableManager varman = new VariableManager(loader)
         VariableCounterStep step = new VariableCounterStep()
-        step.configure([:], [(VariableCounterStep.FIELD_OUTPUT_FIELD_COUNT):"FieldCount"])
+        step.configure([:], [(VariableCounterStep.VAR_OUTPUT_FIELD_COUNT):"FieldCount"])
         
         StepExecutor exec = new StepExecutor(varman);
         
@@ -51,9 +51,9 @@ class VariableCounterStepSpec extends Specification {
         MemoryVariableLoader loader = new MemoryVariableLoader()
         VariableManager varman = new VariableManager(loader)
         VariableCounterStep step1 = new VariableCounterStep()
-        step1.configure([:], [(VariableCounterStep.FIELD_OUTPUT_FIELD_COUNT):'count1'])
+        step1.configure([:], [(VariableCounterStep.VAR_OUTPUT_FIELD_COUNT):'count1'])
         VariableCounterStep step2 = new VariableCounterStep()
-        step2.configure([:], [(VariableCounterStep.FIELD_OUTPUT_FIELD_COUNT):'count2'])
+        step2.configure([:], [(VariableCounterStep.VAR_OUTPUT_FIELD_COUNT):'count2'])
         
         StepExecutor exec = new StepExecutor(varman);
         
