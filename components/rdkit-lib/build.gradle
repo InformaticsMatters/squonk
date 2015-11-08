@@ -1,0 +1,15 @@
+apply plugin: 'groovy'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    
+    compile project(':common')
+    
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+
+    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
+    testCompile 'junit:junit:4.11'
+}

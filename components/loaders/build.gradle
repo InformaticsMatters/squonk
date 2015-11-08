@@ -13,8 +13,10 @@ dependencies {
     
     compile project(':common')
     compile project(':common-camel')
+    compile project(':common-utils')
     compile project(':chemaxon-lib')
     compile project(':chemaxon-camel')
+    compile project(':rdkit-lib')
     
     compile "org.postgresql:postgresql:9.4-1201-jdbc41"
     

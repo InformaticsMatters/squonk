@@ -1,6 +1,5 @@
 package com.im.lac.types;
 
-import com.im.lac.types.BasicObject;
 import java.util.HashMap;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
