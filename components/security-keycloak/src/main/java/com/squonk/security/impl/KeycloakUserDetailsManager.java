@@ -23,15 +23,25 @@ public class KeycloakUserDetailsManager implements UserDetailsManager {
         if (token == null) {
             return null;
         }
-        
+       
         return new UserDetails(token.getPreferredUsername(), token.getEmail(), token.getGivenName(), token.getFamilyName());
     }
 
+    @Override
     public URI getLogoutUrl(HttpServletRequest request, String redirectTo) {
         KeycloakSecurityContext session = (KeycloakSecurityContext) request.getAttribute(KeycloakSecurityContext.class.getName());
+        IDToken token = session.getIdToken();
+        if (token == null) {
+            return null;
+        }
+        
         String realm = session.getRealm();
-        String basePath = "https://192.168.59.103/auth"; // How to get this?
-        URI uri = KeycloakUriBuilder.fromUri(basePath).path(ServiceUrlConstants.TOKEN_SERVICE_LOGOUT_PATH).queryParam("redirect_uri", redirectTo).build(realm);
+        String issuer = token.getIssuer(); // https://192.168.59.103/auth/realms/samplerealm
+        // ServiceUrlConstants.TOKEN_SERVICE_LOGOUT_PATH = "/realms/{realm-name}/protocol/openid-connect/logout";
+         URI uri = KeycloakUriBuilder.fromUri(issuer).path("/protocol/openid-connect/logout").queryParam("redirect_uri", redirectTo).build(realm);
+        
+        // returns something like this:
+        // https://192.168.59.103/auth/realms/samplerealm/protocol/openid-connect/logout?redirect_uri=http%3A%2F%2F192.168.59.103%3A8080%2Fsampleapp%2Findex.html
         return uri;
     }
 }

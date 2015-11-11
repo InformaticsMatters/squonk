@@ -10,7 +10,6 @@ dependencies {
     
     compile 'org.slf4j:slf4j-api:1.7.7'
     compile 'org.keycloak:keycloak-core:1.6.1.Final'
-    compile 'org.keycloak:keycloak-adapter-core:1.6.1.Final'
 
     testCompile 'junit:junit:4.11'
 }
