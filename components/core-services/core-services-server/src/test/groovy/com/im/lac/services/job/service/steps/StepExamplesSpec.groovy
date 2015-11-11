@@ -50,11 +50,11 @@ class StepExamplesSpec extends Specification {
         SDFReaderStep step1 = new SDFReaderStep()
         FileInputStream is = new FileInputStream("../../../data/testfiles/Kinase_inhibs.sdf.gz")
         Variable sdf = varman.createVariable(
-            SDFReaderStep.FIELD_SDF_INPUT, 
+            SDFReaderStep.VAR_SDF_INPUT, 
             InputStream.class, 
             is,
             Variable.PersistenceType.NONE)
-        step1.configure([:], [(SDFReaderStep.FIELD_DATASET_OUTPUT):'sdf_data_out'])
+        step1.configure([:], [(SDFReaderStep.VAR_DATASET_OUTPUT):'sdf_data_out'])
         // end of cell 1
         
         
@@ -64,8 +64,8 @@ class StepExamplesSpec extends Specification {
         step2a.configure([
                 (MoleculeServiceFatExecutorStep.OPTION_SERVICE_ENDPOINT):'http://demos.informaticsmatters.com:9080/chem-services-cdk-basic/rest/v1/calculators/logp'
             ], [
-                (MoleculeServiceFatExecutorStep.FIELD_INPUT_DATASET):'sdf_data_out',
-                (MoleculeServiceFatExecutorStep.FIELD_OUTPUT_DATASET):'_calc1'
+                (MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET):'sdf_data_out',
+                (MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET):'_calc1'
             ])
     
         // step b: cluster
@@ -75,8 +75,8 @@ class StepExamplesSpec extends Specification {
                 'header.min_clusters':5,
                 'header.max_clusters':10
             ], [
-                (MoleculeServiceFatExecutorStep.FIELD_INPUT_DATASET):'_calc1',
-                (MoleculeServiceFatExecutorStep.FIELD_OUTPUT_DATASET):'data_out'
+                (MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET):'_calc1',
+                (MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET):'data_out'
             ])
         // end of cell 2
        
@@ -118,7 +118,7 @@ class StepExamplesSpec extends Specification {
         // create the initial input
         FileInputStream is = new FileInputStream("../../../data/testfiles/Kinase_inhibs.sdf.gz")
         Variable sdf = varman.createVariable(
-            SDFReaderStep.FIELD_SDF_INPUT, 
+            SDFReaderStep.VAR_SDF_INPUT, 
             InputStream.class, 
             is,
             Variable.PersistenceType.NONE)
@@ -127,7 +127,7 @@ class StepExamplesSpec extends Specification {
         // step 1: read the SDF and generate a Dataset<MoleculeObject>
         StepDefinition step1 = new StepDefinition(
             STEP_SDF_READER,
-            [:], [(SDFReaderStep.FIELD_DATASET_OUTPUT):'sdf_data_out'])
+            [:], [(SDFReaderStep.VAR_DATASET_OUTPUT):'sdf_data_out'])
         // end of cell 1
         
         
@@ -138,8 +138,8 @@ class StepExamplesSpec extends Specification {
             [
                 (MoleculeServiceFatExecutorStep.OPTION_SERVICE_ENDPOINT):'http://demos.informaticsmatters.com:9080/chem-services-cdk-basic/rest/v1/calculators/logp'
             ], [
-                (MoleculeServiceFatExecutorStep.FIELD_INPUT_DATASET):'sdf_data_out',
-                (MoleculeServiceFatExecutorStep.FIELD_OUTPUT_DATASET):'_calc1'
+                (MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET):'sdf_data_out',
+                (MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET):'_calc1'
             ])
     
         // step b: cluster.
@@ -150,8 +150,8 @@ class StepExamplesSpec extends Specification {
                 'header.min_clusters':5,
                 'header.max_clusters':10
             ], [
-                (MoleculeServiceFatExecutorStep.FIELD_INPUT_DATASET):'_calc1',
-                (MoleculeServiceFatExecutorStep.FIELD_OUTPUT_DATASET):'data_out'
+                (MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET):'_calc1',
+                (MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET):'data_out'
             ])
         // end of cell 2
         

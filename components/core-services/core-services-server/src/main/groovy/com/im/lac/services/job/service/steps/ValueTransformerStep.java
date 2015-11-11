@@ -13,13 +13,13 @@ import org.apache.camel.CamelContext;
  */
 public class ValueTransformerStep extends AbstractStep {
 
-    private static final String FIELD_INPUT_DATASET = "_ValueTransformerInputDataset";
-    private static final String FIELD_OUTPUT_DATASET = "_ValueTransformerOutputDataset";
+    private static final String VAR_INPUT_DATASET = "_ValueTransformerInputDataset";
+    private static final String VAR_OUTPUT_DATASET = "_ValueTransformerOutputDataset";
     private static final String OPTION_TRANSFORMS = "Transformers";
 
     @Override
     public String[] getInputVariableNames() {
-        return new String[]{FIELD_INPUT_DATASET};
+        return new String[]{VAR_INPUT_DATASET};
     }
 
     @Override
@@ -40,9 +40,9 @@ public class ValueTransformerStep extends AbstractStep {
      */
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        Dataset ds = fetchMappedValue(FIELD_INPUT_DATASET, Dataset.class, varman);
+        Dataset ds = fetchMappedValue(VAR_INPUT_DATASET, Dataset.class, varman);
         if (ds == null) {
-            throw new IllegalStateException("Input field not found: " + FIELD_INPUT_DATASET);
+            throw new IllegalStateException("Input field not found: " + VAR_INPUT_DATASET);
         }
         TransformDefintions txs = getOption(OPTION_TRANSFORMS, TransformDefintions.class);
         if (txs == null) {
@@ -51,7 +51,7 @@ public class ValueTransformerStep extends AbstractStep {
         ValueTransformerProcessor p = ValueTransformerProcessor.create(txs);
         p.execute(context.getTypeConverter(), ds);
         
-        String outFldName = mapVariableName(FIELD_OUTPUT_DATASET);
+        String outFldName = mapVariableName(VAR_OUTPUT_DATASET);
         if (outFldName != null) {
             createVariable(outFldName, Dataset.class, ds, Variable.PersistenceType.NONE, varman);
         }

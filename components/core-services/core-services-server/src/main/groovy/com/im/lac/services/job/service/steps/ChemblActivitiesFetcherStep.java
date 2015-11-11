@@ -18,9 +18,9 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
     public static final String OPTION_BATCH_SIZE = "BatchSize";
 
     /**
-     * The field for the resulting Dataset&lt;MoleculeObject&gt;
+     * The variable for the resulting Dataset&lt;MoleculeObject&gt;
      */
-    public static final String FIELD_OUTPUT_DATASET = "_ChemblActivitiesFetcherOutputDataset";
+    public static final String VAR_OUTPUT_DATASET = "_ChemblActivitiesFetcherOutputDataset";
 
     @Override
     public String[] getInputVariableNames() {
@@ -29,7 +29,7 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
 
     @Override
     public String[] getOutputVariableNames() {
-        return new String[]{FIELD_OUTPUT_DATASET};
+        return new String[]{VAR_OUTPUT_DATASET};
     }
 
     @Override
@@ -45,7 +45,7 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
         ChemblClient client = new ChemblClient();
         Dataset<MoleculeObject> dataset = client.fetchActivitiesForAssay(assayID, batchSize, prefix);
 
-        createMappedVariable(FIELD_OUTPUT_DATASET, Dataset.class, dataset, Variable.PersistenceType.DATASET, varman);
+        createMappedVariable(VAR_OUTPUT_DATASET, Dataset.class, dataset, Variable.PersistenceType.DATASET, varman);
     }
 
 }

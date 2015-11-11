@@ -49,13 +49,13 @@ class DatasetMergerStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
         Variable dsvar1 = varman.createVariable(
-            DatasetMergerStep.FIELD_INPUT_1, 
+            DatasetMergerStep.VAR_INPUT_1, 
             Dataset.class, 
             ds1,
             Variable.PersistenceType.NONE)
         
         Variable dsvar2 = varman.createVariable(
-            DatasetMergerStep.FIELD_INPUT_2, 
+            DatasetMergerStep.VAR_INPUT_2, 
             Dataset.class, 
             ds2,
             Variable.PersistenceType.NONE)
@@ -65,7 +65,7 @@ class DatasetMergerStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        Variable resultvar = varman.lookupVariable(DatasetMergerStep.FIELD_OUTPUT)
+        Variable resultvar = varman.lookupVariable(DatasetMergerStep.VAR_OUTPUT)
         Dataset result = varman.getValue(resultvar)
         
         then:
@@ -92,13 +92,13 @@ class DatasetMergerStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
         Variable dsvar1 = varman.createVariable(
-            DatasetMergerStep.FIELD_INPUT_1, 
+            DatasetMergerStep.VAR_INPUT_1, 
             Dataset.class, 
             ds1,
             Variable.PersistenceType.NONE)
         
         Variable dsvar2 = varman.createVariable(
-            DatasetMergerStep.FIELD_INPUT_2, 
+            DatasetMergerStep.VAR_INPUT_2, 
             Dataset.class, 
             ds2,
             Variable.PersistenceType.NONE)
@@ -111,7 +111,7 @@ class DatasetMergerStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        Variable resultvar = varman.lookupVariable(DatasetMergerStep.FIELD_OUTPUT)
+        Variable resultvar = varman.lookupVariable(DatasetMergerStep.VAR_OUTPUT)
         Dataset result = varman.getValue(resultvar)
         
         then:
@@ -139,19 +139,19 @@ class DatasetMergerStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
         Variable dsvar1 = varman.createVariable(
-            DatasetMergerStep.FIELD_INPUT_1, 
+            DatasetMergerStep.VAR_INPUT_1, 
             Dataset.class, 
             ds1,
             Variable.PersistenceType.NONE)
         
         Variable dsvar2 = varman.createVariable(
-            DatasetMergerStep.FIELD_INPUT_2, 
+            DatasetMergerStep.VAR_INPUT_2, 
             Dataset.class, 
             ds2,
             Variable.PersistenceType.NONE)
         
         Variable dsvar3 = varman.createVariable(
-            DatasetMergerStep.FIELD_INPUT_3, 
+            DatasetMergerStep.VAR_INPUT_3, 
             Dataset.class, 
             ds3,
             Variable.PersistenceType.NONE)
@@ -161,7 +161,7 @@ class DatasetMergerStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        Variable resultvar = varman.lookupVariable(DatasetMergerStep.FIELD_OUTPUT)
+        Variable resultvar = varman.lookupVariable(DatasetMergerStep.VAR_OUTPUT)
         Dataset result = varman.getValue(resultvar)
         
         then:
@@ -183,13 +183,13 @@ class DatasetMergerStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
         Variable dsvar1 = varman.createVariable(
-            DatasetMergerStep.FIELD_INPUT_1, 
+            DatasetMergerStep.VAR_INPUT_1, 
             Dataset.class, 
             ds1,
             Variable.PersistenceType.NONE)
         
         Variable dsvar2 = varman.createVariable(
-            DatasetMergerStep.FIELD_INPUT_2, 
+            DatasetMergerStep.VAR_INPUT_2, 
             Dataset.class, 
             ds2,
             Variable.PersistenceType.NONE)
@@ -199,7 +199,7 @@ class DatasetMergerStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        Variable resultvar = varman.lookupVariable(DatasetMergerStep.FIELD_OUTPUT)
+        Variable resultvar = varman.lookupVariable(DatasetMergerStep.VAR_OUTPUT)
         Dataset result = varman.getValue(resultvar)
         
         then:
@@ -222,13 +222,13 @@ class DatasetMergerStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
         Variable dsvar1 = varman.createVariable(
-            DatasetMergerStep.FIELD_INPUT_1, 
+            DatasetMergerStep.VAR_INPUT_1, 
             Dataset.class, 
             ds1,
             Variable.PersistenceType.NONE)
         
         Variable dsvar2 = varman.createVariable(
-            DatasetMergerStep.FIELD_INPUT_2, 
+            DatasetMergerStep.VAR_INPUT_2, 
             Dataset.class, 
             ds2,
             Variable.PersistenceType.NONE)
@@ -238,7 +238,7 @@ class DatasetMergerStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        Variable resultvar = varman.lookupVariable(DatasetMergerStep.FIELD_OUTPUT)
+        Variable resultvar = varman.lookupVariable(DatasetMergerStep.VAR_OUTPUT)
         Dataset result = varman.getValue(resultvar)
         
         then:

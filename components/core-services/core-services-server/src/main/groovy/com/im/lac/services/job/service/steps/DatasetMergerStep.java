@@ -31,23 +31,23 @@ public class DatasetMergerStep extends AbstractStep {
      */
     public static final String OPTION_KEEP_FIRST = "KeepFirst";
 
-    private static final String FIELD_INPUT_BASE = "_SimpleDatasetMergerInput";
-    public static final String FIELD_INPUT_1 = FIELD_INPUT_BASE + "1";
-    public static final String FIELD_INPUT_2 = FIELD_INPUT_BASE + "2";
-    public static final String FIELD_INPUT_3 = FIELD_INPUT_BASE + "3";
-    public static final String FIELD_INPUT_4 = FIELD_INPUT_BASE + "4";
-    public static final String FIELD_INPUT_5 = FIELD_INPUT_BASE + "5";
+    private static final String VAR_INPUT_BASE = "_SimpleDatasetMergerInput";
+    public static final String VAR_INPUT_1 = VAR_INPUT_BASE + "1";
+    public static final String VAR_INPUT_2 = VAR_INPUT_BASE + "2";
+    public static final String VAR_INPUT_3 = VAR_INPUT_BASE + "3";
+    public static final String VAR_INPUT_4 = VAR_INPUT_BASE + "4";
+    public static final String VAR_INPUT_5 = VAR_INPUT_BASE + "5";
 
-    public static final String FIELD_OUTPUT = "_SimpleDatasetMergerOutput";
+    public static final String VAR_OUTPUT = "_SimpleDatasetMergerOutput";
 
     @Override
     public String[] getInputVariableNames() {
-        return new String[]{FIELD_INPUT_1, FIELD_INPUT_2, FIELD_INPUT_3, FIELD_INPUT_4, FIELD_INPUT_5};
+        return new String[]{VAR_INPUT_1, VAR_INPUT_2, VAR_INPUT_3, VAR_INPUT_4, VAR_INPUT_5};
     }
 
     @Override
     public String[] getOutputVariableNames() {
-        return new String[]{FIELD_OUTPUT};
+        return new String[]{VAR_OUTPUT};
     }
 
     @Override
@@ -57,11 +57,11 @@ public class DatasetMergerStep extends AbstractStep {
         
         LOG.log(Level.INFO, "Merging using field {0}, keep first value = {1}", new Object[]{mergeField, keepFirst});
 
-        Dataset<BasicObject> dataset1 = fetchMappedValue(FIELD_INPUT_1, Dataset.class, varman);
+        Dataset<BasicObject> dataset1 = fetchMappedValue(VAR_INPUT_1, Dataset.class, varman);
 
         Stream<BasicObject> stream = dataset1.getStream();
         for (int i = 2; i <= 5; i++) {
-            Dataset<BasicObject> nextDataset = fetchMappedValue(FIELD_INPUT_BASE + i, Dataset.class, varman);
+            Dataset<BasicObject> nextDataset = fetchMappedValue(VAR_INPUT_BASE + i, Dataset.class, varman);
             if (nextDataset == null) {
                 break;
             }
@@ -88,7 +88,7 @@ public class DatasetMergerStep extends AbstractStep {
         Class type = dataset1.getType();
         Dataset result = new Dataset(type, items.values());
 
-        createMappedVariable(FIELD_OUTPUT, Dataset.class, result, Variable.PersistenceType.DATASET, varman);
+        createMappedVariable(VAR_OUTPUT, Dataset.class, result, Variable.PersistenceType.DATASET, varman);
     }
 
     private Object fetchValueToCompare(BasicObject bo, String mergeField) {

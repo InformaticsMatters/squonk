@@ -19,14 +19,14 @@ class SDFReaderStepSpec extends Specification {
         SDFReaderStep step = new SDFReaderStep()
         FileInputStream is = new FileInputStream("../../../data/testfiles/Kinase_inhibs.sdf.gz")
         Variable sdf = varman.createVariable(
-            SDFReaderStep.FIELD_SDF_INPUT, 
+            SDFReaderStep.VAR_SDF_INPUT, 
             InputStream.class, 
             is,
             Variable.PersistenceType.BYTES)
         
         when:
         step.execute(varman, null)
-        Variable molsvar = varman.lookupVariable(SDFReaderStep.FIELD_DATASET_OUTPUT)
+        Variable molsvar = varman.lookupVariable(SDFReaderStep.VAR_DATASET_OUTPUT)
         
         then:
         molsvar != null

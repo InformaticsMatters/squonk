@@ -32,7 +32,7 @@ field1\tfield2\tfield3
         InputStream is = new ByteArrayInputStream(CSV1.bytes)
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         Variable csv = varman.createVariable(
-            CSVReaderStep.FIELD_CSV_INPUT, 
+            CSVReaderStep.VAR_CSV_INPUT, 
             InputStream.class, 
             is,
             Variable.PersistenceType.BYTES)
@@ -47,7 +47,7 @@ field1\tfield2\tfield3
         
         when:
         step.execute(varman, null)
-        Variable datasetvar = varman.lookupVariable(CSVReaderStep.FIELD_DATASET_OUTPUT)
+        Variable datasetvar = varman.lookupVariable(CSVReaderStep.VAR_DATASET_OUTPUT)
         
         then:
         datasetvar != null
@@ -63,7 +63,7 @@ field1\tfield2\tfield3
         InputStream is = new ByteArrayInputStream(TAB1.bytes)
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         Variable csv = varman.createVariable(
-            CSVReaderStep.FIELD_CSV_INPUT, 
+            CSVReaderStep.VAR_CSV_INPUT, 
             InputStream.class, 
             is,
             Variable.PersistenceType.BYTES)
@@ -76,7 +76,7 @@ field1\tfield2\tfield3
         
         when:
         step.execute(varman, null)
-        Variable datasetvar = varman.lookupVariable(CSVReaderStep.FIELD_DATASET_OUTPUT)
+        Variable datasetvar = varman.lookupVariable(CSVReaderStep.VAR_DATASET_OUTPUT)
         
         then:
         datasetvar != null

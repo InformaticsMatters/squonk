@@ -14,25 +14,25 @@ import org.apache.camel.CamelContext;
  */
 public class DatasetWriterStep extends AbstractStep {
 
-    public static final String FIELD_INPUT_DATASET = "_DatasetWriterSourceDataset";
-    public static final String FIELD_OUTPUT_DATASET = "_DatasetWriterOutputDataset";
+    public static final String VAR_INPUT_DATASET = "_DatasetWriterSourceDataset";
+    public static final String VAR_OUTPUT_DATASET = "_DatasetWriterOutputDataset";
 
     @Override
     public String[] getInputVariableNames() {
-        return new String[]{FIELD_INPUT_DATASET};
+        return new String[]{VAR_INPUT_DATASET};
     }
 
     @Override
     public String[] getOutputVariableNames() {
-        return new String[]{FIELD_OUTPUT_DATASET};
+        return new String[]{VAR_OUTPUT_DATASET};
     }
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         // the assumption is that the dataset has PersistenceType.NONE
-        DatasetProvider p = fetchMappedValue(FIELD_INPUT_DATASET, DatasetProvider.class, varman);
+        DatasetProvider p = fetchMappedValue(VAR_INPUT_DATASET, DatasetProvider.class, varman);
         Dataset ds = p.getDataset();
-        createMappedVariable(FIELD_OUTPUT_DATASET, Dataset.class, ds, Variable.PersistenceType.DATASET, varman);
+        createMappedVariable(VAR_OUTPUT_DATASET, Dataset.class, ds, Variable.PersistenceType.DATASET, varman);
     }
 
 }

@@ -3,6 +3,7 @@ package com.squonk.rdkit.db
 import com.im.lac.types.MoleculeObject
 import groovy.sql.Sql
 import java.lang.reflect.Constructor
+import java.sql.SQLException
 import java.util.stream.Stream
 import javax.sql.DataSource
 
@@ -20,6 +21,10 @@ class RDKitTableLoader extends RDKitTable {
         super(dataSource, schema, baseTable, molSourceType, extraColumnDefs)
         this.propertyToTypeMappings = propertyToTypeMappings
     }
+    
+    //    RDKitTableLoader() {
+    //        super(null, 'public', 'foobar', null, [version_id:'INTEGER', parent_id:'INTEGER'])
+    //    }
     
     void loadData(Stream<MoleculeObject> mols) {
         Sql db = getSql()
@@ -40,7 +45,7 @@ class RDKitTableLoader extends RDKitTable {
         try {
             db.execute(sql1)
             db.execute(sql2)
-            println "Column $colname added"
+            //println "Column $colname added"
         } finally {
             db.close()
         }
@@ -69,23 +74,28 @@ class RDKitTableLoader extends RDKitTable {
         }
     }
     
-    void createFpsColumns() {
+    void addFpColumn(FingerprintType type) {
         String molfps = molfpsSchemaPlusTable()
+        String col = type.colName
+        addColumn(molfps, col, 'bfp')
+        String sql1 = 'UPDATE ' + molfps + ' SET ' + col + ' = ' + String.format(type.function, 'm')
+        String sql2 = 'CREATE INDEX idx_' + getMolfpsTable() + '_' + col + ' ON ' + molfps + ' USING gist(' + col + ')'
         
-        addColumn(molfps, 'mfp2', 'bfp')
-        addColumn(molfps, 'ffp2', 'bfp')
-        
-        String sql1 = 'UPDATE ' + molfps + ' SET mfp2 = morganbv_fp(m), ffp2 = featmorganbv_fp(m)'
-        String sql2 = 'CREATE INDEX idx_' + getMolfpsTable() + '_mfp2 ON ' + molfps + ' USING gist(mfp2);'
-        String sql3 = 'CREATE INDEX idx_' + getMolfpsTable() + '_ffp2 ON ' + molfps + ' USING gist(ffp2);'
-
         println "SQL: $sql1"
         println "SQL: $sql2"
-        println "SQL: $sql3"
-        executeSql { db ->
-            db.execute(sql1)
-            db.execute(sql2)
-            db.execute(sql3)
+        try {
+            executeSql { db ->
+                db.execute(sql1)
+                db.execute(sql2)
+            }
+        } catch (SQLException ex) {
+            println "ERROR: failed to create fingerprint index of type $type. Deleting fingerprint column $col."
+            ex.printStackTrace()
+            return
+        }
+        Metric.each {
+            addSimSearchHelperFunction(type, it)
+            addSimSearchHelperFunction(type, it)
         }
     }
     
@@ -98,24 +108,16 @@ class RDKitTableLoader extends RDKitTable {
         }
     }
     
-    int testMfp2() {
-        String sql = 'SELECT count(*) FROM ' + molfpsSchemaPlusTable() + " WHERE mfp2%morganbv_fp('Cc1ccc2nc(-c3ccc(NC(C4N(C(c5cccs5)=O)CCC4)=O)cc3)sc2c1')"
+    int testFpSearch(FingerprintType type, Metric metric) {
+        String sql = 'SELECT count(*) FROM ' + molfpsSchemaPlusTable() + 
+            ' WHERE ' + type.colName + metric.operator + 
+        String.format(type.function,"'Cc1ccc2nc(-c3ccc(NC(C4N(C(c5cccs5)=O)CCC4)=O)cc3)sc2c1'")
         println "SQL: $sql"
         return executeSql { db ->
             def count = db.firstRow(sql)[0]
             return count
         }
     }
-    
-    int testFfp2() {
-        String sql = 'SELECT count(*) FROM ' + molfpsSchemaPlusTable() + " WHERE ffp2%featmorganbv_fp('Cc1ccc2nc(-c3ccc(NC(C4N(C(c5cccs5)=O)CCC4)=O)cc3)sc2c1')"
-        println "SQL: $sql"
-        return executeSql { db ->
-            def count = db.firstRow(sql)[0]
-            return count
-        }
-    }
-    
     
     int getRowCount() {  
         Sql db = getSql()
@@ -128,7 +130,17 @@ class RDKitTableLoader extends RDKitTable {
         }
     }
     
-    void dropTables() {
+    void dropAllItems() {
+        executeSql { db ->
+            FingerprintType.each { fp ->
+                Metric.each { m ->
+                    String funcName = getSimSearchHelperFunctionName(fp, m)
+                    String sql = 'DROP FUNCTION IF EXISTS ' + funcName + '(text)'
+                    println "SQL: $sql"
+                    db.execute(sql)
+                }
+            }
+        }
         dropTable(molfpsSchemaPlusTable())
         dropTable(baseSchemaPlusTable())
     }
@@ -146,7 +158,7 @@ class RDKitTableLoader extends RDKitTable {
         String sql = 'CREATE TABLE ' + baseSchemaPlusTable() + ' (\n' +
         '  id SERIAL NOT NULL PRIMARY KEY,\n' +
         '  structure TEXT,\n  ' +
-        extraColumnDefs.collect { it.key + ' ' + it.value }.join(',\n  ') + '\n)\n'
+        getExtraColumnDefintions(',\n  ') + '\n)'
         println "SQL: $sql"
         Sql db = getSql()
         try {
@@ -189,6 +201,52 @@ class RDKitTableLoader extends RDKitTable {
             def o = con.newInstance(val.toString())
             return o
         }
+    }
+    
+    private void addSimSearchHelperFunction(FingerprintType type, Metric metric) {
+        String sql = 'CREATE OR REPLACE FUNCTION ' + getSimSearchHelperFunctionName(type, metric) + '(smiles text)' +
+            '\n  RETURNS table(id INTEGER, structure TEXT, m MOL, similarity DOUBLE PRECISION' + extraColumnDefs.collect { ', ' + it.key + ' ' + it.value }.join('') + ') AS' +
+            '\n$$\nSELECT m.id, b.structure, m.m, ' +
+        String.format(metric.function, String.format(type.function, 'mol_from_smiles($1::cstring)') + ',' + type.colName) + ' AS similarity' +
+        extraColumnDefs.keySet().collect { ', b.' + it }.join('') +
+        '\n FROM ' +  molfpsSchemaPlusTable() + ' m JOIN ' + baseSchemaPlusTable() + ' b ON m.id = b.id\n WHERE ' + 
+        String.format(type.function, 'mol_from_smiles($1::cstring)') + metric.operator + type.colName + 
+        '\n ORDER BY ' + 
+        String.format(type.function, 'mol_from_smiles($1::cstring)') + '<' + metric.operator + '>' + type.colName + ';' +
+        '\n$$ LANGUAGE SQL STABLE'
+  
+        println "SQL: $sql"
+        Sql db = getSql()
+        try {
+            db.execute(sql)
+        } finally {
+            db.close()
+        }
+    }
+    
+    //    private void addSimSearchHelperFunction(FingerprintType type, Metric metric) {
+    //        String sql = 'CREATE OR REPLACE FUNCTION ' + getSimSearchHelperFunctionName(type, metric) + '(smiles text)' +
+    //            '\n  RETURNS table(id integer, m mol, similarity double precision) AS' +
+    //            '\n$$\nSELECT id,m,' + 
+    //        String.format(metric.function, String.format(type.function, 'mol_from_smiles($1::cstring)') + ',' + type.colName) + ' AS similarity ' +
+    //        '\n FROM ' +  molfpsSchemaPlusTable() + '\n WHERE ' + 
+    //        String.format(type.function, 'mol_from_smiles($1::cstring)') + metric.operator + type.colName + 
+    //        '\n ORDER BY ' + 
+    //        String.format(type.function, 'mol_from_smiles($1::cstring)') + '<' + metric.operator + '>' + type.colName + ';' +
+    //        '\n$$ LANGUAGE SQL STABLE'
+    //  
+    //        println "SQL: $sql"
+    //        Sql db = getSql()
+    //        try {
+    //            db.execute(sql)
+    //        } finally {
+    //            db.close()
+    //        }
+    //    }
+
+    static void main(String[] args) {
+        RDKitTableLoader l = new RDKitTableLoader(null, 'public', 'foobar', null, [version_id:'INTEGER', parent_id:'INTEGER'], null)
+        l.addSimSearchHelperFunction(FingerprintType.MORGAN_CONNECTIVITY_2, Metric.TANIMOTO)
     }
 	
 }

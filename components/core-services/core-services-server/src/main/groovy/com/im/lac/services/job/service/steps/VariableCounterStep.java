@@ -12,7 +12,7 @@ import org.apache.camel.CamelContext;
  */
 public class VariableCounterStep extends AbstractStep {
 
-    public static final String FIELD_OUTPUT_FIELD_COUNT = "_VariableCounterFieldCount";
+    public static final String VAR_OUTPUT_FIELD_COUNT = "_VariableCounterFieldCount";
 
     @Override
     public String[] getInputVariableNames() {
@@ -21,13 +21,13 @@ public class VariableCounterStep extends AbstractStep {
 
     @Override
     public String[] getOutputVariableNames() {
-        return new String[]{FIELD_OUTPUT_FIELD_COUNT};
+        return new String[]{VAR_OUTPUT_FIELD_COUNT};
     }
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         int i = varman.getVariables().size();
-        createMappedVariable(FIELD_OUTPUT_FIELD_COUNT, Integer.class, i, Variable.PersistenceType.TEXT, varman);
+        createMappedVariable(VAR_OUTPUT_FIELD_COUNT, Integer.class, i, Variable.PersistenceType.TEXT, varman);
     }
 
 }

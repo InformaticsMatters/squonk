@@ -34,7 +34,7 @@ class ValueTransformerStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
         Variable dsvar = varman.createVariable(
-            ValueTransformerStep.FIELD_INPUT_DATASET, 
+            ValueTransformerStep.VAR_INPUT_DATASET, 
             Dataset.class, 
             ds,
             Variable.PersistenceType.NONE)
@@ -44,7 +44,7 @@ class ValueTransformerStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        Variable datasetvar = varman.lookupVariable(ValueTransformerStep.FIELD_INPUT_DATASET)
+        Variable datasetvar = varman.lookupVariable(ValueTransformerStep.VAR_INPUT_DATASET)
         
         then:
         datasetvar != null
