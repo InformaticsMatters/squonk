@@ -13,14 +13,12 @@ public class UserDetails implements Serializable {
     private final String email;
     private final String firstName;
     private final String lastName;
-    private final String fullName;
     
-    public UserDetails(String userid, String email, String firstName, String lastName, String fullName) {
+    public UserDetails(String userid, String email, String firstName, String lastName) {
         this.userid = userid;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.fullName = fullName;
     }
 
     /**
@@ -41,10 +39,6 @@ public class UserDetails implements Serializable {
 
     public String getLastName() {
         return lastName;
-    }
-
-    public String getFullName() {
-        return fullName;
     }
 
 }
