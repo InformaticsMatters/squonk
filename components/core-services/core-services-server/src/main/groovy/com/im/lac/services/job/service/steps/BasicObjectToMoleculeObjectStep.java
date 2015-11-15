@@ -1,5 +1,6 @@
 package com.im.lac.services.job.service.steps;
 
+import com.im.lac.job.jobdef.StepDefinitionConstants;
 import com.im.lac.services.job.variable.Variable;
 import com.im.lac.services.job.variable.VariableManager;
 import com.im.lac.types.BasicObject;
@@ -43,9 +44,9 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
     public static final String OPTION_PRESERVE_UUID = "PreserveUuid";
 
     /** The variable for the source Dataset&lt;BasicObject&gt; */
-    public static final String VAR_INPUT_DATASET = "_BasicObjectToMoleculeObjectInputDataset";
+    public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     /** The variable for the resulting Dataset&lt;MoleculeObject&gt; */
-    public static final String VAR_OUTPUT_DATASET = "_BasicObjectToMoleculeObjectOutputDataset";
+    public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
     public static String DEFAULT_STRUCTURE_FIELD_NAME = "structure";
 

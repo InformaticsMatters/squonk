@@ -15,5 +15,9 @@ public interface StepDefinitionConstants {
     public static final String STEP_BASICOBJECT_TO_MOLEUCLEOBJECT = "com.im.lac.services.job.service.steps.BasicObjectToMoleculeObjectStep";
     public static final String STEP_CHEMBL_ACTIVITIES_FETCHER = "com.im.lac.services.job.service.steps.ChemblActivitiesFetcherStep";
     public static final String STEP_DATASET_MERGER = "com.im.lac.services.job.service.steps.DatasetMergerStep";
-
+    
+    
+    public static final String VARIABLE_INPUT_DATASET = "_InputDataset";
+    public static final String VARIABLE_OUTPUT_DATASET = "_OutputDataset";
+    
 }

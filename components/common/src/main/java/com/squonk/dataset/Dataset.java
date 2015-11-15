@@ -59,8 +59,8 @@ import java.util.stream.StreamSupport;
  * The key function of the metadata is to describe what type of object is
  * present in the underlying InputStream/Interator/Stream/List (must be
  * homogeneous) and what type of properties (values) they contain. When the
- * source is a InputStream/Iterator/Stream then the Metadata is optional, as the
- * core information can be extracted from the underlying objects but then the
+ * source is a List/Iterator/Stream then the Metadata is optional, as the
+ * core information can be extracted from the underlying objects but when the
  * source is InputStream or URL the Metadata is mandatory so that the JSON can
  * be deserialized.
  *
@@ -296,7 +296,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
 
     /**
      * Get the contents as as Iterator. NOTE: Unless the underlying
-     * representation is List then the contents cannot be obtained a second
+     * representation is List or URL then the contents cannot be obtained a second
      * time.
      *
      * @return

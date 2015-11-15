@@ -53,7 +53,7 @@ StepDefinition step2b = new StepDefinition(
 // cell 3
 StepDefinition merge1 = new StepDefinition(
     STEP_DATASET_MERGER,
-    [(DatasetMergerStep.OPTION_MERGE_VAR_NAME):'ChemblID'],
+    [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'ChemblID'],
     [
         (DatasetMergerStep.VAR_INPUT_1):'Cyp2C19_out', 
         (DatasetMergerStep.VAR_INPUT_2):'Cyp2C9_out',

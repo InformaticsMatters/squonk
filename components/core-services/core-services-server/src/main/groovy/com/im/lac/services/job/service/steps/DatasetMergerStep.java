@@ -1,5 +1,6 @@
 package com.im.lac.services.job.service.steps;
 
+import com.im.lac.job.jobdef.StepDefinitionConstants;
 import com.im.lac.services.job.variable.Variable;
 import com.im.lac.services.job.variable.VariableManager;
 import com.im.lac.types.BasicObject;
@@ -31,14 +32,14 @@ public class DatasetMergerStep extends AbstractStep {
      */
     public static final String OPTION_KEEP_FIRST = "KeepFirst";
 
-    private static final String VAR_INPUT_BASE = "_SimpleDatasetMergerInput";
+    private static final String VAR_INPUT_BASE = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_INPUT_1 = VAR_INPUT_BASE + "1";
     public static final String VAR_INPUT_2 = VAR_INPUT_BASE + "2";
     public static final String VAR_INPUT_3 = VAR_INPUT_BASE + "3";
     public static final String VAR_INPUT_4 = VAR_INPUT_BASE + "4";
     public static final String VAR_INPUT_5 = VAR_INPUT_BASE + "5";
 
-    public static final String VAR_OUTPUT = "_SimpleDatasetMergerOutput";
+    public static final String VAR_OUTPUT = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
     @Override
     public String[] getInputVariableNames() {

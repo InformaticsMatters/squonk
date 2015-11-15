@@ -1,5 +1,6 @@
 package com.im.lac.services.job.service.steps;
 
+import com.im.lac.job.jobdef.StepDefinitionConstants;
 import com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter;
 import com.im.lac.services.job.variable.Variable;
 import com.im.lac.services.job.variable.VariableManager;
@@ -20,8 +21,8 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
     public static final String OPTION_SERVICE_ENDPOINT = "ServiceEndpoint";
     public static final String OPTION_EXECUTION_PARAMS = "ExecutionParams";
 
-    public static final String VAR_INPUT_DATASET = "_MoleculeServiceExecutorInputDataset";
-    public static final String VAR_OUTPUT_DATASET = "_MoleculeServiceExecutorOutputDataset";
+    public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
+    public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
     
     @Override
     public String[] getInputVariableNames() {

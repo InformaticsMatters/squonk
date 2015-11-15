@@ -17,30 +17,34 @@ import java.util.Map;
 public class MemoryVariableLoader implements VariableLoader {
 
     protected final Map<String, Object> values = new LinkedHashMap<>();
-    
+
     public MemoryVariableLoader() {
-        
+
     }
-    
+
     /**
      * Allows to create initial values for testing
-     * @param values 
+     *
+     * @param values
      */
     public MemoryVariableLoader(Map<String, Object> values) {
         this.values.putAll(values);
     }
 
-   
     @Override
     public void save() {
         // noop
     }
 
-
     @Override
     public <V> V readFromText(String var, Class<V> type) throws IOException {
         // TODO - use TypeConvertor mechanism and fall back to reflection
         String s = (String) values.get(var);
+        return convertFromText(s, type);
+    }
+
+    private <V> V convertFromText(String s, Class<V> type) throws IOException {
+        // TODO - use TypeConvertor mechanism and fall back to reflection
         try {
             Constructor constr = type.getConstructor(String.class);
             return (V) constr.newInstance(s);
@@ -55,10 +59,9 @@ public class MemoryVariableLoader implements VariableLoader {
         return JsonHandler.getInstance().objectFromJson(json, type);
     }
 
-    
     @Override
     public InputStream readFromBytes(String var) throws IOException {
-        byte[] bytes = (byte[])values.get(var);
+        byte[] bytes = (byte[]) values.get(var);
         return new ByteArrayInputStream(bytes);
     }
 
@@ -83,5 +86,5 @@ public class MemoryVariableLoader implements VariableLoader {
     public void delete(String var) {
         values.remove(var);
     }
-    
+
 }

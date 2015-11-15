@@ -1,6 +1,7 @@
 package com.im.lac.services.job.service.steps;
 
 import com.im.lac.camel.processor.ValueTransformerProcessor;
+import com.im.lac.job.jobdef.StepDefinitionConstants;
 import com.im.lac.services.job.variable.Variable;
 import com.im.lac.services.job.variable.VariableManager;
 import com.squonk.dataset.Dataset;
@@ -13,8 +14,8 @@ import org.apache.camel.CamelContext;
  */
 public class ValueTransformerStep extends AbstractStep {
 
-    private static final String VAR_INPUT_DATASET = "_ValueTransformerInputDataset";
-    private static final String VAR_OUTPUT_DATASET = "_ValueTransformerOutputDataset";
+    private static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
+    private static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
     private static final String OPTION_TRANSFORMS = "Transformers";
 
     @Override

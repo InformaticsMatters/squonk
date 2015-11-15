@@ -1,5 +1,6 @@
 package com.im.lac.services.job.service.steps;
 
+import com.im.lac.job.jobdef.StepDefinitionConstants;
 import com.im.lac.services.job.variable.Variable;
 import com.im.lac.services.job.variable.VariableManager;
 import com.im.lac.types.MoleculeObject;
@@ -20,7 +21,7 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
     /**
      * The variable for the resulting Dataset&lt;MoleculeObject&gt;
      */
-    public static final String VAR_OUTPUT_DATASET = "_ChemblActivitiesFetcherOutputDataset";
+    public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
     @Override
     public String[] getInputVariableNames() {

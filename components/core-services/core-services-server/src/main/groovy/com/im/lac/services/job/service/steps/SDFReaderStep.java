@@ -1,5 +1,6 @@
 package com.im.lac.services.job.service.steps;
 
+import com.im.lac.job.jobdef.StepDefinitionConstants;
 import com.im.lac.services.job.variable.Variable;
 import com.im.lac.services.job.variable.VariableManager;
 import com.im.lac.types.MoleculeObject;
@@ -35,7 +36,7 @@ public class SDFReaderStep extends AbstractStep {
     /**
      * Variable name for the MoleculeObjectDataset output
      */
-    public static final String VAR_DATASET_OUTPUT = "_SDFReaderDatasetOutput";
+    public static final String VAR_DATASET_OUTPUT = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
     @Override
     public String[] getInputVariableNames() {
