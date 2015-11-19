@@ -2,6 +2,7 @@ package com.squonk.rdkit.db
 
 import com.im.lac.types.MoleculeObject
 import groovy.sql.Sql
+import groovy.util.logging.Log
 import java.lang.reflect.Constructor
 import java.sql.SQLException
 import java.util.stream.Stream
@@ -11,6 +12,7 @@ import javax.sql.DataSource
  *
  * @author timbo
  */
+@Log
 class RDKitTableLoader extends RDKitTable {
     
    
@@ -21,10 +23,6 @@ class RDKitTableLoader extends RDKitTable {
         super(dataSource, schema, baseTable, molSourceType, extraColumnDefs)
         this.propertyToTypeMappings = propertyToTypeMappings
     }
-    
-    //    RDKitTableLoader() {
-    //        super(null, 'public', 'foobar', null, [version_id:'INTEGER', parent_id:'INTEGER'])
-    //    }
     
     void loadData(Stream<MoleculeObject> mols) {
         Sql db = getSql()
@@ -39,13 +37,13 @@ class RDKitTableLoader extends RDKitTable {
     void addColumn(String table, String colname, String coldef) {
         String sql1 = 'ALTER TABLE ' + table + ' DROP COLUMN IF EXISTS ' + colname + ' CASCADE'
         String sql2 = 'ALTER TABLE ' + table + ' ADD COLUMN ' + colname + ' ' + coldef
-        println "SQL: $sql1"
-        println "SQL: $sql2"
+        log.info "SQL: $sql1"
+        log.info "SQL: $sql2"
         Sql db = getSql()
         try {
             db.execute(sql1)
             db.execute(sql2)
-            //println "Column $colname added"
+            //log.info "Column $colname added"
         } finally {
             db.close()
         }
@@ -62,10 +60,10 @@ class RDKitTableLoader extends RDKitTable {
         String sql3 = 'ALTER TABLE ' + molfps + ' ADD CONSTRAINT fk_' + getMolfpsTable() + '_id FOREIGN KEY (id) REFERENCES ' + baseSchemaPlusTable() + ' (id)'
         String sql4 = 'CREATE INDEX idx_' + getMolfpsTable() + '_m ON ' +  molfps + ' USING gist(m)'
         
-        println "SQL: $sql1"
-        println "SQL: $sql2"
-        println "SQL: $sql3"
-        println "SQL: $sql4"
+        log.info "SQL: $sql1"
+        log.info "SQL: $sql2"
+        log.info "SQL: $sql3"
+        log.info "SQL: $sql4"
         executeSql { db ->
             db.execute(sql1)
             db.execute(sql2)
@@ -81,15 +79,15 @@ class RDKitTableLoader extends RDKitTable {
         String sql1 = 'UPDATE ' + molfps + ' SET ' + col + ' = ' + String.format(type.function, 'm')
         String sql2 = 'CREATE INDEX idx_' + getMolfpsTable() + '_' + col + ' ON ' + molfps + ' USING gist(' + col + ')'
         
-        println "SQL: $sql1"
-        println "SQL: $sql2"
+        log.info "SQL: $sql1"
+        log.info "SQL: $sql2"
         try {
             executeSql { db ->
                 db.execute(sql1)
                 db.execute(sql2)
             }
         } catch (SQLException ex) {
-            println "ERROR: failed to create fingerprint index of type $type. Deleting fingerprint column $col."
+            log.warn "ERROR: failed to create fingerprint index of type $type. Deleting fingerprint column $col."
             ex.printStackTrace()
             return
         }
@@ -101,7 +99,7 @@ class RDKitTableLoader extends RDKitTable {
     
     int testSSS() {
         String sql = 'SELECT count(*) FROM ' + molfpsSchemaPlusTable() + " WHERE m@>'c1cccc2c1nncc2'"
-        println "SQL: $sql"
+        log.info "SQL: $sql"
         return executeSql { db ->
             def count = db.firstRow(sql)[0]
             return count
@@ -112,7 +110,7 @@ class RDKitTableLoader extends RDKitTable {
         String sql = 'SELECT count(*) FROM ' + molfpsSchemaPlusTable() + 
             ' WHERE ' + type.colName + metric.operator + 
         String.format(type.function,"'Cc1ccc2nc(-c3ccc(NC(C4N(C(c5cccs5)=O)CCC4)=O)cc3)sc2c1'")
-        println "SQL: $sql"
+        log.info "SQL: $sql"
         return executeSql { db ->
             def count = db.firstRow(sql)[0]
             return count
@@ -123,7 +121,7 @@ class RDKitTableLoader extends RDKitTable {
         Sql db = getSql()
         try {
             int rows = db.firstRow('select count(*) from ' + baseSchemaPlusTable())[0]
-            println "Table $baseTable contains $rows rows"
+            log.info "Table $baseTable contains $rows rows"
             return rows
         } finally {
             db.close()
@@ -136,7 +134,7 @@ class RDKitTableLoader extends RDKitTable {
                 Metric.each { m ->
                     String funcName = getSimSearchHelperFunctionName(fp, m)
                     String sql = 'DROP FUNCTION IF EXISTS ' + funcName + '(text)'
-                    println "SQL: $sql"
+                    log.info "SQL: $sql"
                     db.execute(sql)
                 }
             }
@@ -147,7 +145,7 @@ class RDKitTableLoader extends RDKitTable {
     
     private void dropTable(String name) {
         String sql = 'DROP TABLE IF EXISTS ' + name
-        println "SQL: $sql"
+        log.info "SQL: $sql"
         executeSql { db ->
             db.execute(sql)
         }
@@ -159,7 +157,7 @@ class RDKitTableLoader extends RDKitTable {
         '  id SERIAL NOT NULL PRIMARY KEY,\n' +
         '  structure TEXT,\n  ' +
         getExtraColumnDefintions(',\n  ') + '\n)'
-        println "SQL: $sql"
+        log.info "SQL: $sql"
         Sql db = getSql()
         try {
             db.execute(sql)
@@ -170,8 +168,9 @@ class RDKitTableLoader extends RDKitTable {
     
     private void executeBatch(Sql db, Stream<MoleculeObject> mols) {
         List values = []
-        String sql = 'INSERT INTO ' + baseSchemaPlusTable() + ' (structure,' + extraColumnDefs.keySet().join(',') + ') VALUES (?,?,?)'
-        println "SQL: $sql"
+        String qmarks = extraColumnDefs.collect { ',?' }.join('')
+        String sql = 'INSERT INTO ' + baseSchemaPlusTable() + ' (structure,' + extraColumnDefs.keySet().join(',') + ') VALUES (?' + qmarks + ')'
+        log.info "SQL: $sql"
         mols.eachWithIndex { m,i -> 
             values.clear()
             values << m.source
@@ -183,11 +182,11 @@ class RDKitTableLoader extends RDKitTable {
                 ps.addBatch(values)
             }
             if (i % 10000 == 0 && i > 0) {
-                println "  loaded $i records"
+                log.info "  loaded $i records"
             }
         }
 
-        println "Finished loading" 
+        log.info "Finished loading" 
     }
     
     private def convert(Object val, Class cls) {
@@ -215,7 +214,7 @@ class RDKitTableLoader extends RDKitTable {
         String.format(type.function, 'mol_from_smiles($1::cstring)') + '<' + metric.operator + '>' + type.colName + ';' +
         '\n$$ LANGUAGE SQL STABLE'
   
-        println "SQL: $sql"
+        log.info "SQL: $sql"
         Sql db = getSql()
         try {
             db.execute(sql)
@@ -224,30 +223,5 @@ class RDKitTableLoader extends RDKitTable {
         }
     }
     
-    //    private void addSimSearchHelperFunction(FingerprintType type, Metric metric) {
-    //        String sql = 'CREATE OR REPLACE FUNCTION ' + getSimSearchHelperFunctionName(type, metric) + '(smiles text)' +
-    //            '\n  RETURNS table(id integer, m mol, similarity double precision) AS' +
-    //            '\n$$\nSELECT id,m,' + 
-    //        String.format(metric.function, String.format(type.function, 'mol_from_smiles($1::cstring)') + ',' + type.colName) + ' AS similarity ' +
-    //        '\n FROM ' +  molfpsSchemaPlusTable() + '\n WHERE ' + 
-    //        String.format(type.function, 'mol_from_smiles($1::cstring)') + metric.operator + type.colName + 
-    //        '\n ORDER BY ' + 
-    //        String.format(type.function, 'mol_from_smiles($1::cstring)') + '<' + metric.operator + '>' + type.colName + ';' +
-    //        '\n$$ LANGUAGE SQL STABLE'
-    //  
-    //        println "SQL: $sql"
-    //        Sql db = getSql()
-    //        try {
-    //            db.execute(sql)
-    //        } finally {
-    //            db.close()
-    //        }
-    //    }
-
-    static void main(String[] args) {
-        RDKitTableLoader l = new RDKitTableLoader(null, 'public', 'foobar', null, [version_id:'INTEGER', parent_id:'INTEGER'], null)
-        l.addSimSearchHelperFunction(FingerprintType.MORGAN_CONNECTIVITY_2, Metric.TANIMOTO)
-    }
-	
 }
 

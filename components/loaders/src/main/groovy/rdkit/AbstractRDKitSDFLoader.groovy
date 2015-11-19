@@ -1,42 +1,44 @@
+package rdkit
 
 import com.im.lac.types.MoleculeObject
+import com.squonk.rdkit.db.*
 import com.squonk.reader.SDFReader
 import com.squonk.util.IOUtils
-import com.squonk.rdkit.db.*
-import groovy.sql.Sql
-import java.sql.SQLException
-import java.util.stream.Stream
 import javax.sql.DataSource
+import java.util.stream.Stream
+
 
 /**
  *
  * @author timbo
  */
-class EMoleculesRDKitLoader {
+class AbstractRDKitSDFLoader {
     
-    static void main(String[] args) {
-        
-        ConfigObject database = Utils.createConfig('rdkit_cartridge.properties')
-        ConfigObject props = Utils.createConfig(new File('emolecules_rdkit.properties').toURL())
-        String baseTable = props.table
-        String schema = database.externaldbs.schema
-        Map<String,Class> propertyToTypeMappings = props.fields
-        DataSource dataSource = Utils.createDataSource(database, database.externaldbs.username, database.externaldbs.password)
-        Map<String,String> extraColumnDefs = props.extraColumnDefs
-        String file = props.path + '/' + props.file
-        
-        load(file, dataSource, schema, baseTable, RDKitTable.MolSourceType.CTAB, extraColumnDefs, propertyToTypeMappings)
-        
-        testSearcher(dataSource, schema, baseTable, RDKitTable.MolSourceType.CTAB, extraColumnDefs)
+    protected DataSource dataSource
+    protected String schema
+    protected String baseTable
+    protected RDKitTable.MolSourceType molSourceType
+    protected Map<String,String> extraColumnDefs
+    
+     
+    AbstractRDKitSDFLoader(DataSource dataSource, String schema, String baseTable, RDKitTable.MolSourceType molSourceType, Map<String,String> extraColumnDefs) {
+        this.dataSource = dataSource
+        this.schema = schema
+        this.baseTable = baseTable
+        this.molSourceType = molSourceType
+        this.extraColumnDefs = extraColumnDefs
     }
     
-    static void load(String file, DataSource dataSource, String schema, String baseTable, RDKitTable.MolSourceType molSourceType, Map<String,String> extraColumnDefs, Map<String,Class> propertyToTypeMappings) {
+    void load(String file, Map<String,Class> propertyToTypeMappings, List<RDKitTable.FingerprintType> fptypes, int limit) {
         println "Loading file $file"
         long t0 = System.currentTimeMillis()
         InputStream is = IOUtils.getGunzippedInputStream(new FileInputStream(file))
         try {
             SDFReader sdf = new SDFReader(is)
-            Stream<MoleculeObject> mols = sdf.asStream() //.limit(1000)
+            Stream<MoleculeObject> mols = sdf.asStream()
+            if (limit > 0) {
+                mols = mols.limit(limit)
+            }
         
             RDKitTableLoader worker = new RDKitTableLoader(dataSource, schema, baseTable, molSourceType, extraColumnDefs, propertyToTypeMappings)
             worker.dropAllItems()
@@ -44,13 +46,7 @@ class EMoleculesRDKitLoader {
             worker.loadData(mols)
             worker.createMoleculesAndIndex()
 
-            worker.addFpColumn(RDKitTable.FingerprintType.RDKIT)
-            worker.addFpColumn(RDKitTable.FingerprintType.MORGAN_CONNECTIVITY_2)
-            worker.addFpColumn(RDKitTable.FingerprintType.MORGAN_FEATURE_2)
-            //            worker.addFpColumn(RDKitTable.FingerprintType.MORGAN_CONNECTIVITY_3)
-            //            worker.addFpColumn(RDKitTable.FingerprintType.MORGAN_FEATURE_3)
-            //            worker.addFpColumn(RDKitTable.FingerprintType.MACCS)
-            //            worker.addFpColumn(RDKitTable.FingerprintType.TORSION)
+            fptypes.each {  worker.addFpColumn(it) }
             
             worker.getRowCount()
             int hits = worker.testSSS()
@@ -77,23 +73,28 @@ class EMoleculesRDKitLoader {
         println "Completed in ${t1-t0}ms"
     }
     
-    static void testSearcher(DataSource dataSource, String schema, String baseTable, RDKitTable.MolSourceType molSourceType, Map<String,String> extraColumnDefs) {
+    void testSearcher() {
         long t0 = System.currentTimeMillis()
         RDKitTableSearch searcher = new RDKitTableSearch(dataSource, schema, baseTable, molSourceType, extraColumnDefs)
-        def mols = searcher.substructureSearch('NC(=O)[C@@H]1CCCN1C=O', false, 10)
-        println "Found ${mols.size()} non-chiral results"
+        def mols = searcher.exactSearch('CC(=O)OC1=CC=CC=C1C(O)=O', false)
+        println "Found ${mols.size()} non-chiral exact search results"
+        mols.each {
+            println it
+        }
+        mols = searcher.substructureSearch('NC(=O)[C@@H]1CCCN1C=O', false, 10)
+        println "Found ${mols.size()} non-chiral substructure search results"
         mols = searcher.substructureSearch('NC(=O)[C@@H]1CCCN1C=O', true)
-        println "Found ${mols.size()} chiral results"
+        println "Found ${mols.size()} chiral substructure search results"
         mols = searcher.similaritySearch('Cc1ccc2nc(-c3ccc(NC(C4N(C(c5cccs5)=O)CCC4)=O)cc3)sc2c1', 0.5d, RDKitTable.FingerprintType.RDKIT, RDKitTable.Metric.TANIMOTO)
         println "Found ${mols.size()} similar results"
         mols = searcher.similaritySearch('Cc1ccc2nc(-c3ccc(NC(C4N(C(c5cccs5)=O)CCC4)=O)cc3)sc2c1', 0.4d, RDKitTable.FingerprintType.RDKIT, RDKitTable.Metric.TANIMOTO, 10)
         println "Found ${mols.size()} similar results"
-        mols.each {
-            println it
-        }
+//        mols.each {
+//            println it
+//        }
         long t1 = System.currentTimeMillis()
         println "Completed in ${t1-t0}ms"
     }
-   
+	
 }
 
