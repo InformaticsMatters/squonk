@@ -1,8 +1,8 @@
 description = 'notebook execution'
 def contextName = 'notebook'
 
+apply plugin: 'groovy'
 apply plugin: 'war'
-//apply plugin: 'com.bmuschko.tomcat'
 apply plugin: 'com.bmuschko.docker-remote-api'
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
@@ -14,7 +14,6 @@ buildscript {
     }
 
     dependencies {
-//        classpath 'com.bmuschko:gradle-tomcat-plugin:2.2.3'
         classpath 'com.bmuschko:gradle-docker-plugin:2.4.1'
         
     }
@@ -25,6 +24,8 @@ dependencies {
     compile project(':common')
     compile project(':common-utils')
     compile project(':core-services/core-services-common')
+    
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
     
     //compile 'javax:javaee-api:7.0'
     compile 'org.apache.httpcomponents:httpclient:4.5'
@@ -42,30 +43,7 @@ dependencies {
     
     compile 'org.jboss.weld.servlet:weld-servlet:2.2.9.Final'
     
-//    def tomcatVersion = '7.0.59'
-//    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
-//           "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
-//           "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
 }
-
-//tomcat {
-//    enableSSL = true
-//    contextPath = contextName
-//
-//    users {
-//        user {
-//            username = 'admin'
-//            password = 'lacrocks'
-//            roles = ['developers', 'admin']
-//        }
-//
-//        user {
-//            username = 'manager'
-//            password = 'lacrocks'
-//            roles = ['manager']
-//        }
-//    }
-//}
 
 docker {
     url = (System.getenv('DOCKER_HOST') ?  System.getenv('DOCKER_HOST').replace('tcp://', 'http://') : 'http://localhost:2375')
