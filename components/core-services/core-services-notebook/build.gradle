@@ -23,6 +23,7 @@ buildscript {
 dependencies {
    
     compile project(':common')
+    compile project(':common-utils')
     compile project(':core-services/core-services-common')
     
     //compile 'javax:javaee-api:7.0'

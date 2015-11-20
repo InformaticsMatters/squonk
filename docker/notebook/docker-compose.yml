@@ -1,0 +1,4 @@
+notebook-service:
+    build: ../../components/core-services/core-services-notebook/build
+    ports:
+    - 8080:8080
