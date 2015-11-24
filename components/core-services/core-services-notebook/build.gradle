@@ -23,13 +23,13 @@ dependencies {
    
     compile project(':common')
     compile project(':common-utils')
+    compile project(':common-camel')
     compile project(':core-services/core-services-common')
     
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
     
-    //compile 'javax:javaee-api:7.0'
     compile 'org.apache.httpcomponents:httpclient:4.5'
-    //compile 'org.glassfish.jersey.core:jersey-client:2.6'
+
     compile 'com.sun.jersey:jersey-client:1.19'
     compile 'com.sun.jersey:jersey-server:1.19'
     compile 'com.sun.jersey:jersey-servlet:1.19'
@@ -58,7 +58,7 @@ task dockerFile(type: Dockerfile, dependsOn: war) {
     from "tomcat:8-jre8"
     maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
     
-    //runCommand("rm -rf /usr/local/tomcat/webapps/*")
+    runCommand("rm -rf /usr/local/tomcat/webapps/*")
     runCommand("echo JAVA_OPTS=\'-Dcom.sun.jersey.server.impl.cdi.lookupExtensionInBeanManager=true\' > /usr/local/tomcat/bin/setenv.sh")
     
     def warFile = tasks.war.outputs.files.singleFile

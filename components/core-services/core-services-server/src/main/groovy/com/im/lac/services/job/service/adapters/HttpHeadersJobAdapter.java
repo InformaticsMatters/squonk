@@ -1,8 +1,5 @@
 package com.im.lac.services.job.service.adapters;
 
-import com.im.lac.services.ServiceDescriptor;
-import com.im.lac.services.job.service.AbstractDatasetJob;
-import com.im.lac.services.job.service.AsyncJobRouteBuilder;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.HashMap;
@@ -34,6 +31,6 @@ public class HttpHeadersJobAdapter extends SimpleHttpJobAdapter {
             }
         }
 
-        return pt.requestBodyAndHeaders(AsyncJobRouteBuilder.ROUTE_HTTP_SUBMIT, input, headers, InputStream.class);
+        return pt.requestBodyAndHeaders("http4:dummy", input, headers, InputStream.class);
     }
 }

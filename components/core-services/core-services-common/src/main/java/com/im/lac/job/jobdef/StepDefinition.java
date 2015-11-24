@@ -20,6 +20,10 @@ public final class StepDefinition implements Serializable {
 
     }
 
+    public StepDefinition(String implementationClass) {
+        this.implementationClass = implementationClass;
+    }
+
     public StepDefinition(String implementationClass, Map<String, Object> options, Map<String, String> fieldMappings) {
         if (implementationClass == null) {
             throw new NullPointerException("implementationClass must not be null");
@@ -27,6 +31,16 @@ public final class StepDefinition implements Serializable {
         this.implementationClass = implementationClass;
         setOptions(options);
         setFieldMappings(fieldMappings);
+    }
+    
+    public StepDefinition withOption(String name, Object value) {
+        options.put(name, value);
+        return this;
+    }
+    
+    public StepDefinition withFieldMapping(String from, String to) {
+        fieldMappings.put(from, to);
+        return this;
     }
 
     public String getImplementationClass() {

@@ -107,7 +107,7 @@ public class SimpleHttpJobAdapter extends ProcessDatasetJobAdapter {
         headers.put(Exchange.HTTP_URI, endpoint);
         headers.put(Exchange.HTTP_METHOD, "POST");
         
-        return pt.requestBodyAndHeaders(AsyncJobRouteBuilder.ROUTE_HTTP_SUBMIT, input, headers, InputStream.class);
+        return pt.requestBodyAndHeaders("http4:dummy", input, headers, InputStream.class);
     }
 
 }

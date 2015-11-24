@@ -5,7 +5,6 @@ import com.squonk.notebook.client.CallbackContext;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.im.lac.types.MoleculeObject;
-import com.squonk.notebook.api.AbstractClient;
 import com.squonk.notebook.api.CellDTO;
 import com.squonk.notebook.api.NotebookDTO;
 import com.sun.jersey.api.client.WebResource;

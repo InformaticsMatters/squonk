@@ -1,6 +1,5 @@
 package com.im.lac.services.job.service.adapters;
 
-import com.im.lac.services.job.service.adapters.ProcessDatasetJobAdapter;
 import com.im.lac.dataset.JsonMetadataPair;
 import com.im.lac.job.JobExecutionException;
 import com.im.lac.services.ServiceDescriptor;

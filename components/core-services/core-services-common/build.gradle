@@ -4,14 +4,11 @@ dependencies {
     
     compile project(':common')
     
-    //compile 'javax:javaee-api:6.0'
     compile 'javax.servlet:javax.servlet-api:3.0.1'
     compile 'javax.inject:javax.inject:1'
     compile 'javax.enterprise:cdi-api:1.2'
     
     compile 'org.apache.httpcomponents:httpclient:4.5'
-    //compile 'org.glassfish.jersey.core:jersey-client:2.6'
-    compile 'com.sun.jersey:jersey-client:1.19'
     
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"

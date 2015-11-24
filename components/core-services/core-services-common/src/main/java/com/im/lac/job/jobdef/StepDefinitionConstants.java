@@ -6,15 +6,15 @@ package com.im.lac.job.jobdef;
  */
 public interface StepDefinitionConstants {
 
-    public static final String STEP_SDF_READER = "com.im.lac.services.job.service.steps.SDFReaderStep";
-    public static final String STEP_CSV_READER = "com.im.lac.services.job.service.steps.CSVReaderStep";
-    public static final String STEP_DATASET_WRITER = "com.im.lac.services.job.service.steps.DatasetWriterStep";
-    public static final String STEP_DATASET_READER = "com.im.lac.services.job.service.steps.DatasetReaderStep";
-    public static final String STEP_MOLECULE_SERVICE_EXECUTOR = "com.im.lac.services.job.service.steps.MoleculeServiceFatExecutorStep";
-    public static final String STEP_VALUE_TRANSFORMER = "com.im.lac.services.job.service.steps.ValueTransformerStep";
-    public static final String STEP_BASICOBJECT_TO_MOLEUCLEOBJECT = "com.im.lac.services.job.service.steps.BasicObjectToMoleculeObjectStep";
-    public static final String STEP_CHEMBL_ACTIVITIES_FETCHER = "com.im.lac.services.job.service.steps.ChemblActivitiesFetcherStep";
-    public static final String STEP_DATASET_MERGER = "com.im.lac.services.job.service.steps.DatasetMergerStep";
+    public static final String STEP_SDF_READER = "com.squonk.notebook.execution.steps.SDFReaderStep";
+    public static final String STEP_CSV_READER = "com.squonk.notebook.execution.steps.CSVReaderStep";
+    public static final String STEP_DATASET_WRITER = "com.squonk.notebook.execution.steps.DatasetWriterStep";
+    public static final String STEP_DATASET_READER = "com.squonk.notebook.execution.steps.DatasetReaderStep";
+    public static final String STEP_MOLECULE_SERVICE_EXECUTOR = "com.squonk.notebook.execution.steps.MoleculeServiceFatExecutorStep";
+    public static final String STEP_VALUE_TRANSFORMER = "com.squonk.notebook.execution.steps.ValueTransformerStep";
+    public static final String STEP_BASICOBJECT_TO_MOLEUCLEOBJECT = "com.squonk.notebook.execution.steps.BasicObjectToMoleculeObjectStep";
+    public static final String STEP_CHEMBL_ACTIVITIES_FETCHER = "com.squonk.notebook.execution.steps.ChemblActivitiesFetcherStep";
+    public static final String STEP_DATASET_MERGER = "com.squonk.notebook.execution.steps.DatasetMergerStep";
     
     
     public static final String VARIABLE_INPUT_DATASET = "_InputDataset";
