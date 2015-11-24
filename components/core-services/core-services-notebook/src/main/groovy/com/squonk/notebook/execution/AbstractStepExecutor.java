@@ -40,7 +40,7 @@ public abstract class AbstractStepExecutor implements QndCellExecutor {
         try {
             executor.execute(steps, null);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch ChEMBL activities", e);
+            throw new RuntimeException("Failed to execute cell", e);
         }
     }
 

@@ -20,7 +20,8 @@ components/chemcentral/chemcentral.properties
 components/chemcentral/database.properties
 components/chemcentral/users.properties
 components/demo-services/logs
-/components/loaders/files
-/components/core-services/core-services-client/lib
-/components/chem-services-root/src/main/html/licenses
-
+components/loaders/files
+components/core-services/core-services-client/lib
+components/chem-services-root/src/main/html/licenses
+docker/notebook
+docker/notebook_portal

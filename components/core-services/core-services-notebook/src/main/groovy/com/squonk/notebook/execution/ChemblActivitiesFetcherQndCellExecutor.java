@@ -3,8 +3,6 @@ package com.squonk.notebook.execution;
 import com.im.lac.job.jobdef.StepDefinition;
 import static com.im.lac.job.jobdef.StepDefinitionConstants.*;
 import com.squonk.notebook.api.CellDTO;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Given a ChEMBL assay ID fetches all activities for that assay and generated a

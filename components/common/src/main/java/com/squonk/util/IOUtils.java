@@ -31,8 +31,9 @@ public class IOUtils {
     private static final Logger LOG = Logger.getLogger(IOUtils.class.getName());
 
     /**
-     * Utility for checking if an InputStream is gzipped. Returns a GZIPInputStream if the stream is
-     * in gzip format, otherwise the original InputStream (actually a wrapper around it).
+     * Utility for checking if an InputStream is gzipped. Returns a
+     * GZIPInputStream if the stream is in gzip format, otherwise the original
+     * InputStream (actually a wrapper around it).
      *
      * @param is An InputStream that provides the data gunzipped.
      * @return
@@ -87,8 +88,9 @@ public class IOUtils {
     }
 
     /**
-     * Convenience method to close the object if it implements the Closeable interface. If the
-     * close() fails then the exception is logged, but not thrown.
+     * Convenience method to close the object if it implements the Closeable
+     * interface. If the close() fails then the exception is logged, but not
+     * thrown.
      *
      * @param o
      */
@@ -129,7 +131,7 @@ public class IOUtils {
         }
         return out.toString();
     }
-    
+
     public static byte[] convertStreamToBytes(final InputStream is, final int bufferSize) throws IOException {
         final byte[] buffer = new byte[bufferSize];
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -142,7 +144,7 @@ public class IOUtils {
         }
         return out.toByteArray();
     }
-   
+
     public static String truncateString(String s, int maxLength) {
         if (s == null) {
             return null;
@@ -153,35 +155,59 @@ public class IOUtils {
             return s;
         }
     }
-    
+
     /**
      * Create an ordered Stream containing no null values from the Iterator
-     * 
-     * @see {@link com.im.lac.util.SimpleStreamProvider} for more control over this.
+     *
+     * @see {@link com.im.lac.util.SimpleStreamProvider} for more control over
+     * this.
      * @param <T>
      * @param iter
      * @param type
-     * @return 
+     * @return
      */
     public static <T> Stream<T> streamFromIterator(Iterator<T> iter, Class<T> type) {
         SimpleStreamProvider sp = new SimpleStreamProvider(iter, type);
         return sp.getStream();
     }
-    
+
     /**
-     * Create an ordered Stream containing no null values of the specified batch size 
-     * from the Iterator
-     * 
+     * Create an ordered Stream containing no null values of the specified batch
+     * size from the Iterator
+     *
      * @param batchSize
-     * @see {@link com.im.lac.util.SimpleStreamProvider} for more control over this.
+     * @see {@link com.im.lac.util.SimpleStreamProvider} for more control over
+     * this.
      * @param <T>
      * @param iter
      * @param type
-     * @return 
+     * @return
      */
     public static <T> Stream<T> streamFromIterator(Iterator<T> iter, Class<T> type, int batchSize) {
         SimpleStreamProvider sp = new SimpleStreamProvider(iter, type, Spliterator.NONNULL | Spliterator.ORDERED, batchSize);
         return sp.getStream();
+    }
+
+    /**
+     * Get a value that might be configured externally. Looks first for a system property
+     * (a -D option specified to Java), if not present looks for an environment variable
+     * and if not present then falls back to the specified default.
+     * 
+     * @param name The system property or environment variable name
+     * @param defaultValue The value to fall back to.
+     * @return 
+     */
+    public static String getConfiguration(String name, String defaultValue) {
+        String s = System.getProperty(name);
+        if (s != null) {
+            return s;
+        }
+        s = System.getenv(name);
+        if (s != null) {
+            return s;
+        }
+        return defaultValue;
+
     }
 
 }

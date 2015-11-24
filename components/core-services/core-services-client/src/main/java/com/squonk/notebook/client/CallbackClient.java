@@ -1,7 +1,5 @@
 package com.squonk.notebook.client;
 
-import com.squonk.notebook.client.CallbackClientConfig;
-import com.squonk.notebook.client.CallbackContext;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.im.lac.types.MoleculeObject;
