@@ -17,21 +17,24 @@ public abstract class AbstractStepExecutor implements QndCellExecutor {
 
     @Inject
     protected CallbackClient callbackClient;
-
-    protected abstract String getCellTypeName();
+    
+    protected final String cellTypeName;
+    
+    
+    public AbstractStepExecutor(String cellTypeName) {
+        this.cellTypeName = cellTypeName;
+    }
 
     protected abstract StepDefinition[] getStepDefintions(CellDTO cell);
 
     @Override
     public boolean handles(CellType cellType) {
-        return cellType.getName().equals(getCellTypeName());
+        return cellType.getName().equals(cellTypeName);
     }
 
     @Override
     public void execute(String cellName) {
-
-        VariableManager manger = new VariableManager(
-                new CellCallbackClientVariableLoader(callbackClient, cellName));
+        VariableManager manger = new VariableManager(new CellCallbackClientVariableLoader(callbackClient, cellName));
         CellDTO cell = callbackClient.retrieveCell(cellName);
 
         StepDefinition[] steps = getStepDefintions(cell);
@@ -42,6 +45,10 @@ public abstract class AbstractStepExecutor implements QndCellExecutor {
         } catch (Exception e) {
             throw new RuntimeException("Failed to execute cell", e);
         }
+    }
+
+    protected StepDefinition configureOption(StepDefinition step, CellDTO cell, String option) {
+        return step.withOption(option, cell.getPropertyMap().get(option));
     }
 
 }

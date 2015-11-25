@@ -11,9 +11,13 @@ import com.squonk.notebook.api.CellDTO;
  *
  * Created by timbo on 10/11/15.
  */
-public class ChemblActivitiesFetcherQndCellExecutor extends AbstractStepExecutor {
+public class ChemblActivitiesFetcherCellExecutor extends AbstractStepExecutor {
 
-    public static final String CELL_TYPE_NAME_CHEMBL_ACTIVITIES_FETCHER = "ChemblActivitiesFetcher";
+    public static final String CELL_TYPE_NAME_CHEMBL_ACTIVITIES_FETCHER = "ChemblActivitiesFetcherCellType";
+
+    public ChemblActivitiesFetcherCellExecutor() {
+        super(CELL_TYPE_NAME_CHEMBL_ACTIVITIES_FETCHER);
+    }
 
     @Override
     protected StepDefinition[] getStepDefintions(CellDTO cell) {
@@ -25,11 +29,6 @@ public class ChemblActivitiesFetcherQndCellExecutor extends AbstractStepExecutor
 
         return new StepDefinition[]{step};
 
-    }
-
-    @Override
-    protected String getCellTypeName() {
-        return CELL_TYPE_NAME_CHEMBL_ACTIVITIES_FETCHER;
     }
 
 }

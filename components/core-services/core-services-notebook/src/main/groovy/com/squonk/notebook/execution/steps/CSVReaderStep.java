@@ -96,7 +96,7 @@ public class CSVReaderStep extends AbstractStep {
     public static final String OPTION_COMMENT_MARKER = "CommentMarker";
     /**
      * Value for the quote mode. Value expected to be a String corresponding to
-     * of the the {@link org.apache.commons.csvQuoteMode} enums
+     * of the the {@link org.apache.commons.csv.QuoteMode} enums
      */
     public static final String OPTION_QUOTE_MODE = "QuoteMode";
     /**
