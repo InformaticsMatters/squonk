@@ -4,7 +4,6 @@ import com.im.lac.job.jobdef.StepDefinition;
 import static com.im.lac.job.jobdef.StepDefinitionConstants.*;
 import com.squonk.notebook.api.CellDTO;
 import com.squonk.notebook.execution.steps.BasicObjectToMoleculeObjectStep;
-import com.squonk.notebook.execution.steps.SDFReaderStep;
 
 /**
  * Converts a Dataset of BasicObjects to a Dataset of MoleculeObjects using the value

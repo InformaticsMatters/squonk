@@ -14,9 +14,9 @@ import org.apache.camel.CamelContext;
  */
 public class ValueTransformerStep extends AbstractStep {
 
-    private static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
-    private static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
-    private static final String OPTION_TRANSFORMS = "Transformers";
+    public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
+    public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
+    public static final String OPTION_TRANSFORMS = "Transformers";
 
     @Override
     public String[] getInputVariableNames() {

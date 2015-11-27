@@ -13,8 +13,7 @@ import com.squonk.notebook.execution.steps.SDFReaderStep;
  * The file input is read from the FileInput variable (which must be set prior to 
  * execution) and the results set to the Results variable.
  * Note: the molecules are not validated in any way, and if they are invalid will 
- * result in errors downstream. 
- * 
+ * result in errors downstream.
  *
  * Created by timbo on 10/11/15.
  */
