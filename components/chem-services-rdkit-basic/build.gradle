@@ -24,6 +24,7 @@ dependencies {
     compile project(':common')
     compile project(':common-camel')
     compile project(':core-services/core-services-common')
+    compile project(':rdkit-lib')
     compile project(':rdkit-camel')
     
     compile "org.apache.camel:camel-core:$camelVersion"

@@ -6,6 +6,7 @@ import com.squonk.notebook.api.VariableDefinition;
 import com.squonk.notebook.api.CellDTO;
 import com.squonk.notebook.client.CallbackClient;
 import com.squonk.notebook.client.CallbackContext;
+import com.squonk.notebook.execution.SDFUploaderCellExecutor;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -17,6 +18,7 @@ import java.util.List;
 @ApplicationScoped
 @Path("cell")
 public class ExampleCellService {
+
     private static final List<CellType> CELL_TYPE_DESCRIPTOR_LIST = createDescriptors();
     @Inject
     private QndCellExecutorProvider qndCellExecutorProvider;
@@ -24,7 +26,6 @@ public class ExampleCellService {
     private CallbackClient callbackClient;
     @Inject
     private CallbackContext callbackContext;
-    
 
     private static List<CellType> createDescriptors() {
         List<CellType> list = new ArrayList<>();
@@ -98,6 +99,10 @@ public class ExampleCellService {
         cellType.getOptionNameList().add("number2");
         cellType.setExecutable(Boolean.TRUE);
         list.add(cellType);
+
+        list.add(new CellType(SDFUploaderCellExecutor.CELL_TYPE_NAME_SDF_UPLOADER, "SDF upload", true)
+                .withOutputVariable("FileContent", VariableType.FILE)
+                .withOutputVariable("Results", VariableType.DATASET));
 
         return list;
     }
