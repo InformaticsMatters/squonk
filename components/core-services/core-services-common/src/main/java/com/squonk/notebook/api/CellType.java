@@ -34,6 +34,11 @@ public class CellType implements Serializable {
         return this;
     }
 
+    public CellType withOption(String name) {
+        optionNameList.add(name);
+        return this;
+    }
+
     public List<VariableDefinition> getOutputVariableDefinitionList() {
         return outputVariableDefinitionList;
     }

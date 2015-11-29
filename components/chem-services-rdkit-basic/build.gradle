@@ -1,6 +1,8 @@
 description = 'RDKit java services'
 def contextName = 'rdkit_basic_services'
 
+def RDBASE = System.getenv('RDBASE')
+
 
 apply plugin: 'war'
 apply plugin: 'com.bmuschko.tomcat'
@@ -84,3 +86,5 @@ task dockerImage(type: DockerBuildImage) {
     inputDir = dockerFile.destFile.parentFile
     tag = "squonk/${contextName}"
 }
+
+tasks.test.onlyIf { RDBASE != null }

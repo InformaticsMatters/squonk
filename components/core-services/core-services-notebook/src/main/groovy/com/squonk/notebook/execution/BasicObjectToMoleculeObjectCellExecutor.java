@@ -16,7 +16,7 @@ import com.squonk.notebook.execution.steps.BasicObjectToMoleculeObjectStep;
  */
 public class BasicObjectToMoleculeObjectCellExecutor extends AbstractStepExecutor {
 
-    public static final String CELL_TYPE_BASICOBJECT_TO_MOLECULEOBJECT = "BasicObjectToMolecuelObjectCellType";
+    public static final String CELL_TYPE_BASICOBJECT_TO_MOLECULEOBJECT = "BasicObjectToMolecuelObject";
     
     public BasicObjectToMoleculeObjectCellExecutor() {
         super(CELL_TYPE_BASICOBJECT_TO_MOLECULEOBJECT);

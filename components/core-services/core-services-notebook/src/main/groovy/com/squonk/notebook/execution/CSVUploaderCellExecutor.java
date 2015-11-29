@@ -16,7 +16,7 @@ import com.squonk.notebook.execution.steps.CSVReaderStep;
  */
 public class CSVUploaderCellExecutor extends AbstractStepExecutor {
 
-    public static final String CELL_TYPE_NAME_CSV_UPLOADER = "CsvUploaderCellType";
+    public static final String CELL_TYPE_NAME_CSV_UPLOADER = "CsvUploader";
     
     public CSVUploaderCellExecutor() {
         super(CELL_TYPE_NAME_CSV_UPLOADER);

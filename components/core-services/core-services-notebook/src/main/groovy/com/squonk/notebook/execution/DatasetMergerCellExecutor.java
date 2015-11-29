@@ -23,7 +23,7 @@ import com.squonk.notebook.execution.steps.DatasetMergerStep;
  */
 public class DatasetMergerCellExecutor extends AbstractStepExecutor {
 
-    public static final String CELL_TYPE_NAME_DATASET_MERGER = "DatasetMergerCellType";
+    public static final String CELL_TYPE_NAME_DATASET_MERGER = "DatasetMerger";
     public static final String INPUT = "Input";
 
     public DatasetMergerCellExecutor() {

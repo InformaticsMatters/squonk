@@ -17,7 +17,7 @@ import com.squonk.notebook.execution.steps.ValueTransformerStep;
  */
 public class ValueTransformerCellExecutor extends AbstractStepExecutor {
 
-    public static final String CELL_TYPE_NAME_VALUE_TRANSFORMER = "ValueTransformerCellType";
+    public static final String CELL_TYPE_NAME_VALUE_TRANSFORMER = "ValueTransformer";
     
     public ValueTransformerCellExecutor() {
         super(CELL_TYPE_NAME_VALUE_TRANSFORMER);

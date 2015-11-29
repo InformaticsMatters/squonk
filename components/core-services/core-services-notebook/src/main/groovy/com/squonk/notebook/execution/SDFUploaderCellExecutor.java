@@ -19,7 +19,7 @@ import com.squonk.notebook.execution.steps.SDFReaderStep;
  */
 public class SDFUploaderCellExecutor extends AbstractStepExecutor {
 
-    public static final String CELL_TYPE_NAME_SDF_UPLOADER = "SdfUploaderCellType";
+    public static final String CELL_TYPE_NAME_SDF_UPLOADER = "SdfUploader";
     
     public SDFUploaderCellExecutor() {
         super(CELL_TYPE_NAME_SDF_UPLOADER);

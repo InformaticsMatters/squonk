@@ -1,6 +1,6 @@
 package com.im.squonk.rdkit.services;
 
-import com.squonk.rdkit.db.RDkitTableSearch;
+//import com.squonk.rdkit.db.RDkitTableSearch;
 import com.im.lac.camel.CamelCommonConstants;
 import org.apache.camel.builder.RouteBuilder;
 import javax.sql.DataSource;
@@ -29,9 +29,9 @@ public class RdkitSearchRouteBuilder extends RouteBuilder {
         from(RDKIT_SEARCH_EMOLS_BB)
                 .log("RDKIT_SEARCH_EMOLS_BB starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process((Exchange exch) -> {
-                    
-                })
+//                .process((Exchange exch) -> {
+//
+//                })
                 .log("RDKIT_SEARCH_EMOLS_BB finished");
 
     }

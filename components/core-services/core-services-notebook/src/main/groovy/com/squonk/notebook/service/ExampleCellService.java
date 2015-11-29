@@ -6,6 +6,7 @@ import com.squonk.notebook.api.VariableDefinition;
 import com.squonk.notebook.api.CellDTO;
 import com.squonk.notebook.client.CallbackClient;
 import com.squonk.notebook.client.CallbackContext;
+import com.squonk.notebook.execution.DatasetMergerCellExecutor;
 import com.squonk.notebook.execution.SDFUploaderCellExecutor;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -102,7 +103,13 @@ public class ExampleCellService {
 
         list.add(new CellType(SDFUploaderCellExecutor.CELL_TYPE_NAME_SDF_UPLOADER, "SDF upload", true)
                 .withOutputVariable("FileContent", VariableType.FILE)
-                .withOutputVariable("Results", VariableType.DATASET));
+                .withOutputVariable("Results", VariableType.DATASET)
+                .withOption("NameFieldName"));
+
+        list.add(new CellType(DatasetMergerCellExecutor.CELL_TYPE_NAME_DATASET_MERGER, "Dataset merger", true)
+                .withOutputVariable("Results", VariableType.DATASET)
+                .withOption("MergeFieldName")
+                .withOption("KeepFirst"));
 
         return list;
     }

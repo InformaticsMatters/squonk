@@ -11,7 +11,7 @@ dependencies {
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-script:$camelVersion"
 
-    compile "org.python:jython:2.7-b2"
+    //compile "org.python:jython:2.7-b2"
     
     if (RDBASE) {
         println "$RDBASE defined - using that location for RDkit"
@@ -25,15 +25,14 @@ dependencies {
     testCompile project(':core-test')
 }
 
-sourceSets {
-    main {
-        resources {
-            srcDirs += 'src/main/python'
-            srcDirs += '/usr/lib/python2.7'
-        }
-    }
-    
-}
+//sourceSets {
+//    main {
+//        resources {
+//            srcDirs += 'src/main/python'
+//            srcDirs += '/usr/lib/python2.7'
+//        }
+//    }
+//    
+//}
 
-tasks.test.enabled = System.getenv("RDBASE") != null
-
+tasks.test.onlyIf { RDBASE != null }

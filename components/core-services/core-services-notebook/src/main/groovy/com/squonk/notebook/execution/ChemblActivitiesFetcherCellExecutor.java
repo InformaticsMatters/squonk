@@ -13,7 +13,7 @@ import com.squonk.notebook.api.CellDTO;
  */
 public class ChemblActivitiesFetcherCellExecutor extends AbstractStepExecutor {
 
-    public static final String CELL_TYPE_NAME_CHEMBL_ACTIVITIES_FETCHER = "ChemblActivitiesFetcherCellType";
+    public static final String CELL_TYPE_NAME_CHEMBL_ACTIVITIES_FETCHER = "ChemblActivitiesFetcher";
 
     public ChemblActivitiesFetcherCellExecutor() {
         super(CELL_TYPE_NAME_CHEMBL_ACTIVITIES_FETCHER);
