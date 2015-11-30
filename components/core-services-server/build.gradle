@@ -35,7 +35,7 @@ dependencies {
     compile project(':common-utils')
     compile project(':common-camel')
     compile project(':chemaxon-lib')
-    compile project(':core-services/core-services-common')
+    compile project(':core-services-common')
     
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 

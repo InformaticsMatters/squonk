@@ -13,7 +13,7 @@ db:
     - "5432:5432"
 
 cs:
-    build: ../components/core-services/core-services-server/build
+    build: ../components/core-services-server/build
     ports:
     - 80:8080
     links:

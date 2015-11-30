@@ -15,7 +15,7 @@ class SDFReaderStepSpec extends Specification {
     void "test read sdf"() {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         SDFReaderStep step = new SDFReaderStep()
-        FileInputStream is = new FileInputStream("../../../data/testfiles/Kinase_inhibs.sdf.gz")
+        FileInputStream is = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
         Variable sdf = varman.createVariable(
             SDFReaderStep.VAR_SDF_INPUT, 
             InputStream.class, 

@@ -13,7 +13,7 @@ apply plugin: 'org.unbroken-dome.test-sets'
 
 dependencies {
     compile project(':common')
-    compile project(':core-services/core-services-common')
+    compile project(':core-services-common')
     
     compile 'org.apache.httpcomponents:httpclient:4.5'
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
@@ -45,7 +45,7 @@ project.integrationTest {
 
 integrationTest {
     dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean, 
-    tasks.getByPath(':core-services/core-services-server:flywayMigrate')
+    tasks.getByPath(':core-services-server:flywayMigrate')
     finalizedBy rootProject.tasks.integrationTestEnvShutdown
 }
 

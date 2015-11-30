@@ -80,7 +80,7 @@ task wrapper(type: Wrapper) {
 }
 
 task integrationTestEnvPrepare(type:Exec) {
-    dependsOn "core-services/core-services-server:dockerFile"
+    dependsOn "core-services-server:dockerFile"
     
     workingDir '../docker'
     commandLine 'bash', 'int-test-env-prepare.sh'

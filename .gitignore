@@ -21,7 +21,7 @@ components/chemcentral/database.properties
 components/chemcentral/users.properties
 components/demo-services/logs
 components/loaders/files
-components/core-services/core-services-client/lib
+components/core-services-client/lib
 components/chem-services-root/src/main/html/licenses
 docker/notebook/*.war
 docker/notebook_portal/*.war

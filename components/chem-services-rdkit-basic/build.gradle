@@ -25,7 +25,7 @@ buildscript {
 dependencies {
     compile project(':common')
     compile project(':common-camel')
-    compile project(':core-services/core-services-common')
+    compile project(':core-services-common')
     compile project(':rdkit-lib')
     compile project(':rdkit-camel')
     
