@@ -26,6 +26,7 @@ dependencies {
     compile project(':common-camel')
     compile project(':core-services-common')
     compile project(':core-services-client')
+    compile project(':core-services-exec')
     
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
     

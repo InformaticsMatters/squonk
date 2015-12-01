@@ -1,9 +1,9 @@
 package com.squonk.notebook.execution;
 
-import com.im.lac.job.jobdef.StepDefinition;
-import static com.im.lac.job.jobdef.StepDefinitionConstants.*;
+import com.squonk.execution.steps.StepDefinition;
+import static com.squonk.execution.steps.StepDefinitionConstants.*;
 import com.squonk.notebook.api.CellDTO;
-import com.squonk.notebook.execution.steps.SDFReaderStep;
+import com.squonk.execution.steps.impl.SDFReaderStep;
 
 /**
  * Reads a SD file and generates a Dataset of MoleculeObjects containing the 

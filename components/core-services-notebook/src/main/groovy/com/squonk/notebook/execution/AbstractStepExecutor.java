@@ -1,12 +1,12 @@
 package com.squonk.notebook.execution;
 
-import com.im.lac.job.jobdef.StepDefinition;
+import com.squonk.execution.steps.StepDefinition;
 import com.squonk.notebook.api.CellDTO;
 import com.squonk.notebook.api.CellType;
 import com.squonk.notebook.client.CallbackClient;
-import com.squonk.notebook.execution.steps.StepExecutor;
-import com.squonk.notebook.execution.variable.CellCallbackClientVariableLoader;
-import com.squonk.notebook.execution.variable.VariableManager;
+import com.squonk.execution.steps.StepExecutor;
+import com.squonk.execution.variable.impl.CellCallbackClientVariableLoader;
+import com.squonk.execution.variable.VariableManager;
 import javax.inject.Inject;
 
 /**

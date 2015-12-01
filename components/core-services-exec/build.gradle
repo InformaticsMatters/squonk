@@ -1,0 +1,13 @@
+description = 'service execution utils'
+
+apply plugin: 'groovy'
+
+dependencies {
+    compile project(':common')
+    compile project(':common-utils')
+    compile project(':common-camel')
+
+    compile project(':core-services-common')
+
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+}

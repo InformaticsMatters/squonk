@@ -1,9 +1,9 @@
 package com.squonk.notebook.execution;
 
-import com.im.lac.job.jobdef.StepDefinition;
-import static com.im.lac.job.jobdef.StepDefinitionConstants.*;
+import com.squonk.execution.steps.StepDefinition;
+import static com.squonk.execution.steps.StepDefinitionConstants.*;
 import com.squonk.notebook.api.CellDTO;
-import com.squonk.notebook.execution.steps.DatasetMergerStep;
+import com.squonk.execution.steps.impl.DatasetMergerStep;
 
 /**
  * Merges one or more datasets by removing duplicates and merging the data. The
