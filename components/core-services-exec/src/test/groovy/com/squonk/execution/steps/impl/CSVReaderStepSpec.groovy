@@ -1,11 +1,8 @@
 package com.squonk.execution.steps.impl
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.squonk.execution.variable.*
 import com.squonk.execution.variable.impl.*
-import com.im.lac.types.BasicObject
-import java.util.stream.Stream
-import org.apache.commons.csv.CSVFormat
+import com.squonk.dataset.*
 import spock.lang.Specification
 
 /**
@@ -30,7 +27,7 @@ field1\tfield2\tfield3
         //println "simple csv reader with header"
         InputStream is = new ByteArrayInputStream(CSV1.bytes)
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
-        Variable csv = varman.createVariable(
+        Variable csv = varman.putValue(
             CSVReaderStep.VAR_CSV_INPUT, 
             InputStream.class, 
             is,
@@ -46,11 +43,9 @@ field1\tfield2\tfield3
         
         when:
         step.execute(varman, null)
-        Variable datasetvar = varman.lookupVariable(CSVReaderStep.VAR_DATASET_OUTPUT)
+        Dataset dataset = varman.getValue(CSVReaderStep.VAR_DATASET_OUTPUT, Dataset.class, Variable.PersistenceType.DATASET)
         
         then:
-        datasetvar != null
-        def dataset = varman.getValue(datasetvar)
         dataset != null
         def items = dataset.items
         items.size() == 3
@@ -61,7 +56,7 @@ field1\tfield2\tfield3
         //println "simple tab reader without header"
         InputStream is = new ByteArrayInputStream(TAB1.bytes)
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
-        Variable csv = varman.createVariable(
+        Variable csv = varman.putValue(
             CSVReaderStep.VAR_CSV_INPUT, 
             InputStream.class, 
             is,
@@ -75,11 +70,9 @@ field1\tfield2\tfield3
         
         when:
         step.execute(varman, null)
-        Variable datasetvar = varman.lookupVariable(CSVReaderStep.VAR_DATASET_OUTPUT)
+        Dataset dataset = varman.getValue(CSVReaderStep.VAR_DATASET_OUTPUT, Dataset.class, Variable.PersistenceType.DATASET)
         
         then:
-        datasetvar != null
-        def dataset = varman.getValue(datasetvar)
         dataset != null
         def items = dataset.items
         items.size() == 4

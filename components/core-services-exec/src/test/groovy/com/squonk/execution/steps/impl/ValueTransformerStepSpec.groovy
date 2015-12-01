@@ -35,7 +35,7 @@ class ValueTransformerStepSpec extends Specification {
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
-        Variable dsvar = varman.createVariable(
+        varman.putValue(
             ValueTransformerStep.VAR_INPUT_DATASET, 
             Dataset.class, 
             ds,
@@ -46,11 +46,9 @@ class ValueTransformerStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        Variable datasetvar = varman.lookupVariable(ValueTransformerStep.VAR_INPUT_DATASET)
+        Dataset dataset = varman.getValue(ValueTransformerStep.VAR_INPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET)
         
         then:
-        datasetvar != null
-        def dataset = varman.getValue(datasetvar)
         dataset != null
         dataset.generateMetadata()
         List results = dataset.getItems()

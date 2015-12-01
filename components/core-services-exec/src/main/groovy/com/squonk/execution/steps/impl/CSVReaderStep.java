@@ -131,7 +131,7 @@ public class CSVReaderStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws IOException {
-        InputStream is = fetchMappedValue(VAR_CSV_INPUT, InputStream.class, varman);
+        InputStream is = fetchMappedValue(VAR_CSV_INPUT, InputStream.class, Variable.PersistenceType.BYTES, varman);
         CSVReader reader = createReader(IOUtils.getGunzippedInputStream(is));
         Stream<BasicObject> mols = reader.asStream();
         Dataset dataset = new Dataset(BasicObject.class, mols);

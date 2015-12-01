@@ -28,7 +28,7 @@ class MoleculeServiceFatExecutorStepSpec extends Specification {
         Dataset ds = new Dataset(MoleculeObject.class, mols)
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader())
-        varman.createVariable(MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET, Dataset.class, ds, Variable.PersistenceType.NONE)
+        varman.putValue(MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET, Dataset.class, ds, Variable.PersistenceType.NONE)
         
         def options = [
             (MoleculeServiceFatExecutorStep.OPTION_SERVICE_ENDPOINT):'http://demos.informaticsmatters.com:9080/chem-services-cdk-basic/rest/v1/calculators/logp'
@@ -43,9 +43,7 @@ class MoleculeServiceFatExecutorStepSpec extends Specification {
         step.execute(varman, context)
         
         then:
-        def outvar = varman.lookupVariable(MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET)
-        outvar != null
-        def output = varman.getValue(outvar)
+        def output = varman.getValue(MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET)
         output instanceof Dataset
         def items = output.items
         items.size() == 3

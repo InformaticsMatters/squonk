@@ -29,6 +29,7 @@ public abstract class AbstractStepExecutor implements QndCellExecutor {
 
     @Override
     public boolean handles(CellType cellType) {
+        System.out.println("Testing cell type name " + cellType.getName() + " for " + cellTypeName);
         return cellType.getName().equals(cellTypeName);
     }
 

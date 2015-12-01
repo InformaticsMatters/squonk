@@ -39,7 +39,7 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
-        Dataset input = fetchMappedValue(VAR_INPUT_DATASET, Dataset.class, varman);
+        Dataset input = fetchMappedValue(VAR_INPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET, varman);
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
 
         InputStream output = CamelUtils.doPostUsingHeadersAndQueryParams(context, endpoint, input.getInputStream(true), params);

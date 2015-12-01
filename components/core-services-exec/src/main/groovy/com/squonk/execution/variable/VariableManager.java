@@ -7,11 +7,7 @@ import com.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -20,8 +16,7 @@ import java.util.stream.Stream;
  */
 public class VariableManager {
 
-    private final Map<Variable, Object> tmpValues = new HashMap<>();
-    private final Map<String, Variable> variables = new LinkedHashMap<>();
+    private final Map<String, Object> tmpValues = new HashMap<>();
 
     private final VariableLoader loader;
 
@@ -30,24 +25,13 @@ public class VariableManager {
     }
 
     public void save() throws IOException {
-        Iterator<Variable> iter = variables.values().iterator();
-        while (iter.hasNext()) {
-            Variable var = iter.next();
-            if (var.getPersistenceType() == Variable.PersistenceType.NONE) {
-                iter.remove();
-            }
-        }
+        tmpValues.clear();
         loader.save();
     }
 
-    public <V> Variable<V> createVariable(String name, Class<V> type, V value, Variable.PersistenceType persistenceType) throws IOException {
+    public <V> void putValue(String name, Class<V> type, V value, Variable.PersistenceType persistenceType) throws IOException {
 
-        if (variables.containsKey(name)) {
-            throw new IllegalStateException("Variable named " + name + " already exists");
-        }
-
-        Variable<V> var = new Variable(name, type, persistenceType);
-        switch (var.getPersistenceType()) {
+        switch (persistenceType) {
             case TEXT:
                 loader.writeToText(name, value);
                 break;
@@ -63,48 +47,47 @@ public class VariableManager {
 
                 try (Stream s = generator.getAsStream()) {
                     InputStream is = generator.getAsInputStream(s, true);
-                    //loader.writeToBytes(name + "#DATA", is);
                     loader.writeToBytes(name, "#DATA", is);
                 } // stream now closed
-                DatasetMetadata md = (DatasetMetadata)generator.getDatasetMetadata();
-                //loader.writeToJson(name + "#META", md);
+                DatasetMetadata md = generator.getDatasetMetadata();
                 loader.writeToJson(name, md);
                 break;
             case NONE:
-                tmpValues.put(var, value);
+                tmpValues.put(name, value);
+                break;
             default:
-            // do nothing
+                throw new IllegalStateException("Type " + persistenceType + " not supported");
         }
-        variables.put(name, var);
-        return var;
     }
 
-    public Variable lookupVariable(String name) {
-        return variables.get(name);
-    }
 
-    public Set<Variable> getVariables() {
-        return new HashSet(variables.values());
-    }
+    public <V> V getValue(String name, Class<V> type, Variable.PersistenceType persistenceType) throws IOException {
 
-    public <V> V getValue(Variable<V> var) throws IOException {
-        switch (var.getPersistenceType()) {
+        if (tmpValues.containsKey(name)) {
+            return (V) tmpValues.get(name);
+        }
+
+        switch (persistenceType) {
             case TEXT:
-                return loader.readFromText(var.getName(), var.getType());
+                return loader.readFromText(name, type);
             case JSON:
-                return loader.readFromJson(var.getName(), var.getType());
+                return loader.readFromJson(name, type);
             case BYTES:
-                return (V) loader.readFromBytes(var.getName(), "");
+                return (V) loader.readBytes(name, "");
             case DATASET:
-                //DatasetMetadata meta = loader.readFromJson(var.getName() + "#META", DatasetMetadata.class);
-                DatasetMetadata meta = loader.readFromJson(var.getName(), DatasetMetadata.class);
-                //InputStream is = loader.readFromBytes(var.getName() + "#DATA");
-                InputStream is = loader.readFromBytes(var.getName(), "#DATA");
+                DatasetMetadata meta = loader.readFromJson(name, DatasetMetadata.class);
+                if (meta == null) {
+                    return null;
+                }
+                InputStream is = loader.readBytes(name, "#DATA");
+                if (is == null) {
+                    return null;
+                }
                 return (V) JsonHandler.getInstance().unmarshalDataset(meta, IOUtils.getGunzippedInputStream(is));
             case NONE:
-                return (V) tmpValues.get(var);
+                return (V) tmpValues.get(name);
             default:
-                throw new IllegalStateException("Type " + var.getPersistenceType() + " not supported");
+                throw new IllegalStateException("Type " + persistenceType + " not supported");
         }
     }
 

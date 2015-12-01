@@ -29,7 +29,7 @@ public class SDFUploaderCellExecutor extends AbstractStepExecutor {
     protected StepDefinition[] getStepDefintions(CellDTO cell) {
 
         StepDefinition step = new StepDefinition(STEP_SDF_READER)
-                .withFieldMapping(SDFReaderStep.VAR_SDF_INPUT, "FileInput")
+                .withFieldMapping(SDFReaderStep.VAR_SDF_INPUT, "FileContent")
                 .withFieldMapping(VARIABLE_OUTPUT_DATASET, "Results");
 
         step = configureOption(step, cell, SDFReaderStep.OPTION_NAME_FIELD_NAME);

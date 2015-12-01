@@ -49,13 +49,13 @@ class DatasetMergerStepSpec extends Specification {
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
-        Variable dsvar1 = varman.createVariable(
+        varman.putValue(
             DatasetMergerStep.VAR_INPUT_1, 
             Dataset.class, 
             ds1,
             Variable.PersistenceType.NONE)
         
-        Variable dsvar2 = varman.createVariable(
+        varman.putValue(
             DatasetMergerStep.VAR_INPUT_2, 
             Dataset.class, 
             ds2,
@@ -66,11 +66,9 @@ class DatasetMergerStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        Variable resultvar = varman.lookupVariable(DatasetMergerStep.VAR_OUTPUT)
-        Dataset result = varman.getValue(resultvar)
+        Dataset result = varman.getValue(DatasetMergerStep.VAR_OUTPUT, Dataset.class, Variable.PersistenceType.DATASET)
         
         then:
-        resultvar != null
         result != null
         def items = result.items
         items.size() == 4
@@ -92,13 +90,13 @@ class DatasetMergerStepSpec extends Specification {
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
-        Variable dsvar1 = varman.createVariable(
+        varman.putValue(
             DatasetMergerStep.VAR_INPUT_1, 
             Dataset.class, 
             ds1,
             Variable.PersistenceType.NONE)
         
-        Variable dsvar2 = varman.createVariable(
+        varman.putValue(
             DatasetMergerStep.VAR_INPUT_2, 
             Dataset.class, 
             ds2,
@@ -112,11 +110,9 @@ class DatasetMergerStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        Variable resultvar = varman.lookupVariable(DatasetMergerStep.VAR_OUTPUT)
-        Dataset result = varman.getValue(resultvar)
+        Dataset result = varman.getValue(DatasetMergerStep.VAR_OUTPUT, Dataset.class, Variable.PersistenceType.DATASET)
         
         then:
-        resultvar != null
         result != null
         def items = result.items
         items.size() == 4
@@ -139,19 +135,19 @@ class DatasetMergerStepSpec extends Specification {
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
-        Variable dsvar1 = varman.createVariable(
+        varman.putValue(
             DatasetMergerStep.VAR_INPUT_1, 
             Dataset.class, 
             ds1,
             Variable.PersistenceType.NONE)
         
-        Variable dsvar2 = varman.createVariable(
+        varman.putValue(
             DatasetMergerStep.VAR_INPUT_2, 
             Dataset.class, 
             ds2,
             Variable.PersistenceType.NONE)
         
-        Variable dsvar3 = varman.createVariable(
+        varman.putValue(
             DatasetMergerStep.VAR_INPUT_3, 
             Dataset.class, 
             ds3,
@@ -162,11 +158,9 @@ class DatasetMergerStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        Variable resultvar = varman.lookupVariable(DatasetMergerStep.VAR_OUTPUT)
-        Dataset result = varman.getValue(resultvar)
+        Dataset result = varman.getValue(DatasetMergerStep.VAR_OUTPUT, Dataset.class, Variable.PersistenceType.DATASET)
         
         then:
-        resultvar != null
         result != null
         def items = result.items
         items.size() == 5
@@ -183,13 +177,13 @@ class DatasetMergerStepSpec extends Specification {
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
-        Variable dsvar1 = varman.createVariable(
+        varman.putValue(
             DatasetMergerStep.VAR_INPUT_1, 
             Dataset.class, 
             ds1,
             Variable.PersistenceType.NONE)
         
-        Variable dsvar2 = varman.createVariable(
+        varman.putValue(
             DatasetMergerStep.VAR_INPUT_2, 
             Dataset.class, 
             ds2,
@@ -200,11 +194,9 @@ class DatasetMergerStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        Variable resultvar = varman.lookupVariable(DatasetMergerStep.VAR_OUTPUT)
-        Dataset result = varman.getValue(resultvar)
+        Dataset result = varman.getValue(DatasetMergerStep.VAR_OUTPUT, Dataset.class, Variable.PersistenceType.DATASET)
         
         then:
-        resultvar != null
         result != null
         def items = result.items
         items.size() == 4
@@ -222,13 +214,13 @@ class DatasetMergerStepSpec extends Specification {
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
-        Variable dsvar1 = varman.createVariable(
+        varman.putValue(
             DatasetMergerStep.VAR_INPUT_1, 
             Dataset.class, 
             ds1,
             Variable.PersistenceType.NONE)
         
-        Variable dsvar2 = varman.createVariable(
+        varman.putValue(
             DatasetMergerStep.VAR_INPUT_2, 
             Dataset.class, 
             ds2,
@@ -239,11 +231,9 @@ class DatasetMergerStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        Variable resultvar = varman.lookupVariable(DatasetMergerStep.VAR_OUTPUT)
-        Dataset result = varman.getValue(resultvar)
+        Dataset result = varman.getValue(DatasetMergerStep.VAR_OUTPUT, Dataset.class, Variable.PersistenceType.DATASET)
         
         then:
-        resultvar != null
         result != null
         def items = result.items
         items.size() == 4

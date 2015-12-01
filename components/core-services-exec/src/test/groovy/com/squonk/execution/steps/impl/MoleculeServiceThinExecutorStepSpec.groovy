@@ -32,7 +32,7 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
-        Variable dsvar = varman.createVariable(
+        varman.putValue(
             MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET, 
             Dataset.class, 
             ds,
@@ -43,11 +43,9 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        def var = varman.lookupVariable(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET)
+        Dataset result = varman.getValue(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET, Dataset.class, com.squonk.execution.variable.Variable.PersistenceType.DATASET)
         
         then:
-        var != null
-        def result = varman.getValue(var)
         result.items.size() == 3
         result.items[0].values.size() == 6
         result.items[0].values.containsKey('CDK_ALogP') // new

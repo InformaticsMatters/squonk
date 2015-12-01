@@ -11,9 +11,6 @@ import java.util.Map;
  */
 public abstract class AbstractStep implements Step {
 
-    private static final String DATASET_DATA_EXT = "#DATA";
-    private static final String DATASET_META_EXT = "#META";
-
     protected Map<String, Object> options;
     protected Map<String, String> variableMappings;
 
@@ -42,9 +39,11 @@ public abstract class AbstractStep implements Step {
      * @return
      * @throws IOException
      */
-    protected <T> T fetchMappedValue(String internalName, Class<T> type, VariableManager varman) throws IOException {
+    protected <T> T fetchMappedValue(String internalName, Class<T> type, Variable.PersistenceType persistenceType, VariableManager varman) throws IOException {
         String mappedVarName = mapVariableName(internalName);
-        return fetchValue(mappedVarName, type, varman);
+        //System.out.println("Internal name: " + internalName);
+        //System.out.println("Mapped name: " + mappedVarName);
+        return fetchValue(mappedVarName, type, persistenceType, varman);
     }
 
     /**
@@ -57,13 +56,9 @@ public abstract class AbstractStep implements Step {
      * @return
      * @throws IOException
      */
-    protected <T> T fetchValue(String externalName, Class<T> type, VariableManager varman) throws IOException {
-        Variable<T> var = varman.lookupVariable(externalName);
-        if (var == null) {
-            return null;
-        }
-        // TODO - use type convertor mechanism 
-        T value = (T) varman.getValue(var);
+    protected <T> T fetchValue(String externalName, Class<T> type, Variable.PersistenceType persistenceType, VariableManager varman) throws IOException {
+        //System.out.println("Getting value for variable " + externalName);
+        T value = (T) varman.getValue(externalName, type, persistenceType);
         return value;
     }
 
@@ -96,9 +91,9 @@ public abstract class AbstractStep implements Step {
      * @return
      * @throws IOException
      */
-    protected <T> Variable createMappedVariable(String localName, Class<T> type, T value, Variable.PersistenceType persistence, VariableManager varman) throws IOException {
+    protected <T> void createMappedVariable(String localName, Class<T> type, T value, Variable.PersistenceType persistence, VariableManager varman) throws IOException {
         String outFldName = mapVariableName(localName);
-        return createVariable(outFldName, type, value, persistence, varman);
+        createVariable(outFldName, type, value, persistence, varman);
     }
 
     /**
@@ -115,9 +110,8 @@ public abstract class AbstractStep implements Step {
      * @return
      * @throws IOException
      */
-    protected <T> Variable createVariable(String mappedName, Class<T> type, T value, Variable.PersistenceType persistence, VariableManager varman) throws IOException {
-        return varman.createVariable(mappedName, type, value,
-                mappedName.startsWith("_") ? Variable.PersistenceType.NONE : persistence);
+    protected <T> void createVariable(String mappedName, Class<T> type, T value, Variable.PersistenceType persistence, VariableManager varman) throws IOException {
+        varman.putValue(mappedName, type, value, mappedName.startsWith("_") ? Variable.PersistenceType.NONE : persistence);
     }
 
 }

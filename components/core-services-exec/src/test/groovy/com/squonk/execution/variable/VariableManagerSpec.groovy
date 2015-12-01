@@ -18,14 +18,12 @@ class VariableManagerSpec extends Specification {
         VariableManager manager = new VariableManager(new MemoryVariableLoader());
         
         when:
-        Variable text = manager.createVariable("text", String.class,  "John Doe", Variable.PersistenceType.TEXT)
-        Variable age = manager.createVariable("age", Integer.class, 60, Variable.PersistenceType.TEXT)
+        manager.putValue("text", String.class,  "John Doe", Variable.PersistenceType.TEXT)
+        manager.putValue("age", Integer.class, 60, Variable.PersistenceType.TEXT)
         
         then:
-        manager.getVariables().size() == 2
-        manager.getVariables().contains(text)
-        manager.getValue(text) == "John Doe"
-        manager.getValue(age) == 60
+        manager.getValue("text", String.class, Variable.PersistenceType.TEXT) == "John Doe"
+        manager.getValue("age", Integer.class, Variable.PersistenceType.TEXT) == 60
         
     }
     
@@ -43,13 +41,12 @@ class VariableManagerSpec extends Specification {
         VariableManager manager = new VariableManager(loader);
         
         when:
-        Variable ds1var = manager.createVariable("ds1", Dataset.class,  ds1, Variable.PersistenceType.DATASET)
-        Dataset ds2 = manager.getValue(ds1var)
+        manager.putValue("ds1", Dataset.class,  ds1, Variable.PersistenceType.DATASET)
+        Dataset ds2 = manager.getValue("ds1", Dataset.class, Variable.PersistenceType.DATASET)
 
         
         then:
-        manager.getVariables().size() == 1
-        loader.values.size() == 2
+
         ds2 != null
         ds2.items.size() == 3
         

@@ -17,7 +17,7 @@ class SDFReaderStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         SDFReaderStep step = new SDFReaderStep()
         FileInputStream is = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
-        Variable sdf = varman.createVariable(
+        varman.putValue(
             SDFReaderStep.VAR_SDF_INPUT, 
             InputStream.class, 
             is,
@@ -25,16 +25,12 @@ class SDFReaderStepSpec extends Specification {
         
         when:
         step.execute(varman, null)
-        Variable molsvar = varman.lookupVariable(SDFReaderStep.VAR_DATASET_OUTPUT)
+        Dataset ds = varman.getValue(SDFReaderStep.VAR_DATASET_OUTPUT, Dataset.class, Variable.PersistenceType.DATASET)
         
         then:
-        molsvar != null
-        Object ds = varman.getValue(molsvar)
         ds != null
-        ds instanceof Dataset
         ds.items.size() == 36
-        
-        
+
         cleanup:
         is.close()
         

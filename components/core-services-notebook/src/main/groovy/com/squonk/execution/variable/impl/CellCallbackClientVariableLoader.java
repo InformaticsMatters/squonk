@@ -52,7 +52,7 @@ public class CellCallbackClientVariableLoader implements VariableLoader {
     }
 
     @Override
-    public InputStream readFromBytes(String var, String label) throws IOException {
+    public InputStream readBytes(String var, String label) throws IOException {
         System.out.println("Read bytes for : " + var);
         return client.readStreamValue(producerName, var);
     }
@@ -90,33 +90,6 @@ public class CellCallbackClientVariableLoader implements VariableLoader {
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
             throw new IOException("Failed to construct value", ex);
         }
-    }
-
-    /**
-     * Mocks up the CellExecutionClient class
-     */
-    interface CellExecutionClient {
-
-        //public CellDTO retrieveCell(String cellName);
-        String readTextValue(String producerName, String variableName);
-
-        Integer readIntegerValue(String producerName, String variableName);
-
-        // this would be beter than the above 2 methods and would avoid the need for
-        // methods to be added for every data type that needs to be handled 
-        //<T> T readValueFromText(String producerName, String variableName, Class<T> type);
-        //<T> void writeValueAsText(String producerName, String variableName, T value);
-        InputStream readStreamValue(String producerName, String variableName);
-
-        List<MoleculeObject> readFileValueAsMolecules(String producerName, String variableName);
-
-        void writeTextValue(String producerName, String variableName, String value);
-
-        void writeIntegerValue(String producerName, String variableName, Integer value);
-
-        void writeStreamContents(String producerName, String variableName, InputStream inputStream);
-
-        //public void writeStreamContents(String producerName, String variableName, StreamingOutput streamingOutput);
     }
 
 }

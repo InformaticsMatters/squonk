@@ -24,7 +24,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
-        Variable invar = varman.createVariable(
+        varman.putValue(
             BasicObjectToMoleculeObjectStep.VAR_INPUT_DATASET, 
             Dataset.class, 
             ds,
@@ -35,11 +35,10 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         
         when:
         step.execute(varman, null)
+        def molsds= varman.getValue(BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET)
         
         then:
-        Variable outvar = varman.lookupVariable(BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET)
-        outvar != null
-        def molsds = varman.getValue(outvar)
+
         molsds != null
         def items = molsds.items
         items.size() == 3
@@ -54,7 +53,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
-        Variable invar = varman.createVariable(
+        varman.putValue(
             BasicObjectToMoleculeObjectStep.VAR_INPUT_DATASET, 
             Dataset.class, 
             ds,
@@ -69,11 +68,10 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         
         when:
         step.execute(varman, null)
+        def molsds = varman.getValue(BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET)
         
         then:
-        Variable outvar = varman.lookupVariable(BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET)
-        outvar != null
-        def molsds = varman.getValue(outvar)
+
         molsds != null
         def items = molsds.items
         items.size() == 3

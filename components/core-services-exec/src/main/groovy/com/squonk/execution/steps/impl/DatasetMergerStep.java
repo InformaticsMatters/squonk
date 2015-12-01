@@ -59,11 +59,11 @@ public class DatasetMergerStep extends AbstractStep {
         
         LOG.log(Level.INFO, "Merging using field {0}, keep first value = {1}", new Object[]{mergeField, keepFirst});
 
-        Dataset<BasicObject> dataset1 = fetchMappedValue(VAR_INPUT_1, Dataset.class, varman);
+        Dataset<BasicObject> dataset1 = fetchMappedValue(VAR_INPUT_1, Dataset.class, Variable.PersistenceType.DATASET, varman);
 
         Stream<BasicObject> stream = dataset1.getStream();
         for (int i = 2; i <= 5; i++) {
-            Dataset<BasicObject> nextDataset = fetchMappedValue(VAR_INPUT_BASE + i, Dataset.class, varman);
+            Dataset<BasicObject> nextDataset = fetchMappedValue(VAR_INPUT_BASE + i, Dataset.class, Variable.PersistenceType.DATASET, varman);
             if (nextDataset == null) {
                 break;
             }

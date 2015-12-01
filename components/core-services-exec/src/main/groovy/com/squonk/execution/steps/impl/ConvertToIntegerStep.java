@@ -12,8 +12,8 @@ import org.apache.camel.CamelContext;
  */
 public class ConvertToIntegerStep extends AbstractStep {
 
-    public static final String OPTION_SOURCE_FIELD_NAME = "SourceFieldName";
-    public static final String OPTION_DESTINATION_FIELD_NAME = "DestinationFieldName";
+    public static final String OPTION_SOURCE_VAR_NAME = "SourceVarName";
+    public static final String OPTION_DESTINATION_VAR_NAME = "DestinationVarName";
 
     @Override
     public String[] getInputVariableNames() {
@@ -27,16 +27,16 @@ public class ConvertToIntegerStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        String srcFieldName = getOption(OPTION_SOURCE_FIELD_NAME, String.class);
-        String dstFieldName = getOption(OPTION_DESTINATION_FIELD_NAME, String.class);
+        String srcFieldName = getOption(OPTION_SOURCE_VAR_NAME, String.class);
+        String dstFieldName = getOption(OPTION_DESTINATION_VAR_NAME, String.class);
         if (srcFieldName == null) {
-            throw new IllegalStateException("Option SourceFieldName not defined");
+            throw new IllegalStateException("Option SourceVarName not defined");
         }
         if (dstFieldName == null) {
-            throw new IllegalStateException("Option DestinationFieldName not defined");
+            throw new IllegalStateException("Option DestinationVarName not defined");
         }
-        Object input = fetchValue(srcFieldName, Object.class, varman);
-        Integer i = new Integer(input.toString());
+        String input = fetchValue(srcFieldName, String.class, Variable.PersistenceType.TEXT, varman);
+        Integer i = new Integer(input);
         createMappedVariable(dstFieldName, Integer.class, i, Variable.PersistenceType.TEXT, varman);
     }
 

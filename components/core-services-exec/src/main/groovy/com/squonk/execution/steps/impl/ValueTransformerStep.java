@@ -42,7 +42,7 @@ public class ValueTransformerStep extends AbstractStep {
      */
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        Dataset ds = fetchMappedValue(VAR_INPUT_DATASET, Dataset.class, varman);
+        Dataset ds = fetchMappedValue(VAR_INPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET, varman);
         if (ds == null) {
             throw new IllegalStateException("Input field not found: " + VAR_INPUT_DATASET);
         }

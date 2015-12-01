@@ -1,5 +1,6 @@
 package com.squonk.execution.steps.impl
 
+import com.squonk.dataset.Dataset
 import com.squonk.execution.variable.*
 import com.squonk.execution.variable.impl.*
 import spock.lang.Specification
@@ -21,8 +22,8 @@ class ChemblActivitiesFetcherStepSpec extends Specification {
         step.execute(varman, null)
         
         then:
-        varman.getVariables().size() == 1
-        def dataset = varman.getValue(varman.getVariables()[0])
+
+        def dataset = varman.getValue(ChemblActivitiesFetcherStep.VAR_OUTPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET)
         dataset != null
         dataset.items.size() == 10
         

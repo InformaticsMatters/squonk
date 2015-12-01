@@ -16,20 +16,18 @@ class StepExecutorSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         ConvertToIntegerStep step = new ConvertToIntegerStep()
         Map<String, Object> options = new HashMap<>();
-        options.put(ConvertToIntegerStep.OPTION_SOURCE_FIELD_NAME, "text");
-        options.put(ConvertToIntegerStep.OPTION_DESTINATION_FIELD_NAME, "integer");
+        options.put(ConvertToIntegerStep.OPTION_SOURCE_VAR_NAME, "text");
+        options.put(ConvertToIntegerStep.OPTION_DESTINATION_VAR_NAME, "integer");
         step.configure(options, null);
-        Variable text = varman.createVariable("text", String.class,  "99", Variable.PersistenceType.TEXT)
+        varman.putValue("text", String.class,  "99", Variable.PersistenceType.TEXT)
         StepExecutor exec = new StepExecutor(varman);
         
         when:
         exec.execute( [step] as Step[], null)
-        Variable intvar = varman.lookupVariable("integer")
+        Integer intvar = varman.getValue("integer", Integer.class, Variable.PersistenceType.TEXT)
         
         then:
-        varman.getVariables().size() == 2
-        intvar != null
-        varman.getValue(intvar) == 99
+        intvar == 99
     }
 	
 }

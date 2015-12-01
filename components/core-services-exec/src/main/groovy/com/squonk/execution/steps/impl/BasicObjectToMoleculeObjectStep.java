@@ -67,7 +67,7 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
         String structureFormat = getOption(OPTION_STRUCTURE_FORMAT, String.class);
         boolean preserveUuid = getOption(OPTION_PRESERVE_UUID, Boolean.class, true);
 
-        DatasetProvider p = fetchMappedValue(VAR_INPUT_DATASET, DatasetProvider.class, varman);
+        DatasetProvider p = fetchMappedValue(VAR_INPUT_DATASET, DatasetProvider.class, Variable.PersistenceType.DATASET, varman);
         Dataset ds1 = p.getDataset();
         Stream<BasicObject> stream1 = ds1.getStream();
         Stream<MoleculeObject> stream2 = stream1.map((bo) -> {
