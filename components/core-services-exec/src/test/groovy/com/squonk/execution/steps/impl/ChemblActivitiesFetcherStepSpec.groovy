@@ -23,7 +23,7 @@ class ChemblActivitiesFetcherStepSpec extends Specification {
         
         then:
 
-        def dataset = varman.getValue(ChemblActivitiesFetcherStep.VAR_OUTPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET)
+        def dataset = varman.getValue(ChemblActivitiesFetcherStep.VAR_OUTPUT_DATASET, Dataset.class, PersistenceType.DATASET)
         dataset != null
         dataset.items.size() == 10
         

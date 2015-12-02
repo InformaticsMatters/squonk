@@ -3,7 +3,7 @@ package com.squonk.execution.steps.impl;
 import com.squonk.execution.steps.AbstractStep;
 import com.im.lac.camel.util.CamelUtils;
 import com.squonk.execution.steps.StepDefinitionConstants;
-import com.squonk.execution.variable.Variable;
+import com.squonk.execution.variable.PersistenceType;
 import com.squonk.execution.variable.VariableManager;
 import com.im.lac.types.MoleculeObject;
 import com.squonk.dataset.Dataset;
@@ -41,12 +41,12 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
-        Dataset input = fetchMappedValue(VAR_INPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET, varman);
+        Dataset input = fetchMappedValue(VAR_INPUT_DATASET, Dataset.class, PersistenceType.DATASET, varman);
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
 
         InputStream output = CamelUtils.doPostUsingHeadersAndQueryParams(context, endpoint, input.getInputStream(true), params);
         Dataset<MoleculeObject> results = JsonHandler.getInstance().unmarshalDataset(new DatasetMetadata(MoleculeObject.class), IOUtils.getGunzippedInputStream(output));
-        createMappedVariable(VAR_OUTPUT_DATASET, Dataset.class, results, Variable.PersistenceType.DATASET, varman);
+        createMappedVariable(VAR_OUTPUT_DATASET, Dataset.class, results, PersistenceType.DATASET, varman);
      }
 
 }

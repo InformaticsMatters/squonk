@@ -3,8 +3,6 @@ package com.squonk.execution.steps.impl
 import com.squonk.execution.variable.*
 import com.squonk.execution.variable.impl.*
 import com.squonk.dataset.Dataset
-import com.squonk.types.SDFile
-import com.squonk.util.IOUtils
 import spock.lang.Specification
 
 /**
@@ -21,11 +19,11 @@ class SDFReaderStepSpec extends Specification {
             SDFReaderStep.VAR_SDF_INPUT, 
             InputStream.class, 
             is,
-            Variable.PersistenceType.BYTES)
+            PersistenceType.BYTES)
         
         when:
         step.execute(varman, null)
-        Dataset ds = varman.getValue(SDFReaderStep.VAR_DATASET_OUTPUT, Dataset.class, Variable.PersistenceType.DATASET)
+        Dataset ds = varman.getValue(SDFReaderStep.VAR_DATASET_OUTPUT, Dataset.class, PersistenceType.DATASET)
         
         then:
         ds != null

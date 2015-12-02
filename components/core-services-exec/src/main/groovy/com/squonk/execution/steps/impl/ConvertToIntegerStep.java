@@ -1,7 +1,7 @@
 package com.squonk.execution.steps.impl;
 
 import com.squonk.execution.steps.AbstractStep;
-import com.squonk.execution.variable.Variable;
+import com.squonk.execution.variable.PersistenceType;
 import com.squonk.execution.variable.VariableManager;
 import org.apache.camel.CamelContext;
 
@@ -35,9 +35,9 @@ public class ConvertToIntegerStep extends AbstractStep {
         if (dstFieldName == null) {
             throw new IllegalStateException("Option DestinationVarName not defined");
         }
-        String input = fetchValue(srcFieldName, String.class, Variable.PersistenceType.TEXT, varman);
+        String input = fetchValue(srcFieldName, String.class, PersistenceType.TEXT, varman);
         Integer i = new Integer(input);
-        createMappedVariable(dstFieldName, Integer.class, i, Variable.PersistenceType.TEXT, varman);
+        createMappedVariable(dstFieldName, Integer.class, i, PersistenceType.TEXT, varman);
     }
 
 }

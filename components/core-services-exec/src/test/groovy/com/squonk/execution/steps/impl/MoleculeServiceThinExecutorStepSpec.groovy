@@ -5,7 +5,7 @@ import com.squonk.dataset.Dataset
 import com.squonk.dataset.DatasetMetadata
 import com.squonk.execution.steps.Step
 import com.squonk.execution.steps.StepExecutor
-import com.squonk.execution.variable.Variable
+import com.squonk.execution.variable.PersistenceType
 import com.squonk.execution.variable.VariableManager
 import com.squonk.execution.variable.impl.MemoryVariableLoader
 import com.squonk.types.io.JsonHandler
@@ -100,14 +100,14 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
             MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET,
             Dataset.class,
             ds,
-            Variable.PersistenceType.NONE)
+            PersistenceType.NONE)
 
         MoleculeServiceThinExecutorStep step = new MoleculeServiceThinExecutorStep()
         step.configure([(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT):'http://localhost:8888/route1'], [:])
 
         when:
         step.execute(varman, context)
-        Dataset result = varman.getValue(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET)
+        Dataset result = varman.getValue(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET, Dataset.class, PersistenceType.DATASET)
 
         then:
         result.items.size() == 3
@@ -133,7 +133,7 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
                 "Input",
                 Dataset.class,
                 ds,
-                Variable.PersistenceType.NONE)
+                PersistenceType.NONE)
 
         MoleculeServiceThinExecutorStep step1 = new MoleculeServiceThinExecutorStep()
         step1.configure([(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT):'http://localhost:8888/route1'],
@@ -147,7 +147,7 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
         StepExecutor executor = new StepExecutor(varman)
         Step[] steps = [step1, step2] as Step[]
         executor.execute(steps, context)
-        Dataset result = varman.getValue("Output", Dataset.class, Variable.PersistenceType.DATASET)
+        Dataset result = varman.getValue("Output", Dataset.class, PersistenceType.DATASET)
 
         then:
         result.items.size() == 3

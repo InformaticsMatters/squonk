@@ -4,7 +4,6 @@ import com.squonk.dataset.Dataset
 import com.squonk.dataset.DatasetMetadata
 import com.squonk.execution.steps.Step
 import com.squonk.execution.steps.StepExecutor
-import com.squonk.execution.variable.Variable
 import com.squonk.execution.variable.VariableManager
 import com.squonk.execution.variable.impl.MemoryVariableLoader
 import org.apache.camel.Exchange
@@ -48,7 +47,7 @@ class StepExamplesSpec extends Specification {
 //        // step 1: read the SDF and generate a Dataset<MoleculeObject>
 //        SDFReaderStep step1 = new SDFReaderStep()
 //        FileInputStream is = new FileInputStream("../../../data/testfiles/Kinase_inhibs.sdf.gz")
-//        Variable sdf = varman.createVariable(
+//        varman.createVariable(
 //            SDFReaderStep.VAR_SDF_INPUT,
 //            InputStream.class,
 //            is,
@@ -89,11 +88,6 @@ class StepExamplesSpec extends Specification {
 //
 //
 //        then:
-//        def vars = varman.getVariables()
-//        vars.each {
-//            println "Var $it.name $it.type $it.persistenceType"
-//        }
-//        vars.size() == 2
 //
 //        Dataset dataset = varman.getValue(varman.lookupVariable('data_out'))
 //        DatasetMetadata meta = dataset.getMetadata()
@@ -116,7 +110,7 @@ class StepExamplesSpec extends Specification {
 //        
 //        // create the initial input
 //        FileInputStream is = new FileInputStream("../../../data/testfiles/Kinase_inhibs.sdf.gz")
-//        Variable sdf = varman.createVariable(
+//        varman.createVariable(
 //            SDFReaderStep.VAR_SDF_INPUT, 
 //            InputStream.class, 
 //            is,

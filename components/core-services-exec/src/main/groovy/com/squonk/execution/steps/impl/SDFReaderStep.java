@@ -2,7 +2,7 @@ package com.squonk.execution.steps.impl;
 
 import com.squonk.execution.steps.AbstractStep;
 import com.squonk.execution.steps.StepDefinitionConstants;
-import com.squonk.execution.variable.Variable;
+import com.squonk.execution.variable.PersistenceType;
 import com.squonk.execution.variable.VariableManager;
 import com.im.lac.types.MoleculeObject;
 import com.squonk.dataset.Dataset;
@@ -51,11 +51,11 @@ public class SDFReaderStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws IOException {
-        InputStream is = fetchMappedValue(VAR_SDF_INPUT, InputStream.class, Variable.PersistenceType.BYTES, varman);
+        InputStream is = fetchMappedValue(VAR_SDF_INPUT, InputStream.class, PersistenceType.BYTES, varman);
         SDFReader reader = createReader(IOUtils.getGunzippedInputStream(is));
         Stream<MoleculeObject> mols = reader.asStream();
         Dataset dataset = new Dataset(MoleculeObject.class, mols);
-        createMappedVariable(VAR_DATASET_OUTPUT, Dataset.class, dataset, Variable.PersistenceType.DATASET, varman);
+        createMappedVariable(VAR_DATASET_OUTPUT, Dataset.class, dataset, PersistenceType.DATASET, varman);
     }
 
     private SDFReader createReader(InputStream input) throws IOException {

@@ -2,7 +2,7 @@ package com.squonk.execution.steps.impl;
 
 import com.squonk.execution.steps.AbstractStep;
 import com.squonk.execution.steps.StepDefinitionConstants;
-import com.squonk.execution.variable.Variable;
+import com.squonk.execution.variable.PersistenceType;
 import com.squonk.execution.variable.VariableManager;
 import com.im.lac.types.BasicObject;
 import com.squonk.dataset.Dataset;
@@ -59,11 +59,11 @@ public class DatasetMergerStep extends AbstractStep {
         
         LOG.log(Level.INFO, "Merging using field {0}, keep first value = {1}", new Object[]{mergeField, keepFirst});
 
-        Dataset<BasicObject> dataset1 = fetchMappedValue(VAR_INPUT_1, Dataset.class, Variable.PersistenceType.DATASET, varman);
+        Dataset<BasicObject> dataset1 = fetchMappedValue(VAR_INPUT_1, Dataset.class, PersistenceType.DATASET, varman);
 
         Stream<BasicObject> stream = dataset1.getStream();
         for (int i = 2; i <= 5; i++) {
-            Dataset<BasicObject> nextDataset = fetchMappedValue(VAR_INPUT_BASE + i, Dataset.class, Variable.PersistenceType.DATASET, varman);
+            Dataset<BasicObject> nextDataset = fetchMappedValue(VAR_INPUT_BASE + i, Dataset.class, PersistenceType.DATASET, varman);
             if (nextDataset == null) {
                 break;
             }
@@ -90,7 +90,7 @@ public class DatasetMergerStep extends AbstractStep {
         Class type = dataset1.getType();
         Dataset result = new Dataset(type, items.values());
 
-        createMappedVariable(VAR_OUTPUT, Dataset.class, result, Variable.PersistenceType.DATASET, varman);
+        createMappedVariable(VAR_OUTPUT, Dataset.class, result, PersistenceType.DATASET, varman);
     }
 
     private Object fetchValueToCompare(BasicObject bo, String mergeField) {

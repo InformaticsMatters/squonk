@@ -27,11 +27,11 @@ field1\tfield2\tfield3
         //println "simple csv reader with header"
         InputStream is = new ByteArrayInputStream(CSV1.bytes)
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
-        Variable csv = varman.putValue(
+        varman.putValue(
             CSVReaderStep.VAR_CSV_INPUT, 
             InputStream.class, 
             is,
-            Variable.PersistenceType.BYTES)
+            PersistenceType.BYTES)
         
         
         CSVReaderStep step = new CSVReaderStep()
@@ -43,7 +43,7 @@ field1\tfield2\tfield3
         
         when:
         step.execute(varman, null)
-        Dataset dataset = varman.getValue(CSVReaderStep.VAR_DATASET_OUTPUT, Dataset.class, Variable.PersistenceType.DATASET)
+        Dataset dataset = varman.getValue(CSVReaderStep.VAR_DATASET_OUTPUT, Dataset.class, PersistenceType.DATASET)
         
         then:
         dataset != null
@@ -56,11 +56,11 @@ field1\tfield2\tfield3
         //println "simple tab reader without header"
         InputStream is = new ByteArrayInputStream(TAB1.bytes)
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
-        Variable csv = varman.putValue(
+        varman.putValue(
             CSVReaderStep.VAR_CSV_INPUT, 
             InputStream.class, 
             is,
-            Variable.PersistenceType.BYTES)
+            PersistenceType.BYTES)
         
         
         CSVReaderStep step = new CSVReaderStep()
@@ -70,7 +70,7 @@ field1\tfield2\tfield3
         
         when:
         step.execute(varman, null)
-        Dataset dataset = varman.getValue(CSVReaderStep.VAR_DATASET_OUTPUT, Dataset.class, Variable.PersistenceType.DATASET)
+        Dataset dataset = varman.getValue(CSVReaderStep.VAR_DATASET_OUTPUT, Dataset.class, PersistenceType.DATASET)
         
         then:
         dataset != null

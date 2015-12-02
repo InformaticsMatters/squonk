@@ -4,7 +4,6 @@ import com.squonk.execution.variable.*
 import com.squonk.execution.variable.impl.*
 import com.im.lac.types.MoleculeObject
 import com.squonk.dataset.Dataset
-import java.util.stream.Stream
 import spock.lang.Specification
 
 /**
@@ -29,11 +28,11 @@ class DatasetWriterStepSpec extends Specification {
             DatasetWriterStep.VAR_INPUT_DATASET, 
             Dataset.class, 
             ds,
-            Variable.PersistenceType.NONE)
+            PersistenceType.NONE)
         
         when:
         step.execute(varman, null)
-        Dataset dataset = varman.getValue(DatasetWriterStep.VAR_OUTPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET)
+        Dataset dataset = varman.getValue(DatasetWriterStep.VAR_OUTPUT_DATASET, Dataset.class, PersistenceType.DATASET)
         
         then:
         dataset != null

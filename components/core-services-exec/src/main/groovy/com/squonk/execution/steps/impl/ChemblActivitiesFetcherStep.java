@@ -2,7 +2,7 @@ package com.squonk.execution.steps.impl;
 
 import com.squonk.execution.steps.AbstractStep;
 import com.squonk.execution.steps.StepDefinitionConstants;
-import com.squonk.execution.variable.Variable;
+import com.squonk.execution.variable.PersistenceType;
 import com.squonk.execution.variable.VariableManager;
 import com.im.lac.types.MoleculeObject;
 import com.squonk.chembl.ChemblClient;
@@ -47,7 +47,7 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
         ChemblClient client = new ChemblClient();
         Dataset<MoleculeObject> dataset = client.fetchActivitiesForAssay(assayID, batchSize, prefix);
 
-        createMappedVariable(VAR_OUTPUT_DATASET, Dataset.class, dataset, Variable.PersistenceType.DATASET, varman);
+        createMappedVariable(VAR_OUTPUT_DATASET, Dataset.class, dataset, PersistenceType.DATASET, varman);
     }
 
 }

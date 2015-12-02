@@ -4,8 +4,6 @@ import com.squonk.execution.variable.*
 import com.squonk.execution.variable.impl.*
 import com.im.lac.types.MoleculeObject
 import com.squonk.dataset.Dataset
-import org.apache.camel.builder.RouteBuilder
-import org.apache.camel.Exchange
 import org.apache.camel.impl.DefaultCamelContext
 import spock.lang.Specification
 
@@ -28,7 +26,7 @@ class MoleculeServiceFatExecutorStepSpec extends Specification {
         Dataset ds = new Dataset(MoleculeObject.class, mols)
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader())
-        varman.putValue(MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET, Dataset.class, ds, Variable.PersistenceType.NONE)
+        varman.putValue(MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET, Dataset.class, ds, PersistenceType.NONE)
         
         def options = [
             (MoleculeServiceFatExecutorStep.OPTION_SERVICE_ENDPOINT):'http://demos.informaticsmatters.com:9080/chem-services-cdk-basic/rest/v1/calculators/logp'
@@ -43,7 +41,7 @@ class MoleculeServiceFatExecutorStepSpec extends Specification {
         step.execute(varman, context)
         
         then:
-        def output = varman.getValue(MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET)
+        def output = varman.getValue(MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET, Dataset.class, PersistenceType.DATASET)
         output instanceof Dataset
         def items = output.items
         items.size() == 3

@@ -29,7 +29,7 @@ public class VariableManager {
         loader.save();
     }
 
-    public <V> void putValue(String name, Class<V> type, V value, Variable.PersistenceType persistenceType) throws IOException {
+    public <V> void putValue(String name, Class<V> type, V value, PersistenceType persistenceType) throws IOException {
 
         switch (persistenceType) {
             case TEXT:
@@ -61,7 +61,7 @@ public class VariableManager {
     }
 
 
-    public <V> V getValue(String name, Class<V> type, Variable.PersistenceType persistenceType) throws IOException {
+    public <V> V getValue(String name, Class<V> type, PersistenceType persistenceType) throws IOException {
 
         if (tmpValues.containsKey(name)) {
             return (V) tmpValues.get(name);

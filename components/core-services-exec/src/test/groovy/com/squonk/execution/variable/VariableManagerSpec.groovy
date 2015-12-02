@@ -1,8 +1,6 @@
 package com.squonk.execution.variable
 
 import com.squonk.execution.variable.impl.*
-import com.squonk.execution.steps.*
-import com.squonk.execution.steps.impl.*
 import com.im.lac.types.*
 import com.squonk.dataset.*
 import spock.lang.Specification
@@ -18,12 +16,12 @@ class VariableManagerSpec extends Specification {
         VariableManager manager = new VariableManager(new MemoryVariableLoader());
         
         when:
-        manager.putValue("text", String.class,  "John Doe", Variable.PersistenceType.TEXT)
-        manager.putValue("age", Integer.class, 60, Variable.PersistenceType.TEXT)
+        manager.putValue("text", String.class,  "John Doe", PersistenceType.TEXT)
+        manager.putValue("age", Integer.class, 60, PersistenceType.TEXT)
         
         then:
-        manager.getValue("text", String.class, Variable.PersistenceType.TEXT) == "John Doe"
-        manager.getValue("age", Integer.class, Variable.PersistenceType.TEXT) == 60
+        manager.getValue("text", String.class, PersistenceType.TEXT) == "John Doe"
+        manager.getValue("age", Integer.class, PersistenceType.TEXT) == 60
         
     }
     
@@ -41,8 +39,8 @@ class VariableManagerSpec extends Specification {
         VariableManager manager = new VariableManager(loader);
         
         when:
-        manager.putValue("ds1", Dataset.class,  ds1, Variable.PersistenceType.DATASET)
-        Dataset ds2 = manager.getValue("ds1", Dataset.class, Variable.PersistenceType.DATASET)
+        manager.putValue("ds1", Dataset.class,  ds1, PersistenceType.DATASET)
+        Dataset ds2 = manager.getValue("ds1", Dataset.class, PersistenceType.DATASET)
 
         
         then:

@@ -3,7 +3,7 @@ package com.squonk.execution.steps.impl;
 import com.squonk.execution.steps.AbstractStep;
 import com.im.lac.camel.processor.ValueTransformerProcessor;
 import com.squonk.execution.steps.StepDefinitionConstants;
-import com.squonk.execution.variable.Variable;
+import com.squonk.execution.variable.PersistenceType;
 import com.squonk.execution.variable.VariableManager;
 import com.squonk.dataset.Dataset;
 import com.squonk.dataset.transform.TransformDefintions;
@@ -42,7 +42,7 @@ public class ValueTransformerStep extends AbstractStep {
      */
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        Dataset ds = fetchMappedValue(VAR_INPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET, varman);
+        Dataset ds = fetchMappedValue(VAR_INPUT_DATASET, Dataset.class, PersistenceType.DATASET, varman);
         if (ds == null) {
             throw new IllegalStateException("Input field not found: " + VAR_INPUT_DATASET);
         }
@@ -55,7 +55,7 @@ public class ValueTransformerStep extends AbstractStep {
         
         String outFldName = mapVariableName(VAR_OUTPUT_DATASET);
         if (outFldName != null) {
-            createVariable(outFldName, Dataset.class, ds, Variable.PersistenceType.NONE, varman);
+            createVariable(outFldName, Dataset.class, ds, PersistenceType.NONE, varman);
         }
     }
 

@@ -2,11 +2,9 @@ package com.squonk.execution.steps.impl
 
 import com.squonk.execution.variable.*
 import com.squonk.execution.variable.impl.*
-import com.squonk.execution.steps.*
 import com.im.lac.types.MoleculeObject
 import com.squonk.dataset.*
 import com.squonk.dataset.transform.TransformDefintions
-import java.util.stream.Stream
 import org.apache.camel.impl.DefaultCamelContext
 import spock.lang.Specification
 
@@ -39,14 +37,14 @@ class ValueTransformerStepSpec extends Specification {
             ValueTransformerStep.VAR_INPUT_DATASET, 
             Dataset.class, 
             ds,
-            Variable.PersistenceType.NONE)
+            PersistenceType.NONE)
         
         ValueTransformerStep step = new ValueTransformerStep()
         step.configure([(ValueTransformerStep.OPTION_TRANSFORMS):tdefs], [:])
         
         when:
         step.execute(varman, context)
-        Dataset dataset = varman.getValue(ValueTransformerStep.VAR_INPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET)
+        Dataset dataset = varman.getValue(ValueTransformerStep.VAR_INPUT_DATASET, Dataset.class, PersistenceType.DATASET)
         
         then:
         dataset != null

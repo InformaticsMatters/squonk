@@ -28,14 +28,14 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
             BasicObjectToMoleculeObjectStep.VAR_INPUT_DATASET, 
             Dataset.class, 
             ds,
-            Variable.PersistenceType.NONE)
+            PersistenceType.NONE)
         
         BasicObjectToMoleculeObjectStep step = new BasicObjectToMoleculeObjectStep()
         step.configure([(BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FIELD_NAME):'struct'], [:])
         
         when:
         step.execute(varman, null)
-        def molsds= varman.getValue(BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET)
+        def molsds= varman.getValue(BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET, Dataset.class, PersistenceType.DATASET)
         
         then:
 
@@ -57,7 +57,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
             BasicObjectToMoleculeObjectStep.VAR_INPUT_DATASET, 
             Dataset.class, 
             ds,
-            Variable.PersistenceType.NONE)
+            PersistenceType.NONE)
         
         BasicObjectToMoleculeObjectStep step = new BasicObjectToMoleculeObjectStep()
         step.configure([
@@ -68,7 +68,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         
         when:
         step.execute(varman, null)
-        def molsds = varman.getValue(BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET)
+        def molsds = varman.getValue(BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET, Dataset.class, PersistenceType.DATASET)
         
         then:
 

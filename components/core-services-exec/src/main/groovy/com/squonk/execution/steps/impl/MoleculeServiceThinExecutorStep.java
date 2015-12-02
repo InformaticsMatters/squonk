@@ -6,7 +6,7 @@ import com.squonk.dataset.Dataset;
 import com.squonk.dataset.DatasetMetadata;
 import com.squonk.execution.steps.AbstractStep;
 import com.squonk.execution.steps.StepDefinitionConstants;
-import com.squonk.execution.variable.Variable;
+import com.squonk.execution.variable.PersistenceType;
 import com.squonk.execution.variable.VariableManager;
 import com.squonk.types.io.JsonHandler;
 import com.squonk.util.IOUtils;
@@ -56,7 +56,7 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
-        Dataset<MoleculeObject> dataset = fetchMappedValue(VAR_INPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET, varman);
+        Dataset<MoleculeObject> dataset = fetchMappedValue(VAR_INPUT_DATASET, Dataset.class, PersistenceType.DATASET, varman);
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
         Boolean preserveStructure = getOption(OPTION_PRESERVE_STRUCTURE, Boolean.class, true);
@@ -104,7 +104,7 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
 
         Dataset<MoleculeObject> results = new Dataset<>(MoleculeObject.class, resultMols, metadata);
 
-        createMappedVariable(VAR_OUTPUT_DATASET, Dataset.class, results, Variable.PersistenceType.DATASET, varman);
+        createMappedVariable(VAR_OUTPUT_DATASET, Dataset.class, results, PersistenceType.DATASET, varman);
     }
 
 }
