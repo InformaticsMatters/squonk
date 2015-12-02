@@ -135,12 +135,14 @@ public class CSVReaderStep extends AbstractStep {
         CSVReader reader = createReader(IOUtils.getGunzippedInputStream(is));
         Stream<BasicObject> mols = reader.asStream();
         Dataset dataset = new Dataset(BasicObject.class, mols);
+        System.out.println("CSV rows: " + dataset.getItems().size());
         createMappedVariable(VAR_DATASET_OUTPUT, Dataset.class, dataset, Variable.PersistenceType.DATASET, varman);
     }
 
     private CSVReader createReader(InputStream input) throws IOException {
 
         String csvFormatOption = getOption(OPTION_FORMAT_TYPE, String.class);
+        System.out.println("CSVFormat string = " + csvFormatOption);
         CSVFormat csv;
         if (csvFormatOption == null) {
             csv = CSVFormat.DEFAULT;
@@ -162,6 +164,7 @@ public class CSVReaderStep extends AbstractStep {
                     csv = CSVFormat.DEFAULT;
             }
         }
+
         Character delim = getOption(OPTION_DELIMITER, Character.class);
         if (delim != null) {
             csv = csv.withDelimiter(delim);
@@ -217,7 +220,7 @@ public class CSVReaderStep extends AbstractStep {
         if (allowMisingColNames != null) {
             csv = csv.withAllowMissingColumnNames(allowMisingColNames);
         }
-        //System.out.println("CSV: " + csv);
+        System.out.println("CSV: " + csv);
 
         return new CSVReader(input, csv);
     }

@@ -1,29 +1,43 @@
 package com.squonk.execution.steps.impl;
 
-import com.squonk.execution.steps.AbstractStep;
 import com.im.lac.camel.util.CamelUtils;
-import com.squonk.execution.steps.StepDefinitionConstants;
-import com.squonk.execution.variable.Variable;
-import com.squonk.execution.variable.VariableManager;
 import com.im.lac.types.MoleculeObject;
 import com.squonk.dataset.Dataset;
 import com.squonk.dataset.DatasetMetadata;
+import com.squonk.execution.steps.AbstractStep;
+import com.squonk.execution.steps.StepDefinitionConstants;
+import com.squonk.execution.variable.Variable;
+import com.squonk.execution.variable.VariableManager;
 import com.squonk.types.io.JsonHandler;
+import org.apache.camel.CamelContext;
+
 import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
-import org.apache.camel.CamelContext;
 
-/** NOTE: this is work in progress
+/**Thin executor sends only the molecules (no values) to the service and combines the returned values with the
+ * originals. As such the network traffic is minimised and the remote end does not need to handle values which it may
+ * not be able to represent.
+ * Whether the resulting structure is the input structure or the one returned by the service is determined by the
+ * OPTION_PRESERVE_STRUCTURE option.
+ *
+ * NOTE: the input is held in memory until the corresponding molecule is returned from the service which usually means that
+ * the large datasets will be handled OK, but in some cases there could be issues. Examples include when results are returned
+ * out of order or when only a subset of the input molecules are returned.
+ *
  *
  * @author timbo
  */
 public class MoleculeServiceThinExecutorStep extends AbstractStep {
 
+    private static final Logger LOG = Logger.getLogger(MoleculeServiceThinExecutorStep.class.getName());
+
     public static final String OPTION_SERVICE_ENDPOINT = "ServiceEndpoint";
     public static final String OPTION_EXECUTION_PARAMS = "ExecutionParams";
+    public static final String OPTION_PRESERVE_STRUCTURE = "PreserveStructure"; //Boolean
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
@@ -44,6 +58,11 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         Dataset<MoleculeObject> dataset = fetchMappedValue(VAR_INPUT_DATASET, Dataset.class, Variable.PersistenceType.DATASET, varman);
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
+        Boolean preserveStructure = getOption(OPTION_PRESERVE_STRUCTURE, Boolean.class, true);
+        DatasetMetadata<MoleculeObject> metadata = dataset.getMetadata();
+        if (metadata == null) {
+            metadata = new DatasetMetadata<>(MoleculeObject.class);
+        }
 
         Map<UUID, MoleculeObject> cache = new ConcurrentHashMap<>();
         Stream<MoleculeObject> stream = dataset.getStream()
@@ -52,26 +71,37 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
                     return new MoleculeObject(m.getUUID(), m.getSource(), m.getFormat());
                 });
 
-        InputStream isin = JsonHandler.getInstance().marshalStreamToJsonArray(stream, true);
+        InputStream input = JsonHandler.getInstance().marshalStreamToJsonArray(stream, true);
         
         // send for execution
-        InputStream isout = CamelUtils.doPostUsingHeadersAndQueryParams(context, endpoint, isin, params);
+        InputStream output = CamelUtils.doPostUsingHeadersAndQueryParams(context, endpoint, input, params);
 
         // handle results
-        Dataset<MoleculeObject> ds = JsonHandler.getInstance()
-                .unmarshalDataset(new DatasetMetadata<MoleculeObject>(MoleculeObject.class), isout);
+        Dataset<MoleculeObject> outputMols = JsonHandler.getInstance().unmarshalDataset(metadata, output);
 
-        ds.getStream().forEachOrdered(m -> {
-            MoleculeObject o = cache.get(m.getUUID());
+        Stream<MoleculeObject> resultMols = outputMols.getStream().map(m -> {
+            UUID uuid = m.getUUID();
+            MoleculeObject o = cache.get(uuid);
             if (o == null) {
-                System.out.println("Molecule " + m.getUUID() + " not found. Strange!");
+                LOG.warning("Molecule " + uuid + " not found. Strange!");
+                return m;
             } else {
-                System.out.println("Found Mol " + m.getUUID());
-                o.getValues().putAll(m.getValues());
+                LOG.finer("Found Mol " + uuid);
+                MoleculeObject neu;
+                if (preserveStructure) {
+                    o.getValues().putAll(m.getValues());
+                    neu = o;
+                } else {
+                    neu = new MoleculeObject(uuid, m.getSource(), m.getFormat());
+                    neu.getValues().putAll(o.getValues());
+                    neu.getValues().putAll(m.getValues());
+                }
+                cache.remove(uuid);
+                return neu;
             }
         });
 
-        Dataset<MoleculeObject> results = new Dataset<>(MoleculeObject.class, cache.values());
+        Dataset<MoleculeObject> results = new Dataset<>(MoleculeObject.class, resultMols, metadata);
 
         createMappedVariable(VAR_OUTPUT_DATASET, Dataset.class, results, Variable.PersistenceType.DATASET, varman);
     }

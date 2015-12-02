@@ -6,6 +6,7 @@ import com.squonk.notebook.api.VariableDefinition;
 import com.squonk.notebook.api.CellDTO;
 import com.squonk.notebook.client.CallbackClient;
 import com.squonk.notebook.client.CallbackContext;
+import com.squonk.notebook.execution.CSVUploaderCellExecutor;
 import com.squonk.notebook.execution.DatasetMergerCellExecutor;
 import com.squonk.notebook.execution.SDFUploaderCellExecutor;
 
@@ -105,6 +106,12 @@ public class ExampleCellService {
                 .withOutputVariable("FileContent", VariableType.FILE)
                 .withOutputVariable("Results", VariableType.DATASET)
                 .withOption("NameFieldName"));
+
+        list.add(new CellType(CSVUploaderCellExecutor.CELL_TYPE_NAME_CSV_UPLOADER, "CSV upload", true)
+                .withOutputVariable("FileContent", VariableType.FILE)
+                .withOutputVariable("Results", VariableType.DATASET)
+                .withOption("FileType")
+                .withOption("FirstLineIsHeader"));
 
         list.add(new CellType(DatasetMergerCellExecutor.CELL_TYPE_NAME_DATASET_MERGER, "Dataset merger", true)
                 .withOutputVariable("Results", VariableType.DATASET)

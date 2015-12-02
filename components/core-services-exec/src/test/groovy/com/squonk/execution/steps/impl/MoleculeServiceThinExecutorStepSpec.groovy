@@ -1,13 +1,10 @@
 package com.squonk.execution.steps.impl
 
-import com.squonk.execution.variable.*
-import com.squonk.execution.variable.impl.*
 import com.im.lac.types.MoleculeObject
-import com.squonk.dataset.*
-import com.squonk.dataset.transform.TransformDefintions
-import java.util.stream.Stream
-import org.apache.camel.*
-import org.apache.camel.builder.RouteBuilder
+import com.squonk.dataset.Dataset
+import com.squonk.execution.variable.Variable
+import com.squonk.execution.variable.VariableManager
+import com.squonk.execution.variable.impl.MemoryVariableLoader
 import org.apache.camel.impl.DefaultCamelContext
 import spock.lang.Specification
 
@@ -37,7 +34,7 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
             Dataset.class, 
             ds,
             Variable.PersistenceType.NONE)
-        
+
         MoleculeServiceThinExecutorStep step = new MoleculeServiceThinExecutorStep()
         step.configure([(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT):'http://demos.informaticsmatters.com:9080/chem-services-cdk-basic/rest/v1/calculators/logp'], [:])
         

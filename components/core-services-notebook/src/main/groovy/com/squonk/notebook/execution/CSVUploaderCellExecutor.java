@@ -5,6 +5,8 @@ import static com.squonk.execution.steps.StepDefinitionConstants.*;
 import com.squonk.notebook.api.CellDTO;
 import com.squonk.execution.steps.impl.CSVReaderStep;
 
+import java.util.Map;
+
 /**
  * Reads a CSV file (or similar with user specified delimiter) and generates a
  * Dataset of BasicObjects containing the properties found in the file. The file
@@ -25,8 +27,12 @@ public class CSVUploaderCellExecutor extends AbstractStepExecutor {
     @Override
     protected StepDefinition[] getStepDefintions(CellDTO cell) {
 
+        for (Map.Entry e: cell.getPropertyMap().entrySet()) {
+            System.out.println("OPT: " + e.getKey() + " -> " + e.getValue());
+        }
+
         StepDefinition step = new StepDefinition(STEP_CSV_READER)
-                .withFieldMapping(CSVReaderStep.VAR_CSV_INPUT, "FileInput")
+                .withFieldMapping(CSVReaderStep.VAR_CSV_INPUT, "FileContent")
                 .withFieldMapping(VARIABLE_OUTPUT_DATASET, "Results"); 
 
         step = configureOption(step, cell, CSVReaderStep.OPTION_ALLOW_MISSING_COLUMN_NAMES);     // Boolean
