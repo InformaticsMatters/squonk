@@ -9,6 +9,7 @@ import com.squonk.execution.steps.StepDefinitionConstants;
 import com.squonk.execution.variable.Variable;
 import com.squonk.execution.variable.VariableManager;
 import com.squonk.types.io.JsonHandler;
+import com.squonk.util.IOUtils;
 import org.apache.camel.CamelContext;
 
 import java.io.InputStream;
@@ -77,7 +78,7 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         InputStream output = CamelUtils.doPostUsingHeadersAndQueryParams(context, endpoint, input, params);
 
         // handle results
-        Dataset<MoleculeObject> outputMols = JsonHandler.getInstance().unmarshalDataset(metadata, output);
+        Dataset<MoleculeObject> outputMols = JsonHandler.getInstance().unmarshalDataset(metadata, IOUtils.getGunzippedInputStream(output));
 
         Stream<MoleculeObject> resultMols = outputMols.getStream().map(m -> {
             UUID uuid = m.getUUID();

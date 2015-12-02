@@ -11,6 +11,8 @@ import com.squonk.dataset.DatasetMetadata;
 import com.squonk.types.io.JsonHandler;
 import java.io.InputStream;
 import java.util.Map;
+
+import com.squonk.util.IOUtils;
 import org.apache.camel.CamelContext;
 
 /**
@@ -43,7 +45,7 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
 
         InputStream output = CamelUtils.doPostUsingHeadersAndQueryParams(context, endpoint, input.getInputStream(true), params);
-        Dataset<MoleculeObject> results = JsonHandler.getInstance().unmarshalDataset(new DatasetMetadata(MoleculeObject.class), output);
+        Dataset<MoleculeObject> results = JsonHandler.getInstance().unmarshalDataset(new DatasetMetadata(MoleculeObject.class), IOUtils.getGunzippedInputStream(output));
         createMappedVariable(VAR_OUTPUT_DATASET, Dataset.class, results, Variable.PersistenceType.DATASET, varman);
      }
 

@@ -10,4 +10,6 @@ dependencies {
     compile project(':core-services-common')
 
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+
+    testCompile "org.apache.camel:camel-jetty:$camelVersion"
 }
