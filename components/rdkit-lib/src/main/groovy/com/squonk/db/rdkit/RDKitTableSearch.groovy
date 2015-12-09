@@ -1,10 +1,9 @@
-package com.squonk.rdkit.db
+package com.squonk.db.rdkit
 
 import com.im.lac.types.MoleculeObject
-import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.util.logging.Log
-import java.util.stream.Stream
+
 import javax.sql.DataSource
 
 /**

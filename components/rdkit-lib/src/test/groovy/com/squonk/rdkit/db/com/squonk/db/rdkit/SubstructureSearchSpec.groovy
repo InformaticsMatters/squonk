@@ -1,6 +1,8 @@
-package com.squonk.rdkit.db
+package com.squonk.rdkit.db.com.squonk.db.rdkit
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.squonk.db.rdkit.StructureSearch
+import com.squonk.db.rdkit.SubstructureSearch
 import spock.lang.Specification
 
 /**

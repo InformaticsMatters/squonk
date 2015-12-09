@@ -1,4 +1,4 @@
-package com.squonk.rdkit.db
+package com.squonk.db.rdkit
 
 import groovy.transform.Canonical
 

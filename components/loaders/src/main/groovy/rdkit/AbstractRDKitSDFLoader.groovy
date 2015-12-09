@@ -1,7 +1,9 @@
 package rdkit
 
 import com.im.lac.types.MoleculeObject
-import com.squonk.rdkit.db.*
+import com.squonk.db.rdkit.RDKitTable
+import com.squonk.db.rdkit.RDKitTableLoader
+import com.squonk.db.rdkit.RDKitTableSearch
 import com.squonk.reader.SDFReader
 import com.squonk.util.IOUtils
 import javax.sql.DataSource
