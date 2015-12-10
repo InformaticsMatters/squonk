@@ -25,3 +25,4 @@ components/core-services-client/lib
 components/chem-services-root/src/main/html/licenses
 docker/notebook/*.war
 docker/notebook_portal/*.war
+docker/xwiki-site/yyy.json
