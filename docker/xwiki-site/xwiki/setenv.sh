@@ -7,7 +7,7 @@
 #  exit 1
 #fi
 
-export JAVA_OPTS="${JAVA_OPTS} -Djava.awt.headless=true"
+export JAVA_OPTS="${JAVA_OPTS} -Djava.awt.headless=true -Dcom.squonk.keycloak.baseurl=$KEYCLOAK_SERVER_URL"
 
 #postgres_connect_string="$(echo "$POSTGRES_PORT" | sed -r 's/^tcp:\/\/(.+)/jdbc:postgresql:\/\/\1\/'"$POSTGRES_ENV_POSTGRES_USER"'/' )"
 #echo "Connecting to postgres via '$postgres_connect_string'"

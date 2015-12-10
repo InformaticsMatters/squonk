@@ -11,3 +11,4 @@ RUN keytool -import -v -trustcacerts -alias keycloakserver -file /usr/local/tomc
 COPY keycloak-jars/* /usr/local/tomcat/lib/
 RUN mkdir /usr/local/tomcat/webapps/sampleapp
 COPY sampleapp /usr/local/tomcat/webapps/sampleapp
+RUN echo JAVA_OPTS='"-Dcom.squonk.keycloak.baseurl=$KEYCLOAK_SERVER_URL"' > /usr/local/tomcat/bin/setenv.sh

@@ -27,9 +27,13 @@ xwiki:
     links:
     - keycloak:keycloak
 #    - postgres:postgres
+    environment:
+    - KEYCLOAK_SERVER_URL=http://192.168.59.103:8080
 
 sampleapp:
     build: sampleapp/
     ports:
     - "9080:8080"
     - "9443:8443"
+    environment:
+    - KEYCLOAK_SERVER_URL=http://192.168.59.103:8080
