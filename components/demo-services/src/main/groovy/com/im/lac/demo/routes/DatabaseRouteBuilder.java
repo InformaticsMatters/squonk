@@ -66,7 +66,9 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                         .propertyTable("vendordbs.jchemproperties")
                         .searchOptions("t:d")
                         .searchOptionsOverride("maxResults:5000 maxTime:30000")
+                        .outputColumn("cd_id")
                         .outputColumn("version_id")
+                        .outputColumn("parent_id")
                         .outputMode(JChemDBSearcher.OutputMode.MOLECULE_OBJECTS)
                         .structureFormat("smiles:-a")
                 );
@@ -79,7 +81,9 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                         .propertyTable("vendordbs.jchemproperties")
                         .searchOptions("t:d")
                         .searchOptionsOverride("maxResults:5000 maxTime:30000")
-                        .outputColumn("cd_id").outputColumn("version_id")
+                        .outputColumn("cd_id")
+                        .outputColumn("version_id")
+                        .outputColumn("parent_id")
                         .outputMode(JChemDBSearcher.OutputMode.MOLECULE_OBJECTS)
                         .structureFormat("smiles")
                 );
@@ -92,7 +96,9 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                         .propertyTable("vendordbs.jchemproperties")
                         .searchOptions("t:d")
                         .searchOptionsOverride("maxResults:5000 maxTime:30000")
-                        .outputColumn("cd_id").outputColumn("version_id")
+                        .outputColumn("cd_id")
+                        .outputColumn("version_id")
+                        .outputColumn("parent_id")
                         .outputMode(JChemDBSearcher.OutputMode.MOLECULE_OBJECTS)
                         .structureFormat("smiles")
                 );

@@ -60,6 +60,7 @@ public class Main {
         camelContext.addRoutes(new ReactorRouteBuilder());
         camelContext.addRoutes(new RestRouteBuilder());
         camelContext.addRoutes(new FileServicesRouteBuilder(ds));
+        camelContext.addRoutes(new EmolsMultiSearchRouteBuilder());
         //camelContext.addRoutes(new JmsRouteBuilder());
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -95,13 +96,15 @@ public class Main {
         PGSimpleDataSource ds = new PGSimpleDataSource();
         String server = System.getenv("CHEMCENTRAL_DB_SERVER");
         ds.setServerName(server != null ? server : "localhost");
-        LOG.log(Level.INFO, "DB sever: {0}", ds.getServerName());
+        LOG.log(Level.INFO, "DB server: {0}", ds.getServerName());
         String portEnv = System.getenv("CHEMCENTRAL_DB_PORT");
         ds.setPortNumber(portEnv != null ? new Integer(portEnv) : 5432);
         LOG.log(Level.INFO, "DB port: {0}", ds.getPortNumber());
         ds.setDatabaseName("chemcentral");
+        LOG.log(Level.INFO, "Database: {0}", ds.getDatabaseName());
         String username = System.getenv("CHEMCENTRAL_DB_USERNAME");
         ds.setUser(username != null ? username : "chemcentral");
+        LOG.log(Level.INFO, "User: {0}", ds.getUser()); 
         String password = System.getenv("CHEMCENTRAL_DB_PASSWORD");
         ds.setPassword(password != null ? password : "chemcentral");
         return ds;
