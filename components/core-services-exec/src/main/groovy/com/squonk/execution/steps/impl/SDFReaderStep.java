@@ -29,7 +29,7 @@ public class SDFReaderStep extends AbstractStep {
      * How to handle the name field (the first line of the CTAB block). See
      * {@link com.squonk.reader.SDFReader} for details.
      */
-    public static final String OPTION_NAME_FIELD_NAME = "NameFieldName";
+    public static final String OPTION_NAME_FIELD_NAME = "nameFieldName";
     /**
      * Expected variable name for the input
      */
@@ -61,6 +61,7 @@ public class SDFReaderStep extends AbstractStep {
     private SDFReader createReader(InputStream input) throws IOException {
         SDFReader reader = new SDFReader(input);
         String nameFieldName = getOption(OPTION_NAME_FIELD_NAME, String.class);
+        System.out.println("nameFieldName = " + nameFieldName);
         if (nameFieldName != null && nameFieldName.length() > 0) {
             reader.setNameFieldName(nameFieldName);
         } else {

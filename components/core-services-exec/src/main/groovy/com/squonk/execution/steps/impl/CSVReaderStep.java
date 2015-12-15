@@ -44,71 +44,71 @@ public class CSVReaderStep extends AbstractStep {
      * If not present then CSVFormat.DEFAULT is used.
      *
      */
-    public static final String OPTION_FORMAT_TYPE = "CSVFormatType";
+    public static final String OPTION_FORMAT_TYPE = "csvFormatType";
 
     /**
      * Whether to include or skip the first line. Value expected to be a
      * boolean.
      */
-    public static final String OPTION_SKIP_HEADER_LINE = "SkipHeaderLine";
+    public static final String OPTION_SKIP_HEADER_LINE = "skipHeaderLine";
     /**
      * Use the first line for the name of the fields. Value expected to be a
      * boolean. If being set you probably also want to set
      * OPTION_SKIP_HEADER_LINE to true to make sure that line is not read as
      * data.
      */
-    public static final String OPTION_USE_HEADER_FOR_FIELD_NAMES = "UseHeaderForFieldNames";
+    public static final String OPTION_USE_HEADER_FOR_FIELD_NAMES = "firstLineIsHeader";
     /**
      * Names to use for the fields. Use this only if you are not specifying
      * OPTION_USE_HEADER_FOR_FIELD_NAMES or that value is set to false. Value
      * expected to be a String[]
      */
-    public static final String OPTION_FIELD_NAMES = "FieldNames";
+    public static final String OPTION_FIELD_NAMES = "fieldNames";
     /**
      * Whether to ignore empty lines. Value expected to be a boolean.
      */
-    public static final String OPTION_IGNORE_EMPTY_LINES = "IgnoreEmptyLines";
+    public static final String OPTION_IGNORE_EMPTY_LINES = "ignoreEmptyLines";
     /**
      * Whether to ignore surrounding whitespace. Value expected to be a boolean.
      */
-    public static final String OPTION_IGNORE_SURROUNDING_WHITESPACE = "IgnoreSuroundingWhiteSpace";
+    public static final String OPTION_IGNORE_SURROUNDING_WHITESPACE = "ignoreSuroundingWhiteSpace";
     /**
      * String for null values. Value expected to be a String.
      */
-    public static final String OPTION_NULL_STRING = "NullString";
+    public static final String OPTION_NULL_STRING = "nullString";
 
     /**
      * Value for delimeter. Can be used to overrride the default set by the
      * OPTION_FORMAT_TYPE (of comma if this is not defined). Value expected to
      * be a Character
      */
-    public static final String OPTION_DELIMITER = "Delimiter";
+    public static final String OPTION_DELIMITER = "delimiter";
     /**
      * Value for the quote character. Value expected to be a Character
      */
-    public static final String OPTION_QUOTE_CHAR = "QuoteCharacter";
+    public static final String OPTION_QUOTE_CHAR = "quoteCharacter";
     /**
      * Value for the escape character. Value expected to be a Character
      */
-    public static final String OPTION_ESCAPE_CHAR = "EscapeCharacter";
+    public static final String OPTION_ESCAPE_CHAR = "escapeCharacter";
     /**
      * Value for the comment marker. Value expected to be a Character
      */
-    public static final String OPTION_COMMENT_MARKER = "CommentMarker";
+    public static final String OPTION_COMMENT_MARKER = "commentMarker";
     /**
      * Value for the quote mode. Value expected to be a String corresponding to
      * of the the {@link org.apache.commons.csv.QuoteMode} enums
      */
-    public static final String OPTION_QUOTE_MODE = "QuoteMode";
+    public static final String OPTION_QUOTE_MODE = "quoteMode";
     /**
      * Value for the record separator. Value expected to be a String
      */
-    public static final String OPTION_RECORD_SEPARATOR = "RecordSeparator";
+    public static final String OPTION_RECORD_SEPARATOR = "recordSeparator";
 
     /**
      * Whether to allow missing column names. Value expected to be a boolean.
      */
-    public static final String OPTION_ALLOW_MISSING_COLUMN_NAMES = "AllowMissingColumnNames";
+    public static final String OPTION_ALLOW_MISSING_COLUMN_NAMES = "allowMissingColumnNames";
 
     /**
      * Expected variable name for the input

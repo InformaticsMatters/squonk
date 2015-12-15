@@ -39,17 +39,19 @@ import org.postgresql.ds.PGSimpleDataSource;
  */
 public class EmolsMultiSearchRouteBuilder extends RouteBuilder {
 
-    private static String PROP_LOGP = "LogP";
-    private static String PROP_MOLWEIGHT = "MolWeight";
-    private static String PROP_HEAVY_ATOM_COUNT = "HeavyAtomCount";
+    private static final String PROP_LOGP = "LogP";
+    private static final String PROP_MOLWEIGHT = "MolWeight";
+    private static final String PROP_HEAVY_ATOM_COUNT = "HeavyAtomCount";
 
-    private static String TABLE_NAME = "emolecules_order_bb";
+    private static final String TABLE_NAME = "emolecules_order_bb";
 
-    private static String HEADER_QUERY_MOLECULEOBJECT_ID = "MoleculeObjectID";
+    private static final String HEADER_QUERY_MOLECULEOBJECT_ID = "MoleculeObjectID";
 
-    private static String FIELD_HISTORY = "history";
+    private static final String FIELD_HISTORY = "history";
 
     String base = "../../lacfiledrop/";
+    
+     private static final String EMOLS_SEARCHER_ROUTE = "direct:chemsearch/emolecules_all";
 
     @Override
     public void configure() throws Exception {
@@ -57,7 +59,7 @@ public class EmolsMultiSearchRouteBuilder extends RouteBuilder {
         MoleculeObjectDatasetJsonDataFormat modsjdf = new MoleculeObjectDatasetJsonDataFormat();
         SimpleJsonDataFormat dmddf = new SimpleJsonDataFormat(DatasetMetadata.class);
 
-        from("direct:molexporter")
+        from("direct:exportmols")
                 .process((Exchange exchange) -> {
                     String accept = exchange.getIn().getHeader("Accept", String.class);
                     String options = exchange.getIn().getHeader("MolExporterOptions", String.class);
@@ -95,7 +97,7 @@ public class EmolsMultiSearchRouteBuilder extends RouteBuilder {
                 .log("processing search ${header.CamelSplitIndex}")
                 .to("direct:prepareForSearch")
                 .log("searching")
-                .to("direct:chemsearch/emolecules_bb")
+                .to(EMOLS_SEARCHER_ROUTE)
                 .end()
                 .log("converting")
                 .process((exch) -> {
@@ -127,7 +129,7 @@ public class EmolsMultiSearchRouteBuilder extends RouteBuilder {
                 .log("processing search ${header.CamelSplitIndex}")
                 .to("direct:prepareForSearch")
                 .log("searching")
-                .to("direct:chemsearch/emolecules_bb")
+                .to(EMOLS_SEARCHER_ROUTE)
                 .process((exch) -> {
                     MoleculeObjectDataset mods = exch.getIn().getBody(MoleculeObjectDataset.class);
                     exch.getIn().setHeader("HitCount", mods.getItems().size());
@@ -179,7 +181,7 @@ public class EmolsMultiSearchRouteBuilder extends RouteBuilder {
         from("file:" + base + "sdfExport?antInclude=*.json&move=done&moveFailed=error/${file:name}")
                 .to("direct:readFile")
                 .log("exporting")
-                .to("direct:molexporter")
+                .to("direct:exportmols")
                 .log("saving")
                 .to("file:" + base + "sdfExport/output?fileName=${file:name.noext}.sdf")
                 .log("finished");
@@ -234,7 +236,7 @@ public class EmolsMultiSearchRouteBuilder extends RouteBuilder {
     }
 
     public static void main(String[] args) throws Exception {
-
+        System.out.println("Running EmolsMultiSearchRouteBuilder");
         DataSource ds = createDataSource();
 
         DefaultCamelContext context = new DefaultCamelContext();
@@ -273,7 +275,7 @@ public class EmolsMultiSearchRouteBuilder extends RouteBuilder {
         Map<String, Object> headers = new HashMap<>();
         headers.put("Accept", mimeType);
         headers.put("MolExporterOptions", options);
-        String is = pt.requestBodyAndHeaders("direct:molexporter", mols, headers, String.class
+        String is = pt.requestBodyAndHeaders("direct:exportmols", mols, headers, String.class
         );
         return is;
     }
@@ -313,7 +315,7 @@ public class EmolsMultiSearchRouteBuilder extends RouteBuilder {
         System.out.println("Searching for " + query);
         ProducerTemplate pt = context.createProducerTemplate();
         MoleculeObjectDataset o = pt.requestBodyAndHeader(
-                "direct:chemsearch/emolecules_bb",
+                EMOLS_SEARCHER_ROUTE,
                 query,
                 JChemDBSearcher.HEADER_SEARCH_OPTIONS, searchOptions,
                 MoleculeObjectDataset.class
