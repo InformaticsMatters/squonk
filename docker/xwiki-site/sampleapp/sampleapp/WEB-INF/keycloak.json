@@ -1,0 +1,11 @@
+{
+  "realm": "squonk",
+  "realm-public-key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjSZraYYf/0NBuEr8HlbLfoJxerquD0l1Q3ZZP3CiLAU4+qYfR4bph2LsWbxXpWCIaKfLn2bPAy942l6AI3ZOw2dCUBobT1TpPAr7rVYciM9IGsTAyOgac5FYBW7JE4+A4BYJcZCtARRn4BsZ+dZYXQGnEtvCY0LfBIs1BrJqF2oY38xxfytYHP3ZvV1+ngf1mQ/R5XzrXknJGkIB0ZkwmyyCmfn9L96ntO4RXGJrAsx1vybpuCuz5yzuTANbuF2gfQGFEYrshFS7oW6JtNNsUyhwcs7JaCXdKVjpFOcdWgLskc3FajKVKfpekidr0QE16lHUfn9NCVyKAFwEo1fBSwIDAQAB",
+  "auth-server-url": "${com.squonk.keycloak.baseurl}/auth",
+  "ssl-required": "external",
+  "resource": "sampleapp",
+  "credentials": {
+    "secret": "434ecd6b-586d-4db8-a3fa-83bfeb16bf44"
+  },
+  "use-resource-role-mappings": false
+}

@@ -2,7 +2,7 @@ package com.im.squonk.rdkit.services;
 
 import com.im.lac.types.MoleculeObject;
 import com.squonk.dataset.Dataset;
-import com.squonk.rdkit.db.*;
+import com.squonk.db.rdkit.*;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
