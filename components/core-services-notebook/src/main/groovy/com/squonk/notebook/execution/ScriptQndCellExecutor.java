@@ -1,16 +1,11 @@
 package com.squonk.notebook.execution;
 
 
-import com.squonk.notebook.api.CellDTO;
-import com.squonk.notebook.client.CallbackClient;
+import org.squonk.notebook.client.CallbackClient;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
-import com.squonk.notebook.api.CellType;
+import org.squonk.notebook.api.CellType;
 
 import javax.inject.Inject;
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;

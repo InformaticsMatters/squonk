@@ -1,4 +1,4 @@
-package com.squonk.notebook.client;
+package org.squonk.notebook.client;
 
 public interface CellClientConfig {
 

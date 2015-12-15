@@ -1,7 +1,7 @@
-package com.squonk.notebook.client;
+package org.squonk.notebook.client;
 
 
-import com.squonk.notebook.api.CellType;
+import org.squonk.notebook.api.CellType;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 

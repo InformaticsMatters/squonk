@@ -1,14 +1,12 @@
 package com.squonk.execution.variable.impl;
 
 import com.squonk.execution.variable.*;
-import com.im.lac.types.MoleculeObject;
-import com.squonk.notebook.client.CallbackClient;
+import org.squonk.notebook.client.CallbackClient;
 import com.squonk.types.io.JsonHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 /**
  *

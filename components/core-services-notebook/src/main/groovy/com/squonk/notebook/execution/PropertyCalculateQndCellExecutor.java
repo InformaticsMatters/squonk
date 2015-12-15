@@ -1,10 +1,10 @@
 package com.squonk.notebook.execution;
 
-import com.squonk.notebook.api.VariableDTO;
-import com.squonk.notebook.api.CellType;
-import com.squonk.notebook.api.NotebookDTO;
-import com.squonk.notebook.api.CellDTO;
-import com.squonk.notebook.client.CallbackClient;
+import org.squonk.notebook.api.VariableDTO;
+import org.squonk.notebook.api.CellType;
+import org.squonk.notebook.api.NotebookDTO;
+import org.squonk.notebook.api.CellDTO;
+import org.squonk.notebook.client.CallbackClient;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.im.lac.types.MoleculeObject;

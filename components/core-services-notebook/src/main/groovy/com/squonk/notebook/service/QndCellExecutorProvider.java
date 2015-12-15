@@ -1,7 +1,7 @@
 package com.squonk.notebook.service;
 
 import com.squonk.notebook.execution.QndCellExecutor;
-import com.squonk.notebook.api.CellType;
+import org.squonk.notebook.api.CellType;
 
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;

@@ -1,10 +1,10 @@
-package com.squonk.notebook.client;
+package org.squonk.notebook.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.im.lac.types.MoleculeObject;
-import com.squonk.notebook.api.CellDTO;
-import com.squonk.notebook.api.NotebookDTO;
+import org.squonk.notebook.api.CellDTO;
+import org.squonk.notebook.api.NotebookDTO;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 

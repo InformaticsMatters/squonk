@@ -2,7 +2,7 @@ package com.squonk.notebook.execution;
 
 import com.squonk.execution.steps.StepDefinition;
 import static com.squonk.execution.steps.StepDefinitionConstants.*;
-import com.squonk.notebook.api.CellDTO;
+import org.squonk.notebook.api.CellDTO;
 
 /**
  * Given a ChEMBL assay ID fetches all activities for that assay and generated a

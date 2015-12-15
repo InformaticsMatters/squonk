@@ -1,4 +1,4 @@
-package com.squonk.notebook.client;
+package org.squonk.notebook.client;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.sun.jersey.api.client.Client;

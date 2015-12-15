@@ -1,11 +1,11 @@
 package com.squonk.notebook.service;
 
-import com.squonk.notebook.api.VariableType;
-import com.squonk.notebook.api.CellType;
-import com.squonk.notebook.api.VariableDefinition;
-import com.squonk.notebook.api.CellDTO;
-import com.squonk.notebook.client.CallbackClient;
-import com.squonk.notebook.client.CallbackContext;
+import org.squonk.notebook.api.VariableType;
+import org.squonk.notebook.api.CellType;
+import org.squonk.notebook.api.VariableDefinition;
+import org.squonk.notebook.api.CellDTO;
+import org.squonk.notebook.client.CallbackClient;
+import org.squonk.notebook.client.CallbackContext;
 import com.squonk.notebook.execution.CSVUploaderCellExecutor;
 import com.squonk.notebook.execution.DatasetMergerCellExecutor;
 import com.squonk.notebook.execution.SDFUploaderCellExecutor;
