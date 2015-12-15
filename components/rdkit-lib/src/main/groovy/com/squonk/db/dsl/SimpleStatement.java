@@ -1,0 +1,14 @@
+package com.squonk.db.dsl;
+
+/**
+ * Created by timbo on 13/12/2015.
+ */
+public class SimpleStatement {
+
+    private final String cmd;
+
+    SimpleStatement(String cmd) {
+        this.cmd = cmd;
+
+    }
+}
