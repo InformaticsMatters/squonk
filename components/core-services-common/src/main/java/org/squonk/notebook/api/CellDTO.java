@@ -11,19 +11,11 @@ import java.util.Map;
 public class CellDTO {
     private String name;
     private CellType cellType;
-    private final List<VariableDTO> inputVariableList = new ArrayList<>();
+    private final Map<String, BindingDTO> bindingMap = new HashMap<>();
     private final List<String> outputVariableNameList = new ArrayList<>();
-    private final Map<String, Object> propertyMap = new HashMap<>();
+    private final Map<String, OptionDTO> optionMap = new HashMap<>();
     private int positionTop;
     private int positionLeft;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public CellType getCellType() {
         return cellType;
@@ -34,8 +26,8 @@ public class CellDTO {
     }
 
     @XmlElement
-    public List<VariableDTO> getInputVariableList() {
-        return inputVariableList;
+    public Map<String, BindingDTO> getBindingMap() {
+        return bindingMap;
     }
 
     @XmlElement
@@ -43,8 +35,9 @@ public class CellDTO {
         return outputVariableNameList;
     }
 
-    public Map<String, Object> getPropertyMap() {
-        return propertyMap;
+    @XmlElement
+    public Map<String, OptionDTO> getOptionMap() {
+        return optionMap;
     }
 
     public int getPositionTop() {
@@ -61,5 +54,13 @@ public class CellDTO {
 
     public void setPositionLeft(int positionLeft) {
         this.positionLeft = positionLeft;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

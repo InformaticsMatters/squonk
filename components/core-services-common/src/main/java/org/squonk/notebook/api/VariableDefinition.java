@@ -6,11 +6,12 @@ import java.io.Serializable;
 @XmlRootElement
 public class VariableDefinition implements Serializable {
     private String name;
+    private String displayName;
     private VariableType variableType;
     private Object defaultValue;
 
     public VariableDefinition() {
-        
+
     }
     
     public VariableDefinition(String name, VariableType variableType) {
@@ -46,5 +47,13 @@ public class VariableDefinition implements Serializable {
 
     public void setDefaultValue(Object defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 }

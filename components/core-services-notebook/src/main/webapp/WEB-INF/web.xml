@@ -9,7 +9,7 @@
         <servlet-class>toolkit.jersey.CDIJerseyServlet</servlet-class>
         <init-param>
             <param-name>com.sun.jersey.config.property.packages</param-name>
-            <param-value>com.squonk.notebook.execution,com.squonk.notebook.client,com.squonk.notebook.service</param-value>
+            <param-value>org.squonk.notebook.service</param-value>
         </init-param>
         <init-param>
             <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
