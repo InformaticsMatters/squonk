@@ -34,18 +34,22 @@ public class Table {
         }
     }
 
-    Column addColumn(String name, String type, String definition) {
+    protected Column addColumn(String name, String type, String definition) {
         Column col = new Column(this, name, type, definition);
         columns.add(col);
         return col;
     }
 
-    Table column(String name, String type, String definition) {
+    protected Table column(String name, String type, String definition) {
         addColumn(name, type, definition);
         return this;
     }
 
-    Table alias(String alias) {
+    public List<Column> getColumns() {
+        return columns;
+    }
+
+    protected Table alias(String alias) {
         return new Table(alias, this.schema, this.baseName, this.columns);
     }
 

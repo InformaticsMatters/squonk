@@ -21,7 +21,7 @@ public class Select {
     public Select(SqlQuery query, Column... cols) {
         this.query = query;
         this.projections.addAll(Arrays.asList(cols));
-        this.join = new FpTableJoin(this, query.rdkTable.schemaPlusTable() + "_molfps");
+        this.join = new FpTableJoin(this, query.rdkTable.molfpsTable.baseName);
         this.whereClause = new WhereClause(this);
         this.orderByClause = new OrderByClause(this);
         this.limitClause = new LimitClause(this, 0);

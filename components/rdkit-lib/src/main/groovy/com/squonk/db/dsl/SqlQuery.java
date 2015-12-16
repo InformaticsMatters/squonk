@@ -1,8 +1,7 @@
 package com.squonk.db.dsl;
 
-import com.im.lac.types.MoleculeObject;
 import com.squonk.db.rdkit.FingerprintType;
-import com.squonk.db.rdkit.Metric;
+import com.squonk.db.rdkit.RDKitTableLoader;
 
 import java.util.*;
 
@@ -23,7 +22,6 @@ public class SqlQuery {
     }
 
     public List<FingerprintType> getFingerPrintTypes() {
-
         return Collections.unmodifiableList(rdkTable.fptypes);
     }
 
@@ -33,6 +31,10 @@ public class SqlQuery {
 
     public Select select(Column... cols) {
         return new Select(this, cols);
+    }
+
+    public RDKitTableLoader loader() {
+        return new RDKitTableLoader(rdkTable, config);
     }
 
 

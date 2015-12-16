@@ -20,6 +20,10 @@ public final class Column implements IProjectionPart {
         this.definition = definition;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public String getProjectionName() {
         return name;
     }
