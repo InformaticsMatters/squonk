@@ -10,43 +10,7 @@ import javax.sql.DataSource
 abstract class RDKitTable {
     
     static final String RDKIT_SMILES = 'RDKit_smiles'
-    
-    enum MolSourceType {
-        CTAB, SMILES
-    }
-    
-    enum FingerprintType { 
-        RDKIT('rdkit_fp(%s)', 'rdk'),
-        MORGAN_CONNECTIVITY_2('morganbv_fp(%s,2)', 'mfp2'), 
-        MORGAN_CONNECTIVITY_3('morganbv_fp(%s,3)', 'mfp3'), 
-        MORGAN_FEATURE_2('featmorganbv_fp(%s,2)', 'ffp2'), 
-        MORGAN_FEATURE_3('featmorganbv_fp(%s,3)', 'ffp3'), 
-        TORSION('torsionbv_fp(%s)', 'tfp'), 
-        MACCS('maccs_fp(%s)', 'maccsfp') 
-    
-        String function
-        String colName
-        
-        FingerprintType(String function, String col) {
-            this.function = function
-            this.colName = col
-        }
-    }
-    
-    enum Metric { 
-        TANIMOTO('%', 'tanimoto_sml(%s)', 'rdkit.tanimoto_threshold'), 
-        DICE('#', 'dice_sml(%s)', 'rdkit.dice_threshold') 
-    
-        String operator
-        String function
-        String simThresholdProp
-        
-        Metric(String operator, String function, String simThresholdProp) {
-            this.operator = operator
-            this.function = function
-            this.simThresholdProp = simThresholdProp
-        }
-    }
+
     
     protected final DataSource dataSource
     protected final String schema

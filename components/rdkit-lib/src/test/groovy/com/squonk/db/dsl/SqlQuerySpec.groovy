@@ -2,6 +2,7 @@ package com.squonk.db.dsl
 
 import com.squonk.db.rdkit.FingerprintType
 import com.squonk.db.rdkit.Metric
+import com.squonk.db.rdkit.MolSourceType
 import spock.lang.Specification
 
 /**
@@ -9,12 +10,12 @@ import spock.lang.Specification
  */
 class SqlQuerySpec extends Specification {
 
-    Table table = new RdkTable("foo", [:])
-            .column("id")
-            .column("structure")
-            .column("version_id")
-            .column("parent_id")
-    def query = new SqlQuery(table)
+    Table table = new RdkTable("foo", MolSourceType.CTAB, [])
+            .column("id", "SERIAL", "SERIAL PRIMARY KEY")
+            .column("structure", "TEXT", "TEXT")
+            .column("version_id", "INTEGER", "INTEGER NOT NULL")
+            .column("parent_id", "INTEGER", "INTEGER NOT NULL")
+    def query = new SqlQuery(table, null)
     def cols = query.columns;
 
     void "query with limit"() {
@@ -26,7 +27,7 @@ class SqlQuerySpec extends Specification {
 
         when:
         List bindVars = []
-        def sql = q.buildSql(bindVars)
+        def sql = q.executor.buildSql(bindVars)
 
         then:
         sql != null
@@ -42,7 +43,7 @@ class SqlQuerySpec extends Specification {
 
         when:
         List bindVars = []
-        def sql = q.buildSql(bindVars)
+        def sql = q.executor.buildSql(bindVars)
 
         then:
         sql != null
@@ -59,7 +60,7 @@ class SqlQuerySpec extends Specification {
 
         when:
         List bindVars = []
-        def sql = q.buildSql(bindVars)
+        def sql = q.executor.buildSql(bindVars)
 
         then:
         sql != null
@@ -78,7 +79,7 @@ class SqlQuerySpec extends Specification {
 
         when:
         List bindVars = []
-        def sql = q.buildSql(bindVars)
+        def sql = q.executor.buildSql(bindVars)
 
         then:
         sql != null
@@ -96,7 +97,7 @@ class SqlQuerySpec extends Specification {
 
         when:
         List bindVars = []
-        def sql = q.buildSql(bindVars)
+        def sql = q.executor.buildSql(bindVars)
 
         then:
         sql != null
@@ -114,7 +115,7 @@ class SqlQuerySpec extends Specification {
 
         when:
         List bindVars = []
-        def sql = q.buildSql(bindVars)
+        def sql = q.executor.buildSql(bindVars)
 
         then:
         sql != null
@@ -133,7 +134,7 @@ class SqlQuerySpec extends Specification {
 
         when:
         List bindVars = []
-        def sql = q.buildSql(bindVars)
+        def sql = q.executor.buildSql(bindVars)
 
         then:
         sql != null
@@ -150,7 +151,7 @@ class SqlQuerySpec extends Specification {
 
         when:
         List bindVars = []
-        def sql = q.buildSql(bindVars)
+        def sql = q.executor.buildSql(bindVars)
 
         then:
         sql != null
@@ -167,7 +168,7 @@ class SqlQuerySpec extends Specification {
 
         when:
         List bindVars = []
-        def sql = q.buildSql(bindVars)
+        def sql = q.executor.buildSql(bindVars)
 
         then:
         sql != null
@@ -184,7 +185,7 @@ class SqlQuerySpec extends Specification {
 
         when:
         List bindVars = []
-        def sql = q.buildSql(bindVars)
+        def sql = q.executor.buildSql(bindVars)
 
         then:
         sql != null
@@ -201,7 +202,7 @@ class SqlQuerySpec extends Specification {
 
         when:
         List bindVars = []
-        def sql = q.buildSql(bindVars)
+        def sql = q.executor.buildSql(bindVars)
 
         then:
         sql != null
@@ -220,7 +221,7 @@ class SqlQuerySpec extends Specification {
 
         when:
         List bindVars = []
-        def sql = q.buildSql(bindVars)
+        def sql = q.executor.buildSql(bindVars)
 
         then:
         sql != null
@@ -241,7 +242,7 @@ class SqlQuerySpec extends Specification {
 
         when:
         List bindVars = []
-        def sql = q.buildSql(bindVars)
+        def sql = q.executor.buildSql(bindVars)
 
         then:
         sql != null
@@ -262,7 +263,7 @@ class SqlQuerySpec extends Specification {
 
         when:
         List bindVars = []
-        def sql = q.buildSql(bindVars)
+        def sql = q.executor.buildSql(bindVars)
 
         then:
         sql != null

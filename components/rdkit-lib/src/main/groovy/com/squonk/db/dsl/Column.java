@@ -8,11 +8,20 @@ import java.util.List;
 public final class Column implements IProjectionPart {
 
     final String name;
+    final String type;
+    final String definition;
+
     final Table table;
 
-    Column(Table table, String name) {
+    Column(Table table, String name, String type, String definition) {
         this.table = table;
         this.name = name;
+        this.type = type;
+        this.definition = definition;
+    }
+
+    public String getProjectionName() {
+        return name;
     }
 
     public boolean isSameAs(Column col) {
@@ -28,5 +37,7 @@ public final class Column implements IProjectionPart {
                 .append(name);
         return 1;
     }
+
+
 
 }

@@ -2,29 +2,35 @@ package com.squonk.db.dsl;
 
 import com.squonk.db.rdkit.FingerprintType;
 import com.squonk.db.rdkit.Metric;
+import com.squonk.db.rdkit.MolSourceType;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by timbo on 14/12/2015.
  */
 public class RdkTable extends Table {
 
-    final Map<FingerprintType, Metric> fptypes = new LinkedHashMap<>();
+    final List<FingerprintType> fptypes = new ArrayList<>();
+    final MolSourceType molSourceType;
 
-    public RdkTable(String baseTableName, Map<FingerprintType, Metric> fptypes) {
+    public RdkTable(String baseTableName, MolSourceType molSourceType, Collection<FingerprintType> fptypes) {
         super(baseTableName);
-        this.fptypes.putAll(fptypes);
+        this.molSourceType = molSourceType;
+        this.fptypes.addAll(fptypes);
     }
 
-    public RdkTable(String schema, String name, Map<FingerprintType, Metric> fptypes) {
+    public RdkTable(String schema, String name, MolSourceType molSourceType, Collection<FingerprintType> fptypes) {
         super(schema, name);
-        this.fptypes.putAll(fptypes);
+        this.molSourceType = molSourceType;
+        this.fptypes.addAll(fptypes);
     }
 
-    public Map<FingerprintType, Metric> getFingerprintTypes() {
-        return Collections.unmodifiableMap(fptypes);
+    public List<FingerprintType> getFingerprintTypes() {
+        return Collections.unmodifiableList(fptypes);
+    }
+
+    public MolSourceType getMolSourceType() {
+        return molSourceType;
     }
 }

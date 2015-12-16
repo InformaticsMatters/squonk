@@ -12,18 +12,19 @@ import java.util.*;
 public class SqlQuery {
 
     final RdkTable rdkTable;
+    final IConfiguration config;
     final Table aliasTable;
-    final Map<FingerprintType, Metric> fptypes = new LinkedHashMap<>();
 
 
-    public SqlQuery(RdkTable rdkTable) {
+    public SqlQuery(RdkTable rdkTable, IConfiguration config) {
         this.rdkTable = rdkTable;
+        this.config = config;
         this.aliasTable = rdkTable.alias("t");
-        this.fptypes.putAll(rdkTable.fptypes);
     }
 
-    public Map<FingerprintType, Metric> getFingerPrintTypes() {
-        return Collections.unmodifiableMap(fptypes);
+    public List<FingerprintType> getFingerPrintTypes() {
+
+        return Collections.unmodifiableList(rdkTable.fptypes);
     }
 
     List<Column> getColumns() {

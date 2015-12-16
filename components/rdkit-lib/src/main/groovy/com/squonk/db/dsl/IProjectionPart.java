@@ -7,4 +7,6 @@ import java.util.List;
  */
 public interface IProjectionPart {
     int appendToProjections(StringBuilder builder, List bindVars);
+
+    String getProjectionName();
 }

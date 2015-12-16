@@ -30,18 +30,18 @@ public class Table {
         this.name = alias;
         this.baseName = baseTableName;
         for (Column col : columns) {
-            addColumn(col.name);
+            addColumn(col.name, col.type, col.definition);
         }
     }
 
-    Column addColumn(String name) {
-        Column col = new Column(this, name);
+    Column addColumn(String name, String type, String definition) {
+        Column col = new Column(this, name, type, definition);
         columns.add(col);
         return col;
     }
 
-    Table column(String name) {
-        addColumn(name);
+    Table column(String name, String type, String definition) {
+        addColumn(name, type, definition);
         return this;
     }
 

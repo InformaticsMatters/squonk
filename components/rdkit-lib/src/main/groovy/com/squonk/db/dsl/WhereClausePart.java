@@ -142,6 +142,10 @@ public abstract class WhereClausePart implements IExecutable, IWherePart {
                 return 1;
             }
 
+            public String getProjectionName() {
+                return outputColName;
+            }
+
             public int appendToOrderBy(StringBuilder buf) {
                 buf.append(outputColName).append(" DESC");
                 return 1;

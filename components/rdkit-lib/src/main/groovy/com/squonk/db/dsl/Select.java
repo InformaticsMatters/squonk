@@ -70,59 +70,11 @@ public class Select {
         return preExecuteStatements;
     }
 
-    protected String buildSql(List bindVars) {
-        bindVars.clear();
-        StringBuilder buf = new StringBuilder("SELECT ");
-
-        // projections
-        int count = 0;
-        if (projections.size() == 0) {
-            buf.append(query.aliasTable.name)
-                    .append(".")
-                    .append("*");
-            count++;
-        } else {
-            for (IProjectionPart col : projections) {
-                if (count > 0) {
-                    buf.append(",");
-                }
-                col.appendToProjections(buf, bindVars);
-                count++;
-            }
-        }
-
-        // from
-        buf.append("\n  FROM ")
-                .append(query.rdkTable.schemaPlusTable())
-                .append(" t");
-
-        // join clause
-        join.append(buf);
-
-        // where clause
-        whereClause.appendToWhereClause(buf, bindVars);
-
-        // order by
-        orderByClause.appendToOrderBy(buf);
-
-        // limit clause
-        limitClause.append(buf);
-
-        String sql = buf.toString();
-        System.out.println("SQL: " + sql);
-        for (Object o : bindVars) {
-            System.out.println("  -> " + o.toString());
-        }
-        return sql;
+    public Executor getExecutor() {
+        return new Executor(this);
     }
 
     public List<MoleculeObject> execute() {
-
-        // 1 execute the preExecuteStatements
-        // 2 build the SQL
-        List bindVars = new ArrayList();
-        String sql = buildSql(bindVars);
-        // 3 execute and build results
-        return new ArrayList<>();
+        return getExecutor().execute();
     }
 }

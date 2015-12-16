@@ -9,6 +9,9 @@ public class SimpleStatement {
 
     SimpleStatement(String cmd) {
         this.cmd = cmd;
+    }
 
+    public String getCommand() {
+        return cmd;
     }
 }
