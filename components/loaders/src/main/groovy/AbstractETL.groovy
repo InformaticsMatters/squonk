@@ -19,7 +19,7 @@ class AbstractETL {
     
     
     AbstractETL() {
-        database = Utils.createConfig('database.properties')
+        database = LoaderUtils.createConfig('database.properties')
         
         this.chemcentralInstancesTable = database.chemcentral.schema + '.instances'
         this.chemcentralStructureTable = database.chemcentral.schema + '.structures'

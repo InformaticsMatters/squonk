@@ -1,9 +1,8 @@
 import chemaxon.jchem.db.*
 import chemaxon.util.ConnectionHandler
 import groovy.sql.Sql
-import java.sql.*
+
 import javax.sql.DataSource
-import org.postgresql.ds.PGSimpleDataSource
 
 /**
  * Drops and/or creates the chemcentral tables. 
@@ -27,9 +26,9 @@ class ChemcentralCreate  {
     }
     
     ChemcentralCreate() {
-        database = Utils.createConfig('database.properties')
+        database = LoaderUtils.createConfig('database.properties')
         this.structureTable = database.chemcentral.schema + '.structures'
-        dataSource = Utils.createDataSource(database, database.chemcentral.username, database.chemcentral.password)
+        dataSource = LoaderUtils.createDataSource(database, database.chemcentral.username, database.chemcentral.password)
     }
     
     void run(String[] args) {
@@ -55,7 +54,7 @@ class ChemcentralCreate  {
     void dropTables(def props) {
         ConnectionHandler conh = createConnectionHandler()
         Sql db = new Sql(conh.getConnection())
-        Utils.with {
+        LoaderUtils.with {
             executeMayFail(db, "drop table ${props.schema}.structure_props", 'DROP TABLE ' + props.schema + '.structure_props')
             executeMayFail(db, "drop table ${props.schema}.instances", 'DROP TABLE ' + props.schema + '.instances')
             executeMayFail(db, "drop table ${props.schema}.property_definitions", 'DROP TABLE ' + props.schema + '.property_definitions')
@@ -95,7 +94,7 @@ class ChemcentralCreate  {
             ]
             opts.standardizerConfig = new File(props.standardizer).text
             UpdateHandler.createStructureTable(conh, opts)
-            Utils.with {    
+            LoaderUtils.with {
                 execute(db, "create table ${props.schema}.categories",  """\
                     |CREATE TABLE ${props.schema}.categories (
                     |  id SERIAL PRIMARY KEY,

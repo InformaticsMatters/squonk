@@ -4,7 +4,6 @@ import chemaxon.jchem.db.UpdateHandler
 import chemaxon.standardizer.Standardizer
 import chemaxon.struc.Molecule
 import chemaxon.formats.MolImporter
-import chemaxon.formats.MolExporter
 import chemaxon.calculations.clean.Cleaner
 import groovy.sql.Sql
 import com.im.lac.chemaxon.molecule.MoleculeUtils
@@ -78,7 +77,7 @@ class StructureLoader {
     }
     
     int insertParent(Molecule mol, int childId) {
-        Molecule parentMol = Utils.findParentStructure(mol)
+        Molecule parentMol = LoaderUtils.findParentStructure(mol)
         //println "Child is $mol parent is $parentMol"
         int parentId = 0
         if (parentMol.is(mol)) { // no frags

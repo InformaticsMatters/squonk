@@ -1,4 +1,4 @@
-package com.squonk.db.dsl;
+package com.squonk.db.rdkit.dsl;
 
 /**
  * Created by timbo on 13/12/2015.

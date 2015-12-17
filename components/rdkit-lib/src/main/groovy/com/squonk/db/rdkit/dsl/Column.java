@@ -1,4 +1,4 @@
-package com.squonk.db.dsl;
+package com.squonk.db.rdkit.dsl;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ public final class Column implements IProjectionPart {
 
     public boolean isSameAs(Column col) {
         if (col != null) {
-            return (this.name.equals(col.name) && this.table.getBaseTable().equals(col.table.getBaseTable()));
+            return (this.name.equals(col.name) && this.table.getBaseName().equals(col.table.getBaseName()));
         }
         return false;
     }

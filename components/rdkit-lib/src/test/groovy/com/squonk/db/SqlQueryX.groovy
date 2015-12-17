@@ -1,8 +1,8 @@
 package com.squonk.db
 
-import com.squonk.db.dsl.RdkTable
-import com.squonk.db.dsl.SqlQuery
-import com.squonk.db.dsl.Table
+import com.squonk.db.rdkit.RDKitTable
+import com.squonk.db.rdkit.dsl.SqlQuery
+import com.squonk.db.rdkit.dsl.Table
 import com.squonk.db.rdkit.MolSourceType
 import spock.lang.Specification
 
@@ -11,7 +11,7 @@ import spock.lang.Specification
  */
 class SqlQueryX extends Specification {
 
-    Table table = new RdkTable("foo", MolSourceType.CTAB, [])
+    Table table = new RDKitTable("foo", MolSourceType.CTAB, [])
             .column("id", "SERIAL", "SERIAL PRIMARY KEY")
             .column("structure", "TEXT", "TEXT")
             .column("version_id", "INTEGER", "INTEGER NOT NULL")

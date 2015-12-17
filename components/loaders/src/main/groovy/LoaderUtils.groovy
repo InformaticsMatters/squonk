@@ -8,7 +8,7 @@ import org.postgresql.ds.PGSimpleDataSource
  *
  * @author timbo
  */
-class Utils {
+class LoaderUtils {
     
     static ConfigObject createConfig(String path) {
         return createConfig(new File(path).toURL())

@@ -1,4 +1,4 @@
-package com.squonk.db.dsl;
+package com.squonk.db.rdkit.dsl;
 
 import java.util.ArrayList;
 import java.util.List;

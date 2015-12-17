@@ -1,4 +1,4 @@
-package com.squonk.db.dsl;
+package com.squonk.db.rdkit.dsl;
 
 import com.im.lac.types.MoleculeObject;
 import com.squonk.db.rdkit.FingerprintType;

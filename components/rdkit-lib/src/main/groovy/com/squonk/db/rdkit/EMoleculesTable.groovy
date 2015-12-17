@@ -1,19 +1,8 @@
 package com.squonk.db.rdkit
-
-import com.im.lac.types.MoleculeObject
-import com.squonk.db.dsl.DataSourceConfiguration
-import com.squonk.db.dsl.RdkTable
-import com.squonk.db.dsl.SqlQuery
-import com.squonk.reader.SDFReader
-import com.squonk.util.IOUtils
-
-import javax.sql.DataSource
-import java.util.stream.Stream
-
 /**
  * Created by timbo on 16/12/2015.
  */
-class EMoleculesTable extends RdkTable {
+class EMoleculesTable extends RDKitTable {
 
     EMoleculesTable(String schema, String baseTableName, MolSourceType molSourceType) {
         super(schema, baseTableName, molSourceType, [

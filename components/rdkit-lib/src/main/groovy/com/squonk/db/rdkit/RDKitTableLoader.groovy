@@ -1,12 +1,10 @@
 package com.squonk.db.rdkit
 
 import com.im.lac.types.MoleculeObject
-import com.squonk.db.dsl.IConfiguration
-import com.squonk.db.dsl.RdkTable
+import com.squonk.db.rdkit.dsl.IConfiguration
 import groovy.sql.Sql
 import groovy.util.logging.Log
 
-import javax.sql.DataSource
 import java.lang.reflect.Constructor
 import java.sql.SQLException
 import java.util.stream.Stream
@@ -20,10 +18,10 @@ class RDKitTableLoader {
 
 
     int batchSize = 100
-    private final RdkTable rdkTable
+    private final RDKitTable rdkTable
     private final IConfiguration config
 
-    RDKitTableLoader(RdkTable rdkTable, IConfiguration config) {
+    RDKitTableLoader(RDKitTable rdkTable, IConfiguration config) {
         this.rdkTable = rdkTable
         this.config = config
     }
@@ -50,7 +48,7 @@ class RDKitTableLoader {
     }
 
     private String molfpsTable() {
-        rdkTable.molFpTable.getBaseTable()
+        rdkTable.molFpTable.getBaseName()
     }
 
     void loadData(Stream<MoleculeObject> mols, Map<String, Class> propertyToTypeMappings) {

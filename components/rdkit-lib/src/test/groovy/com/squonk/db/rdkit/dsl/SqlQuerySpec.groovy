@@ -1,8 +1,9 @@
-package com.squonk.db.dsl
+package com.squonk.db.rdkit.dsl
 
 import com.squonk.db.rdkit.FingerprintType
 import com.squonk.db.rdkit.Metric
 import com.squonk.db.rdkit.MolSourceType
+import com.squonk.db.rdkit.RDKitTable
 import spock.lang.Specification
 
 /**
@@ -10,7 +11,7 @@ import spock.lang.Specification
  */
 class SqlQuerySpec extends Specification {
 
-    Table table = new RdkTable("foo", MolSourceType.CTAB, [])
+    Table table = new RDKitTable("foo", MolSourceType.CTAB, [])
             .column("id", "SERIAL", "SERIAL PRIMARY KEY")
             .column("structure", "TEXT", "TEXT")
             .column("version_id", "INTEGER", "INTEGER NOT NULL")

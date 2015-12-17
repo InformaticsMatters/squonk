@@ -1,5 +1,5 @@
 import groovy.sql.Sql
-import java.sql.Connection
+
 import javax.sql.DataSource
 
 /**
@@ -24,7 +24,7 @@ class ChemblETL extends AbstractETL {
     }
     
     ChemblETL() {
-        chembl = Utils.createConfig('chembl.properties')
+        chembl = LoaderUtils.createConfig('chembl.properties')
         
         this.concordanceTable = database.chemcentral.schema + '.concordance_chembl_' + chembl.version
         this.chemblIdLookupTable = chembl.schema + '.chembl_id_lookup'
@@ -146,7 +146,7 @@ class ChemblETL extends AbstractETL {
     
     void run() {
 
-        DataSource dataSource = Utils.createDataSource(database, database.chemcentral.username, database.chemcentral.password)
+        DataSource dataSource = LoaderUtils.createDataSource(database, database.chemcentral.username, database.chemcentral.password)
         Sql db1, db2, db3
         db1 = new Sql(dataSource.connection)
         StructureLoader loader
@@ -166,7 +166,7 @@ class ChemblETL extends AbstractETL {
             
             createConcordanceIndexes(db1)
             
-            int chemblSourceId = Utils.createSourceDefinition(dataSource, database.chemcentral.schema, 1, chembl.name, chembl.version, chembl.description, 'P', chembl.owner, chembl.maintainer, false)
+            int chemblSourceId = LoaderUtils.createSourceDefinition(dataSource, database.chemcentral.schema, 1, chembl.name, chembl.version, chembl.description, 'P', chembl.owner, chembl.maintainer, false)
             insertAliases(db1, chemblSourceId)
             generatePropertyDefinitions(db1, chemblSourceId)
             generatePropertyValues(db1, [])
@@ -180,8 +180,8 @@ class ChemblETL extends AbstractETL {
     }
     
     void createConcordanceTable(Sql db) {
-        Utils.executeMayFail(db, 'drop concordance table', 'DROP TABLE ' + concordanceTable)
-        Utils.execute(db, 'create concordance table', createConcordanceTableSql)
+        LoaderUtils.executeMayFail(db, 'drop concordance table', 'DROP TABLE ' + concordanceTable)
+        LoaderUtils.execute(db, 'create concordance table', createConcordanceTableSql)
     }
     
     void loadData(Sql reader, Sql writer, StructureLoader loader) {

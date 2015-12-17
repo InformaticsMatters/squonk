@@ -1,6 +1,5 @@
 import chemaxon.jchem.db.StructureTableOptions
-import chemaxon.util.ConnectionHandler
-import java.sql.*
+
 import javax.sql.DataSource
 import org.apache.camel.CamelContext
 import org.apache.camel.impl.DefaultCamelContext
@@ -21,15 +20,15 @@ class AbstractLoader {
     String tableName
     
     AbstractLoader(URL config) {
-        database = Utils.createConfig('database.properties')
-        props = Utils.createConfig(config)
+        database = LoaderUtils.createConfig('database.properties')
+        props = LoaderUtils.createConfig(config)
         validate()
         dataSource = createDataSource()
         tableName = database.vendordbs.schema + '.' + props.table
     }
     
     protected DataSource createDataSource() {     
-        return Utils.createDataSource(database, database.vendordbs.username, database.vendordbs.password)
+        return LoaderUtils.createDataSource(database, database.vendordbs.username, database.vendordbs.password)
     }
     
     protected void validate() {

@@ -1,8 +1,7 @@
-package com.squonk.db.dsl
+package com.squonk.db.rdkit.dsl
 
-import com.squonk.db.rdkit.FingerprintType
-import com.squonk.db.rdkit.Metric
 import com.squonk.db.rdkit.MolSourceType
+import com.squonk.db.rdkit.RDKitTable
 import org.postgresql.ds.PGSimpleDataSource
 import spock.lang.Specification
 
@@ -13,7 +12,7 @@ import javax.sql.DataSource
  */
 class SqlQueryExecuteSpec extends Specification {
 
-    Table table = new RdkTable("emolecules_order_bb", MolSourceType.CTAB, [])
+    Table table = new RDKitTable("emolecules_order_bb", MolSourceType.CTAB, [])
             .column("id", "SERIAL", "SERIAL PRIMARY KEY")
             .column("structure", "TEXT", "TEXT")
             .column("version_id", "INTEGER", "INTEGER NOT NULL")

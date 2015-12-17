@@ -1,6 +1,6 @@
 
 import groovy.sql.Sql
-import java.sql.Connection
+
 import javax.sql.DataSource
 
 /**
@@ -23,7 +23,7 @@ class PdbLigandETL extends AbstractETL {
     }
     
     PdbLigandETL() {
-        props = Utils.createConfig('pdb_ligand.properties')
+        props = LoaderUtils.createConfig('pdb_ligand.properties')
         
         this.sourceTable = database.vendordbs.schema + '.' + props.table
         this.concordanceTable = database.chemcentral.schema + '.concordance_' + props.table
@@ -78,7 +78,7 @@ class PdbLigandETL extends AbstractETL {
     
     void run() {
 
-        DataSource dataSource = Utils.createDataSource(database, database.chemcentral.username, database.chemcentral.password)
+        DataSource dataSource = LoaderUtils.createDataSource(database, database.chemcentral.username, database.chemcentral.password)
         Sql db1, db2, db3
         db1 = new Sql(dataSource.connection)
         StructureLoader loader
@@ -101,7 +101,7 @@ class PdbLigandETL extends AbstractETL {
             int count = db1.firstRow(countConcordanceSql)[0]
             println "Number of structures is $count"
             
-            int sourceId = Utils.createSourceDefinition(dataSource, database.chemcentral.schema, 1, props.name, props.version, props.description, 'P', props.owner, props.maintainer, false)
+            int sourceId = LoaderUtils.createSourceDefinition(dataSource, database.chemcentral.schema, 1, props.name, props.version, props.description, 'P', props.owner, props.maintainer, false)
             
             generateInstancesValues(db1, [sourceId])
             
@@ -125,8 +125,8 @@ class PdbLigandETL extends AbstractETL {
     }
     
     void createConcordanceTable(Sql db) {
-        Utils.executeMayFail(db, "drop concordance table $concordanceTable", 'DROP TABLE ' + concordanceTable)
-        Utils.execute(db, "create concordance table $concordanceTable", createConcordanceTableSql)
+        LoaderUtils.executeMayFail(db, "drop concordance table $concordanceTable", 'DROP TABLE ' + concordanceTable)
+        LoaderUtils.execute(db, "create concordance table $concordanceTable", createConcordanceTableSql)
     }
     
     void loadData(Sql reader, Sql writer, StructureLoader loader) {

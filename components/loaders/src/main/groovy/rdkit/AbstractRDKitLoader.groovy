@@ -1,10 +1,10 @@
 package rdkit
 
 import com.im.lac.types.MoleculeObject
-import com.squonk.db.dsl.DataSourceConfiguration
-import com.squonk.db.dsl.IConfiguration
-import com.squonk.db.dsl.RdkTable
-import com.squonk.db.dsl.SqlQuery
+import com.squonk.db.rdkit.dsl.DataSourceConfiguration
+import com.squonk.db.rdkit.dsl.IConfiguration
+import com.squonk.db.rdkit.RDKitTable
+import com.squonk.db.rdkit.dsl.SqlQuery
 import com.squonk.db.rdkit.RDKitTableLoader
 import com.squonk.reader.SDFReader
 import com.squonk.util.IOUtils
@@ -17,12 +17,21 @@ import java.util.stream.Stream
  */
 class AbstractRDKitLoader {
 
+    protected final RDKitTable table
+    protected IConfiguration config
+
+    AbstractRDKitLoader(RDKitTable table, IConfiguration config) {
+        this.table = table
+        this.config = config
+    }
+
+
     static IConfiguration createConfiguration(ConfigObject props) {
-        DataSource dataSource = Utils.createDataSource(props.database, props.database.username, props.database.password)
+        DataSource dataSource = LoaderUtils.createDataSource(props.database, props.database.username, props.database.password)
         return new DataSourceConfiguration(dataSource, [:])
     }
 
-    void loadSDF(String file, int limit, Map<String, Class> propertyToTypeMappings, RdkTable table, IConfiguration config) {
+    void loadSDF(String file, int limit, Map<String, Class> propertyToTypeMappings) {
         SqlQuery q = new SqlQuery(table, config)
 
         println "Loading file $file"

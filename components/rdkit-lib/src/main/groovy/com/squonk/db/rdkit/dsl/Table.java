@@ -1,4 +1,4 @@
-package com.squonk.db.dsl;
+package com.squonk.db.rdkit.dsl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,13 +34,13 @@ public class Table {
         }
     }
 
-    protected Column addColumn(String name, String type, String definition) {
+    public Column addColumn(String name, String type, String definition) {
         Column col = new Column(this, name, type, definition);
         columns.add(col);
         return col;
     }
 
-    protected Table column(String name, String type, String definition) {
+    public Table column(String name, String type, String definition) {
         addColumn(name, type, definition);
         return this;
     }
@@ -49,7 +49,7 @@ public class Table {
         return columns;
     }
 
-    protected Table alias(String alias) {
+    public Table alias(String alias) {
         return new Table(alias, this.schema, this.baseName, this.columns);
     }
 
@@ -61,7 +61,15 @@ public class Table {
         }
     }
 
-    public String getBaseTable() {
+    public String getBaseName() {
         return baseName;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public String getName() {
+        return name;
     }
 }

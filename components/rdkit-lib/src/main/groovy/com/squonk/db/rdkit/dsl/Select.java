@@ -1,4 +1,4 @@
-package com.squonk.db.dsl;
+package com.squonk.db.rdkit.dsl;
 
 import com.im.lac.types.MoleculeObject;
 import com.squonk.db.rdkit.Metric;
@@ -21,7 +21,7 @@ public class Select {
     public Select(SqlQuery query, Column... cols) {
         this.query = query;
         this.projections.addAll(Arrays.asList(cols));
-        this.join = new FpTableJoin(this, query.rdkTable.molfpsTable.baseName);
+        this.join = new FpTableJoin(this, query.rdkTable.getMolFpTable().baseName);
         this.whereClause = new WhereClause(this);
         this.orderByClause = new OrderByClause(this);
         this.limitClause = new LimitClause(this, 0);

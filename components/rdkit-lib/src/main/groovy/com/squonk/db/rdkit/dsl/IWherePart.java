@@ -1,4 +1,4 @@
-package com.squonk.db.dsl;
+package com.squonk.db.rdkit.dsl;
 
 import com.squonk.db.rdkit.FingerprintType;
 import com.squonk.db.rdkit.Metric;

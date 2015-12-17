@@ -1,6 +1,7 @@
-package com.squonk.db.dsl;
+package com.squonk.db.rdkit.dsl;
 
 import com.squonk.db.rdkit.FingerprintType;
+import com.squonk.db.rdkit.RDKitTable;
 import com.squonk.db.rdkit.RDKitTableLoader;
 
 import java.util.*;
@@ -10,19 +11,19 @@ import java.util.*;
  */
 public class SqlQuery {
 
-    final RdkTable rdkTable;
+    final RDKitTable rdkTable;
     final IConfiguration config;
     final Table aliasTable;
 
 
-    public SqlQuery(RdkTable rdkTable, IConfiguration config) {
+    public SqlQuery(RDKitTable rdkTable, IConfiguration config) {
         this.rdkTable = rdkTable;
         this.config = config;
         this.aliasTable = rdkTable.alias("t");
     }
 
     public List<FingerprintType> getFingerPrintTypes() {
-        return Collections.unmodifiableList(rdkTable.fptypes);
+        return Collections.unmodifiableList(rdkTable.getFingerprintTypes());
     }
 
     List<Column> getColumns() {

@@ -1,10 +1,9 @@
-package com.squonk.db.dsl;
+package com.squonk.db.rdkit.dsl;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Created by timbo on 16/12/2015.
