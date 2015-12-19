@@ -6,6 +6,7 @@ import com.squonk.dataset.Dataset
 import org.squonk.execution.variable.PersistenceType
 import org.squonk.execution.variable.VariableManager
 import org.squonk.execution.variable.impl.MemoryVariableLoader
+import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
 /**
@@ -18,15 +19,19 @@ class SDFReaderStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         SDFReaderStep step = new SDFReaderStep()
         FileInputStream is = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
+        String producer = "p"
+        step.configure(producer, [:],
+                [(SDFReaderStep.VAR_SDF_INPUT): new VariableKey(producer, "input")],
+                [:])
         varman.putValue(
-            SDFReaderStep.VAR_SDF_INPUT, 
+            new VariableKey(producer,"input"),
             InputStream.class, 
             is,
             PersistenceType.BYTES)
         
         when:
         step.execute(varman, null)
-        Dataset ds = varman.getValue(SDFReaderStep.VAR_DATASET_OUTPUT, Dataset.class, PersistenceType.DATASET)
+        Dataset ds = varman.getValue(new VariableKey(producer, SDFReaderStep.VAR_DATASET_OUTPUT), Dataset.class, PersistenceType.DATASET)
         
         then:
         ds != null

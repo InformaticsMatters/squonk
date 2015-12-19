@@ -4,6 +4,7 @@ import org.squonk.execution.steps.StepDefinition;
 import static org.squonk.execution.steps.StepDefinitionConstants.*;
 import org.squonk.notebook.api.CellDTO;
 import org.squonk.execution.steps.impl.BasicObjectToMoleculeObjectStep;
+import org.squonk.notebook.api.VariableKey;
 
 /**
  * Converts a Dataset of BasicObjects to a Dataset of MoleculeObjects using the value
@@ -26,8 +27,8 @@ public class BasicObjectToMoleculeObjectCellExecutor extends AbstractStepExecuto
     protected StepDefinition[] getStepDefintions(CellDTO cell) {
 
         StepDefinition step = new StepDefinition(STEP_BASICOBJECT_TO_MOLECULEOBJECT)
-                .withFieldMapping(VARIABLE_INPUT_DATASET, "Input")
-                .withFieldMapping(VARIABLE_OUTPUT_DATASET, "Results");
+                .withInputVariableMapping(VARIABLE_INPUT_DATASET, new VariableKey(cell.getName(), "input"))
+                .withOutputVariableMapping(VARIABLE_OUTPUT_DATASET, "results");
 
         step = configureOption(step, cell, BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FIELD_NAME);
         step = configureOption(step, cell, BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FORMAT);

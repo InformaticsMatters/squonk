@@ -32,9 +32,9 @@ public class DatasetWriterStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         // the assumption is that the dataset has PersistenceType.NONE
-        DatasetProvider p = fetchMappedValue(VAR_INPUT_DATASET, DatasetProvider.class, PersistenceType.DATASET, varman);
+        DatasetProvider p = fetchMappedInput(VAR_INPUT_DATASET, DatasetProvider.class, PersistenceType.DATASET, varman);
         Dataset ds = p.getDataset();
-        createMappedVariable(VAR_OUTPUT_DATASET, Dataset.class, ds, PersistenceType.DATASET, varman);
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, ds, PersistenceType.DATASET, varman);
     }
 
 }

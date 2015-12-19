@@ -1,14 +1,21 @@
 package org.squonk.execution.steps;
 
 import org.squonk.execution.variable.VariableManager;
+
 import java.util.Map;
+
 import org.apache.camel.CamelContext;
+import org.squonk.notebook.api.VariableKey;
 
 /**
- *
  * @author timbo
  */
 public interface Step {
+
+    /**
+     * @return the name of the producer for the output variables
+     */
+    String getOutputProducerName();
 
     /**
      * The names of the input variables that are used internally. The actual
@@ -20,30 +27,32 @@ public interface Step {
 
     /**
      * The names of the output variables that are used internally. The actual
-     * variable names must match these or be mapped to these.
+     * variables must be mapped to these.
      *
-     * @return The output variable names
+     * @return The output variables
      */
     String[] getOutputVariableNames();
 
     /**
      * Configure the execution details of the step.
      *
-     * @param options Options that configure the execution of the step. e.g. use
-     * specified options
-     * @param variableMappings Mappings between the variable names provided by
-     * the VariableManager and the names expected by the implementation. Keys
-     * are the names needed by the implementation, values are the names present
-     * in the variable manager.
+     * @param producerName           The name for the producer of output variables
+     * @param options                Options that configure the execution of the step. e.g. use
+     *                               specified options
+     * @param inputVariableMappings  Mappings between the variable names provided by
+     *                               the VariableManager and the names expected by the implementation. Keys
+     *                               are the names needed by the implementation, values are the VariableKeys that
+     *                               can be used to fetch the actual values from the variable manager.
+     * @param outputVariableMappings The names for the output variables. The producer is determined by {@link #getOutputProducerName}
      */
-    void configure(Map<String, Object> options, Map<String, String> variableMappings);
+    void configure(String producerName, Map<String, Object> options, Map<String, VariableKey> inputVariableMappings, Map<String, String> outputVariableMappings);
 
     /**
      * Perform the processing. Each implementation will expect a defined set of
      * input variables and generate a defined set of output variables. These
      * variables are handled through the VariableManager. If the input variable
      * names are not what is expected they can be transformed using the
-     * variableMappings.
+     * inputVariableMappings.
      *
      * @param varman
      * @param context

@@ -2,8 +2,16 @@ package org.squonk.notebook.execution;
 
 import org.squonk.execution.steps.StepDefinition;
 import static org.squonk.execution.steps.StepDefinitionConstants.*;
+
+import org.squonk.notebook.api.BindingDTO;
 import org.squonk.notebook.api.CellDTO;
 import org.squonk.execution.steps.impl.DatasetMergerStep;
+import org.squonk.notebook.api.OptionDTO;
+import org.squonk.notebook.api.VariableKey;
+
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Merges one or more datasets by removing duplicates and merging the data. The
@@ -23,8 +31,10 @@ import org.squonk.execution.steps.impl.DatasetMergerStep;
  */
 public class DatasetMergerCellExecutor extends AbstractStepExecutor {
 
+    private static final Logger LOG = Logger.getLogger(DatasetMergerCellExecutor.class.getName());
+
     public static final String CELL_TYPE_NAME_DATASET_MERGER = "DatasetMerger";
-    public static final String INPUT = "Input";
+    public static final String INPUT = "input";
 
     public DatasetMergerCellExecutor() {
         super(CELL_TYPE_NAME_DATASET_MERGER);
@@ -32,21 +42,26 @@ public class DatasetMergerCellExecutor extends AbstractStepExecutor {
 
     @Override
     protected StepDefinition[] getStepDefintions(CellDTO cell) {
+
+        dumpCellConfig(cell, Level.INFO);
+
         // define the step and execution options
         StepDefinition step = new StepDefinition(STEP_DATASET_MERGER)
-                .withFieldMapping(VARIABLE_OUTPUT_DATASET, "Results");
+                .withOutputVariableMapping(VARIABLE_OUTPUT_DATASET, "results");
 
         step = configureOption(step, cell, DatasetMergerStep.OPTION_MERGE_FIELD_NAME);
         step = configureOption(step, cell, DatasetMergerStep.OPTION_KEEP_FIRST);
 
         // define the input variable name mappings
-        String s;
+        BindingDTO o;
         for (int i = 1; i <= 5; i++) {
-            s = (String) cell.getOptionMap().get(INPUT + i).getValue();
-            if (s == null) {
+            o = (BindingDTO) cell.getBindingMap().get(INPUT + i);
+            if (o == null || o.getVariableKey() == null) {
+                LOG.info("Variable " + (INPUT + i) + " not bound.");
                 break;
             }
-            step = step.withFieldMapping(DatasetMergerStep.VAR_INPUT_BASE + i, s);
+            LOG.info("Setting " + DatasetMergerStep.VAR_INPUT_BASE + i + " to " + o.getVariableKey().getName() + " from " + o.getVariableKey().getProducerName());
+            step = step.withInputVariableMapping(DatasetMergerStep.VAR_INPUT_BASE + i, o.getVariableKey());
         }
 
         return new StepDefinition[]{step};

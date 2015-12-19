@@ -1,6 +1,8 @@
 package org.squonk.execution.steps;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.squonk.notebook.api.VariableKey;
+
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -14,7 +16,8 @@ public final class StepDefinition implements Serializable {
 
     private String implementationClass;
     private final Map<String, Object> options = new LinkedHashMap<>();
-    private final Map<String, String> fieldMappings = new LinkedHashMap<>();
+    private final Map<String, VariableKey> inputVariableMappings = new LinkedHashMap<>();
+    private final Map<String, String> outputVariableMappings = new LinkedHashMap<>();
 
     public StepDefinition() {
 
@@ -24,10 +27,11 @@ public final class StepDefinition implements Serializable {
         this.implementationClass = implementationClass;
     }
 
-    public StepDefinition(String implementationClass, Map<String, Object> options, Map<String, String> fieldMappings) {
+    public StepDefinition(String implementationClass, Map<String, Object> options, Map<String, VariableKey> inputVariableMappings, Map<String, String> outputVariableMappings) {
         this(implementationClass);
         setOptions(options);
-        setFieldMappings(fieldMappings);
+        setInputVariableMappings(inputVariableMappings);
+        setOutputVariableMappings(outputVariableMappings);
     }
     
     public StepDefinition withOption(String name, Object value) {
@@ -35,8 +39,13 @@ public final class StepDefinition implements Serializable {
         return this;
     }
     
-    public StepDefinition withFieldMapping(String from, String to) {
-        fieldMappings.put(from, to);
+    public StepDefinition withInputVariableMapping(String from, VariableKey to) {
+        inputVariableMappings.put(from, to);
+        return this;
+    }
+
+    public StepDefinition withOutputVariableMapping(String from, String to) {
+        outputVariableMappings.put(from, to);
         return this;
     }
 
@@ -59,14 +68,25 @@ public final class StepDefinition implements Serializable {
         }
     }
 
-    public Map<String, String> getFieldMappings() {
-        return fieldMappings;
+    public Map<String, VariableKey> getInputVariableMappings() {
+        return inputVariableMappings;
     }
 
-    public void setFieldMappings(Map<String, String> fieldMappings) {
-        this.fieldMappings.clear();
-        if (fieldMappings != null) {
-            this.fieldMappings.putAll(fieldMappings);
+    public void setInputVariableMappings(Map<String, VariableKey> inputVariableMappings) {
+        this.inputVariableMappings.clear();
+        if (inputVariableMappings != null) {
+            this.inputVariableMappings.putAll(inputVariableMappings);
+        }
+    }
+
+    public Map<String, String> getOutputVariableMappings() {
+        return outputVariableMappings;
+    }
+
+    public void setOutputVariableMappings(Map<String, String> outputVariableMappings) {
+        this.outputVariableMappings.clear();
+        if (outputVariableMappings != null) {
+            this.outputVariableMappings.putAll(outputVariableMappings);
         }
     }
 

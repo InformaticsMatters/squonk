@@ -8,6 +8,7 @@ import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.execution.variable.PersistenceType
 import org.squonk.execution.variable.VariableManager
 import org.squonk.execution.variable.impl.MemoryVariableLoader
+import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
 /**
@@ -39,6 +40,8 @@ class DatasetMergerStepSpec extends Specification {
         new MoleculeObject("CC", "smiles", [id:2,c:"999"]),
         new MoleculeObject("CCC", "smiles", [id:4,c:"100"])
     ]
+
+    String producer = "p"
     
     void "merge 2 datasets keep first"() {
         println "merge 2 datasets keep first()"
@@ -52,23 +55,25 @@ class DatasetMergerStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
         
         varman.putValue(
-            DatasetMergerStep.VAR_INPUT_1, 
+            new VariableKey(producer, "input1"),
             Dataset.class, 
             ds1,
             PersistenceType.NONE)
         
         varman.putValue(
-            DatasetMergerStep.VAR_INPUT_2, 
-            Dataset.class, 
+                new VariableKey(producer, "input2"),
+                Dataset.class,
             ds2,
             PersistenceType.NONE)
         
         DatasetMergerStep step = new DatasetMergerStep()
-        step.configure([(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'], [:])
+        step.configure(producer, [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
+                [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2")],
+                [:])
         
         when:
         step.execute(varman, context)
-        Dataset result = varman.getValue(DatasetMergerStep.VAR_OUTPUT, Dataset.class, PersistenceType.DATASET)
+        Dataset result = varman.getValue(new VariableKey(producer, DatasetMergerStep.VAR_OUTPUT), Dataset.class, PersistenceType.DATASET)
         
         then:
         result != null
@@ -91,28 +96,28 @@ class DatasetMergerStepSpec extends Specification {
         
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
-        
+
         varman.putValue(
-            DatasetMergerStep.VAR_INPUT_1, 
-            Dataset.class, 
-            ds1,
-            PersistenceType.NONE)
-        
+                new VariableKey(producer, "input1"),
+                Dataset.class,
+                ds1,
+                PersistenceType.NONE)
+
         varman.putValue(
-            DatasetMergerStep.VAR_INPUT_2, 
-            Dataset.class, 
-            ds2,
-            PersistenceType.NONE)
+                new VariableKey(producer, "input2"),
+                Dataset.class,
+                ds2,
+                PersistenceType.NONE)
         
         DatasetMergerStep step = new DatasetMergerStep()
-        step.configure([
-                (DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id',
-                (DatasetMergerStep.OPTION_KEEP_FIRST):false
-            ], [:])
+        step.configure(producer,
+                [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id', (DatasetMergerStep.OPTION_KEEP_FIRST):false],
+                [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2")],
+                [:])
         
         when:
         step.execute(varman, context)
-        Dataset result = varman.getValue(DatasetMergerStep.VAR_OUTPUT, Dataset.class, PersistenceType.DATASET)
+        Dataset result = varman.getValue(new VariableKey(producer, DatasetMergerStep.VAR_OUTPUT), Dataset.class, PersistenceType.DATASET)
         
         then:
         result != null
@@ -136,31 +141,34 @@ class DatasetMergerStepSpec extends Specification {
         Dataset ds3 = new Dataset(BasicObject.class, objs3)
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
-        
+
         varman.putValue(
-            DatasetMergerStep.VAR_INPUT_1, 
-            Dataset.class, 
-            ds1,
-            PersistenceType.NONE)
-        
+                new VariableKey(producer, "input1"),
+                Dataset.class,
+                ds1,
+                PersistenceType.NONE)
+
         varman.putValue(
-            DatasetMergerStep.VAR_INPUT_2, 
-            Dataset.class, 
-            ds2,
-            PersistenceType.NONE)
-        
+                new VariableKey(producer, "input2"),
+                Dataset.class,
+                ds2,
+                PersistenceType.NONE)
+
         varman.putValue(
-            DatasetMergerStep.VAR_INPUT_3, 
-            Dataset.class, 
-            ds3,
-            PersistenceType.NONE)
+                new VariableKey(producer, "input3"),
+                Dataset.class,
+                ds3,
+                PersistenceType.NONE)
         
         DatasetMergerStep step = new DatasetMergerStep()
-        step.configure([(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'], [:])
+        step.configure(producer,
+                [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
+                [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2"), (DatasetMergerStep.VAR_INPUT_3):new VariableKey(producer, "input3")],
+                [:])
         
         when:
         step.execute(varman, context)
-        Dataset result = varman.getValue(DatasetMergerStep.VAR_OUTPUT, Dataset.class, PersistenceType.DATASET)
+        Dataset result = varman.getValue(new VariableKey(producer, DatasetMergerStep.VAR_OUTPUT), Dataset.class, PersistenceType.DATASET)
         
         then:
         result != null
@@ -178,25 +186,28 @@ class DatasetMergerStepSpec extends Specification {
         
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
-        
+
         varman.putValue(
-            DatasetMergerStep.VAR_INPUT_1, 
-            Dataset.class, 
-            ds1,
-            PersistenceType.NONE)
-        
+                new VariableKey(producer, "input1"),
+                Dataset.class,
+                ds1,
+                PersistenceType.NONE)
+
         varman.putValue(
-            DatasetMergerStep.VAR_INPUT_2, 
-            Dataset.class, 
-            ds2,
-            PersistenceType.NONE)
+                new VariableKey(producer, "input2"),
+                Dataset.class,
+                ds2,
+                PersistenceType.NONE)
         
         DatasetMergerStep step = new DatasetMergerStep()
-        step.configure([(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'], [:])
+        step.configure(producer,
+                [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
+                [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2")],
+                [:])
         
         when:
         step.execute(varman, context)
-        Dataset result = varman.getValue(DatasetMergerStep.VAR_OUTPUT, Dataset.class, PersistenceType.DATASET)
+        Dataset result = varman.getValue(new VariableKey(producer, DatasetMergerStep.VAR_OUTPUT), Dataset.class, PersistenceType.DATASET)
         
         then:
         result != null
@@ -215,25 +226,28 @@ class DatasetMergerStepSpec extends Specification {
         
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
-        
+
         varman.putValue(
-            DatasetMergerStep.VAR_INPUT_1, 
-            Dataset.class, 
-            ds1,
-            PersistenceType.NONE)
-        
+                new VariableKey(producer, "input1"),
+                Dataset.class,
+                ds1,
+                PersistenceType.NONE)
+
         varman.putValue(
-            DatasetMergerStep.VAR_INPUT_2, 
-            Dataset.class, 
-            ds2,
-            PersistenceType.NONE)
+                new VariableKey(producer, "input2"),
+                Dataset.class,
+                ds2,
+                PersistenceType.NONE)
         
         DatasetMergerStep step = new DatasetMergerStep()
-        step.configure([(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'], [:])
+        step.configure(producer,
+                [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
+                [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2")],
+                [:])
         
         when:
         step.execute(varman, context)
-        Dataset result = varman.getValue(DatasetMergerStep.VAR_OUTPUT, Dataset.class, PersistenceType.DATASET)
+        Dataset result = varman.getValue(new VariableKey(producer, DatasetMergerStep.VAR_OUTPUT), Dataset.class, PersistenceType.DATASET)
         
         then:
         result != null

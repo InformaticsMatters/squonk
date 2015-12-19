@@ -8,13 +8,17 @@ import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.execution.variable.PersistenceType
 import org.squonk.execution.variable.VariableManager
 import org.squonk.execution.variable.impl.MemoryVariableLoader
+import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
+
+
 
 /**
  *
  * @author timbo
  */
 class MoleculeServiceFatExecutorStepSpec extends Specification {
+    String producer = "p"
     
     void "test simple service"() {
         
@@ -29,22 +33,26 @@ class MoleculeServiceFatExecutorStepSpec extends Specification {
         Dataset ds = new Dataset(MoleculeObject.class, mols)
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader())
-        varman.putValue(MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET, Dataset.class, ds, PersistenceType.NONE)
+        varman.putValue(
+                new VariableKey(producer,"input"), Dataset.class, ds, PersistenceType.NONE)
+
+                //MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET, Dataset.class, ds, PersistenceType.NONE)
         
-        def options = [
+        def opts = [
             (MoleculeServiceFatExecutorStep.OPTION_SERVICE_ENDPOINT):'http://demos.informaticsmatters.com:9080/chem-services-cdk-basic/rest/v1/calculators/logp'
         ]
-        def mappings = [:]
+        def inputMappings = [(MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET):new VariableKey(producer,"input")]
+        def outputMappings = [:]
         
         MoleculeServiceFatExecutorStep step = new MoleculeServiceFatExecutorStep()
-        step.configure(options, mappings)
+        step.configure(producer, opts, inputMappings, outputMappings)
         
         
         when:
         step.execute(varman, context)
         
         then:
-        def output = varman.getValue(MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET, Dataset.class, PersistenceType.DATASET)
+        def output = varman.getValue(new VariableKey(producer, MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET), Dataset.class, PersistenceType.DATASET)
         output instanceof Dataset
         def items = output.items
         items.size() == 3

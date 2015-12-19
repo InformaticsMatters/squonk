@@ -1,6 +1,7 @@
 package org.squonk.execution.variable;
 
 import com.squonk.dataset.Dataset;
+import org.squonk.notebook.api.VariableKey;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,19 +14,16 @@ public interface VariableLoader {
 
     public void save() throws IOException;
     
-    public <V> V readFromText(String var, Class<V> type) throws IOException;
+    public <V> V readFromText(VariableKey var, Class<V> type) throws IOException;
     
-    public <V> V readFromJson(String var, Class<V> type) throws IOException;
+    public <V> V readFromJson(VariableKey var, Class<V> type) throws IOException;
     
-    public InputStream readBytes(String var, String label) throws IOException;
+    public InputStream readBytes(VariableKey var, String label) throws IOException;
     
-    public void writeToText(String var, Object o) throws IOException;
+    public void writeToText(VariableKey var, Object o) throws IOException;
     
-    public void writeToJson(String var, Object o) throws IOException;
+    public void writeToJson(VariableKey var, Object o) throws IOException;
     
-    public void writeToBytes(String var, String label, InputStream is) throws IOException;
-
-    public void delete(String var) throws IOException;
-    
+    public void writeToBytes(VariableKey var, String label, InputStream is) throws IOException;
 
 }

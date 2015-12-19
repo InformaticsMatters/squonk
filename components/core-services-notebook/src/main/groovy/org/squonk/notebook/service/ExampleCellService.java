@@ -198,6 +198,13 @@ public class ExampleCellService {
         optionDefinition.setDisplayName("Keep first");
         optionDefinition.setOptionType(OptionType.SIMPLE);
         cellType.getOptionDefinitionList().add(optionDefinition);
+        for (int i = 0; i < 5; i++) {
+            bindingDefinition = new BindingDefinition();
+            bindingDefinition.setDisplayName("Input dataset " + (i + 1));
+            bindingDefinition.setName("input" + (i + 1));
+            bindingDefinition.getAcceptedVariableTypeList().add(VariableType.DATASET);
+            cellType.getBindingDefinitionList().add(bindingDefinition);
+        }
         list.add(cellType);
 
         return list;
@@ -229,4 +236,5 @@ public class ExampleCellService {
         }
         return null;
     }
+
 }

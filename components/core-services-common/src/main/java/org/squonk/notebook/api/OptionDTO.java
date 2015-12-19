@@ -32,4 +32,9 @@ public class OptionDTO implements Serializable {
     public void setOptionType(OptionType optionType) {
         this.optionType = optionType;
     }
+
+    @Override
+    public String toString() {
+        return "OptionDTO [name=" + name + " value:" + value + " optionType:" + optionType + "]";
+    }
 }

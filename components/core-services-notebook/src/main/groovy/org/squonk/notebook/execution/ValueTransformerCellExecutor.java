@@ -4,6 +4,7 @@ import org.squonk.execution.steps.StepDefinition;
 import static org.squonk.execution.steps.StepDefinitionConstants.*;
 import org.squonk.notebook.api.CellDTO;
 import org.squonk.execution.steps.impl.ValueTransformerStep;
+import org.squonk.notebook.api.VariableKey;
 
 /**
  * Transform the values of a Dataset. The transforms are defined by the Transformers
@@ -27,8 +28,8 @@ public class ValueTransformerCellExecutor extends AbstractStepExecutor {
     protected StepDefinition[] getStepDefintions(CellDTO cell) {
 
         StepDefinition step = new StepDefinition(STEP_VALUE_TRANSFORMER)
-                .withFieldMapping(VARIABLE_INPUT_DATASET, "Input")
-                .withFieldMapping(VARIABLE_OUTPUT_DATASET, "Results");
+                .withInputVariableMapping(VARIABLE_INPUT_DATASET, new VariableKey(cell.getName(), "input"))
+                .withOutputVariableMapping(VARIABLE_OUTPUT_DATASET, "results");
         
         // TODO - handle the data type here. The step needs a TransformDefinitions
         // but we might need to gernate that from JSON?

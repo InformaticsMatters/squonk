@@ -3,6 +3,8 @@ package org.squonk.execution.variable.impl;
 import org.squonk.execution.variable.VariableLoader;
 import com.squonk.types.io.JsonHandler;
 import com.squonk.util.IOUtils;
+import org.squonk.notebook.api.VariableKey;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +19,7 @@ import java.util.Map;
  */
 public class MemoryVariableLoader implements VariableLoader {
 
-    protected final Map<String, Object> values = new LinkedHashMap<>();
+    protected final Map<VariableKey, Object> values = new LinkedHashMap<>();
 
     public MemoryVariableLoader() {
 
@@ -28,7 +30,7 @@ public class MemoryVariableLoader implements VariableLoader {
      *
      * @param values
      */
-    public MemoryVariableLoader(Map<String, Object> values) {
+    public MemoryVariableLoader(Map<VariableKey, Object> values) {
         this.values.putAll(values);
     }
 
@@ -38,7 +40,7 @@ public class MemoryVariableLoader implements VariableLoader {
     }
 
     @Override
-    public <V> V readFromText(String var, Class<V> type) throws IOException {
+    public <V> V readFromText(VariableKey var, Class<V> type) throws IOException {
         String s = (String) values.get(var);
         if (s == null) {
             return null;
@@ -58,7 +60,7 @@ public class MemoryVariableLoader implements VariableLoader {
     }
 
     @Override
-    public <V> V readFromJson(String var, Class<V> type) throws IOException {
+    public <V> V readFromJson(VariableKey var, Class<V> type) throws IOException {
         String json = (String) values.get(var);
         if (json == null) {
             return null;
@@ -68,8 +70,9 @@ public class MemoryVariableLoader implements VariableLoader {
     }
 
     @Override
-    public InputStream readBytes(String var, String label) throws IOException {
-        byte[] bytes = (byte[]) values.get(var + label);
+    public InputStream readBytes(VariableKey var, String label) throws IOException {
+        VariableKey neu = new VariableKey(var.getProducerName(), var.getName() + label);
+        byte[] bytes = (byte[]) values.get(neu);
         if (bytes == null) {
             return null;
         } else {
@@ -78,25 +81,21 @@ public class MemoryVariableLoader implements VariableLoader {
     }
 
     @Override
-    public void writeToText(String var, Object o) {
+    public void writeToText(VariableKey var, Object o) {
         values.put(var, o.toString());
     }
 
     @Override
-    public void writeToJson(String var, Object o) throws IOException {
+    public void writeToJson(VariableKey var, Object o) throws IOException {
         String json = JsonHandler.getInstance().objectToJson(o);
         values.put(var, json);
     }
 
     @Override
-    public void writeToBytes(String var, String label, InputStream is) throws IOException {
+    public void writeToBytes(VariableKey var, String label, InputStream is) throws IOException {
         byte[] bytes = IOUtils.convertStreamToBytes(is, 1000);
-        values.put(var + label, bytes);
-    }
-
-    @Override
-    public void delete(String var) {
-        values.remove(var);
+        VariableKey neu = new VariableKey(var.getProducerName(), var.getName() + label);
+        values.put(neu, bytes);
     }
 
 }

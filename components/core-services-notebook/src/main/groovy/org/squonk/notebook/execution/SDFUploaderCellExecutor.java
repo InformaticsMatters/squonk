@@ -4,6 +4,7 @@ import org.squonk.execution.steps.StepDefinition;
 import static org.squonk.execution.steps.StepDefinitionConstants.*;
 import org.squonk.notebook.api.CellDTO;
 import org.squonk.execution.steps.impl.SDFReaderStep;
+import org.squonk.notebook.api.VariableKey;
 
 /**
  * Reads a SD file and generates a Dataset of MoleculeObjects containing the 
@@ -29,8 +30,8 @@ public class SDFUploaderCellExecutor extends AbstractStepExecutor {
     protected StepDefinition[] getStepDefintions(CellDTO cell) {
 
         StepDefinition step = new StepDefinition(STEP_SDF_READER)
-                .withFieldMapping(SDFReaderStep.VAR_SDF_INPUT, "fileContent")
-                .withFieldMapping(VARIABLE_OUTPUT_DATASET, "results");
+                .withInputVariableMapping(SDFReaderStep.VAR_SDF_INPUT, new VariableKey(cell.getName(), "fileContent"))
+                .withOutputVariableMapping(VARIABLE_OUTPUT_DATASET, "results");
 
         step = configureOption(step, cell, SDFReaderStep.OPTION_NAME_FIELD_NAME);
         

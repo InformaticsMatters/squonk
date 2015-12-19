@@ -24,4 +24,8 @@ public class BindingDTO {
         this.variableKey = variableKey;
     }
 
+    @Override
+    public String toString() {
+        return "BindingDTO [name:" + name + " variableKey:" + variableKey + "]";
+    }
 }

@@ -1,6 +1,8 @@
 package org.squonk.execution.variable.impl;
 
 import org.squonk.execution.variable.VariableLoader;
+import org.squonk.notebook.api.CellDTO;
+import org.squonk.notebook.api.VariableKey;
 import org.squonk.notebook.client.CallbackClient;
 import com.squonk.types.io.JsonHandler;
 import java.io.IOException;
@@ -19,15 +21,8 @@ public class CellCallbackClientVariableLoader implements VariableLoader {
      */
     final private CallbackClient client;
 
-    /**
-     * The cell name. If handled this way then a new loader needs to be created
-     * for execution of each cell.
-     */
-    final private String producerName;
-
-    public CellCallbackClientVariableLoader(CallbackClient client, String producerName) {
+    public CellCallbackClientVariableLoader(CallbackClient client) {
         this.client = client;
-        this.producerName = producerName;
     }
 
     @Override
@@ -36,48 +31,46 @@ public class CellCallbackClientVariableLoader implements VariableLoader {
     }
 
     @Override
-    public <V> V readFromText(String var, Class<V> type) throws IOException {
-        String val = client.readTextValue(producerName, var);
+    public <V> V readFromText(VariableKey var, Class<V> type) throws IOException {
+        System.out.println("Reading text for: " + var);
+        String val = client.readTextValue(var.getProducerName(), var.getName());
         System.out.println("Read value: " + var + " -> " + val);
         return convertFromText(val, type);
     }
 
     @Override
-    public <V> V readFromJson(String var, Class<V> type) throws IOException {
-        String json = client.readTextValue(producerName, var);
+    public <V> V readFromJson(VariableKey var, Class<V> type) throws IOException {
+        System.out.println("Reading json for: "  + var);
+        String json = client.readTextValue(var.getProducerName(), var.getName());
         System.out.println("Read json: " + var + " -> " + json);
         return JsonHandler.getInstance().objectFromJson(json, type);
     }
 
     @Override
-    public InputStream readBytes(String var, String label) throws IOException {
-        System.out.println("Read bytes for : " + var);
-        return client.readStreamValue(producerName, var);
+    public InputStream readBytes(VariableKey var, String label) throws IOException {
+        System.out.println("Reading bytes for: " + var);
+        InputStream is = client.readStreamValue(var.getProducerName(), var.getName());
+        System.out.println("Read bytes for : " + var + " -> " + is);
+        return is;
     }
 
     @Override
-    public void writeToText(String var, Object o) throws IOException {
+    public void writeToText(VariableKey var, Object o) throws IOException {
         System.out.println("Writing value: " + var + " -> " + o);
-        client.writeTextValue(producerName, var, o.toString());
+        client.writeTextValue(var.getProducerName(), var.getName(), o.toString());
     }
 
     @Override
-    public void writeToJson(String var, Object o) throws IOException {
+    public void writeToJson(VariableKey var, Object o) throws IOException {
         System.out.println("Writing json: " + var + " -> " + o);
         String json = JsonHandler.getInstance().objectToJson(o);
-        client.writeTextValue(producerName, var, json);
+        client.writeTextValue(var.getProducerName(), var.getName(), json);
     }
 
     @Override
-    public void writeToBytes(String var, String label, InputStream is) throws IOException {
+    public void writeToBytes(VariableKey var, String label, InputStream is) throws IOException {
         System.out.println("Writing bytes: " + var + " -> " + is);
-        client.writeStreamContents(producerName, var, is);
-    }
-
-    @Override
-    public void delete(String var) throws IOException {
-        // do we need this or will this only be done through the notebook client
-        throw new UnsupportedOperationException("Not supported yet.");
+        client.writeStreamContents(var.getProducerName(), var.getName(), is);
     }
 
     private <V> V convertFromText(String s, Class<V> type) throws IOException {

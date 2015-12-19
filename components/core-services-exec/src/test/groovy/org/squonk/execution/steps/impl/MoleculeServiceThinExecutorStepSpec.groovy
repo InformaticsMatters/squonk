@@ -15,6 +15,7 @@ import org.apache.camel.ProducerTemplate
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.execution.steps.StepExecutor
+import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
 import java.util.stream.Stream
@@ -26,9 +27,9 @@ import java.util.stream.Stream
 class MoleculeServiceThinExecutorStepSpec extends Specification {
 
     def mols = [
-            new MoleculeObject("C", "smiles", [num:"1",hello:'world']),
-            new MoleculeObject("CC", "smiles", [num:"99",hello:'mars']),
-            new MoleculeObject("CCC", "smiles", [num:"100",hello:'mum'])
+            new MoleculeObject("C", "smiles", [num: "1", hello: 'world']),
+            new MoleculeObject("CC", "smiles", [num: "99", hello: 'mars']),
+            new MoleculeObject("CCC", "smiles", [num: "100", hello: 'mum'])
     ]
 
     CamelContext createCamelContext() {
@@ -95,19 +96,23 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
 
 
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
-
+        String producer = "p"
         varman.putValue(
-            MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET,
-            Dataset.class,
-            ds,
-            PersistenceType.NONE)
+                new VariableKey(producer, "input"),
+                Dataset.class,
+                ds,
+                PersistenceType.NONE)
 
         MoleculeServiceThinExecutorStep step = new MoleculeServiceThinExecutorStep()
-        step.configure([(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT):'http://localhost:8888/route1'], [:])
+
+        step.configure(producer,
+                [(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT): 'http://localhost:8888/route1'],
+                [(MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
+                [:])
 
         when:
         step.execute(varman, context)
-        Dataset result = varman.getValue(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET, Dataset.class, PersistenceType.DATASET)
+        Dataset result = varman.getValue(new VariableKey(producer, MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET), Dataset.class, PersistenceType.DATASET)
 
         then:
         result.items.size() == 3
@@ -129,25 +134,30 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
 
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
 
+        String producer = "p"
         varman.putValue(
-                "Input",
+                new VariableKey(producer, "input"),
                 Dataset.class,
                 ds,
                 PersistenceType.NONE)
 
         MoleculeServiceThinExecutorStep step1 = new MoleculeServiceThinExecutorStep()
-        step1.configure([(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT):'http://localhost:8888/route1'],
-                [ (MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET):"Input", (MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET):"_tmp1"])
+        step1.configure(producer,
+                [(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT): 'http://localhost:8888/route1'],
+                [(MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
+                [(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET): "_tmp1"])
 
         MoleculeServiceThinExecutorStep step2 = new MoleculeServiceThinExecutorStep()
-        step2.configure([(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT):'http://localhost:8888/route2'],
-                [(MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET):"_tmp1",(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET):"Output"])
+        step2.configure(producer,
+                [(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT): 'http://localhost:8888/route2'],
+                [(MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET): new VariableKey(producer, "_tmp1")],
+                [(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET): "Output"])
 
         when:
-        StepExecutor executor = new StepExecutor(varman)
+        StepExecutor executor = new StepExecutor(producer, varman)
         Step[] steps = [step1, step2] as Step[]
         executor.execute(steps, context)
-        Dataset result = varman.getValue("Output", Dataset.class, PersistenceType.DATASET)
+        Dataset result = varman.getValue(new VariableKey(producer, "Output"), Dataset.class, PersistenceType.DATASET)
 
         then:
         result.items.size() == 3
@@ -159,7 +169,6 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
         cleanup:
         context.stop();
     }
-
 
 
 }

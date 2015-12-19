@@ -2,8 +2,13 @@ package org.squonk.execution.steps;
 
 import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.notebook.api.VariableKey;
+
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -11,22 +16,65 @@ import java.util.Map;
  */
 public abstract class AbstractStep implements Step {
 
+    private static final Logger LOG = Logger.getLogger(AbstractStep.class.getName());
+
+    protected String outputProducerName;
     protected Map<String, Object> options;
-    protected Map<String, String> variableMappings;
+    protected final Map<String, VariableKey> inputVariableMappings = new HashMap<>();
+    protected final Map<String, String> outputVariableMappings = new HashMap<>();
+
 
     @Override
-    public void configure(Map<String, Object> options, Map<String, String> variableMappings) {
-        this.options = options;
-        this.variableMappings = variableMappings;
+    public String getOutputProducerName() {
+        return outputProducerName;
     }
 
-    protected String mapVariableName(String name) {
-        String mapped = null;
-        if (variableMappings != null) {
-            mapped = variableMappings.get(name);
+    protected void dumpConfig(Level level) {
+        if (LOG.isLoggable(level)) {
+            StringBuilder b = new StringBuilder("Step configuration: [class:").append(this.getClass().getName())
+                    .append(" producerName:").append(outputProducerName)
+                    .append(" inputs:[");
+            int count = 0;
+            for (Map.Entry<String,VariableKey> e : inputVariableMappings.entrySet()) {
+                if (count > 0) {
+                    b.append(" ");
+                }
+                count++;
+                b.append(e.getKey()).append(" -> ").append(e.getValue());
+            }
+            b.append("] outputs:[");
+            count = 0;
+            for (Map.Entry<String,String> e : outputVariableMappings.entrySet()) {
+                if (count > 0) {
+                    b.append(" ");
+                }
+                count++;
+                b.append(e.getKey()).append(" -> ").append(e.getValue());
+            }
+            b.append("]");
+            LOG.log(level, b.toString());
         }
-        return (mapped == null ? name : mapped);
     }
+
+    @Override
+    public void configure(String outputProducerName, Map<String, Object> options, Map<String, VariableKey> inputVariableMappings, Map<String, String> outputVariableMappings) {
+        this.outputProducerName = outputProducerName;
+        this.options = options;
+        this.inputVariableMappings.putAll(inputVariableMappings);
+        this.outputVariableMappings.putAll(outputVariableMappings);
+    }
+
+    protected VariableKey mapInputVariable(String name) {
+        VariableKey mapped = inputVariableMappings.get(name);
+        //if (mapped == null) {throw new IllegalArgumentException("Input variable mapping for " + name + " not present");}
+        return mapped;
+    }
+
+    protected String mapOutputVariable(String name) {
+        String mapped = outputVariableMappings.get(name);
+        return (mapped == null) ? name : mapped;
+    }
+
 
     /**
      * Map the variable name using the variable mappings and fetch the
@@ -39,26 +87,29 @@ public abstract class AbstractStep implements Step {
      * @return
      * @throws IOException
      */
-    protected <T> T fetchMappedValue(String internalName, Class<T> type, PersistenceType persistenceType, VariableManager varman) throws IOException {
-        String mappedVarName = mapVariableName(internalName);
+    protected <T> T fetchMappedInput(String internalName, Class<T> type, PersistenceType persistenceType, VariableManager varman) throws IOException {
+        VariableKey mappedVar = mapInputVariable(internalName);
+        if (mappedVar == null) {
+            return null;
+        }
         //System.out.println("Internal name: " + internalName);
         //System.out.println("Mapped name: " + mappedVarName);
-        return fetchValue(mappedVarName, type, persistenceType, varman);
+        return fetchInput(mappedVar, type, persistenceType, varman);
     }
 
     /**
      * Fetch the value with this name
      *
      * @param <T>
-     * @param externalName
+     * @param var
      * @param type
      * @param varman
      * @return
      * @throws IOException
      */
-    protected <T> T fetchValue(String externalName, Class<T> type, PersistenceType persistenceType, VariableManager varman) throws IOException {
+    protected <T> T fetchInput(VariableKey var, Class<T> type, PersistenceType persistenceType, VariableManager varman) throws IOException {
         //System.out.println("Getting value for variable " + externalName);
-        T value = (T) varman.getValue(externalName, type, persistenceType);
+        T value = (T) varman.getValue(var, type, persistenceType);
         return value;
     }
 
@@ -91,8 +142,8 @@ public abstract class AbstractStep implements Step {
      * @return
      * @throws IOException
      */
-    protected <T> void createMappedVariable(String localName, Class<T> type, T value, PersistenceType persistence, VariableManager varman) throws IOException {
-        String outFldName = mapVariableName(localName);
+    protected <T> void createMappedOutput(String localName, Class<T> type, T value, PersistenceType persistence, VariableManager varman) throws IOException {
+        String outFldName = mapOutputVariable(localName);
         createVariable(outFldName, type, value, persistence, varman);
     }
 
@@ -111,7 +162,8 @@ public abstract class AbstractStep implements Step {
      * @throws IOException
      */
     protected <T> void createVariable(String mappedName, Class<T> type, T value, PersistenceType persistence, VariableManager varman) throws IOException {
-        varman.putValue(mappedName, type, value, mappedName.startsWith("_") ? PersistenceType.NONE : persistence);
+        VariableKey key = new VariableKey(getOutputProducerName(), mappedName);
+        varman.putValue(key, type, value, mappedName.startsWith("_") ? PersistenceType.NONE : persistence);
     }
 
 }

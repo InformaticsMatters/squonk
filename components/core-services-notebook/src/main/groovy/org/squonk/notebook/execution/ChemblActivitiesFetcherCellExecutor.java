@@ -3,6 +3,7 @@ package org.squonk.notebook.execution;
 import org.squonk.execution.steps.StepDefinition;
 import static org.squonk.execution.steps.StepDefinitionConstants.*;
 import org.squonk.notebook.api.CellDTO;
+import org.squonk.notebook.api.VariableKey;
 
 /**
  * Given a ChEMBL assay ID fetches all activities for that assay and generated a
@@ -25,7 +26,7 @@ public class ChemblActivitiesFetcherCellExecutor extends AbstractStepExecutor {
         StepDefinition step = new StepDefinition(STEP_CHEMBL_ACTIVITIES_FETCHER)
                 .withOption("AssayID", cell.getOptionMap().get("assayId").getValue())
                 .withOption("Prefix", cell.getOptionMap().get("prefix").getValue())
-                .withFieldMapping(VARIABLE_OUTPUT_DATASET, "results");
+                .withOutputVariableMapping(VARIABLE_OUTPUT_DATASET, "results");
 
         return new StepDefinition[]{step};
 

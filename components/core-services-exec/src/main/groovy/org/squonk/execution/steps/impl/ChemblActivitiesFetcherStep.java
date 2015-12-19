@@ -9,11 +9,16 @@ import com.squonk.chembl.ChemblClient;
 import com.squonk.dataset.Dataset;
 import org.apache.camel.CamelContext;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author timbo
  */
 public class ChemblActivitiesFetcherStep extends AbstractStep {
+
+    private static final Logger LOG = Logger.getLogger(ChemblActivitiesFetcherStep.class.getName());
 
     public static final String OPTION_ASSAY_ID = "AssayID";
     public static final String OPTION_PREFIX = "Prefix";
@@ -37,6 +42,8 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
+        dumpConfig(Level.INFO);
+
         int batchSize = getOption(OPTION_BATCH_SIZE, Integer.class, 100);
         String prefix = getOption(OPTION_PREFIX, String.class);
         String assayID = getOption(OPTION_ASSAY_ID, String.class);
@@ -47,7 +54,8 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
         ChemblClient client = new ChemblClient();
         Dataset<MoleculeObject> dataset = client.fetchActivitiesForAssay(assayID, batchSize, prefix);
 
-        createMappedVariable(VAR_OUTPUT_DATASET, Dataset.class, dataset, PersistenceType.DATASET, varman);
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, dataset, PersistenceType.DATASET, varman);
+        LOG.info("ChEMBL fetch complete. Results: " + dataset.getMetadata());
     }
 
 }

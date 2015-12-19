@@ -4,6 +4,7 @@ import org.squonk.execution.steps.StepDefinition;
 import static org.squonk.execution.steps.StepDefinitionConstants.*;
 import org.squonk.notebook.api.CellDTO;
 import org.squonk.execution.steps.impl.CSVReaderStep;
+import org.squonk.notebook.api.VariableKey;
 
 import java.util.Map;
 
@@ -32,8 +33,8 @@ public class CSVUploaderCellExecutor extends AbstractStepExecutor {
         }
 
         StepDefinition step = new StepDefinition(STEP_CSV_READER)
-                .withFieldMapping(CSVReaderStep.VAR_CSV_INPUT, "fileContent")
-                .withFieldMapping(VARIABLE_OUTPUT_DATASET, "results");
+                .withInputVariableMapping(CSVReaderStep.VAR_CSV_INPUT, new VariableKey(cell.getName(), "fileContent"))
+                .withOutputVariableMapping(VARIABLE_OUTPUT_DATASET, "results");
 
         step = configureOption(step, cell, CSVReaderStep.OPTION_ALLOW_MISSING_COLUMN_NAMES);     // Boolean
         step = configureOption(step, cell, CSVReaderStep.OPTION_COMMENT_MARKER);                 // Character

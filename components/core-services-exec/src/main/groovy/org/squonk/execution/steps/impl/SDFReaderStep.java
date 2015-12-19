@@ -51,11 +51,11 @@ public class SDFReaderStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws IOException {
-        InputStream is = fetchMappedValue(VAR_SDF_INPUT, InputStream.class, PersistenceType.BYTES, varman);
+        InputStream is = fetchMappedInput(VAR_SDF_INPUT, InputStream.class, PersistenceType.BYTES, varman);
         SDFReader reader = createReader(IOUtils.getGunzippedInputStream(is));
         Stream<MoleculeObject> mols = reader.asStream();
         Dataset dataset = new Dataset(MoleculeObject.class, mols);
-        createMappedVariable(VAR_DATASET_OUTPUT, Dataset.class, dataset, PersistenceType.DATASET, varman);
+        createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, dataset, PersistenceType.DATASET, varman);
     }
 
     private SDFReader createReader(InputStream input) throws IOException {

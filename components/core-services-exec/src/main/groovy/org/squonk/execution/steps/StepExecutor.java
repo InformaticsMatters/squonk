@@ -10,9 +10,11 @@ import org.apache.camel.CamelContext;
 public class StepExecutor {
     
     private final VariableManager varman;
+    private final String  producer;
     
-    public StepExecutor(VariableManager varman) {
+    public StepExecutor(String  producer, VariableManager varman) {
         this.varman = varman;
+        this.producer = producer;
     }
     
     public void execute(StepDefinition[] defs, CamelContext context) throws Exception {
@@ -21,7 +23,7 @@ public class StepExecutor {
             StepDefinition def = defs[i];
             Class cls = Class.forName(def.getImplementationClass());
             Step step = (Step)cls.newInstance();
-            step.configure(def.getOptions(), def.getFieldMappings());
+            step.configure(producer, def.getOptions(), def.getInputVariableMappings(), def.getOutputVariableMappings());
             steps[i] = step;
         }
         execute(steps, context);

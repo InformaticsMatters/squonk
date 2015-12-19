@@ -42,7 +42,7 @@ public class ValueTransformerStep extends AbstractStep {
      */
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        Dataset ds = fetchMappedValue(VAR_INPUT_DATASET, Dataset.class, PersistenceType.DATASET, varman);
+        Dataset ds = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, PersistenceType.DATASET, varman);
         if (ds == null) {
             throw new IllegalStateException("Input field not found: " + VAR_INPUT_DATASET);
         }
@@ -53,7 +53,7 @@ public class ValueTransformerStep extends AbstractStep {
         ValueTransformerProcessor p = ValueTransformerProcessor.create(txs);
         p.execute(context.getTypeConverter(), ds);
         
-        String outFldName = mapVariableName(VAR_OUTPUT_DATASET);
+        String outFldName = mapOutputVariable(VAR_OUTPUT_DATASET);
         if (outFldName != null) {
             createVariable(outFldName, Dataset.class, ds, PersistenceType.NONE, varman);
         }

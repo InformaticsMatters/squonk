@@ -4,6 +4,7 @@ import com.squonk.execution.variable.impl.*
 import com.im.lac.types.*
 import com.squonk.dataset.*
 import org.squonk.execution.variable.impl.MemoryVariableLoader
+import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
 /**
@@ -11,18 +12,21 @@ import spock.lang.Specification
  * @author timbo
  */
 class VariableManagerSpec extends Specification {
+
+    String producer = "p"
     
     void "simple put/get variable"() {
         
         VariableManager manager = new VariableManager(new MemoryVariableLoader());
         
         when:
-        manager.putValue("text", String.class,  "John Doe", PersistenceType.TEXT)
-        manager.putValue("age", Integer.class, 60, PersistenceType.TEXT)
+
+        manager.putValue(new VariableKey(producer, "text"), String.class,  "John Doe", PersistenceType.TEXT)
+        manager.putValue(new VariableKey(producer, "age"), Integer.class, 60, PersistenceType.TEXT)
         
         then:
-        manager.getValue("text", String.class, PersistenceType.TEXT) == "John Doe"
-        manager.getValue("age", Integer.class, PersistenceType.TEXT) == 60
+        manager.getValue(new VariableKey(producer, "text"), String.class, PersistenceType.TEXT) == "John Doe"
+        manager.getValue(new VariableKey(producer, "age"), Integer.class, PersistenceType.TEXT) == 60
         
     }
     
@@ -40,8 +44,8 @@ class VariableManagerSpec extends Specification {
         VariableManager manager = new VariableManager(loader);
         
         when:
-        manager.putValue("ds1", Dataset.class,  ds1, PersistenceType.DATASET)
-        Dataset ds2 = manager.getValue("ds1", Dataset.class, PersistenceType.DATASET)
+        manager.putValue(new VariableKey(producer, "ds1"), Dataset.class,  ds1, PersistenceType.DATASET)
+        Dataset ds2 = manager.getValue(new VariableKey(producer, "ds1"), Dataset.class, PersistenceType.DATASET)
 
         
         then:
