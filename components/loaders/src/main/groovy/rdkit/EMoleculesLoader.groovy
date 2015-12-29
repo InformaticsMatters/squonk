@@ -1,10 +1,9 @@
 package rdkit
 
-import com.squonk.db.rdkit.RDKitTable
-import com.squonk.db.rdkit.dsl.IConfiguration
-import com.squonk.db.rdkit.EMoleculesTable
-import com.squonk.db.rdkit.MolSourceType
-import com.sun.xml.bind.v2.runtime.unmarshaller.Loader
+import org.squonk.db.rdkit.RDKitTable
+import org.squonk.db.rdkit.dsl.IConfiguration
+import org.squonk.db.rdkit.EMoleculesTable
+import org.squonk.db.rdkit.MolSourceType
 
 /**
  * Created by timbo on 16/12/2015.

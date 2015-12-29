@@ -1,6 +1,6 @@
 package com.im.lac.rdkit.mol;
 
-import com.squonk.stream.FixedBatchSpliteratorBase;
+import org.squonk.stream.FixedBatchSpliteratorBase;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Stream;

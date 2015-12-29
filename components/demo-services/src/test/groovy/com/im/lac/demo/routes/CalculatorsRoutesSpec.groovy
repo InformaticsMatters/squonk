@@ -1,18 +1,12 @@
 package com.im.lac.demo.routes
 
-import spock.lang.Specification
-import chemaxon.formats.MolImporter
 import chemaxon.struc.Molecule
 import chemaxon.struc.MolBond
 import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import com.im.lac.types.MoleculeObject
-import com.squonk.dataset.MoleculeObjectDataset
-import java.util.stream.*
-import org.apache.camel.CamelContext
+import org.squonk.dataset.MoleculeObjectDataset
 import org.apache.camel.builder.RouteBuilder
-import org.apache.camel.builder.ThreadPoolProfileBuilder
-import org.apache.camel.spi.ThreadPoolProfile
 
 /**
  * Created by timbo on 14/04/2014.

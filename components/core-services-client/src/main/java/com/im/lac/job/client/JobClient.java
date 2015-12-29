@@ -3,7 +3,7 @@ package com.im.lac.job.client;
 import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.services.CommonConstants;
-import com.squonk.types.io.JsonHandler;
+import org.squonk.types.io.JsonHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;

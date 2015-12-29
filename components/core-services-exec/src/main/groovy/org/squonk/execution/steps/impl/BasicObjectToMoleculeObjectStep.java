@@ -5,15 +5,13 @@ import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
-import com.im.lac.types.BasicObject;
 import com.im.lac.types.MoleculeObject;
-import com.squonk.dataset.Dataset;
-import com.squonk.dataset.DatasetProvider;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetProvider;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
+
 import org.apache.camel.CamelContext;
 
 /**

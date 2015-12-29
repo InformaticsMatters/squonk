@@ -1,11 +1,10 @@
 package com.im.lac.camel.cdk.processor
 
-import spock.lang.Specification
 import com.im.lac.cdk.molecule.MolecularDescriptors
 
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import com.im.lac.types.MoleculeObject
-import com.squonk.dataset.MoleculeObjectDataset
+import org.squonk.dataset.MoleculeObjectDataset
 import org.apache.camel.builder.RouteBuilder
 
 /**

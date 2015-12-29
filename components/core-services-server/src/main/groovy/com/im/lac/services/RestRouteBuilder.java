@@ -3,7 +3,7 @@ package com.im.lac.services;
 import com.im.lac.services.util.Utils;
 import com.im.lac.dataset.DataItem;
 import com.im.lac.types.MoleculeObject;
-import com.squonk.util.IOUtils;
+import org.squonk.util.IOUtils;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.JobDefinition;

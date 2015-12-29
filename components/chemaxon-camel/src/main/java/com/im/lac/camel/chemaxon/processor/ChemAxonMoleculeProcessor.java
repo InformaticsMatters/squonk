@@ -8,7 +8,7 @@ import com.im.lac.chemaxon.molecule.ChemTermsEvaluator;
 import com.im.lac.chemaxon.molecule.MoleculeEvaluator;
 import com.im.lac.chemaxon.molecule.StandardizerEvaluator;
 import com.im.lac.types.MoleculeObject;
-import com.squonk.dataset.MoleculeObjectDataset;
+import org.squonk.dataset.MoleculeObjectDataset;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;

@@ -5,7 +5,7 @@ import com.im.lac.chemaxon.enumeration.ReactorExecutor;
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
-import com.squonk.dataset.MoleculeObjectDataset;
+import org.squonk.dataset.MoleculeObjectDataset;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;

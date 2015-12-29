@@ -1,9 +1,9 @@
 package org.squonk.execution.variable;
 
-import com.squonk.dataset.Dataset;
-import com.squonk.dataset.DatasetMetadata;
-import com.squonk.types.io.JsonHandler;
-import com.squonk.util.IOUtils;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetMetadata;
+import org.squonk.types.io.JsonHandler;
+import org.squonk.util.IOUtils;
 import org.squonk.notebook.api.VariableKey;
 
 import java.io.IOException;

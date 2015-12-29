@@ -5,17 +5,12 @@ import com.im.lac.dataset.DataItem
 import com.im.lac.dataset.Metadata
 import groovy.sql.Sql
 import groovy.util.logging.Log
-import java.sql.Connection
-import java.sql.PreparedStatement
-import java.sql.SQLException
+
 import java.util.function.Consumer
 import java.util.function.Function
 import javax.sql.DataSource
 import org.postgresql.largeobject.LargeObject
 import org.postgresql.largeobject.LargeObjectManager
-import org.apache.camel.util.IOHelper
-import com.squonk.util.IOUtils
-
 
 /**
  *

@@ -1,9 +1,7 @@
 package org.squonk.execution.steps.impl;
 
-import com.im.lac.camel.processor.ValueTransformerProcessor;
-import com.squonk.dataset.Dataset;
-import com.squonk.dataset.transform.TransformDefinitions;
-import com.squonk.util.GroovyScriptExecutor;
+import org.squonk.dataset.Dataset;
+import org.squonk.util.GroovyScriptExecutor;
 import org.apache.camel.CamelContext;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.squonk.util.IOUtils;
+import org.squonk.util.IOUtils;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;

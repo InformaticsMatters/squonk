@@ -1,8 +1,7 @@
 package org.squonk.execution.variable
 
-import com.squonk.execution.variable.impl.*
 import com.im.lac.types.*
-import com.squonk.dataset.*
+import org.squonk.dataset.Dataset
 import org.squonk.execution.variable.impl.MemoryVariableLoader
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification

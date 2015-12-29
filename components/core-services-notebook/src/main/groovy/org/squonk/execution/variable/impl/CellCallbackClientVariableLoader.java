@@ -1,10 +1,9 @@
 package org.squonk.execution.variable.impl;
 
 import org.squonk.execution.variable.VariableLoader;
-import org.squonk.notebook.api.CellDTO;
 import org.squonk.notebook.api.VariableKey;
 import org.squonk.notebook.client.CallbackClient;
-import com.squonk.types.io.JsonHandler;
+import org.squonk.types.io.JsonHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;

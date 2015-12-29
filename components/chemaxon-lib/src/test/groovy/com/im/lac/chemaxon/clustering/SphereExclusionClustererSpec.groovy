@@ -6,10 +6,9 @@ import com.chemaxon.descriptors.fingerprints.ecfp.EcfpGenerator
 import com.chemaxon.descriptors.fingerprints.ecfp.EcfpParameters
 import com.chemaxon.descriptors.metrics.BinaryMetrics
 import com.im.lac.chemaxon.molecule.MoleculeUtils
-import com.im.lac.types.MoleculeObject
 import com.im.lac.types.MoleculeObjectIterable
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils
-import com.squonk.util.IOUtils
+import org.squonk.util.IOUtils
 
 import spock.lang.Specification
 

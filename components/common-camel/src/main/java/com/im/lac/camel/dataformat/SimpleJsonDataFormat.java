@@ -2,7 +2,7 @@ package com.im.lac.camel.dataformat;
 
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.squonk.types.io.JsonHandler;
+import org.squonk.types.io.JsonHandler;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.apache.camel.Exchange;

@@ -1,17 +1,12 @@
 package com.im.lac.camel.chemaxon.processor.screening
 
-import spock.lang.Specification
 import chemaxon.formats.MolImporter
-import chemaxon.formats.MolExporter
-import chemaxon.struc.Molecule
-import com.chemaxon.descriptors.fingerprints.ecfp.*
 import com.chemaxon.descriptors.fingerprints.pf2d.PfGenerator
 import com.chemaxon.descriptors.fingerprints.pf2d.PfParameters
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import com.im.lac.chemaxon.screening.MoleculeScreener
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.types.MoleculeObject
-import com.squonk.stream.FixedBatchSpliterator
 import org.apache.camel.builder.RouteBuilder
 import java.util.stream.*
 

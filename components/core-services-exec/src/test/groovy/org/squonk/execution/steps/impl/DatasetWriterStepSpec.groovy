@@ -1,7 +1,7 @@
 package org.squonk.execution.steps.impl
 
 import com.im.lac.types.MoleculeObject
-import com.squonk.dataset.Dataset
+import org.squonk.dataset.Dataset
 import org.squonk.execution.variable.PersistenceType
 import org.squonk.execution.variable.VariableManager
 import org.squonk.execution.variable.impl.MemoryVariableLoader

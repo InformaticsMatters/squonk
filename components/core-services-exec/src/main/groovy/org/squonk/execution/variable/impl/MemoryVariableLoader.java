@@ -1,8 +1,8 @@
 package org.squonk.execution.variable.impl;
 
 import org.squonk.execution.variable.VariableLoader;
-import com.squonk.types.io.JsonHandler;
-import com.squonk.util.IOUtils;
+import org.squonk.types.io.JsonHandler;
+import org.squonk.util.IOUtils;
 import org.squonk.notebook.api.VariableKey;
 
 import java.io.ByteArrayInputStream;

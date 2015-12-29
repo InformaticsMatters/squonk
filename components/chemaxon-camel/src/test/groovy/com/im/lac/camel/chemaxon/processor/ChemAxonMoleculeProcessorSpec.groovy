@@ -1,21 +1,12 @@
 package com.im.lac.camel.chemaxon.processor
 
-import spock.lang.Specification
-import chemaxon.formats.MolImporter
-import chemaxon.formats.MolExporter
-import chemaxon.struc.Molecule
-import com.im.lac.camel.chemaxon.processor.screening.MoleculeScreenerProcessor
-import com.im.lac.camel.chemaxon.processor.screening.MoleculeScreenerProcessor
-import com.im.lac.chemaxon.molecule.ChemTermsEvaluator
 import com.im.lac.types.MoleculeObject
-import com.squonk.dataset.Dataset
-import com.squonk.dataset.MoleculeObjectDataset
+import org.squonk.dataset.Dataset
+import org.squonk.dataset.MoleculeObjectDataset
 import java.util.stream.*
 import com.im.lac.chemaxon.molecule.MoleculeObjectUtils
-import com.im.lac.chemaxon.screening.MoleculeScreener
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
-import com.squonk.util.IOUtils
 
 /**
  * Created by timbo on 14/04/2014.

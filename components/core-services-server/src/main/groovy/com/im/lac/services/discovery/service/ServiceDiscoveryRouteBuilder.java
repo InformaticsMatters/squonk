@@ -7,7 +7,7 @@ import com.im.lac.services.AccessMode;
 import com.im.lac.services.ServerConstants;
 import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.services.job.service.AsyncJobRouteBuilder;
-import com.squonk.types.io.JsonHandler;
+import org.squonk.types.io.JsonHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;

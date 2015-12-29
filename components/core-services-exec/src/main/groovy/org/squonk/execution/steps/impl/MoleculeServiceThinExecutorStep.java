@@ -2,14 +2,14 @@ package org.squonk.execution.steps.impl;
 
 import com.im.lac.camel.util.CamelUtils;
 import com.im.lac.types.MoleculeObject;
-import com.squonk.dataset.Dataset;
-import com.squonk.dataset.DatasetMetadata;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
-import com.squonk.types.io.JsonHandler;
-import com.squonk.util.IOUtils;
+import org.squonk.types.io.JsonHandler;
+import org.squonk.util.IOUtils;
 import org.apache.camel.CamelContext;
 
 import java.io.InputStream;

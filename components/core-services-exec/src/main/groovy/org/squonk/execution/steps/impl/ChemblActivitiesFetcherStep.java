@@ -5,8 +5,8 @@ import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 import com.im.lac.types.MoleculeObject;
-import com.squonk.chembl.ChemblClient;
-import com.squonk.dataset.Dataset;
+import org.squonk.chembl.ChemblClient;
+import org.squonk.dataset.Dataset;
 import org.apache.camel.CamelContext;
 
 import java.util.logging.Level;

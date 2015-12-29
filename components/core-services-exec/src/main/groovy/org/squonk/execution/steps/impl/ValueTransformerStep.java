@@ -5,8 +5,8 @@ import com.im.lac.camel.processor.ValueTransformerProcessor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
-import com.squonk.dataset.Dataset;
-import com.squonk.dataset.transform.TransformDefinitions;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.transform.TransformDefinitions;
 import org.apache.camel.CamelContext;
 
 import java.util.logging.Logger;

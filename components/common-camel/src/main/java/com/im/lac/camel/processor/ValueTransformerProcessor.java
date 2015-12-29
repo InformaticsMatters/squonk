@@ -1,12 +1,12 @@
 package com.im.lac.camel.processor;
 
 import com.im.lac.types.BasicObject;
-import com.squonk.dataset.Dataset;
-import com.squonk.dataset.transform.AbstractTransform;
-import com.squonk.dataset.transform.ConvertFieldTransform;
-import com.squonk.dataset.transform.DeleteFieldTransform;
-import com.squonk.dataset.transform.RenameFieldTransform;
-import com.squonk.dataset.transform.TransformDefinitions;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.transform.AbstractTransform;
+import org.squonk.dataset.transform.ConvertFieldTransform;
+import org.squonk.dataset.transform.DeleteFieldTransform;
+import org.squonk.dataset.transform.RenameFieldTransform;
+import org.squonk.dataset.transform.TransformDefinitions;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

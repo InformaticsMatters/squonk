@@ -1,9 +1,9 @@
 package com.im.lac.camel.dataformat;
 
 import com.im.lac.types.MoleculeObject;
-import com.squonk.dataset.Dataset;
-import com.squonk.dataset.DatasetMetadata;
-import com.squonk.types.io.JsonHandler;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetMetadata;
+import org.squonk.types.io.JsonHandler;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;

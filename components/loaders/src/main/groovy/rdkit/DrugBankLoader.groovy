@@ -1,10 +1,8 @@
 package rdkit
 
-import com.squonk.db.rdkit.DrugbankTable
-import com.squonk.db.rdkit.EMoleculesTable
-import com.squonk.db.rdkit.MolSourceType
-import com.squonk.db.rdkit.RDKitTable
-import com.squonk.db.rdkit.dsl.IConfiguration
+import org.squonk.db.rdkit.DrugbankTable
+import org.squonk.db.rdkit.RDKitTable
+import org.squonk.db.rdkit.dsl.IConfiguration
 
 /**
  * Created by timbo on 16/12/2015.

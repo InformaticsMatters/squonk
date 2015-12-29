@@ -1,6 +1,6 @@
 package com.im.lac.util;
 
-import com.squonk.util.IOUtils;
+import org.squonk.util.IOUtils;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,6 +1,6 @@
 package com.im.lac.types;
 
-import com.squonk.dataset.Dataset;
+import org.squonk.dataset.Dataset;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;

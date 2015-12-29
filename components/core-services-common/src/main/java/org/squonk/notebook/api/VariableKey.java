@@ -1,6 +1,6 @@
 package org.squonk.notebook.api;
 
-import com.squonk.util.Utils;
+import org.squonk.util.Utils;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;

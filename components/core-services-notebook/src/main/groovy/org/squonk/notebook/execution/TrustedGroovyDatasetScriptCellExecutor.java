@@ -1,16 +1,11 @@
 package org.squonk.notebook.execution;
 
-import com.squonk.dataset.transform.TransformDefinitions;
-import com.squonk.util.GroovyScriptExecutor;
 import org.squonk.execution.steps.StepDefinition;
 import org.squonk.execution.steps.impl.TrustedGroovyDatasetScriptStep;
-import org.squonk.execution.steps.impl.ValueTransformerStep;
 import org.squonk.notebook.api.BindingDTO;
 import org.squonk.notebook.api.CellDTO;
 import org.squonk.notebook.api.OptionDTO;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
 import java.util.logging.Level;
 
 import static org.squonk.execution.steps.StepDefinitionConstants.*;

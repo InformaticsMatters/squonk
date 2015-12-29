@@ -1,10 +1,10 @@
 package com.im.lac.camel.dataformat;
 
 import com.im.lac.types.MoleculeObject;
-import com.squonk.dataset.Dataset;
-import com.squonk.dataset.DatasetMetadata;
-import com.squonk.dataset.MoleculeObjectDataset;
-import com.squonk.types.io.JsonHandler;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetMetadata;
+import org.squonk.dataset.MoleculeObjectDataset;
+import org.squonk.types.io.JsonHandler;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
@@ -22,10 +22,10 @@ public class MoleculeObjectDatasetJsonDataFormat implements DataFormat {
     private final static Logger LOG = Logger.getLogger(MoleculeObjectDatasetJsonDataFormat.class.getName());
 
     /**
-     * Writes a {@link com.squonk.dataset.Dataset} of @{link
+     * Writes a {@link Dataset} of @{link
      * com.im.lac.types.MoleculeObject}s or a
-     * {@link com.squonk.dataset.MoleculeObjectDataset} to the OutputStream.
-     * Generates the {@link com.squonk.dataset.DatasetMetadata} as it does so,
+     * {@link MoleculeObjectDataset} to the OutputStream.
+     * Generates the {@link DatasetMetadata} as it does so,
      * and then sets that DatasetMetadata as a header named by the value of the
      * {@link JsonHandler.ATTR_DATASET_METADATA} constant.
      *
@@ -59,7 +59,7 @@ public class MoleculeObjectDatasetJsonDataFormat implements DataFormat {
 
     /**
      * Reads the InputStream as objects into a new
-     * {@link com.squonk.dataset.Dataset}. The DatasetMetadata MUST be defined
+     * {@link Dataset}. The DatasetMetadata MUST be defined
      * as a header named by the value of the
      * {@link JsonHandler.ATTR_DATASET_METADATA} constant.
      *

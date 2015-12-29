@@ -1,7 +1,8 @@
 package org.squonk.notebook.execution;
 
-import com.squonk.dataset.transform.TransformDefinitions;
-import com.squonk.util.GroovyScriptExecutor;
+import org.squonk.dataset.transform.AbstractTransform;
+import org.squonk.dataset.transform.TransformDefinitions;
+import org.squonk.util.GroovyScriptExecutor;
 import org.squonk.execution.steps.StepDefinition;
 import static org.squonk.execution.steps.StepDefinitionConstants.*;
 
@@ -16,9 +17,9 @@ import java.util.logging.Level;
 /**
  * Transform the values of a Dataset. The transforms are defined by the Transformers
  * option which defines a list of individual transforms (extending from 
- * {@link com.squonk.dataset.transform.AbstractTransform}). Current transforms include
+ * {@link AbstractTransform}). Current transforms include
  * deleting a value, renaming a value and converting the value to a different type
- * (e.g. String -> Integer). See the {@link com.squonk.dataset.transform} package for 
+ * (e.g. String -> Integer). See the {@link org.squonk.dataset.transform} package for
  * details.
  *
  * Created by timbo on 10/11/15.
@@ -54,7 +55,7 @@ public class ValueTransformerCellExecutor extends AbstractStepExecutor {
 
         try {
             ScriptEngine engine = GroovyScriptExecutor.createScriptEngine(this.getClass().getClassLoader());
-            String script = GroovyScriptExecutor.addImportsToScript((String)dto.getValue(), new String[] {"com.squonk.dataset.transform.TransformDefinitions"});
+            String script = GroovyScriptExecutor.addImportsToScript((String)dto.getValue(), new String[] {"TransformDefinitions"});
             TransformDefinitions txs = GroovyScriptExecutor.executeAndReturnValue(TransformDefinitions.class, engine, script, null);
             step.withOption(ValueTransformerStep.OPTION_TRANSFORMS, txs);
 

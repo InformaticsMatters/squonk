@@ -1,7 +1,7 @@
 package com.im.lac.camel.processor
 
 import com.im.lac.types.BasicObject
-import com.squonk.dataset.Dataset
+import org.squonk.dataset.Dataset
 import org.apache.camel.CamelContext
 import org.apache.camel.impl.DefaultCamelContext
 import spock.lang.Specification

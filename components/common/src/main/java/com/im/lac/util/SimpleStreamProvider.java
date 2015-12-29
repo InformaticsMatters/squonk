@@ -1,6 +1,6 @@
 package com.im.lac.util;
 
-import com.squonk.stream.FixedBatchSpliterator;
+import org.squonk.stream.FixedBatchSpliterator;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;

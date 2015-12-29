@@ -4,8 +4,8 @@ import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
-import com.squonk.dataset.Dataset;
-import com.squonk.dataset.DatasetProvider;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetProvider;
 import org.apache.camel.CamelContext;
 
 /** Reads a dataset and writes it. The only real purpose of this is to take a temporary

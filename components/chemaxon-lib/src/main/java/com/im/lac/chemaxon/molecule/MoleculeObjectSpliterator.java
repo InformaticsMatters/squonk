@@ -1,15 +1,12 @@
 package com.im.lac.chemaxon.molecule;
 
-import chemaxon.marvin.io.MPropHandler;
 import chemaxon.marvin.io.MRecord;
-import chemaxon.struc.MProp;
 import chemaxon.struc.MPropertyContainer;
-import com.squonk.stream.FixedBatchSpliteratorBase;
+import org.squonk.stream.FixedBatchSpliteratorBase;
 import com.im.lac.types.MoleculeObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Spliterator;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;

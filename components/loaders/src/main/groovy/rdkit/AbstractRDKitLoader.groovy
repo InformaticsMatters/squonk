@@ -1,13 +1,13 @@
 package rdkit
 
 import com.im.lac.types.MoleculeObject
-import com.squonk.db.rdkit.dsl.DataSourceConfiguration
-import com.squonk.db.rdkit.dsl.IConfiguration
-import com.squonk.db.rdkit.RDKitTable
-import com.squonk.db.rdkit.dsl.SqlQuery
-import com.squonk.db.rdkit.RDKitTableLoader
-import com.squonk.reader.SDFReader
-import com.squonk.util.IOUtils
+import org.squonk.db.rdkit.dsl.DataSourceConfiguration
+import org.squonk.db.rdkit.dsl.IConfiguration
+import org.squonk.db.rdkit.RDKitTable
+import org.squonk.db.rdkit.dsl.SqlQuery
+import org.squonk.db.rdkit.RDKitTableLoader
+import org.squonk.reader.SDFReader
+import org.squonk.util.IOUtils
 
 import javax.sql.DataSource
 import java.util.stream.Stream

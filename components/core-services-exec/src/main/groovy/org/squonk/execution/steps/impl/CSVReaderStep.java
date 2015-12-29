@@ -5,9 +5,9 @@ import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 import com.im.lac.types.BasicObject;
-import com.squonk.dataset.Dataset;
-import com.squonk.reader.CSVReader;
-import com.squonk.util.IOUtils;
+import org.squonk.dataset.Dataset;
+import org.squonk.reader.CSVReader;
+import org.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;
@@ -17,7 +17,7 @@ import org.apache.commons.csv.QuoteMode;
 
 /**
  * Reads a CSV or Tab delimited file and generates a
- * {@link com.squonk.dataset.Dataset} of {@link com.im.lac.types.BasicObject}s.
+ * {@link Dataset} of {@link com.im.lac.types.BasicObject}s.
  * <p>
  * The SDFile is passed as an {@link java.io.InputStream} (can be gzipped). By
  default the input is expected in the variable named by the VAR_CSV_INPUT
@@ -30,7 +30,7 @@ import org.apache.commons.csv.QuoteMode;
  * in particular). See <a href="http://camel.apache.org/csv.html">here</a> for
  * specific details.
  * <p>
- * The {@link com.squonk.reader.CSVReader} class acts as a bridge between this
+ * The {@link CSVReader} class acts as a bridge between this
  * class and the Apache Commons CSV library.
  *
  *

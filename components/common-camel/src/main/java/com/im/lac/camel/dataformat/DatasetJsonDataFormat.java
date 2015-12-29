@@ -1,8 +1,8 @@
 package com.im.lac.camel.dataformat;
 
-import com.squonk.dataset.Dataset;
-import com.squonk.dataset.DatasetMetadata;
-import com.squonk.types.io.JsonHandler;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetMetadata;
+import org.squonk.types.io.JsonHandler;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.stream.Stream;
@@ -16,8 +16,8 @@ import org.apache.camel.spi.DataFormat;
 public class DatasetJsonDataFormat implements DataFormat {
 
     /**
-     * Writes the {@link com.squonk.dataset.Dataset} items to the OutputStream.
-     * Generates the {@link com.squonk.dataset.DatasetMetadata} as it does so,
+     * Writes the {@link Dataset} items to the OutputStream.
+     * Generates the {@link DatasetMetadata} as it does so,
      * and then sets the DatasetMetadata as a header named by the value of the
      * {@link JsonHandler.ATTR_DATASET_METADATA} constant.
      *
@@ -41,7 +41,7 @@ public class DatasetJsonDataFormat implements DataFormat {
 
     /**
      * Reads the InputStream as objects into a new
-     * {@link com.squonk.dataset.Dataset}. The DatasetMetadata MUST be defined
+     * {@link Dataset}. The DatasetMetadata MUST be defined
      * as a header named by the value of the
      * {@link JsonHandler.ATTR_DATASET_METADATA} constant.
      *

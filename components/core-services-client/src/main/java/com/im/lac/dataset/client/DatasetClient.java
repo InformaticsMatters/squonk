@@ -2,8 +2,8 @@ package com.im.lac.dataset.client;
 
 import com.im.lac.dataset.DataItem;
 import com.im.lac.services.CommonConstants;
-import com.squonk.types.io.JsonHandler;
-import com.squonk.util.IOUtils;
+import org.squonk.types.io.JsonHandler;
+import org.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;

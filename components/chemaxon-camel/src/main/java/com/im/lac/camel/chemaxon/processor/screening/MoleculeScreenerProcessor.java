@@ -7,7 +7,7 @@ import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.chemaxon.screening.MoleculeScreener;
 import com.im.lac.types.MoleculeObject;
-import com.squonk.dataset.MoleculeObjectDataset;
+import org.squonk.dataset.MoleculeObjectDataset;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

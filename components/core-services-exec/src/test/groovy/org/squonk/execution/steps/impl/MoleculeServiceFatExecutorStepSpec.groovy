@@ -1,9 +1,7 @@
 package org.squonk.execution.steps.impl
 
-import com.squonk.execution.variable.*
-import com.squonk.execution.variable.impl.*
 import com.im.lac.types.MoleculeObject
-import com.squonk.dataset.Dataset
+import org.squonk.dataset.Dataset
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.execution.variable.PersistenceType
 import org.squonk.execution.variable.VariableManager

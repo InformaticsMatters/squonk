@@ -5,16 +5,16 @@ import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 import com.im.lac.types.MoleculeObject;
-import com.squonk.dataset.Dataset;
-import com.squonk.reader.SDFReader;
-import com.squonk.util.IOUtils;
+import org.squonk.dataset.Dataset;
+import org.squonk.reader.SDFReader;
+import org.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;
 import org.apache.camel.CamelContext;
 
 /**
- * Reads a SDFile and generates a {@link com.squonk.dataset.Dataset} of 
+ * Reads a SDFile and generates a {@link Dataset} of
  * {@link com.im.lac.types.MoleculeObject}s. The SDFile is passed as an
  * {@link java.io.InputStream} (can be gzipped). By default the
  input is expected in the variable named by the VAR_SDF_INPUT
@@ -27,7 +27,7 @@ public class SDFReaderStep extends AbstractStep {
 
     /**
      * How to handle the name field (the first line of the CTAB block). See
-     * {@link com.squonk.reader.SDFReader} for details.
+     * {@link SDFReader} for details.
      */
     public static final String OPTION_NAME_FIELD_NAME = "nameFieldName";
     /**

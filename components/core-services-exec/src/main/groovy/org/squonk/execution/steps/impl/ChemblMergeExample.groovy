@@ -4,7 +4,7 @@ import org.squonk.execution.steps.StepDefinition
 import org.squonk.execution.steps.StepExecutor
 import org.squonk.execution.variable.PersistenceType
 import org.squonk.notebook.api.VariableKey
-import com.squonk.dataset.Dataset
+import org.squonk.dataset.Dataset
 
 import static org.squonk.execution.steps.StepDefinitionConstants.*
 import org.squonk.execution.variable.impl.MemoryVariableLoader

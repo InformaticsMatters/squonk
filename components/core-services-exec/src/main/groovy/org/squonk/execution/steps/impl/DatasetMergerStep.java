@@ -5,7 +5,7 @@ import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 import com.im.lac.types.BasicObject;
-import com.squonk.dataset.Dataset;
+import org.squonk.dataset.Dataset;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;

@@ -1,6 +1,5 @@
 package org.squonk.execution.variable;
 
-import com.squonk.dataset.Dataset;
 import org.squonk.notebook.api.VariableKey;
 
 import java.io.IOException;
