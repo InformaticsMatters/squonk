@@ -10,7 +10,7 @@ class ExampleCellServiceSpec extends Specification {
     void "test get cell defs"() {
 
         when:
-        def cells = ExampleCellService.createDescriptors()
+        def cells = ExampleCellService.createDefinitions()
 
         then:
         cells.size() > 0

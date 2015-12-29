@@ -4,7 +4,7 @@ import com.squonk.execution.variable.*
 import com.squonk.execution.variable.impl.*
 import com.im.lac.types.MoleculeObject
 import com.squonk.dataset.*
-import com.squonk.dataset.transform.TransformDefintions
+import com.squonk.dataset.transform.TransformDefinitions
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.execution.variable.PersistenceType
 import org.squonk.execution.variable.VariableManager
@@ -29,7 +29,7 @@ class ValueTransformerStepSpec extends Specification {
         ]
         Dataset ds = new Dataset(MoleculeObject.class, mols)
         
-        TransformDefintions tdefs = new TransformDefintions()
+        TransformDefinitions tdefs = new TransformDefinitions()
         .deleteField("foo")
         .renameField("hello", "goodbye")
         .convertField("num", Integer.class);

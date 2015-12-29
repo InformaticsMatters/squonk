@@ -1,0 +1,109 @@
+@startuml
+
+/'
+Basic attributes such as name, id, date_created,
+last_updated are omitted from all classes
+'/
+
+/'
+All methods implicitly pass in the current user to allow
+authorization to take place. e.g. Workspace.getLayers()
+returns the layers the current user has access to
+'/
+
+interface Workspace{
+{static} Workspace[] getWorkspaces()
+Layer[] getLayers()
+Layer getDefaultLayer()
+void addLayer(Layer)
+void removeLayer(Layer)
+Layer createLayer()
+Group[] getGroups()
+void addGroup(Group)
+void removeGroup(Group)
+Permission canPerformOperation(WorkspaceOperation)
+}
+
+interface Layer {
+<T extends LayerItem> T[] getItems(Class<T>)
+Permission canPerform(LayerOperation)
+<T extends LayerItem> T createItem(Class<T>)
+<T extends LayerItem> void addItem(T)
+<T extends LayerItem> void removeItem(T)
+}
+
+enum Permission {
+ALLOWED
+DENIED
+WARN
+}
+
+enum WorkspaceOperation {
+LAYERS_MANAGE
+USERS_MANAGE
+EXPORT_DATA
+NOTEBOOKS_PUBLISH_OUTSIDE_WORKSPACE
+CELLS_PUBLISH_OUTSIDE_WORKSPACE
+SECRETS_PUBLISH_OUTSIDE_WORKSPACE
+}
+
+enum LayerOperation {
+NOTEBOOK_ADD
+NOTEBOOK_CREATE
+NOTEBOOK_REMOVE
+NOTEBOOK_EXECUTE
+NOTEBOOK_EDIT
+NOTEBOOK_PUBLISH
+
+CELL_DEF_ADD_ANY
+CELL_DEF_ADD_TRUSTED
+CELL_DEF_CREATE
+CELL_DEF_REMOVE
+CELL_DEF_PUBLISH
+
+SECRET_ADD
+SECRET_CREATE
+SECRET_REMOVE
+SECRET_PUBLISH
+}
+
+interface Group {
+Group getOwner()
+User[] getUsers()
+addUser(User)
+removeUser(User)
+}
+
+interface User {
+}
+
+interface LayerItem {
+Group getOwner()
+void setOwner(Group)
+}
+
+interface CellDefinition {
+boolean isTrusted()
+}
+note bottom: Appear in cell pallette
+
+interface Notebook {
+}
+note bottom: Notebooks the user can\naccess in this workspace
+
+interface Secret {
+}
+note bottom: For things like connection credentials
+
+
+LayerItem <|-- Notebook
+LayerItem <|-- CellDefinition
+LayerItem <|-- Secret
+Workspace "*" *-- "*" Layer
+Workspace "*" o-- "*" Group
+Group     "*" o-- "*" User
+Layer     "*" o-- "*" Notebook
+Layer     "*" o-- "*" CellDefinition
+Layer     "*" o-- "*" Secret
+
+@enduml

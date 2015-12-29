@@ -120,16 +120,6 @@ public class CSVReaderStep extends AbstractStep {
     public static final String VAR_DATASET_OUTPUT = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
     @Override
-    public String[] getInputVariableNames() {
-        return new String[]{VAR_CSV_INPUT};
-    }
-
-    @Override
-    public String[] getOutputVariableNames() {
-        return new String[]{VAR_DATASET_OUTPUT};
-    }
-
-    @Override
     public void execute(VariableManager varman, CamelContext context) throws IOException {
         InputStream is = fetchMappedInput(VAR_CSV_INPUT, InputStream.class, PersistenceType.BYTES, varman);
         CSVReader reader = createReader(IOUtils.getGunzippedInputStream(is));

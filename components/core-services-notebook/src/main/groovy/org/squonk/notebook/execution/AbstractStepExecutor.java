@@ -1,5 +1,6 @@
 package org.squonk.notebook.execution;
 
+import org.apache.camel.impl.DefaultCamelContext;
 import org.squonk.execution.steps.StepDefinition;
 import org.squonk.notebook.api.BindingDTO;
 import org.squonk.notebook.api.CellDTO;
@@ -54,20 +55,26 @@ public abstract class AbstractStepExecutor implements QndCellExecutor {
 
         StepExecutor executor = new StepExecutor(cellName, manager);
         try {
-            executor.execute(steps, null);
+            // TODO - get the real camel context
+            executor.execute(steps, new DefaultCamelContext());
         } catch (Exception e) {
             throw new RuntimeException("Failed to execute cell", e);
         }
     }
 
     protected StepDefinition configureOption(StepDefinition step, CellDTO cell, String option) {
+    return configureOption(step, cell, option, false);
+    }
+
+    protected StepDefinition configureOption(StepDefinition step, CellDTO cell, String option, boolean required) {
         OptionDTO dto = cell.getOptionMap().get(option);
-        if (dto == null) {
-            if (LOG.isLoggable(Level.INFO)) {
+        if (dto == null || dto.getValue() == null) {
+            if (required) {
                 String values = cell.getOptionMap().keySet().stream().collect(Collectors.joining(","));
-                LOG.info("Option " + option + " not found. Possible values are " + values);
+                throw new IllegalStateException("Option " + option + " not defined. Possible values are: " + values);
+            } else {
+                return step;
             }
-            return step;
         } else {
             return step.withOption(option, dto.getValue());
         }

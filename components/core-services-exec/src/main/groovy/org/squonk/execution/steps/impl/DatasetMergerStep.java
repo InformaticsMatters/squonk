@@ -42,17 +42,6 @@ public class DatasetMergerStep extends AbstractStep {
 
     public static final String VAR_OUTPUT = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
-
-    @Override
-    public String[] getInputVariableNames() {
-        return new String[]{VAR_INPUT_1, VAR_INPUT_2, VAR_INPUT_3, VAR_INPUT_4, VAR_INPUT_5};
-    }
-
-    @Override
-    public String[] getOutputVariableNames() {
-        return new String[]{VAR_OUTPUT};
-    }
-
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         String mergeField = getOption(OPTION_MERGE_FIELD_NAME, String.class);

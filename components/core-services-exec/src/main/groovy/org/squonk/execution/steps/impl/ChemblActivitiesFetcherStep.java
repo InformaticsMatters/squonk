@@ -30,16 +30,6 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
     @Override
-    public String[] getInputVariableNames() {
-        return new String[]{};
-    }
-
-    @Override
-    public String[] getOutputVariableNames() {
-        return new String[]{VAR_OUTPUT_DATASET};
-    }
-
-    @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
         dumpConfig(Level.INFO);

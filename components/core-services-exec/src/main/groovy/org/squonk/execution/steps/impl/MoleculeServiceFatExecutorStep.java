@@ -26,16 +26,6 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
-    
-    @Override
-    public String[] getInputVariableNames() {
-        return new String[]{VAR_INPUT_DATASET};
-    }
-
-    @Override
-    public String[] getOutputVariableNames() {
-        return new String[]{VAR_OUTPUT_DATASET};
-    }
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {

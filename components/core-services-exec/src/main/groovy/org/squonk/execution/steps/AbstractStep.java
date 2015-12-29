@@ -75,6 +75,10 @@ public abstract class AbstractStep implements Step {
         return (mapped == null) ? name : mapped;
     }
 
+    protected <T> T fetchMappedInput(String internalName, Class<T> type, PersistenceType persistenceType, VariableManager varman) throws IOException {
+        return fetchMappedInput(internalName, type, persistenceType, varman, false);
+    }
+
 
     /**
      * Map the variable name using the variable mappings and fetch the
@@ -84,17 +88,27 @@ public abstract class AbstractStep implements Step {
      * @param internalName
      * @param type
      * @param varman
+     * @param required Whether a value is required
      * @return
      * @throws IOException
+     * @throws IllegalStateException If required is true and no value is present
      */
-    protected <T> T fetchMappedInput(String internalName, Class<T> type, PersistenceType persistenceType, VariableManager varman) throws IOException {
+    protected <T> T fetchMappedInput(String internalName, Class<T> type, PersistenceType persistenceType, VariableManager varman, boolean required) throws IOException {
         VariableKey mappedVar = mapInputVariable(internalName);
         if (mappedVar == null) {
-            return null;
+            if (required) {
+                throw new IllegalStateException("Mandatory input variable " + internalName + " not mapped to a notebook variable name");
+            } else {
+                return null;
+            }
         }
         //System.out.println("Internal name: " + internalName);
         //System.out.println("Mapped name: " + mappedVarName);
-        return fetchInput(mappedVar, type, persistenceType, varman);
+        T input = fetchInput(mappedVar, type, persistenceType, varman);
+        if (input == null && required) {
+            throw new IllegalStateException("Mandatory input variable " + internalName + " does not have a value");
+        }
+        return input;
     }
 
     /**

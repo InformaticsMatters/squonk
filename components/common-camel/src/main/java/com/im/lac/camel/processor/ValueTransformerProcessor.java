@@ -6,7 +6,7 @@ import com.squonk.dataset.transform.AbstractTransform;
 import com.squonk.dataset.transform.ConvertFieldTransform;
 import com.squonk.dataset.transform.DeleteFieldTransform;
 import com.squonk.dataset.transform.RenameFieldTransform;
-import com.squonk.dataset.transform.TransformDefintions;
+import com.squonk.dataset.transform.TransformDefinitions;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +55,7 @@ public class ValueTransformerProcessor implements Processor {
         return stream;
     }
 
-    public static ValueTransformerProcessor create(TransformDefintions txdefs) {
+    public static ValueTransformerProcessor create(TransformDefinitions txdefs) {
 
         ValueTransformerProcessor vtp = new ValueTransformerProcessor();
         for (AbstractTransform tx : txdefs.getTransforms()) {

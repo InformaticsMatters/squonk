@@ -9,29 +9,29 @@ import java.util.List;
  *
  * @author timbo
  */
-public class TransformDefintions {
+public class TransformDefinitions {
 
     private final List<AbstractTransform> transforms;
 
-    public TransformDefintions(@JsonProperty("transforms") List<AbstractTransform> transforms) {
+    public TransformDefinitions(@JsonProperty("transforms") List<AbstractTransform> transforms) {
         this.transforms = transforms;
     }
 
-    public TransformDefintions() {
+    public TransformDefinitions() {
         transforms = new ArrayList<>();
     }
 
-    public TransformDefintions deleteField(String fieldName) {
+    public TransformDefinitions deleteField(String fieldName) {
         transforms.add(new DeleteFieldTransform(fieldName));
         return this;
     }
     
-    public TransformDefintions renameField(String fieldName, String newName) {
+    public TransformDefinitions renameField(String fieldName, String newName) {
         transforms.add(new RenameFieldTransform(fieldName, newName));
         return this;
     }
     
-    public TransformDefintions convertField(String fieldName, Class type) {
+    public TransformDefinitions convertField(String fieldName, Class type) {
         transforms.add(new ConvertFieldTransform(fieldName, type));
         return this;
     }
@@ -41,14 +41,14 @@ public class TransformDefintions {
     }
 
     public static void main(String[] args) throws Exception {
-        TransformDefintions o = new TransformDefintions();
+        TransformDefinitions o = new TransformDefinitions();
         o.deleteField("foo").renameField("bar", "baz");
         ObjectMapper mapper = new ObjectMapper();
 
         String json = mapper.writeValueAsString(o);
         System.out.println("JSON: " + json);
 
-        TransformDefintions b = mapper.readValue(json, TransformDefintions.class);
+        TransformDefinitions b = mapper.readValue(json, TransformDefinitions.class);
         System.out.println("OBJ:  " + b);
         System.out.println("SIZE: " + b.getTransforms().size());
         

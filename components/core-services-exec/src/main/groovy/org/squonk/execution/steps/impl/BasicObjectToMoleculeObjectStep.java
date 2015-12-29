@@ -1,5 +1,6 @@
 package org.squonk.execution.steps.impl;
 
+import com.im.lac.types.TypesUtils;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.PersistenceType;
@@ -10,6 +11,8 @@ import com.squonk.dataset.Dataset;
 import com.squonk.dataset.DatasetProvider;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.apache.camel.CamelContext;
 
@@ -35,14 +38,16 @@ import org.apache.camel.CamelContext;
  */
 public class BasicObjectToMoleculeObjectStep extends AbstractStep {
 
+    private static final Logger LOG = Logger.getLogger(BasicObjectToMoleculeObjectStep.class.getName());
+
     /** The name of the value in the BasicObject that contains the structure */
-    public static final String OPTION_STRUCTURE_FIELD_NAME = "StructureFieldName";
+    public static final String OPTION_STRUCTURE_FIELD_NAME = "structureFieldName";
     /** Optional value for the structure format. e.g. "smiles". */
-    public static final String OPTION_STRUCTURE_FORMAT = "StructureFormat";
+    public static final String OPTION_STRUCTURE_FORMAT = "structureFormat";
     /** Option for whether to use the UUID of BasicObject as the UUID of the new MolecuelObject.
      * Default is true. Expects a boolean value.
      */  
-    public static final String OPTION_PRESERVE_UUID = "PreserveUuid";
+    public static final String OPTION_PRESERVE_UUID = "preserveUuid";
 
     /** The variable for the source Dataset&lt;BasicObject&gt; */
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
@@ -52,48 +57,20 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
     public static String DEFAULT_STRUCTURE_FIELD_NAME = "structure";
 
     @Override
-    public String[] getInputVariableNames() {
-        return new String[]{VAR_INPUT_DATASET};
-    }
-
-    @Override
-    public String[] getOutputVariableNames() {
-        return new String[]{VAR_OUTPUT_DATASET};
-    }
-
-    @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         String structureFieldName = getOption(OPTION_STRUCTURE_FIELD_NAME, String.class, DEFAULT_STRUCTURE_FIELD_NAME);
         String structureFormat = getOption(OPTION_STRUCTURE_FORMAT, String.class);
         boolean preserveUuid = getOption(OPTION_PRESERVE_UUID, Boolean.class, true);
 
         DatasetProvider p = fetchMappedInput(VAR_INPUT_DATASET, DatasetProvider.class, PersistenceType.DATASET, varman);
-        Dataset ds1 = p.getDataset();
-        Stream<BasicObject> stream1 = ds1.getStream();
-        Stream<MoleculeObject> stream2 = stream1.map((bo) -> {
-            return convert(bo, structureFieldName, structureFormat, preserveUuid);
-        });
-
-        Dataset<MoleculeObject> mods = new Dataset<>(MoleculeObject.class, stream2);
-
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, mods, PersistenceType.DATASET, varman);
-    }
-
-    private MoleculeObject convert(BasicObject bo, String structureFieldName, String format, boolean preserveUuid) {
-
-        Map<String, Object> vals = new LinkedHashMap<>();
-        String struct = null;
-        for (Map.Entry<String, Object> e : bo.getValues().entrySet()) {
-            if (structureFieldName.equalsIgnoreCase(e.getKey())) {
-                Object o = e.getValue();
-                if (o != null) {
-                    struct = o.toString();
-                }
-            } else {
-                vals.put(e.getKey(), e.getValue());
-            }
+        Dataset input = p.getDataset();
+        if (LOG.isLoggable(Level.FINE) && input.getMetadata() != null) {
+            LOG.fine("Input has " + input.getMetadata().getSize() + " items");
         }
-        return new MoleculeObject(preserveUuid ? bo.getUUID() : null, struct, format, vals);
+
+        Dataset<MoleculeObject> output = TypesUtils.convertBasicObjectDatasetToMoleculeObjectDataset(input, structureFieldName, structureFormat, preserveUuid);
+
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, output, PersistenceType.DATASET, varman);
     }
 
 }

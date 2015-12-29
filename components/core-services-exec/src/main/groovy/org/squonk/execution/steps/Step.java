@@ -18,22 +18,6 @@ public interface Step {
     String getOutputProducerName();
 
     /**
-     * The names of the input variables that are used internally. The actual
-     * variable names must match these or be mapped to these.
-     *
-     * @return The input variable names
-     */
-    String[] getInputVariableNames();
-
-    /**
-     * The names of the output variables that are used internally. The actual
-     * variables must be mapped to these.
-     *
-     * @return The output variables
-     */
-    String[] getOutputVariableNames();
-
-    /**
      * Configure the execution details of the step.
      *
      * @param producerName           The name for the producer of output variables

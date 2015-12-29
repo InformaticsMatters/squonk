@@ -541,7 +541,8 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
                 }
             }).onClose(() -> {
                 if (metadata == null) {
-                    metadata = new DatasetMetadata(type.get(), mappings, count.get());
+                    Class cls = type.get();
+                    metadata = new DatasetMetadata(cls == null ? Object.class : cls, mappings, count.get());
                 } else {
                     metadata.setSize(count.get());
                     metadata.getValueClassMappings().clear();

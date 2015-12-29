@@ -15,6 +15,7 @@ public interface StepDefinitionConstants {
     public static final String STEP_BASICOBJECT_TO_MOLECULEOBJECT = "org.squonk.execution.steps.impl.BasicObjectToMoleculeObjectStep";
     public static final String STEP_CHEMBL_ACTIVITIES_FETCHER = "org.squonk.execution.steps.impl.ChemblActivitiesFetcherStep";
     public static final String STEP_DATASET_MERGER = "org.squonk.execution.steps.impl.DatasetMergerStep";
+    public static final String STEP_TRUSTED_GROOVY_DATASET_SCRIPT = "org.squonk.execution.steps.impl.TrustedGroovyDatasetScriptStep";
     
     
     public static final String VARIABLE_INPUT_DATASET = "_InputDataset";

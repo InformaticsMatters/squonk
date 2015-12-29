@@ -20,16 +20,6 @@ public class DatasetWriterStep extends AbstractStep {
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
     @Override
-    public String[] getInputVariableNames() {
-        return new String[]{VAR_INPUT_DATASET};
-    }
-
-    @Override
-    public String[] getOutputVariableNames() {
-        return new String[]{VAR_OUTPUT_DATASET};
-    }
-
-    @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         // the assumption is that the dataset has PersistenceType.NONE
         DatasetProvider p = fetchMappedInput(VAR_INPUT_DATASET, DatasetProvider.class, PersistenceType.DATASET, varman);

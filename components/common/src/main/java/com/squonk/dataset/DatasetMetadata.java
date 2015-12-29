@@ -43,6 +43,7 @@ public class DatasetMetadata<T extends BasicObject> {
             @JsonProperty("valueClassMappings") Map<String, Class> valueClassMappings,
             @JsonProperty("size") int size,
             @JsonProperty("properties") Map<String, Object> properties) {
+        assert type != null;
         this.type = type;
         if (valueClassMappings != null) {
             this.valueClassMappings.putAll(valueClassMappings);
@@ -87,7 +88,7 @@ public class DatasetMetadata<T extends BasicObject> {
 
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder("DatasetMetadata [size:").append(size).append(" type:").append(type.getName()).append(" properties:[");
+        StringBuilder b = new StringBuilder("DatasetMetadata [size:").append(size).append(" type:").append(type == null ? "null" : type.getName()).append(" properties:[");
         int count = 0;
         for (Map.Entry<String, Object> e : properties.entrySet()) {
             if (count > 0) {

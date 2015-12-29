@@ -6,8 +6,10 @@ import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 import com.squonk.dataset.Dataset;
-import com.squonk.dataset.transform.TransformDefintions;
+import com.squonk.dataset.transform.TransformDefinitions;
 import org.apache.camel.CamelContext;
+
+import java.util.logging.Logger;
 
 /**
  *
@@ -15,19 +17,11 @@ import org.apache.camel.CamelContext;
  */
 public class ValueTransformerStep extends AbstractStep {
 
+    private static final Logger LOG = Logger.getLogger(ValueTransformerStep.class.getName());
+
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
-    public static final String OPTION_TRANSFORMS = "Transformers";
-
-    @Override
-    public String[] getInputVariableNames() {
-        return new String[]{VAR_INPUT_DATASET};
-    }
-
-    @Override
-    public String[] getOutputVariableNames() {
-        return new String[]{};
-    }
+    public static final String OPTION_TRANSFORMS = "transformDefinitions";
 
     /**
      * Add the transforms to the dataset Stream. NOTE: transforms will not occur
@@ -44,19 +38,26 @@ public class ValueTransformerStep extends AbstractStep {
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         Dataset ds = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, PersistenceType.DATASET, varman);
         if (ds == null) {
-            throw new IllegalStateException("Input field not found: " + VAR_INPUT_DATASET);
+            throw new IllegalStateException("Input variable not found: " + VAR_INPUT_DATASET);
         }
-        TransformDefintions txs = getOption(OPTION_TRANSFORMS, TransformDefintions.class);
+        LOG.info("Input Dataset: " + ds);
+        TransformDefinitions txs = getOption(OPTION_TRANSFORMS, TransformDefinitions.class);
         if (txs == null) {
             throw new IllegalStateException("Options not found: " + OPTION_TRANSFORMS);
         }
+        LOG.info("Transform Definitions: " + txs);
+
         ValueTransformerProcessor p = ValueTransformerProcessor.create(txs);
         p.execute(context.getTypeConverter(), ds);
+
+        LOG.info("Transforms complete");
         
         String outFldName = mapOutputVariable(VAR_OUTPUT_DATASET);
         if (outFldName != null) {
-            createVariable(outFldName, Dataset.class, ds, PersistenceType.NONE, varman);
+            createVariable(outFldName, Dataset.class, ds, PersistenceType.DATASET, varman);
         }
+
+        LOG.info("Results: " + ds.getMetadata());
     }
 
 }
