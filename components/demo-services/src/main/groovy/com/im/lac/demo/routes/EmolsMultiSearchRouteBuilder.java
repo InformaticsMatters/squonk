@@ -1,15 +1,15 @@
 package com.im.lac.demo.routes;
 
 import chemaxon.struc.Molecule;
-import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
-import com.im.lac.camel.chemaxon.processor.db.JChemDBSearcher;
+import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
+import org.squonk.camel.chemaxon.processor.db.JChemDBSearcher;
 import com.im.lac.camel.dataformat.MoleculeObjectDatasetJsonDataFormat;
 import com.im.lac.camel.dataformat.SimpleJsonDataFormat;
 import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.camel.processor.ValueTransformerProcessor;
 import com.im.lac.camel.util.CamelUtils;
-import com.im.lac.chemaxon.molecule.MoleculeObjectWriter;
-import com.im.lac.chemaxon.molecule.MoleculeUtils;
+import org.squonk.chemaxon.molecule.MoleculeObjectWriter;
+import org.squonk.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;

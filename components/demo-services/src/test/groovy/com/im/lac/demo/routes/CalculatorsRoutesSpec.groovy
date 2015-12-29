@@ -2,7 +2,7 @@ package com.im.lac.demo.routes
 
 import chemaxon.struc.Molecule
 import chemaxon.struc.MolBond
-import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor
+import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import com.im.lac.types.MoleculeObject
 import org.squonk.dataset.MoleculeObjectDataset

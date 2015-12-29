@@ -2,8 +2,8 @@ package com.im.lac.demo.routes;
 
 import com.im.lac.types.io.MoleculeObjectJsonConverter;
 import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
-import com.im.lac.chemaxon.molecule.MoleculeObjectUtils;
-import com.im.lac.chemaxon.molecule.MoleculeObjectWriter;
+import org.squonk.chemaxon.molecule.MoleculeObjectUtils;
+import org.squonk.chemaxon.molecule.MoleculeObjectWriter;
 import com.im.lac.demo.services.DbFileService;
 import com.im.lac.demo.model.*;
 import com.im.lac.types.MoleculeObject;

@@ -1,7 +1,7 @@
 package com.im.lac.demo.routes;
 
 import com.im.lac.camel.cdk.processor.CDKMolecularDescriptorProcessor;
-import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
+import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 import com.im.lac.cdk.molecule.MolecularDescriptors;
 import com.im.lac.types.MoleculeObject;
 

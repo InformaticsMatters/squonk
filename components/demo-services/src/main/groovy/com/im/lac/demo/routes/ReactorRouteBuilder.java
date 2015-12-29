@@ -1,6 +1,6 @@
 package com.im.lac.demo.routes;
 
-import com.im.lac.camel.chemaxon.processor.enumeration.ReactorProcessor;
+import org.squonk.camel.chemaxon.processor.enumeration.ReactorProcessor;
 import org.apache.camel.builder.RouteBuilder;
 
 /**

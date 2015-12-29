@@ -1,7 +1,7 @@
 package com.im.lac.demo.routes;
 
 import com.im.lac.camel.processor.HeaderPropertySetterProcessor;
-import com.im.lac.camel.chemaxon.processor.db.JChemDBSearcher;
+import org.squonk.camel.chemaxon.processor.db.JChemDBSearcher;
 import com.im.lac.types.MoleculeObject;
 import java.io.File;
 import java.io.InputStream;

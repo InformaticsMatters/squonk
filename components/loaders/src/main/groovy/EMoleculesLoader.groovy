@@ -1,16 +1,11 @@
-import chemaxon.jchem.db.*
-import chemaxon.marvin.io.*
 import chemaxon.util.ConnectionHandler
-import com.im.lac.camel.chemaxon.processor.db.DefaultJChemInserter
+import org.squonk.camel.chemaxon.processor.db.DefaultJChemInserter
 import com.im.lac.camel.processor.ChunkBasedReporter
-import com.im.lac.chemaxon.molecule.MoleculeUtils
+import org.squonk.chemaxon.molecule.MoleculeUtils
 import groovy.sql.Sql
-import java.sql.*
 import org.apache.camel.CamelContext
-import org.apache.camel.Exchange
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.builder.RouteBuilder
-import org.apache.camel.impl.DefaultCamelContext
 
 /**
  *

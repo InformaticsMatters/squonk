@@ -1,8 +1,5 @@
 package com.im.squonk.rdkit.services
 
-import spock.lang.Specification
-
-import com.im.lac.camel.chemaxon.processor.ChemAxonMoleculeProcessor
 import com.im.lac.camel.testsupport.CamelSpecificationBase
 import com.im.lac.types.MoleculeObject
 import com.im.lac.camel.CamelCommonConstants

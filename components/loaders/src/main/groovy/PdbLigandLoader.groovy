@@ -2,21 +2,15 @@
 import chemaxon.jchem.db.*
 import chemaxon.marvin.io.*
 import chemaxon.util.ConnectionHandler
-import com.im.lac.camel.chemaxon.processor.db.AbstractUpdateHandlerProcessor
-import chemaxon.formats.MolImporter
-import com.im.lac.camel.chemaxon.processor.db.DefaultJChemInserter
+import org.squonk.camel.chemaxon.processor.db.AbstractUpdateHandlerProcessor
 import com.im.lac.camel.processor.ChunkBasedReporter
-import com.im.lac.chemaxon.molecule.MoleculeUtils
+import org.squonk.chemaxon.molecule.MoleculeUtils
 import groovy.sql.Sql
-import java.sql.*
 import org.apache.camel.CamelContext
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.builder.RouteBuilder
-import org.apache.camel.impl.DefaultCamelContext
-import org.apache.camel.language.bean.BeanLanguage
-import static org.apache.camel.builder.PredicateBuilder.not
 
 /**
  *
@@ -86,7 +80,7 @@ class PdbLigandLoader extends AbstractLoader {
                     .split().method(MoleculeUtils.class, 'mrecordIterator').streaming()
                     //.log('Processing line ${header.CamelSplitIndex}')
                     //.filter().expression(bean(MoleculeUtils.class, "isNotEmpty"))
-                    .filter().groovy("com.im.lac.chemaxon.molecule.MoleculeUtils.heavyAtomCount(request.body.string) > 5")
+                    .filter().groovy("MoleculeUtils.heavyAtomCount(request.body.string) > 5")
                     //.filter().groovy("1 == 2")
                     .process(updateHandlerProcessor)
                     .process(new ChunkBasedReporter(props.reportingChunk))

@@ -19,10 +19,10 @@
         <!-- note: instead of using a XML file we can also define the routes in Java code in a RouteBuilder class -->
         <!--param-value>com.im.lac.demo.SimpleRouteBuilder</param-value-->
         <param-value>
-            com.im.lac.chemaxon.services.ChemaxonCalculatorsRouteBuilder,
-            com.im.lac.chemaxon.services.ChemaxonDescriptorsRouteBuilder,
-            com.im.lac.chemaxon.services.ChemaxonRestRouteBuilder
-          </param-value>
+            org.squonk.chemaxon.services.ChemaxonCalculatorsRouteBuilder,
+            org.squonk.chemaxon.services.ChemaxonDescriptorsRouteBuilder,
+            org.squonk.chemaxon.services.ChemaxonRestRouteBuilder
+        </param-value>
     </context-param>
     
     <context-param>
@@ -31,7 +31,7 @@
         must use the JndiRegistry as well. And likewise if the servlet is org.apache.camel.component.servletlistener.SimpleCamelServletContextListener 
         then the CamelContextLifecycle must use the SimpleRegistry -->
         <param-name>CamelContextLifecycle</param-name>
-        <param-value>com.im.lac.chemaxon.services.CamelLifeCycle</param-value>
+        <param-value>org.squonk.chemaxon.services.CamelLifeCycle</param-value>
     </context-param>
 
     

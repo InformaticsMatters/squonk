@@ -6,7 +6,7 @@ import chemaxon.struc.Molecule
 import chemaxon.formats.MolImporter
 import chemaxon.calculations.clean.Cleaner
 import groovy.sql.Sql
-import com.im.lac.chemaxon.molecule.MoleculeUtils
+import org.squonk.chemaxon.molecule.MoleculeUtils
 
 /**
  *
