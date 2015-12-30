@@ -19,8 +19,8 @@
         <!-- note: instead of using a XML file we can also define the routes in Java code in a RouteBuilder class -->
         <!--param-value>com.im.lac.demo.SimpleRouteBuilder</param-value-->
         <param-value>
-            com.im.squonk.rdkit.services.RdkitCalculatorsRouteBuilder,
-            com.im.squonk.rdkit.services.RdkitRestRouteBuilder</param-value>
+            org.squonk.rdkit.services.RdkitCalculatorsRouteBuilder,
+            org.squonk.rdkit.services.RdkitRestRouteBuilder</param-value>
     </context-param>
     
     <context-param>
@@ -29,7 +29,7 @@
         must use the JndiRegistry as well. And likewise if the servlet is org.apache.camel.component.servletlistener.SimpleCamelServletContextListener 
         then the CamelContextLifecycle must use the SimpleRegistry -->
         <param-name>CamelContextLifecycle</param-name>
-        <param-value>com.im.squonk.rdkit.services.CamelLifeCycle</param-value>
+        <param-value>org.squonk.rdkit.services.CamelLifeCycle</param-value>
     </context-param>
 
     
