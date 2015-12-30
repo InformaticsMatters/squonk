@@ -3,7 +3,7 @@ package org.squonk.camel.chemaxon.processor.screening;
 import chemaxon.formats.MolFormatException;
 import chemaxon.struc.Molecule;
 import com.chemaxon.descriptors.common.Descriptor;
-import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
+import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import org.squonk.chemaxon.molecule.MoleculeUtils;
 import org.squonk.chemaxon.screening.MoleculeScreener;
 import com.im.lac.types.MoleculeObject;

@@ -4,7 +4,7 @@ import chemaxon.jchem.db.DatabaseProperties
 import chemaxon.jchem.db.StructureTableOptions
 import chemaxon.jchem.db.UpdateHandler
 import chemaxon.util.ConnectionHandler
-import com.im.lac.camel.testsupport.CamelSpecificationBase
+import org.squonk.camel.testsupport.CamelSpecificationBase
 import com.im.lac.types.MoleculeObject
 import org.apache.camel.builder.RouteBuilder
 import spock.lang.Shared

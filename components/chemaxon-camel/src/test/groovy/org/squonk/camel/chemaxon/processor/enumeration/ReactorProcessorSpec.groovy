@@ -1,6 +1,6 @@
 package org.squonk.camel.chemaxon.processor.enumeration
 
-import com.im.lac.camel.testsupport.CamelSpecificationBase
+import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
 
 /**

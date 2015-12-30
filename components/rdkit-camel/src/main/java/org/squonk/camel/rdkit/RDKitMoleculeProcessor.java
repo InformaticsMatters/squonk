@@ -1,6 +1,6 @@
 package org.squonk.camel.rdkit;
 
-import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
+import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import org.squonk.rdkit.mol.EvaluatorDefintion;
 import org.squonk.rdkit.mol.MolEvaluator;
 import org.squonk.rdkit.mol.MolReader;

@@ -73,7 +73,7 @@ import com.im.lac.types.MoleculeObject
 
 println "input: $input ${input.metadata}"
 def s = input.stream.peek {
-    it.values['hero'] ='tim'
+    it.values['hero'] ='superman'
 }
 return new Dataset(input.metadata.type, s)'''
 

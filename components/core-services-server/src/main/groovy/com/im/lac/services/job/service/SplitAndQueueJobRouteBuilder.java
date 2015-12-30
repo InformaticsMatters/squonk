@@ -1,7 +1,7 @@
 package com.im.lac.services.job.service;
 
-import com.im.lac.camel.CamelCommonConstants;
-import com.im.lac.camel.dataformat.MoleculeObjectJsonDataFormat;
+import org.squonk.camel.CamelCommonConstants;
+import org.squonk.camel.dataformat.MoleculeObjectJsonDataFormat;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.services.ServerConstants;
 import com.im.lac.job.jobdef.JobStatus;

@@ -1,6 +1,6 @@
 package org.squonk.cdk.services;
 
-import com.im.lac.camel.CamelCommonConstants;
+import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.cdk.processor.CDKMolecularDescriptorProcessor;
 import org.squonk.cdk.molecule.MolecularDescriptors;
 import org.apache.camel.builder.RouteBuilder;

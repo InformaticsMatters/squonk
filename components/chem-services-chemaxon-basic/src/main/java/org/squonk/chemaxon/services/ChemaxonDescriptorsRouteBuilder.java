@@ -5,7 +5,7 @@ import com.chemaxon.descriptors.fingerprints.ecfp.EcfpParameters;
 import com.chemaxon.descriptors.fingerprints.pf2d.PfGenerator;
 import com.chemaxon.descriptors.fingerprints.pf2d.PfParameters;
 import com.chemaxon.descriptors.metrics.BinaryMetrics;
-import com.im.lac.camel.CamelCommonConstants;
+import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.chemaxon.processor.clustering.SphereExclusionClusteringProcessor;
 import org.squonk.camel.chemaxon.processor.screening.MoleculeScreenerProcessor;
 import org.squonk.chemaxon.screening.MoleculeScreener;

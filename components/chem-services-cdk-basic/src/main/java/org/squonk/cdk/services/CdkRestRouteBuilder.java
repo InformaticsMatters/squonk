@@ -1,6 +1,6 @@
 package org.squonk.cdk.services;
 
-import com.im.lac.camel.util.CamelUtils;
+import org.squonk.camel.util.CamelUtils;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
 import com.im.lac.services.AccessMode;

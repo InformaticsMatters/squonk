@@ -1,6 +1,6 @@
 package com.im.lac.demo.routes;
 
-import com.im.lac.camel.dataformat.MoleculeObjectJsonDataFormat;
+import org.squonk.camel.dataformat.MoleculeObjectJsonDataFormat;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 

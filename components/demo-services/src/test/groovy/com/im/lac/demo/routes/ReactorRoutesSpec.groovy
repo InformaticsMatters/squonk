@@ -1,8 +1,6 @@
 package com.im.lac.demo.routes
 
-import com.im.lac.camel.testsupport.CamelSpecificationBase
-import com.im.lac.types.MoleculeObject
-import java.util.stream.*
+import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.util.IOHelper
 

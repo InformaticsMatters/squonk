@@ -1,6 +1,6 @@
 package org.squonk.rdkit.services;
 
-import com.im.lac.camel.CamelCommonConstants;
+import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.rdkit.RDKitMoleculeProcessor;
 import org.apache.camel.builder.RouteBuilder;
 import static org.squonk.rdkit.mol.EvaluatorDefintion.Function.*;

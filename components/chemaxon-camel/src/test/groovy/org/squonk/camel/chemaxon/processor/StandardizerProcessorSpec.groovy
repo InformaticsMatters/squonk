@@ -1,7 +1,7 @@
 package org.squonk.camel.chemaxon.processor
 
 import chemaxon.struc.Molecule
-import com.im.lac.camel.testsupport.CamelSpecificationBase
+import org.squonk.camel.testsupport.CamelSpecificationBase
 import com.im.lac.types.MoleculeObject
 import org.apache.camel.builder.RouteBuilder
 

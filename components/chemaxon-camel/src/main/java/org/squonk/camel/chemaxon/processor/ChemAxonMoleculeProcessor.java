@@ -2,7 +2,7 @@ package org.squonk.camel.chemaxon.processor;
 
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.struc.Molecule;
-import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
+import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.util.ResultExtractor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 import org.squonk.chemaxon.molecule.MoleculeEvaluator;

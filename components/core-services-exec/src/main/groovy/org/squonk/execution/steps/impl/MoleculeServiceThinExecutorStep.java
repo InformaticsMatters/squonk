@@ -1,6 +1,6 @@
 package org.squonk.execution.steps.impl;
 
-import com.im.lac.camel.util.CamelUtils;
+import org.squonk.camel.util.CamelUtils;
 import com.im.lac.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;

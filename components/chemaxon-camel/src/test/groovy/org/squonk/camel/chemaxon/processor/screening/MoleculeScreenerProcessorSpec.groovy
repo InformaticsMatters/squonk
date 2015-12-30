@@ -3,7 +3,7 @@ package org.squonk.camel.chemaxon.processor.screening
 import chemaxon.formats.MolImporter
 import com.chemaxon.descriptors.fingerprints.pf2d.PfGenerator
 import com.chemaxon.descriptors.fingerprints.pf2d.PfParameters
-import com.im.lac.camel.testsupport.CamelSpecificationBase
+import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.squonk.chemaxon.screening.MoleculeScreener
 import org.squonk.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.types.MoleculeObject

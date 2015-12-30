@@ -1,6 +1,6 @@
 package com.im.lac.services.job.service.adapters;
 
-import com.im.lac.camel.util.CamelUtils;
+import org.squonk.camel.util.CamelUtils;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.logging.Logger;

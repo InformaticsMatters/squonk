@@ -1,6 +1,6 @@
 package org.squonk.chemaxon.services;
 
-import com.im.lac.camel.CamelCommonConstants;
+import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 
 import org.apache.camel.builder.RouteBuilder;

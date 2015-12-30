@@ -1,6 +1,6 @@
 import chemaxon.util.ConnectionHandler
 import org.squonk.camel.chemaxon.processor.db.DefaultJChemInserter
-import com.im.lac.camel.processor.ChunkBasedReporter
+import org.squonk.camel.processor.ChunkBasedReporter
 import org.squonk.chemaxon.molecule.MoleculeUtils
 import groovy.sql.Sql
 import org.apache.camel.CamelContext

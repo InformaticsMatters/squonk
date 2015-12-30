@@ -5,7 +5,7 @@ import chemaxon.jchem.db.JChemSearch
 import chemaxon.sss.search.JChemSearchOptions
 import chemaxon.struc.Molecule
 import chemaxon.util.ConnectionHandler
-import com.im.lac.camel.testsupport.CamelSpecificationBase
+import org.squonk.camel.testsupport.CamelSpecificationBase
 
 import groovy.sql.Sql
 import java.sql.*

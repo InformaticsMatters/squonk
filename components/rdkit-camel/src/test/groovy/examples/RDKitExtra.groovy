@@ -1,10 +1,7 @@
 package example
 
-import com.im.lac.camel.testsupport.CamelSpecificationBase
-import java.util.zip.GZIPInputStream
+import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
-import spock.lang.FailsWith
-import spock.lang.Shared
 
 class RDKitExtraTest extends CamelSpecificationBase {
     

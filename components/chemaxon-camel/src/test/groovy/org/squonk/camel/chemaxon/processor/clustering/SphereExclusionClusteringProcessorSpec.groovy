@@ -2,7 +2,7 @@ package org.squonk.camel.chemaxon.processor.clustering
 
 import com.chemaxon.descriptors.fingerprints.ecfp.*
 import com.chemaxon.descriptors.metrics.BinaryMetrics
-import com.im.lac.camel.testsupport.CamelSpecificationBase
+import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.squonk.chemaxon.molecule.MoleculeObjectUtils
 import com.im.lac.types.MoleculeObject;
 import org.apache.camel.builder.RouteBuilder

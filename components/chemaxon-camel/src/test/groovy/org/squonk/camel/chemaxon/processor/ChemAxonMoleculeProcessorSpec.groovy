@@ -5,7 +5,7 @@ import org.squonk.dataset.Dataset
 import org.squonk.dataset.MoleculeObjectDataset
 import java.util.stream.*
 import org.squonk.chemaxon.molecule.MoleculeObjectUtils
-import com.im.lac.camel.testsupport.CamelSpecificationBase
+import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
 
 /**

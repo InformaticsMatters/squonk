@@ -1,6 +1,6 @@
 package org.squonk.camel.cdk.processor;
 
-import com.im.lac.camel.processor.StreamingMoleculeObjectSourcer;
+import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import org.squonk.cdk.molecule.DescriptorCalculator;
 import org.squonk.cdk.molecule.MolecularDescriptors;
 import com.im.lac.types.MoleculeObject;

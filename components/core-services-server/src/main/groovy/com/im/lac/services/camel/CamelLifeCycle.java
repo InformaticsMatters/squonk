@@ -2,7 +2,7 @@ package com.im.lac.services.camel;
 
 import com.im.lac.services.ServerConstants;
 import com.im.lac.services.dataset.service.DatasetHandler;
-import com.im.lac.camel.CamelCommonConstants;
+import org.squonk.camel.CamelCommonConstants;
 import com.im.lac.services.dataset.service.DatasetService;
 import com.im.lac.services.discovery.service.ServiceDescriptorStore;
 import com.im.lac.services.user.UserService;

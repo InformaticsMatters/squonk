@@ -3,9 +3,9 @@ package org.squonk.chemaxon.services
 import chemaxon.struc.Molecule
 import chemaxon.struc.MolBond
 import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor
-import com.im.lac.camel.testsupport.CamelSpecificationBase
+import org.squonk.camel.testsupport.CamelSpecificationBase
 import com.im.lac.types.MoleculeObject
-import com.im.lac.camel.CamelCommonConstants
+import org.squonk.camel.CamelCommonConstants
 import com.im.lac.util.StreamProvider
 import org.apache.camel.CamelContext
 import org.apache.camel.builder.RouteBuilder

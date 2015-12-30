@@ -2,7 +2,7 @@ package com.im.lac.services.job.service;
 
 import com.im.lac.services.ServerConstants;
 import com.im.lac.job.jobdef.JobStatus;
-import com.im.lac.camel.CamelCommonConstants;
+import org.squonk.camel.CamelCommonConstants;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
 import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition;
 import static com.im.lac.services.job.service.JobServiceRouteBuilder.ROUTE_SUBMIT_PREFIX;

@@ -1,6 +1,6 @@
 package org.squonk.cdk.services;
 
-import com.im.lac.camel.CamelCommonConstants;
+import org.squonk.camel.CamelCommonConstants;
 import java.util.logging.Logger;
 import org.apache.camel.builder.ThreadPoolProfileBuilder;
 import org.apache.camel.component.servletlistener.CamelContextLifecycle;

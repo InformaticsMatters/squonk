@@ -1,8 +1,8 @@
 package org.squonk.rdkit.services
 
-import com.im.lac.camel.testsupport.CamelSpecificationBase
+import org.squonk.camel.testsupport.CamelSpecificationBase
 import com.im.lac.types.MoleculeObject
-import com.im.lac.camel.CamelCommonConstants
+import org.squonk.camel.CamelCommonConstants
 import com.im.lac.util.StreamProvider
 import static RdkitCalculatorsRouteBuilder.*
 import java.util.stream.*

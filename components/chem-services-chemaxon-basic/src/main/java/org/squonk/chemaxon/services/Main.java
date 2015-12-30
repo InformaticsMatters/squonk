@@ -1,6 +1,6 @@
 package org.squonk.chemaxon.services;
 
-import com.im.lac.camel.CamelCommonConstants;
+import org.squonk.camel.CamelCommonConstants;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.camel.CamelContext;

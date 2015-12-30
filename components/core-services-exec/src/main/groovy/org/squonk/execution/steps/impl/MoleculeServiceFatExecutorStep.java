@@ -1,7 +1,7 @@
 package org.squonk.execution.steps.impl;
 
 import org.squonk.execution.steps.AbstractStep;
-import com.im.lac.camel.util.CamelUtils;
+import org.squonk.camel.util.CamelUtils;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
