@@ -8,20 +8,22 @@ import com.im.lac.services.ServerConstants;
 import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.services.job.service.AsyncJobRouteBuilder;
 import org.squonk.types.io.JsonHandler;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+
+import java.util.*;
+import java.util.logging.Logger;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
+import org.squonk.util.IOUtils;
 
 /**
- *
  * @author timbo
  */
 public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
+
+    private static final Logger LOG = Logger.getLogger(ServiceDiscoveryRouteBuilder.class.getName());
 
     public static final String ROUTE_REQUEST = "direct:request";
     private static final String DOCKER_IP = System.getenv("DOCKER_IP") != null ? System.getenv("DOCKER_IP") : "localhost";
@@ -38,55 +40,69 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
      */
     protected int timerDelay = 5 * 60 * 1000;
 
-    List<String> locations = Arrays.asList(new String[]{
+    final List<String> locations = new ArrayList<>();
 
-        "http://demos.informaticsmatters.com:9080/chem-services-cdk-basic/rest/v1/calculators",
-        "http://demos.informaticsmatters.com:9080/chem-services-chemaxon-basic/rest/v1/calculators",
-        "http://demos.informaticsmatters.com:9080/chem-services-chemaxon-basic/rest/v1/descriptors",
-        "http://demos.informaticsmatters.com:9080/chem-services-rdkit-basic/rest/v1/calculators",
-        "http://demos.informaticsmatters.com:8000/rdkit_screen",
-        "http://demos.informaticsmatters.com:8000/rdkit_cluster"
-            
-            
-        
-        //"http://squonk-javachemservices.elasticbeanstalk.com/chem-services-chemaxon-basic/rest/v1/calculators",
-        //"http://squonk-javachemservices.elasticbeanstalk.com/chem-services-chemaxon-basic/rest/v1/descriptors",
-        //"http://squonk-javachemservices.elasticbeanstalk.com/chem-services-cdk-basic/rest/v1/calculators",
-        //"http://dockerrdkitservices-env.elasticbeanstalk.com/rdkit_cluster",
-        //"http://dockerrdkitservices-env.elasticbeanstalk.com/rdkit_screen"
-    });
+    public ServiceDiscoveryRouteBuilder() {
+
+        // prod is http://demos.informaticsmatters.com:9080
+        String basicChemServicesUrl = IOUtils.getConfiguration("SQUONK_BASIC_CHEM_SERVICES_URL", null);
+        // prod is http://demos.informaticsmatters.com:8000
+        String rdkitPythonServicesUrl = IOUtils.getConfiguration("SQUONK_RDKIT_CHEM_SERVICES_URL", null);
+
+        if (basicChemServicesUrl != null) {
+            LOG.info("Enabling basic chem services from " + basicChemServicesUrl);
+            locations.add(basicChemServicesUrl + "/chem-services-cdk-basic/rest/v1/calculators");
+            locations.add(basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/v1/calculators");
+            locations.add(basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/v1/descriptors");
+            locations.add(basicChemServicesUrl + "/chem-services-rdkit-basic/rest/v1/calculators");
+        } else {
+            LOG.warning("Environment variable SQUONK_BASIC_CHEM_SERVICES_URL not defined. Basic Chem services willl not be available");
+        }
+
+        if (rdkitPythonServicesUrl != null) {
+            LOG.info("Enabling RDKit python services from " + rdkitPythonServicesUrl);
+            locations.add(rdkitPythonServicesUrl + "/rdkit_screen");
+            locations.add(rdkitPythonServicesUrl + "/rdkit_cluster");
+        } else {
+            LOG.warning("Environment variable SQUONK_RDKIT_CHEM_SERVICES_URL not defined. RDKit Python services willl not be available");
+        }
+    }
+
+    public ServiceDiscoveryRouteBuilder(Collection<String> locations) {
+        this.locations.addAll(locations);
+    }
 
     public static final ServiceDescriptor[] TEST_SERVICE_DESCRIPTORS = new ServiceDescriptor[]{
-        new ServiceDescriptor(
-        "test.noop",
-        "NOOP Service",
-        "Does nothing other than create a Job",
-        new String[]{"testing"},
-        null,
-        new String[]{"/Testing"},
-        "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
-        null,
-        new String[]{"testing"},
-        Object.class, // inputClass
-        Object.class, // outputClass
-        Metadata.Type.ITEM, // inputType
-        Metadata.Type.ITEM, // outputType
-        new AccessMode[]{
-            new AccessMode(
-            "donothing",
-            "Immediate execution",
-            "Execute as an asynchronous REST web service",
-            "valueIsIgnored", // endpoint
-            false, // URL is relative
-            DoNothingJobDefinition.class,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null)
-        }
-        ),
+            new ServiceDescriptor(
+                    "test.noop",
+                    "NOOP Service",
+                    "Does nothing other than create a Job",
+                    new String[]{"testing"},
+                    null,
+                    new String[]{"/Testing"},
+                    "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
+                    null,
+                    new String[]{"testing"},
+                    Object.class, // inputClass
+                    Object.class, // outputClass
+                    Metadata.Type.ITEM, // inputType
+                    Metadata.Type.ITEM, // outputType
+                    new AccessMode[]{
+                            new AccessMode(
+                                    "donothing",
+                                    "Immediate execution",
+                                    "Execute as an asynchronous REST web service",
+                                    "valueIsIgnored", // endpoint
+                                    false, // URL is relative
+                                    DoNothingJobDefinition.class,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null)
+                    }
+            ),
 //        new ServiceDescriptor(
 //        "test.echo.http",
 //        "Echo Service (HTTP)",
@@ -118,38 +134,38 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 //            null)
 //        }
 //        ),
-        new ServiceDescriptor(
-        "test.echo.local",
-        "Echo Service (local)",
-        "Reads a dataset and writes it back as a new dataset",
-        new String[]{"testing"
-        },
-        null,
-        new String[]{"/Testing"
-        },
-        "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
-        null,
-        new String[]{"testing"},
-        Object.class, // inputClass
-        Object.class, // outputClass
-        Metadata.Type.ARRAY, // inputType
-        Metadata.Type.ARRAY, // outputType
-        new AccessMode[]{
-            new AccessMode(
-            "asyncLocal",
-            "Immediate execution",
-            "Execute as an asynchronous REST web service",
-            AsyncJobRouteBuilder.ROUTE_DUMMY, // the direct:simpleroute endpoint
-            false, // URL is relative
-            AsyncLocalProcessDatasetJobDefinition.class,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null)
-        }
-        )
+            new ServiceDescriptor(
+                    "test.echo.local",
+                    "Echo Service (local)",
+                    "Reads a dataset and writes it back as a new dataset",
+                    new String[]{"testing"
+                    },
+                    null,
+                    new String[]{"/Testing"
+                    },
+                    "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
+                    null,
+                    new String[]{"testing"},
+                    Object.class, // inputClass
+                    Object.class, // outputClass
+                    Metadata.Type.ARRAY, // inputType
+                    Metadata.Type.ARRAY, // outputType
+                    new AccessMode[]{
+                            new AccessMode(
+                                    "asyncLocal",
+                                    "Immediate execution",
+                                    "Execute as an asynchronous REST web service",
+                                    AsyncJobRouteBuilder.ROUTE_DUMMY, // the direct:simpleroute endpoint
+                                    false, // URL is relative
+                                    AsyncLocalProcessDatasetJobDefinition.class,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null)
+                    }
+            )
     };
 
     @Override
@@ -188,7 +204,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                 })
                 .log(LoggingLevel.DEBUG, "Site ${header[" + Exchange.HTTP_URI + "]} updated.")
                 .endChoice()
-                .otherwise() // anything else and we remove the service descriptor defintions from the store
+                .otherwise() // anything else and we remove the service descriptor definitions from the store
                 .log(LoggingLevel.INFO, "Site ${header[" + Exchange.HTTP_URI + "]} not responding. Removing from available services.")
                 .process((Exchange exch) -> {
                     ServiceDescriptorStore store = getServiceDescriptorStore(exch.getContext());

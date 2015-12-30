@@ -7,6 +7,8 @@ import org.apache.camel.impl.SimpleRegistry
 import spock.lang.Ignore
 import spock.lang.Specification
 
+import static com.im.lac.services.discovery.service.ServiceDiscoveryRouteBuilder.TEST_SERVICE_DESCRIPTORS
+
 /**
  *
  * @author timbo
@@ -16,7 +18,9 @@ class ServiceDiscoveryRouteBuilderSpec extends Specification {
     void "test service discovery"() {
         setup:     
         SimpleRegistry registry = new SimpleRegistry()
-        registry.put(ServerConstants.SERVICE_DESCRIPTOR_STORE, new ServiceDescriptorStore())
+        ServiceDescriptorStore serviceDescriptorStore = new ServiceDescriptorStore();
+        serviceDescriptorStore.addServiceDescriptors("ignored", TEST_SERVICE_DESCRIPTORS);
+        registry.put(ServerConstants.SERVICE_DESCRIPTOR_STORE, serviceDescriptorStore)
         DefaultCamelContext context = new DefaultCamelContext(registry)
         ServiceDiscoveryRouteBuilder rb = new ServiceDiscoveryRouteBuilder()
         rb.timerRepeats = 1
