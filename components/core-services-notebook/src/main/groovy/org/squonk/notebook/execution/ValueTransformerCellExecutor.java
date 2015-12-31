@@ -55,7 +55,7 @@ public class ValueTransformerCellExecutor extends AbstractStepExecutor {
 
         try {
             ScriptEngine engine = GroovyScriptExecutor.createScriptEngine(this.getClass().getClassLoader());
-            String script = GroovyScriptExecutor.addImportsToScript((String)dto.getValue(), new String[] {"TransformDefinitions"});
+            String script = GroovyScriptExecutor.addImportsToScript((String)dto.getValue(), new String[] {"org.squonk.dataset.transform.TransformDefinitions"});
             TransformDefinitions txs = GroovyScriptExecutor.executeAndReturnValue(TransformDefinitions.class, engine, script, null);
             step.withOption(ValueTransformerStep.OPTION_TRANSFORMS, txs);
 

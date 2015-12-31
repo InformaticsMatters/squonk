@@ -49,8 +49,7 @@ integrationTest {
     finalizedBy rootProject.tasks.integrationTestEnvShutdown
 }
 
-task copyDependencies(type: Copy) {
-    
+task copyDependencies(type: Sync) {
     from configurations.compile
     into 'lib'
 }
