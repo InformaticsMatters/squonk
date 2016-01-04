@@ -1,7 +1,11 @@
 package com.im.lac.services.client;
 
+import com.im.lac.client.AbstractHttpClient;
 import com.im.lac.services.CommonConstants;
 import com.im.lac.services.ServiceDescriptor;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.squonk.types.io.JsonHandler;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,15 +24,13 @@ import org.apache.http.util.EntityUtils;
  *
  * @author timbo
  */
-public class ServicesClient {
+public class ServicesClient extends AbstractHttpClient {
 
     private static final Logger LOG = Logger.getLogger(ServicesClient.class.getName());
 
     private static final String DEFAULT_BASE_URL = "http://demos.informaticsmatters.com:8080/coreservices/rest/v1/services";
 
     private final String base;
-    private final CloseableHttpClient httpclient = HttpClients.createDefault();
-    private final JsonHandler jsonHandler = new JsonHandler();
 
     public ServicesClient(String baseUrl) {
         this.base = baseUrl;
@@ -60,8 +62,19 @@ public class ServicesClient {
                 throw new IOException("Request failed: " + response.getStatusLine().toString());
             }
             InputStream is = entity.getContent();
-            return jsonHandler.streamFromJson(is, ServiceDescriptor.class, true).collect(Collectors.toList());
+            return JsonHandler.getInstance().streamFromJson(is, ServiceDescriptor.class, true).collect(Collectors.toList());
         }
     }
+
+//    public List<ServiceDescriptor> getServiceDefinitions2(String username) throws IOException {
+//        if (username == null) {
+//            throw new IllegalStateException("Username must be specified");
+//        }
+//        URIBuilder b = new URIBuilder().setPath(base);
+//        NameValuePair[] headers = new NameValuePair[] {new BasicNameValuePair(CommonConstants.HEADER_SQUONK_USERNAME, username)};
+//        try (InputStream is = executeGetAsInputStream(b, headers)) {
+//            return JsonHandler.getInstance().streamFromJson(is, ServiceDescriptor.class, true).collect(Collectors.toList());
+//        }
+//    }
 
 }

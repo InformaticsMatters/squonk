@@ -1,0 +1,9 @@
+rabbitmq:
+    build: .
+    ports:
+    - "5672:5672"
+    - "15672:15672"
+    hostname: rabbitmq
+    environment: 
+        RABBITMQ_ERLANG_COOKIE: topsecret
+

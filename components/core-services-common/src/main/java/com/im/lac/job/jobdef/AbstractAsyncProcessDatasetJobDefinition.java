@@ -9,15 +9,14 @@ import java.util.Map;
  * class. Typical usage:
  * <ol>
  * <li>Start with a {@link ServiceDescriptor} and a chosen {@link AccessMode}. This defines the service endpoint.</li>
- * <li>The {@link AccessMode.getJobType()} method defines the type of JobDefinition that is needed</li>
+ * <li>The {@link AccessMode#getJobType()} method defines the type of JobDefinition that is needed</li>
  * <li>Create a new instance of the JobDefinition class using the zero arg constructor.</li>
  * <li>Based of your context there will be a limited number of interfaces that the JobDefinition
  * might implement. In this case it will implement {@link ServiceExecutionJobDefinition} and {@link ProcessDatasetJobDefinition}</li>
  * <li>For each of these possible interfaces check whether the JobDefintion implements the appropriate interface and if so 
  * call the corresponding method in the interface. e.g. if it implements ServiceExecutionJobDefinition then call
- * {@link ServiceExecutionJobDefinition.configureService(ServiceDescriptor serviceDescriptor, AccessMode accessMode, Map<String,Object>
- * parameters)</li>
- * <li>Submit the job definition using the {@link JobClient}.</li>
+ * {@link ServiceExecutionJobDefinition#configureService(ServiceDescriptor, AccessMode, Map<String,Object>)}</li>
+ * <li>Submit the job definition using the {@link com.im.lac.job.client.JobClient}.</li>
  * </ol>
  * <br>
  * Potential issue: we assume we always start with a ServiceDescriptor. There could be jobs that don't use services?
