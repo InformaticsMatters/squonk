@@ -15,7 +15,7 @@ public class DefaultUserDetailsManager implements UserDetailsManager {
         Principal p = request.getUserPrincipal();
         if (p != null) {
             String username = p.getName();
-            return new UserDetails(UserDetails.AUTHENTICATOR_SERVLET, username, null, null, null);
+            return new UserDetails(UserDetails.AUTHENTICATOR_SERVLET, username, username + "@nowhere.com", username, username);
         }
         return null;
     }
