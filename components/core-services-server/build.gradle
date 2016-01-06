@@ -37,6 +37,7 @@ dependencies {
     compile project(':chemaxon-lib')
     compile project(':core-services-common')
     compile project(':core-services-exec')
+    compile project(':core-services-client')
     
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 

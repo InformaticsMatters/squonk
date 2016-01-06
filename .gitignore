@@ -23,6 +23,7 @@ components/demo-services/logs
 components/loaders/files
 components/core-services-client/lib
 components/chem-services-root/src/main/html/licenses
+components/security-keycloak/lib/
 docker/notebook/*.war
 docker/notebook_portal/*.war
 docker/xwiki-site/yyy.json

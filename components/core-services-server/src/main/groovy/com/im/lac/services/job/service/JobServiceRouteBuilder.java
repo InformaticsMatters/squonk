@@ -1,14 +1,12 @@
 package com.im.lac.services.job.service;
 
-import com.im.lac.job.jobdef.DoNothingJobDefinition;
-import com.im.lac.job.jobdef.JobStatus;
+import com.im.lac.job.jobdef.*;
 import com.im.lac.services.job.Job;
-import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
-import com.im.lac.job.jobdef.AsyncLocalProcessDatasetJobDefinition;
-import com.im.lac.job.jobdef.JobDefinition;
+import com.im.lac.services.job.dao.MemoryJobStatusClient;
 import com.im.lac.services.util.Utils;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.squonk.client.JobStatusClient;
 
 /**
  *
@@ -20,6 +18,8 @@ public class JobServiceRouteBuilder extends RouteBuilder {
     public static final String ROUTE_SUBMIT_JOB = "seda:submitJob";
     protected static final String ROUTE_SUBMIT_PREFIX = "seda:job_submit_";
     public static final String ROUTE_DO_NOTHING = ROUTE_SUBMIT_PREFIX + DoNothingJobDefinition.class.getName();
+
+    private final JobStatusClient jobStatusClient = new MemoryJobStatusClient();
 
     @Override
     public void configure() throws Exception {
@@ -43,11 +43,13 @@ public class JobServiceRouteBuilder extends RouteBuilder {
                 .log("ROUTE_SUBMIT_JOB")
                 .process((Exchange exch) -> {
                     JobDefinition jobdef = exch.getIn().getBody(JobDefinition.class);
-                    AbstractJob job = null;
+                    Job job = null;
                     if (jobdef instanceof AsyncHttpProcessDatasetJobDefinition) {
                         job = new AsyncHttpJob((AsyncHttpProcessDatasetJobDefinition)jobdef);
                     } else if (jobdef instanceof AsyncLocalProcessDatasetJobDefinition) {
                         job = new AsyncLocalJob((AsyncLocalProcessDatasetJobDefinition)jobdef);
+                    } else if (jobdef instanceof DoNothingJobDefinition) {
+                        job = new StepsCellJob((StepsCellExecutorJobDefinition)jobdef, jobStatusClient);
                     } else if (jobdef instanceof DoNothingJobDefinition) {
                         job = new DoNothingJob((DoNothingJobDefinition)jobdef);
                     } else {

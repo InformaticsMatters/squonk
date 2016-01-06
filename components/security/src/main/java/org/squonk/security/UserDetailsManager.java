@@ -10,7 +10,7 @@ import javax.servlet.http.HttpSession;
  */
 public interface UserDetailsManager {
 
-    public static String USER_DETAILS_SESSION_ATTR = "org.squonk.security.UserDetailsManager#UserDetails";
+    String USER_DETAILS_SESSION_ATTR = "org.squonk.security.UserDetailsManager#UserDetails";
 
     /**
      * Get details of the authenticated user whose details such as username, email that
@@ -24,7 +24,7 @@ public interface UserDetailsManager {
     /** Get details of the authenticated user, caching the UserDetails in the session.
      *
      * @param request
-     * @param cache whether to use the session as a cache
+     * @param cache whether to use the session as a cache for the generated UserDetails.
      */
     default UserDetails getAuthenticatedUser(HttpServletRequest request, boolean cache) {
         UserDetails user;
@@ -41,6 +41,10 @@ public interface UserDetailsManager {
         return user;
     }
 
+    /** Removed the cached UserDetails from the session.
+     *
+     * @param session
+     */
     default void clearUserDetailsFromSession(HttpSession session) {
         session.removeAttribute(USER_DETAILS_SESSION_ATTR);
     }
@@ -48,12 +52,14 @@ public interface UserDetailsManager {
     /**
      * Get the URI to use to log out the authenticated user. Following that URI will 
      * logout the user and redirect to the specified page (e.g. the login page).
-     * If there is no authenticated user then null should be returned.
+     * This default implementation returns null. Subclasses might override to provide something different
      * 
      * @param request
      * @param redirectTo The URI to redirect to once the logout is complete.
      * @return 
      */
-    URI getLogoutUrl(HttpServletRequest request, String redirectTo);
+    default URI getLogoutUrl(HttpServletRequest request, String redirectTo) {
+        return null;
+    }
 
 }

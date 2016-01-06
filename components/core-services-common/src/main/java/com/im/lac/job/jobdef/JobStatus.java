@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.im.lac.dataset.DataItem;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  *
@@ -25,6 +26,11 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
     private final Date completed;
     private final T jobDefinition;
     private final DataItem result;
+
+    public static <T extends JobDefinition> JobStatus<T> create(T jobDef, Date started) {
+        String jobId = UUID.randomUUID().toString();
+        return new JobStatus(jobId, Status.PENDING, -1, -1, -1, started, null, jobDef, null);
+    }
 
     public JobStatus(
             @JsonProperty("jobId") String jobId,
@@ -82,6 +88,18 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
     public DataItem getResult() {
         return result;
     }
+
+    public JobStatus withStatus(Status status, Integer processedCount) {
+        Date completed = null;
+        // TODO - block certain status transitions e.g. once complete doen't let status be changed
+        int processed = (processedCount == null ? -1 : processedCount.intValue());
+        if (status == Status.COMPLETED || status == Status.ERROR || status == Status.CANCELLED) {
+            // does the date come from java or the database?
+            completed = new Date();
+        }
+        return new JobStatus(this.jobId, status, this.totalCount, processed, 0, this.started, completed, this.jobDefinition, this.result );
+    }
+
 
     @Override
     public String toString() {

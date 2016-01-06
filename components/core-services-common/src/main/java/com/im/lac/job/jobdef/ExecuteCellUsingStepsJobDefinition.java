@@ -23,6 +23,15 @@ public class ExecuteCellUsingStepsJobDefinition implements StepsCellExecutorJobD
         this.steps = steps;
     }
 
+    public ExecuteCellUsingStepsJobDefinition(
+            Long notebookId,
+            String cellName,
+           StepDefinition step) {
+        this.notebookId = notebookId;
+        this.cellName = cellName;
+        this.steps = new StepDefinition[] { step };
+    }
+
     public Long getNotebookId() {
         return notebookId;
     }

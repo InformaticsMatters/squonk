@@ -160,7 +160,7 @@ public class JobClient {
     }
 
     /**
-     * Process any pending results for the job and update the results. This method can be called
+     * Process any pending results for the job and updateStatus the results. This method can be called
      * many times during a long process and the results updated. The final results are only ready
      * once the return status is {@link JobStatus.Status.COMPLETE}. Note: this only works for
      * certain types of Job. For others it is equivalent to {@link getStatus()}

@@ -70,7 +70,7 @@ public abstract class AbstractDatasetJob<T extends ProcessDatasetJobDefinition> 
     }
 
     /**
-     * Get the status based on the last updated stats. Does NOT do anything to update the stats.
+     * Get the status based on the last updated stats. Does NOT do anything to updateStatus the stats.
      *
      * @return
      */

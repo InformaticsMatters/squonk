@@ -64,9 +64,9 @@ class KeycloakUserDetailsManagerSpec extends Specification {
         user != null
         user.authenticator == UserDetails.AUTHENTICATOR_SERVLET
         user.userid == 'squonk'
-        user.firstName == null
-        user.lastName == null
-        user.email == null
+        user.firstName == 'squonk'
+        user.lastName == 'squonk'
+        user.email == 'squonk@nowhere.com'
 
         logout == null
     }

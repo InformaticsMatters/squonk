@@ -18,10 +18,10 @@ import org.apache.camel.util.toolbox.AggregationStrategies;
 
 public class SplitAndQueueJobRouteBuilder extends RouteBuilder implements ServerConstants {
 
-    private String mqHostname = null;
-    private String mqVirtualHost = null;
-    private String mqUsername = null;
-    private String mqPassword = null;
+    private final String mqHostname;
+    private final String mqVirtualHost;
+    private final String mqUsername;
+    private final String mqPassword;
 
     private static final Logger LOG = Logger.getLogger(SplitAndQueueJobRouteBuilder.class.getName());
 
@@ -29,12 +29,17 @@ public class SplitAndQueueJobRouteBuilder extends RouteBuilder implements Server
     public static final String ROUTE_FETCH_AND_DISPATCH = "seda:queueProcessDatasetSubmit";
     public static final String ENDPOINT_SPLIT_AND_SUBMIT = "seda:splitAndSubmit";
     public static final String DUMMY_MESSAGE_QUEUE = "rabbitmq";
+    public static final String ROUTE_STEPS_JOB_SUBMIT = "direct:stepsJobSubmit";
+    public static final String ROUTING_KEY_STEPS_JOB = "jobs.steps";
 
     JsonHandler jsonHandler = new JsonHandler();
     MoleculeObjectJsonDataFormat moDataFormat = new MoleculeObjectJsonDataFormat();
 
     public SplitAndQueueJobRouteBuilder() {
-
+        this.mqHostname = null;
+        this.mqVirtualHost = null;
+        this.mqUsername = null;
+        this.mqPassword = null;
     }
 
     public SplitAndQueueJobRouteBuilder(String mqHostname, String mqVirtualHost, String mqUsername, String mqPassword) {
@@ -133,6 +138,12 @@ public class SplitAndQueueJobRouteBuilder extends RouteBuilder implements Server
         // a dummy queue for testing
         from(mqueueUrl + "&autoDelete=false&queue=devnull")
                 .log("devnull received ${body}, with rabbitmq.REPLY_TO of ${header[rabbitmq.REPLY_TO]}");
+
+        from(ROUTE_STEPS_JOB_SUBMIT)
+                .log("Submitting stepped job to queue " + mqueueUrl + ": ${body}")
+                .setHeader("rabbitmq.ROUTING_KEY", constant(ROUTING_KEY_STEPS_JOB))
+                .to(ExchangePattern.InOnly, mqueueUrl + "&autoDelete=false&durable=true")
+                .log("Job submitted");
 
     }
 

@@ -1,5 +1,7 @@
 package com.im.lac.services.job.service;
 
+import org.squonk.util.IOUtils;
+
 /**
  *
  * @author timbo
@@ -33,56 +35,11 @@ public class MessageQueueCredentials {
      */
     public MessageQueueCredentials(String hostname, String username, String password, String virtualHost, String exchange) {
 
-        if (hostname != null) {
-            this.hostname = hostname;
-        } else {
-            hostname = System.getenv("RABBITMQ_HOST");
-            if (hostname == null) {
-                this.hostname = "localhost";
-            } else {
-                this.hostname = hostname;
-            }
-        }
-
-        if (username != null) {
-            this.username = username;
-        } else {
-            username = System.getenv("RABBITMQ_USER");
-            if (username == null) {
-                this.username = "lac";
-            } else {
-                this.username = username;
-            }
-        }
-
-        if (password != null) {
-            this.password = password;
-        } else {
-            password = System.getenv("RABBITMQ_PASSWORD");
-            if (password == null) {
-                this.password = "lac";
-            } else {
-                this.password = password;
-            }
-        }
-
-        if (virtualHost != null) {
-            this.virtualHost = virtualHost;
-        } else {
-            virtualHost = System.getenv("RABBITMQ_VHOST");
-            if (virtualHost == null) {
-                this.virtualHost = "/prod";
-            } else {
-                this.virtualHost = virtualHost;
-            }
-        }
-
-        if (exchange != null) {
-            this.exchange = exchange;
-        } else {
-            this.exchange = "jobs.direct";
-        }
-
+        this.hostname = hostname != null ? hostname : IOUtils.getConfiguration("RABBITMQ_HOST", "localhost");
+        this.username = username != null ? username : IOUtils.getConfiguration("RABBITMQ_USER", "lac");
+        this.password = password != null ? password : IOUtils.getConfiguration("RABBITMQ_PASSWORD", "lac");
+        this.virtualHost = virtualHost != null ? virtualHost : IOUtils.getConfiguration("RABBITMQ_VHOST", "/prod");
+        this.exchange = exchange != null ? exchange : "jobs.direct";
     }
 
     public String getHostname() {
