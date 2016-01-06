@@ -37,13 +37,13 @@ public class MemoryJobStatusClient implements JobStatusClient {
     }
 
     @Override
-    public JobStatus updateStatus(String id, JobStatus.Status status, Integer processedCount) {
+    public JobStatus updateStatus(String id, JobStatus.Status status, String event, Integer processedCount) {
         synchronized (lock) {
             JobStatus item = store.get(id);
             if (item == null) {
                 throw new IllegalArgumentException("JobStatus with ID " + id + " not found");
             }
-            JobStatus nue = item.withStatus(status == null ? item.getStatus() : status, processedCount);
+            JobStatus nue = item.withStatus(status == null ? item.getStatus() : status, processedCount, event);
             store.put(id, nue);
             return nue;
         }
@@ -56,7 +56,7 @@ public class MemoryJobStatusClient implements JobStatusClient {
             if (item == null) {
                 throw new IllegalArgumentException("JobStatus with ID " + id + " not found");
             }
-            JobStatus nue = item.withStatus(item.getStatus(), item.getProcessedCount() + count);
+            JobStatus nue = item.withStatus(item.getStatus(), item.getProcessedCount() + count, null);
             store.put(id, nue);
             return nue;
         }

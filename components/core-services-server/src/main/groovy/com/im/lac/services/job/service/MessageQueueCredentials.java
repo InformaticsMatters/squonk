@@ -35,10 +35,11 @@ public class MessageQueueCredentials {
      */
     public MessageQueueCredentials(String hostname, String username, String password, String virtualHost, String exchange) {
 
-        this.hostname = hostname != null ? hostname : IOUtils.getConfiguration("RABBITMQ_HOST", "localhost");
-        this.username = username != null ? username : IOUtils.getConfiguration("RABBITMQ_USER", "lac");
-        this.password = password != null ? password : IOUtils.getConfiguration("RABBITMQ_PASSWORD", "lac");
-        this.virtualHost = virtualHost != null ? virtualHost : IOUtils.getConfiguration("RABBITMQ_VHOST", "/prod");
+        this.hostname = hostname != null ? hostname : IOUtils.getConfiguration("SQUONK_RABBITMQ_HOST", "localhost");
+        this.username = username != null ? username : IOUtils.getConfiguration("SQUONK_RABBITMQ_USER", "squonk");
+        this.password = password != null ? password : IOUtils.getConfiguration("SQUONK_RABBITMQ_PASS", "lacrocks");
+        this.password = password != null ? password : IOUtils.getConfiguration("SQUONK_RABBITMQ_PASS", "lacrocks");
+        this.virtualHost = virtualHost != null ? virtualHost : IOUtils.getConfiguration("SQUONK_RABBITMQ_VHOST", "/prod");
         this.exchange = exchange != null ? exchange : "jobs.direct";
     }
 

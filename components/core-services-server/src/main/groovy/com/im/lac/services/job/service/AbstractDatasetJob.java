@@ -75,7 +75,7 @@ public abstract class AbstractDatasetJob<T extends ProcessDatasetJobDefinition> 
      * @return
      */
     public JobStatus buildStatus() {
-        return new JobStatus(jobId, status, totalCount, processedCount, pendingCount, started, completed, jobdef, result);
+        return new JobStatus(jobId, status, totalCount, processedCount, pendingCount, started, completed, jobdef, result, null);
     }
 
     public DataItem getResult() {

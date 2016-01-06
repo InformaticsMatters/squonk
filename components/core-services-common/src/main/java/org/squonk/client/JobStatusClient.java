@@ -39,10 +39,19 @@ public interface JobStatusClient {
      *
      * @param id Job ID
      * @param status The new status, or null if no change
+     * @param event A message that describes the update (can be null)
      * @param processedCount The number of work units processed, or null if unknown
      * @return The updated status
      */
-    JobStatus updateStatus(String id, JobStatus.Status status, Integer processedCount);
+    JobStatus updateStatus(String id, JobStatus.Status status, String event, Integer processedCount);
+
+    default JobStatus updateStatus(String id, JobStatus.Status status, String event) {
+        return updateStatus(id, status, event, 0);
+    }
+
+    default JobStatus updateStatus(String id, JobStatus.Status status) {
+        return updateStatus(id, status, null, 0);
+    }
 
     JobStatus incrementProcesssedCount(String id, int count);
 

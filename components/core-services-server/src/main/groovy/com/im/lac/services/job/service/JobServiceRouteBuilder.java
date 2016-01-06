@@ -48,7 +48,7 @@ public class JobServiceRouteBuilder extends RouteBuilder {
                         job = new AsyncHttpJob((AsyncHttpProcessDatasetJobDefinition)jobdef);
                     } else if (jobdef instanceof AsyncLocalProcessDatasetJobDefinition) {
                         job = new AsyncLocalJob((AsyncLocalProcessDatasetJobDefinition)jobdef);
-                    } else if (jobdef instanceof DoNothingJobDefinition) {
+                    } else if (jobdef instanceof ExecuteCellUsingStepsJobDefinition) {
                         job = new StepsCellJob((StepsCellExecutorJobDefinition)jobdef, jobStatusClient);
                     } else if (jobdef instanceof DoNothingJobDefinition) {
                         job = new DoNothingJob((DoNothingJobDefinition)jobdef);

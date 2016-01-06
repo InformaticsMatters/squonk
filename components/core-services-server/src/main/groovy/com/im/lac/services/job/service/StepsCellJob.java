@@ -11,6 +11,7 @@ import org.squonk.types.io.JsonHandler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -73,24 +74,24 @@ public class StepsCellJob
 
 
         if (jobdef.getNotebookId() == null) {
-            // TODO - handle description for error
-            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, 0);
+            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to start job as notebook ID is not defined");
         }
         if (jobdef.getCellName() == null) {
-            // TODO - handle description for error
-            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, 0);
+            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to start job as notebook cell name is not defined");
         }
         if (jobdef.getSteps() == null || jobdef.getSteps().length == 0) {
-            // TODO - handle description for error
-            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, 0);
+            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to start job as no steps were defined");
         }
 
         try {
             startJob(camelContext);
-            return jobstatusClient.updateStatus(jobid, JobStatus.Status.RUNNING, 0);
+            return jobstatusClient.updateStatus(jobid, JobStatus.Status.RUNNING);
         } catch (Throwable t) {
-            // TODO - handle description for error
-            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, 0);
+            StringBuilder b = new StringBuilder("Job submission failed: ")
+                    .append(t.getMessage());
+            // TODO - should we pass back the exception as well?
+            LOG.log(Level.WARNING, "Job submission failed", t);
+            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, b.toString());
         }
     }
 

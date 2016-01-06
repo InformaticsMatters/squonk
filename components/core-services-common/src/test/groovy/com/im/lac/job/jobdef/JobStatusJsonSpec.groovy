@@ -24,6 +24,7 @@ class JobStatusJsonSpec extends Specification {
             new Date(),
             new Date(),
             new DoNothingJobDefinition(),
+            null,
             null)
         
         when:

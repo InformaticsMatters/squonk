@@ -27,3 +27,4 @@ components/security-keycloak/lib/
 docker/notebook/*.war
 docker/notebook_portal/*.war
 docker/xwiki-site/yyy.json
+docker/deploy/setenv.sh*
