@@ -1,50 +1,61 @@
 package com.im.lac.services.job.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.im.lac.job.client.JobStatusRestClient;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition;
 import com.im.lac.services.job.Job;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.squonk.client.JobStatusClient;
+import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.types.io.JsonHandler;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_NAME;
+import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_PARAMS;
+
 /**
  * Created by timbo on 31/12/15.
  */
-public class StepsCellJob
-        implements Job<StepsCellExecutorJobDefinition> {
+public class StepsCellJob  implements Job<StepsCellExecutorJobDefinition> {
 
     private static final Logger LOG = Logger.getLogger(AbstractDatasetJob.class.getName());
 
-    private final StepsCellExecutorJobDefinition jobdef;
-    private String jobid;
-    private final JobStatusClient jobstatusClient;
+    protected final StepsCellExecutorJobDefinition jobdef;
+    protected String jobid;
+    protected static JobStatusClient jobstatusClient = new JobStatusRestClient();
+    private static MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials();
+    private static final String mqueueUrl = rabbitmqCredentials.generateUrl(MQUEUE_JOB_STEPS_EXCHANGE_NAME,MQUEUE_JOB_STEPS_EXCHANGE_PARAMS);
 
-    public StepsCellJob(StepsCellExecutorJobDefinition jobdef, JobStatusClient jobstatusClient) {
+    protected StepsCellJob(StepsCellExecutorJobDefinition jobdef,JobStatusClient jobstatusClient) {
         this.jobdef = jobdef;
         this.jobstatusClient = jobstatusClient;
     }
 
-    public StepsCellJob(JobStatus<StepsCellExecutorJobDefinition> jobStatus, JobStatusClient jobstatusClient) {
-        this.jobdef = jobStatus.getJobDefinition();
-        this.jobid = jobStatus.getJobId();
-        this.jobstatusClient = jobstatusClient;
+    public StepsCellJob(StepsCellExecutorJobDefinition jobdef) {
+        this.jobdef = jobdef;
+        this.jobstatusClient = new JobStatusRestClient();
     }
 
+    public StepsCellJob(JobStatus<StepsCellExecutorJobDefinition> jobStatus) {
+        this.jobdef = jobStatus.getJobDefinition();
+        this.jobid = jobStatus.getJobId();
+        this.jobstatusClient = new JobStatusRestClient();
+    }
 
     @Override
-    public void setStatus(JobStatus.Status status) {
+    public void setStatus(JobStatus.Status status) throws IOException {
         jobstatusClient.updateStatus(jobid, status, null);
     }
 
     @Override
-    public JobStatus.Status getStatus() {
+    public JobStatus.Status getStatus() throws IOException {
         return jobstatusClient.get(jobid).getStatus();
     }
 
@@ -54,12 +65,12 @@ public class StepsCellJob
     }
 
     @Override
-    public JobStatus getCurrentJobStatus() {
+    public JobStatus getCurrentJobStatus() throws IOException {
         return jobstatusClient.get(jobid);
     }
 
     @Override
-    public JobStatus getUpdatedJobStatus() {
+    public JobStatus getUpdatedJobStatus() throws IOException {
         return getCurrentJobStatus();
     }
 
@@ -69,9 +80,7 @@ public class StepsCellJob
     }
 
     public JobStatus start(CamelContext camelContext, String username) throws Exception {
-        LOG.info("start()");
-        jobid = jobstatusClient.create(jobdef, -1);
-
+        LOG.finer("start() " + jobdef);
 
         if (jobdef.getNotebookId() == null) {
             return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to start job as notebook ID is not defined");
@@ -84,56 +93,27 @@ public class StepsCellJob
         }
 
         try {
-            startJob(camelContext);
+            JobStatus status = jobstatusClient.create(jobdef, username, -1);
+            jobid = status.getJobId();
+            startJob(camelContext, jobid, username);
             return jobstatusClient.updateStatus(jobid, JobStatus.Status.RUNNING);
         } catch (Throwable t) {
-            StringBuilder b = new StringBuilder("Job submission failed: ")
-                    .append(t.getMessage());
+            StringBuilder b = new StringBuilder("Job submission failed: ").append(t.getMessage());
             // TODO - should we pass back the exception as well?
             LOG.log(Level.WARNING, "Job submission failed", t);
             return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, b.toString());
         }
     }
 
-    protected void startJob(CamelContext camelContext) throws JsonProcessingException {
+    protected void startJob(CamelContext camelContext, String jobid, String username) throws JsonProcessingException {
         ProducerTemplate pt = camelContext.createProducerTemplate();
         String json = JsonHandler.getInstance().objectToJson(jobdef);
         Map<String,Object> headers = new HashMap<>();
         headers.put("rabbitmq.ROUTING_KEY", "jobs.steps");
-        pt.sendBodyAndHeaders(SplitAndQueueJobRouteBuilder.ROUTE_STEPS_JOB_SUBMIT, json, headers);
+        headers.put("rabbitmq.MESSAGE_ID", jobid);
+        headers.put("rabbitmq.USERID", username);
+        // send to mqueue
+        pt.sendBodyAndHeaders(mqueueUrl, json, headers);
     }
-
-//    protected void executeJob(CamelContext camelContext) {
-//        Long notebookId = jobdef.getNotebookId();
-//        String cellName = jobdef.getCellName();
-//        StepDefinition[] steps = jobdef.getSteps();
-//
-//        // TODO - sort out which client to use. Probably remove the Jersey one and replace the HttpComponents one.
-//        CallbackClientConfig config = new DefaultCallbackClientConfig();
-//        CallbackContext callbackContext = new CallbackContext();
-//        CallbackClient callbackClient = new CallbackClient(config, callbackContext);
-//        callbackContext.setNotebookId(notebookId);
-//
-//        // fetch the cell
-//        CellDTO cell = callbackClient.retrieveCell(cellName);
-//        if (cell == null) {
-//            throw new IllegalStateException("Executor for cell " + cellName + " not found");
-//        }
-//
-//        // setup the variable manager
-//        VariableLoader loader = new CellCallbackClientVariableLoader(callbackClient);
-//        VariableManager varman = new VariableManager(loader);
-//        StepExecutor executor = new StepExecutor(cellName, varman);
-//
-//        // and execute
-//        try {
-//
-//            executor.execute(steps, camelContext);
-//            jobstatusClient.updateStatus(jobid, JobStatus.Status.COMPLETED, 0);
-//        } catch (Exception e) {
-//            // TODO - handle description for error
-//            jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, 0);
-//        }
-//    }
 
 }

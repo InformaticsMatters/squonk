@@ -13,13 +13,13 @@ public interface Job<T extends JobDefinition> {
 
     String getJobId();
 
-    JobStatus getCurrentJobStatus();
+    JobStatus getCurrentJobStatus() throws Exception;
 
-    JobStatus getUpdatedJobStatus();
+    JobStatus getUpdatedJobStatus() throws Exception;
 
-    JobStatus.Status getStatus();
+    JobStatus.Status getStatus() throws Exception;
     
-    void setStatus(JobStatus.Status status);
+    void setStatus(JobStatus.Status status) throws Exception;
     
     T getJobDefinition();
 

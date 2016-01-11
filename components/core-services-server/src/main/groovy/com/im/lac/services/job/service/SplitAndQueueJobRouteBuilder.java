@@ -1,27 +1,21 @@
 package com.im.lac.services.job.service;
 
-import org.squonk.camel.CamelCommonConstants;
-import org.squonk.camel.dataformat.MoleculeObjectJsonDataFormat;
-import com.im.lac.dataset.Metadata;
-import com.im.lac.services.ServerConstants;
-import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.SplitAndQueueProcessDatasetJobDefinition;
-import static com.im.lac.services.job.service.JobServiceRouteBuilder.ROUTE_SUBMIT_PREFIX;
+import com.im.lac.services.ServerConstants;
+import org.apache.camel.builder.RouteBuilder;
+import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.types.io.JsonHandler;
-import java.util.Iterator;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.camel.Exchange;
-import org.apache.camel.ExchangePattern;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.util.toolbox.AggregationStrategies;
+
+import static com.im.lac.services.job.service.JobServiceRouteBuilder.ROUTE_SUBMIT_PREFIX;
+import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_NAME;
+import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_PARAMS;
 
 public class SplitAndQueueJobRouteBuilder extends RouteBuilder implements ServerConstants {
 
-    private final String mqHostname;
-    private final String mqVirtualHost;
-    private final String mqUsername;
-    private final String mqPassword;
+    private final MessageQueueCredentials rabbitmqCredentials;
 
     private static final Logger LOG = Logger.getLogger(SplitAndQueueJobRouteBuilder.class.getName());
 
@@ -30,30 +24,22 @@ public class SplitAndQueueJobRouteBuilder extends RouteBuilder implements Server
     public static final String ENDPOINT_SPLIT_AND_SUBMIT = "seda:splitAndSubmit";
     public static final String DUMMY_MESSAGE_QUEUE = "rabbitmq";
     public static final String ROUTE_STEPS_JOB_SUBMIT = "direct:stepsJobSubmit";
-    public static final String ROUTING_KEY_STEPS_JOB = "jobs.steps";
 
     JsonHandler jsonHandler = new JsonHandler();
-    MoleculeObjectJsonDataFormat moDataFormat = new MoleculeObjectJsonDataFormat();
+    //MoleculeObjectJsonDataFormat moDataFormat = new MoleculeObjectJsonDataFormat();
 
     public SplitAndQueueJobRouteBuilder() {
-        this.mqHostname = null;
-        this.mqVirtualHost = null;
-        this.mqUsername = null;
-        this.mqPassword = null;
+        this.rabbitmqCredentials = new MessageQueueCredentials();
     }
 
-    public SplitAndQueueJobRouteBuilder(String mqHostname, String mqVirtualHost, String mqUsername, String mqPassword) {
-        this.mqHostname = mqHostname;
-        this.mqVirtualHost = mqVirtualHost;
-        this.mqUsername = mqUsername;
-        this.mqPassword = mqPassword;
+    public SplitAndQueueJobRouteBuilder(MessageQueueCredentials rabbitmqCredentials) {
+        this.rabbitmqCredentials = rabbitmqCredentials;
     }
 
     @Override
     public void configure() throws Exception {
 
-        MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials(mqHostname, mqUsername, mqPassword, mqVirtualHost, null);
-        String mqueueUrl = getRabbitMQUrl(rabbitmqCredentials);
+        String mqueueUrl = rabbitmqCredentials.generateUrl(MQUEUE_JOB_STEPS_EXCHANGE_NAME, MQUEUE_JOB_STEPS_EXCHANGE_PARAMS);
         LOG.log(Level.INFO, "Using RabbitMQ URL of {0}", mqueueUrl);
 
         // This is the entrypoint. Send your AbstractDatasetJob here.
@@ -142,19 +128,10 @@ public class SplitAndQueueJobRouteBuilder extends RouteBuilder implements Server
 //        from(mqueueUrl + "&autoDelete=false&queue=devnull")
 //                .log("devnull received ${body}, with rabbitmq.REPLY_TO of ${header[rabbitmq.REPLY_TO]}");
 
-        from(ROUTE_STEPS_JOB_SUBMIT)
-                .log("Submitting stepped job to queue " + mqueueUrl + ": ${body}")
-                .setHeader("rabbitmq.ROUTING_KEY", constant(ROUTING_KEY_STEPS_JOB))
-                .to(ExchangePattern.InOnly, mqueueUrl + "&autoDelete=false&durable=true&queue=" + ROUTING_KEY_STEPS_JOB + "&routingKey=" + ROUTING_KEY_STEPS_JOB)
-                .log("Job submitted");
-    }
+//        from(ROUTE_STEPS_JOB_SUBMIT)
+//                .log("Submitting stepped job to queue " + mqueueUrl + ": ${body}")
+//                .to(ExchangePattern.InOnly, mqueueUrl)
+//                .log("Job submitted");
 
-    String getRabbitMQUrl(MessageQueueCredentials rabbitmqCredentials) {
-        return "rabbitmq://" + rabbitmqCredentials.getHostname()
-                + "/" + rabbitmqCredentials.getExchange()
-                + "?vhost=" + rabbitmqCredentials.getVirtualHost()
-                + "&username=" + rabbitmqCredentials.getUsername()
-                + "&password=" + rabbitmqCredentials.getPassword();
     }
-
 }

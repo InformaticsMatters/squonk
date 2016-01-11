@@ -17,6 +17,7 @@ class JobStatusJsonSpec extends Specification {
         ObjectMapper mapper = new ObjectMapper()
         def status = new JobStatus(
             'jobone',
+            'nobody',
             JobStatus.Status.COMPLETED,
             0,
             0,

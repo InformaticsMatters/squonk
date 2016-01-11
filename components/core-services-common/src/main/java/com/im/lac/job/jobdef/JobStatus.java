@@ -20,6 +20,7 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         PENDING, SUBMITTING, RUNNING, RESULTS_READY, COMPLETED, ERROR, FAILED, CANCELLED
     }
     private final String jobId;
+    private final String username;
     private final Status status;
     private final int totalCount;
     private final int processedCount;
@@ -30,13 +31,14 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
     private final DataItem result;
     private final List<String> events = new ArrayList<>();
 
-    public static <T extends JobDefinition> JobStatus<T> create(T jobDef, Date started) {
+    public static <T extends JobDefinition> JobStatus<T> create(T jobDef, String username, Date started) {
         String jobId = UUID.randomUUID().toString();
-        return new JobStatus(jobId, Status.PENDING, -1, -1, -1, started, null, jobDef, null, null);
+        return new JobStatus(jobId, username, Status.PENDING, -1, -1, -1, started, null, jobDef, null, null);
     }
 
     public JobStatus(
             @JsonProperty("jobId") String jobId,
+            @JsonProperty("username") String username,
             @JsonProperty("status") Status status,
             @JsonProperty("totalCount") int totalCount,
             @JsonProperty("processedCount") int processedCount,
@@ -48,6 +50,7 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
             @JsonProperty("events") List<String> events
     ) {
         this.jobId = jobId;
+        this.username = username;
         this.status = status;
         this.totalCount = totalCount;
         this.processedCount = processedCount;
@@ -63,6 +66,10 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
 
     public String getJobId() {
         return jobId;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public Status getStatus() {
@@ -105,7 +112,7 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         List neu = new ArrayList<>();
         neu.addAll(events);
         neu.add(event);
-        return new JobStatus(this.jobId, status, this.totalCount, this.processedCount, 0, this.started, completed, this.jobDefinition, this.result, neu);
+        return new JobStatus(this.jobId, this.username, status, this.totalCount, this.processedCount, 0, this.started, completed, this.jobDefinition, this.result, neu);
     }
 
     public JobStatus withStatus(Status status, Integer processedCount, String event) {
@@ -120,9 +127,9 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
             List neu = new ArrayList<>();
             neu.addAll(events);
             neu.add(event);
-            return new JobStatus(this.jobId, status, this.totalCount, processed, 0, this.started, completed, this.jobDefinition, this.result, neu);
+            return new JobStatus(this.jobId, this.username, status, this.totalCount, processed, 0, this.started, completed, this.jobDefinition, this.result, neu);
         } else {
-            return new JobStatus(this.jobId, status, this.totalCount, processed, 0, this.started, completed, this.jobDefinition, this.result, this.events);
+            return new JobStatus(this.jobId, this.username, status, this.totalCount, processed, 0, this.started, completed, this.jobDefinition, this.result, this.events);
         }
     }
 
@@ -131,10 +138,10 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         StringBuilder b = new StringBuilder();
         b.append("JobStatus: ").append(status)
                 .append(" JobId=").append(jobId)
+                .append(" Username=").append(username)
+                .append(" Status=").append(status.toString())
                 .append(" TotalCount=").append(totalCount)
-                .append(" ProcessedCount=").append(processedCount)
-                .append(" PendingCount=").append(pendingCount)
-                .append(" Job Definition=").append(jobDefinition);
+                .append(" ProcessedCount=").append(processedCount);
         return b.toString();
     }
 

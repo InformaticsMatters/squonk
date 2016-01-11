@@ -1,0 +1,90 @@
+description = 'Cell executor'
+
+apply plugin: 'groovy'
+apply plugin: 'application'
+apply plugin: 'com.bmuschko.docker-remote-api'
+
+//mainClassName = "org.jboss.weld.environment.se.StartMain"
+mainClassName = "org.squonk.services.cell.Launcher"
+
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:2.4.1'
+    }
+}
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+
+    compile project(':common')
+    compile project(':common-utils')
+    compile project(':common-camel')
+    compile project(':core-services-common')
+    compile project(':core-services-exec')
+    compile project(':core-services-client')
+
+    compile 'org.jboss.weld.se:weld-se:2.3.2.Final'
+
+    compile "org.apache.camel:camel-core:$camelVersion"
+    compile "org.apache.camel:camel-rabbitmq:$camelVersion"
+    compile "org.apache.camel:camel-jackson:$camelVersion"
+
+    compile 'com.sun.jersey:jersey-client:1.19'
+    //compile 'com.sun.jersey:jersey-server:1.19'
+    //compile 'com.sun.jersey:jersey-servlet:1.19'
+    compile 'com.sun.jersey:jersey-json:1.19'
+
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+}
+
+sourceSets.main.resources {
+    exclude 'META-INF/beans.xml'
+}
+classes {
+    inputs.dir 'src/main/resources/META-INF/beans.xml'
+    outputs.dir "$buildDir/classes/main/META-INF/beans.xml"
+} << {
+    copy {
+        from('src/main/resources') { include 'META-INF/beans.xml' }
+        into "$buildDir/classes/main/"
+    }
+}
+
+testClasses {
+    inputs.dir 'src/test/resources/META-INF/beans.xml'
+    outputs.dir "$buildDir/classes/test/META-INF/beans.xml"
+} << {
+    copy {
+        from('src/test/resources') { include 'META-INF/beans.xml' }
+        into "$buildDir/classes/test/"
+    }
+}
+
+
+docker {
+    url = 'http://' + (System.getenv('DOCKER_IP') ?: 'localhost') + ':2375'
+    //certPath = new File(System.properties['user.home'], '.docker')
+    certPath = null
+}
+
+task dockerFile(type: Dockerfile, dependsOn: build) {
+
+    destFile = project.file('build/Dockerfile')
+    from "debian:jessie"
+    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
+
+
+}
+
+task dockerImage(type: DockerBuildImage) {
+    dependsOn dockerFile
+    inputDir = dockerFile.destFile.parentFile
+    tag = "squonk/cellexecutor"
+}

@@ -4,6 +4,7 @@ import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobQuery;
 import com.im.lac.job.jobdef.JobStatus;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -17,21 +18,21 @@ public interface JobStatusClient {
      * @param totalCount The total number of work units, or null if unknown
      * @return The Job ID
      */
-    String create(JobDefinition jobdef, Integer totalCount);
+    JobStatus create(JobDefinition jobdef, String username, Integer totalCount) throws IOException;
 
     /** Fetch the current status for the job with this ID
      *
      * @param id The Job ID
      * @return
      */
-    JobStatus get(String id);
+    JobStatus get(String id) throws IOException;
 
     /** Fetch jobs matching these query criteria
      *
      * @param query
      * @return
      */
-    List<JobStatus> list(JobQuery query);
+    List<JobStatus> list(JobQuery query) throws IOException;
 
     /** Update the status of this job
      *
@@ -43,16 +44,16 @@ public interface JobStatusClient {
      * @param processedCount The number of work units processed, or null if unknown
      * @return The updated status
      */
-    JobStatus updateStatus(String id, JobStatus.Status status, String event, Integer processedCount);
+    JobStatus updateStatus(String id, JobStatus.Status status, String event, Integer processedCount) throws IOException;
 
-    default JobStatus updateStatus(String id, JobStatus.Status status, String event) {
+    default JobStatus updateStatus(String id, JobStatus.Status status, String event) throws IOException {
         return updateStatus(id, status, event, 0);
     }
 
-    default JobStatus updateStatus(String id, JobStatus.Status status) {
+    default JobStatus updateStatus(String id, JobStatus.Status status) throws IOException {
         return updateStatus(id, status, null, 0);
     }
 
-    JobStatus incrementProcesssedCount(String id, int count);
+    JobStatus incrementProcesssedCount(String id, int count) throws IOException;
 
 }

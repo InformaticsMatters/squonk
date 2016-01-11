@@ -41,7 +41,7 @@ public class TmpNotebookCellClient extends AbstractHttpClient {
         this.baseUrl = baseUrl;
     }
 
-    public NotebookDTO retrieveNotebookDefinition() {
+    public NotebookDTO retrieveNotebookDefinition() throws IOException {
         URIBuilder b = new URIBuilder()
                 .setPath(baseUrl + "/retrieveNotebook")
                 .setParameter(PARAM_NOTEBOOK_ID, notebookId.toString());
@@ -49,7 +49,7 @@ public class TmpNotebookCellClient extends AbstractHttpClient {
         return fromJson(s, NotebookDTO.class);
     }
 
-    public CellDTO retrieveCell(String cellName) {
+    public CellDTO retrieveCell(String cellName) throws IOException {
         URIBuilder b = new URIBuilder()
                 .setPath(baseUrl + "/retrieveCell")
                 .setParameter(PARAM_NOTEBOOK_ID, notebookId.toString())
@@ -58,7 +58,7 @@ public class TmpNotebookCellClient extends AbstractHttpClient {
         return fromJson(s, CellDTO.class);
     }
 
-    public String readTextValue(String producerName, String variableName) {
+    public String readTextValue(String producerName, String variableName) throws IOException {
         URIBuilder b = new URIBuilder()
                 .setPath(baseUrl + "/readTextValue")
                 .setParameter(PARAM_NOTEBOOK_ID, notebookId.toString())
@@ -67,7 +67,7 @@ public class TmpNotebookCellClient extends AbstractHttpClient {
         return executeGetAsString(b);
     }
 
-    public Integer readIntegerValue(String producerName, String variableName) {
+    public Integer readIntegerValue(String producerName, String variableName) throws IOException {
         URIBuilder b = new URIBuilder()
                 .setPath(baseUrl + "/readTextValue")
                 .setParameter(PARAM_NOTEBOOK_ID, notebookId.toString())
@@ -83,7 +83,7 @@ public class TmpNotebookCellClient extends AbstractHttpClient {
      * @param variableName
      * @return
      */
-    public InputStream readStreamValue(String producerName, String variableName) {
+    public InputStream readStreamValue(String producerName, String variableName) throws IOException {
         URIBuilder b = new URIBuilder()
                 .setPath(baseUrl + "/readStreamValue")
                 .setParameter(PARAM_NOTEBOOK_ID, notebookId.toString())
@@ -92,14 +92,7 @@ public class TmpNotebookCellClient extends AbstractHttpClient {
         return executeGetAsInputStream(b);
     }
 
-    public void writeTextValue(String producerName, String variableName, String value) {
-//        MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
-//        queryParams.add("notebookId", context.getNotebookId().toString());
-//        queryParams.add("producerName", producerName);
-//        queryParams.add("variableName", variableName);
-//        queryParams.add("value", value);
-//        newResourceBuilder("/writeTextValue", queryParams).post();
-
+    public void writeTextValue(String producerName, String variableName, String value) throws IOException {
         URIBuilder b = new URIBuilder()
                 .setPath(baseUrl + "/writeTextValue")
                 .setParameter(PARAM_NOTEBOOK_ID, notebookId.toString())

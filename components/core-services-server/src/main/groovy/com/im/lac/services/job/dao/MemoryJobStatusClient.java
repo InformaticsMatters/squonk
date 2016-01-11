@@ -6,21 +6,27 @@ import com.im.lac.job.jobdef.JobStatus;
 import org.squonk.client.JobStatusClient;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Created by timbo on 04/01/16.
  */
 public class MemoryJobStatusClient implements JobStatusClient {
 
+    private static final Logger LOG = Logger.getLogger(MemoryJobStatusClient.class.getName());
+
+    public final static MemoryJobStatusClient INSTANCE = new MemoryJobStatusClient();
+
     private final Object lock = new Object();
 
     private final Map<String,JobStatus> store = new LinkedHashMap<>();
 
     @Override
-    public String create(JobDefinition jobdef, Integer totalCount) {
-        JobStatus status = JobStatus.create(jobdef, new Date());
+    public JobStatus create(JobDefinition jobdef, String username, Integer totalCount) {
+        LOG.finer("Registering JobDef: " + jobdef);
+        JobStatus status = JobStatus.create(jobdef, username, new Date());
         store.put(status.getJobId(), status);
-        return status.getJobId();
+        return status;
     }
 
     @Override
@@ -61,5 +67,6 @@ public class MemoryJobStatusClient implements JobStatusClient {
             return nue;
         }
     }
+
 
 }

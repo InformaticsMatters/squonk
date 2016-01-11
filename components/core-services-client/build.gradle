@@ -20,7 +20,7 @@ dependencies {
     
     compile 'com.sun.jersey:jersey-client:1.19'
     //compile 'com.sun.jersey:jersey-server:1.19'
-    compile 'com.sun.jersey:jersey-servlet:1.19'
+    //compile 'com.sun.jersey:jersey-servlet:1.19'
     compile 'com.sun.jersey:jersey-json:1.19'
     
 }

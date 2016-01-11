@@ -1,25 +1,30 @@
-package com.im.lac.services.job.service;
+package org.squonk.mqueue;
 
 import org.squonk.util.IOUtils;
 
 /**
- *
  * @author timbo
  */
 public class MessageQueueCredentials {
+
+    public static final String MQUEUE_JOB_STEPS_EXCHANGE_NAME = "jobs.direct";
+    public static final String MQUEUE_JOB_STEPS_EXCHANGE_PARAMS = "&autoDelete=false&durable=true&queue=jobs.steps&routingKey=jobs.steps";
+    public static final String MQUEUE_JOB_STEPS_QUEUE_NAME = "jobs.steps";
+
+    public static final String MQUEUE_USERS_EXCHANGE_NAME = "users.topic";
+    public static final String MQUEUE_USERS_EXCHANGE_PARAMS = "&exchangeType=topic&autoDelete=false&durable=true&queue=allusers&routingKey=users.#";
 
     private String hostname;
     private String username;
     private String password;
     private String virtualHost;
-    private String exchange;
 
     /**
      * Default credentials pointing to prod environment. Default setting scan be overridden using
      * the RABBITMQ_HOST, RABBITMQ_USER and RABBITMQ_PASSWORD environment variables.
      */
     public MessageQueueCredentials() {
-        this(null, null, null, null, null);
+        this(null, null, null, null);
     }
 
     /**
@@ -30,17 +35,14 @@ public class MessageQueueCredentials {
      * @param hostname
      * @param username
      * @param password
-     * @param virtualHost
-     * @param exchange
+     * @param vHost
      */
-    public MessageQueueCredentials(String hostname, String username, String password, String virtualHost, String exchange) {
+    public MessageQueueCredentials(String hostname, String username, String password, String vHost) {
 
         this.hostname = hostname != null ? hostname : IOUtils.getConfiguration("SQUONK_RABBITMQ_HOST", "localhost");
         this.username = username != null ? username : IOUtils.getConfiguration("SQUONK_RABBITMQ_USER", "squonk");
-        this.password = password != null ? password : IOUtils.getConfiguration("SQUONK_RABBITMQ_PASS", "lacrocks");
-        this.password = password != null ? password : IOUtils.getConfiguration("SQUONK_RABBITMQ_PASS", "lacrocks");
-        this.virtualHost = virtualHost != null ? virtualHost : IOUtils.getConfiguration("SQUONK_RABBITMQ_VHOST", "/prod");
-        this.exchange = exchange != null ? exchange : "jobs.direct";
+        this.password = password != null ? password : IOUtils.getConfiguration("SQUONK_RABBITMQ_PASS", "squonk");
+        this.virtualHost = vHost != null ? vHost : IOUtils.getConfiguration("SQUONK_RABBITMQ_VHOST", "/squonk");
     }
 
     public String getHostname() {
@@ -59,8 +61,14 @@ public class MessageQueueCredentials {
         return virtualHost;
     }
 
-    public String getExchange() {
-        return exchange;
+    public String generateUrl(String exchange, String params) {
+        return "rabbitmq://" + getHostname()
+                + "/" + exchange
+                + "?vhost=" + getVirtualHost()
+                + "&username=" + getUsername()
+                + "&password=" + getPassword()
+                + params;
     }
+
 
 }

@@ -48,11 +48,15 @@ public class SimpleJobStore implements JobStore {
     @Override
     public List<JobStatus> listJobs(JobQuery query) {
         // query is ignored
-        List<JobStatus> list = new ArrayList<>();
-        for (Job job : getJobs()) {
-            list.add(job.getCurrentJobStatus());
+        try {
+            List<JobStatus> list = new ArrayList<>();
+            for (Job job : getJobs()) {
+                list.add(job.getCurrentJobStatus());
+            }
+            return list;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to list jobs", e);
         }
-        return list;
     }
 
 }

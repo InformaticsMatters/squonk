@@ -1,4 +1,4 @@
-package com.im.lac.services.job.service;
+package org.squonk.services.cell;
 
 import org.squonk.execution.variable.VariableLoader;
 import org.squonk.notebook.api.VariableKey;

@@ -9,3 +9,4 @@ export RABBITMQ_ERLANG_COOKIE=topsecret
 export SQUONK_RABBITMQ_VHOST="/squonk"
 export SQUONK_RABBITMQ_USER=squonk
 export SQUONK_RABBITMQ_PASS=squonk
+export SQUONK_SERVICES_CORE=http://${DOCKER_GATEWAY}/coreservices/rest/v1

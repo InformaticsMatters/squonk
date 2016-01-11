@@ -74,7 +74,7 @@ public class JobHandler implements ServerConstants {
 
     /**
      * Given a AbstractDatasetJob as the current body finds the dataset specified by the job and
-     * sets its contents as the body. Also sets headers {@link Constants.HEADER_JOB_ID} to the
+     * sets its contents as the body. Also sets headers {@link com.im.lac.services.CommonConstants.HEADER_JOB_ID} to the
      * appropriate property.
      *
      * @param exchange
@@ -139,7 +139,7 @@ public class JobHandler implements ServerConstants {
         exchange.getIn().setBody(results);
     }
 
-    protected static List<JobStatus> getJobStatuses(JobStore store) {
+    protected static List<JobStatus> getJobStatuses(JobStore store) throws Exception {
         List<JobStatus> results = new ArrayList<>();
         Date now = new Date();
         for (Job job : store.getJobs()) {
@@ -159,7 +159,7 @@ public class JobHandler implements ServerConstants {
         return results;
     }
 
-    public static void setJobStatus(Exchange exchange, JobStatus.Status status) {
+    public static void setJobStatus(Exchange exchange, JobStatus.Status status) throws Exception {
         AbstractDatasetJob job = JobHandler.getJobFromHeader(exchange, AbstractDatasetJob.class);
         if (job != null) {
             job.status = status;
@@ -171,7 +171,7 @@ public class JobHandler implements ServerConstants {
      *
      * @param exchange
      */
-    public static void putCurrentJobStatus(Exchange exchange) {
+    public static void putCurrentJobStatus(Exchange exchange) throws Exception {
         Job job = getJobFromHeader(exchange);
         if (job == null) {
             exchange.getIn().setBody(null);
@@ -185,7 +185,7 @@ public class JobHandler implements ServerConstants {
      *
      * @param exchange
      */
-    public static void putUpdatedJobStatus(Exchange exchange) {
+    public static void putUpdatedJobStatus(Exchange exchange) throws Exception {
         Job job = getJobFromHeader(exchange);
         if (job == null) {
             exchange.getIn().setBody(null);

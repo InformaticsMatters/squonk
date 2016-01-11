@@ -1,4 +1,6 @@
-# You must set various environment variables before running anything.
+# You must set various environment variables before running anything. 
+# These variables define things like usernames and passwords that will be used and allows
+# these to be easily set for different environments.
 # The easiest way is to create a shell script containing the definitions and 'source' it.
 # A template file is present called docker/deploy/setenv-default.sh
 # Copy this to docker/deploy/setenv.sh and edit it accordingly.
@@ -59,6 +61,7 @@ chemservices:
 # http://${DOCKER_GATEWAY}/coreservices/rest/ping
 # http://${DOCKER_GATEWAY}/coreservices/rest/v1/services
 # http://${DOCKER_GATEWAY}/coreservices/rest/v1/jobs
+# http://${DOCKER_GATEWAY}/coreservices/rest/v1/jobstatus
 # 
 coreservices:
     image: squonk/core-services
@@ -73,6 +76,7 @@ coreservices:
         SQUONK_RABBITMQ_USER:
         SQUONK_RABBITMQ_PASS:
         SQUONK_DB_SERVER: db
+        SQUONK_SERVICES_CORE:
         SQUONK_BASIC_CHEM_SERVICES_URL: "http://${DOCKER_GATEWAY}:9080"
 #        SQUONK_RDKIT_CHEM_SERVICES_URL
 

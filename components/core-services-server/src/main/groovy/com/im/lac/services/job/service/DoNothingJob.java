@@ -24,7 +24,7 @@ public class DoNothingJob<T extends DoNothingJobDefinition> extends AbstractJob<
         super();
         this.jobdef = jobdef;
         Date now = new Date();
-        jobStatus = new JobStatus(jobId, JobStatus.Status.COMPLETED, 0, 0, 0, now, now, jobdef, null, null);
+        jobStatus = new JobStatus(jobId, null, JobStatus.Status.COMPLETED, 0, 0, 0, now, now, jobdef, null, null);
     }
 
     @Override
