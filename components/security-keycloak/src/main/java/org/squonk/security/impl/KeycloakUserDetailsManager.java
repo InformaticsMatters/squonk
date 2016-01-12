@@ -2,7 +2,6 @@ package org.squonk.security.impl;
 
 import org.squonk.security.DefaultUserDetailsManager;
 import org.squonk.security.UserDetails;
-import org.squonk.security.UserDetailsManager;
 import java.net.URI;
 import javax.servlet.http.HttpServletRequest;
 import org.keycloak.KeycloakSecurityContext;

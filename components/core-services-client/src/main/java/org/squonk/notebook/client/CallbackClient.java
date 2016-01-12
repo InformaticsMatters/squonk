@@ -26,6 +26,15 @@ public class CallbackClient extends AbstractClient implements Serializable {
     @Inject
     private CallbackContext context;
 
+    public CallbackClient() {
+
+    }
+
+    public CallbackClient(CallbackClientConfig config, CallbackContext context) {
+        this.config = config;
+        this.context = context;
+    }
+
     public NotebookDTO retrieveNotebookDefinition() {
         MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
         queryParams.add("notebookId", context.getNotebookId().toString());

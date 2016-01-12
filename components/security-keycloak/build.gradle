@@ -7,11 +7,15 @@ repositories {
 dependencies {
     
     compile project(':security')
-    
-    compile 'org.slf4j:slf4j-api:1.7.7'
-    compile 'org.keycloak:keycloak-core:1.6.1.Final'
+
+    compile 'org.keycloak:keycloak-core:1.7.0.Final'
 
     testCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
     testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
     testCompile "cglib:cglib-nodep:3.2.0"
+}
+
+task copyDependencies(type: Sync) {
+    from configurations.compile
+    into 'lib'
 }

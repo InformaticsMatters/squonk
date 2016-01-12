@@ -2,6 +2,7 @@ package com.im.lac.services.job;
 
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.JobDefinition;
+import org.apache.camel.CamelContext;
 
 /**
  *
@@ -21,5 +22,7 @@ public interface Job<T extends JobDefinition> {
     void setStatus(JobStatus.Status status);
     
     T getJobDefinition();
+
+    JobStatus start(CamelContext context, String username) throws Exception;
 
 }

@@ -15,7 +15,7 @@ class JobHandlerSpec extends Specification {
         JobHandler h = new JobHandler()
         JobStore store = new SimpleJobStore()
         Date now = new Date()
-        store.putJob(new TestJob(new JobStatus("jobId1", JobStatus.Status.COMPLETED, 0, 0, 0, now, now, null, null)))
+        store.putJob(new TestJob(new JobStatus("jobId1", JobStatus.Status.COMPLETED, 0, 0, 0, now, now, null, null, null)))
         
         when:
         def results = h.getJobStatuses(store)
@@ -32,9 +32,9 @@ class JobHandlerSpec extends Specification {
         Date now = new Date()
         Date notsoold = new Date(now.time - (30 * 1000)) // 30s ago
         Date veryold = new Date(1)
-        store.putJob(new TestJob(new JobStatus("jobId1", JobStatus.Status.COMPLETED, 0, 0, 0, now, now, null, null)))
-        store.putJob(new TestJob(new JobStatus("jobId2", JobStatus.Status.COMPLETED, 0, 0, 0, notsoold, now, null, null)))
-        store.putJob(new TestJob(new JobStatus("jobId3", JobStatus.Status.COMPLETED, 0, 0, 0, veryold, now, null, null)))
+        store.putJob(new TestJob(new JobStatus("jobId1", JobStatus.Status.COMPLETED, 0, 0, 0, now, now, null, null, null)))
+        store.putJob(new TestJob(new JobStatus("jobId2", JobStatus.Status.COMPLETED, 0, 0, 0, notsoold, now, null, null, null)))
+        store.putJob(new TestJob(new JobStatus("jobId3", JobStatus.Status.COMPLETED, 0, 0, 0, veryold, now, null, null, null)))
         
         when:
         def results1 = h.getJobStatuses(store)

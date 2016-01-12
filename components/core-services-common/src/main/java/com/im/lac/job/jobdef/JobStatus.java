@@ -3,7 +3,10 @@ package com.im.lac.job.jobdef;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.im.lac.dataset.DataItem;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 /**
  *
@@ -25,6 +28,12 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
     private final Date completed;
     private final T jobDefinition;
     private final DataItem result;
+    private final List<String> events = new ArrayList<>();
+
+    public static <T extends JobDefinition> JobStatus<T> create(T jobDef, Date started) {
+        String jobId = UUID.randomUUID().toString();
+        return new JobStatus(jobId, Status.PENDING, -1, -1, -1, started, null, jobDef, null, null);
+    }
 
     public JobStatus(
             @JsonProperty("jobId") String jobId,
@@ -35,7 +44,9 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
             @JsonProperty("started") Date started,
             @JsonProperty("completed") Date completed,
             @JsonProperty("jobDefinition") T jobDefinition,
-            @JsonProperty("result") DataItem result) {
+            @JsonProperty("result") DataItem result,
+            @JsonProperty("events") List<String> events
+    ) {
         this.jobId = jobId;
         this.status = status;
         this.totalCount = totalCount;
@@ -45,6 +56,9 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         this.completed = completed;
         this.jobDefinition = jobDefinition;
         this.result = result;
+        if (events != null) {
+            this.events.addAll(events);
+        }
     }
 
     public String getJobId() {
@@ -81,6 +95,35 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
 
     public DataItem getResult() {
         return result;
+    }
+
+    public List<String> getEvents() {
+        return events;
+    }
+
+    public JobStatus withEvent(String event) {
+        List neu = new ArrayList<>();
+        neu.addAll(events);
+        neu.add(event);
+        return new JobStatus(this.jobId, status, this.totalCount, this.processedCount, 0, this.started, completed, this.jobDefinition, this.result, neu);
+    }
+
+    public JobStatus withStatus(Status status, Integer processedCount, String event) {
+        Date completed = null;
+        // TODO - block certain status transitions e.g. once complete doen't let status be changed
+        int processed = (processedCount == null ? -1 : processedCount.intValue());
+        if (status == Status.COMPLETED || status == Status.ERROR || status == Status.CANCELLED) {
+            // does the date come from java or the database?
+            completed = new Date();
+        }
+        if (event != null) {
+            List neu = new ArrayList<>();
+            neu.addAll(events);
+            neu.add(event);
+            return new JobStatus(this.jobId, status, this.totalCount, processed, 0, this.started, completed, this.jobDefinition, this.result, neu);
+        } else {
+            return new JobStatus(this.jobId, status, this.totalCount, processed, 0, this.started, completed, this.jobDefinition, this.result, this.events);
+        }
     }
 
     @Override

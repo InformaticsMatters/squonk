@@ -58,7 +58,7 @@ class DatasetServiceSpec extends Specification {
     }
     
     def "1.2 add update dataitem"() {
-        println "add update dataitem()"
+        println "add updateStatus dataitem()"
         
         setup:
         DataItem data = new DataItem(name: 'test1')

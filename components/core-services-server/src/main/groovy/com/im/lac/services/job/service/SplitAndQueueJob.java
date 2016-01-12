@@ -33,8 +33,8 @@ import java.util.logging.Logger;
  * <li>create a new queue for the response (dedicated to this job)</li>
  * <li>submit each item to request queue, specifying the queue name for the responses</li>
  * <li>monitor items from response queue</li>
- * <li>create/update dataset when requested</li>
- * <li>when response queue has expected totalCount then update dataset with final results</li>
+ * <li>create/updateStatus dataset when requested</li>
+ * <li>when response queue has expected totalCount then updateStatus dataset with final results</li>
  * <li>delete the response queue</li>
  * </ol>
  * </p>

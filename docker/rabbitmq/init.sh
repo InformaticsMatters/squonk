@@ -5,18 +5,18 @@
 # execute in docker like this:
 # docker exec <image_name> bash init.sh
 
-rabbitmqctl delete_vhost /unittest
-rabbitmqctl delete_vhost /prod
-rabbitmqctl delete_user admin
-rabbitmqctl delete_user tester
+rabbitmqctl delete_vhost $SQUONK_RABBITMQ_VHOST
+rabbitmqctl delete_user guest
+rabbitmqctl delete_user $RABBITMQ_DEFAULT_USER
+rabbitmqctl delete_user $SQUONK_RABBITMQ_USER
 
-rabbitmqctl add_vhost /unittest
-rabbitmqctl add_vhost /prod
-rabbitmqctl add_user admin lacrocks
-rabbitmqctl set_user_tags admin administrator
-rabbitmqctl add_user tester lacrocks
-rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
-rabbitmqctl set_permissions -p /unittest admin ".*" ".*" ".*"
-rabbitmqctl set_permissions -p /prod admin ".*" ".*" ".*"
-rabbitmqctl set_permissions -p /unittest tester ".*" ".*" ".*"
-rabbitmqctl set_permissions -p /prod tester ".*" ".*" ".*"
+rabbitmqctl add_vhost $SQUONK_RABBITMQ_VHOST
+
+rabbitmqctl add_user $RABBITMQ_DEFAULT_USER $RABBITMQ_DEFAULT_PASS
+rabbitmqctl add_user $SQUONK_RABBITMQ_USER $SQUONK_RABBITMQ_PASS
+
+rabbitmqctl set_user_tags $RABBITMQ_DEFAULT_USER administrator
+
+rabbitmqctl set_permissions -p /                      $RABBITMQ_DEFAULT_USER ".*" ".*" ".*"
+rabbitmqctl set_permissions -p $SQUONK_RABBITMQ_VHOST $RABBITMQ_DEFAULT_USER ".*" ".*" ".*"
+rabbitmqctl set_permissions -p $SQUONK_RABBITMQ_VHOST $SQUONK_RABBITMQ_USER  ".*" ".*" ".*"
