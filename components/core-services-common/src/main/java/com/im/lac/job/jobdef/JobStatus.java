@@ -23,17 +23,16 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
     private final String username;
     private final Status status;
     private final int totalCount;
-    private final int processedCount;
-    private final int pendingCount;
+    private final int processedCount;;
     private final Date started;
     private final Date completed;
     private final T jobDefinition;
     private final DataItem result;
     private final List<String> events = new ArrayList<>();
 
-    public static <T extends JobDefinition> JobStatus<T> create(T jobDef, String username, Date started) {
+    public static <T extends JobDefinition> JobStatus<T> create(T jobDef, String username, Date started, Integer totalCount) {
         String jobId = UUID.randomUUID().toString();
-        return new JobStatus(jobId, username, Status.PENDING, -1, -1, -1, started, null, jobDef, null, null);
+        return new JobStatus(jobId, username, Status.PENDING, totalCount == null ? 0 : totalCount, 0, started, null, jobDef, null, null);
     }
 
     public JobStatus(
@@ -42,7 +41,6 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
             @JsonProperty("status") Status status,
             @JsonProperty("totalCount") int totalCount,
             @JsonProperty("processedCount") int processedCount,
-            @JsonProperty("pendingCount") int pendingCount,
             @JsonProperty("started") Date started,
             @JsonProperty("completed") Date completed,
             @JsonProperty("jobDefinition") T jobDefinition,
@@ -54,7 +52,6 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         this.status = status;
         this.totalCount = totalCount;
         this.processedCount = processedCount;
-        this.pendingCount = pendingCount;
         this.started = started;
         this.completed = completed;
         this.jobDefinition = jobDefinition;
@@ -84,9 +81,6 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         return processedCount;
     }
 
-    public int getPendingCount() {
-        return pendingCount;
-    }
 
     public Date getStarted() {
         return started;
@@ -112,7 +106,7 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         List neu = new ArrayList<>();
         neu.addAll(events);
         neu.add(event);
-        return new JobStatus(this.jobId, this.username, status, this.totalCount, this.processedCount, 0, this.started, completed, this.jobDefinition, this.result, neu);
+        return new JobStatus(this.jobId, this.username, status, this.totalCount, this.processedCount, this.started, completed, this.jobDefinition, this.result, neu);
     }
 
     public JobStatus withStatus(Status status, Integer processedCount, String event) {
@@ -127,9 +121,9 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
             List neu = new ArrayList<>();
             neu.addAll(events);
             neu.add(event);
-            return new JobStatus(this.jobId, this.username, status, this.totalCount, processed, 0, this.started, completed, this.jobDefinition, this.result, neu);
+            return new JobStatus(this.jobId, this.username, status, this.totalCount, processed, this.started, completed, this.jobDefinition, this.result, neu);
         } else {
-            return new JobStatus(this.jobId, this.username, status, this.totalCount, processed, 0, this.started, completed, this.jobDefinition, this.result, this.events);
+            return new JobStatus(this.jobId, this.username, status, this.totalCount, processed, this.started, completed, this.jobDefinition, this.result, this.events);
         }
     }
 

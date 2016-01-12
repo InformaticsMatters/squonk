@@ -3,7 +3,6 @@ package com.im.lac.services.job.service
 import com.im.lac.job.jobdef.ExecuteCellUsingStepsJobDefinition
 import com.im.lac.job.jobdef.JobStatus
 import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition
-import com.im.lac.services.job.dao.MemoryJobStatusClient
 import org.apache.camel.CamelContext
 import org.squonk.execution.steps.StepDefinition
 import org.squonk.execution.steps.impl.EchoStep
@@ -25,23 +24,21 @@ class StepsCellJobSpec extends Specification {
                 ["output":"output"])
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(1, "cell1", steps);
-        MemoryJobStatusClient jobstatusClient = new MemoryJobStatusClient()
-
         int camelCounter = 0
 
         when:
-        StepsCellJob job = new StepsCellJob(jobdef, jobstatusClient) {
-            protected void startJob(CamelContext camelContext, String jobid, String username) {
+        StepsCellJob job = new StepsCellJob(jobdef) {
+            protected void startJob(CamelContext camelContext, String username) {
                 camelCounter++
             }
         }
-        JobStatus status = job.start(null, "username")
+        JobStatus status = job.start(null, "username", 0)
 
 
         then:
         status.status == JobStatus.Status.RUNNING
         status.getJobId() != null
-        jobstatusClient.list(null).size() == 1
+        job.jobstatusClient.list(null).size() == 1
         camelCounter == 1
 
     }

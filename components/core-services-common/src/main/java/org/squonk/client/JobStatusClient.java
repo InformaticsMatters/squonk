@@ -18,7 +18,7 @@ public interface JobStatusClient {
      * @param totalCount The total number of work units, or null if unknown
      * @return The Job ID
      */
-    JobStatus create(JobDefinition jobdef, String username, Integer totalCount) throws IOException;
+    JobStatus submit(JobDefinition jobdef, String username, Integer totalCount) throws IOException;
 
     /** Fetch the current status for the job with this ID
      *

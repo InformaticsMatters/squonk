@@ -32,20 +32,30 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
     }
 
     public JobStatusRestClient() {
-        this.baseUrl = IOUtils.getConfiguration("SQUONK_SERVICES_CORE", "http://localhost/coreservices/rest/v1") + "/jobstatus";
+        this.baseUrl = IOUtils.getConfiguration("SQUONK_SERVICES_CORE", "http://localhost/coreservices/rest/v1" + "/jobs");
     }
 
-    /** Post this Job.
+    /**
+     * Submit this as a new Job. This is the entrypoint for submitting a job.
      *
-     * @param jobdef The Job definition
-     * @param username
-     * @param totalCount The total number of work units, or null if unknown
-     * @return The current job status. Hopefully the job is RUNNING, but it could already have caused an ERROR
+     * @param username Username of the authenticated user
+     * @param jobdef The definition of the job
+     * @return The status of the submitted job, which includes the job ID that can be used to
+     * further monitor and handle the job.
+     * @throws java.io.IOException
      */
-    public JobStatus create(JobDefinition jobdef, String username, Integer totalCount) throws IOException {
-        LOG.fine("create() " + jobdef + " - " + username);
-        URIBuilder b = new URIBuilder().setPath(baseUrl);
+    public JobStatus submit(JobDefinition jobdef, String username, Integer totalCount) throws IOException {
+        if (jobdef == null) {
+            throw new IllegalStateException("Job definition must be specified");
+        }
+        if (username == null) {
+            throw new IllegalStateException("Username must be specified");
+        }
         String json = toJson(jobdef);
+        URIBuilder b = new URIBuilder().setPath(baseUrl);
+        if (totalCount != null && totalCount > 0) {
+            b = b.setParameter(CommonConstants.HEADER_JOB_SIZE, totalCount.toString());
+        }
         LOG.fine("About to post job of " + json);
         InputStream result = executePostAsInputStream( b, json, new BasicNameValuePair(CommonConstants.HEADER_SQUONK_USERNAME, username));
         return fromJson(result, JobStatus.class);

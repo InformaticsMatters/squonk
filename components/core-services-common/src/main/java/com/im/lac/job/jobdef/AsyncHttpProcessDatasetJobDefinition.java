@@ -41,7 +41,7 @@ public class AsyncHttpProcessDatasetJobDefinition
      * dataset onto a service uses both types of interface).
      *
      * The basic flow would be like this: 1. the ServiceDescriptor's AccessMode specifies the class
-     * name of the JobDefintion and the necessary information to create the UI. 2. When user
+     * name of the JobDefintion and the necessary information to submit the UI. 2. When user
      * executes the specified service the JobDefintion class is instantiated with this zero-arg
      * constructor. 3. If the JobDefintion implements the appropriate interfaces it is configured by
      * calling those methods accordingly. 4. The configured JobDefintion is sent for execution and

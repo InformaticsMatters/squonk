@@ -21,7 +21,6 @@ class JobStatusJsonSpec extends Specification {
             JobStatus.Status.COMPLETED,
             0,
             0,
-            0,
             new Date(),
             new Date(),
             new DoNothingJobDefinition(),

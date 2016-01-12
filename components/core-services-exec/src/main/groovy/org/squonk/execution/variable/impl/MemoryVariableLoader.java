@@ -26,7 +26,7 @@ public class MemoryVariableLoader implements VariableLoader {
     }
 
     /**
-     * Allows to create initial values for testing
+     * Allows to submit initial values for testing
      *
      * @param values
      */

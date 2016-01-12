@@ -64,7 +64,7 @@ task dockerFile(type: Dockerfile, dependsOn: war) {
     runCommand("echo JAVA_OPTS=\'-Dcom.sun.jersey.server.impl.cdi.lookupExtensionInBeanManager=true\' > /usr/local/tomcat/bin/setenv.sh")
     
     def warFile = tasks.war.outputs.files.singleFile
-    addFile('libs/core-services/' + warFile.name, "/usr/local/tomcat/webapps/${contextName}.war")
+    addFile('libs/' + warFile.name, "/usr/local/tomcat/webapps/${contextName}.war")
     
     exposePort(8080)
 }

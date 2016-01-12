@@ -1,13 +1,11 @@
 package com.im.lac.services.job.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.im.lac.job.client.JobStatusRestClient;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition;
 import com.im.lac.services.job.Job;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
-import org.squonk.client.JobStatusClient;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.types.io.JsonHandler;
 
@@ -25,28 +23,22 @@ import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANG
  */
 public class StepsCellJob  implements Job<StepsCellExecutorJobDefinition> {
 
-    private static final Logger LOG = Logger.getLogger(AbstractDatasetJob.class.getName());
+    private static final Logger LOG = Logger.getLogger(StepsCellJob.class.getName());
 
     protected final StepsCellExecutorJobDefinition jobdef;
     protected String jobid;
-    protected static JobStatusClient jobstatusClient = new JobStatusRestClient();
+    protected static MemoryJobStatusClient jobstatusClient = MemoryJobStatusClient.INSTANCE;
     private static MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials();
     private static final String mqueueUrl = rabbitmqCredentials.generateUrl(MQUEUE_JOB_STEPS_EXCHANGE_NAME,MQUEUE_JOB_STEPS_EXCHANGE_PARAMS);
 
-    protected StepsCellJob(StepsCellExecutorJobDefinition jobdef,JobStatusClient jobstatusClient) {
-        this.jobdef = jobdef;
-        this.jobstatusClient = jobstatusClient;
-    }
 
     public StepsCellJob(StepsCellExecutorJobDefinition jobdef) {
         this.jobdef = jobdef;
-        this.jobstatusClient = new JobStatusRestClient();
     }
 
     public StepsCellJob(JobStatus<StepsCellExecutorJobDefinition> jobStatus) {
         this.jobdef = jobStatus.getJobDefinition();
         this.jobid = jobStatus.getJobId();
-        this.jobstatusClient = new JobStatusRestClient();
     }
 
     @Override
@@ -79,23 +71,23 @@ public class StepsCellJob  implements Job<StepsCellExecutorJobDefinition> {
         return jobdef;
     }
 
-    public JobStatus start(CamelContext camelContext, String username) throws Exception {
-        LOG.finer("start() " + jobdef);
+    public JobStatus start(CamelContext camelContext, String username, Integer totalCount) throws Exception {
+        LOG.finer("submit() " + jobdef);
 
         if (jobdef.getNotebookId() == null) {
-            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to start job as notebook ID is not defined");
+            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to submit job as notebook ID is not defined");
         }
         if (jobdef.getCellName() == null) {
-            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to start job as notebook cell name is not defined");
+            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to submit job as notebook cell name is not defined");
         }
         if (jobdef.getSteps() == null || jobdef.getSteps().length == 0) {
-            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to start job as no steps were defined");
+            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to submit job as no steps were defined");
         }
 
         try {
-            JobStatus status = jobstatusClient.create(jobdef, username, -1);
+            JobStatus status = jobstatusClient.submit(jobdef, username, totalCount);
             jobid = status.getJobId();
-            startJob(camelContext, jobid, username);
+            startJob(camelContext, username);
             return jobstatusClient.updateStatus(jobid, JobStatus.Status.RUNNING);
         } catch (Throwable t) {
             StringBuilder b = new StringBuilder("Job submission failed: ").append(t.getMessage());
@@ -105,7 +97,7 @@ public class StepsCellJob  implements Job<StepsCellExecutorJobDefinition> {
         }
     }
 
-    protected void startJob(CamelContext camelContext, String jobid, String username) throws JsonProcessingException {
+    protected void startJob(CamelContext camelContext, String username) throws JsonProcessingException {
         ProducerTemplate pt = camelContext.createProducerTemplate();
         String json = JsonHandler.getInstance().objectToJson(jobdef);
         Map<String,Object> headers = new HashMap<>();

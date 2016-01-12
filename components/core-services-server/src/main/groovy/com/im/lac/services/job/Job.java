@@ -23,6 +23,6 @@ public interface Job<T extends JobDefinition> {
     
     T getJobDefinition();
 
-    JobStatus start(CamelContext context, String username) throws Exception;
+    JobStatus start(CamelContext context, String username, Integer totalCount) throws Exception;
 
 }

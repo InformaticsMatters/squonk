@@ -17,10 +17,10 @@ import java.io.Serializable;
  * what types of values are valid
  *
  * TODO - specification of text: How to distinguish a short bit of text from multi-line text. Do we 
- * create a specific Text class that allows these sorts of things to be specified?
+ * submit a specific Text class that allows these sorts of things to be specified?
  *
  * TODO - molecules: how to handle aspects of molecules e.g. for query molecules implicit hydrogens
- * should not be displayed. Do we create a specific QueryMolecule class?
+ * should not be displayed. Do we submit a specific QueryMolecule class?
  *
  *
  * @author Tim Dudgeon

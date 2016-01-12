@@ -11,6 +11,7 @@
 # To build the docker images move to the directory above this and run:
 # ./build-internal.sh     <--- builds the containers containing our code
 # ./build-external.sh     <--- builds the postgres and rabbitmq containers (should only need doing once, or when something changes in these)
+# To build the portal docker image move into ../portal and run build.sh
 #
 # Once running you can set up the RabbitMQ users by running:
 # docker exec deploy_mq_1 bash init.sh
@@ -56,7 +57,7 @@ chemservices:
     - "9080:8080"
 
 
-################# core services container #########################################
+################# core-services-server container #########################################
 # available on:
 # http://${DOCKER_GATEWAY}/coreservices/rest/ping
 # http://${DOCKER_GATEWAY}/coreservices/rest/v1/services
@@ -64,9 +65,9 @@ chemservices:
 # http://${DOCKER_GATEWAY}/coreservices/rest/v1/jobstatus
 # 
 coreservices:
-    image: squonk/core-services
+    image: squonk/core-services-server
     ports:
-    - 80:8080
+    - 8080:8080
     links:
     - db:db
     - mq:rabbitmq
@@ -81,13 +82,35 @@ coreservices:
 #        SQUONK_RDKIT_CHEM_SERVICES_URL
 
 
+################# core-services-notebook container #########################################
+# NOTE - these will be merged into core-services-server
+# available on:
+# http://${DOCKER_GATEWAY}:8081/notebook/ws/cell
+# 
+notebookservices:
+    image: squonk/core-services-notebook
+    ports:
+    - 8081:8080
+    environment:
+        SERVICE_CALLBACK: http://${DOCKER_GATEWAY}/ws/callback
+
 
 ################# swagger container ###############################################
-swagger:
-    image: sjeandeaux/docker-swagger-ui
+#swagger:
+#    image: sjeandeaux/docker-swagger-ui
+#    ports:
+#        - "8888:8888"
+#    environment: 
+#        API_URL: http://${DOCKER_GATEWAY}/coreservices/api-docs
+
+
+################# portal ##########################################################
+portal:
+    image: squonk/portal
     ports:
-        - "8888:8888"
-    environment: 
-        API_URL: http://${DOCKER_GATEWAY}/coreservices/api-docs
+    - "80:8080"
+    environment:
+        SERVICE_CELL_EXECUTION: "http://${DOCKER_GATEWAY}:8081/notebook/ws/cell"
+
         
 

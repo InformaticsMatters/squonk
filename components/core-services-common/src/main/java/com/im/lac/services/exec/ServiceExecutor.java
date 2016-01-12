@@ -15,7 +15,7 @@ public class ServiceExecutor {
     private String endpoint;
 
     /**
-     * Parameters for the invocation. The keys must start with .header or .query
+     * Parameters for the invocation. The keys must submit with .header or .query
      * to specify of they are query or header invocationParameters. Example: a
      * key of header.min_clusters specifies that a header name min_clusters
      * should be set with the corresponding value.

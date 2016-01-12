@@ -144,7 +144,7 @@ public abstract class AbstractStep implements Step {
     }
 
     /**
-     * Map the variable name and then create it. See {@link #createVariable} for 
+     * Map the variable name and then submit it. See {@link #createVariable} for
      * details.
      *
      * @param <T>

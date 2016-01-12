@@ -179,7 +179,7 @@ public class DatasetHandler implements ServerConstants {
                 DataItem di = service.addDataItem(sql, username, neu, marshalResults.getInputStream());
                 return di;
             } catch (Exception ex) {
-                throw new RuntimeException("Failed to create dataset", ex);
+                throw new RuntimeException("Failed to submit dataset", ex);
             } finally {
                 IOHelper.close(marshalResults.getInputStream());
             }

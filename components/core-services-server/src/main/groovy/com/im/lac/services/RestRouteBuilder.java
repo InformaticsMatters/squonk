@@ -2,13 +2,14 @@ package com.im.lac.services;
 
 import com.im.lac.dataset.DataItem;
 import com.im.lac.dataset.Metadata;
+import com.im.lac.job.jobdef.ExecuteCellUsingStepsJobDefinition;
 import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.services.dataset.service.DatasetHandler;
 import com.im.lac.services.discovery.service.ServiceDiscoveryRouteBuilder;
-import com.im.lac.services.job.dao.MemoryJobStatusClient;
-import com.im.lac.services.job.service.JobHandler;
-import com.im.lac.services.job.service.JobServiceRouteBuilder;
+import com.im.lac.services.job.Job;
+import com.im.lac.services.job.service.MemoryJobStatusClient;
+import com.im.lac.services.job.service.StepsCellJob;
 import com.im.lac.services.user.User;
 import com.im.lac.services.user.UserHandler;
 import com.im.lac.services.util.Utils;
@@ -80,7 +81,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
         rest("/v1/datasets").description("Dataset management services")
                 // POST
                 .post()
-                .description("Upload file to create new dataset. File is the body and dataset name is given by the header named " + CommonConstants.HEADER_DATAITEM_NAME)
+                .description("Upload file to submit new dataset. File is the body and dataset name is given by the header named " + CommonConstants.HEADER_DATAITEM_NAME)
                 .bindingMode(RestBindingMode.off)
                 .produces("application/json")
                 .route()
@@ -120,39 +121,8 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .setBody(simple("${body.inputStream}"))
                 .endRest();
 
-        rest("/v1/jobs").description("Job submission and management services")
-                //
-                // GET statuses
-                // TODO - handle filter criteria
-                .get("/").description("Get the statuses of jobs")
-                .bindingMode(RestBindingMode.json).produces("application/json")
-                .outType(JobStatus.class)
-                .route()
-                .process((Exchange exch) -> JobHandler.putJobStatuses(exch))
-                .endRest()
-                //
-                // GET status
-                .get("/{" + REST_JOB_ID + "}").description("Get the latest status of an individual job")
-                .bindingMode(RestBindingMode.json).produces("application/json")
-                .outType(JobStatus.class)
-                .route()
-                .process((Exchange exch) -> JobHandler.putUpdatedJobStatus(exch))
-                .endRest()
-                //
-                // POST new async process dataset job
-                // can be testing by posing JSON like this: 
-                // {"endpoint": "direct:simpleroute", "datasetId": 44, "mode": "CREATE", "datasetName": "holy cow","resultType": "com.im.lac.types.MoleculeObject"}
-                .post().description("Submit a new job defined the by the supplied JobDefinition")
-                .bindingMode(RestBindingMode.json)
-                .consumes("application/json").type(JobDefinition.class)
-                .produces("application/json").outType(JobStatus.class)
-                .route()
-                .log("REST POST jobdef: ${body}")
-                .to(JobServiceRouteBuilder.ROUTE_SUBMIT_JOB)
-                .endRest();
 
-
-        rest("/v1/jobstatus").description("JobStatus services")
+        rest("/v1/jobs").description("Job submission and status services")
                 //
                 // GET statuses
                 // TODO - handle filter criteria
@@ -176,8 +146,8 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 })
                 .endRest()
                 //
-                // create new job status
-                .post("/").description("Create a new job status")
+                // submit new job
+                .post("/").description("Submit a new job")
                 .bindingMode(RestBindingMode.off).produces("application/json")
                 .outType(JobStatus.class)
                 .route()
@@ -185,12 +155,16 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     String json = exch.getIn().getBody(String.class);
                     LOG.finer("JSON is " + json);
                     JobDefinition jobdef = JsonHandler.getInstance().objectFromJson(json, JobDefinition.class);
-                    LOG.fine("Received request to create job for " + jobdef);
-                    String username = exch.getIn().getHeader(HEADER_SQUONK_USERNAME, String.class);
-                    if (username == null) {
-                        throw new IllegalStateException("Username not specified");
+                    LOG.fine("Received request to submit job for " + jobdef);
+
+                    Integer count = exch.getIn().getHeader(HEADER_JOB_SIZE, Integer.class);
+                    Job job = null;
+                    if (jobdef instanceof ExecuteCellUsingStepsJobDefinition) {
+                        job = new StepsCellJob((ExecuteCellUsingStepsJobDefinition)jobdef);
+                    } else {
+                        throw new IllegalStateException("Job definition type " + jobdef.getClass().getName() + " not currently supported");
                     }
-                    JobStatus result = jobstatusClient.create(jobdef, username, 0);
+                    JobStatus result = job.start(exch.getContext(), Utils.fetchUsername(exch), count);
                     String jsonResult = JsonHandler.getInstance().objectToJson(result);
                     exch.getIn().setBody(jsonResult);
                 })

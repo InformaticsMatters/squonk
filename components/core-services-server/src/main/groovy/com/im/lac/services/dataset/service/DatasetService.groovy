@@ -51,7 +51,7 @@ class DatasetService {
     //        Sql db = new Sql(dataSource)
     //        try {
     //            db.firstRow('select count(*) from ' + tableName)
-    //            log.warning("Table " + tableName + " exsits - will not create")
+    //            log.warning("Table " + tableName + " exsits - will not submit")
     //        } catch (SQLException se) {
     //            createTable(db)
     //        }

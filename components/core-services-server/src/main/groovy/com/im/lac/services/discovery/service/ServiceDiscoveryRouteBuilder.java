@@ -6,7 +6,6 @@ import com.im.lac.job.jobdef.DoNothingJobDefinition;
 import com.im.lac.services.AccessMode;
 import com.im.lac.services.ServerConstants;
 import com.im.lac.services.ServiceDescriptor;
-import com.im.lac.services.job.service.AsyncJobRouteBuilder;
 import org.squonk.types.io.JsonHandler;
 
 import java.util.*;
@@ -76,7 +75,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             new ServiceDescriptor(
                     "test.noop",
                     "NOOP Service",
-                    "Does nothing other than create a Job",
+                    "Does nothing other than submit a Job",
                     new String[]{"testing"},
                     null,
                     new String[]{"/Testing"},
@@ -95,69 +94,6 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                                     "valueIsIgnored", // endpoint
                                     false, // URL is relative
                                     DoNothingJobDefinition.class,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    null)
-                    }
-            ),
-//        new ServiceDescriptor(
-//        "test.echo.http",
-//        "Echo Service (HTTP)",
-//        "Reads a dataset and writes it back as a new dataset",
-//        new String[]{"testing"
-//        },
-//        null,
-//        new String[]{"/Testing"
-//        },
-//        "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
-//        null,
-//        new String[]{"testing"},
-//        Object.class, // inputClass
-//        Object.class, // outputClass
-//        Metadata.Type.ARRAY, // inputType
-//        Metadata.Type.ARRAY, // outputType
-//        new AccessMode[]{
-//            new AccessMode(
-//            "asyncHttp",
-//            "Immediate execution",
-//            "Execute as an asynchronous REST web service",
-//            "http://" + DOCKER_IP + "/coreservices/rest/echo", // the  endpoint
-//            false, // URL is relative
-//            AsyncHttpProcessDatasetJobDefinition.class,
-//            null,
-//            null,
-//            null,
-//            null,
-//            null)
-//        }
-//        ),
-            new ServiceDescriptor(
-                    "test.echo.local",
-                    "Echo Service (local)",
-                    "Reads a dataset and writes it back as a new dataset",
-                    new String[]{"testing"
-                    },
-                    null,
-                    new String[]{"/Testing"
-                    },
-                    "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
-                    null,
-                    new String[]{"testing"},
-                    Object.class, // inputClass
-                    Object.class, // outputClass
-                    Metadata.Type.ARRAY, // inputType
-                    Metadata.Type.ARRAY, // outputType
-                    new AccessMode[]{
-                            new AccessMode(
-                                    "asyncLocal",
-                                    "Immediate execution",
-                                    "Execute as an asynchronous REST web service",
-                                    AsyncJobRouteBuilder.ROUTE_DUMMY, // the direct:simpleroute endpoint
-                                    false, // URL is relative
-                                    AsyncLocalProcessDatasetJobDefinition.class,
                                     null,
                                     null,
                                     null,

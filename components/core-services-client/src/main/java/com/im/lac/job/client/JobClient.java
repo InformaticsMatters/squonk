@@ -55,9 +55,9 @@ public class JobClient {
      * @param max The maximum number of jobs to retrieve. If less than 1 all jobs matching the other
      * filters are retrieved.
      * @param status One or more status filters. Can be null if no filter.
-     * @param submissionTimeStart The start time for the job submission period. Can be null.
+     * @param submissionTimeStart The submit time for the job submission period. Can be null.
      * @param submissionTimeEnd The end time for the job submission period. Can be null.
-     * @param completionTimeStart The start time for the job completion period. Can be null.
+     * @param completionTimeStart The submit time for the job completion period. Can be null.
      * @param completionTimeEnd The end time for the job completion period. Can be null.
      * @return A list of job statuses matching the filters
      * @throws java.io.IOException

@@ -57,7 +57,7 @@ public class RdkitSearchRouteBuilder extends RouteBuilder {
 //        CamelContext context = new DefaultCamelContext();
 //        String route = "direct:rdkitEmoleculesBBSearch";
 //        context.addRoutes(new RdkitSearchRouteBuilder(emolsBBSearcher, route));
-//        context.start();
+//        context.submit();
 //        try {
 //            ProducerTemplate pt = context.createProducerTemplate();
 //            StructureSearch search = new SubstructureSearch("[#8]-[#6](=O)-[#6]-1=[#6]-[#6]=[#6]-[#6]=[#6]-1-[#8]", false, 100);

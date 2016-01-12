@@ -19,7 +19,7 @@ import java.util.Map;
  * <li>Submit the job definition using the {@link com.im.lac.job.client.JobClient}.</li>
  * </ol>
  * <br>
- * Potential issue: we assume we always start with a ServiceDescriptor. There could be jobs that don't use services?
+ * Potential issue: we assume we always submit with a ServiceDescriptor. There could be jobs that don't use services?
  *
  * @author timbo
  */

@@ -1,4 +1,4 @@
-package com.im.lac.services.job.dao;
+package com.im.lac.services.job.service;
 
 import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobQuery;
@@ -21,10 +21,9 @@ public class MemoryJobStatusClient implements JobStatusClient {
 
     private final Map<String,JobStatus> store = new LinkedHashMap<>();
 
-    @Override
-    public JobStatus create(JobDefinition jobdef, String username, Integer totalCount) {
+    public JobStatus submit(JobDefinition jobdef, String username, Integer totalCount) {
         LOG.finer("Registering JobDef: " + jobdef);
-        JobStatus status = JobStatus.create(jobdef, username, new Date());
+        JobStatus status = JobStatus.create(jobdef, username, new Date(), totalCount);
         store.put(status.getJobId(), status);
         return status;
     }
@@ -53,6 +52,16 @@ public class MemoryJobStatusClient implements JobStatusClient {
             store.put(id, nue);
             return nue;
         }
+    }
+
+    @Override
+    public JobStatus updateStatus(String id, JobStatus.Status status) {
+        return updateStatus(id, status, null, 0);
+    }
+
+    @Override
+    public JobStatus updateStatus(String id, JobStatus.Status status, String event) {
+        return updateStatus(id, status, event, 0);
     }
 
     @Override

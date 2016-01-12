@@ -63,7 +63,7 @@ public class Main {
                 try {
                     camelContext.start();
                 } catch (Exception ex) {
-                    LOG.log(Level.SEVERE, "Failed to start Camel", ex);
+                    LOG.log(Level.SEVERE, "Failed to submit Camel", ex);
                 }
             }
         };

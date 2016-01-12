@@ -16,8 +16,13 @@ echo "... chem-services-basic docker image built"
 
 echo "building core-services docker image ..."
 ./gradlew --daemon core-services-server:dockerFile &&
-  docker build -t squonk/core-services core-services-server/build
+  docker build -t squonk/core-services-server core-services-server/build
 echo "... core-services docker image built"
+
+echo "building core-services-notebook docker image ..."
+./gradlew --daemon core-services-notebook:dockerFile &&
+  docker build -t squonk/core-services-notebook core-services-notebook/build
+echo "... core-services-notebook docker image built"
 
 
 echo finished
