@@ -71,6 +71,7 @@ coreservices:
     links:
     - db:db
     - mq:rabbitmq
+    - chemservices:chemservices
     environment:
         SQUONK_RABBITMQ_HOST: rabbitmq
         SQUONK_RABBITMQ_VHOST:
@@ -78,7 +79,7 @@ coreservices:
         SQUONK_RABBITMQ_PASS:
         SQUONK_DB_SERVER: db
         SQUONK_SERVICES_CORE:
-        SQUONK_BASIC_CHEM_SERVICES_URL: "http://${DOCKER_GATEWAY}:9080"
+        SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
 #        SQUONK_RDKIT_CHEM_SERVICES_URL
 
 
@@ -92,7 +93,7 @@ notebookservices:
     ports:
     - 8081:8080
     environment:
-        SERVICE_CALLBACK: http://${DOCKER_GATEWAY}/ws/callback
+        SERVICE_CALLBACK:
 
 
 ################# swagger container ###############################################
@@ -107,10 +108,14 @@ notebookservices:
 ################# portal ##########################################################
 portal:
     image: squonk/portal
+    hostname: portal
     ports:
     - "80:8080"
+    links:
+    - db:db
+    - notebookservices:notebookservices
     environment:
-        SERVICE_CELL_EXECUTION: "http://${DOCKER_GATEWAY}:8081/notebook/ws/cell"
+        SERVICE_CELL_EXECUTION: "http://notebookservices:8080/notebook/ws/cell" # internal port
 
         
 

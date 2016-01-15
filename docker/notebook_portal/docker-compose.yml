@@ -4,3 +4,5 @@ portal:
     - "80:8080"
     environment:
         SERVICE_CELL_EXECUTION: "http://localhost:8080/notebook/ws/cell"
+        HELLO_WORLD_VAR:
+
