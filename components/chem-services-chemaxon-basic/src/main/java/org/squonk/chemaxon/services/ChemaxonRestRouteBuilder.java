@@ -1,16 +1,17 @@
 package org.squonk.chemaxon.services;
 
+import org.squonk.options.OptionDescriptor;
 import org.squonk.camel.util.CamelUtils;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
 import com.im.lac.services.AccessMode;
 import com.im.lac.services.ServiceDescriptor;
-import com.im.lac.services.ServicePropertyDescriptor;
 import com.im.lac.types.MoleculeObject;
 import java.util.logging.Logger;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
+import org.squonk.options.types.DiscreteStructure;
 
 /**
  *
@@ -107,9 +108,9 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "asyncHttp",
                         "screening/ecfp4",
                         0.001f,
-                        new ServicePropertyDescriptor[]{
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRUCTURE, KEY_QMOL, LABEL_QMOL, DESC_QMOL),
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
+                        new OptionDescriptor[]{
+                            new OptionDescriptor(DiscreteStructure.class, KEY_QMOL, LABEL_QMOL, DESC_QMOL),
+                            new OptionDescriptor(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF, 0.7f)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
                 createServiceDescriptor(
@@ -121,9 +122,9 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "asyncHttp",
                         "screening/pharmacophore",
                         0.004f,
-                        new ServicePropertyDescriptor[]{
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRUCTURE, KEY_QMOL, LABEL_QMOL, DESC_QMOL),
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.FLOAT, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF)
+                        new OptionDescriptor[]{
+                            new OptionDescriptor(DiscreteStructure.class, KEY_QMOL, LABEL_QMOL, DESC_QMOL),
+                            new OptionDescriptor(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF, 0.7f)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
                 createServiceDescriptor(
@@ -135,15 +136,15 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "asyncHttp",
                         "clustering/spherex/ecfp4",
                         0.002f,
-                        new ServicePropertyDescriptor[]{
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.INTEGER, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS),
-                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.INTEGER, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS)
+                        new OptionDescriptor[]{
+                            new OptionDescriptor(Integer.class, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS, 5),
+                            new OptionDescriptor(Integer.class, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS, 10)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter")
             };
 
     static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags,
-            String[] paths, String modeId, String endpoint, float cost, ServicePropertyDescriptor[] props, String adapterClass) {
+                                                     String[] paths, String modeId, String endpoint, float cost, OptionDescriptor[] props, String adapterClass) {
         return new ServiceDescriptor(
                 serviceDescriptorId,
                 name,

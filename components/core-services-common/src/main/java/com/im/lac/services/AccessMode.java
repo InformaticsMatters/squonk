@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.im.lac.job.jobdef.JobDefinition;
+import org.squonk.options.OptionDescriptor;
+
 import java.io.Serializable;
 
 /**
@@ -24,7 +26,7 @@ public class AccessMode implements Serializable {
     final Integer maxSize;
     final Float cost;
     final ServiceDescriptor.LicenseToken[] requiredLicenseTokens;
-    final ServicePropertyDescriptor[] parameters;
+    final OptionDescriptor[] parameters;
     final String adapterClassName;
 
     @JsonCreator
@@ -39,7 +41,7 @@ public class AccessMode implements Serializable {
             @JsonProperty("maxSize") Integer maxSize,
             @JsonProperty("cost") Float cost,
             @JsonProperty("requiredLicenseTokens") ServiceDescriptor.LicenseToken[] requiredLicenseTokens,
-            @JsonProperty("parameters") ServicePropertyDescriptor[] parameters,
+            @JsonProperty("parameters") OptionDescriptor[] parameters,
             @JsonProperty("adapterClassName") String adapterClassName) {
 
         if (cost != null && cost < 0) {
@@ -168,7 +170,7 @@ public class AccessMode implements Serializable {
      *
      * @return
      */
-    public ServicePropertyDescriptor[] getParameters() {
+    public OptionDescriptor[] getParameters() {
         return parameters;
     }
 

@@ -1,11 +1,11 @@
 package org.squonk.rdkit.services;
 
+import org.squonk.options.OptionDescriptor;
 import org.squonk.camel.util.CamelUtils;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
 import com.im.lac.services.AccessMode;
 import com.im.lac.services.ServiceDescriptor;
-import com.im.lac.services.ServicePropertyDescriptor;
 import com.im.lac.types.MoleculeObject;
 import java.util.logging.Logger;
 import org.apache.camel.Exchange;
@@ -96,7 +96,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
             };
 
     static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags,
-            String[] paths, String modeId, String endpoint, ServicePropertyDescriptor[] props, String adapterClass) {
+                                                     String[] paths, String modeId, String endpoint, OptionDescriptor[] props, String adapterClass) {
         return new ServiceDescriptor(
                 serviceDescriptorId,
                 name,

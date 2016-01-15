@@ -59,10 +59,10 @@ chemservices:
 
 ################# core-services-server container #########################################
 # available on:
-# http://${DOCKER_GATEWAY}/coreservices/rest/ping
-# http://${DOCKER_GATEWAY}/coreservices/rest/v1/services
-# http://${DOCKER_GATEWAY}/coreservices/rest/v1/jobs
-# http://${DOCKER_GATEWAY}/coreservices/rest/v1/jobstatus
+# http://${DOCKER_GATEWAY}:8080/coreservices/rest/ping
+# http://${DOCKER_GATEWAY}:8080/coreservices/rest/v1/services
+# http://${DOCKER_GATEWAY}:8080/coreservices/rest/v1/jobs
+# http://${DOCKER_GATEWAY}:8080/coreservices/rest/v1/jobstatus
 # 
 coreservices:
     image: squonk/core-services-server

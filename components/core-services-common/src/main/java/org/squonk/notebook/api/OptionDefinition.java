@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @XmlRootElement
-public class OptionDefinition<T> implements Serializable {
+@Deprecated
+public class OptionDefinition<T> implements IOptionDefinition, Serializable {
     private String name;
     private String displayName;
     private OptionType optionType;
@@ -21,6 +22,7 @@ public class OptionDefinition<T> implements Serializable {
         this.optionType = optionType;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -29,6 +31,7 @@ public class OptionDefinition<T> implements Serializable {
         this.name = name;
     }
 
+    @Override
     public String getDisplayName() {
         return displayName;
     }
@@ -37,10 +40,12 @@ public class OptionDefinition<T> implements Serializable {
         this.displayName = displayName;
     }
 
+    @Override
     public List<T> getPicklistValueList() {
         return picklistValueList;
     }
 
+    @Override
     public T getDefaultValue() {
         return defaultValue;
     }
@@ -49,6 +54,7 @@ public class OptionDefinition<T> implements Serializable {
         this.defaultValue = defaultValue;
     }
 
+    @Override
     public OptionType getOptionType() {
         return optionType;
     }
