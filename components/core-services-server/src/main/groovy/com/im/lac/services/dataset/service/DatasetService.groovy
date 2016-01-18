@@ -40,9 +40,9 @@ class DatasetService {
         def ids = []
         doInTransaction { db ->
             ids << addDataItem(db, username, new DataItem(name: 'test0', ownerUsername: username, metadata:new Metadata(type:Metadata.Type.TEXT,size:1,className:"java.lang.String")), new ByteArrayInputStream('World'.bytes)).id
-            ids << addDataItem(db, username, new DataItem(name: 'test1', ownerUsername: username, metadata:new Metadata(type:Metadata.Type.ARRAY,size:3,className:"java.lang.String")), new ByteArrayInputStream('''["one", "two", "three"]'''.bytes)).id
-            ids << addDataItem(db, username, new DataItem(name: 'test2', ownerUsername: username, metadata:new Metadata(type:Metadata.Type.ARRAY,size:4,className:"java.lang.String")), new ByteArrayInputStream('''["red", "yellow", "green", "blue"]'''.bytes)).id
-            ids << addDataItem(db, username, new DataItem(name: 'test3', ownerUsername: username, metadata:new Metadata(type:Metadata.Type.ARRAY,size:5,className:"java.lang.String")), new ByteArrayInputStream('''["banana", "pineapple", "orange", "apple", "pear"]'''.bytes)).id
+            ids << addDataItem(db, username, new DataItem(name: 'test1', ownerUsername: username, metadata:new Metadata(type:Metadata.Type.STREAM,size:3,className:"java.lang.String")), new ByteArrayInputStream('''["one", "two", "three"]'''.bytes)).id
+            ids << addDataItem(db, username, new DataItem(name: 'test2', ownerUsername: username, metadata:new Metadata(type:Metadata.Type.STREAM,size:4,className:"java.lang.String")), new ByteArrayInputStream('''["red", "yellow", "green", "blue"]'''.bytes)).id
+            ids << addDataItem(db, username, new DataItem(name: 'test3', ownerUsername: username, metadata:new Metadata(type:Metadata.Type.STREAM,size:5,className:"java.lang.String")), new ByteArrayInputStream('''["banana", "pineapple", "orange", "apple", "pear"]'''.bytes)).id
         }
         return ids
     }

@@ -209,7 +209,7 @@ public class DatasetHandler implements ServerConstants {
                 return IOUtils.convertStreamToString(inputStream, 100);
             case ITEM:
                 return jsonHandler.unmarshalItem(metadata, inputStream);
-            case ARRAY:
+            case STREAM:
                 return jsonHandler.unmarshalItemsAsStream(metadata, inputStream);
             default:
                 throw new IllegalStateException("Unimplemented dataset type: " + metadata.getType());

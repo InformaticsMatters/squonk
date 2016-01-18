@@ -13,21 +13,21 @@ import spock.lang.Specification
 class StepExamplesSpec extends Specification {
 	
     
-    DefaultCamelContext createCamelContext() {
-        DefaultCamelContext context = new DefaultCamelContext()
-        RouteBuilder rb = new RouteBuilder() {
-            public void configure() {
-                from(AsyncJobRouteBuilder.ROUTE_HTTP_SUBMIT)
-                .log("ROUTE_HTTP_SUBMIT received")
-                .log('Routing to ${header[' + Exchange.HTTP_URI + ']}')
-                .to("http4:dummy")
-                .log("HTTP response received");
-            }
-        }
-        context.addRoutes(rb)
-        context.start()
-        return context
-    }
+//    DefaultCamelContext createCamelContext() {
+//        DefaultCamelContext context = new DefaultCamelContext()
+//        RouteBuilder rb = new RouteBuilder() {
+//            public void configure() {
+//                from(AsyncJobRouteBuilder.ROUTE_HTTP_SUBMIT)
+//                .log("ROUTE_HTTP_SUBMIT received")
+//                .log('Routing to ${header[' + Exchange.HTTP_URI + ']}')
+//                .to("http4:dummy")
+//                .log("HTTP response received");
+//            }
+//        }
+//        context.addRoutes(rb)
+//        context.start()
+//        return context
+//    }
 
 //    void "read sdf calculate and cluster"() {
 //        println "read sdf calculate and cluster()"
@@ -156,7 +156,7 @@ class StepExamplesSpec extends Specification {
 //        then:
 //        def vars = varman.getVariables()
 //        vars.each {
-//            println "Var $it.name $it.type $it.persistenceType"
+//            println "Var $it.name $it.typeDescriptor $it.persistenceType"
 //        }
 //        vars.size() == 2
 //        

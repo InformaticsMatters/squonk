@@ -42,13 +42,13 @@ public class MemoryJobStatusClient implements JobStatusClient {
     }
 
     @Override
-    public JobStatus updateStatus(String id, JobStatus.Status status, String event, Integer processedCount) {
+    public JobStatus updateStatus(String id, JobStatus.Status status, String event, Integer processedCount, Integer errorCount) {
         synchronized (lock) {
             JobStatus item = store.get(id);
             if (item == null) {
                 throw new IllegalArgumentException("JobStatus with ID " + id + " not found");
             }
-            JobStatus nue = item.withStatus(status == null ? item.getStatus() : status, processedCount, event);
+            JobStatus nue = item.withStatus(status == null ? item.getStatus() : status, processedCount, errorCount, event);
             store.put(id, nue);
             return nue;
         }
@@ -56,22 +56,22 @@ public class MemoryJobStatusClient implements JobStatusClient {
 
     @Override
     public JobStatus updateStatus(String id, JobStatus.Status status) {
-        return updateStatus(id, status, null, 0);
+        return updateStatus(id, status, null, 0, 0);
     }
 
     @Override
     public JobStatus updateStatus(String id, JobStatus.Status status, String event) {
-        return updateStatus(id, status, event, 0);
+        return updateStatus(id, status, event, 0, 0);
     }
 
     @Override
-    public JobStatus incrementProcesssedCount(String id, int count) {
+    public JobStatus incrementCounts(String id, int processedCount, int errorCount) {
         synchronized (lock) {
             JobStatus item = store.get(id);
             if (item == null) {
                 throw new IllegalArgumentException("JobStatus with ID " + id + " not found");
             }
-            JobStatus nue = item.withStatus(item.getStatus(), item.getProcessedCount() + count, null);
+            JobStatus nue = item.withStatus(item.getStatus(), item.getProcessedCount() + processedCount, item.getErrorCount() + errorCount, null);
             store.put(id, nue);
             return nue;
         }

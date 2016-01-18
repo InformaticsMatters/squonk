@@ -4,8 +4,8 @@ import org.squonk.notebook.execution.*;
 import org.squonk.notebook.api.*;
 import org.squonk.notebook.client.CallbackClient;
 import org.squonk.notebook.client.CallbackContext;
-
-import static org.squonk.notebook.api.OptionType.*;
+import org.squonk.options.MultiLineTextTypeDescriptor;
+import org.squonk.options.OptionDescriptor;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -30,10 +30,8 @@ public class ExampleCellService {
     private static List<CellType> createDefinitions() {
         List<CellType> list = new ArrayList<>();
 
-        list.add(createPropertyCalculateCellType());
         list.add(createChemblActivitiesFetcherCellType());
         list.add( createTableDisplayCellType());
-        //list.add(createScriptCellType());
         list.add(createSdfUploaderCellType());
         list.add(createCsvUploaderCellType());
         list.add(createDatasetMergerCellType());
@@ -54,16 +52,10 @@ public class ExampleCellService {
         variableDefinition.setDisplayName("Results");
         variableDefinition.setVariableType(VariableType.DATASET);
         cellType.getOutputVariableDefinitionList().add(variableDefinition);
-        OptionDefinition<String> fieldNameOptionDefinition = new OptionDefinition<String>();
-        fieldNameOptionDefinition.setName("mergeFieldName");
-        fieldNameOptionDefinition.setDisplayName("Merge field name");
-        fieldNameOptionDefinition.setOptionType(OptionType.SIMPLE);
-        cellType.getOptionDefinitionList().add(fieldNameOptionDefinition);
-        OptionDefinition<Boolean> keepFirstOptionDefinition = new OptionDefinition<>();
-        keepFirstOptionDefinition.setName("keepFirst");
-        keepFirstOptionDefinition.setDisplayName("Keep first");
-        keepFirstOptionDefinition.setOptionType(OptionType.SIMPLE);
-        cellType.getOptionDefinitionList().add(keepFirstOptionDefinition);
+        cellType.getOptionDefinitionList().add(new OptionDescriptor(String.class, "mergeFieldName", "Merge field name",
+                "Name of field to use to match items"));
+        cellType.getOptionDefinitionList().add(new OptionDescriptor(Boolean.class, "keepFirst", "Keep first",
+                "When merging keep the original value (or the new one)"));
         for (int i = 0; i < 5; i++) {
             BindingDefinition bindingDefinition = new BindingDefinition();
             bindingDefinition.setDisplayName("Input dataset " + (i + 1));
@@ -89,18 +81,14 @@ public class ExampleCellService {
         variableDefinition.setDisplayName("Results");
         variableDefinition.setVariableType(VariableType.DATASET);
         cellType.getOutputVariableDefinitionList().add(variableDefinition);
-        OptionDefinition<String> fileTypeOptionDefinition = new OptionDefinition<String>();
-        fileTypeOptionDefinition.setName(OPTION_FILE_TYPE);
-        fileTypeOptionDefinition.setDisplayName("File type");
-        fileTypeOptionDefinition.setOptionType(OptionType.SIMPLE);
-        cellType.getOptionDefinitionList().add(fileTypeOptionDefinition);
-        OptionDefinition<Boolean> firstLineIsHeaderOptionDefinition = new OptionDefinition<Boolean>();
-        firstLineIsHeaderOptionDefinition.setName(OPTION_FIRST_LINE_IS_HEADER);
-        firstLineIsHeaderOptionDefinition.setDisplayName("First line is header");
-        firstLineIsHeaderOptionDefinition.setOptionType(OptionType.SIMPLE);
-        cellType.getOptionDefinitionList().add(firstLineIsHeaderOptionDefinition);
+        cellType.getOptionDefinitionList().add(new OptionDescriptor(String.class, OPTION_FILE_TYPE, "File type",
+                "Type of CSV or TAB file")
+                .withValues(new String [] {"TDF", "EXCEL", "MYSQL", "RFC4180", "DEFAULT"}).withDefaultValue("DEFAULT"));
+        cellType.getOptionDefinitionList().add(new OptionDescriptor(Boolean.class, OPTION_FIRST_LINE_IS_HEADER, "First line is header",
+                "First line contains field names"));
         return cellType;
     }
+
 
     private static CellType createSdfUploaderCellType() {
         CellType cellType = new CellType();
@@ -117,36 +105,10 @@ public class ExampleCellService {
         variableDefinition.setDisplayName("Results");
         variableDefinition.setVariableType(VariableType.DATASET);
         cellType.getOutputVariableDefinitionList().add(variableDefinition);
-        OptionDefinition optionDefinition = new OptionDefinition();
-        optionDefinition.setName("nameFieldName");
-        optionDefinition.setDisplayName("Name field´s name");
-        optionDefinition.setOptionType(OptionType.SIMPLE);
-        cellType.getOptionDefinitionList().add(optionDefinition);
+        cellType.getOptionDefinitionList().add(new OptionDescriptor(String.class, "nameFieldName", "Name field´s name",
+                "Field name to use for the molecule name (the part before the CTAB block").withMinValues(0));
         return cellType;
     }
-
-//    private static CellType createScriptCellType() {
-//        CellType cellType = new CellType();
-//        cellType.setName("Script");
-//        cellType.setDescription("Script");
-//        cellType.setExecutable(Boolean.TRUE);
-//        OptionDefinition<String> optionDefinition = new OptionDefinition<String>();
-//        optionDefinition.setName("code");
-//        optionDefinition.setDisplayName("Code");
-//        optionDefinition.setOptionType(OptionType.SIMPLE);
-//        cellType.getOptionDefinitionList().add(optionDefinition);
-//        optionDefinition = new OptionDefinition<String>();
-//        optionDefinition.setName("errorMessage");
-//        optionDefinition.setDisplayName("Error message");
-//        optionDefinition.setOptionType(OptionType.SIMPLE);
-//        cellType.getOptionDefinitionList().add(optionDefinition);
-//        VariableDefinition variableDefinition = new VariableDefinition();
-//        variableDefinition.setName("outcome");
-//        variableDefinition.setDisplayName("Outcome");
-//        variableDefinition.setVariableType(VariableType.VALUE);
-//        cellType.getOutputVariableDefinitionList().add(variableDefinition);
-//        return cellType;
-//    }
 
     private static CellType createTableDisplayCellType() {
         CellType cellType = new CellType();
@@ -174,46 +136,32 @@ public class ExampleCellService {
         variableDefinition.setDisplayName("Results");
         variableDefinition.setVariableType(VariableType.DATASET);
         cellType.getOutputVariableDefinitionList().add(variableDefinition);
-        OptionDefinition optionDefinition = new OptionDefinition();
-        optionDefinition.setName("assayId");
-        optionDefinition.setDisplayName("Assay ID");
-        optionDefinition.setOptionType(OptionType.SIMPLE);
-        cellType.getOptionDefinitionList().add(optionDefinition);
-        optionDefinition = new OptionDefinition();
-        optionDefinition.setName("prefix");
-        optionDefinition.setDisplayName("Prefix");
-        optionDefinition.setOptionType(OptionType.SIMPLE);
-        cellType.getOptionDefinitionList().add(optionDefinition);
+        cellType.getOptionDefinitionList().add(new OptionDescriptor(String.class, "assayId", "Assay ID", "ChEBML Asssay ID"));
+        cellType.getOptionDefinitionList().add(new OptionDescriptor(String.class, "prefix", "Prefix", "Prefix for result fields"));
         cellType.setExecutable(Boolean.TRUE);
         return cellType;
     }
 
-    private static CellType createPropertyCalculateCellType() {
-        CellType cellType = new CellType();
-        cellType.setName("PropertyCalculate");
-        cellType.setDescription("Property calc.");
-        cellType.setExecutable(Boolean.TRUE);
-        VariableDefinition variableDefinition = new VariableDefinition();
-        variableDefinition.setName("outputFile");
-        variableDefinition.setDisplayName("Output file");
-        variableDefinition.setVariableType(VariableType.FILE);
-        cellType.getOutputVariableDefinitionList().add(variableDefinition);
-        BindingDefinition bindingDefinition = new BindingDefinition();
-        bindingDefinition.setDisplayName("Input file");
-        bindingDefinition.setName("input");
-        bindingDefinition.getAcceptedVariableTypeList().add(VariableType.FILE);
-        cellType.getBindingDefinitionList().add(bindingDefinition);
-        OptionDefinition<String> optionDefinition = new OptionDefinition<String>();
-        optionDefinition.setName("serviceName");
-        optionDefinition.setDisplayName("Service");
-        optionDefinition.setOptionType(OptionType.PICKLIST);
-        for (String serviceName : CalculatorsClient.getServiceNames()) {
-            optionDefinition.getPicklistValueList().add(serviceName);
-        }
-        cellType.getOptionDefinitionList().add(optionDefinition);
-        cellType.setExecutable(Boolean.TRUE);
-        return cellType;
-    }
+//    private static CellType createPropertyCalculateCellType() {
+//        CellType cellType = new CellType();
+//        cellType.setName("PropertyCalculate");
+//        cellType.setDescription("Property calc.");
+//        cellType.setExecutable(Boolean.TRUE);
+//        VariableDefinition variableDefinition = new VariableDefinition();
+//        variableDefinition.setName("outputFile");
+//        variableDefinition.setDisplayName("Output file");
+//        variableDefinition.setVariableType(VariableType.FILE);
+//        cellType.getOutputVariableDefinitionList().add(variableDefinition);
+//        BindingDefinition bindingDefinition = new BindingDefinition();
+//        bindingDefinition.setDisplayName("Input file");
+//        bindingDefinition.setName("input");
+//        bindingDefinition.getAcceptedVariableTypeList().add(VariableType.FILE);
+//        cellType.getBindingDefinitionList().add(bindingDefinition);
+//        cellType.getOptionDefinitionList().add(new OptionDescriptor(String.class, "serviceName", "Service", "Service to call")
+//                .withValues(CalculatorsClient.getServiceNames()));
+//        cellType.setExecutable(Boolean.TRUE);
+//        return cellType;
+//    }
 
 //    private static CellType createFileUploadCellType() {
 //        CellType cellType = new CellType();
@@ -249,21 +197,12 @@ public class ExampleCellService {
         bindingDefinition.setName("input");
         bindingDefinition.getAcceptedVariableTypeList().add(VariableType.DATASET);
         cellType.getBindingDefinitionList().add(bindingDefinition);
-        OptionDefinition structFieldptionDefinition = new OptionDefinition();
-        structFieldptionDefinition.setName("structureFieldName");
-        structFieldptionDefinition.setDisplayName("Structure Field Name");
-        structFieldptionDefinition.setOptionType(OptionType.SIMPLE);
-        cellType.getOptionDefinitionList().add(structFieldptionDefinition);
-        OptionDefinition structFormatOptionDefinition = new OptionDefinition();
-        structFormatOptionDefinition.setName("structureFormat");
-        structFormatOptionDefinition.setDisplayName("Structure Format");
-        structFormatOptionDefinition.setOptionType(OptionType.SIMPLE); // should be picklist
-        cellType.getOptionDefinitionList().add(structFormatOptionDefinition);
-        OptionDefinition preserveUuidOptionDefinition = new OptionDefinition();
-        preserveUuidOptionDefinition.setName("preserveUuid");
-        preserveUuidOptionDefinition.setDisplayName("PreserveUUID");
-        preserveUuidOptionDefinition.setOptionType(OptionType.SIMPLE); // should be boolean
-        cellType.getOptionDefinitionList().add(preserveUuidOptionDefinition);
+        cellType.getOptionDefinitionList().add(new OptionDescriptor(String.class, "structureFieldName", "Structure Field Name",
+                "Name of property to use for the structure"));
+        cellType.getOptionDefinitionList().add(new OptionDescriptor(String.class, "structureFormat",
+                "Structure Format", "Format of the structures e.g. smiles, mol")
+                .withValues(new String[] {"smiles", "mol"}));
+        cellType.getOptionDefinitionList().add(new OptionDescriptor(Boolean.class, "preserveUuid", "Preserve UUID", "Keep the existing UUID or generate a new one").withMinValues(1));
         cellType.setExecutable(Boolean.TRUE);
         return cellType;
     }
@@ -283,11 +222,9 @@ public class ExampleCellService {
         bindingDefinition.setName("input");
         bindingDefinition.getAcceptedVariableTypeList().add(VariableType.DATASET);
         cellType.getBindingDefinitionList().add(bindingDefinition);
-        OptionDefinition optionDefinition = new OptionDefinition();
-        optionDefinition.setName("transformDefinitions");
-        optionDefinition.setDisplayName("Transform Definitions");
-        optionDefinition.setOptionType(OptionType.SIMPLE);
-        cellType.getOptionDefinitionList().add(optionDefinition);
+        cellType.getOptionDefinitionList().add(new OptionDescriptor(new MultiLineTextTypeDescriptor(10, 60, MultiLineTextTypeDescriptor.MIME_TYPE_SCRIPT_GROOVY),
+                "transformDefinitions", "Transform Definitions",
+                "Definition of the transforms to perform"));
         cellType.setExecutable(Boolean.TRUE);
         return cellType;
     }
@@ -307,11 +244,9 @@ public class ExampleCellService {
         bindingDefinition.setName("input");
         bindingDefinition.getAcceptedVariableTypeList().add(VariableType.DATASET);
         cellType.getBindingDefinitionList().add(bindingDefinition);
-        OptionDefinition optionDefinition = new OptionDefinition();
-        optionDefinition.setName("script");
-        optionDefinition.setDisplayName("Groovy Script");
-        optionDefinition.setOptionType(OptionType.SIMPLE);
-        cellType.getOptionDefinitionList().add(optionDefinition);
+        cellType.getOptionDefinitionList().add(new OptionDescriptor(
+                new MultiLineTextTypeDescriptor(20, 60, MultiLineTextTypeDescriptor.MIME_TYPE_SCRIPT_GROOVY),
+                "script", "Groovy Script", "Groovy script to execute"));
         cellType.setExecutable(Boolean.TRUE);
         return cellType;
     }

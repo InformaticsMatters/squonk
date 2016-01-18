@@ -110,7 +110,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         0.001f,
                         new OptionDescriptor[]{
                             new OptionDescriptor(DiscreteStructure.class, KEY_QMOL, LABEL_QMOL, DESC_QMOL),
-                            new OptionDescriptor(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF, 0.7f)
+                            new OptionDescriptor(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
                 createServiceDescriptor(
@@ -124,21 +124,21 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         0.004f,
                         new OptionDescriptor[]{
                             new OptionDescriptor(DiscreteStructure.class, KEY_QMOL, LABEL_QMOL, DESC_QMOL),
-                            new OptionDescriptor(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF, 0.7f)
+                            new OptionDescriptor(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
                 createServiceDescriptor(
                         "chemaxon.clustering.sperex",
                         "CXN SpereEx Clustering",
-                        "Sphere exclusion clustering using ChemAxon ECFP4 fingerprints. See http://www.chemaxon.com/products/jkulstor/",
+                        "Sphere exclusion clustering using ChemAxon ECFP4 fingerprints. See http://www.chemaxon.com/products/jklustor/",
                         new String[]{"clustering", "ecfp", "ecfp4", "chemaxon"},
                         new String[]{"/Vendors/ChemAxon/Clustering", "Chemistry/Clustering"},
                         "asyncHttp",
                         "clustering/spherex/ecfp4",
                         0.002f,
                         new OptionDescriptor[]{
-                            new OptionDescriptor(Integer.class, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS, 5),
-                            new OptionDescriptor(Integer.class, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS, 10)
+                            new OptionDescriptor(Integer.class, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS).withDefaultValue(5),
+                            new OptionDescriptor(Integer.class, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS).withDefaultValue(10)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter")
             };
@@ -157,8 +157,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 new String[]{"public"},
                 MoleculeObject.class, // inputClass
                 MoleculeObject.class, // outputClass
-                Metadata.Type.ARRAY, // inputType
-                Metadata.Type.ARRAY, // outputType
+                Metadata.Type.STREAM, // inputType
+                Metadata.Type.STREAM, // outputType
                 new AccessMode[]{
                     new AccessMode(
                             modeId,

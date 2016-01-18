@@ -1,5 +1,7 @@
 package org.squonk.notebook.api;
 
+import org.squonk.options.OptionDescriptor;
+
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -12,7 +14,7 @@ public class CellType implements Serializable {
     private Boolean executable;
     private final List<BindingDefinition> bindingDefinitionList = new ArrayList<>();
     private final List<VariableDefinition> outputVariableDefinitionList = new ArrayList<>();
-    private final List<OptionDefinition> optionDefinitionList = new ArrayList<>();
+    private final List<OptionDescriptor> optionDefinitionList = new ArrayList<>();
 
     public CellType(String name, String description, Boolean executable) {
         this.name = name;
@@ -44,7 +46,7 @@ public class CellType implements Serializable {
         return outputVariableDefinitionList;
     }
 
-    public List<OptionDefinition> getOptionDefinitionList() {
+    public List<OptionDescriptor> getOptionDefinitionList() {
         return optionDefinitionList;
     }
 
@@ -72,8 +74,4 @@ public class CellType implements Serializable {
         this.name = name;
     }
 
-    public CellType withOption(String name, OptionType optionType) {
-        optionDefinitionList.add(new OptionDefinition(name, optionType));
-        return this;
-    }
 }

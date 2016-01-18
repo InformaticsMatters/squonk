@@ -109,8 +109,8 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                 new String[]{"public"},
                 MoleculeObject.class, // inputClass
                 MoleculeObject.class, // outputClass
-                Metadata.Type.ARRAY, // inputType
-                Metadata.Type.ARRAY, // outputType
+                Metadata.Type.STREAM, // inputType
+                Metadata.Type.STREAM, // outputType
                 new AccessMode[]{
                     new AccessMode(
                             modeId,

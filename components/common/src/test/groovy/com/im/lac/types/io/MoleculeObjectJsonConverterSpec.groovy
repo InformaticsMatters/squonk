@@ -81,7 +81,7 @@ class MoleculeObjectJsonConverterSpec extends Specification {
     {"format":"smiles","source":"c1ccccc1","values":{"field_0":1}},
     {"format":"smiles","source":"CCC","values":{"field_0":2}}
     ]'''
-        Metadata meta = new Metadata(MoleculeObject.class.getName(), Metadata.Type.ARRAY, 2)
+        Metadata meta = new Metadata(MoleculeObject.class.getName(), Metadata.Type.STREAM, 2)
         meta.propertyTypes.put("field_0", Integer.class)
         def convertor = new MoleculeObjectJsonConverter()
             

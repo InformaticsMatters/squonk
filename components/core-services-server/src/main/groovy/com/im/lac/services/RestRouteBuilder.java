@@ -179,15 +179,16 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .log("Updating status of job ${header.id} to status ${header.Status} and processed count of ${header.ProcessedCount}")
                 .process((Exchange exch) -> {
                     String id = exch.getIn().getHeader("id", String.class);
-                    String status = exch.getIn().getHeader("Status", String.class);
-                    Integer processedCount = exch.getIn().getHeader("ProcessedCount", Integer.class);
+                    String status = exch.getIn().getHeader(HEADER_JOB_STATUS, String.class);
+                    Integer processedCount = exch.getIn().getHeader(HEADER_JOB_PROCESSED_COUNT, Integer.class);
+                    Integer errorCount = exch.getIn().getHeader(HEADER_JOB_ERROR_COUNT, Integer.class);
                     JobStatus result;
                     if (status == null) {
-                        result = jobstatusClient.incrementProcesssedCount(id, processedCount);
+                        result = jobstatusClient.incrementCounts(id, processedCount, errorCount);
                         exch.getIn().setBody(result);
                     } else {
                         String event = exch.getIn().getBody(String.class);
-                        result = jobstatusClient.updateStatus(id, JobStatus.Status.valueOf(status), event, processedCount);
+                        result = jobstatusClient.updateStatus(id, JobStatus.Status.valueOf(status), event, processedCount, errorCount);
                         exch.getIn().setBody(result);
                     }
                     exch.getIn().setHeader(CommonConstants.HEADER_SQUONK_USERNAME, result.getUsername());
@@ -234,7 +235,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                                         mols = MoleculeObjectUtils.createStreamGenerator(gunzip).getStream(false);
                                     } else { // assume MoleculeObject JSON
                                         // need to convert to objects so that the metadata can be generated
-                                        mols = (Stream<MoleculeObject>) datasetHandler.generateObjectFromJson(body, new Metadata(MoleculeObject.class.getName(), Metadata.Type.ARRAY, 0));
+                                        mols = (Stream<MoleculeObject>) datasetHandler.generateObjectFromJson(body, new Metadata(MoleculeObject.class.getName(), Metadata.Type.STREAM, 0));
                                     }
 
                                     DataItem result = datasetHandler.createDataset(

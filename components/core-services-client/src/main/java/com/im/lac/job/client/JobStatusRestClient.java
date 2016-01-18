@@ -5,6 +5,7 @@ import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobQuery;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.services.CommonConstants;
+import static com.im.lac.services.CommonConstants.*;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
@@ -86,19 +87,22 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
         }
     }
 
-    public JobStatus updateStatus(String id, JobStatus.Status status, String event, Integer processedCount) throws IOException {
+    public JobStatus updateStatus(String id, JobStatus.Status status, String event, Integer processedCount, Integer errorCount) throws IOException {
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + id);
         if (status != null) {
             b.setParameter("status", status.toString());
         }
         if (processedCount != null) {
-            b.setParameter("processedCount", processedCount.toString());
+            b.setParameter(HEADER_JOB_PROCESSED_COUNT, processedCount.toString());
+        }
+        if (errorCount != null) {
+            b.setParameter(HEADER_JOB_ERROR_COUNT, errorCount.toString());
         }
         InputStream result = executePostAsInputStream( b, event, new NameValuePair[0]);
         return fromJson(result, JobStatus.class);
     }
 
-    public JobStatus incrementProcesssedCount(String id, int count) throws IOException {
-        return updateStatus(id, null, null, count);
+    public JobStatus incrementCounts(String id, int processedCount, int errorCount) throws IOException {
+        return updateStatus(id, null, null, processedCount, errorCount);
     }
 }

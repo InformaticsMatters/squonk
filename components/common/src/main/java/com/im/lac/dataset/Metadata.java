@@ -16,7 +16,7 @@ public class Metadata implements Serializable {
 
     public enum Type {
 
-        ITEM, ARRAY, TEXT
+        ITEM, STREAM, TEXT, ARRAY
     }
 
     public static final String FORMAT = "format";
@@ -34,7 +34,7 @@ public class Metadata implements Serializable {
     String className;
 
     /**
-     * The number of records present (if Type is ARRAY)
+     * The number of records present (if Type is STREAM)
      */
     @JsonProperty
     int size = 0;

@@ -32,8 +32,8 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                         new String[]{"public"},
                         MoleculeObject.class, // inputClass
                         MoleculeObject.class, // outputClass
-                        Metadata.Type.ARRAY, // inputTypes
-                        Metadata.Type.ARRAY, // outputTypes
+                        Metadata.Type.STREAM, // inputTypes
+                        Metadata.Type.STREAM, // outputTypes
                         new AccessMode[]{
                             new AccessMode(
                                     "asyncHttp",

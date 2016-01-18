@@ -44,7 +44,7 @@ public class ExecuteCellUsingStepsJobDefinition implements StepsCellExecutorJobD
         return steps;
     }
 
-    public void configureCellAndSteps(Long notebookId, String cellName, StepDefinition[] steps) {
+    public void configureCellAndSteps(Long notebookId, String cellName, StepDefinition... steps) {
         this.notebookId = notebookId;
         this.cellName = cellName;
         this.steps = steps;

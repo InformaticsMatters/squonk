@@ -38,14 +38,29 @@ public final class StepDefinition implements Serializable {
         options.put(name, value);
         return this;
     }
+
+    public StepDefinition withOptions(Map<String,Object> options) {
+        options.putAll(options);
+        return this;
+    }
     
     public StepDefinition withInputVariableMapping(String from, VariableKey to) {
         inputVariableMappings.put(from, to);
         return this;
     }
 
+    public StepDefinition withInputVariableMappings(Map<String, VariableKey> mappings) {
+        inputVariableMappings.putAll(mappings);
+        return this;
+    }
+
     public StepDefinition withOutputVariableMapping(String from, String to) {
         outputVariableMappings.put(from, to);
+        return this;
+    }
+
+    public StepDefinition withOutputVariableMappings(Map<String, String> mappings) {
+        outputVariableMappings.putAll(mappings);
         return this;
     }
 

@@ -51,7 +51,7 @@ public class CamelUtils {
         final InputStream is = IOUtils.getGunzippedInputStream(maybeGzippedInputStream);
 
         // TODO - grab the metadata from the header if present
-        Metadata meta = new Metadata(MoleculeObject.class.getName(), Metadata.Type.ARRAY, 0);
+        Metadata meta = new Metadata(MoleculeObject.class.getName(), Metadata.Type.STREAM, 0);
         Stream<MoleculeObject> stream = (Stream<MoleculeObject>) jsonHandler.unmarshalItemsAsStream(meta, is);
         StreamProvider sp = new SimpleStreamProvider<>(stream.onClose(() -> {
             IOUtils.close(is);
@@ -66,7 +66,7 @@ public class CamelUtils {
         final PipedInputStream pis = new PipedInputStream();
         final OutputStream pout = new PipedOutputStream(pis);
         Stream<MoleculeObject> mols = StreamingMoleculeObjectSourcer.bodyAsMoleculeObjectStream(exch);
-        Metadata meta = new Metadata(MoleculeObject.class.getName(), Metadata.Type.ARRAY, 0);
+        Metadata meta = new Metadata(MoleculeObject.class.getName(), Metadata.Type.STREAM, 0);
         final OutputStream out = (gzip ? new GZIPOutputStream(pout) : pout);
         final Stream<MoleculeObject> molsClose = mols.onClose(() -> IOUtils.close(out));
         exch.getIn().setBody(pis);

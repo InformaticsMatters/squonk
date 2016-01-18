@@ -141,7 +141,7 @@ public class JsonHandler {
 
     public void marshalItems(Stream items, Metadata meta, OutputStream outputStream) throws IOException {
         LOG.fine("marshalling items to JSON");
-        meta.setType(Metadata.Type.ARRAY);
+        meta.setType(Metadata.Type.STREAM);
         ContextAttributes attrs = ContextAttributes.getEmpty().withSharedAttribute("metadata", meta);
         ObjectWriter ow = mapper.writer().with(attrs);
         try (SequenceWriter sw = ow.writeValuesAsArray(outputStream)) {

@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-/**
+/** Handles the status and definition of a job.
  *
  * @author timbo
  * @param <T>
@@ -23,7 +23,8 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
     private final String username;
     private final Status status;
     private final int totalCount;
-    private final int processedCount;;
+    private final int processedCount;
+    private final int errorCount;
     private final Date started;
     private final Date completed;
     private final T jobDefinition;
@@ -32,7 +33,7 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
 
     public static <T extends JobDefinition> JobStatus<T> create(T jobDef, String username, Date started, Integer totalCount) {
         String jobId = UUID.randomUUID().toString();
-        return new JobStatus(jobId, username, Status.PENDING, totalCount == null ? 0 : totalCount, 0, started, null, jobDef, null, null);
+        return new JobStatus(jobId, username, Status.PENDING, totalCount == null ? 0 : totalCount, 0, 0, started, null, jobDef, null, null);
     }
 
     public JobStatus(
@@ -41,6 +42,7 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
             @JsonProperty("status") Status status,
             @JsonProperty("totalCount") int totalCount,
             @JsonProperty("processedCount") int processedCount,
+            @JsonProperty("errorCount") int errorCount,
             @JsonProperty("started") Date started,
             @JsonProperty("completed") Date completed,
             @JsonProperty("jobDefinition") T jobDefinition,
@@ -52,6 +54,7 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         this.status = status;
         this.totalCount = totalCount;
         this.processedCount = processedCount;
+        this.errorCount = errorCount;
         this.started = started;
         this.completed = completed;
         this.jobDefinition = jobDefinition;
@@ -81,6 +84,9 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         return processedCount;
     }
 
+    public int getErrorCount() {
+        return errorCount;
+    }
 
     public Date getStarted() {
         return started;
@@ -94,6 +100,11 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         return jobDefinition;
     }
 
+    /**
+     * @deprecated Result will be removed or converted to a more general type
+     * @return
+     */
+    @Deprecated
     public DataItem getResult() {
         return result;
     }
@@ -106,25 +117,28 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         List neu = new ArrayList<>();
         neu.addAll(events);
         neu.add(event);
-        return new JobStatus(this.jobId, this.username, status, this.totalCount, this.processedCount, this.started, completed, this.jobDefinition, this.result, neu);
+        return new JobStatus(jobId, username, status, totalCount, processedCount, errorCount, started, completed, jobDefinition, result, neu);
     }
 
-    public JobStatus withStatus(Status status, Integer processedCount, String event) {
+    public JobStatus withCounts(Integer processedCount, Integer errorCount) {
+        return withStatus(null, processedCount,errorCount, null);
+    }
+
+
+    public JobStatus withStatus(Status status, Integer processedCount, Integer errorCount, String event) {
         Date completed = null;
-        // TODO - block certain status transitions e.g. once complete doen't let status be changed
-        int processed = (processedCount == null ? -1 : processedCount.intValue());
+        // TODO - block certain status transitions e.g. once complete don't let status be changed
+        int processed = (processedCount == null ? this.processedCount : this.processedCount + processedCount.intValue());
+        int error = (errorCount == null ? this.errorCount : this.errorCount + errorCount.intValue());
         if (status == Status.COMPLETED || status == Status.ERROR || status == Status.CANCELLED) {
             // does the date come from java or the database?
             completed = new Date();
         }
+        List neu = new ArrayList<>(events);
         if (event != null) {
-            List neu = new ArrayList<>();
-            neu.addAll(events);
             neu.add(event);
-            return new JobStatus(this.jobId, this.username, status, this.totalCount, processed, this.started, completed, this.jobDefinition, this.result, neu);
-        } else {
-            return new JobStatus(this.jobId, this.username, status, this.totalCount, processed, this.started, completed, this.jobDefinition, this.result, this.events);
         }
+        return new JobStatus(jobId, username, status, totalCount, processed, error, started, completed, jobDefinition, result, neu);
     }
 
     @Override
@@ -135,7 +149,8 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
                 .append(" Username=").append(username)
                 .append(" Status=").append(status.toString())
                 .append(" TotalCount=").append(totalCount)
-                .append(" ProcessedCount=").append(processedCount);
+                .append(" ProcessedCount=").append(processedCount)
+                .append(" ErrorCount=").append(errorCount);
         return b.toString();
     }
 

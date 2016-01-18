@@ -44,16 +44,16 @@ public interface JobStatusClient {
      * @param processedCount The number of work units processed, or null if unknown
      * @return The updated status
      */
-    JobStatus updateStatus(String id, JobStatus.Status status, String event, Integer processedCount) throws IOException;
+    JobStatus updateStatus(String id, JobStatus.Status status, String event, Integer processedCount, Integer errorCount) throws IOException;
 
     default JobStatus updateStatus(String id, JobStatus.Status status, String event) throws IOException {
-        return updateStatus(id, status, event, 0);
+        return updateStatus(id, status, event, 0, 0);
     }
 
     default JobStatus updateStatus(String id, JobStatus.Status status) throws IOException {
-        return updateStatus(id, status, null, 0);
+        return updateStatus(id, status, null, 0, 0);
     }
 
-    JobStatus incrementProcesssedCount(String id, int count) throws IOException;
+    JobStatus incrementCounts(String id, int processsedCount, int errorCount) throws IOException;
 
 }

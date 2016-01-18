@@ -52,7 +52,7 @@ public class MoleculeObjectJsonConverter {
      * @throws IOException
      */
      public Metadata marshal(Stream<MoleculeObject> mols, OutputStream outputStream) throws IOException {
-         Metadata meta = new Metadata(MoleculeObject.class.getName(), Metadata.Type.ARRAY, 0);
+         Metadata meta = new Metadata(MoleculeObject.class.getName(), Metadata.Type.STREAM, 0);
          jsonHandler.marshalItems(mols, meta, outputStream);
          return meta;
      }

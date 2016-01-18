@@ -5,8 +5,6 @@ import com.im.lac.dataset.Metadata
 import spock.lang.Specification
 
 import com.im.lac.job.jobdef.*
-import com.im.lac.services.AccessMode
-import com.im.lac.services.ServiceDescriptor
 import com.im.lac.types.MoleculeObject
 
 /**
@@ -32,8 +30,8 @@ class ServiceDescriptorJsonSpec extends Specification {
             ["public"] as String[],
             MoleculeObject.class, // inputClass
             MoleculeObject.class, // outputClass
-            Metadata.Type.ARRAY, // inputTypes
-            Metadata.Type.ARRAY, // outputTypes
+            Metadata.Type.STREAM, // inputTypes
+            Metadata.Type.STREAM, // outputTypes
             [new AccessMode(
                 "async",
                 "Immediate execution",
@@ -42,7 +40,7 @@ class ServiceDescriptorJsonSpec extends Specification {
                 true,
                 AsyncHttpProcessDatasetJobDefinition.class,
                 0, Integer.MAX_VALUE, 0.001f,
-                [ServiceDescriptor.LicenseToken.CHEMAXON] as ServiceDescriptor.LicenseToken[],
+                null,
                 null,
                 null)
             ] as AccessMode[])
