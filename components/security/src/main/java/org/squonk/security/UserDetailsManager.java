@@ -1,6 +1,7 @@
 package org.squonk.security;
 
 import java.net.URI;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -61,5 +62,7 @@ public interface UserDetailsManager {
     default URI getLogoutUrl(HttpServletRequest request, String redirectTo) {
         return null;
     }
+
+    Map<String,String> getSecurityHeaders(HttpServletRequest request);
 
 }

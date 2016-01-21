@@ -51,4 +51,32 @@ public class UserDetails implements Serializable {
         return lastName;
     }
 
+    /** Get the name to display for the user, determined as best we can based on what is present as firstName, lastName and userid
+     *
+     * @return Human friendly user name
+     */
+    public String getDisplayName() {
+        if (firstName == null && lastName == null) {
+            return getUserid();
+        }
+        if (firstName == null) {
+            return lastName;
+        }
+        if (lastName == null) {
+            return firstName;
+        }
+        return firstName + " " + lastName;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder("UserDetails [")
+                .append("userid:").append(userid)
+                .append(" firstName:").append(firstName)
+                .append(" lastName:").append(lastName)
+                .append(" email:").append(email)
+                .append(" authenticator:").append(authenticator)
+                .append("]");
+        return b.toString();
+    }
 }

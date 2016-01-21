@@ -3,6 +3,8 @@ package org.squonk.security;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.security.Principal;
+import java.util.Collections;
+import java.util.Map;
 
 /** Basic UserDetailsManager that uses the servlet API to provide minimal information about the user.
  * Authentication by the container is required.
@@ -27,6 +29,11 @@ public class DefaultUserDetailsManager implements UserDetailsManager {
             return new UserDetails(UserDetails.AUTHENTICATOR_SERVLET, username, username + "@nowhere.com", username, username);
         }
         return null;
+    }
+
+    @Override
+    public Map<String,String> getSecurityHeaders(HttpServletRequest request) {
+        return Collections.emptyMap();
     }
 
 }

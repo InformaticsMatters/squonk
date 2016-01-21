@@ -24,7 +24,9 @@ components/loaders/files
 components/core-services-client/lib
 components/chem-services-root/src/main/html/licenses
 components/security-keycloak/lib/
-docker/notebook_portal/*.war
-docker/portal/*.war
+docker/**/*.war
 docker/xwiki-site/yyy.json
-docker/deploy/setenv.sh*
+docker/deploy/setenv.sh
+docker/portal_keycloak/setenv.sh*
+docker/portal_keycloak/yyy.json
+
