@@ -78,6 +78,25 @@ public class QualifiedValue<T extends Number> implements Comparable<T> {
         this.qualifier = qv.qualifier;
     }
 
+    /** Generate a QualifiedValue of the specified type. If the value is of the specified type then
+     * the QualifiedValue is created directly from this value (using EQUALS as qualifier), else the
+     * QualifiedValue is created from the toString() representation of the value (usually this would
+     * be a String) using the static parse() method.
+     *
+     * @param value
+     * @param type
+     */
+    public QualifiedValue(Object value, Class<T> type) {
+        if (value.getClass() == type) {
+            this.value = (T)value;
+            this.qualifier = Qualifier.EQUALS;
+        } else {
+            QualifiedValue<T> q = parse(value.toString(), type);
+            this.value = q.getValue();
+            this.qualifier = q.getQualifier();
+        }
+    }
+
     public T getValue() {
         return value;
     }
@@ -96,13 +115,11 @@ public class QualifiedValue<T extends Number> implements Comparable<T> {
      * Double types are supported. If your format does not match this format
      * then parse it yourself and use one of the constructors.
      *
-     * @param o
-     * @pa
      * @param s The text to parse
      * @param cls the type to parse the number part to
      * @return The value
      */
-    static <Q extends Number> QualifiedValue<Q> parse(String s, Class<Q> cls) {
+    public static <Q extends Number> QualifiedValue<Q> parse(String s, Class<Q> cls) {
         Matcher matcher = patt.matcher(s);
         if (matcher.matches()) {
             String q = matcher.group(1);

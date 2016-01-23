@@ -8,12 +8,15 @@ import org.squonk.dataset.transform.DeleteFieldTransform;
 import org.squonk.dataset.transform.RenameFieldTransform;
 import org.squonk.dataset.transform.TransformDefinitions;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.TypeConverter;
+import org.squonk.types.QualifiedValue;
 
 /**
  * Processor that handles transforming values of{@link BasicObject}s. Follows
@@ -67,14 +70,34 @@ public class ValueTransformerProcessor implements Processor {
                 vtp.convertValueName(rf.getFieldName(), rf.getNewName());
             } else if (tx instanceof ConvertFieldTransform) {
                 ConvertFieldTransform cf = (ConvertFieldTransform) tx;
-                vtp.convertValueType(cf.getFieldName(), cf.getNewType());
+                vtp.convertValueType(cf.getFieldName(), cf.getNewType(), cf.getGenericType());
             }
         }
         return vtp;
     }
 
+
+    public ValueTransformerProcessor transformValue(String fldName, Object match, Object result) {
+        conversions.add(new TransformConversion(fldName, match, result));
+        return this;
+    }
+
     public ValueTransformerProcessor convertValueType(String fldName, Class newClass) {
-        conversions.add(new TypeConversion(fldName, newClass));
+        return convertValueType(fldName, newClass, null);
+    }
+
+    public ValueTransformerProcessor convertValueType(String fldName, Class newClass, Class genericType) {
+
+        if (genericType != null) {
+            // check that its got the right constructor to save nasty exceptions later
+            try {
+                Constructor c = newClass.getConstructor(Object.class, Class.class);
+            } catch (NoSuchMethodException e) {
+                throw new IllegalStateException("Illegal conversion. Must have constructor that takes Object, Class");
+            }
+        }
+
+        conversions.add(new TypeConversion(fldName, newClass, genericType));
         return this;
     }
 
@@ -93,14 +116,47 @@ public class ValueTransformerProcessor implements Processor {
         public Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream);
     }
 
+    class TransformConversion implements Conversion {
+
+        final String fldName;
+        final Object match;
+        final Object result;
+
+        TransformConversion(String fldName, Object match, Object result)  {
+            this.fldName = fldName;
+            this.match = match;
+            this.result = result;
+        }
+
+        @Override
+        public Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream) {
+            return stream.peek((o) -> {
+                Object old = o.getValue(fldName);
+                if (old == null) {
+                    if (match == null)  {
+                        // null matches null
+                        o.putValue(fldName, result);
+                    }
+                } else {
+                  if (old.equals(match)) {
+                      // old matches match
+                      o.putValue(fldName, result);
+                  }
+                }
+            });
+        }
+    }
+
     class TypeConversion implements Conversion {
 
         final String fldName;
         final Class newClass;
+        final Class genericClass;
 
-        TypeConversion(String fldName, Class newClass) {
+        TypeConversion(String fldName, Class newClass, Class genericClass) {
             this.fldName = fldName;
             this.newClass = newClass;
+            this.genericClass = genericClass;
         }
 
         @Override
@@ -109,10 +165,24 @@ public class ValueTransformerProcessor implements Processor {
             return stream.peek((o) -> {
                 Object old = o.getValue(fldName);
                 if (old != null) {
-                    Object neu = converter.convertTo(newClass, old);
+                    Object neu = null;
+                    if (genericClass != null) {
+                        neu = genericCreate(old, newClass, genericClass);
+                    } else {
+                        neu = converter.convertTo(newClass, old);
+                    }
                     o.putValue(fldName, neu);
                 }
             });
+        }
+
+        private Object genericCreate(Object value, Class type, Class genericType) {
+            try {
+                Constructor c = type.getConstructor(Object.class, Class.class);
+                return c.newInstance(value, genericType);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException("Failed to instantiate value", e);
+            }
         }
     }
 
