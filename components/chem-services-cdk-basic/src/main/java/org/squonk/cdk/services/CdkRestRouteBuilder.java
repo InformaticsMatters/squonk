@@ -1,15 +1,16 @@
 package org.squonk.cdk.services;
 
-import org.squonk.camel.util.CamelUtils;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
 import com.im.lac.services.AccessMode;
 import com.im.lac.services.ServiceDescriptor;
 import com.im.lac.types.MoleculeObject;
-import java.util.logging.Logger;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
+import org.squonk.camel.util.CamelUtils;
+
+import java.util.logging.Logger;
 
 /**
  *

@@ -1,87 +1,127 @@
 package org.squonk.cdk.io;
 
-import org.openscience.cdk.depict.Depiction;
-import org.openscience.cdk.depict.DepictionGenerator;
-import org.openscience.cdk.exception.CDKException;
-import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.io.MDLV2000Reader;
-import org.openscience.cdk.io.MDLV3000Reader;
-import org.openscience.cdk.silent.AtomContainer;
-import org.openscience.cdk.silent.SilentChemObjectBuilder;
-import org.openscience.cdk.smiles.SmilesParser;
-
-import java.awt.*;
-import java.io.ByteArrayInputStream;
+import javax.imageio.ImageIO;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
- * Created by timbo on 17/01/2016.
+ * Created by timbo on 23/01/2016.
  */
-public class MolDepict {
+public abstract class MolDepict<T extends Object> {
 
-    private final DepictionParameters params;
-    private final DepictionGenerator generator;
+    protected final DepictionParameters params;
+    protected static final Color DEFAULT_BACKGROUND = new Color(255, 255, 255, 0);
+    protected static final int DEFAULT_WIDTH = 100;
+    protected static final int DEFAULT_HEIGHT = 75;
+    protected static final boolean DEFAULT_EXPAND_TO_FIT = true;
 
-    private static final SmilesParser smilesParser = new SmilesParser(SilentChemObjectBuilder.getInstance());
-
-
-
+    /** Constructor with these parameters as defaults
+     *
+     * @param params
+     */
     public MolDepict(DepictionParameters params) {
         this.params = params;
-        DepictionGenerator dg = new DepictionGenerator()
-                .withAtomColors()
-                .withBackgroundColor(params.getBackgroundColor() != null ? params.getBackgroundColor() : new Color(255, 255, 255, 0));
-
-        if (params.getSize() != null) {
-            dg = dg.withSize(params.getSize().width, params.getSize().height);
-        }
-        if (params.isExpandToFit()) {
-            dg = dg.withFillToFit();
-        }
-        generator = dg;
     }
 
-    public String v2000ToSVG(String molfile) throws CDKException {
-        MDLV2000Reader v2000Parser = new MDLV2000Reader(new ByteArrayInputStream(molfile.getBytes()));
-        IAtomContainer mol = v2000Parser.read(new AtomContainer());
-        return generateSVG(mol);
+    /** Constructor using default parameters of 100px x 75px image, scaled to fit, and transparent background
+     *
+     */
+    public MolDepict() {
+        this.params = new DepictionParameters(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_EXPAND_TO_FIT, DEFAULT_BACKGROUND);
     }
 
-    public String v3000ToSVG(String molfile) throws CDKException {
-        MDLV3000Reader v3000Parser = new MDLV3000Reader(new ByteArrayInputStream(molfile.getBytes()));
-        IAtomContainer mol = v3000Parser.read(new AtomContainer());
-        return generateSVG(mol);
+    public abstract T smilesToMolecule(String molecule) throws Exception;
+
+    public abstract T v2000ToMolecule(String molecule) throws Exception;
+
+    public abstract T v3000ToMolecule(String molecule) throws Exception;
+
+    public abstract T stringToMolecule(String molecule) throws Exception;
+
+    public abstract BufferedImage moleculeToImage(T molecule, DepictionParameters params) throws Exception;
+
+    public BufferedImage moleculeToImage(T molecule) throws Exception {
+        return moleculeToImage(molecule, params);
     }
 
-    public String moleculeToSVG(String molecule) throws CDKException {
-        IAtomContainer mol = CDKMoleculeIOUtils.readMolecule(molecule);
-        return generateSVG(mol);
+    public abstract String moleculeToSVG(T molecule, DepictionParameters params) throws Exception;
+
+    public String moleculeToSVG(T molecule) throws Exception {
+        return moleculeToSVG(molecule, params);
     }
 
-    public String smilesToSVG(String smiles)
-            throws CDKException {
-        IAtomContainer mol = smilesParser.parseSmiles(smiles);
-        return generateSVG(mol);
+    public byte[] writeImage(BufferedImage img, String format) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ImageIO.write(img, format, out);
+        out.close();
+        return out.toByteArray();
     }
 
-    public String generateSVG(IAtomContainer mol)
-            throws CDKException {
-        if (mol == null) {
-            return null;
-        }
-        Depiction depiction = depict(mol);
-        String svg = depiction.toSvgStr();
-        return svg;
+    public String stringToSVG(String mol, DepictionParameters params) throws Exception {
+        return moleculeToSVG(stringToMolecule(mol), params);
     }
 
-    public Depiction depict(IAtomContainer mol)
-            throws CDKException {
-
-        Depiction depiction = generator.depict(mol);
-        return depiction;
+    public String stringToSVG(String mol) throws Exception {
+        return moleculeToSVG(stringToMolecule(mol), null);
     }
 
+    public String smilesToSVG(String mol, DepictionParameters params) throws Exception {
+        return moleculeToSVG(smilesToMolecule(mol), params);
+    }
 
+    public String smilesToSVG(String mol) throws Exception {
+        return moleculeToSVG(smilesToMolecule(mol), null);
+    }
+
+    public String v2000ToSVG(String mol, DepictionParameters params) throws Exception {
+        return moleculeToSVG(v2000ToMolecule(mol), params);
+    }
+
+    public String v2000ToSVG(String mol) throws Exception {
+        return moleculeToSVG(v2000ToMolecule(mol), null);
+    }
+
+    public String v3000ToSVG(String mol, DepictionParameters params) throws Exception {
+        return moleculeToSVG(v3000ToMolecule(mol), params);
+    }
+
+    public String v3000ToSVG(String mol) throws Exception {
+        return moleculeToSVG(v3000ToMolecule(mol), null);
+    }
+
+    public byte[] stringToImage(String mol, String imgFormat, DepictionParameters params) throws Exception {
+        return writeImage(moleculeToImage(stringToMolecule(mol), params), imgFormat);
+    }
+
+    public byte[] stringToImage(String mol, String imgFormat) throws Exception {
+        return writeImage(moleculeToImage(stringToMolecule(mol), null), imgFormat);
+    }
+
+    public byte[] smilesToImage(String mol, String imgFormat, DepictionParameters params) throws Exception {
+        return writeImage(moleculeToImage(smilesToMolecule(mol), params), imgFormat);
+    }
+
+    public byte[] smilesToImage(String mol, String imgFormat) throws Exception {
+        return writeImage(moleculeToImage(smilesToMolecule(mol), null), imgFormat);
+    }
+
+    public byte[] v2000ToImage(String mol, String imgFormat, DepictionParameters params) throws Exception {
+        return writeImage(moleculeToImage(v2000ToMolecule(mol), params), imgFormat);
+    }
+
+    public byte[] v2000ToImage(String mol, String imgFormat) throws Exception {
+        return writeImage(moleculeToImage(v2000ToMolecule(mol), null), imgFormat);
+    }
+
+    public byte[] v3000ToImage(String mol, String imgFormat, DepictionParameters params) throws Exception {
+        return writeImage(moleculeToImage(v2000ToMolecule(mol), params), imgFormat);
+    }
+
+    public byte[] v3000ToImage(String mol, String imgFormat) throws Exception {
+        return writeImage(moleculeToImage(v3000ToMolecule(mol), null), imgFormat);
+    }
 
 
 }
