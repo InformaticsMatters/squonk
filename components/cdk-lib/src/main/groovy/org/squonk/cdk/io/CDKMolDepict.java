@@ -9,8 +9,9 @@ import org.openscience.cdk.io.MDLV3000Reader;
 import org.openscience.cdk.silent.AtomContainer;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesParser;
+import org.squonk.io.AbstractMolDepict;
+import org.squonk.io.DepictionParameters;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -18,7 +19,7 @@ import java.io.IOException;
 /**
  * Created by timbo on 17/01/2016.
  */
-public class CDKMolDepict extends MolDepict<IAtomContainer> {
+public class CDKMolDepict extends AbstractMolDepict<IAtomContainer> {
 
 
     private final DepictionGenerator generator;

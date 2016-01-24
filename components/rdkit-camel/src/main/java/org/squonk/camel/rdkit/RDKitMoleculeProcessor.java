@@ -39,7 +39,6 @@ public class RDKitMoleculeProcessor implements Processor {
             }
 
             @Override
-
             public void handleMultiple(Exchange exchange, Stream<MoleculeObject> mols) throws Exception {
                 Stream<MoleculeObject> results = evaluate(exchange, mols, definitions);
                 exchange.getIn().setBody(new MoleculeObjectDataset(results));

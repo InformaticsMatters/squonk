@@ -5,34 +5,21 @@ def RDBASE = System.getenv('RDBASE')
 dependencies {
     
     compile project(":common")
-    compile project(":chemaxon-lib")
-    compile project(":chemaxon-camel")
+    compile project(":rdkit-lib")
+    compile project(':common-camel')
     
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-script:$camelVersion"
-
-    //compile "org.python:jython:2.7-b2"
     
     if (RDBASE) {
         println "$RDBASE defined - using that location for RDkit"
         compile files("$RDBASE/Code/JavaWrappers/gmwrapper/org.RDKit.jar")
     } else {
         println "Using local org.RDKit.jar"
-        compile files("lib/org.RDKit.jar")
+        compile files("../../lib/rdkit/org.RDKit.jar")
     }
-        
     
     testCompile project(':core-test')
 }
-
-//sourceSets {
-//    main {
-//        resources {
-//            srcDirs += 'src/main/python'
-//            srcDirs += '/usr/lib/python2.7'
-//        }
-//    }
-//    
-//}
 
 tasks.test.onlyIf { RDBASE != null }

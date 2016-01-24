@@ -1,7 +1,7 @@
 package org.squonk.cdk.services;
 
 import org.squonk.cdk.io.CDKMolDepict;
-import org.squonk.cdk.io.DepictionParameters;
+import org.squonk.io.DepictionParameters;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

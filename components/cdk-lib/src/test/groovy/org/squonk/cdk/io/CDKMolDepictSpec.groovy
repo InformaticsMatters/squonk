@@ -1,5 +1,6 @@
 package org.squonk.cdk.io
 
+import org.squonk.io.DepictionParameters
 import spock.lang.Specification
 
 import java.awt.Color

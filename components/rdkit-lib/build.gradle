@@ -4,6 +4,8 @@ repositories {
     jcenter()
 }
 
+def RDBASE = System.getenv('RDBASE')
+
 dependencies {
     
     compile project(':common')
@@ -14,4 +16,14 @@ dependencies {
     testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
     testCompile 'junit:junit:4.11'
     testCompile "org.postgresql:postgresql:9.4-1201-jdbc41"
+
+    if (RDBASE) {
+        println "$RDBASE defined - using that location for RDkit"
+        compile files("$RDBASE/Code/JavaWrappers/gmwrapper/org.RDKit.jar")
+    } else {
+        println "Using local org.RDKit.jar"
+        compile files("../../lib/rdkit/org.RDKit.jar")
+    }
 }
+
+tasks.test.onlyIf { RDBASE != null }
