@@ -1,5 +1,6 @@
 package org.squonk.cdk.io
 
+import org.squonk.data.Molecules
 import org.squonk.io.DepictionParameters
 import spock.lang.Specification
 
@@ -17,7 +18,7 @@ class CDKMolDepictSpec extends Specification {
         CDKMolDepict d = new CDKMolDepict(params)
 
         when:
-        String svg1 = d.smilesToSVG(CDKMoleculeIOUtilsSpec.smiles)
+        String svg1 = d.smilesToSVG(Molecules.ethanol.smiles)
         //println svg1
 
         then:
@@ -29,7 +30,7 @@ class CDKMolDepictSpec extends Specification {
         CDKMolDepict d = new CDKMolDepict()
 
         when:
-        String svg1 = d.smilesToSVG(CDKMoleculeIOUtilsSpec.smiles)
+        String svg1 = d.smilesToSVG(Molecules.ethanol.smiles)
         //println svg1
 
         then:
@@ -42,7 +43,7 @@ class CDKMolDepictSpec extends Specification {
         CDKMolDepict d = new CDKMolDepict()
 
         when:
-        String svg1 = d.smilesToSVG(CDKMoleculeIOUtilsSpec.smiles, params)
+        String svg1 = d.smilesToSVG(Molecules.ethanol.smiles, params)
         //println svg1
 
         then:
@@ -56,7 +57,7 @@ class CDKMolDepictSpec extends Specification {
         CDKMolDepict d = new CDKMolDepict(params)
 
         when:
-        String svg1 = d.v2000ToSVG(CDKMoleculeIOUtilsSpec.v2000)
+        String svg1 = d.v2000ToSVG(Molecules.ethanol.v2000)
         //println svg1
 
         then:
@@ -69,7 +70,7 @@ class CDKMolDepictSpec extends Specification {
         CDKMolDepict d = new CDKMolDepict(params)
 
         when:
-        String svg1 = d.v3000ToSVG(CDKMoleculeIOUtilsSpec.v3000)
+        String svg1 = d.v3000ToSVG(Molecules.ethanol.v3000)
         //println svg1
 
         then:
@@ -82,7 +83,7 @@ class CDKMolDepictSpec extends Specification {
         CDKMolDepict d = new CDKMolDepict(params)
 
         when:
-        String svg = d.stringToSVG(CDKMoleculeIOUtilsSpec.smiles)
+        String svg = d.stringToSVG(Molecules.ethanol.smiles)
         //println svg
 
         then:
@@ -96,7 +97,7 @@ class CDKMolDepictSpec extends Specification {
         CDKMolDepict d = new CDKMolDepict(params)
 
         when:
-        String svg = d.stringToSVG(CDKMoleculeIOUtilsSpec.v2000)
+        String svg = d.stringToSVG(Molecules.ethanol.v2000)
         //println svg
 
         then:
@@ -110,7 +111,7 @@ class CDKMolDepictSpec extends Specification {
         CDKMolDepict d = new CDKMolDepict(params)
 
         when:
-        String svg = d.stringToSVG(CDKMoleculeIOUtilsSpec.v3000)
+        String svg = d.stringToSVG(Molecules.ethanol.v3000)
         //println svg
 
         then:
@@ -124,7 +125,7 @@ class CDKMolDepictSpec extends Specification {
         CDKMolDepict d = new CDKMolDepict(params)
 
         when:
-        byte[] png = d.smilesToImage(CDKMoleculeIOUtilsSpec.smiles, 'PNG')
+        byte[] png = d.smilesToImage(Molecules.ethanol.smiles, 'PNG')
 
         then:
         png != null

@@ -12,10 +12,10 @@ dependencies {
     compile "org.apache.camel:camel-script:$camelVersion"
     
     if (RDBASE) {
-        println "$RDBASE defined - using that location for RDkit"
+        //println "$RDBASE defined - using that location for RDkit"
         compile files("$RDBASE/Code/JavaWrappers/gmwrapper/org.RDKit.jar")
     } else {
-        println "Using local org.RDKit.jar"
+        //println "Using local org.RDKit.jar"
         compile files("../../lib/rdkit/org.RDKit.jar")
     }
     

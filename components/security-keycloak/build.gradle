@@ -10,8 +10,6 @@ dependencies {
 
     compile 'org.keycloak:keycloak-core:1.7.0.Final'
 
-    testCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
-    testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
     testCompile "cglib:cglib-nodep:3.2.0"
 }
 

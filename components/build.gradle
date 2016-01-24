@@ -18,7 +18,7 @@ buildscript {
 
 allprojects {
     
-    group = 'im.lac.components'
+    group = 'org.squonk.components'
     
     apply plugin: 'groovy' // Apply the groovy plugin (also adds support for Java)
     apply plugin: 'maven'  // Maven repo stuff
@@ -32,7 +32,7 @@ allprojects {
     // note: version used by camel is 2.4.3 - trying later version to use "Attributes"
     project.ext.set('jacksonVersion', '2.6.4')
     project.ext.set('cdkVersion', '1.5.12')
-    project.ext.set('groovyVersion', '2.4.3')
+    project.ext.set('groovyVersion', '2.4.1')
 
 
     // In this section you declare where to find the dependencies of your project
@@ -57,7 +57,7 @@ allprojects {
 
         // Spock for unit testing
         testCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
-        testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+        testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
     }
 }
 
