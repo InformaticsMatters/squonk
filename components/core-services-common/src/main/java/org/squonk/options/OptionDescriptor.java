@@ -15,8 +15,7 @@ import java.util.List;
  * <br>e.g. the threshold for a similarity search
  * <br>e.g. the query structure for a structure search
  * <p>
- * TODO - validation: can't use a method call for this as it may be specified from non-java
- * language. So maybe specify a regexp that can be used to validate the value (but this assumes it a
+ * TODO - validation: Maybe specify a regexp that can be used to validate the value (but this assumes it a
  * string) and also need to provide a reason why the value is invalid, or at least a description of
  * what types of values are valid
  * <p>
@@ -26,10 +25,6 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
 
-    public enum Visibility {
-
-        EDITABLE, NON_EDITABLE, HIDDEN
-    }
 
     private final TypeDescriptor<T> typeDescriptor;
     private final String key;
@@ -37,21 +32,22 @@ public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
     private final String description;
     private final T[] values;
     private final T defaultValue;
-    private final Visibility visibility;
+    private final boolean editable;
+    private final boolean visible;
     private final Integer minValues;
     private final Integer maxValues;
 
     /** Full constructor.
      *
-     * @param typeDescriptor The Java typeDescriptor of the option
+     * @param typeDescriptor The TypeDescriptor of the option
      * @param key The code name of the option. Must be unique among a set of options.
      * @param label The name of the option as displayed to the user.
      * @param description A description of the option e.g. to be displayed as a tooltip.
      * @param values A list of legal values. If null then any value us allowed
      * @param defaultValue The default value. Can be null.
-     * @param visibility How the option appears to the user. Allows options to be presented but not changed, or an option
-     *                   to be defined but completely hidden from the user.
-     * @param minValues The minimum number of values. If 0 then the option is optional. If 1 it is requiried. If greater than
+     * @param visible Is the option visible to the user.
+     * @param editable Can the user edit the option (if not then a default would normally be specified)
+     * @param minValues The minimum number of values. If 0 then the option is optional. If 1 it is required. If greater than
      *                  1 then at least this many values need to be specified. If null then assumed to be 1.
      * @param maxValues The maximum number of values. If null then any number are allowed.
      */
@@ -62,7 +58,8 @@ public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
             @JsonProperty("description") String description,
             @JsonProperty("values") T[] values,
             @JsonProperty("defaultValue") T defaultValue,
-            @JsonProperty("visibility") Visibility visibility,
+            @JsonProperty("visible") boolean visible,
+            @JsonProperty("editable") boolean editable,
             @JsonProperty("minValues") Integer minValues,
             @JsonProperty("maxValues") Integer maxValues
     ) {
@@ -72,13 +69,14 @@ public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
         this.description = description;
         this.values = values;
         this.defaultValue = defaultValue;
-        this.visibility = visibility;
+        this.visible = visible;
+        this.editable = editable;
         this.minValues = minValues;
         this.maxValues = maxValues;
     }
 
     public OptionDescriptor(TypeDescriptor<T> type, String key, String label, String description) {
-        this(type, key, label, description, null, null, Visibility.EDITABLE, 1, null);
+        this(type, key, label, description, null, null, true, true, 1, null);
     }
 
     /** Create an OptionDescriptor whose typeDescriptor is a {@link SimpleTypeDescriptor&lt;T&gt;}
@@ -89,27 +87,27 @@ public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
      * @param description
      */
     public OptionDescriptor(Class<T> type, String key, String label, String description) {
-        this(new SimpleTypeDescriptor<T>(type), key, label, description, null, null, Visibility.EDITABLE, 1, null);
+        this(new SimpleTypeDescriptor<T>(type), key, label, description, null, null, true, true, 1, null);
     }
 
     public OptionDescriptor withDefaultValue(T defaultValue) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visibility, minValues, maxValues);
+        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
     }
 
     public OptionDescriptor withValues(T[] values) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visibility, minValues, maxValues);
+        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
     }
 
-    public OptionDescriptor withVisibility(Visibility visibility) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visibility, minValues, maxValues);
+    public OptionDescriptor withAccess(boolean visible, boolean editable) {
+        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
     }
 
     public OptionDescriptor withMinValues(int minValues) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visibility, minValues, maxValues);
+        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
     }
 
     public OptionDescriptor withMaxValues(int maxValues) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visibility, minValues, maxValues);
+        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
     }
 
     /**
@@ -165,19 +163,28 @@ public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
 
 
     /**
-     * How the parameter should appear in the UI.
-     * <ul>
-     * <li>EDITABLE - the parameter is visible and editable.</li>
-     * <li>NON_EDITABLE - the parameter is visible but not editable. A default must be
-     * specified.</li>
-     * <li>HIDDEN - the parameter is not displayed but its value is returned in the results. A
-     * default must be specified.</li>
-     * </ul>
+     * Is the value visible to the user.
+     *
      *
      * @return
      */
-    public Visibility getVisibility() {
-        return visibility;
+    public boolean isVisible() {
+        return visible;
+    }
+
+    /**
+     * Is the value editable.
+     *
+     *
+     * @return
+     */
+    public boolean isEditable() {
+        return editable;
+    }
+
+    @JsonIgnore
+    public boolean isRequired() {
+        return minValues == null || minValues > 0;
     }
 
     @Override

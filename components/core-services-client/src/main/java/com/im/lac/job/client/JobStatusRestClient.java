@@ -33,7 +33,7 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
     }
 
     public JobStatusRestClient() {
-        this.baseUrl = IOUtils.getConfiguration("SQUONK_SERVICES_CORE", "http://localhost/coreservices/rest/v1" + "/jobs");
+        this.baseUrl = IOUtils.getConfiguration("SQUONK_SERVICES_CORE", "http://localhost/coreservices/rest/v1") + "/jobs";
     }
 
     /**
