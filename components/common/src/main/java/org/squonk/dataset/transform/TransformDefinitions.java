@@ -36,6 +36,17 @@ public class TransformDefinitions {
         return this;
     }
 
+    public TransformDefinitions convertField(String fieldName, Class type, Class genericType) {
+        transforms.add(new ConvertFieldTransform(fieldName, type, genericType));
+        return this;
+    }
+
+    public TransformDefinitions transformValue(String fieldName, String match, String result) {
+        transforms.add(new TransformValueTransform(fieldName, match, result));
+        return this;
+    }
+
+
     public List<AbstractTransform> getTransforms() {
         return transforms;
     }

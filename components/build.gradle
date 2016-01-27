@@ -31,7 +31,7 @@ allprojects {
     // https://github.com/apache/camel/blob/master/parent/pom.xml
     // note: version used by camel is 2.4.3 - trying later version to use "Attributes"
     project.ext.set('jacksonVersion', '2.6.4')
-    project.ext.set('cdkVersion', '1.5.10')
+    project.ext.set('cdkVersion', '1.5.12')
     project.ext.set('groovyVersion', '2.4.3')
 
 

@@ -21,7 +21,7 @@ dependencies {
     compile "org.openscience.cdk:cdk-renderbasic:$cdkVersion"
     compile "org.openscience.cdk:cdk-renderawt:$cdkVersion"
     compile "org.openscience.cdk:cdk-sdg:$cdkVersion"
-    
+    compile "org.openscience.cdk:cdk-depict:$cdkVersion"
 
 }
 
