@@ -1,42 +1,36 @@
-package org.squonk.notebook.client;
+package com.im.lac.cell;
 
 import com.im.lac.client.AbstractHttpClient;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.apache.http.entity.AbstractHttpEntity;
+import org.apache.http.entity.InputStreamEntity;
 import org.squonk.notebook.api.CellDTO;
 import org.squonk.notebook.api.NotebookDTO;
-import org.squonk.types.io.JsonHandler;
-import org.squonk.util.IOUtils;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 /**
  * Created by timbo on 31/12/15.
  */
-public class TmpNotebookCellClient extends AbstractHttpClient {
+@ApplicationScoped
+public class CellClient extends AbstractHttpClient {
 
-    private static final Logger LOG = Logger.getLogger(TmpNotebookCellClient.class.getName());
+    private static final Logger LOG = Logger.getLogger(CellClient.class.getName());
 
     private static final String PARAM_NOTEBOOK_ID = "notebookId";
     private static final String PARAM_PRODUCER_NAME = "cellName";
     private static final String PARAM_VARIABLE_NAME = "variableName";
-    private static final String PARAM_VALUE = "alue";
+    private static final String PARAM_VALUE = "value";
 
     private final String baseUrl;
 
     private final Long notebookId;
 
-    public TmpNotebookCellClient(Long notebookId, String baseUrl) {
+    public CellClient(Long notebookId, String baseUrl) {
         this.notebookId = notebookId;
         this.baseUrl = baseUrl;
     }
@@ -68,12 +62,7 @@ public class TmpNotebookCellClient extends AbstractHttpClient {
     }
 
     public Integer readIntegerValue(String producerName, String variableName) throws IOException {
-        URIBuilder b = new URIBuilder()
-                .setPath(baseUrl + "/readTextValue")
-                .setParameter(PARAM_NOTEBOOK_ID, notebookId.toString())
-                .setParameter(PARAM_PRODUCER_NAME, producerName)
-                .setParameter(PARAM_VARIABLE_NAME, variableName);
-        String s = executeGetAsString(b);
+        String s = readTextValue(producerName, variableName);
         return s == null ? null : new Integer(s);
     }
 
@@ -99,8 +88,28 @@ public class TmpNotebookCellClient extends AbstractHttpClient {
                 .setParameter(PARAM_PRODUCER_NAME, producerName)
                 .setParameter(PARAM_VARIABLE_NAME, variableName)
                 .setParameter(PARAM_VALUE, value);
-        // TODO - the value should be POSTed, not set as query param
+        // TODO - the value should be POSTed, not set as query param?
+        executePost(b, (AbstractHttpEntity) null, new NameValuePair[0]);
+    }
 
+    public void writeIntegerValue(String producerName, String variableName, Integer value) throws IOException {
+        // TODO - is this method really needed? Shouldn't it be handled as text?
+        URIBuilder b = new URIBuilder()
+                .setPath(baseUrl + "/writIntegerValue")
+                .setParameter(PARAM_NOTEBOOK_ID, notebookId.toString())
+                .setParameter(PARAM_PRODUCER_NAME, producerName)
+                .setParameter(PARAM_VARIABLE_NAME, variableName)
+                .setParameter(PARAM_VALUE, value == null ? null : value.toString());
+        // TODO - the value should be POSTed, not set as query param?
+        executePost(b, (AbstractHttpEntity) null);
+    }
 
+    public void writeStreamContents(String producerName, String variableName, InputStream inputStream) throws IOException {
+        URIBuilder b = new URIBuilder()
+                .setPath(baseUrl + "/writeStreamContents")
+                .setParameter(PARAM_NOTEBOOK_ID, notebookId.toString())
+                .setParameter(PARAM_PRODUCER_NAME, producerName)
+                .setParameter(PARAM_VARIABLE_NAME, variableName);
+        executePost(b, new InputStreamEntity(inputStream));
     }
 }
