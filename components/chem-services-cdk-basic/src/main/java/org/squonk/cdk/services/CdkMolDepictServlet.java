@@ -8,25 +8,25 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.Dimension;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** Mol depiction servlet using CDK.
- * Example URL: /moldepict?format=_format_&w=_width_&h=_height_&bg=_rgba_&expand=_true_&mol=_smiles_
+ * Example URL: /moldepict?format=_format_&w=_width_&h=_height_&bg=_rgba_&expand=_expand_&mol=_smiles_
  * where:
  * <ul>
  *     <li>_format_ is the output format, currently either png or svg</li>
  *     <li>_width_ is the image width</li>
  *     <li>_height_ is the image height</li>
- *     <li>_rgba_ is the background color as RGBA integer</li>
- *     <li>_true_ is whether to expand the rendering to fit the image size</li>
+ *     <li>_rgba_ is the background color as RGBA integer (#AARRGGBB)</li>
+  *     <li>_expand_ is whether to expand the rendering to fit the image size (true/false)</li>
  *     <li>_smiles_ is the molecule in some format that is recognised such as smiles</li>
  * </ul>
- * Only the format and mol parameters are required. Defaults will be used for the others if not specified.
- *
+ * Only the format and mol parameters are required. Defaults will be used for the others if not specified.<br>
+ * For example, this renders caffeine as SVG with a partly transparent yellow background (# is encoded as %23):<br>
+ * http://192.168.99.100:8888/cdk_basic_services/moldepict?format=svg&w=75&h=75&bg=0x33FFFF00&mol=CN1C%3DNC2%3DC1C(%3DO)N(C)C(%3DO)N2C
  *
  * Created by timbo on 24/01/2016.
  */
@@ -35,9 +35,9 @@ import java.util.logging.Logger;
         description = "Moleucle depiction using CDK",
         urlPatterns = {"/moldepict"}
 )
-public class CdkMolDepictServlet extends HttpServlet {
+public class CDKMolDepictServlet extends HttpServlet {
 
-    private static final Logger LOG = Logger.getLogger(CdkMolDepictServlet.class.getName());
+    private static final Logger LOG = Logger.getLogger(CDKMolDepictServlet.class.getName());
     private final CDKMolDepict moldepict = new CDKMolDepict();  // with default params
 
     @Override
@@ -120,6 +120,7 @@ public class CdkMolDepictServlet extends HttpServlet {
         String paramHeight = req.getParameter("h");
         String paramExpand = req.getParameter("expand");
         String paramBg = req.getParameter("bg");
+        String paramAlpha = req.getParameter("alpha");
 
         // size
         Integer width = null;
@@ -136,10 +137,16 @@ public class CdkMolDepictServlet extends HttpServlet {
 
         // background
         Color col = null;
-        if (paramBg != null) {
+        if (paramBg != null || paramAlpha != null) {
             try {
-                int bg = Integer.parseInt(paramBg);
-                new Color(bg, true);
+
+                col = new Color(Long.decode(paramBg).intValue(), true);
+
+//                col = Color.decode(paramBg == null ? "#FFFFFF" : paramBg);
+//                if (paramAlpha != null) {
+//                    int alpha = Integer.decode(paramAlpha);
+//                    col = new Color(col.getRed(), col.getGreen(), col.getBlue(), alpha);
+//                }
             } catch (NumberFormatException ex) {
                 LOG.log(Level.INFO, "Can't interpret color parameters: " + paramBg, ex);
             }

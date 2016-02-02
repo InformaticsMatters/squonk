@@ -23,8 +23,8 @@
         <!-- note: instead of using a XML file we can also define the routes in Java code in a RouteBuilder class -->
         <!--param-value>com.im.lac.demo.SimpleRouteBuilder</param-value-->
         <param-value>
-            org.squonk.cdk.services.CdkCalculatorsRouteBuilder,
-            org.squonk.cdk.services.CdkRestRouteBuilder</param-value>
+            org.squonk.cdk.services.CDKCalculatorsRouteBuilder,
+            org.squonk.cdk.services.CDKRestRouteBuilder</param-value>
     </context-param>
     
     <context-param>

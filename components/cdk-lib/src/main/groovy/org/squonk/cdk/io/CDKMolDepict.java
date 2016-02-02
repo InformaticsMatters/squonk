@@ -6,6 +6,7 @@ import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.io.MDLV2000Reader;
 import org.openscience.cdk.io.MDLV3000Reader;
+import org.openscience.cdk.renderer.generators.BasicAtomGenerator;
 import org.openscience.cdk.silent.AtomContainer;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesParser;
@@ -39,6 +40,8 @@ public class CDKMolDepict extends AbstractMolDepict<IAtomContainer> {
     DepictionGenerator createDepictionGenerator(DepictionParameters params) {
         DepictionGenerator dg = new DepictionGenerator()
                 .withAtomColors()
+                .withTerminalCarbons()
+                //.withParam(BasicAtomGenerator.ShowExplicitHydrogens.class, true)
                 .withBackgroundColor(params.getBackgroundColor() != null ? params.getBackgroundColor() : DEFAULT_BACKGROUND);
 
         if (params.getWidth() != null || params.getHeight() != null) {

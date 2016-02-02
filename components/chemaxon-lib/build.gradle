@@ -6,7 +6,7 @@ dependencies {
     
     compile("com.chemaxon:jchem:6.3.4") {
         // probably other things should be excluded too - jchem is not at all modular
-        exclude group:'chemaxonlib',module:'batik-core'
+        //exclude group:'chemaxonlib',module:'batik-core'
         exclude group:'chemaxonlib',module:'castor-core'
         exclude group:'chemaxonlib',module:'castor-xml'
         exclude group:'chemaxonlib',module:'classes12'
@@ -84,6 +84,8 @@ dependencies {
         exclude group:'org.swinglabs',module:'swingx'
     }
 
+    testCompile project(':core-test')
     testCompile "org.apache.derby:derby:10.11.1.1"
+
 }
 

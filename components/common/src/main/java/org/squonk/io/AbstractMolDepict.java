@@ -123,5 +123,10 @@ public abstract class AbstractMolDepict<T extends Object> {
         return writeImage(moleculeToImage(v3000ToMolecule(mol), null), imgFormat);
     }
 
+    protected DepictionParameters depictionParameters(DepictionParameters maybeNull) {
+        return maybeNull == null ? this.params : maybeNull;
+
+    }
+
 
 }

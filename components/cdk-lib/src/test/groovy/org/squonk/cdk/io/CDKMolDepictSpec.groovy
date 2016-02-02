@@ -11,6 +11,28 @@ import java.awt.Color
  */
 class CDKMolDepictSpec extends Specification {
 
+
+    void f() {
+
+        when:
+        //int i = Integer.parseInt('FFFFFF', 16)
+        //println i
+        //Color col = new Color(i, true)
+
+        println Integer.toHexString(Integer.MAX_VALUE);
+
+        Color col = new Color(Long.decode('#EEFFFFFF').intValue(), true);
+        println Integer.toHexString(col.getRGB());
+        println Integer.toHexString(col.getAlpha());
+        println col.toString()
+
+        then:
+        col != null
+
+
+
+    }
+
     void "smiles to svg"() {
 
         //DepictionParameters params = new DepictionParameters(new Dimension(40, 30), true, Color.YELLOW)
@@ -121,11 +143,22 @@ class CDKMolDepictSpec extends Specification {
 
     void "smiles to png"() {
 
-        DepictionParameters params = new DepictionParameters(40, 30, true, Color.YELLOW)
+        DepictionParameters params = new DepictionParameters(200, 200, true, Color.WHITE)
         CDKMolDepict d = new CDKMolDepict(params)
 
         when:
-        byte[] png = d.smilesToImage(Molecules.ethanol.smiles, 'PNG')
+
+
+        //byte[] png = d.smilesToImage("CN1C=NC2=C1C(=O)N(C)C(=O)N2C", 'PNG')
+
+        byte[] png = d.smilesToImage("[H][#7]-[#6]-1=[#6]-[#6]=[#6]-[#6]=[#6]-1", 'PNG')
+
+        //byte[] png = d.smilesToImage("[H]C1C(N)N(C)C2=C(N(C)C=N2)C1=O", 'PNG')
+        //byte[] png = d.smilesToImage(Molecules.ethanol.smiles, 'PNG')
+        FileOutputStream f = new FileOutputStream("/users/timbo/tmp/test_cdk.png")
+        f.write(png)
+        f.flush()
+        f.close()
 
         then:
         png != null
