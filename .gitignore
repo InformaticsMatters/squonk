@@ -29,4 +29,5 @@ docker/xwiki-site/yyy.json
 docker/deploy/setenv.sh
 docker/portal_keycloak/setenv.sh*
 docker/portal_keycloak/yyy.json
+docker/newdeploy
 

@@ -113,7 +113,7 @@ public class CSVReaderStep extends AbstractStep {
     /**
      * Expected variable name for the input
      */
-    public static final String VAR_CSV_INPUT = "_CSVReaderCSVInput";
+    public static final String VAR_CSV_INPUT = StepDefinitionConstants.VARIABLE_FILE_INPUT;
     /**
      * Variable name for the MoleculeObjectDataset output
      */

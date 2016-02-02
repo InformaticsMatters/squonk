@@ -56,7 +56,7 @@ public class AbstractHttpClient {
                 return EntityUtils.toString(entity);
             }
         } catch (URISyntaxException e) {
-            throw new RuntimeException("Bad URI. Realy?", e);
+            throw new IOException("Bad URI. Really?", e);
         }
     }
 
@@ -81,29 +81,21 @@ public class AbstractHttpClient {
             }
             return entity.getContent();
         } catch (URISyntaxException e) {
-            throw new RuntimeException("Bad URI. Realy?", e);
+            throw new IOException("Bad URI. Really?", e);
         }
     }
 
     protected InputStream executePostAsInputStream(URIBuilder b, String body, NameValuePair... headers) throws IOException {
-        try {
             return executePostAsInputStream(b, body == null ? null : new StringEntity(body), headers);
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("Unsupported Encoding. Realy?", e);
-        }
+    }
+
+    protected InputStream executePostAsInputStream(URIBuilder b, AbstractHttpEntity body) throws IOException {
+        return executePostAsInputStream(b, body, new NameValuePair[0]);
     }
 
     protected InputStream executePostAsInputStream(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
-        try {
-            HttpPost httpPost = new HttpPost(b.build());
-            if (headers != null && headers.length > 0) {
-                addHeaders(httpPost, headers);
-            }
-            if (body != null) {
-                LOG.finer("Setting POST body: " + body);
-                httpPost.setEntity(body);
-            }
-            CloseableHttpResponse response = httpclient.execute(httpPost);
+
+            CloseableHttpResponse response = doPost(b, body, headers);
             LOG.finer(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
             if (response.getStatusLine().getStatusCode() != 200) {
@@ -113,37 +105,44 @@ public class AbstractHttpClient {
             }
             InputStream is = entity.getContent();
             return is;
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Bad URI. Realy?", e);
+    }
+
+    protected void executePost(URIBuilder b, String body, NameValuePair... headers) throws IOException {
+        executePost(b, body == null ? null : new StringEntity(body), headers);
+    }
+
+    protected void executePost(URIBuilder b, AbstractHttpEntity body) throws IOException {
+        executePost(b, body, new NameValuePair[0]);
+    }
+
+    protected void executePost(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
+
+        CloseableHttpResponse response = doPost(b, body, headers);
+        LOG.finer(response.getStatusLine().toString());
+        HttpEntity entity = response.getEntity();
+        if (response.getStatusLine().getStatusCode() != 200) {
+            String err = EntityUtils.toString(entity);
+            LOG.log(Level.WARNING, "Request failed: {0}", err);
+            throw new IOException("Request failed: " + response.getStatusLine().toString());
         }
     }
 
-//    protected InputStream executePostAsInputStream(URIBuilder b, InputStream body, NameValuePair... headers) {
-//        try {
-//            HttpPost httpPost = new HttpPost(b.build());
-//            if (headers != null && headers.length > 0) {
-//                addHeaders(httpPost, headers);
-//            }
-//            if (body != null) {
-//                LOG.info("Setting POST body: " + body);
-//                httpPost.setEntity(new InputStreamEntity(body));
-//            }
-//            CloseableHttpResponse response = httpclient.execute(httpPost);
-//            LOG.info(response.getStatusLine().toString());
-//            HttpEntity entity = response.getEntity();
-//            if (response.getStatusLine().getStatusCode() != 200) {
-//                String err = EntityUtils.toString(entity);
-//                LOG.log(Level.WARNING, "Request failed: {0}", err);
-//                throw new IOException("Request failed: " + response.getStatusLine().toString());
-//            }
-//            InputStream is = entity.getContent();
-//            return is;
-//        } catch (IOException e) {
-//            throw new RuntimeException("IOException", e);
-//        } catch (URISyntaxException e) {
-//            throw new RuntimeException("Bad URI. Realy?", e);
-//        }
-//    }
+    protected CloseableHttpResponse doPost(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
+        try {
+            HttpPost httpPost = new HttpPost(b.build());
+            if (headers != null && headers.length > 0) {
+                addHeaders(httpPost, headers);
+            }
+            if (body != null) {
+                LOG.finer("Setting POST body: " + body);
+                httpPost.setEntity(body);
+            }
+            return httpclient.execute(httpPost);
+        } catch (URISyntaxException e) {
+            throw new IOException("Bad URI. Really?", e);
+        }
+
+    }
 
     protected void addHeaders(HttpMessage message, NameValuePair... headers) {
         if (headers != null) {

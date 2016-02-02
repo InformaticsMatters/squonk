@@ -4,8 +4,8 @@ apply plugin: 'groovy'
 apply plugin: 'application'
 apply plugin: 'com.bmuschko.docker-remote-api'
 
-//mainClassName = "org.jboss.weld.environment.se.StartMain"
-mainClassName = "org.squonk.services.cell.Launcher"
+mainClassName = "org.jboss.weld.environment.se.StartMain"
+//mainClassName = "org.squonk.services.cell.Launcher"
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
@@ -35,6 +35,7 @@ dependencies {
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-rabbitmq:$camelVersion"
     compile "org.apache.camel:camel-jackson:$camelVersion"
+    compile "io.astefanutti.camel.cdi:camel-cdi:1.2.0"
 
     compile 'com.sun.jersey:jersey-client:1.19'
     //compile 'com.sun.jersey:jersey-server:1.19'

@@ -20,6 +20,6 @@ public interface StepDefinitionConstants {
     
     public static final String VARIABLE_INPUT_DATASET = "_InputDataset";
     public static final String VARIABLE_OUTPUT_DATASET = "_OutputDataset";
-    public static final String VARIABLE_FILE_INPUT = "FileInput";
+    public static final String VARIABLE_FILE_INPUT = "_FileInput";
     
 }
