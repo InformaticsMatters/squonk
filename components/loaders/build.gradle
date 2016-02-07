@@ -28,7 +28,7 @@ dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.3.7'
 
     // We use the awesome Spock testing and specification framework
-    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
     testCompile 'junit:junit:4.11'
 }
 

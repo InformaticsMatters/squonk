@@ -4,14 +4,10 @@ apply plugin: 'groovy'
 group = 'im.camelish.core-test'
 description = 'Camelish test utilities' 
 
-repositories {
-    mavenCentral()
-}
 
 
 dependencies {
 
-    compile group: 'org.apache.camel', name: 'camel-core', version: camelVersion
-
-    compile "org.spockframework:spock-core:0.7-groovy-2.0"
+    compile "org.apache.camel:camel-core:$camelVersion"
+    compile "org.spockframework:spock-core:1.0-groovy-2.4"
 }

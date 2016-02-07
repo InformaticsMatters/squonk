@@ -50,7 +50,9 @@ public class ChemblClient {
      * An example of data from the service can be seen
      * <a href="https://www.ebi.ac.uk/chembl/api/data/activity.json?assay_chembl_id=CHEMBL1909156&limit=10">here</a>.
      * <br>
-     * Data is retrieved in chunks (size specified by the batchSize parameter)
+     * Documentation can be found <a href="https://www.ebi.ac.uk/chembl/ws">here</a>
+     * <br>
+     * Results are retrieved in chunks (size specified by the batchSize parameter)
      * until the entire set of activities has been obtained. To prevent infinite
      * recursion there is a limit of 1000 iterations. A batchSize of 100 is
      * generally good, but if there are over 100,000 activities you will need to
@@ -59,6 +61,15 @@ public class ChemblClient {
      * NOTE: this method will not currently function correctly if there are
      * repeated values for the same activity type. Support for aggregate values is
      * needed for this.
+     *
+     * To query for assays:
+     * https://www.ebi.ac.uk/chembl/api/data/assay.json?description__icontains=P450
+     * To get details of an assay:
+     * https://www.ebi.ac.uk/chembl/api/data/assay.json?assay_chembl_id=CHEMBL1613777
+     * To get the target info:
+     * https://www.ebi.ac.uk/chembl/api/data/target.json?target_chembl_id=CHEMBL3622
+     * From this you can get the target components:
+     * https://www.ebi.ac.uk/chembl/api/data/target_component.json?component_id=1939
      *
      *
      * @param assayId The assay ID to retrieved e.g. CHEMBL1909156

@@ -4,7 +4,7 @@ description = 'CDK lib'
 dependencies {
     
     compile project(':common')
-    
+
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
     
     //compile 'org.openscience.cdk:cdk-bundle:1.5.10'
@@ -22,6 +22,8 @@ dependencies {
     compile "org.openscience.cdk:cdk-renderawt:$cdkVersion"
     compile "org.openscience.cdk:cdk-sdg:$cdkVersion"
     compile "org.openscience.cdk:cdk-depict:$cdkVersion"
+
+    testCompile project(':core-test')
 
 }
 

@@ -16,9 +16,9 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class CdkRestRouteBuilder extends RouteBuilder {
+public class CDKRestRouteBuilder extends RouteBuilder {
 
-    private static final Logger LOG = Logger.getLogger(CdkRestRouteBuilder.class.getName());
+    private static final Logger LOG = Logger.getLogger(CDKRestRouteBuilder.class.getName());
 
     private static final ServiceDescriptor[] calculatorsServiceDescriptor
             = new ServiceDescriptor[]{new ServiceDescriptor(
@@ -84,7 +84,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 .post("logp").description("Calculate the logP for the supplied MoleculeObjects")
                 .route()
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamInput(exch))
-                .to(CdkCalculatorsRouteBuilder.CDK_LOGP)
+                .to(CDKCalculatorsRouteBuilder.CDK_LOGP)
                 .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
                 .endRest();
 
