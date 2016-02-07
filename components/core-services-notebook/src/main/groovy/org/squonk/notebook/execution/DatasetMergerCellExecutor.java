@@ -3,6 +3,7 @@ package org.squonk.notebook.execution;
 import org.squonk.execution.steps.StepDefinition;
 import static org.squonk.execution.steps.StepDefinitionConstants.*;
 
+import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.notebook.api.BindingDTO;
 import org.squonk.notebook.api.CellDTO;
 import org.squonk.execution.steps.impl.DatasetMergerStep;
@@ -46,7 +47,7 @@ public class DatasetMergerCellExecutor extends AbstractStepExecutor {
         dumpCellConfig(cell, Level.INFO);
 
         // define the step and execution options
-        StepDefinition step = new StepDefinition(STEP_DATASET_MERGER)
+        StepDefinition step = new StepDefinition(DatasetMerger.CLASSNAME)
                 .withOutputVariableMapping(VARIABLE_OUTPUT_DATASET, "results");
 
         step = configureOption(step, cell, DatasetMergerStep.OPTION_MERGE_FIELD_NAME);

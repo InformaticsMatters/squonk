@@ -40,7 +40,7 @@ public final class StepDefinition implements Serializable {
     }
 
     public StepDefinition withOptions(Map<String,Object> options) {
-        options.putAll(options);
+        this.options.putAll(options);
         return this;
     }
     

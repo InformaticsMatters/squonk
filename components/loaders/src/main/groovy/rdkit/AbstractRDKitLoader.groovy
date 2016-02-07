@@ -31,6 +31,10 @@ class AbstractRDKitLoader {
         return new DataSourceConfiguration(dataSource, [:])
     }
 
+    void loadSmiles(String file, int limit, Map<String, Class> propertyToTypeMappings) {
+
+    }
+
     void loadSDF(String file, int limit, Map<String, Class> propertyToTypeMappings) {
         SqlQuery q = new SqlQuery(table, config)
 
@@ -44,15 +48,7 @@ class AbstractRDKitLoader {
                 mols = mols.limit(limit)
             }
 
-            RDKitTableLoader worker = q.loader()
-
-            worker.dropAllItems()
-            worker.createTables()
-            worker.loadData(mols, propertyToTypeMappings)
-            worker.createMoleculesAndIndex()
-            worker.addFpColumns()
-
-            worker.getRowCount()
+            doLoad(q.loader(), mols, propertyToTypeMappings)
 
             //worker.dropAllItems()
 
@@ -61,5 +57,16 @@ class AbstractRDKitLoader {
         }
         long t1 = System.currentTimeMillis()
         println "Completed in ${t1 - t0}ms"
+    }
+
+    private void doLoad(RDKitTableLoader worker, Stream<MoleculeObject> mols, Map<String, Class> propertyToTypeMappings) {
+
+        worker.dropAllItems()
+        worker.createTables()
+        worker.loadData(mols, propertyToTypeMappings)
+        worker.createMoleculesAndIndex()
+        worker.addFpColumns()
+
+        worker.getRowCount()
     }
 }

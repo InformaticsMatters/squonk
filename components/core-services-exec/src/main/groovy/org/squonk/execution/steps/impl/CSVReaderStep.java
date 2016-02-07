@@ -44,7 +44,7 @@ public class CSVReaderStep extends AbstractStep {
      * If not present then CSVFormat.DEFAULT is used.
      *
      */
-    public static final String OPTION_FORMAT_TYPE = "csvFormatType";
+    public static final String OPTION_FORMAT_TYPE = StepDefinitionConstants.CsvUpload.OPTION_CSV_FORMAT_TYPE;
 
     /**
      * Whether to include or skip the first line. Value expected to be a
@@ -57,7 +57,7 @@ public class CSVReaderStep extends AbstractStep {
      * OPTION_SKIP_HEADER_LINE to true to make sure that line is not read as
      * data.
      */
-    public static final String OPTION_USE_HEADER_FOR_FIELD_NAMES = "firstLineIsHeader";
+    public static final String OPTION_USE_HEADER_FOR_FIELD_NAMES = StepDefinitionConstants.CsvUpload.OPTION_NAME_FIRST_LINE_IS_HEADER;
     /**
      * Names to use for the fields. Use this only if you are not specifying
      * OPTION_USE_HEADER_FOR_FIELD_NAMES or that value is set to false. Value

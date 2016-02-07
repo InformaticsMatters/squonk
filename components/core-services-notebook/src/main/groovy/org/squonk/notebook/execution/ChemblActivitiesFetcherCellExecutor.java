@@ -2,6 +2,9 @@ package org.squonk.notebook.execution;
 
 import org.squonk.execution.steps.StepDefinition;
 import static org.squonk.execution.steps.StepDefinitionConstants.*;
+import static org.squonk.execution.steps.StepDefinitionConstants.ChemblActivitiesFetcher.*;
+
+import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.notebook.api.CellDTO;
 import org.squonk.notebook.api.VariableKey;
 
@@ -23,9 +26,9 @@ public class ChemblActivitiesFetcherCellExecutor extends AbstractStepExecutor {
     @Override
     protected StepDefinition[] getStepDefintions(CellDTO cell) {
 
-        StepDefinition step = new StepDefinition(STEP_CHEMBL_ACTIVITIES_FETCHER)
-                .withOption("AssayID", cell.getOptionMap().get("assayId").getValue())
-                .withOption("Prefix", cell.getOptionMap().get("prefix").getValue())
+        StepDefinition step = new StepDefinition(CLASSNAME)
+                .withOption(OPTION_ASSAY_ID, cell.getOptionMap().get(OPTION_ASSAY_ID).getValue())
+                .withOption(OPTION_PREFIX, cell.getOptionMap().get(OPTION_PREFIX).getValue())
                 .withOutputVariableMapping(VARIABLE_OUTPUT_DATASET, "results");
 
         return new StepDefinition[]{step};

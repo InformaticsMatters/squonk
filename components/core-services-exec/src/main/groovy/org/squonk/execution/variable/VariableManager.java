@@ -69,6 +69,8 @@ public class VariableManager {
 
     public <V> V getValue(VariableKey key, Class<V> type, PersistenceType persistenceType) throws IOException {
 
+        LOG.info("Getting variable " + key.getName() + " from cell " + key.getProducerName() + " of type " + type + " using persistence type of " + persistenceType);
+
         if (tmpValues.containsKey(key)) {
             return (V) tmpValues.get(key);
         }

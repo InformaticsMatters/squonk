@@ -1,5 +1,6 @@
 package org.squonk.services.cell;
 
+import com.im.lac.cell.CellClient;
 import com.im.lac.job.client.JobStatusRestClient;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition;
@@ -16,9 +17,11 @@ import org.squonk.notebook.api.CellDTO;
 import org.squonk.notebook.client.CallbackClient;
 import org.squonk.notebook.client.CallbackClientConfig;
 import org.squonk.notebook.client.CallbackContext;
+//import org.squonk.notebook.client.CellClient;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,7 +30,7 @@ import static com.im.lac.services.CommonConstants.HEADER_SQUONK_USERNAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_NAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_PARAMS;
 
-/** Consunmes a steps job from the message queue and executes it, updating the status of the job accordingly.
+/** Consumes a steps job from the message queue and executes it, updating the status of the job accordingly.
  * Created by timbo on 07/01/16.
  */
 public class CellExecutorRouteBuilder extends RouteBuilder {
@@ -48,7 +51,7 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
 
         String mqueue = rabbitmqCredentials.generateUrl(MQUEUE_JOB_STEPS_EXCHANGE_NAME, MQUEUE_JOB_STEPS_EXCHANGE_PARAMS);
 
-        //LOG.info("Starting to consume from " + mqueue);
+        LOG.info("Starting to consume from " + mqueue);
         from(mqueue)
                 .log("consumed message ${body}")
                 .unmarshal().json(JsonLibrary.Jackson, StepsCellExecutorJobDefinition.class)
@@ -68,13 +71,24 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
     }
 
     void processJob(Exchange exch) throws IOException {
+        dumpHeaders(exch);
         StepsCellExecutorJobDefinition jobdef = exch.getIn().getBody(StepsCellExecutorJobDefinition.class);
-        String jobid = exch.getIn().getHeader("rabbitmq.MESSAGE_ID", String.class);
-        String username = exch.getIn().getHeader("rabbitmq.USERID", String.class);
+        String jobid = exch.getIn().getHeader("SquonkJobID", String.class);
+        String username = exch.getIn().getHeader("SquonkUsername", String.class);
         executeJob(exch.getContext(), jobdef, jobid, username);
     }
 
+    void dumpHeaders(Exchange exch) {
+        StringBuilder b = new StringBuilder("Headers:");
+        for (Map.Entry<String,Object> e:  exch.getIn().getHeaders().entrySet()) {
+            b.append("\n  " + e.getKey() + " -> " + e.getValue());
+        }
+        LOG.info(b.toString());
+    }
+
     void executeJob(CamelContext camelContext, StepsCellExecutorJobDefinition jobdef, String jobid, String username) throws IOException {
+
+        LOG.info("Executing Job: id:" + jobid + " username:" + username);
 
         Long notebookId = jobdef.getNotebookId();
         String cellName = jobdef.getCellName();
@@ -105,15 +119,13 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
         CallbackContext callbackContext = new CallbackContext();
         CallbackClient callbackClient = new CallbackClient(config, callbackContext);
         callbackContext.setNotebookId(notebookId);
+        VariableLoader loader = new CellCallbackClientVariableLoader(callbackClient);
 
-        // fetch the cell
-        CellDTO cell = callbackClient.retrieveCell(cellName);
-        if (cell == null) {
-            throw new IllegalStateException("Executor for cell " + cellName + " not found");
-        }
 
         // setup the variable manager - @Inject these?
-        VariableLoader loader = new CellCallbackClientVariableLoader(callbackClient);
+//        CellClient cellClient = new CellClient(notebookId);
+//        VariableLoader loader = new CellClientVariableLoader(cellClient);
+
         VariableManager varman = new VariableManager(loader);
         StepExecutor executor = new StepExecutor(cellName, varman);
 

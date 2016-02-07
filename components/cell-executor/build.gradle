@@ -2,13 +2,9 @@ description = 'Cell executor'
 
 apply plugin: 'groovy'
 apply plugin: 'application'
-apply plugin: 'com.bmuschko.docker-remote-api'
+apply plugin: 'com.bmuschko.docker-java-application'
 
 mainClassName = "org.jboss.weld.environment.se.StartMain"
-//mainClassName = "org.squonk.services.cell.Launcher"
-
-import com.bmuschko.gradle.docker.tasks.image.Dockerfile
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 buildscript {
     repositories {
@@ -16,11 +12,10 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.bmuschko:gradle-docker-plugin:2.4.1'
+        classpath 'com.bmuschko:gradle-docker-plugin:2.6.5'
     }
 }
 
-// In this section you declare the dependencies for your production and test code
 dependencies {
 
     compile project(':common')
@@ -38,8 +33,6 @@ dependencies {
     compile "io.astefanutti.camel.cdi:camel-cdi:1.2.0"
 
     compile 'com.sun.jersey:jersey-client:1.19'
-    //compile 'com.sun.jersey:jersey-server:1.19'
-    //compile 'com.sun.jersey:jersey-servlet:1.19'
     compile 'com.sun.jersey:jersey-json:1.19'
 
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
@@ -68,24 +61,14 @@ testClasses {
     }
 }
 
-
 docker {
-    url = 'http://' + (System.getenv('DOCKER_IP') ?: 'localhost') + ':2375'
-    //certPath = new File(System.properties['user.home'], '.docker')
+    //url = 'http://' + (System.getenv('DOCKER_IP') ?: 'localhost') + ':2375'
+    url = 'unix:///var/run/docker.sock'
     certPath = null
-}
 
-task dockerFile(type: Dockerfile, dependsOn: build) {
-
-    destFile = project.file('build/Dockerfile')
-    from "debian:jessie"
-    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
-
-
-}
-
-task dockerImage(type: DockerBuildImage) {
-    dependsOn dockerFile
-    inputDir = dockerFile.destFile.parentFile
-    tag = "squonk/cellexecutor"
+    javaApplication {
+        baseImage = 'java:openjdk-8-jre'
+        maintainer = 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
+        tag = 'squonk/cellexecutor'
+    }
 }

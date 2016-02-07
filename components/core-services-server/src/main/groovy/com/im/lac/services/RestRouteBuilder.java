@@ -153,9 +153,9 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .route()
                 .process((Exchange exch) -> {
                     String json = exch.getIn().getBody(String.class);
-                    LOG.finer("JSON is " + json);
+                    LOG.info("JSON is " + json);
                     JobDefinition jobdef = JsonHandler.getInstance().objectFromJson(json, JobDefinition.class);
-                    LOG.fine("Received request to submit job for " + jobdef);
+                    LOG.info("Received request to submit job for " + jobdef);
 
                     Integer count = exch.getIn().getHeader(HEADER_JOB_SIZE, Integer.class);
                     Job job = null;
@@ -164,7 +164,9 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     } else {
                         throw new IllegalStateException("Job definition type " + jobdef.getClass().getName() + " not currently supported");
                     }
+                    LOG.info("Starting Job");
                     JobStatus result = job.start(exch.getContext(), Utils.fetchUsername(exch), count);
+                    LOG.info("Job " + result.getJobId() + " started");
                     String jsonResult = JsonHandler.getInstance().objectToJson(result);
                     exch.getIn().setBody(jsonResult);
                 })

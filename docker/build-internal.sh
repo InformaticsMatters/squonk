@@ -24,5 +24,11 @@ echo "building core-services-notebook docker image ..."
   docker build -t squonk/core-services-notebook core-services-notebook/build
 echo "... core-services-notebook docker image built"
 
+echo "building cell-executor docker image ..."
+./gradlew --daemon cell-executor:dockerBuildImage 
+#&&
+#  docker build -t squonk/cell-executor cell-executor/build
+echo "... cell-executor docker image built"
+
 
 echo finished

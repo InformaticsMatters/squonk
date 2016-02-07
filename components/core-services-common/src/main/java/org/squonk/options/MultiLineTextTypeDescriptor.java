@@ -9,7 +9,7 @@ import java.io.Serializable;
  * Created by timbo on 15/01/16.
  */
 @JsonIgnoreProperties({"type"})
-public class MultiLineTextTypeDescriptor implements Serializable, TypeDescriptor<String> {
+public class MultiLineTextTypeDescriptor extends SimpleTypeDescriptor<String> {
 
     public static final String MIME_TYPE_TEXT_PLAIN = "text/plain";
     public static final String MIME_TYPE_TEXT_HTML = "text/html";
@@ -24,14 +24,10 @@ public class MultiLineTextTypeDescriptor implements Serializable, TypeDescriptor
             @JsonProperty("rows") Integer rows,
             @JsonProperty("cols") Integer cols,
             @JsonProperty("mimeType") String mimeType) {
+        super(String.class);
         this.rows = rows;
         this.cols = cols;
         this.mimeType = mimeType;
-    }
-
-    @Override
-    public Class<String> getType() {
-        return String.class;
     }
 
     public Integer getRows() {

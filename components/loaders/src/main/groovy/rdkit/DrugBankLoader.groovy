@@ -16,7 +16,9 @@ class DrugBankLoader extends AbstractRDKitLoader {
 
     static void main(String[] args) {
 
-        ConfigObject props = LoaderUtils.createConfig(new File('loaders/rdkit_loader.properties').toURL())
+        URL from = new File('loaders/rdkit_loader.properties').toURI().toURL()
+        println "Loading from $from"
+        ConfigObject props = LoaderUtils.createConfig(from)
         String baseTable = props.drugbank.table
         String schema = props.database.schema
         String file = props.drugbank.path + '/' + props.drugbank.file

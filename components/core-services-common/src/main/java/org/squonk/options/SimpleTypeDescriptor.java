@@ -2,10 +2,12 @@ package org.squonk.options;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.io.Serializable;
+
 /**
  * Created by timbo on 15/01/16.
  */
-public class SimpleTypeDescriptor<T> implements TypeDescriptor<T> {
+public class SimpleTypeDescriptor<T> implements Serializable, TypeDescriptor<T> {
 
     private Class<T> type;
 

@@ -90,23 +90,23 @@ public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
         this(new SimpleTypeDescriptor<T>(type), key, label, description, null, null, true, true, 1, null);
     }
 
-    public OptionDescriptor withDefaultValue(T defaultValue) {
+    public OptionDescriptor<T> withDefaultValue(T defaultValue) {
         return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
     }
 
-    public OptionDescriptor withValues(T[] values) {
+    public OptionDescriptor<T> withValues(T[] values) {
         return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
     }
 
-    public OptionDescriptor withAccess(boolean visible, boolean editable) {
+    public OptionDescriptor<T> withAccess(boolean visible, boolean editable) {
         return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
     }
 
-    public OptionDescriptor withMinValues(int minValues) {
+    public OptionDescriptor<T> withMinValues(int minValues) {
         return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
     }
 
-    public OptionDescriptor withMaxValues(int maxValues) {
+    public OptionDescriptor<T> withMaxValues(int maxValues) {
         return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
     }
 

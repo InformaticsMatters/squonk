@@ -57,7 +57,7 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
         if (totalCount != null && totalCount > 0) {
             b = b.setParameter(CommonConstants.HEADER_JOB_SIZE, totalCount.toString());
         }
-        LOG.fine("About to post job of " + json);
+        LOG.info("About to post job of " + json);
         InputStream result = executePostAsInputStream( b, json, new BasicNameValuePair(CommonConstants.HEADER_SQUONK_USERNAME, username));
         return fromJson(result, JobStatus.class);
     }

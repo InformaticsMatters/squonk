@@ -29,11 +29,11 @@ public class SDFReaderStep extends AbstractStep {
      * How to handle the name field (the first line of the CTAB block). See
      * {@link SDFReader} for details.
      */
-    public static final String OPTION_NAME_FIELD_NAME = "nameFieldName";
+    public static final String OPTION_NAME_FIELD_NAME = StepDefinitionConstants.SdfUpload.OPTION_NAME_FIELD_NAME;
     /**
      * Expected variable name for the input
      */
-    public static final String VAR_SDF_INPUT = "_SDFReaderSDFInput";
+    public static final String VAR_SDF_INPUT = StepDefinitionConstants.VARIABLE_FILE_INPUT;
     /**
      * Variable name for the MoleculeObjectDataset output
      */
@@ -51,7 +51,6 @@ public class SDFReaderStep extends AbstractStep {
     private SDFReader createReader(InputStream input) throws IOException {
         SDFReader reader = new SDFReader(input);
         String nameFieldName = getOption(OPTION_NAME_FIELD_NAME, String.class);
-        System.out.println("nameFieldName = " + nameFieldName);
         if (nameFieldName != null && nameFieldName.length() > 0) {
             reader.setNameFieldName(nameFieldName);
         } else {

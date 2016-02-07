@@ -72,7 +72,7 @@ public class StepsCellJob  implements Job<StepsCellExecutorJobDefinition> {
     }
 
     public JobStatus start(CamelContext camelContext, String username, Integer totalCount) throws Exception {
-        LOG.finer("submit() " + jobdef);
+        LOG.info("submit() " + jobdef);
 
         if (jobdef.getNotebookId() == null) {
             return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to submit job as notebook ID is not defined");
@@ -98,13 +98,16 @@ public class StepsCellJob  implements Job<StepsCellExecutorJobDefinition> {
     }
 
     protected void startJob(CamelContext camelContext, String username) throws JsonProcessingException {
+        LOG.info("Starting Job for user " + username);
         ProducerTemplate pt = camelContext.createProducerTemplate();
         String json = JsonHandler.getInstance().objectToJson(jobdef);
+        LOG.info("JSON: " + json);
         Map<String,Object> headers = new HashMap<>();
         headers.put("rabbitmq.ROUTING_KEY", "jobs.steps");
-        headers.put("rabbitmq.MESSAGE_ID", jobid);
-        headers.put("rabbitmq.USERID", username);
+        headers.put("SquonkJobID", jobid);
+        headers.put("SquonkUsername", username);
         // send to mqueue
+        LOG.info("Sending job to queue " + mqueueUrl + " ->\n" + json);
         pt.sendBodyAndHeaders(mqueueUrl, json, headers);
     }
 

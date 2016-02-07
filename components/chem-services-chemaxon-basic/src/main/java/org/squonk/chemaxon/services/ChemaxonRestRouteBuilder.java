@@ -1,5 +1,6 @@
 package org.squonk.chemaxon.services;
 
+import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.camel.util.CamelUtils;
 import com.im.lac.dataset.Metadata;
@@ -11,7 +12,6 @@ import java.util.logging.Logger;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
-import org.squonk.options.types.DiscreteStructure;
 
 /**
  *
@@ -109,7 +109,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "screening/ecfp4",
                         0.001f,
                         new OptionDescriptor[]{
-                            new OptionDescriptor(DiscreteStructure.class, KEY_QMOL, LABEL_QMOL, DESC_QMOL),
+                            new OptionDescriptor(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
                             new OptionDescriptor(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
@@ -123,7 +123,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "screening/pharmacophore",
                         0.004f,
                         new OptionDescriptor[]{
-                            new OptionDescriptor(DiscreteStructure.class, KEY_QMOL, LABEL_QMOL, DESC_QMOL),
+                            new OptionDescriptor(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
                             new OptionDescriptor(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),

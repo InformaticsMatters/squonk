@@ -20,12 +20,12 @@ public class CellClientVariableLoader implements VariableLoader {
 
     private static final Logger LOG = Logger.getLogger(CellClientVariableLoader.class.getName());
 
-    /**
-     * Used for variable reading/writing
-     */
-    @Inject
+
     private CellClient client;
 
+    public CellClientVariableLoader(CellClient client) {
+        this.client = client;
+    }
 
     @Override
     public void save() throws IOException {

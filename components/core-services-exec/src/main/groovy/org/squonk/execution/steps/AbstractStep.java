@@ -51,6 +51,15 @@ public abstract class AbstractStep implements Step {
                 count++;
                 b.append(e.getKey()).append(" -> ").append(e.getValue());
             }
+            b.append("] options:[");
+            count = 0;
+            for (Map.Entry<String,Object> e: options.entrySet()) {
+                if (count > 0) {
+                    b.append(" ");
+                }
+                count++;
+                b.append(e.getKey()).append(" -> ").append(e.getValue());
+            }
             b.append("]");
             LOG.log(level, b.toString());
         }
@@ -95,6 +104,7 @@ public abstract class AbstractStep implements Step {
      */
     protected <T> T fetchMappedInput(String internalName, Class<T> type, PersistenceType persistenceType, VariableManager varman, boolean required) throws IOException {
         VariableKey mappedVar = mapInputVariable(internalName);
+        LOG.info("VariableKey mapped to " + internalName + " is " + mappedVar);
         if (mappedVar == null) {
             if (required) {
                 throw new IllegalStateException("Mandatory input variable " + internalName + " not mapped to a notebook variable name");
@@ -102,8 +112,6 @@ public abstract class AbstractStep implements Step {
                 return null;
             }
         }
-        //System.out.println("Internal name: " + internalName);
-        //System.out.println("Mapped name: " + mappedVarName);
         T input = fetchInput(mappedVar, type, persistenceType, varman);
         if (input == null && required) {
             throw new IllegalStateException("Mandatory input variable " + internalName + " does not have a value");
@@ -176,6 +184,7 @@ public abstract class AbstractStep implements Step {
      * @throws IOException
      */
     protected <T> void createVariable(String mappedName, Class<T> type, T value, PersistenceType persistence, VariableManager varman) throws IOException {
+        LOG.info("Creating variable " + mappedName + "  for producer " + getOutputProducerName());
         VariableKey key = new VariableKey(getOutputProducerName(), mappedName);
         varman.putValue(key, type, value, mappedName.startsWith("_") ? PersistenceType.NONE : persistence);
     }

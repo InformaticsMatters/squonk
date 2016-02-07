@@ -20,9 +20,9 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(ChemblActivitiesFetcherStep.class.getName());
 
-    public static final String OPTION_ASSAY_ID = "AssayID";
-    public static final String OPTION_PREFIX = "Prefix";
-    public static final String OPTION_BATCH_SIZE = "BatchSize";
+    static final String OPTION_ASSAY_ID = StepDefinitionConstants.ChemblActivitiesFetcher.OPTION_ASSAY_ID;
+    static final String OPTION_PREFIX = StepDefinitionConstants.ChemblActivitiesFetcher.OPTION_PREFIX;
+    static final String OPTION_BATCH_SIZE = StepDefinitionConstants.ChemblActivitiesFetcher.OPTION_BATCH_SIZE;
 
     /**
      * The variable for the resulting Dataset&lt;MoleculeObject&gt;

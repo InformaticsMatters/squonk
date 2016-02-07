@@ -11,7 +11,7 @@ import org.postgresql.ds.PGSimpleDataSource
 class LoaderUtils {
     
     static ConfigObject createConfig(String path) {
-        return createConfig(new File(path).toURL())
+        return createConfig(new File(path).toURI().toURL())
     }
     
     static ConfigObject createConfig(URL url) {

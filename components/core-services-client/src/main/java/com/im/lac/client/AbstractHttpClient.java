@@ -3,6 +3,7 @@ package com.im.lac.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpMessage;
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -21,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,7 +52,7 @@ public class AbstractHttpClient {
             try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
                 LOG.finer(response.getStatusLine().toString());
                 HttpEntity entity = response.getEntity();
-                if (response.getStatusLine().getStatusCode() != 200) {
+                if (!responseOK(response)) {
                     throw new IOException("HTTP GET failed: " + response.getStatusLine().toString());
                 }
                 return EntityUtils.toString(entity);
@@ -76,7 +78,7 @@ public class AbstractHttpClient {
             CloseableHttpResponse response = httpclient.execute(httpGet);
             LOG.finer(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
-            if (response.getStatusLine().getStatusCode() != 200) {
+            if (!responseOK(response)) {
                 throw new IOException("HTTP GET failed: " + response.getStatusLine().toString());
             }
             return entity.getContent();
@@ -98,7 +100,7 @@ public class AbstractHttpClient {
             CloseableHttpResponse response = doPost(b, body, headers);
             LOG.finer(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
-            if (response.getStatusLine().getStatusCode() != 200) {
+            if (!responseOK(response)) {
                 String err = EntityUtils.toString(entity);
                 LOG.log(Level.WARNING, "Request failed: {0}", err);
                 throw new IOException("Request failed: " + response.getStatusLine().toString());
@@ -120,16 +122,20 @@ public class AbstractHttpClient {
         CloseableHttpResponse response = doPost(b, body, headers);
         LOG.finer(response.getStatusLine().toString());
         HttpEntity entity = response.getEntity();
-        if (response.getStatusLine().getStatusCode() != 200) {
-            String err = EntityUtils.toString(entity);
-            LOG.log(Level.WARNING, "Request failed: {0}", err);
+        if (!responseOK(response)) {
             throw new IOException("Request failed: " + response.getStatusLine().toString());
         }
     }
 
+    boolean responseOK(HttpResponse response) {
+        return response.getStatusLine().getStatusCode() >=200 && response.getStatusLine().getStatusCode() < 300;
+    }
+
     protected CloseableHttpResponse doPost(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
         try {
-            HttpPost httpPost = new HttpPost(b.build());
+            URI uri = b.build();
+            LOG.info("POSTing to " + uri);
+            HttpPost httpPost = new HttpPost(uri);
             if (headers != null && headers.length > 0) {
                 addHeaders(httpPost, headers);
             }
