@@ -10,7 +10,7 @@ import org.apache.camel.builder.RouteBuilder;
  *
  * @author timbo
  */
-public class CDKCalculatorsRouteBuilder extends RouteBuilder {
+public class CdkCalculatorsRouteBuilder extends RouteBuilder {
 
     static final String CDK_LOGP = "direct:logp";
 

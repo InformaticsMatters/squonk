@@ -35,9 +35,9 @@ import java.util.logging.Logger;
         description = "Moleucle depiction using CDK",
         urlPatterns = {"/moldepict"}
 )
-public class CDKMolDepictServlet extends HttpServlet {
+public class CdkMolDepictServlet extends HttpServlet {
 
-    private static final Logger LOG = Logger.getLogger(CDKMolDepictServlet.class.getName());
+    private static final Logger LOG = Logger.getLogger(CdkMolDepictServlet.class.getName());
     private final CDKMolDepict moldepict = new CDKMolDepict();  // with default params
 
     @Override

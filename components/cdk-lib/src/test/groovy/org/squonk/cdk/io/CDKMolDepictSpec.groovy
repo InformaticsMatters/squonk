@@ -155,10 +155,10 @@ class CDKMolDepictSpec extends Specification {
 
         //byte[] png = d.smilesToImage("[H]C1C(N)N(C)C2=C(N(C)C=N2)C1=O", 'PNG')
         //byte[] png = d.smilesToImage(Molecules.ethanol.smiles, 'PNG')
-        FileOutputStream f = new FileOutputStream("/users/timbo/tmp/test_cdk.png")
-        f.write(png)
-        f.flush()
-        f.close()
+//        FileOutputStream f = new FileOutputStream("/users/timbo/tmp/test_cdk.png")
+//        f.write(png)
+//        f.flush()
+//        f.close()
 
         then:
         png != null
