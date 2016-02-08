@@ -1,0 +1,25 @@
+description = 'Database creation'
+
+apply plugin: 'java'
+apply plugin: 'org.flywaydb.flyway'
+
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.postgresql:postgresql:9.4-1201-jdbc41'
+        classpath 'org.flywaydb:flyway-gradle-plugin:3.2.1'
+    }
+}
+
+flyway {
+    url =      System.getenv('SQUONK_DB_URL')  ?: 'jdbc:postgresql://localhost:5432/squonk'
+    user =     System.getenv('SQUONK_DB_USER') ?: 'squonk'
+    password = System.getenv('SQUONK_DB_PASS') ?: 'squonk'
+    schemas = ['users']
+}
+
+
