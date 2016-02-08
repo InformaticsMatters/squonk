@@ -13,6 +13,15 @@ import java.awt.image.BufferedImage;
  */
 public class RdkitMolDepict extends AbstractMolDepict<ROMol> {
 
+
+    public RdkitMolDepict() {
+        super();
+    }
+
+    public RdkitMolDepict(DepictionParameters params) {
+        super(params);
+    }
+
     @Override
     public ROMol smilesToMolecule(String smiles) throws Exception {
         return MolReader.generateMolFromSmiles(smiles);
@@ -40,7 +49,8 @@ public class RdkitMolDepict extends AbstractMolDepict<ROMol> {
 
     @Override
     public String moleculeToSVG(ROMol molecule, DepictionParameters params) throws Exception {
-        MolDraw2DSVG o = new MolDraw2DSVG(params.getWidth(), params.getHeight());
+        DepictionParameters p = depictionParameters(params);
+        MolDraw2DSVG o = new MolDraw2DSVG(p.getWidth(), p.getHeight());
         o.drawMolecule(molecule);
         return o.getDrawingText();
     }

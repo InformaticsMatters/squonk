@@ -1,7 +1,7 @@
 package com.im.lac.dataset.client;
 
 import com.im.lac.dataset.DataItem;
-import com.im.lac.services.CommonConstants;
+import org.squonk.core.CommonConstants;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 import java.io.IOException;

@@ -1,7 +1,7 @@
 package com.im.lac.job.jobdef;
 
-import com.im.lac.services.AccessMode;
-import com.im.lac.services.ServiceDescriptor;
+import org.squonk.core.AccessMode;
+import org.squonk.core.ServiceDescriptor;
 import java.util.Map;
 
 /**

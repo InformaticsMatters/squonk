@@ -11,19 +11,19 @@ import java.awt.*
  */
 class RdkitMolDepictSpec extends Specification {
 
-    void "smiles to svg"() {
-
-        //DepictionParameters params = new DepictionParameters(new Dimension(40, 30), true, Color.YELLOW)
-        DepictionParameters params = new DepictionParameters(40, 30, true, new Color(255, 255, 255, 0))
-        RdkitMolDepict d = new RdkitMolDepict(params)
-
-        when:
-        String svg1 = d.smilesToSVG(Molecules.ethanol.smiles)
-        println svg1
-
-        then:
-        svg1 != null
-    }
+//    void "smiles to svg"() {
+//
+//        //DepictionParameters params = new DepictionParameters(new Dimension(40, 30), true, Color.YELLOW)
+//        DepictionParameters params = new DepictionParameters(40, 30, true, new Color(255, 255, 255, 0))
+//        RdkitMolDepict d = new RdkitMolDepict(params)
+//
+//        when:
+//        String svg1 = d.smilesToSVG(Molecules.ethanol.smiles)
+//        println svg1
+//
+//        then:
+//        svg1 != null
+//    }
 //
 //    void "smiles to svg default"() {
 //

@@ -2,8 +2,8 @@ package org.squonk.cdk.services;
 
 import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
-import com.im.lac.services.AccessMode;
-import com.im.lac.services.ServiceDescriptor;
+import org.squonk.core.AccessMode;
+import org.squonk.core.ServiceDescriptor;
 import com.im.lac.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;

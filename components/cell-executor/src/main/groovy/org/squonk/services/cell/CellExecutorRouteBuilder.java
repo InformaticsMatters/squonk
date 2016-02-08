@@ -1,6 +1,5 @@
 package org.squonk.services.cell;
 
-import com.im.lac.cell.CellClient;
 import com.im.lac.job.client.JobStatusRestClient;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition;
@@ -13,7 +12,6 @@ import org.squonk.execution.steps.StepExecutor;
 import org.squonk.execution.variable.VariableLoader;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.mqueue.MessageQueueCredentials;
-import org.squonk.notebook.api.CellDTO;
 import org.squonk.notebook.client.CallbackClient;
 import org.squonk.notebook.client.CallbackClientConfig;
 import org.squonk.notebook.client.CallbackContext;
@@ -25,8 +23,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.im.lac.services.CommonConstants.HEADER_JOB_ID;
-import static com.im.lac.services.CommonConstants.HEADER_SQUONK_USERNAME;
+import static org.squonk.core.CommonConstants.HEADER_JOB_ID;
+import static org.squonk.core.CommonConstants.HEADER_SQUONK_USERNAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_NAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_PARAMS;
 

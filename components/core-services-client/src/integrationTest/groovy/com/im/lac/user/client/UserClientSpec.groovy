@@ -1,6 +1,6 @@
 package com.im.lac.user.client
 
-import com.im.lac.services.user.User
+import org.squonk.core.user.User
 import spock.lang.Specification
 
 /**

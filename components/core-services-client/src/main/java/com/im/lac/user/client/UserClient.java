@@ -1,6 +1,6 @@
 package com.im.lac.user.client;
 
-import com.im.lac.services.user.User;
+import org.squonk.core.user.User;
 import org.squonk.types.io.JsonHandler;
 import java.io.IOException;
 import java.util.logging.Level;
