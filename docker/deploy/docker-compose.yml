@@ -14,39 +14,39 @@
 # To build the portal docker image move into ../portal and run build.sh
 #
 # Once running you can set up the RabbitMQ users by running:
-# docker exec deploy_mq_1 bash init.sh
+# docker exec deploy_rabbitmq_1 bash init.sh
 # (or use some other input)
 
 ################# Rabbit MQ container #############################################
+#
+# initialize:
+# docker exec deploy_mq_1 bash init.sh
 # admin console available on http://${DOCKER_GATEWAY}:15672/
 #
-mq:
+rabbitmq:
     image: squonk/rabbitmq
     ports:
     - "5672:5672"
     - "15672:15672"
-    hostname: rabbitmq
     environment: 
         RABBITMQ_ERLANG_COOKIE:
         RABBITMQ_DEFAULT_USER:
         RABBITMQ_DEFAULT_PASS:
-        SQUONK_RABBITMQ_VHOST:
-        SQUONK_RABBITMQ_USER:
-        SQUONK_RABBITMQ_PASS:
+        RABBITMQ_SQUONK_PASS:
 
 ################# PostgreSQL container ############################################
-db:
-    image: squonk/postgres
+postgres:
+    image: deploy/postgres
     ports: 
     - "5432:5432"
 
 
 ################# chem services container #########################################
 # available on
-# http://${DOCKER_GATEWAY}:9080/chem-services-rdkit-basic/rest/v1/calculators
-# http://${DOCKER_GATEWAY}:9080/chem-services-cdk-basic/rest/v1/calculators
-# http://${DOCKER_GATEWAY}:9080/chem-services-chemaxon-basic/rest/v1/calculators
-# http://${DOCKER_GATEWAY}:9080/chem-services-chemaxon-basic/rest/v1/descriptors
+# http://${DOCKER_GATEWAY}:8092/chem-services-rdkit-basic/rest/v1/calculators
+# http://${DOCKER_GATEWAY}:8092/chem-services-cdk-basic/rest/v1/calculators
+# http://${DOCKER_GATEWAY}:8092/chem-services-chemaxon-basic/rest/v1/calculators
+# http://${DOCKER_GATEWAY}:8092/chem-services-chemaxon-basic/rest/v1/descriptors
 #
 # Test using something like this:
 # curl -X POST -T mols.json "http://${DOCKER_GATEWAY}:9080/chem-services-cdk-basic/rest/v1/calculators/logp"
@@ -54,29 +54,27 @@ db:
 chemservices:
     image: squonk/chem-services-basic
     ports:
-    - "9080:8080"
+    - "8092:8080"
 
 
 ################# core-services-server container #########################################
 # available on:
-# http://${DOCKER_GATEWAY}:8080/coreservices/rest/ping
-# http://${DOCKER_GATEWAY}:8080/coreservices/rest/v1/services
-# http://${DOCKER_GATEWAY}:8080/coreservices/rest/v1/jobs
-# http://${DOCKER_GATEWAY}:8080/coreservices/rest/v1/jobstatus
+# http://${DOCKER_GATEWAY}:8090/coreservices/rest/ping
+# http://${DOCKER_GATEWAY}:8090/coreservices/rest/v1/services
+# http://${DOCKER_GATEWAY}:8090/coreservices/rest/v1/jobs
+# http://${DOCKER_GATEWAY}:8090/coreservices/rest/v1/jobstatus
 # 
 coreservices:
     image: squonk/core-services-server
     ports:
-    - 8080:8080
+    - 8090:8080
     links:
-    - db:db
-    - mq:rabbitmq
+    - postgres:db
+    - rabbitmq:rabbitmq
     - chemservices:chemservices
     environment:
-        SQUONK_RABBITMQ_HOST: rabbitmq
-        SQUONK_RABBITMQ_VHOST:
-        SQUONK_RABBITMQ_USER:
-        SQUONK_RABBITMQ_PASS:
+        RABBITMQ_HOST: rabbitmq
+        RABBITMQ_SQUONK_PASS:
         SQUONK_DB_SERVER: db
         SQUONK_SERVICES_CORE:
         SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
@@ -86,13 +84,26 @@ coreservices:
 ################# core-services-notebook container #########################################
 # NOTE - these will be merged into core-services-server
 # available on:
-# http://${DOCKER_GATEWAY}:8081/notebook/ws/cell
+# http://${DOCKER_GATEWAY}:8091/notebook/ws/cell
 # 
-notebookservices:
-    image: squonk/core-services-notebook
-    ports:
-    - 8081:8080
+#notebookservices:
+#    image: squonk/core-services-notebook
+#    ports:
+#    - 8091:8080
+#    environment:
+#        SERVICE_CALLBACK:
+
+
+################# cell-executor container #########################################
+cellexecutor:
+    image: squonk/cellexecutor
+    links:
+    - coreservices:coreservices
+    - rabbitmq:rabbitmq
     environment:
+        RABBITMQ_HOST: rabbitmq
+        RABBITMQ_SQUONK_PASS:
+        SQUONK_SERVICES_CORE:
         SERVICE_CALLBACK:
 
 
@@ -104,18 +115,39 @@ notebookservices:
 #    environment: 
 #        API_URL: http://${DOCKER_GATEWAY}/coreservices/api-docs
 
+################# keycloak container ###############################################
+#
+# to initialize:
+# docker-compose up -d postgres
+# docker run -it --link deploy_postgres_1:postgres -e POSTGRES_DATABASE=keycloak -e POSTGRES_USER=keycloak -e POSTGRES_PASSWORD=keycloak --rm -v $PWD:/tmp/json jboss/keycloak-postgres /opt/jboss/keycloak/bin/standalone.sh -b 0.0.0.0 -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=/tmp/json/yyy.json -Dkeycloak.migration.strategy=OVERWRITE_EXISTING
+#
+keycloak:
+    image: jboss/keycloak-postgres
+    links:
+    - postgres:postgres
+    environment:
+    - POSTGRES_DATABASE=keycloak
+    - POSTGRES_USER=keycloak
+    - POSTGRES_PASSWORD=keycloak
+    ports:
+    - 8080:8080
+    - 8443:8443
+
 
 ################# portal ##########################################################
 portal:
-    image: squonk/portal
+    build: portal/
     hostname: portal
     ports:
     - "80:8080"
     links:
-    - db:db
-    - notebookservices:notebookservices
+    - postgres:postgres
+#    - notebookservices:notebookservices
+    - coreservices:coreservices
     environment:
-        SERVICE_CELL_EXECUTION: "http://notebookservices:8080/notebook/ws/cell" # internal port
+#        SERVICE_CELL_EXECUTION: "http://notebookservices:8080/notebook/ws/cell" # internal port
+        KEYCLOAK_SERVER_URL:
+        SQUONK_SERVICES_CORE:
 
         
 

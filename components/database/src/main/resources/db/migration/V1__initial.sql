@@ -28,4 +28,6 @@ CREATE TABLE users.jobs (
     CONSTRAINT fk_jobs2users FOREIGN KEY (owner_id) REFERENCES users.users (id) ON DELETE CASCADE
 );
 
-INSERT INTO users.users (username) VALUES ('testuser');
+INSERT INTO users.users (username) VALUES ('squonkuser');
+INSERT INTO users.users (username) VALUES ('user1');
+INSERT INTO users.users (username) VALUES ('user2');

@@ -3,7 +3,9 @@ rabbitmq:
     ports:
     - "5672:5672"
     - "15672:15672"
-    hostname: rabbitmq
+#    volumes:
+#    - ./init.sh:/usr/local/etc/init.sh:ro
+#    - ./update-credentials.sh:/usr/local/etc/update-credentials.sh:ro
     environment: 
         RABBITMQ_ERLANG_COOKIE: topsecret
 

@@ -27,8 +27,8 @@ class DbFileServiceSpec extends Specification {
         ds.serverName = System.getenv('DOCKER_IP') ?: 'localhost'
         ds.portNumber =  5432
         ds.databaseName = 'squonk'
-        ds.user = 'tester'
-        ds.password = 'lacrocks'
+        ds.user = 'squonk'
+        ds.password = 'squonk'
 
         return ds;
     }

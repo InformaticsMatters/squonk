@@ -9,7 +9,7 @@ import spock.lang.Specification
  */
 class ServicesClientSpec extends Specification {   
     
-    String username = "testuser"
+    String username = 'squonkuser'
     
     @Ignore
     void "list services"() {

@@ -34,6 +34,7 @@ public class Utils {
 
     public static DataSource createDataSource(String server, String port, String dbName, String user, String password) {
 
+
         String s = (server != null ? server : IOUtils.getConfiguration("SQUONK_DB_SERVER", "localhost"));
         String po = (port != null ? port : IOUtils.getConfiguration("SQUONK_DB_PORT", "5432"));
         String d = (dbName != null ? dbName : IOUtils.getConfiguration("SQUONK_DB_NAME", "squonk"));
@@ -47,7 +48,7 @@ public class Utils {
         ds.setUser(u);
         ds.setPassword(pw);
 
-        LOG.log(Level.INFO, "Created datasource for server {0}@{1}:{2}/{3}", new Object[]{u, s, po, d});
+        LOG.log(Level.INFO, "Using datasource for server {0}@{1}:{2}/{3}", new Object[]{u, s, po, d});
 
         return ds;
     }

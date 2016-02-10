@@ -11,7 +11,7 @@ import spock.lang.Specification
  */
 class DatasetClientSpec extends Specification {
     
-    String username = "testuser"
+    String username = "squonkuser"
     
     String url = "http://" + (System.getenv("DOCKER_IP") ?: "localhost") + "/coreservices/rest/v1/datasets"
     

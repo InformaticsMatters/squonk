@@ -44,7 +44,7 @@ class SplitAndQueueJobRouteBuilderSpec extends DatasetSpecificationBase {
 //        System.out.println("Status 2: " + status2);
 //
 //        then:
-//        status1.status != null
+//        status1.statuses != null
 //        status2.totalCount == 5
 //
 //    }

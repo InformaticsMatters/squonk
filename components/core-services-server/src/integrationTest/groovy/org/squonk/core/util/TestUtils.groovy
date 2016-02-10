@@ -11,9 +11,8 @@ import org.squonk.core.job.Job
  * @author timbo
  */
 class TestUtils {
-    
-    public final static String LAC_PASSWORD = 'lacrocks' 
-    public final static String TEST_USERNAME = "testuser"
+
+    public final static String TEST_USERNAME = 'squonkuser'
         
 //    static List<Long> createTestData(DatasetHandler handler) {
 //
@@ -28,7 +27,7 @@ class TestUtils {
 //    }
     
     static DataSource createTestDataSource() {
-        return Utils.createDataSource(null, null, 'squonk', "tester", LAC_PASSWORD)
+        return Utils.createDataSource()
     }
     
     static void waitForJobToComplete(Job job, long timeOutMillis) {

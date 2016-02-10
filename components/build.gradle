@@ -79,6 +79,11 @@ task wrapper(type: Wrapper) {
     jarFile = 'wrapper/wrapper.jar'
 }
 
+/* to run the integration tests first cd into $LAC_HOME/docker and then execute:
+./build-external.sh
+./configure-external.sh
+*/
+
 task integrationTestEnvPrepare(type:Exec) {
     dependsOn "core-services-server:dockerFile"
     
@@ -99,7 +104,6 @@ task integrationTestEnvShutdown(type:Exec) {
 
 task integrationTestEnvClean(type:Exec) { 
     commandLine 'bash', '../docker/int-test-env-clean.sh'
-    
 }
 
 

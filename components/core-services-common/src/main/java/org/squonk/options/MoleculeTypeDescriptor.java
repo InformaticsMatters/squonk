@@ -12,7 +12,7 @@ public class MoleculeTypeDescriptor <T> extends SimpleTypeDescriptor<Structure> 
 
     private final MoleculeType molType;
 
-    public MoleculeTypeDescriptor(MoleculeType molType) {
+    public MoleculeTypeDescriptor(@JsonProperty("molType") MoleculeType molType) {
         super(Structure.class);
         this.molType = molType;
     }

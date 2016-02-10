@@ -1,5 +1,6 @@
 package org.squonk.mqueue;
 
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import org.squonk.util.IOUtils;
 
 /**
@@ -24,25 +25,23 @@ public class MessageQueueCredentials {
      * the RABBITMQ_HOST, RABBITMQ_USER and RABBITMQ_PASSWORD environment variables.
      */
     public MessageQueueCredentials() {
-        this(null, null, null, null);
+        this(null, null);
     }
 
     /**
      * Specify the MQ credentials. If null then defaults for the prod environment are used, but can
-     * be overridden using the RABBITMQ_HOST, RABBITMQ_USER and RABBITMQ_PASSWORD environment
+     * be overridden using the RABBITMQ_HOST, RABBITMQ_SQUONK_PASS environment
      * variables.
      *
      * @param hostname
-     * @param username
      * @param password
-     * @param vHost
      */
-    public MessageQueueCredentials(String hostname, String username, String password, String vHost) {
+    public MessageQueueCredentials(String hostname, String password) {
 
-        this.hostname = hostname != null ? hostname : IOUtils.getConfiguration("SQUONK_RABBITMQ_HOST", "localhost");
-        this.username = username != null ? username : IOUtils.getConfiguration("SQUONK_RABBITMQ_USER", "squonk");
-        this.password = password != null ? password : IOUtils.getConfiguration("SQUONK_RABBITMQ_PASS", "squonk");
-        this.virtualHost = vHost != null ? vHost : IOUtils.getConfiguration("SQUONK_RABBITMQ_VHOST", "/squonk");
+        this.hostname = (hostname != null ? hostname : IOUtils.getConfiguration("RABBITMQ_HOST", "localhost"));
+        this.username = "squonk";
+        this.password = (password != null ? password : IOUtils.getConfiguration("RABBITMQ_SQUONK_PASS", "squonk"));
+        this.virtualHost = "/squonk";
     }
 
     public String getHostname() {

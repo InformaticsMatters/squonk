@@ -9,7 +9,7 @@ import spock.lang.Specification
  */
 class UserClientSpec extends Specification {
     
-    String username = "testuser"
+    String username = 'squonkuser'
     
     String url = "http://" + (System.getenv("DOCKER_IP") ?: "localhost") + "/coreservices/rest/v1/users/"
     

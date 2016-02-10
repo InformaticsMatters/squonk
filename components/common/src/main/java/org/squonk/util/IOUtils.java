@@ -199,11 +199,11 @@ public class IOUtils {
      */
     public static String getConfiguration(String name, String defaultValue) {
         String s = System.getProperty(name);
-        if (s != null) {
+        if (s != null && s.length() > 0) {
             return s;
         }
         s = System.getenv(name);
-        if (s != null) {
+        if (s != null && s.length() > 0) {
             return s;
         }
         return defaultValue;

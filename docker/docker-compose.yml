@@ -1,11 +1,13 @@
 mq:
-    build: rabbitmq/
+    image: squonk/rabbitmq
     ports:
     - "5672:5672"
     - "15672:15672"
-    hostname: rabbitmq
     environment: 
         RABBITMQ_ERLANG_COOKIE: topsecret
+        RABBITMQ_DEFAULT_USER: admin
+        RABBITMQ_DEFAULT_PASS: squonk
+
 
 db:
     build: postgres/
@@ -20,17 +22,6 @@ cs:
     - db:db
     - mq:rabbitmq
     environment:
-        RABBITMQ_HOST: rabbitmq
-        RABBITMQ_VHOST: "/unittest"
-        RABBITMQ_USER: tester
-        RABBITMQ_PASSWORD: lacrocks
+        RABBITMQ_HOST: mq
         SQUONK_DB_SERVER: db
-
-swagger:
-    image: sjeandeaux/docker-swagger-ui
-    ports:
-        - "8888:8888"
-    environment: 
-        API_URL: http://localhost/coreservices/api-docs
-        
 
