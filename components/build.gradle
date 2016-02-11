@@ -156,8 +156,7 @@ task createEbsBackendServicesZip(type: Zip) {
 
 
 docker {
-    url = 'http://' + (System.getenv('DOCKER_IP') ?: 'localhost') + ':2375'
-    //certPath = new File(System.properties['user.home'], '.docker')
+    url = (System.getenv('DOCKER_HOST') ?: 'unix:///var/run/docker.sock')
     certPath = null
 }
 
