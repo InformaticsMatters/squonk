@@ -1,9 +1,9 @@
 package org.squonk.mqueue;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import org.squonk.util.IOUtils;
 
 /**
+ *
  * @author timbo
  */
 public class MessageQueueCredentials {

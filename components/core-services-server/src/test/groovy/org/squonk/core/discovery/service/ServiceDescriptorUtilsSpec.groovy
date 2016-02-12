@@ -1,7 +1,11 @@
 package org.squonk.core.discovery.service
 
 import org.squonk.core.AccessMode
+import org.squonk.core.ServiceDescriptor
+import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
+
+import java.util.stream.Stream
 
 /**
  *
@@ -41,5 +45,22 @@ class ServiceDescriptorUtilsSpec extends Specification {
         then:
         url == "http:localhost:8080/some/other/path"
     }
+
+//    void "remote"() {
+//
+//        URL url = new URL('http://demos.informaticsmatters.com:8091/coreservices/rest/v1/services')
+//
+//        when:
+//        String json = url.text
+//        println json
+//        def str = JsonHandler.instance.streamFromJson(json, ServiceDescriptor.class)
+//
+//        then:
+//        json != null
+//        str instanceof Stream
+//        str.each {
+//            println it
+//        }
+//    }
 }
 
