@@ -33,7 +33,7 @@ public class CellClient extends AbstractHttpClient {
 
     public CellClient(Long notebookId) {
         this.notebookId = notebookId;
-        LOG.info("Using base URL of " + baseUrl);
+        LOG.info("CellClient is using base URL of " + baseUrl);
     }
 
     public NotebookDTO retrieveNotebookDefinition() throws IOException {

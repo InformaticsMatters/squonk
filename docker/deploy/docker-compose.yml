@@ -24,21 +24,49 @@
 # admin console available on http://${DOCKER_GATEWAY}:15672/
 #
 rabbitmq:
-    image: squonk/rabbitmq
+    image: rabbitmq:3-management
     ports:
     - "5672:5672"
     - "15672:15672"
+    volumes:
+    - ../rabbitmq/init.sh:/usr/local/etc/init.sh:ro
+    - ../rabbitmq/update-credentials.sh:/usr/local/etc/update-credentials.sh:ro
+    - ../rabbitmq/clean.sh:/usr/local/etc/clean.sh:ro
     environment: 
         RABBITMQ_ERLANG_COOKIE:
-        RABBITMQ_DEFAULT_USER:
+        RABBITMQ_DEFAULT_USER: admin
         RABBITMQ_DEFAULT_PASS:
         RABBITMQ_SQUONK_PASS:
 
 ################# PostgreSQL container ############################################
 postgres:
-    image: deploy/postgres
+    image: postgres:9.5
+    volumes:
+    - ./init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro
     ports: 
     - "5432:5432"
+
+################# swagger container ###############################################
+#swagger:
+#    image: sjeandeaux/docker-swagger-ui
+#    ports:
+#        - "8888:8888"
+#    environment: 
+#        API_URL: http://${DOCKER_GATEWAY}:8091/coreservices/api-docs
+
+################# keycloak container ###############################################
+keycloak:
+    image: jboss/keycloak-postgres:1.8.1.Final
+    links:
+    - postgres:postgres
+    environment:
+        POSTGRES_DATABASE: keycloak
+        POSTGRES_USER: keycloak
+        POSTGRES_PASSWORD:
+    ports:
+    - 8080:8080
+    - 8443:8443
+
 
 
 ################# chem services container #########################################
@@ -59,15 +87,15 @@ chemservices:
 
 ################# core-services-server container #########################################
 # available on:
-# http://${DOCKER_GATEWAY}:8090/coreservices/rest/ping
-# http://${DOCKER_GATEWAY}:8090/coreservices/rest/v1/services
-# http://${DOCKER_GATEWAY}:8090/coreservices/rest/v1/jobs
-# http://${DOCKER_GATEWAY}:8090/coreservices/rest/v1/jobstatus
+# http://${DOCKER_GATEWAY}:8091/coreservices/rest/ping
+# http://${DOCKER_GATEWAY}:8091/coreservices/rest/v1/services
+# http://${DOCKER_GATEWAY}:8091/coreservices/rest/v1/jobs
+# http://${DOCKER_GATEWAY}:8091/coreservices/rest/v1/jobstatus
 # 
 coreservices:
     image: squonk/core-services-server
     ports:
-    - 8090:8080
+    - 8091:8080
     links:
     - postgres:db
     - rabbitmq:rabbitmq
@@ -81,18 +109,6 @@ coreservices:
 #        SQUONK_RDKIT_CHEM_SERVICES_URL
 
 
-################# core-services-notebook container #########################################
-# NOTE - these will be merged into core-services-server
-# available on:
-# http://${DOCKER_GATEWAY}:8091/notebook/ws/cell
-# 
-#notebookservices:
-#    image: squonk/core-services-notebook
-#    ports:
-#    - 8091:8080
-#    environment:
-#        SERVICE_CALLBACK:
-
 
 ################# cell-executor container #########################################
 cellexecutor:
@@ -103,35 +119,8 @@ cellexecutor:
     environment:
         RABBITMQ_HOST: rabbitmq
         RABBITMQ_SQUONK_PASS:
-        SQUONK_SERVICES_CORE:
+        SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
         SERVICE_CALLBACK:
-
-
-################# swagger container ###############################################
-#swagger:
-#    image: sjeandeaux/docker-swagger-ui
-#    ports:
-#        - "8888:8888"
-#    environment: 
-#        API_URL: http://${DOCKER_GATEWAY}/coreservices/api-docs
-
-################# keycloak container ###############################################
-#
-# to initialize:
-# docker-compose up -d postgres
-# docker run -it --link deploy_postgres_1:postgres -e POSTGRES_DATABASE=keycloak -e POSTGRES_USER=keycloak -e POSTGRES_PASSWORD=keycloak --rm -v $PWD:/tmp/json jboss/keycloak-postgres /opt/jboss/keycloak/bin/standalone.sh -b 0.0.0.0 -Dkeycloak.migration.action=import -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=/tmp/json/yyy.json -Dkeycloak.migration.strategy=OVERWRITE_EXISTING
-#
-keycloak:
-    image: jboss/keycloak-postgres
-    links:
-    - postgres:postgres
-    environment:
-    - POSTGRES_DATABASE=keycloak
-    - POSTGRES_USER=keycloak
-    - POSTGRES_PASSWORD=keycloak
-    ports:
-    - 8080:8080
-    - 8443:8443
 
 
 ################# portal ##########################################################
@@ -142,12 +131,10 @@ portal:
     - "80:8080"
     links:
     - postgres:postgres
-#    - notebookservices:notebookservices
     - coreservices:coreservices
     environment:
-#        SERVICE_CELL_EXECUTION: "http://notebookservices:8080/notebook/ws/cell" # internal port
         KEYCLOAK_SERVER_URL:
-        SQUONK_SERVICES_CORE:
+        SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
 
         
 
