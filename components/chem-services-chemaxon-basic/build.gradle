@@ -8,16 +8,6 @@ apply plugin: 'com.bmuschko.docker-remote-api'
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
-buildscript {
-    repositories { 
-        jcenter() 
-    }
-    dependencies {
-        classpath 'com.bmuschko:gradle-tomcat-plugin:2.2.2'
-        classpath 'com.bmuschko:gradle-docker-plugin:2.4.1'
-    }
-}
-
 dependencies {
     compile project(':common')
     compile project(':common-camel')

@@ -20,7 +20,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(CdkRestRouteBuilder.class.getName());
 
-    private static final ServiceDescriptor[] calculatorsServiceDescriptor
+    protected static final ServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
             = new ServiceDescriptor[]{new ServiceDescriptor(
                         "cdk.calculators",
                         "CDK LogP",
@@ -77,7 +77,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 .produces("application/json")
                 .route()
                 .process((Exchange exch) -> {
-                    exch.getIn().setBody(calculatorsServiceDescriptor);
+                    exch.getIn().setBody(CALCULATORS_SERVICE_DESCRIPTOR);
                 })
                 .endRest()
                 //

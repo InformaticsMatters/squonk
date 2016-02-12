@@ -6,16 +6,6 @@ apply plugin: 'com.bmuschko.docker-java-application'
 
 mainClassName = "org.jboss.weld.environment.se.StartMain"
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath 'com.bmuschko:gradle-docker-plugin:2.6.5'
-    }
-}
-
 dependencies {
 
     compile project(':common')

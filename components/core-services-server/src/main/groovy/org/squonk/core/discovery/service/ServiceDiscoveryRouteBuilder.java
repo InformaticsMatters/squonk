@@ -36,13 +36,13 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     /**
      * This allows the timer delay to be set, primarily to allow easy testing
      */
-    protected int timerDelay = 5 * 60 * 1000;
+    protected int timerDelay = 15 * 60 * 1000;
 
     final List<String> locations = new ArrayList<>();
 
     public ServiceDiscoveryRouteBuilder() {
 
-        // prod is http://demos.informaticsmatters.com:9080
+        // prod is http://demos.informaticsmatters.com:8091
         String basicChemServicesUrl = IOUtils.getConfiguration("SQUONK_BASIC_CHEM_SERVICES_URL", null);
         // prod is http://demos.informaticsmatters.com:8000
         String rdkitPythonServicesUrl = IOUtils.getConfiguration("SQUONK_RDKIT_CHEM_SERVICES_URL", null);

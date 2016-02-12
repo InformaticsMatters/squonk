@@ -1,6 +1,7 @@
 package org.squonk.execution.steps.impl
 
 import com.im.lac.types.MoleculeObject
+import org.squonk.core.CommonConstants
 import org.squonk.dataset.Dataset
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.execution.variable.PersistenceType
@@ -37,7 +38,7 @@ class MoleculeServiceFatExecutorStepSpec extends Specification {
                 //MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET, Dataset.class, ds, PersistenceType.NONE)
         
         def opts = [
-            (MoleculeServiceFatExecutorStep.OPTION_SERVICE_ENDPOINT):'http://demos.informaticsmatters.com:9080/chem-services-cdk-basic/rest/v1/calculators/logp'
+            (MoleculeServiceFatExecutorStep.OPTION_SERVICE_ENDPOINT): CommonConstants.HOST_CDK_CALCULATORS + '/logp'
         ]
         def inputMappings = [(MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET):new VariableKey(producer,"input")]
         def outputMappings = [:]

@@ -20,7 +20,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(RdkitRestRouteBuilder.class.getName());
 
-    private static final ServiceDescriptor[] calculatorsServiceDescriptor
+    protected static final ServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
             = new ServiceDescriptor[]{
                 createServiceDescriptor(
                         "rdkit.calculators.logp",
@@ -153,7 +153,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                 .produces("application/json")
                 .route()
                 .process((Exchange exch) -> {
-                    exch.getIn().setBody(calculatorsServiceDescriptor);
+                    exch.getIn().setBody(CALCULATORS_SERVICE_DESCRIPTOR);
                 })
                 .endRest()
                 //

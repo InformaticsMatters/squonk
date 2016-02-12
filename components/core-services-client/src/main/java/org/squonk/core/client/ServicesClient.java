@@ -23,7 +23,7 @@ public class ServicesClient extends AbstractHttpClient {
 
     private static final Logger LOG = Logger.getLogger(ServicesClient.class.getName());
 
-    private static final String DEFAULT_BASE_URL = "http://demos.informaticsmatters.com:8080/coreservices/rest/v1/services";
+    private static final String DEFAULT_BASE_URL = CommonConstants.HOST_CORE_SERVICES + "/rest/v1/services";
 
     private final String base;
 

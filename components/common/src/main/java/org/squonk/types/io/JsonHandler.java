@@ -212,6 +212,13 @@ public class JsonHandler {
         return reader.readValues(is);
     }
 
+    public <T> Stream<T> streamFromJson(final String json, final Class<T> type) throws IOException {
+        ObjectReader reader = mapper.readerFor(type);
+        Iterator<T> iter = reader.readValues(json);
+        Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iter, Spliterator.NONNULL | Spliterator.ORDERED);
+        return StreamSupport.stream(spliterator, true);
+    }
+
     public <T> Stream<T> streamFromJson(final InputStream is, final Class<T> type, final boolean autoClose) throws IOException {
         return streamFromJson(is, type, (Map) null, autoClose);
     }
@@ -234,7 +241,7 @@ public class JsonHandler {
             reader = reader.withAttribute(ATTR_VALUE_MAPPINGS, mappings);
         }
         Iterator<T> iter = reader.readValues(is);
-        Spliterator spliterator = Spliterators.spliteratorUnknownSize(iter, Spliterator.NONNULL | Spliterator.ORDERED);
+        Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iter, Spliterator.NONNULL | Spliterator.ORDERED);
         Stream<T> stream = StreamSupport.stream(spliterator, true);
         if (autoClose) {
             return stream.onClose(() -> IOUtils.close(is));

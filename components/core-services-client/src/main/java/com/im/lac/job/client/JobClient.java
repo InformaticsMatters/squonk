@@ -30,7 +30,7 @@ public class JobClient {
 
     private static final Logger LOG = Logger.getLogger(JobClient.class.getName());
 
-    private static final String DEFAULT_BASE_URL = "http://demos.informaticsmatters.com:8080/coreservices/rest/v1/jobs";
+    private static final String DEFAULT_BASE_URL = CommonConstants.HOST_CORE_SERVICES + "/rest/v1/jobs";
 
     private final String base;
     private final CloseableHttpClient httpclient = HttpClients.createDefault();

@@ -1,5 +1,6 @@
 package com.im.lac.user.client;
 
+import org.squonk.core.CommonConstants;
 import org.squonk.core.user.User;
 import org.squonk.types.io.JsonHandler;
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class UserClient {
 
     private static final Logger LOG = Logger.getLogger(UserClient.class.getName());
 
-    private static final String DEFAULT_BASE_URL = "http://demos.informaticsmatters.com:8080/coreservices/rest/v1/users/";
+    private static final String DEFAULT_BASE_URL = CommonConstants.HOST_CORE_SERVICES + "/rest/v1/users/";
 
     private final String base;
     private final CloseableHttpClient httpclient = HttpClients.createDefault();

@@ -37,7 +37,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     private static final String LABEL_MAX_CLUSTERS = "Max clusters";
     private static final String DESC_MAX_CLUSTERS = "Target maximum number of clusters to generate";
 
-    private static final ServiceDescriptor[] SERVICE_DESCRIPTOR_CALCULATORS
+    protected static final ServiceDescriptor[] SERVICE_DESCRIPTOR_CALCULATORS
             = new ServiceDescriptor[]{
                 createServiceDescriptor(
                         "chemaxon.calculators.logp",
