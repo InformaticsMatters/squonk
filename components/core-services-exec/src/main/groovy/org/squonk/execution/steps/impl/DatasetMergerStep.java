@@ -21,17 +21,8 @@ public class DatasetMergerStep extends AbstractStep {
     
     private static final Logger LOG = Logger.getLogger(DatasetMergerStep.class.getName());
 
-    /**
-     * The name of the value to use to merge the entries. If undefined then the
-     * UUID is used which is probably not what you want. Expects a String value.
-     */
-    public static final String OPTION_MERGE_FIELD_NAME = "mergeFieldName";
-    /**
-     * In the case of duplicate field names whether to keep the original value
-     * (true) or to replace this with newly found value (false). Expects a
-     * Boolean value. Default is true.
-     */
-    public static final String OPTION_KEEP_FIRST = "keepFirst";
+    public static final String OPTION_MERGE_FIELD_NAME = StepDefinitionConstants.DatasetMerger.OPTION_MERGE_FIELD_NAME;
+    public static final String OPTION_KEEP_FIRST = StepDefinitionConstants.DatasetMerger.OPTION_KEEP_FIRST;
 
     public static final String VAR_INPUT_BASE = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_INPUT_1 = VAR_INPUT_BASE + "1";

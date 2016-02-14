@@ -36,9 +36,9 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(MoleculeServiceThinExecutorStep.class.getName());
 
-    public static final String OPTION_SERVICE_ENDPOINT = "ServiceEndpoint";
-    public static final String OPTION_EXECUTION_PARAMS = "ExecutionParams";
-    public static final String OPTION_PRESERVE_STRUCTURE = "PreserveStructure"; //Boolean
+    public static final String OPTION_SERVICE_ENDPOINT = StepDefinitionConstants.ServiceExecutor.OPTION_SERVICE_ENDPOINT;
+    public static final String OPTION_EXECUTION_PARAMS = StepDefinitionConstants.ServiceExecutor.OPTION_SERVICE_PARAMS;
+    public static final String OPTION_PRESERVE_STRUCTURE = StepDefinitionConstants.ServiceExecutor.OPTION_PRESERVE_STRUCTURE;
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;

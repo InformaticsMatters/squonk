@@ -116,6 +116,7 @@ cellexecutor:
     links:
     - coreservices:coreservices
     - rabbitmq:rabbitmq
+    - chemservices:chemservices
     environment:
         RABBITMQ_HOST: rabbitmq
         RABBITMQ_SQUONK_PASS:

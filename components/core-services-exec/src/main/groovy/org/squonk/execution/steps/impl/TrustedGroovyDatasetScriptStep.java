@@ -22,7 +22,7 @@ public class TrustedGroovyDatasetScriptStep extends AbstractStep {
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
-    public static final String OPTION_SCRIPT = "script";
+    public static final String OPTION_SCRIPT = StepDefinitionConstants.TrustedGroovyDataset.OPTION_SCRIPT;
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {

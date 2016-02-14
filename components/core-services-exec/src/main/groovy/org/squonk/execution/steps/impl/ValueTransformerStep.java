@@ -21,7 +21,7 @@ public class ValueTransformerStep extends AbstractStep {
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
-    public static final String OPTION_TRANSFORMS = "transformDefinitions";
+    public static final String OPTION_TRANSFORMS = StepDefinitionConstants.ValueTransformer.OPTION_TRANSFORMS;
 
     /**
      * Add the transforms to the dataset Stream. NOTE: transforms will not occur

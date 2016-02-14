@@ -38,18 +38,10 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(BasicObjectToMoleculeObjectStep.class.getName());
 
-    /** The name of the value in the BasicObject that contains the structure */
-    public static final String OPTION_STRUCTURE_FIELD_NAME = "structureFieldName";
-    /** Optional value for the structure format. e.g. "smiles". */
-    public static final String OPTION_STRUCTURE_FORMAT = "structureFormat";
-    /** Option for whether to use the UUID of BasicObject as the UUID of the new MolecuelObject.
-     * Default is true. Expects a boolean value.
-     */  
-    public static final String OPTION_PRESERVE_UUID = "preserveUuid";
-
-    /** The variable for the source Dataset&lt;BasicObject&gt; */
+    public static final String OPTION_STRUCTURE_FIELD_NAME = StepDefinitionConstants.ConvertBasicToMoleculeObject.OPTION_STRUCTURE_FIELD_NAME;
+    public static final String OPTION_STRUCTURE_FORMAT = StepDefinitionConstants.ConvertBasicToMoleculeObject.OPTION_STRUCTURE_FORMAT;
+    public static final String OPTION_PRESERVE_UUID = StepDefinitionConstants.ConvertBasicToMoleculeObject.OPTION_PRESERVE_UUID;
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
-    /** The variable for the resulting Dataset&lt;MoleculeObject&gt; */
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
     public static String DEFAULT_STRUCTURE_FIELD_NAME = "structure";
