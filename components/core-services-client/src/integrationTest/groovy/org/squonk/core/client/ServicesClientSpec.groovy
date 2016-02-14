@@ -19,7 +19,7 @@ class ServicesClientSpec extends Specification {
         def client = new ServicesClient()
         
         when:
-        def definitions = client.getServiceDefinitions(username)
+        def definitions = client.getServiceDescriptors(username)
         println "received definitions " + definitions
         
         then: 

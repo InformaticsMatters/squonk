@@ -23,7 +23,7 @@ public class ServicesClient extends AbstractHttpClient {
 
     private static final Logger LOG = Logger.getLogger(ServicesClient.class.getName());
 
-    private static final String DEFAULT_BASE_URL = CommonConstants.HOST_CORE_SERVICES + "/rest/v1/services";
+    private static final String DEFAULT_BASE_URL = CommonConstants.HOST_CORE_SERVICES_SERVICES;
 
     private final String base;
 
@@ -42,7 +42,7 @@ public class ServicesClient extends AbstractHttpClient {
      * @return A list of job statuses matching the filters
      * @throws java.io.IOException
      */
-    public List<ServiceDescriptor> getServiceDefinitions(String username) throws IOException {
+    public List<ServiceDescriptor> getServiceDescriptors(String username) throws IOException {
         if (username == null) {
             throw new IllegalStateException("Username must be specified");
         }
@@ -60,16 +60,5 @@ public class ServicesClient extends AbstractHttpClient {
             return JsonHandler.getInstance().streamFromJson(is, ServiceDescriptor.class, true).collect(Collectors.toList());
         }
     }
-
-//    public List<ServiceDescriptor> getServiceDefinitions2(String username) throws IOException {
-//        if (username == null) {
-//            throw new IllegalStateException("Username must be specified");
-//        }
-//        URIBuilder b = new URIBuilder().setPath(base);
-//        NameValuePair[] headers = new NameValuePair[] {new BasicNameValuePair(CommonConstants.HEADER_SQUONK_USERNAME, username)};
-//        try (InputStream is = executeGetAsInputStream(b, headers)) {
-//            return JsonHandler.getInstance().streamFromJson(is, ServiceDescriptor.class, true).collect(Collectors.toList());
-//        }
-//    }
 
 }
