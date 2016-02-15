@@ -13,10 +13,10 @@ import spock.lang.Stepwise
  * Created by timbo on 08/02/16.
  */
 @Stepwise
-class DatabaseJobStatusClientSpec extends Specification {
+class PostgresJobStatusClientSpec extends Specification {
 
     @Shared long inTheFuture = System.currentTimeMillis() + 1000000
-    @Shared  DatabaseJobStatusClient client = new DatabaseJobStatusClient()
+    @Shared  PostgresJobStatusClient client = new PostgresJobStatusClient()
 
     void "create job"() {
 

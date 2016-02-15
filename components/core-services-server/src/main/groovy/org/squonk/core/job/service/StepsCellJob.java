@@ -3,6 +3,7 @@ package org.squonk.core.job.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition;
+import org.squonk.client.JobStatusClient;
 import org.squonk.core.job.Job;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
@@ -27,16 +28,18 @@ public class StepsCellJob  implements Job<StepsCellExecutorJobDefinition> {
 
     protected final StepsCellExecutorJobDefinition jobdef;
     protected String jobid;
-    protected static MemoryJobStatusClient jobstatusClient = MemoryJobStatusClient.INSTANCE;
+    protected final JobStatusClient jobstatusClient;
     private static MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials();
     private static final String mqueueUrl = rabbitmqCredentials.generateUrl(MQUEUE_JOB_STEPS_EXCHANGE_NAME,MQUEUE_JOB_STEPS_EXCHANGE_PARAMS);
 
 
-    public StepsCellJob(StepsCellExecutorJobDefinition jobdef) {
+    public StepsCellJob(JobStatusClient jobstatusClient, StepsCellExecutorJobDefinition jobdef) {
+        this.jobstatusClient =jobstatusClient;
         this.jobdef = jobdef;
     }
 
-    public StepsCellJob(JobStatus<StepsCellExecutorJobDefinition> jobStatus) {
+    public StepsCellJob(JobStatusClient jobstatusClient, JobStatus<StepsCellExecutorJobDefinition> jobStatus) {
+        this.jobstatusClient =jobstatusClient;
         this.jobdef = jobStatus.getJobDefinition();
         this.jobid = jobStatus.getJobId();
     }

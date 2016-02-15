@@ -90,8 +90,6 @@ public class CamelLifeCycle {
         r.put(ServerConstants.DATASET_HANDLER, new DatasetHandler(datasetService, "/tmp/datasetcache"));
 //        r.put(ServerConstants.JOB_HANDLER, new JobHandler());
         r.put(ServerConstants.USER_HANDLER, new UserHandler(new UserService(dataSource)));
-//        r.put(ServerConstants.JOB_STORE, new SimpleJobStore());
-        r.put(ServerConstants.JOBSTATUS_CLIENT, new MemoryJobStatusClient());
 
     }
 

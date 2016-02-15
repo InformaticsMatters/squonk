@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import javax.sql.DataSource;
 
+import org.postgresql.ds.PGPoolingDataSource;
 import org.postgresql.ds.PGSimpleDataSource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.squonk.core.CommonConstants;
@@ -34,14 +35,13 @@ public class Utils {
 
     public static DataSource createDataSource(String server, String port, String dbName, String user, String password) {
 
-
         String s = (server != null ? server : IOUtils.getConfiguration("SQUONK_DB_SERVER", "localhost"));
         String po = (port != null ? port : IOUtils.getConfiguration("SQUONK_DB_PORT", "5432"));
-        String d = (dbName != null ? dbName : IOUtils.getConfiguration("SQUONK_DB_NAME", "squonk"));
-        String u = (user != null ? user : IOUtils.getConfiguration("SQUONK_DB_USER", "squonk"));
-        String pw = (password != null ? password :  IOUtils.getConfiguration("SQUONK_DB_PASS", "squonk"));
+        String d = "squonk";
+        String u = "squonk";
+        String pw = (password != null ? password :  IOUtils.getConfiguration("POSTGRES_SQUONK_PASS", "squonk"));
 
-        PGSimpleDataSource ds = new PGSimpleDataSource();
+        PGPoolingDataSource ds = new PGPoolingDataSource();
         ds.setServerName(s);
         ds.setPortNumber(new Integer(po));
         ds.setDatabaseName(d);

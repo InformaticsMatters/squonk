@@ -7,6 +7,7 @@
 export DOCKER_GATEWAY=172.17.0.1
 export RABBITMQ_ERLANG_COOKIE=topsecret
 export RABBITMQ_DEFAULT_PASS=squonk
+#export RABBITMQ_SQUONK_PASS=squonk
 #export KEYCLOAK_ADMIN_PASS=squonk
 export POSTGRES_PASSWORD=squonk
 #export POSTGRES_KEYCLOAK_PASS=squonk

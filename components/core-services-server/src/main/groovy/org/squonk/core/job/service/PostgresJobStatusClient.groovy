@@ -17,7 +17,9 @@ import java.sql.Timestamp;
  * Created by timbo on 04/01/16.
  */
 @Log
-public class DatabaseJobStatusClient implements JobStatusClient {
+public class PostgresJobStatusClient implements JobStatusClient {
+
+    public final static PostgresJobStatusClient INSTANCE = new PostgresJobStatusClient();
 
     private final Object lock = new Object();
 
@@ -34,10 +36,10 @@ public class DatabaseJobStatusClient implements JobStatusClient {
 
     public JobStatus submit(JobDefinition jobdef, String username, Integer totalCount) {
         log.info("Registering JobDef: " + jobdef);
-        JobStatus status = JobStatus.create(jobdef, username, new Date(), totalCount)
+        JobStatus status = JobStatus.create(jobdef, username, new Date(), totalCount == null ? 0 : totalCount)
         int count
         db.withTransaction {
-            count = insertStatusInDb(db, status, username, totalCount)
+            count = insertStatusInDb(db, status)
         }
         if (count == 1) {
             return status
@@ -49,10 +51,9 @@ public class DatabaseJobStatusClient implements JobStatusClient {
     private static final String SQL_INSERT = """INSERT INTO users.jobstatus (owner_id, uuid, status, total_count, processed_count, error_count, definition)
 (SELECT id, ?, ?, ?, ?, ?, ?::jsonb FROM users.users u WHERE u.username = ?)"""
 
-    private int insertStatusInDb(Sql db, JobStatus status, String username, Integer totalCount) {
+    private int insertStatusInDb(Sql db, JobStatus status) {
         String json = JsonHandler.getInstance().objectToJson(status.getJobDefinition())
-            def vals = db.executeInsert(SQL_INSERT, [status.getJobId(), status.getStatus().toString(), totalCount, 0, 0, json, username])
-
+            def vals = db.executeInsert(SQL_INSERT, [status.getJobId(), status.getStatus().toString(), status.totalCount, 0, 0, json, status.username])
             return vals.size()
     }
 

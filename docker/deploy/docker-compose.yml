@@ -104,6 +104,9 @@ coreservices:
         RABBITMQ_HOST: rabbitmq
         RABBITMQ_SQUONK_PASS:
         SQUONK_DB_SERVER: db
+        SQUONK_DB_PORT:
+        SQUONK_DB_USER:
+        SQUONK_DB_PASS:
         SQUONK_SERVICES_CORE:
         SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
 #        SQUONK_RDKIT_CHEM_SERVICES_URL

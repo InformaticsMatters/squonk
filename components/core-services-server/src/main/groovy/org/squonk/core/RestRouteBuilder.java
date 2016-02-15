@@ -9,6 +9,7 @@ import org.squonk.core.dataset.service.DatasetHandler;
 import org.squonk.core.discovery.service.ServiceDiscoveryRouteBuilder;
 import org.squonk.core.job.Job;
 import org.squonk.core.job.service.MemoryJobStatusClient;
+import org.squonk.core.job.service.PostgresJobStatusClient;
 import org.squonk.core.job.service.StepsCellJob;
 import org.squonk.core.user.User;
 import org.squonk.core.user.UserHandler;
@@ -40,15 +41,27 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
 
     private static final Logger LOG = Logger.getLogger(RestRouteBuilder.class.getName());
 
-    private final JobStatusClient jobstatusClient = MemoryJobStatusClient.INSTANCE;
+    private final JobStatusClient jobstatusClient;
     private final JsonHandler jsonHandler = JsonHandler.getInstance();
     private MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials();
     private final String userNotifyMqueueUrl = rabbitmqCredentials.generateUrl(MQUEUE_USERS_EXCHANGE_NAME, MQUEUE_USERS_EXCHANGE_PARAMS);
 
+
+    public RestRouteBuilder() {
+        String server = IOUtils.getConfiguration("SQUONK_DB_SERVER", null);
+        if (server == null) {
+            LOG.info("Using MemoryJobStatusClient");
+            jobstatusClient = MemoryJobStatusClient.INSTANCE;
+        } else {
+            LOG.info("Using PostgresJobStatusClient");
+            jobstatusClient = PostgresJobStatusClient.INSTANCE;
+        }
+    }
+
     @Override
     public void configure() throws Exception {
 
-        restConfiguration().component("servlet").host("0.0.0.0");
+               restConfiguration().component("servlet").host("0.0.0.0");
 
         /* These are the REST endpoints - exposed as public web services 
          */
@@ -160,7 +173,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     Integer count = exch.getIn().getHeader(HEADER_JOB_SIZE, Integer.class);
                     Job job = null;
                     if (jobdef instanceof ExecuteCellUsingStepsJobDefinition) {
-                        job = new StepsCellJob((ExecuteCellUsingStepsJobDefinition)jobdef);
+                        job = new StepsCellJob(jobstatusClient, (ExecuteCellUsingStepsJobDefinition)jobdef);
                     } else {
                         throw new IllegalStateException("Job definition type " + jobdef.getClass().getName() + " not currently supported");
                     }

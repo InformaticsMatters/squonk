@@ -3,7 +3,7 @@
 HOME=$PWD
 echo HOME = $HOME
 
-rm portal/*.war
+touch portal/ROOT.war && rm portal/*.war
 
 cd ../../../portal/portal-app; ant -f portal.xml build-portal-app-zip
 cd $HOME
