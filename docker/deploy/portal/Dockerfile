@@ -19,6 +19,7 @@ RUN cd /usr/local/tomcat/webapps/ROOT/WEB-INF/lib && rm bcprov-jdk15-1.46.jar co
 
 
 COPY web.xml /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml
+COPY beans.xml /usr/local/tomcat/webapps/ROOT/WEB-INF/beans.xml
 COPY persistence.properties /usr/local/tomcat/webapps/ROOT/WEB-INF/persistence.properties
 
  
