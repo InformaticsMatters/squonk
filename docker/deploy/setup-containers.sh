@@ -4,17 +4,7 @@
 # only occasionally need rebuilding 
 
 ./setenv.sh
-
-
-
 base=$PWD
-
-echo "preparing rabbitmq docker image ..."
-docker-compose up -d rabbitmq
-sleep 2
-./rabbitmq-setup.sh deploy_rabbitmq_1
-docker-compose stop rabbitmq
-echo "... rabbitmq docker image built"
 
 echo "preaparing postgres docker image ..."
 docker-compose up -d postgres
@@ -23,6 +13,15 @@ cd ../../components
 ./gradlew database:flywayMigrate
 echo "... tables created"
 cd $base
+
+echo "preparing rabbitmq docker image ..."
+docker-compose up -d rabbitmq
+sleep 2
+./rabbitmq-setup.sh deploy_rabbitmq_1
+docker-compose stop rabbitmq
+echo "... rabbitmq docker image built"
+
+
 
 docker-compose up -d keycloak
 sleep 5

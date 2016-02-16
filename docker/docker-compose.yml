@@ -1,3 +1,10 @@
+db:
+    image: postgres:9.5
+    volumes:
+    - ./deploy/init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro
+    ports: 
+    - "5432:5432"
+
 mq:
     image: squonk/rabbitmq
     ports:
@@ -7,12 +14,6 @@ mq:
         RABBITMQ_ERLANG_COOKIE: topsecret
         RABBITMQ_DEFAULT_USER: admin
         RABBITMQ_DEFAULT_PASS: squonk
-
-
-db:
-    build: postgres/
-    ports: 
-    - "5432:5432"
 
 cs:
     build: ../components/core-services-server/build

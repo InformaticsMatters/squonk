@@ -19,6 +19,16 @@ CREATE TABLE users.datasets (
     CONSTRAINT fk_datasets2users FOREIGN KEY (owner_id) REFERENCES users.users (id) ON DELETE CASCADE
 );
 
+CREATE TABLE users.demo_files (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      time_created TIMESTAMP NOT NULL DEFAULT NOW(),
+      last_updated TIMESTAMP NOT NULL DEFAULT NOW(),
+      size INTEGER,
+      metadata JSONB,
+      loid BIGINT NOT NULL
+);
+
 -- legacy table - will be deleted
 CREATE TABLE users.jobs (
     id SERIAL PRIMARY KEY,
@@ -31,3 +41,12 @@ CREATE TABLE users.jobs (
 INSERT INTO users.users (username) VALUES ('squonkuser');
 INSERT INTO users.users (username) VALUES ('user1');
 INSERT INTO users.users (username) VALUES ('user2');
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON users.users TO squonk;
+GRANT SELECT, INSERT, UPDATE, DELETE ON users.datasets TO squonk;
+GRANT SELECT, INSERT, UPDATE, DELETE ON users.demo_files TO squonk;
+GRANT SELECT, INSERT, UPDATE, DELETE ON users.jobs TO squonk;
+GRANT USAGE ON SEQUENCE users.users_id_seq TO squonk;
+GRANT USAGE ON SEQUENCE users.datasets_id_seq TO squonk;
+GRANT USAGE ON SEQUENCE users.demo_files_id_seq TO squonk;
+GRANT USAGE ON SEQUENCE users.jobs_id_seq TO squonk;

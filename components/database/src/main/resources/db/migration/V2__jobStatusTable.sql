@@ -17,3 +17,6 @@ CREATE TABLE users.jobstatus (
 );
 
 CREATE INDEX idx_js_owner_id ON users.jobstatus (owner_id);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON users.jobstatus TO squonk;
+GRANT USAGE ON SEQUENCE users.jobstatus_id_seq TO squonk;

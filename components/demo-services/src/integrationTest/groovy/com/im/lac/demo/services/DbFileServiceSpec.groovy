@@ -34,20 +34,25 @@ class DbFileServiceSpec extends Specification {
     }
     // run before the first feature method
     def setupSpec() {
-        try {
-            db.execute 'DROP TABLE ' + service.tableName
-        } catch (Exception e) { }// expected   
-        service.createTables()
-    }     
+//        try {
+//            db.execute 'DROP TABLE ' + service.tableName
+//        } catch (Exception e) { }// expected
+//        service.createTables()
+        cleanupLargeObjects()
+    }
     
     // run after the last feature method
     def cleanupSpec() {
-        // first delete so that our LOBs get deleted
+        cleanupLargeObjects()
+    }
+    
+    private void cleanupLargeObjects() {
+//        db.execute '''SELECT lo_unlink(l.loid) FROM pg_largeobject l
+//  JOIN pg_largeobject_metadata m ON l.loid = m.oid
+//  JOIN pg_authid a ON a.oid = m.lomowner
+//  WHERE a.rolname = 'squonk' '''
         db.execute 'DELETE FROM ' + service.tableName
-        db.execute 'DROP TABLE ' + service.tableName
-    }   
-    
-    
+    }
     
     def "1.1 add dataitem"() {
         println "add dataitem()"

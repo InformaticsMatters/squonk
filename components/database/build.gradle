@@ -21,10 +21,10 @@ flyway {
             (System.getenv('SQUONK_DB_SERVER') ?: 'localhost') + ':' +
             (System.getenv('SQUONK_DB_PORT') ?: '5432') + '/' +
             (System.getenv('SQUONK_DB_NAME') ?: 'squonk')
-    user =     System.getenv('SQUONK_DB_USER') ?: 'squonk'
-    password = System.getenv('SQUONK_DB_PASS') ?: 'squonk'
+    user =     System.getenv('POSTGRES_USER') ?: 'postgres'
+    password = System.getenv('POSTGRES_PASSWORD') ?: 'postgres'
     schemas = ['users']
-    println "Using DB URL of $url"
+    println "Using DB URL of $url and password of " + (System.getenv('POSTGRES_PASSWORD') ?: 'postgres')
 }
 
 
