@@ -13,6 +13,7 @@ import org.squonk.client.JobStatusClient;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
+import javax.enterprise.inject.Default;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 /**
  * Created by timbo on 06/01/16.
  */
+@Default
 public class JobStatusRestClient extends AbstractHttpClient implements JobStatusClient {
 
     private static final Logger LOG = Logger.getLogger(JobStatusRestClient.class.getName());

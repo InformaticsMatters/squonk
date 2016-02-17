@@ -6,6 +6,8 @@
 ./setenv.sh
 base=$PWD
 
+echo "Setting up for server ${DOCKER_GATEWAY}"
+
 echo "preaparing postgres docker image ..."
 docker-compose up -d postgres rabbitmq keycloak
 
