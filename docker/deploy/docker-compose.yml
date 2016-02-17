@@ -45,6 +45,9 @@ postgres:
     - ./init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro
     ports: 
     - "5432:5432"
+    environment:
+        POSTGRES_PASSWORD:
+
 
 ################# swagger container ###############################################
 #swagger:
@@ -56,7 +59,7 @@ postgres:
 
 ################# keycloak container ###############################################
 keycloak:
-    image: jboss/keycloak-postgres:1.8.1.Final
+    build: keycloak/
     links:
     - postgres:postgres
     environment:

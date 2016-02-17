@@ -21,3 +21,19 @@ docker-compose -d
 
 
 
+To build a new environment
+==========================
+
+
+Ubuntu 15.10 image
+Install openjdk-8-jdk ant jq
+Install docker-engine (https://docs.docker.com/compose/install/)
+Install docker compose (https://docs.docker.com/compose/install/)
+
+pull the lac and portal repos
+build as above (remember to create/edit setenv.sh)
+
+
+
+
+

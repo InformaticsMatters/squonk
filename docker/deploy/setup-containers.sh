@@ -59,6 +59,8 @@ done
 # no idea why this extra sleep is necessary, but it is
 sleep 10
 
+# substitute the realm json file
+sed "s/192.168.59.103/${DOCKER_GATEWAY}/g" squonk-realm.json > yyy.json
 
 token=$(curl -s -X POST "${keycloak_url}/realms/master/protocol/openid-connect/token" -H "Content-Type: application/x-www-form-urlencoded" -d "username=admin" -d "password=${KEYCLOAK_ADMIN_PASS:-squonk}" -d "grant_type=password" -d "client_id=admin-cli" | jq -r '.access_token')
 #echo "token: $token"

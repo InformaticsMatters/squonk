@@ -10,7 +10,8 @@ export RABBITMQ_DEFAULT_PASS=squonk
 #export RABBITMQ_SQUONK_PASS=squonk
 #export KEYCLOAK_ADMIN_PASS=squonk
 export POSTGRES_PASSWORD=squonk
-#export POSTGRES_KEYCLOAK_PASS=squonk
+# currently this pasword is shared between the postgres admin and the postgres keycloak users :-(
+export POSTGRES_KEYCLOAK_PASS=$POSTGRES_PASSWORD
 #export POSTGRES_SQUONK_PASS=squonk
 #export POSTGRES_XWIKI_PASS=squonk
 
