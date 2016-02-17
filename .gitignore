@@ -30,4 +30,5 @@ docker/deploy/setenv.sh
 docker/portal_keycloak/setenv.sh*
 docker/portal_keycloak/yyy.json
 docker/deploy/yyy.json
+docker/deploy/keycloak/keycloak.jks
 
