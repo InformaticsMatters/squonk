@@ -29,10 +29,11 @@ public class ServicesClient extends AbstractHttpClient {
 
     public ServicesClient(String baseUrl) {
         this.base = baseUrl;
+        LOG.info("ServicesClient using base URL of " + baseUrl);
     }
 
     public ServicesClient() {
-        base = DEFAULT_BASE_URL;
+        this(DEFAULT_BASE_URL);
     }
 
     /**

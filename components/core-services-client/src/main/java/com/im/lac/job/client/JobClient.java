@@ -30,7 +30,7 @@ public class JobClient {
 
     private static final Logger LOG = Logger.getLogger(JobClient.class.getName());
 
-    private static final String DEFAULT_BASE_URL = CommonConstants.HOST_CORE_SERVICES + "/rest/v1/jobs";
+    private static final String DEFAULT_BASE_URL = CommonConstants.HOST_CORE_SERVICES + "/jobs";
 
     private final String base;
     private final CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -38,10 +38,11 @@ public class JobClient {
 
     public JobClient(String baseUrl) {
         this.base = baseUrl;
+        LOG.info("JobClient using base URL of " + baseUrl);
     }
 
     public JobClient() {
-        base = DEFAULT_BASE_URL;
+        this( DEFAULT_BASE_URL);
     }
 
     /**

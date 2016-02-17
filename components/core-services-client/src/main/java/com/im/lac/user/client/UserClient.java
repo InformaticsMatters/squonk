@@ -22,7 +22,7 @@ public class UserClient {
 
     private static final Logger LOG = Logger.getLogger(UserClient.class.getName());
 
-    private static final String DEFAULT_BASE_URL = CommonConstants.HOST_CORE_SERVICES + "/rest/v1/users/";
+    private static final String DEFAULT_BASE_URL = CommonConstants.HOST_CORE_SERVICES + "/users/";
 
     private final String base;
     private final CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -30,10 +30,11 @@ public class UserClient {
 
     public UserClient(String baseUrl) {
         this.base = baseUrl;
+        LOG.info("UserClient using base URL of " + baseUrl);
     }
 
     public UserClient() {
-        base = DEFAULT_BASE_URL;
+        this(DEFAULT_BASE_URL);
     }
 
     /**
