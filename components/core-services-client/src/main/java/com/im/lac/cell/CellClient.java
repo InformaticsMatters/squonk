@@ -28,7 +28,7 @@ public class CellClient extends AbstractHttpClient {
     private static final String PARAM_VARIABLE_NAME = "variableName";
     private static final String PARAM_VALUE = "value";
 
-    private final String baseUrl = IOUtils.getConfiguration("SERVICE_CALLBACK", "http://localhost:8080/ws/callback");
+    private final String baseUrl = IOUtils.getConfiguration("SERVICE_CALLBACK", "http://localhost:8080/ws/notebook");
     private final Long notebookId;
 
     public CellClient(Long notebookId) {
