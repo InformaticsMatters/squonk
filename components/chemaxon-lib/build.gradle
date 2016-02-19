@@ -85,6 +85,7 @@ dependencies {
     }
 
     testCompile project(':core-test')
+    testCompile project(':common-utils')
     testCompile "org.apache.derby:derby:10.11.1.1"
 
 }

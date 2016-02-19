@@ -49,7 +49,7 @@ import java.util.stream.StreamSupport;
  * the underlying source is a List or URL. To make this easier there are ways to
  * automatically "materialize" the underlying as a List (e.g. convert a
  * InputStream/Interator/Stream into a List. For instance if the underlying data
- * is specified as InputStream/Interator/Stream and you call {@link getItems()}
+ * is specified as InputStream/Interator/Stream and you call {@link #getItems()}
  * then the underlying source will be converted to a List so that it can be read
  * repeatedly. HOWEVER do this with care, as if the dataset is large you may
  * exhaust memory. Usually it is better to stream the data using a Stream or
@@ -69,13 +69,13 @@ import java.util.stream.StreamSupport;
  * the contents to/from JSON. This means that the contents are stored separate
  * from the metadata. To serialize an Dataset you must first serialize the items
  * (as an array of JSON objects) - use the
- * {@link JsonHandler.serializeStreamAsJsonArray(Stream, boolean)} helper method
+ * {@link JsonHandler#marshalStreamToJsonArray(Stream, boolean)} helper method
  * for this. You must then ALSO save the metadata as its separate JSON 'file'.
  * <br>
  * Similarly when reading JSON you must first read the metadata from its JSON
  * and the use that metadata to deserialize the contents (the JSON array of
  * items). The
- * {@link JsonHandler.deserializeDataset(DatasetMetadata, InputStream)} utility
+ * {@link JsonHandler#unmarshalDataset(DatasetMetadata, InputStream)} utility
  * method handles this for you.
  * <p>
  * The key reason for this separation of data and metadata is that in order to

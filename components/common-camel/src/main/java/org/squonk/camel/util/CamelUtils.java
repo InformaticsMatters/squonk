@@ -1,37 +1,28 @@
 package org.squonk.camel.util;
 
-import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.types.MoleculeObject;
-import org.squonk.types.io.JsonHandler;
-import org.squonk.util.IOUtils;
 import com.im.lac.util.SimpleStreamProvider;
 import com.im.lac.util.StreamProvider;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.UnsupportedEncodingException;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.camel.ProducerTemplate;
+import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
+import org.squonk.types.io.JsonHandler;
+import org.squonk.util.IOUtils;
+
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import java.util.zip.GZIPOutputStream;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.ProducerTemplate;
 
 /**
  *
@@ -54,34 +45,20 @@ public class CamelUtils {
         Metadata meta = new Metadata(MoleculeObject.class.getName(), Metadata.Type.STREAM, 0);
         Stream<MoleculeObject> stream = (Stream<MoleculeObject>) jsonHandler.unmarshalItemsAsStream(meta, is);
         StreamProvider sp = new SimpleStreamProvider<>(stream.onClose(() -> {
+            LOG.fine("Stream closed. Closing underlying InputStream");
             IOUtils.close(is);
         }), MoleculeObject.class);
         exch.getIn().setBody(sp);
     }
 
     public static void handleMoleculeObjectStreamOutput(Exchange exch) throws IOException {
-        //String accept = exch.getIn().getHeader("Accept", String.class);
+        String acceptEncoding = exch.getIn().getHeader("Accept-Encoding", String.class);
         // TODO - handle other formats like SDF is the Accept header is set.
-        boolean gzip = "gzip".equals(exch.getIn().getHeader("Accept-Encoding", String.class));
-        final PipedInputStream pis = new PipedInputStream();
-        final OutputStream pout = new PipedOutputStream(pis);
+        boolean gzip = acceptEncoding == null ? false : "gzip".equals(acceptEncoding.toLowerCase());
+        LOG.fine("GZIP: " + gzip);
         Stream<MoleculeObject> mols = StreamingMoleculeObjectSourcer.bodyAsMoleculeObjectStream(exch);
-        Metadata meta = new Metadata(MoleculeObject.class.getName(), Metadata.Type.STREAM, 0);
-        final OutputStream out = (gzip ? new GZIPOutputStream(pout) : pout);
-        final Stream<MoleculeObject> molsClose = mols.onClose(() -> IOUtils.close(out));
-        exch.getIn().setBody(pis);
-
-        Callable c = (Callable) () -> {
-            jsonHandler.marshalItems(molsClose, meta, out);
-            // HOW to handle metadata? Its only complete once the stream is processed so can't be a header
-            //String metaJson = jsonHandler.objectToJson(meta);
-            //exch.getIn().setHeader(Constants.HEADER_METADATA, metaJson);
-
-            return true;
-
-        };
-        executor.submit(c);
-
+        InputStream is = jsonHandler.marshalStreamToJsonArray(mols,  gzip);
+        exch.getIn().setBody(is);
     }
 
     public static int putPropertiesAsHeaders(Message message, File propertiesFile) throws FileNotFoundException, IOException {
@@ -103,21 +80,27 @@ public class CamelUtils {
         return count;
     }
 
-    public static InputStream doPostUsingHeadersAndQueryParams(
+
+    public static InputStream doRequestUsingHeadersAndQueryParams(
             CamelContext context,
+            String method,
             String endpoint,
             InputStream input,
-            Map<String, Object> params) throws Exception {
+            Map<String, Object> headers,
+            Map<String, Object> queryParams) throws Exception {
 
-        Map<String, Object> headers = new HashMap<>();
-        headers.put(Exchange.HTTP_METHOD, "POST");
-        String url = generateUrlUsingHeadersAndQueryParams(endpoint, params, headers);
+        Map<String, Object> allHeaders = new HashMap<>(headers);
+        allHeaders.put(Exchange.HTTP_METHOD, method);
+        String url = generateUrlUsingHeadersAndQueryParams(endpoint, queryParams, allHeaders);
         LOG.log(Level.INFO, "Generated URL: {0}", url);
-        headers.put(Exchange.HTTP_URI, url);
+        allHeaders.put(Exchange.HTTP_URI, url);
 
         ProducerTemplate pt = context.createProducerTemplate();
 
-        return pt.requestBodyAndHeaders("http4:dummy", input, headers, InputStream.class);
+        LOG.info("REQUEST starting");
+        InputStream result = pt.requestBodyAndHeaders("http4:dummy", input, allHeaders, InputStream.class);
+        LOG.info("REQUEST complete");
+        return result;
     }
 
     public static String generateUrlUsingHeadersAndQueryParams(String endpoint, Map<String, Object> params, Map<String, Object> headers) throws UnsupportedEncodingException, URISyntaxException {

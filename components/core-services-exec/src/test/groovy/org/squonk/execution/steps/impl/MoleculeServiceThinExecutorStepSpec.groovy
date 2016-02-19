@@ -1,21 +1,21 @@
 package org.squonk.execution.steps.impl
 
 import com.im.lac.types.MoleculeObject
-import org.squonk.dataset.Dataset
-import org.squonk.dataset.DatasetMetadata
-import org.squonk.execution.steps.Step
-import org.squonk.execution.variable.PersistenceType
-import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableLoader
-import org.squonk.types.io.JsonHandler
-import org.squonk.util.IOUtils
 import org.apache.camel.CamelContext
 import org.apache.camel.Exchange
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.impl.DefaultCamelContext
+import org.squonk.dataset.Dataset
+import org.squonk.dataset.DatasetMetadata
+import org.squonk.execution.steps.Step
 import org.squonk.execution.steps.StepExecutor
+import org.squonk.execution.variable.PersistenceType
+import org.squonk.execution.variable.VariableManager
+import org.squonk.execution.variable.impl.MemoryVariableLoader
 import org.squonk.notebook.api.VariableKey
+import org.squonk.types.io.JsonHandler
+import org.squonk.util.IOUtils
 import spock.lang.Specification
 
 import java.util.stream.Stream
@@ -26,46 +26,13 @@ import java.util.stream.Stream
  */
 class MoleculeServiceThinExecutorStepSpec extends Specification {
 
-    def mols = [
-            new MoleculeObject("C", "smiles", [num: "1", hello: 'world']),
-            new MoleculeObject("CC", "smiles", [num: "99", hello: 'mars']),
-            new MoleculeObject("CCC", "smiles", [num: "100", hello: 'mum'])
-    ]
-
-    CamelContext createCamelContext() {
-        DefaultCamelContext context = new DefaultCamelContext()
-        context.addRoutes(new RouteBuilder() {
-            void configure() {
-
-                restConfiguration().component("jetty").host("0.0.0.0").port(8888);
-
-                rest("/route1").post().route().process() { exch ->
-                    handle(exch, "route1", 99)
-                }
-
-                rest("/route2").post().route().process() { exch ->
-                    handle(exch, "route2", 88)
-                }
-            }
-
-            void handle(Exchange exch, String prop, Object value) {
-                InputStream is = exch.in.getBody(InputStream.class)
-                Dataset ds = JsonHandler.getInstance().unmarshalDataset(new DatasetMetadata(MoleculeObject.class), IOUtils.getGunzippedInputStream(is))
-                Stream s = ds.stream.peek() { it.putValue(prop, value) }
-                InputStream out = JsonHandler.getInstance().marshalStreamToJsonArray(s, false)
-                exch.in.body = out
-            }
-        })
-
-        return context
-    }
 
     void "test routes simple"() {
 
-        DefaultCamelContext context = createCamelContext()
+        DefaultCamelContext context = ServiceExecutorHelper.createCamelContext()
         context.start()
 
-        Dataset ds = new Dataset(MoleculeObject.class, mols)
+        Dataset ds = new Dataset(MoleculeObject.class, ServiceExecutorHelper.mols)
 
         ProducerTemplate pt = context.createProducerTemplate()
 
@@ -89,10 +56,10 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
 
     void "test execute single"() {
 
-        DefaultCamelContext context = createCamelContext()
+        DefaultCamelContext context = ServiceExecutorHelper.createCamelContext()
         context.start()
 
-        Dataset ds = new Dataset(MoleculeObject.class, mols)
+        Dataset ds = new Dataset(MoleculeObject.class, ServiceExecutorHelper.mols)
 
 
         VariableManager varman = new VariableManager(new MemoryVariableLoader());
@@ -126,10 +93,10 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
 
     void "test execute multiple"() {
 
-        DefaultCamelContext context = createCamelContext()
+        DefaultCamelContext context = ServiceExecutorHelper.createCamelContext()
         context.start()
 
-        Dataset ds = new Dataset(MoleculeObject.class, mols)
+        Dataset ds = new Dataset(MoleculeObject.class, ServiceExecutorHelper.mols)
 
 
         VariableManager varman = new VariableManager(new MemoryVariableLoader());

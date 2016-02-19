@@ -310,30 +310,11 @@ public class JsonHandler {
                 }
             });
         } finally {
-            //out.close();
+            out.close();
             stream.close();
         }
     }
-    
 
-//     public <T> void marshalStreamToJsonArray(Stream<T> stream, OutputStream out) throws IOException {
-//
-//        ObjectWriter ow = mapper.writer();
-//        try (SequenceWriter sw = ow.writeValuesAsArray(out)) {
-//            stream.sequential().peek((i) -> {
-//                //LOG.info("Writing to json: "  + i);
-//                try {
-//                    sw.write(i);
-//                } catch (IOException ex) {
-//                    throw new RuntimeException("Failed to write object: " + i, ex);
-//                }
-//            }).forEachOrdered((i) -> {
-//            });
-//        } finally {
-//            //out.close();
-//            stream.close();
-//        }
-//    }
     /**
      * Use the metadata to deserialize the JSON in the InputStream to a Dataset
      * of the right type.

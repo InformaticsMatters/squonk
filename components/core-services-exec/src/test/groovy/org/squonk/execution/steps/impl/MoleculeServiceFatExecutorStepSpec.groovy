@@ -1,16 +1,13 @@
 package org.squonk.execution.steps.impl
 
 import com.im.lac.types.MoleculeObject
-import org.squonk.core.CommonConstants
-import org.squonk.dataset.Dataset
 import org.apache.camel.impl.DefaultCamelContext
+import org.squonk.dataset.Dataset
 import org.squonk.execution.variable.PersistenceType
 import org.squonk.execution.variable.VariableManager
 import org.squonk.execution.variable.impl.MemoryVariableLoader
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
-
-
 
 /**
  *
@@ -20,26 +17,22 @@ class MoleculeServiceFatExecutorStepSpec extends Specification {
     String producer = "p"
     
     void "test simple service"() {
-        
-        DefaultCamelContext context = new DefaultCamelContext()
+
+        DefaultCamelContext context = ServiceExecutorHelper.createCamelContext()
         context.start()
                
-        def mols = [
-            new MoleculeObject("C", "smiles"),
-            new MoleculeObject("CC", "smiles"),
-            new MoleculeObject("CCC", "smiles")
-        ]
-        Dataset ds = new Dataset(MoleculeObject.class, mols)
+
+        Dataset ds = new Dataset(MoleculeObject.class, ServiceExecutorHelper.mols)
         
         VariableManager varman = new VariableManager(new MemoryVariableLoader())
-        varman.putValue(
-                new VariableKey(producer,"input"), Dataset.class, ds, PersistenceType.NONE)
+        varman.putValue(new VariableKey(producer,"input"), Dataset.class, ds, PersistenceType.NONE)
 
-                //MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET, Dataset.class, ds, PersistenceType.NONE)
-        
+
         def opts = [
-            (MoleculeServiceFatExecutorStep.OPTION_SERVICE_ENDPOINT): CommonConstants.HOST_CDK_CALCULATORS + '/logp'
+            (MoleculeServiceFatExecutorStep.OPTION_SERVICE_ENDPOINT): "http://localhost:8888/route1"
         ]
+
+
         def inputMappings = [(MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET):new VariableKey(producer,"input")]
         def outputMappings = [:]
         
@@ -55,7 +48,7 @@ class MoleculeServiceFatExecutorStepSpec extends Specification {
         output instanceof Dataset
         def items = output.items
         items.size() == 3
-        items[0].getValue('CDK_ALogP') != null
+        items[0].getValue('route1') == 99
         
         cleanup:
         context.stop()

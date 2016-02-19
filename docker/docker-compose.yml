@@ -15,6 +15,11 @@ mq:
         RABBITMQ_DEFAULT_USER: admin
         RABBITMQ_DEFAULT_PASS: squonk
 
+chemservices:
+    image: squonk/chem-services-basic
+    ports:
+    - "8092:8080"
+
 cs:
     build: ../components/core-services-server/build
     ports:
@@ -22,6 +27,7 @@ cs:
     links:
     - db:db
     - mq:rabbitmq
+    - chemservices:chemservices
     environment:
         RABBITMQ_HOST: mq
         SQUONK_DB_SERVER: db

@@ -2,26 +2,28 @@ package org.squonk.camel.chemaxon.processor;
 
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.struc.Molecule;
-import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
+import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.ResultExtractor;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 import org.squonk.chemaxon.molecule.MoleculeEvaluator;
 import org.squonk.chemaxon.molecule.StandardizerEvaluator;
-import com.im.lac.types.MoleculeObject;
 import org.squonk.dataset.MoleculeObjectDataset;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
 
 /**
  * Processor that calculates chemical properties using ChemAxon's
@@ -199,12 +201,18 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
             @Override
             public void handleMultiple(Exchange exchange, Stream<MoleculeObject> input) throws Exception {
                 //LOG.info("Calculating for stream " + input);
+
                 Stream<MoleculeObject> result = input;
                 for (MoleculeEvaluator evaluator : evals) {
-                    //LOG.log(Level.INFO, "Handling evaluator {0}", evaluator);
+                    LOG.log(Level.INFO, "Handling evaluator {0}", evaluator);
+                    AtomicInteger count = new AtomicInteger(0);
                     switch (evaluator.getMode()) {
                         case Filter:
                             result = result.filter((mo) -> {
+                                int i = count.incrementAndGet();
+                                if (i % 5000 == 0) {
+                                    LOG.info("Processed molecule " + i + " " + Thread.currentThread());
+                                }
                                 try {
                                     return evaluator.processMoleculeObject(mo) != null;
                                 } catch (IOException ex) {
@@ -216,6 +224,10 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
                         default:
                             result = result.map((mo) -> {
                                 //LOG.log(Level.INFO, "Processing molecule {0}", mo);
+                                int i = count.incrementAndGet();
+                                if (i % 5000 == 0) {
+                                    LOG.info("Processed molecule " + i + " " + Thread.currentThread());
+                                }
                                 try {
                                     return evaluator.processMoleculeObject(mo);
                                 } catch (IOException ex) {
@@ -229,7 +241,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
                 exchange.getIn().setBody(new MoleculeObjectDataset(result));
             }
         };
-
+        LOG.info("Handling data");
         sourcer.handle(exchange);
     }
 

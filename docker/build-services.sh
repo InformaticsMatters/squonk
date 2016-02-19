@@ -8,6 +8,8 @@ base=$PWD
 
 cd ../components
 
+./gradlew --daemon assemble
+
 echo "building chem-services-basic docker image ..."
 ./gradlew --daemon dockerFileChemServices &&
   docker build -t squonk/chem-services-basic build/chem-services-basic
@@ -20,9 +22,8 @@ echo "building core-services docker image ..."
 echo "... core-services docker image built"
 
 echo "building cell-executor docker image ..."
-./gradlew --daemon cell-executor:dockerBuildImage 
-#&&
-#  docker build -t squonk/cell-executor cell-executor/build
+./gradlew --daemon cell-executor:dockerBuildImage &&
+  docker build -t squonk/cell-executor cell-executor/build/docker
 echo "... cell-executor docker image built"
 
 

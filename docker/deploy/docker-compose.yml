@@ -66,8 +66,6 @@ keycloak:
     links:
     - postgres:postgres
     environment:
-        KEYCLOAK_USER: admin
-        KEYCLOAK_PASSWORD:
         POSTGRES_DATABASE: keycloak
         POSTGRES_USER: keycloak
         POSTGRES_PASSWORD:

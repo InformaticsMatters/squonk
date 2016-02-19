@@ -26,7 +26,7 @@ do
 done
 
 # now we can start keycloak (needs postgres to be setup before it starts)
-docker-compose up -d keycloak
+docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d keycloak
 
 echo "creating db tables ..."
 cd ../../components

@@ -13,6 +13,7 @@ import org.squonk.util.IOUtils;
 import org.apache.camel.CamelContext;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,9 +64,12 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
                 });
 
         InputStream input = JsonHandler.getInstance().marshalStreamToJsonArray(stream, true);
+
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("Accept-Encoding", "gzip");
         
         // send for execution
-        InputStream output = CamelUtils.doPostUsingHeadersAndQueryParams(context, endpoint, input, params);
+        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, headers, params);
 
         // handle results
         Dataset<MoleculeObject> outputMols = JsonHandler.getInstance().unmarshalDataset(metadata, IOUtils.getGunzippedInputStream(output));

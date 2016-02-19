@@ -2,6 +2,19 @@ description = 'service execution utils'
 
 apply plugin: 'groovy'
 
+
+apply plugin: 'org.unbroken-dome.test-sets'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.2.0'
+    }
+}
+
 dependencies {
     compile project(':common')
     compile project(':common-utils')
@@ -12,4 +25,29 @@ dependencies {
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 
     testCompile "org.apache.camel:camel-jetty:$camelVersion"
+}
+
+
+/* Integration test setup is borrowed from here:
+ * http://www.petrikainulainen.net/programming/gradle/getting-started-with-gradle-integration-testing-with-the-testsets-plugin/
+ * */
+testSets {
+    integrationTest
+}
+
+//check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+
+tasks.withType(Test) {
+    reports.html.destination = file("${reporting.baseDir}/${name}")
+}
+
+integrationTest {
+    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean,
+            tasks.getByPath(':database:flywayMigrate')
+    finalizedBy rootProject.tasks.integrationTestEnvShutdown
+}
+
+project.integrationTest {
+    outputs.upToDateWhen { false }
 }

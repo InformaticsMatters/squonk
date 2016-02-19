@@ -4,6 +4,8 @@ import com.im.lac.types.*
 import org.squonk.dataset.*
 import spock.lang.Specification
 
+import java.util.stream.Stream
+
 /**
  *
  * @author timbo
@@ -38,6 +40,24 @@ class JsonHandlerSpec extends Specification {
         items.size() == 2
         ds.metadata.size == 2
     }
-	
+
+    void "slow producer"() {
+        int count = 100
+
+        when:
+        InputStream input = JsonHandler.getInstance().marshalStreamToJsonArray(Stream.generate() {
+            sleep(5)
+            new MoleculeObject("C", "smiles")
+        }.limit(count), false)
+
+        Dataset<MoleculeObject> results = JsonHandler.getInstance().unmarshalDataset(new DatasetMetadata(MoleculeObject.class), input)
+
+        then:
+        results.items.size() == count
+
+
+    }
+
+
 }
 

@@ -14,7 +14,7 @@ public interface StepDefinitionConstants {
     public static final String VARIABLE_FILE_INPUT = "_FileInput";
 
     interface ServiceExecutor {
-        public static final String CLASSNAME = "org.squonk.execution.steps.impl.MoleculeServiceFatExecutorStep";
+        public static final String CLASSNAME = "org.squonk.execution.steps.impl.MoleculeServiceThinExecutorStep";
         public static final String OPTION_SERVICE_PARAMS = "serviceParams"; // Map of params for the service
         public static final String OPTION_SERVICE_ENDPOINT = "serviceEndpoint"; // the URL for the service
         public static final String OPTION_PRESERVE_STRUCTURE = "preserveStructure"; //Boolean
