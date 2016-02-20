@@ -140,7 +140,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                 .get()
                 .produces("text/plain")
                 .route()
-                .transform(constant("Ping\n")).endRest();
+                .transform(constant("OK\n")).endRest();
 
         rest("/v1/calculators").description("Property calculation services using RDKit")
                 .bindingMode(RestBindingMode.off)

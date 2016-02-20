@@ -188,7 +188,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 .get().description("Simple ping service to check things are running")
                 .produces("text/plain")
                 .route()
-                .transform(constant("Ping\n")).endRest();
+                .transform(constant("OK\n")).endRest();
 
         rest("v1/calculators").description("Property calculation services using ChemAxon")
                 .bindingMode(RestBindingMode.off)

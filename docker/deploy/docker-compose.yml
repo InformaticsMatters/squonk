@@ -98,7 +98,6 @@ chemservices:
 # http://${DOCKER_GATEWAY}:8091/coreservices/rest/ping
 # http://${DOCKER_GATEWAY}:8091/coreservices/rest/v1/services
 # http://${DOCKER_GATEWAY}:8091/coreservices/rest/v1/jobs
-# http://${DOCKER_GATEWAY}:8091/coreservices/rest/v1/jobstatus
 # 
 coreservices:
     image: squonk/core-services-server

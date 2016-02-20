@@ -69,7 +69,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .get().description("Simple ping service to check things are running")
                 .produces("text/plain")
                 .route()
-                .transform(constant("Ping\n")).endRest();
+                .transform(constant("OK\n")).endRest();
 
         rest("/echo")
                 .post().description("Simple echo service for testing")

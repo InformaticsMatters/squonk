@@ -42,7 +42,7 @@ public class RestRouteBuilder extends RouteBuilder {
                 .route()
                 .log("pinged")
                 .wireTap("direct:logger")
-                .transform().constant("Service Running\n");
+                .transform().constant("OK\n");
 
         // info on the JChem structure cache
         rest("/rest/cache").get()
