@@ -2,6 +2,7 @@ package org.squonk.cdk.services;
 
 import org.squonk.cdk.io.CDKMolDepict;
 import org.squonk.io.DepictionParameters;
+import org.squonk.util.IOUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -9,25 +10,31 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.Color;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Mol depiction servlet using CDK.
+/**
+ * Mol depiction servlet using CDK.
  * Example URL: /moldepict?format=_format_&w=_width_&h=_height_&bg=_rgba_&expand=_expand_&mol=_smiles_
  * where:
  * <ul>
- *     <li>_format_ is the output format, currently either png or svg</li>
- *     <li>_width_ is the image width</li>
- *     <li>_height_ is the image height</li>
- *     <li>_rgba_ is the background color as RGBA integer (#AARRGGBB)</li>
-  *     <li>_expand_ is whether to expand the rendering to fit the image size (true/false)</li>
- *     <li>_smiles_ is the molecule in some format that is recognised such as smiles</li>
+ * <li>_format_ is the output format, currently either png or svg</li>
+ * <li>_width_ is the image width</li>
+ * <li>_height_ is the image height</li>
+ * <li>_rgba_ is the background color as RGBA integer (#AARRGGBB)</li>
+ * <li>_expand_ is whether to expand the rendering to fit the image size (true/false)</li>
+ * <li>_smiles_ is the molecule in some format that is recognised such as smiles</li>
  * </ul>
  * Only the format and mol parameters are required. Defaults will be used for the others if not specified.<br>
  * For example, this renders caffeine as SVG with a partly transparent yellow background (# is encoded as %23):<br>
  * http://192.168.99.100:8888/cdk_basic_services/moldepict?format=svg&w=75&h=75&bg=0x33FFFF00&mol=CN1C%3DNC2%3DC1C(%3DO)N(C)C(%3DO)N2C
- *
+ * <p>
+ * POST operations are also supported with the body containing the molecule to render and the depiction params
+ * specified as query parameters as described above.
+ * <p>
  * Created by timbo on 24/01/2016.
  */
 @WebServlet(
@@ -41,6 +48,20 @@ public class CdkMolDepictServlet extends HttpServlet {
     private final CDKMolDepict moldepict = new CDKMolDepict();  // with default params
 
     @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+        InputStream is = req.getInputStream();
+        if (is == null) {
+            return;
+        }
+        String mol = IOUtils.convertStreamToString(is, 1000);
+        if (mol == null || mol.length() == 0) {
+            return;
+        }
+        generateImage(req, resp, mol);
+    }
+
+    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         String paramMol = req.getParameter("mol");
@@ -48,6 +69,13 @@ public class CdkMolDepictServlet extends HttpServlet {
             LOG.info("No molecule specified. Cannot render");
             return;
         }
+        generateImage(req, resp, paramMol);
+    }
+
+    private void generateImage(
+            HttpServletRequest req,
+            HttpServletResponse resp,
+            String mol) throws IOException {
 
         String paramFormat = req.getParameter("format");
         if (paramFormat == null) {
@@ -58,12 +86,12 @@ public class CdkMolDepictServlet extends HttpServlet {
         DepictionParameters params = createDepictionParams(req);
 
         if ("png".equalsIgnoreCase(paramFormat)) {
-            generatePng(req, resp, paramMol, params);
+            generatePng(req, resp, mol, params);
         } else if ("svg".equalsIgnoreCase(paramFormat)) {
-            generateSvg(req, resp, paramMol, params);
+            generateSvg(req, resp, mol, params);
         }
-
     }
+
 
     private void generatePng(
             HttpServletRequest req,
