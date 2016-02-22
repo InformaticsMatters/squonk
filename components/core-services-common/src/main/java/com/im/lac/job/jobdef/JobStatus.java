@@ -17,7 +17,17 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
 
     public enum Status {
 
-        PENDING, SUBMITTING, RUNNING, RESULTS_READY, COMPLETED, ERROR, FAILED, CANCELLED
+        PENDING(false), SUBMITTING(false), RUNNING(false), RESULTS_READY(false), COMPLETED(true), ERROR(true), CANCELLED(true);
+
+        private boolean finished;
+
+        Status(boolean finished) {
+            this.finished = finished;
+        }
+
+        public boolean isFinished() {
+            return finished;
+        }
     }
     private final String jobId;
     private final String username;

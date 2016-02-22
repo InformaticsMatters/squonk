@@ -72,13 +72,48 @@ class PostgresJobStatusClientSpec extends Specification {
         String uuid = client.db.firstRow("SELECT uuid from users.jobstatus LIMIT 1")[0]
 
         when:
-        JobStatus status = client.updateStatus(uuid, JobStatus.Status.ERROR)
+        JobStatus status = client.updateStatus(uuid, JobStatus.Status.RESULTS_READY)
+
+        then:
+        status != null
+        status.username == TestUtils.TEST_USERNAME
+        status.jobDefinition instanceof DoNothingJobDefinition
+        status.status == JobStatus.Status.RESULTS_READY
+        status.completed == null
+    }
+
+    void "first event"() {
+
+        String uuid = client.db.firstRow("SELECT uuid from users.jobstatus LIMIT 1")[0]
+
+        when:
+        JobStatus status = client.updateStatus(uuid, null, "Going wrong")
+
+        then:
+        status != null
+        status.username == TestUtils.TEST_USERNAME
+        status.jobDefinition instanceof DoNothingJobDefinition
+        status.status == JobStatus.Status.RESULTS_READY
+        status.events.size() == 1
+        status.events[0] == "Going wrong"
+        status.completed == null
+    }
+
+    void "update event"() {
+
+        String uuid = client.db.firstRow("SELECT uuid from users.jobstatus LIMIT 1")[0]
+
+        when:
+        JobStatus status = client.updateStatus(uuid, JobStatus.Status.ERROR, "Gone wrong")
 
         then:
         status != null
         status.username == TestUtils.TEST_USERNAME
         status.jobDefinition instanceof DoNothingJobDefinition
         status.status == JobStatus.Status.ERROR
+        status.events.size() == 2
+        status.events[0] == "Going wrong"
+        status.events[1] == "Gone wrong"
         status.completed != null
     }
 

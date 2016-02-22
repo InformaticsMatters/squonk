@@ -9,6 +9,7 @@ import org.squonk.client.JobStatusClient
 import org.squonk.core.util.Utils
 import org.squonk.types.io.JsonHandler
 
+import java.sql.Array
 import java.sql.SQLException
 import java.sql.Timestamp;
 
@@ -57,13 +58,17 @@ public class PostgresJobStatusClient implements JobStatusClient {
             return vals.size()
     }
 
-    private int updateStatusInDb(Sql db, String jobid, JobStatus.Status status, int processedCount, int errorCount, boolean complete) {
+    private int updateStatusInDb(Sql db, String jobid, JobStatus.Status status, int processedCount, int errorCount, String event) {
             def vals = db.executeInsert(
-                    "UPDATE users.jobstatus j SET status=?, processed_count=d.p, error_count=d.e, completed=" +
-                            (complete ? "NOW()" : "NULL") +
-                            "\n  FROM (SELECT processed_count + ? AS p, error_count + ? AS e FROM users.jobstatus WHERE uuid =?) AS d" +
-                            "\n  WHERE j.uuid=?",
-                    [status.toString(), processedCount, errorCount, jobid, jobid])
+                    "UPDATE users.jobstatus j SET status=d.st, processed_count=d.pc, error_count=d.ec, events=d.evt, completed=" +
+                            ((status != null && status.isFinished()) ? "NOW()" : "NULL") +
+                            "\n  FROM (SELECT COALESCE(:status::text, status) AS st, processed_count + :processedCount AS pc, error_count + :errorCount AS ec," +
+                            "\n    CASE WHEN :event::text IS NULL THEN events ELSE " + // no new event so stick with the current events
+                            "\n      CASE WHEN events IS NULL THEN ARRAY[:event::text] ELSE events || :event::text END" + // new array or append to the array
+                            "\n    END AS evt" +
+                            "\n  FROM users.jobstatus WHERE uuid =:jobid) AS d" +
+                            "\n  WHERE j.uuid=:jobid",
+                    [status:(status == null ? null : status.toString()), processedCount:processedCount, errorCount:errorCount, jobid:jobid, event:event])
 
             return vals.size()
     }
@@ -100,8 +105,9 @@ public class PostgresJobStatusClient implements JobStatusClient {
         Date started = data['started']
         Date completed = data['completed']
         String json = data['definition']
-        String[] events = data['events']
         JobDefinition jobDefinition = JsonHandler.getInstance().objectFromJson(json, JobDefinition.class)
+        Array eventsArr = data['events']
+        String[] eventsStr = (eventsArr == null ? new String[0] : (String[])eventsArr.getArray());
 
         return new JobStatus(jobId, username, status,
                 totalCount == null ? 0 : totalCount.intValue(),
@@ -110,7 +116,7 @@ public class PostgresJobStatusClient implements JobStatusClient {
                 started,
                 completed,
                 jobDefinition, null,
-                events == null ? null : Arrays.asList(events))
+                Arrays.asList(eventsStr))
     }
 
     private static final String SQL_QUERY = '''SELECT j.*, u.username FROM users.jobstatus j JOIN users.users u ON u.id = j.owner_id WHERE
@@ -156,16 +162,12 @@ public class PostgresJobStatusClient implements JobStatusClient {
             db.withTransaction {
                 JobStatus item = getFromDb(db, id)
                 if (item != null) {
-                    updateStatusInDb(db, id, status ?: item.status, processedCount ?: 0, errorCount ?: 0, isCompleted(status) && !isCompleted(item.status))
+                    updateStatusInDb(db, id, status ?: item.status, processedCount ?: 0, errorCount ?: 0, event)
                     result = getFromDb(db, id)
                 }
             }
             return result
         }
-    }
-
-    private boolean isCompleted(JobStatus.Status status) {
-        return status == JobStatus.Status.COMPLETED || status == JobStatus.Status.ERROR || status == JobStatus.Status.CANCELLED
     }
 
     @Override
