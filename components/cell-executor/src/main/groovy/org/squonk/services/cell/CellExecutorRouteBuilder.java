@@ -47,7 +47,8 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        String mqueue = rabbitmqCredentials.generateUrl(MQUEUE_JOB_STEPS_EXCHANGE_NAME, MQUEUE_JOB_STEPS_EXCHANGE_PARAMS);
+        String mqueue = rabbitmqCredentials.generateUrl(MQUEUE_JOB_STEPS_EXCHANGE_NAME, MQUEUE_JOB_STEPS_EXCHANGE_PARAMS) +
+                "&concurrentConsumers=10";
 
         LOG.info("Starting to consume from " + mqueue);
         from(mqueue)
