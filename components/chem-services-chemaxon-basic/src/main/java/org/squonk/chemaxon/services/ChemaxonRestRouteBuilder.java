@@ -109,8 +109,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "screening/ecfp4",
                         0.001f,
                         new OptionDescriptor[]{
-                            new OptionDescriptor(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
-                            new OptionDescriptor(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
+                            new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
+                            new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
                 createServiceDescriptor(
@@ -123,8 +123,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "screening/pharmacophore",
                         0.004f,
                         new OptionDescriptor[]{
-                            new OptionDescriptor(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
-                            new OptionDescriptor(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
+                            new OptionDescriptor<>(new MoleculeTypeDescriptor<>(MoleculeTypeDescriptor.MoleculeType.DISCRETE), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
+                            new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
                 createServiceDescriptor(
@@ -137,8 +137,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "clustering/spherex/ecfp4",
                         0.002f,
                         new OptionDescriptor[]{
-                            new OptionDescriptor(Integer.class, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS).withDefaultValue(5),
-                            new OptionDescriptor(Integer.class, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS).withDefaultValue(10)
+                            new OptionDescriptor<>(Integer.class, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS).withDefaultValue(5),
+                            new OptionDescriptor<>(Integer.class, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS).withDefaultValue(10)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter")
             };
