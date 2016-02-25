@@ -8,6 +8,8 @@ import static org.squonk.cdk.molecule.CDKMoleculeUtils.HYDROGEN_ADDER;
 import com.im.lac.types.MoleculeObject;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
+
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.qsar.DescriptorValue;
@@ -20,6 +22,7 @@ import org.openscience.cdk.qsar.result.DoubleArrayResult;
 import org.openscience.cdk.qsar.result.DoubleResult;
 import org.openscience.cdk.qsar.result.IntegerResult;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
+import org.squonk.util.IOUtils;
 
 /**
  * This class is an experiment to work out how best to utilise CDK molecular
@@ -28,6 +31,8 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
  * @author timbo
  */
 public class MolecularDescriptors {
+
+    private static final Logger LOG = Logger.getLogger(MolecularDescriptors.class.getName());
 
     public static final String WIENER_PATH = "CDK_WienerPath";
     public static final String WIENER_POLARITY = "CDK_WienerPolarity";
@@ -65,17 +70,19 @@ public class MolecularDescriptors {
         IAtomContainer result = mo.getRepresentation(CDK_MOLECULE_WITH_ALL_EXPLICIT_HYDROGENS, IAtomContainer.class);
         if (result == null) {
             IAtomContainer mol = getMolecule(mo, save);
-            result = CDKMoleculeUtils.moleculeWithExlicitHydrogens(mol);
-            if (save) {
-                mo.putRepresentation(CDK_MOLECULE_WITH_ALL_EXPLICIT_HYDROGENS, result);
+            if (mol != null) {
+                result = CDKMoleculeUtils.moleculeWithExlicitHydrogens(mol);
+                if (save) {
+                    mo.putRepresentation(CDK_MOLECULE_WITH_ALL_EXPLICIT_HYDROGENS, result);
+                }
             }
         }
         return result;
     }
 
     /**
-     * Finds or builds the default CDK IAtomContainer. The default has atom
-     * types configures, implicit hydrogens added and aromaticity detected
+     * Finds or builds the default CDK IAtomContainer that has atom
+     * types configured, implicit hydrogens added and aromaticity detected
      *
      * @param mo
      * @param save
@@ -84,12 +91,13 @@ public class MolecularDescriptors {
      * @throws CDKException
      * @throws CloneNotSupportedException
      */
-    private static IAtomContainer getMolecule(MoleculeObject mo, boolean save) throws IOException, CDKException, CloneNotSupportedException {
-        IAtomContainer result = mo.getRepresentation(IAtomContainer.class.getName(), IAtomContainer.class);
+    private static IAtomContainer getMolecule(MoleculeObject mo, boolean save)
+            throws IOException, CDKException, CloneNotSupportedException {
+
+        IAtomContainer result = mo.getRepresentation(CDK_MOLECULE_WITH_ALL_IMPLICIT_HYDROGENS, IAtomContainer.class);
         if (result == null) {
-            List<IAtomContainer> mols = CDKMoleculeIOUtils.importMolecules(mo.getSource());
-            if (mols.size() > 0) {
-                IAtomContainer mol = mols.get(0);
+            IAtomContainer mol = CDKMoleculeIOUtils.readMolecule(mo.getSource());
+            if (mol != null) {
                 AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
                 HYDROGEN_ADDER.addImplicitHydrogens(mol);
                 AROMATICITY.apply(mol);
@@ -97,8 +105,6 @@ public class MolecularDescriptors {
                 if (save) {
                     mo.putRepresentation(CDK_MOLECULE_WITH_ALL_IMPLICIT_HYDROGENS, result);
                 }
-            } else {
-                throw new IOException("Failed to read molecule");
             }
         }
         return result;
@@ -160,10 +166,12 @@ public class MolecularDescriptors {
 
         @Override
         public void calculate(MoleculeObject mo) throws Exception {
-            IAtomContainer mol = getMoleculeWithExplicitHydrogens(mo, true);
-            DescriptorValue result = descriptor.calculate(prepareMolecule(mo));
-            IntegerResult retval = (IntegerResult) result.getValue();
-            mo.putValue(propNames[0], retval.intValue());
+            if (mo.getSource() != null) {
+                IAtomContainer mol = getMoleculeWithExplicitHydrogens(mo, true);
+                DescriptorValue result = descriptor.calculate(prepareMolecule(mo));
+                IntegerResult retval = (IntegerResult) result.getValue();
+                mo.putValue(propNames[0], retval.intValue());
+            }
         }
     }
 
@@ -171,9 +179,18 @@ public class MolecularDescriptors {
 
         @Override
         public void calculate(MoleculeObject mo) throws Exception {
-            DescriptorValue result = descriptor.calculate(prepareMolecule(mo));
-            DoubleResult retval = (DoubleResult) result.getValue();
-            mo.putValue(propNames[0], retval.doubleValue());
+            if (mo.getSource() != null) {
+                IAtomContainer mol = prepareMolecule(mo);
+                if (mol != null) {
+                    DescriptorValue result = descriptor.calculate(mol);
+                    DoubleResult retval = (DoubleResult) result.getValue();
+                    if (retval != null) {
+                        putDoubleIfProperValue(mo, propNames[0], retval.doubleValue());
+                    }
+                } else {
+                    LOG.info("Failed to prepare molecule " + mo + " for calculating " + propNames[0]);
+                }
+            }
         }
     }
 
@@ -181,12 +198,26 @@ public class MolecularDescriptors {
 
         @Override
         public void calculate(MoleculeObject mo) throws Exception {
-
-            DescriptorValue result = descriptor.calculate(prepareMolecule(mo));
-            DoubleArrayResult retval = (DoubleArrayResult) result.getValue();
-            for (int i = 0; i < propNames.length; i++) {
-                mo.putValue(propNames[i], retval.get(i)); // ALogP
+            if (mo.getSource() != null) {
+                IAtomContainer mol = prepareMolecule(mo);
+                if (mol != null) {
+                    DescriptorValue result = descriptor.calculate(mol);
+                    DoubleArrayResult retval = (DoubleArrayResult) result.getValue();
+                    if (retval != null) {
+                        for (int i = 0; i < propNames.length; i++) {
+                            putDoubleIfProperValue(mo, propNames[i], retval.get(i));
+                        }
+                    }
+                } else {
+                    LOG.info("Failed to prepare molecule " + mo + " for calculating " + IOUtils.joinArray(propNames, ","));
+                }
             }
+        }
+    }
+
+    private static void putDoubleIfProperValue(MoleculeObject mo, String propName, Double d) {
+        if (d != null && !d.isNaN() && !d.isInfinite()) {
+            mo.putValue(propName, d);
         }
     }
 

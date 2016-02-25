@@ -63,6 +63,10 @@ public class CDKMoleculeIOUtils {
 
     public static IAtomContainer readMolecule(String mol) throws CDKException {
 
+        if (mol == null) {
+            return null;
+        }
+
         ISimpleChemObjectReader reader = null;
         FormatFactory factory = new FormatFactory();
         try {

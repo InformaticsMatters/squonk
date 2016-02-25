@@ -83,6 +83,7 @@ public class ChemblClient {
         if (assayId == null) {
             throw new NullPointerException("Assay ID must be defined");
         }
+        LOG.info("Querying ChEMBL for " + assayId);
 
         int iteration = 0;
         if (prefix == null) {
@@ -90,16 +91,15 @@ public class ChemblClient {
         }
         Map<String, MoleculeObject> mols = new HashMap<>();
         String path = "/chembl/api/data/activity.json?assay_chembl_id=" + assayId + "&limit=" + batchSize;
-        LOG.log(Level.FINE, "First: {0}", path);
         JsonNode meta = handleRequest(path, prefix, mols);
         iteration++;
         String next = readStringValue(meta, "next");
-        LOG.log(Level.FINE, "Next:  {0}", next);
+        LOG.log(Level.INFO, "Next:  {0}", next);
         while (next != null && iteration <= maxIterations) {
             meta = handleRequest(next, prefix, mols);
             iteration++;
             next = readStringValue(meta, "next");
-            LOG.log(Level.FINE, "Next:  {0}", next);
+            LOG.log(Level.INFO, "Next:  {0}", next);
         }
 
         return new Dataset(MoleculeObject.class, mols.values());
@@ -107,6 +107,7 @@ public class ChemblClient {
 
     private JsonNode handleRequest(String path, String prefix, Map<String, MoleculeObject> mols) throws IOException {
         URL url = new URL(BASE_URL + path);
+        LOG.info("GET: " + url.toString());
 
         JsonNode root = mapper.readTree(url);
         JsonNode activities = root.get("activities");

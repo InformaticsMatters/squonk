@@ -27,9 +27,12 @@ public class MolReader {
      * @return
      */
     public static ROMol findROMol(MoleculeObject mo) {
+        String source = mo.getSource();
+        if (source == null) {
+            return null;
+        }
         ROMol rdkitMol = mo.getRepresentation(ROMol.class.getName(), ROMol.class);
         if (rdkitMol == null) {
-            String source = mo.getSource();
             String format = mo.getFormat();
             try {
                 rdkitMol = MolReader.generateMolFromString(source, format);

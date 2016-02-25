@@ -12,6 +12,7 @@ import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 import org.apache.camel.CamelContext;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,12 +56,16 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         if (metadata == null) {
             metadata = new DatasetMetadata<>(MoleculeObject.class);
         }
+        //LOG.info("Initial metadata: " + metadata);
 
         Map<UUID, MoleculeObject> cache = new ConcurrentHashMap<>();
         Stream<MoleculeObject> stream = dataset.getStream()
-                .map(m -> {
-                    cache.put(m.getUUID(), m);
-                    return new MoleculeObject(m.getUUID(), m.getSource(), m.getFormat());
+                .map(fat -> {
+                    cache.put(fat.getUUID(), fat);
+                    //LOG.info("Fat molecule:  " + fat);
+                    MoleculeObject thin = new MoleculeObject(fat.getUUID(), fat.getSource(), fat.getFormat());
+                    //LOG.info("Thin molecule: " + thin);
+                    return thin;
                 });
 
         InputStream input = JsonHandler.getInstance().marshalStreamToJsonArray(stream, true);
@@ -69,19 +74,29 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         headers.put("Accept-Encoding", "gzip");
         
         // send for execution
+        //TODO - read the response headers and get any metadata provided by the service and merge it with the source metadata
         InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, headers, params);
 
+//        String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(output), 1000);
+//        //LOG.info("Data: " + data);
+//        output = new ByteArrayInputStream(data.getBytes());
+
         // handle results
-        Dataset<MoleculeObject> outputMols = JsonHandler.getInstance().unmarshalDataset(metadata, IOUtils.getGunzippedInputStream(output));
+        DatasetMetadata respMetadata = new DatasetMetadata(MoleculeObject.class);
+        Dataset<MoleculeObject> outputMols = JsonHandler.getInstance().unmarshalDataset(respMetadata, IOUtils.getGunzippedInputStream(output));
+        if (outputMols.getMetadata() != null) {
+            LOG.info("Response metadata: " + outputMols.getMetadata());
+        }
 
         Stream<MoleculeObject> resultMols = outputMols.getStream().map(m -> {
+            //LOG.info("Handling: " + m);
             UUID uuid = m.getUUID();
             MoleculeObject o = cache.get(uuid);
             if (o == null) {
                 LOG.warning("Molecule " + uuid + " not found. Strange!");
                 return m;
             } else {
-                LOG.finer("Found Mol " + uuid);
+                LOG.fine("Found Mol " + uuid);
                 MoleculeObject neu;
                 if (preserveStructure) {
                     o.getValues().putAll(m.getValues());

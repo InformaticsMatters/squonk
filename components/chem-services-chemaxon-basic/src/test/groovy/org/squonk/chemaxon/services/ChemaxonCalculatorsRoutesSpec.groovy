@@ -11,6 +11,7 @@ import org.apache.camel.CamelContext
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.builder.ThreadPoolProfileBuilder
 import org.apache.camel.spi.ThreadPoolProfile
+import org.squonk.chemaxon.molecule.ChemTermsEvaluator
 
 /**
  * Created by timbo on 14/04/2014.
@@ -125,8 +126,8 @@ class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
 
         then:
         result instanceof MoleculeObject
-        result.getValue('atom_count') != null
-        result.getValue('bond_count') != null
+        result.getValue(ChemTermsEvaluator.ATOM_COUNT) != null
+        result.getValue(ChemTermsEvaluator.BOND_COUNT) != null
     } 
     
     def 'aromatize molecule'() {

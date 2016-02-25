@@ -28,6 +28,9 @@ public class StandardizerEvaluator implements MoleculeEvaluator {
     
     @Override
     public Molecule processMolecule(Molecule mol) {
+        if (mol == null) {
+            return null;
+        }
         Standardizer szr = pool.checkout();
         try {
             szr.standardize(mol);
@@ -39,6 +42,10 @@ public class StandardizerEvaluator implements MoleculeEvaluator {
    
     @Override
     public MoleculeObject processMoleculeObject(MoleculeObject mo) throws MolFormatException, IOException {
+        if (mo == null || mo.getSource() == null) {
+            return mo;
+        }
+
         Molecule mol = MoleculeUtils.fetchMolecule(mo, false);
         mol = processMolecule(mol);
         return MoleculeUtils.derriveMoleculeObject(mo, mol, mo.getFormat("mol"));
