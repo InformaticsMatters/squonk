@@ -20,19 +20,25 @@ public class MolEvaluator {
     private static final Logger LOG = Logger.getLogger(MolEvaluator.class.getName());
 
     public static void evaluate(MoleculeObject mo, ROMol rdkitMol, EvaluatorDefintion definition) {
-        LOG.log(Level.FINER, "Evaluating {0}", definition);
-        EvaluatorDefintion.Function func = EvaluatorDefintion.Function.valueOf(definition.expression);
-        Object result = calculate(rdkitMol, func);
-        switch (definition.mode) {
-            case Calculate:
-                mo.putValue(definition.propName, result);
-                break;
-            case Filter:
-                throw new UnsupportedOperationException("NYI");
+        if (mo.getSource() != null || definition == null) {
+            LOG.log(Level.FINER, "Evaluating {0}", definition);
+            EvaluatorDefintion.Function func = EvaluatorDefintion.Function.valueOf(definition.expression);
+            Object result = calculate(rdkitMol, func);
+            switch (definition.mode) {
+                case Calculate:
+                    mo.putValue(definition.propName, result);
+                    break;
+                case Filter:
+                    throw new UnsupportedOperationException("NYI");
+            }
         }
     }
 
     public static Object calculate(ROMol rdkitMol, EvaluatorDefintion.Function function) {
+
+        if (rdkitMol == null || function == null) {
+            return null;
+        }
 
         switch (function) {
             case LOGP:

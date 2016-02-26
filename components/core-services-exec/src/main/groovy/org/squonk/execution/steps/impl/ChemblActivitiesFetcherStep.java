@@ -34,7 +34,7 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
 
         dumpConfig(Level.INFO);
 
-        int batchSize = getOption(OPTION_BATCH_SIZE, Integer.class, 100);
+        int batchSize = getOption(OPTION_BATCH_SIZE, Integer.class, 500);
         String prefix = getOption(OPTION_PREFIX, String.class);
         String assayID = getOption(OPTION_ASSAY_ID, String.class);
         if (assayID == null) {

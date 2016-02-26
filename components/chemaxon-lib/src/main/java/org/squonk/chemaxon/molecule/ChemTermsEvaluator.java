@@ -26,6 +26,13 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
     private final Mode mode;
     private final String chemTermsFunction;
 
+    public static final String LOGP = "CXN_LogP";
+    public static final String ATOM_COUNT = "CXN_AtomCount";
+    public static final String BOND_COUNT = "CXN_BondCount";
+    public static final String HBOND_ACCEPTOR_COUNT = "CXN_HBondAcceptorCount";
+    public static final String HBOND_DONOR_COUNT = "CXN_HBondDonorCount";
+    public static final String MOLECULAR_WEIGHT = "CXN_MolWeight";
+
     /**
      * Constructor to standard ChemTerms evaluator. The property is calculated
      * and added to the molecule.
@@ -83,6 +90,9 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
      */
     @Override
     public Molecule processMolecule(Molecule mol) {
+        if (mol == null) {
+            return null;
+        }
         MolContext context = new MolContext();
         context.setMolecule(mol);
         return evaluateMoleculeImpl(context);
@@ -90,6 +100,10 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
 
     @Override
     public MoleculeObject processMoleculeObject(MoleculeObject mo) throws MolFormatException, IOException {
+        if (mo == null || mo.getSource() == null) {
+            return mo;
+        }
+
         Molecule mol = MoleculeUtils.fetchMolecule(mo, true);
         mol = processMolecule(mol);
 

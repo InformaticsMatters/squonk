@@ -46,11 +46,13 @@ public interface StepDefinitionConstants {
 
     interface SdfUpload {
         public static final String CLASSNAME = "org.squonk.execution.steps.impl.SDFReaderStep";
+        public static final String OPTION_FILE_UPLOAD = "fileUpload";
         public static final String OPTION_NAME_FIELD_NAME = "nameFieldName";
     }
 
     interface CsvUpload {
         public static final String CLASSNAME = "org.squonk.execution.steps.impl.CSVReaderStep";
+        public static final String OPTION_FILE_UPLOAD = "fileUpload";
         public static final String OPTION_CSV_FORMAT_TYPE = "csvFormatType";
         public static final String OPTION_NAME_FIRST_LINE_IS_HEADER = "firstLineIsHeader";
     }

@@ -162,12 +162,15 @@ public class SphereExclusionClusterer<T extends Descriptor> {
                 input,
                 ProgressObservers.createForgivingNullObserver());
 
+
         ClusterSpliterator spliterator = new ClusterSpliterator(input, clus) {
             @Override
             MoleculeObject generate(int idx) {
                 Molecule clone = input.getMolecule(idx);
                 MoleculeObject orig = (MoleculeObject) clone.getPropertyObject(PROP_NAME_ORIGINAL_MOLECULE);
-                orig.putValue(clusterPropertyName, clus.clusters().indexOf(clus.clusterOf(idx).get()));
+                int cl = clus.clusters().indexOf(clus.clusterOf(idx).get());
+                orig.putValue(clusterPropertyName, cl);
+                //LOG.info(idx + " Cluster: " + cl + " -> " + orig);
                 clone.clearProperties();
                 return orig;
             }
@@ -180,9 +183,18 @@ public class SphereExclusionClusterer<T extends Descriptor> {
         // InputBuilder is not really stream ready so this has to be done sequentially
         final Standardizer szr = this.standardizer;
         long count = mols.sequential()
-                .map(mol -> mol.cloneMolecule())
+                .map(mol -> {
+                    if (mol == null) {
+                        return null;
+                    }
+                    return mol.cloneMolecule();
+                })
                 .map(mol -> prepareMolecule(mol))
-                .peek(mol -> inputBuilder.addMolecule(mol))
+                .peek(mol -> {
+                    if (mol != null) {
+                        inputBuilder.addMolecule(mol);
+                    }
+                })
                 .count();
 
         LOG.log(Level.INFO, "Prepared {0} Molecules for input", count);
@@ -194,7 +206,11 @@ public class SphereExclusionClusterer<T extends Descriptor> {
         final MolInputBuilder inputBuilder = new MolInputBuilder();
         long count = mols.sequential()
                 .map(mo -> prepareMoleculeObject(mo))
-                .peek(mol -> inputBuilder.addMolecule(mol))
+                .peek(mol -> {
+                    if (mol != null) {
+                        inputBuilder.addMolecule(mol);
+                    }
+                })
                 .count();
 
         LOG.log(Level.INFO, "Prepared {0} Molecules for input", count);
@@ -202,6 +218,10 @@ public class SphereExclusionClusterer<T extends Descriptor> {
     }
 
     Molecule prepareMolecule(Molecule mol) {
+        if (mol == null) {
+            return null;
+        }
+
         // work with a clone so we don't destroy the original
         Molecule clone = mol.cloneMolecule();
         standardizer.standardize(clone);
@@ -210,6 +230,9 @@ public class SphereExclusionClusterer<T extends Descriptor> {
     }
 
     Molecule prepareMoleculeObject(MoleculeObject mo) {
+        if (mo == null || mo.getSource() == null) {
+            return null;
+        }
         // work with a clone so we don't destroy the original
         Molecule clone = MoleculeUtils.fetchMolecule(mo, false).cloneMolecule();
         standardizer.standardize(clone);
@@ -221,45 +244,6 @@ public class SphereExclusionClusterer<T extends Descriptor> {
         return inputBuilder.build(descriptorGenerator, descriptorComparator);
     }
 
-//    Iterable<Molecule> generateMoleculeOutput(MolInput input, IDBasedSingleLevelClustering clus) {
-//        final CloseableQueue<Molecule> q = new CloseableQueue<>(50);
-//        Thread t = new Thread(() -> {
-//            try {
-//                for (int i = 0; i < input.size(); i++) {
-//                    Molecule clone = input.getMolecule(i);
-//                    Molecule orig = (Molecule) clone.getPropertyObject(PROP_NAME_ORIGINAL_MOLECULE);
-//                    orig.setPropertyObject(clusterPropertyName, clus.clusters().indexOf(clus.clusterOf(i).get()));
-//                    clone.clearProperties();
-//                    q.add(orig);
-//                }
-//            } finally {
-//                q.close();
-//            }
-//        });
-//        t.start();
-//
-//        return q;
-//    }
-
-//    Iterable<MoleculeObject> generateMoleculeObjectOutput(MolInput input, IDBasedSingleLevelClustering clus) {
-//        final CloseableQueue<MoleculeObject> q = new CloseableMoleculeObjectQueue(50);
-//        Thread t = new Thread(() -> {
-//            try {
-//                for (int i = 0; i < input.size(); i++) {
-//                    Molecule clone = input.getMolecule(i);
-//                    MoleculeObject orig = (MoleculeObject) clone.getPropertyObject(PROP_NAME_ORIGINAL_MOLECULE);
-//                    orig.putValue(clusterPropertyName, clus.clusters().indexOf(clus.clusterOf(i).get()));
-//                    clone.clearProperties();
-//                    q.add(orig);
-//                }
-//            } finally {
-//                q.close();
-//            }
-//        });
-//        t.start();
-//
-//        return q;
-//    }
     abstract class ClusterSpliterator<T> extends AbstractSpliterator<T> {
 
         final MolInput input;

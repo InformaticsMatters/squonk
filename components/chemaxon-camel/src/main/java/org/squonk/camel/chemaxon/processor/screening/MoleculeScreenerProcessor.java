@@ -28,8 +28,8 @@ import org.apache.camel.util.IOHelper;
 public class MoleculeScreenerProcessor<T extends Descriptor> implements Processor {
 
     private static final Logger LOG = Logger.getLogger(MoleculeScreenerProcessor.class.getName());
-    public static final String HEADER_QUERY_MOLECULE = "QueryMolecule";
-    public static final String HEADER_THRESHOLD = "Threshold";
+    public static final String HEADER_QUERY_MOLECULE = "query_structure";
+    public static final String HEADER_THRESHOLD = "threshold";
 
     private final MoleculeScreener<T> screener;
 
@@ -108,6 +108,10 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
     }
 
     double compareMolecule(MoleculeObject query, T targetFp) throws MolFormatException {
+        if (query.getSource() == null) {
+            return 0d;
+        }
+
         Molecule mol = MoleculeUtils.fetchMolecule(query, true);
         double sim = doCompare(mol, targetFp);
         if (similarityPropName != null) {
@@ -119,6 +123,9 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
     Stream<MoleculeObject> compareMultiple(final Stream<MoleculeObject> mols, final T targetFp, final double thresh) {
 
         return mols.filter((mo) -> {
+            if (mo.getSource() == null) {
+                return false;
+            }
             boolean b = false;
             try {
                 double sim = compareMolecule(mo, targetFp);
@@ -143,10 +150,8 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
     private T findTargetFromHeader(Exchange exchange) {
         Object h = exchange.getIn().getHeader(HEADER_QUERY_MOLECULE);
         LOG.log(Level.FINE, "HEADER_TARGET_MOLECULE: {0}", h);
-        Molecule header = exchange.getIn().getHeader(HEADER_QUERY_MOLECULE, Molecule.class
-        );
-        if (header
-                != null) {
+        Molecule header = exchange.getIn().getHeader(HEADER_QUERY_MOLECULE, Molecule.class);
+        if (header != null) {
             return screener.generateDescriptor(header);
         }
 

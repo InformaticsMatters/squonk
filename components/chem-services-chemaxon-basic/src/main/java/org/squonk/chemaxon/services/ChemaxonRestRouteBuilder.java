@@ -1,5 +1,7 @@
 package org.squonk.chemaxon.services;
 
+import org.squonk.camel.chemaxon.processor.clustering.SphereExclusionClusteringProcessor;
+import org.squonk.camel.chemaxon.processor.screening.MoleculeScreenerProcessor;
 import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.camel.util.CamelUtils;
@@ -21,19 +23,20 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(ChemaxonRestRouteBuilder.class.getName());
 
-    private static final String KEY_SIM_CUTTOFF = "header.threshold";
+    private static final String HEADER = "header.";
+    private static final String KEY_SIM_CUTTOFF = HEADER + MoleculeScreenerProcessor.HEADER_THRESHOLD;
     private static final String LABEL_SIM_CUTTOFF = "Similarity Cuttoff";
     private static final String DESC_SIM_CUTTOFF = "Similarity score cuttoff between 0 and 1 (1 means identical)";
-    private static final String KEY_QMOL = "header.query_structure";
+    private static final String KEY_QMOL = HEADER + MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE;
     private static final String LABEL_QMOL = "Query Structure";
     private static final String DESC_QMOL = "Structure to us as the query";
 //    private static final String KEY_CT_EXPR = "ct_expr";
 //    private static final String LABEL_CT_EXPR = "ChemTerms Expression";
 //    private static final String DESC_CT_EXPR = "Expression using  the Chemical Terms language";
-    private static final String KEY_MIN_CLUSTERS = "header.min_clusters";
+    private static final String KEY_MIN_CLUSTERS = HEADER + SphereExclusionClusteringProcessor.HEADER_MIN_CLUSTER_COUNT;
     private static final String LABEL_MIN_CLUSTERS = "Min clusters";
     private static final String DESC_MIN_CLUSTERS = "Minimum number of clusters to generate";
-    private static final String KEY_MAX_CLUSTERS = "header.max_clusters";
+    private static final String KEY_MAX_CLUSTERS = HEADER + SphereExclusionClusteringProcessor.HEADER_MAX_CLUSTER_COUNT;
     private static final String LABEL_MAX_CLUSTERS = "Max clusters";
     private static final String DESC_MAX_CLUSTERS = "Target maximum number of clusters to generate";
 
@@ -109,8 +112,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "screening/ecfp4",
                         0.001f,
                         new OptionDescriptor[]{
-                            new OptionDescriptor(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
-                            new OptionDescriptor(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
+                            new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
+                            new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
                 createServiceDescriptor(
@@ -123,8 +126,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "screening/pharmacophore",
                         0.004f,
                         new OptionDescriptor[]{
-                            new OptionDescriptor(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
-                            new OptionDescriptor(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
+                            new OptionDescriptor<>(new MoleculeTypeDescriptor<>(MoleculeTypeDescriptor.MoleculeType.DISCRETE), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
+                            new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
                 createServiceDescriptor(
@@ -137,8 +140,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "clustering/spherex/ecfp4",
                         0.002f,
                         new OptionDescriptor[]{
-                            new OptionDescriptor(Integer.class, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS).withDefaultValue(5),
-                            new OptionDescriptor(Integer.class, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS).withDefaultValue(10)
+                            new OptionDescriptor<>(Integer.class, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS).withDefaultValue(5),
+                            new OptionDescriptor<>(Integer.class, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS).withDefaultValue(10)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter")
             };

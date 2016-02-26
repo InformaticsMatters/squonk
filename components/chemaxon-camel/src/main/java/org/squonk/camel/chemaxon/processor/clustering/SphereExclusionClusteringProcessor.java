@@ -21,8 +21,8 @@ public class SphereExclusionClusteringProcessor<T extends Descriptor> implements
 
     private static final Logger LOG = Logger.getLogger(SphereExclusionClusteringProcessor.class.getName());
 
-    public static final String HEADER_MIN_CLUSTER_COUNT = "MinClusterCount";
-    public static final String HEADER_MAX_CLUSTER_COUNT = "MaxClusterCount";
+    public static final String HEADER_MIN_CLUSTER_COUNT = "min_clusters";
+    public static final String HEADER_MAX_CLUSTER_COUNT = "max_clusters";
 
     private String clusterPropertyName;
     private int minClusterCount = SphereExclusionClusterer.DEFAULT_MIN_CLUSTER_COUNT;
@@ -70,7 +70,11 @@ public class SphereExclusionClusteringProcessor<T extends Descriptor> implements
         try (Stream<MoleculeObject> stream = StreamingMoleculeObjectSourcer.bodyAsMoleculeObjectStream(exchange)) {
             results = clusterer.clusterMoleculeObjects(stream);
         }
-        exchange.getIn().setBody(new MoleculeObjectDataset(results));
+        MoleculeObjectDataset dataset = new MoleculeObjectDataset(results);
+        // TODO - work out why the stream needs to be materialized
+        int size = dataset.getDataset().getItems().size();
+        //LOG.info("Putting " + size + " clustering results: " + dataset);
+        exchange.getIn().setBody(dataset);
     }
 
     SphereExclusionClusterer createClusterer(Exchange exchange) {

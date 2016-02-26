@@ -70,6 +70,7 @@ class SphereExclusionClustererSpec extends Specification {
            if (cluster > max) { max = cluster }
         }
         max > 0
+        //println "max $max"
         
         cleanup:
         IOUtils.closeIfCloseable(iterable)

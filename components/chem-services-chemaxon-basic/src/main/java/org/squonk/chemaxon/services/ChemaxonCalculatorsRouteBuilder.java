@@ -4,6 +4,7 @@ import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 
 /**
  * These are routes that provide basic property calculation services. The input to the route is a
@@ -33,7 +34,7 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                 .log("CHEMAXON_LOGP starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
-                        .calculate("CXN_LogP", "logP()"))
+                        .calculate(ChemTermsEvaluator.LOGP, "logP()"))
                 .log("CHEMAXON_LOGP finished");
 
         // Calculate atom count
@@ -41,7 +42,7 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                 .log("CHEMAXON_ATOM_COUNT starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
-                        .calculate("atom_count", "atomCount()"))
+                        .calculate(ChemTermsEvaluator.ATOM_COUNT, "atomCount()"))
                 .log("CHEMAXON_ATOM_COUNT finished");
 
         // Calculate LogP, atom count and bond count
@@ -49,8 +50,8 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                 .log("CHEMAXON_ATOM_BOND_COUNT starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
-                        .calculate("atom_count", "atomCount()")
-                        .calculate("bond_count", "bondCount()")
+                        .calculate(ChemTermsEvaluator.ATOM_COUNT, "atomCount()")
+                        .calculate(ChemTermsEvaluator.BOND_COUNT, "bondCount()")
                 )
                 .log("CHEMAXON_ATOM_BOND_COUNT finished");
 
@@ -59,10 +60,10 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                 .log("CHEMAXON_LIPINSKI starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
-                        .calculate("mol_weight", "mass()")
-                        .calculate("logp", "logP()")
-                        .calculate("hbd_count", "donorCount()")
-                        .calculate("hba_count", "acceptorCount()")
+                        .calculate(ChemTermsEvaluator.MOLECULAR_WEIGHT, "mass()")
+                        .calculate(ChemTermsEvaluator.LOGP, "logP()")
+                        .calculate(ChemTermsEvaluator.HBOND_DONOR_COUNT, "donorCount()")
+                        .calculate(ChemTermsEvaluator.HBOND_ACCEPTOR_COUNT, "acceptorCount()")
                 )
                 .log("CHEMAXON_LIPINSKI finished");
 

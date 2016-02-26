@@ -16,7 +16,7 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 public class CDKMoleculeUtils {
 
     public static final String CDK_MOLECULE_WITH_ALL_EXPLICIT_HYDROGENS = "CDK_MOLECULE_WITH_ALL_EXPLICIT_HYDROGENS";
-    public static final String CDK_MOLECULE_WITH_ALL_IMPLICIT_HYDROGENS = IAtomContainer.class.getName();
+    public static final String CDK_MOLECULE_WITH_ALL_IMPLICIT_HYDROGENS = "CDK_MOLECULE_WITH_ALL_IMPLICIT_HYDROGENS";
     public static final Aromaticity AROMATICITY = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
 
     public static final SilentChemObjectBuilder SILENT_OBJECT_BUILDER = (SilentChemObjectBuilder) SilentChemObjectBuilder.getInstance();

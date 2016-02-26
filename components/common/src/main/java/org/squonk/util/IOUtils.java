@@ -156,6 +156,18 @@ public class IOUtils {
         }
     }
 
+    public static String joinArray(Object[] vals, String sep) {
+
+        if (vals == null || vals.length == 0) {
+            return "";
+        }
+        StringBuilder b = new StringBuilder(vals[0].toString());
+        for (int i = 1; i < vals.length; i++) {
+            b.append(sep).append(vals[i]);
+        }
+        return b.toString();
+    }
+
     /**
      * Create an ordered Stream containing no null values from the Iterator
      *

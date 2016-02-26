@@ -6,7 +6,7 @@
 ./setenv.sh
 base=$PWD
 
-echo "Setting up for server ${DOCKER_GATEWAY}"
+echo "Setting up for server ${SQUONK_HOST}"
 
 echo "preaparing postgres docker image ..."
 docker-compose up -d postgres rabbitmq
@@ -39,11 +39,11 @@ echo "preparing rabbitmq docker image ..."
 echo "... rabbitmq container configured"
 docker-compose stop rabbitmq
 
-keycloak_url="https://${DOCKER_GATEWAY}:8443/auth"
+keycloak_url="https://${SQUONK_HOST}:8443/auth"
 echo "keycloak_url: $keycloak_url"
 
 # substitute the realm json file
-sed "s/192.168.59.103/${DOCKER_GATEWAY}/g" squonk-realm.json > yyy.json
+sed "s/192.168.59.103/${SQUONK_HOST}/g" squonk-realm.json > yyy.json
 
 
 #attempt=0
