@@ -26,15 +26,6 @@ public class PostgresJobStatusClient implements JobStatusClient {
 
     protected final Sql db = new Sql(Utils.createDataSource())
 
-    def execute(Closure cl) {
-        def result
-        db.withTransaction {
-            result = cl(db)
-        }
-        return result
-    }
-
-
     public JobStatus submit(JobDefinition jobdef, String username, Integer totalCount) {
         log.info("Registering JobDef: " + jobdef);
         JobStatus status = JobStatus.create(jobdef, username, new Date(), totalCount == null ? 0 : totalCount)

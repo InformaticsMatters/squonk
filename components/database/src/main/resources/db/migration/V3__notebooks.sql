@@ -1,14 +1,14 @@
 -- add tables to hold the notebook and variable definitions
 
-CREATE TABLE users.nb_definition (
+CREATE TABLE users.nb_descriptor (
     id              SERIAL PRIMARY KEY,
     owner_id        INT NOT NULL,
     name            VARCHAR(50) NOT NULL,
     description     VARCHAR(400) NOT NULL,
     created         TIMESTAMP NOT NULL,
     updated         TIMESTAMP NOT NULL,
-    CONSTRAINT nbdef_uq_name UNIQUE (owner_id, name),
-    CONSTRAINT nbdef2users FOREIGN KEY (owner_id) REFERENCES users.users (id)
+    CONSTRAINT nbdes_uq_name UNIQUE (owner_id, name),
+    CONSTRAINT nbdes2users FOREIGN KEY (owner_id) REFERENCES users.users (id)
 );
 
 CREATE TABLE users.nb_version (
@@ -21,7 +21,7 @@ CREATE TABLE users.nb_version (
     description     VARCHAR(400),
     nb_definition   JSONB,
     CONSTRAINT nbver_uq_label UNIQUE (notebook_id, label),
-    CONSTRAINT nbver2nbdef FOREIGN KEY (notebook_id) REFERENCES users.nb_definition (id) ON DELETE CASCADE,
+    CONSTRAINT nbver2nbdef FOREIGN KEY (notebook_id) REFERENCES users.nb_descriptor (id) ON DELETE CASCADE,
     CONSTRAINT nbver2parent FOREIGN KEY (parent_id) REFERENCES users.nb_version (id) ON DELETE CASCADE,
     CONSTRAINT nbver2users FOREIGN KEY (owner_id) REFERENCES users.users (id)
 );
@@ -42,10 +42,10 @@ CREATE TABLE users.nb_variable (
 ALTER TABLE users.nb_variable ALTER val_blob SET STORAGE EXTERNAL;
 
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON users.nb_definition TO squonk;
+GRANT SELECT, INSERT, UPDATE, DELETE ON users.nb_descriptor TO squonk;
 GRANT SELECT, INSERT, UPDATE, DELETE ON users.nb_version TO squonk;
 GRANT SELECT, INSERT, UPDATE, DELETE ON users.nb_variable TO squonk;
 
-GRANT USAGE ON SEQUENCE users.nb_definition_id_seq TO squonk;
+GRANT USAGE ON SEQUENCE users.nb_descriptor_id_seq TO squonk;
 GRANT USAGE ON SEQUENCE users.nb_version_id_seq TO squonk;
 GRANT USAGE ON SEQUENCE users.nb_variable_id_seq TO squonk;
