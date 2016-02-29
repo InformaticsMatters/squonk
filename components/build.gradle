@@ -154,9 +154,28 @@ task createEbsBackendServicesZip(type: Zip) {
         
 }
 
+project.ext.set('dockerHost', getDockerHost())
+
+String getDockerHost() {
+
+    String d = System.getenv('DOCKER_HOST');
+    String h = null;
+    if (d == null) {
+        h = 'unix:///var/run/docker.sock'
+    } else {
+        if (d.endsWith('2375')) {
+            h = 'http' + d.substring(3)
+        } else {
+            // assume 2376 and https
+            h = 'https' + d.substring(3)
+        }
+    }
+    return h
+}
 
 docker {
-    url = (System.getenv('DOCKER_HOST') ?: 'unix:///var/run/docker.sock')
+    println "Using docker host of $dockerHost"
+    url = dockerHost
     certPath = null
 }
 

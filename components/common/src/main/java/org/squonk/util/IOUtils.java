@@ -1,6 +1,7 @@
 package org.squonk.util;
 
 import com.im.lac.util.SimpleStreamProvider;
+
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
@@ -18,12 +19,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
- *
  * @author timbo
  */
 public class IOUtils {
@@ -171,12 +172,12 @@ public class IOUtils {
     /**
      * Create an ordered Stream containing no null values from the Iterator
      *
-     * @see {@link com.im.lac.util.SimpleStreamProvider} for more control over
-     * this.
      * @param <T>
      * @param iter
      * @param type
      * @return
+     * @see {@link com.im.lac.util.SimpleStreamProvider} for more control over
+     * this.
      */
     public static <T> Stream<T> streamFromIterator(Iterator<T> iter, Class<T> type) {
         SimpleStreamProvider sp = new SimpleStreamProvider(iter, type);
@@ -188,12 +189,12 @@ public class IOUtils {
      * size from the Iterator
      *
      * @param batchSize
-     * @see {@link com.im.lac.util.SimpleStreamProvider} for more control over
-     * this.
      * @param <T>
      * @param iter
      * @param type
      * @return
+     * @see {@link com.im.lac.util.SimpleStreamProvider} for more control over
+     * this.
      */
     public static <T> Stream<T> streamFromIterator(Iterator<T> iter, Class<T> type, int batchSize) {
         SimpleStreamProvider sp = new SimpleStreamProvider(iter, type, Spliterator.NONNULL | Spliterator.ORDERED, batchSize);
@@ -204,10 +205,10 @@ public class IOUtils {
      * Get a value that might be configured externally. Looks first for a system property
      * (a -D option specified to Java), if not present looks for an environment variable
      * and if not present then falls back to the specified default.
-     * 
-     * @param name The system property or environment variable name
+     *
+     * @param name         The system property or environment variable name
      * @param defaultValue The value to fall back to.
-     * @return 
+     * @return
      */
     public static String getConfiguration(String name, String defaultValue) {
         String s = System.getProperty(name);
@@ -220,6 +221,25 @@ public class IOUtils {
         }
         return defaultValue;
 
+    }
+
+
+    public static String getDockerGateway() {
+        String result = null;
+        String dockerHost = IOUtils.getConfiguration("DOCKER_HOST", null);
+        if (dockerHost != null && dockerHost.startsWith("tcp://")) {
+            //tcp://192.168.99.100:2376
+            String s = dockerHost.substring(6);
+            int i = s.indexOf(":");
+            if (i > 0) {
+                result = s.substring(0, i);
+            } else {
+                result = s;
+            }
+        }
+        String h = (result == null ? "localhost" : result);
+        LOG.info("Docker Gateway: " + h);
+        return h;
     }
 
 }

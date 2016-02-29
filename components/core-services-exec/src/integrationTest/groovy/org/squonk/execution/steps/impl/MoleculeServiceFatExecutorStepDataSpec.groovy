@@ -21,7 +21,7 @@ import java.util.zip.GZIPInputStream
  */
 class MoleculeServiceFatExecutorStepDataSpec extends Specification {
 
-    static String HOST_CDK_CALCULATORS = "http://" + IOUtils.getConfiguration("DOCKER_HOST", "localhost") + ":8092/chem-services-cdk-basic/rest/v1/calculators"
+    static String HOST_CDK_CALCULATORS = "http://" + IOUtils.getDockerGateway() + ":8092/chem-services-cdk-basic/rest/v1/calculators"
 
     String producer = "p"
 

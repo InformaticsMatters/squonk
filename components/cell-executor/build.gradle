@@ -52,7 +52,7 @@ testClasses {
 }
 
 docker {
-    url = (System.getenv('DOCKER_HOST') ?: 'unix:///var/run/docker.sock')
+    url = dockerHost
     certPath = null
 
     javaApplication {

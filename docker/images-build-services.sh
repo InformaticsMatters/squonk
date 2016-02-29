@@ -8,7 +8,7 @@ base=$PWD
 
 cd ../components
 
-./gradlew --daemon assemble
+#./gradlew --daemon assemble
 
 echo "building chem-services-basic docker image ..."
 ./gradlew --daemon dockerFileChemServices &&

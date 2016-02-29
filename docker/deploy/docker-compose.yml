@@ -26,7 +26,6 @@
 rabbitmq:
     image: rabbitmq:3-management
     ports:
-    - "5672:5672"
     - "15672:15672"
     volumes:
     - ../rabbitmq/init.sh:/usr/local/etc/init.sh:ro
@@ -43,8 +42,6 @@ postgres:
     image: postgres:9.5
     volumes:
     - ./init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro
-    ports: 
-    - "5432:5432"
     environment:
         POSTGRES_PASSWORD:
         POSTGRES_KEYCLOAK_PASS:
@@ -73,9 +70,8 @@ keycloak:
     - 8080:8080
     - 8443:8443
     volumes:
-    - ./keycloak/keycloak.jks:/opt/jboss/keycloak/standalone/configuration/keycloak.jks:ro
     - ./keycloak/standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml:ro
-
+    - ./keycloak/keycloak.jks:/opt/jboss/keycloak/standalone/configuration/keycloak.jks:ro
 
 ################# chem services container #########################################
 # available on
