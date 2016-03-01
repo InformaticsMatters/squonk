@@ -4,8 +4,8 @@
 # docker network inspect bridge
 #
 
-export PUBLIC_HOST=localhost
-export PRIVATE_HOST=localhost
+export PUBLIC_HOST=172.17.0.1
+export PRIVATE_HOST=172.17.0.1
 export RABBITMQ_ERLANG_COOKIE=topsecret
 export RABBITMQ_DEFAULT_PASS=squonk
 export RABBITMQ_SQUONK_PASS=squonk
@@ -17,5 +17,5 @@ export POSTGRES_SQUONK_PASS=squonk
 export POSTGRES_XWIKI_PASS=squonk
 
 # generally no need to change these
-export SERVICE_CALLBACK=http://${SQUONK_HOST}/ws/notebook
-export KEYCLOAK_SERVER_URL=http://${SQUONK_HOST}:8080
+export SERVICE_CALLBACK=http://${PRIVATE_HOST}/ws/notebook
+export KEYCLOAK_SERVER_URL=http://${PUBLIC_HOST}:8080
