@@ -21,7 +21,7 @@
 #
 # initialize:
 # docker exec deploy_mq_1 bash init.sh
-# admin console available on http://${SQUONK_HOST}:15672/
+# admin console available on http://${PUBLIC_HOST}:15672/
 #
 rabbitmq:
     image: rabbitmq:3-management
@@ -55,7 +55,7 @@ postgres:
 #    ports:
 #        - "8888:8888"
 #    environment: 
-#        API_URL: http://${SQUONK_HOST}:8091/coreservices/api-docs
+#        API_URL: http://${PUBLIC_HOST}:8091/coreservices/api-docs
 
 ################# keycloak container ###############################################
 keycloak:
@@ -75,13 +75,13 @@ keycloak:
 
 ################# chem services container #########################################
 # available on
-# http://${SQUONK_HOST}:8092/chem-services-rdkit-basic/rest/v1/calculators
-# http://${SQUONK_HOST}:8092/chem-services-cdk-basic/rest/v1/calculators
-# http://${SQUONK_HOST}:8092/chem-services-chemaxon-basic/rest/v1/calculators
-# http://${SQUONK_HOST}:8092/chem-services-chemaxon-basic/rest/v1/descriptors
+# http://${PUBLIC_HOST}:8092/chem-services-rdkit-basic/rest/v1/calculators
+# http://${PUBLIC_HOST}:8092/chem-services-cdk-basic/rest/v1/calculators
+# http://${PUBLIC_HOST}:8092/chem-services-chemaxon-basic/rest/v1/calculators
+# http://${PUBLIC_HOST}:8092/chem-services-chemaxon-basic/rest/v1/descriptors
 #
 # Test using something like this:
-# curl -X POST -T mols.json "http://${SQUONK_HOST}:9080/chem-services-cdk-basic/rest/v1/calculators/logp"
+# curl -X POST -T mols.json "http://${PUBLIC_HOST}:9080/chem-services-cdk-basic/rest/v1/calculators/logp"
 #
 chemservices:
     image: squonk/chem-services-basic
@@ -91,9 +91,9 @@ chemservices:
 
 ################# core-services-server container #########################################
 # available on:
-# http://${SQUONK_HOST}:8091/coreservices/rest/ping
-# http://${SQUONK_HOST}:8091/coreservices/rest/v1/services
-# http://${SQUONK_HOST}:8091/coreservices/rest/v1/jobs
+# http://${PUBLIC_HOST}:8091/coreservices/rest/ping
+# http://${PUBLIC_HOST}:8091/coreservices/rest/v1/services
+# http://${PUBLIC_HOST}:8091/coreservices/rest/v1/jobs
 # 
 coreservices:
     image: squonk/core-services-server

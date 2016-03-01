@@ -10,15 +10,14 @@ docker-compose build
 ./setenv.sh
 base=$PWD
 
-echo "Setting up for server ${SQUONK_HOST}"
+echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 
 echo "preaparing postgres docker image ..."
 docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d postgres rabbitmq
 
 # we need to wait for postgres to start as the next step is to populate the database
 attempt=0
-until nc -z $SQUONK_HOST 5432
-#until docker exec -it deploy_postgres_1 psql -U squonk -c 'select version()' > /dev/null 2>&1
+until nc -z -w 1 $PRIVATE_HOST 5432
 do
     if [ $attempt -gt 10 ]; then 
         echo "Giving up on postgres"
@@ -36,7 +35,7 @@ docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d keycloak
 
 echo "creating db tables ..."
 cd ../../components
-SQUONK_DB_SERVER=$SQUONK_HOST
+SQUONK_DB_SERVER=$PRIVATE_HOST
 ./gradlew database:flywayMigrate
 echo "... tables created"
 cd $base
@@ -46,11 +45,11 @@ echo "preparing rabbitmq docker image ..."
 echo "... rabbitmq container configured"
 docker-compose stop rabbitmq
 
-keycloak_url="https://${SQUONK_HOST}:8443/auth"
+keycloak_url="https://${PRIVATE_HOST}:8443/auth"
 echo "keycloak_url: $keycloak_url"
 
 # substitute the realm json file
-sed "s/192.168.59.103/${SQUONK_HOST}/g" squonk-realm.json > yyy.json
+sed "s/192.168.59.103/${PUBLIC_HOST}/g" squonk-realm.json > yyy.json
 
 
 attempt=0
