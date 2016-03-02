@@ -13,17 +13,19 @@ public class NotebookEditable {
     private String owner;
     private Date createdDate;
     private Date lastUpdatedDate;
+    private String content;
 
     public NotebookEditable() {
 
     }
 
-    public NotebookEditable(Long id, Long parentId, String owner, Date createdDate, Date lastUpdatedDate) {
+    public NotebookEditable(Long id, Long parentId, String owner, Date createdDate, Date lastUpdatedDate, String content) {
         this.id = id;
         this.parentId = parentId;
         this.owner = owner;
         this.createdDate = createdDate;
         this.lastUpdatedDate = lastUpdatedDate;
+        this.content = content;
     }
 
     public Long getId() {
@@ -46,8 +48,7 @@ public class NotebookEditable {
         return lastUpdatedDate;
     }
 
-    public Object getInstance() {
-        // TODO - comvert the return type to NotebookInstance and adapt
-        return null;
+    public String getContent() {
+        return content;
     }
 }
