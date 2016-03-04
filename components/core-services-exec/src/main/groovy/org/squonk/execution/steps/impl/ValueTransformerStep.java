@@ -8,6 +8,7 @@ import org.squonk.execution.variable.VariableManager;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.transform.TransformDefinitions;
 import org.apache.camel.CamelContext;
+import org.squonk.types.io.JsonHandler;
 
 import java.util.logging.Logger;
 
@@ -41,9 +42,17 @@ public class ValueTransformerStep extends AbstractStep {
             throw new IllegalStateException("Input variable not found: " + VAR_INPUT_DATASET);
         }
         LOG.info("Input Dataset: " + ds);
-        TransformDefinitions txs = getOption(OPTION_TRANSFORMS, TransformDefinitions.class);
-        if (txs == null) {
-            throw new IllegalStateException("Options not found: " + OPTION_TRANSFORMS);
+
+        Object val = getOption(OPTION_TRANSFORMS);
+        if (val == null) {
+            throw new IllegalStateException("Transforms must be defined as option named " + OPTION_TRANSFORMS);
+        }
+
+        TransformDefinitions txs = null;
+        if (val instanceof TransformDefinitions) {
+            txs = (TransformDefinitions)val;
+        } else { // otherwise it must be json representing TransformDefinitions
+            txs = JsonHandler.getInstance().objectFromJson(val.toString(), TransformDefinitions.class);
         }
         LOG.info("Transform Definitions: " + txs);
 

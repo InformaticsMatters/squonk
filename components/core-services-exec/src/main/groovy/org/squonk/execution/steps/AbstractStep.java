@@ -135,6 +135,10 @@ public abstract class AbstractStep implements Step {
         return value;
     }
 
+    protected Object getOption(String name) {
+        return (options == null ? null : options.get(name));
+    }
+
     protected <T> T getOption(String name, Class<T> type) {
         if (options != null) {
             return (T) options.get(name);

@@ -19,7 +19,7 @@ public class GroovyScriptExecutor {
 
     }
 
-    public static String addImportsToScript(String script, String[] imports) {
+    public static String addImportsToScript(String script, String... imports) {
         StringBuilder b = new StringBuilder();
         for (String imp : imports) {
             b.append("import ").append(imp).append("\n");
