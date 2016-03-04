@@ -9,6 +9,7 @@ import java.util.List;
 public class NotebookEditable {
 
     private Long id;
+    private Long notebookId;
     private Long parentId;
     private String owner;
     private Date createdDate;
@@ -19,8 +20,9 @@ public class NotebookEditable {
 
     }
 
-    public NotebookEditable(Long id, Long parentId, String owner, Date createdDate, Date lastUpdatedDate, String content) {
+    public NotebookEditable(Long id, Long notebookId, Long parentId, String owner, Date createdDate, Date lastUpdatedDate, String content) {
         this.id = id;
+        this.notebookId = notebookId;
         this.parentId = parentId;
         this.owner = owner;
         this.createdDate = createdDate;
@@ -30,6 +32,10 @@ public class NotebookEditable {
 
     public Long getId() {
         return id;
+    }
+
+    public Long getNotebookId() {
+        return notebookId;
     }
 
     public Long getParentId() {
