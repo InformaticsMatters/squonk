@@ -49,6 +49,7 @@ public class Utils {
         ds.setPassword(pw);
 
         LOG.log(Level.INFO, "Using datasource for server {0}@{1}:{2}/{3}", new Object[]{u, s, po, d});
+        //LOG.log(Level.INFO, "Connecting as {0}/{1}", new Object[]{u, pw});
 
         return ds;
     }

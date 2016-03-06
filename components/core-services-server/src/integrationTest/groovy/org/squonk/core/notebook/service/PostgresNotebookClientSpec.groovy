@@ -17,6 +17,7 @@ import spock.lang.Stepwise
 class PostgresNotebookClientSpec extends Specification {
 
     @Shared PostgresNotebookClient client = new PostgresNotebookClient()
+    @Shared List<NotebookDescriptor> notebooks
 
     static String JSON_TERM = '{"hello": "world"}'
 
@@ -42,20 +43,19 @@ class PostgresNotebookClientSpec extends Specification {
     void "list notebooks"() {
 
         when:
-        List<NotebookDescriptor> nbs = client.listNotebooks(TestUtils.TEST_USERNAME)
+        notebooks = client.listNotebooks(TestUtils.TEST_USERNAME)
 
         then:
-        nbs.size() == 2
-        nbs[0].name == "notebook2" // should be listed in descending creation date
-        nbs[1].name == "notebook1"
+        notebooks.size() == 2
+        notebooks[0].name == "notebook2" // should be listed in descending creation date
+        notebooks[1].name == "notebook1"
 
     }
 
     void "list editables"() {
 
         when:
-        List<NotebookDescriptor> nbs = client.listNotebooks(TestUtils.TEST_USERNAME)
-        List<NotebookEditable> eds = client.listEditables(nbs[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
 
         then:
         eds.size() == 1
@@ -68,9 +68,8 @@ class PostgresNotebookClientSpec extends Specification {
     void "update editable"() {
 
         when:
-        List<NotebookDescriptor> nbs = client.listNotebooks(TestUtils.TEST_USERNAME)
-        List<NotebookEditable> eds = client.listEditables(nbs[0].id, TestUtils.TEST_USERNAME)
-        NotebookEditable up = client.updateNotebookEditable(nbs[0].id, eds[0].id, JSON_TERM)
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        NotebookEditable up = client.updateNotebookEditable(notebooks[0].id, eds[0].id, JSON_TERM)
 
         then:
         eds.size() == 1
@@ -86,10 +85,9 @@ class PostgresNotebookClientSpec extends Specification {
     void "create savepoint"() {
 
         when:
-        List<NotebookDescriptor> nbs = client.listNotebooks(TestUtils.TEST_USERNAME)
-        List<NotebookEditable> eds = client.listEditables(nbs[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
         NotebookEditable nue = client.createSavepoint(eds[0].notebookId, eds[0].id)
-        List<NotebookSavepoint> sps = client.listSavepoints(nbs[0].id)
+        List<NotebookSavepoint> sps = client.listSavepoints(notebooks[0].id)
 
         then:
         nue != null
@@ -103,19 +101,19 @@ class PostgresNotebookClientSpec extends Specification {
 
         sps.size() == 1
         sps[0].id == eds[0].id
-        sps[0].owner == TestUtils.TEST_USERNAME
+        sps[0].creator == TestUtils.TEST_USERNAME
         sps[0].content == eds[0].content
     }
 
     void "savepoint description"() {
 
         when:
-        List<NotebookDescriptor> nbs = client.listNotebooks(TestUtils.TEST_USERNAME)
-        List<NotebookSavepoint> sps = client.listSavepoints(nbs[0].id)
+        List<NotebookSavepoint> sps = client.listSavepoints(notebooks[0].id)
         NotebookSavepoint sp1 = client.setSavepointDescription(sps[0].notebookId, sps[0].id, "squonk")
 
         then:
         sp1.description == "squonk"
+        sp1.creator == TestUtils.TEST_USERNAME
     }
 
     void "savepoint label"() {
@@ -135,10 +133,9 @@ class PostgresNotebookClientSpec extends Specification {
     void "duplicate labels"() {
 
         when:
-        List<NotebookDescriptor> nbs = client.listNotebooks(TestUtils.TEST_USERNAME)
-        List<NotebookEditable> eds = client.listEditables(nbs[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
         NotebookEditable nue = client.createSavepoint(eds[0].notebookId, eds[0].id)
-        List<NotebookSavepoint> sps = client.listSavepoints(nbs[0].id)
+        List<NotebookSavepoint> sps = client.listSavepoints(notebooks[0].id)
 
         sps.each {
             client.setSavepointLabel(it.notebookId, it.id, "abcdefg")
@@ -148,5 +145,93 @@ class PostgresNotebookClientSpec extends Specification {
         then:
         thrown(PSQLException)
     }
+
+    void "variable insert no key"() {
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        client.writeTextValue(eds[0].id, 'cell1', 'var1', 'val1')
+
+        then:
+        client.createSql().firstRow("SELECT count(*) from users.nb_variable")[0] == 1
+        client.createSql().firstRow("SELECT val_text from users.nb_variable WHERE var_name='var1' AND var_key='default' AND source_id=${eds[0].id}")[0] == 'val1'
+
+    }
+
+    void "variable insert with key"() {
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        client.writeTextValue(eds[0].id, 'cell1', 'var1', 'val2', 'key')
+
+        then:
+        client.createSql().firstRow("SELECT count(*) from users.nb_variable")[0] == 2
+        client.createSql().firstRow("SELECT val_text from users.nb_variable WHERE var_name='var1' AND var_key='key' AND source_id=${eds[0].id}")[0] == 'val2'
+
+    }
+
+    void "variable update no key"() {
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        client.writeTextValue(eds[0].id, 'cell1', 'var1', 'val3')
+        client.writeTextValue(eds[0].id, 'cell1', 'var2', 'another val')
+
+        then:
+        client.createSql().firstRow("SELECT count(*) from users.nb_variable")[0] == 3
+        client.createSql().firstRow("SELECT val_text from users.nb_variable WHERE var_name='var1' AND var_key='default' AND source_id=${eds[0].id}")[0] == 'val3'
+        client.createSql().firstRow("SELECT val_text from users.nb_variable WHERE var_name='var2' AND var_key='default' AND source_id=${eds[0].id}")[0] == 'another val'
+
+    }
+
+    void "variable update with key"() {
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        client.writeTextValue(eds[0].id, 'cell1', 'var1', 'val4', 'key')
+
+        then:
+        client.createSql().firstRow("SELECT count(*) from users.nb_variable")[0] == 3
+        client.createSql().firstRow("SELECT val_text from users.nb_variable WHERE var_name='var1' AND var_key='key' AND source_id=${eds[0].id}")[0] == 'val4'
+
+    }
+
+    void "read text variable with key correct version"() {
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        String var1 = client.readTextValue(eds[0].id, 'var1', 'key')
+
+        then:
+        var1 == 'val4'
+    }
+
+    void "read text variable no key correct version"() {
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        String var1 = client.readTextValue(eds[0].id, 'var1')
+        String var2 = client.readTextValue(eds[0].id, 'var2')
+
+        then:
+        var1 == 'val3'
+        var2 == 'another val'
+    }
+
+    void "read text variable previous versions"() {
+        System.err.println "read text variable previous versions()"
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        NotebookEditable ed1 = client.createSavepoint(eds[0].notebookId, eds[0].id)
+        String var1 = client.readTextValue(ed1.id, 'var1')
+        NotebookEditable ed2 = client.createSavepoint(ed1.notebookId, ed1.id)
+        String var2 = client.readTextValue(ed2.id, 'var1')
+
+        then:
+        var1 == 'val3'
+        var2 == 'val3'
+    }
+
 
 }

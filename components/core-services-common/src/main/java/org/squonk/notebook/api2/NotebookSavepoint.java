@@ -6,8 +6,9 @@ import java.util.List;
 /**
  * Created by timbo on 29/02/16.
  */
-public class NotebookSavepoint extends NotebookEditable {
+public class NotebookSavepoint extends AbstractNotebookVersion {
 
+    private String creator;
     private String description;
     private String label;
 
@@ -15,10 +16,15 @@ public class NotebookSavepoint extends NotebookEditable {
 
     }
 
-    public NotebookSavepoint(Long id, Long notebookId, Long parentId, String owner, Date createdDate, Date updatedDate, String description, String label, String content) {
-        super(id, notebookId, parentId, owner, createdDate, updatedDate, content);
+    public NotebookSavepoint(Long id, Long notebookId, Long parentId, String creator, Date createdDate, Date updatedDate, String description, String label, String content) {
+        super(id, notebookId, parentId, createdDate, updatedDate, content);
+        this.creator = creator;
         this.description = description;
         this.label = label;
+    }
+
+    public String getCreator() {
+        return creator;
     }
 
     public String getDescription() {

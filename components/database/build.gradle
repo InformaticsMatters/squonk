@@ -18,13 +18,12 @@ buildscript {
 flyway {
     //          jdbc:postgresql://localhost:5432/squonk'
     url =      'jdbc:postgresql://' +
-            (System.getenv('SQUONK_DB_SERVER') ?: 'localhost') + ':' +
-            (System.getenv('SQUONK_DB_PORT') ?: '5432') + '/' +
-            (System.getenv('SQUONK_DB_NAME') ?: 'squonk')
-    user =     System.getenv('POSTGRES_USER') ?: 'postgres'
-    password = System.getenv('POSTGRES_PASSWORD') ?: 'postgres'
+            (System.getenv('SQUONK_DB_SERVER') ?: 'localhost') + ':5432/squonk'
+    user = 'postgres'
+    password = 'postgres'
     schemas = ['users']
-    println "Using DB URL of $url and password of " + (System.getenv('POSTGRES_PASSWORD') ?: 'postgres')
+
+    println "Using DB URL of $url"
 }
 
 

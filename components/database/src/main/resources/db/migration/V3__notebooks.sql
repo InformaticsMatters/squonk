@@ -14,7 +14,7 @@ CREATE TABLE users.nb_descriptor (
 CREATE TABLE users.nb_version (
     id              SERIAL PRIMARY KEY,
     notebook_id     INT NOT NULL,
-    parent_id       INT,
+    parent_id       INT CHECK (parent_id != id),
     owner_id        INT NOT NULL,
     created         TIMESTAMP NOT NULL,
     updated         TIMESTAMP NOT NULL,
@@ -31,10 +31,12 @@ CREATE TABLE users.nb_version (
 CREATE TABLE users.nb_variable (
     id              SERIAL PRIMARY KEY,
     source_id       INT NOT NULL,
-    cell_id         INT NOT NULL,
-    var_name       VARCHAR(50) NOT NULL,
+    cell_name       VARCHAR(50) NOT NULL,
+    var_name        VARCHAR(50) NOT NULL,
     var_key         VARCHAR(20) NOT NULL,
-    val_txt         TEXT,
+    created         TIMESTAMP NOT NULL,
+    updated         TIMESTAMP NOT NULL,
+    val_text        TEXT,
     val_blob        BYTEA,
     CONSTRAINT nbvar_uq UNIQUE (source_id, var_name, var_key),
     CONSTRAINT nbvar2source FOREIGN KEY (source_id) REFERENCES users.nb_version (id) ON DELETE CASCADE

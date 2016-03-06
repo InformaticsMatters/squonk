@@ -16,10 +16,15 @@ import javax.sql.DataSource
 class PostgresNotebookClient {
 
     public final static PostgresNotebookClient INSTANCE = new PostgresNotebookClient();
+    public static final String DEFAULT_KEY = 'default'
 
     private final Object lock = new Object();
 
     protected final DataSource dataSource = Utils.createDataSource()
+
+    protected Sql createSql() {
+        new Sql(dataSource.getConnection())
+    }
 
     /** create a new notebook
      *
@@ -27,7 +32,7 @@ class PostgresNotebookClient {
      * @return
      */
     public NotebookDescriptor createNotebook(String username, String notebookName, String notebookDescription) {
-        Sql db = new Sql(dataSource.getConnection())
+        Sql db = createSql()
         try {
             NotebookDescriptor result = null
             db.withTransaction {
@@ -60,7 +65,7 @@ class PostgresNotebookClient {
      * @return
      */
     public List<NotebookDescriptor> listNotebooks(String username) {
-        Sql db = new Sql(dataSource.getConnection())
+        Sql db = createSql()
         try {
             List<NotebookDescriptor> results = null
             db.withTransaction {
@@ -80,7 +85,7 @@ class PostgresNotebookClient {
      * @return
      */
     public List<NotebookEditable> listEditables(Long notebookId, String username) {
-        Sql db = new Sql(dataSource.getConnection())
+        Sql db = createSql()
         try {
             List<NotebookDescriptor> results = null
             db.withTransaction {
@@ -101,13 +106,15 @@ class PostgresNotebookClient {
      * @param username The user
      */
     public NotebookEditable createNotebookEditable(Long notebookId, Long parentId, String username) {
-        Sql db = new Sql(dataSource.getConnection())
+        log.info("Creating editable for notebook $notebookId with parent $parentId for $username")
+        Sql db = createSql()
         try {
             NotebookEditable result = null
             db.withTransaction {
                 Long userId = fetchIdForUsername(db, username)
                 result = insertNotebookEditable(db, notebookId, parentId, userId)
             }
+            log.info("Created editable ${result?.id} for notebook $notebookId with parent $parentId for $username")
             return result
         } finally {
             db.close()
@@ -120,7 +127,7 @@ class PostgresNotebookClient {
      * @param json The contents of the notebook
      */
     public NotebookEditable updateNotebookEditable(Long notebookId, Long editableId, String json) {
-        Sql db = new Sql(dataSource.getConnection())
+        Sql db = createSql()
         try {
             NotebookEditable result = null
             db.withTransaction {
@@ -147,7 +154,8 @@ class PostgresNotebookClient {
      * @return The new Editable that is created.
      */
     public NotebookEditable createSavepoint(Long notebookId, Long editableId) {
-        Sql db = new Sql(dataSource.getConnection())
+        log.info("Creating savepoint for editable $editableId")
+        Sql db = createSql()
         try {
             NotebookEditable result = null
             db.withTransaction {
@@ -158,7 +166,7 @@ class PostgresNotebookClient {
                         [notebookId: notebookId, editableId: editableId])
 
                 Long id = findInsertedId(keys)
-                log.info("Created editable with ID $id")
+                log.info("Created new editable $id based on $editableId")
                 if (id == null) {
                     throw new IllegalStateException("No insert performed. Does the editable with these criteria exist: notebook id=$notebookId, editable id=$editableId")
                 }
@@ -172,6 +180,7 @@ class PostgresNotebookClient {
                 result = fetchNotebookEditableById(db, notebookId, id)
 
             }
+            log.info("Created savepoint ${result?.id} for editable $editableId")
             return result
         } finally {
             db.close()
@@ -184,7 +193,7 @@ class PostgresNotebookClient {
      * @return
      */
     public List<NotebookSavepoint> listSavepoints(Long notebookId) {
-        Sql db = new Sql(dataSource.getConnection())
+        Sql db = createSql()
         try {
             List<NotebookSavepoint> results = null
             db.withTransaction {
@@ -201,7 +210,7 @@ class PostgresNotebookClient {
      * @param description
      */
     public NotebookSavepoint setSavepointDescription(Long notebookId, Long savepointId, String description) {
-        Sql db = new Sql(dataSource.getConnection())
+        Sql db = createSql()
         try {
             NotebookSavepoint result = null
             db.withTransaction {
@@ -227,7 +236,7 @@ class PostgresNotebookClient {
      */
     public NotebookSavepoint setSavepointLabel(Long notebookId, Long savepointId, String label) {
         log.info("Setting label for $notebookId:$savepointId to $label")
-        Sql db = new Sql(dataSource.getConnection())
+        Sql db = createSql()
         try {
             NotebookSavepoint result = null
             db.withTransaction {
@@ -238,7 +247,7 @@ class PostgresNotebookClient {
                     throw new IllegalStateException("Label not updated. Does the savepoint with these criteria exist: notebook id=$notebookId, editable id=$savepointId")
                 }
                 result = fetchNotebookSavepointById(db, notebookId, savepointId)
-                log.info("Label for savepoint $notebookId:$savepointId set to ${result.label}" )
+                log.info("Label for savepoint $notebookId:$savepointId set to ${result.label}")
             }
             return result
         } finally {
@@ -254,7 +263,171 @@ class PostgresNotebookClient {
     public void deleteSavepoint(Long notebookId, Long savepointId) {
         throw new UnsupportedOperationException("NYI")
     }
-    
+
+    // ------------------- variable handling methods -----------------------
+
+    /* reading and writing variables
+    *
+    * This differs from current API in:
+    * 1. the producer cell is not present - variable names are unique within a notebook and I should not need to know who produced the data to be able to retrieve it.
+    * 2. a key property is introduced to allow to distinguish multi-attribute variables (e.g. Dataset and its metadata)
+    * 3. variables can be retrieved, but not stored for NotebookSavepoints
+    * 4. variable can be retrieved using the "label" of a NotebookSavepoint
+    * 5. read/Write for Integer is removed as that can be handled as text, and we don't want to introduce API methods for every Java data type.
+     */
+
+//            id              SERIAL PRIMARY KEY,
+//            source_id       INT NOT NULL,
+//            cell_name       VARCHAR(50) NOT NULL,
+//            var_name        VARCHAR(50) NOT NULL,
+//            var_key         VARCHAR(20) NOT NULL,
+//            val_txt         TEXT,
+//            val_blob        BYTEA,
+
+
+    public String readTextValue(Long sourceId, String variableName) {
+        readTextValue(sourceId, variableName, null)
+    }
+
+    /**
+     *
+     * @param sourceId Can be a editable ID or a savepoint ID
+     * @param variableName
+     * @param key
+     * @return
+     */
+    public String readTextValue(Long sourceId, String variableName, String key) {
+        log.info("Reading text variable $variableName:$key for $sourceId")
+        Sql db = new Sql(dataSource.getConnection())
+        try {
+            String result = null
+            db.withTransaction {
+                result = doFetchTextVar(db, sourceId, variableName, key)
+            }
+            return result
+        } finally {
+            db.close()
+        }
+    }
+
+    private doFetchTextVar(Sql db, Long sourceId, String variableName, String key) {
+
+        // TODO - this can probably be optimised significantly
+
+        log.info("Looking for variable $variableName:$key in source $sourceId")
+
+        def row = db.firstRow("""\
+                |SELECT val_text FROM users.nb_variable
+                |  WHERE source_id=:sourceId AND var_name=:variableName AND var_key=:key""".stripMargin(),
+                [sourceId: sourceId, variableName: variableName, key: key ?: DEFAULT_KEY])
+
+        if (row == null) {
+            log.info("Variable $variableName:$key not found in source $sourceId")
+            row = db.firstRow("SELECT parent_id FROM users.nb_version WHERE id=$sourceId")
+            if (row != null) {
+                Long parent = row[0]
+                if (parent == null) {
+                    log.info("No parent defined for source $sourceId, so variable $variableName:$key does not exist")
+                    return null
+                } else {
+                    log.info("Looking for variable $variableName:$key in parent $parent")
+                    return doFetchTextVar(db, parent, variableName, key)
+                }
+            } else {
+                log.info("No row found for $sourceId - probably invalid ID?")
+                return null;
+            }
+        } else {
+            String result = row[0]
+            log.info("Found variable: $result")
+            return result
+        }
+    }
+
+    /**
+     *
+     * @param label
+     * @param variableName
+     * @param key
+     * @return
+     */
+    public String readTextValue(String label, String variableName, String key) {
+        return null;
+    }
+
+    /** Save this variable using the default key name of 'default'.
+     * Use this for single component variables.
+     *
+     * @param editableId
+     * @param cellName
+     * @param variableName
+     */
+    public void writeTextValue(Long editableId, String cellName, String variableName, String value) {
+        writeTextValue(editableId, cellName, variableName, value, DEFAULT_KEY)
+    }
+
+    /** Save this variable using the specified key.
+     * Use this for multi component variables where each part is saved under a different key name, but with the same variable name.
+     * If the combination of editableId, variableName and key already exists this is an update operation, if not then it
+     * inserts a new row.
+     *
+     * @param editableId
+     * @param cellName
+     * @param variableName
+     * @param value
+     * @param key
+     */
+    public void writeTextValue(Long editableId, String cellName, String variableName, String value, String key) {
+        log.info("Writing text variable $variableName:$key for $editableId")
+        Sql db = new Sql(dataSource.getConnection())
+        try {
+
+            db.executeInsert("""\
+                |INSERT INTO users.nb_variable AS t (source_id, cell_name, var_name, var_key, created, updated, val_text)
+                |  VALUES (:sourceId, :cellName, :variableName, :key, NOW(), NOW(), :value )
+                |  ON CONFLICT ON CONSTRAINT nbvar_uq DO UPDATE
+                |    SET val_text=EXCLUDED.val_text, updated=NOW()
+                |      WHERE t.source_id=EXCLUDED.source_id AND t.cell_name=EXCLUDED.cell_name AND t.var_name=EXCLUDED.var_name AND t.var_key=EXCLUDED.var_key""".stripMargin(),
+                    [sourceId: editableId, cellName: cellName, variableName: variableName, key: key, value: value])
+
+
+        } finally {
+            db.close()
+        }
+    }
+
+    /**
+     *
+     * @param sourceId Can be a editable ID or a savepoint ID
+     * @param variableName
+     * @param key
+     * @return
+     */
+    public InputStream readStreamValue(Long sourceId, String variableName, String key) {
+        return null;
+    }
+
+    /**
+     *
+     * @param label
+     * @param variableName
+     * @param key
+     * @return
+     */
+    public InputStream readStreamValue(String label, String variableName, String key) {
+
+    }
+
+    /**
+     *
+     * @param editableId
+     * @param variableName
+     * @param key
+     * @param value
+     */
+    public void writeStreamValue(Long editableId, String cellName, String variableName, String key, InputStream value) {
+
+    }
 
     // ------------------- private implementation methods -----------------------
 

@@ -4,6 +4,9 @@ db:
     - ./deploy/init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro
     ports: 
     - "5432:5432"
+    environment:
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: postgres
 
 mq:
     image: squonk/rabbitmq

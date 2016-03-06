@@ -106,6 +106,12 @@ task integrationTestEnvClean(type:Exec) {
     commandLine 'bash', '../docker/int-test-env-clean.sh'
 }
 
+// tests integration test setup process without running any tests
+task integrationTestEnvDryRun {
+    dependsOn integrationTestEnvPrepareAndClean, 'database:flywayMigrate'
+    finalizedBy integrationTestEnvShutdown
+}
+
 
 task dbTestEnvPrepare(type:Exec) {
     dependsOn "core-services/core-services-server:dockerFile"
