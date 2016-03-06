@@ -121,13 +121,15 @@ class PostgresNotebookClientSpec extends Specification {
         when:
         List<NotebookDescriptor> nbs = client.listNotebooks(TestUtils.TEST_USERNAME)
         List<NotebookSavepoint> sps = client.listSavepoints(nbs[0].id)
-        NotebookSavepoint sp1 = client.setSavepointLabel(sps[0].notebookId, sps[0].id, "squonk")
+        NotebookSavepoint sp1 = client.setSavepointLabel(sps[0].notebookId, sps[0].id, "label1")
         NotebookSavepoint sp2 = client.setSavepointLabel(sps[0].notebookId, sps[0].id, null)
+        NotebookSavepoint sp3 = client.setSavepointLabel(sps[0].notebookId, sps[0].id, "label2")
 
         then:
         sps.size() == 1
-        sp1.label == "squonk"
+        sp1.label == "label1"
         sp2.label == null
+        sp3.label == "label2"
     }
 
     void "duplicate labels"() {
@@ -138,9 +140,8 @@ class PostgresNotebookClientSpec extends Specification {
         List<NotebookSavepoint> sps = client.listSavepoints(notebooks[0].id)
 
         sps.each {
-            client.setSavepointLabel(it.notebookId, it.id, "abcdefg")
+            client.setSavepointLabel(it.notebookId, it.id, "label3")
         }
-
 
         then:
         thrown(PSQLException)
@@ -219,11 +220,14 @@ class PostgresNotebookClientSpec extends Specification {
     }
 
     void "read text variable previous versions"() {
-        System.err.println "read text variable previous versions()"
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
         NotebookEditable ed1 = client.createSavepoint(eds[0].notebookId, eds[0].id)
+
+        // label it for later
+        client.setSavepointLabel(eds[0].notebookId, eds[0].id, 'label4')
+
         String var1 = client.readTextValue(ed1.id, 'var1')
         NotebookEditable ed2 = client.createSavepoint(ed1.notebookId, ed1.id)
         String var2 = client.readTextValue(ed2.id, 'var1')
@@ -231,6 +235,16 @@ class PostgresNotebookClientSpec extends Specification {
         then:
         var1 == 'val3'
         var2 == 'val3'
+    }
+
+    void "read text variable for label"() {
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        String var = client.readTextValueForLabel(notebooks[0].id, 'label4', 'var1', null)
+
+        then:
+        var == 'val3'
     }
 
 

@@ -106,7 +106,7 @@ class PostgresNotebookClient {
      * @param username The user
      */
     public NotebookEditable createNotebookEditable(Long notebookId, Long parentId, String username) {
-        log.info("Creating editable for notebook $notebookId with parent $parentId for $username")
+        log.fine("Creating editable for notebook $notebookId with parent $parentId for $username")
         Sql db = createSql()
         try {
             NotebookEditable result = null
@@ -154,7 +154,7 @@ class PostgresNotebookClient {
      * @return The new Editable that is created.
      */
     public NotebookEditable createSavepoint(Long notebookId, Long editableId) {
-        log.info("Creating savepoint for editable $editableId")
+        log.fine("Creating savepoint for editable $editableId")
         Sql db = createSql()
         try {
             NotebookEditable result = null
@@ -235,7 +235,7 @@ class PostgresNotebookClient {
      * @param label the new label. If null then clears the label.
      */
     public NotebookSavepoint setSavepointLabel(Long notebookId, Long savepointId, String label) {
-        log.info("Setting label for $notebookId:$savepointId to $label")
+        log.fine("Setting label for $notebookId:$savepointId to $label")
         Sql db = createSql()
         try {
             NotebookSavepoint result = null
@@ -310,49 +310,43 @@ class PostgresNotebookClient {
         }
     }
 
-    private doFetchTextVar(Sql db, Long sourceId, String variableName, String key) {
-
-        // TODO - this can probably be optimised significantly
-
-        log.info("Looking for variable $variableName:$key in source $sourceId")
-
-        def row = db.firstRow("""\
-                |SELECT val_text FROM users.nb_variable
-                |  WHERE source_id=:sourceId AND var_name=:variableName AND var_key=:key""".stripMargin(),
-                [sourceId: sourceId, variableName: variableName, key: key ?: DEFAULT_KEY])
-
-        if (row == null) {
-            log.info("Variable $variableName:$key not found in source $sourceId")
-            row = db.firstRow("SELECT parent_id FROM users.nb_version WHERE id=$sourceId")
-            if (row != null) {
-                Long parent = row[0]
-                if (parent == null) {
-                    log.info("No parent defined for source $sourceId, so variable $variableName:$key does not exist")
-                    return null
-                } else {
-                    log.info("Looking for variable $variableName:$key in parent $parent")
-                    return doFetchTextVar(db, parent, variableName, key)
-                }
-            } else {
-                log.info("No row found for $sourceId - probably invalid ID?")
-                return null;
-            }
-        } else {
-            String result = row[0]
-            log.info("Found variable: $result")
-            return result
-        }
+    /** Read the variable with the default key for the notebook version with the specified label.
+     *
+     * @param notebookId
+     * @param label
+     * @param variableName
+     * @return
+     */
+    public String readTextValueForLabel(Long notebookId, String label, String variableName) {
+        readTextValueForLabel(notebookId, label, variableName, null)
     }
 
-    /**
+    /** Read the variable with the specified key for the notebook version with the specified label.
      *
+     * @param notebookId
      * @param label
      * @param variableName
      * @param key
      * @return
      */
-    public String readTextValue(String label, String variableName, String key) {
-        return null;
+    public String readTextValueForLabel(Long notebookId, String label, String variableName, String key) {
+        log.info("Reading text variable $variableName:$key for label $label")
+        Sql db = new Sql(dataSource.getConnection())
+        try {
+            String result = null
+            db.withTransaction {
+                Long sourceId = fetchSourceIdForLabel(db, notebookId, label)
+                if (sourceId == null) {
+                    log.info("Label $label not defined for notebook $notebookId")
+                } else {
+                    log.fine("Label $label resolved to source $sourceId")
+                    result = doFetchTextVar(db, sourceId, variableName, key)
+                }
+            }
+            return result
+        } finally {
+            db.close()
+        }
     }
 
     /** Save this variable using the default key name of 'default'.
@@ -389,7 +383,6 @@ class PostgresNotebookClient {
                 |    SET val_text=EXCLUDED.val_text, updated=NOW()
                 |      WHERE t.source_id=EXCLUDED.source_id AND t.cell_name=EXCLUDED.cell_name AND t.var_name=EXCLUDED.var_name AND t.var_key=EXCLUDED.var_key""".stripMargin(),
                     [sourceId: editableId, cellName: cellName, variableName: variableName, key: key, value: value])
-
 
         } finally {
             db.close()
@@ -439,11 +432,9 @@ class PostgresNotebookClient {
     }
 
 
-    private
-    static String SQL_NB_FETCH = "SELECT n.*, u.username FROM users.nb_descriptor n JOIN users.users u ON u.id = n.owner_id"
+    private static String SQL_NB_FETCH = "SELECT n.*, u.username FROM users.nb_descriptor n JOIN users.users u ON u.id = n.owner_id"
     private static String SQL_NB_FETCH_BY_ID = SQL_NB_FETCH + " WHERE n.id = :notebookId"
-    private
-    static String SQL_NB_FETCH_BY_USERNAME = SQL_NB_FETCH + " WHERE u.username = :username ORDER BY n.created DESC"
+    private static String SQL_NB_FETCH_BY_USERNAME = SQL_NB_FETCH + " WHERE u.username = :username ORDER BY n.created DESC"
 
     private NotebookDescriptor fetchNotebookDescriptorById(Sql db, Long notebookId) {
         def data = db.firstRow(SQL_NB_FETCH_BY_ID, [notebookId: notebookId])
@@ -473,7 +464,7 @@ class PostgresNotebookClient {
 (:notebookId, :parentId, :userId, NOW(), NOW(), 'E')"""
                 , [notebookId: notebookId, userId: userId, parentId: parentId, userId: userId])
         Long id = findInsertedId(keys)
-        log.info("Created editable of ID $id")
+        log.fine("Created editable of ID $id")
         return id
     }
 
@@ -533,10 +524,48 @@ class PostgresNotebookClient {
     }
 
     private NotebookSavepoint buildNotebookSavepoint(def data) {
-        log.info("Building savepoint: $data")
+        log.finer("Building savepoint: $data")
         //                           Long id,  Long notebookId  Long parentId, String owner, Date createdDate,Date updatedDate, String description, String label, String content
         return new NotebookSavepoint(data.id, data.notebook_id, data.parent_id, data.username, data.created, data.updated, data.description, data.label, data.nb_definition)
     }
 
+    private doFetchTextVar(Sql db, Long sourceId, String variableName, String key) {
+
+        // TODO - this can probably be optimised significantly
+
+        log.fine("Looking for variable $variableName:$key in source $sourceId")
+
+        def row = db.firstRow("""\
+                |SELECT val_text FROM users.nb_variable
+                |  WHERE source_id=:sourceId AND var_name=:variableName AND var_key=:key""".stripMargin(),
+                [sourceId: sourceId, variableName: variableName, key: key ?: DEFAULT_KEY])
+
+        if (row == null) {
+            log.fine("Variable $variableName:$key not found in source $sourceId")
+            row = db.firstRow("SELECT parent_id FROM users.nb_version WHERE id=$sourceId")
+            if (row != null) {
+                Long parent = row[0]
+                if (parent == null) {
+                    log.fine("No parent defined for source $sourceId, so variable $variableName:$key does not exist")
+                    return null
+                } else {
+                    log.fine("Looking for variable $variableName:$key in parent $parent")
+                    return doFetchTextVar(db, parent, variableName, key)
+                }
+            } else {
+                log.info("No row found for $sourceId - probably invalid ID?")
+                return null;
+            }
+        } else {
+            String result = row[0]
+            log.fine("Found variable: $result")
+            return result
+        }
+    }
+
+    private Long fetchSourceIdForLabel(Sql db, Long notebookId, String label) {
+        def row = db.firstRow("SELECT id FROM users.nb_version WHERE notebook_id=$notebookId AND label=$label")
+        return (row ? row[0] : null)
+    }
 
 }
