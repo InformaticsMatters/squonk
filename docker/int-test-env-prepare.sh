@@ -19,5 +19,5 @@ do
     attempt=$(( $attempt + 1 ))
 done
 
-sleep 1
+sleep 2
 

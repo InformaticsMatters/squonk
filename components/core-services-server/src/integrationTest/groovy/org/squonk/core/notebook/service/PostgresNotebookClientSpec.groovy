@@ -1,6 +1,5 @@
 package org.squonk.core.notebook.service
 
-import com.ibm.db2.jcc.am.SqlException
 import org.postgresql.util.PSQLException
 import org.squonk.core.util.TestUtils
 import org.squonk.notebook.api2.NotebookDescriptor
@@ -20,6 +19,8 @@ class PostgresNotebookClientSpec extends Specification {
     @Shared List<NotebookDescriptor> notebooks
 
     static String JSON_TERM = '{"hello": "world"}'
+    static String LONG_VARIABLE_1 = 'a potentially very long variable' * 10
+    static String LONG_VARIABLE_2 = 'another potentially very long variable' * 10
 
 
 
@@ -147,7 +148,7 @@ class PostgresNotebookClientSpec extends Specification {
         thrown(PSQLException)
     }
 
-    void "variable insert no key"() {
+    void "text variable insert no key"() {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
@@ -159,7 +160,7 @@ class PostgresNotebookClientSpec extends Specification {
 
     }
 
-    void "variable insert with key"() {
+    void "text variable insert with key"() {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
@@ -171,7 +172,7 @@ class PostgresNotebookClientSpec extends Specification {
 
     }
 
-    void "variable update no key"() {
+    void "text variable update no key"() {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
@@ -185,7 +186,7 @@ class PostgresNotebookClientSpec extends Specification {
 
     }
 
-    void "variable update with key"() {
+    void "text variable update with key"() {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
@@ -195,6 +196,56 @@ class PostgresNotebookClientSpec extends Specification {
         client.createSql().firstRow("SELECT count(*) from users.nb_variable")[0] == 3
         client.createSql().firstRow("SELECT val_text from users.nb_variable WHERE var_name='var1' AND var_key='key' AND source_id=${eds[0].id}")[0] == 'val4'
 
+    }
+
+
+
+    void "stream variable insert no key"() {
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
+        client.writeStreamValue(eds[0].id, 'cell1', 'stream1', new ByteArrayInputStream(LONG_VARIABLE_1.getBytes()), null)
+        int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
+
+        then:
+        (afterCount - beforeCount) == 1
+    }
+
+    void "stream variable insert with key"() {
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
+        client.writeStreamValue(eds[0].id, 'cell1', 'stream2', new ByteArrayInputStream(LONG_VARIABLE_1.getBytes()), "key")
+        int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
+
+        then:
+        (afterCount - beforeCount) == 1
+    }
+
+    void "stream variable update no key"() {
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
+        client.writeStreamValue(eds[0].id, 'cell1', 'stream1', new ByteArrayInputStream(LONG_VARIABLE_2.getBytes()), null)
+        int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
+
+        then:
+        afterCount == beforeCount
+    }
+
+    void "stream variable update with key"() {
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
+        client.writeStreamValue(eds[0].id, 'cell1', 'stream2', new ByteArrayInputStream(LONG_VARIABLE_2.getBytes()), "key")
+        int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
+
+        then:
+        afterCount == beforeCount
     }
 
     void "read text variable with key correct version"() {
@@ -219,7 +270,31 @@ class PostgresNotebookClientSpec extends Specification {
         var2 == 'another val'
     }
 
-    void "read text variable previous versions"() {
+    void "read stream variable with key correct version"() {
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        InputStream var1 = client.readStreamValue(eds[0].id, 'stream2', 'key')
+        String s = var1.text
+        var1.close()
+
+        then:
+        s == LONG_VARIABLE_2
+
+    }
+
+    void "read stream variable no key correct version"() {
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        InputStream var1 = client.readStreamValue(eds[0].id, 'stream1')
+        String s = var1.text
+
+        then:
+        s == LONG_VARIABLE_2
+    }
+
+    void "read text variable previous version"() {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
@@ -237,6 +312,19 @@ class PostgresNotebookClientSpec extends Specification {
         var2 == 'val3'
     }
 
+    void "read stream variable previous version"() {
+
+        when:
+        List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+
+        InputStream var1 = client.readStreamValue(eds[0].id, 'stream1')
+        String s = var1.text
+        var1.close()
+
+        then:
+        s == LONG_VARIABLE_2
+    }
+
     void "read text variable for label"() {
 
         when:
@@ -246,6 +334,5 @@ class PostgresNotebookClientSpec extends Specification {
         then:
         var == 'val3'
     }
-
 
 }

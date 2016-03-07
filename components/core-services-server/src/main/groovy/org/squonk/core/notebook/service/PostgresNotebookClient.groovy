@@ -8,6 +8,8 @@ import org.squonk.notebook.api2.NotebookEditable
 import org.squonk.notebook.api2.NotebookSavepoint
 
 import javax.sql.DataSource
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 
 /**
  * Created by timbo on 29/02/16.
@@ -255,14 +257,14 @@ class PostgresNotebookClient {
         }
     }
 
-    /** Remove this savepoint, shortening the history as appropriate (and deleting variables associated ONLY with this savepoint).
-     * NOTE: this method is not yet implemented.
-     *
-     * @param savepointId
-     */
-    public void deleteSavepoint(Long notebookId, Long savepointId) {
-        throw new UnsupportedOperationException("NYI")
-    }
+//    /** Remove this savepoint, shortening the history as appropriate (and deleting variables associated ONLY with this savepoint).
+//     * NOTE: this method is not yet implemented.
+//     *
+//     * @param savepointId
+//     */
+//    public void deleteSavepoint(Long notebookId, Long savepointId) {
+//        throw new UnsupportedOperationException("NYI")
+//    }
 
     // ------------------- variable handling methods -----------------------
 
@@ -298,11 +300,11 @@ class PostgresNotebookClient {
      */
     public String readTextValue(Long sourceId, String variableName, String key) {
         log.info("Reading text variable $variableName:$key for $sourceId")
-        Sql db = new Sql(dataSource.getConnection())
+        Sql db = createSql()
         try {
             String result = null
             db.withTransaction {
-                result = doFetchTextVar(db, sourceId, variableName, key)
+                result = doFetchVar(db, sourceId, variableName, key, true)
             }
             return result
         } finally {
@@ -331,22 +333,7 @@ class PostgresNotebookClient {
      */
     public String readTextValueForLabel(Long notebookId, String label, String variableName, String key) {
         log.info("Reading text variable $variableName:$key for label $label")
-        Sql db = new Sql(dataSource.getConnection())
-        try {
-            String result = null
-            db.withTransaction {
-                Long sourceId = fetchSourceIdForLabel(db, notebookId, label)
-                if (sourceId == null) {
-                    log.info("Label $label not defined for notebook $notebookId")
-                } else {
-                    log.fine("Label $label resolved to source $sourceId")
-                    result = doFetchTextVar(db, sourceId, variableName, key)
-                }
-            }
-            return result
-        } finally {
-            db.close()
-        }
+        return doReadValueForLabel(notebookId, label, variableName, key, true)
     }
 
     /** Save this variable using the default key name of 'default'.
@@ -373,7 +360,7 @@ class PostgresNotebookClient {
      */
     public void writeTextValue(Long editableId, String cellName, String variableName, String value, String key) {
         log.info("Writing text variable $variableName:$key for $editableId")
-        Sql db = new Sql(dataSource.getConnection())
+        Sql db = createSql()
         try {
 
             db.executeInsert("""\
@@ -382,22 +369,38 @@ class PostgresNotebookClient {
                 |  ON CONFLICT ON CONSTRAINT nbvar_uq DO UPDATE
                 |    SET val_text=EXCLUDED.val_text, updated=NOW()
                 |      WHERE t.source_id=EXCLUDED.source_id AND t.cell_name=EXCLUDED.cell_name AND t.var_name=EXCLUDED.var_name AND t.var_key=EXCLUDED.var_key""".stripMargin(),
-                    [sourceId: editableId, cellName: cellName, variableName: variableName, key: key, value: value])
+                    [sourceId: editableId, cellName: cellName, variableName: variableName, key: (key ?: DEFAULT_KEY), value: value])
 
         } finally {
             db.close()
         }
     }
 
-    /**
+    public InputStream readStreamValue(Long sourceId, String variableName) {
+        return readStreamValue(sourceId, variableName, null)
+    }
+
+    /** Read a stream variable
      *
      * @param sourceId Can be a editable ID or a savepoint ID
      * @param variableName
      * @param key
-     * @return
+     * @return An InputStream to the data. Ensure that this is closed when finished
      */
     public InputStream readStreamValue(Long sourceId, String variableName, String key) {
-        return null;
+        log.info("Reading stream variable $variableName:$key for $sourceId")
+        // not entirely clear why this works as the connection is closed immediately but the InputStream is still readable.
+        Sql db = createSql()
+        try {
+            InputStream result = null
+            db.withTransaction {
+                log.info("Fetching InputStream for $sourceId, $variableName, $key")
+                result = doFetchVar(db, sourceId, variableName, key, false)
+            }
+            return result
+        } finally {
+            db.close()
+        }
     }
 
     /**
@@ -407,8 +410,9 @@ class PostgresNotebookClient {
      * @param key
      * @return
      */
-    public InputStream readStreamValue(String label, String variableName, String key) {
-
+    public InputStream readStreamValueForLabel(Long notebookId, String label, String variableName, String key) {
+        log.info("Reading stream variable $variableName:$key for label $label")
+        return doReadValueForLabel(notebookId, label, variableName, key, false)
     }
 
     /**
@@ -418,8 +422,30 @@ class PostgresNotebookClient {
      * @param key
      * @param value
      */
-    public void writeStreamValue(Long editableId, String cellName, String variableName, String key, InputStream value) {
+    public void writeStreamValue(Long editableId, String cellName, String variableName, InputStream value, String key) {
+        log.info("Writing stream variable $variableName:$key for $editableId")
+        Sql db = new Sql(dataSource.getConnection()) {
+            protected void setParameters(List<Object> params, PreparedStatement ps) {
+                log.info("setParameters() ${params.size()}")
+                ps.setLong(1, params[0])
+                ps.setString(2, params[1])
+                ps.setString(3, params[2])
+                ps.setString(4, params[3])
+                ps.setBinaryStream(5, params[4])
+            }
+        }
+        try {
+            db.executeInsert("""\
+                |INSERT INTO users.nb_variable AS t (source_id, cell_name, var_name, var_key, created, updated, val_blob)
+                |  VALUES (?, ?, ?, ?, NOW(), NOW(), ?)
+                |  ON CONFLICT ON CONSTRAINT nbvar_uq DO UPDATE
+                |    SET val_blob=EXCLUDED.val_blob, updated=NOW()
+                |      WHERE t.source_id=EXCLUDED.source_id AND t.cell_name=EXCLUDED.cell_name AND t.var_name=EXCLUDED.var_name AND t.var_key=EXCLUDED.var_key""".stripMargin(),
+                    [editableId, cellName, variableName, key ?: DEFAULT_KEY, value])
 
+        } finally {
+            db.close()
+        }
     }
 
     // ------------------- private implementation methods -----------------------
@@ -501,7 +527,6 @@ class PostgresNotebookClient {
         return new NotebookEditable(data.id, data.notebook_id, data.parent_id, data.username, data.created, data.updated, data.nb_definition)
     }
 
-
     private static String SQL_SP_FETCH = """\
     |SELECT s.id, s.notebook_id, s.parent_id, s.created, s.updated, s.description, s.label, s.nb_definition::text, u.username
     |  FROM users.nb_version s
@@ -529,37 +554,69 @@ class PostgresNotebookClient {
         return new NotebookSavepoint(data.id, data.notebook_id, data.parent_id, data.username, data.created, data.updated, data.description, data.label, data.nb_definition)
     }
 
-    private doFetchTextVar(Sql db, Long sourceId, String variableName, String key) {
+    private Object doFetchVar(Sql db, Long sourceId, String variableName, String key, boolean isText) {
 
         // TODO - this can probably be optimised significantly
 
-        log.fine("Looking for variable $variableName:$key in source $sourceId")
+        log.fine("Looking for ${isText ? 'text' : 'stream'} variable $variableName:$key in source $sourceId")
 
-        def row = db.firstRow("""\
-                |SELECT val_text FROM users.nb_variable
-                |  WHERE source_id=:sourceId AND var_name=:variableName AND var_key=:key""".stripMargin(),
-                [sourceId: sourceId, variableName: variableName, key: key ?: DEFAULT_KEY])
+        def result = null
+        boolean found = false
 
-        if (row == null) {
-            log.fine("Variable $variableName:$key not found in source $sourceId")
-            row = db.firstRow("SELECT parent_id FROM users.nb_version WHERE id=$sourceId")
+        String sql = """\
+                |SELECT ${isText ? 'val_text' : 'val_blob'} FROM users.nb_variable
+                |  WHERE source_id=:sourceId AND var_name=:variableName AND var_key=:key""".stripMargin()
+        log.fine("SQL: $sql")
+
+        db.query(sql, [sourceId: sourceId, variableName: variableName, key: key ?: DEFAULT_KEY]) { ResultSet rs ->
+
+            if (rs.next()) {
+                found = true
+                if (isText) {
+                    result = rs.getString(1)
+                } else {
+                    result = rs.getBinaryStream(1)
+                }
+            }
+        }
+
+        if (found) {
+            return result
+        } else {
+            log.info("Variable $variableName:$key not found in source $sourceId")
+            def row = db.firstRow("SELECT parent_id FROM users.nb_version WHERE id=?", [sourceId])
             if (row != null) {
                 Long parent = row[0]
                 if (parent == null) {
-                    log.fine("No parent defined for source $sourceId, so variable $variableName:$key does not exist")
+                    log.info("No parent defined for source $sourceId, so variable $variableName:$key does not exist")
                     return null
                 } else {
-                    log.fine("Looking for variable $variableName:$key in parent $parent")
-                    return doFetchTextVar(db, parent, variableName, key)
+                    log.info("Looking for variable $variableName:$key in parent $parent")
+                    return doFetchVar(db, parent, variableName, key, isText)
                 }
             } else {
                 log.info("No row found for $sourceId - probably invalid ID?")
                 return null;
             }
-        } else {
-            String result = row[0]
-            log.fine("Found variable: $result")
+        }
+    }
+
+    private Object doReadValueForLabel(Long notebookId, String label, String variableName, String key, isText) {
+        Sql db = new Sql(dataSource.getConnection())
+        try {
+            String result = null
+            db.withTransaction {
+                Long sourceId = fetchSourceIdForLabel(db, notebookId, label)
+                if (sourceId == null) {
+                    log.info("Label $label not defined for notebook $notebookId")
+                } else {
+                    log.fine("Label $label resolved to source $sourceId")
+                    result = doFetchVar(db, sourceId, variableName, key, isText)
+                }
+            }
             return result
+        } finally {
+            db.close()
         }
     }
 
