@@ -20,7 +20,7 @@ flyway {
     url =      'jdbc:postgresql://' +
             (System.getenv('SQUONK_DB_SERVER') ?: 'localhost') + ':5432/squonk'
     user = 'postgres'
-    password = 'postgres'
+    password = System.getenv('POSTGRES_PASSWORD') ?: 'postgres'
     schemas = ['users']
 
     println "Using DB URL of $url"
