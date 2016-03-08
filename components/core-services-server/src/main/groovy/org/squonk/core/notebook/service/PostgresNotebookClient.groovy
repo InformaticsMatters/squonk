@@ -11,27 +11,18 @@ import javax.sql.DataSource
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 
-/**
+/** NotebookClient that persists data in a PostgreSQL database
  * Created by timbo on 29/02/16.
  */
 @Log
-class PostgresNotebookClient {
+class PostgresNotebookClient implements NotebookClient {
 
     public final static PostgresNotebookClient INSTANCE = new PostgresNotebookClient();
-    public static final String DEFAULT_KEY = 'default'
-
-    private final Object lock = new Object();
 
     protected final DataSource dataSource = Utils.createDataSource()
 
-    protected Sql createSql() {
-        new Sql(dataSource.getConnection())
-    }
-
-    /** create a new notebook
-     *
-     * @param username
-     * @return
+    /**
+     * {@inheritDoc}
      */
     public NotebookDescriptor createNotebook(String username, String notebookName, String notebookDescription) {
         Sql db = createSql()
@@ -53,7 +44,6 @@ class PostgresNotebookClient {
                 // TODO - this can be made more efficient?
                 Long userId = fetchIdForUsername(db, username)
                 Long editableId = insertNotebookEditable(db, result.id, null, userId)
-
             }
             return result
         } finally {
@@ -61,10 +51,8 @@ class PostgresNotebookClient {
         }
     }
 
-    /** all notebooks the user has access to
-     *
-     * @param username
-     * @return
+    /**
+     * {@inheritDoc}
      */
     public List<NotebookDescriptor> listNotebooks(String username) {
         Sql db = createSql()
@@ -79,12 +67,8 @@ class PostgresNotebookClient {
         }
     }
 
-    //NotebookDescriptor fetchNotebookDefinition(Long definitionId);       // optional?
-
-    /** All all editables that belong to this user for this notebook
-     *
-     * @param notebookId
-     * @return
+    /**
+     * {@inheritDoc}
      */
     public List<NotebookEditable> listEditables(Long notebookId, String username) {
         Sql db = createSql()
@@ -99,13 +83,8 @@ class PostgresNotebookClient {
         }
     }
 
-    //NotebookEditable fetchNotebookEditable(Long editableId);             // optional?
-
-    /** Create a new editable based on this parent.
-     *
-     * @param notebookId The ID of the notebook
-     * @param parentId The ID of the parent snapshot
-     * @param username The user
+    /**
+     * {@inheritDoc}
      */
     public NotebookEditable createNotebookEditable(Long notebookId, Long parentId, String username) {
         log.fine("Creating editable for notebook $notebookId with parent $parentId for $username")
@@ -123,10 +102,8 @@ class PostgresNotebookClient {
         }
     }
 
-    /** update the definition of this editable
-     *
-     * @param editableId
-     * @param json The contents of the notebook
+    /**
+     * {@inheritDoc}
      */
     public NotebookEditable updateNotebookEditable(Long notebookId, Long editableId, String json) {
         Sql db = createSql()
@@ -145,15 +122,8 @@ class PostgresNotebookClient {
         }
     }
 
-    /** Create a new savepoint that is inserted in the history between this NotebookEditable and its parent.
-     * This is done by creating a new editable whose parent is the current one, and then converting the current editable
-     * to a savepoint. The savepoint cannot then be further modified (except for updating its description and label).
-     * What is returned in the NEW editable, as that is what will be continued to be worked on. If your want the savepoint
-     * then fetch it separately using the ID of the original editable.
-     *
-     * @param notebookId
-     * @param editableId
-     * @return The new Editable that is created.
+    /**
+     * {@inheritDoc}
      */
     public NotebookEditable createSavepoint(Long notebookId, Long editableId) {
         log.fine("Creating savepoint for editable $editableId")
@@ -189,10 +159,8 @@ class PostgresNotebookClient {
         }
     }
 
-    /** Get all savepoints for this notebook.
-     *
-     * @param notebookId
-     * @return
+    /**
+     * {@inheritDoc}
      */
     public List<NotebookSavepoint> listSavepoints(Long notebookId) {
         Sql db = createSql()
@@ -207,9 +175,8 @@ class PostgresNotebookClient {
         }
     }
 
-    /** gives this savepoint a description that can be helpful to describe its purpose
-     *
-     * @param description
+    /**
+     * {@inheritDoc}
      */
     public NotebookSavepoint setSavepointDescription(Long notebookId, Long savepointId, String description) {
         Sql db = createSql()
@@ -231,10 +198,8 @@ class PostgresNotebookClient {
         }
     }
 
-    /** Gives this savepoint a specific label. If a savepoint for this notebook with the same label already exists it MUST
-     * first be cleared (set to null or another value) as duplicate labels are not permitted
-     *
-     * @param label the new label. If null then clears the label.
+    /**
+     * {@inheritDoc}
      */
     public NotebookSavepoint setSavepointLabel(Long notebookId, Long savepointId, String label) {
         log.fine("Setting label for $notebookId:$savepointId to $label")
@@ -257,26 +222,7 @@ class PostgresNotebookClient {
         }
     }
 
-//    /** Remove this savepoint, shortening the history as appropriate (and deleting variables associated ONLY with this savepoint).
-//     * NOTE: this method is not yet implemented.
-//     *
-//     * @param savepointId
-//     */
-//    public void deleteSavepoint(Long notebookId, Long savepointId) {
-//        throw new UnsupportedOperationException("NYI")
-//    }
-
     // ------------------- variable handling methods -----------------------
-
-    /* reading and writing variables
-    *
-    * This differs from current API in:
-    * 1. the producer cell is not present - variable names are unique within a notebook and I should not need to know who produced the data to be able to retrieve it.
-    * 2. a key property is introduced to allow to distinguish multi-attribute variables (e.g. Dataset and its metadata)
-    * 3. variables can be retrieved, but not stored for NotebookSavepoints
-    * 4. variable can be retrieved using the "label" of a NotebookSavepoint
-    * 5. read/Write for Integer is removed as that can be handled as text, and we don't want to introduce API methods for every Java data type.
-     */
 
 //            id              SERIAL PRIMARY KEY,
 //            source_id       INT NOT NULL,
@@ -286,17 +232,8 @@ class PostgresNotebookClient {
 //            val_txt         TEXT,
 //            val_blob        BYTEA,
 
-
-    public String readTextValue(Long sourceId, String variableName) {
-        readTextValue(sourceId, variableName, null)
-    }
-
     /**
-     *
-     * @param sourceId Can be a editable ID or a savepoint ID
-     * @param variableName
-     * @param key
-     * @return
+     * {@inheritDoc}
      */
     public String readTextValue(Long sourceId, String variableName, String key) {
         log.info("Reading text variable $variableName:$key for $sourceId")
@@ -312,51 +249,16 @@ class PostgresNotebookClient {
         }
     }
 
-    /** Read the variable with the default key for the notebook version with the specified label.
-     *
-     * @param notebookId
-     * @param label
-     * @param variableName
-     * @return
-     */
-    public String readTextValueForLabel(Long notebookId, String label, String variableName) {
-        readTextValueForLabel(notebookId, label, variableName, null)
-    }
-
-    /** Read the variable with the specified key for the notebook version with the specified label.
-     *
-     * @param notebookId
-     * @param label
-     * @param variableName
-     * @param key
-     * @return
+    /**
+     * {@inheritDoc}
      */
     public String readTextValueForLabel(Long notebookId, String label, String variableName, String key) {
         log.info("Reading text variable $variableName:$key for label $label")
         return doReadValueForLabel(notebookId, label, variableName, key, true)
     }
 
-    /** Save this variable using the default key name of 'default'.
-     * Use this for single component variables.
-     *
-     * @param editableId
-     * @param cellName
-     * @param variableName
-     */
-    public void writeTextValue(Long editableId, String cellName, String variableName, String value) {
-        writeTextValue(editableId, cellName, variableName, value, DEFAULT_KEY)
-    }
-
-    /** Save this variable using the specified key.
-     * Use this for multi component variables where each part is saved under a different key name, but with the same variable name.
-     * If the combination of editableId, variableName and key already exists this is an update operation, if not then it
-     * inserts a new row.
-     *
-     * @param editableId
-     * @param cellName
-     * @param variableName
-     * @param value
-     * @param key
+    /**
+     * {@inheritDoc}
      */
     public void writeTextValue(Long editableId, String cellName, String variableName, String value, String key) {
         log.info("Writing text variable $variableName:$key for $editableId")
@@ -376,16 +278,8 @@ class PostgresNotebookClient {
         }
     }
 
-    public InputStream readStreamValue(Long sourceId, String variableName) {
-        return readStreamValue(sourceId, variableName, null)
-    }
-
-    /** Read a stream variable
-     *
-     * @param sourceId Can be a editable ID or a savepoint ID
-     * @param variableName
-     * @param key
-     * @return An InputStream to the data. Ensure that this is closed when finished
+    /**
+     * {@inheritDoc}
      */
     public InputStream readStreamValue(Long sourceId, String variableName, String key) {
         log.info("Reading stream variable $variableName:$key for $sourceId")
@@ -404,11 +298,7 @@ class PostgresNotebookClient {
     }
 
     /**
-     *
-     * @param label
-     * @param variableName
-     * @param key
-     * @return
+     * {@inheritDoc}
      */
     public InputStream readStreamValueForLabel(Long notebookId, String label, String variableName, String key) {
         log.info("Reading stream variable $variableName:$key for label $label")
@@ -416,11 +306,7 @@ class PostgresNotebookClient {
     }
 
     /**
-     *
-     * @param editableId
-     * @param variableName
-     * @param key
-     * @param value
+     * {@inheritDoc}
      */
     public void writeStreamValue(Long editableId, String cellName, String variableName, InputStream value, String key) {
         log.info("Writing stream variable $variableName:$key for $editableId")
@@ -450,13 +336,16 @@ class PostgresNotebookClient {
 
     // ------------------- private implementation methods -----------------------
 
+    private Sql createSql() {
+        new Sql(dataSource.getConnection())
+    }
+
     private Long findInsertedId(def keys) {
         if (keys != null && keys.size() == 1) {
             return keys[0][0]
         }
         return null
     }
-
 
     private static String SQL_NB_FETCH = "SELECT n.*, u.username FROM users.nb_descriptor n JOIN users.users u ON u.id = n.owner_id"
     private static String SQL_NB_FETCH_BY_ID = SQL_NB_FETCH + " WHERE n.id = :notebookId"
