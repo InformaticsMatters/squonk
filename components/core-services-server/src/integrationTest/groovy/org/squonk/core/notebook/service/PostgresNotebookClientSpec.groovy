@@ -104,6 +104,7 @@ class PostgresNotebookClientSpec extends Specification {
         sps[0].id == eds[0].id
         sps[0].creator == TestUtils.TEST_USERNAME
         sps[0].content == eds[0].content
+        sps[0].createdDate <= nue.createdDate
     }
 
     void "savepoint description"() {
