@@ -15,7 +15,7 @@ RUN unzip -d            /usr/local/tomcat/webapps/ROOT /usr/local/tomcat/webapps
  rm -f                  /usr/local/tomcat/webapps/ROOT.war
 
 # remove unused or conflicting jars
-RUN cd /usr/local/tomcat/webapps/ROOT/WEB-INF/lib && rm bcprov-jdk15-1.46.jar commons-codec-*.jar commons-logging-*.jar httpclient*.jar httpcore*.jar keycloak*.jar
+RUN cd /usr/local/tomcat/webapps/ROOT/WEB-INF/lib && rm bcprov-jdk15-1.46.jar commons-codec-*.jar commons-logging-*.jar httpclient*.jar httpcore*.jar keycloak*.jar jackson-annotations-2.6.4.jar jackson-core-2.6.4.jar jackson-databind-2.6.4.jar servlet-api-3.0.jar
 
 
 COPY web.xml /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml

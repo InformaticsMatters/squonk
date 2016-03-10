@@ -1,2 +1,5 @@
-The following jars are part of the keycloak distro but were removed or upgraded:
-commons-codec-1.6.jar  commons-logging-1.1.3.jar  httpclient-4.3.6.jar  httpcore-4.3.3.jar
+The following jars were upgraded from what is provided in keycloak 1.9.1.FINAL:
+jackson-annotations, jackson-core, jackson-databind upgraded from 2.5.4 to 2.6.4
+bcprov-jdk15on and bcpkix-jdk15on upgraded from 1.5.2 to 1.5.3
+
+

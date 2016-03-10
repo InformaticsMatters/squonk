@@ -11,9 +11,9 @@ do
     
 echo "processing $c ..."
 
-docker exec -it $c bash -c "rabbitmqctl delete_vhost /squonk"
+#docker exec -it $c bash -c "rabbitmqctl delete_vhost /squonk"
 docker exec -it $c bash -c "rabbitmqctl delete_user guest"
-docker exec -it $c bash -c "rabbitmqctl delete_user squonk"
+#docker exec -it $c bash -c "rabbitmqctl delete_user squonk"
 
 docker exec -it $c bash -c "rabbitmqctl add_vhost /squonk"
 echo "  created /squonk virtualhost"

@@ -1,9 +1,13 @@
 package org.squonk.execution.steps.impl;
 
+import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
 import com.im.lac.types.MoleculeObject;
+import org.squonk.core.CommonConstants;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.dataset.DatasetUtils;
+import org.squonk.dataset.IncompatibleMetadataException;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.PersistenceType;
@@ -52,10 +56,8 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
         Boolean preserveStructure = getOption(OPTION_PRESERVE_STRUCTURE, Boolean.class, true);
-        DatasetMetadata<MoleculeObject> metadata = dataset.getMetadata();
-        if (metadata == null) {
-            metadata = new DatasetMetadata<>(MoleculeObject.class);
-        }
+        DatasetMetadata<MoleculeObject> requestMetadata = dataset.getMetadata();
+
         //LOG.info("Initial metadata: " + metadata);
 
         Map<UUID, MoleculeObject> cache = new ConcurrentHashMap<>();
@@ -70,24 +72,48 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
 
         InputStream input = JsonHandler.getInstance().marshalStreamToJsonArray(stream, true);
 
-        Map<String, Object> headers = new HashMap<>();
-        headers.put("Accept-Encoding", "gzip");
+        Map<String, Object> requestHeaders = new HashMap<>();
+        requestHeaders.put("Accept-Encoding", "gzip");
         
         // send for execution
-        //TODO - read the response headers and get any metadata provided by the service and merge it with the source metadata
-        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, headers, params);
+        Map<String, Object> responseHeaders = new HashMap<>();
+        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, requestHeaders, responseHeaders, params);
+
 
 //        String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(output), 1000);
 //        //LOG.info("Data: " + data);
 //        output = new ByteArrayInputStream(data.getBytes());
 
-        // handle results
-        DatasetMetadata respMetadata = new DatasetMetadata(MoleculeObject.class);
-        Dataset<MoleculeObject> outputMols = JsonHandler.getInstance().unmarshalDataset(respMetadata, IOUtils.getGunzippedInputStream(output));
+        // merge the metadata
+        String responseMetadataJson = (String)responseHeaders.get(CamelCommonConstants.HEADER_METADATA);
+        DatasetMetadata responseMetadata = null;
+        if (responseMetadataJson == null) {
+            responseMetadata = new DatasetMetadata(MoleculeObject.class);
+        } else {
+            responseMetadata = JsonHandler.getInstance().objectFromJson(responseMetadataJson,DatasetMetadata.class);
+        }
+        DatasetMetadata mergedMetadata = null;
+        if (requestMetadata == null && responseMetadata == null) {
+            mergedMetadata = new DatasetMetadata(MoleculeObject.class);
+        } else if (requestMetadata != null && responseMetadata != null) {
+            try {
+                mergedMetadata = DatasetUtils.mergeDatasetMetadata(requestMetadata, responseMetadata);
+            } catch (IncompatibleMetadataException ex) {
+                mergedMetadata = new DatasetMetadata(MoleculeObject.class);
+            }
+        } else if  (requestMetadata != null) {
+            mergedMetadata = requestMetadata;
+        } else if  (responseMetadata != null) {
+            mergedMetadata = responseMetadata;
+        }
+
+
+        Dataset<MoleculeObject> outputMols = JsonHandler.getInstance().unmarshalDataset(mergedMetadata, IOUtils.getGunzippedInputStream(output));
         if (outputMols.getMetadata() != null) {
             LOG.info("Response metadata: " + outputMols.getMetadata());
         }
 
+        // merge the results back into the original data
         Stream<MoleculeObject> resultMols = outputMols.getStream().map(m -> {
             //LOG.info("Handling: " + m);
             UUID uuid = m.getUUID();
@@ -111,7 +137,7 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
             }
         });
 
-        Dataset<MoleculeObject> results = new Dataset<>(MoleculeObject.class, resultMols, metadata);
+        Dataset<MoleculeObject> results = new Dataset<>(MoleculeObject.class, resultMols, mergedMetadata);
 
         createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, PersistenceType.DATASET, varman);
     }

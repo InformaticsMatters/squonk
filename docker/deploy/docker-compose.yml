@@ -141,6 +141,7 @@ portal:
     - coreservices:coreservices
     environment:
         KEYCLOAK_SERVER_URL:
+        PORTAL_SERVER_URL:
         SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
 
         

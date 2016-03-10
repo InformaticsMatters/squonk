@@ -49,7 +49,7 @@ keycloak_url="https://${PRIVATE_HOST}:8443/auth"
 echo "keycloak_url: $keycloak_url"
 
 # substitute the realm json file
-sed "s/192.168.59.103/${PUBLIC_HOST}/g" squonk-realm.json > yyy.json
+sed "s/__server_name__/${PUBLIC_HOST}/g" squonk-realm.json > yyy.json
 
 
 attempt=0

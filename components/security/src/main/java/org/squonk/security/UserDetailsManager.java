@@ -2,6 +2,7 @@ package org.squonk.security;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 

@@ -16,11 +16,7 @@ import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.util.IOUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -172,6 +168,10 @@ public class JsonHandler {
 
     public String objectToJson(Object o) throws JsonProcessingException {
         return mapper.writeValueAsString(o);
+    }
+
+    public void objectToFile(Object o, File f) throws JsonProcessingException, IOException {
+        mapper.writeValue(f, o);
     }
 
     public <T> T objectFromJson(InputStream is, Class<T> type) throws IOException {

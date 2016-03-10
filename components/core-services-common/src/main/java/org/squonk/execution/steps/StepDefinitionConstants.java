@@ -77,9 +77,20 @@ public interface StepDefinitionConstants {
         public static final String OPTION_SCRIPT = "script";
     }
 
+    interface UnrustedGroovyDataset {
+        public static final String CLASSNAME = "org.squonk.execution.steps.impl.UntrustedGroovyDatasetScriptStep";
+        public static final String OPTION_SCRIPT = "script";
+    }
+
     interface ValueTransformer {
         public static final String CLASSNAME = "org.squonk.execution.steps.impl.ValueTransformerStep";
         public static final String OPTION_TRANSFORMS = "transformDefinitions";
+    }
+
+    interface DockerProcessDataset {
+        public static final String CLASSNAME = "org.squonk.execution.steps.impl.DockerProcessDatasetStep";
+        public static final String OPTION_DOCKER_IMAGE = "dockerImage";
+        public static final String OPTION_DOCKER_COMMAND  = "dockerCommand";
     }
     
 }

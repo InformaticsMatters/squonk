@@ -22,6 +22,8 @@ dependencies {
 
     compile project(':core-services-common')
 
+    compile 'com.github.docker-java:docker-java:2.2.3'
+
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 
     testCompile "org.apache.camel:camel-jetty:$camelVersion"

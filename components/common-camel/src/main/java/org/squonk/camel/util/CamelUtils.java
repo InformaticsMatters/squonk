@@ -4,10 +4,7 @@ import com.im.lac.dataset.Metadata;
 import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.SimpleStreamProvider;
 import com.im.lac.util.StreamProvider;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.ProducerTemplate;
+import org.apache.camel.*;
 import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
@@ -81,15 +78,38 @@ public class CamelUtils {
     }
 
 
+//    public static InputStream doRequestUsingHeadersAndQueryParams(
+//            CamelContext context,
+//            String method,
+//            String endpoint,
+//            InputStream input,
+//            Map<String, Object> headers,
+//            Map<String, Object> queryParams) throws Exception {
+//
+//        Map<String, Object> allHeaders = new HashMap<>(headers);
+//        allHeaders.put(Exchange.HTTP_METHOD, method);
+//        String url = generateUrlUsingHeadersAndQueryParams(endpoint, queryParams, allHeaders);
+//        LOG.log(Level.INFO, "Generated URL: {0}", url);
+//        allHeaders.put(Exchange.HTTP_URI, url);
+//
+//        ProducerTemplate pt = context.createProducerTemplate();
+//
+//        LOG.info("REQUEST starting");
+//        InputStream result = pt.requestBodyAndHeaders("http4:dummy", input, allHeaders, InputStream.class);
+//        LOG.info("REQUEST complete");
+//        return result;
+//    }
+
     public static InputStream doRequestUsingHeadersAndQueryParams(
             CamelContext context,
             String method,
             String endpoint,
             InputStream input,
-            Map<String, Object> headers,
+            Map<String, Object> requestHeaders,
+            Map<String, Object> responseHeaders,
             Map<String, Object> queryParams) throws Exception {
 
-        Map<String, Object> allHeaders = new HashMap<>(headers);
+        Map<String, Object> allHeaders = new HashMap<>(requestHeaders);
         allHeaders.put(Exchange.HTTP_METHOD, method);
         String url = generateUrlUsingHeadersAndQueryParams(endpoint, queryParams, allHeaders);
         LOG.log(Level.INFO, "Generated URL: {0}", url);
@@ -98,8 +118,19 @@ public class CamelUtils {
         ProducerTemplate pt = context.createProducerTemplate();
 
         LOG.info("REQUEST starting");
-        InputStream result = pt.requestBodyAndHeaders("http4:dummy", input, allHeaders, InputStream.class);
+        //InputStream result = pt.requestBodyAndHeaders("http4:dummy", input, allHeaders, InputStream.class);
+        Exchange response = pt.request("http4:dummy", new Processor() {
+            @Override
+            public void process(Exchange exch) throws Exception {
+                exch.getIn().setHeaders(allHeaders);
+                exch.getIn().setBody(input);
+            }
+        });
         LOG.info("REQUEST complete");
+        InputStream result = response.getOut().getBody(InputStream.class);
+        if (responseHeaders != null) {
+            responseHeaders.putAll(response.getOut().getHeaders());
+        }
         return result;
     }
 

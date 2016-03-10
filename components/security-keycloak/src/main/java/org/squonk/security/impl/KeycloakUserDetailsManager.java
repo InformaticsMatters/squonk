@@ -26,7 +26,7 @@ public class KeycloakUserDetailsManager extends DefaultUserDetailsManager {
             IDToken token = session.getIdToken();
             if (token != null) {
                 UserDetails ud = new UserDetails(UserDetails.AUTHENTICATOR_KEYCLOAK, token.getPreferredUsername(), token.getEmail(), token.getGivenName(), token.getFamilyName());
-                LOG.fine("Authenticated User: " + ud.toString());
+                LOG.fine("Found authenticated user from Keycloak token: " + ud.toString());
                 return ud;
             }
         }

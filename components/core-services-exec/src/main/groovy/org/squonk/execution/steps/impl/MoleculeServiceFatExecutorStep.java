@@ -40,7 +40,7 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
         Map<String, Object> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip");
         LOG.info("POSTing to service");
-        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST",  endpoint, input.getInputStream(true), headers, params);
+        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST",  endpoint, input.getInputStream(true), headers, null, params);
         LOG.fine("Creating Dataset");
         Dataset<MoleculeObject> results = JsonHandler.getInstance().unmarshalDataset(new DatasetMetadata(MoleculeObject.class), IOUtils.getGunzippedInputStream(output));
         LOG.fine("Dataset created");
