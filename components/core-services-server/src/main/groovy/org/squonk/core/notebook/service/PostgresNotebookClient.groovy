@@ -226,7 +226,7 @@ class PostgresNotebookClient implements NotebookClient {
 
 //            id              SERIAL PRIMARY KEY,
 //            source_id       INT NOT NULL,
-//            cell_name       VARCHAR(50) NOT NULL,
+//            cell_id         INT NOT NULL,
 //            var_name        VARCHAR(50) NOT NULL,
 //            var_key         VARCHAR(20) NOT NULL,
 //            val_txt         TEXT,
@@ -260,18 +260,18 @@ class PostgresNotebookClient implements NotebookClient {
     /**
      * {@inheritDoc}
      */
-    public void writeTextValue(Long editableId, String cellName, String variableName, String value, String key) {
+    public void writeTextValue(Long editableId, Long cellId, String variableName, String value, String key) {
         log.info("Writing text variable $variableName:$key for $editableId")
         Sql db = createSql()
         try {
 
             db.executeInsert("""\
-                |INSERT INTO users.nb_variable AS t (source_id, cell_name, var_name, var_key, created, updated, val_text)
-                |  VALUES (:sourceId, :cellName, :variableName, :key, NOW(), NOW(), :value )
+                |INSERT INTO users.nb_variable AS t (source_id, cell_id, var_name, var_key, created, updated, val_text)
+                |  VALUES (:sourceId, :cellId, :variableName, :key, NOW(), NOW(), :value )
                 |  ON CONFLICT ON CONSTRAINT nbvar_uq DO UPDATE
                 |    SET val_text=EXCLUDED.val_text, updated=NOW()
-                |      WHERE t.source_id=EXCLUDED.source_id AND t.cell_name=EXCLUDED.cell_name AND t.var_name=EXCLUDED.var_name AND t.var_key=EXCLUDED.var_key""".stripMargin(),
-                    [sourceId: editableId, cellName: cellName, variableName: variableName, key: (key ?: DEFAULT_KEY), value: value])
+                |      WHERE t.source_id=EXCLUDED.source_id AND t.cell_id=EXCLUDED.cell_id AND t.var_name=EXCLUDED.var_name AND t.var_key=EXCLUDED.var_key""".stripMargin(),
+                    [sourceId: editableId, cellId: cellId, variableName: variableName, key: (key ?: DEFAULT_KEY), value: value])
 
         } finally {
             db.close()
@@ -308,13 +308,13 @@ class PostgresNotebookClient implements NotebookClient {
     /**
      * {@inheritDoc}
      */
-    public void writeStreamValue(Long editableId, String cellName, String variableName, InputStream value, String key) {
+    public void writeStreamValue(Long editableId, Long cellId, String variableName, InputStream value, String key) {
         log.info("Writing stream variable $variableName:$key for $editableId")
         Sql db = new Sql(dataSource.getConnection()) {
             protected void setParameters(List<Object> params, PreparedStatement ps) {
                 log.info("setParameters() ${params.size()}")
                 ps.setLong(1, params[0])
-                ps.setString(2, params[1])
+                ps.setLong(2, params[1])
                 ps.setString(3, params[2])
                 ps.setString(4, params[3])
                 ps.setBinaryStream(5, params[4])
@@ -322,12 +322,12 @@ class PostgresNotebookClient implements NotebookClient {
         }
         try {
             db.executeInsert("""\
-                |INSERT INTO users.nb_variable AS t (source_id, cell_name, var_name, var_key, created, updated, val_blob)
+                |INSERT INTO users.nb_variable AS t (source_id, cell_id, var_name, var_key, created, updated, val_blob)
                 |  VALUES (?, ?, ?, ?, NOW(), NOW(), ?)
                 |  ON CONFLICT ON CONSTRAINT nbvar_uq DO UPDATE
                 |    SET val_blob=EXCLUDED.val_blob, updated=NOW()
-                |      WHERE t.source_id=EXCLUDED.source_id AND t.cell_name=EXCLUDED.cell_name AND t.var_name=EXCLUDED.var_name AND t.var_key=EXCLUDED.var_key""".stripMargin(),
-                    [editableId, cellName, variableName, key ?: DEFAULT_KEY, value])
+                |      WHERE t.source_id=EXCLUDED.source_id AND t.cell_id=EXCLUDED.cell_id AND t.var_name=EXCLUDED.var_name AND t.var_key=EXCLUDED.var_key""".stripMargin(),
+                    [editableId, cellId, variableName, key ?: DEFAULT_KEY, value])
 
         } finally {
             db.close()

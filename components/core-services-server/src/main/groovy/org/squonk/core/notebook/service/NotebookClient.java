@@ -138,12 +138,12 @@ public interface NotebookClient {
      * Use this for single component variables.
      *
      * @param editableId
-     * @param cellName
+     * @param cellId
      * @param variableName
      * @param value
      */
-    default void writeTextValue(Long editableId, String cellName, String variableName, String value) {
-        writeTextValue(editableId, cellName, variableName, value, DEFAULT_KEY);
+    default void writeTextValue(Long editableId, Long cellId, String variableName, String value) {
+        writeTextValue(editableId, cellId, variableName, value, DEFAULT_KEY);
     }
 
     /** Save this variable using the specified key.
@@ -152,12 +152,12 @@ public interface NotebookClient {
      * inserts a new row.
      *
      * @param editableId
-     * @param cellName
+     * @param cellId
      * @param variableName
      * @param value
      * @param key
      */
-    public void writeTextValue(Long editableId, String cellName, String variableName, String value, String key);
+    public void writeTextValue(Long editableId, Long cellId, String variableName, String value, String key);
 
     /**
      *
@@ -201,21 +201,22 @@ public interface NotebookClient {
     /**
      *
      * @param editableId
-     * @param cellName
+     * @param cellId
      * @param variableName
      * @param value
      */
-    default void writeStreamValue(Long editableId, String cellName, String variableName, InputStream value) {
-        writeStreamValue(editableId, cellName, variableName, value, DEFAULT_KEY);
+    default void writeStreamValue(Long editableId, Long cellId, String variableName, InputStream value) {
+        writeStreamValue(editableId, cellId, variableName, value, DEFAULT_KEY);
     }
 
 
     /**
      *
      * @param editableId
+     * @param cellId
      * @param variableName
      * @param key
      * @param value
      */
-    void writeStreamValue(Long editableId, String cellName, String variableName, InputStream value, String key);
+    void writeStreamValue(Long editableId, Long cellId, String variableName, InputStream value, String key);
 }

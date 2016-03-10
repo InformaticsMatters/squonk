@@ -31,7 +31,7 @@ CREATE TABLE users.nb_version (
 CREATE TABLE users.nb_variable (
     id              SERIAL PRIMARY KEY,
     source_id       INT NOT NULL,
-    cell_name       VARCHAR(50) NOT NULL,
+    cell_id         INT NOT NULL,
     var_name        VARCHAR(50) NOT NULL,
     var_key         VARCHAR(20) NOT NULL,
     created         TIMESTAMP NOT NULL,

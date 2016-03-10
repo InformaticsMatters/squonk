@@ -152,7 +152,7 @@ class PostgresNotebookClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        client.writeTextValue(eds[0].id, 'cell1', 'var1', 'val1')
+        client.writeTextValue(eds[0].id, 1, 'var1', 'val1')
 
         then:
         client.createSql().firstRow("SELECT count(*) from users.nb_variable")[0] == 1
@@ -164,7 +164,7 @@ class PostgresNotebookClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        client.writeTextValue(eds[0].id, 'cell1', 'var1', 'val2', 'key')
+        client.writeTextValue(eds[0].id, 1, 'var1', 'val2', 'key')
 
         then:
         client.createSql().firstRow("SELECT count(*) from users.nb_variable")[0] == 2
@@ -176,8 +176,8 @@ class PostgresNotebookClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        client.writeTextValue(eds[0].id, 'cell1', 'var1', 'val3')
-        client.writeTextValue(eds[0].id, 'cell1', 'var2', 'another val')
+        client.writeTextValue(eds[0].id, 1, 'var1', 'val3')
+        client.writeTextValue(eds[0].id, 1, 'var2', 'another val')
 
         then:
         client.createSql().firstRow("SELECT count(*) from users.nb_variable")[0] == 3
@@ -190,7 +190,7 @@ class PostgresNotebookClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        client.writeTextValue(eds[0].id, 'cell1', 'var1', 'val4', 'key')
+        client.writeTextValue(eds[0].id, 1, 'var1', 'val4', 'key')
 
         then:
         client.createSql().firstRow("SELECT count(*) from users.nb_variable")[0] == 3
@@ -205,7 +205,7 @@ class PostgresNotebookClientSpec extends Specification {
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
         int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
-        client.writeStreamValue(eds[0].id, 'cell1', 'stream1', new ByteArrayInputStream(LONG_VARIABLE_1.getBytes()), null)
+        client.writeStreamValue(eds[0].id, 1, 'stream1', new ByteArrayInputStream(LONG_VARIABLE_1.getBytes()), null)
         int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
 
         then:
@@ -217,7 +217,7 @@ class PostgresNotebookClientSpec extends Specification {
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
         int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
-        client.writeStreamValue(eds[0].id, 'cell1', 'stream2', new ByteArrayInputStream(LONG_VARIABLE_1.getBytes()), "key")
+        client.writeStreamValue(eds[0].id, 1, 'stream2', new ByteArrayInputStream(LONG_VARIABLE_1.getBytes()), "key")
         int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
 
         then:
@@ -229,7 +229,7 @@ class PostgresNotebookClientSpec extends Specification {
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
         int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
-        client.writeStreamValue(eds[0].id, 'cell1', 'stream1', new ByteArrayInputStream(LONG_VARIABLE_2.getBytes()), null)
+        client.writeStreamValue(eds[0].id, 1, 'stream1', new ByteArrayInputStream(LONG_VARIABLE_2.getBytes()), null)
         int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
 
         then:
@@ -241,7 +241,7 @@ class PostgresNotebookClientSpec extends Specification {
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
         int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
-        client.writeStreamValue(eds[0].id, 'cell1', 'stream2', new ByteArrayInputStream(LONG_VARIABLE_2.getBytes()), "key")
+        client.writeStreamValue(eds[0].id, 1, 'stream2', new ByteArrayInputStream(LONG_VARIABLE_2.getBytes()), "key")
         int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
 
         then:
