@@ -17,14 +17,22 @@ import java.sql.ResultSet
 @Log
 class PostgresNotebookClient implements NotebookClient {
 
-    public final static PostgresNotebookClient INSTANCE = new PostgresNotebookClient();
+    public final static PostgresNotebookClient INSTANCE = new PostgresNotebookClient()
 
     protected final DataSource dataSource = Utils.createDataSource()
+
+    public PostgresNotebookClient() {
+        dataSource = Utils.createDataSource()
+    }
+
+    public PostgresNotebookClient(DataSource dataSource) {
+        this.dataSource = dataSource
+    }
 
     /**
      * {@inheritDoc}
      */
-    public NotebookDescriptor createNotebook(String username, String notebookName, String notebookDescription) {
+    public NotebookDescriptor createNotebook(String username, String name, String description) {
         Sql db = createSql()
         try {
             NotebookDescriptor result = null
@@ -32,7 +40,7 @@ class PostgresNotebookClient implements NotebookClient {
                 def keys = db.executeInsert(
                         "INSERT INTO users.nb_descriptor (owner_id, name, description, created, updated) " +
                                 "(SELECT id, :name, :desc, NOW(), NOW() FROM users.users u WHERE u.username = :username)",
-                        [username: username, name: notebookName, desc: notebookDescription])
+                        [username: username, name: name, desc: description])
                 Long id = findInsertedId(keys)
                 log.info("Created Notebook of ID $id")
                 if (id == null) {
@@ -44,6 +52,29 @@ class PostgresNotebookClient implements NotebookClient {
                 // TODO - this can be made more efficient?
                 Long userId = fetchIdForUsername(db, username)
                 Long editableId = insertNotebookEditable(db, result.id, null, userId)
+            }
+            return result
+        } finally {
+            db.close()
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public NotebookDescriptor updateNotebook(Long notebookId, String name, String description) {
+        Sql db = createSql()
+        try {
+            NotebookDescriptor result = null
+            db.withTransaction {
+                int rows = db.executeUpdate(
+                        "UPDATE users.nb_descriptor SET name=:name, description=:desc, updated=NOW() WHERE id=:notebookid",
+                        [name: name, desc: description, notebookid:notebookId])
+                if (rows != 1) {
+                    throw new IllegalStateException("Failed to update notebook")
+                }
+                // fetch the nb definition
+                result = fetchNotebookDescriptorById(db, notebookId)
             }
             return result
         } finally {
@@ -86,14 +117,18 @@ class PostgresNotebookClient implements NotebookClient {
     /**
      * {@inheritDoc}
      */
-    public NotebookEditable createNotebookEditable(Long notebookId, Long parentId, String username) {
+    public NotebookEditable createEditable(Long notebookId, Long parentId, String username) {
         log.fine("Creating editable for notebook $notebookId with parent $parentId for $username")
         Sql db = createSql()
         try {
             NotebookEditable result = null
             db.withTransaction {
                 Long userId = fetchIdForUsername(db, username)
-                result = insertNotebookEditable(db, notebookId, parentId, userId)
+                Long id = insertNotebookEditable(db, notebookId, parentId, userId)
+                if (id == null) {
+                    throw new IllegalStateException("Failed to create editable. Does the notebook and parent with these criteria exist: notebook id=$notebookId, parent id=$parentId")
+                }
+                result = fetchNotebookEditableById(db, notebookId, id)
             }
             log.info("Created editable ${result?.id} for notebook $notebookId with parent $parentId for $username")
             return result
@@ -105,7 +140,7 @@ class PostgresNotebookClient implements NotebookClient {
     /**
      * {@inheritDoc}
      */
-    public NotebookEditable updateNotebookEditable(Long notebookId, Long editableId, String json) {
+    public NotebookEditable updateEditable(Long notebookId, Long editableId, String json) {
         Sql db = createSql()
         try {
             NotebookEditable result = null
@@ -125,39 +160,6 @@ class PostgresNotebookClient implements NotebookClient {
     /**
      * {@inheritDoc}
      */
-//    public NotebookEditable createSavepoint(Long notebookId, Long editableId) {
-//        log.fine("Creating savepoint for editable $editableId")
-//        Sql db = createSql()
-//        try {
-//            NotebookEditable result = null
-//            db.withTransaction {
-//                // create the new editable
-//                def keys = db.executeInsert(
-//                        "INSERT INTO users.nb_version (notebook_id, parent_id, owner_id, type, created, updated, nb_definition) " +
-//                                "(SELECT notebook_id, id, owner_id, 'E', NOW(), NOW(), nb_definition FROM users.nb_version WHERE id = :editableId AND notebook_id = :notebookId AND type = 'E')",
-//                        [notebookId: notebookId, editableId: editableId])
-//
-//                Long id = findInsertedId(keys)
-//                log.info("Created new editable $id based on $editableId")
-//                if (id == null) {
-//                    throw new IllegalStateException("No insert performed. Does the editable with these criteria exist: notebook id=$notebookId, editable id=$editableId")
-//                }
-//                // convert the old editable to a savepoint
-//                int updates = db.executeUpdate("UPDATE users.nb_version SET type='S', updated = NOW() WHERE id = $editableId AND notebook_id = $notebookId")
-//                if (updates != 1) {
-//                    throw new IllegalStateException("Failed to convert editable to savepoint. Does the editable with these criteria exist: notebook id=$notebookId, editable id=$editableId")
-//                }
-//
-//                // fetch the newly created editable
-//                result = fetchNotebookEditableById(db, notebookId, id)
-//
-//            }
-//            log.info("Created savepoint ${result?.id} for editable $editableId")
-//            return result
-//        } finally {
-//            db.close()
-//        }
-//    }
     public NotebookEditable createSavepoint(Long notebookId, Long editableId) {
         log.fine("Creating savepoint for editable $editableId")
         Sql db = createSql()

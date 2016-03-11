@@ -8,6 +8,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.InputStreamEntity;
@@ -71,7 +72,9 @@ public class AbstractHttpClient {
      */
     protected InputStream executeGetAsInputStream(URIBuilder b, NameValuePair... headers) throws IOException {
         try {
-            HttpGet httpGet = new HttpGet(b.build());
+            URI uri = b.build();
+            LOG.info("GET " + uri);
+            HttpGet httpGet = new HttpGet(uri);
             if (headers != null && headers.length > 0) {
                 addHeaders(httpGet, headers);
             }
@@ -109,6 +112,24 @@ public class AbstractHttpClient {
             return is;
     }
 
+    protected InputStream executePutAsInputStream(URIBuilder b, AbstractHttpEntity body) throws IOException {
+        return executePutAsInputStream(b, body, new NameValuePair[0]);
+    }
+
+    protected InputStream executePutAsInputStream(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
+
+        CloseableHttpResponse response = doPut(b, body, headers);
+        LOG.finer(response.getStatusLine().toString());
+        HttpEntity entity = response.getEntity();
+        if (!responseOK(response)) {
+            String err = EntityUtils.toString(entity);
+            LOG.log(Level.WARNING, "Request failed: {0}", err);
+            throw new IOException("Request failed: " + response.getStatusLine().toString());
+        }
+        InputStream is = entity.getContent();
+        return is;
+    }
+
     protected void executePost(URIBuilder b, String body, NameValuePair... headers) throws IOException {
         executePost(b, body == null ? null : new StringEntity(body), headers);
     }
@@ -127,7 +148,7 @@ public class AbstractHttpClient {
         }
     }
 
-    boolean responseOK(HttpResponse response) {
+    protected boolean responseOK(HttpResponse response) {
         return response.getStatusLine().getStatusCode() >=200 && response.getStatusLine().getStatusCode() < 300;
     }
 
@@ -147,7 +168,24 @@ public class AbstractHttpClient {
         } catch (URISyntaxException e) {
             throw new IOException("Bad URI. Really?", e);
         }
+    }
 
+    protected CloseableHttpResponse doPut(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
+        try {
+            URI uri = b.build();
+            LOG.info("PUTing to " + uri);
+            HttpPut httpPut = new HttpPut(uri);
+            if (headers != null && headers.length > 0) {
+                addHeaders(httpPut, headers);
+            }
+            if (body != null) {
+                LOG.finer("Setting PUT body: " + body);
+                httpPut.setEntity(body);
+            }
+            return httpclient.execute(httpPut);
+        } catch (URISyntaxException e) {
+            throw new IOException("Bad URI. Really?", e);
+        }
     }
 
     protected void addHeaders(HttpMessage message, NameValuePair... headers) {

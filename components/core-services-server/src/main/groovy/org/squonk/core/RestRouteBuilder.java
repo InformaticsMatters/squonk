@@ -11,6 +11,7 @@ import org.squonk.core.job.Job;
 import org.squonk.core.job.service.MemoryJobStatusClient;
 import org.squonk.core.job.service.PostgresJobStatusClient;
 import org.squonk.core.job.service.StepsCellJob;
+import org.squonk.core.notebook.service.PostgresNotebookClient;
 import org.squonk.core.user.User;
 import org.squonk.core.user.UserHandler;
 import org.squonk.core.util.Utils;
@@ -22,17 +23,26 @@ import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.chemaxon.molecule.MoleculeObjectUtils;
 import org.squonk.client.JobStatusClient;
 import org.squonk.mqueue.MessageQueueCredentials;
+import org.squonk.notebook.api2.NotebookDescriptor;
+import org.squonk.notebook.api2.NotebookEditable;
+import org.squonk.notebook.api2.NotebookSavepoint;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
 import java.io.InputStream;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_USERS_EXCHANGE_NAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_USERS_EXCHANGE_PARAMS;
+
+import static org.apache.camel.model.rest.RestParamType.query;
+import static org.apache.camel.model.rest.RestParamType.body;
+import static org.apache.camel.model.rest.RestParamType.path;
 
 /**
  * @author timbo
@@ -42,6 +52,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
     private static final Logger LOG = Logger.getLogger(RestRouteBuilder.class.getName());
 
     private final JobStatusClient jobstatusClient;
+    private final PostgresNotebookClient notebookClient;
     private final JsonHandler jsonHandler = JsonHandler.getInstance();
     private MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials();
     private final String userNotifyMqueueUrl = rabbitmqCredentials.generateUrl(MQUEUE_USERS_EXCHANGE_NAME, MQUEUE_USERS_EXCHANGE_PARAMS);
@@ -52,9 +63,12 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
         if (server == null) {
             LOG.info("Using MemoryJobStatusClient");
             jobstatusClient = MemoryJobStatusClient.INSTANCE;
+            notebookClient = null;
         } else {
-            LOG.info("Using PostgresJobStatusClient");
+            LOG.info("Using Postgres Clients");
+            // this is hacky - find way to inject datasource
             jobstatusClient = PostgresJobStatusClient.INSTANCE;
+            notebookClient = new PostgresNotebookClient(PostgresJobStatusClient.INSTANCE.dataSource);
         }
     }
 
@@ -212,6 +226,160 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 })
                 .inOnly("seda:notifyJobStatusUpdate")
                 .endRest();
+
+        rest("/v1/notebooks").description("Notebook and variable services")
+                //
+                // GET
+                .get("/").description("Get all notebooks for the user")
+                .bindingMode(RestBindingMode.json).produces("application/json")
+                .outType(NotebookDescriptor.class)
+                .param().name("user").type(query).description("The username").dataType("string").endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    String username = exch.getIn().getHeader("username", String.class);
+                    List<NotebookDescriptor> results = notebookClient.listNotebooks(username);
+                    exch.getIn().setBody(results);
+                })
+                .endRest()
+                .get("/{notebookid}/editables").description("Get all editables for a notebook for the user")
+                .bindingMode(RestBindingMode.json).produces("application/json")
+                .outType(NotebookEditable.class)
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
+                .param().name("user").type(query).description("The username").dataType("string").endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    String username = exch.getIn().getHeader("user", String.class);
+                    List<NotebookEditable> results = notebookClient.listEditables(notebookid, username);
+                    exch.getIn().setBody(results);
+                })
+                .endRest()
+                // List<NotebookSavepoint> listSavepoints(Long notebookId);
+                .get("/{notebookid}/savepoints").description("Get all savepoints for a notebook")
+                .bindingMode(RestBindingMode.json).produces("application/json")
+                .outType(NotebookSavepoint.class)
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    List<NotebookSavepoint> results = notebookClient.listSavepoints(notebookid);
+                    exch.getIn().setBody(results);
+                })
+                .endRest()
+                //NotebookDescriptor createNotebook(String username, String notebookName, String notebookDescription)
+                .post("/").description("Create a new notebook")
+                .bindingMode(RestBindingMode.json).produces("application/json")
+                .outType(NotebookDescriptor.class)
+                .param().name("user").type(query).description("The owner of the new notebook").dataType("string").endParam()
+                .param().name("name").type(query).description("The name for the new notebook").dataType("string").endParam()
+                .param().name("description").type(query).description("A description for the new notebook").dataType("string").endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    String user = exch.getIn().getHeader("user", String.class);
+                    String name = exch.getIn().getHeader("name", String.class);
+                    String description = exch.getIn().getHeader("description", String.class);
+                    NotebookDescriptor result = notebookClient.createNotebook(user, name, description);
+                    exch.getIn().setBody(result);
+                })
+                .endRest()
+                // NotebookEditable createEditable(Long notebookId, Long parentId, String username);
+                .post("/{notebookid}/editables").description("Create a new editable for a notebook")
+                .bindingMode(RestBindingMode.json).produces("application/json")
+                .outType(NotebookEditable.class)
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
+                .param().name("user").type(query).description("The owner of the new notebook").dataType("string").endParam()
+                .param().name("parent").type(query).description("The parent savepoint").dataType("long").endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    String user = exch.getIn().getHeader("user", String.class);
+                    Long parent = exch.getIn().getHeader("parent", Long.class);
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    String description = exch.getIn().getHeader("description", String.class);
+                    NotebookEditable result = notebookClient.createEditable(notebookid, parent, user);
+                    exch.getIn().setBody(result);
+                })
+                .endRest()
+                // NotebookEditable updateEditable(Long notebookId, Long editableId, String json);
+                .put("/{notebookid}/editables/{editableid}").description("Update the definition of an editable")
+                .bindingMode(RestBindingMode.json).produces("application/json")
+                .outType(NotebookEditable.class)
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
+                .param().name("editableid").type(path).description("Editable ID").dataType("long").endParam()
+                .param().name("json").type(body).description("Content (as JSON)").dataType("string").endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    String json = exch.getIn().getBody(String.class);
+                    Long editableid = exch.getIn().getHeader("editableid", Long.class);
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    NotebookEditable result = notebookClient.updateEditable(notebookid, editableid, json);
+                    exch.getIn().setBody(result);
+                })
+                .endRest()
+                // public NotebookEditable createSavepoint(Long notebookId, Long editableId);
+                .post("/{notebookid}/savepoints").description("Create a new editable for a notebook")
+                .bindingMode(RestBindingMode.json).produces("application/json")
+                .outType(NotebookEditable.class)
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
+                .param().name("editableid").type(query).description("The editable ID to make the savepoint from").dataType("long").endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    Long parent = exch.getIn().getHeader("parent", Long.class);
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    Long editableid = exch.getIn().getHeader("editableid", Long.class);
+                    NotebookEditable result = notebookClient.createSavepoint(notebookid, editableid);
+                    exch.getIn().setBody(result);
+                })
+                .endRest()
+                //NotebookSavepoint setSavepointDescription(Long notebookId, Long savepointId, String description)
+                .put("/{notebookid}/savepoints/{savepointid}/description").description("Update the description of a savepoint")
+                .bindingMode(RestBindingMode.json).produces("application/json")
+                .outType(NotebookSavepoint.class)
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
+                .param().name("savepointid").type(path).description("Savepoint ID").dataType("long").endParam()
+                .param().name("description").type(query).description("New description").dataType("string").endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    String description = exch.getIn().getHeader("description", String.class);
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    Long savepointid = exch.getIn().getHeader("savepointid", Long.class);
+                    NotebookSavepoint result = notebookClient.setSavepointDescription(notebookid, savepointid, description);
+                    exch.getIn().setBody(result);
+                })
+                .endRest()
+                //NotebookSavepoint setSavepointLabel(Long notebookId, Long savepointId, String label);
+                .put("/{notebookid}/savepoints/{savepointid}/label").description("Update the label of a savepoint")
+                .bindingMode(RestBindingMode.json).produces("application/json")
+                .outType(NotebookSavepoint.class)
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
+                .param().name("savepointid").type(path).description("Savepoint ID").dataType("long").endParam()
+                .param().name("label").type(query).description("New Label").dataType("string").endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    String label = exch.getIn().getHeader("label", String.class);
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    Long savepointid = exch.getIn().getHeader("savepointid", Long.class);
+                    NotebookSavepoint result = notebookClient.setSavepointLabel(notebookid, savepointid, label);
+                    exch.getIn().setBody(result);
+                })
+                .endRest()
+                // public NotebookDescriptor updateNotebook(Long notebookId, String name, String description)
+                .put("/{notebookid}").description("Update the label of a savepoint")
+                .bindingMode(RestBindingMode.json).produces("application/json")
+                .outType(NotebookDescriptor.class)
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
+                .param().name("name").type(query).description("New name").dataType("string").endParam()
+                .param().name("description").type(query).description("New description").dataType("string").endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    String name = exch.getIn().getHeader("name", String.class);
+                    String description = exch.getIn().getHeader("description", String.class);
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    NotebookDescriptor result = notebookClient.updateNotebook(notebookid, name, description);
+                    exch.getIn().setBody(result);
+                })
+                .endRest()
+
+        ;
 
         from("seda:notifyJobStatusUpdate")
                 .setHeader("rabbitmq.ROUTING_KEY", simple("users.${header[" + HEADER_SQUONK_USERNAME + "]}.jobstatus"))

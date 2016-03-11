@@ -70,7 +70,7 @@ class PostgresNotebookClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        NotebookEditable up = client.updateNotebookEditable(notebooks[0].id, eds[0].id, JSON_TERM)
+        NotebookEditable up = client.updateEditable(notebooks[0].id, eds[0].id, JSON_TERM)
 
         then:
         eds.size() == 1

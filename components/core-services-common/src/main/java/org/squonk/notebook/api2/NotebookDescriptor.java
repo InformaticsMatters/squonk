@@ -1,10 +1,14 @@
 package org.squonk.notebook.api2;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Date;
 
 /**
  * Created by timbo on 29/02/16.
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class NotebookDescriptor {
 
     private Long id;
@@ -18,7 +22,13 @@ public class NotebookDescriptor {
 
     }
 
-    public NotebookDescriptor(Long id, String name, String description, String owner, Date createdDate, Date lastUpdatedDate) {
+    public NotebookDescriptor(
+            @JsonProperty("id") Long id,
+            @JsonProperty("name") String name,
+            @JsonProperty("description") String description,
+            @JsonProperty("owner") String owner,
+            @JsonProperty("createdDate") Date createdDate,
+            @JsonProperty("lastUpdatedDate") Date lastUpdatedDate) {
         this.id = id;
         this.name = name;
         this.description = description;

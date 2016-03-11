@@ -4,6 +4,7 @@ import org.squonk.notebook.api2.NotebookDescriptor;
 import org.squonk.notebook.api2.NotebookEditable;
 import org.squonk.notebook.api2.NotebookSavepoint;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -19,26 +20,39 @@ public interface NotebookClient {
     /** Create a new notebook
      *
      * @param username
-     * @param notebookName
-     * @param notebookDescription
+     * @param name
+     * @param description
      * @return
+     * @throws Exception
      */
-    NotebookDescriptor createNotebook(String username, String notebookName, String notebookDescription);
+    NotebookDescriptor createNotebook(String username, String name, String description) throws Exception;
+
+    /** Update details of a notebook
+     *
+     * @param notebookId
+     * @param name
+     * @param description
+     * @return
+     * @throws Exception
+     */
+    NotebookDescriptor updateNotebook(Long notebookId, String name, String description) throws Exception;
 
     /** All notebooks the user has access to
      *
      * @param username
      * @return
+     * @throws Exception
      */
-    List<NotebookDescriptor> listNotebooks(String username);
+    List<NotebookDescriptor> listNotebooks(String username) throws Exception;
 
     /** List all editables of this notebook that belong to this user
      *
      * @param notebookId
      * @param username
      * @return
+     * @throws Exception
      */
-    List<NotebookEditable> listEditables(Long notebookId, String username);
+    List<NotebookEditable> listEditables(Long notebookId, String username) throws Exception;
 
 
     /** Create a new editable based on this parent.
@@ -46,16 +60,20 @@ public interface NotebookClient {
      * @param notebookId The ID of the notebook
      * @param parentId The ID of the parent snapshot
      * @param username The user
+     * @return
+     * @throws Exception
      */
-    NotebookEditable createNotebookEditable(Long notebookId, Long parentId, String username);
+    NotebookEditable createEditable(Long notebookId, Long parentId, String username) throws Exception;
 
     /** update the definition of this editable
      *
      * @param notebookId
      * @param editableId
      * @param json The contents of the notebook
+     * @return
+     * @throws Exception
      */
-    NotebookEditable updateNotebookEditable(Long notebookId, Long editableId, String json);
+    NotebookEditable updateEditable(Long notebookId, Long editableId, String json) throws Exception;
 
     /** Create a new savepoint that is inserted in the history between this NotebookEditable and its parent.
      * This is done by creating a new editable whose parent is the current one, and then converting the current editable
@@ -66,23 +84,27 @@ public interface NotebookClient {
      * @param notebookId
      * @param editableId
      * @return The new Editable that is created.
+     * @throws Exception
      */
-    public NotebookEditable createSavepoint(Long notebookId, Long editableId);
+    public NotebookEditable createSavepoint(Long notebookId, Long editableId) throws Exception;
 
     /** Get all savepoints for this notebook.
      *
      * @param notebookId
      * @return
+     * @throws Exception
      */
-    List<NotebookSavepoint> listSavepoints(Long notebookId);
+    List<NotebookSavepoint> listSavepoints(Long notebookId) throws Exception;
 
     /** gives this savepoint a description that can be helpful to describe its purpose
      *
      * @param notebookId
      * @param savepointId
      * @param description
+     * @return
+     * @throws Exception
      */
-    NotebookSavepoint setSavepointDescription(Long notebookId, Long savepointId, String description);
+    NotebookSavepoint setSavepointDescription(Long notebookId, Long savepointId, String description) throws Exception;
 
     /** Gives this savepoint a specific label. If a savepoint for this notebook with the same label already exists it MUST
      * first be cleared (set to null or another value) as duplicate labels are not permitted
@@ -90,8 +112,10 @@ public interface NotebookClient {
      * @param notebookId
      * @param savepointId
      * @param label the new label. If null then clears the label.
+     * @return
+     * @throws Exception
      */
-    NotebookSavepoint setSavepointLabel(Long notebookId, Long savepointId, String label);
+    NotebookSavepoint setSavepointLabel(Long notebookId, Long savepointId, String label) throws Exception;
 
 
     /**
@@ -99,8 +123,9 @@ public interface NotebookClient {
      * @param sourceId
      * @param variableName
      * @return
+     * @throws Exception
      */
-    default String readTextValue(Long sourceId, String variableName) {
+    default String readTextValue(Long sourceId, String variableName) throws Exception {
         return readTextValue(sourceId, variableName, DEFAULT_KEY);
     }
 
@@ -110,8 +135,9 @@ public interface NotebookClient {
      * @param variableName
      * @param key
      * @return
+     * @throws Exception
      */
-    String readTextValue(Long sourceId, String variableName, String key);
+    String readTextValue(Long sourceId, String variableName, String key) throws Exception;
 
     /** Read the variable with the default key for the notebook version with the specified label.
      *
@@ -120,7 +146,7 @@ public interface NotebookClient {
      * @param variableName
      * @return
      */
-    default String readTextValueForLabel(Long notebookId, String label, String variableName) {
+    default String readTextValueForLabel(Long notebookId, String label, String variableName) throws Exception {
         return readTextValueForLabel(notebookId, label, variableName, DEFAULT_KEY);
     }
 
@@ -131,8 +157,9 @@ public interface NotebookClient {
      * @param variableName
      * @param key
      * @return
+     * @throws Exception
      */
-    String readTextValueForLabel(Long notebookId, String label, String variableName, String key);
+    String readTextValueForLabel(Long notebookId, String label, String variableName, String key) throws Exception;
 
     /** Save this variable using the default key name of 'default'.
      * Use this for single component variables.
@@ -141,8 +168,9 @@ public interface NotebookClient {
      * @param cellId
      * @param variableName
      * @param value
+     * @throws Exception
      */
-    default void writeTextValue(Long editableId, Long cellId, String variableName, String value) {
+    default void writeTextValue(Long editableId, Long cellId, String variableName, String value) throws Exception {
         writeTextValue(editableId, cellId, variableName, value, DEFAULT_KEY);
     }
 
@@ -156,16 +184,18 @@ public interface NotebookClient {
      * @param variableName
      * @param value
      * @param key
+     * @throws Exception
      */
-    public void writeTextValue(Long editableId, Long cellId, String variableName, String value, String key);
+    public void writeTextValue(Long editableId, Long cellId, String variableName, String value, String key) throws Exception;
 
     /**
      *
      * @param sourceId
      * @param variableName
      * @return
+     * @throws Exception
      */
-    default InputStream readStreamValue(Long sourceId, String variableName) {
+    default InputStream readStreamValue(Long sourceId, String variableName) throws Exception {
         return readStreamValue(sourceId, variableName, DEFAULT_KEY);
     }
 
@@ -175,8 +205,9 @@ public interface NotebookClient {
      * @param variableName
      * @param key
      * @return An InputStream to the data. Ensure that this is closed when finished
+     * @throws Exception
      */
-    InputStream readStreamValue(Long sourceId, String variableName, String key);
+    InputStream readStreamValue(Long sourceId, String variableName, String key) throws Exception;
 
     /**
      *
@@ -184,8 +215,9 @@ public interface NotebookClient {
      * @param label
      * @param variableName
      * @return
+     * @throws Exception
      */
-    default InputStream readStreamValueForLabel(Long notebookId, String label, String variableName) {
+    default InputStream readStreamValueForLabel(Long notebookId, String label, String variableName) throws Exception {
         return readStreamValueForLabel(notebookId, label, variableName, DEFAULT_KEY);
     }
 
@@ -195,8 +227,9 @@ public interface NotebookClient {
      * @param variableName
      * @param key
      * @return
+     * @throws Exception
      */
-    InputStream readStreamValueForLabel(Long notebookId, String label, String variableName, String key);
+    InputStream readStreamValueForLabel(Long notebookId, String label, String variableName, String key) throws Exception;
 
     /**
      *
@@ -204,8 +237,9 @@ public interface NotebookClient {
      * @param cellId
      * @param variableName
      * @param value
+     * @throws Exception
      */
-    default void writeStreamValue(Long editableId, Long cellId, String variableName, InputStream value) {
+    default void writeStreamValue(Long editableId, Long cellId, String variableName, InputStream value) throws Exception {
         writeStreamValue(editableId, cellId, variableName, value, DEFAULT_KEY);
     }
 
@@ -217,6 +251,7 @@ public interface NotebookClient {
      * @param variableName
      * @param key
      * @param value
+     * @throws Exception
      */
-    void writeStreamValue(Long editableId, Long cellId, String variableName, InputStream value, String key);
+    void writeStreamValue(Long editableId, Long cellId, String variableName, InputStream value, String key) throws Exception;
 }

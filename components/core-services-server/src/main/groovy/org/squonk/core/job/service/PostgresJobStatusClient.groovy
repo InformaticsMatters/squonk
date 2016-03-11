@@ -9,6 +9,7 @@ import org.squonk.client.JobStatusClient
 import org.squonk.core.util.Utils
 import org.squonk.types.io.JsonHandler
 
+import javax.sql.DataSource
 import java.sql.Array
 import java.sql.SQLException
 import java.sql.Timestamp;
@@ -24,7 +25,9 @@ public class PostgresJobStatusClient implements JobStatusClient {
 
     private final Object lock = new Object();
 
-    protected final Sql db = new Sql(Utils.createDataSource())
+    // this is hacky - need to inject the datasource
+    public final DataSource dataSource = Utils.createDataSource();
+    protected final Sql db = new Sql(dataSource)
 
     public JobStatus submit(JobDefinition jobdef, String username, Integer totalCount) {
         log.info("Registering JobDef: " + jobdef);
