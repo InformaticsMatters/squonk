@@ -36,6 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import static org.squonk.client.NotebookClient.VarType;
 
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_USERS_EXCHANGE_NAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_USERS_EXCHANGE_PARAMS;
@@ -75,7 +76,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
     @Override
     public void configure() throws Exception {
 
-               restConfiguration().component("servlet").host("0.0.0.0");
+        restConfiguration().component("servlet").host("0.0.0.0");
 
         /* These are the REST endpoints - exposed as public web services 
          */
@@ -187,7 +188,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     Integer count = exch.getIn().getHeader(HEADER_JOB_SIZE, Integer.class);
                     Job job = null;
                     if (jobdef instanceof ExecuteCellUsingStepsJobDefinition) {
-                        job = new StepsCellJob(jobstatusClient, (ExecuteCellUsingStepsJobDefinition)jobdef);
+                        job = new StepsCellJob(jobstatusClient, (ExecuteCellUsingStepsJobDefinition) jobdef);
                     } else {
                         throw new IllegalStateException("Job definition type " + jobdef.getClass().getName() + " not currently supported");
                     }
@@ -227,7 +228,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .inOnly("seda:notifyJobStatusUpdate")
                 .endRest();
 
-        rest("/v1/notebooks").description("Notebook and variable services")
+        rest("/v1/notebooks").description("Notebook services")
                 //
                 // GET
                 .get("/").description("Get all notebooks for the user")
@@ -241,7 +242,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     exch.getIn().setBody(results);
                 })
                 .endRest()
-                .get("/{notebookid}/editables").description("Get all editables for a notebook for the user")
+                .get("/{notebookid}/e").description("Get all editables for a notebook for the user")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookEditable.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
@@ -255,7 +256,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 })
                 .endRest()
                 // List<NotebookSavepoint> listSavepoints(Long notebookId);
-                .get("/{notebookid}/savepoints").description("Get all savepoints for a notebook")
+                .get("/{notebookid}/s").description("Get all savepoints for a notebook")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookSavepoint.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
@@ -283,7 +284,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 })
                 .endRest()
                 // NotebookEditable createEditable(Long notebookId, Long parentId, String username);
-                .post("/{notebookid}/editables").description("Create a new editable for a notebook")
+                .post("/{notebookid}/e").description("Create a new editable for a notebook")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookEditable.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
@@ -300,7 +301,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 })
                 .endRest()
                 // NotebookEditable updateEditable(Long notebookId, Long editableId, String json);
-                .put("/{notebookid}/editables/{editableid}").description("Update the definition of an editable")
+                .put("/{notebookid}/e/{editableid}").description("Update the definition of an editable")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookEditable.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
@@ -316,7 +317,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 })
                 .endRest()
                 // public NotebookEditable createSavepoint(Long notebookId, Long editableId);
-                .post("/{notebookid}/savepoints").description("Create a new editable for a notebook")
+                .post("/{notebookid}/s").description("Create a new editable for a notebook")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookEditable.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
@@ -331,7 +332,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 })
                 .endRest()
                 //NotebookSavepoint setSavepointDescription(Long notebookId, Long savepointId, String description)
-                .put("/{notebookid}/savepoints/{savepointid}/description").description("Update the description of a savepoint")
+                .put("/{notebookid}/s/{savepointid}/description").description("Update the description of a savepoint")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookSavepoint.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
@@ -347,7 +348,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 })
                 .endRest()
                 //NotebookSavepoint setSavepointLabel(Long notebookId, Long savepointId, String label);
-                .put("/{notebookid}/savepoints/{savepointid}/label").description("Update the label of a savepoint")
+                .put("/{notebookid}/s/{savepointid}/label").description("Update the label of a savepoint")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookSavepoint.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
@@ -378,8 +379,120 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     exch.getIn().setBody(result);
                 })
                 .endRest()
+                //
+                // VARIABLES
+                //
+                // GET
+                .get("/{notebookid}/v/{varname}/{type}/{key}").description("Read a variable value using either its label or its editable/savepoint id")
+                .bindingMode(RestBindingMode.off)
+                .param().name("notebookid").type(path).description("The notebook ID").dataType("long").required(true).endParam()
+                .param().name("varname").type(path).description("The name of the variable").dataType("string").required(true).endParam()
+                .param().name("key").type(path).description("Optional key for the variable. If not provide key of 'default' is assumed").dataType("string").required(false).endParam()
+                .param().name("type").type(path).description("The type of variable (s = stream, t = text)").dataType("string").required(true).allowableValues("s", "t").endParam()
+                .param().name("label").type(query).description("The label of the variable").dataType("string").required(false).endParam()
+                .param().name("sourceid").type(query).description("The editable/savepoint ID").dataType("long").required(false).endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    String varname = exch.getIn().getHeader("varname", String.class);
+                    String key = exch.getIn().getHeader("key", String.class);
+                    VarType type = VarType.valueOf(exch.getIn().getHeader("type", String.class));
+                    String label = exch.getIn().getHeader("label", String.class);
+                    Long sourceid = exch.getIn().getHeader("sourceid", Long.class);
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
 
-        ;
+                    if (notebookid == null) {
+                        throw new IllegalArgumentException("Must specify notebookid");
+                    }
+                    if (varname == null) {
+                        throw new IllegalArgumentException("Must specify variable name");
+                    }
+                    if (type == null) {
+                        throw new IllegalArgumentException("Must specify variable type");
+                    }
+                    // TODO -set the mime type and encoding
+                    if (label != null) {
+                        switch (type) {
+                            case s:
+                                InputStream is = notebookClient.readStreamValue(notebookid, label, varname, key);
+                                exch.getIn().setBody(is);
+                                break;
+                            case t:
+                                LOG.info("reading text value for label");
+                                String t = notebookClient.readTextValue(notebookid, label, varname, key);
+                                exch.getIn().setBody(t);
+                                break;
+                            default:
+                                throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
+                        }
+                    } else if (sourceid != null) {
+                        switch (type) {
+                            case s:
+                                InputStream is = notebookClient.readStreamValue(notebookid, sourceid, varname, key);
+                                exch.getIn().setBody(is);
+                                break;
+                            case t:
+                                String t = notebookClient.readTextValue(notebookid, sourceid, varname, key);
+                                exch.getIn().setBody(t);
+                                break;
+                            default:
+                                throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
+                        }
+                    } else {
+                        throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
+                    }
+                })
+                .endRest()
+                // write a variable
+                .post("/{notebookid}/v/{varname}/{type}/{key}").description("Write a variable value")
+                .bindingMode(RestBindingMode.off)
+                .param().name("notebookid").type(path).description("The notebook ID").dataType("long").required(true).endParam()
+                .param().name("varname").type(path).description("The name of the variable").dataType("string").required(true).endParam()
+                .param().name("key").type(path).description("Optional key for the variable. If not provide key of 'default' is assumed").dataType("string").required(false).endParam()
+                .param().name("type").type(path).description("The type of variable (s = stream, t = text)").dataType("string").required(true).allowableValues("s", "t").endParam()
+                .param().name("editableid").type(query).description("The editable ID").dataType("long").required(true).endParam()
+                .param().name("cellid").type(query).description("The cell ID that produces the value").dataType("long").required(true).endParam()
+                .param().name("body").type(body).description("The value").required(true).endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    String varname = exch.getIn().getHeader("varname", String.class);
+                    String key = exch.getIn().getHeader("key", String.class);
+                    VarType type = VarType.valueOf(exch.getIn().getHeader("type", String.class));
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    Long editableid = exch.getIn().getHeader("editableid", Long.class);
+                    Long cellid = exch.getIn().getHeader("cellid", Long.class);
+
+
+                    if (notebookid == null) {
+                        throw new IllegalArgumentException("Must specify notebookid");
+                    }
+                    if (editableid == null) {
+                        throw new IllegalArgumentException("Must specify editableid");
+                    }
+                    if (cellid == null) {
+                        throw new IllegalArgumentException("Must specify cellid");
+                    }
+                    if (varname == null) {
+                        throw new IllegalArgumentException("Must specify variable name");
+                    }
+                    if (type == null) {
+                        throw new IllegalArgumentException("Must specify variable type");
+                    }
+
+                    switch (type) {
+                        case s:
+                            InputStream is = exch.getIn().getBody(InputStream.class);
+                            notebookClient.writeStreamValue(notebookid, editableid, cellid, varname, is, key);
+                            break;
+                        case t:
+                            String t = exch.getIn().getBody(String.class);
+                            notebookClient.writeTextValue(notebookid, editableid, cellid, varname, t, key);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
+                    }
+
+                })
+                .endRest();
 
         from("seda:notifyJobStatusUpdate")
                 .setHeader("rabbitmq.ROUTING_KEY", simple("users.${header[" + HEADER_SQUONK_USERNAME + "]}.jobstatus"))

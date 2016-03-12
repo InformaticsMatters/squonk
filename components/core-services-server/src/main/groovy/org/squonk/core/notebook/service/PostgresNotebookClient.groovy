@@ -2,6 +2,7 @@ package org.squonk.core.notebook.service
 
 import groovy.sql.Sql
 import groovy.util.logging.Log
+import org.squonk.client.NotebookClient
 import org.squonk.core.util.Utils
 import org.squonk.notebook.api2.NotebookDescriptor
 import org.squonk.notebook.api2.NotebookEditable
@@ -272,13 +273,13 @@ class PostgresNotebookClient implements NotebookClient {
     /**
      * {@inheritDoc}
      */
-    public String readTextValue(Long sourceId, String variableName, String key) {
+    public String readTextValue(Long notebookId, Long sourceId, String variableName, String key) {
         log.info("Reading text variable $variableName:$key for $sourceId")
         Sql db = createSql()
         try {
             String result = null
             db.withTransaction {
-                result = doFetchVar(db, sourceId, variableName, key, true)
+                result = doFetchVar(db, notebookId, sourceId, variableName, key, true)
             }
             return result
         } finally {
@@ -289,7 +290,7 @@ class PostgresNotebookClient implements NotebookClient {
     /**
      * {@inheritDoc}
      */
-    public String readTextValueForLabel(Long notebookId, String label, String variableName, String key) {
+    public String readTextValue(Long notebookId, String label, String variableName, String key) {
         log.info("Reading text variable $variableName:$key for label $label")
         return doReadValueForLabel(notebookId, label, variableName, key, true)
     }
@@ -297,7 +298,8 @@ class PostgresNotebookClient implements NotebookClient {
     /**
      * {@inheritDoc}
      */
-    public void writeTextValue(Long editableId, Long cellId, String variableName, String value, String key) {
+    public void writeTextValue(Long notebookId, Long editableId, Long cellId, String variableName, String value, String key) {
+        // TODO - include the notebookId in the process to increase security
         log.info("Writing text variable $variableName:$key for $editableId")
         Sql db = createSql()
         try {
@@ -318,7 +320,7 @@ class PostgresNotebookClient implements NotebookClient {
     /**
      * {@inheritDoc}
      */
-    public InputStream readStreamValue(Long sourceId, String variableName, String key) {
+    public InputStream readStreamValue(Long notebookId, Long sourceId, String variableName, String key) {
         log.info("Reading stream variable $variableName:$key for $sourceId")
         // not entirely clear why this works as the connection is closed immediately but the InputStream is still readable.
         Sql db = createSql()
@@ -326,7 +328,7 @@ class PostgresNotebookClient implements NotebookClient {
             InputStream result = null
             db.withTransaction {
                 log.info("Fetching InputStream for $sourceId, $variableName, $key")
-                result = doFetchVar(db, sourceId, variableName, key, false)
+                result = doFetchVar(db, notebookId, sourceId, variableName, key, false)
             }
             return result
         } finally {
@@ -337,7 +339,7 @@ class PostgresNotebookClient implements NotebookClient {
     /**
      * {@inheritDoc}
      */
-    public InputStream readStreamValueForLabel(Long notebookId, String label, String variableName, String key) {
+    public InputStream readStreamValue(Long notebookId, String label, String variableName, String key) {
         log.info("Reading stream variable $variableName:$key for label $label")
         return doReadValueForLabel(notebookId, label, variableName, key, false)
     }
@@ -345,7 +347,8 @@ class PostgresNotebookClient implements NotebookClient {
     /**
      * {@inheritDoc}
      */
-    public void writeStreamValue(Long editableId, Long cellId, String variableName, InputStream value, String key) {
+    public void writeStreamValue(Long notebookId, Long editableId, Long cellId, String variableName, InputStream value, String key) {
+        // TODO - include the notebookId in the process to increase security
         log.info("Writing stream variable $variableName:$key for $editableId")
         Sql db = new Sql(dataSource.getConnection()) {
             protected void setParameters(List<Object> params, PreparedStatement ps) {
@@ -480,7 +483,7 @@ class PostgresNotebookClient implements NotebookClient {
         return new NotebookSavepoint(data.id, data.notebook_id, data.parent_id, data.username, data.created, data.updated, data.description, data.label, data.nb_definition)
     }
 
-    private Object doFetchVar(Sql db, Long sourceId, String variableName, String key, boolean isText) {
+    private Object doFetchVar(Sql db, Long notebookId, Long sourceId, String variableName, String key, boolean isText) {
 
         // TODO - this can probably be optimised significantly
 
@@ -490,11 +493,12 @@ class PostgresNotebookClient implements NotebookClient {
         boolean found = false
 
         String sql = """\
-                |SELECT ${isText ? 'val_text' : 'val_blob'} FROM users.nb_variable
-                |  WHERE source_id=:sourceId AND var_name=:variableName AND var_key=:key""".stripMargin()
+                |SELECT ${isText ? 'val_text' : 'val_blob'} FROM users.nb_variable v
+                |  JOIN users.nb_version s ON s.id=v.source_id
+                |  WHERE v.source_id=:source AND v.var_name=:varname AND v.var_key=:key AND s.notebook_id=:notebook""".stripMargin()
         log.fine("SQL: $sql")
 
-        db.query(sql, [sourceId: sourceId, variableName: variableName, key: key ?: DEFAULT_KEY]) { ResultSet rs ->
+        db.query(sql, [notebook:notebookId, source: sourceId, varname: variableName, key: key ?: DEFAULT_KEY]) { ResultSet rs ->
 
             if (rs.next()) {
                 found = true
@@ -510,7 +514,7 @@ class PostgresNotebookClient implements NotebookClient {
             return result
         } else {
             log.info("Variable $variableName:$key not found in source $sourceId")
-            def row = db.firstRow("SELECT parent_id FROM users.nb_version WHERE id=?", [sourceId])
+            def row = db.firstRow("SELECT parent_id FROM users.nb_version WHERE id=? AND notebook_id=?", [sourceId, notebookId])
             if (row != null) {
                 Long parent = row[0]
                 if (parent == null) {
@@ -518,10 +522,10 @@ class PostgresNotebookClient implements NotebookClient {
                     return null
                 } else {
                     log.info("Looking for variable $variableName:$key in parent $parent")
-                    return doFetchVar(db, parent, variableName, key, isText)
+                    return doFetchVar(db, notebookId, parent, variableName, key, isText)
                 }
             } else {
-                log.info("No row found for $sourceId - probably invalid ID?")
+                log.info("No row found for $sourceId - probably invalid source or notebook ID?")
                 return null;
             }
         }
@@ -530,14 +534,14 @@ class PostgresNotebookClient implements NotebookClient {
     private Object doReadValueForLabel(Long notebookId, String label, String variableName, String key, isText) {
         Sql db = new Sql(dataSource.getConnection())
         try {
-            String result = null
+            Object result = null
             db.withTransaction {
                 Long sourceId = fetchSourceIdForLabel(db, notebookId, label)
                 if (sourceId == null) {
                     log.info("Label $label not defined for notebook $notebookId")
                 } else {
                     log.fine("Label $label resolved to source $sourceId")
-                    result = doFetchVar(db, sourceId, variableName, key, isText)
+                    result = doFetchVar(db, notebookId, sourceId, variableName, key, isText)
                 }
             }
             return result

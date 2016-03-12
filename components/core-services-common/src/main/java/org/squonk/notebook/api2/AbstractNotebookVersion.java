@@ -7,6 +7,7 @@ import java.util.Date;
  */
 public abstract class AbstractNotebookVersion {
 
+
     private Long id;
     private Long notebookId;
     private Long parentId;

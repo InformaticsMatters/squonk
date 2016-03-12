@@ -1,7 +1,5 @@
 package org.squonk.core.client
 
-import com.im.lac.user.client.UserClient
-import org.squonk.core.user.User
 import org.squonk.notebook.api2.NotebookDescriptor
 import org.squonk.notebook.api2.NotebookEditable
 import org.squonk.notebook.api2.NotebookSavepoint
@@ -153,6 +151,52 @@ class NotebookRestClientSpec extends Specification {
         savepoint1 != null
         savepoint1.label == "label1"
         id == savepoint1.id
+    }
+
+    void "write/read text variable"() {
+
+        when:
+        client.writeTextValue(editable3.notebookId, editable3.id, 1, "var1", "hello world")
+        String s1 = client.readTextValue(editable3.notebookId, editable3.id, "var1")
+        String s2 = client.readTextValue(editable3.notebookId, editable3.id, "var1", "default")
+
+        then:
+        s1 == "hello world"
+        s2 == "hello world"
+    }
+
+    void "write/read stream variable"() {
+
+        when:
+        client.writeStreamValue(editable3.notebookId, editable3.id, 1, "var2", new ByteArrayInputStream("hello mars".bytes))
+        String s1 = client.readStreamValue(editable3.notebookId, editable3.id, "var2").text
+        String s2 = client.readStreamValue(editable3.notebookId, editable3.id, "var2", "default").text
+
+        then:
+        s1 == "hello mars"
+        s2 == "hello mars"
+    }
+
+    void "read text variable with label"() {
+
+        def ed1 = client.createSavepoint(editable3.notebookId, editable3.id) // savepoint id is editable3.id
+        def ed2 = client.createSavepoint(ed1.notebookId, ed1.id) // savepoint id is ed1.id
+        def savepoint = client.setSavepointLabel(editable3.notebookId, ed1.id, "label2")
+
+        when:
+        String s1 = client.readTextValue(editable3.notebookId, "label2", "var1")
+
+        then:
+        s1 == "hello world"
+    }
+
+    void "read stream variable with label"() {
+
+        when:
+        String s1 = client.readStreamValue(editable3.notebookId, "label2", "var2").text
+
+        then:
+        s1 == "hello mars"
     }
 }
 

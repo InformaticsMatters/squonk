@@ -26,6 +26,9 @@ class PostgresNotebookClientSpec extends Specification {
 
     void "create notebooks"() {
 
+        setup:
+        client.createSql().execute("DELETE FROM users.nb_descriptor")
+
         when:
         NotebookDescriptor nb1 = client.createNotebook(TestUtils.TEST_USERNAME, "notebook1", "notebook one")
         NotebookDescriptor nb2 = client.createNotebook(TestUtils.TEST_USERNAME, "notebook2", "notebook two")
@@ -153,7 +156,7 @@ class PostgresNotebookClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        client.writeTextValue(eds[0].id, 1, 'var1', 'val1')
+        client.writeTextValue(eds[0].notebookId, eds[0].id, 1, 'var1', 'val1')
 
         then:
         client.createSql().firstRow("SELECT count(*) from users.nb_variable")[0] == 1
@@ -165,7 +168,7 @@ class PostgresNotebookClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        client.writeTextValue(eds[0].id, 1, 'var1', 'val2', 'key')
+        client.writeTextValue(eds[0].notebookId, eds[0].id, 1, 'var1', 'val2', 'key')
 
         then:
         client.createSql().firstRow("SELECT count(*) from users.nb_variable")[0] == 2
@@ -177,8 +180,8 @@ class PostgresNotebookClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        client.writeTextValue(eds[0].id, 1, 'var1', 'val3')
-        client.writeTextValue(eds[0].id, 1, 'var2', 'another val')
+        client.writeTextValue(eds[0].notebookId, eds[0].id, 1, 'var1', 'val3')
+        client.writeTextValue(eds[0].notebookId, eds[0].id, 1, 'var2', 'another val')
 
         then:
         client.createSql().firstRow("SELECT count(*) from users.nb_variable")[0] == 3
@@ -191,7 +194,7 @@ class PostgresNotebookClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        client.writeTextValue(eds[0].id, 1, 'var1', 'val4', 'key')
+        client.writeTextValue(eds[0].notebookId, eds[0].id, 1, 'var1', 'val4', 'key')
 
         then:
         client.createSql().firstRow("SELECT count(*) from users.nb_variable")[0] == 3
@@ -206,7 +209,7 @@ class PostgresNotebookClientSpec extends Specification {
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
         int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
-        client.writeStreamValue(eds[0].id, 1, 'stream1', new ByteArrayInputStream(LONG_VARIABLE_1.getBytes()), null)
+        client.writeStreamValue(eds[0].notebookId, eds[0].id, 1, 'stream1', new ByteArrayInputStream(LONG_VARIABLE_1.getBytes()), null)
         int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
 
         then:
@@ -218,7 +221,7 @@ class PostgresNotebookClientSpec extends Specification {
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
         int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
-        client.writeStreamValue(eds[0].id, 1, 'stream2', new ByteArrayInputStream(LONG_VARIABLE_1.getBytes()), "key")
+        client.writeStreamValue(eds[0].notebookId, eds[0].id, 1, 'stream2', new ByteArrayInputStream(LONG_VARIABLE_1.getBytes()), "key")
         int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
 
         then:
@@ -230,7 +233,7 @@ class PostgresNotebookClientSpec extends Specification {
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
         int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
-        client.writeStreamValue(eds[0].id, 1, 'stream1', new ByteArrayInputStream(LONG_VARIABLE_2.getBytes()), null)
+        client.writeStreamValue(eds[0].notebookId, eds[0].id, 1, 'stream1', new ByteArrayInputStream(LONG_VARIABLE_2.getBytes()), null)
         int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
 
         then:
@@ -242,7 +245,7 @@ class PostgresNotebookClientSpec extends Specification {
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
         int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
-        client.writeStreamValue(eds[0].id, 1, 'stream2', new ByteArrayInputStream(LONG_VARIABLE_2.getBytes()), "key")
+        client.writeStreamValue(eds[0].notebookId, eds[0].id, 1, 'stream2', new ByteArrayInputStream(LONG_VARIABLE_2.getBytes()), "key")
         int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
 
         then:
@@ -253,7 +256,7 @@ class PostgresNotebookClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        String var1 = client.readTextValue(eds[0].id, 'var1', 'key')
+        String var1 = client.readTextValue(eds[0].notebookId, eds[0].id, 'var1', 'key')
 
         then:
         var1 == 'val4'
@@ -263,8 +266,8 @@ class PostgresNotebookClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        String var1 = client.readTextValue(eds[0].id, 'var1')
-        String var2 = client.readTextValue(eds[0].id, 'var2')
+        String var1 = client.readTextValue(eds[0].notebookId, eds[0].id, 'var1')
+        String var2 = client.readTextValue(eds[0].notebookId, eds[0].id, 'var2')
 
         then:
         var1 == 'val3'
@@ -275,7 +278,7 @@ class PostgresNotebookClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        InputStream var1 = client.readStreamValue(eds[0].id, 'stream2', 'key')
+        InputStream var1 = client.readStreamValue(eds[0].notebookId, eds[0].id, 'stream2', 'key')
         String s = var1.text
         var1.close()
 
@@ -288,7 +291,7 @@ class PostgresNotebookClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        InputStream var1 = client.readStreamValue(eds[0].id, 'stream1')
+        InputStream var1 = client.readStreamValue(eds[0].notebookId, eds[0].id, 'stream1')
         String s = var1.text
 
         then:
@@ -304,9 +307,9 @@ class PostgresNotebookClientSpec extends Specification {
         // label it for later
         client.setSavepointLabel(eds[0].notebookId, eds[0].id, 'label4')
 
-        String var1 = client.readTextValue(ed1.id, 'var1')
+        String var1 = client.readTextValue(ed1.notebookId, ed1.id, 'var1')
         NotebookEditable ed2 = client.createSavepoint(ed1.notebookId, ed1.id)
-        String var2 = client.readTextValue(ed2.id, 'var1')
+        String var2 = client.readTextValue(ed2.notebookId, ed2.id, 'var1')
 
         then:
         var1 == 'val3'
@@ -318,7 +321,7 @@ class PostgresNotebookClientSpec extends Specification {
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
 
-        InputStream var1 = client.readStreamValue(eds[0].id, 'stream1')
+        InputStream var1 = client.readStreamValue(eds[0].notebookId, eds[0].id, 'stream1')
         String s = var1.text
         var1.close()
 
@@ -330,7 +333,7 @@ class PostgresNotebookClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        String var = client.readTextValueForLabel(notebooks[0].id, 'label4', 'var1', null)
+        String var = client.readTextValue(notebooks[0].id, 'label4', 'var1', null)
 
         then:
         var == 'val3'

@@ -82,6 +82,7 @@ public class AbstractHttpClient {
             LOG.finer(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
             if (!responseOK(response)) {
+                LOG.warning("GET FAILED: " + IOUtils.convertStreamToString(entity.getContent(), 1000));
                 throw new IOException("HTTP GET failed: " + response.getStatusLine().toString());
             }
             return entity.getContent();
