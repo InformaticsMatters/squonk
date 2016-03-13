@@ -118,32 +118,46 @@ public class IOUtils {
         }
     }
 
+    /**
+     * Convert with a default buffer size of 1000
+     *
+     * @param is
+     * @return
+     * @throws IOException
+     */
+    public static String convertStreamToString(final InputStream is) throws IOException {
+        return convertStreamToString(is, 1000);
+    }
+
     public static String convertStreamToString(final InputStream is, final int bufferSize) throws IOException {
         final char[] buffer = new char[bufferSize];
         final StringBuilder out = new StringBuilder();
-        Reader in = new InputStreamReader(is);
+        try (Reader in = new InputStreamReader(is)) {
 
-        while (true) {
-            int rsz = in.read(buffer, 0, buffer.length);
-            if (rsz < 0) {
-                break;
+            while (true) {
+                int rsz = in.read(buffer, 0, buffer.length);
+                if (rsz < 0) {
+                    break;
+                }
+                out.append(buffer, 0, rsz);
             }
-            out.append(buffer, 0, rsz);
+
+            return out.toString();
         }
-        return out.toString();
     }
 
     public static byte[] convertStreamToBytes(final InputStream is, final int bufferSize) throws IOException {
         final byte[] buffer = new byte[bufferSize];
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        while (true) {
-            int rsz = is.read(buffer, 0, buffer.length);
-            if (rsz < 0) {
-                break;
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            while (true) {
+                int rsz = is.read(buffer, 0, buffer.length);
+                if (rsz < 0) {
+                    break;
+                }
+                out.write(buffer, 0, rsz);
             }
-            out.write(buffer, 0, rsz);
+            return out.toByteArray();
         }
-        return out.toByteArray();
     }
 
     public static String truncateString(String s, int maxLength) {

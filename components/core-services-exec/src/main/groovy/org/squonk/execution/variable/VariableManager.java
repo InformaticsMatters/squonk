@@ -2,9 +2,9 @@ package org.squonk.execution.variable;
 
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.notebook.api.VariableKey;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
-import org.squonk.notebook.api.VariableKey;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,7 +65,6 @@ public class VariableManager {
                 throw new IllegalStateException("Type " + persistenceType + " not supported");
         }
     }
-
 
     public <V> V getValue(VariableKey key, Class<V> type, PersistenceType persistenceType) throws IOException {
 

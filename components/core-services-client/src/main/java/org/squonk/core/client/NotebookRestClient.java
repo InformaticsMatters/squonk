@@ -13,6 +13,9 @@ import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -168,13 +171,24 @@ public class NotebookRestClient extends AbstractHttpClient implements NotebookCl
     public String readTextValue(Long notebookId, Long sourceId, String variableName, String key) throws IOException {
         assert sourceId != null;
         assert variableName != null;
-        URIBuilder b = new URIBuilder().setPath(buildVariableUrl(notebookId, variableName, key, VarType.t))
-                .setParameter("sourceid", sourceId.toString());
+        URIBuilder b = createURIBuilder(notebookId, sourceId, variableName, key, VarType.t);
         try (InputStream is = executeGetAsInputStream(b)) {
             return IOUtils.convertStreamToString(is, 1000);
         }
     }
 
+    public URL getTextValueURL(Long notebookId, Long sourceId, String variableName, String key) {
+        try {
+            return createURIBuilder(notebookId, sourceId, variableName, key, VarType.t).build().toURL();
+        } catch (MalformedURLException | URISyntaxException e) {
+            throw new IllegalArgumentException("Unable to build URL. Maybe bad parameters?");
+        }
+    }
+
+    private URIBuilder createURIBuilder(Long notebookId, Long sourceId, String variableName, String key,VarType t) {
+        return new URIBuilder().setPath(buildVariableUrl(notebookId, variableName, key, t))
+                .setParameter("sourceid", sourceId.toString());
+    }
 
 
     public String readTextValue(Long notebookId, String label, String variableName, String key) throws IOException {
@@ -192,11 +206,17 @@ public class NotebookRestClient extends AbstractHttpClient implements NotebookCl
     public InputStream readStreamValue(Long notebookId, Long sourceId, String variableName, String key) throws IOException {
         assert sourceId != null;
         assert variableName != null;
-        URIBuilder b = new URIBuilder().setPath(buildVariableUrl(notebookId, variableName, key, VarType.s))
-                .setParameter("sourceid", sourceId.toString());
+        URIBuilder b = createURIBuilder(notebookId, sourceId, variableName, key, VarType.s);
         InputStream is = executeGetAsInputStream(b);
         return is;
+    }
 
+    public URL getStreamValueURL(Long notebookId, Long sourceId, String variableName, String key) {
+        try {
+            return createURIBuilder(notebookId, sourceId, variableName, key, VarType.s).build().toURL();
+        } catch (MalformedURLException | URISyntaxException e) {
+            throw new IllegalArgumentException("Unable to build URL. Maybe bad parameters?");
+        }
     }
 
     public InputStream readStreamValue(Long notebookId, String label, String variableName, String key) throws IOException {
