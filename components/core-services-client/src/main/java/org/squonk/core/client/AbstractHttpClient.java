@@ -49,10 +49,8 @@ public class AbstractHttpClient {
             }
             try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
                 LOG.finer(response.getStatusLine().toString());
+                checkResponse(response);
                 HttpEntity entity = response.getEntity();
-                if (!responseOK(response)) {
-                    throw new IOException("HTTP GET failed: " + response.getStatusLine().toString());
-                }
                 return EntityUtils.toString(entity);
             }
         } catch (URISyntaxException e) {
@@ -77,11 +75,8 @@ public class AbstractHttpClient {
             }
             CloseableHttpResponse response = httpclient.execute(httpGet);
             LOG.finer(response.getStatusLine().toString());
+            checkResponse(response);
             HttpEntity entity = response.getEntity();
-            if (!responseOK(response)) {
-                LOG.warning("GET FAILED: " + IOUtils.convertStreamToString(entity.getContent(), 1000));
-                throw new IOException("HTTP GET failed: " + response.getStatusLine().toString());
-            }
             return entity.getContent();
         } catch (URISyntaxException e) {
             throw new IOException("Bad URI. Really?", e);
@@ -100,12 +95,8 @@ public class AbstractHttpClient {
 
             CloseableHttpResponse response = doPost(b, body, headers);
             LOG.finer(response.getStatusLine().toString());
+            checkResponse(response);
             HttpEntity entity = response.getEntity();
-            if (!responseOK(response)) {
-                String err = EntityUtils.toString(entity);
-                LOG.log(Level.WARNING, "Request failed: {0}", err);
-                throw new IOException("Request failed: " + response.getStatusLine().toString());
-            }
             InputStream is = entity.getContent();
             return is;
     }
@@ -118,12 +109,8 @@ public class AbstractHttpClient {
 
         CloseableHttpResponse response = doPut(b, body, headers);
         LOG.finer(response.getStatusLine().toString());
+        checkResponse(response);
         HttpEntity entity = response.getEntity();
-        if (!responseOK(response)) {
-            String err = EntityUtils.toString(entity);
-            LOG.log(Level.WARNING, "Request failed: {0}", err);
-            throw new IOException("Request failed: " + response.getStatusLine().toString());
-        }
         InputStream is = entity.getContent();
         return is;
     }
@@ -140,14 +127,7 @@ public class AbstractHttpClient {
 
         CloseableHttpResponse response = doPost(b, body, headers);
         LOG.finer(response.getStatusLine().toString());
-        HttpEntity entity = response.getEntity();
-        if (!responseOK(response)) {
-            throw new IOException("Request failed: " + response.getStatusLine().toString());
-        }
-    }
-
-    protected boolean responseOK(HttpResponse response) {
-        return response.getStatusLine().getStatusCode() >=200 && response.getStatusLine().getStatusCode() < 300;
+        checkResponse(response);
     }
 
     protected CloseableHttpResponse doPost(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
@@ -211,6 +191,25 @@ public class AbstractHttpClient {
             return JsonHandler.getInstance().objectFromJson(json, type);
         } finally {
             IOUtils.close(json);
+        }
+    }
+
+//    protected boolean responseOK(HttpResponse response) {
+//        return response.getStatusLine().getStatusCode() >=200 && response.getStatusLine().getStatusCode() < 300;
+//    }
+
+    /** Throws IOException if response is not in the 200 range, providing whatever information is available as the exception message.
+     * Override this if you need different behaviour.
+     *
+     * @param response
+     * @throws IOException
+     */
+    protected void checkResponse(HttpResponse response) throws IOException {
+        HttpEntity entity = response.getEntity();
+        if (response.getStatusLine().getStatusCode() <200 || response.getStatusLine().getStatusCode() >= 300) {
+            String err = EntityUtils.toString(entity);
+            LOG.log(Level.WARNING, "Request failed: {0}", err);
+            throw new IOException("Request failed: " + (err == null ? response.getStatusLine().toString() : err));
         }
     }
 }

@@ -35,6 +35,7 @@ class NotebookRestClientSpec extends Specification {
         notebooks.size() == 0
     }
 
+
     void "list editables notebook not exist"() {
 
         when:
@@ -49,8 +50,6 @@ class NotebookRestClientSpec extends Specification {
 
         when:
         def savepoints = client.listSavepoints(0l)
-        println "received ${savepoints?.size()} savepoints"
-
 
         then:
         savepoints != null
@@ -67,6 +66,16 @@ class NotebookRestClientSpec extends Specification {
         notebook1.id > 0
         notebook1.owner == username
     }
+
+    void "create notebook bad user"() {
+
+        when:
+        def notebook = client.createNotebook("bananaman", "won't create", "user doesn't exist")
+
+        then:
+        thrown(IOException.class)
+    }
+
 
     void "update notebook"() {
 
@@ -105,8 +114,6 @@ class NotebookRestClientSpec extends Specification {
 
         when:
         editable2 = client.updateEditable(editable2.notebookId, editable2.id, '{}')
-        println "updated editable  $editable2"
-
 
         then:
         editable2 != null

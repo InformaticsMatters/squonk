@@ -77,6 +77,32 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
 
         restConfiguration().component("servlet").host("0.0.0.0");
 
+        onException(IllegalStateException.class)
+                .handled(true)
+                .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(400))
+                .setHeader(Exchange.CONTENT_TYPE, constant("text/plain"))
+                .process((Exchange exch) -> {
+                    Throwable caused = exch.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
+                    if (caused == null || caused.getMessage() == null) {
+                        exch.getIn().setBody("Invalid state: Cause unknown");
+                    } else {
+                        exch.getIn().setBody("Invalid state: " + caused.getMessage());
+                    }
+                });
+
+        onException(NotFoundException.class)
+                .handled(true)
+                .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(404))
+                .setHeader(Exchange.CONTENT_TYPE, constant("text/plain"))
+                .process((Exchange exch) -> {
+                    Throwable caused = exch.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
+                    if (caused == null || caused.getMessage() == null) {
+                        exch.getIn().setBody("Not Found: Cause unknown");
+                    } else {
+                        exch.getIn().setBody("Not Found: " + caused.getMessage());
+                    }
+                });
+
         /* These are the REST endpoints - exposed as public web services 
          */
         rest("/ping")

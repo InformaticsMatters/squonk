@@ -35,6 +35,7 @@ class NotebookPostgresClient implements NotebookClient {
      * {@inheritDoc}
      */
     public NotebookDescriptor createNotebook(String username, String name, String description) {
+        log.fine("Creating notebook $name for user $username and $description description")
         Sql db = createSql()
         try {
             NotebookDescriptor result = null
@@ -44,9 +45,9 @@ class NotebookPostgresClient implements NotebookClient {
                                 "(SELECT id, :name, :desc, NOW(), NOW() FROM users.users u WHERE u.username = :username)",
                         [username: username, name: name, desc: description])
                 Long id = findInsertedId(keys)
-                log.info("Created Notebook of ID $id")
+                log.info("Created Notebook of ID $id for user $username")
                 if (id == null) {
-                    throw new IllegalStateException("Failed to insert notebook")
+                    throw new IllegalStateException("Failed to insert notebook for user $username. Is username valid?")
                 }
                 // fetch the nb definition
                 result = fetchNotebookDescriptorById(db, id)
@@ -65,6 +66,7 @@ class NotebookPostgresClient implements NotebookClient {
      * {@inheritDoc}
      */
     public NotebookDescriptor updateNotebook(Long notebookId, String name, String description) {
+        log.fine("Updating notebook $notebookId with name $name and $description description")
         Sql db = createSql()
         try {
             NotebookDescriptor result = null
@@ -73,7 +75,7 @@ class NotebookPostgresClient implements NotebookClient {
                         "UPDATE users.nb_descriptor SET name=:name, description=:desc, updated=NOW() WHERE id=:notebookid",
                         [name: name, desc: description, notebookid:notebookId])
                 if (rows != 1) {
-                    throw new IllegalStateException("Failed to update notebook")
+                    throw new IllegalStateException("Failed to update notebook $notebookId")
                 }
                 // fetch the nb definition
                 result = fetchNotebookDescriptorById(db, notebookId)
@@ -88,6 +90,7 @@ class NotebookPostgresClient implements NotebookClient {
      * {@inheritDoc}
      */
     public List<NotebookDescriptor> listNotebooks(String username) {
+        log.fine("Listing notebooks for user $username")
         Sql db = createSql()
         try {
             List<NotebookDescriptor> results = null
@@ -104,6 +107,7 @@ class NotebookPostgresClient implements NotebookClient {
      * {@inheritDoc}
      */
     public List<NotebookEditable> listEditables(Long notebookId, String username) {
+        log.fine("Listing editables for notebook $notebookId and user $username")
         Sql db = createSql()
         try {
             List<NotebookDescriptor> results = null
@@ -128,7 +132,7 @@ class NotebookPostgresClient implements NotebookClient {
                 Long userId = fetchIdForUsername(db, username)
                 Long id = insertNotebookEditable(db, notebookId, parentId, userId)
                 if (id == null) {
-                    throw new IllegalStateException("Failed to create editable. Does the notebook and parent with these criteria exist: notebook id=$notebookId, parent id=$parentId")
+                    throw new IllegalStateException("Failed to create editable. Does the notebook $notebookId and parent $parentId exist?")
                 }
                 result = fetchNotebookEditableById(db, notebookId, id)
             }
@@ -149,7 +153,7 @@ class NotebookPostgresClient implements NotebookClient {
             db.withTransaction {
                 int updates = db.executeUpdate("UPDATE users.nb_version SET nb_definition=${json}::jsonb, updated=NOW() WHERE id=$editableId AND notebook_id=$notebookId AND type='E'")
                 if (updates != 1) {
-                    throw new IllegalStateException("No update performed. Does the editable with these criteria exist: notebook id=$notebookId, editable id=$editableId")
+                    throw new IllegalStateException("No update performed. Does the editable $editableId for notebook $notebookId exist?")
                 }
                 result = fetchNotebookEditableById(db, notebookId, editableId)
             }
@@ -172,7 +176,7 @@ class NotebookPostgresClient implements NotebookClient {
                 // convert the editable to a savepoint
                 int updates = db.executeUpdate("UPDATE users.nb_version SET type='S', created=NOW(), updated=NOW() WHERE id=$editableId AND notebook_id=$notebookId AND type='E'")
                 if (updates != 1) {
-                    throw new IllegalStateException("Failed to convert editable to savepoint. Does the editable with these criteria exist: notebook id=$notebookId, editable id=$editableId")
+                    throw new IllegalStateException("Failed to convert editable to savepoint. Does the editable $editableId for notebook $notebookId exist?")
                 }
 
                 // create the new editable
@@ -184,7 +188,7 @@ class NotebookPostgresClient implements NotebookClient {
                 Long id = findInsertedId(keys)
                 log.info("Created new editable $id based on $editableId")
                 if (id == null) {
-                    throw new IllegalStateException("No insert performed. Does the editable with these criteria exist: notebook id=$notebookId, editable id=$editableId")
+                    throw new IllegalStateException("No insert performed. Does the editable $editableId for notebook $notebookId exist?")
                 }
 
                 // fetch the newly created editable
@@ -226,7 +230,7 @@ class NotebookPostgresClient implements NotebookClient {
                         "UPDATE users.nb_version SET description=:description, updated=NOW() WHERE notebook_id=:notebookId AND id=:savepointId AND type='S' ",
                         [notebookId: notebookId, savepointId: savepointId, description: description])
                 if (updates != 1) {
-                    throw new IllegalStateException("Description not updated. Does the savepoint with these criteria exist: notebook id=$notebookId, editable id=$savepointId")
+                    throw new IllegalStateException("Description not updated. Does the savepoint $savepointId for notebook $notebookId exist?")
                 }
 
                 result = fetchNotebookSavepointById(db, notebookId, savepointId)
@@ -250,7 +254,7 @@ class NotebookPostgresClient implements NotebookClient {
                         "UPDATE users.nb_version SET label=:label, updated=NOW() WHERE notebook_id=:notebookId AND id=:savepointId AND type ='S' ",
                         [notebookId: notebookId, savepointId: savepointId, label: label])
                 if (updates != 1) {
-                    throw new IllegalStateException("Label not updated. Does the savepoint with these criteria exist: notebook id=$notebookId, editable id=$savepointId")
+                    throw new IllegalStateException("Label not updated. Does the savepoint $savepointId for notebook $notebookId exist?")
                 }
                 result = fetchNotebookSavepointById(db, notebookId, savepointId)
                 log.info("Label for savepoint $notebookId:$savepointId set to ${result.label}")
@@ -353,7 +357,6 @@ class NotebookPostgresClient implements NotebookClient {
         log.info("Writing stream variable $variableName:$key for $editableId")
         Sql db = new Sql(dataSource.getConnection()) {
             protected void setParameters(List<Object> params, PreparedStatement ps) {
-                log.info("setParameters() ${params.size()}")
                 ps.setLong(1, params[0])
                 ps.setLong(2, params[1])
                 ps.setString(3, params[2])
