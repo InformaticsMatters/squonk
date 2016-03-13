@@ -6,14 +6,14 @@ import com.im.lac.job.jobdef.ExecuteCellUsingStepsJobDefinition;
 import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
 import org.squonk.core.dataset.service.DatasetHandler;
-import org.squonk.core.discovery.service.ServiceDiscoveryRouteBuilder;
-import org.squonk.core.job.Job;
-import org.squonk.core.job.service.MemoryJobStatusClient;
-import org.squonk.core.job.service.PostgresJobStatusClient;
-import org.squonk.core.job.service.StepsCellJob;
-import org.squonk.core.notebook.service.PostgresNotebookClient;
+import org.squonk.core.service.discovery.ServiceDiscoveryRouteBuilder;
+import org.squonk.core.service.job.Job;
+import org.squonk.core.service.job.MemoryJobStatusClient;
+import org.squonk.core.service.job.PostgresJobStatusClient;
+import org.squonk.core.service.job.StepsCellJob;
+import org.squonk.core.service.notebook.NotebookPostgresClient;
 import org.squonk.core.user.User;
-import org.squonk.core.user.UserHandler;
+import org.squonk.core.service.user.UserHandler;
 import org.squonk.core.util.Utils;
 import com.im.lac.types.MoleculeObject;
 import org.apache.camel.Exchange;
@@ -53,7 +53,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
     private static final Logger LOG = Logger.getLogger(RestRouteBuilder.class.getName());
 
     private final JobStatusClient jobstatusClient;
-    private final PostgresNotebookClient notebookClient;
+    private final NotebookPostgresClient notebookClient;
     private final JsonHandler jsonHandler = JsonHandler.getInstance();
     private MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials();
     private final String userNotifyMqueueUrl = rabbitmqCredentials.generateUrl(MQUEUE_USERS_EXCHANGE_NAME, MQUEUE_USERS_EXCHANGE_PARAMS);
@@ -67,9 +67,8 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
             notebookClient = null;
         } else {
             LOG.info("Using Postgres Clients");
-            // this is hacky - find way to inject datasource
             jobstatusClient = PostgresJobStatusClient.INSTANCE;
-            notebookClient = new PostgresNotebookClient(PostgresJobStatusClient.INSTANCE.dataSource);
+            notebookClient = NotebookPostgresClient.INSTANCE;
         }
     }
 

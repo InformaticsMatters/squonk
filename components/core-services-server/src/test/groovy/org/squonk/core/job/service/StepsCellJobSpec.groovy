@@ -4,18 +4,14 @@ import com.im.lac.job.jobdef.ExecuteCellUsingStepsJobDefinition
 import com.im.lac.job.jobdef.JobStatus
 import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition
 import org.apache.camel.CamelContext
-import org.apache.camel.ProducerTemplate
-import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.client.JobStatusClient
+import org.squonk.core.service.job.MemoryJobStatusClient
+import org.squonk.core.service.job.StepsCellJob
 import org.squonk.execution.steps.StepDefinition
 import org.squonk.execution.steps.impl.EchoStep
-import org.squonk.mqueue.MessageQueueCredentials
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Shared
 import spock.lang.Specification
-
-import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_NAME
-import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_PARAMS
 
 /**
  * Created by timbo on 06/01/16.

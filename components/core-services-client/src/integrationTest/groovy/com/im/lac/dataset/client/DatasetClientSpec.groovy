@@ -1,6 +1,8 @@
 package com.im.lac.dataset.client
 
 import com.im.lac.dataset.DataItem
+import spock.lang.Shared
+
 import java.util.stream.Stream
 import java.util.stream.Collectors
 import spock.lang.Specification
@@ -12,12 +14,12 @@ import spock.lang.Specification
 class DatasetClientSpec extends Specification {
     
     String username = "squonkuser"
-    
-    String url = "http://" + (System.getenv("DOCKER_IP") ?: "localhost") + "/coreservices/rest/v1/datasets"
+
+    @Shared DatasetClient client = new DatasetClient()
+
     
     void "1. test post content"() {
         setup:
-        def client = new DatasetClient(url)
         String smiles = 'c1ccccc1\nc1ccncc1\nCC\nCCC'
         String name = 'Random smiles'
         
@@ -33,9 +35,7 @@ class DatasetClientSpec extends Specification {
     }
 	
     void "2. test list items"() {
-        setup:
-        def client = new DatasetClient(url)
-        
+
         when:
         Stream stream = client.getAll(username)
         def items = stream.collect(Collectors.toList())
@@ -45,9 +45,7 @@ class DatasetClientSpec extends Specification {
     }
     
     void "3. test get data item"() {
-        setup:
-        def client = new DatasetClient(url)
-        
+
         when:
         DataItem item1 = client.getAll(username).findFirst().get()
         println "received $item1"
@@ -60,9 +58,7 @@ class DatasetClientSpec extends Specification {
     }
     
     void "4. test get content"() {
-        setup:
-        def client = new DatasetClient(url)
-        
+
         when:
         DataItem item1 = client.getAll(username).findFirst().get()
         println "received $item1"
@@ -76,7 +72,6 @@ class DatasetClientSpec extends Specification {
       
     void "5. test delete content"() {
         setup:
-        def client = new DatasetClient(url)
         String smiles = 'c1ccccc1\nc1ccncc1\nCC\nCCC'
         String name = 'Random smiles'
         

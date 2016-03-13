@@ -3,6 +3,7 @@ package com.im.lac.job.client;
 import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
 import org.squonk.core.CommonConstants;
+import org.squonk.core.client.config.SquonkClientConfig;
 import org.squonk.types.io.JsonHandler;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +23,7 @@ import org.apache.http.util.EntityUtils;
 
 /**
  * Client to manage submission and management of jobs. The client only knows about
- * {@link JobDefintion}s and {@link JobStatus}es, not about how jobs are executed.
+ * {@link com.im.lac.job.jobdef.JobDefinition}s and {@link com.im.lac.job.jobdef.JobStatus}es, not about how jobs are executed.
  *
  * @author timbo
  */
@@ -30,7 +31,6 @@ public class JobClient {
 
     private static final Logger LOG = Logger.getLogger(JobClient.class.getName());
 
-    private static final String DEFAULT_BASE_URL = CommonConstants.HOST_CORE_SERVICES + "/jobs";
 
     private final String base;
     private final CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -42,7 +42,7 @@ public class JobClient {
     }
 
     public JobClient() {
-        this( DEFAULT_BASE_URL);
+        this(SquonkClientConfig.INSTANCE.getCoreServiceBaseUrl() + "/jobs");
     }
 
     /**

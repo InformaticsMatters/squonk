@@ -1,6 +1,6 @@
 package com.im.lac.cell;
 
-import com.im.lac.client.AbstractHttpClient;
+import org.squonk.core.client.AbstractHttpClient;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.AbstractHttpEntity;

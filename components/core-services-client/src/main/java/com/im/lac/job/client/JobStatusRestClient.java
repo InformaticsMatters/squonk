@@ -1,6 +1,6 @@
 package com.im.lac.job.client;
 
-import com.im.lac.client.AbstractHttpClient;
+import org.squonk.core.client.AbstractHttpClient;
 import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobQuery;
 import com.im.lac.job.jobdef.JobStatus;

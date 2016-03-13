@@ -1,10 +1,10 @@
 package org.squonk.core.client;
 
-import com.im.lac.client.AbstractHttpClient;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.squonk.client.NotebookClient;
+import org.squonk.core.client.config.SquonkClientConfig;
 import org.squonk.notebook.api2.NotebookDescriptor;
 import org.squonk.notebook.api2.NotebookEditable;
 import org.squonk.notebook.api2.NotebookSavepoint;
@@ -28,12 +28,12 @@ public class NotebookRestClient extends AbstractHttpClient implements NotebookCl
     private final String baseUrl;
 
     public NotebookRestClient(String baseUrl) {
-        this.baseUrl = baseUrl + "/notebooks";
+        this.baseUrl = baseUrl;
+        LOG.info("NotebookRestClient is using base URL of " + baseUrl);
     }
 
     public NotebookRestClient() {
-        this.baseUrl = IOUtils.getConfiguration("SQUONK_SERVICES_CORE", "http://localhost/coreservices/rest/v1") + "/notebooks";
-        LOG.info("NotebookRestClient is using base URL of " + baseUrl);
+        this(SquonkClientConfig.INSTANCE.getCoreServiceBaseUrl() + "/notebooks");
     }
 
     public NotebookDescriptor createNotebook(String username, String notebookName, String notebookDescription) throws IOException {

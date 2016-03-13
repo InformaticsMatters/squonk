@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          version="3.0">  
     
-    <display-name>LAC Core Services</display-name>
+    <display-name>Squonk Core Services</display-name>
     
     <!-- Camel stuff follows -->
     
@@ -21,7 +21,7 @@
         <!-- note: instead of using a XML file we can also define the routes in Java code in a RouteBuilder class -->
         <!--param-value>com.im.lac.demo.SimpleRouteBuilder</param-value-->
         <param-value>
-            org.squonk.core.discovery.service.ServiceDiscoveryRouteBuilder,
+            org.squonk.core.service.discovery.ServiceDiscoveryRouteBuilder,
             org.squonk.core.RestRouteBuilder</param-value>
     </context-param>
     

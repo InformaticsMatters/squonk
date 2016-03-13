@@ -1,11 +1,8 @@
 package org.squonk.core.discovery.service
 
 import org.squonk.core.AccessMode
-import org.squonk.core.ServiceDescriptor
-import org.squonk.types.io.JsonHandler
+import org.squonk.core.service.discovery.ServiceDescriptorUtils
 import spock.lang.Specification
-
-import java.util.stream.Stream
 
 /**
  *

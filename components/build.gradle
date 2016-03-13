@@ -92,7 +92,6 @@ task integrationTestEnvPrepare(type:Exec) {
 
 task integrationTestEnvPrepareAndClean(type:Exec) {
     dependsOn integrationTestEnvPrepare
-    //sleep 1000
     commandLine 'bash', '../docker/int-test-env-clean.sh'
 }
 

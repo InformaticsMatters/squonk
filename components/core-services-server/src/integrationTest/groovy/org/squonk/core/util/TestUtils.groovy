@@ -4,7 +4,7 @@ import javax.sql.DataSource
 
 import com.im.lac.job.jobdef.JobStatus
 import com.im.lac.services.dataset.service.*
-import org.squonk.core.job.Job
+import org.squonk.core.service.job.Job
 
 /**
  *

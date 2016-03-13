@@ -4,9 +4,11 @@ import org.squonk.core.ServerConstants
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.impl.DefaultCamelContext
 import org.apache.camel.impl.SimpleRegistry
+import org.squonk.core.service.discovery.ServiceDescriptorStore
+import org.squonk.core.service.discovery.ServiceDiscoveryRouteBuilder
 import spock.lang.Specification
 
-import static ServiceDiscoveryRouteBuilder.TEST_SERVICE_DESCRIPTORS
+import static org.squonk.core.service.discovery.ServiceDiscoveryRouteBuilder.TEST_SERVICE_DESCRIPTORS
 
 /**
  *

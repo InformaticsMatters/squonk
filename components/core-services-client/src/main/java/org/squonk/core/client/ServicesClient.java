@@ -1,8 +1,8 @@
 package org.squonk.core.client;
 
-import com.im.lac.client.AbstractHttpClient;
 import org.squonk.core.CommonConstants;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.client.config.SquonkClientConfig;
 import org.squonk.types.io.JsonHandler;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,8 +23,6 @@ public class ServicesClient extends AbstractHttpClient {
 
     private static final Logger LOG = Logger.getLogger(ServicesClient.class.getName());
 
-    private static final String DEFAULT_BASE_URL = CommonConstants.HOST_CORE_SERVICES_SERVICES;
-
     private final String base;
 
     public ServicesClient(String baseUrl) {
@@ -33,7 +31,7 @@ public class ServicesClient extends AbstractHttpClient {
     }
 
     public ServicesClient() {
-        this(DEFAULT_BASE_URL);
+        this(SquonkClientConfig.INSTANCE.getCoreServiceBaseUrl() + "/services");
     }
 
     /**

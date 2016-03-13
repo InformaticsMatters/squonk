@@ -2,21 +2,20 @@ package org.squonk.core.camel;
 
 import org.squonk.core.ServerConstants;
 import org.squonk.core.dataset.service.DatasetHandler;
-import org.squonk.core.job.service.MemoryJobStatusClient;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.core.dataset.service.DatasetService;
-import org.squonk.core.discovery.service.ServiceDescriptorStore;
-import org.squonk.core.user.UserService;
+import org.squonk.core.service.discovery.ServiceDescriptorStore;
+import org.squonk.core.service.user.UserPostgresClient;
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.SimpleRegistry;
 import org.squonk.core.util.Utils;
-import org.squonk.core.user.UserHandler;
+import org.squonk.core.service.user.UserHandler;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 import org.apache.camel.builder.ThreadPoolProfileBuilder;
 import org.apache.camel.spi.ThreadPoolProfile;
-import org.squonk.core.discovery.service.ServiceDiscoveryRouteBuilder;
+import org.squonk.core.service.discovery.ServiceDiscoveryRouteBuilder;
 
 /**
  *
@@ -89,7 +88,7 @@ public class CamelLifeCycle {
         r.put(ServerConstants.SERVICE_DESCRIPTOR_STORE, serviceDescriptorStore);
         r.put(ServerConstants.DATASET_HANDLER, new DatasetHandler(datasetService, "/tmp/datasetcache"));
 //        r.put(ServerConstants.JOB_HANDLER, new JobHandler());
-        r.put(ServerConstants.USER_HANDLER, new UserHandler(new UserService(dataSource)));
+        r.put(ServerConstants.USER_HANDLER, new UserHandler(new UserPostgresClient(dataSource)));
 
     }
 

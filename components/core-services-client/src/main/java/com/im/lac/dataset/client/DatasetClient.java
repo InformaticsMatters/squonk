@@ -2,6 +2,7 @@ package com.im.lac.dataset.client;
 
 import com.im.lac.dataset.DataItem;
 import org.squonk.core.CommonConstants;
+import org.squonk.core.client.config.SquonkClientConfig;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 import java.io.IOException;
@@ -36,7 +37,6 @@ import org.apache.http.util.EntityUtils;
 public class DatasetClient {
 
     private static final Logger LOG = Logger.getLogger(DatasetClient.class.getName());
-    private static final String DEFAULT_BASE_URL = CommonConstants.HOST_CORE_SERVICES + "/datasets";
 
     private final String base;
     private final CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -48,7 +48,7 @@ public class DatasetClient {
     }
 
     public DatasetClient() {
-        this(DEFAULT_BASE_URL);
+        this(SquonkClientConfig.INSTANCE.getCoreServiceBaseUrl() + "/datasets");
     }
 
     /**
