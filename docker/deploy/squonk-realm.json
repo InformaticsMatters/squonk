@@ -32,25 +32,30 @@
   "codeSecret" : "c03cf497-acb4-4f4a-a9dc-01867eae670e",
   "roles" : {
     "realm" : [ {
-      "id" : "da0f28f3-7339-4622-b428-4241fe4c3490",
-      "name" : "admin-user",
-      "scopeParamRequired" : false,
-      "composite" : false
-    }, {
-      "id" : "7e0ac5c0-c736-4298-a124-45b29df3ef02",
+      "id" : "6c97486a-61ca-4816-92c7-86728f9c11b0",
       "name" : "standard-user",
       "scopeParamRequired" : false,
       "composite" : false
     }, {
-      "id" : "6aab432a-5bfd-45cb-8b0c-9ba8a752b1a5",
+      "id" : "55c4c63e-bb01-44c3-bc48-fcd9828a6933",
+      "name" : "XWiki.XWikiAdminGroup",
+      "scopeParamRequired" : false,
+      "composite" : false
+    }, {
+      "id" : "25269475-a8bc-44dc-ad70-140fefa4b0c3",
+      "name" : "admin-user",
+      "scopeParamRequired" : false,
+      "composite" : false
+    }, {
+      "id" : "cd6c52bf-9ec8-4871-8da6-474b98ef1b36",
+      "name" : "XWiki.XWikiAllGroup",
+      "scopeParamRequired" : false,
+      "composite" : false
+    }, {
+      "id" : "173af993-2f51-4859-a100-6718120d10a0",
       "name" : "offline_access",
       "description" : "${role_offline-access}",
       "scopeParamRequired" : true,
-      "composite" : false
-    }, {
-      "id" : "683785c2-9f1f-40fe-be83-224c35ec73fd",
-      "name" : "XWiki.XWikiAllGroup",
-      "scopeParamRequired" : false,
       "composite" : false
     } ],
     "client" : {
@@ -184,7 +189,7 @@
       "digits" : 0
     } ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "admin-user" ],
+    "realmRoles" : [ "XWiki.XWikiAdminGroup", "admin-user", "XWiki.XWikiAllGroup" ],
     "clientRoles" : {
       "account" : [ "view-profile", "manage-account" ]
     },
@@ -235,6 +240,32 @@
     } ],
     "requiredActions" : [ ],
     "realmRoles" : [ "standard-user", "XWiki.XWikiAllGroup" ],
+    "clientRoles" : {
+      "account" : [ "view-profile", "manage-account" ]
+    },
+    "groups" : [ ]
+  }, {
+    "id" : "22c1ea4b-678e-4036-9d5e-82dc3fd48b43",
+    "createdTimestamp" : 1457955250013,
+    "username" : "wikiadmin",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "firstName" : "Wiki",
+    "lastName" : "Admin",
+    "email" : "wikiadmin@squonk.it",
+    "credentials" : [ {
+      "type" : "password",
+      "hashedSaltedValue" : "DHJE3AAO4S0taAdjmyZO4GUY16NkY8AZaR+7QVqlCd5bj2byE5IwTEG2HGFqkqwy9hG/FnjH8FUK1keQ58FbZg==",
+      "salt" : "b17jxX9SKV2CF7HNwBCM4w==",
+      "hashIterations" : 1,
+      "counter" : 0,
+      "algorithm" : "pbkdf2",
+      "digits" : 0,
+      "createdDate" : 1457955265000
+    } ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "XWiki.XWikiAdminGroup", "XWiki.XWikiAllGroup", "admin-user", "offline_access" ],
     "clientRoles" : {
       "account" : [ "view-profile", "manage-account" ]
     },
@@ -570,8 +601,8 @@
     "enabled" : true,
     "clientAuthenticatorType" : "client-secret",
     "secret" : "434ecd6b-586d-4db8-a3fa-83bfeb16bf44",
-    "redirectUris" : [ "http://__server_name__/*", "https://__server_name__/*" ],
-    "webOrigins" : [ "http://__server_name__", "https://__server_name__" ],
+    "redirectUris" : [ "http://172.17.0.1/*", "https://172.17.0.1/*" ],
+    "webOrigins" : [ "http://172.17.0.1", "https://172.17.0.1" ],
     "notBefore" : 0,
     "bearerOnly" : false,
     "consentRequired" : false,
@@ -892,12 +923,13 @@
     "id" : "955917a7-5bb1-46df-84a1-3d63c5a57590",
     "clientId" : "xwiki",
     "name" : "XWiki",
+    "baseUrl" : "http://172.17.0.1:9080",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "clientAuthenticatorType" : "client-secret",
     "secret" : "fa007a05-a152-426c-ae75-6cbed2c43319",
-    "redirectUris" : [ "http://__server_name__/*" ],
-    "webOrigins" : [ "http://__server_name__" ],
+    "redirectUris" : [ "http://172.17.0.1:9080/*", "https://172.17.0.1:9443/*" ],
+    "webOrigins" : [ "http://172.17.0.1:9080" ],
     "notBefore" : 0,
     "bearerOnly" : false,
     "consentRequired" : false,
@@ -1020,7 +1052,7 @@
   "internationalizationEnabled" : false,
   "supportedLocales" : [ ],
   "authenticationFlows" : [ {
-    "id" : "8ef33161-5424-4fa3-a86c-0c47db84edd5",
+    "id" : "96783204-0537-419f-b36f-f8e498ea16a5",
     "alias" : "Handle Existing Account",
     "description" : "Handle what to do if there is existing account with same email/username like authenticated identity provider",
     "providerId" : "basic-flow",
@@ -1046,7 +1078,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "4eab967e-cd3c-4bad-a9df-67f60c64c85e",
+    "id" : "bc9a33c0-5c02-44a4-bd7b-946b7b42cb86",
     "alias" : "Verify Existing Account by Re-authentication",
     "description" : "Reauthentication of existing account",
     "providerId" : "basic-flow",
@@ -1066,7 +1098,7 @@
       "autheticatorFlow" : false
     } ]
   }, {
-    "id" : "e1c66bfd-3b12-43e6-a8df-9fc10487de88",
+    "id" : "367e5a88-6a69-499d-a38b-cb8dac43b575",
     "alias" : "browser",
     "description" : "browser based authentication",
     "providerId" : "basic-flow",
@@ -1092,7 +1124,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "fc6d7b70-c325-41fb-87f8-37acb9d97ba5",
+    "id" : "76af1c73-e027-4027-9e82-20962faec00f",
     "alias" : "clients",
     "description" : "Base authentication for clients",
     "providerId" : "client-flow",
@@ -1112,7 +1144,7 @@
       "autheticatorFlow" : false
     } ]
   }, {
-    "id" : "934179ed-0dc3-4548-a3d3-c407a1e89e55",
+    "id" : "ae0fea8f-92ca-4bdf-8010-5acabc36e7f0",
     "alias" : "direct grant",
     "description" : "OpenID Connect Resource Owner Grant",
     "providerId" : "basic-flow",
@@ -1138,7 +1170,7 @@
       "autheticatorFlow" : false
     } ]
   }, {
-    "id" : "6ac4782a-09dc-44a2-ad3e-21b8d01818aa",
+    "id" : "ba08e665-6d37-4031-8b9f-0437f30b53b0",
     "alias" : "first broker login",
     "description" : "Actions taken after first broker login with identity provider account, which is not yet linked to any Keycloak account",
     "providerId" : "basic-flow",
@@ -1166,7 +1198,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "ae011e13-eaba-49a1-9ad8-2319bda84e6f",
+    "id" : "839d9009-17d2-414c-8677-863ca7645df4",
     "alias" : "forms",
     "description" : "Username, password, otp and other auth forms.",
     "providerId" : "basic-flow",
@@ -1186,7 +1218,7 @@
       "autheticatorFlow" : false
     } ]
   }, {
-    "id" : "f21608b7-efed-497e-9660-91cb285a4478",
+    "id" : "2f851348-4b20-4371-ac1e-0fba1a831b69",
     "alias" : "registration",
     "description" : "registration flow",
     "providerId" : "basic-flow",
@@ -1201,7 +1233,7 @@
       "autheticatorFlow" : true
     } ]
   }, {
-    "id" : "1bac7095-4c75-4019-89d4-25cc0a1f5f41",
+    "id" : "72babd35-6d47-48e0-9a49-ae2c2b5dad7b",
     "alias" : "registration form",
     "description" : "registration form",
     "providerId" : "form-flow",
@@ -1233,7 +1265,7 @@
       "autheticatorFlow" : false
     } ]
   }, {
-    "id" : "de2ada09-23e9-4dce-8b6b-9e7d0d8bd9a1",
+    "id" : "271fa35e-9ef1-4288-88ea-efba8251914f",
     "alias" : "reset credentials",
     "description" : "Reset credentials for a user if they forgot their password or something",
     "providerId" : "basic-flow",

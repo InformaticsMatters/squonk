@@ -73,6 +73,19 @@ keycloak:
     - ./keycloak/standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml:ro
     - ./keycloak/keycloak.jks:/opt/jboss/keycloak/standalone/configuration/keycloak.jks:ro
 
+################# xwiki container ###################################################
+xwiki:
+    build: .
+    dockerfile: Dockerfile-xwiki
+    ports:
+    - 9080:8080
+    - 9443:8443
+    links:
+    - keycloak:keycloak
+    - postgres:postgres
+    environment:
+    - KEYCLOAK_SERVER_URL
+
 ################# chem services container #########################################
 # available on
 # http://${PUBLIC_HOST}:8092/chem-services-rdkit-basic/rest/v1/calculators
@@ -132,7 +145,8 @@ cellexecutor:
 
 ################# portal ##########################################################
 portal:
-    build: portal/
+    build: .
+    dockerfile: Dockerfile-portal
     hostname: portal
     ports:
     - "80:8080"
