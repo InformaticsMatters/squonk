@@ -85,6 +85,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                     Object.class, // outputClass
                     Metadata.Type.ITEM, // inputType
                     Metadata.Type.ITEM, // outputType
+                    "default_icon.png",
                     new AccessMode[]{
                             new AccessMode(
                                     "donothing",

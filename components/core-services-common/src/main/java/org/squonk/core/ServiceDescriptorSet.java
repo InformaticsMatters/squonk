@@ -6,7 +6,7 @@ import java.io.Serializable;
 /**
  * Definition of set of ServiceDescriptors. Each set is defined at a specific URL, with the
  * individual ServiceDescriptor endpoint possibly being relative to this base URL. The
- * {@link AccessMode.endpointIsRelative()} method defined whether the defined endpoint is absolute or
+ * {@link org.squonk.core.AccessMode#isEndpointRelative} method defined whether the defined endpoint is absolute or
  * relative.
  * TODO - not clear exactly how this will work for message queue endpoints. Will they all have to
  * be absolute?

@@ -27,6 +27,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                         "RDKit LogP",
                         "RDKit LogP prediction",
                         new String[]{"logp", "partitioning", "molecularproperties", "rdkit"},
+                        "icons/propertiesadd.png",
                         new String[]{"/Chemistry/Toolkits/RDKit/Calculators", "Chemistry/Calculators/Partioning"},
                         "asyncHttp",
                         "logp",
@@ -37,6 +38,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                         "RDKit frac sp3 carbons",
                         "Fraction sp3 hybridised carbons using RDKit",
                         new String[]{"fraccsp3", "topology", "molecularproperties", "rdkit"},
+                        "icons/propertiesadd.png",
                         new String[]{"/Vendors/RDKit/Calculators", "Chemistry/Calculators/Topological"},
                         "asyncHttp",
                         "frac_c_sp3",
@@ -47,6 +49,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                         "RDKit Lipinski",
                         "Lipinski properties using RDKit",
                         new String[]{"lipinski", "druglike", "molecularproperties", "rdkit"},
+                        "icons/propertiesadd.png",
                         new String[]{"/Vendors/RDKit/Calculators", "Chemistry/Calculators/DrugLike"},
                         "asyncHttp",
                         "lipinski",
@@ -57,6 +60,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                         "RDKit molar refractivity",
                         "Molar Refractivity using RDKit",
                         new String[]{"refractivity", "molarrefractivity", "molecularproperties", "rdkit"},
+                        "icons/propertiesadd.png",
                         new String[]{"/Vendors/RDKit/Calculators", "Chemistry/Calculators/Other"},
                         "asyncHttp",
                         "molar_refractivity",
@@ -67,6 +71,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                         "RDKit TPSA",
                         "Topological surface area using RDKit",
                         new String[]{"tpsa", "molarrefractivity", "molecularproperties", "rdkit"},
+                        "icons/propertiesadd.png",
                         new String[]{"/Vendors/RDKit/Calculators", "Chemistry/Calculators/Other"},
                         "asyncHttp",
                         "tpsa",
@@ -77,6 +82,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                         "RDKit rings",
                         "Ring count and aromatic ring count using RDKit",
                         new String[]{"rings", "aromatic", "molecularproperties", "rdkit"},
+                        "icons/propertiesadd.png",
                         new String[]{"/Vendors/RDKit/Calculators", "Chemistry/Calculators/Topological"},
                         "asyncHttp",
                         "rings",
@@ -87,6 +93,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                         "RDKit rotatable bond count",
                         "Rotatable bond count using RDKit",
                         new String[]{"rotatablebonds", "molecularproperties", "rdkit"},
+                        "icons/propertiesadd.png",
                         new String[]{"/Vendors/RDKit/Calculators", "Chemistry/Calculators/Topological"},
                         "asyncHttp",
                         "rotatable_bonds",
@@ -95,7 +102,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
 
             };
 
-    static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags,
+    static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String icon,
                                                      String[] paths, String modeId, String endpoint, OptionDescriptor[] props, String adapterClass) {
         return new ServiceDescriptor(
                 serviceDescriptorId,
@@ -111,6 +118,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                 MoleculeObject.class, // outputClass
                 Metadata.Type.STREAM, // inputType
                 Metadata.Type.STREAM, // outputType
+                icon,
                 new AccessMode[]{
                     new AccessMode(
                             modeId,

@@ -47,6 +47,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "CXN LogP",
                         "LogP using ChemAxon calculators. See http://www.chemaxon.com/products/calculator-plugins/property-predictors/#logp_logd",
                         new String[]{"logp", "partitioning", "molecularproperties", "chemaxon"},
+                        "icons/propertiesadd.png",
                         new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Partioning"},
                         "asyncHttp",
                         "logp",
@@ -58,6 +59,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "CXN Atom Count",
                         "Atom Count using ChemAxon calculators. See http://www.chemaxon.com/products/calculator-plugins/property-calculations/#topology_analysis",
                         new String[]{"atomcount", "topology", "molecularproperties", "chemaxon"},
+                        "icons/propertiesadd.png",
                         new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Topological"},
                         "asyncHttp",
                         "atomCount",
@@ -69,6 +71,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "CXN Lipinski Properties",
                         "Lipinski properties using ChemAxon calculators",
                         new String[]{"lipinski", "druglike", "molecularproperties", "chemaxon"},
+                        "icons/propertiesadd.png",
                         new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/DrugLike"},
                         "asyncHttp",
                         "lipinski",
@@ -80,6 +83,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "CXN Drug-like Filter",
                         "Drug-like filter using ChemAxon calculators. mass() < 400 and ringCount > 0 and rotatableBondCount() < 5 and acceptorCount <= 10 and LogP < 5",
                         new String[]{"druglike", "molecularproperties", "chemaxon"},
+                        "icons/propertiesfilter.png",
                         new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/DrugLike"},
                         "asyncHttp",
                         "drugLikeFilter",
@@ -107,6 +111,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "CXN ECFP4 Screening",
                         "Virtual screening using ChemAxon ECFP4 fingerprints. See http://www.chemaxon.com/products/screen/",
                         new String[]{"virtualscreening", "screening", "ecfp", "ecfp4", "moleculardescriptors", "fingerprints", "chemaxon"},
+                        "icons/filter.png",
                         new String[]{"/Vendors/ChemAxon/Screening", "Chemistry/Screening"},
                         "asyncHttp",
                         "screening/ecfp4",
@@ -121,6 +126,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "CXN Pharmacophore Screening",
                         "Virtual screening using ChemAxon 2D pharmacophore fingerprints. See http://www.chemaxon.com/products/screen/",
                         new String[]{"virtualscreening", "screening", "parmacophore", "moleculardescriptors", "fingerprints", "chemaxon"},
+                        "icons/filter.png",
                         new String[]{"/Vendors/ChemAxon/Screening", "Chemistry/Screening"},
                         "asyncHttp",
                         "screening/pharmacophore",
@@ -135,6 +141,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "CXN SpereEx Clustering",
                         "Sphere exclusion clustering using ChemAxon ECFP4 fingerprints. See http://www.chemaxon.com/products/jklustor/",
                         new String[]{"clustering", "ecfp", "ecfp4", "chemaxon"},
+                        "icons/clustering.png",
                         new String[]{"/Vendors/ChemAxon/Clustering", "Chemistry/Clustering"},
                         "asyncHttp",
                         "clustering/spherex/ecfp4",
@@ -146,7 +153,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter")
             };
 
-    static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags,
+    static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String icon,
                                                      String[] paths, String modeId, String endpoint, float cost, OptionDescriptor[] props, String adapterClass) {
         return new ServiceDescriptor(
                 serviceDescriptorId,
@@ -162,6 +169,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 MoleculeObject.class, // outputClass
                 Metadata.Type.STREAM, // inputType
                 Metadata.Type.STREAM, // outputType
+                icon,
                 new AccessMode[]{
                     new AccessMode(
                             modeId,

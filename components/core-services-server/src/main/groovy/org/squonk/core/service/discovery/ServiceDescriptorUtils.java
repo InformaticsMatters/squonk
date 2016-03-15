@@ -31,6 +31,7 @@ public class ServiceDescriptorUtils {
                 serviceDescriptor.getOwner(), serviceDescriptor.getOwnerUrl(),
                 serviceDescriptor.getLayers(),
                 serviceDescriptor.getInputClass(), serviceDescriptor.getOutputClass(), serviceDescriptor.getInputType(), serviceDescriptor.getOutputType(),
+                serviceDescriptor.getIcon(),
                 modes
         );
 

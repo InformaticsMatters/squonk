@@ -52,6 +52,7 @@ public class ServiceDescriptor implements Serializable {
     private final Class outputClass;
     private final Metadata.Type inputType;
     private final Metadata.Type outputType;
+    private final String icon;
     private final AccessMode[] accessModes;
 
     @JsonCreator
@@ -69,6 +70,7 @@ public class ServiceDescriptor implements Serializable {
             @JsonProperty("outputClass") Class outputClass,
             @JsonProperty("inputType") Metadata.Type inputType,
             @JsonProperty("outputType") Metadata.Type outputType,
+            @JsonProperty("icon") String icon,
             @JsonProperty("accessModes") AccessMode[] accessModes
     ) {
         this.id = id;
@@ -84,6 +86,7 @@ public class ServiceDescriptor implements Serializable {
         this.outputClass = outputClass;
         this.inputType = inputType;
         this.outputType = outputType;
+        this.icon = icon;
         this.accessModes = accessModes;
     }
 
@@ -203,6 +206,14 @@ public class ServiceDescriptor implements Serializable {
      */
     public Metadata.Type getOutputType() {
         return outputType;
+    }
+
+    /** The relative or absolute path to an icon that describes the service
+     *
+     * @return
+     */
+    public String getIcon() {
+        return icon;
     }
 
     /**

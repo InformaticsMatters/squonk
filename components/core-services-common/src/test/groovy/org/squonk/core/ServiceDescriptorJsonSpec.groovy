@@ -31,7 +31,8 @@ class ServiceDescriptorJsonSpec extends Specification {
             MoleculeObject.class, // inputClass
             MoleculeObject.class, // outputClass
             Metadata.Type.STREAM, // inputTypes
-            Metadata.Type.STREAM, // outputTypes
+            Metadata.Type.STREAM, // outputType
+            "icon.png",
             [new AccessMode(
                 "async",
                 "Immediate execution",
