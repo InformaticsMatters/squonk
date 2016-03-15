@@ -73,18 +73,6 @@ keycloak:
     - ./keycloak/standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml:ro
     - ./keycloak/keycloak.jks:/opt/jboss/keycloak/standalone/configuration/keycloak.jks:ro
 
-################# xwiki container ###################################################
-xwiki:
-    build: .
-    dockerfile: Dockerfile-xwiki
-    ports:
-    - 9080:8080
-    - 9443:8443
-    links:
-    - keycloak:keycloak
-    - postgres:postgres
-    environment:
-    - KEYCLOAK_SERVER_URL
 
 ################# chem services container #########################################
 # available on
@@ -94,7 +82,7 @@ xwiki:
 # http://${PUBLIC_HOST}:8092/chem-services-chemaxon-basic/rest/v1/descriptors
 #
 # Test using something like this:
-# curl -X POST -T mols.json "http://${PUBLIC_HOST}:9080/chem-services-cdk-basic/rest/v1/calculators/logp"
+# curl -X POST -T mols.json "http://${PUBLIC_HOST}:8092/chem-services-cdk-basic/rest/v1/calculators/logp"
 #
 chemservices:
     image: squonk/chem-services-basic
@@ -149,7 +137,8 @@ portal:
     dockerfile: Dockerfile-portal
     hostname: portal
     ports:
-    - "80:8080"
+    - "9080:8080"
+    - "9443:8443"
     links:
     - postgres:postgres
     - coreservices:coreservices
@@ -158,5 +147,17 @@ portal:
         PORTAL_SERVER_URL:
         SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
 
+################# xwiki container ###################################################
+xwiki:
+    build: .
+    dockerfile: Dockerfile-xwiki
+    ports:
+    - 80:8080
+    - 443:8443
+    links:
+    - keycloak:keycloak
+    - postgres:postgres
+    environment:
+    - KEYCLOAK_SERVER_URL
         
 

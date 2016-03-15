@@ -3,14 +3,26 @@
 # sets up the containers ready for use.
 # once comple run them with run-containers.sh
 
+if [ ! $PUBLIC_HOST ]; then
+	echo "environment variables not set?"
+	exit 1
+fi
+
+base=$PWD
+
+echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
+
+# substitute the realm json file need by keycloak
+sed "s/__server_name__/${PUBLIC_HOST}/g" squonk-realm.json.template > squonk-realm.json
+
+# substitute the xwiki hibernate props
+sed "s/__postgres_xwiki_password__/${POSTGRES_XWIKI_PASS:-squonk}/g" xwiki/hibernate.cfg.xml.template > xwiki/hibernate.cfg.xml
+
+
 docker-compose stop
 docker-compose rm -f
 docker-compose build
 
-./setenv.sh
-base=$PWD
-
-echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 
 echo "preaparing postgres docker image ..."
 docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d postgres rabbitmq
@@ -48,8 +60,6 @@ docker-compose stop rabbitmq
 keycloak_url="https://${PRIVATE_HOST}:8443/auth"
 echo "keycloak_url: $keycloak_url"
 
-# substitute the realm json file
-sed "s/__server_name__/${PUBLIC_HOST}/g" squonk-realm.json > yyy.json
 
 
 attempt=0
@@ -67,7 +77,7 @@ echo "keycloak is up"
 token=$(curl -s -k -X POST "${keycloak_url}/realms/master/protocol/openid-connect/token" -H "Content-Type: application/x-www-form-urlencoded" -d "username=admin" -d "password=${KEYCLOAK_PASSWORD:-squonk}" -d "grant_type=password" -d "client_id=admin-cli" | jq -r '.access_token')
 echo "token: $token"
 
-curl -s -k -X POST -T yyy.json "${keycloak_url}/admin/realms" -H "Authorization: Bearer $token" -H "Content-Type: application/json"
+curl -s -k -X POST -T squonk-realm.json "${keycloak_url}/admin/realms" -H "Authorization: Bearer $token" -H "Content-Type: application/json"
 echo "squonk realm added to keycloak"
 
 docker-compose stop

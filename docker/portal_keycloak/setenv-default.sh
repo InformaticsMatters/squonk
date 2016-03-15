@@ -1,3 +1,0 @@
-export SERVICE_CELL_EXECUTION="http://172.17.0.1/ws/cell"
-export KEYCLOAK_SERVER_URL=http://172.17.0.1:8080
-
