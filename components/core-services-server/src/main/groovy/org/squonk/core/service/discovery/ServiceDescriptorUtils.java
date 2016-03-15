@@ -3,11 +3,15 @@ package org.squonk.core.service.discovery;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 
+import java.util.logging.Logger;
+
 /**
  *
  * @author timbo
  */
 public class ServiceDescriptorUtils {
+
+    private static final Logger LOG = Logger.getLogger(ServiceDescriptorUtils.class.getName());
 
     public static String getAbsoluteUrl(String baseUrl, AccessMode mode) {
         if (mode.isEndpointRelative()) {
@@ -26,6 +30,9 @@ public class ServiceDescriptorUtils {
         for (int i = 0; i < modes.length; i++) {
             modes[0] = makeAbsolute(baseUrl, serviceDescriptor.getAccessModes()[i]);
         }
+
+        LOG.info("Icon for " + serviceDescriptor.getId() + ": " + serviceDescriptor.getIcon());
+
         return new ServiceDescriptor(serviceDescriptor.getId(), serviceDescriptor.getName(), serviceDescriptor.getDescription(),
                 serviceDescriptor.getTags(), serviceDescriptor.getResourceUrl(), serviceDescriptor.getPaths(),
                 serviceDescriptor.getOwner(), serviceDescriptor.getOwnerUrl(),

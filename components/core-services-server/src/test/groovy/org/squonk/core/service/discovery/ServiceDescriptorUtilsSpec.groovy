@@ -1,9 +1,9 @@
-package org.squonk.core.discovery.service
+package org.squonk.core.service.discovery
 
 import org.squonk.core.AccessMode
-import org.squonk.core.service.discovery.ServiceDescriptorUtils
+import org.squonk.core.ServiceDescriptor
 import spock.lang.Specification
-
+import static org.squonk.core.service.discovery.ServiceDiscoveryRouteBuilder.TEST_SERVICE_DESCRIPTORS
 /**
  *
  * @author timbo
@@ -43,21 +43,17 @@ class ServiceDescriptorUtilsSpec extends Specification {
         url == "http:localhost:8080/some/other/path"
     }
 
-//    void "remote"() {
-//
-//        URL url = new URL('http://demos.informaticsmatters.com:8091/coreservices/rest/v1/services')
-//
-//        when:
-//        String json = url.text
-//        println json
-//        def str = JsonHandler.instance.streamFromJson(json, ServiceDescriptor.class)
-//
-//        then:
-//        json != null
-//        str instanceof Stream
-//        str.each {
-//            println it
-//        }
-//    }
+    void "copy props when making absolute"() {
+        ServiceDescriptor sd1 = TEST_SERVICE_DESCRIPTORS[0]
+
+        when:
+        ServiceDescriptor sd2 = ServiceDescriptorUtils.makeAbsolute("http://nowhere.com/", sd1)
+
+        then:
+        sd2.getId() != null
+        sd2.getIcon() != null
+        sd2.getAccessModes()[0].getExecutionEndpoint().startsWith("http://nowhere.com/")
+    }
+
 }
 

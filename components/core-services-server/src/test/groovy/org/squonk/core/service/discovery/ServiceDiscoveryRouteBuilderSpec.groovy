@@ -1,4 +1,4 @@
-package org.squonk.core.discovery.service
+package org.squonk.core.service.discovery
 
 import org.squonk.core.ServerConstants
 import org.apache.camel.ProducerTemplate
