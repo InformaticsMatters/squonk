@@ -37,8 +37,8 @@ COPY xwiki/hibernate.cfg.xml /usr/local/tomcat/webapps/ROOT/WEB-INF/
 COPY xwiki/xwiki-authenticator-keycloak.jar /usr/local/tomcat/webapps/ROOT/WEB-INF/lib
 
 # change authenticator logging level (optional)
-RUN echo '\norg.keycloak.adapters.OAuthRequestAuthenticator.level = FINE\n' >> /usr/local/tomcat/conf/logging.properties
+#RUN echo '\norg.keycloak.adapters.OAuthRequestAuthenticator.level = FINE\n' >> /usr/local/tomcat/conf/logging.properties
 
 # change adapter logging level (optional)
-COPY xwiki/logback.xml /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/
+#COPY xwiki/logback.xml /usr/local/tomcat/webapps/ROOT/WEB-INF/classes/
 
