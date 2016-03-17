@@ -34,3 +34,5 @@ docker/deploy/keycloak/keycloak.jks
 docker/deploy/squonk-realm.json
 docker/deploy/xwiki/hibernate.cfg.xml
 
+docker/deploy/nginx
+

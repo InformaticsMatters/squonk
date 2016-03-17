@@ -15,9 +15,6 @@ echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 # substitute the realm json file need by keycloak
 sed "s/__server_name__/${PUBLIC_HOST}/g" squonk-realm.json.template > squonk-realm.json
 
-# substitute the xwiki hibernate props
-sed "s/__postgres_xwiki_password__/${POSTGRES_XWIKI_PASS:-squonk}/g" xwiki/hibernate.cfg.xml.template > xwiki/hibernate.cfg.xml
-
 
 docker-compose stop
 docker-compose rm -f

@@ -137,8 +137,8 @@ portal:
     dockerfile: Dockerfile-portal
     hostname: portal
     ports:
-    - "9080:8080"
-    - "9443:8443"
+    - "80:8080"
+    - "443:8443"
     links:
     - postgres:postgres
     - coreservices:coreservices
@@ -147,17 +147,5 @@ portal:
         PORTAL_SERVER_URL:
         SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
 
-################# xwiki container ###################################################
-xwiki:
-    build: .
-    dockerfile: Dockerfile-xwiki
-    ports:
-    - 80:8080
-    - 443:8443
-    links:
-    - keycloak:keycloak
-    - postgres:postgres
-    environment:
-    - KEYCLOAK_SERVER_URL
         
 
