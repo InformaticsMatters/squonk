@@ -17,6 +17,6 @@ export POSTGRES_SQUONK_PASS=squonk
 export POSTGRES_XWIKI_PASS=squonk
 
 # generally no need to change these
-export SERVICE_CALLBACK=http://${PRIVATE_HOST}:9080/ws/notebook
+export SERVICE_CALLBACK=http://${PRIVATE_HOST}/ws/notebook
 export KEYCLOAK_SERVER_URL=http://${PUBLIC_HOST}:8080
-export PORTAL_SERVER_URL=http://${PUBLIC_HOST}:9080
+export PORTAL_SERVER_URL=http://${PUBLIC_HOST}
