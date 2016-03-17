@@ -58,6 +58,7 @@ postgres:
 #        API_URL: http://${PUBLIC_HOST}:8091/coreservices/api-docs
 
 ################# keycloak container ###############################################
+# available on http://${PUBLIC_HOST}/auth
 keycloak:
     build: keycloak/
     links:
@@ -66,40 +67,35 @@ keycloak:
         POSTGRES_DATABASE: keycloak
         POSTGRES_USER: keycloak
         POSTGRES_PASSWORD:
-    ports:
-    - 8080:8080
-    - 8443:8443
     volumes:
     - ./keycloak/standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml:ro
-    - ./keycloak/keycloak.jks:/opt/jboss/keycloak/standalone/configuration/keycloak.jks:ro
+#    - ./keycloak/keycloak.jks:/opt/jboss/keycloak/standalone/configuration/keycloak.jks:ro
 
 
 ################# chem services container #########################################
 # available on
-# http://${PUBLIC_HOST}:8092/chem-services-rdkit-basic/rest/v1/calculators
-# http://${PUBLIC_HOST}:8092/chem-services-cdk-basic/rest/v1/calculators
-# http://${PUBLIC_HOST}:8092/chem-services-chemaxon-basic/rest/v1/calculators
-# http://${PUBLIC_HOST}:8092/chem-services-chemaxon-basic/rest/v1/descriptors
+# http://${PUBLIC_HOST}/chem-services-rdkit-basic/rest/v1/calculators
+# http://${PUBLIC_HOST}/chem-services-cdk-basic/rest/v1/calculators
+# http://${PUBLIC_HOST}/chem-services-chemaxon-basic/rest/v1/calculators
+# http://${PUBLIC_HOST}/chem-services-chemaxon-basic/rest/v1/descriptors
 #
 # Test using something like this:
 # curl -X POST -T mols.json "http://${PUBLIC_HOST}:8092/chem-services-cdk-basic/rest/v1/calculators/logp"
 #
 chemservices:
     image: squonk/chem-services-basic
-    ports:
-    - "8092:8080"
+#    ports:
+#    - "8092:8080"
 
 
 ################# core-services-server container #########################################
 # available on:
-# http://${PUBLIC_HOST}:8091/coreservices/rest/ping
-# http://${PUBLIC_HOST}:8091/coreservices/rest/v1/services
-# http://${PUBLIC_HOST}:8091/coreservices/rest/v1/jobs
+# http://${PUBLIC_HOST}/coreservices/rest/ping
+# http://${PUBLIC_HOST}/coreservices/rest/v1/services
+# http://${PUBLIC_HOST}/coreservices/rest/v1/jobs
 # 
 coreservices:
     image: squonk/core-services-server
-    ports:
-    - 8091:8080
     links:
     - postgres:db
     - rabbitmq:rabbitmq
@@ -115,8 +111,6 @@ coreservices:
         SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
 #        SQUONK_RDKIT_CHEM_SERVICES_URL
 
-
-
 ################# cell-executor container #########################################
 cellexecutor:
     image: squonk/cellexecutor
@@ -130,15 +124,11 @@ cellexecutor:
         SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
         SERVICE_CALLBACK:
 
-
 ################# portal ##########################################################
+# available on http://${PUBLIC_HOST}/portal
 portal:
     build: .
     dockerfile: Dockerfile-portal
-    hostname: portal
-    ports:
-    - "9080:8080"
-    - "9443:8443"
     links:
     - postgres:postgres
     - coreservices:coreservices
@@ -148,16 +138,35 @@ portal:
         SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
 
 ################# xwiki container ###################################################
+# available on http://${PUBLIC_HOST}/xwiki
 xwiki:
     build: .
     dockerfile: Dockerfile-xwiki
-    ports:
-    - 80:8080
-    - 443:8443
     links:
     - keycloak:keycloak
     - postgres:postgres
     environment:
     - KEYCLOAK_SERVER_URL
+
+################# nginx container ###################################################
+# create a SSL cert/key using:
+# openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout nginx/cert.key -out nginx/cert.crt
+nginx:
+    image: nginx
+    ports:
+    - 80:80
+    - 443:443
+    volumes:
+    - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    - ./nginx/cert.crt:/etc/nginx/cert.crt:ro
+    - ./nginx/cert.key:/etc/nginx/cert.key:ro
+    - ./nginx/index.html:/usr/share/nginx/html/index.html:ro
+    links:
+    - xwiki
+    - keycloak
+    - portal
+    - coreservices
+    - chemservices
+
         
 

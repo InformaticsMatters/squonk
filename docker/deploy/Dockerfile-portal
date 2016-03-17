@@ -1,26 +1,26 @@
 FROM tomcat:8-jre8
 MAINTAINER Tim Dudgeon <tdudgeon@informaticsmatters.com>
+
 RUN echo JAVA_OPTS='"-Dcom.sun.jersey.server.impl.cdi.lookupExtensionInBeanManager=true -DstartDerbyServer=true -Dcom.squonk.keycloak.baseurl=$KEYCLOAK_SERVER_URL"' > /usr/local/tomcat/bin/setenv.sh
 RUN rm -rf              /usr/local/tomcat/webapps/*
 COPY portal/tomcat-users.xml /usr/local/tomcat/conf/tomcat-users.xml
 COPY portal/server.xml       /usr/local/tomcat/conf/server.xml
-COPY portal/keycloak.json    /usr/local/tomcat/webapps/ROOT/WEB-INF/
-COPY portal/context.xml      /usr/local/tomcat/webapps/ROOT/META-INF/
+COPY portal/keycloak.json    /usr/local/tomcat/webapps/portal/WEB-INF/
+COPY portal/context.xml      /usr/local/tomcat/webapps/portal/META-INF/
 
 # copy the keycloak jars to the tomcat lib folder
 COPY keycloak-jars-tomcat8/* /usr/local/tomcat/lib/
 
 ADD portal/*.war        /usr/local/tomcat/webapps/
-RUN unzip -d            /usr/local/tomcat/webapps/ROOT /usr/local/tomcat/webapps/ROOT.war &&\
- rm -f                  /usr/local/tomcat/webapps/ROOT.war
+RUN unzip -d            /usr/local/tomcat/webapps/portal /usr/local/tomcat/webapps/ROOT.war && rm -f /usr/local/tomcat/webapps/ROOT.war
 
 # remove unused or conflicting jars
-RUN cd /usr/local/tomcat/webapps/ROOT/WEB-INF/lib && rm bcprov-jdk15-1.46.jar commons-codec-*.jar commons-logging-*.jar httpclient*.jar httpcore*.jar keycloak*.jar jackson-annotations-2.6.4.jar jackson-core-2.6.4.jar jackson-databind-2.6.4.jar servlet-api-3.0.jar
+RUN cd /usr/local/tomcat/webapps/portal/WEB-INF/lib && rm bcprov-jdk15-1.46.jar commons-codec-*.jar commons-logging-*.jar httpclient*.jar httpcore*.jar keycloak*.jar jackson-annotations-2.6.4.jar jackson-core-2.6.4.jar jackson-databind-2.6.4.jar servlet-api-3.0.jar
 
 
-COPY portal/web.xml /usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml
-COPY portal/beans.xml /usr/local/tomcat/webapps/ROOT/WEB-INF/beans.xml
-COPY portal/persistence.properties /usr/local/tomcat/webapps/ROOT/WEB-INF/persistence.properties
+COPY portal/web.xml /usr/local/tomcat/webapps/portal/WEB-INF/web.xml
+COPY portal/beans.xml /usr/local/tomcat/webapps/portal/WEB-INF/beans.xml
+COPY portal/persistence.properties /usr/local/tomcat/webapps/portal/WEB-INF/persistence.properties
 
  
 EXPOSE 8080

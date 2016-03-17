@@ -27,10 +27,24 @@ components/security-keycloak/lib/
 docker/**/*.war
 docker/xwiki-site/yyy.json
 docker/deploy/setenv.sh
-docker/portal_keycloak/setenv.sh*
-docker/portal_keycloak/yyy.json
 docker/deploy/yyy.json
-docker/deploy/keycloak/keycloak.jks
+
 docker/deploy/squonk-realm.json
+
 docker/deploy/xwiki/hibernate.cfg.xml
+docker/deploy/xwiki/server.xml
+
+docker/deploy/portal/server.xml
+
+docker/deploy/nginx/cert.key
+docker/deploy/nginx/cert.crt
+
+docker/deploy/keycloak/keycloak.jks
+
+
+
+
+
+
+
 

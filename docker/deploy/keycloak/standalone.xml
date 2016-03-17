@@ -43,14 +43,6 @@
                     <properties path="application-roles.properties" relative-to="jboss.server.config.dir"/>
                 </authorization>
             </security-realm>
-            <!-- add keystore setup for https -->
-	    <security-realm name="UndertowRealm">
-                <server-identities>
-                    <ssl>
-                        <keystore path="keycloak.jks" relative-to="jboss.server.config.dir" keystore-password="squonk" />
-                    </ssl>
-                </server-identities>
-            </security-realm>
         </security-realms>
         <audit-log>
             <formatters>
@@ -400,9 +392,7 @@
         <subsystem xmlns="urn:jboss:domain:undertow:3.0">
             <buffer-cache name="default"/>
             <server name="default-server">
-                <!-- add https listener --> 
-                <https-listener name="https" socket-binding="https" security-realm="UndertowRealm"/>
-                <http-listener name="default" socket-binding="http" redirect-socket="https"/>
+                <http-listener name="default" socket-binding="http" proxy-address-forwarding="true" redirect-socket="proxy-https"/>
                 <host name="default-host" alias="localhost">
                     <location name="/" handler="welcome-content"/>
                     <filter-ref name="server-header"/>
@@ -444,6 +434,7 @@
         <socket-binding name="https" port="${jboss.https.port:8443}"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
+        <socket-binding name="proxy-https" port="443"/>
         <outbound-socket-binding name="mail-smtp">
             <remote-destination host="localhost" port="25"/>
         </outbound-socket-binding>

@@ -453,6 +453,7 @@
       <web-resource-collection>
           <web-resource-name>XWikiSite</web-resource-name>
           <url-pattern>/bin/login/*</url-pattern>
+          <!--url-pattern>/*</url-pattern-->
       </web-resource-collection>
       <auth-constraint>
           <role-name>standard-user</role-name>
