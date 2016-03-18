@@ -118,11 +118,12 @@ cellexecutor:
     - coreservices:coreservices
     - rabbitmq:rabbitmq
     - chemservices:chemservices
+    - portal:portal
     environment:
         RABBITMQ_HOST: rabbitmq
         RABBITMQ_SQUONK_PASS:
         SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
-        SERVICE_CALLBACK:
+        SERVICE_CALLBACK: http://portal:8080/portal
 
 ################# portal ##########################################################
 # available on http://${PUBLIC_HOST}/portal
@@ -134,8 +135,9 @@ portal:
     - coreservices:coreservices
     environment:
         KEYCLOAK_SERVER_URL:
-        PORTAL_SERVER_URL:
+        PUBLIC_HOST_URL:
         SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
+        SERVICE_CALLBACK: http://localhost:8080/portal
 
 ################# xwiki container ###################################################
 # available on http://${PUBLIC_HOST}/xwiki
