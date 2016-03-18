@@ -1,0 +1,65 @@
+grant codeBase "file:${catalina.base}/webapps/xwiki/WEB-INF/lib/-" {
+  // for mySQL connection
+  permission java.net.SocketPermission "127.0.0.1:3306", "connect,resolve";
+
+  // XWiki must have access to all properties in read/write
+  permission java.util.PropertyPermission "*", "read, write";
+
+  // Generic detected permissions
+  permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
+  permission java.lang.RuntimePermission "createClassLoader";
+  permission java.lang.RuntimePermission "setContextClassLoader";
+  permission java.lang.RuntimePermission "accessClassInPackage.org.apache.catalina.loader";
+  permission java.lang.RuntimePermission "accessDeclaredMembers";
+  permission java.lang.RuntimePermission "getenv.ProgramFiles";
+  permission java.lang.RuntimePermission "getenv.APPDATA";
+  permission java.lang.RuntimePermission "accessClassInPackage.sun.reflect";
+  permission java.lang.RuntimePermission "getClassLoader";
+  permission java.lang.RuntimePermission "accessClassInPackage.org.apache.catalina.connector";
+  permission java.lang.RuntimePermission "accessClassInPackage.org.apache.tomcat.util.threads";
+  permission java.lang.RuntimePermission "reflectionFactoryAccess";
+  permission java.lang.RuntimePermission "accessClassInPackage.com.sun.jmx.interceptor";
+  permission java.lang.RuntimePermission "accessClassInPackage.com.sun.jmx.mbeanserver";
+  permission java.lang.RuntimePermission "modifyThread";
+  permission java.lang.RuntimePermission "getProtectionDomain";
+
+  // JAXB permissions
+  permission javax.xml.bind.JAXBPermission "setDatatypeConverter";
+
+  // Serialization related permissions
+  permission java.io.SerializablePermission "allowSerializationReflection";
+  permission java.io.SerializablePermission "creator";
+  permission java.io.SerializablePermission "enableSubclassImplementation";
+
+  // Internal resources access permissions
+  permission java.io.FilePermission "synonyms.txt", "read";
+  permission java.io.FilePermission "lang/synonyms_en.txt", "read";
+  permission java.io.FilePermission "quartz.properties", "read";
+  permission java.io.FilePermission "/templates/-", "read";
+  permission java.io.FilePermission "/skins/-", "read";
+  permission java.io.FilePermission "/resources/-", "read";
+
+  // MBean related permissions
+  permission javax.management.MBeanServerPermission "createMBeanServer";
+  permission javax.management.MBeanPermission "*", "registerMBean";
+  permission javax.management.MBeanPermission "*", "unregisterMBean";
+  permission javax.management.MBeanTrustPermission "register";
+  permission javax.management.MBeanPermission "-#-[-]", "queryNames";
+  permission javax.management.MBeanServerPermission "findMBeanServer";
+
+  // LibreOffice/OpenOffice related permissions
+  permission java.io.FilePermission "/opt/openoffice.org3/program/soffice.bin", "read";
+  permission java.io.FilePermission "/opt/libreoffice/program/soffice.bin", "read";
+  permission java.io.FilePermission "/usr/lib/openoffice/program/soffice.bin", "read";
+  permission java.io.FilePermission "/usr/lib/libreoffice/program/soffice.bin", "read";
+
+  // Allow file storage directory reading - for directory and everything underneath
+  // This is dependent on the setting of environment.permanentDirectory in xwiki.properties
+  permission java.io.FilePermission "${catalina.base}${file.separator}xwikidata${file.separator}", "read,write,delete";
+  permission java.io.FilePermission "${catalina.base}${file.separator}xwikidata${file.separator}-", "read,write,delete";
+
+  // Allow file storage directory reading - temporary directory and everything underneath
+  // This is dependent on the setting of environment.temporaryDirectory in xwiki.properties.
+  permission java.io.FilePermission "${catalina.base}${file.separator}temp${file.separator}", "read,write,delete";
+  permission java.io.FilePermission "${catalina.base}${file.separator}temp${file.separator}-", "read,write,delete";
+};

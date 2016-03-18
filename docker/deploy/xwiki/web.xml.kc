@@ -1,0 +1,42 @@
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+      version="3.0">
+
+    <module-name>sampleapp</module-name>
+
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>SampleApp</web-resource-name>
+            <url-pattern>/auth/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>standard-user</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <!--security-constraint>
+           <web-resource-collection>
+               <url-pattern>/*</url-pattern>
+           </web-resource-collection>
+           <user-data-constraint>
+               <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+           </user-data-constraint>
+    </security-constraint-->
+	   
+    <login-config>
+        <auth-method>BASIC</auth-method>
+        <realm-name>ignored</realm-name>
+    </login-config>
+
+    <security-role>
+        <role-name>realm-manager</role-name>
+    </security-role>
+    <security-role>
+        <role-name>standard-user</role-name>
+    </security-role>
+    <security-role>
+        <role-name>nobody-has-this-role</role-name>
+    </security-role>
+</web-app>

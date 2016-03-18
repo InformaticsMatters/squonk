@@ -4,9 +4,9 @@
   "auth-server-url": "${com.squonk.keycloak.baseurl}",
   "ssl-required": "external",
   "disable-trust-manager": true,
-  "resource": "portal",
+  "resource": "xwiki",
   "credentials": {
-    "secret": "434ecd6b-586d-4db8-a3fa-83bfeb16bf44"
+    "secret": "fa007a05-a152-426c-ae75-6cbed2c43319"
   },
   "use-resource-role-mappings": false
 }

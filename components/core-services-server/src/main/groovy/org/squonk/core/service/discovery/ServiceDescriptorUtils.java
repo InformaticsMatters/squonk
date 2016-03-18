@@ -31,8 +31,6 @@ public class ServiceDescriptorUtils {
             modes[0] = makeAbsolute(baseUrl, serviceDescriptor.getAccessModes()[i]);
         }
 
-        LOG.info("Icon for " + serviceDescriptor.getId() + ": " + serviceDescriptor.getIcon());
-
         return new ServiceDescriptor(serviceDescriptor.getId(), serviceDescriptor.getName(), serviceDescriptor.getDescription(),
                 serviceDescriptor.getTags(), serviceDescriptor.getResourceUrl(), serviceDescriptor.getPaths(),
                 serviceDescriptor.getOwner(), serviceDescriptor.getOwnerUrl(),
@@ -41,7 +39,6 @@ public class ServiceDescriptorUtils {
                 serviceDescriptor.getIcon(),
                 modes
         );
-
     }
 
     public static AccessMode makeAbsolute(String baseUrl, AccessMode mode) {

@@ -4,7 +4,7 @@
 # once comple run them with run-containers.sh
 
 if [ ! $PUBLIC_HOST ]; then
-	echo "environment variables not set?"
+	echo "environment variables not set? Run 'source setenv.sh' to set them"
 	exit 1
 fi
 
@@ -13,7 +13,10 @@ base=$PWD
 echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 
 # substitute the realm json file need by keycloak
-sed "s/__server_name__/${PUBLIC_HOST}/g" squonk-realm.json.template > squonk-realm.json
+sed "s/__public_host__/${PUBLIC_HOST}/g" squonk-realm.json.template > squonk-realm.json
+# set up teh proxy details in the tomcat apps 
+sed "s/__public_host__/${PUBLIC_HOST}/g" portal/server.xml.template > portal/server.xml
+sed "s/__public_host__/${PUBLIC_HOST}/g" xwiki/server.xml.template > xwiki/server.xml
 
 
 docker-compose stop
@@ -54,7 +57,7 @@ echo "preparing rabbitmq docker image ..."
 echo "... rabbitmq container configured"
 docker-compose stop rabbitmq
 
-keycloak_url="https://${PRIVATE_HOST}:8443/auth"
+keycloak_url="http://${PRIVATE_HOST}:8080/auth"
 echo "keycloak_url: $keycloak_url"
 
 

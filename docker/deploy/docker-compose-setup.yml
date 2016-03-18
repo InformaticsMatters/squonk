@@ -2,6 +2,9 @@ keycloak:
     environment:
         KEYCLOAK_USER: admin
         KEYCLOAK_PASSWORD:
+    ports: 
+    - "8080:8080"
+    - "8443:8443"
 postgres:
     ports: 
     - "5432:5432"
