@@ -3,15 +3,18 @@ package org.squonk.options;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.squonk.notebook.api.OptionDefinition;
 import org.squonk.notebook.api.OptionType;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Describes a property that needs to be defined in order to execute a service.
+ * Describes an option that needs to be defined in order to execute a service.
  * <br>e.g. the threshold for a similarity search
  * <br>e.g. the query structure for a structure search
  * <p>
@@ -19,12 +22,19 @@ import java.util.List;
  * string) and also need to provide a reason why the value is invalid, or at least a description of
  * what types of values are valid
  * <p>
+ * This class uses the JsonTypeInfo mechanism to allow subclasses to be used and marshalled/unmarshalled to/from json.
+ * Also, the "properties" property provides a generic way for subclasses to persist their custom properties.
+ * These custom properties are persisted automatically avoiding the need for subclasses to need to deal with persistence.
+ * All that should be needed in simple cases is to read and write any custom properties to this properties map and the sub-class
+ * will be marshalled/unmarshalled correctly. You must however implement the full arg form of the constructor.
+ * Of course, if you need something more complex then you can define your own persistence using the standard mechanisms
+ * Jackson provides.
  *
  * @author Tim Dudgeon
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
-
 
     private final TypeDescriptor<T> typeDescriptor;
     private final String key;
@@ -36,6 +46,7 @@ public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
     private final boolean visible;
     private final Integer minValues;
     private final Integer maxValues;
+    private final Map<String,Object> properties = new LinkedHashMap<>();
 
     /** Full constructor.
      *
@@ -50,6 +61,7 @@ public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
      * @param minValues The minimum number of values. If 0 then the option is optional. If 1 it is required. If greater than
      *                  1 then at least this many values need to be specified. If null then assumed to be 1.
      * @param maxValues The maximum number of values. If null then any number are allowed.
+     * @param properties Any cusom properties needed by subclasses
      */
     public OptionDescriptor(
             @JsonProperty("typeDescriptor") TypeDescriptor<T> typeDescriptor,
@@ -61,7 +73,8 @@ public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
             @JsonProperty("visible") boolean visible,
             @JsonProperty("editable") boolean editable,
             @JsonProperty("minValues") Integer minValues,
-            @JsonProperty("maxValues") Integer maxValues
+            @JsonProperty("maxValues") Integer maxValues,
+            @JsonProperty("properties") Map<String,Object> properties
     ) {
         this.typeDescriptor = typeDescriptor;
         this.key = key;
@@ -73,6 +86,23 @@ public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
         this.editable = editable;
         this.minValues = minValues;
         this.maxValues = maxValues;
+        if (properties != null) {
+            this.properties.putAll(properties);
+        }
+    }
+
+    public OptionDescriptor(
+            TypeDescriptor<T> typeDescriptor,
+            String key,
+            String label,
+            String description,
+            T[] values,
+            T defaultValue,
+            boolean visible,
+            boolean editable,
+            Integer minValues,
+            Integer maxValues) {
+        this(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, null);
     }
 
     public OptionDescriptor(TypeDescriptor<T> type, String key, String label, String description) {
@@ -180,6 +210,29 @@ public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
      */
     public boolean isEditable() {
         return editable;
+    }
+
+    /** Get the custom properties of this descriptor.
+     *
+     * @return
+     */
+    public Map<String,Object> getProperties() {
+        return properties;
+    }
+
+    @JsonIgnore
+    protected Object getProperty(String name) {
+        return properties.get(name);
+    }
+
+    @JsonIgnore
+    protected <P> P getProperty(String name, Class<P>cls) {
+        return (P)properties.get(name);
+    }
+
+    @JsonIgnore
+    protected void putProperty(String name, Object value) {
+        properties.put(name, value);
     }
 
     @JsonIgnore
