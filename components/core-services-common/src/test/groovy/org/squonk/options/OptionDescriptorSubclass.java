@@ -30,4 +30,23 @@ public class OptionDescriptorSubclass extends OptionDescriptor<Integer> {
     ) {
         super(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, properties);
     }
+
+    public String getPlanet() {
+        return getProperty("planet", String.class);
+    }
+
+    public void setPlanet(String planet) {
+        putProperty("planet", planet);
+    }
+
+    public Integer getPosition() {
+        return getProperty("position", Integer.class);
+    }
+
+    public void setPosition(Integer position) {
+        putProperty("position", position);
+    }
+
+
+
 }
