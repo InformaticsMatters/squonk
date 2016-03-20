@@ -1,10 +1,7 @@
 package org.squonk.execution.steps.impl;
 
 import com.im.lac.types.BasicObject;
-import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyShell;
-import groovy.lang.Script;
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
@@ -12,12 +9,7 @@ import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
-import org.squonk.util.GroovyScriptExecutor;
 
-import javax.script.ScriptEngine;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -25,9 +17,9 @@ import java.util.stream.Stream;
 /**
  * Created by timbo on 29/12/15.
  */
-public class DatasetFilterProcessScriptStep extends AbstractStep {
+public class DatasetFilterGroovyStep extends AbstractStep {
 
-    private static final Logger LOG = Logger.getLogger(DatasetFilterProcessScriptStep.class.getName());
+    private static final Logger LOG = Logger.getLogger(DatasetFilterGroovyStep.class.getName());
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;

@@ -66,7 +66,7 @@ public interface StepDefinitionConstants {
         /** Optional value for the structure format. e.g. "smiles". */
         public static final String OPTION_STRUCTURE_FORMAT = "structureFormat";
 
-        /** Option for whether to use the UUID of BasicObject as the UUID of the new MolecuelObject.
+        /** Option for whether to use the UUID of BasicObject as the UUID of the new MoleculeObject.
          * Default is true. Expects a boolean value.
          */
         public static final String OPTION_PRESERVE_UUID = "preserveUuid";
@@ -91,6 +91,11 @@ public interface StepDefinitionConstants {
         public static final String CLASSNAME = "org.squonk.execution.steps.impl.DockerProcessDatasetStep";
         public static final String OPTION_DOCKER_IMAGE = "dockerImage";
         public static final String OPTION_DOCKER_COMMAND  = "dockerCommand";
+    }
+
+    interface DatasetFilterGroovy {
+        public static final String CLASSNAME = "org.squonk.execution.steps.impl.DatasetFilterGroovyStep";
+        public static final String OPTION_SCRIPT = "script";
     }
     
 }

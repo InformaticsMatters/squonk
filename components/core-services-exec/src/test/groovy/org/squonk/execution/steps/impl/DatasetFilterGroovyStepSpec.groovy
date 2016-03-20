@@ -1,7 +1,6 @@
 package org.squonk.execution.steps.impl
 
 import com.im.lac.types.BasicObject
-import com.im.lac.types.MoleculeObject
 import groovy.transform.Canonical
 import org.squonk.dataset.Dataset
 import org.squonk.execution.variable.PersistenceType
@@ -13,7 +12,7 @@ import spock.lang.Specification
 /**
  * Created by timbo on 19/03/2016.
  */
-class DatasetFilterProcessScriptStepSpec extends Specification {
+class DatasetFilterGroovyStepSpec extends Specification {
 
 
     static def values = [
@@ -100,15 +99,15 @@ class Filter {
                 ds,
                 PersistenceType.NONE)
 
-        DatasetFilterProcessScriptStep step = new DatasetFilterProcessScriptStep()
+        DatasetFilterGroovyStep step = new DatasetFilterGroovyStep()
         step.configure(producer,
-                [(DatasetFilterProcessScriptStep.OPTION_SCRIPT):'i < 5 && f > 2.0'],
-                [(DatasetFilterProcessScriptStep.VAR_INPUT_DATASET) :new VariableKey(producer, "input")],
+                [(DatasetFilterGroovyStep.OPTION_SCRIPT):'i < 5 && f > 2.0'],
+                [(DatasetFilterGroovyStep.VAR_INPUT_DATASET):new VariableKey(producer, "input")],
                 [:])
 
         when:
         step.execute(varman, null)
-        Dataset output = varman.getValue(new VariableKey(producer, DatasetFilterProcessScriptStep.VAR_OUTPUT_DATASET), Dataset.class, PersistenceType.DATASET)
+        Dataset output = varman.getValue(new VariableKey(producer, DatasetFilterGroovyStep.VAR_OUTPUT_DATASET), Dataset.class, PersistenceType.DATASET)
 
         then:
 
