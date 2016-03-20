@@ -1,5 +1,6 @@
 package org.squonk.execution.steps.impl;
 
+import com.im.lac.types.BasicObject;
 import com.im.lac.types.TypesUtils;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
@@ -53,7 +54,7 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
         boolean preserveUuid = getOption(OPTION_PRESERVE_UUID, Boolean.class, true);
 
         DatasetProvider p = fetchMappedInput(VAR_INPUT_DATASET, DatasetProvider.class, PersistenceType.DATASET, varman);
-        Dataset input = p.getDataset();
+        Dataset<BasicObject> input = p.getDataset();
         if (LOG.isLoggable(Level.FINE) && input.getMetadata() != null) {
             LOG.fine("Input has " + input.getMetadata().getSize() + " items");
         }
