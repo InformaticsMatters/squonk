@@ -14,9 +14,11 @@ echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 
 # substitute the realm json file need by keycloak
 sed "s/__public_host__/${PUBLIC_HOST}/g" squonk-realm.json.template > squonk-realm.json
-# set up teh proxy details in the tomcat apps 
+# set up the proxy details in the tomcat apps 
 sed "s/__public_host__/${PUBLIC_HOST}/g" portal/server.xml.template > portal/server.xml
 sed "s/__public_host__/${PUBLIC_HOST}/g" xwiki/server.xml.template > xwiki/server.xml
+# setup xwiki connection to postgres
+sed "s/__postgres_xwiki_password__/${POSTGRES_XWIKI_PASS}/g" xwiki/hibernate.cfg.xml.template > xwiki/hibernate.cfg.xml
 
 
 docker-compose stop
