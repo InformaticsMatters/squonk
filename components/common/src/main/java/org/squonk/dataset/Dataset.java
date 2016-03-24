@@ -2,7 +2,6 @@ package org.squonk.dataset;
 
 import com.im.lac.types.BasicObject;
 import com.im.lac.util.StreamProvider;
-import org.squonk.core.Variable;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
@@ -86,7 +85,7 @@ import java.util.stream.StreamSupport;
  * @author Tim Dudgeon &lt;tdudgeon@informaticsmatters.com&gt;
  * @param <T>
  */
-public class Dataset<T extends BasicObject> implements DatasetProvider, StreamProvider<T>, Variable<Dataset> {
+public class Dataset<T extends BasicObject> implements DatasetProvider, StreamProvider<T> {
 
     private static final Logger LOG = Logger.getLogger(Dataset.class.getName());
     private static final String MSG_ALREADY_CONSUMED = "Input not defined or already consumed";
@@ -98,7 +97,6 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     protected URL url;
     private DatasetMetadata metadata;
     private final Class<T> type;
-    private final Variable.ReadContext readContext;
 
     private final Object lock = new Object();
 
@@ -137,28 +135,24 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         this.list = new ArrayList<>();
         list.addAll(items);
         this.metadata = metadata;
-        this.readContext = null;
     }
 
     public Dataset(Class<T> type, Stream<T> objects, DatasetMetadata<T> metadata) {
         this.type = type;
         this.stream = objects;
         this.metadata = metadata;
-        this.readContext = null;
     }
 
     public Dataset(Class<T> type, Iterator<T> iter, DatasetMetadata<T> metadata) {
         this.type = type;
         this.iter = iter;
         this.metadata = metadata;
-        this.readContext = null;
     }
 
     public Dataset(Class<T> type, URL url, DatasetMetadata<T> metadata) {
         this.type = type;
         this.url = url;
         this.metadata = metadata;
-        this.readContext = null;
     }
 
     /**
@@ -173,23 +167,6 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         this.type = type;
         this.inputStream = inputStream;
         this.metadata = metadata;
-        this.readContext = null;
-    }
-
-    /** Create using a variable reader.
-     * This immediatedly grabs the metadata but defers loading the data until its needed.
-     * The semantics are that same as if the source is defined as a URL.
-     *
-     * @param type
-     * @param reader
-     * @throws IOException
-     */
-    public Dataset(Class<T> type, Variable.ReadContext reader) throws Exception {
-        this.type = type;
-        String metaJ = reader.readTextValue();
-        this.metadata = JsonHandler.getInstance().objectFromJson(metaJ, DatasetMetadata.class);
-        this.url = reader.getStreamValueUrl();
-        this.readContext = reader;
     }
 
     @Override
@@ -353,12 +330,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     }
 
     private Stream<T> createStreamFromUrl() throws IOException {
-        InputStream is = null;
-        if (readContext == null) {
-            is = url.openStream();
-        } else {
-            is = readContext.readStreamValue(url);
-        }
+        InputStream is = url.openStream();
         return JsonHandler.getInstance().streamFromJson(IOUtils.getGunzippedInputStream(is), metadata.getType(), metadata.getValueClassMappings(), true);
     }
 
@@ -578,27 +550,5 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
             });
         }
     }
-
-    @Override
-    public Writer<Dataset> getVariableWriter() {
-        return writer;
-    }
-
-
-    private final Writer<Dataset> writer = new Variable.Writer<Dataset>() {
-
-        @Override
-        public void write(WriteContext context) throws IOException {
-            Dataset.DatasetMetadataGenerator generator = createDatasetMetadataGenerator();
-
-            try (Stream s = generator.getAsStream()) {
-                InputStream is = generator.getAsInputStream(s, true);
-                context.writeStreamValue(is);
-            } // stream now closed
-            DatasetMetadata md = generator.getDatasetMetadata();
-            String json = JsonHandler.getInstance().objectToJson(md);
-            context.writeTextValue(json);
-        }
-    };
 
 }

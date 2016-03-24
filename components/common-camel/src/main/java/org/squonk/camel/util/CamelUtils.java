@@ -9,6 +9,7 @@ import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
+import javax.servlet.http.HttpServlet;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -32,6 +33,8 @@ public class CamelUtils {
     private static final JsonHandler jsonHandler = new JsonHandler();
     // TODO - its probably better to get the thread pool from CamelContext?
     final static ExecutorService executor = Executors.newCachedThreadPool();
+
+
 
     public static void handleMoleculeObjectStreamInput(Exchange exch) throws IOException, ClassNotFoundException {
 

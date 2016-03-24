@@ -9,6 +9,8 @@ import java.io.InputStream;
  * @author timbo
  */
 public class SDFile {
+
+    public static final String PROP_NAME_FIELD_NAME = "SDF_NAME_FIELD_NAME";
     
     private final InputStream inputStream;
     

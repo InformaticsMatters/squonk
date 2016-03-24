@@ -26,7 +26,7 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
     private String nameFieldName = "name";
 
     public SDFReader(InputStream is) throws IOException {
-        this.reader = new LineNumberReader(new InputStreamReader(is));
+        this.reader = new LineNumberReader(new InputStreamReader(IOUtils.getGunzippedInputStream(is)));
     }
 
     /**

@@ -1,6 +1,6 @@
 package org.squonk.execution.variable.impl;
 
-import org.squonk.core.Variable;
+import org.squonk.api.VariableHandler;
 import org.squonk.core.client.NotebookRestClient;
 
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.io.InputStream;
 /**
  * Created by timbo on 13/03/16.
  */
-public class VariableWriteContext implements Variable.WriteContext {
+public class VariableWriteContext implements VariableHandler.WriteContext {
 
     private final NotebookRestClient client;
     private final Long notebookId;

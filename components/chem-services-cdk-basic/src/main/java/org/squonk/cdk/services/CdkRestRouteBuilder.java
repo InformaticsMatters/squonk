@@ -9,6 +9,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.util.CamelUtils;
+import org.squonk.api.MimeTypeResolver;
 
 import java.util.logging.Logger;
 
@@ -57,7 +58,10 @@ public class CdkRestRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        restConfiguration().component("servlet").host("0.0.0.0");
+        restConfiguration().component("servlet").host("0.0.0.0")
+                .apiContextPath("/api-doc")
+                .apiProperty("api.title", "CDK Basic services").apiProperty("api.version", "1.0")
+                .apiProperty("cors", "true");
 
         /* These are the REST endpoints - exposed as public web services 
          */
@@ -69,8 +73,8 @@ public class CdkRestRouteBuilder extends RouteBuilder {
 
         rest("/v1/calculators").description("Property calculation services using CDK")
                 .bindingMode(RestBindingMode.off)
-                .consumes("application/json")
-                .produces("application/json")
+                .consumes(MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON)
+                .produces(MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON)
                 //
                 // service descriptor
                 .get().description("ServiceDescriptors for CDK calculators")

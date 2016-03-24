@@ -1,6 +1,6 @@
 package org.squonk.execution.variable;
 
-import org.squonk.core.Variable;
+import org.squonk.api.VariableHandler;
 import org.squonk.core.client.NotebookRestClient;
 import org.squonk.execution.variable.impl.VariableReadContext;
 import org.squonk.execution.variable.impl.VariableWriteContext;
@@ -33,11 +33,10 @@ public class VariableManager2 {
         Long editableId = 0l; // TODO -get the right value
         Long cellId = 0l;     // TODO -get the right value
         String variableName = key.getName();
-        Variable.WriteContext context = new VariableWriteContext(client, notebookId, editableId, cellId, variableName);
+        VariableHandler.WriteContext context = new VariableWriteContext(client, notebookId, editableId, cellId, variableName);
         if (canBeHandledAsVariable(value.getClass())) {
-            Variable v = (Variable)value;
-            Variable.Writer writer = v.getVariableWriter();
-            writer.write(context);
+            VariableHandler v = (VariableHandler)value;
+            v.writeVariable(value, context);
         } else if (canBeHandledAsString(value.getClass())){
             client.writeTextValue(notebookId, editableId, cellId, variableName, value.toString(), null);
         }
@@ -50,12 +49,12 @@ public class VariableManager2 {
         String variableName = key.getName();
         if (canBeHandledAsVariable(type)) {
 
-            Variable.ReadContext context = new VariableReadContext(client, notebookId, sourceId, variableName);
+            VariableHandler.ReadContext context = new VariableReadContext(client, notebookId, sourceId, variableName);
 
             for (Constructor c: type.getConstructors()) {
-                if (c.getParameterCount() == 1 && c.getParameterTypes()[0].isAssignableFrom(Variable.ReadContext.class)) {
+                if (c.getParameterCount() == 1 && c.getParameterTypes()[0].isAssignableFrom(VariableHandler.ReadContext.class)) {
                     return (V)c.newInstance(context);
-                } else if (c.getParameterCount() == 2 && c.getParameterTypes()[0].isAssignableFrom(Class.class) && c.getParameterTypes()[0].isAssignableFrom(Variable.ReadContext.class)) {
+                } else if (c.getParameterCount() == 2 && c.getParameterTypes()[0].isAssignableFrom(Class.class) && c.getParameterTypes()[0].isAssignableFrom(VariableHandler.ReadContext.class)) {
                     return (V)c.newInstance(type, context);
                 }
             }
@@ -68,11 +67,11 @@ public class VariableManager2 {
     }
 
     boolean canBeHandledAsVariable(Class cls) {
-        if (cls.isAssignableFrom(Variable.class)) {
+        if (cls.isAssignableFrom(VariableHandler.class)) {
             for (Constructor c: cls.getConstructors()) {
-                if (c.getParameterCount() == 1 && c.getParameterTypes()[0].isAssignableFrom(Variable.ReadContext.class)) {
+                if (c.getParameterCount() == 1 && c.getParameterTypes()[0].isAssignableFrom(VariableHandler.ReadContext.class)) {
                     return true;
-                } else if (c.getParameterCount() == 2 && c.getParameterTypes()[0].isAssignableFrom(Class.class) && c.getParameterTypes()[0].isAssignableFrom(Variable.ReadContext.class)) {
+                } else if (c.getParameterCount() == 2 && c.getParameterTypes()[0].isAssignableFrom(Class.class) && c.getParameterTypes()[0].isAssignableFrom(VariableHandler.ReadContext.class)) {
                     return true;
                 }
             }

@@ -8,9 +8,12 @@ repositories {
 dependencies {
     
     compile project(':common')
+    compile project(':common-utils')
     
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-jackson:$camelVersion"
     compile "org.apache.camel:camel-http4:$camelVersion"
+
+    testCompile "org.apache.camel:camel-jetty:$camelVersion"
 
 }
