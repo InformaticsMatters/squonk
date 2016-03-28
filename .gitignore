@@ -43,10 +43,6 @@ docker/deploy/keycloak/keycloak.jks
 
 
 
-
-
-
-
-
 docker/deploy/nginx
 
+components/cdi-services-cdk-basic

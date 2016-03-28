@@ -50,21 +50,21 @@ class DefaultHttpContextSpec extends Specification {
 
     void "simple get"() {
 
-        DefaultHttpExecutor hc = new DefaultHttpExecutor(context, HttpMethods.GET,
+        CamelRequestResponseExecutor hc = new CamelRequestResponseExecutor(context, HttpMethods.GET,
                 URI.create("http://localhost:8889/sayhello"))
         StringHandler sh = new StringHandler()
 
         when:
-        sh.prepareRequest(null, hc)
+        sh.prepareRequest(null, hc, false)
         hc.execute()
 
         then:
-        sh.readResponse(hc) == "hello world"
+        sh.readResponse(hc, false) == "hello world"
     }
 
     void "basic objects post"() {
 
-        DefaultHttpExecutor exec = new DefaultHttpExecutor(context, HttpMethods.POST,
+        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, HttpMethods.POST,
                 URI.create("http://localhost:8889/echo"))
         DatasetHandler dh = new DatasetHandler(BasicObject.class)
 
@@ -77,9 +77,9 @@ class DefaultHttpContextSpec extends Specification {
                 new DatasetMetadata(BasicObject.class, [name: String.class], 3))
 
         when:
-        dh.prepareRequest(ds, exec)
+        dh.prepareRequest(ds, exec, false)
         exec.execute()
-        Dataset output = dh.readResponse(exec)
+        Dataset output = dh.readResponse(exec, false)
 
 
         then:
@@ -88,7 +88,7 @@ class DefaultHttpContextSpec extends Specification {
 
     void "send basic receive string"() {
 
-        DefaultHttpExecutor exec = new DefaultHttpExecutor(context, HttpMethods.POST,
+        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, HttpMethods.POST,
                 URI.create("http://localhost:8889/echo"))
         DatasetHandler dh = new DatasetHandler(BasicObject.class)
         StringHandler sh = new StringHandler()
@@ -102,9 +102,9 @@ class DefaultHttpContextSpec extends Specification {
                 new DatasetMetadata(BasicObject.class, [name: String.class], 3))
 
         when:
-        dh.prepareRequest(ds, exec)
+        dh.prepareRequest(ds, exec, false)
         exec.execute()
-        String output = sh.readResponse(exec)
+        String output = sh.readResponse(exec, false)
 
         then:
         output.length() > 0
@@ -112,7 +112,7 @@ class DefaultHttpContextSpec extends Specification {
 
     void "send string receive basic"() {
 
-        DefaultHttpExecutor exec = new DefaultHttpExecutor(context, HttpMethods.POST,
+        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, HttpMethods.POST,
                 URI.create("http://localhost:8889/echo"))
         DatasetHandler dh = new DatasetHandler(BasicObject.class)
         StringHandler sh = new StringHandler()
@@ -120,9 +120,9 @@ class DefaultHttpContextSpec extends Specification {
         def input = '[{"uuid":"f91972fd-7087-4437-abfb-c2c2eb5eb89f","values":{"name":"venus"}},{"uuid":"af245c3f-b87c-4c64-b0af-0df99fe86427","values":{"name":"mercury"}},{"uuid":"bd755fef-b4ae-44e5-b224-ceb39be66708","values":{"name":"earth"}}]'
 
         when:
-        sh.prepareRequest(input, exec)
+        sh.prepareRequest(input, exec, false)
         exec.execute()
-        Dataset output = dh.readResponse(exec)
+        Dataset output = dh.readResponse(exec, false)
 
 
         then:

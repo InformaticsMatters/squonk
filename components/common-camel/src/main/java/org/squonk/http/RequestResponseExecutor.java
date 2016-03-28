@@ -6,10 +6,12 @@ import java.io.InputStream;
 /**
  * Created by timbo on 23/03/2016.
  */
-public interface HttpExecutor {
+public interface RequestResponseExecutor {
 
-    void addRequestHeader(String name, String value);
-    void setRequestBody(InputStream is);
+    void prepareRequestHeader(String name, String value);
+    void prepareRequestBody(InputStream is);
+    void setResponseHeader(String name, String value);
+    void setResponseBody(InputStream is);
     void execute() throws IOException;
     InputStream getResponseBody();
     String getResponseHeader(String name);

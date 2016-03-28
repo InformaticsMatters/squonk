@@ -2,7 +2,7 @@ package org.squonk.types;
 
 import org.squonk.api.HttpHandler;
 import org.squonk.api.VariableHandler;
-import org.squonk.http.HttpExecutor;
+import org.squonk.http.RequestResponseExecutor;
 import org.squonk.util.IOUtils;
 
 import java.io.ByteArrayInputStream;
@@ -15,17 +15,33 @@ import java.io.InputStream;
 public class StringHandler implements HttpHandler<String>, VariableHandler<String> {
 
     @Override
-    public void prepareRequest(String obj, HttpExecutor executor) throws IOException {
-        if (obj != null) {
-            executor.setRequestBody(new ByteArrayInputStream(obj.getBytes()));
+    public Class<String> getType() {
+        return String.class;
+    }
+
+    @Override
+    public void prepareRequest(String s, RequestResponseExecutor executor, boolean gzip) throws IOException {
+        if (s != null) {
+            InputStream is = new ByteArrayInputStream(s.getBytes());
+            executor.prepareRequestBody(gzip ? IOUtils.getGzippedInputStream(is) : is);
         }
     }
 
     @Override
-    public String readResponse(HttpExecutor executor) throws IOException {
+    public void writeResponse(String s, RequestResponseExecutor executor, boolean gzip) throws IOException {
+        if (s == null) {
+            executor.setResponseBody(null);
+        }  else {
+            InputStream is = new ByteArrayInputStream(s.getBytes());
+            executor.setResponseBody(gzip ? IOUtils.getGzippedInputStream(is) : is);
+        }
+    }
+
+    @Override
+    public String readResponse(RequestResponseExecutor executor, boolean gunzip) throws IOException {
         InputStream is = executor.getResponseBody();
         if (is != null) {
-            return IOUtils.convertStreamToString(is);
+            return IOUtils.convertStreamToString(gunzip ? IOUtils.getGunzippedInputStream(is) : is);
         }
         return null;
     }

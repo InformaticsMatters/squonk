@@ -32,6 +32,7 @@ allprojects {
     project.ext.set('jacksonVersion', '2.7.2')
     project.ext.set('cdkVersion', '1.5.12')
     project.ext.set('groovyVersion', '2.4.1')
+    project.ext.set('weldVersion', '2.3.2.Final')
 
 
     // In this section you declare where to find the dependencies of your project

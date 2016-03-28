@@ -10,6 +10,8 @@ public interface GenericHandler<P,G> {
 
     void setGenericType(Class<G> genericType);
 
+    Class<G> getGenericType();
+
      default boolean canConvertGeneric(Class<? extends Object> otherGenericType, TypeConverterRegistry registry) {
          return false;
      }

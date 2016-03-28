@@ -8,12 +8,16 @@ import org.squonk.api.MimeTypeResolver;
 import org.squonk.api.VariableHandler;
 import org.squonk.dataset.Dataset;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by timbo on 20/03/2016.
  */
+@Default
+@ApplicationScoped
 public class TypeResolver implements MimeTypeResolver {
 
     private final Map<String, Class> primaryTypes = new HashMap<>();
@@ -24,8 +28,9 @@ public class TypeResolver implements MimeTypeResolver {
     public TypeResolver() {
         registerMimeType(MIME_TYPE_DATASET_BASIC_JSON, Dataset.class, BasicObject.class);
         registerMimeType(MIME_TYPE_DATASET_MOLECULE_JSON, Dataset.class, MoleculeObject.class);
-
+        registerMimeType(MIME_TYPE_MDL_SDF, SDFile.class);
         registerHttpHandler(Dataset.class, DatasetHandler.class);
+        registerHttpHandler(SDFile.class, SDFileHandler.class);
         registerVariableHandler(Dataset.class, DatasetHandler.class);
     }
 
@@ -62,6 +67,12 @@ public class TypeResolver implements MimeTypeResolver {
         return genericTypes.get(mimeType);
     }
 
+    public HttpHandler createHttpHandler(String mimeType) {
+        Class p = resolvePrimaryType(mimeType);
+        Class g = resolveGenericType(mimeType);
+        return createHttpHandler(p, g);
+    }
+
     public HttpHandler createHttpHandler(Class primaryType, Class genericType) {
 
         Class type = httpHandlers.get(primaryType);
@@ -96,6 +107,3 @@ public class TypeResolver implements MimeTypeResolver {
         }
     }
 }
-
-
-

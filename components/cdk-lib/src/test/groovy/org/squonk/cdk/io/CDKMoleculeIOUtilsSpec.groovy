@@ -1,11 +1,14 @@
 package org.squonk.cdk.io
 
+import com.im.lac.types.MoleculeObject
 import org.openscience.cdk.ChemFile
 import org.openscience.cdk.interfaces.IAtomContainer
 import org.openscience.cdk.io.formats.IChemFormat
 import org.openscience.cdk.silent.AtomContainer
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator
 import org.squonk.data.Molecules
+import org.squonk.types.CDKSDFile
+import org.squonk.util.IOUtils
 
 import java.util.zip.GZIPInputStream
 import spock.lang.Specification
@@ -145,6 +148,28 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
 //        containersList.size() == 1
 //    }
 
+
+    void "write sdf"() {
+
+        def mols = [
+                new MoleculeObject('CC1=CC(=O)C=CC1=O', 'smiles', [fruit: 'apple', index: 1]),
+                new MoleculeObject('S(SC1=NC2=CC=CC=C2S1)', 'smiles', [fruit: 'orange', index: 2]),
+                new MoleculeObject('CC(=O)OC(CC([O-])=O)C[N+](C)(C)C', 'smiles', [fruit: 'pear', index: 3]),
+                new MoleculeObject('[O-][N+](=O)C1=CC(=C(Cl)C=C1)[N+]([O-])=O', 'smiles', [fruit: 'banana', index: 4]),
+                new MoleculeObject('OC1C(O)C(O)C(OP(O)(O)=O)C(O)C1O', 'smiles', [fruit: 'melon', index: 5])
+        ]
+
+        when:
+        CDKSDFile sdf = CDKMoleculeIOUtils.covertToSDFile(mols.stream(), true)
+        String content = IOUtils.convertStreamToString(sdf.inputStream)
+        //println content
+
+        then:
+        content.length() > 0
+        content.split('fruit').length == 6
+
+
+    }
     
 }
 

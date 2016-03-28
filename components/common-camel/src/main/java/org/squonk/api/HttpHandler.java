@@ -1,31 +1,17 @@
 package org.squonk.api;
 
-import org.squonk.http.HttpExecutor;
+import org.squonk.http.RequestResponseExecutor;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Created by timbo on 23/03/2016.
  */
 public interface HttpHandler<T> {
 
-    void prepareRequest(T obj, HttpExecutor executor) throws IOException;
-    T readResponse(HttpExecutor executor) throws IOException;
-
-//    interface HttpRequestContext {
-//
-//        void addRequestHeader(String name, String value);
-//        void setRequestBody(InputStream is);
-//
-//    }
-//
-//    interface HttpResponseContext {
-//
-//        void execute();
-//        InputStream getResponseBody();
-//        String getResponseHeader(String name);
-//
-//    }
+    Class<T> getType();
+    void prepareRequest(T obj, RequestResponseExecutor executor, boolean gzip) throws IOException;
+    void writeResponse(T obj, RequestResponseExecutor executor, boolean gzip) throws IOException;
+    T readResponse(RequestResponseExecutor executor, boolean gunzip) throws IOException;
 
 }

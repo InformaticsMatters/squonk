@@ -12,6 +12,15 @@ public abstract class DescriptorCalculator {
     
     IMolecularDescriptor descriptor;
     String[] propNames;
+    Class[] propTypes;
+
+    public String[] getPropertyNames() {
+        return propNames;
+    }
+
+    public Class[] getPropertyTypes() {
+        return propTypes;
+    }
 
     public abstract void calculate(MoleculeObject mo) throws Exception;
     

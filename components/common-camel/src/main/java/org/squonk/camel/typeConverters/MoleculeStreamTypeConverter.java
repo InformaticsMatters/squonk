@@ -4,10 +4,13 @@ import com.im.lac.types.BasicObject;
 import com.im.lac.types.MoleculeObject;
 import org.apache.camel.Converter;
 import org.apache.camel.Exchange;
+import org.squonk.camel.CamelCommonConstants;
 import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.reader.SDFReader;
 import org.squonk.types.SDFile;
+import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
 import java.io.IOException;
@@ -41,6 +44,21 @@ public class MoleculeStreamTypeConverter {
         return mods.getDataset();
     }
 
+    /** This is deliberately not registered as a TypeConverter
+     *
+     * @param dataset
+     * @param exchange
+     * @return
+     * @throws IOException
+     */
+    public static MoleculeObjectDataset convertMoleculeObjectDatasetToDataset(Dataset dataset, Exchange exchange) throws IOException {
+        if (dataset.getType() == MoleculeObject.class) {
+            return new MoleculeObjectDataset(dataset);
+        } else {
+            return null;
+        }
+    }
+
     @Converter
     public static Stream<MoleculeObject> convertSDFileToMoleculeObjectSteam(SDFile sdf, Exchange exchange) throws IOException {
         SDFReader reader = new SDFReader(sdf.getInputStream());
@@ -55,16 +73,34 @@ public class MoleculeStreamTypeConverter {
     }
 
     @Converter
-    public static Dataset<MoleculeObject> convertSDFileToMoleculeObjectDataset(SDFile sdf, Exchange exchange) throws IOException {
+    public static Dataset<MoleculeObject> convertSDFileToDataset(SDFile sdf, Exchange exchange) throws IOException {
         Stream<MoleculeObject> mols = convertSDFileToMoleculeObjectSteam(sdf, exchange);
         Dataset dataset = new Dataset(MoleculeObject.class, mols);
         return dataset;
     }
 
+    @Converter
+    public static MoleculeObjectDataset convertSDFileToMoleculeObjectDataset(SDFile sdf, Exchange exchange) throws IOException {
+        Stream<MoleculeObject> mols = convertSDFileToMoleculeObjectSteam(sdf, exchange);
+        MoleculeObjectDataset dataset = new MoleculeObjectDataset(mols);
+        return dataset;
+    }
+
+    @Converter
+    public static MoleculeObjectDataset convertInputStreamToMoleculeObjectDataset(InputStream is, Exchange exchange) throws IOException {
+        DatasetMetadata meta = exchange.getIn().getHeader(CamelCommonConstants.HEADER_METADATA, DatasetMetadata.class);
+        Dataset<MoleculeObject> dataset = new Dataset<>(MoleculeObject.class, is, meta);
+        return new MoleculeObjectDataset(dataset);
+    }
 
     @Converter
     public static SDFile convertInputStreamToSDFile(InputStream is, Exchange exchange) throws IOException {
         return new SDFile(is);
+    }
+
+    @Converter
+    public static DatasetMetadata convertJsonToDatasetMetadata(String json, Exchange exchange) throws IOException {
+        return JsonHandler.getInstance().objectFromJson(json, DatasetMetadata.class);
     }
 
 

@@ -38,7 +38,7 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:streaming', mols, Dataset.class).getStream()
+        Stream results = template.prepareRequestBody('direct:streaming', mols, Dataset.class).getStream()
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
         println "  ...done"
@@ -63,7 +63,7 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:streaming', mols, Dataset.class).getStream()
+        Stream results = template.prepareRequestBody('direct:streaming', mols, Dataset.class).getStream()
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
         println "  ...done"
@@ -86,7 +86,7 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:noop', mols, Dataset.class).getStream()
+        Stream results = template.prepareRequestBody('direct:noop', mols, Dataset.class).getStream()
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
         println "  ...done"
@@ -111,7 +111,7 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:noop', mods, Dataset.class).getStream()
+        Stream results = template.prepareRequestBody('direct:noop', mods, Dataset.class).getStream()
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
         println "  ...done"

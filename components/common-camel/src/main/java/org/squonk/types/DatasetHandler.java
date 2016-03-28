@@ -7,11 +7,13 @@ import org.squonk.api.VariableHandler;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.http.HttpExecutor;
+import org.squonk.http.RequestResponseExecutor;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
@@ -19,9 +21,11 @@ import java.util.stream.Stream;
  */
 public class DatasetHandler<T extends BasicObject> implements VariableHandler<Dataset>, HttpHandler<Dataset>, GenericHandler<Dataset,T> {
 
+    private static final Logger LOG = Logger.getLogger(DatasetHandler.class.getName());
     private Class<T> genericType;
 
-    /** Default constructor. If using this the generic type MUST be set using the {@link #setGenericType(Class)} method
+    /** Default constructor.
+     * If using this constructor the generic type MUST be set using the {@link #setGenericType(Class)} method
      *
      */
     public DatasetHandler() { }
@@ -31,25 +35,49 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
     }
 
     @Override
-    public void prepareRequest(Dataset dataset, HttpExecutor executor) throws IOException {
-        DatasetMetadata md = dataset.getMetadata();
-        String json = JsonHandler.getInstance().objectToJson(md);
-        executor.addRequestHeader(CamelCommonConstants.HEADER_METADATA, json); // TODO - move this constant to this class
-        executor.setRequestBody(dataset.getInputStream(false)); // context should work out whether to gzip
+    public Class<Dataset> getType() {
+        return Dataset.class;
     }
 
     @Override
-    public Dataset readResponse(HttpExecutor executor) throws IOException {
+    public Class<T> getGenericType() {
+        return genericType;
+    }
+
+
+    @Override
+    public void prepareRequest(Dataset dataset, RequestResponseExecutor executor, boolean gzip) throws IOException {
+        DatasetMetadata md = dataset.getMetadata();
+        String json = JsonHandler.getInstance().objectToJson(md);
+        executor.prepareRequestHeader(CamelCommonConstants.HEADER_METADATA, json); // TODO - move this constant to this class
+        executor.prepareRequestBody(dataset.getInputStream(gzip));
+    }
+
+    @Override
+    public Dataset<T> readResponse(RequestResponseExecutor executor, boolean gunzip) throws IOException {
         String json = executor.getResponseHeader(CamelCommonConstants.HEADER_METADATA);
         InputStream is = executor.getResponseBody();
-        return create(json, is);
+        return create(json, gunzip ? IOUtils.getGunzippedInputStream(is) : is);
+    }
+
+    @Override
+    public void writeResponse(Dataset dataset, RequestResponseExecutor executor, boolean gzip) throws IOException {
+
+        if (dataset == null) {
+            executor.setResponseBody(null);
+        } else {
+            DatasetMetadata md = dataset.getMetadata();
+            String json = JsonHandler.getInstance().objectToJson(md);
+            executor.setResponseHeader(CamelCommonConstants.HEADER_METADATA, json); // TODO - move this constant to this class
+            executor.setResponseBody(dataset.getInputStream(gzip));
+        }
     }
 
     @Override
     public void writeVariable(Dataset dataset, WriteContext context) throws IOException {
         Dataset.DatasetMetadataGenerator generator = dataset.createDatasetMetadataGenerator();
         try (Stream s = generator.getAsStream()) {
-            InputStream is = generator.getAsInputStream(s, true);
+            InputStream is = generator.getAsInputStream(s, false);
             context.writeStreamValue(is);
         } // stream now closed
         DatasetMetadata md = generator.getDatasetMetadata();

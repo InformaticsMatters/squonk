@@ -23,7 +23,7 @@ class RdkitCalculatorsRouteBuilderSpec extends CamelSpecificationBase {
         mols << new MoleculeObject('CCC')
         
         when:
-        def results = template.requestBody(RdkitCalculatorsRouteBuilder.RDKIT_LOGP, mols)
+        def results = template.prepareRequestBody(RdkitCalculatorsRouteBuilder.RDKIT_LOGP, mols)
 
         then:
         results instanceof StreamProvider
@@ -41,7 +41,7 @@ class RdkitCalculatorsRouteBuilderSpec extends CamelSpecificationBase {
         mols << new MoleculeObject('CCC')
         
         when:
-        def results = template.requestBody(RDKIT_FRACTION_C_SP3, mols)
+        def results = template.prepareRequestBody(RDKIT_FRACTION_C_SP3, mols)
 
         then:
         results instanceof StreamProvider
@@ -59,7 +59,7 @@ class RdkitCalculatorsRouteBuilderSpec extends CamelSpecificationBase {
         mols << new MoleculeObject('CCC')
         
         when:
-        def results = template.requestBody(RDKIT_LIPINSKI, mols)
+        def results = template.prepareRequestBody(RDKIT_LIPINSKI, mols)
 
         then:
         results instanceof StreamProvider

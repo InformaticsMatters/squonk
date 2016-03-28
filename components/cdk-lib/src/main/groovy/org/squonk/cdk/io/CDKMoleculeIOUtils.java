@@ -1,31 +1,33 @@
 package org.squonk.cdk.io;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
+import com.im.lac.types.MoleculeObject;
 import org.openscience.cdk.ChemFile;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.io.*;
 import org.openscience.cdk.io.formats.IChemFormat;
-import org.openscience.cdk.io.FormatFactory;
-import org.openscience.cdk.io.INChIReader;
-import org.openscience.cdk.io.SMILESReader;
-import org.openscience.cdk.io.ISimpleChemObjectReader;
 import org.openscience.cdk.silent.AtomContainer;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesParser;
+import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
+import org.squonk.types.CDKSDFile;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * @author timbo
  */
 public class CDKMoleculeIOUtils {
+
+    private static final Logger LOG = Logger.getLogger(CDKMoleculeIOUtils.class.getName());
 
 
     public static Iterator<IAtomContainer> moleculeIterator(final InputStream is)
@@ -59,6 +61,21 @@ public class CDKMoleculeIOUtils {
         ChemFile chemFile = reader.read(new ChemFile());
         List<IAtomContainer> containersList = ChemFileManipulator.getAllAtomContainers(chemFile);
         return containersList;
+    }
+
+    public static IAtomContainer fetchMolecule(MoleculeObject mo, boolean store) throws CDKException, CloneNotSupportedException {
+        IAtomContainer mol = mo.getRepresentation(IAtomContainer.class.getName(), IAtomContainer.class);
+        if (mol == null) {
+            mol = CDKMoleculeIOUtils.readMolecule(mo.getSource());
+        }
+        if (mol != null) {
+            AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
+            if (store) {
+                mo.putRepresentation(IAtomContainer.class.getName(), mol);
+            }
+            return mol.clone();
+        }
+        return null;
     }
 
     public static IAtomContainer readMolecule(String mol) throws CDKException {
@@ -147,6 +164,43 @@ public class CDKMoleculeIOUtils {
             }
         }
         return mols;
+    }
+
+    public static CDKSDFile covertToSDFile(Stream<MoleculeObject> mols, boolean haltOnError) throws IOException, CDKException {
+        final PipedInputStream in = new PipedInputStream();
+        final PipedOutputStream out = new PipedOutputStream(in);
+
+        Thread t = new Thread() {
+            public void run() {
+                try (SDFWriter writer = new SDFWriter(out)) {
+                    mols.forEachOrdered((mo) -> {
+                        try {
+                            IAtomContainer mol = fetchMolecule(mo, false);
+                            for (Map.Entry<String, Object> e : mo.getValues().entrySet()) {
+                                mol.setProperty(e.getKey(), e.getValue());
+                            }
+                            // for some reason CDK adds this property with no value, so we remove it
+                            mol.removeProperty("cdk:Title");
+                            //LOG.info("WRITING MOL");
+                            writer.write(mol);
+                        } catch (CDKException | CloneNotSupportedException e) {
+                            if (haltOnError) {
+                                throw new RuntimeException("Failed to read molecule " + mo.getUUID(), e);
+                            } else {
+                                LOG.warning("Failed to read molecule " + mo.getUUID());
+                            }
+                        }
+                    });
+                    LOG.fine("Writing to SDF complete");
+                    mols.close();
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to create SDFWriter", e);
+                }
+            }
+        };
+        t.start();
+
+        return new CDKSDFile(in);
     }
 
 

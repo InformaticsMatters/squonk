@@ -2,6 +2,7 @@ package org.squonk.execution.variable.impl;
 
 import org.squonk.api.VariableHandler;
 import org.squonk.core.client.NotebookRestClient;
+import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +33,7 @@ public class VariableWriteContext implements VariableHandler.WriteContext {
 
     @Override
     public void writeStreamValue(InputStream val, String key) throws IOException {
-        client.writeStreamValue(notebookId, editableId, cellId, variableName, val, key);
+        client.writeStreamValue(notebookId, editableId, cellId, variableName, IOUtils.getGzippedInputStream(val), key);
     }
 
 }

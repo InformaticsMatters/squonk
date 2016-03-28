@@ -5,17 +5,15 @@ import org.apache.camel.spi.TypeConverterRegistry;
 import org.squonk.api.GenericHandler;
 import org.squonk.api.HttpHandler;
 import org.squonk.api.VariableHandler;
-import org.squonk.http.HttpExecutor;
+import org.squonk.http.RequestResponseExecutor;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Created by timbo on 23/03/2016.
@@ -25,17 +23,37 @@ public class ListHandler<T> implements HttpHandler<List>, VariableHandler<List>,
     protected Class<T> genericType;
 
     @Override
-    public void prepareRequest(List list, HttpExecutor executor) throws IOException {
+    public Class<List> getType() {
+        return List.class;
+    }
+
+    @Override
+    public Class<T> getGenericType() {
+        return genericType;
+    }
+
+    @Override
+    public void prepareRequest(List list, RequestResponseExecutor executor, boolean gzip) throws IOException {
         if (list != null) {
             InputStream is = write(list);
-            executor.setRequestBody(is);
+            executor.prepareRequestBody(gzip ? IOUtils.getGzippedInputStream(is) : is);
         }
     }
 
     @Override
-    public List readResponse(HttpExecutor executor) throws IOException {
+    public void writeResponse(List list, RequestResponseExecutor executor, boolean gzip) throws IOException {
+        if (list == null) {
+            executor.setResponseBody(null);
+        } else {
+            InputStream is = write(list);
+            executor.setResponseBody(gzip ? IOUtils.getGzippedInputStream(is) : is);
+        }
+    }
+
+    @Override
+    public List readResponse(RequestResponseExecutor executor, boolean gunzip) throws IOException {
         InputStream is = executor.getResponseBody();
-        return read(is);
+        return read(gunzip ? IOUtils.getGunzippedInputStream(is) : is);
     }
 
     @Override
@@ -82,8 +100,7 @@ public class ListHandler<T> implements HttpHandler<List>, VariableHandler<List>,
     protected List read(InputStream is) throws IOException {
         if (is != null) {
             List results = new ArrayList();
-            InputStream gunzipped = IOUtils.getGunzippedInputStream(is);
-            Iterator it = JsonHandler.getInstance().iteratorFromJson(gunzipped, genericType);
+            Iterator it = JsonHandler.getInstance().iteratorFromJson(is, genericType);
             while (it.hasNext()) {
                 results.add(it.next());
             }

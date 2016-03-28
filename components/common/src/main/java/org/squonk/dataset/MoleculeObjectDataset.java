@@ -11,7 +11,7 @@ import java.util.stream.Stream;
  * MoleculeObject specific wrapper for Dataset to get round problem with generics. e.g. you can say
  * MoleculeObjectDataset.class but you can't say Dataset&lt;MoleculeObject&gt;.class
  * This class exposes a few of the most useful methods from the Dataset it wraps, but for the full
- * functionality using the {@link getDataset()} method 
+ * functionality using the {@link #getDataset} method
  *
  *
  * @author timbo
@@ -62,5 +62,7 @@ public class MoleculeObjectDataset implements DatasetProvider, StreamProvider {
     public Class getType() {
         return MoleculeObject.class;
     }
+
+
 
 }

@@ -45,23 +45,27 @@ public class MolecularDescriptors {
 
     public enum Descriptor {
 
-        ALogP(ALogPCalculator.class, new String[]{ALOGP_ALOPG,ALOGP_ALOPG2,ALOGP_AMR}),
-        XLogP(XLogPCalculator.class, new String[]{XLOGP_XLOGP}),
-        HBondDonorCount(HBondDonorCountCalculator.class, new String[]{HBOND_DONOR_COUNT}),
-        HBondAcceptorCount(HBondAcceptorCountCalculator.class, new String[]{HBOND_ACCEPTOR_COUNT}),
-        WienerNumbers(WienerNumberCalculator.class, new String[]{WIENER_PATH,WIENER_POLARITY});
+        ALogP(ALogPCalculator.class, new String[]{ALOGP_ALOPG,ALOGP_ALOPG2,ALOGP_AMR}, new Class[] {Double.class,Double.class,Double.class}),
+        XLogP(XLogPCalculator.class, new String[]{XLOGP_XLOGP}, new Class[] {Double.class}),
+        HBondDonorCount(HBondDonorCountCalculator.class, new String[]{HBOND_DONOR_COUNT}, new Class[] {Integer.class}),
+        HBondAcceptorCount(HBondAcceptorCountCalculator.class, new String[]{HBOND_ACCEPTOR_COUNT}, new Class[] {Integer.class}),
+        WienerNumbers(WienerNumberCalculator.class, new String[]{WIENER_PATH,WIENER_POLARITY}, new Class[] {Double.class,Double.class});
 
         public Class implClass;
         public String[] defaultPropNames;
+        public Class[] propTypes;
 
-        Descriptor(Class cls, String[] defaultPropNames) {
+        Descriptor(Class cls, String[] defaultPropNames, Class[] propTypes) {
+            assert defaultPropNames.length == propTypes.length;
             this.implClass = cls;
             this.defaultPropNames = defaultPropNames;
+            this.propTypes = propTypes;
         }
 
         public DescriptorCalculator create(String[] propNames) throws InstantiationException, IllegalAccessException {
             DescriptorCalculator inst = (DescriptorCalculator) implClass.newInstance();
             inst.propNames = propNames;
+            inst.propTypes = propTypes;
             return inst;
         }
     }
@@ -96,9 +100,14 @@ public class MolecularDescriptors {
 
         IAtomContainer result = mo.getRepresentation(CDK_MOLECULE_WITH_ALL_IMPLICIT_HYDROGENS, IAtomContainer.class);
         if (result == null) {
-            IAtomContainer mol = CDKMoleculeIOUtils.readMolecule(mo.getSource());
+            IAtomContainer mol = mo.getRepresentation(IAtomContainer.class.getName(), IAtomContainer.class);
+            if (mol == null) {
+                mol = CDKMoleculeIOUtils.readMolecule(mo.getSource());
+            }
             if (mol != null) {
                 AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
+                mo.putRepresentation(IAtomContainer.class.getName(), mol.clone());
+
                 HYDROGEN_ADDER.addImplicitHydrogens(mol);
                 AROMATICITY.apply(mol);
                 result = mol;

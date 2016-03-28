@@ -14,6 +14,8 @@ dependencies {
     compile "org.apache.camel:camel-jackson:$camelVersion"
     compile "org.apache.camel:camel-http4:$camelVersion"
 
+    compile "org.jboss.weld.se:weld-se:$weldVersion"
+
     testCompile "org.apache.camel:camel-jetty:$camelVersion"
 
 }
