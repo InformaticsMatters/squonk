@@ -27,7 +27,7 @@ class CDKMolecularDescriptorProcessorSpec extends CamelSpecificationBase {
         mols << new MoleculeObject("CCC")
         
         when:
-        template.sendBody('direct:start', mols)
+        template.sendBody('direct:start', new MoleculeObjectDataset(mols))
         
         then:
         resultEndpoint.assertIsSatisfied()

@@ -1,73 +1,84 @@
 package org.squonk.camel.cdk.processor;
 
-import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
+import com.im.lac.types.MoleculeObject;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.squonk.camel.CamelCommonConstants;
 import org.squonk.cdk.molecule.DescriptorCalculator;
 import org.squonk.cdk.molecule.MolecularDescriptors;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
-import java.util.ArrayList;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 
 /**
- *
  * @author timbo
  */
 public class CDKMolecularDescriptorProcessor implements Processor {
 
     private static final Logger LOG = Logger.getLogger(CDKMolecularDescriptorProcessor.class.getName());
 
-    private final List<DescriptorDefinition> calculatorDefintions = new ArrayList<>();
+    private final List<DescriptorDefinition> calculatorDefinitions = new ArrayList<>();
+
 
     public CDKMolecularDescriptorProcessor calculate(MolecularDescriptors.Descriptor descriptor, String[] propNames) {
-        calculatorDefintions.add(new DescriptorDefinition(descriptor, propNames));
+        calculatorDefinitions.add(new DescriptorDefinition(descriptor, propNames));
+
         return this;
     }
 
     public CDKMolecularDescriptorProcessor calculate(MolecularDescriptors.Descriptor descriptor) {
-        calculatorDefintions.add(new DescriptorDefinition(descriptor, descriptor.defaultPropNames));
+        calculatorDefinitions.add(new DescriptorDefinition(descriptor, descriptor.defaultPropNames));
         return this;
     }
 
-    List<DescriptorCalculator> getCalculators(Exchange exchange) throws InstantiationException, IllegalAccessException {
+    protected List<DescriptorCalculator> getCalculators(Exchange exchange) throws InstantiationException, IllegalAccessException {
         List<DescriptorCalculator> calculators = new ArrayList<>();
-        for (DescriptorDefinition def : calculatorDefintions) {
+        for (DescriptorDefinition def : calculatorDefinitions) {
             calculators.add(def.descriptor.create(def.propNames));
         }
         return calculators;
     }
 
     @Override
-    public void process(final Exchange exchange) throws Exception {
-        LOG.fine("Processing CDK Molecular Descriptors");
-        final List<DescriptorCalculator> calculators = getCalculators(exchange);
-        StreamingMoleculeObjectSourcer sourcer = new StreamingMoleculeObjectSourcer() {
-            @Override
-            public void handleSingle(Exchange exchange, MoleculeObject mo) throws Exception {
-                for (DescriptorCalculator calculator : calculators) {
-                    calculator.calculate(mo);
-                }
-                exchange.getIn().setBody(mo);
-            }
-
-            @Override
-            public void handleMultiple(Exchange exchange, Stream<MoleculeObject> mols) throws Exception {
-                for (DescriptorCalculator calculator : calculators) {
-                    mols = calculateMultiple(mols, calculator);
-                }
-                exchange.getIn().setBody(new MoleculeObjectDataset(mols));
-            }
-        };
-
-        sourcer.handle(exchange);
+    public void process(Exchange exch) throws Exception {
+        Dataset<MoleculeObject> dataset = exch.getIn().getBody(Dataset.class);
+        if (dataset == null || dataset.getType() != MoleculeObject.class) {
+            throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
+        }
+        Stream<MoleculeObject> mols = dataset.getStream();
+        List<DescriptorCalculator> calculators = getCalculators(exch);
+        for (DescriptorCalculator calculator : calculators) {
+            mols = calculateMultiple(mols, calculator);
+        }
+        handleMetadata(exch, dataset.getMetadata());
+        exch.getIn().setBody(new MoleculeObjectDataset(mols));
     }
 
-    Stream<MoleculeObject> calculateMultiple(Stream<MoleculeObject> input, final DescriptorCalculator calculator) {
+    protected void handleMetadata(Exchange exch, DatasetMetadata meta) throws IllegalAccessException, InstantiationException {
+        if (meta == null) {
+            meta = new DatasetMetadata(MoleculeObject.class);
+        }
+        List<DescriptorCalculator> calculators = getCalculators(exch);
+        for (DescriptorCalculator calc : calculators) {
+            String[] names = calc.getPropertyNames();
+            Class[] types = calc.getPropertyTypes();
+            if (names.length != types.length) {
+                throw new IllegalStateException("Names and types differ in length");
+            }
+            for (int i=0; i<names.length; i++) {
+                meta.getValueClassMappings().put(names[i], types[i]);
+            }
+        }
+        exch.getIn().setHeader(CamelCommonConstants.HEADER_METADATA, meta);
+    }
+
+    protected Stream<MoleculeObject> calculateMultiple(Stream<MoleculeObject> input, DescriptorCalculator calculator) {
         input = input.peek((mo) -> {
             try {
                 calculator.calculate(mo);
@@ -78,19 +89,14 @@ public class CDKMolecularDescriptorProcessor implements Processor {
         return input;
     }
 
-    class DescriptorDefinition {
+    protected class DescriptorDefinition {
 
         MolecularDescriptors.Descriptor descriptor;
         String[] propNames;
 
-        DescriptorDefinition(
-                MolecularDescriptors.Descriptor descriptor,
-                String[] propNames) {
+        DescriptorDefinition(MolecularDescriptors.Descriptor descriptor, String[] propNames) {
             this.descriptor = descriptor;
             this.propNames = propNames;
-
         }
-
     }
-
 }

@@ -2,24 +2,23 @@ package org.squonk.cdk.services;
 
 import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
-import org.squonk.camel.processor.MoleculeObjectDatasetHttpProcessor;
-import org.squonk.core.AccessMode;
-import org.squonk.core.ServiceDescriptor;
 import com.im.lac.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
-import org.squonk.camel.util.CamelUtils;
+import org.squonk.camel.processor.MoleculeObjectDatasetHttpProcessor;
+import org.squonk.core.AccessMode;
+import org.squonk.core.ServiceDescriptor;
 import org.squonk.types.CDKSDFile;
 import org.squonk.types.TypeResolver;
-import static org.squonk.types.TypeResolver.*;
 
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.squonk.types.TypeResolver.*;
+
 /**
- *
  * @author timbo
  */
 public class CdkRestRouteBuilder extends RouteBuilder {
@@ -28,39 +27,53 @@ public class CdkRestRouteBuilder extends RouteBuilder {
 
     private static final TypeResolver resolver = new TypeResolver();
 
+    private static final String ROUTE_LOGP = "logp";
+    private static final String ROUTE_DONORS_ACCEPTORS = "donors_acceptors";
+    private static final String ROUTE_WIENER_NUMBERS = "wiener_numbers";
+
+
     protected static final ServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
-            = new ServiceDescriptor[]{new ServiceDescriptor(
-                        "cdk.calculators",
-                        "CDK LogP",
-                        "CDK LogP predictions for XLogP and ALogP",
-                        new String[]{"logp", "partitioning", "molecularproperties", "cdk"},
-                        null,
-                        new String[]{"/Chemistry/Toolkits/CDK/Calculators", "Chemistry/Calculators/Partioning"},
-                        "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
-                        null,
-                        new String[]{"public"},
-                        MoleculeObject.class, // inputClass
-                        MoleculeObject.class, // outputClass
-                        Metadata.Type.STREAM, // inputTypes
-                        Metadata.Type.STREAM, // outputTypes
-                        "icons/properties_add.png",
-                        new AccessMode[]{
-                            new AccessMode(
-                                    "asyncHttp",
-                                    "Immediate execution",
-                                    "Execute as an asynchronous REST web service",
-                                    "logp", // endpoint
-                                    true, // URL is relative
-                                    AsyncHttpProcessDatasetJobDefinition.class,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    null)
-                        }
-                )
-            };
+            = new ServiceDescriptor[]{
+            createServiceDescriptor(
+                    "cdk.logp", "CDK LogP", "CDK LogP predictions for XLogP, ALogP and AMR",
+                    new String[]{"logp", "partitioning", "molecularproperties", "cdk"},
+                    new String[]{"/Chemistry/Toolkits/CDK/Calculators", "Chemistry/Calculators/Partioning"},
+                    "icons/properties_add.png", ROUTE_LOGP),
+            createServiceDescriptor(
+                    "cdk.donors_acceptors", "CDK HBA and HBD", "CDK H-bond donor and acceptor counts",
+                    new String[]{"hbd", "donors", "hba", "acceptors", "topology", "molecularproperties", "cdk"},
+                    new String[]{"/Chemistry/Toolkits/CDK/Calculators", "Chemistry/Calculators/Topological"},
+                    "icons/properties_add.png", ROUTE_DONORS_ACCEPTORS),
+            createServiceDescriptor(
+                    "cdk.wiener_numbers", "CDK Wiener numbers", "CDK predictions for Wiener numbers",
+                    new String[]{"wiener", "topology", "molecularproperties", "cdk"},
+                    new String[]{"/Chemistry/Toolkits/CDK/Calculators"},
+                    "icons/properties_add.png", ROUTE_WIENER_NUMBERS)
+    };
+
+    private static ServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String[] paths, String icon, String endpoint) {
+        return new ServiceDescriptor(
+                id, name, description, tags, null, paths,
+                "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
+                null,
+                new String[]{"public"},
+                MoleculeObject.class, // inputClass
+                MoleculeObject.class, // outputClass
+                Metadata.Type.STREAM, // inputTypes
+                Metadata.Type.STREAM, // outputTypes
+                icon,
+                new AccessMode[]{
+                        new AccessMode(
+                                "asyncHttp",
+                                "Immediate execution",
+                                "Execute as an asynchronous REST web service",
+                                endpoint, // endpoint
+                                true, // URL is relative
+                                AsyncHttpProcessDatasetJobDefinition.class,
+                                null, null, null, null, null, null)
+                }
+        );
+    }
 
     @Override
     public void configure() throws Exception {
@@ -96,21 +109,25 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 })
                 .endRest()
                 //
-                .post("logp").description("Calculate the logP for the supplied MoleculeObjects")
-                .consumes(MIME_TYPE_DATASET_MOLECULE_JSON)
-                .produces(MIME_TYPE_DATASET_MOLECULE_JSON)
-                .route()
-                .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamInput(exch))
-                .to(CdkCalculatorsRouteBuilder.CDK_LOGP)
-                .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
-                .endRest()
-                //
-                // experimental flexible services
-                .post("logp2").description("Calculate the logP for the supplied MoleculeObjects")
+                .post(ROUTE_LOGP).description("Calculate the logP for the supplied structures")
                 .consumes(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_MDL_SDF))
                 .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_BASIC_OBJECT_JSON, MIME_TYPE_MDL_SDF))
                 .route()
-                .process(new MoleculeObjectDatasetHttpProcessor(CdkCalculatorsRouteBuilder.CDK_LOGP + "_2", resolver, CDKSDFile.class))
+                .process(new MoleculeObjectDatasetHttpProcessor(CdkCalculatorsRouteBuilder.CDK_LOGP, resolver, CDKSDFile.class))
+                .endRest()
+                //
+                .post(ROUTE_DONORS_ACCEPTORS).description("Calculate the hydrogen bond donors and acceptors for the supplied structures")
+                .consumes(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_MDL_SDF))
+                .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_BASIC_OBJECT_JSON, MIME_TYPE_MDL_SDF))
+                .route()
+                .process(new MoleculeObjectDatasetHttpProcessor(CdkCalculatorsRouteBuilder.CDK_DONORS_ACCEPTORS, resolver, CDKSDFile.class))
+                .endRest()
+                //
+                .post(ROUTE_WIENER_NUMBERS).description("Calculate the Wiener numbers for the supplied structures")
+                .consumes(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_MDL_SDF))
+                .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_BASIC_OBJECT_JSON, MIME_TYPE_MDL_SDF))
+                .route()
+                .process(new MoleculeObjectDatasetHttpProcessor(CdkCalculatorsRouteBuilder.CDK_WIENER_NUMBERS, resolver, CDKSDFile.class))
                 .endRest();
 
     }
