@@ -64,8 +64,8 @@ class DefaultHttpContextSpec extends Specification {
 
     void "basic objects post"() {
 
-        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, HttpMethods.POST,
-                URI.create("http://localhost:8889/echo"))
+        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, "http://localhost:8889/echo")
+        exec.prepareRequestHeader(Exchange.HTTP_METHOD, "POST")
         DatasetHandler dh = new DatasetHandler(BasicObject.class)
 
         def input = [
@@ -88,8 +88,8 @@ class DefaultHttpContextSpec extends Specification {
 
     void "send basic receive string"() {
 
-        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, HttpMethods.POST,
-                URI.create("http://localhost:8889/echo"))
+        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, "http://localhost:8889/echo")
+        exec.prepareRequestHeader(Exchange.HTTP_METHOD, "POST")
         DatasetHandler dh = new DatasetHandler(BasicObject.class)
         StringHandler sh = new StringHandler()
 
@@ -112,8 +112,8 @@ class DefaultHttpContextSpec extends Specification {
 
     void "send string receive basic"() {
 
-        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, HttpMethods.POST,
-                URI.create("http://localhost:8889/echo"))
+        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, "http://localhost:8889/echo")
+        exec.prepareRequestHeader(Exchange.HTTP_METHOD, "POST")
         DatasetHandler dh = new DatasetHandler(BasicObject.class)
         StringHandler sh = new StringHandler()
 

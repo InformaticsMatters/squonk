@@ -24,7 +24,7 @@ class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
 
         when:
         def mol = new MoleculeObject('c1ccccc1')
-        def result = template.prepareRequestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, mol)
+        def result = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, mol)
 
         then:
         result instanceof MoleculeObject
@@ -35,7 +35,7 @@ class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
     def 'logp multiple as String'() {
 
         when:
-        def result = template.prepareRequestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, 'c1ccccc1')
+        def result = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, 'c1ccccc1')
 
         then:
         result instanceof MoleculeObject
@@ -51,7 +51,7 @@ class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
         mols << new MoleculeObject('CCC')
         
         when:
-        def results = template.prepareRequestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, mols)
+        def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, mols)
 
         then:
         results instanceof StreamProvider
@@ -62,7 +62,7 @@ class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
     def 'logp file as stream'() {
         
         when:
-        def results = template.prepareRequestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, new FileInputStream(FILE_SMILES_100))
+        def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, new FileInputStream(FILE_SMILES_100))
 
         then:
         results instanceof StreamProvider
@@ -72,7 +72,7 @@ class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
     def 'filter as stream'() {
         
         when:
-        def results = template.prepareRequestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_DRUG_LIKE_FILTER, new FileInputStream(FILE_SMILES_100))
+        def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_DRUG_LIKE_FILTER, new FileInputStream(FILE_SMILES_100))
                 
         then:
         results.stream.count() < 100
@@ -122,7 +122,7 @@ class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
 
         when:
         def mol = new MoleculeObject('c1ccccc1')
-        def result = template.prepareRequestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_ATOM_BOND_COUNT, mol)
+        def result = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_ATOM_BOND_COUNT, mol)
 
         then:
         result instanceof MoleculeObject
@@ -134,7 +134,7 @@ class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
 
         when:
         def mol = new MoleculeObject('C1=CC=CC=C1')
-        def result = template.prepareRequestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_AROMATIZE, mol)
+        def result = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_AROMATIZE, mol)
 
         then:
         result instanceof MoleculeObject

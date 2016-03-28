@@ -11,7 +11,6 @@ import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.reader.SDFReader;
 import org.squonk.types.SDFile;
 import org.squonk.types.io.JsonHandler;
-import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;

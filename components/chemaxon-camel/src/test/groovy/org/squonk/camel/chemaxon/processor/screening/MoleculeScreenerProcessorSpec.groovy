@@ -31,7 +31,7 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         def mol = new MoleculeObject("CN(C)C1=C(Cl)C(=O)C2=C(C=CC=C2)C1=O")
 
         when:
-        MoleculeObject result = template.prepareRequestBody('direct:pharmacophore/streaming', mol)
+        MoleculeObject result = template.requestBody('direct:pharmacophore/streaming', mol)
 
         then:
         double similarity = result.getValue('similarity')
