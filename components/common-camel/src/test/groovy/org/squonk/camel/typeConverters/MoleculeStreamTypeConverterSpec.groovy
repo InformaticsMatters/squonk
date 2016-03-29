@@ -1,6 +1,7 @@
 package org.squonk.camel.typeConverters
 
 import org.squonk.dataset.Dataset
+import org.squonk.dataset.MoleculeObjectDataset
 import org.squonk.types.SDFile
 import spock.lang.Specification
 
@@ -16,7 +17,7 @@ class MoleculeStreamTypeConverterSpec extends Specification {
         SDFile sdf = new SDFile(is)
 
         when:
-        Dataset ds = MoleculeStreamTypeConverter.convertSDFileToMoleculeObjectDataset(sdf, null)
+        MoleculeObjectDataset ds = MoleculeStreamTypeConverter.convertSDFileToMoleculeObjectDataset(sdf, null)
 
         then:
         ds != null

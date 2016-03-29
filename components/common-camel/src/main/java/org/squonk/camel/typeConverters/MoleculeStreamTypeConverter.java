@@ -11,7 +11,6 @@ import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.reader.SDFReader;
 import org.squonk.types.SDFile;
 import org.squonk.types.io.JsonHandler;
-import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,18 +83,6 @@ public class MoleculeStreamTypeConverter {
         Stream<MoleculeObject> mols = convertSDFileToMoleculeObjectSteam(sdf, exchange);
         MoleculeObjectDataset dataset = new MoleculeObjectDataset(mols);
         return dataset;
-    }
-
-    @Converter
-    public static MoleculeObjectDataset convertInputStreamToMoleculeObjectDataset(InputStream is, Exchange exchange) throws IOException {
-        DatasetMetadata meta = exchange.getIn().getHeader(CamelCommonConstants.HEADER_METADATA, DatasetMetadata.class);
-        Dataset<MoleculeObject> dataset = new Dataset<>(MoleculeObject.class, is, meta);
-        return new MoleculeObjectDataset(dataset);
-    }
-
-    @Converter
-    public static SDFile convertInputStreamToSDFile(InputStream is, Exchange exchange) throws IOException {
-        return new SDFile(is);
     }
 
     @Converter

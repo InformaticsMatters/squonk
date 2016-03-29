@@ -164,6 +164,12 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
      * @param metadata
      */
     public Dataset(Class<T> type, InputStream inputStream, DatasetMetadata<T> metadata) {
+        if (inputStream == null) {
+            throw new NullPointerException("InputStream must not be null");
+        }
+        if (metadata == null) {
+            throw new NullPointerException("Metadata must not be null when creating Dataset from InputStream");
+        }
         this.type = type;
         this.inputStream = inputStream;
         this.metadata = metadata;

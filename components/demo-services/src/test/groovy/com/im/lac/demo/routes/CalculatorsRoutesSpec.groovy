@@ -13,33 +13,12 @@ import org.apache.camel.builder.RouteBuilder
  */
 class CalculatorsRoutesSpec extends CamelSpecificationBase {
 
-    def 'logp single as MoleculeObject'() {
 
-        when:
-        def mol = new MoleculeObject('c1ccccc1')
-        def result = template.prepareRequestBody('direct:logp', mol)
-
-        then:
-        result instanceof MoleculeObject
-        result.getValue('CXN_LogP') != null
-        result.getValue('CXN_LogP') instanceof Number
-    }
-    
-    def 'logp multiple as String'() {
-
-        when:
-        def result = template.prepareRequestBody('direct:logp', 'c1ccccc1')
-
-        then:
-        result instanceof MoleculeObject
-        result.getValue('CXN_LogP') != null
-        result.getValue('CXN_LogP') instanceof Number
-    }
     
     def 'logp single as String'() {
 
         when:
-        def result = template.prepareRequestBody('direct:logpSingleMolecule', 'c1ccccc1')
+        def result = template.requestBody('direct:logpSingleMolecule', 'c1ccccc1')
 
         then:
         result instanceof MoleculeObject
@@ -54,7 +33,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         mols << new MoleculeObject('CCC')
         
         when:
-        def results = template.prepareRequestBody('direct:logp', mols)
+        def results = template.requestBody('direct:logp', mols)
 
         then:
         results instanceof MoleculeObjectDataset
@@ -65,7 +44,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
         def mols = 'C\nCC\nCCC'
         
         when:
-        def results = template.prepareRequestBody('direct:logp', new ByteArrayInputStream(mols.getBytes()))
+        def results = template.requestBody('direct:logp', new ByteArrayInputStream(mols.getBytes()))
 
         then:
         results.items.size() == 3
@@ -74,7 +53,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
     def 'logp as stream'() {
         
         when:
-        def results = template.prepareRequestBody('direct:logp', new FileInputStream("../../data/testfiles/nci100.smiles"))
+        def results = template.requestBody('direct:logp', new FileInputStream("../../data/testfiles/nci100.smiles"))
 
         then:
         results.items.size() == 100
@@ -83,7 +62,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
     def 'filter as stream'() {
         
         when:
-        def results = template.prepareRequestBody('direct:filter_example', new FileInputStream("../../data/testfiles/nci100.smiles"))
+        def results = template.requestBody('direct:filter_example', new FileInputStream("../../data/testfiles/nci100.smiles"))
                 
         then:
         results.items.size() < 100
@@ -133,7 +112,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
 
         when:
         def mol = new MoleculeObject('c1ccccc1')
-        def result = template.prepareRequestBody('direct:logp_atomcount_bondcount', mol)
+        def result = template.requestBody('direct:logp_atomcount_bondcount', mol)
 
         then:
         result instanceof MoleculeObject
@@ -146,7 +125,7 @@ class CalculatorsRoutesSpec extends CamelSpecificationBase {
 
         when:
         def mol = new MoleculeObject('C1=CC=CC=C1')
-        def result = template.prepareRequestBody('direct:standardize', mol)
+        def result = template.requestBody('direct:standardize', mol)
 
         then:
         result instanceof MoleculeObject
