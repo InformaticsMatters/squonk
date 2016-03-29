@@ -86,18 +86,6 @@ public class MoleculeStreamTypeConverter {
     }
 
     @Converter
-    public static MoleculeObjectDataset convertInputStreamToMoleculeObjectDataset(InputStream is, Exchange exchange) throws IOException {
-        DatasetMetadata meta = exchange.getIn().getHeader(CamelCommonConstants.HEADER_METADATA, DatasetMetadata.class);
-        Dataset<MoleculeObject> dataset = new Dataset<>(MoleculeObject.class, is, meta);
-        return new MoleculeObjectDataset(dataset);
-    }
-
-    @Converter
-    public static SDFile convertInputStreamToSDFile(InputStream is, Exchange exchange) throws IOException {
-        return new SDFile(is);
-    }
-
-    @Converter
     public static DatasetMetadata convertJsonToDatasetMetadata(String json, Exchange exchange) throws IOException {
         return JsonHandler.getInstance().objectFromJson(json, DatasetMetadata.class);
     }

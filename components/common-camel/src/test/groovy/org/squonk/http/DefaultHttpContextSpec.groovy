@@ -50,8 +50,7 @@ class DefaultHttpContextSpec extends Specification {
 
     void "simple get"() {
 
-        CamelRequestResponseExecutor hc = new CamelRequestResponseExecutor(context, HttpMethods.GET,
-                URI.create("http://localhost:8889/sayhello"))
+        CamelRequestResponseExecutor hc = new CamelRequestResponseExecutor(context, "jetty:http://localhost:8889/sayhello")
         StringHandler sh = new StringHandler()
 
         when:
@@ -64,7 +63,7 @@ class DefaultHttpContextSpec extends Specification {
 
     void "basic objects post"() {
 
-        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, "http://localhost:8889/echo")
+        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, "jetty:http://localhost:8889/echo")
         exec.prepareRequestHeader(Exchange.HTTP_METHOD, "POST")
         DatasetHandler dh = new DatasetHandler(BasicObject.class)
 
@@ -88,7 +87,7 @@ class DefaultHttpContextSpec extends Specification {
 
     void "send basic receive string"() {
 
-        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, "http://localhost:8889/echo")
+        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, "jetty:http://localhost:8889/echo")
         exec.prepareRequestHeader(Exchange.HTTP_METHOD, "POST")
         DatasetHandler dh = new DatasetHandler(BasicObject.class)
         StringHandler sh = new StringHandler()
@@ -112,7 +111,7 @@ class DefaultHttpContextSpec extends Specification {
 
     void "send string receive basic"() {
 
-        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, "http://localhost:8889/echo")
+        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, "jetty:http://localhost:8889/echo")
         exec.prepareRequestHeader(Exchange.HTTP_METHOD, "POST")
         DatasetHandler dh = new DatasetHandler(BasicObject.class)
         StringHandler sh = new StringHandler()

@@ -13,28 +13,7 @@ import org.apache.camel.builder.RouteBuilder
  */
 class CalculatorsRoutesSpec extends CamelSpecificationBase {
 
-    def 'logp single as MoleculeObject'() {
 
-        when:
-        def mol = new MoleculeObject('c1ccccc1')
-        def result = template.requestBody('direct:logp', mol)
-
-        then:
-        result instanceof MoleculeObject
-        result.getValue('CXN_LogP') != null
-        result.getValue('CXN_LogP') instanceof Number
-    }
-    
-    def 'logp multiple as String'() {
-
-        when:
-        def result = template.requestBody('direct:logp', 'c1ccccc1')
-
-        then:
-        result instanceof MoleculeObject
-        result.getValue('CXN_LogP') != null
-        result.getValue('CXN_LogP') instanceof Number
-    }
     
     def 'logp single as String'() {
 
