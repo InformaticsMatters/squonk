@@ -37,17 +37,17 @@ public class CdkRestRouteBuilder extends RouteBuilder {
             createServiceDescriptor(
                     "cdk.logp", "CDK LogP", "CDK LogP predictions for XLogP, ALogP and AMR",
                     new String[]{"logp", "partitioning", "molecularproperties", "cdk"},
-                    new String[]{"/Chemistry/Toolkits/CDK/Calculators", "Chemistry/Calculators/Partioning"},
+                    new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Partioning"},
                     "icons/properties_add.png", ROUTE_LOGP),
             createServiceDescriptor(
                     "cdk.donors_acceptors", "CDK HBA and HBD", "CDK H-bond donor and acceptor counts",
                     new String[]{"hbd", "donors", "hba", "acceptors", "topology", "molecularproperties", "cdk"},
-                    new String[]{"/Chemistry/Toolkits/CDK/Calculators", "Chemistry/Calculators/Topological"},
+                    new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Topological"},
                     "icons/properties_add.png", ROUTE_DONORS_ACCEPTORS),
             createServiceDescriptor(
-                    "cdk.wiener_numbers", "CDK Wiener numbers", "CDK predictions for Wiener numbers",
+                    "cdk.wiener_numbers", "CDK Wiener numbers", "CDK Wiener numbers properties",
                     new String[]{"wiener", "topology", "molecularproperties", "cdk"},
-                    new String[]{"/Chemistry/Toolkits/CDK/Calculators"},
+                    new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Topological"},
                     "icons/properties_add.png", ROUTE_WIENER_NUMBERS)
     };
 
