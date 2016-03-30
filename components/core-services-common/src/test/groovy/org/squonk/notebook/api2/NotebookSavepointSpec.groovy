@@ -11,7 +11,7 @@ class NotebookSavepointSpec extends Specification {
     void "to and from json"() {
 
         when:
-        NotebookSavepoint s1 = new NotebookSavepoint(1, 2, 3, "creator", new Date(), new Date(), "description", "label", "content")
+        NotebookSavepoint s1 = new NotebookSavepoint(1, 2, 3, "creator", new Date(), new Date(), "description", "label", new NotebookInstance())
         String json = JsonHandler.getInstance().objectToJson(s1)
         NotebookSavepoint s2 = JsonHandler.getInstance().objectFromJson(json, NotebookSavepoint.class)
 
@@ -27,7 +27,7 @@ class NotebookSavepointSpec extends Specification {
         s2.lastUpdatedDate != null
         s2.description == "description"
         s2.label == "label"
-        s2.content == "content"
+        s2.content != null
     }
 
 }

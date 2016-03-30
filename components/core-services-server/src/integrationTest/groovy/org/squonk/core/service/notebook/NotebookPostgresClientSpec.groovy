@@ -5,6 +5,7 @@ import org.squonk.core.service.notebook.NotebookPostgresClient
 import org.squonk.core.util.TestUtils
 import org.squonk.notebook.api2.NotebookDescriptor
 import org.squonk.notebook.api2.NotebookEditable
+import org.squonk.notebook.api2.NotebookInstance
 import org.squonk.notebook.api2.NotebookSavepoint
 import spock.lang.Shared
 import spock.lang.Specification
@@ -19,7 +20,7 @@ class NotebookPostgresClientSpec extends Specification {
     @Shared NotebookPostgresClient client = new NotebookPostgresClient()
     @Shared List<NotebookDescriptor> notebooks
 
-    static String JSON_TERM = '{"hello": "world"}'
+    static NotebookInstance NB_INST = new NotebookInstance()
     static String LONG_VARIABLE_1 = 'a potentially very long variable' * 10
     static String LONG_VARIABLE_2 = 'another potentially very long variable' * 10
 
@@ -74,7 +75,7 @@ class NotebookPostgresClientSpec extends Specification {
 
         when:
         List<NotebookEditable> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        NotebookEditable up = client.updateEditable(notebooks[0].id, eds[0].id, JSON_TERM)
+        NotebookEditable up = client.updateEditable(notebooks[0].id, eds[0].id, NB_INST)
 
         then:
         eds.size() == 1
@@ -82,7 +83,7 @@ class NotebookPostgresClientSpec extends Specification {
         up.parentId == null
         up.createdDate != null
         up.lastUpdatedDate != null
-        up.content == JSON_TERM
+        up.content != null
         eds[0].createdDate == up.createdDate
         eds[0].lastUpdatedDate < up.lastUpdatedDate
     }
@@ -100,14 +101,14 @@ class NotebookPostgresClientSpec extends Specification {
         nue.parentId == sps[0].id
         nue.createdDate != null
         nue.lastUpdatedDate != null
-        nue.content == JSON_TERM
+        nue.content != null
         eds[0].createdDate < nue.createdDate
         eds[0].lastUpdatedDate < nue.lastUpdatedDate
 
         sps.size() == 1
         sps[0].id == eds[0].id
         sps[0].creator == TestUtils.TEST_USERNAME
-        sps[0].content == eds[0].content
+        sps[0].content != null
         sps[0].createdDate <= nue.createdDate
     }
 

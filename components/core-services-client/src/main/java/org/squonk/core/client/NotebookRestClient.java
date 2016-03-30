@@ -7,6 +7,7 @@ import org.squonk.client.NotebookClient;
 import org.squonk.core.client.config.SquonkClientConfig;
 import org.squonk.notebook.api2.NotebookDescriptor;
 import org.squonk.notebook.api2.NotebookEditable;
+import org.squonk.notebook.api2.NotebookInstance;
 import org.squonk.notebook.api2.NotebookSavepoint;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
@@ -127,8 +128,9 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
     }
 
 
-    public NotebookEditable updateEditable(Long notebookId, Long editableId, String json) throws IOException {
+    public NotebookEditable updateEditable(Long notebookId, Long editableId, NotebookInstance notebookInstance) throws IOException {
         // PUT {notebookid}/e/{editableid}
+        String json = JsonHandler.getInstance().objectToJson(notebookInstance);
         assert notebookId != null;
         assert editableId != null;
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/e/" + editableId);

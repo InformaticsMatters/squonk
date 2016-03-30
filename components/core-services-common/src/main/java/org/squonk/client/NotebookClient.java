@@ -2,6 +2,7 @@ package org.squonk.client;
 
 import org.squonk.notebook.api2.NotebookDescriptor;
 import org.squonk.notebook.api2.NotebookEditable;
+import org.squonk.notebook.api2.NotebookInstance;
 import org.squonk.notebook.api2.NotebookSavepoint;
 
 import java.io.InputStream;
@@ -70,11 +71,11 @@ public interface NotebookClient {
      *
      * @param notebookId
      * @param editableId
-     * @param json The contents of the notebook
+     * @param notebookInstance The definition of the notebook
      * @return
      * @throws Exception
      */
-    NotebookEditable updateEditable(Long notebookId, Long editableId, String json) throws Exception;
+    NotebookEditable updateEditable(Long notebookId, Long editableId, NotebookInstance notebookInstance) throws Exception;
 
     /** Create a new savepoint that is inserted in the history between this NotebookEditable and its parent.
      * This is done by creating a new editable whose parent is the current one, and then converting the current editable

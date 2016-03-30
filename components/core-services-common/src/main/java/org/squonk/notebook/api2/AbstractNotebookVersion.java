@@ -13,19 +13,19 @@ public abstract class AbstractNotebookVersion {
     private Long parentId;
     private Date createdDate;
     private Date lastUpdatedDate;
-    private String content;
+    private NotebookInstance notebookInstance;
 
     AbstractNotebookVersion() {
 
     }
 
-    AbstractNotebookVersion(Long id, Long notebookId, Long parentId, Date createdDate, Date lastUpdatedDate, String content) {
+    AbstractNotebookVersion(Long id, Long notebookId, Long parentId, Date createdDate, Date lastUpdatedDate, NotebookInstance notebookInstance) {
         this.id = id;
         this.notebookId = notebookId;
         this.parentId = parentId;
         this.createdDate = createdDate;
         this.lastUpdatedDate = lastUpdatedDate;
-        this.content = content;
+        this.notebookInstance = notebookInstance;
     }
 
     public Long getId() {
@@ -48,7 +48,7 @@ public abstract class AbstractNotebookVersion {
         return lastUpdatedDate;
     }
 
-    public String getContent() {
-        return content;
+    public NotebookInstance getContent() {
+        return notebookInstance;
     }
 }

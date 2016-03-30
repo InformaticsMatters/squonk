@@ -26,8 +26,8 @@ public class NotebookEditable extends AbstractNotebookVersion {
             @JsonProperty("owner") String owner,
             @JsonProperty("createdDate") Date createdDate,
             @JsonProperty("lastUpdatedDate") Date lastUpdatedDate,
-            @JsonProperty("content") String content) {
-        super(id, notebookId, parentId, createdDate, lastUpdatedDate, content);
+            @JsonProperty("content") NotebookInstance notebookInstance) {
+        super(id, notebookId, parentId, createdDate, lastUpdatedDate, notebookInstance);
         this.owner = owner;
     }
 

@@ -7,7 +7,9 @@ import org.squonk.core.util.SquonkServerConfig
 import org.squonk.core.util.Utils
 import org.squonk.notebook.api2.NotebookDescriptor
 import org.squonk.notebook.api2.NotebookEditable
+import org.squonk.notebook.api2.NotebookInstance
 import org.squonk.notebook.api2.NotebookSavepoint
+import org.squonk.types.io.JsonHandler
 
 import javax.sql.DataSource
 import java.sql.PreparedStatement
@@ -146,7 +148,8 @@ class NotebookPostgresClient implements NotebookClient {
     /**
      * {@inheritDoc}
      */
-    public NotebookEditable updateEditable(Long notebookId, Long editableId, String json) {
+    public NotebookEditable updateEditable(Long notebookId, Long editableId, NotebookInstance notebookInstance) {
+        String json = JsonHandler.getInstance().objectToJson(notebookInstance);
         Sql db = createSql()
         try {
             NotebookEditable result = null
@@ -456,8 +459,10 @@ class NotebookPostgresClient implements NotebookClient {
 
     private NotebookEditable buildNotebookEditable(def data) {
         log.fine("Building editable: $data")
+        String json = data.nb_definition
+        NotebookInstance notebookInstance = (json == null ? null : JsonHandler.getInstance().objectFromJson(json, NotebookInstance.class))
         // Long id, Long notebookId, Long parentId, String owner, Date createdDate, Date lastUpdatedDate, String content
-        return new NotebookEditable(data.id, data.notebook_id, data.parent_id, data.username, data.created, data.updated, data.nb_definition)
+        return new NotebookEditable(data.id, data.notebook_id, data.parent_id, data.username, data.created, data.updated, notebookInstance)
     }
 
     private static String SQL_SP_FETCH = """\
@@ -483,8 +488,10 @@ class NotebookPostgresClient implements NotebookClient {
 
     private NotebookSavepoint buildNotebookSavepoint(def data) {
         log.finer("Building savepoint: $data")
+        String json = data.nb_definition
+        NotebookInstance notebookInstance = (json == null ? null : JsonHandler.getInstance().objectFromJson(json, NotebookInstance.class))
         //                           Long id,  Long notebookId  Long parentId, String owner, Date createdDate,Date updatedDate, String description, String label, String content
-        return new NotebookSavepoint(data.id, data.notebook_id, data.parent_id, data.username, data.created, data.updated, data.description, data.label, data.nb_definition)
+        return new NotebookSavepoint(data.id, data.notebook_id, data.parent_id, data.username, data.created, data.updated, data.description, data.label, notebookInstance)
     }
 
     private Object doFetchVar(Sql db, Long notebookId, Long sourceId, String variableName, String key, boolean isText) {

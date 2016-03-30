@@ -2,6 +2,7 @@ package org.squonk.core.client
 
 import org.squonk.notebook.api2.NotebookDescriptor
 import org.squonk.notebook.api2.NotebookEditable
+import org.squonk.notebook.api2.NotebookInstance
 import org.squonk.notebook.api2.NotebookSavepoint
 import spock.lang.Shared
 import spock.lang.Specification
@@ -113,11 +114,11 @@ class NotebookRestClientSpec extends Specification {
     void "update editable"() {
 
         when:
-        editable2 = client.updateEditable(editable2.notebookId, editable2.id, '{}')
+        editable2 = client.updateEditable(editable2.notebookId, editable2.id, new NotebookInstance())
 
         then:
         editable2 != null
-        editable2.content == '{}'
+        editable2.content != null
     }
 
     void "create savepoint"() {

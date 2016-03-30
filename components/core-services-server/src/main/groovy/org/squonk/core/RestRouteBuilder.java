@@ -25,6 +25,7 @@ import org.squonk.client.JobStatusClient;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.notebook.api2.NotebookDescriptor;
 import org.squonk.notebook.api2.NotebookEditable;
+import org.squonk.notebook.api2.NotebookInstance;
 import org.squonk.notebook.api2.NotebookSavepoint;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
@@ -328,16 +329,17 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 // NotebookEditable updateEditable(Long notebookId, Long editableId, String json);
                 .put("/{notebookid}/e/{editableid}").description("Update the definition of an editable")
                 .bindingMode(RestBindingMode.json).produces("application/json")
+                .type(NotebookInstance.class)
                 .outType(NotebookEditable.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
                 .param().name("editableid").type(path).description("Editable ID").dataType("long").endParam()
                 .param().name("json").type(body).description("Content (as JSON)").dataType("string").endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    String json = exch.getIn().getBody(String.class);
+                    NotebookInstance notebookInstance = exch.getIn().getBody(NotebookInstance.class);
                     Long editableid = exch.getIn().getHeader("editableid", Long.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
-                    NotebookEditable result = notebookClient.updateEditable(notebookid, editableid, json);
+                    NotebookEditable result = notebookClient.updateEditable(notebookid, editableid, notebookInstance);
                     exch.getIn().setBody(result);
                 })
                 .endRest()

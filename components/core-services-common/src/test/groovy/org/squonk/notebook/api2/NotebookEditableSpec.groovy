@@ -11,7 +11,7 @@ class NotebookEditableSpec extends Specification {
     void "to and from json"() {
 
         when:
-        NotebookEditable e1 = new NotebookEditable(1, 2, 3, "owner", new Date(), new Date(), "content")
+        NotebookEditable e1 = new NotebookEditable(1, 2, 3, "owner", new Date(), new Date(), new NotebookInstance())
         String json = JsonHandler.getInstance().objectToJson(e1)
         NotebookEditable e2 = JsonHandler.getInstance().objectFromJson(json, NotebookEditable.class)
 
@@ -25,7 +25,7 @@ class NotebookEditableSpec extends Specification {
         e2.owner == "owner"
         e2.createdDate != null
         e2.lastUpdatedDate != null
-        e2.content == "content"
+        e2.content != null
     }
 
 }

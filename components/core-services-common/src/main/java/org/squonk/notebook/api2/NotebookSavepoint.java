@@ -29,8 +29,8 @@ public class NotebookSavepoint extends AbstractNotebookVersion {
             @JsonProperty("updatedDate") Date updatedDate,
             @JsonProperty("description") String description,
             @JsonProperty("label") String label,
-            @JsonProperty("content") String content) {
-        super(id, notebookId, parentId, createdDate, updatedDate, content);
+            @JsonProperty("content") NotebookInstance notebookInstance) {
+        super(id, notebookId, parentId, createdDate, updatedDate, notebookInstance);
         this.creator = creator;
         this.description = description;
         this.label = label;
