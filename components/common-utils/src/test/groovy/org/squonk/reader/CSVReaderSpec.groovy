@@ -84,10 +84,10 @@ field1 field2 field3
         list[0].values.size() == 3
     }
     
-    void "simple tab reader"() {
-        //println "simple tab reader"
+    void "pubchem tab reader"() {
+        //println "pubchem tab reader"
         InputStream is = new FileInputStream("../../data/testfiles/Pubchem.tab.gz")
-        CSVFormat format = CSVFormat.DEFAULT.withHeader().withDelimiter('\t' as char)
+        CSVFormat format = CSVFormat.TDF.withHeader()
         CSVReader reader = new CSVReader(is, format)
         
         when:
@@ -116,6 +116,23 @@ field1 field2 field3
         then:
         list.size() == 4
         list[0].values.size() == 3
+    }
+
+    void "kinase tab reader"() {
+        //println "kinase tab reader"
+        InputStream is = new FileInputStream("../../data/testfiles/Nature-SAR-100.txt.gz")
+        CSVFormat format = CSVFormat.TDF.withHeader()
+        CSVReader reader = new CSVReader(is, format)
+
+        when:
+        Stream<BasicObject> stream = reader.asStream()
+        def size = stream.count()
+
+        then:
+        size == 100
+
+        cleanup:
+        reader.close()
     }
     
 }

@@ -16,7 +16,7 @@ import spock.lang.Specification
 /**
  * Created by timbo on 23/03/2016.
  */
-class DefaultHttpContextSpec extends Specification {
+class CamelRequestResponseExecutorSpec extends Specification {
 
     @Shared
     DefaultCamelContext context

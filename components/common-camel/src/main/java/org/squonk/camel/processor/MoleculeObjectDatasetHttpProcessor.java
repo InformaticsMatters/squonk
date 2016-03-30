@@ -40,21 +40,35 @@ public class MoleculeObjectDatasetHttpProcessor implements Processor {
     protected final TypeResolver resolver;
     protected final Class sdfClass;
 
-    protected final String[] supportedInputMimeTypes = new String[]{
+    protected final String[] supportedInputMimeTypes;
+    protected final String[] supportedOutputMimeTypes;
+
+    protected static final String[] DEFAULT_INPUT_MIME_TYPES = new String[]{
             MIME_TYPE_DATASET_MOLECULE_JSON,
             MIME_TYPE_MDL_SDF};
-    protected final String[] supportedOutputMimeTypes = new String[]{
+    protected static final String[] DEFAULT_OUTPUT_MIME_TYPES = new String[]{
             MIME_TYPE_DATASET_MOLECULE_JSON,
             MIME_TYPE_DATASET_BASIC_JSON,
             MIME_TYPE_MDL_SDF};
 
     public MoleculeObjectDatasetHttpProcessor(String route, TypeResolver resolver) {
-        this(route, resolver, null);
+        this(route, resolver, DEFAULT_INPUT_MIME_TYPES, DEFAULT_OUTPUT_MIME_TYPES, null);
     }
 
     public MoleculeObjectDatasetHttpProcessor(String route, TypeResolver resolver, Class<? extends SDFile> sdfClass) {
+        this(route, resolver, DEFAULT_INPUT_MIME_TYPES, DEFAULT_OUTPUT_MIME_TYPES, sdfClass);
+    }
+
+    public MoleculeObjectDatasetHttpProcessor(
+            String route,
+            TypeResolver resolver,
+            String[] supportedInputMimeTypes,
+            String[] supportedOutputMimeTypes,
+            Class<? extends SDFile> sdfClass) {
         this.route = route;
         this.resolver = resolver;
+        this.supportedInputMimeTypes = supportedInputMimeTypes;
+        this.supportedOutputMimeTypes = supportedOutputMimeTypes;
         this.sdfClass = sdfClass;
     }
 

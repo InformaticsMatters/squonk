@@ -13,6 +13,7 @@ import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 /**
  * Created by timbo on 11/03/16.
  */
-public class NotebookRestClient extends AbstractHttpClient implements NotebookClient
+public class NotebookRestClient extends AbstractHttpClient implements Serializable, NotebookClient
 {
 
     private static final Logger LOG = Logger.getLogger(NotebookRestClient.class.getName());

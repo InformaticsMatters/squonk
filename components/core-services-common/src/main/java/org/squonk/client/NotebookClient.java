@@ -59,7 +59,7 @@ public interface NotebookClient {
     /** Create a new editable based on this parent.
      *
      * @param notebookId The ID of the notebook
-     * @param parentId The ID of the parent snapshot
+     * @param parentId The ID of the parent savepoint
      * @param username The user
      * @return
      * @throws Exception
