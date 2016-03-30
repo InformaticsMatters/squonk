@@ -20,7 +20,7 @@ import java.util.stream.Stream
 /**
  * Created by timbo on 27/03/2016.
  */
-class MoleculeObjectDatasetHttpProcessorSpec extends Specification {
+class MoleculeObjectRouteHttpProcessorSpec extends Specification {
 
     @Shared
     DefaultCamelContext context
@@ -44,7 +44,7 @@ class MoleculeObjectDatasetHttpProcessorSpec extends Specification {
                 }
 
                 from("direct:poster")
-                     .process(new MoleculeObjectDatasetHttpProcessor("direct:simple", typeResolver))
+                     .process(new MoleculeObjectRouteHttpProcessor("direct:simple", typeResolver))
 
             }
         })

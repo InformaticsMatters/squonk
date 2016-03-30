@@ -1,8 +1,7 @@
 package org.squonk.rdkit.services;
 
-import org.squonk.camel.processor.MoleculeObjectDatasetHttpProcessor;
+import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.options.OptionDescriptor;
-import org.squonk.camel.util.CamelUtils;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
 import org.squonk.core.AccessMode;
@@ -182,42 +181,42 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                 //
                 .post("logp").description("Calculate the logP for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectDatasetHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_LOGP, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_LOGP, resolver))
                 .endRest()
                 //
                 .post("frac_c_sp3").description("Calculate the fraction of SP3 hybrised carbons for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectDatasetHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_FRACTION_C_SP3, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_FRACTION_C_SP3, resolver))
                 .endRest()
                 //
                 .post("lipinski").description("Calculate Lipinski properties for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectDatasetHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_LIPINSKI, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_LIPINSKI, resolver))
                 .endRest()
                 //
                 .post("donors_acceptors").description("Calculate H-bond donor and acceptor counts for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectDatasetHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_DONORS_ACCEPTORS, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_DONORS_ACCEPTORS, resolver))
                 .endRest()
                 //
                 .post("molar_refractivity").description("Calculate molar refractivity for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectDatasetHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_MOLAR_REFRACTIVITY, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_MOLAR_REFRACTIVITY, resolver))
                 .endRest()
                 //
                 .post("tpsa").description("Calculate TPSA for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectDatasetHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_TPSA, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_TPSA, resolver))
                 .endRest()
                 //
                 .post("rings").description("Calculate ring counts for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectDatasetHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_RINGS, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_RINGS, resolver))
                 .endRest()
                 //
                 .post("rotatable_bonds").description("Calculate rotatable bond count for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectDatasetHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_ROTATABLE_BONDS, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_ROTATABLE_BONDS, resolver))
                 .endRest();
 
     }

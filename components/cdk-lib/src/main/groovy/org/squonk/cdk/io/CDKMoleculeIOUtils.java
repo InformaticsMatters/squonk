@@ -177,7 +177,11 @@ public class CDKMoleculeIOUtils {
                         try {
                             IAtomContainer mol = fetchMolecule(mo, false);
                             for (Map.Entry<String, Object> e : mo.getValues().entrySet()) {
-                                mol.setProperty(e.getKey(), e.getValue());
+                                String key = e.getKey();
+                                Object val = e.getValue();
+                                if (key != null && val != null) {
+                                    mol.setProperty(key, val);
+                                }
                             }
                             // for some reason CDK adds this property with no value, so we remove it
                             mol.removeProperty("cdk:Title");

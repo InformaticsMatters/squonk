@@ -11,6 +11,7 @@ import org.squonk.notebook.api2.NotebookSavepoint;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
+import javax.enterprise.inject.Default;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -24,8 +25,8 @@ import java.util.stream.Collectors;
 /**
  * Created by timbo on 11/03/16.
  */
-public class NotebookRestClient extends AbstractHttpClient implements Serializable, NotebookClient
-{
+@Default
+public class NotebookRestClient extends AbstractHttpClient implements Serializable, NotebookClient {
 
     private static final Logger LOG = Logger.getLogger(NotebookRestClient.class.getName());
 

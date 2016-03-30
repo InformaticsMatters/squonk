@@ -50,6 +50,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         if (basicChemServicesUrl != null) {
             LOG.info("Enabling basic chem services from " + basicChemServicesUrl);
             locations.add(basicChemServicesUrl + "/chem-services-cdk-basic/rest/v1/calculators");
+            locations.add(basicChemServicesUrl + "/chem-services-cdk-basic/rest/v1/converters");
             locations.add(basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/v1/calculators");
             locations.add(basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/v1/descriptors");
             locations.add(basicChemServicesUrl + "/chem-services-rdkit-basic/rest/v1/calculators");

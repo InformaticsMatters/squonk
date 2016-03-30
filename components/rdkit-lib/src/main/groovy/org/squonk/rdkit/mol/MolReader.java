@@ -21,12 +21,12 @@ public class MolReader {
     }
 
     /**
-     * Looks up or creates (and sets) the ROMol for this MoleculeObject
+     * Looks up or creates (and optionally stores under the name org.RDKit.ROMol) the ROMol for this MoleculeObject
      *
      * @param mo
      * @return
      */
-    public static ROMol findROMol(MoleculeObject mo) {
+    public static ROMol findROMol(MoleculeObject mo, boolean store) {
         String source = mo.getSource();
         if (source == null) {
             return null;
@@ -36,13 +36,19 @@ public class MolReader {
             String format = mo.getFormat();
             try {
                 rdkitMol = MolReader.generateMolFromString(source, format);
-                mo.putRepresentation(ROMol.class.getName(), rdkitMol);
+                if (store) {
+                    mo.putRepresentation(ROMol.class.getName(), rdkitMol);
+                }
             } catch (Exception ex) {
                 LOG.log(Level.WARNING, "Failed to generate RDKit molecule for molecule " + mo.getUUID(), ex);
                 return null;
             }
         }
         return rdkitMol;
+    }
+
+    public static ROMol findROMol(MoleculeObject mo) {
+        return findROMol(mo, true);
     }
 
     public static RWMol generateMolFromSmiles(String smiles) {
