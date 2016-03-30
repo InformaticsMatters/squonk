@@ -17,7 +17,7 @@ class MolEvaluatorSpec extends Specification {
         
         then:
         logp != null
-        logp instanceof Double
+        logp instanceof Float
     }
 }
 

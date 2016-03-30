@@ -22,8 +22,7 @@ public class MolEvaluator {
     public static void evaluate(MoleculeObject mo, ROMol rdkitMol, EvaluatorDefintion definition) {
         if (mo.getSource() != null || definition == null) {
             LOG.log(Level.FINER, "Evaluating {0}", definition);
-            EvaluatorDefintion.Function func = EvaluatorDefintion.Function.valueOf(definition.expression);
-            Object result = calculate(rdkitMol, func);
+            Object result = calculate(rdkitMol, definition.function);
             switch (definition.mode) {
                 case Calculate:
                     mo.putValue(definition.propName, result);
@@ -42,35 +41,51 @@ public class MolEvaluator {
 
         switch (function) {
             case LOGP:
-                return RDKFuncs.calcMolLogP(rdkitMol);
+                return cooerceFloat(RDKFuncs.calcMolLogP(rdkitMol));
             case EXACT_MW:
-                return RDKFuncs.calcExactMW(rdkitMol);
+                return cooerceFloat(RDKFuncs.calcExactMW(rdkitMol));
             case FRACTION_C_SP3:
-                return RDKFuncs.calcFractionCSP3(rdkitMol);
+                return cooerceFloat(RDKFuncs.calcFractionCSP3(rdkitMol));
             case NUM_HBA:
-                return RDKFuncs.calcNumHBA(rdkitMol);
+                return cooerceInt(RDKFuncs.calcNumHBA(rdkitMol));
             case NUM_HBD:
-                return RDKFuncs.calcNumHBD(rdkitMol);
+                return cooerceInt(RDKFuncs.calcNumHBD(rdkitMol));
             case LIPINSKI_HBA:
-                return RDKFuncs.calcLipinskiHBA(rdkitMol);
+                return cooerceInt(RDKFuncs.calcLipinskiHBA(rdkitMol));
             case LIPINSKI_HBD:
-                return RDKFuncs.calcLipinskiHBD(rdkitMol);
+                return cooerceInt(RDKFuncs.calcLipinskiHBD(rdkitMol));
             case MOLECULAR_FORMULA:
                 return RDKFuncs.calcMolFormula(rdkitMol);
             case MOLAR_REFRACTIVITY:
-                return RDKFuncs.calcMolMR(rdkitMol);
+                return cooerceFloat(RDKFuncs.calcMolMR(rdkitMol));
             case NUM_HETEROATOMS:
-                return RDKFuncs.calcNumHeteroatoms(rdkitMol);
+                return cooerceInt(RDKFuncs.calcNumHeteroatoms(rdkitMol));
             case NUM_RINGS:
-                return RDKFuncs.calcNumRings(rdkitMol);
+                return cooerceInt(RDKFuncs.calcNumRings(rdkitMol));
             case NUM_AROMATIC_RINGS:
-                return RDKFuncs.calcNumAromaticRings(rdkitMol);
+                return cooerceInt(RDKFuncs.calcNumAromaticRings(rdkitMol));
             case NUM_ROTATABLE_BONDS:
-                return RDKFuncs.calcNumRotatableBonds(rdkitMol);
+                return cooerceInt(RDKFuncs.calcNumRotatableBonds(rdkitMol));
             case TPSA:
-                return RDKFuncs.calcTPSA(rdkitMol);
+                return cooerceFloat(RDKFuncs.calcTPSA(rdkitMol));
         }
         LOG.log(Level.WARNING, "Function {0} not handled", function);
         return null;
+    }
+
+    private static Integer cooerceInt(Number n) {
+        if (n == null) {
+            return null;
+        } else {
+            return n.intValue();
+        }
+    }
+
+    private static Float cooerceFloat(Number n) {
+        if (n == null) {
+            return null;
+        } else {
+            return n.floatValue();
+        }
     }
 }

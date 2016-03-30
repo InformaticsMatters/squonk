@@ -18,7 +18,7 @@ class RDKitMoleculeProcessorSpec extends Specification {
         setup:
         println "simple calc logp()"
         RDKitMoleculeProcessor p = new RDKitMoleculeProcessor()
-        p.calculate('logp', LOGP)
+        p.calculate(LOGP, 'logp')
         def mols = Stream.of(new MoleculeObject("C", "smiles"), new MoleculeObject("CC", "smiles"))
         
         

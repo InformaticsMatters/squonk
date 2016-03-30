@@ -1,6 +1,9 @@
 package org.squonk.camel.rdkit;
 
+import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetMetadata;
 import org.squonk.rdkit.mol.EvaluatorDefintion;
 import org.squonk.rdkit.mol.MolEvaluator;
 import org.squonk.rdkit.mol.MolReader;
@@ -30,21 +33,29 @@ public class RDKitMoleculeProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        StreamingMoleculeObjectSourcer sourcer = new StreamingMoleculeObjectSourcer() {
-            @Override
-            public void handleSingle(Exchange exchange, MoleculeObject mo) throws Exception {
-                Stream<MoleculeObject> stream = evaluate(exchange, Stream.of(mo), definitions);
-                MoleculeObject mol = stream.findFirst().orElse(null);
-                exchange.getIn().setBody(mol);
-            }
+        Dataset<MoleculeObject> dataset = exchange.getIn().getBody(Dataset.class);
+        if (dataset == null || dataset.getType() != MoleculeObject.class) {
+            throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
+        }
+        List<EvaluatorDefintion> defs = definitions;
+        Stream<MoleculeObject> mols = dataset.getStream();
 
-            @Override
-            public void handleMultiple(Exchange exchange, Stream<MoleculeObject> mols) throws Exception {
-                Stream<MoleculeObject> results = evaluate(exchange, mols, definitions);
-                exchange.getIn().setBody(new MoleculeObjectDataset(results));
-            }
-        };
-        sourcer.handle(exchange);
+        Stream<MoleculeObject> results = evaluate(exchange, mols, defs);
+
+        handleMetadata(exchange, dataset.getMetadata(), defs);
+        exchange.getIn().setBody(new MoleculeObjectDataset(results));
+    }
+
+    protected void handleMetadata(Exchange exch, DatasetMetadata meta, List<EvaluatorDefintion> definitions) throws IllegalAccessException, InstantiationException {
+        if (meta == null) {
+            meta = new DatasetMetadata(MoleculeObject.class);
+        }
+        for (EvaluatorDefintion eval : definitions) {
+            String name = eval.propName;
+            Class type = eval.function.getType();
+            meta.getValueClassMappings().put(name, type);
+        }
+        exch.getIn().setHeader(CamelCommonConstants.HEADER_METADATA, meta);
     }
 
     Stream<MoleculeObject> evaluate(Exchange exchange, Stream<MoleculeObject> mols, List<EvaluatorDefintion> definitions) {
@@ -70,30 +81,17 @@ public class RDKitMoleculeProcessor implements Processor {
      * Note: the return type is the instance, to allow the fluent builder pattern to be used.
      *
      * @param name The name for the calculated property
-     * @param expression The chemical terms expression e.g. logP()
+     * @param function The RDKit function to execute
      * @return
      */
-    public RDKitMoleculeProcessor calculate(String name, String expression) {
-        definitions.add(EvaluatorDefintion.calculate(name, expression));
-        return this;
-    }
-    
-    public RDKitMoleculeProcessor calculate(String name, EvaluatorDefintion.Function function) {
-        definitions.add(EvaluatorDefintion.calculate(name, function.toString()));
+    public RDKitMoleculeProcessor calculate(EvaluatorDefintion.Function function, String name) {
+        definitions.add(EvaluatorDefintion.calculate(function, name));
         return this;
     }
 
-    /**
-     * Create a new filter based on a chemical terms expression. The expression MUST evaluate to a
-     * boolean value. e.g. logP() &lt; 5
-     *
-     * @param expression
-     * @return
-     */
-    public RDKitMoleculeProcessor filter(String expression) {
-        definitions.add(EvaluatorDefintion.filter(expression));
+    public RDKitMoleculeProcessor calculate(EvaluatorDefintion.Function function) {
+        definitions.add(EvaluatorDefintion.calculate(function, function.getName()));
         return this;
-
     }
 
 }

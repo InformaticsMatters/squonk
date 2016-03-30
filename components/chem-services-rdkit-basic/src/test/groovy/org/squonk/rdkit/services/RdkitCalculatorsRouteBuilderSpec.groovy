@@ -4,6 +4,10 @@ import org.squonk.camel.testsupport.CamelSpecificationBase
 import com.im.lac.types.MoleculeObject
 import org.squonk.camel.CamelCommonConstants
 import com.im.lac.util.StreamProvider
+import org.squonk.dataset.Dataset
+import org.squonk.dataset.MoleculeObjectDataset
+import org.squonk.rdkit.mol.EvaluatorDefintion
+
 import static RdkitCalculatorsRouteBuilder.*
 import java.util.stream.*
 import org.apache.camel.CamelContext
@@ -15,62 +19,49 @@ import org.apache.camel.spi.ThreadPoolProfile
  * Created by timbo on 14/04/2014.
  */
 class RdkitCalculatorsRouteBuilderSpec extends CamelSpecificationBase {
+
+    static MoleculeObjectDataset dataset = new MoleculeObjectDataset([
+            new MoleculeObject('C'),
+            new MoleculeObject('CC'),
+            new MoleculeObject('CCC')])
     
     def 'logp'() {
-        def mols = []
-        mols << new MoleculeObject('C')
-        mols << new MoleculeObject('CC')        
-        mols << new MoleculeObject('CCC')
-        
+
         when:
-        def results = template.requestBody(RdkitCalculatorsRouteBuilder.RDKIT_LOGP, mols)
+        def results = template.requestBody(RdkitCalculatorsRouteBuilder.RDKIT_LOGP, dataset)
 
         then:
-        results instanceof StreamProvider
-        def list = results.stream.collect(Collectors.toList())
+        results instanceof MoleculeObjectDataset
+        def list = results.dataset.items
         list.size == 3
-        list[0].getValue(KEY_LOGP) != null
-        //println list[0].getValue(KEY_LOGP).class.name
-        list[0].getValue(KEY_LOGP) instanceof Double
+        list[0].getValue(EvaluatorDefintion.Function.LOGP.name) instanceof Float
     }
     
     def 'frac c sp3'() {
-        def mols = []
-        mols << new MoleculeObject('C')
-        mols << new MoleculeObject('CC')        
-        mols << new MoleculeObject('CCC')
         
         when:
-        def results = template.requestBody(RDKIT_FRACTION_C_SP3, mols)
+        def results = template.requestBody(RdkitCalculatorsRouteBuilder.RDKIT_FRACTION_C_SP3, dataset)
 
         then:
-        results instanceof StreamProvider
-        def list = results.stream.collect(Collectors.toList())
+        results instanceof MoleculeObjectDataset
+        def list = results.dataset.items
         list.size == 3
-        list[0].getValue(KEY_FRACTION_C_SP3) != null
-        //println list[0].getValue(KEY_LOGP).class.name
-        list[0].getValue(KEY_FRACTION_C_SP3) instanceof Double
+        list[0].getValue(EvaluatorDefintion.Function.FRACTION_C_SP3.name) instanceof Float
     }
 
     def 'lipinski'() {
-        def mols = []
-        mols << new MoleculeObject('C')
-        mols << new MoleculeObject('CC')        
-        mols << new MoleculeObject('CCC')
         
         when:
-        def results = template.requestBody(RDKIT_LIPINSKI, mols)
+        def results = template.requestBody(RDKIT_LIPINSKI, dataset)
 
         then:
-        results instanceof StreamProvider
-        def list = results.stream.collect(Collectors.toList())
+        results instanceof MoleculeObjectDataset
+        def list = results.dataset.items
         list.size == 3
-        list[0].getValue(KEY_LIPINSKI_HBA) != null
-        //println list[0].getValue(KEY_LIPINSKI_HBA).class.name
-        list[0].getValue(KEY_LIPINSKI_HBA) instanceof Long
-        list[0].getValue(KEY_LIPINSKI_HBD) instanceof Long
-        list[0].getValue(KEY_LIPINSKI_LOGP) instanceof Double
-        list[0].getValue(KEY_LIPINSKI_MW) instanceof Double
+        list[0].getValue(EvaluatorDefintion.Function.LIPINSKI_HBA.name) instanceof Integer
+        list[0].getValue(EvaluatorDefintion.Function.LIPINSKI_HBD.name) instanceof Integer
+        list[0].getValue(EvaluatorDefintion.Function.LOGP.name) instanceof Float
+        list[0].getValue(EvaluatorDefintion.Function.EXACT_MW.name) instanceof Float
     }
 
     
