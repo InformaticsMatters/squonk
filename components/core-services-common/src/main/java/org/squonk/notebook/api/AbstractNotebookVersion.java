@@ -1,4 +1,4 @@
-package org.squonk.notebook.api2;
+package org.squonk.notebook.api;
 
 import java.util.Date;
 
@@ -26,6 +26,10 @@ public abstract class AbstractNotebookVersion {
         this.createdDate = createdDate;
         this.lastUpdatedDate = lastUpdatedDate;
         this.notebookInstance = notebookInstance;
+        // TODO - work out how to handle this better
+        if (notebookInstance != null) {
+            notebookInstance.fixReferences();
+        }
     }
 
     public Long getId() {
@@ -48,7 +52,7 @@ public abstract class AbstractNotebookVersion {
         return lastUpdatedDate;
     }
 
-    public NotebookInstance getContent() {
+    public NotebookInstance getNotebookInstance() {
         return notebookInstance;
     }
 }

@@ -1,4 +1,4 @@
-package org.squonk.notebook.api2;
+package org.squonk.notebook.api;
 
 import com.im.lac.job.jobdef.JobStatus;
 

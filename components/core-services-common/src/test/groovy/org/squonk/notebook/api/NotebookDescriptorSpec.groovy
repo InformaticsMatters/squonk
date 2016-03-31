@@ -1,5 +1,6 @@
-package org.squonk.notebook.api2
+package org.squonk.notebook.api
 
+import org.squonk.notebook.api.NotebookDescriptor
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
 

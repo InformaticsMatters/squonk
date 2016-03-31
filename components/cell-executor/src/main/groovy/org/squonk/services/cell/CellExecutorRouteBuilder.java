@@ -10,13 +10,8 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.squonk.core.client.NotebookRestClient;
 import org.squonk.execution.steps.StepDefinition;
 import org.squonk.execution.steps.StepExecutor;
-import org.squonk.execution.variable.VariableLoader;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.mqueue.MessageQueueCredentials;
-import org.squonk.notebook.client.CallbackClient;
-import org.squonk.notebook.client.CallbackClientConfig;
-import org.squonk.notebook.client.CallbackContext;
-//import org.squonk.notebook.client.CellClient;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -29,15 +24,14 @@ import static org.squonk.core.CommonConstants.HEADER_SQUONK_USERNAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_NAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_PARAMS;
 
+//import org.squonk.notebook.client.CellClient;
+
 /** Consumes a steps job from the message queue and executes it, updating the status of the job accordingly.
  * Created by timbo on 07/01/16.
  */
 public class CellExecutorRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(CellExecutorRouteBuilder.class.getName());
-
-    @Inject
-    private CallbackClientConfig config;
 
     @Inject
     private JobStatusRestClient jobstatusClient;
@@ -119,19 +113,6 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
         if (steps == null) {
             throw new IllegalStateException("No step definitions found. Should be defined in the job definition");
         }
-
-//
-//        // TODO - sort out which client to use. Probably remove the Jersey one and replace the HttpComponents one?
-//        // @Inject these?
-//        CallbackContext callbackContext = new CallbackContext();
-//        CallbackClient callbackClient = new CallbackClient(config, callbackContext);
-//        callbackContext.setNotebookId(notebookId);
-//        VariableLoader loader = new CellCallbackClientVariableLoader(callbackClient);
-//
-//
-//        // setup the variable manager - @Inject these?
-////        CellClient cellClient = new CellClient(notebookId);
-////        VariableLoader loader = new CellClientVariableLoader(cellClient);
 
         VariableManager varman = new VariableManager(notebookRestClient,notebookId, editableId);
         StepExecutor executor = new StepExecutor(cellId, varman);

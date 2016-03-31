@@ -1,9 +1,9 @@
 package org.squonk.client;
 
-import org.squonk.notebook.api2.NotebookDescriptor;
-import org.squonk.notebook.api2.NotebookEditable;
-import org.squonk.notebook.api2.NotebookInstance;
-import org.squonk.notebook.api2.NotebookSavepoint;
+import org.squonk.notebook.api.NotebookDescriptor;
+import org.squonk.notebook.api.NotebookEditable;
+import org.squonk.notebook.api.NotebookInstance;
+import org.squonk.notebook.api.NotebookSavepoint;
 
 import java.util.List;
 

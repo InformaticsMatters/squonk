@@ -1,4 +1,4 @@
-package org.squonk.notebook.api2;
+package org.squonk.notebook.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -116,7 +116,7 @@ public class NotebookInstance implements Serializable {
         for (OptionDescriptor optionDescriptor : cellDefinition.getOptionDefinitionList()) {
             OptionInstance option = new OptionInstance();
             option.setOptionDescriptor(optionDescriptor);
-            cell.getOptionInstanceMap().put(optionDescriptor.getName(), option);
+            cell.getOptionInstanceMap().put(optionDescriptor.getkey(), option);
         }
         return cell;
     }
@@ -159,7 +159,7 @@ public class NotebookInstance implements Serializable {
         }
         for (OptionInstance optionInstance : cellInstance.getOptionInstanceMap().values()) {
             if (optionInstance.isDirty()) {
-                localCellInstance.getOptionInstanceMap().get(optionInstance.getOptionDescriptor().getName()).setValue(optionInstance.getValue());
+                localCellInstance.getOptionInstanceMap().get(optionInstance.getOptionDescriptor().getkey()).setValue(optionInstance.getValue());
             }
         }
         for (BindingInstance bindingInstance : cellInstance.getBindingInstanceMap().values()) {

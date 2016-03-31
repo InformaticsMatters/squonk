@@ -1,4 +1,4 @@
-package org.squonk.notebook.api2
+package org.squonk.notebook.api
 
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
@@ -25,7 +25,7 @@ class NotebookEditableSpec extends Specification {
         e2.owner == "owner"
         e2.createdDate != null
         e2.lastUpdatedDate != null
-        e2.content != null
+        e2.notebookInstance != null
     }
 
 }

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.squonk.notebook.api.OptionDefinition;
 import org.squonk.notebook.api.OptionType;
 
 import java.io.Serializable;
@@ -34,7 +33,7 @@ import java.util.Map;
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
+public class OptionDescriptor<T> implements Serializable {
 
     private final TypeDescriptor<T> typeDescriptor;
     private final String key;
@@ -240,31 +239,4 @@ public class OptionDescriptor<T> implements OptionDefinition<T>, Serializable {
         return minValues == null || minValues > 0;
     }
 
-    @Override
-    @JsonIgnore
-    public String getName() {
-        return key;
-    }
-
-    @Override
-    @JsonIgnore
-    public String getDisplayName() {
-        return label;
-    }
-
-    @Override
-    @JsonIgnore
-    public OptionType getOptionType() {
-        if (maxValues != null && maxValues > 1) {
-            return OptionType.PICKLIST;
-        } else {
-            return OptionType.SIMPLE;
-        }
-    }
-
-    @Override
-    @JsonIgnore
-    public List<T> getPicklistValueList() {
-        return values == null ? null : Arrays.asList(getValues());
-    }
 }

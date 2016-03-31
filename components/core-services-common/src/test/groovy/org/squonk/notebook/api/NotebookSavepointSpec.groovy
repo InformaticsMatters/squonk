@@ -1,4 +1,4 @@
-package org.squonk.notebook.api2
+package org.squonk.notebook.api
 
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
@@ -27,7 +27,7 @@ class NotebookSavepointSpec extends Specification {
         s2.lastUpdatedDate != null
         s2.description == "description"
         s2.label == "label"
-        s2.content != null
+        s2.notebookInstance != null
     }
 
 }

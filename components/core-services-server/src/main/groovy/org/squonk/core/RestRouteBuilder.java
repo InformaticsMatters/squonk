@@ -23,10 +23,10 @@ import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.chemaxon.molecule.MoleculeObjectUtils;
 import org.squonk.client.JobStatusClient;
 import org.squonk.mqueue.MessageQueueCredentials;
-import org.squonk.notebook.api2.NotebookDescriptor;
-import org.squonk.notebook.api2.NotebookEditable;
-import org.squonk.notebook.api2.NotebookInstance;
-import org.squonk.notebook.api2.NotebookSavepoint;
+import org.squonk.notebook.api.NotebookDescriptor;
+import org.squonk.notebook.api.NotebookEditable;
+import org.squonk.notebook.api.NotebookInstance;
+import org.squonk.notebook.api.NotebookSavepoint;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 

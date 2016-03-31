@@ -1,4 +1,4 @@
-package org.squonk.notebook.api2;
+package org.squonk.notebook.api;
 
 import org.squonk.options.OptionDescriptor;
 

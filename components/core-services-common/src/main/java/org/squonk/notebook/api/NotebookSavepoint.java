@@ -1,10 +1,9 @@
-package org.squonk.notebook.api2;
+package org.squonk.notebook.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by timbo on 29/02/16.
@@ -29,7 +28,7 @@ public class NotebookSavepoint extends AbstractNotebookVersion {
             @JsonProperty("updatedDate") Date updatedDate,
             @JsonProperty("description") String description,
             @JsonProperty("label") String label,
-            @JsonProperty("content") NotebookInstance notebookInstance) {
+            @JsonProperty("notebookInstance") NotebookInstance notebookInstance) {
         super(id, notebookId, parentId, createdDate, updatedDate, notebookInstance);
         this.creator = creator;
         this.description = description;

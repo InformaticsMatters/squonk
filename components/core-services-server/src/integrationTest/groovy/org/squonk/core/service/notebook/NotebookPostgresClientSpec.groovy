@@ -1,12 +1,11 @@
 package org.squonk.core.service.notebook
 
 import org.postgresql.util.PSQLException
-import org.squonk.core.service.notebook.NotebookPostgresClient
 import org.squonk.core.util.TestUtils
-import org.squonk.notebook.api2.NotebookDescriptor
-import org.squonk.notebook.api2.NotebookEditable
-import org.squonk.notebook.api2.NotebookInstance
-import org.squonk.notebook.api2.NotebookSavepoint
+import org.squonk.notebook.api.NotebookDescriptor
+import org.squonk.notebook.api.NotebookEditable
+import org.squonk.notebook.api.NotebookInstance
+import org.squonk.notebook.api.NotebookSavepoint
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -83,7 +82,7 @@ class NotebookPostgresClientSpec extends Specification {
         up.parentId == null
         up.createdDate != null
         up.lastUpdatedDate != null
-        up.content != null
+        up.notebookInstance != null
         eds[0].createdDate == up.createdDate
         eds[0].lastUpdatedDate < up.lastUpdatedDate
     }
@@ -101,14 +100,14 @@ class NotebookPostgresClientSpec extends Specification {
         nue.parentId == sps[0].id
         nue.createdDate != null
         nue.lastUpdatedDate != null
-        nue.content != null
+        nue.notebookInstance != null
         eds[0].createdDate < nue.createdDate
         eds[0].lastUpdatedDate < nue.lastUpdatedDate
 
         sps.size() == 1
         sps[0].id == eds[0].id
         sps[0].creator == TestUtils.TEST_USERNAME
-        sps[0].content != null
+        sps[0].notebookInstance != null
         sps[0].createdDate <= nue.createdDate
     }
 
