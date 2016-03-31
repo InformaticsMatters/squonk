@@ -3,20 +3,17 @@ package org.squonk.execution.steps.impl;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
 import com.im.lac.types.MoleculeObject;
-import org.squonk.core.CommonConstants;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.DatasetUtils;
 import org.squonk.dataset.IncompatibleMetadataException;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 import org.apache.camel.CamelContext;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +49,7 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
-        Dataset<MoleculeObject> dataset = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, PersistenceType.DATASET, varman);
+        Dataset<MoleculeObject> dataset = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
         Boolean preserveStructure = getOption(OPTION_PRESERVE_STRUCTURE, Boolean.class, true);
@@ -139,7 +136,7 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
 
         Dataset<MoleculeObject> results = new Dataset<>(MoleculeObject.class, resultMols, mergedMetadata);
 
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, PersistenceType.DATASET, varman);
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
     }
 
 }

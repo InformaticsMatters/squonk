@@ -2,7 +2,6 @@ package org.squonk.execution.steps.impl;
 
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 import com.im.lac.types.MoleculeObject;
 import org.squonk.chembl.ChemblClient;
@@ -44,7 +43,7 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
         ChemblClient client = new ChemblClient();
         Dataset<MoleculeObject> dataset = client.fetchActivitiesForAssay(assayID, batchSize, prefix);
 
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, dataset, PersistenceType.DATASET, varman);
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, dataset, varman);
         LOG.info("ChEMBL fetch complete. Results: " + dataset.getMetadata());
     }
 

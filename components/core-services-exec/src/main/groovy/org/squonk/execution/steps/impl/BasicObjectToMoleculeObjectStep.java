@@ -4,7 +4,6 @@ import com.im.lac.types.BasicObject;
 import com.im.lac.types.TypesUtils;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 import com.im.lac.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
@@ -53,15 +52,14 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
         String structureFormat = getOption(OPTION_STRUCTURE_FORMAT, String.class);
         boolean preserveUuid = getOption(OPTION_PRESERVE_UUID, Boolean.class, true);
 
-        DatasetProvider p = fetchMappedInput(VAR_INPUT_DATASET, DatasetProvider.class, PersistenceType.DATASET, varman);
-        Dataset<BasicObject> input = p.getDataset();
+        Dataset<BasicObject> input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
         if (LOG.isLoggable(Level.FINE) && input.getMetadata() != null) {
             LOG.fine("Input has " + input.getMetadata().getSize() + " items");
         }
 
         Dataset<MoleculeObject> output = TypesUtils.convertBasicObjectDatasetToMoleculeObjectDataset(input, structureFieldName, structureFormat, preserveUuid);
 
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, output, PersistenceType.DATASET, varman);
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, output, varman);
     }
 
 }

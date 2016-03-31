@@ -2,7 +2,6 @@ package org.squonk.execution.steps.impl;
 
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetProvider;
@@ -22,9 +21,8 @@ public class DatasetWriterStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         // the assumption is that the dataset has PersistenceType.NONE
-        DatasetProvider p = fetchMappedInput(VAR_INPUT_DATASET, DatasetProvider.class, PersistenceType.DATASET, varman);
-        Dataset ds = p.getDataset();
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, ds, PersistenceType.DATASET, varman);
+        Dataset ds = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, ds, varman);
     }
 
 }

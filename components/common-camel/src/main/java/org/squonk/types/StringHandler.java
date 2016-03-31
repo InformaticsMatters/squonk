@@ -47,12 +47,12 @@ public class StringHandler implements HttpHandler<String>, VariableHandler<Strin
     }
 
     @Override
-    public void writeVariable(String value, WriteContext context) throws IOException {
+    public void writeVariable(String value, WriteContext context) throws Exception {
         context.writeTextValue(value);
     }
 
     @Override
-    public String readVariable(ReadContext context) throws IOException {
+    public String readVariable(ReadContext context) throws Exception {
         return context.readTextValue();
     }
 }

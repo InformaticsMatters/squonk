@@ -19,12 +19,14 @@ import java.net.URL;
  */
 public interface VariableHandler<T> {
 
+    Class<T> getType();
+
     /** Write the variable using the Notebook/Variable API
      *
      * @param value The value to be writen
      * @param context The  WriteContext to write the variable to
      */
-    void writeVariable(T value, WriteContext context) throws IOException;
+    void writeVariable(T value, WriteContext context) throws Exception;
 
 
     /** Read the variable using the Notebook/Variable API
@@ -33,26 +35,26 @@ public interface VariableHandler<T> {
      * @return
      * @throws IOException
      */
-    T readVariable(ReadContext context) throws IOException;
+    T readVariable(ReadContext context) throws Exception;
 
 
     /** Context that allows a value to be read.
      *
      */
     interface ReadContext {
-        String readTextValue(String key) throws IOException;
-        InputStream readStreamValue(String key) throws IOException;
-        default String readTextValue() throws IOException { return readTextValue((String)null);}
-        default InputStream readStreamValue() throws IOException { return readStreamValue((String)null);}
+        String readTextValue(String key) throws Exception;
+        InputStream readStreamValue(String key) throws Exception;
+        default String readTextValue() throws Exception { return readTextValue((String)null);}
+        default InputStream readStreamValue() throws Exception { return readStreamValue((String)null);}
     }
 
     /** Context that allows a value to be written.
      *
      */
     interface WriteContext {
-        void writeTextValue(String value, String key) throws IOException;
-        void writeStreamValue(InputStream value, String key) throws IOException;
-        default void writeTextValue(String value) throws IOException { writeTextValue(value, null);}
-        default void writeStreamValue(InputStream value) throws IOException { writeStreamValue(value, null);}
+        void writeTextValue(String value, String key) throws Exception;
+        void writeStreamValue(InputStream value, String key) throws Exception;
+        default void writeTextValue(String value) throws Exception { writeTextValue(value, null);}
+        default void writeStreamValue(InputStream value) throws Exception { writeStreamValue(value, null);}
     }
 }

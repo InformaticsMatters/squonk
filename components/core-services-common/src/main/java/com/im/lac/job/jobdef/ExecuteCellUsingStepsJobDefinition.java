@@ -9,26 +9,31 @@ import org.squonk.execution.steps.StepDefinition;
 public class ExecuteCellUsingStepsJobDefinition implements StepsCellExecutorJobDefinition {
 
     private Long notebookId;
-    private String cellName;
+    private Long editableId;
+    private Long cellId;
     private StepDefinition[] steps;
 
     public ExecuteCellUsingStepsJobDefinition() {}
 
     public ExecuteCellUsingStepsJobDefinition(
             @JsonProperty("notebookId") Long notebookId,
-            @JsonProperty("cellName") String cellName,
+            @JsonProperty("editableId") Long editableId,
+            @JsonProperty("cellId") Long cellId,
             @JsonProperty("steps") StepDefinition[] steps) {
         this.notebookId = notebookId;
-        this.cellName = cellName;
+        this.editableId = editableId;
+        this.cellId = cellId;
         this.steps = steps;
     }
 
     public ExecuteCellUsingStepsJobDefinition(
             Long notebookId,
-            String cellName,
+            Long editableId,
+            Long cellId,
            StepDefinition step) {
         this.notebookId = notebookId;
-        this.cellName = cellName;
+        this.editableId = editableId;
+        this.cellId = cellId;
         this.steps = new StepDefinition[] { step };
     }
 
@@ -36,17 +41,22 @@ public class ExecuteCellUsingStepsJobDefinition implements StepsCellExecutorJobD
         return notebookId;
     }
 
-    public String getCellName() {
-        return cellName;
+    public Long getEditableId() {
+        return editableId;
+    }
+
+    public Long getCellId() {
+        return cellId;
     }
 
     public StepDefinition[] getSteps() {
         return steps;
     }
 
-    public void configureCellAndSteps(Long notebookId, String cellName, StepDefinition... steps) {
+    public void configureCellAndSteps(Long notebookId, Long editableId, Long cellId, StepDefinition... steps) {
         this.notebookId = notebookId;
-        this.cellName = cellName;
+        this.editableId = editableId;
+        this.cellId = cellId;
         this.steps = steps;
     }
 

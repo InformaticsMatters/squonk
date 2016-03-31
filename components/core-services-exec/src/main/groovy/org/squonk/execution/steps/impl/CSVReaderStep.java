@@ -2,7 +2,6 @@ package org.squonk.execution.steps.impl;
 
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 import com.im.lac.types.BasicObject;
 import org.squonk.dataset.Dataset;
@@ -120,13 +119,13 @@ public class CSVReaderStep extends AbstractStep {
     public static final String VAR_DATASET_OUTPUT = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws IOException {
-        InputStream is = fetchMappedInput(VAR_CSV_INPUT, InputStream.class, PersistenceType.BYTES, varman);
+    public void execute(VariableManager varman, CamelContext context) throws Exception {
+        InputStream is = fetchMappedInput(VAR_CSV_INPUT, InputStream.class, varman);
         CSVReader reader = createReader(IOUtils.getGunzippedInputStream(is));
         Stream<BasicObject> mols = reader.asStream();
         Dataset dataset = new Dataset(BasicObject.class, mols);
         System.out.println("CSV rows: " + dataset.getItems().size());
-        createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, dataset, PersistenceType.DATASET, varman);
+        createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, dataset, varman);
     }
 
     private CSVReader createReader(InputStream input) throws IOException {

@@ -57,13 +57,13 @@ public class ListHandler<T> implements HttpHandler<List>, VariableHandler<List>,
     }
 
     @Override
-    public void writeVariable(List list, WriteContext context) throws IOException {
+    public void writeVariable(List list, WriteContext context) throws Exception {
         InputStream is = write(list);
         context.writeStreamValue(is);
     }
 
     @Override
-    public List readVariable(ReadContext context) throws IOException {
+    public List readVariable(ReadContext context) throws Exception {
         InputStream is =  context.readStreamValue();
         return read(is);
     }

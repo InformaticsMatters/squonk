@@ -1,9 +1,9 @@
 package org.squonk.execution.steps.impl
 
 import org.squonk.dataset.Dataset
-import org.squonk.execution.variable.PersistenceType
+
 import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableLoader
+import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
@@ -14,11 +14,11 @@ import spock.lang.Specification
 class ChemblActivitiesFetcherStepSpec extends Specification {
 	
     void "test fetch"() {
-        VariableManager varman = new VariableManager(new MemoryVariableLoader());
+        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1);
     
         
         ChemblActivitiesFetcherStep step = new ChemblActivitiesFetcherStep()
-        String producer = "p"
+        Long producer = 1
         step.configure(producer,
                 [(ChemblActivitiesFetcherStep.OPTION_ASSAY_ID):'CHEMBL864878'],
                 [:], [:])
@@ -28,7 +28,7 @@ class ChemblActivitiesFetcherStepSpec extends Specification {
         
         then:
 
-        def dataset = varman.getValue(new VariableKey(producer, ChemblActivitiesFetcherStep.VAR_OUTPUT_DATASET), Dataset.class, PersistenceType.DATASET)
+        def dataset = varman.getValue(new VariableKey(producer, ChemblActivitiesFetcherStep.VAR_OUTPUT_DATASET), Dataset.class)
         dataset != null
         dataset.items.size() == 10
         

@@ -5,9 +5,9 @@ import org.squonk.dataset.Dataset
 import org.squonk.dataset.DatasetMetadata
 import org.squonk.dataset.transform.TransformDefinitions
 import org.apache.camel.impl.DefaultCamelContext
-import org.squonk.execution.variable.PersistenceType
+
 import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableLoader
+import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
@@ -34,13 +34,12 @@ class ValueTransformerStepSpec extends Specification {
         .convertField("num", Integer.class);
         
         
-        VariableManager varman = new VariableManager(new MemoryVariableLoader());
-        String producer = "p"
+        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1);
+        Long producer = 1
         varman.putValue(
             new VariableKey(producer, "input"),
             Dataset.class, 
-            ds,
-            PersistenceType.NONE)
+            ds)
         
         ValueTransformerStep step = new ValueTransformerStep()
         step.configure(producer,
@@ -50,7 +49,7 @@ class ValueTransformerStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, ValueTransformerStep.VAR_OUTPUT_DATASET), Dataset.class, PersistenceType.DATASET)
+        Dataset dataset = varman.getValue(new VariableKey(producer, ValueTransformerStep.VAR_OUTPUT_DATASET), Dataset.class)
         
         then:
         dataset != null

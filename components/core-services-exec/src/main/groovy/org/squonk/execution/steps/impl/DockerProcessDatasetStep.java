@@ -7,16 +7,11 @@ import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.docker.DockerRunner;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.io.JsonHandler;
-import org.squonk.util.GroovyScriptExecutor;
 
-import javax.script.ScriptEngine;
 import java.io.*;
 import java.nio.file.Files;
-import java.util.Collections;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -33,7 +28,7 @@ public class DockerProcessDatasetStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, PersistenceType.DATASET, varman, true);
+        Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman, true);
         LOG.info("Input Dataset: " + input);
         String image = getOption(OPTION_DOCKER_IMAGE, String.class);
         String command = getOption(OPTION_DOCKER_COMMAND, String.class);
@@ -88,7 +83,7 @@ public class DockerProcessDatasetStep extends AbstractStep {
         }
         try (FileInputStream fis = new FileInputStream(resultsF)) {
             Dataset<MoleculeObject> dataset = new Dataset(MoleculeObject.class, fis, resultsMeta);
-            createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, dataset, PersistenceType.DATASET, varman);
+            createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, dataset, varman);
             LOG.info("Results: " + dataset.getMetadata());
         }
 

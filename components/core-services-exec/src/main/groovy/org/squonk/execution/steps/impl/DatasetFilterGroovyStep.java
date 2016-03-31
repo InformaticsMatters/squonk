@@ -7,7 +7,6 @@ import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 
 import java.util.function.Predicate;
@@ -27,7 +26,7 @@ public class DatasetFilterGroovyStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, PersistenceType.DATASET, varman, true);
+        Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman, true);
         LOG.info("Input Dataset: " + input);
         String script = getOption(OPTION_SCRIPT, String.class);
         if (script == null) {
@@ -44,7 +43,7 @@ public class DatasetFilterGroovyStep extends AbstractStep {
         Stream output = input.getStream().filter(predicate);
         Dataset results = new Dataset(input.getType(), output, deriveOutputDatasetMetadata(input.getMetadata()));
 
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, PersistenceType.DATASET, varman);
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
 
         LOG.info("Results: " + results.getMetadata());
     }

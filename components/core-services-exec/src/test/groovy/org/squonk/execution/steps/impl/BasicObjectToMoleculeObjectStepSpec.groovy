@@ -3,9 +3,9 @@ package org.squonk.execution.steps.impl
 import com.im.lac.types.BasicObject
 import com.im.lac.types.MoleculeObject
 import org.squonk.dataset.Dataset
-import org.squonk.execution.variable.PersistenceType
+
 import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableLoader
+import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
@@ -21,17 +21,16 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         new BasicObject([struct:"CCC", num:3, hello:'world']),
     ]
     Dataset ds = new Dataset(BasicObject.class, input)
-    String producer = "p"
+    Long producer = 1
     
     void "simple convert"() {
         
-        VariableManager varman = new VariableManager(new MemoryVariableLoader());
+        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1);
         
         varman.putValue(
             new VariableKey(producer,"input"),
             Dataset.class, 
-            ds,
-            PersistenceType.NONE)
+            ds)
         
         BasicObjectToMoleculeObjectStep step = new BasicObjectToMoleculeObjectStep()
         step.configure(producer,
@@ -41,7 +40,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         
         when:
         step.execute(varman, null)
-        def molsds= varman.getValue(new VariableKey(producer, BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET), Dataset.class, PersistenceType.DATASET)
+        def molsds= varman.getValue(new VariableKey(producer, BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET), Dataset.class)
         
         then:
 
@@ -57,13 +56,12 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
     
      void "uuid and format props"() {
         
-        VariableManager varman = new VariableManager(new MemoryVariableLoader());
+        VariableManager varman = new VariableManager(new MemoryVariableClient(), 1,1);
         
         varman.putValue(
                 new VariableKey(producer,"input"),
             Dataset.class, 
-            ds,
-            PersistenceType.NONE)
+            ds)
         
         BasicObjectToMoleculeObjectStep step = new BasicObjectToMoleculeObjectStep()
         step.configure(producer, [
@@ -75,7 +73,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         
         when:
         step.execute(varman, null)
-        def molsds = varman.getValue(new VariableKey(producer, BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET), Dataset.class, PersistenceType.DATASET)
+        def molsds = varman.getValue(new VariableKey(producer, BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET), Dataset.class)
         
         then:
 

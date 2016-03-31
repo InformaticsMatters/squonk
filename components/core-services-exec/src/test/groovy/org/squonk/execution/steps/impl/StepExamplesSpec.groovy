@@ -1,14 +1,5 @@
 package org.squonk.execution.steps.impl
 
-import org.apache.camel.Exchange
-import org.apache.camel.builder.RouteBuilder
-import org.apache.camel.impl.DefaultCamelContext
-import org.squonk.dataset.Dataset
-import org.squonk.dataset.DatasetMetadata
-import org.squonk.execution.steps.Step
-import org.squonk.execution.steps.StepExecutor
-import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableLoader
 import spock.lang.Specification
 
 

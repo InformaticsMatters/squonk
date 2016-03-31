@@ -10,9 +10,9 @@ import org.apache.camel.CamelContext;
 public class StepExecutor {
     
     private final VariableManager varman;
-    private final String  producer;
+    private final Long  producer;
     
-    public StepExecutor(String  producer, VariableManager varman) {
+    public StepExecutor(Long  producer, VariableManager varman) {
         this.varman = varman;
         this.producer = producer;
     }
@@ -33,8 +33,6 @@ public class StepExecutor {
         for (Step step: steps) {
             step.execute(varman, context);
         }
-        // VariableManager1 should be transactional?
-        varman.save();
     }
     
 }

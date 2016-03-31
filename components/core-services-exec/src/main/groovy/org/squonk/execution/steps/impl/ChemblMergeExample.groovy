@@ -2,17 +2,15 @@ package org.squonk.execution.steps.impl
 
 import org.squonk.execution.steps.StepDefinition
 import org.squonk.execution.steps.StepExecutor
-import org.squonk.execution.variable.PersistenceType
+
 import org.squonk.notebook.api.VariableKey
 import org.squonk.dataset.Dataset
-
-import static org.squonk.execution.steps.StepDefinitionConstants.*
-import org.squonk.execution.variable.impl.MemoryVariableLoader
+import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.execution.variable.VariableManager
 
 
         
-MemoryVariableLoader loader = new MemoryVariableLoader()
+MemoryVariableClient loader = new MemoryVariableClient()
 VariableManager varman = new VariableManager(loader)
         
 // cell 1

@@ -13,7 +13,7 @@ class StepDefintionSpec extends Specification {
 
         StepDefinition step1 = new StepDefinition('foo.bar.Baz')
                 .withOptions(['hello':'world'])
-                .withInputVariableMappings(["in":new VariableKey('p','input')])
+                .withInputVariableMappings(["in":new VariableKey(1,'input')])
                 .withOutputVariableMappings([out:'output'])
 
         when:

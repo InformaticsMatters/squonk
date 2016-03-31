@@ -1,17 +1,17 @@
 package org.squonk.execution.variable;
 
-import org.squonk.dataset.Dataset;
-import org.squonk.dataset.DatasetMetadata;
+import org.squonk.api.VariableHandler;
+import org.squonk.api.VariableHandlerRegistry;
+import org.squonk.client.VariableClient;
+import org.squonk.execution.variable.impl.MemoryVariableClient;
+import org.squonk.execution.variable.impl.VariableReadContext;
+import org.squonk.execution.variable.impl.VariableWriteContext;
 import org.squonk.notebook.api.VariableKey;
-import org.squonk.types.io.JsonHandler;
-import org.squonk.util.IOUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 /**
  *
@@ -21,81 +21,58 @@ public class VariableManager {
 
     public static Logger LOG = Logger.getLogger(VariableManager.class.getName());
 
+    private static final VariableHandlerRegistry variableHandlerRegistry = VariableHandlerRegistry.INSTANCE;
     private final Map<VariableKey, Object> tmpValues = new HashMap<>();
 
-    private final VariableLoader loader;
+    private final VariableClient client;
+    private final Long notebookId;
+    private final Long sourceId;
 
-    public VariableManager(VariableLoader loader) {
-        this.loader = loader;
+    public VariableManager(VariableClient client, Long notebookId,  Long sourceId) {
+        this.client = client;
+        this.notebookId = notebookId;
+        this.sourceId = sourceId;
     }
 
-    public void save() throws IOException {
-        tmpValues.clear();
-        loader.save();
-    }
+    public <V> void putValue(VariableKey key, Class<V> type, V value) throws Exception {
+        LOG.fine("putValue: " + key + " -> " +value);
+        Long cellId = key.getCellId();
+        String variableName = key.getVariableName();
 
-    public <V> void putValue(VariableKey var, Class<V> type, V value, PersistenceType persistenceType) throws IOException {
-
-        switch (persistenceType) {
-            case TEXT:
-                loader.writeToText(var, value);
-                break;
-            case JSON:
-                loader.writeToJson(var, value);
-                break;
-            case BYTES:
-                loader.writeToBytes(var, "", (InputStream) value);
-                break;
-            case DATASET:
-                Dataset ds = (Dataset) value;
-                Dataset.DatasetMetadataGenerator generator = ds.createDatasetMetadataGenerator();
-
-                try (Stream s = generator.getAsStream()) {
-                    InputStream is = generator.getAsInputStream(s, true);
-                    loader.writeToBytes(var, "#DATA", is);
-                } // stream now closed
-                DatasetMetadata md = generator.getDatasetMetadata();
-                loader.writeToJson(var, md);
-                LOG.info("Wrote dataset containing " + md.getSize() + " values");
-                break;
-            case NONE:
-                tmpValues.put(var, value);
-                break;
-            default:
-                throw new IllegalStateException("Type " + persistenceType + " not supported");
+        VariableHandler<V> vh = variableHandlerRegistry.lookup(type);
+        if (vh != null) {
+            VariableHandler.WriteContext context = new VariableWriteContext(client, notebookId, sourceId, cellId, variableName);
+            vh.writeVariable(value, context);
+        } else if (canBeHandledAsString(value.getClass())){
+            client.writeTextValue(notebookId, sourceId, cellId, variableName, value.toString(), null);
         }
     }
 
-    public <V> V getValue(VariableKey key, Class<V> type, PersistenceType persistenceType) throws IOException {
+    public <V> V getValue(VariableKey key, Class<V> type) throws Exception {
+        LOG.fine("getValue " + key + " of type " + type);
+        String variableName = key.getVariableName();
+        VariableHandler<V> vh = variableHandlerRegistry.lookup(type);
+        if (vh != null) {
 
-        LOG.info("Getting variable " + key.getName() + " from cell " + key.getProducerName() + " of type " + type + " using persistence type of " + persistenceType);
+            VariableHandler.ReadContext context = new VariableReadContext(client, notebookId, sourceId, variableName);
+            V result = (V)vh.readVariable(context);
+            return result;
 
-        if (tmpValues.containsKey(key)) {
-            return (V) tmpValues.get(key);
+        } else if (canBeHandledAsString(type)){
+            Constructor c = type.getConstructor(String.class);
+            String s = client.readTextValue(notebookId, sourceId, variableName, null);
+            return (V)c.newInstance(s);
         }
+        throw new IllegalArgumentException("Don't know how to handle value of type " + type.getName());
+    }
 
-        switch (persistenceType) {
-            case TEXT:
-                return loader.readFromText(key, type);
-            case JSON:
-                return loader.readFromJson(key, type);
-            case BYTES:
-                return (V) loader.readBytes(key, "");
-            case DATASET:
-                DatasetMetadata meta = loader.readFromJson(key, DatasetMetadata.class);
-                if (meta == null) {
-                    return null;
-                }
-                InputStream is = loader.readBytes(key, "#DATA");
-                if (is == null) {
-                    return null;
-                }
-                return (V) JsonHandler.getInstance().unmarshalDataset(meta, IOUtils.getGunzippedInputStream(is));
-            case NONE:
-                return (V) tmpValues.get(key);
-            default:
-                throw new IllegalStateException("Type " + persistenceType + " not supported");
+    boolean canBeHandledAsString(Class cls) {
+        for (Constructor c: cls.getConstructors()) {
+            if (c.getParameterCount() == 1 && c.getParameterTypes()[0].isAssignableFrom(String.class)) {
+                return true;
+            }
         }
+        return false;
     }
 
 }

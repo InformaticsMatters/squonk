@@ -7,7 +7,6 @@ import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
@@ -35,7 +34,7 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
-        Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, PersistenceType.DATASET, varman);
+        Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
         Map<String, Object> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip");
@@ -44,7 +43,7 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
         LOG.fine("Creating Dataset");
         Dataset<MoleculeObject> results = JsonHandler.getInstance().unmarshalDataset(new DatasetMetadata(MoleculeObject.class), IOUtils.getGunzippedInputStream(output));
         LOG.fine("Dataset created");
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, PersistenceType.DATASET, varman);
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
         LOG.info("Dataset written to variable");
      }
 

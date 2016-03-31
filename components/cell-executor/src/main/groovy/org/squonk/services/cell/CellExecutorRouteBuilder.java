@@ -7,6 +7,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
+import org.squonk.core.client.NotebookRestClient;
 import org.squonk.execution.steps.StepDefinition;
 import org.squonk.execution.steps.StepExecutor;
 import org.squonk.execution.variable.VariableLoader;
@@ -40,6 +41,9 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
 
     @Inject
     private JobStatusRestClient jobstatusClient;
+
+    @Inject
+    private NotebookRestClient notebookRestClient;
 
     @Inject
     private MessageQueueCredentials rabbitmqCredentials;
@@ -90,7 +94,8 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
         LOG.info("Executing Job: id:" + jobid + " username:" + username);
 
         Long notebookId = jobdef.getNotebookId();
-        String cellName = jobdef.getCellName();
+        Long editableId = jobdef.getEditableId();
+        Long cellId = jobdef.getCellId();
         StepDefinition[] steps = jobdef.getSteps();
 
         if (jobdef == null) {
@@ -105,28 +110,31 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
         if (notebookId == null) {
             throw new IllegalStateException("No notebookId found. Should be defined in the job definition");
         }
-        if (cellName == null) {
-            throw new IllegalStateException("No cellName found. Should be defined in the job definition");
+        if (editableId == null) {
+            throw new IllegalStateException("No editableId found. Should be defined in the job definition");
+        }
+        if (cellId == null) {
+            throw new IllegalStateException("No cellId found. Should be defined in the job definition");
         }
         if (steps == null) {
             throw new IllegalStateException("No step definitions found. Should be defined in the job definition");
         }
 
+//
+//        // TODO - sort out which client to use. Probably remove the Jersey one and replace the HttpComponents one?
+//        // @Inject these?
+//        CallbackContext callbackContext = new CallbackContext();
+//        CallbackClient callbackClient = new CallbackClient(config, callbackContext);
+//        callbackContext.setNotebookId(notebookId);
+//        VariableLoader loader = new CellCallbackClientVariableLoader(callbackClient);
+//
+//
+//        // setup the variable manager - @Inject these?
+////        CellClient cellClient = new CellClient(notebookId);
+////        VariableLoader loader = new CellClientVariableLoader(cellClient);
 
-        // TODO - sort out which client to use. Probably remove the Jersey one and replace the HttpComponents one?
-        // @Inject these?
-        CallbackContext callbackContext = new CallbackContext();
-        CallbackClient callbackClient = new CallbackClient(config, callbackContext);
-        callbackContext.setNotebookId(notebookId);
-        VariableLoader loader = new CellCallbackClientVariableLoader(callbackClient);
-
-
-        // setup the variable manager - @Inject these?
-//        CellClient cellClient = new CellClient(notebookId);
-//        VariableLoader loader = new CellClientVariableLoader(cellClient);
-
-        VariableManager varman = new VariableManager(loader);
-        StepExecutor executor = new StepExecutor(cellName, varman);
+        VariableManager varman = new VariableManager(notebookRestClient,notebookId, editableId);
+        StepExecutor executor = new StepExecutor(cellId, varman);
 
         // and execute
         try {

@@ -1,8 +1,8 @@
 package org.squonk.execution.steps.impl
 
-import org.squonk.execution.variable.PersistenceType
+
 import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableLoader
+import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
@@ -13,13 +13,12 @@ class EchoStepSpec extends Specification {
 
     void "simple test"() {
         String value = "hello"
-        VariableManager varman = new VariableManager(new MemoryVariableLoader());
-        String producer = "p"
+        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1);
+        Long producer = 1
         varman.putValue(
                 new VariableKey(producer, "input"),
                 String.class,
-                value,
-                PersistenceType.TEXT)
+                value)
 
         EchoStep step = new EchoStep()
         step.configure(producer,
@@ -29,7 +28,7 @@ class EchoStepSpec extends Specification {
 
         when:
         step.execute(varman, null)
-        String result = varman.getValue(new VariableKey(producer, "output"), String.class, PersistenceType.TEXT)
+        String result = varman.getValue(new VariableKey(producer, "output"), String.class)
 
         then:
         result == value

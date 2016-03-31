@@ -2,11 +2,10 @@ package org.squonk.execution.steps.impl
 
 import com.im.lac.types.MoleculeObject
 import org.apache.camel.impl.DefaultCamelContext
-import org.squonk.core.CommonConstants
 import org.squonk.dataset.Dataset
-import org.squonk.execution.variable.PersistenceType
+
 import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableLoader
+import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import org.squonk.reader.SDFReader
 import org.squonk.util.IOUtils
@@ -23,7 +22,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
 
     static String HOST_CDK_CALCULATORS = "http://" + IOUtils.getDockerGateway() + ":8092/chem-services-cdk-basic/rest/v1/calculators"
 
-    String producer = "p"
+    Long producer = 1
 
     @Shared
     DefaultCamelContext context = new DefaultCamelContext()
@@ -56,8 +55,8 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         ]
         Dataset ds = new Dataset(MoleculeObject.class, mols)
         
-        VariableManager varman = new VariableManager(new MemoryVariableLoader())
-        varman.putValue(new VariableKey(producer,"input"), Dataset.class, ds, PersistenceType.NONE)
+        VariableManager varman = new VariableManager(new MemoryVariableClient(), 1,1)
+        varman.putValue(new VariableKey(producer,"input"), Dataset.class, ds)
 
         MoleculeServiceFatExecutorStep step = createStep(ds)
         
@@ -66,7 +65,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         step.execute(varman, context)
         
         then:
-        def output = varman.getValue(new VariableKey(producer, MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET), Dataset.class, PersistenceType.DATASET)
+        def output = varman.getValue(new VariableKey(producer, MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET), Dataset.class)
         output instanceof Dataset
         def items = output.items
         items.size() == 3
@@ -79,8 +78,8 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         SDFReader reader = new SDFReader(new GZIPInputStream(fis))
         Dataset ds = new Dataset(MoleculeObject.class, reader.asStream())
 
-        VariableManager varman = new VariableManager(new MemoryVariableLoader())
-        varman.putValue(new VariableKey(producer,"input"), Dataset.class, ds, PersistenceType.NONE)
+        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1)
+        varman.putValue(new VariableKey(producer,"input"), Dataset.class, ds)
 
         MoleculeServiceFatExecutorStep step = createStep(ds)
 
@@ -89,7 +88,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         step.execute(varman, context)
 
         then:
-        def output = varman.getValue(new VariableKey(producer, MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET), Dataset.class, PersistenceType.DATASET)
+        def output = varman.getValue(new VariableKey(producer, MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET), Dataset.class)
         output instanceof Dataset
         def items = output.items
         items.size() == 36
@@ -102,8 +101,8 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         SDFReader reader = new SDFReader(new GZIPInputStream(fis))
         Dataset ds = new Dataset(MoleculeObject.class, reader.asStream())
 
-        VariableManager varman = new VariableManager(new MemoryVariableLoader())
-        varman.putValue(new VariableKey(producer,"input"), Dataset.class, ds, PersistenceType.NONE)
+        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1)
+        varman.putValue(new VariableKey(producer,"input"), Dataset.class, ds)
 
         MoleculeServiceFatExecutorStep step = createStep(ds)
 
@@ -112,7 +111,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         step.execute(varman, context)
 
         then:
-        def output = varman.getValue(new VariableKey(producer, MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET), Dataset.class, PersistenceType.DATASET)
+        def output = varman.getValue(new VariableKey(producer, MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET), Dataset.class)
         output instanceof Dataset
         long  size = output.getStream().count()
         size == 7003

@@ -4,6 +4,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.squonk.client.NotebookClient;
+import org.squonk.client.VariableClient;
 import org.squonk.core.client.config.SquonkClientConfig;
 import org.squonk.notebook.api2.NotebookDescriptor;
 import org.squonk.notebook.api2.NotebookEditable;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
  * Created by timbo on 11/03/16.
  */
 @Default
-public class NotebookRestClient extends AbstractHttpClient implements Serializable, NotebookClient {
+public class NotebookRestClient extends AbstractHttpClient implements Serializable, NotebookClient, VariableClient {
 
     private static final Logger LOG = Logger.getLogger(NotebookRestClient.class.getName());
 

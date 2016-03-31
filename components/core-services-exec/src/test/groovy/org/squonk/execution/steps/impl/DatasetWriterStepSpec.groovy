@@ -2,9 +2,9 @@ package org.squonk.execution.steps.impl
 
 import com.im.lac.types.MoleculeObject
 import org.squonk.dataset.Dataset
-import org.squonk.execution.variable.PersistenceType
+
 import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableLoader
+import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
@@ -23,9 +23,9 @@ class DatasetWriterStepSpec extends Specification {
         ]
         Dataset ds = new Dataset(MoleculeObject.class, mols)
 
-        VariableManager varman = new VariableManager(new MemoryVariableLoader());
+        VariableManager varman = new VariableManager(new MemoryVariableClient(), 1, 1);
         DatasetWriterStep step = new DatasetWriterStep()
-        String producer = "p"
+        Long producer = 1
         step.configure(producer,
                 [:],
                 [(DatasetWriterStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
@@ -33,12 +33,11 @@ class DatasetWriterStepSpec extends Specification {
         varman.putValue(
                 new VariableKey(producer, "input"),
                 Dataset.class,
-                ds,
-                PersistenceType.NONE)
+                ds)
 
         when:
         step.execute(varman, null)
-        Dataset dataset = varman.getValue(new VariableKey(producer, DatasetWriterStep.VAR_OUTPUT_DATASET), Dataset.class, PersistenceType.DATASET)
+        Dataset dataset = varman.getValue(new VariableKey(producer, DatasetWriterStep.VAR_OUTPUT_DATASET), Dataset.class)
 
         then:
         dataset != null

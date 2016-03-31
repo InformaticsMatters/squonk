@@ -79,8 +79,11 @@ public class StepsCellJob  implements Job<StepsCellExecutorJobDefinition> {
         if (jobdef.getNotebookId() == null) {
             return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to submit job as notebook ID is not defined");
         }
-        if (jobdef.getCellName() == null) {
-            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to submit job as notebook cell name is not defined");
+        if (jobdef.getEditableId() == null) {
+            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to submit job as editable ID is not defined");
+        }
+        if (jobdef.getCellId() == null) {
+            return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to submit job as notebook cell ID is not defined");
         }
         if (jobdef.getSteps() == null || jobdef.getSteps().length == 0) {
             return jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Unable to submit job as no steps were defined");

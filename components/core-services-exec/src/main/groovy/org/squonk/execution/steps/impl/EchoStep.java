@@ -3,7 +3,6 @@ package org.squonk.execution.steps.impl;
 import org.apache.camel.CamelContext;
 
 import org.squonk.execution.steps.AbstractStep;
-import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 
 import java.util.logging.Logger;
@@ -18,13 +17,13 @@ public class EchoStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        String input = fetchMappedInput("input", String.class, PersistenceType.TEXT, varman);
+        String input = fetchMappedInput("input", String.class, varman);
         if (input == null) {
             throw new IllegalStateException("Input variable not found");
         }
         LOG.info("Input: " + input);
 
-        createMappedOutput("output", String.class, input, PersistenceType.TEXT, varman);
+        createMappedOutput("output", String.class, input, varman);
         LOG.info("Wrote input as output");
     }
 }

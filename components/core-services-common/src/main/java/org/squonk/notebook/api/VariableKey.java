@@ -7,36 +7,30 @@ import java.io.Serializable;
 
 @XmlRootElement
 public class VariableKey implements Serializable {
-    private String producerName;
-    private String name;
+    private Long cellId;
+    private String variableName;
 
     public VariableKey() {}
 
-    public VariableKey(String producerName, String name) {
-        this.producerName = producerName;
-        this.name = name;
+    public VariableKey(Long cellId, String variableName) {
+        this.cellId = cellId;
+        this.variableName = variableName;
     }
 
 
-    public String getProducerName() {
-        return producerName;
+    public Long getCellId() {
+        return cellId;
     }
 
-    public void setProducerName(String producerName) {
-        this.producerName = producerName;
+
+    public String getVariableName() {
+        return variableName;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     @Override
     public String toString() {
-        return "VariableKey [producerName:" + producerName + " name:" + name + "]";
+        return "VariableKey [CellId:" + cellId + " VariableName:" + variableName + "]";
     }
 
     @Override
@@ -44,11 +38,11 @@ public class VariableKey implements Serializable {
         if (obj == null || !(obj instanceof VariableKey)) {
             return false;
         }
-        return Utils.safeEquals(this.producerName, ((VariableKey)obj).producerName) && Utils.safeEquals(this.name, ((VariableKey)obj).name);
+        return Utils.safeEquals(this.cellId, ((VariableKey)obj).cellId) && Utils.safeEquals(this.variableName, ((VariableKey)obj).variableName);
     }
 
     @Override
     public int hashCode() {
-        return (producerName + name).hashCode();
+        return (cellId + variableName).hashCode();
     }
 }

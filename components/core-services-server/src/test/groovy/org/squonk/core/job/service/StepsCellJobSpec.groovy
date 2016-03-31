@@ -22,14 +22,14 @@ class StepsCellJobSpec extends Specification {
 
     void "basic test"() {
 
-        String producer = "p"
+        Long producer = 1
         StepDefinition steps = new StepDefinition(
                 EchoStep.class.getName(),
                 [:],
                 ["input":new VariableKey(producer, "input")],
                 ["output":"output"])
 
-        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(1, "cell1", steps);
+        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(1, 1, 1, steps);
         int camelCounter = 0
 
         when:

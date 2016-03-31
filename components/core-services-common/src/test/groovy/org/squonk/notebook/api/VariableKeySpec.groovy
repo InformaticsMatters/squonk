@@ -10,10 +10,10 @@ class VariableKeySpec extends Specification {
     void "test equals"() {
 
         when:
-        VariableKey a = new VariableKey("p", "n")
-        VariableKey b = new VariableKey("p", "n")
-        VariableKey c = new VariableKey("", "n")
-        VariableKey d = new VariableKey("", "n")
+        VariableKey a = new VariableKey(1, "n")
+        VariableKey b = new VariableKey(1, "n")
+        VariableKey c = new VariableKey(2, "n")
+        VariableKey d = new VariableKey(2, "n")
 
         then:
         a.equals(b)

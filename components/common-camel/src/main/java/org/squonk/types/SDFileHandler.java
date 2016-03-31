@@ -44,12 +44,12 @@ public class SDFileHandler implements HttpHandler<SDFile>, VariableHandler<SDFil
     }
 
     @Override
-    public void writeVariable(SDFile sdf, WriteContext context) throws IOException {
+    public void writeVariable(SDFile sdf, WriteContext context) throws Exception {
         context.writeStreamValue(sdf.getInputStream());
     }
 
     @Override
-    public SDFile readVariable(ReadContext context) throws IOException {
+    public SDFile readVariable(ReadContext context) throws Exception {
         InputStream is =  context.readStreamValue();
         return new SDFile(is);
     }

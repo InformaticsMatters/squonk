@@ -74,7 +74,7 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
     }
 
     @Override
-    public void writeVariable(Dataset dataset, WriteContext context) throws IOException {
+    public void writeVariable(Dataset dataset, WriteContext context) throws Exception {
         Dataset.DatasetMetadataGenerator generator = dataset.createDatasetMetadataGenerator();
         try (Stream s = generator.getAsStream()) {
             InputStream is = generator.getAsInputStream(s, false);
@@ -86,8 +86,13 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
     }
 
     @Override
-    public Dataset<T> readVariable(ReadContext context) throws IOException {
-        return create(context.readTextValue(), context.readStreamValue());
+    public Dataset<T> readVariable(ReadContext context) throws Exception {
+        Dataset<T> result = create(context.readTextValue(), context.readStreamValue());
+//        LOG.info("Read dataset:");
+//        result.getItems().forEach((o) -> {
+//            LOG.info("Item: " + o);
+//        });
+        return result;
     }
 
     protected Dataset<T> create(String meta, InputStream data) throws IOException {

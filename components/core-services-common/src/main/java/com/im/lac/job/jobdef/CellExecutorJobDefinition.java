@@ -6,6 +6,7 @@ package com.im.lac.job.jobdef;
 public interface CellExecutorJobDefinition extends JobDefinition {
 
     Long getNotebookId();
-    String getCellName();
+    Long getEditableId();
+    Long getCellId();
 
 }

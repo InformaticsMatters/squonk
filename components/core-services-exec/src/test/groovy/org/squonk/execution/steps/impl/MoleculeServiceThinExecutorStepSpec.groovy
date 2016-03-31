@@ -1,24 +1,18 @@
 package org.squonk.execution.steps.impl
 
 import com.im.lac.types.MoleculeObject
-import org.apache.camel.CamelContext
-import org.apache.camel.Exchange
 import org.apache.camel.ProducerTemplate
-import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.DatasetMetadata
 import org.squonk.execution.steps.Step
 import org.squonk.execution.steps.StepExecutor
-import org.squonk.execution.variable.PersistenceType
+
 import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableLoader
+import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import org.squonk.types.io.JsonHandler
-import org.squonk.util.IOUtils
 import spock.lang.Specification
-
-import java.util.stream.Stream
 
 /**
  *
@@ -62,13 +56,12 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
         Dataset ds = new Dataset(MoleculeObject.class, ServiceExecutorHelper.mols)
 
 
-        VariableManager varman = new VariableManager(new MemoryVariableLoader());
-        String producer = "p"
+        VariableManager varman = new VariableManager(new MemoryVariableClient(), 1, 1);
+        Long producer = 1
         varman.putValue(
                 new VariableKey(producer, "input"),
                 Dataset.class,
-                ds,
-                PersistenceType.NONE)
+                ds)
 
         MoleculeServiceThinExecutorStep step = new MoleculeServiceThinExecutorStep()
 
@@ -79,7 +72,7 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
 
         when:
         step.execute(varman, context)
-        Dataset result = varman.getValue(new VariableKey(producer, MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET), Dataset.class, PersistenceType.DATASET)
+        Dataset result = varman.getValue(new VariableKey(producer, MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET), Dataset.class)
 
         then:
         result.items.size() == 3
@@ -99,14 +92,13 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
         Dataset ds = new Dataset(MoleculeObject.class, ServiceExecutorHelper.mols)
 
 
-        VariableManager varman = new VariableManager(new MemoryVariableLoader());
+        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1);
 
-        String producer = "p"
+        Long producer = 1
         varman.putValue(
                 new VariableKey(producer, "input"),
                 Dataset.class,
-                ds,
-                PersistenceType.NONE)
+                ds)
 
         MoleculeServiceThinExecutorStep step1 = new MoleculeServiceThinExecutorStep()
         step1.configure(producer,
@@ -124,7 +116,7 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
         StepExecutor executor = new StepExecutor(producer, varman)
         Step[] steps = [step1, step2] as Step[]
         executor.execute(steps, context)
-        Dataset result = varman.getValue(new VariableKey(producer, "Output"), Dataset.class, PersistenceType.DATASET)
+        Dataset result = varman.getValue(new VariableKey(producer, "Output"), Dataset.class)
 
         then:
         result.items.size() == 3

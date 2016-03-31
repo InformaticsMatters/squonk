@@ -146,6 +146,10 @@ public class IOUtils {
         }
     }
 
+    public static byte[] convertStreamToBytes(final InputStream is) throws IOException {
+        return convertStreamToBytes(is, 1000);
+    }
+
     public static byte[] convertStreamToBytes(final InputStream is, final int bufferSize) throws IOException {
         final byte[] buffer = new byte[bufferSize];
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {

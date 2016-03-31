@@ -2,10 +2,11 @@ package org.squonk.execution.steps.impl;
 
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 import com.im.lac.types.BasicObject;
 import org.squonk.dataset.Dataset;
+
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,40 +39,41 @@ public class DatasetMergerStep extends AbstractStep {
         String mergeField = getOption(OPTION_MERGE_FIELD_NAME, String.class);
         boolean keepFirst = getOption(OPTION_KEEP_FIRST, Boolean.class, true);
         
-        LOG.log(Level.INFO, "Merging using field {0}, keep first value = {1}", new Object[]{mergeField, keepFirst});
+        LOG.log(Level.FINE, "Merging using field {0}, keep first value={1}", new Object[]{mergeField, keepFirst});
 
-        Dataset<BasicObject> dataset1 = fetchMappedInput(VAR_INPUT_1, Dataset.class, PersistenceType.DATASET, varman);
+        Dataset<BasicObject> dataset1 = fetchMappedInput(VAR_INPUT_1, Dataset.class, varman);
 
-        Stream<BasicObject> stream = dataset1.getStream();
+        Stream<BasicObject> stream = dataset1.getStream().sequential();
         for (int i = 2; i <= 5; i++) {
-            Dataset<BasicObject> nextDataset = fetchMappedInput(VAR_INPUT_BASE + i, Dataset.class, PersistenceType.DATASET, varman);
+            Dataset<BasicObject> nextDataset = fetchMappedInput(VAR_INPUT_BASE + i, Dataset.class, varman);
             if (nextDataset == null) {
                 break;
             }
             LOG.log(Level.FINE, "Concatting stream {0}", i);
-            stream = Stream.concat(stream, nextDataset.getStream());
+            stream = Stream.concat(stream, nextDataset.getStream().sequential());
         }
 
-        Map<Object, BasicObject> items = stream
+        Map<Object, BasicObject> items = stream.sequential()
                 .filter(o -> mergeField == null || o.getValue(mergeField) != null)
                 .collect(Collectors.toConcurrentMap(
                                 bo -> fetchValueToCompare(bo, mergeField),
                                 bo -> bo,
-                                (bo1, b02) -> {
+                                (bo1, bo2) -> {
+                                    //LOG.info("\nMerging " + bo1 + " and " + bo2 + "\n");
                                     if (keepFirst) {
-                                        for (Map.Entry<String, Object> e : b02.getValues().entrySet()) {
+                                        for (Map.Entry<String, Object> e : bo2.getValues().entrySet()) {
                                             bo1.getValues().putIfAbsent(e.getKey(), e.getValue());
                                         }
                                     } else {
-                                        bo1.getValues().putAll(b02.getValues());
+                                        bo1.getValues().putAll(bo2.getValues());
                                     }
                                     return bo1;
                                 }));
 
         Class type = dataset1.getType();
-        Dataset result = new Dataset(type, items.values());
-        createMappedOutput(VAR_OUTPUT, Dataset.class, result, PersistenceType.DATASET, varman);
-        LOG.info("Merge complete. Results: " + result.getMetadata());
+        Dataset result = new Dataset<>(type, items.values());
+        createMappedOutput(VAR_OUTPUT, Dataset.class, result, varman);
+        LOG.fine("Merge complete. Results: " + result.getMetadata());
     }
 
     private Object fetchValueToCompare(BasicObject bo, String mergeField) {

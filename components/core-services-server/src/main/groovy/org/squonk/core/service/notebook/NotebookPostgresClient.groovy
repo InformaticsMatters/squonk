@@ -3,6 +3,7 @@ package org.squonk.core.service.notebook
 import groovy.sql.Sql
 import groovy.util.logging.Log
 import org.squonk.client.NotebookClient
+import org.squonk.client.VariableClient
 import org.squonk.core.util.SquonkServerConfig
 import org.squonk.core.util.Utils
 import org.squonk.notebook.api2.NotebookDescriptor
@@ -15,11 +16,11 @@ import javax.sql.DataSource
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 
-/** NotebookClient that persists data in a PostgreSQL database
+/** Notebook adn Variable Client that persists data in a PostgreSQL database
  * Created by timbo on 29/02/16.
  */
 @Log
-class NotebookPostgresClient implements NotebookClient {
+class NotebookPostgresClient implements NotebookClient, VariableClient {
 
     public final static NotebookPostgresClient INSTANCE = new NotebookPostgresClient()
 

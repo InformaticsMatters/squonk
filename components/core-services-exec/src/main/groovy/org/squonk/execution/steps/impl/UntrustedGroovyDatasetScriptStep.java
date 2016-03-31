@@ -4,7 +4,6 @@ import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.PersistenceType;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.util.GroovyScriptExecutor;
 
@@ -26,7 +25,7 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, PersistenceType.DATASET, varman, true);
+        Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman, true);
         LOG.info("Input Dataset: " + input);
         String script = getOption(OPTION_SCRIPT, String.class);
         if (script == null) {
@@ -40,7 +39,7 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractStep {
         Dataset output = GroovyScriptExecutor.executeAndReturnValue(Dataset.class, engine, script, bindings);
         LOG.info("Script executed");
 
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, output, PersistenceType.DATASET, varman);
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, output, varman);
 
         LOG.info("Results: " + output.getMetadata());
     }

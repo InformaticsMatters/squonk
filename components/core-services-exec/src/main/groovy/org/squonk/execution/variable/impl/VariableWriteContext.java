@@ -1,6 +1,7 @@
 package org.squonk.execution.variable.impl;
 
 import org.squonk.api.VariableHandler;
+import org.squonk.client.VariableClient;
 import org.squonk.core.client.NotebookRestClient;
 import org.squonk.util.IOUtils;
 
@@ -12,13 +13,13 @@ import java.io.InputStream;
  */
 public class VariableWriteContext implements VariableHandler.WriteContext {
 
-    private final NotebookRestClient client;
+    private final VariableClient client;
     private final Long notebookId;
     private final Long editableId;
     private final Long cellId;
     private final String variableName;
 
-    public VariableWriteContext(NotebookRestClient client, Long notebookId, Long editableId, Long cellId, String variableName) {
+    public VariableWriteContext(VariableClient client, Long notebookId, Long editableId, Long cellId, String variableName) {
         this.client = client;
         this.notebookId = notebookId;
         this.editableId = editableId;
@@ -27,12 +28,12 @@ public class VariableWriteContext implements VariableHandler.WriteContext {
     }
 
     @Override
-    public void writeTextValue(String val, String key) throws IOException {
+    public void writeTextValue(String val, String key) throws Exception {
         client.writeTextValue(notebookId, editableId, cellId, variableName, val, key);
     }
 
     @Override
-    public void writeStreamValue(InputStream val, String key) throws IOException {
+    public void writeStreamValue(InputStream val, String key) throws Exception {
         client.writeStreamValue(notebookId, editableId, cellId, variableName, IOUtils.getGzippedInputStream(val), key);
     }
 

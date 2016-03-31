@@ -3,9 +3,9 @@ package org.squonk.execution.steps.impl
 import com.im.lac.types.MoleculeObject
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
-import org.squonk.execution.variable.PersistenceType
+
 import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableLoader
+import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
@@ -14,7 +14,8 @@ import spock.lang.Specification
  * @author timbo
  */
 class MoleculeServiceFatExecutorStepSpec extends Specification {
-    String producer = "p"
+
+    Long producer = 1
     
     void "test simple service"() {
 
@@ -24,8 +25,8 @@ class MoleculeServiceFatExecutorStepSpec extends Specification {
 
         Dataset ds = new Dataset(MoleculeObject.class, ServiceExecutorHelper.mols)
         
-        VariableManager varman = new VariableManager(new MemoryVariableLoader())
-        varman.putValue(new VariableKey(producer,"input"), Dataset.class, ds, PersistenceType.NONE)
+        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1)
+        varman.putValue(new VariableKey(producer,"input"), Dataset.class, ds)
 
 
         def opts = [
@@ -44,7 +45,7 @@ class MoleculeServiceFatExecutorStepSpec extends Specification {
         step.execute(varman, context)
         
         then:
-        def output = varman.getValue(new VariableKey(producer, MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET), Dataset.class, PersistenceType.DATASET)
+        def output = varman.getValue(new VariableKey(producer, MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET), Dataset.class)
         output instanceof Dataset
         def items = output.items
         items.size() == 3
