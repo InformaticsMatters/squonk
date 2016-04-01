@@ -2,8 +2,7 @@ package org.squonk.core.service.notebook
 
 import groovy.sql.Sql
 import groovy.util.logging.Log
-import org.squonk.client.NotebookClient
-import org.squonk.client.VariableClient
+import org.squonk.client.NotebookVariableClient
 import org.squonk.core.util.SquonkServerConfig
 import org.squonk.core.util.Utils
 import org.squonk.notebook.api.NotebookDescriptor
@@ -16,11 +15,11 @@ import javax.sql.DataSource
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 
-/** Notebook adn Variable Client that persists data in a PostgreSQL database
+/** Notebook and Variable Client that persists data in a PostgreSQL database
  * Created by timbo on 29/02/16.
  */
 @Log
-class NotebookPostgresClient implements NotebookClient, VariableClient {
+class NotebookPostgresClient implements NotebookVariableClient {
 
     public final static NotebookPostgresClient INSTANCE = new NotebookPostgresClient()
 
@@ -38,7 +37,7 @@ class NotebookPostgresClient implements NotebookClient, VariableClient {
      * {@inheritDoc}
      */
     public NotebookDescriptor createNotebook(String username, String name, String description) {
-        log.fine("Creating notebook $name for user $username and $description description")
+        log.info("Creating notebook $name for user $username and $description description")
         Sql db = createSql()
         try {
             NotebookDescriptor result = null
@@ -93,13 +92,14 @@ class NotebookPostgresClient implements NotebookClient, VariableClient {
      * {@inheritDoc}
      */
     public List<NotebookDescriptor> listNotebooks(String username) {
-        log.fine("Listing notebooks for user $username")
+        log.info("Listing notebooks for user $username")
         Sql db = createSql()
         try {
             List<NotebookDescriptor> results = null
             db.withTransaction {
                 results = fetchNotebookDescriptorsByUsername(db, username)
             }
+            log.info("Found ${results.size()} notebooks for user $username")
             return results
         } finally {
             db.close()
@@ -117,6 +117,7 @@ class NotebookPostgresClient implements NotebookClient, VariableClient {
             db.withTransaction {
                 results = fetchNotebookEditablesByUsername(db, notebookId, username)
             }
+            log.info("Found ${results.size()} editables for notebook $notebookId")
             return results
         } finally {
             db.close()
@@ -216,6 +217,7 @@ class NotebookPostgresClient implements NotebookClient, VariableClient {
             db.withTransaction {
                 results = fetchNotebookSavepoints(db, notebookId)
             }
+            log.info("Found ${results.size()} savepoints for notebook $notebookId")
             return results
         } finally {
             db.close()

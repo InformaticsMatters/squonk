@@ -3,8 +3,7 @@ package org.squonk.core.client;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
-import org.squonk.client.NotebookClient;
-import org.squonk.client.VariableClient;
+import org.squonk.client.NotebookVariableClient;
 import org.squonk.core.client.config.SquonkClientConfig;
 import org.squonk.notebook.api.NotebookDescriptor;
 import org.squonk.notebook.api.NotebookEditable;
@@ -28,7 +27,7 @@ import java.util.stream.Collectors;
  * Created by timbo on 11/03/16.
  */
 @Default
-public class NotebookRestClient extends AbstractHttpClient implements Serializable, NotebookClient, VariableClient {
+public class NotebookRestClient extends AbstractHttpClient implements Serializable, NotebookVariableClient {
 
     private static final Logger LOG = Logger.getLogger(NotebookRestClient.class.getName());
 
@@ -78,6 +77,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
      */
     public List<NotebookDescriptor> listNotebooks(String username) throws IOException {
         assert username != null;
+        LOG.info("Listing notebooks for user " + username);
         URIBuilder b = new URIBuilder().setPath(baseUrl)
                 .setParameter("user", username);
         try (InputStream is = executeGetAsInputStream(b)) {
@@ -136,7 +136,9 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         assert editableId != null;
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/e/" + editableId);
         try (InputStream is = executePutAsInputStream(b, new StringEntity(json))) {
-            return JsonHandler.getInstance().objectFromJson(is, NotebookEditable.class);
+            String result = IOUtils.convertStreamToString(is);
+            LOG.info("JSON: " + result);
+            return JsonHandler.getInstance().objectFromJson(result, NotebookEditable.class);
         }
     }
 

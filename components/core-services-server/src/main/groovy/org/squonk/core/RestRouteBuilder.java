@@ -263,8 +263,8 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .param().name("user").type(query).description("The username").dataType("string").endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    String username = exch.getIn().getHeader("username", String.class);
-                    List<NotebookDescriptor> results = notebookClient.listNotebooks(username);
+                    String user = exch.getIn().getHeader("user", String.class);
+                    List<NotebookDescriptor> results = notebookClient.listNotebooks(user);
                     exch.getIn().setBody(results);
                 })
                 .endRest()
@@ -276,8 +276,8 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .route()
                 .process((Exchange exch) -> {
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
-                    String username = exch.getIn().getHeader("user", String.class);
-                    List<NotebookEditable> results = notebookClient.listEditables(notebookid, username);
+                    String user = exch.getIn().getHeader("user", String.class);
+                    List<NotebookEditable> results = notebookClient.listEditables(notebookid, user);
                     exch.getIn().setBody(results);
                 })
                 .endRest()
@@ -336,11 +336,11 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .param().name("json").type(body).description("Content (as JSON)").dataType("string").endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    NotebookInstance notebookInstance = exch.getIn().getBody(NotebookInstance.class);
                     Long editableid = exch.getIn().getHeader("editableid", Long.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    NotebookInstance notebookInstance = exch.getIn().getBody(NotebookInstance.class);
                     NotebookEditable result = notebookClient.updateEditable(notebookid, editableid, notebookInstance);
-                    exch.getIn().setBody(result);
+                    exch.getIn().setBody(JsonHandler.getInstance().objectToJson(result));
                 })
                 .endRest()
                 // public NotebookEditable createSavepoint(Long notebookId, Long editableId);
