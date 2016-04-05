@@ -6,14 +6,15 @@ import spock.lang.Specification
 /**
  * Created by timbo on 11/03/16.
  */
-class NotebookEditableSpec extends Specification {
+class NotebookEditableDTOSpec extends Specification {
 
     void "to and from json"() {
 
         when:
-        NotebookEditable e1 = new NotebookEditable(1, 2, 3, "owner", new Date(), new Date(), new NotebookInstance())
+        NotebookEditableDTO e1 = new NotebookEditableDTO(1, 2, 3, "owner", new Date(), new Date(), new NotebookCanvasDTO(1))
         String json = JsonHandler.getInstance().objectToJson(e1)
-        NotebookEditable e2 = JsonHandler.getInstance().objectFromJson(json, NotebookEditable.class)
+        println json
+        NotebookEditableDTO e2 = JsonHandler.getInstance().objectFromJson(json, NotebookEditableDTO.class)
 
         then:
         json != null
@@ -25,7 +26,7 @@ class NotebookEditableSpec extends Specification {
         e2.owner == "owner"
         e2.createdDate != null
         e2.lastUpdatedDate != null
-        e2.notebookInstance != null
+        e2.canvasDTO != null
     }
 
 }

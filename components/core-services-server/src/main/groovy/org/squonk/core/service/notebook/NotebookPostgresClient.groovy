@@ -5,10 +5,10 @@ import groovy.util.logging.Log
 import org.squonk.client.NotebookVariableClient
 import org.squonk.core.util.SquonkServerConfig
 import org.squonk.core.util.Utils
-import org.squonk.notebook.api.NotebookDescriptor
-import org.squonk.notebook.api.NotebookEditable
-import org.squonk.notebook.api.NotebookInstance
-import org.squonk.notebook.api.NotebookSavepoint
+import org.squonk.notebook.api.NotebookCanvasDTO
+import org.squonk.notebook.api.NotebookDTO
+import org.squonk.notebook.api.NotebookEditableDTO
+import org.squonk.notebook.api.NotebookSavepointDTO
 import org.squonk.types.io.JsonHandler
 
 import javax.sql.DataSource
@@ -36,11 +36,12 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
-    public NotebookDescriptor createNotebook(String username, String name, String description) {
+    @Override
+    public NotebookDTO createNotebook(String username, String name, String description) {
         log.info("Creating notebook $name for user $username and $description description")
         Sql db = createSql()
         try {
-            NotebookDescriptor result = null
+            NotebookDTO result = null
             db.withTransaction {
                 def keys = db.executeInsert(
                         "INSERT INTO users.nb_descriptor (owner_id, name, description, created, updated) " +
@@ -67,11 +68,12 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
-    public NotebookDescriptor updateNotebook(Long notebookId, String name, String description) {
+    @Override
+    public NotebookDTO updateNotebook(Long notebookId, String name, String description) {
         log.fine("Updating notebook $notebookId with name $name and $description description")
         Sql db = createSql()
         try {
-            NotebookDescriptor result = null
+            NotebookDTO result = null
             db.withTransaction {
                 int rows = db.executeUpdate(
                         "UPDATE users.nb_descriptor SET name=:name, description=:desc, updated=NOW() WHERE id=:notebookid",
@@ -91,11 +93,12 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
-    public List<NotebookDescriptor> listNotebooks(String username) {
+    @Override
+    public List<NotebookDTO> listNotebooks(String username) {
         log.info("Listing notebooks for user $username")
         Sql db = createSql()
         try {
-            List<NotebookDescriptor> results = null
+            List<NotebookDTO> results = null
             db.withTransaction {
                 results = fetchNotebookDescriptorsByUsername(db, username)
             }
@@ -109,11 +112,12 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
-    public List<NotebookEditable> listEditables(Long notebookId, String username) {
+    @Override
+    public List<NotebookEditableDTO> listEditables(Long notebookId, String username) {
         log.fine("Listing editables for notebook $notebookId and user $username")
         Sql db = createSql()
         try {
-            List<NotebookDescriptor> results = null
+            List<NotebookDTO> results = null
             db.withTransaction {
                 results = fetchNotebookEditablesByUsername(db, notebookId, username)
             }
@@ -127,11 +131,12 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
-    public NotebookEditable createEditable(Long notebookId, Long parentId, String username) {
+    @Override
+    public NotebookEditableDTO createEditable(Long notebookId, Long parentId, String username) {
         log.fine("Creating editable for notebook $notebookId with parent $parentId for $username")
         Sql db = createSql()
         try {
-            NotebookEditable result = null
+            NotebookEditableDTO result = null
             db.withTransaction {
                 Long userId = fetchIdForUsername(db, username)
                 Long id = insertNotebookEditable(db, notebookId, parentId, userId)
@@ -150,11 +155,12 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
-    public NotebookEditable updateEditable(Long notebookId, Long editableId, NotebookInstance notebookInstance) {
-        String json = JsonHandler.getInstance().objectToJson(notebookInstance);
+    @Override
+    public NotebookEditableDTO updateEditable(Long notebookId, Long editableId, NotebookCanvasDTO canvasDTO) {
+        String json = JsonHandler.getInstance().objectToJson(canvasDTO);
         Sql db = createSql()
         try {
-            NotebookEditable result = null
+            NotebookEditableDTO result = null
             db.withTransaction {
                 int updates = db.executeUpdate("UPDATE users.nb_version SET nb_definition=${json}::jsonb, updated=NOW() WHERE id=$editableId AND notebook_id=$notebookId AND type='E'")
                 if (updates != 1) {
@@ -171,11 +177,12 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
-    public NotebookEditable createSavepoint(Long notebookId, Long editableId) {
+    @Override
+    public NotebookEditableDTO createSavepoint(Long notebookId, Long editableId) {
         log.fine("Creating savepoint for editable $editableId")
         Sql db = createSql()
         try {
-            NotebookEditable result = null
+            NotebookEditableDTO result = null
             db.withTransaction {
 
                 // convert the editable to a savepoint
@@ -210,10 +217,11 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
-    public List<NotebookSavepoint> listSavepoints(Long notebookId) {
+    @Override
+    public List<NotebookSavepointDTO> listSavepoints(Long notebookId) {
         Sql db = createSql()
         try {
-            List<NotebookSavepoint> results = null
+            List<NotebookSavepointDTO> results = null
             db.withTransaction {
                 results = fetchNotebookSavepoints(db, notebookId)
             }
@@ -227,10 +235,11 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
-    public NotebookSavepoint setSavepointDescription(Long notebookId, Long savepointId, String description) {
+    @Override
+    public NotebookSavepointDTO setSavepointDescription(Long notebookId, Long savepointId, String description) {
         Sql db = createSql()
         try {
-            NotebookSavepoint result = null
+            NotebookSavepointDTO result = null
             db.withTransaction {
                 int updates = db.executeUpdate(
                         "UPDATE users.nb_version SET description=:description, updated=NOW() WHERE notebook_id=:notebookId AND id=:savepointId AND type='S' ",
@@ -250,11 +259,12 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
-    public NotebookSavepoint setSavepointLabel(Long notebookId, Long savepointId, String label) {
+    @Override
+    public NotebookSavepointDTO setSavepointLabel(Long notebookId, Long savepointId, String label) {
         log.fine("Setting label for $notebookId:$savepointId to $label")
         Sql db = createSql()
         try {
-            NotebookSavepoint result = null
+            NotebookSavepointDTO result = null
             db.withTransaction {
                 int updates = db.executeUpdate(
                         "UPDATE users.nb_version SET label=:label, updated=NOW() WHERE notebook_id=:notebookId AND id=:savepointId AND type ='S' ",
@@ -284,6 +294,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String readTextValue(Long notebookId, Long sourceId, String variableName, String key) {
         log.info("Reading text variable $variableName:$key for $sourceId")
         Sql db = createSql()
@@ -301,6 +312,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String readTextValue(Long notebookId, String label, String variableName, String key) {
         log.info("Reading text variable $variableName:$key for label $label")
         return doReadValueForLabel(notebookId, label, variableName, key, true)
@@ -309,6 +321,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void writeTextValue(Long notebookId, Long editableId, Long cellId, String variableName, String value, String key) {
         // TODO - include the notebookId in the process to increase security
         log.info("Writing text variable $variableName:$key for $editableId")
@@ -331,6 +344,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
+    @Override
     public InputStream readStreamValue(Long notebookId, Long sourceId, String variableName, String key) {
         log.info("Reading stream variable $variableName:$key for $sourceId")
         // not entirely clear why this works as the connection is closed immediately but the InputStream is still readable.
@@ -350,6 +364,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
+    @Override
     public InputStream readStreamValue(Long notebookId, String label, String variableName, String key) {
         log.info("Reading stream variable $variableName:$key for label $label")
         return doReadValueForLabel(notebookId, label, variableName, key, false)
@@ -358,6 +373,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void writeStreamValue(Long notebookId, Long editableId, Long cellId, String variableName, InputStream value, String key) {
         // TODO - include the notebookId in the process to increase security
         log.info("Writing stream variable $variableName:$key for $editableId")
@@ -401,22 +417,22 @@ class NotebookPostgresClient implements NotebookVariableClient {
     private static String SQL_NB_FETCH_BY_ID = SQL_NB_FETCH + " WHERE n.id = :notebookId"
     private static String SQL_NB_FETCH_BY_USERNAME = SQL_NB_FETCH + " WHERE u.username = :username ORDER BY n.created DESC"
 
-    private NotebookDescriptor fetchNotebookDescriptorById(Sql db, Long notebookId) {
+    private NotebookDTO fetchNotebookDescriptorById(Sql db, Long notebookId) {
         def data = db.firstRow(SQL_NB_FETCH_BY_ID, [notebookId: notebookId])
         return (data == null ? null : buildNotebookDescriptor(data))
     }
 
-    private List<NotebookDescriptor> fetchNotebookDescriptorsByUsername(Sql db, String username) {
-        List<NotebookDescriptor> results = new ArrayList<>()
+    private List<NotebookDTO> fetchNotebookDescriptorsByUsername(Sql db, String username) {
+        List<NotebookDTO> results = new ArrayList<>()
         def data = db.eachRow(SQL_NB_FETCH_BY_USERNAME, [username: username]) {
             results << buildNotebookDescriptor(it)
         }
         return results
     }
 
-    private NotebookDescriptor buildNotebookDescriptor(def data) {
+    private NotebookDTO buildNotebookDescriptor(def data) {
         log.fine("Building notebook: $data")
-        return new NotebookDescriptor(data.id, data.name, data.description, data.username, data.created, data.updated)
+        return new NotebookDTO(data.id, data.name, data.description, data.username, data.created, data.updated)
     }
 
     /** Create the first editable that will be the initial one that's used when a new notebook is created
@@ -447,25 +463,25 @@ class NotebookPostgresClient implements NotebookVariableClient {
     static String SQL_ED_FETCH_BY_USERNAME = SQL_ED_FETCH + " AND u.username = :username\n  ORDER BY v.updated DESC"
 
 
-    private NotebookEditable fetchNotebookEditableById(Sql db, Long notebookId, Long editableId) {
+    private NotebookEditableDTO fetchNotebookEditableById(Sql db, Long notebookId, Long editableId) {
         def data = db.firstRow(SQL_ED_FETCH_BY_ID, [notebookId: notebookId, editableId: editableId])
         return (data == null ? null : buildNotebookEditable(data))
     }
 
-    private List<NotebookDescriptor> fetchNotebookEditablesByUsername(Sql db, Long notebookId, String username) {
-        List<NotebookDescriptor> results = new ArrayList<>()
+    private List<NotebookDTO> fetchNotebookEditablesByUsername(Sql db, Long notebookId, String username) {
+        List<NotebookDTO> results = new ArrayList<>()
         db.eachRow(SQL_ED_FETCH_BY_USERNAME, [notebookId: notebookId, username: username]) {
             results << buildNotebookEditable(it)
         }
         return results
     }
 
-    private NotebookEditable buildNotebookEditable(def data) {
+    private NotebookEditableDTO buildNotebookEditable(def data) {
         log.fine("Building editable: $data")
         String json = data.nb_definition
-        NotebookInstance notebookInstance = (json == null ? null : JsonHandler.getInstance().objectFromJson(json, NotebookInstance.class))
+        NotebookCanvasDTO canvasDTO = (json == null ? null : JsonHandler.getInstance().objectFromJson(json, NotebookCanvasDTO.class))
         // Long id, Long notebookId, Long parentId, String owner, Date createdDate, Date lastUpdatedDate, String content
-        return new NotebookEditable(data.id, data.notebook_id, data.parent_id, data.username, data.created, data.updated, notebookInstance)
+        return new NotebookEditableDTO(data.id, data.notebook_id, data.parent_id, data.username, data.created, data.updated, canvasDTO)
     }
 
     private static String SQL_SP_FETCH = """\
@@ -476,25 +492,25 @@ class NotebookPostgresClient implements NotebookVariableClient {
     private static String SQL_SP_FETCH_BY_ID = SQL_SP_FETCH + " AND s.id = :savepointId"
     private static String SQL_SP_FETCH_ALL = SQL_SP_FETCH + "  ORDER BY s.updated DESC"
 
-    private NotebookSavepoint fetchNotebookSavepointById(Sql db, Long notebookId, Long savepointId) {
+    private NotebookSavepointDTO fetchNotebookSavepointById(Sql db, Long notebookId, Long savepointId) {
         def data = db.firstRow(SQL_SP_FETCH_BY_ID, [notebookId: notebookId, savepointId: savepointId])
         return (data == null ? null : buildNotebookSavepoint(data))
     }
 
-    private List<NotebookSavepoint> fetchNotebookSavepoints(Sql db, Long notebookId) {
-        List<NotebookSavepoint> results = new ArrayList<>()
+    private List<NotebookSavepointDTO> fetchNotebookSavepoints(Sql db, Long notebookId) {
+        List<NotebookSavepointDTO> results = new ArrayList<>()
         db.eachRow(SQL_SP_FETCH_ALL, [notebookId: notebookId]) {
             results << buildNotebookSavepoint(it)
         }
         return results
     }
 
-    private NotebookSavepoint buildNotebookSavepoint(def data) {
+    private NotebookSavepointDTO buildNotebookSavepoint(def data) {
         log.finer("Building savepoint: $data")
         String json = data.nb_definition
-        NotebookInstance notebookInstance = (json == null ? null : JsonHandler.getInstance().objectFromJson(json, NotebookInstance.class))
+        NotebookCanvasDTO canvasDTO = (json == null ? null : JsonHandler.getInstance().objectFromJson(json, NotebookCanvasDTO.class))
         //                           Long id,  Long notebookId  Long parentId, String owner, Date createdDate,Date updatedDate, String description, String label, String content
-        return new NotebookSavepoint(data.id, data.notebook_id, data.parent_id, data.username, data.created, data.updated, data.description, data.label, notebookInstance)
+        return new NotebookSavepointDTO(data.id, data.notebook_id, data.parent_id, data.username, data.created, data.updated, data.description, data.label, canvasDTO)
     }
 
     private Object doFetchVar(Sql db, Long notebookId, Long sourceId, String variableName, String key, boolean isText) {

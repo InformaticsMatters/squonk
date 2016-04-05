@@ -1,3 +1,3 @@
-package org.squonk.notebook.api;
+package org.squonk.options;
 
 public enum OptionType {SIMPLE, PICKLIST}

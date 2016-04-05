@@ -9,7 +9,7 @@ import java.util.Date;
  * Created by timbo on 29/02/16.
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class NotebookDescriptor {
+public class NotebookDTO {
 
     private Long id;
     private String name;
@@ -18,11 +18,11 @@ public class NotebookDescriptor {
     private Date createdDate;
     private Date lastUpdatedDate;
 
-    public NotebookDescriptor() {
+    public NotebookDTO() {
 
     }
 
-    public NotebookDescriptor(
+    public NotebookDTO(
             @JsonProperty("id") Long id,
             @JsonProperty("name") String name,
             @JsonProperty("description") String description,

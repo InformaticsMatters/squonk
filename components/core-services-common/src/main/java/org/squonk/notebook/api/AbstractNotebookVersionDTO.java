@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Created by timbo on 04/03/16.
  */
-public abstract class AbstractNotebookVersion {
+public abstract class AbstractNotebookVersionDTO {
 
 
     private Long id;
@@ -13,23 +13,19 @@ public abstract class AbstractNotebookVersion {
     private Long parentId;
     private Date createdDate;
     private Date lastUpdatedDate;
-    private NotebookInstance notebookInstance;
+    private NotebookCanvasDTO canvasDTO;
 
-    AbstractNotebookVersion() {
+    AbstractNotebookVersionDTO() {
 
     }
 
-    AbstractNotebookVersion(Long id, Long notebookId, Long parentId, Date createdDate, Date lastUpdatedDate, NotebookInstance notebookInstance) {
+    AbstractNotebookVersionDTO(Long id, Long notebookId, Long parentId, Date createdDate, Date lastUpdatedDate, NotebookCanvasDTO canvasDTO) {
         this.id = id;
         this.notebookId = notebookId;
         this.parentId = parentId;
         this.createdDate = createdDate;
         this.lastUpdatedDate = lastUpdatedDate;
-        this.notebookInstance = notebookInstance;
-        // TODO - work out how to handle this better
-        if (notebookInstance != null) {
-            notebookInstance.fixReferences();
-        }
+        this.canvasDTO = canvasDTO;
     }
 
     public Long getId() {
@@ -52,7 +48,7 @@ public abstract class AbstractNotebookVersion {
         return lastUpdatedDate;
     }
 
-    public NotebookInstance getNotebookInstance() {
-        return notebookInstance;
+    public NotebookCanvasDTO getCanvasDTO() {
+        return canvasDTO;
     }
 }

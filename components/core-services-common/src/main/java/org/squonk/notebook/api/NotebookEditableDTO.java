@@ -9,24 +9,24 @@ import java.util.Date;
  * Created by timbo on 29/02/16.
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class NotebookEditable extends AbstractNotebookVersion {
+public class NotebookEditableDTO extends AbstractNotebookVersionDTO {
 
     private String owner;
 
 
-    public NotebookEditable() {
+    public NotebookEditableDTO() {
 
     }
 
-    public NotebookEditable(
+    public NotebookEditableDTO(
             @JsonProperty("id") Long id,
             @JsonProperty("notebookId") Long notebookId,
             @JsonProperty("parentId") Long parentId,
             @JsonProperty("owner") String owner,
             @JsonProperty("createdDate") Date createdDate,
             @JsonProperty("lastUpdatedDate") Date lastUpdatedDate,
-            @JsonProperty("notebookInstance") NotebookInstance notebookInstance) {
-        super(id, notebookId, parentId, createdDate, lastUpdatedDate, notebookInstance);
+            @JsonProperty("canvasDTO") NotebookCanvasDTO canvasDTO) {
+        super(id, notebookId, parentId, createdDate, lastUpdatedDate, canvasDTO);
         this.owner = owner;
     }
 

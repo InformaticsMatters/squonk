@@ -1,9 +1,10 @@
 package org.squonk.core.client
 
-import org.squonk.notebook.api.NotebookDescriptor
-import org.squonk.notebook.api.NotebookEditable
-import org.squonk.notebook.api.NotebookInstance
-import org.squonk.notebook.api.NotebookSavepoint
+import org.squonk.notebook.api.NotebookCanvasDTO
+import org.squonk.notebook.api.NotebookDTO
+import org.squonk.notebook.api.NotebookEditableDTO
+
+import org.squonk.notebook.api.NotebookSavepointDTO
 import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
@@ -20,11 +21,11 @@ class NotebookRestClientSpec extends Specification {
 
     @Shared NotebookRestClient client = new NotebookRestClient()
 
-    @Shared NotebookDescriptor notebook1
-    @Shared NotebookEditable editable1
-    @Shared NotebookEditable editable2
-    @Shared NotebookEditable editable3
-    @Shared NotebookSavepoint savepoint1
+    @Shared NotebookDTO notebook1
+    @Shared NotebookEditableDTO editable1
+    @Shared NotebookEditableDTO editable2
+    @Shared NotebookEditableDTO editable3
+    @Shared NotebookSavepointDTO savepoint1
 
 
     void "list notebooks none exist"() {
@@ -124,16 +125,14 @@ class NotebookRestClientSpec extends Specification {
         editable2.owner == username
     }
 
-    // this will fail until the NotebookInstance marshall/unmarshall issues are resolved
-    @Ignore
     void "update editable"() {
 
         when:
-        editable2 = client.updateEditable(editable2.notebookId, editable2.id, new NotebookInstance())
+        editable2 = client.updateEditable(editable2.notebookId, editable2.id, new NotebookCanvasDTO(1))
 
         then:
         editable2 != null
-        editable2.notebookInstance != null
+        editable2.canvasDTO != null
     }
 
     void "create savepoint"() {

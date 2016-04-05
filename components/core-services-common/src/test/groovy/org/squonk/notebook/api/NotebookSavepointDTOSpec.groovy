@@ -6,14 +6,14 @@ import spock.lang.Specification
 /**
  * Created by timbo on 11/03/16.
  */
-class NotebookSavepointSpec extends Specification {
+class NotebookSavepointDTOSpec extends Specification {
 
     void "to and from json"() {
 
         when:
-        NotebookSavepoint s1 = new NotebookSavepoint(1, 2, 3, "creator", new Date(), new Date(), "description", "label", new NotebookInstance())
+        NotebookSavepointDTO s1 = new NotebookSavepointDTO(1, 2, 3, "creator", new Date(), new Date(), "description", "label", new NotebookCanvasDTO(1))
         String json = JsonHandler.getInstance().objectToJson(s1)
-        NotebookSavepoint s2 = JsonHandler.getInstance().objectFromJson(json, NotebookSavepoint.class)
+        NotebookSavepointDTO s2 = JsonHandler.getInstance().objectFromJson(json, NotebookSavepointDTO.class)
 
         then:
         json != null
@@ -27,7 +27,7 @@ class NotebookSavepointSpec extends Specification {
         s2.lastUpdatedDate != null
         s2.description == "description"
         s2.label == "label"
-        s2.notebookInstance != null
+        s2.canvasDTO != null
     }
 
 }

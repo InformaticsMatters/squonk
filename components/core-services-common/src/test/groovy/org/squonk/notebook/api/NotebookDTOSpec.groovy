@@ -1,20 +1,19 @@
 package org.squonk.notebook.api
 
-import org.squonk.notebook.api.NotebookDescriptor
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
 
 /**
  * Created by timbo on 11/03/16.
  */
-class NotebookDescriptorSpec extends Specification {
+class NotebookDTOSpec extends Specification {
 
     void "to and from json"() {
 
         when:
-        NotebookDescriptor d1 = new NotebookDescriptor(1, "name", "description", "owner", new Date(), new Date())
+        NotebookDTO d1 = new NotebookDTO(1, "name", "description", "owner", new Date(), new Date())
         String json = JsonHandler.getInstance().objectToJson(d1)
-        NotebookDescriptor d2 = JsonHandler.getInstance().objectFromJson(json, NotebookDescriptor.class)
+        NotebookDTO d2 = JsonHandler.getInstance().objectFromJson(json, NotebookDTO.class)
 
         then:
         json != null

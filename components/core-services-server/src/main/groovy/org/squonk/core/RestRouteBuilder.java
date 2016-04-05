@@ -23,10 +23,7 @@ import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.chemaxon.molecule.MoleculeObjectUtils;
 import org.squonk.client.JobStatusClient;
 import org.squonk.mqueue.MessageQueueCredentials;
-import org.squonk.notebook.api.NotebookDescriptor;
-import org.squonk.notebook.api.NotebookEditable;
-import org.squonk.notebook.api.NotebookInstance;
-import org.squonk.notebook.api.NotebookSavepoint;
+import org.squonk.notebook.api.*;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
@@ -259,44 +256,44 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 // GET
                 .get("/").description("Get all notebooks for the user")
                 .bindingMode(RestBindingMode.json).produces("application/json")
-                .outType(NotebookDescriptor.class)
+                .outType(NotebookDTO.class)
                 .param().name("user").type(query).description("The username").dataType("string").endParam()
                 .route()
                 .process((Exchange exch) -> {
                     String user = exch.getIn().getHeader("user", String.class);
-                    List<NotebookDescriptor> results = notebookClient.listNotebooks(user);
+                    List<NotebookDTO> results = notebookClient.listNotebooks(user);
                     exch.getIn().setBody(results);
                 })
                 .endRest()
                 .get("/{notebookid}/e").description("Get all editables for a notebook for the user")
                 .bindingMode(RestBindingMode.json).produces("application/json")
-                .outType(NotebookEditable.class)
+                .outType(NotebookEditableDTO.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
                 .param().name("user").type(query).description("The username").dataType("string").endParam()
                 .route()
                 .process((Exchange exch) -> {
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
                     String user = exch.getIn().getHeader("user", String.class);
-                    List<NotebookEditable> results = notebookClient.listEditables(notebookid, user);
+                    List<NotebookEditableDTO> results = notebookClient.listEditables(notebookid, user);
                     exch.getIn().setBody(results);
                 })
                 .endRest()
                 // List<NotebookSavepoint> listSavepoints(Long notebookId);
                 .get("/{notebookid}/s").description("Get all savepoints for a notebook")
                 .bindingMode(RestBindingMode.json).produces("application/json")
-                .outType(NotebookSavepoint.class)
+                .outType(NotebookSavepointDTO.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
                 .route()
                 .process((Exchange exch) -> {
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
-                    List<NotebookSavepoint> results = notebookClient.listSavepoints(notebookid);
+                    List<NotebookSavepointDTO> results = notebookClient.listSavepoints(notebookid);
                     exch.getIn().setBody(results);
                 })
                 .endRest()
                 //NotebookDescriptor createNotebook(String username, String notebookName, String notebookDescription)
                 .post("/").description("Create a new notebook")
                 .bindingMode(RestBindingMode.json).produces("application/json")
-                .outType(NotebookDescriptor.class)
+                .outType(NotebookDTO.class)
                 .param().name("user").type(query).description("The owner of the new notebook").dataType("string").endParam()
                 .param().name("name").type(query).description("The name for the new notebook").dataType("string").endParam()
                 .param().name("description").type(query).description("A description for the new notebook").dataType("string").endParam()
@@ -305,14 +302,14 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     String user = exch.getIn().getHeader("user", String.class);
                     String name = exch.getIn().getHeader("name", String.class);
                     String description = exch.getIn().getHeader("description", String.class);
-                    NotebookDescriptor result = notebookClient.createNotebook(user, name, description);
+                    NotebookDTO result = notebookClient.createNotebook(user, name, description);
                     exch.getIn().setBody(result);
                 })
                 .endRest()
                 // NotebookEditable createEditable(Long notebookId, Long parentId, String username);
                 .post("/{notebookid}/e").description("Create a new editable for a notebook")
                 .bindingMode(RestBindingMode.json).produces("application/json")
-                .outType(NotebookEditable.class)
+                .outType(NotebookEditableDTO.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
                 .param().name("user").type(query).description("The owner of the new notebook").dataType("string").endParam()
                 .param().name("parent").type(query).description("The parent savepoint").dataType("long").endParam()
@@ -322,15 +319,15 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     Long parent = exch.getIn().getHeader("parent", Long.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
                     String description = exch.getIn().getHeader("description", String.class);
-                    NotebookEditable result = notebookClient.createEditable(notebookid, parent, user);
+                    NotebookEditableDTO result = notebookClient.createEditable(notebookid, parent, user);
                     exch.getIn().setBody(result);
                 })
                 .endRest()
                 // NotebookEditable updateEditable(Long notebookId, Long editableId, String json);
                 .put("/{notebookid}/e/{editableid}").description("Update the definition of an editable")
                 .bindingMode(RestBindingMode.json).produces("application/json")
-                .type(NotebookInstance.class)
-                .outType(NotebookEditable.class)
+                .type(NotebookCanvasDTO.class)
+                .outType(NotebookEditableDTO.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
                 .param().name("editableid").type(path).description("Editable ID").dataType("long").endParam()
                 .param().name("json").type(body).description("Content (as JSON)").dataType("string").endParam()
@@ -338,30 +335,29 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .process((Exchange exch) -> {
                     Long editableid = exch.getIn().getHeader("editableid", Long.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
-                    NotebookInstance notebookInstance = exch.getIn().getBody(NotebookInstance.class);
-                    NotebookEditable result = notebookClient.updateEditable(notebookid, editableid, notebookInstance);
-                    exch.getIn().setBody(JsonHandler.getInstance().objectToJson(result));
+                    NotebookCanvasDTO canvasDTO = exch.getIn().getBody(NotebookCanvasDTO.class);
+                    NotebookEditableDTO result = notebookClient.updateEditable(notebookid, editableid, canvasDTO);
+                    exch.getIn().setBody(result);
                 })
                 .endRest()
                 // public NotebookEditable createSavepoint(Long notebookId, Long editableId);
                 .post("/{notebookid}/s").description("Create a new editable for a notebook")
                 .bindingMode(RestBindingMode.json).produces("application/json")
-                .outType(NotebookEditable.class)
+                .outType(NotebookEditableDTO.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
                 .param().name("editableid").type(query).description("The editable ID to make the savepoint from").dataType("long").endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    Long parent = exch.getIn().getHeader("parent", Long.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
                     Long editableid = exch.getIn().getHeader("editableid", Long.class);
-                    NotebookEditable result = notebookClient.createSavepoint(notebookid, editableid);
+                    NotebookEditableDTO result = notebookClient.createSavepoint(notebookid, editableid);
                     exch.getIn().setBody(result);
                 })
                 .endRest()
                 //NotebookSavepoint setSavepointDescription(Long notebookId, Long savepointId, String description)
                 .put("/{notebookid}/s/{savepointid}/description").description("Update the description of a savepoint")
                 .bindingMode(RestBindingMode.json).produces("application/json")
-                .outType(NotebookSavepoint.class)
+                .outType(NotebookSavepointDTO.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
                 .param().name("savepointid").type(path).description("Savepoint ID").dataType("long").endParam()
                 .param().name("description").type(query).description("New description").dataType("string").endParam()
@@ -370,14 +366,14 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     String description = exch.getIn().getHeader("description", String.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
                     Long savepointid = exch.getIn().getHeader("savepointid", Long.class);
-                    NotebookSavepoint result = notebookClient.setSavepointDescription(notebookid, savepointid, description);
+                    NotebookSavepointDTO result = notebookClient.setSavepointDescription(notebookid, savepointid, description);
                     exch.getIn().setBody(result);
                 })
                 .endRest()
                 //NotebookSavepoint setSavepointLabel(Long notebookId, Long savepointId, String label);
                 .put("/{notebookid}/s/{savepointid}/label").description("Update the label of a savepoint")
                 .bindingMode(RestBindingMode.json).produces("application/json")
-                .outType(NotebookSavepoint.class)
+                .outType(NotebookSavepointDTO.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
                 .param().name("savepointid").type(path).description("Savepoint ID").dataType("long").endParam()
                 .param().name("label").type(query).description("New Label").dataType("string").endParam()
@@ -386,14 +382,14 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     String label = exch.getIn().getHeader("label", String.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
                     Long savepointid = exch.getIn().getHeader("savepointid", Long.class);
-                    NotebookSavepoint result = notebookClient.setSavepointLabel(notebookid, savepointid, label);
+                    NotebookSavepointDTO result = notebookClient.setSavepointLabel(notebookid, savepointid, label);
                     exch.getIn().setBody(result);
                 })
                 .endRest()
                 // public NotebookDescriptor updateNotebook(Long notebookId, String name, String description)
                 .put("/{notebookid}").description("Update the label of a savepoint")
                 .bindingMode(RestBindingMode.json).produces("application/json")
-                .outType(NotebookDescriptor.class)
+                .outType(NotebookDTO.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
                 .param().name("name").type(query).description("New name").dataType("string").endParam()
                 .param().name("description").type(query).description("New description").dataType("string").endParam()
@@ -402,7 +398,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     String name = exch.getIn().getHeader("name", String.class);
                     String description = exch.getIn().getHeader("description", String.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
-                    NotebookDescriptor result = notebookClient.updateNotebook(notebookid, name, description);
+                    NotebookDTO result = notebookClient.updateNotebook(notebookid, name, description);
                     exch.getIn().setBody(result);
                 })
                 .endRest()

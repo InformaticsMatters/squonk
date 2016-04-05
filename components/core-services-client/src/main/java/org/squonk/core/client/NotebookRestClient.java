@@ -5,10 +5,7 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.squonk.client.NotebookVariableClient;
 import org.squonk.core.client.config.SquonkClientConfig;
-import org.squonk.notebook.api.NotebookDescriptor;
-import org.squonk.notebook.api.NotebookEditable;
-import org.squonk.notebook.api.NotebookInstance;
-import org.squonk.notebook.api.NotebookSavepoint;
+import org.squonk.notebook.api.*;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
@@ -16,9 +13,6 @@ import javax.enterprise.inject.Default;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -42,7 +36,8 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         this(SquonkClientConfig.INSTANCE.getCoreServiceBaseUrl() + "/notebooks");
     }
 
-    public NotebookDescriptor createNotebook(String username, String notebookName, String notebookDescription) throws IOException {
+    @Override
+    public NotebookDTO createNotebook(String username, String notebookName, String notebookDescription) throws IOException {
         assert notebookName != null;
         assert username != null;
         URIBuilder b = new URIBuilder().setPath(baseUrl)
@@ -52,11 +47,12 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
             b = b.setParameter("description", notebookDescription);
         }
         try (InputStream is = executePostAsInputStream(b, null)) {
-            return JsonHandler.getInstance().objectFromJson(is, NotebookDescriptor.class);
+            return JsonHandler.getInstance().objectFromJson(is, NotebookDTO.class);
         }
     }
 
-    public NotebookDescriptor updateNotebook(Long notebookId, String name, String description) throws IOException {
+    @Override
+    public NotebookDTO updateNotebook(Long notebookId, String name, String description) throws IOException {
         // PUT {notebookid}
         assert notebookId != null;
         assert name != null;
@@ -66,7 +62,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
             b = b.setParameter("description", description);
         }
         try (InputStream is = executePutAsInputStream(b, null)) {
-            return JsonHandler.getInstance().objectFromJson(is, NotebookDescriptor.class);
+            return JsonHandler.getInstance().objectFromJson(is, NotebookDTO.class);
         }
     }
 
@@ -75,13 +71,14 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
      * @param username The username
      * @return
      */
-    public List<NotebookDescriptor> listNotebooks(String username) throws IOException {
+    @Override
+    public List<NotebookDTO> listNotebooks(String username) throws IOException {
         assert username != null;
         LOG.info("Listing notebooks for user " + username);
         URIBuilder b = new URIBuilder().setPath(baseUrl)
                 .setParameter("user", username);
         try (InputStream is = executeGetAsInputStream(b)) {
-            return JsonHandler.getInstance().streamFromJson(is, NotebookDescriptor.class, true).collect(Collectors.toList());
+            return JsonHandler.getInstance().streamFromJson(is, NotebookDTO.class, true).collect(Collectors.toList());
         }
     }
 
@@ -91,13 +88,14 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
      * @param username The username
      * @return
      */
-    public List<NotebookEditable> listEditables(Long notebookId, String username) throws IOException {
+    @Override
+    public List<NotebookEditableDTO> listEditables(Long notebookId, String username) throws IOException {
         assert notebookId != null;
         assert username != null;
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/e")
                 .setParameter("user", username);
         try (InputStream is = executeGetAsInputStream(b)) {
-            return JsonHandler.getInstance().streamFromJson(is, NotebookEditable.class, true).collect(Collectors.toList());
+            return JsonHandler.getInstance().streamFromJson(is, NotebookEditableDTO.class, true).collect(Collectors.toList());
         }
     }
 
@@ -106,15 +104,17 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
      * @param notebookId The ID of the notebook
      * @return
      */
-    public List<NotebookSavepoint> listSavepoints(Long notebookId) throws IOException {
+    @Override
+    public List<NotebookSavepointDTO> listSavepoints(Long notebookId) throws IOException {
         assert notebookId != null;
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/s");
         try (InputStream is = executeGetAsInputStream(b)) {
-            return JsonHandler.getInstance().streamFromJson(is, NotebookSavepoint.class, true).collect(Collectors.toList());
+            return JsonHandler.getInstance().streamFromJson(is, NotebookSavepointDTO.class, true).collect(Collectors.toList());
         }
     }
 
-    public NotebookEditable createEditable(Long notebookId, Long parentId, String username) throws IOException {
+    @Override
+    public NotebookEditableDTO createEditable(Long notebookId, Long parentId, String username) throws IOException {
         assert notebookId != null;
         assert username != null;
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/e")
@@ -124,57 +124,61 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
                 }
 
         try (InputStream is = executePostAsInputStream(b, null)) {
-            return JsonHandler.getInstance().objectFromJson(is, NotebookEditable.class);
+            return JsonHandler.getInstance().objectFromJson(is, NotebookEditableDTO.class);
         }
     }
 
-
-    public NotebookEditable updateEditable(Long notebookId, Long editableId, NotebookInstance notebookInstance) throws IOException {
+    @Override
+    public NotebookEditableDTO updateEditable(Long notebookId, Long editableId, NotebookCanvasDTO canvasDTO) throws IOException {
         // PUT {notebookid}/e/{editableid}
-        String json = JsonHandler.getInstance().objectToJson(notebookInstance);
+        String json = JsonHandler.getInstance().objectToJson(canvasDTO);
         assert notebookId != null;
         assert editableId != null;
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/e/" + editableId);
         try (InputStream is = executePutAsInputStream(b, new StringEntity(json))) {
-            String result = IOUtils.convertStreamToString(is);
-            LOG.info("JSON: " + result);
-            return JsonHandler.getInstance().objectFromJson(result, NotebookEditable.class);
+//            String result = IOUtils.convertStreamToString(is);
+//            LOG.info("JSON: " + result);
+            return JsonHandler.getInstance().objectFromJson(is, NotebookEditableDTO.class);
         }
     }
 
-    public NotebookEditable createSavepoint(Long notebookId, Long editableId) throws IOException {
+    @Override
+    public NotebookEditableDTO createSavepoint(Long notebookId, Long editableId) throws IOException {
         assert notebookId != null;
         assert editableId != null;
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/s")
                 .setParameter("editableid", editableId.toString());
 
         try (InputStream is = executePostAsInputStream(b, null)) {
-            return JsonHandler.getInstance().objectFromJson(is, NotebookEditable.class);
+            return JsonHandler.getInstance().objectFromJson(is, NotebookEditableDTO.class);
         }
     }
 
-    public NotebookSavepoint setSavepointDescription(Long notebookId, Long savepointId, String description) throws IOException {
+    @Override
+    public NotebookSavepointDTO setSavepointDescription(Long notebookId, Long savepointId, String description) throws IOException {
         // PUT {notebookid}/s/{savepointid}/description
         assert notebookId != null;
         assert savepointId != null;
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/s/" + savepointId + "/description")
                 .setParameter("description", description);
         try (InputStream is = executePutAsInputStream(b, null)) {
-            return JsonHandler.getInstance().objectFromJson(is, NotebookSavepoint.class);
+            return JsonHandler.getInstance().objectFromJson(is, NotebookSavepointDTO.class);
         }
     }
 
-    public NotebookSavepoint setSavepointLabel(Long notebookId, Long savepointId, String label) throws IOException {
+    @Override
+    public NotebookSavepointDTO setSavepointLabel(Long notebookId, Long savepointId, String label) throws IOException {
         // PUT {notebookid}/s/{savepointid}/label
         assert notebookId != null;
         assert savepointId != null;
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/s/" + savepointId + "/label")
                 .setParameter("label", label);
         try (InputStream is = executePutAsInputStream(b, null)) {
-            return JsonHandler.getInstance().objectFromJson(is, NotebookSavepoint.class);
+            return JsonHandler.getInstance().objectFromJson(is, NotebookSavepointDTO.class);
         }
     }
 
+    @Override
     public String readTextValue(Long notebookId, Long sourceId, String variableName, String key) throws IOException {
         assert sourceId != null;
         assert variableName != null;
@@ -184,20 +188,20 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         }
     }
 
-    public URL getTextValueURL(Long notebookId, Long sourceId, String variableName, String key) {
-        try {
-            return createURIBuilder(notebookId, sourceId, variableName, key, VarType.t).build().toURL();
-        } catch (MalformedURLException | URISyntaxException e) {
-            throw new IllegalArgumentException("Unable to build URL. Maybe bad parameters?");
-        }
-    }
+//    public URL getTextValueURL(Long notebookId, Long sourceId, String variableName, String key) {
+//        try {
+//            return createURIBuilder(notebookId, sourceId, variableName, key, VarType.t).build().toURL();
+//        } catch (MalformedURLException | URISyntaxException e) {
+//            throw new IllegalArgumentException("Unable to build URL. Maybe bad parameters?");
+//        }
+//    }
 
     private URIBuilder createURIBuilder(Long notebookId, Long sourceId, String variableName, String key,VarType t) {
         return new URIBuilder().setPath(buildVariableUrl(notebookId, variableName, key, t))
                 .setParameter("sourceid", sourceId.toString());
     }
 
-
+    @Override
     public String readTextValue(Long notebookId, String label, String variableName, String key) throws IOException {
         assert notebookId != null;
         assert label != null;
@@ -210,6 +214,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         }
     }
 
+    @Override
     public InputStream readStreamValue(Long notebookId, Long sourceId, String variableName, String key) throws IOException {
         assert sourceId != null;
         assert variableName != null;
@@ -218,14 +223,15 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         return is;
     }
 
-    public URL getStreamValueURL(Long notebookId, Long sourceId, String variableName, String key) {
-        try {
-            return createURIBuilder(notebookId, sourceId, variableName, key, VarType.s).build().toURL();
-        } catch (MalformedURLException | URISyntaxException e) {
-            throw new IllegalArgumentException("Unable to build URL. Maybe bad parameters?");
-        }
-    }
+//    public URL getStreamValueURL(Long notebookId, Long sourceId, String variableName, String key) {
+//        try {
+//            return createURIBuilder(notebookId, sourceId, variableName, key, VarType.s).build().toURL();
+//        } catch (MalformedURLException | URISyntaxException e) {
+//            throw new IllegalArgumentException("Unable to build URL. Maybe bad parameters?");
+//        }
+//    }
 
+    @Override
     public InputStream readStreamValue(Long notebookId, String label, String variableName, String key) throws IOException {
         assert notebookId != null;
         assert label != null;
@@ -236,6 +242,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         return is;
     }
 
+    @Override
     public void writeTextValue(Long notebookId, Long editableId, Long cellId, String variableName, String value, String key) throws IOException {
         assert editableId != null;
         assert cellId != null;
@@ -246,6 +253,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         executePost(b, new StringEntity(value));
     }
 
+    @Override
     public void writeStreamValue(Long notebookId, Long editableId, Long cellId, String variableName, InputStream value, String key) throws IOException {
         assert editableId != null;
         assert cellId != null;
