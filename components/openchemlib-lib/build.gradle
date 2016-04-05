@@ -1,0 +1,16 @@
+description = 'OpenChemLib lib'
+
+
+dependencies {
+    
+    compile project(':common')
+
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+
+    compile files("../../lib/openchemlib/OpenChemLib.jar")
+    
+
+    testCompile project(':core-test')
+
+}
+

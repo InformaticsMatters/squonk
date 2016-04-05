@@ -1,0 +1,13 @@
+description = 'OpenChemLib Camel'
+
+
+dependencies {
+    compile project(':common')
+    compile project(':common-camel')
+    compile project(':openchemlib-lib')
+    
+    compile "org.apache.camel:camel-core:$camelVersion"
+    
+    
+    testCompile project(':core-test')
+}
