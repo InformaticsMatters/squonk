@@ -84,7 +84,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                         "rdkit.calculators.tpsa",
                         "RDKit TPSA",
                         "Topological surface area using RDKit",
-                        new String[]{"tpsa", "molarrefractivity", "molecularproperties", "rdkit"},
+                        new String[]{"tpsa", "psa", "molarrefractivity", "molecularproperties", "rdkit"},
                         "icons/properties_add.png",
                         new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Other"},
                         "asyncHttp",

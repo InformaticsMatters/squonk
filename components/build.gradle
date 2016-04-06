@@ -189,7 +189,8 @@ task dockerFileChemServices(type: Dockerfile) {
     dependsOn = [
         tasks.getByPath(':chem-services-cdk-basic:war'),
         tasks.getByPath(':chem-services-chemaxon-basic:war'),
-        tasks.getByPath(':chem-services-rdkit-basic:war')
+        tasks.getByPath(':chem-services-rdkit-basic:war'),
+        tasks.getByPath(':chem-services-openchemlib-basic:war')
     ]
     
     copy{
@@ -205,6 +206,10 @@ task dockerFileChemServices(type: Dockerfile) {
         from ("chem-services-rdkit-basic/build/libs") {
             include '*.war'
             rename '.*', 'chem-services-rdkit-basic.war'
+        }
+        from ("chem-services-openchemlib-basic/build/libs") {
+            include '*.war'
+            rename '.*', 'chem-services-openchemlib-basic.war'
         }
         into 'build/chem-services-basic'
     }

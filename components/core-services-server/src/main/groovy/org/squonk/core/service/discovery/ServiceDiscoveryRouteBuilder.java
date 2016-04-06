@@ -42,9 +42,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 
     public ServiceDiscoveryRouteBuilder() {
 
-        // prod is http://demos.informaticsmatters.com:8091
         String basicChemServicesUrl = IOUtils.getConfiguration("SQUONK_BASIC_CHEM_SERVICES_URL", null);
-        // prod is http://demos.informaticsmatters.com:8000
         String rdkitPythonServicesUrl = IOUtils.getConfiguration("SQUONK_RDKIT_CHEM_SERVICES_URL", null);
 
         if (basicChemServicesUrl != null) {
@@ -54,8 +52,9 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             locations.add(basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/v1/calculators");
             locations.add(basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/v1/descriptors");
             locations.add(basicChemServicesUrl + "/chem-services-rdkit-basic/rest/v1/calculators");
+            locations.add(basicChemServicesUrl + "/chem-services-openchemlib-basic/rest/v1/calculators");
         } else {
-            LOG.warning("Environment variable SQUONK_BASIC_CHEM_SERVICES_URL not defined. Basic Chem services willl not be available");
+            LOG.warning("Environment variable SQUONK_BASIC_CHEM_SERVICES_URL not defined. Basic Chem services will not be available");
         }
 
         if (rdkitPythonServicesUrl != null) {
@@ -63,7 +62,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             locations.add(rdkitPythonServicesUrl + "/rdkit_screen");
             locations.add(rdkitPythonServicesUrl + "/rdkit_cluster");
         } else {
-            LOG.warning("Environment variable SQUONK_RDKIT_CHEM_SERVICES_URL not defined. RDKit Python services willl not be available");
+            LOG.warning("Environment variable SQUONK_RDKIT_CHEM_SERVICES_URL not defined. RDKit Python services will not be available");
         }
     }
 

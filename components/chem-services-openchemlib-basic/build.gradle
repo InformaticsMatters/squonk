@@ -1,0 +1,39 @@
+description = 'Basic services based on Actelion OpenChemLib'
+
+apply plugin: 'war'
+apply plugin: 'org.akhikhl.gretty'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.akhikhl.gretty:gretty:+'
+    }
+}
+
+dependencies {
+    compile project(':common')
+    compile project(':common-camel')
+    compile project(':core-services-common')
+    compile project(':openchemlib-lib')
+    compile project(':openchemlib-camel')
+
+    compile "org.jboss.weld.servlet:weld-servlet-core:$weldVersion"
+    
+    compile "org.apache.camel:camel-core:$camelVersion"
+    compile "org.apache.camel:camel-jackson:$camelVersion"
+    compile "org.apache.camel:camel-servlet:$camelVersion"
+    compile "org.apache.camel:camel-swagger:$camelVersion"
+    compile "org.apache.camel:camel-swagger-java:$camelVersion"
+    compile "org.apache.camel:camel-cdi:$camelVersion"
+    
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+
+}
+
+gretty {
+    // supported values: 'jetty7', 'jetty8', 'jetty9', 'tomcat7', 'tomcat8'
+    servletContainer = 'tomcat7'
+}
