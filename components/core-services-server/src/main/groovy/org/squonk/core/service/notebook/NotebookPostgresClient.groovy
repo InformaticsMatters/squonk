@@ -295,13 +295,13 @@ class NotebookPostgresClient implements NotebookVariableClient {
      * {@inheritDoc}
      */
     @Override
-    public String readTextValue(Long notebookId, Long sourceId, String variableName, String key) {
+    public String readTextValue(Long notebookId, Long sourceId, Long cellId, String variableName, String key) {
         log.info("Reading text variable $variableName:$key for $sourceId")
         Sql db = createSql()
         try {
             String result = null
             db.withTransaction {
-                result = doFetchVar(db, notebookId, sourceId, variableName, key, true)
+                result = doFetchVar(db, notebookId, sourceId, cellId, variableName, key, true)
             }
             return result
         } finally {
@@ -309,14 +309,14 @@ class NotebookPostgresClient implements NotebookVariableClient {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String readTextValue(Long notebookId, String label, String variableName, String key) {
-        log.info("Reading text variable $variableName:$key for label $label")
-        return doReadValueForLabel(notebookId, label, variableName, key, true)
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public String readTextValue(Long notebookId, String label, String variableName, String key) {
+//        log.info("Reading text variable $variableName:$key for label $label")
+//        return doReadValueForLabel(notebookId, label, variableName, key, true)
+//    }
 
     /**
      * {@inheritDoc}
@@ -345,7 +345,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
      * {@inheritDoc}
      */
     @Override
-    public InputStream readStreamValue(Long notebookId, Long sourceId, String variableName, String key) {
+    public InputStream readStreamValue(Long notebookId, Long sourceId, Long cellId, String variableName, String key) {
         log.info("Reading stream variable $variableName:$key for $sourceId")
         // not entirely clear why this works as the connection is closed immediately but the InputStream is still readable.
         Sql db = createSql()
@@ -353,7 +353,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
             InputStream result = null
             db.withTransaction {
                 log.info("Fetching InputStream for $sourceId, $variableName, $key")
-                result = doFetchVar(db, notebookId, sourceId, variableName, key, false)
+                result = doFetchVar(db, notebookId, sourceId, cellId, variableName, key, false)
             }
             return result
         } finally {
@@ -361,14 +361,14 @@ class NotebookPostgresClient implements NotebookVariableClient {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public InputStream readStreamValue(Long notebookId, String label, String variableName, String key) {
-        log.info("Reading stream variable $variableName:$key for label $label")
-        return doReadValueForLabel(notebookId, label, variableName, key, false)
-    }
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public InputStream readStreamValue(Long notebookId, String label, String variableName, String key) {
+//        log.info("Reading stream variable $variableName:$key for label $label")
+//        return doReadValueForLabel(notebookId, label, variableName, key, false)
+//    }
 
     /**
      * {@inheritDoc}
@@ -513,7 +513,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
         return new NotebookSavepointDTO(data.id, data.notebook_id, data.parent_id, data.username, data.created, data.updated, data.description, data.label, canvasDTO)
     }
 
-    private Object doFetchVar(Sql db, Long notebookId, Long sourceId, String variableName, String key, boolean isText) {
+    private Object doFetchVar(Sql db, Long notebookId, Long sourceId, Long cellId, String variableName, String key, boolean isText) {
 
         // TODO - this can probably be optimised significantly
 
@@ -525,10 +525,10 @@ class NotebookPostgresClient implements NotebookVariableClient {
         String sql = """\
                 |SELECT ${isText ? 'val_text' : 'val_blob'} FROM users.nb_variable v
                 |  JOIN users.nb_version s ON s.id=v.source_id
-                |  WHERE v.source_id=:source AND v.var_name=:varname AND v.var_key=:key AND s.notebook_id=:notebook""".stripMargin()
+                |  WHERE v.source_id=:source AND v.cell_id=:cell AND v.var_name=:varname AND v.var_key=:key AND s.notebook_id=:notebook""".stripMargin()
         log.fine("SQL: $sql")
 
-        db.query(sql, [notebook:notebookId, source: sourceId, varname: variableName, key: key ?: DEFAULT_KEY]) { ResultSet rs ->
+        db.query(sql, [notebook:notebookId, source: sourceId, cell: cellId, varname: variableName, key: key ?: DEFAULT_KEY]) { ResultSet rs ->
 
             if (rs.next()) {
                 found = true
@@ -552,7 +552,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
                     return null
                 } else {
                     log.info("Looking for variable $variableName:$key in parent $parent")
-                    return doFetchVar(db, notebookId, parent, variableName, key, isText)
+                    return doFetchVar(db, notebookId, parent, cellId, variableName, key, isText)
                 }
             } else {
                 log.info("No row found for $sourceId - probably invalid source or notebook ID?")
@@ -561,28 +561,28 @@ class NotebookPostgresClient implements NotebookVariableClient {
         }
     }
 
-    private Object doReadValueForLabel(Long notebookId, String label, String variableName, String key, isText) {
-        Sql db = new Sql(dataSource.getConnection())
-        try {
-            Object result = null
-            db.withTransaction {
-                Long sourceId = fetchSourceIdForLabel(db, notebookId, label)
-                if (sourceId == null) {
-                    log.info("Label $label not defined for notebook $notebookId")
-                } else {
-                    log.fine("Label $label resolved to source $sourceId")
-                    result = doFetchVar(db, notebookId, sourceId, variableName, key, isText)
-                }
-            }
-            return result
-        } finally {
-            db.close()
-        }
-    }
-
-    private Long fetchSourceIdForLabel(Sql db, Long notebookId, String label) {
-        def row = db.firstRow("SELECT id FROM users.nb_version WHERE notebook_id=$notebookId AND label=$label")
-        return (row ? row[0] : null)
-    }
+//    private Object doReadValueForLabel(Long notebookId, String label, String variableName, String key, isText) {
+//        Sql db = new Sql(dataSource.getConnection())
+//        try {
+//            Object result = null
+//            db.withTransaction {
+//                Long sourceId = fetchSourceIdForLabel(db, notebookId, label)
+//                if (sourceId == null) {
+//                    log.info("Label $label not defined for notebook $notebookId")
+//                } else {
+//                    log.fine("Label $label resolved to source $sourceId")
+//                    result = doFetchVar(db, notebookId, sourceId, variableName, key, isText)
+//                }
+//            }
+//            return result
+//        } finally {
+//            db.close()
+//        }
+//    }
+//
+//    private Long fetchSourceIdForLabel(Sql db, Long notebookId, String label) {
+//        def row = db.firstRow("SELECT id FROM users.nb_version WHERE notebook_id=$notebookId AND label=$label")
+//        return (row ? row[0] : null)
+//    }
 
 }

@@ -54,13 +54,13 @@ public class VariableManager {
         VariableHandler<V> vh = variableHandlerRegistry.lookup(type);
         if (vh != null) {
 
-            VariableHandler.ReadContext context = new VariableReadContext(client, notebookId, sourceId, variableName);
+            VariableHandler.ReadContext context = new VariableReadContext(client, notebookId, sourceId, key.getCellId(), variableName);
             V result = (V)vh.readVariable(context);
             return result;
 
         } else if (canBeHandledAsString(type)){
             Constructor c = type.getConstructor(String.class);
-            String s = client.readTextValue(notebookId, sourceId, variableName, null);
+            String s = client.readTextValue(notebookId, sourceId, key.getCellId(), variableName, null);
             return (V)c.newInstance(s);
         }
         throw new IllegalArgumentException("Don't know how to handle value of type " + type.getName());

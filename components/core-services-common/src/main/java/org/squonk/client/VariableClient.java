@@ -21,8 +21,8 @@ public interface VariableClient {
      * @return
      * @throws Exception
      */
-    default String readTextValue(Long notebookId, Long sourceId, String variableName) throws Exception {
-        return readTextValue(notebookId, sourceId, variableName, DEFAULT_KEY);
+    default String readTextValue(Long notebookId, Long sourceId, Long cellId, String variableName) throws Exception {
+        return readTextValue(notebookId, sourceId, cellId, variableName, DEFAULT_KEY);
     }
 
     /**
@@ -34,29 +34,29 @@ public interface VariableClient {
      * @return
      * @throws Exception
      */
-    String readTextValue(Long notebookId, Long sourceId, String variableName, String key) throws Exception;
+    String readTextValue(Long notebookId, Long sourceId, Long cellId, String variableName, String key) throws Exception;
 
-    /** Read the variable with the default key for the notebook version with the specified label.
-     *
-     * @param notebookId
-     * @param label
-     * @param variableName
-     * @return
-     */
-    default String readTextValue(Long notebookId, String label, String variableName) throws Exception {
-        return readTextValue(notebookId, label, variableName, DEFAULT_KEY);
-    }
+//    /** Read the variable with the default key for the notebook version with the specified label.
+//     *
+//     * @param notebookId
+//     * @param label
+//     * @param variableName
+//     * @return
+//     */
+//    default String readTextValue(Long notebookId, String label, String variableName) throws Exception {
+//        return readTextValue(notebookId, label, variableName, DEFAULT_KEY);
+//    }
 
-    /** Read the variable with the specified key for the notebook version with the specified label.
-     *
-     * @param notebookId
-     * @param label
-     * @param variableName
-     * @param key
-     * @return
-     * @throws Exception
-     */
-    String readTextValue(Long notebookId, String label, String variableName, String key) throws Exception;
+//    /** Read the variable with the specified key for the notebook version with the specified label.
+//     *
+//     * @param notebookId
+//     * @param label
+//     * @param variableName
+//     * @param key
+//     * @return
+//     * @throws Exception
+//     */
+//    String readTextValue(Long notebookId, String label, String variableName, String key) throws Exception;
 
     /** Save this variable using the default key name of 'default'.
      * Use this for single component variables.
@@ -94,8 +94,8 @@ public interface VariableClient {
      * @return An InputStream to the data. Ensure that this is closed when finished
      * @throws Exception
      */
-    default InputStream readStreamValue(Long notebookId, Long sourceId, String variableName) throws Exception {
-        return readStreamValue(notebookId, sourceId, variableName, DEFAULT_KEY);
+    default InputStream readStreamValue(Long notebookId, Long sourceId, Long cellId, String variableName) throws Exception {
+        return readStreamValue(notebookId, sourceId, cellId, variableName, DEFAULT_KEY);
     }
 
     /** Read a stream variable
@@ -107,29 +107,29 @@ public interface VariableClient {
      * @return An InputStream to the data. Ensure that this is closed when finished
      * @throws Exception
      */
-    InputStream readStreamValue(Long notebookId, Long sourceId, String variableName, String key) throws Exception;
+    InputStream readStreamValue(Long notebookId, Long sourceId, Long cellId, String variableName, String key) throws Exception;
 
-    /**
-     *
-     * @param notebookId
-     * @param label
-     * @param variableName
-     * @return An InputStream to the data. Ensure that this is closed when finished
-     * @throws Exception
-     */
-    default InputStream readStreamValue(Long notebookId, String label, String variableName) throws Exception {
-        return readStreamValue(notebookId, label, variableName, DEFAULT_KEY);
-    }
+//    /**
+//     *
+//     * @param notebookId
+//     * @param label
+//     * @param variableName
+//     * @return An InputStream to the data. Ensure that this is closed when finished
+//     * @throws Exception
+//     */
+//    default InputStream readStreamValue(Long notebookId, String label, String variableName) throws Exception {
+//        return readStreamValue(notebookId, label, variableName, DEFAULT_KEY);
+//    }
 
-    /**
-     * @param notebookId
-     * @param label
-     * @param variableName
-     * @param key
-     * @return An InputStream to the data. Ensure that this is closed when finished
-     * @throws Exception
-     */
-    InputStream readStreamValue(Long notebookId, String label, String variableName, String key) throws Exception;
+//    /**
+//     * @param notebookId
+//     * @param label
+//     * @param variableName
+//     * @param key
+//     * @return An InputStream to the data. Ensure that this is closed when finished
+//     * @throws Exception
+//     */
+//    InputStream readStreamValue(Long notebookId, String label, String variableName, String key) throws Exception;
 
     /**
      * @param notebookId

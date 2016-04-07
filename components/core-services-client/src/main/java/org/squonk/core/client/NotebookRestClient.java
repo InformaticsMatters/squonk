@@ -179,10 +179,10 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
     }
 
     @Override
-    public String readTextValue(Long notebookId, Long sourceId, String variableName, String key) throws IOException {
+    public String readTextValue(Long notebookId, Long sourceId, Long cellId, String variableName, String key) throws IOException {
         assert sourceId != null;
         assert variableName != null;
-        URIBuilder b = createURIBuilder(notebookId, sourceId, variableName, key, VarType.t);
+        URIBuilder b = createURIBuilder(notebookId, sourceId, cellId, variableName, key, VarType.t);
         try (InputStream is = executeGetAsInputStream(b)) {
             return IOUtils.convertStreamToString(is, 1000);
         }
@@ -196,29 +196,24 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
 //        }
 //    }
 
-    private URIBuilder createURIBuilder(Long notebookId, Long sourceId, String variableName, String key,VarType t) {
-        return new URIBuilder().setPath(buildVariableUrl(notebookId, variableName, key, t))
-                .setParameter("sourceid", sourceId.toString());
-    }
+//    @Override
+//    public String readTextValue(Long notebookId, String label, String variableName, String key) throws IOException {
+//        assert notebookId != null;
+//        assert label != null;
+//        assert variableName != null;
+//        URIBuilder b = new URIBuilder().setPath(buildVariableUrl(notebookId, variableName, key, VarType.t))
+//                .setParameter("label", label);
+//        try (InputStream is = executeGetAsInputStream(b)) {
+//            String s = IOUtils.convertStreamToString(is, 1000);
+//            return s;
+//        }
+//    }
 
     @Override
-    public String readTextValue(Long notebookId, String label, String variableName, String key) throws IOException {
-        assert notebookId != null;
-        assert label != null;
-        assert variableName != null;
-        URIBuilder b = new URIBuilder().setPath(buildVariableUrl(notebookId, variableName, key, VarType.t))
-                .setParameter("label", label);
-        try (InputStream is = executeGetAsInputStream(b)) {
-            String s = IOUtils.convertStreamToString(is, 1000);
-            return s;
-        }
-    }
-
-    @Override
-    public InputStream readStreamValue(Long notebookId, Long sourceId, String variableName, String key) throws IOException {
+    public InputStream readStreamValue(Long notebookId, Long sourceId, Long cellId, String variableName, String key) throws IOException {
         assert sourceId != null;
         assert variableName != null;
-        URIBuilder b = createURIBuilder(notebookId, sourceId, variableName, key, VarType.s);
+        URIBuilder b = createURIBuilder(notebookId, sourceId, cellId, variableName, key, VarType.s);
         InputStream is = executeGetAsInputStream(b);
         return is;
     }
@@ -231,25 +226,23 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
 //        }
 //    }
 
-    @Override
-    public InputStream readStreamValue(Long notebookId, String label, String variableName, String key) throws IOException {
-        assert notebookId != null;
-        assert label != null;
-        assert variableName != null;
-        URIBuilder b = new URIBuilder().setPath(buildVariableUrl(notebookId, variableName, key, VarType.s))
-                .setParameter("label", label);
-        InputStream is = executeGetAsInputStream(b);
-        return is;
-    }
+//    @Override
+//    public InputStream readStreamValue(Long notebookId, String label, String variableName, String key) throws IOException {
+//        assert notebookId != null;
+//        assert label != null;
+//        assert variableName != null;
+//        URIBuilder b = new URIBuilder().setPath(buildVariableUrl(notebookId, variableName, key, VarType.s))
+//                .setParameter("label", label);
+//        InputStream is = executeGetAsInputStream(b);
+//        return is;
+//    }
 
     @Override
     public void writeTextValue(Long notebookId, Long editableId, Long cellId, String variableName, String value, String key) throws IOException {
         assert editableId != null;
         assert cellId != null;
         assert variableName != null;
-        URIBuilder b = new URIBuilder().setPath(buildVariableUrl(notebookId, variableName, key, VarType.t))
-                .setParameter("editableid", editableId.toString())
-                .setParameter("cellId", cellId.toString());
+        URIBuilder b = createURIBuilder(notebookId, editableId, cellId, variableName, key, VarType.t);
         executePost(b, new StringEntity(value));
     }
 
@@ -258,15 +251,16 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         assert editableId != null;
         assert cellId != null;
         assert variableName != null;
-        URIBuilder b = new URIBuilder().setPath(buildVariableUrl(notebookId, variableName, key, VarType.s))
-                .setParameter("editableid", editableId.toString())
-                .setParameter("cellId", cellId.toString());
+        URIBuilder b = createURIBuilder(notebookId, editableId, cellId, variableName, key, VarType.s);
         executePost(b, new InputStreamEntity(value));
     }
 
+    private URIBuilder createURIBuilder(Long notebookId, Long sourceId, Long cellId, String variableName, String key, VarType t) {
+        return new URIBuilder().setPath(buildVariableUrl(notebookId, sourceId, cellId, variableName, key, t));
+    }
 
-    private String buildVariableUrl(Long notebookId, String variableName, String key, VarType type) {
-        return baseUrl + "/" + notebookId + "/v/" + variableName + "/" + type.toString() + (key == null ? "" : "/" + key);
+    private String buildVariableUrl(Long notebookId, Long sourceId, Long cellId, String variableName, String key, VarType type) {
+        return baseUrl + "/" + notebookId + "/v/" + sourceId + "/" + cellId + "/" + variableName + "/" + type.toString() + (key == null ? "" : "/" + key);
     }
 
 }

@@ -406,25 +406,32 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 // VARIABLES
                 //
                 // GET
-                .get("/{notebookid}/v/{varname}/{type}/{key}").description("Read a variable value using either its label or its editable/savepoint id")
+                .get("/{notebookid}/v/{sourceid}/{cellid}/{varname}/{type}/{key}").description("Read a variable value using either its label or its editable/savepoint id")
                 .bindingMode(RestBindingMode.off)
                 .param().name("notebookid").type(path).description("The notebook ID").dataType("long").required(true).endParam()
+                .param().name("sourceid").type(path).description("The editable/savepoint ID").dataType("long").required(true).endParam()
+                .param().name("cellid").type(path).description("The cell ID").dataType("long").required(true).endParam()
                 .param().name("varname").type(path).description("The name of the variable").dataType("string").required(true).endParam()
                 .param().name("key").type(path).description("Optional key for the variable. If not provide key of 'default' is assumed").dataType("string").required(false).endParam()
                 .param().name("type").type(path).description("The type of variable (s = stream, t = text)").dataType("string").required(true).allowableValues("s", "t").endParam()
-                .param().name("label").type(query).description("The label of the variable").dataType("string").required(false).endParam()
-                .param().name("sourceid").type(query).description("The editable/savepoint ID").dataType("long").required(false).endParam()
+                //.param().name("label").type(query).description("The label of the variable").dataType("string").required(false).endParam()
                 .route()
                 .process((Exchange exch) -> {
                     String varname = exch.getIn().getHeader("varname", String.class);
                     String key = exch.getIn().getHeader("key", String.class);
                     VarType type = VarType.valueOf(exch.getIn().getHeader("type", String.class));
-                    String label = exch.getIn().getHeader("label", String.class);
                     Long sourceid = exch.getIn().getHeader("sourceid", Long.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    Long cellid = exch.getIn().getHeader("cellid", Long.class);
 
                     if (notebookid == null) {
                         throw new IllegalArgumentException("Must specify notebookid");
+                    }
+                    if (sourceid == null) {
+                        throw new IllegalArgumentException("Must specify sourceid");
+                    }
+                    if (cellid == null) {
+                        throw new IllegalArgumentException("Must specify cellid");
                     }
                     if (varname == null) {
                         throw new IllegalArgumentException("Must specify variable name");
@@ -433,47 +440,47 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                         throw new IllegalArgumentException("Must specify variable type");
                     }
                     // TODO -set the mime type and encoding
-                    if (label != null) {
+                    //if (label != null) {
+//                        switch (type) {
+//                            case s:
+//                                InputStream is = notebookClient.readStreamValue(notebookid, label, varname, key);
+//                                exch.getIn().setBody(is);
+//                                break;
+//                            case t:
+//                                LOG.info("reading text value for label");
+//                                String t = notebookClient.readTextValue(notebookid, label, varname, key);
+//                                exch.getIn().setBody(t);
+//                                break;
+//                            default:
+//                                throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
+//                        }
+                    //} else if (sourceid != null) {
                         switch (type) {
                             case s:
-                                InputStream is = notebookClient.readStreamValue(notebookid, label, varname, key);
+                                InputStream is = notebookClient.readStreamValue(notebookid, sourceid, cellid, varname, key);
                                 exch.getIn().setBody(is);
                                 break;
                             case t:
-                                LOG.info("reading text value for label");
-                                String t = notebookClient.readTextValue(notebookid, label, varname, key);
+                                String t = notebookClient.readTextValue(notebookid, sourceid, cellid, varname, key);
                                 exch.getIn().setBody(t);
                                 break;
                             default:
                                 throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
                         }
-                    } else if (sourceid != null) {
-                        switch (type) {
-                            case s:
-                                InputStream is = notebookClient.readStreamValue(notebookid, sourceid, varname, key);
-                                exch.getIn().setBody(is);
-                                break;
-                            case t:
-                                String t = notebookClient.readTextValue(notebookid, sourceid, varname, key);
-                                exch.getIn().setBody(t);
-                                break;
-                            default:
-                                throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
-                        }
-                    } else {
-                        throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
-                    }
+//                    } else {
+//                        throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
+//                    }
                 })
                 .endRest()
                 // write a variable
-                .post("/{notebookid}/v/{varname}/{type}/{key}").description("Write a variable value")
+                .post("/{notebookid}/v/{editableid}/{cellid}/{varname}/{type}/{key}").description("Write a variable value")
                 .bindingMode(RestBindingMode.off)
                 .param().name("notebookid").type(path).description("The notebook ID").dataType("long").required(true).endParam()
                 .param().name("varname").type(path).description("The name of the variable").dataType("string").required(true).endParam()
                 .param().name("key").type(path).description("Optional key for the variable. If not provide key of 'default' is assumed").dataType("string").required(false).endParam()
                 .param().name("type").type(path).description("The type of variable (s = stream, t = text)").dataType("string").required(true).allowableValues("s", "t").endParam()
-                .param().name("editableid").type(query).description("The editable ID").dataType("long").required(true).endParam()
-                .param().name("cellid").type(query).description("The cell ID that produces the value").dataType("long").required(true).endParam()
+                .param().name("editableid").type(path).description("The editable ID").dataType("long").required(true).endParam()
+                .param().name("cellid").type(path).description("The cell ID that produces the value").dataType("long").required(true).endParam()
                 .param().name("body").type(body).description("The value").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
@@ -483,7 +490,6 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
                     Long editableid = exch.getIn().getHeader("editableid", Long.class);
                     Long cellid = exch.getIn().getHeader("cellid", Long.class);
-
 
                     if (notebookid == null) {
                         throw new IllegalArgumentException("Must specify notebookid");

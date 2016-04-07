@@ -46,8 +46,9 @@ class NotebookCanvasDTOSpec extends Specification {
         when:
         NotebookCanvasDTO canvas1 = new NotebookCanvasDTO(123)
                 .withCell(new NotebookCanvasDTO.CellDTO(99, 3, 'key', 'name', 10,20,30,40)
-                    .withOption(new NotebookCanvasDTO.OptionDTO('key', 'value')))
+                    .withOption(new NotebookCanvasDTO.OptionDTO('key1', 'value1')))
         String json = JsonHandler.getInstance().objectToJson(canvas1)
+        println json
         NotebookCanvasDTO canvas2 = JsonHandler.getInstance().objectFromJson(json, NotebookCanvasDTO)
 
         then:
@@ -55,8 +56,8 @@ class NotebookCanvasDTOSpec extends Specification {
         canvas2 != null
         canvas2.cells.size() == 1
         canvas2.cells[0].options.size() == 1
-        canvas2.cells[0].options[0].key == 'key'
-        canvas2.cells[0].options[0].value == 'value'
+        canvas2.cells[0].options[0].key == 'key1'
+        canvas2.cells[0].options[0].value == 'value1'
     }
 
     void "binding json read write"() {

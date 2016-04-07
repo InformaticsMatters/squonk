@@ -122,19 +122,21 @@ public class CamelUtils {
 
         LOG.info("REQUEST starting");
         //InputStream result = pt.requestBodyAndHeaders("http4:dummy", input, allHeaders, InputStream.class);
-        Exchange response = pt.request("http4:dummy", new Processor() {
-            @Override
-            public void process(Exchange exch) throws Exception {
-                exch.getIn().setHeaders(allHeaders);
-                exch.getIn().setBody(input);
-            }
+        Exchange response = pt.request("http4:dummy", exch -> {
+            exch.getIn().setHeaders(allHeaders);
+            exch.getIn().setBody(input);
         });
         LOG.info("REQUEST complete");
-        InputStream result = response.getOut().getBody(InputStream.class);
+        Message msg = getMessage(response);
+        InputStream result = msg.getBody(InputStream.class);
         if (responseHeaders != null) {
-            responseHeaders.putAll(response.getOut().getHeaders());
+            responseHeaders.putAll(msg.getHeaders());
         }
         return result;
+    }
+
+    public static Message getMessage(Exchange exch) {
+        return exch.hasOut() ? exch.getOut() : exch.getIn();
     }
 
     public static String generateUrlUsingHeadersAndQueryParams(String endpoint, Map<String, Object> params, Map<String, Object> headers) throws UnsupportedEncodingException, URISyntaxException {

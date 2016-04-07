@@ -16,23 +16,25 @@ public class VariableReadContext implements VariableHandler.ReadContext{
     private final VariableClient client;
     private final Long notebookId;
     private final Long sourceId;
+    private final Long cellId;
     private final String variableName;
 
-    public VariableReadContext(VariableClient client, Long notebookId, Long sourceId, String variableName) {
+    public VariableReadContext(VariableClient client, Long notebookId, Long sourceId, Long cellId, String variableName) {
         this.client = client;
         this.notebookId = notebookId;
         this.sourceId = sourceId;
+        this.cellId = cellId;
         this.variableName = variableName;
     }
 
     @Override
     public String readTextValue(String key) throws Exception {
-        return client.readTextValue(notebookId, sourceId, variableName, key);
+        return client.readTextValue(notebookId, sourceId, cellId, variableName, key);
     }
 
     @Override
     public InputStream readStreamValue(String key) throws Exception {
-        InputStream is = client.readStreamValue(notebookId, sourceId, variableName, key);
+        InputStream is = client.readStreamValue(notebookId, sourceId, cellId, variableName, key);
         return (is == null ? null : IOUtils.getGunzippedInputStream(is));
     }
 

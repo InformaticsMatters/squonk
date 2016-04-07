@@ -142,7 +142,8 @@ task createEbsBackendServicesZip(type: Zip) {
         createEbsBackendServicesRootZip, 
        'chem-services-cdk-basic:war',
        'chem-services-chemaxon-basic:war',
-       'chem-services-rdkit-basic:war'
+       'chem-services-rdkit-basic:war',
+        'chem-services-openchemlib-basic:war'
     ]
     archiveName = 'ebs.zip'
     destinationDir = file('build/ebs/')
@@ -150,6 +151,7 @@ task createEbsBackendServicesZip(type: Zip) {
         'chem-services-cdk-basic/build/libs/chem-services-cdk-basic-' + version + '.war',
         'chem-services-chemaxon-basic/build/libs/chem-services-chemaxon-basic-' + version + '.war',
         'chem-services-rdkit-basic/build/libs/chem-services-rdkit-basic-' + version + '.war',
+            'chem-services-openchemlib-basic/build/libs/chem-services-openchemlib-basic-' + version + '.war',
         'build/ebs/ROOT.war',
     
     )
