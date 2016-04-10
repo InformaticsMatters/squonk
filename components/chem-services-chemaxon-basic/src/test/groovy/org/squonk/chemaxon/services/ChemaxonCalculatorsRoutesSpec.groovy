@@ -19,31 +19,7 @@ import org.squonk.chemaxon.molecule.ChemTermsEvaluator
 class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
     
     static final String FILE_SMILES_100 = "../../data/testfiles/nci100.smiles";
-    
-    def 'logp single as MoleculeObject'() {
 
-        when:
-        def mol = new MoleculeObject('c1ccccc1')
-        def result = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, mol)
-
-        then:
-        result instanceof MoleculeObject
-        result.getValue('CXN_LogP') != null
-        result.getValue('CXN_LogP') instanceof Number
-    }
-    
-    def 'logp multiple as String'() {
-
-        when:
-        def result = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, 'c1ccccc1')
-
-        then:
-        result instanceof MoleculeObject
-        result.getValue('CXN_LogP') != null
-        result.getValue('CXN_LogP') instanceof Number
-    }
-    
-    
     def 'logp multiple MoleculeObject as stream'() {
         def mols = []
         mols << new MoleculeObject('C')

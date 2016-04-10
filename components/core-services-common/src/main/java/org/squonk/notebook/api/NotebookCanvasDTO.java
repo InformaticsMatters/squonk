@@ -3,9 +3,7 @@ package org.squonk.notebook.api;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by timbo on 01/04/16.
@@ -74,7 +72,7 @@ public class NotebookCanvasDTO {
 
         private final Integer top, left, width, height;
 
-        private final List<OptionDTO> options = new ArrayList<>();
+        private final Map<String,Object> options = new LinkedHashMap<>();
 
         private final  List<BindingDTO> bindings = new ArrayList<>();
         // does the state need to be stored e.g. execution failed?
@@ -111,21 +109,21 @@ public class NotebookCanvasDTO {
             this(id, version, key, name, top, left, null, null);
         }
 
-        public  List<OptionDTO> getOptions() {
-            return Collections.unmodifiableList(options);
+        public  Map<String,Object> getOptions() {
+            return Collections.unmodifiableMap(options);
         }
 
         public List<BindingDTO> getBindings() {
             return Collections.unmodifiableList(bindings);
         }
 
-        public CellDTO withOption(OptionDTO option) {
-            options.add(option);
+        public CellDTO withOption(String key, Object value) {
+            options.put(key, value);
             return this;
         }
 
-        public void addOption(OptionDTO option) {
-            options.add(option);
+        public void addOption(String key, Object value) {
+            options.put(key, value);
         }
 
         public CellDTO withBinding(BindingDTO binding) {
@@ -167,30 +165,6 @@ public class NotebookCanvasDTO {
 
         public Integer getHeight() {
             return height;
-        }
-    }
-
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public static class OptionDTO {
-        /** identifies which option (key property of the OptionDescriptor) */
-        private final String key;
-        /** value, which must be writable as JSON */
-        private final Object value;
-
-
-        public OptionDTO(
-                @JsonProperty("key") String key,
-                @JsonProperty("value") Object value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public Object getValue() {
-            return value;
         }
     }
 
