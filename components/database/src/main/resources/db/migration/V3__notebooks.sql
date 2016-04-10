@@ -38,7 +38,7 @@ CREATE TABLE users.nb_variable (
     updated         TIMESTAMP NOT NULL,
     val_text        TEXT,
     val_blob        BYTEA,
-    CONSTRAINT nbvar_uq UNIQUE (source_id, var_name, var_key),
+    CONSTRAINT nbvar_uq UNIQUE (source_id, cell_id, var_name, var_key),
     CONSTRAINT nbvar2source FOREIGN KEY (source_id) REFERENCES users.nb_version (id) ON DELETE CASCADE
 );
 

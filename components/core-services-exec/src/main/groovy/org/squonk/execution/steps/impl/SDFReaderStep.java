@@ -9,6 +9,7 @@ import org.squonk.reader.SDFReader;
 import org.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.apache.camel.CamelContext;
 
@@ -23,6 +24,8 @@ import org.apache.camel.CamelContext;
  * @author timbo
  */
 public class SDFReaderStep extends AbstractStep {
+
+    private static final Logger LOG = Logger.getLogger(SDFReaderStep.class.getName());
 
     /**
      * How to handle the name field (the first line of the CTAB block). See
@@ -40,11 +43,17 @@ public class SDFReaderStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        InputStream is = fetchMappedInput(VAR_SDF_INPUT, InputStream.class, varman);
-        SDFReader reader = createReader(IOUtils.getGunzippedInputStream(is));
-        Stream<MoleculeObject> mols = reader.asStream();
-        Dataset dataset = new Dataset(MoleculeObject.class, mols);
-        createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, dataset, varman);
+        LOG.info("execute SDFReaderStep");
+        try (InputStream is = fetchMappedInput(VAR_SDF_INPUT, InputStream.class, varman)) {
+            LOG.fine("Fetched input: " + (is != null));
+            SDFReader reader = createReader(IOUtils.getGunzippedInputStream(is));
+            LOG.fine("Created SDFReader");
+            Stream<MoleculeObject> mols = reader.asStream();
+            Dataset dataset = new Dataset(MoleculeObject.class, mols);
+            LOG.fine("Writing output");
+            createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, dataset, varman);
+            LOG.info("Writing dataset from SDF complete");
+        }
     }
 
     private SDFReader createReader(InputStream input) throws IOException {

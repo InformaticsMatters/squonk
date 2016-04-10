@@ -49,7 +49,7 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                     new String[]{"/Chemistry/Toolkits/OpenChemLib/Calculators", "/Chemistry/Calculators/Solubility"},
                     "icons/properties_add.png", ROUTE_LOGS),
             createServiceDescriptor(
-                    "ocl.logs", "PSA (OpenChemLib)", "OpenChemLib Polar Surface Area prediction",
+                    "ocl.psa", "PSA (OpenChemLib)", "OpenChemLib Polar Surface Area prediction",
                     new String[]{"logp", "psa", "molecularproperties", "openchemlib"},
                     new String[]{"/Chemistry/Toolkits/OpenChemLib/Calculators", "/Chemistry/Calculators/Other"},
                     "icons/properties_add.png", ROUTE_PSA)

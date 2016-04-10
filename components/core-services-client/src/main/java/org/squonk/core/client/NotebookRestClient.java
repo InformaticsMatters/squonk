@@ -184,7 +184,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         assert variableName != null;
         URIBuilder b = createURIBuilder(notebookId, sourceId, cellId, variableName, key, VarType.t);
         try (InputStream is = executeGetAsInputStream(b)) {
-            return IOUtils.convertStreamToString(is, 1000);
+            return is == null ? null : IOUtils.convertStreamToString(is);
         }
     }
 
@@ -260,7 +260,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
     }
 
     private String buildVariableUrl(Long notebookId, Long sourceId, Long cellId, String variableName, String key, VarType type) {
-        return baseUrl + "/" + notebookId + "/v/" + sourceId + "/" + cellId + "/" + variableName + "/" + type.toString() + (key == null ? "" : "/" + key);
+        return baseUrl + "/" + notebookId + "/v/" + sourceId + "/" + cellId + "/" + variableName + "/" + type.toString() + "/" + (key == null ? DEFAULT_KEY : key);
     }
 
 }

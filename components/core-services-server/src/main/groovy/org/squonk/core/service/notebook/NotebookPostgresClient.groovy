@@ -324,7 +324,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
     @Override
     public void writeTextValue(Long notebookId, Long editableId, Long cellId, String variableName, String value, String key) {
         // TODO - include the notebookId in the process to increase security
-        log.info("Writing text variable $variableName:$key for $editableId")
+        log.info("Writing text variable $variableName:$key for $editableId:$cellId")
         Sql db = createSql()
         try {
 
@@ -376,7 +376,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
     @Override
     public void writeStreamValue(Long notebookId, Long editableId, Long cellId, String variableName, InputStream value, String key) {
         // TODO - include the notebookId in the process to increase security
-        log.info("Writing stream variable $variableName:$key for $editableId")
+        log.info("Writing stream variable $variableName:$key for $editableId:$cellId")
         Sql db = new Sql(dataSource.getConnection()) {
             protected void setParameters(List<Object> params, PreparedStatement ps) {
                 ps.setLong(1, params[0])
@@ -517,7 +517,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
 
         // TODO - this can probably be optimised significantly
 
-        log.fine("Looking for ${isText ? 'text' : 'stream'} variable $variableName:$key in source $sourceId")
+        log.info("Looking for ${isText ? 'text' : 'stream'} variable $variableName:$key in source $sourceId, cell $cellId")
 
         def result = null
         boolean found = false
@@ -543,12 +543,12 @@ class NotebookPostgresClient implements NotebookVariableClient {
         if (found) {
             return result
         } else {
-            log.info("Variable $variableName:$key not found in source $sourceId")
+            log.info("Variable $variableName:$key not found in source $sourceId:$cellId")
             def row = db.firstRow("SELECT parent_id FROM users.nb_version WHERE id=? AND notebook_id=?", [sourceId, notebookId])
             if (row != null) {
                 Long parent = row[0]
                 if (parent == null) {
-                    log.info("No parent defined for source $sourceId, so variable $variableName:$key does not exist")
+                    log.info("No parent defined for source $sourceId, cell $cellId, so variable $variableName:$key does not exist")
                     return null
                 } else {
                     log.info("Looking for variable $variableName:$key in parent $parent")
