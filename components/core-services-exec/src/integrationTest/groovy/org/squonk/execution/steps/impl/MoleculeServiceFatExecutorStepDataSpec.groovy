@@ -69,7 +69,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         output instanceof Dataset
         def items = output.items
         items.size() == 3
-        items[0].getValue('CDK_ALogP') != null
+        items[0].getValue('ALogP_CDK') != null
     }
 
     void "test kinase inhibs service"() {
@@ -92,7 +92,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         output instanceof Dataset
         def items = output.items
         items.size() == 36
-        items[0].getValue('CDK_ALogP') != null
+        items[0].getValue('ALogP_CDK') != null
     }
 
     void "test building blocks service"() {

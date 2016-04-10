@@ -11,10 +11,10 @@ class SolubilityPredictorSpec extends Specification {
 
     void "test with smiles"() {
 
-        SolubilityPredictor predictor = new SolubilityPredictor()
+        SolubilityOCLPredictor predictor = new SolubilityOCLPredictor()
 
         when:
-        def result = predictor.calculate(new MoleculeObject(Molecules.ethanol.smiles, "smiles"))
+        def result = predictor.calculator.calculate(new MoleculeObject(Molecules.ethanol.smiles, "smiles"))
 
         then:
         result != null
@@ -22,10 +22,10 @@ class SolubilityPredictorSpec extends Specification {
 
     void "test with molfile"() {
 
-        SolubilityPredictor predictor = new SolubilityPredictor()
+        SolubilityOCLPredictor predictor = new SolubilityOCLPredictor()
 
         when:
-        def result = predictor.calculate(new MoleculeObject(Molecules.ethanol.v2000, "mol"))
+        def result = predictor.calculator.calculate(new MoleculeObject(Molecules.ethanol.v2000, "mol"))
 
         then:
         result != null

@@ -26,12 +26,12 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
     private final Mode mode;
     private final String chemTermsFunction;
 
-    public static final String LOGP = "CXN_LogP";
-    public static final String ATOM_COUNT = "CXN_AtomCount";
-    public static final String BOND_COUNT = "CXN_BondCount";
-    public static final String HBOND_ACCEPTOR_COUNT = "CXN_HBondAcceptorCount";
-    public static final String HBOND_DONOR_COUNT = "CXN_HBondDonorCount";
-    public static final String MOLECULAR_WEIGHT = "CXN_MolWeight";
+    public static final String LOGP = "LogP_CXN";
+    public static final String ATOM_COUNT = "AtomCount_CXN";
+    public static final String BOND_COUNT = "BondCount_CXN";
+    public static final String HBOND_ACCEPTOR_COUNT = "HBA_CXN";
+    public static final String HBOND_DONOR_COUNT = "HBD_CXN";
+    public static final String MOLECULAR_WEIGHT = "MolWeight_CXN";
 
     /**
      * Constructor to standard ChemTerms evaluator. The property is calculated

@@ -7,7 +7,8 @@ import org.squonk.camel.CamelCommonConstants;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
-import org.squonk.openchemlib.predict.AbstractPredictor;
+import org.squonk.openchemlib.predict.AbstractOCLPredictor;
+import org.squonk.property.Calculator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +23,10 @@ public class PredictorProcessor implements Processor {
 
     private static final Logger LOG = Logger.getLogger(PredictorProcessor.class.getName());
 
-    private final List<AbstractPredictor> predictors = new ArrayList<>();
+    private final List<AbstractOCLPredictor> predictors = new ArrayList<>();
 
 
-    public PredictorProcessor calculate(AbstractPredictor predictor) {
+    public PredictorProcessor calculate(AbstractOCLPredictor predictor) {
         predictors.add(predictor);
         return this;
     }
@@ -39,17 +40,20 @@ public class PredictorProcessor implements Processor {
         }
         Stream<MoleculeObject> mols = dataset.getStream();
 
-        for (AbstractPredictor predictor : predictors) {
-            mols = calculateMultiple(mols, predictor);
+        for (AbstractOCLPredictor predictor : predictors) {
+            Calculator calc = predictor.getCalculator();
+            mols = calculateMultiple(mols, calc);
+            // TODO - handle the stats from the calculator, but bear in mind that the calculations won't happen until the stream is processed.
         }
         handleMetadata(exch, dataset.getMetadata());
         exch.getIn().setBody(new MoleculeObjectDataset(mols));
     }
 
-    protected Stream<MoleculeObject> calculateMultiple(Stream<MoleculeObject> input, AbstractPredictor predictor) {
+    protected Stream<MoleculeObject> calculateMultiple(Stream<MoleculeObject> input, Calculator calc) {
+
         input = input.peek((mo) -> {
             try {
-                predictor.calculate(mo, true, true);
+                calc.calculate(mo, true, true);
             } catch (Exception ex) {
                 LOG.log(Level.SEVERE, "Failed to evaluate molecule", ex);
             }
@@ -61,7 +65,7 @@ public class PredictorProcessor implements Processor {
         if (meta == null) {
             meta = new DatasetMetadata(MoleculeObject.class);
         }
-        for (AbstractPredictor predictor : predictors) {
+        for (AbstractOCLPredictor predictor : predictors) {
             String name = predictor.getResultName();
             Class type = predictor.getPropertyType().getValueClass();
             meta.getValueClassMappings().put(name, type);

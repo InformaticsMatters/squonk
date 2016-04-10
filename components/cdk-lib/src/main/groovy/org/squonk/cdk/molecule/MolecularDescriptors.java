@@ -34,14 +34,14 @@ public class MolecularDescriptors {
 
     private static final Logger LOG = Logger.getLogger(MolecularDescriptors.class.getName());
 
-    public static final String WIENER_PATH = "CDK_WienerPath";
-    public static final String WIENER_POLARITY = "CDK_WienerPolarity";
-    public static final String ALOGP_ALOPG = "CDK_ALogP";
-    public static final String ALOGP_ALOPG2 = "CDK_ALogP2";
-    public static final String ALOGP_AMR = "CDK_AMR";
-    public static final String XLOGP_XLOGP = "CDK_XLogP";
-    public static final String HBOND_ACCEPTOR_COUNT = "CDK_HBondAcceptorCount";
-    public static final String HBOND_DONOR_COUNT = "CDK_HBondDonorCount";
+    public static final String WIENER_PATH = "WienerPath_CDK";
+    public static final String WIENER_POLARITY = "WienerPolarity_CDK";
+    public static final String ALOGP_ALOPG = "ALogP_CDK";
+    public static final String ALOGP_ALOPG2 = "ALogP2_CDK";
+    public static final String ALOGP_AMR = "AMR_CDK";
+    public static final String XLOGP_XLOGP = "XLogP_CDK";
+    public static final String HBOND_ACCEPTOR_COUNT = "HBA_CDK";
+    public static final String HBOND_DONOR_COUNT = "HBD_CDK";
 
     public enum Descriptor {
 

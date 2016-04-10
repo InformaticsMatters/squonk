@@ -2,6 +2,7 @@ package org.squonk.openchemlib.predict
 
 import com.im.lac.types.MoleculeObject
 import org.squonk.data.Molecules
+import org.squonk.property.Calculator
 import spock.lang.Specification
 
 /**
@@ -11,10 +12,10 @@ class LogPPredictorSpec extends Specification {
 
     void "test with smiles"() {
 
-        LogPPredictor predictor = new LogPPredictor()
+        LogPOCLPredictor predictor = new LogPOCLPredictor()
 
         when:
-        def result = predictor.calculate(new MoleculeObject(Molecules.ethanol.smiles, "smiles"))
+        def result = predictor.calculator.calculate(new MoleculeObject(Molecules.ethanol.smiles, "smiles"))
 
         then:
         result != null
@@ -22,12 +23,16 @@ class LogPPredictorSpec extends Specification {
 
     void "test with molfile"() {
 
-        LogPPredictor predictor = new LogPPredictor()
+        LogPOCLPredictor predictor = new LogPOCLPredictor()
+        Calculator calc = predictor.calculator
 
         when:
-        def result = predictor.calculate(new MoleculeObject(Molecules.ethanol.v2000, "mol"))
+        def result = calc.calculate(new MoleculeObject(Molecules.ethanol.v2000, "mol"))
         println "logp: $result"
+
         then:
         result != null
+        calc.totalCount == 1
+        calc.errorCount == 0
     }
 }

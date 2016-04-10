@@ -7,9 +7,9 @@ import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.MoleculeObjectDataset
-import org.squonk.openchemlib.predict.LogPPredictor
-import org.squonk.openchemlib.predict.PSAPredictor
-import org.squonk.openchemlib.predict.SolubilityPredictor
+import org.squonk.openchemlib.predict.LogPOCLPredictor
+import org.squonk.openchemlib.predict.PSAOCLPredictor
+import org.squonk.openchemlib.predict.SolubilityOCLPredictor
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -35,9 +35,9 @@ class PredictorProcessorSpec extends Specification {
             void configure() throws Exception {
                 from("direct:predict")
                         .process(new PredictorProcessor()
-                        .calculate(new LogPPredictor())
-                        .calculate(new SolubilityPredictor())
-                        .calculate(new PSAPredictor()))
+                        .calculate(new LogPOCLPredictor())
+                        .calculate(new SolubilityOCLPredictor())
+                        .calculate(new PSAOCLPredictor()))
             }
         }
 

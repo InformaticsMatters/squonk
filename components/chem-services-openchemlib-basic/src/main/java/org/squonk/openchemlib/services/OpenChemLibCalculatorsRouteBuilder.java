@@ -2,11 +2,10 @@ package org.squonk.openchemlib.services;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.cdi.ContextName;
-import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.openchemlib.processor.PredictorProcessor;
-import org.squonk.openchemlib.predict.LogPPredictor;
-import org.squonk.openchemlib.predict.PSAPredictor;
-import org.squonk.openchemlib.predict.SolubilityPredictor;
+import org.squonk.openchemlib.predict.LogPOCLPredictor;
+import org.squonk.openchemlib.predict.PSAOCLPredictor;
+import org.squonk.openchemlib.predict.SolubilityOCLPredictor;
 
 /**
  * Created by timbo on 06/04/16.
@@ -24,17 +23,17 @@ public class OpenChemLibCalculatorsRouteBuilder extends RouteBuilder {
         from(OCL_LOGP )
                 .log("OCL_LOGP starting")
                 //.threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new PredictorProcessor().calculate(new LogPPredictor()));
+                .process(new PredictorProcessor().calculate(new LogPOCLPredictor()));
 
         from(OCL_LOGS )
                 .log("OCL_LOGS starting")
                 //.threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new PredictorProcessor().calculate(new SolubilityPredictor()));
+                .process(new PredictorProcessor().calculate(new SolubilityOCLPredictor()));
 
         from(OCL_PSA )
                 .log("OCL_PSA starting")
                 //.threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new PredictorProcessor().calculate(new PSAPredictor()));
+                .process(new PredictorProcessor().calculate(new PSAOCLPredictor()));
 
     }
 }

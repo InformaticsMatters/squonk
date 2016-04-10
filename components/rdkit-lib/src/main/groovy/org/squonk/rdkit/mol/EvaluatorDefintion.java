@@ -10,20 +10,20 @@ public class EvaluatorDefintion {
 
     public enum Function {
 
-        EXACT_MW(Float.class, "RDKit_ExactMW"),
-        FRACTION_C_SP3(Float.class, "RDKit_FracCSP3"),
-        LIPINSKI_HBA(Integer.class, "RDKit_Lip_HBA"),
-        LIPINSKI_HBD(Integer.class, "RDKit_Lip_HBD"),
-        LOGP(Float.class,"RDKit_LogP"),
-        MOLECULAR_FORMULA(String.class, "RDKit_MolFormula"),
-        MOLAR_REFRACTIVITY(Float.class, "RDKit_MolarRefractivity"),
-        NUM_HBA(Integer.class, "RDKit_HBA"),
-        NUM_HBD(Integer.class, "RDKit_HBD"),
-        NUM_HETEROATOMS(Integer.class, "RDKit_HeteroAtomCount"),
-        NUM_RINGS(Integer.class, "RDKit_RingCount"),
-        NUM_AROMATIC_RINGS(Integer.class, "RDKit_AromaticRingCount"),
-        NUM_ROTATABLE_BONDS(Integer.class, "RDKit_RotBondCount"),
-        TPSA(Float.class, "RDKit_TPSA");
+        EXACT_MW(Float.class, "ExactMW_RDKit"),
+        FRACTION_C_SP3(Float.class, "FracCSP3_RDKit"),
+        LIPINSKI_HBA(Integer.class, "HBA_LIP_RDKit"),
+        LIPINSKI_HBD(Integer.class, "HBD_Lip_RDKit"),
+        LOGP(Float.class,"LogP_RDKit"),
+        MOLECULAR_FORMULA(String.class, "MolFormula_RDKit"),
+        MOLAR_REFRACTIVITY(Float.class, "MolarRefractivity_RDKit"),
+        NUM_HBA(Integer.class, "HBA_RDKit"),
+        NUM_HBD(Integer.class, "HBD_RDKit"),
+        NUM_HETEROATOMS(Integer.class, "HeteroAtomCount_RDKit"),
+        NUM_RINGS(Integer.class, "RingCount_RDKit"),
+        NUM_AROMATIC_RINGS(Integer.class, "AromaticRingCount_RDKit"),
+        NUM_ROTATABLE_BONDS(Integer.class, "RotBondCount_RDKit"),
+        TPSA(Float.class, "TPSA_RDKit");
 
         Class type;
         String name;
