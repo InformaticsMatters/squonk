@@ -14,7 +14,7 @@ class SolubilityPredictorSpec extends Specification {
         SolubilityOCLPredictor predictor = new SolubilityOCLPredictor()
 
         when:
-        def result = predictor.calculator.calculate(new MoleculeObject(Molecules.ethanol.smiles, "smiles"))
+        def result = predictor.calculators[0].calculate(new MoleculeObject(Molecules.ethanol.smiles, "smiles"))
 
         then:
         result != null
@@ -25,7 +25,7 @@ class SolubilityPredictorSpec extends Specification {
         SolubilityOCLPredictor predictor = new SolubilityOCLPredictor()
 
         when:
-        def result = predictor.calculator.calculate(new MoleculeObject(Molecules.ethanol.v2000, "mol"))
+        def result = predictor.calculators[0].calculate(new MoleculeObject(Molecules.ethanol.v2000, "mol"))
 
         then:
         result != null

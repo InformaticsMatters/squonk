@@ -2,25 +2,20 @@ package org.squonk.openchemlib.predict;
 
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.prediction.CLogPPredictor;
-import com.im.lac.types.MoleculeObject;
-import org.squonk.property.Calculator;
 import org.squonk.property.LogPProperty;
 import org.squonk.property.MoleculeCalculator;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by timbo on 05/04/16.
  */
 public class LogPOCLPredictor extends AbstractOCLPredictor<Float> {
 
-    private static final Logger LOG = Logger.getLogger(LogPOCLPredictor.class.getName());
+    private static final String NAME = "LogP_OCL";
 
     private CLogPPredictor predictor;
 
     public LogPOCLPredictor() {
-        super("LogP_OCL", new LogPProperty());
+        super(NAME, new LogPProperty());
     }
 
 
@@ -32,11 +27,16 @@ public class LogPOCLPredictor extends AbstractOCLPredictor<Float> {
     }
 
     @Override
-    public MoleculeCalculator<Float> getCalculator() {
-        return new Calc();
+    public MoleculeCalculator<Float>[] getCalculators() {
+        return new MoleculeCalculator[] {new Calc(NAME)};
     }
 
     class Calc extends AbstractOCLPredictor.OCLCalculator {
+
+        Calc(String resultName) {
+            super(resultName, Float.class);
+        }
+
 
         protected Float doCalculate(StereoMolecule mol) {
             return getPredictor().assessCLogP(mol);

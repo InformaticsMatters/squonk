@@ -31,6 +31,7 @@ docker/deploy/setenv.sh
 docker/deploy/yyy.json
 
 docker/deploy/squonk-realm.json
+docker/deploy/data
 
 docker/deploy/xwiki/hibernate.cfg.xml
 docker/deploy/xwiki/server.xml

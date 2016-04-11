@@ -15,7 +15,7 @@ class LogPPredictorSpec extends Specification {
         LogPOCLPredictor predictor = new LogPOCLPredictor()
 
         when:
-        def result = predictor.calculator.calculate(new MoleculeObject(Molecules.ethanol.smiles, "smiles"))
+        def result = predictor.calculators[0].calculate(new MoleculeObject(Molecules.ethanol.smiles, "smiles"))
 
         then:
         result != null
@@ -24,7 +24,7 @@ class LogPPredictorSpec extends Specification {
     void "test with molfile"() {
 
         LogPOCLPredictor predictor = new LogPOCLPredictor()
-        Calculator calc = predictor.calculator
+        Calculator calc = predictor.calculators[0]
 
         when:
         def result = calc.calculate(new MoleculeObject(Molecules.ethanol.v2000, "mol"))

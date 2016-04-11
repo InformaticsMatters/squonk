@@ -3,12 +3,10 @@ package org.squonk.openchemlib.predict;
 import com.actelion.research.chem.StereoMolecule;
 import com.im.lac.types.MoleculeObject;
 import org.squonk.openchemlib.molecule.OCLMoleculeUtils;
-import org.squonk.property.Calculator;
 import org.squonk.property.MoleculeCalculator;
 import org.squonk.property.Predictor;
 import org.squonk.property.Property;
 
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,17 +22,18 @@ public abstract class AbstractOCLPredictor<V> extends Predictor<V,MoleculeObject
     }
 
 
-    public abstract class OCLCalculator<V> implements MoleculeCalculator<V> {
+    public abstract class OCLCalculator<V> extends MoleculeCalculator<V> {
 
-        protected final AtomicInteger totalCount = new AtomicInteger(0);
-        protected final AtomicInteger errorCount = new AtomicInteger(0);
+        public OCLCalculator(String resultName, Class<V> resultType) {
+            super(resultName, resultType);
+        }
 
         @Override
         public V calculate(MoleculeObject mo, boolean storeResult, boolean storeMol) {
             StereoMolecule mol = OCLMoleculeUtils.fetchMolecule(mo, storeMol);
             V result = calculate(mol);
             if (storeResult) {
-                mo.putValue(getResultName(), result);
+                mo.putValue(resultName, result);
             }
             return result;
         }
@@ -44,27 +43,22 @@ public abstract class AbstractOCLPredictor<V> extends Predictor<V,MoleculeObject
             return calculate(mo, storeResult, false);
         }
 
+        @Override
+        public V calculate(MoleculeObject mo) {
+            return calculate(mo, false, false);
+        }
+
         public V calculate(StereoMolecule mol) {
             totalCount.incrementAndGet();
             try {
                 return doCalculate(mol);
             } catch (Throwable t) {
                 errorCount.incrementAndGet();
-                LOG.log(Level.INFO, "OCL calculation " + getResultName() + " failed", t);
+                LOG.log(Level.INFO, "OCL calculation " + resultName + " failed", t);
                 return null;
             }
         }
 
         protected abstract V doCalculate(StereoMolecule mol);
-
-        @Override
-        public int getTotalCount() {
-            return totalCount.get();
-        }
-
-        @Override
-        public int getErrorCount() {
-            return errorCount.get();
-        }
     }
 }

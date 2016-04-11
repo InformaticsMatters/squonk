@@ -12,10 +12,12 @@ import org.squonk.property.PSAProperty;
  */
 public class PSAOCLPredictor extends AbstractOCLPredictor<Float> {
 
+    private static final String NAME = "PSA_OCL";
+
     private PolarSurfaceAreaPredictor predictor;
 
     public PSAOCLPredictor() {
-        super("PSA_OCL", new PSAProperty());
+        super(NAME, new PSAProperty());
     }
 
 
@@ -27,11 +29,15 @@ public class PSAOCLPredictor extends AbstractOCLPredictor<Float> {
     }
 
     @Override
-    public MoleculeCalculator<Float> getCalculator() {
-        return new Calc();
+    public MoleculeCalculator<Float>[] getCalculators() {
+        return new MoleculeCalculator[] {new Calc(NAME)};
     }
 
     class Calc extends AbstractOCLPredictor.OCLCalculator {
+
+        Calc(String resultName) {
+            super(resultName, Float.class);
+        }
 
         protected Float doCalculate(StereoMolecule mol) {
             return getPredictor().assessPSA(mol);

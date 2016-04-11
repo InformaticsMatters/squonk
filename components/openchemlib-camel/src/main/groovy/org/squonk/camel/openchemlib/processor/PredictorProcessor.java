@@ -42,9 +42,11 @@ public class PredictorProcessor implements Processor {
         Stream<MoleculeObject> mols = dataset.getStream();
 
         for (AbstractOCLPredictor<?> predictor : predictors) {
-            MoleculeCalculator<?> calc = predictor.getCalculator();
-            mols = calculateMultiple(mols, calc);
-            // TODO - handle the stats from the calculator, but bear in mind that the calculations won't happen until the stream is processed.
+            MoleculeCalculator<?>[] calcs = predictor.getCalculators();
+            for (MoleculeCalculator<?> calc : calcs) {
+                mols = calculateMultiple(mols, calc);
+                // TODO - handle the stats from the calculator, but bear in mind that the calculations won't happen until the stream is processed.
+            }
         }
         handleMetadata(exch, dataset.getMetadata());
         exch.getIn().setBody(new MoleculeObjectDataset(mols));
@@ -66,10 +68,10 @@ public class PredictorProcessor implements Processor {
         if (meta == null) {
             meta = new DatasetMetadata(MoleculeObject.class);
         }
-        for (AbstractOCLPredictor predictor : predictors) {
-            String name = predictor.getResultName();
-            Class type = predictor.getPropertyType().getValueClass();
-            meta.getValueClassMappings().put(name, type);
+        for (AbstractOCLPredictor<?> predictor : predictors) {
+            for (MoleculeCalculator<?> calc : predictor.getCalculators()) {
+                meta.getValueClassMappings().put(calc.getResultName(), calc.getResultType());
+            }
         }
         exch.getIn().setHeader(CamelCommonConstants.HEADER_METADATA, meta);
     }

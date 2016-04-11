@@ -42,6 +42,7 @@ postgres:
     image: postgres:9.5
     volumes:
     - ./init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro
+    - ./data/pgdata:/var/lib/postgresql/data
     environment:
         POSTGRES_PASSWORD:
         POSTGRES_KEYCLOAK_PASS:
@@ -144,6 +145,8 @@ portal:
 xwiki:
     build: .
     dockerfile: Dockerfile-xwiki
+    volumes:
+    - ./data/xwiki:/var/local/xwiki
     links:
     - keycloak:keycloak
     - postgres:postgres

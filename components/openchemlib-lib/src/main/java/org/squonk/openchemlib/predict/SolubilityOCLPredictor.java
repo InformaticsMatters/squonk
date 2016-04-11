@@ -1,6 +1,7 @@
 package org.squonk.openchemlib.predict;
 
 import com.actelion.research.chem.StereoMolecule;
+import com.actelion.research.chem.prediction.SolubilityPredictor;
 import com.im.lac.types.MoleculeObject;
 import org.squonk.property.AqueousSolubilityProperty;
 import org.squonk.property.Calculator;
@@ -11,26 +12,33 @@ import org.squonk.property.MoleculeCalculator;
  */
 public class SolubilityOCLPredictor extends AbstractOCLPredictor<Float> {
 
-    private com.actelion.research.chem.prediction.SolubilityPredictor predictor;
+    private static final String NAME = "AqSol_OCL";
+
+    private SolubilityPredictor predictor;
 
     public SolubilityOCLPredictor() {
-        super("AqSol_OCL", new AqueousSolubilityProperty());
+        super(NAME, new AqueousSolubilityProperty());
     }
 
 
-    private com.actelion.research.chem.prediction.SolubilityPredictor getPredictor() {
+    private SolubilityPredictor getPredictor() {
         if (predictor == null) {
-            predictor = new com.actelion.research.chem.prediction.SolubilityPredictor();
+            predictor = new SolubilityPredictor();
         }
         return predictor;
     }
 
     @Override
-    public MoleculeCalculator<Float> getCalculator() {
-        return new Calc();
+    public MoleculeCalculator<Float>[] getCalculators() {
+        return new MoleculeCalculator[] {new Calc(NAME)};
     }
 
     class Calc extends AbstractOCLPredictor.OCLCalculator {
+
+        Calc(String resultName) {
+            super(resultName, Float.class);
+        }
+
 
         protected Float doCalculate(StereoMolecule mol) {
             return getPredictor().assessSolubility(mol);

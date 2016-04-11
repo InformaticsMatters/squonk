@@ -8,7 +8,6 @@ import org.squonk.property.MoleculeCalculator;
 import org.squonk.property.Predictor;
 import org.squonk.property.Property;
 
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,10 +23,11 @@ public abstract class AbstractCDKMoleculePredictor<V> extends Predictor<V,Molecu
     }
 
 
-    public abstract class OCLCalculator<V> implements MoleculeCalculator<V> {
+    public abstract class CDKCalculator<V> extends MoleculeCalculator<V> {
 
-        protected final AtomicInteger totalCount = new AtomicInteger(0);
-        protected final AtomicInteger errorCount = new AtomicInteger(0);
+        public CDKCalculator(String resultName, Class<V> resultType) {
+            super(resultName, resultType);
+        }
 
         @Override
         public V calculate(MoleculeObject mo, boolean storeResult, boolean storeMol) {
@@ -36,11 +36,11 @@ public abstract class AbstractCDKMoleculePredictor<V> extends Predictor<V,Molecu
                 mol = CDKMoleculeIOUtils.fetchMolecule(mo, storeMol);
             } catch (CDKException | CloneNotSupportedException e) {
                 errorCount.incrementAndGet();
-                LOG.log(Level.INFO, "CDK calculation " + getResultName() + " failed", e);
+                LOG.log(Level.INFO, "CDK calculation " + resultName + " failed", e);
             }
             V result = calculate(mol);
             if (storeResult) {
-                mo.putValue(getResultName(), result);
+                mo.putValue(resultName, result);
             }
             return result;
         }
@@ -58,14 +58,5 @@ public abstract class AbstractCDKMoleculePredictor<V> extends Predictor<V,Molecu
 
         protected abstract V doCalculate(IAtomContainer mol);
 
-        @Override
-        public int getTotalCount() {
-            return totalCount.get();
-        }
-
-        @Override
-        public int getErrorCount() {
-            return errorCount.get();
-        }
     }
 }
