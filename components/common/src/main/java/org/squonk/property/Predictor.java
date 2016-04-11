@@ -1,9 +1,11 @@
 package org.squonk.property;
 
+import com.im.lac.types.BasicObject;
+
 /**
  * Created by timbo on 05/04/16.
  */
-public abstract class Predictor<V,T> {
+public abstract class Predictor<V, T extends BasicObject, C extends Calculator<V,T>> {
 
 private final String resultName;
     private final Property<V,T> propertyType;
@@ -21,6 +23,6 @@ private final String resultName;
         return propertyType;
     }
 
-    public abstract Calculator getCalculator();
+    public abstract C getCalculator();
 
 }

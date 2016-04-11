@@ -4,11 +4,12 @@ import com.actelion.research.chem.StereoMolecule;
 import com.im.lac.types.MoleculeObject;
 import org.squonk.property.AqueousSolubilityProperty;
 import org.squonk.property.Calculator;
+import org.squonk.property.MoleculeCalculator;
 
 /**
  * Created by timbo on 05/04/16.
  */
-public class SolubilityOCLPredictor extends AbstractOCLPredictor<Float, MoleculeObject> {
+public class SolubilityOCLPredictor extends AbstractOCLPredictor<Float> {
 
     private com.actelion.research.chem.prediction.SolubilityPredictor predictor;
 
@@ -25,7 +26,7 @@ public class SolubilityOCLPredictor extends AbstractOCLPredictor<Float, Molecule
     }
 
     @Override
-    public Calculator getCalculator() {
+    public MoleculeCalculator<Float> getCalculator() {
         return new Calc();
     }
 

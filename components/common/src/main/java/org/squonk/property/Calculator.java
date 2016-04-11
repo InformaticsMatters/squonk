@@ -1,17 +1,18 @@
 package org.squonk.property;
 
+import com.im.lac.types.BasicObject;
 import com.im.lac.types.MoleculeObject;
 
 /**
  * Created by timbo on 10/04/16.
  */
-public interface Calculator<V> {
+public interface Calculator<V,T extends BasicObject> {
 
-    default V calculate(MoleculeObject mo) {
-        return calculate(mo, false, false);
+    default V calculate(T target) {
+        return calculate(target, false);
     }
 
-    V calculate(MoleculeObject mo, boolean storeMol, boolean storeResult);
+    V calculate(T target, boolean storeResult);
 
     int getTotalCount();
 

@@ -4,12 +4,13 @@ import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.prediction.PolarSurfaceAreaPredictor;
 import com.im.lac.types.MoleculeObject;
 import org.squonk.property.Calculator;
+import org.squonk.property.MoleculeCalculator;
 import org.squonk.property.PSAProperty;
 
 /**
  * Created by timbo on 05/04/16.
  */
-public class PSAOCLPredictor extends AbstractOCLPredictor<Float,MoleculeObject> {
+public class PSAOCLPredictor extends AbstractOCLPredictor<Float> {
 
     private PolarSurfaceAreaPredictor predictor;
 
@@ -26,7 +27,7 @@ public class PSAOCLPredictor extends AbstractOCLPredictor<Float,MoleculeObject> 
     }
 
     @Override
-    public Calculator getCalculator() {
+    public MoleculeCalculator<Float> getCalculator() {
         return new Calc();
     }
 

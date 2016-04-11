@@ -9,6 +9,7 @@ import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.openchemlib.predict.AbstractOCLPredictor;
 import org.squonk.property.Calculator;
+import org.squonk.property.MoleculeCalculator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ public class PredictorProcessor implements Processor {
 
     private static final Logger LOG = Logger.getLogger(PredictorProcessor.class.getName());
 
-    private final List<AbstractOCLPredictor> predictors = new ArrayList<>();
+    private final List<AbstractOCLPredictor<?>> predictors = new ArrayList<>();
 
 
     public PredictorProcessor calculate(AbstractOCLPredictor predictor) {
@@ -40,8 +41,8 @@ public class PredictorProcessor implements Processor {
         }
         Stream<MoleculeObject> mols = dataset.getStream();
 
-        for (AbstractOCLPredictor predictor : predictors) {
-            Calculator calc = predictor.getCalculator();
+        for (AbstractOCLPredictor<?> predictor : predictors) {
+            MoleculeCalculator<?> calc = predictor.getCalculator();
             mols = calculateMultiple(mols, calc);
             // TODO - handle the stats from the calculator, but bear in mind that the calculations won't happen until the stream is processed.
         }
@@ -49,7 +50,7 @@ public class PredictorProcessor implements Processor {
         exch.getIn().setBody(new MoleculeObjectDataset(mols));
     }
 
-    protected Stream<MoleculeObject> calculateMultiple(Stream<MoleculeObject> input, Calculator calc) {
+    protected Stream<MoleculeObject> calculateMultiple(Stream<MoleculeObject> input, MoleculeCalculator<?> calc) {
 
         input = input.peek((mo) -> {
             try {

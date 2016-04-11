@@ -1,9 +1,9 @@
-package org.squonk.openchemlib.predict;
+package org.squonk.cdk.predict;
 
-import com.actelion.research.chem.StereoMolecule;
 import com.im.lac.types.MoleculeObject;
-import org.squonk.openchemlib.molecule.OCLMoleculeUtils;
-import org.squonk.property.Calculator;
+import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.interfaces.IAtomContainer;
+import org.squonk.cdk.io.CDKMoleculeIOUtils;
 import org.squonk.property.MoleculeCalculator;
 import org.squonk.property.Predictor;
 import org.squonk.property.Property;
@@ -15,11 +15,11 @@ import java.util.logging.Logger;
 /**
  * Created by timbo on 05/04/16.
  */
-public abstract class AbstractOCLPredictor<V> extends Predictor<V,MoleculeObject,MoleculeCalculator<V>> {
+public abstract class AbstractCDKMoleculePredictor<V> extends Predictor<V,MoleculeObject,MoleculeCalculator<V>> {
 
-    private static final Logger LOG = Logger.getLogger(AbstractOCLPredictor.class.getName());
+    private static final Logger LOG = Logger.getLogger(AbstractCDKMoleculePredictor.class.getName());
 
-    public AbstractOCLPredictor(String resultName, Property<V,MoleculeObject> propertyType) {
+    public AbstractCDKMoleculePredictor(String resultName, Property<V,MoleculeObject> propertyType) {
         super(resultName, propertyType);
     }
 
@@ -31,7 +31,13 @@ public abstract class AbstractOCLPredictor<V> extends Predictor<V,MoleculeObject
 
         @Override
         public V calculate(MoleculeObject mo, boolean storeResult, boolean storeMol) {
-            StereoMolecule mol = OCLMoleculeUtils.fetchMolecule(mo, storeMol);
+            IAtomContainer mol = null;
+            try {
+                mol = CDKMoleculeIOUtils.fetchMolecule(mo, storeMol);
+            } catch (CDKException | CloneNotSupportedException e) {
+                errorCount.incrementAndGet();
+                LOG.log(Level.INFO, "CDK calculation " + getResultName() + " failed", e);
+            }
             V result = calculate(mol);
             if (storeResult) {
                 mo.putValue(getResultName(), result);
@@ -39,23 +45,18 @@ public abstract class AbstractOCLPredictor<V> extends Predictor<V,MoleculeObject
             return result;
         }
 
-        @Override
-        public V calculate(MoleculeObject mo, boolean storeResult) {
-            return calculate(mo, storeResult, false);
-        }
-
-        public V calculate(StereoMolecule mol) {
+        public V calculate(IAtomContainer mol) {
             totalCount.incrementAndGet();
             try {
                 return doCalculate(mol);
             } catch (Throwable t) {
                 errorCount.incrementAndGet();
-                LOG.log(Level.INFO, "OCL calculation " + getResultName() + " failed", t);
+                LOG.log(Level.INFO, "CDK calculation failed", t);
                 return null;
             }
         }
 
-        protected abstract V doCalculate(StereoMolecule mol);
+        protected abstract V doCalculate(IAtomContainer mol);
 
         @Override
         public int getTotalCount() {
