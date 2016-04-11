@@ -306,6 +306,23 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     exch.getIn().setBody(result);
                 })
                 .endRest()
+                // DELETE
+                .delete("/{notebookid}").description("Delete a notebook")
+                .bindingMode(RestBindingMode.off)
+                .produces("text/plain")
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    boolean result = notebookClient.deleteNotebook(notebookid);
+                    exch.getIn().setBody(null);
+                    if (result) {
+                        exch.getIn().setBody("OK");
+                    } else {
+                        throw new NotFoundException("Notebook " + notebookid + " could not be deleted. May not exist or may not be yours?");
+                    }
+                })
+                .endRest()
                 // NotebookEditable createEditable(Long notebookId, Long parentId, String username);
                 .post("/{notebookid}/e").description("Create a new editable for a notebook")
                 .bindingMode(RestBindingMode.json).produces("application/json")
@@ -318,7 +335,6 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     String user = exch.getIn().getHeader("user", String.class);
                     Long parent = exch.getIn().getHeader("parent", Long.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
-                    String description = exch.getIn().getHeader("description", String.class);
                     NotebookEditableDTO result = notebookClient.createEditable(notebookid, parent, user);
                     exch.getIn().setBody(result);
                 })

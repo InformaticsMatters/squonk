@@ -5,10 +5,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.StringEntity;
@@ -39,6 +36,21 @@ public class AbstractHttpClient {
 
     protected InputStream executeGetAsInputStream(URIBuilder b) throws IOException {
         return executeGetAsInputStream(b, new NameValuePair[0]);
+    }
+
+    protected void executeDelete(URIBuilder b, NameValuePair... headers) throws IOException {
+        try {
+            HttpDelete httpDelete = new HttpDelete(b.build());
+            if (headers != null && headers.length > 0) {
+                addHeaders(httpDelete, headers);
+            }
+            try (CloseableHttpResponse response = httpclient.execute(httpDelete)) {
+                LOG.finer(response.getStatusLine().toString());
+                checkResponse(response);
+            }
+        } catch (URISyntaxException e) {
+            throw new IOException("Bad URI. Really?", e);
+        }
     }
 
     protected String executeGetAsString(URIBuilder b, NameValuePair... headers) throws IOException {
@@ -205,9 +217,14 @@ public class AbstractHttpClient {
      * @throws IOException
      */
     protected void checkResponse(HttpResponse response) throws IOException {
-        HttpEntity entity = response.getEntity();
+
         if (response.getStatusLine().getStatusCode() <200 || response.getStatusLine().getStatusCode() >= 300) {
-            String err = EntityUtils.toString(entity);
+            HttpEntity entity = response.getEntity();
+            InputStream is = entity.getContent();
+            String err = null;
+            if (is != null) {
+                err = EntityUtils.toString(entity);
+            }
             LOG.log(Level.WARNING, "Request failed: {0}", err);
             throw new IOException("Request failed: " + (err == null ? response.getStatusLine().toString() : err));
         }

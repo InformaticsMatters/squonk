@@ -57,6 +57,20 @@ class NotebookPostgresClientSpec extends Specification {
 
     }
 
+    void "delete notebook"() {
+
+        when:
+        NotebookDTO nb3 = client.createNotebook(TestUtils.TEST_USERNAME, "notebook3", "notebook three")
+        def notebooks1 = client.listNotebooks(TestUtils.TEST_USERNAME)
+        client.deleteNotebook(nb3.id)
+        def notebooks2 = client.listNotebooks(TestUtils.TEST_USERNAME)
+
+        then:
+        notebooks1.size() == 3
+        notebooks2.size() == 2
+
+    }
+
     void "list editables"() {
 
         when:

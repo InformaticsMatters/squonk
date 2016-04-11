@@ -1,5 +1,6 @@
 package org.squonk.core.client;
 
+import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
@@ -49,6 +50,14 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         try (InputStream is = executePostAsInputStream(b, null)) {
             return JsonHandler.getInstance().objectFromJson(is, NotebookDTO.class);
         }
+    }
+
+    @Override
+    public boolean deleteNotebook(Long notebookId) throws Exception {
+        assert notebookId != null;
+        URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId);
+        executeDelete(b);
+        return true;
     }
 
     @Override

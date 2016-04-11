@@ -79,8 +79,6 @@ class NotebookRestClientSpec extends Specification {
         thrown(IOException.class)
     }
 
-    // this will fail until the NotebookInstance marshall/unmarshall issues are resolved
-    @Ignore
     void "list notebooks"() {
 
         when:
@@ -91,6 +89,18 @@ class NotebookRestClientSpec extends Specification {
         notebooks.size() == 1
     }
 
+    void "delete notebook"() {
+
+        when:
+        def notebook = client.createNotebook(username, "notebook99", "disposable notebook")
+        int c1 = client.listNotebooks(username).size()
+        client.deleteNotebook(notebook.id)
+        int c2 = client.listNotebooks(username).size()
+
+        then:
+        c1-c2 == 1
+
+    }
 
     void "update notebook"() {
 

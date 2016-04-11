@@ -21,6 +21,14 @@ public interface NotebookClient {
      */
     NotebookDTO createNotebook(String username, String name, String description) throws Exception;
 
+
+    /** Delete the specified notebook
+     *
+     * @param notebookId
+     * @throws Exception
+     */
+    boolean deleteNotebook(Long notebookId) throws Exception;
+
     /** Update details of a notebook
      *
      * @param notebookId

@@ -69,6 +69,29 @@ class NotebookPostgresClient implements NotebookVariableClient {
      * {@inheritDoc}
      */
     @Override
+    public boolean deleteNotebook(Long notebookId) {
+        log.fine("Deleting notebook $notebookId")
+        Sql db = createSql()
+        boolean b = false;
+        try {
+            db.withTransaction {
+                int rows = db.executeUpdate("DELETE FROM users.nb_descriptor WHERE id=$notebookId")
+                if (rows == 1) {
+                    b = true;
+                } else {
+                    LOG.warning("Failed to delete notebook $notebookId")
+                }
+            }
+            return b;
+        } finally {
+            db.close()
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public NotebookDTO updateNotebook(Long notebookId, String name, String description) {
         log.fine("Updating notebook $notebookId with name $name and $description description")
         Sql db = createSql()
