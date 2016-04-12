@@ -136,6 +136,63 @@ class NotebookPostgresClient implements NotebookVariableClient {
      * {@inheritDoc}
      */
     @Override
+    public void addNotebookToLayer(Long notebookId, String layer) throws Exception {
+
+        log.info("Adding notebook $notebookId to layer $layer")
+        // currently the layer name is ignored and assumed to be "public"
+        Sql db = createSql()
+        try {
+            db.withTransaction {
+                setVisibility(db, notebookId, 1)
+            }
+        } finally {
+            db.close()
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void removeNotebookFromLayer(Long notebookId, String layer) throws Exception {
+        log.info("Removing notebook $notebookId from layer $layer")
+        // currently the layer name is ignored and assumed to be "public"
+        Sql db = createSql()
+        try {
+            db.withTransaction {
+                setVisibility(db, notebookId, 0)
+            }
+        } finally {
+            db.close()
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> listLayers(Long notebookId) throws Exception {
+
+        Sql db = createSql()
+        try {
+            boolean isPublic = false
+            db.withTransaction {
+                isPublic = isNotebookPublic(db, notebookId)
+            }
+            List<String> l = new ArrayList<>()
+            if (isPublic) {
+                l.add("public")
+            }
+            return l;
+        } finally {
+            db.close()
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public List<NotebookEditableDTO> listEditables(Long notebookId, String username) {
         log.fine("Listing editables for notebook $notebookId and user $username")
         Sql db = createSql()
@@ -456,6 +513,30 @@ class NotebookPostgresClient implements NotebookVariableClient {
     private NotebookDTO buildNotebookDescriptor(def data) {
         log.fine("Building notebook: $data")
         return new NotebookDTO(data.id, data.name, data.description, data.username, data.created, data.updated)
+    }
+
+    /** this is a temp solution until layers are fully implemented
+     *
+     * @param db
+     * @param notebookId
+     * @return
+     */
+    private boolean isNotebookPublic(Sql db, Long notebookId) {
+        def row = db.firstRow("SELECT visibility FROM users.nb_descriptor WHERE id=$notebookId")
+        if (row != null) {
+            return row[0] != 0
+        }
+        return false;
+    }
+
+    /** this is a temp solution until layers are fully implemented
+     *
+     * @param db
+     * @param notebookId
+     * @param visibility
+     */
+    private void setVisibility(Sql db, Long notebookId, int visibility) {
+        int rows = db.executeUpdate("UPDATE users.nb_descriptor SET visibility=$visibility WHERE id=$notebookId")
     }
 
     /** Create the first editable that will be the initial one that's used when a new notebook is created

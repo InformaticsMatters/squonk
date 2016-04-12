@@ -1,10 +1,21 @@
 -- add tables to hold the notebook and variable definitions
 
+--CREATE TABLE users.layers (
+--    id              SERIAL PRIMARY KEY,
+--    name            VARCHAR(50) NOT NULL,
+--    created         TIMESTAMP NOT NULL,
+--    updated         TIMESTAMP NOT NULL,
+--);
+
+--INSERT INTO users.layers (name, created, updated) VALUES ('public', NOW(), NOW());
+
+
 CREATE TABLE users.nb_descriptor (
     id              SERIAL PRIMARY KEY,
     owner_id        INT NOT NULL,
     name            VARCHAR(50) NOT NULL,
     description     VARCHAR(400) NOT NULL,
+    visibility      INT NOT NULL DEFAULT 0,
     created         TIMESTAMP NOT NULL,
     updated         TIMESTAMP NOT NULL,
     CONSTRAINT nbdes_uq_name UNIQUE (owner_id, name),

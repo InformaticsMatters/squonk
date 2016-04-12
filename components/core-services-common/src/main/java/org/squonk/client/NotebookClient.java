@@ -39,6 +39,30 @@ public interface NotebookClient {
      */
     NotebookDTO updateNotebook(Long notebookId, String name, String description) throws Exception;
 
+    /** Remove notebook from the specified layer
+     *
+     * @param notebookId
+     * @param layer
+     * @throws Exception
+     */
+    void addNotebookToLayer(Long notebookId, String layer) throws Exception;
+
+    /** Add notebook to the specified layer
+     *
+     * @param notebookId
+     * @param layer
+     * @throws Exception
+     */
+    void removeNotebookFromLayer(Long notebookId, String layer) throws Exception;
+
+    /** Get the layers the notebook belongs to
+     *
+     * @param notebookId
+     * @return
+     * @throws Exception
+     */
+    List<String> listLayers(Long notebookId) throws Exception;
+
     /** All notebooks the user has access to
      *
      * @param username

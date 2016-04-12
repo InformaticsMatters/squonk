@@ -114,6 +114,25 @@ class NotebookRestClientSpec extends Specification {
         notebook1.description ==  "different description"
     }
 
+    void "add to layer"() {
+        when:
+        client.addNotebookToLayer(notebook1.id, "public")
+        def layers = client.listLayers(notebook1.id)
+
+        then:
+        layers.size() == 1
+        layers[0] == "public"
+    }
+
+    void "remove from layer"() {
+        when:
+        client.removeNotebookFromLayer(notebook1.id, "public")
+        def layers = client.listLayers(notebook1.id)
+
+        then:
+        layers.size() == 0
+    }
+
     void "fetch initial editable"() {
 
         when:

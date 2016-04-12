@@ -91,6 +91,34 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         }
     }
 
+
+    @Override
+    public List<String> listLayers(Long notebookId) throws Exception {
+        assert notebookId != null;
+        URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/layer");
+        try (InputStream is = executeGetAsInputStream(b)) {
+            return JsonHandler.getInstance().streamFromJson(is, String.class, true).collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public void addNotebookToLayer(Long notebookId, String layer) throws Exception {
+        assert notebookId != null;
+        assert layer != null;
+        LOG.info("Adding notebook " + notebookId + " to layer " + layer);
+        URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/layer/" + layer);
+        executePost(b, null);
+    }
+
+    @Override
+    public void removeNotebookFromLayer(Long notebookId, String layer) throws Exception {
+        assert notebookId != null;
+        assert layer != null;
+        LOG.info("Removing notebook " + notebookId + " from layer " + layer);
+        URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/layer/" + layer);
+        executeDelete(b);
+    }
+
     /** Fetch the editables for a particular notebook that are owned by this user
      *
      * @param notebookId The ID of the notebook

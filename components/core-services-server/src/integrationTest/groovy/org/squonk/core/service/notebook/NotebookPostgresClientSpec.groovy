@@ -54,7 +54,6 @@ class NotebookPostgresClientSpec extends Specification {
         notebooks.size() == 2
         notebooks[0].name == "notebook2" // should be listed in descending creation date
         notebooks[1].name == "notebook1"
-
     }
 
     void "delete notebook"() {
@@ -68,8 +67,31 @@ class NotebookPostgresClientSpec extends Specification {
         then:
         notebooks1.size() == 3
         notebooks2.size() == 2
-
     }
+
+
+    void "add to layer"() {
+
+        when:
+        client.addNotebookToLayer(notebooks[0].id, "public")
+        def layers = client.listLayers(notebooks[0].id)
+
+        then:
+        layers.size() == 1
+        layers[0] == "public"
+    }
+
+
+    void "remove from layer"() {
+
+        when:
+        client.removeNotebookFromLayer(notebooks[0].id, "public")
+        def layers = client.listLayers(notebooks[0].id)
+
+        then:
+        layers.size() == 0
+    }
+
 
     void "list editables"() {
 

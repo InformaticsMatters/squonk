@@ -323,6 +323,44 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     }
                 })
                 .endRest()
+                // List<String> listLayer(Long notebookId);
+                .get("/{notebookid}/layer").description("Get the layers a notebook belongs to")
+                .bindingMode(RestBindingMode.json).produces("application/json")
+                .outType(List.class)
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    List<String> results = notebookClient.listLayers(notebookid);
+                    exch.getIn().setBody(results);
+                })
+                .endRest()
+                // add to layer
+                .post("/{notebookid}/layer/{layer}").description("Add notebook to this layer")
+                .bindingMode(RestBindingMode.off).produces("text/plain")
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name("layer").type(path).description("The name of the layer").dataType("string").required(true).endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    String layer = exch.getIn().getHeader("layer", String.class);
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    notebookClient.addNotebookToLayer(notebookid, layer);
+                    exch.getIn().setBody("OK");
+                })
+                .endRest()
+                // remove from layer
+                .delete("/{notebookid}/layer/{layer}").description("Remove notebook from this layer")
+                .bindingMode(RestBindingMode.off).produces("text/plain")
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name("layer").type(path).description("The name of the layer").dataType("string").required(true).endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    String layer = exch.getIn().getHeader("layer", String.class);
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    notebookClient.removeNotebookFromLayer(notebookid, layer);
+                    exch.getIn().setBody("OK");
+                })
+                .endRest()
                 // NotebookEditable createEditable(Long notebookId, Long parentId, String username);
                 .post("/{notebookid}/e").description("Create a new editable for a notebook")
                 .bindingMode(RestBindingMode.json).produces("application/json")
