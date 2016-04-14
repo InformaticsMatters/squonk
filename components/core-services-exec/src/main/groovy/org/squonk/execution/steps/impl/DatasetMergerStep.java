@@ -6,8 +6,10 @@ import org.squonk.execution.variable.VariableManager;
 import com.im.lac.types.BasicObject;
 import org.squonk.dataset.Dataset;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -39,41 +41,47 @@ public class DatasetMergerStep extends AbstractStep {
         String mergeField = getOption(OPTION_MERGE_FIELD_NAME, String.class);
         boolean keepFirst = getOption(OPTION_KEEP_FIRST, Boolean.class, true);
         
-        LOG.log(Level.FINE, "Merging using field {0}, keep first value={1}", new Object[]{mergeField, keepFirst});
+        LOG.log(Level.INFO, "Merging using field {0}, keep first value={1}", new Object[]{mergeField, keepFirst});
 
-        Dataset<BasicObject> dataset1 = fetchMappedInput(VAR_INPUT_1, Dataset.class, varman);
+        Map<Object, BasicObject> results = new LinkedHashMap<>();
+        Class type = null;
 
-        Stream<BasicObject> stream = dataset1.getStream().sequential();
-        for (int i = 2; i <= 5; i++) {
-            Dataset<BasicObject> nextDataset = fetchMappedInput(VAR_INPUT_BASE + i, Dataset.class, varman);
-            if (nextDataset == null) {
-                break;
+        for (int i = 1; i <= 5; i++) {
+            Dataset<? extends BasicObject> nextDataset = fetchMappedInput(VAR_INPUT_BASE + i, Dataset.class, varman);
+            if (type == null) {
+                type = nextDataset.getType();
             }
-            LOG.log(Level.FINE, "Concatting stream {0}", i);
-            stream = Stream.concat(stream, nextDataset.getStream().sequential());
+            if (nextDataset != null) {
+
+                LOG.log(Level.INFO, "Handling dataset {0}", i);
+                Stream<? extends BasicObject> st = nextDataset.getStream();
+                st.forEachOrdered((BasicObject bo) -> {
+                    Object comparator = fetchValueToCompare(bo, mergeField);
+                    BasicObject existing = results.get(comparator);
+                    if (existing != null) {
+                        if (keepFirst) {
+                            for (Map.Entry<String, Object> e : bo.getValues().entrySet()) {
+                                existing.getValues().putIfAbsent(e.getKey(), e.getValue());
+                            }
+                        } else {
+                            existing.getValues().putAll(bo.getValues());
+                        }
+                    } else {
+                        results.put(comparator, bo);
+                    }
+                });
+                st.close();
+
+                // TODO - merge the metadata?
+            }
         }
 
-        Map<Object, BasicObject> items = stream.sequential()
-                .filter(o -> mergeField == null || o.getValue(mergeField) != null)
-                .collect(Collectors.toConcurrentMap(
-                                bo -> fetchValueToCompare(bo, mergeField),
-                                bo -> bo,
-                                (bo1, bo2) -> {
-                                    //LOG.info("\nMerging " + bo1 + " and " + bo2 + "\n");
-                                    if (keepFirst) {
-                                        for (Map.Entry<String, Object> e : bo2.getValues().entrySet()) {
-                                            bo1.getValues().putIfAbsent(e.getKey(), e.getValue());
-                                        }
-                                    } else {
-                                        bo1.getValues().putAll(bo2.getValues());
-                                    }
-                                    return bo1;
-                                }));
+        if (type != null) {
 
-        Class type = dataset1.getType();
-        Dataset result = new Dataset<>(type, items.values());
-        createMappedOutput(VAR_OUTPUT, Dataset.class, result, varman);
-        LOG.fine("Merge complete. Results: " + result.getMetadata());
+            Dataset result = new Dataset<>(type, results.values());
+            createMappedOutput(VAR_OUTPUT, Dataset.class, result, varman);
+            LOG.info("Merge complete. Results: " + result.getMetadata());
+        }
     }
 
     private Object fetchValueToCompare(BasicObject bo, String mergeField) {

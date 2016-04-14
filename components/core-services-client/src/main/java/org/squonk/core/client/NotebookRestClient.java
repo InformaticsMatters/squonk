@@ -217,10 +217,12 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
 
     @Override
     public String readTextValue(Long notebookId, Long sourceId, Long cellId, String variableName, String key) throws IOException {
+        LOG.finer("readTextValue " + buildVariableUrl(notebookId, sourceId, cellId, variableName, key, VarType.t));
         assert sourceId != null;
         assert variableName != null;
         URIBuilder b = createURIBuilder(notebookId, sourceId, cellId, variableName, key, VarType.t);
         try (InputStream is = executeGetAsInputStream(b)) {
+            LOG.finer("readTextValue completed");
             return is == null ? null : IOUtils.convertStreamToString(is);
         }
     }
@@ -248,10 +250,12 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
 
     @Override
     public InputStream readStreamValue(Long notebookId, Long sourceId, Long cellId, String variableName, String key) throws IOException {
+        LOG.finer("readStreamValue " + buildVariableUrl(notebookId, sourceId, cellId, variableName, key, VarType.s));
         assert sourceId != null;
         assert variableName != null;
         URIBuilder b = createURIBuilder(notebookId, sourceId, cellId, variableName, key, VarType.s);
         InputStream is = executeGetAsInputStream(b);
+        LOG.finer("readStreamValue completed");
         return is;
     }
 

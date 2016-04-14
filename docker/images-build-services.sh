@@ -6,9 +6,16 @@
 
 base=$PWD
 
+docker-compose stop
+docker-compose rm -fv coreservices
+docker-compose rm -fv cellexecutor
+docker-compose rm -fv chemservices
+
 cd ../components
 
-#./gradlew --daemon assemble
+./gradlew --daemon assemble 
+
+docker rmi squonk/core-services-server squonk/chem-services-basic squonk/cellexecutor
 
 echo "building chem-services-basic docker image ..."
 ./gradlew --daemon dockerFileChemServices &&
@@ -23,7 +30,7 @@ echo "... core-services docker image built"
 
 echo "building cell-executor docker image ..."
 ./gradlew --daemon cell-executor:dockerBuildImage &&
-  docker build -t squonk/cell-executor cell-executor/build/docker
+  docker build -t squonk/cellexecutor cell-executor/build/docker
 echo "... cell-executor docker image built"
 
 
