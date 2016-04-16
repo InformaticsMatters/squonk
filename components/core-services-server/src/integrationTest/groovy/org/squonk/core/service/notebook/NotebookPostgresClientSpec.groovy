@@ -73,23 +73,21 @@ class NotebookPostgresClientSpec extends Specification {
     void "add to layer"() {
 
         when:
-        client.addNotebookToLayer(notebooks[0].id, "public")
-        def layers = client.listLayers(notebooks[0].id)
+        NotebookDTO nb = client.addNotebookToLayer(notebooks[0].id, "public")
 
         then:
-        layers.size() == 1
-        layers[0] == "public"
+        nb.layers.size() == 1
+        nb.layers[0] == "public"
     }
 
 
     void "remove from layer"() {
 
         when:
-        client.removeNotebookFromLayer(notebooks[0].id, "public")
-        def layers = client.listLayers(notebooks[0].id)
+        NotebookDTO nb = client.removeNotebookFromLayer(notebooks[0].id, "public")
 
         then:
-        layers.size() == 0
+        nb.layers.size() == 0
     }
 
 

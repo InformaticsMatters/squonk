@@ -14,7 +14,7 @@ CREATE TABLE users.nb_descriptor (
     id              SERIAL PRIMARY KEY,
     owner_id        INT NOT NULL,
     name            VARCHAR(50) NOT NULL,
-    description     VARCHAR(400),
+    description     VARCHAR(400) NOT NULL,
     visibility      INT NOT NULL DEFAULT 0,
     created         TIMESTAMP NOT NULL,
     updated         TIMESTAMP NOT NULL,

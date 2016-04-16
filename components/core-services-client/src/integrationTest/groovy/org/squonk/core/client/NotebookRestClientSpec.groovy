@@ -116,21 +116,19 @@ class NotebookRestClientSpec extends Specification {
 
     void "add to layer"() {
         when:
-        client.addNotebookToLayer(notebook1.id, "public")
-        def layers = client.listLayers(notebook1.id)
+        NotebookDTO nb = client.addNotebookToLayer(notebook1.id, "public")
 
         then:
-        layers.size() == 1
-        layers[0] == "public"
+        nb.layers.size() == 1
+        nb.layers[0] == "public"
     }
 
     void "remove from layer"() {
         when:
-        client.removeNotebookFromLayer(notebook1.id, "public")
-        def layers = client.listLayers(notebook1.id)
+        NotebookDTO nb = client.removeNotebookFromLayer(notebook1.id, "public")
 
         then:
-        layers.size() == 0
+        nb.layers.size() == 0
     }
 
     void "fetch initial editable"() {

@@ -102,21 +102,25 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
     }
 
     @Override
-    public void addNotebookToLayer(Long notebookId, String layer) throws Exception {
+    public NotebookDTO addNotebookToLayer(Long notebookId, String layer) throws Exception {
         assert notebookId != null;
         assert layer != null;
         LOG.info("Adding notebook " + notebookId + " to layer " + layer);
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/layer/" + layer);
-        executePost(b, null);
+        try (InputStream is = executePostAsInputStream(b, null)) {
+            return JsonHandler.getInstance().objectFromJson(is, NotebookDTO.class);
+        }
     }
 
     @Override
-    public void removeNotebookFromLayer(Long notebookId, String layer) throws Exception {
+    public NotebookDTO removeNotebookFromLayer(Long notebookId, String layer) throws Exception {
         assert notebookId != null;
         assert layer != null;
         LOG.info("Removing notebook " + notebookId + " from layer " + layer);
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/layer/" + layer);
-        executeDelete(b);
+        try (InputStream is = executeDeleteAsInputStream(b)) {
+            return JsonHandler.getInstance().objectFromJson(is, NotebookDTO.class);
+        }
     }
 
     /** Fetch the editables for a particular notebook that are owned by this user

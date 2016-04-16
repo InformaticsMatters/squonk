@@ -43,17 +43,19 @@ public interface NotebookClient {
      *
      * @param notebookId
      * @param layer
+     * @return The updated notebook definition
      * @throws Exception
      */
-    void addNotebookToLayer(Long notebookId, String layer) throws Exception;
+    NotebookDTO addNotebookToLayer(Long notebookId, String layer) throws Exception;
 
     /** Add notebook to the specified layer
      *
      * @param notebookId
      * @param layer
+     * @return The updated notebook definition
      * @throws Exception
      */
-    void removeNotebookFromLayer(Long notebookId, String layer) throws Exception;
+    NotebookDTO removeNotebookFromLayer(Long notebookId, String layer) throws Exception;
 
     /** Get the layers the notebook belongs to
      *

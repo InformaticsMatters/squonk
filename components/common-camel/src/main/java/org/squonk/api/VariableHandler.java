@@ -8,7 +8,7 @@ import java.net.URL;
  * To conform the class must:
  * <ol>
  *     <li>Implement this interface</li>
- *     <li>Have a constructor with a single parameter of {@link ReadContext} or, for handleing generic types, two parameters
+ *     <li>Have a constructor with a single parameter of {@link ReadContext} or, for handling generic types, two parameters
  *     of types {java.lang.Class} and {@link ReadContext}</li>
  * </ol>
  * This allows the implementation to define exactly how it is persisted, using text and stream values.

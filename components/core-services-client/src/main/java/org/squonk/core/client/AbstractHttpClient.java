@@ -53,6 +53,23 @@ public class AbstractHttpClient {
         }
     }
 
+    protected InputStream executeDeleteAsInputStream(URIBuilder b, NameValuePair... headers) throws IOException {
+        try {
+            HttpDelete httpDelete = new HttpDelete(b.build());
+            if (headers != null && headers.length > 0) {
+                addHeaders(httpDelete, headers);
+            }
+            try (CloseableHttpResponse response = httpclient.execute(httpDelete)) {
+                LOG.finer(response.getStatusLine().toString());
+                checkResponse(response);
+                HttpEntity entity = response.getEntity();
+                return entity.getContent();
+            }
+        } catch (URISyntaxException e) {
+            throw new IOException("Bad URI. Really?", e);
+        }
+    }
+
     protected String executeGetAsString(URIBuilder b, NameValuePair... headers) throws IOException {
         try {
             HttpGet httpGet = new HttpGet(b.build());

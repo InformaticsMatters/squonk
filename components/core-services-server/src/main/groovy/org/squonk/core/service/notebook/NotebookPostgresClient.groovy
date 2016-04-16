@@ -136,35 +136,21 @@ class NotebookPostgresClient implements NotebookVariableClient {
      * {@inheritDoc}
      */
     @Override
-    public void addNotebookToLayer(Long notebookId, String layer) throws Exception {
+    public NotebookDTO addNotebookToLayer(Long notebookId, String layer) throws Exception {
 
         log.info("Adding notebook $notebookId to layer $layer")
         // currently the layer name is ignored and assumed to be "public"
-        Sql db = createSql()
-        try {
-            db.withTransaction {
-                setVisibility(db, notebookId, 1)
-            }
-        } finally {
-            db.close()
-        }
+        return doNotebookLayerChange(notebookId, 1)
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void removeNotebookFromLayer(Long notebookId, String layer) throws Exception {
+    public NotebookDTO removeNotebookFromLayer(Long notebookId, String layer) throws Exception {
         log.info("Removing notebook $notebookId from layer $layer")
         // currently the layer name is ignored and assumed to be "public"
-        Sql db = createSql()
-        try {
-            db.withTransaction {
-                setVisibility(db, notebookId, 0)
-            }
-        } finally {
-            db.close()
-        }
+        return doNotebookLayerChange(notebookId, 0)
     }
 
     /**
@@ -512,8 +498,30 @@ class NotebookPostgresClient implements NotebookVariableClient {
 
     private NotebookDTO buildNotebookDescriptor(def data) {
         log.fine("Building notebook: $data")
-        return new NotebookDTO(data.id, data.name, data.description, data.username, data.created, data.updated)
+        List<String> layers = []
+        if (data.visibility > 0) {
+            layers << 'public'
+        }
+        return new NotebookDTO(data.id, data.name, data.description, data.username, data.created, data.updated, layers)
     }
+
+    private NotebookDTO doNotebookLayerChange(Long notebookId, int value) throws Exception {
+
+        // current implementation is private (0) or public (1)
+        // this will be replaced by an implementation that uses layers
+        Sql db = createSql()
+        try {
+            NotebookDTO result = null
+            db.withTransaction {
+                setVisibility(db, notebookId, value)
+                result = fetchNotebookDescriptorById(db, notebookId)
+            }
+            return result
+        } finally {
+            db.close()
+        }
+    }
+
 
     /** this is a temp solution until layers are fully implemented
      *
@@ -572,8 +580,8 @@ class NotebookPostgresClient implements NotebookVariableClient {
         return (data == null ? null : buildNotebookEditable(data))
     }
 
-    private List<NotebookDTO> fetchNotebookEditablesByUsername(Sql db, Long notebookId, String username) {
-        List<NotebookDTO> results = new ArrayList<>()
+    private List<NotebookEditableDTO> fetchNotebookEditablesByUsername(Sql db, Long notebookId, String username) {
+        List<NotebookEditableDTO> results = new ArrayList<>()
         db.eachRow(SQL_ED_FETCH_BY_USERNAME, [notebookId: notebookId, username: username]) {
             results << buildNotebookEditable(it)
         }
