@@ -14,18 +14,7 @@ class TestUtils {
 
     public final static String TEST_USERNAME = 'squonkuser'
         
-//    static List<Long> createTestData(DatasetHandler handler) {
-//
-//        def ids = []
-//
-//        ids << handler.createDataset('World', 'test0').id
-//        ids << handler.createDataset(["one", "two", "three"],'test1').id
-//        ids << handler.createDataset(["red", "yellow", "green", "blue"],'test2').id
-//        ids << handler.createDataset(["banana", "pineapple", "orange", "apple", "pear"], 'test3').id
-//        
-//        return ids
-//    }
-    
+
     static DataSource createTestDataSource() {
         return Utils.createDataSource()
     }

@@ -1,47 +1,38 @@
 package org.squonk.core;
 
-import com.im.lac.dataset.DataItem;
-import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.ExecuteCellUsingStepsJobDefinition;
 import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobStatus;
-import org.squonk.core.dataset.service.DatasetHandler;
+import org.apache.camel.Exchange;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.rest.RestBindingMode;
+import org.squonk.client.JobStatusClient;
 import org.squonk.core.service.discovery.ServiceDiscoveryRouteBuilder;
 import org.squonk.core.service.job.Job;
 import org.squonk.core.service.job.MemoryJobStatusClient;
 import org.squonk.core.service.job.PostgresJobStatusClient;
 import org.squonk.core.service.job.StepsCellJob;
 import org.squonk.core.service.notebook.NotebookPostgresClient;
-import org.squonk.core.user.User;
 import org.squonk.core.service.user.UserHandler;
+import org.squonk.core.user.User;
 import org.squonk.core.util.Utils;
-import com.im.lac.types.MoleculeObject;
-import org.apache.camel.Exchange;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.model.dataformat.JsonLibrary;
-import org.apache.camel.model.rest.RestBindingMode;
-import org.squonk.chemaxon.molecule.MoleculeObjectUtils;
-import org.squonk.client.JobStatusClient;
 import org.squonk.mqueue.MessageQueueCredentials;
-import org.squonk.notebook.api.*;
+import org.squonk.notebook.api.NotebookCanvasDTO;
+import org.squonk.notebook.api.NotebookDTO;
+import org.squonk.notebook.api.NotebookEditableDTO;
+import org.squonk.notebook.api.NotebookSavepointDTO;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
 import java.io.InputStream;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
+import static org.apache.camel.model.rest.RestParamType.*;
 import static org.squonk.client.VariableClient.VarType;
-
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_USERS_EXCHANGE_NAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_USERS_EXCHANGE_PARAMS;
-
-import static org.apache.camel.model.rest.RestParamType.query;
-import static org.apache.camel.model.rest.RestParamType.body;
-import static org.apache.camel.model.rest.RestParamType.path;
 
 /**
  * @author timbo
@@ -52,7 +43,6 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
 
     private final JobStatusClient jobstatusClient;
     private final NotebookPostgresClient notebookClient;
-    private final JsonHandler jsonHandler = JsonHandler.getInstance();
     private MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials();
     private final String userNotifyMqueueUrl = rabbitmqCredentials.generateUrl(MQUEUE_USERS_EXCHANGE_NAME, MQUEUE_USERS_EXCHANGE_PARAMS);
 
@@ -128,49 +118,6 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .outType(ServiceDescriptor.class)
                 .produces("application/json")
                 .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST);
-
-        rest("/v1/datasets").description("Dataset management services")
-                // POST
-                .post()
-                .description("Upload file to submit new dataset. File is the body and dataset name is given by the header named " + HEADER_DATAITEM_NAME)
-                .bindingMode(RestBindingMode.off)
-                .produces("application/json")
-                .route()
-                // this is a temp hack - client should set Content-Type, but for now we assume SDF
-                .setHeader("Content-Type", constant("chemical/x-mdl-sdfile"))
-                .to("direct:datasets/upload")
-                .endRest()
-                // 
-                // DELETE
-                .delete("/{" + REST_DATASET_ID + "}").description("Deletes the dataset specified by the ID")
-                .route()
-                .process((Exchange exch) -> DatasetHandler.deleteDataset(exch))
-                .transform(constant("OK"))
-                .endRest()
-                //
-                // GET all 
-                .get().description("List all datasets")
-                .bindingMode(RestBindingMode.json).produces("application/json")
-                .outType(DataItem.class)
-                .route()
-                .process((Exchange exch) -> DatasetHandler.putDataItems(exch))
-                .endRest()
-                //
-                // GET DataItem for one
-                .get("/{" + REST_DATASET_ID + "}/dataitem").description("Gets a description of the dataset specified by the ID as JSON")
-                .bindingMode(RestBindingMode.json).produces("application/json")
-                .outType(DataItem.class)
-                .route()
-                .process((Exchange exch) -> DatasetHandler.putDataItem(exch))
-                .endRest()
-                //
-                // GET content for item
-                .get("/{" + REST_DATASET_ID + "}/content").description("Gets the actual data content specified by the ID as JSON")
-                .bindingMode(RestBindingMode.off).produces("application/json")
-                .route()
-                .process((Exchange exch) -> DatasetHandler.putJsonForDataset(exch))
-                .setBody(simple("${body.inputStream}"))
-                .endRest();
 
 
         rest("/v1/jobs").description("Job submission and status services")
@@ -494,36 +441,18 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                         throw new IllegalArgumentException("Must specify variable type");
                     }
                     // TODO -set the mime type and encoding
-                    //if (label != null) {
-//                        switch (type) {
-//                            case s:
-//                                InputStream is = notebookClient.readStreamValue(notebookid, label, varname, key);
-//                                exch.getIn().setBody(is);
-//                                break;
-//                            case t:
-//                                LOG.info("reading text value for label");
-//                                String t = notebookClient.readTextValue(notebookid, label, varname, key);
-//                                exch.getIn().setBody(t);
-//                                break;
-//                            default:
-//                                throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
-//                        }
-                    //} else if (sourceid != null) {
-                        switch (type) {
-                            case s:
-                                InputStream is = notebookClient.readStreamValue(notebookid, sourceid, cellid, varname, key);
-                                exch.getIn().setBody(is);
-                                break;
-                            case t:
-                                String t = notebookClient.readTextValue(notebookid, sourceid, cellid, varname, key);
-                                exch.getIn().setBody(t);
-                                break;
-                            default:
-                                throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
-                        }
-//                    } else {
-//                        throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
-//                    }
+                    switch (type) {
+                        case s:
+                            InputStream is = notebookClient.readStreamValue(notebookid, sourceid, cellid, varname, key);
+                            exch.getIn().setBody(is);
+                            break;
+                        case t:
+                            String t = notebookClient.readTextValue(notebookid, sourceid, cellid, varname, key);
+                            exch.getIn().setBody(t);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
+                    }
                 })
                 .endRest()
                 // write a variable
@@ -589,55 +518,11 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .get("/{" + HEADER_SQUONK_USERNAME + "}").description("Get the User object for this username (spceified as the query parameter named " + HEADER_SQUONK_USERNAME)
                 .bindingMode(RestBindingMode.json)
                 .produces("application/json")
+                .produces("application/json")
                 .outType(User.class)
                 .route()
                 .process((Exchange exch) -> UserHandler.putUser(exch))
                 .endRest();
-
-
-
-        /* These are the implementation endpoints - not accessible directly from "outside"
-         */
-        from("direct:datasets/upload")
-                .process((Exchange exchange) -> {
-                            String specifiedName = exchange.getIn().getHeader(HEADER_DATAITEM_NAME, String.class);
-                            String username = Utils.fetchUsername(exchange);
-                            DataItem created = null;
-                            InputStream body = exchange.getIn().getBody(InputStream.class);
-                            String contentType = exchange.getIn().getHeader("Content-Type", String.class);
-                            if (body != null) {
-                                DatasetHandler datasetHandler = Utils.getDatasetHandler(exchange);
-                                InputStream gunzip = IOUtils.getGunzippedInputStream(body);
-                                Stream<MoleculeObject> mols = null;
-                                try {
-                                    if (contentType != null && "chemical/x-mdl-sdfile".equals(contentType)) {
-                                        mols = MoleculeObjectUtils.createStreamGenerator(gunzip).getStream(false);
-                                    } else { // assume MoleculeObject JSON
-                                        // need to convert to objects so that the metadata can be generated
-                                        mols = (Stream<MoleculeObject>) datasetHandler.generateObjectFromJson(body, new Metadata(MoleculeObject.class.getName(), Metadata.Type.STREAM, 0));
-                                    }
-
-                                    DataItem result = datasetHandler.createDataset(
-                                            username,
-                                            mols,
-                                            specifiedName == null ? "File uploaded on " + new Date().toString() : specifiedName);
-                                    if (result != null) {
-                                        created = result;
-                                    }
-
-                                } finally {
-                                    if (mols != null) {
-                                        mols.close();
-                                    }
-                                }
-
-                            }
-                            exchange.getOut().setBody(created);
-                        }
-                )
-                .marshal()
-                .json(JsonLibrary.Jackson);
-
     }
 
 }

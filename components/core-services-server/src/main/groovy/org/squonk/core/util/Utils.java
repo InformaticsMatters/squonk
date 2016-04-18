@@ -1,23 +1,17 @@
 package org.squonk.core.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.camel.Exchange;
+import org.postgresql.ds.PGPoolingDataSource;
+import org.squonk.core.CommonConstants;
+import org.squonk.util.IOUtils;
 
 import javax.sql.DataSource;
-
-import org.postgresql.ds.PGPoolingDataSource;
-import org.postgresql.ds.PGSimpleDataSource;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.squonk.core.CommonConstants;
-import org.squonk.core.ServerConstants;
-import org.squonk.core.dataset.service.DatasetHandler;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.camel.Exchange;
-import org.squonk.util.IOUtils;
 
 /**
  * @author timbo
@@ -64,10 +58,6 @@ public class Utils {
 
     public static <T> T fromJson(String s, Class<T> type) throws IOException {
         return mapper.readValue(s, type);
-    }
-
-    public static DatasetHandler getDatasetHandler(Exchange exch) {
-        return exch.getContext().getRegistry().lookupByNameAndType(ServerConstants.DATASET_HANDLER, DatasetHandler.class);
     }
 
     public static String fetchUsername(Exchange exchange) {
