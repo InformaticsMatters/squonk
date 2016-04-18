@@ -29,7 +29,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     private static final String DESC_SIM_CUTTOFF = "Similarity score cuttoff between 0 and 1 (1 means identical)";
     private static final String KEY_QMOL = HEADER + MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE;
     private static final String LABEL_QMOL = "Query Structure";
-    private static final String DESC_QMOL = "Structure to us as the query";
+    private static final String DESC_QMOL = "Structure to use as the query";
 //    private static final String KEY_CT_EXPR = "ct_expr";
 //    private static final String LABEL_CT_EXPR = "ChemTerms Expression";
 //    private static final String DESC_CT_EXPR = "Expression using  the Chemical Terms language";

@@ -57,7 +57,7 @@ public class OptionDescriptor<T> implements Serializable {
      * @param minValues The minimum number of values. If 0 then the option is optional. If 1 it is required. If greater than
      *                  1 then at least this many values need to be specified. If null then assumed to be 1.
      * @param maxValues The maximum number of values. If null then any number are allowed.
-     * @param properties Any cusom properties needed by subclasses
+     * @param properties Any custom properties needed by subclasses
      */
     public OptionDescriptor(
             @JsonProperty("typeDescriptor") TypeDescriptor<T> typeDescriptor,

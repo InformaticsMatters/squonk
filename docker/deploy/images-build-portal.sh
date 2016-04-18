@@ -1,18 +1,19 @@
 #!/bin/bash
 
-HOME=$PWD
-echo HOME = $HOME
+base=$PWD
+echo base = $HOME
 
-touch portal/ROOT.war && rm portal/*.war
+touch images/portal/ROOT.war && rm images/portal/*.war
 
 cd ../../../portal/portal-app; ant -f portal.xml build-portal-app-zip
-cd $HOME
-cp ../../../portal/portal-app/dist/portal-app.war portal/ROOT.war
+cd $base
+cp ../../../portal/portal-app/dist/portal-app.war images/portal/ROOT.war
 
-#echo "building squonk/portal docker image ..."
-#docker build -t squonk/portal portal/
-#echo "... squonk/portal docker image built"
-cd $HOME
+echo "building squonk/portal docker image ..."
+cd images
+docker build -t squonk/portal -f Dockerfile-portal .
+echo "... squonk/portal docker image built"
 
+cd $base
 echo finished
 

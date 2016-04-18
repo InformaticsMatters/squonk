@@ -13,7 +13,7 @@ base=$PWD
 echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 
 # set up the proxy details in the tomcat apps 
-sed "s/__public_host__/${PUBLIC_HOST}/g" portal/server.xml.template > portal/server.xml
+sed "s/__public_host__/${PUBLIC_HOST}/g" images/portal/server.xml.template > images/portal/server.xml
 
 images="chemservices coreservices cellexecutor portal nginx"
 

@@ -59,8 +59,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 
         if (rdkitPythonServicesUrl != null) {
             LOG.info("Enabling RDKit python services from " + rdkitPythonServicesUrl);
-            locations.add(rdkitPythonServicesUrl + "/rdkit_screen");
-            locations.add(rdkitPythonServicesUrl + "/rdkit_cluster");
+            locations.add(rdkitPythonServicesUrl + "/rdkit_screen/");
+            locations.add(rdkitPythonServicesUrl + "/rdkit_cluster/");
         } else {
             LOG.warning("Environment variable SQUONK_RDKIT_CHEM_SERVICES_URL not defined. RDKit Python services will not be available");
         }
@@ -120,7 +120,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         from("timer:discover?period=" + timerDelay + "&repeatCount=" + timerRepeats)
                 .process((Exchange exch) -> exch.getIn().setBody(locations))
                 .split(body())
-                .log(LoggingLevel.DEBUG, "Discovering services for ${body}")
+                .log(LoggingLevel.INFO, "Discovering services for ${body}")
                 .setHeader(Exchange.HTTP_URI, simple("${body}"))
                 .setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.GET))
                 .to("http4:foo.bar/?throwExceptionOnFailure=false")
@@ -134,6 +134,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                         Iterator<ServiceDescriptor> iter = jsonHandler.iteratorFromJson(json, ServiceDescriptor.class);
                         while (iter.hasNext()) {
                             ServiceDescriptor sd = iter.next();
+                            LOG.info("Adding service descriptor " + sd.getId());
                             store.addServiceDescriptor(url, ServiceDescriptorUtils.makeAbsolute(url, sd));
                         }
                     }

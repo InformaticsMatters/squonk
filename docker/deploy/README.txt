@@ -4,17 +4,25 @@ To setup:
 create a self-signed certificate for keycloak and put it in the keycloak dir. see:
 http://keycloak.github.io/docs/userguide/keycloak-server/html/server-installation.html#d4e345
 
-
+Inital config:
+--------------
 cp setenv-default.sh  setenv.sh    # create the file that defines the environment variables
 # edit setenv.sh as needed changing passwords and docker gateway address
 source setenv.sh                   # to set the environment variables
 
+First time setup of core containers
+-----------------------------------
+e.g. postgres, keycloak, rabbitmq
+./containers-setup-core.sh         # one-off setup and configuration of the core containers that only needs doing once
+
+
+Build or update the app
+-----------------------
+cd images
 ./images-build-all.sh              # build all docker images
-./containers-setup.sh              # one-off setup and configuration
+cd ..
+./containers-setup-app.sh          # setup of the applciation containers. This will need doing whenever the code udpates
 ./containers-run.sh                # start the containers
-
-
-
 
 To run:
 =======
