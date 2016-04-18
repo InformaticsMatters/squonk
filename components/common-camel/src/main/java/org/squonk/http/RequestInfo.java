@@ -1,17 +1,8 @@
 package org.squonk.http;
 
-import com.im.lac.types.MoleculeObject;
 import org.apache.camel.Exchange;
-import org.apache.camel.spi.TypeConverterRegistry;
-import org.squonk.api.GenericHandler;
-import org.squonk.api.HttpHandler;
-import org.squonk.dataset.Dataset;
-import org.squonk.types.TypeResolver;
 
-import java.io.IOException;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by timbo on 25/03/2016.

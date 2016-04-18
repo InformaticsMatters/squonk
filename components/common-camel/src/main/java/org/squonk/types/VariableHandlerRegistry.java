@@ -1,7 +1,6 @@
-package org.squonk.api;
+package org.squonk.types;
 
-import org.squonk.types.DatasetHandler;
-import org.squonk.types.InputStreamHandler;
+import org.squonk.api.VariableHandler;
 
 import java.util.HashMap;
 import java.util.Map;

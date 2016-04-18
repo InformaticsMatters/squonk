@@ -2,7 +2,6 @@ package org.squonk.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 
 /** Interfaces for a class that wants to define how it will be persisted using the Notebook/Variable API.
  * To conform the class must:

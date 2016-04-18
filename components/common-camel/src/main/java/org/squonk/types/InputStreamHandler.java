@@ -5,7 +5,6 @@ import org.squonk.api.VariableHandler;
 import org.squonk.http.RequestResponseExecutor;
 import org.squonk.util.IOUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 

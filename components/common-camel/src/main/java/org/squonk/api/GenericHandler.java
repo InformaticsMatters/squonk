@@ -1,6 +1,5 @@
 package org.squonk.api;
 
-import org.apache.camel.TypeConverter;
 import org.apache.camel.spi.TypeConverterRegistry;
 
 /**
