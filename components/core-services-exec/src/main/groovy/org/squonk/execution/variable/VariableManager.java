@@ -1,7 +1,7 @@
 package org.squonk.execution.variable;
 
 import org.squonk.api.VariableHandler;
-import org.squonk.types.VariableHandlerRegistry;
+import org.squonk.api.VariableHandlerRegistry;
 import org.squonk.client.VariableClient;
 import org.squonk.execution.variable.impl.VariableReadContext;
 import org.squonk.execution.variable.impl.VariableWriteContext;
