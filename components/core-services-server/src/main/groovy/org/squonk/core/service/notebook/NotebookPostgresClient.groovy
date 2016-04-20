@@ -232,11 +232,27 @@ class NotebookPostgresClient implements NotebookVariableClient {
                 if (updates != 1) {
                     throw new IllegalStateException("No update performed. Does the editable $editableId for notebook $notebookId exist?")
                 }
+                cleanCellData(db, notebookId, editableId, canvasDTO)
                 result = fetchNotebookEditableById(db, notebookId, editableId)
             }
             return result
         } finally {
             db.close()
+        }
+    }
+
+    private void cleanCellData(Sql db, Long notebookId, Long editableId, NotebookCanvasDTO canvasDTO) {
+        String sql = "DELETE FROM users.nb_variable WHERE source_id=?"
+        if (canvasDTO.cells.size() > 0) {
+            List cellIds = canvasDTO.cells*.id
+            String s = cellIds.join(',')
+            log.info("Cleaning variable data for editable $editableId for cells other than $s")
+            sql += " AND cell_id NOT IN (" + s + ")"
+        }
+        log.info("SQL: $sql")
+        int deletes = db.executeUpdate(sql, [editableId])
+        if (deletes) {
+            log.info("Deleted stale data for $deletes variables")
         }
     }
 

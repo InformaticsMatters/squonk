@@ -1,5 +1,6 @@
 package org.squonk.core.service.notebook
 
+import groovy.sql.Sql
 import org.postgresql.util.PSQLException
 import org.squonk.core.util.TestUtils
 import org.squonk.notebook.api.NotebookCanvasDTO
@@ -187,6 +188,7 @@ class NotebookPostgresClientSpec extends Specification {
         thrown(PSQLException)
     }
 
+
     void "text variable insert no key"() {
 
         when:
@@ -354,9 +356,10 @@ class NotebookPostgresClientSpec extends Specification {
     void "read stream variable previous version"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        NotebookEditableDTO ed = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)[0]
+        println "Editable ID=${ed.id}"
 
-        InputStream var1 = client.readStreamValue(eds[0].notebookId, eds[0].id, 1, 'stream1')
+        InputStream var1 = client.readStreamValue(ed.notebookId, ed.id, 1, 'stream1')
         String s = var1.text
         var1.close()
 
@@ -373,5 +376,25 @@ class NotebookPostgresClientSpec extends Specification {
 //        then:
 //        var == 'val3'
 //    }
+
+    void "delete stale variable"() {
+
+        Sql db = client.createSql()
+
+        when:
+        NotebookEditableDTO ed = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)[0]
+        client.writeTextValue(ed.notebookId, ed.id, 1, 'var99', 'val99')
+        int c1 = db.firstRow("SELECT COUNT(*) FROM users.nb_variable WHERE source_id=${ed.id}")[0]
+        // no cells so variables should be deleted
+        client.updateEditable(ed.notebookId, ed.id, new NotebookCanvasDTO(1, 1))
+        int c2 = db.firstRow("SELECT COUNT(*) FROM users.nb_variable WHERE source_id=${ed.id}")[0]
+
+        then:
+        c1 > 0  // there used to be variables
+        c2 == 0 // but not they've been deleted as the cell no longer exists
+
+        cleanup:
+        db.close()
+    }
 
 }

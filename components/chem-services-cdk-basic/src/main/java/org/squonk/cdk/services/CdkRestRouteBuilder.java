@@ -39,17 +39,17 @@ public class CdkRestRouteBuilder extends RouteBuilder {
     protected static final ServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
             = new ServiceDescriptor[]{
             createServiceDescriptor(
-                    "cdk.logp", "CDK LogP", "CDK LogP predictions for XLogP, ALogP and AMR",
+                    "cdk.logp", "LogP (CDK)", "LogP predictions for XLogP, ALogP and AMR using CDK",
                     new String[]{"logp", "partitioning", "molecularproperties", "cdk"},
                     new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Partioning"},
                     "icons/properties_add.png", ROUTE_LOGP),
             createServiceDescriptor(
-                    "cdk.donors_acceptors", "CDK HBA and HBD", "CDK H-bond donor and acceptor counts",
+                    "cdk.donors_acceptors", "HBA and HBD (CDK)", "H-bond donor and acceptor counts using CDK",
                     new String[]{"hbd", "donors", "hba", "acceptors", "topology", "molecularproperties", "cdk"},
                     new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Topological"},
                     "icons/properties_add.png", ROUTE_DONORS_ACCEPTORS),
             createServiceDescriptor(
-                    "cdk.wiener_numbers", "CDK Wiener numbers", "CDK Wiener numbers properties",
+                    "cdk.wiener_numbers", "Wiener numbers (CDK)", "Wiener path and polarity numbers using CDK",
                     new String[]{"wiener", "topology", "molecularproperties", "cdk"},
                     new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Topological"},
                     "icons/properties_add.png", ROUTE_WIENER_NUMBERS)
@@ -58,7 +58,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
     protected static final ServiceDescriptor[] CONVERTERS_SERVICE_DESCRIPTOR
             = new ServiceDescriptor[]{
             createServiceDescriptor(
-                    "cdk.export.sdf", "SDF Export", "Convert to SD file format",
+                    "cdk.export.sdf", "SDF Export (CDK)", "Convert to SD file format using CDK",
                     new String[]{"export", "sdf", "sdfile", "cdk"},
                     new String[]{"/Chemistry/Toolkits/CDK/IO"},
                     "default_icon.png", CONVERT_TO_SDF)
