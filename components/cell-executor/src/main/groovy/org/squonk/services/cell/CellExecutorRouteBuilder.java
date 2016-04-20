@@ -114,6 +114,11 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
             throw new IllegalStateException("No step definitions found. Should be defined in the job definition");
         }
 
+        int i = 1;
+        for (StepDefinition stepdef: steps) {
+            LOG.info("Step " + i++ + ": " + stepdef.getImplementationClass());
+        }
+
         VariableManager varman = new VariableManager(notebookRestClient,notebookId, editableId);
         StepExecutor executor = new StepExecutor(cellId, varman);
 

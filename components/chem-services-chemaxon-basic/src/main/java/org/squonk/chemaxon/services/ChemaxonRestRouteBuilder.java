@@ -117,7 +117,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "screening/ecfp4",
                         0.001f,
                         new OptionDescriptor[]{
-                            new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
+                            new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE, new String[] {"smiles"}), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
                             new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
@@ -132,7 +132,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "screening/pharmacophore",
                         0.004f,
                         new OptionDescriptor[]{
-                            new OptionDescriptor<>(new MoleculeTypeDescriptor<>(MoleculeTypeDescriptor.MoleculeType.DISCRETE), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
+                            new OptionDescriptor<>(new MoleculeTypeDescriptor<>(MoleculeTypeDescriptor.MoleculeType.DISCRETE, new String[] {"smiles"}), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
                             new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
                         },
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),

@@ -11,14 +11,20 @@ public class MoleculeTypeDescriptor <T> extends SimpleTypeDescriptor<Structure> 
     public enum MoleculeType {DISCRETE, QUERY, REACTION}
 
     private final MoleculeType molType;
+    private final String[] formats;
 
-    public MoleculeTypeDescriptor(@JsonProperty("molType") MoleculeType molType) {
+    public MoleculeTypeDescriptor(@JsonProperty("molType") MoleculeType molType, @JsonProperty("formats") String[] formats) {
         super(Structure.class);
         this.molType = molType;
+        this.formats = formats;
     }
 
     public MoleculeType getMolType() {
         return molType;
+    }
+
+    public String[] getFormats() {
+        return formats;
     }
 
 

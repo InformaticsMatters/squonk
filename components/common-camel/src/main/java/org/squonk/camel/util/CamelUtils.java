@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -117,16 +118,18 @@ public class CamelUtils {
         String url = generateUrlUsingHeadersAndQueryParams(endpoint, queryParams, allHeaders);
         LOG.log(Level.INFO, "Generated URL: {0}", url);
         allHeaders.put(Exchange.HTTP_URI, url);
+        LOG.info("Using headers: " + allHeaders.entrySet().stream()
+                .map((e) -> e.getKey() + ": " + (e.getValue() == null ? "" : e.getValue().toString()))
+                .collect(Collectors.joining(" ")));
 
         ProducerTemplate pt = context.createProducerTemplate();
 
         LOG.info("REQUEST starting");
-        //InputStream result = pt.requestBodyAndHeaders("http4:dummy", input, allHeaders, InputStream.class);
         Exchange response = pt.request("http4:dummy", exch -> {
             exch.getIn().setHeaders(allHeaders);
             exch.getIn().setBody(input);
         });
-        LOG.info("REQUEST complete");
+        LOG.info("REQUEST complete. Response has OUT message: " + response.hasOut());
         Message msg = getMessage(response);
         InputStream result = msg.getBody(InputStream.class);
         if (responseHeaders != null) {

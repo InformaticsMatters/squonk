@@ -5,6 +5,19 @@ keycloak:
     ports: 
     - "8080:8080"
     - "8443:8443"
+
 postgres:
     ports: 
     - "5432:5432"
+
+rdkitserver:
+    ports:
+    - "8000:8000"
+
+coreservices:
+    ports: 
+    - "8091:8080"
+
+chemservices:
+    ports:
+    - "8092:8080"

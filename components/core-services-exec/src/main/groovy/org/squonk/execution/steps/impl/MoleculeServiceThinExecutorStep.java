@@ -14,13 +14,13 @@ import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 import org.apache.camel.CamelContext;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 
 /**Thin executor sends only the molecules (no values) to the service and combines the returned values with the
  * originals. As such the network traffic is minimised and the remote end does not need to handle values which it may
@@ -41,7 +41,6 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
 
     public static final String OPTION_SERVICE_ENDPOINT = StepDefinitionConstants.ServiceExecutor.OPTION_SERVICE_ENDPOINT;
     public static final String OPTION_EXECUTION_PARAMS = StepDefinitionConstants.ServiceExecutor.OPTION_SERVICE_PARAMS;
-    public static final String OPTION_PRESERVE_STRUCTURE = StepDefinitionConstants.ServiceExecutor.OPTION_PRESERVE_STRUCTURE;
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
@@ -52,13 +51,17 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         Dataset<MoleculeObject> dataset = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
-        Boolean preserveStructure = getOption(OPTION_PRESERVE_STRUCTURE, Boolean.class, true);
+        boolean preserveStructure = getOption(StepDefinitionConstants.ServiceExecutor.OPTION_PRESERVE_STRUCTURE, Boolean.class, true);
+        boolean filter = getOption(StepDefinitionConstants.ServiceExecutor.OPTION_FILTER, Boolean.class, false);
+        LOG.info("Filter mode: " + filter);
+
         DatasetMetadata<MoleculeObject> requestMetadata = dataset.getMetadata();
 
-        //LOG.info("Initial metadata: " + metadata);
+        LOG.info("Initial metadata: " + requestMetadata);
 
+        // TODO - improve the caching to handle large sets when filtering
         Map<UUID, MoleculeObject> cache = new ConcurrentHashMap<>();
-        Stream<MoleculeObject> stream = dataset.getStream()
+        Stream<MoleculeObject> stream = dataset.getStream().sequential()
                 .map(fat -> {
                     cache.put(fat.getUUID(), fat);
                     //LOG.info("Fat molecule:  " + fat);
@@ -67,18 +70,22 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
                     return thin;
                 });
 
-        InputStream input = JsonHandler.getInstance().marshalStreamToJsonArray(stream, true);
+        InputStream input = JsonHandler.getInstance().marshalStreamToJsonArray(stream, false);
+//            String inputData = IOUtils.convertStreamToString(input);
+//            LOG.info("Input: " + inputData);
+//            input = new ByteArrayInputStream(inputData.getBytes());
 
         Map<String, Object> requestHeaders = new HashMap<>();
         requestHeaders.put("Accept-Encoding", "gzip");
+        // NOTE: setting the Content-Encoding will cause camel to gzip the data, we don't need to do it
+        requestHeaders.put("Content-Encoding", "gzip");
         
         // send for execution
         Map<String, Object> responseHeaders = new HashMap<>();
         InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, requestHeaders, responseHeaders, params);
 
-
 //        String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(output), 1000);
-//        //LOG.info("Data: " + data);
+//        LOG.info("Results: " + data);
 //        output = new ByteArrayInputStream(data.getBytes());
 
         // merge the metadata
@@ -111,15 +118,18 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         }
 
         // merge the results back into the original data
-        Stream<MoleculeObject> resultMols = outputMols.getStream().map(m -> {
+        Stream<MoleculeObject> resultMols = outputMols.getStream().sequential().map(m -> {
             //LOG.info("Handling: " + m);
             UUID uuid = m.getUUID();
             MoleculeObject o = cache.get(uuid);
             if (o == null) {
-                LOG.warning("Molecule " + uuid + " not found. Strange!");
+                // TODO - when filtering remove intervening items
+                if (!filter) {
+                    LOG.warning("Molecule " + uuid + " not found and service does not filter. Strange!");
+                }
                 return m;
             } else {
-                LOG.fine("Found Mol " + uuid);
+                //LOG.fine("Found Mol " + uuid);
                 MoleculeObject neu;
                 if (preserveStructure) {
                     o.getValues().putAll(m.getValues());

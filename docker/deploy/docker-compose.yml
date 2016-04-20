@@ -77,22 +77,18 @@ keycloak:
 #
 chemservices:
     image: squonk/chem-services-basic
-#    ports:
-#    - "8092:8080"
 
 
 ################# rdkit server services container ##################################
-#rdkitserver:
-#    image: squonk/rdkitserver
-#    restart: always
-#    environment: 
-#        SECRET_KEY:
-#        C_FORCE_ROOT: "true"
-#    command: gunicorn -w 3 -b 0.0.0.0 proj.wsgi
-#    volumes:
-#    - /code/static
-#    ports:
-#    - "8000:8000"
+rdkitserver:
+    image: squonk/rdkitserver
+    restart: always
+    environment: 
+        SECRET_KEY:
+        C_FORCE_ROOT: "true"
+    command: gunicorn -w 3 -b 0.0.0.0 proj.wsgi
+    volumes:
+    - /code/static
 
 ################# core-services-server container ###################################
 # available on:
@@ -106,7 +102,7 @@ coreservices:
     - postgres:db
     - rabbitmq:rabbitmq
     - chemservices:chemservices
-#    - rdkitserver:rdkitserver
+    - rdkitserver:rdkitserver
     environment:
         RABBITMQ_HOST: rabbitmq
         RABBITMQ_SQUONK_PASS:
@@ -116,7 +112,7 @@ coreservices:
         SQUONK_DB_PASS:
         SQUONK_SERVICES_CORE:
         SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
-#        SQUONK_RDKIT_CHEM_SERVICES_URL: "http://rdkitserver:8000"  # internal port
+        SQUONK_RDKIT_CHEM_SERVICES_URL: "http://rdkitserver:8000"  # internal port
 
 ################# cell-executor container #########################################
 cellexecutor:
@@ -125,6 +121,7 @@ cellexecutor:
     - coreservices:coreservices
     - rabbitmq:rabbitmq
     - chemservices:chemservices
+    - rdkitserver:rdkitserver
     - portal:portal
     environment:
         RABBITMQ_HOST: rabbitmq

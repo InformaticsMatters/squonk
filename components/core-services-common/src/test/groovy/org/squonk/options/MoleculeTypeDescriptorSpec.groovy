@@ -11,7 +11,7 @@ class MoleculeTypeDescriptorSpec extends Specification {
 
     void "test json"() {
 
-        MoleculeTypeDescriptor discrete = new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE);
+        MoleculeTypeDescriptor discrete = new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE, ["smiles"] as String[]);
 
         when:
         String json = JsonHandler.getInstance().objectToJson(discrete)
@@ -22,6 +22,8 @@ class MoleculeTypeDescriptorSpec extends Specification {
         json != null
         td != null
         td.type == Structure.class
+        td.formats.length == 1
+        td.formats[0] == "smiles"
 
     }
 }
