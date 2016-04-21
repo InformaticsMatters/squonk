@@ -27,7 +27,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
             = new ServiceDescriptor[]{
                 createServiceDescriptor(
                         "rdkit.calculators.logp",
-                        "RDKit LogP",
+                        "LogP (RDKit)",
                         "RDKit LogP prediction",
                         new String[]{"logp", "partitioning", "molecularproperties", "rdkit"},
                         "icons/properties_add.png",
@@ -38,7 +38,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                         null),
                 createServiceDescriptor(
                         "rdkit.calculators.frac_c_sp3",
-                        "RDKit frac sp3 carbons",
+                        "Frac sp3 C (RDKit)",
                         "Fraction sp3 hybridised carbons using RDKit",
                         new String[]{"fraccsp3", "topology", "molecularproperties", "rdkit"},
                         "icons/properties_add.png",
@@ -49,7 +49,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                         null),
                 createServiceDescriptor(
                         "rdkit.calculators.lipinski",
-                        "RDKit Lipinski",
+                        "Lipinski (RDKit)",
                         "Lipinski properties using RDKit",
                         new String[]{"lipinski", "hbond", "donors", "acceptors", "logp", "molecularweight", "druglike", "molecularproperties", "rdkit"},
                         "icons/properties_add.png",
@@ -60,7 +60,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                         null),
             createServiceDescriptor(
                     "rdkit.calculators.donors_acceptors",
-                    "RDKit Donors & Acceptors",
+                    "HBA & HBD (RDKit)",
                     "H-bond donor and acceptor counts using RDKit",
                     new String[]{"hbond", "donors", "acceptors", "druglike", "molecularproperties", "rdkit"},
                     "icons/properties_add.png",
@@ -71,7 +71,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                     null),
                 createServiceDescriptor(
                         "rdkit.calculators.molar_refractivity",
-                        "RDKit molar refractivity",
+                        "Molar Refractivity (RDKit)",
                         "Molar Refractivity using RDKit",
                         new String[]{"refractivity", "molarrefractivity", "molecularproperties", "rdkit"},
                         "icons/properties_add.png",
@@ -82,7 +82,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                         null),
                 createServiceDescriptor(
                         "rdkit.calculators.tpsa",
-                        "RDKit TPSA",
+                        "TPSA (RDKit)",
                         "Topological surface area using RDKit",
                         new String[]{"tpsa", "psa", "molarrefractivity", "molecularproperties", "rdkit"},
                         "icons/properties_add.png",
@@ -93,7 +93,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                         null),
                 createServiceDescriptor(
                         "rdkit.calculators.rings",
-                        "RDKit rings",
+                        "Ring Count (RDKit)",
                         "Ring count and aromatic ring count using RDKit",
                         new String[]{"rings", "aromatic", "molecularproperties", "rdkit"},
                         "icons/properties_add.png",
@@ -104,7 +104,7 @@ public class RdkitRestRouteBuilder extends RouteBuilder {
                         null),
                 createServiceDescriptor(
                         "rdkit.calculators.rotatable_bonds",
-                        "RDKit rotatable bond count",
+                        "Rotatable bonds (RDKit)",
                         "Rotatable bond count using RDKit",
                         new String[]{"rotatablebonds", "molecularproperties", "rdkit"},
                         "icons/properties_add.png",

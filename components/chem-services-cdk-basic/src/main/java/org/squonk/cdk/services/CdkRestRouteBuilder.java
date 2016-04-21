@@ -44,12 +44,12 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                     new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Partioning"},
                     "icons/properties_add.png", ROUTE_LOGP),
             createServiceDescriptor(
-                    "cdk.donors_acceptors", "HBA and HBD (CDK)", "H-bond donor and acceptor counts using CDK",
+                    "cdk.donors_acceptors", "HBA & HBD (CDK)", "H-bond donor and acceptor counts using CDK",
                     new String[]{"hbd", "donors", "hba", "acceptors", "topology", "molecularproperties", "cdk"},
                     new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Topological"},
                     "icons/properties_add.png", ROUTE_DONORS_ACCEPTORS),
             createServiceDescriptor(
-                    "cdk.wiener_numbers", "Wiener numbers (CDK)", "Wiener path and polarity numbers using CDK",
+                    "cdk.wiener_numbers", "Wiener Numbers (CDK)", "Wiener path and polarity numbers using CDK",
                     new String[]{"wiener", "topology", "molecularproperties", "cdk"},
                     new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Topological"},
                     "icons/properties_add.png", ROUTE_WIENER_NUMBERS)

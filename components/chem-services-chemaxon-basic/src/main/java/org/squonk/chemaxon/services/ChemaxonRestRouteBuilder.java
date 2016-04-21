@@ -44,7 +44,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
             = new ServiceDescriptor[]{
                 createServiceDescriptor(
                         "chemaxon.calculators.logp",
-                        "CXN LogP",
+                        "LogP (CXN)",
                         "LogP using ChemAxon calculators. See http://www.chemaxon.com/products/calculator-plugins/property-predictors/#logp_logd",
                         new String[]{"logp", "partitioning", "molecularproperties", "chemaxon"},
                         "icons/properties_add.png",
@@ -56,7 +56,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         null),
                 createServiceDescriptor(
                         "chemaxon.calculators.atomcount",
-                        "CXN Atom Count",
+                        "Atom Count (CXN)",
                         "Atom Count using ChemAxon calculators. See http://www.chemaxon.com/products/calculator-plugins/property-calculations/#topology_analysis",
                         new String[]{"atomcount", "topology", "molecularproperties", "chemaxon"},
                         "icons/properties_add.png",
@@ -68,7 +68,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         null),
                 createServiceDescriptor(
                         "chemaxon.calculators.lipinski",
-                        "CXN Lipinski Properties",
+                        "Lipinski (CXN)",
                         "Lipinski properties using ChemAxon calculators",
                         new String[]{"lipinski", "druglike", "molecularproperties", "chemaxon"},
                         "icons/properties_add.png",
@@ -80,7 +80,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         null),
                 createServiceDescriptor(
                         "chemaxon.calculators.druglikefilter",
-                        "CXN Drug-like Filter",
+                        "Drug-like Filter (CXN)",
                         "Drug-like filter using ChemAxon calculators. mass() < 400 and ringCount > 0 and rotatableBondCount() < 5 and acceptorCount <= 10 and LogP < 5",
                         new String[]{"druglike", "molecularproperties", "chemaxon"},
                         "icons/properties_filter.png",
@@ -108,7 +108,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
             = new ServiceDescriptor[]{
                 createServiceDescriptor(
                         "chemaxon.screening.ecpf4",
-                        "CXN ECFP4 Screening",
+                        "ECFP4 Screen (CXN)",
                         "Virtual screening using ChemAxon ECFP4 fingerprints. See http://www.chemaxon.com/products/screen/",
                         new String[]{"virtualscreening", "screening", "ecfp", "ecfp4", "moleculardescriptors", "fingerprints", "chemaxon"},
                         "icons/filter_molecules.png",
@@ -123,7 +123,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
                 createServiceDescriptor(
                         "chemaxon.screening.pharmacophore",
-                        "CXN Pharmacophore Screening",
+                        "Pharmacophore Screen (CXN)",
                         "Virtual screening using ChemAxon 2D pharmacophore fingerprints. See http://www.chemaxon.com/products/screen/",
                         new String[]{"virtualscreening", "screening", "parmacophore", "moleculardescriptors", "fingerprints", "chemaxon"},
                         "icons/filter_molecules.png",
@@ -138,7 +138,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
                 createServiceDescriptor(
                         "chemaxon.clustering.sperex",
-                        "CXN SpereEx Clustering",
+                        "SpereEx Clustering (CXN)",
                         "Sphere exclusion clustering using ChemAxon ECFP4 fingerprints. See http://www.chemaxon.com/products/jklustor/",
                         new String[]{"clustering", "ecfp", "ecfp4", "chemaxon"},
                         "icons/clustering.png",
