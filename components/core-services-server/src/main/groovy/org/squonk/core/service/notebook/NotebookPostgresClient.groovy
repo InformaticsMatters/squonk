@@ -241,21 +241,6 @@ class NotebookPostgresClient implements NotebookVariableClient {
         }
     }
 
-    private void cleanCellData(Sql db, Long notebookId, Long editableId, NotebookCanvasDTO canvasDTO) {
-        String sql = "DELETE FROM users.nb_variable WHERE source_id=?"
-        if (canvasDTO.cells.size() > 0) {
-            List cellIds = canvasDTO.cells*.id
-            String s = cellIds.join(',')
-            log.info("Cleaning variable data for editable $editableId for cells other than $s")
-            sql += " AND cell_id NOT IN (" + s + ")"
-        }
-        log.info("SQL: $sql")
-        int deletes = db.executeUpdate(sql, [editableId])
-        if (deletes) {
-            log.info("Deleted stale data for $deletes variables")
-        }
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -712,5 +697,20 @@ class NotebookPostgresClient implements NotebookVariableClient {
 //        def row = db.firstRow("SELECT id FROM users.nb_version WHERE notebook_id=$notebookId AND label=$label")
 //        return (row ? row[0] : null)
 //    }
+
+    private void cleanCellData(Sql db, Long notebookId, Long editableId, NotebookCanvasDTO canvasDTO) {
+        String sql = "DELETE FROM users.nb_variable WHERE source_id=?"
+        if (canvasDTO.cells.size() > 0) {
+            List cellIds = canvasDTO.cells*.id
+            String s = cellIds.join(',')
+            log.info("Cleaning variable data for editable $editableId for cells other than $s")
+            sql += " AND cell_id NOT IN (" + s + ")"
+        }
+        log.info("SQL: $sql")
+        int deletes = db.executeUpdate(sql, [editableId])
+        if (deletes) {
+            log.info("Deleted stale data for $deletes variables")
+        }
+    }
 
 }
