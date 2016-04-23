@@ -1,0 +1,14 @@
+apply plugin: 'groovy'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+
+    compile project(':rdkit-lib')
+
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+    compile "org.postgresql:postgresql:$postgresDriverVersion"
+
+}

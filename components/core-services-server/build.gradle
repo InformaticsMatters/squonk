@@ -52,7 +52,7 @@ dependencies {
            "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
     
-    compile "org.postgresql:postgresql:9.4-1201-jdbc41"
+    compile "org.postgresql:postgresql:$postgresDriverVersion"
   
 }
 

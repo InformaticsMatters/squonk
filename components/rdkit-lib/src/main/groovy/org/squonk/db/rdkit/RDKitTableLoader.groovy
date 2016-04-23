@@ -18,6 +18,7 @@ class RDKitTableLoader {
 
 
     int batchSize = 100
+    int reportingSize = 10000
     private final RDKitTable rdkTable
     private final IConfiguration config
 
@@ -206,7 +207,7 @@ class RDKitTableLoader {
             db.withBatch(batchSize, sql) { ps ->
                 ps.addBatch(values)
             }
-            if (i % 10000 == 0 && i > 0) {
+            if (i % reportingSize == 0 && i > 0) {
                 log.info "  loaded $i records"
             }
         }

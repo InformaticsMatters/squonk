@@ -16,6 +16,7 @@ java/*.log.*
 **/derby.log
 **/*~
 data/licenses
+data/testfiles/emols*
 
 components/chemcentral/chemcentral.properties
 components/chemcentral/database.properties

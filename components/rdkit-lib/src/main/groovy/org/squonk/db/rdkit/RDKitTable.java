@@ -23,7 +23,7 @@ public class RDKitTable extends Table {
         addColumn("structure", "TEXT", "TEXT");
         this.molSourceType = molSourceType;
         this.fptypes.addAll(fptypes);
-        this.molfpsTable = new Table(getBaseName() + "_molfps")
+        this.molfpsTable = new Table(schema, getBaseName() + "_molfps")
                 .column("id", "INTEGER", "INTEGER NOT NULL PRIMARY KEY")
                 .column("m", "MOL", "MOL");
     }
