@@ -10,6 +10,7 @@ import org.squonk.reader.SDFReader
 import org.squonk.util.IOUtils
 
 import javax.sql.DataSource
+import java.util.function.Predicate
 import java.util.stream.Stream
 
 /**
@@ -19,6 +20,7 @@ class AbstractRDKitLoader {
 
     protected final RDKitTable table
     protected IConfiguration config
+    protected Predicate filter
 
     AbstractRDKitLoader(RDKitTable table, IConfiguration config) {
         this.table = table
@@ -32,6 +34,7 @@ class AbstractRDKitLoader {
     }
 
 
+
     protected void loadSDF(String file, int limit, int reportingChunk, Map<String, Class> propertyToTypeMappings) {
         SqlQuery q = new SqlQuery(table, config)
 
@@ -41,8 +44,13 @@ class AbstractRDKitLoader {
         try {
             SDFReader sdf = new SDFReader(is)
             Stream<MoleculeObject> mols = sdf.asStream()
+
             if (limit > 0) {
                 mols = mols.limit(limit)
+            }
+
+            if (filter != null) {
+                mols = mols.filter(filter)
             }
 
             RDKitTableLoader loader = q.loader()
@@ -78,6 +86,10 @@ class AbstractRDKitLoader {
 
             if (limit > 0) {
                 mols = mols.limit(limit)
+            }
+
+            if (filter != null) {
+                mols = mols.filter(filter)
             }
 
             println "setting reportingSize to $reportingChunk"

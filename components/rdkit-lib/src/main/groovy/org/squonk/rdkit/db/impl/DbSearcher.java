@@ -23,6 +23,7 @@ public class DbSearcher {
         dbConfig = new DataSourceConfiguration(dataSource, Collections.emptyMap());
         rdkitTables.put("emolecules_order_bb", new EMoleculesTable(SCHEMA, "emolecules_order_bb", MolSourceType.SMILES));
         rdkitTables.put("emolecules_order_all", new EMoleculesTable(SCHEMA, "emolecules_order_all", MolSourceType.SMILES));
+        rdkitTables.put("chembl_21", new EMoleculesTable(SCHEMA, "chembl_21", MolSourceType.CTAB));
     }
 
     public Collection<String> getTablesNames() {
