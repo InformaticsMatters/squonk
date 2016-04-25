@@ -15,35 +15,41 @@ public class SquonkServerConfig {
     private static final Logger LOG = Logger.getLogger(SquonkServerConfig.class.getName());
 
     public static final SquonkServerConfig INSTANCE = new SquonkServerConfig();
-    private final PGPoolingDataSource dataSource;
+    private DataSource squonkDataSource;
     private final String coreServiceBaseUrl;
 
 
     private SquonkServerConfig() {
-        String s = IOUtils.getConfiguration("SQUONK_DB_SERVER", "localhost");
-        String po = IOUtils.getConfiguration("SQUONK_DB_PORT", "5432");
-        String d = "squonk";
-        String u = "squonk";
-        String pw = IOUtils.getConfiguration("POSTGRES_SQUONK_PASS", "squonk");
-
-        dataSource = new PGPoolingDataSource();
-        dataSource.setServerName(s);
-        dataSource.setPortNumber(new Integer(po));
-        dataSource.setDatabaseName(d);
-        dataSource.setUser(u);
-        dataSource.setPassword(pw);
-
-        LOG.log(Level.INFO, "Using datasource for server {0}@{1}:{2}/{3}", new Object[]{u, s, po, d});
-        //LOG.log(Level.INFO, "Connecting as {0}/{1}", new Object[]{u, pw});
-
-
         coreServiceBaseUrl = IOUtils.getConfiguration("SQUONK_SERVICES_CORE", "http://localhost/coreservices/rest/v1");
         LOG.info("Using core services base URL: " + coreServiceBaseUrl);
+    }
 
+    public DataSource getSquonkDataSource() {
+        if (squonkDataSource == null) {
+            String s = IOUtils.getConfiguration("SQUONK_DB_SERVER", "localhost");
+            String po = IOUtils.getConfiguration("SQUONK_DB_PORT", "5432");
+            String d = "squonk";
+            String u = "squonk";
+            String pw = IOUtils.getConfiguration("POSTGRES_SQUONK_PASS", "squonk");
+
+            squonkDataSource = createDataSource(u, pw, d);
+
+            LOG.log(Level.INFO, "Using datasource for squonk {0}@{1}:{2}/{3}", new Object[]{u, s, po, d});
+        }
+        return squonkDataSource;
     }
 
 
-    public DataSource getDataSource() {
+    private DataSource createDataSource(String username, String password, String database) {
+        String s = IOUtils.getConfiguration("SQUONK_DB_SERVER", "localhost");
+        String po = IOUtils.getConfiguration("SQUONK_DB_PORT", "5432");
+
+        PGPoolingDataSource dataSource = new PGPoolingDataSource();
+        dataSource.setServerName(s);
+        dataSource.setPortNumber(new Integer(po));
+        dataSource.setDatabaseName(database);
+        dataSource.setUser(username);
+        dataSource.setPassword(password);
         return dataSource;
     }
 

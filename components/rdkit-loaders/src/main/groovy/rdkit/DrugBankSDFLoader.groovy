@@ -1,8 +1,8 @@
 package rdkit
 
-import org.squonk.db.rdkit.DrugbankTable
-import org.squonk.db.rdkit.RDKitTable
-import org.squonk.db.rdkit.dsl.IConfiguration
+import org.squonk.rdkit.db.impl.DrugbankTable
+import org.squonk.rdkit.db.RDKitTable
+import org.squonk.rdkit.db.dsl.IConfiguration
 
 /**
  * Created by timbo on 16/12/2015.

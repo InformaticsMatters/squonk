@@ -11,7 +11,6 @@ psql --username "$PG_USER" --command "CREATE USER squonk WITH PASSWORD '${POSTGR
 echo "created squonk user with password ${POSTGRES_SQUONK_PASS:-squonk}"
 
 createdb --username "$PG_USER" -O $PG_USER squonk
-createdb --username "$PG_USER" -O $PG_USER chemcentral
 createdb --username "$PG_USER" -O keycloak keycloak
 createdb --username "$PG_USER" -O xwiki xwiki
 
@@ -24,6 +23,6 @@ psql --username "$PG_USER" -d squonk --command "CREATE SCHEMA notebooks AUTHORIZ
 
 # patch 1. Create chemcentral database
 # docker exec -it -u postgres deploy_postgres_1 bash
-createdb chemcentral
+createdb --username "$PG_USER" -O $PG_USER chemcentral
 psql --username "$PG_USER" --command 'create extension rdkit' chemcentral
 psql --username "$PG_USER" -d chemcentral --command "CREATE SCHEMA vendordbs AUTHORIZATION squonk;"

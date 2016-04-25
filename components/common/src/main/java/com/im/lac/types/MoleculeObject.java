@@ -105,17 +105,6 @@ public class MoleculeObject extends BasicObject {
         this.format = format;
     }
 
-    /**
-     * Constructor for re-generating a MoleculeObject with an existing UUID
-     *
-     *
-     * @param uuid
-     * @param source
-     */
-    public MoleculeObject(UUID uuid, String source) {
-        super(uuid);
-        this.source = source;
-    }
 
     /**
      * Constructor for re-generating a MoleculeObject with an existing UUID

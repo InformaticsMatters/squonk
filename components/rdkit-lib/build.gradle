@@ -18,7 +18,8 @@ dependencies {
         compile files("../../lib/rdkit/org.RDKit.jar")
     }
 
-    testCompile "org.postgresql:postgresql:9.4-1201-jdbc41"
+    compile "org.postgresql:postgresql:$postgresDriverVersion"
+
     testCompile project(':core-test')
 }
 

@@ -1,9 +1,9 @@
 package org.squonk.db
 
-import org.squonk.db.rdkit.MolSourceType
-import org.squonk.db.rdkit.RDKitTable
-import org.squonk.db.rdkit.dsl.SqlQuery
-import org.squonk.db.rdkit.dsl.Table
+import org.squonk.rdkit.db.MolSourceType
+import org.squonk.rdkit.db.RDKitTable
+import org.squonk.rdkit.db.dsl.SqlQuery
+import org.squonk.rdkit.db.dsl.Table
 import spock.lang.Specification
 
 /**

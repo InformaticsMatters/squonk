@@ -14,7 +14,7 @@ class RdkitRestRouteBuilderSpec extends Specification  {
     void "calculators service descriptors to/from json"() {
 
         when:
-        String json = JsonHandler.getInstance().objectToJson(RdkitRestRouteBuilder.CALCULATORS_SERVICE_DESCRIPTOR)
+        String json = JsonHandler.getInstance().objectToJson(RdkitBasicRestRouteBuilder.CALCULATORS_SERVICE_DESCRIPTOR)
         Stream<ServiceDescriptor> sds = JsonHandler.getInstance().streamFromJson(json, ServiceDescriptor.class)
 
         then:

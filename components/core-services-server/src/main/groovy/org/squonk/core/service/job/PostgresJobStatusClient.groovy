@@ -25,7 +25,7 @@ public class PostgresJobStatusClient implements JobStatusClient {
 
     private final Object lock = new Object();
 
-    protected final DataSource dataSource = SquonkServerConfig.INSTANCE.getDataSource();
+    protected final DataSource dataSource = SquonkServerConfig.INSTANCE.getSquonkDataSource();
     protected final Sql db = new Sql(dataSource)
 
     public JobStatus submit(JobDefinition jobdef, String username, Integer totalCount) {

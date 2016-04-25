@@ -112,6 +112,10 @@ task integrationTestEnvDryRun {
     finalizedBy integrationTestEnvShutdown
 }
 
+task integrationTestEnvDryRunNoShutdown {
+    dependsOn integrationTestEnvPrepareAndClean, 'database:flywayMigrate'
+}
+
 
 task dbTestEnvPrepare(type:Exec) {
     dependsOn "core-services/core-services-server:dockerFile"
@@ -193,6 +197,7 @@ task dockerFileChemServices(type: Dockerfile) {
         tasks.getByPath(':chem-services-cdk-basic:war'),
         tasks.getByPath(':chem-services-chemaxon-basic:war'),
         tasks.getByPath(':chem-services-rdkit-basic:war'),
+        tasks.getByPath(':chem-services-rdkit-search:war'),
         tasks.getByPath(':chem-services-openchemlib-basic:war')
     ]
     
@@ -209,6 +214,10 @@ task dockerFileChemServices(type: Dockerfile) {
         from ("chem-services-rdkit-basic/build/libs") {
             include '*.war'
             rename '.*', 'chem-services-rdkit-basic.war'
+        }
+        from ("chem-services-rdkit-search/build/libs") {
+            include '*.war'
+            rename '.*', 'chem-services-rdkit-search.war'
         }
         from ("chem-services-openchemlib-basic/build/libs") {
             include '*.war'

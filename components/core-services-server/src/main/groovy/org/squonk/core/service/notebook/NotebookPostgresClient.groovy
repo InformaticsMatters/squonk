@@ -23,7 +23,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
 
     public final static NotebookPostgresClient INSTANCE = new NotebookPostgresClient()
 
-    protected final DataSource dataSource = SquonkServerConfig.INSTANCE.getDataSource();
+    protected final DataSource dataSource = SquonkServerConfig.INSTANCE.getSquonkDataSource();
 
     public NotebookPostgresClient() {
         dataSource = Utils.createDataSource()
@@ -675,7 +675,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
     }
 
 //    private Object doReadValueForLabel(Long notebookId, String label, String variableName, String key, isText) {
-//        Sql db = new Sql(dataSource.getConnection())
+//        Sql db = new Sql(squonkDataSource.getConnection())
 //        try {
 //            Object result = null
 //            db.withTransaction {
