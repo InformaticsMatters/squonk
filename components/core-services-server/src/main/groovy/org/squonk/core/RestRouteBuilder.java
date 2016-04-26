@@ -200,60 +200,66 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
 
         rest("/v1/notebooks").description("Notebook services")
                 //
-                // GET
                 .get("/").description("Get all notebooks for the user")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookDTO.class)
-                .param().name("user").type(query).description("The username").dataType("string").endParam()
+                .param().name("user").type(query).description("The username").dataType("string").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
                     String user = exch.getIn().getHeader("user", String.class);
+                    checkNotNull(user, "Username must be specified");
                     List<NotebookDTO> results = notebookClient.listNotebooks(user);
                     exch.getIn().setBody(results);
                 })
                 .endRest()
-                .get("/{notebookid}/e").description("Get all editables for a notebook for the user")
+                //
+                .get("/{notebookid}/e").description("List the editables for a notebook for the user")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookEditableDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
-                .param().name("user").type(query).description("The username").dataType("string").endParam()
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name("user").type(query).description("The username").dataType("string").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
                     String user = exch.getIn().getHeader("user", String.class);
+                    checkNotNull(notebookid, "Notebook ID must be specified");
+                    checkNotNull(user, "Username must be specified");
                     List<NotebookEditableDTO> results = notebookClient.listEditables(notebookid, user);
                     exch.getIn().setBody(results);
                 })
                 .endRest()
-                // List<NotebookSavepoint> listSavepoints(Long notebookId);
-                .get("/{notebookid}/s").description("Get all savepoints for a notebook")
+                //
+                .get("/{notebookid}/s").description("List all savepoints for a notebook")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookSavepointDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    checkNotNull(notebookid, "Notebook ID must be specified");
                     List<NotebookSavepointDTO> results = notebookClient.listSavepoints(notebookid);
                     exch.getIn().setBody(results);
                 })
                 .endRest()
-                //NotebookDescriptor createNotebook(String username, String notebookName, String notebookDescription)
+                //
                 .post("/").description("Create a new notebook")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookDTO.class)
-                .param().name("user").type(query).description("The owner of the new notebook").dataType("string").endParam()
-                .param().name("name").type(query).description("The name for the new notebook").dataType("string").endParam()
-                .param().name("description").type(query).description("A description for the new notebook").dataType("string").endParam()
+                .param().name("user").type(query).description("The owner of the new notebook").dataType("string").required(true).endParam()
+                .param().name("name").type(query).description("The name for the new notebook").dataType("string").required(true).endParam()
+                .param().name("description").type(query).description("A description for the new notebook").dataType("string").required(false).endParam()
                 .route()
                 .process((Exchange exch) -> {
                     String user = exch.getIn().getHeader("user", String.class);
                     String name = exch.getIn().getHeader("name", String.class);
                     String description = exch.getIn().getHeader("description", String.class);
+                    checkNotNull(user, "Username must be specified");
+                    checkNotNull(name, "Notebook name must be specified");
                     NotebookDTO result = notebookClient.createNotebook(user, name, description);
                     exch.getIn().setBody(result);
                 })
                 .endRest()
-                // DELETE
+                //
                 .delete("/{notebookid}").description("Delete a notebook")
                 .bindingMode(RestBindingMode.off)
                 .produces("text/plain")
@@ -261,6 +267,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .route()
                 .process((Exchange exch) -> {
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    checkNotNull(notebookid, "Notebook ID must be specified");
                     boolean result = notebookClient.deleteNotebook(notebookid);
                     exch.getIn().setBody(null);
                     if (result) {
@@ -270,19 +277,20 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     }
                 })
                 .endRest()
-                // List<String> listLayer(Long notebookId);
-                .get("/{notebookid}/layer").description("Get the layers a notebook belongs to")
+                //
+                .get("/{notebookid}/layer").description("List the layers a notebook belongs to")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(List.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    checkNotNull(notebookid, "Notebook ID must be specified");
                     List<String> results = notebookClient.listLayers(notebookid);
                     exch.getIn().setBody(results);
                 })
                 .endRest()
-                // add to layer
+                //
                 .post("/{notebookid}/layer/{layer}").description("Add notebook to this layer")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
@@ -291,11 +299,13 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .process((Exchange exch) -> {
                     String layer = exch.getIn().getHeader("layer", String.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    checkNotNull(notebookid, "Notebook ID must be specified");
+                    checkNotNull(layer, "Layer name must be specified");
                     NotebookDTO result = notebookClient.addNotebookToLayer(notebookid, layer);
                     exch.getIn().setBody(result);
                 })
                 .endRest()
-                // remove from layer
+                //
                 .delete("/{notebookid}/layer/{layer}").description("Remove notebook from this layer")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
@@ -304,101 +314,141 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .process((Exchange exch) -> {
                     String layer = exch.getIn().getHeader("layer", String.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    checkNotNull(layer, "Layer name must be specified");
+                    checkNotNull(notebookid, "Notebook ID must be specified");
                     NotebookDTO result = notebookClient.removeNotebookFromLayer(notebookid, layer);
                     exch.getIn().setBody(result);
                 })
                 .endRest()
-                // NotebookEditable createEditable(Long notebookId, Long parentId, String username);
+                //
                 .post("/{notebookid}/e").description("Create a new editable for a notebook")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookEditableDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
-                .param().name("user").type(query).description("The owner of the new notebook").dataType("string").endParam()
-                .param().name("parent").type(query).description("The parent savepoint").dataType("long").endParam()
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name("user").type(query).description("The owner of the new notebook").dataType("string").required(true).endParam()
+                .param().name("parent").type(query).description("The parent savepoint").dataType("long").required(false).endParam()
                 .route()
                 .process((Exchange exch) -> {
                     String user = exch.getIn().getHeader("user", String.class);
                     Long parent = exch.getIn().getHeader("parent", Long.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    checkNotNull(notebookid, "Notebook ID must be specified");
+                    checkNotNull(user, "Username must be specified");
                     NotebookEditableDTO result = notebookClient.createEditable(notebookid, parent, user);
                     exch.getIn().setBody(result);
                 })
                 .endRest()
-                // NotebookEditable updateEditable(Long notebookId, Long editableId, String json);
+                //
                 .put("/{notebookid}/e/{editableid}").description("Update the definition of an editable")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .type(NotebookCanvasDTO.class)
                 .outType(NotebookEditableDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
-                .param().name("editableid").type(path).description("Editable ID").dataType("long").endParam()
-                .param().name("json").type(body).description("Content (as JSON)").dataType("string").endParam()
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name("editableid").type(path).description("Editable ID").dataType("long").required(true).endParam()
+                .param().name("json").type(body).description("Content (as JSON)").dataType("string").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    Long editableid = exch.getIn().getHeader("editableid", Long.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    Long editableid = exch.getIn().getHeader("editableid", Long.class);
                     NotebookCanvasDTO canvasDTO = exch.getIn().getBody(NotebookCanvasDTO.class);
+                    checkNotNull(notebookid, "Notebook ID must be specified");
+                    checkNotNull(editableid, "Editable ID must be specified");
+                    checkNotNull(canvasDTO, "Canvas definition must be specified as body");
                     NotebookEditableDTO result = notebookClient.updateEditable(notebookid, editableid, canvasDTO);
                     exch.getIn().setBody(result);
                 })
                 .endRest()
-                // public NotebookEditable createSavepoint(Long notebookId, Long editableId);
-                .post("/{notebookid}/s").description("Create a new editable for a notebook")
-                .bindingMode(RestBindingMode.json).produces("application/json")
-                .outType(NotebookEditableDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
-                .param().name("editableid").type(query).description("The editable ID to make the savepoint from").dataType("long").endParam()
+                .delete("/{notebookid}/e/{editableid}").description("Delete an editable")
+                .bindingMode(RestBindingMode.off)
+                .produces("text/plain")
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name("editableid").type(path).description("Editable ID").dataType("long").required(true).endParam()
+                .param().name("user").type(query).description("The owner of the editable").dataType("string").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
                     Long editableid = exch.getIn().getHeader("editableid", Long.class);
-                    NotebookEditableDTO result = notebookClient.createSavepoint(notebookid, editableid);
+                    String user = exch.getIn().getHeader("user", String.class);
+                    checkNotNull(notebookid, "Notebook ID must be specified");
+                    checkNotNull(editableid, "Editable ID must be specified");
+                    checkNotNull(user, "Username must be specified");
+                    boolean result = notebookClient.deleteEditable(notebookid, editableid, user);
+                    if (result) {
+                        exch.getIn().setBody("OK");
+                    } else {
+                        throw new NotFoundException("Editable " + editableid + " could not be deleted. May not exist or may not be yours?");
+                    }
+                })
+                .endRest()
+                //
+                .post("/{notebookid}/s").description("Create a new savepoint for a notebook")
+                .bindingMode(RestBindingMode.json).produces("application/json")
+                .outType(NotebookEditableDTO.class)
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name("editableid").type(query).description("The editable ID to make the savepoint from").dataType("long").required(true).endParam()
+                .param().name("description").type(query).description("The description of the savepoint").dataType("string").required(false).endParam()
+                .route()
+                .process((Exchange exch) -> {
+                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    Long editableid = exch.getIn().getHeader("editableid", Long.class);
+                    String description = exch.getIn().getHeader("description", String.class);
+                    checkNotNull(notebookid, "Notebook ID must be specified");
+                    checkNotNull(editableid, "Editable ID must be specified");
+                    NotebookEditableDTO result = notebookClient.createSavepoint(notebookid, editableid, description);
                     exch.getIn().setBody(result);
                 })
                 .endRest()
-                //NotebookSavepoint setSavepointDescription(Long notebookId, Long savepointId, String description)
+                //
                 .put("/{notebookid}/s/{savepointid}/description").description("Update the description of a savepoint")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookSavepointDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
-                .param().name("savepointid").type(path).description("Savepoint ID").dataType("long").endParam()
-                .param().name("description").type(query).description("New description").dataType("string").endParam()
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name("savepointid").type(path).description("Savepoint ID").dataType("long").required(true).endParam()
+                .param().name("description").type(query).description("New description").dataType("string").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
                     String description = exch.getIn().getHeader("description", String.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
                     Long savepointid = exch.getIn().getHeader("savepointid", Long.class);
+                    checkNotNull(notebookid, "Notebook ID must be specified");
+                    checkNotNull(savepointid, "Savepoint ID must be specified");
+                    checkNotNull(description, "Description must be specified");
                     NotebookSavepointDTO result = notebookClient.setSavepointDescription(notebookid, savepointid, description);
                     exch.getIn().setBody(result);
                 })
                 .endRest()
-                //NotebookSavepoint setSavepointLabel(Long notebookId, Long savepointId, String label);
+                //
                 .put("/{notebookid}/s/{savepointid}/label").description("Update the label of a savepoint")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookSavepointDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
-                .param().name("savepointid").type(path).description("Savepoint ID").dataType("long").endParam()
-                .param().name("label").type(query).description("New Label").dataType("string").endParam()
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name("savepointid").type(path).description("Savepoint ID").dataType("long").required(true).endParam()
+                .param().name("label").type(query).description("New Label").dataType("string").required(false).endParam()
                 .route()
                 .process((Exchange exch) -> {
                     String label = exch.getIn().getHeader("label", String.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
                     Long savepointid = exch.getIn().getHeader("savepointid", Long.class);
+                    checkNotNull(notebookid, "Notebook ID must be specified");
+                    checkNotNull(savepointid, "Savepoint ID must be specified");
                     NotebookSavepointDTO result = notebookClient.setSavepointLabel(notebookid, savepointid, label);
                     exch.getIn().setBody(result);
                 })
                 .endRest()
-                // public NotebookDescriptor updateNotebook(Long notebookId, String name, String description)
-                .put("/{notebookid}").description("Update the label of a savepoint")
+                //
+                .put("/{notebookid}").description("Update the name and description of a notebook")
                 .bindingMode(RestBindingMode.json).produces("application/json")
                 .outType(NotebookDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").endParam()
-                .param().name("name").type(query).description("New name").dataType("string").endParam()
-                .param().name("description").type(query).description("New description").dataType("string").endParam()
+                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name("name").type(query).description("New name").dataType("string").required(true).endParam()
+                .param().name("description").type(query).description("New description").dataType("string").required(false).endParam()
                 .route()
                 .process((Exchange exch) -> {
                     String name = exch.getIn().getHeader("name", String.class);
                     String description = exch.getIn().getHeader("description", String.class);
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    checkNotNull(notebookid, "Notebook ID must be specified");
+                    checkNotNull(name, "Notebook name must be specified");
                     NotebookDTO result = notebookClient.updateNotebook(notebookid, name, description);
                     exch.getIn().setBody(result);
                 })
@@ -523,6 +573,12 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .route()
                 .process((Exchange exch) -> UserHandler.putUser(exch))
                 .endRest();
+    }
+
+    private void checkNotNull(Object var, String messageForExceptionIfNull) {
+        if (var == null) {
+            throw new IllegalStateException(messageForExceptionIfNull);
+        }
     }
 
 }

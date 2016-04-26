@@ -245,7 +245,33 @@ class NotebookPostgresClient implements NotebookVariableClient {
      * {@inheritDoc}
      */
     @Override
-    public NotebookEditableDTO createSavepoint(Long notebookId, Long editableId) {
+    boolean deleteEditable(Long notebookId, Long editableId, String username) throws Exception {
+        boolean b = false;
+        Sql db = createSql()
+        try {
+            db.withTransaction {
+                Long userId = fetchIdForUsername(db, username)
+                int rows = 0
+                if (userId != null) {
+                    rows = db.executeUpdate("DELETE FROM users.nb_version WHERE notebook_id=$notebookId AND id=$editableId AND owner_id=$userId AND type='E'")
+                }
+                if (rows == 1) {
+                    b = true;
+                } else {
+                    LOG.warning("Failed to delete editable $editableId")
+                }
+            }
+            return b;
+        } finally {
+            db.close()
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NotebookEditableDTO createSavepoint(Long notebookId, Long editableId, String description) {
         log.fine("Creating savepoint for editable $editableId")
         Sql db = createSql()
         try {
@@ -253,7 +279,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
             db.withTransaction {
 
                 // convert the editable to a savepoint
-                int updates = db.executeUpdate("UPDATE users.nb_version SET type='S', created=NOW(), updated=NOW() WHERE id=$editableId AND notebook_id=$notebookId AND type='E'")
+                int updates = db.executeUpdate("UPDATE users.nb_version SET type='S', description=$description, created=NOW(), updated=NOW() WHERE id=$editableId AND notebook_id=$notebookId AND type='E'")
                 if (updates != 1) {
                     throw new IllegalStateException("Failed to convert editable to savepoint. Does the editable $editableId for notebook $notebookId exist?")
                 }

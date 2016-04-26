@@ -23,6 +23,7 @@ class NotebookPostgresClientSpec extends Specification {
     static NotebookCanvasDTO CANVAS_DTO = new NotebookCanvasDTO(1)
     static String LONG_VARIABLE_1 = 'a potentially very long variable' * 10
     static String LONG_VARIABLE_2 = 'another potentially very long variable' * 10
+    static String username = TestUtils.TEST_USERNAME
 
 
 
@@ -32,14 +33,14 @@ class NotebookPostgresClientSpec extends Specification {
         client.createSql().execute("DELETE FROM users.nb_descriptor")
 
         when:
-        NotebookDTO nb1 = client.createNotebook(TestUtils.TEST_USERNAME, "notebook1", "notebook one")
-        NotebookDTO nb2 = client.createNotebook(TestUtils.TEST_USERNAME, "notebook2", "notebook two")
+        NotebookDTO nb1 = client.createNotebook(username, "notebook1", "notebook one")
+        NotebookDTO nb2 = client.createNotebook(username, "notebook2", "notebook two")
 
         then:
         nb1 != null
         nb2 != null
         nb1.id > 0
-        nb1.owner == TestUtils.TEST_USERNAME
+        nb1.owner == username
         nb1.name == "notebook1"
         nb1.description == "notebook one"
         nb1.createdDate != null
@@ -49,7 +50,7 @@ class NotebookPostgresClientSpec extends Specification {
     void "list notebooks"() {
 
         when:
-        notebooks = client.listNotebooks(TestUtils.TEST_USERNAME)
+        notebooks = client.listNotebooks(username)
 
         then:
         notebooks.size() == 2
@@ -60,10 +61,10 @@ class NotebookPostgresClientSpec extends Specification {
     void "delete notebook"() {
 
         when:
-        NotebookDTO nb3 = client.createNotebook(TestUtils.TEST_USERNAME, "notebook3", "notebook three")
-        def notebooks1 = client.listNotebooks(TestUtils.TEST_USERNAME)
+        NotebookDTO nb3 = client.createNotebook(username, "notebook3", "notebook three")
+        def notebooks1 = client.listNotebooks(username)
         client.deleteNotebook(nb3.id)
-        def notebooks2 = client.listNotebooks(TestUtils.TEST_USERNAME)
+        def notebooks2 = client.listNotebooks(username)
 
         then:
         notebooks1.size() == 3
@@ -95,11 +96,11 @@ class NotebookPostgresClientSpec extends Specification {
     void "list editables"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
 
         then:
         eds.size() == 1
-        eds[0].owner == TestUtils.TEST_USERNAME
+        eds[0].owner == username
         eds[0].parentId == null
         eds[0].createdDate != null
         eds[0].lastUpdatedDate != null
@@ -108,12 +109,12 @@ class NotebookPostgresClientSpec extends Specification {
     void "update editable"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
         NotebookEditableDTO up = client.updateEditable(notebooks[0].id, eds[0].id, CANVAS_DTO)
 
         then:
         eds.size() == 1
-        up.owner == TestUtils.TEST_USERNAME
+        up.owner == username
         up.parentId == null
         up.createdDate != null
         up.lastUpdatedDate != null
@@ -122,16 +123,31 @@ class NotebookPostgresClientSpec extends Specification {
         eds[0].lastUpdatedDate < up.lastUpdatedDate
     }
 
+    void "create and delete editable"() {
+        Long nbid = notebooks[0].id
+
+        when:
+        List<NotebookEditableDTO> eds0 = client.listEditables(nbid, username)
+        NotebookEditableDTO ed = client.createEditable(nbid, null, username)
+        List<NotebookEditableDTO> eds1 = client.listEditables(nbid, username)
+        client.deleteEditable(nbid, ed.id, username)
+        List<NotebookEditableDTO> eds2 = client.listEditables(nbid, username)
+
+        then:
+        eds0.size() == eds1.size() -1
+        eds0.size() == eds2.size()
+    }
+
     void "create savepoint"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        NotebookEditableDTO nue = client.createSavepoint(eds[0].notebookId, eds[0].id)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
+        NotebookEditableDTO nue = client.createSavepoint(eds[0].notebookId, eds[0].id, "a description")
         List<NotebookSavepointDTO> sps = client.listSavepoints(notebooks[0].id)
 
         then:
         nue != null
-        nue.owner == TestUtils.TEST_USERNAME
+        nue.owner == username
         nue.parentId == sps[0].id
         nue.createdDate != null
         nue.lastUpdatedDate != null
@@ -141,7 +157,7 @@ class NotebookPostgresClientSpec extends Specification {
 
         sps.size() == 1
         sps[0].id == eds[0].id
-        sps[0].creator == TestUtils.TEST_USERNAME
+        sps[0].creator == username
         sps[0].canvasDTO != null
         sps[0].createdDate <= nue.createdDate
     }
@@ -154,13 +170,13 @@ class NotebookPostgresClientSpec extends Specification {
 
         then:
         sp1.description == "squonk"
-        sp1.creator == TestUtils.TEST_USERNAME
+        sp1.creator == username
     }
 
     void "savepoint label"() {
 
         when:
-        List<NotebookDTO> nbs = client.listNotebooks(TestUtils.TEST_USERNAME)
+        List<NotebookDTO> nbs = client.listNotebooks(username)
         List<NotebookSavepointDTO> sps = client.listSavepoints(nbs[0].id)
         NotebookSavepointDTO sp1 = client.setSavepointLabel(sps[0].notebookId, sps[0].id, "label1")
         NotebookSavepointDTO sp2 = client.setSavepointLabel(sps[0].notebookId, sps[0].id, null)
@@ -176,8 +192,8 @@ class NotebookPostgresClientSpec extends Specification {
     void "duplicate labels"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        NotebookEditableDTO nue = client.createSavepoint(eds[0].notebookId, eds[0].id)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
+        NotebookEditableDTO nue = client.createSavepoint(eds[0].notebookId, eds[0].id, "a description")
         List<NotebookSavepointDTO> sps = client.listSavepoints(notebooks[0].id)
 
         sps.each {
@@ -192,7 +208,7 @@ class NotebookPostgresClientSpec extends Specification {
     void "text variable insert no key"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
         client.writeTextValue(eds[0].notebookId, eds[0].id, 1, 'var1', 'val1')
 
         then:
@@ -204,7 +220,7 @@ class NotebookPostgresClientSpec extends Specification {
     void "text variable insert with key"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
         client.writeTextValue(eds[0].notebookId, eds[0].id, 1, 'var1', 'val2', 'key')
 
         then:
@@ -216,7 +232,7 @@ class NotebookPostgresClientSpec extends Specification {
     void "text variable update no key"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
         client.writeTextValue(eds[0].notebookId, eds[0].id, 1, 'var1', 'val3')
         client.writeTextValue(eds[0].notebookId, eds[0].id, 1, 'var2', 'another val')
 
@@ -230,7 +246,7 @@ class NotebookPostgresClientSpec extends Specification {
     void "text variable update with key"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
         client.writeTextValue(eds[0].notebookId, eds[0].id, 1, 'var1', 'val4', 'key')
 
         then:
@@ -244,7 +260,7 @@ class NotebookPostgresClientSpec extends Specification {
     void "stream variable insert no key"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
         int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
         client.writeStreamValue(eds[0].notebookId, eds[0].id, 1, 'stream1', new ByteArrayInputStream(LONG_VARIABLE_1.getBytes()), null)
         int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
@@ -256,7 +272,7 @@ class NotebookPostgresClientSpec extends Specification {
     void "stream variable insert with key"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
         int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
         client.writeStreamValue(eds[0].notebookId, eds[0].id, 1, 'stream2', new ByteArrayInputStream(LONG_VARIABLE_1.getBytes()), "key")
         int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
@@ -268,7 +284,7 @@ class NotebookPostgresClientSpec extends Specification {
     void "stream variable update no key"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
         int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
         client.writeStreamValue(eds[0].notebookId, eds[0].id, 1, 'stream1', new ByteArrayInputStream(LONG_VARIABLE_2.getBytes()), null)
         int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
@@ -280,7 +296,7 @@ class NotebookPostgresClientSpec extends Specification {
     void "stream variable update with key"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
         int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
         client.writeStreamValue(eds[0].notebookId, eds[0].id, 1, 'stream2', new ByteArrayInputStream(LONG_VARIABLE_2.getBytes()), "key")
         int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
@@ -292,7 +308,7 @@ class NotebookPostgresClientSpec extends Specification {
     void "read text variable with key correct version"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
         String var1 = client.readTextValue(eds[0].notebookId, eds[0].id, 1, 'var1', 'key')
 
         then:
@@ -302,7 +318,7 @@ class NotebookPostgresClientSpec extends Specification {
     void "read text variable no key correct version"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
         String var1 = client.readTextValue(eds[0].notebookId, eds[0].id, 1, 'var1')
         String var2 = client.readTextValue(eds[0].notebookId, eds[0].id, 1, 'var2')
 
@@ -314,7 +330,7 @@ class NotebookPostgresClientSpec extends Specification {
     void "read stream variable with key correct version"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
         InputStream var1 = client.readStreamValue(eds[0].notebookId, eds[0].id, 1, 'stream2', 'key')
         String s = var1.text
         var1.close()
@@ -327,7 +343,7 @@ class NotebookPostgresClientSpec extends Specification {
     void "read stream variable no key correct version"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
         InputStream var1 = client.readStreamValue(eds[0].notebookId, eds[0].id, 1, 'stream1')
         String s = var1.text
 
@@ -338,14 +354,14 @@ class NotebookPostgresClientSpec extends Specification {
     void "read text variable previous version"() {
 
         when:
-        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
-        NotebookEditableDTO ed1 = client.createSavepoint(eds[0].notebookId, eds[0].id)
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
+        NotebookEditableDTO ed1 = client.createSavepoint(eds[0].notebookId, eds[0].id, "a description")
 
         // label it for later
         client.setSavepointLabel(eds[0].notebookId, eds[0].id, 'label4')
 
         String var1 = client.readTextValue(ed1.notebookId, ed1.id, 1, 'var1')
-        NotebookEditableDTO ed2 = client.createSavepoint(ed1.notebookId, ed1.id)
+        NotebookEditableDTO ed2 = client.createSavepoint(ed1.notebookId, ed1.id, "a description")
         String var2 = client.readTextValue(ed2.notebookId, ed2.id, 1, 'var1')
 
         then:
@@ -356,7 +372,7 @@ class NotebookPostgresClientSpec extends Specification {
     void "read stream variable previous version"() {
 
         when:
-        NotebookEditableDTO ed = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)[0]
+        NotebookEditableDTO ed = client.listEditables(notebooks[0].id, username)[0]
         println "Editable ID=${ed.id}"
 
         InputStream var1 = client.readStreamValue(ed.notebookId, ed.id, 1, 'stream1')
@@ -370,7 +386,7 @@ class NotebookPostgresClientSpec extends Specification {
 //    void "read text variable for label"() {
 //
 //        when:
-//        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)
+//        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
 //        String var = client.readTextValue(notebooks[0].id, 'label4', 'var1', null)
 //
 //        then:
@@ -382,7 +398,7 @@ class NotebookPostgresClientSpec extends Specification {
         Sql db = client.createSql()
 
         when:
-        NotebookEditableDTO ed = client.listEditables(notebooks[0].id, TestUtils.TEST_USERNAME)[0]
+        NotebookEditableDTO ed = client.listEditables(notebooks[0].id, username)[0]
         client.writeTextValue(ed.notebookId, ed.id, 1, 'var99', 'val99')
         int c1 = db.firstRow("SELECT COUNT(*) FROM users.nb_variable WHERE source_id=${ed.id}")[0]
         // no cells so variables should be deleted

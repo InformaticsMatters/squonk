@@ -103,6 +103,16 @@ public interface NotebookClient {
      */
     NotebookEditableDTO updateEditable(Long notebookId, Long editableId, NotebookCanvasDTO canvasDTO) throws Exception;
 
+    /** Delete an editable. This will also delete its variables
+     *
+     * @param notebookId
+     * @param editableId
+     * @param username
+     * @return
+     * @throws Exception
+     */
+    boolean deleteEditable(Long notebookId, Long editableId, String username) throws Exception;
+
     /** Create a new savepoint that is inserted in the history between this NotebookEditable and its parent.
      * This is done by creating a new editable whose parent is the current one, and then converting the current editable
      * to a savepoint. The savepoint cannot then be further modified (except for updating its description and label).
@@ -111,10 +121,11 @@ public interface NotebookClient {
      *
      * @param notebookId
      * @param editableId
+     * @param description
      * @return The new Editable that is created.
      * @throws Exception
      */
-    NotebookEditableDTO createSavepoint(Long notebookId, Long editableId) throws Exception;
+    NotebookEditableDTO createSavepoint(Long notebookId, Long editableId, String description) throws Exception;
 
     /** Get all savepoints for this notebook.
      *

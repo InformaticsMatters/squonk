@@ -162,10 +162,25 @@ class NotebookRestClientSpec extends Specification {
         editable2.canvasDTO != null
     }
 
+    void "create and delete editable"() {
+        Long nbid = editable2.notebookId
+
+        when:
+        List<NotebookEditableDTO> eds0 = client.listEditables(nbid, username)
+        NotebookEditableDTO ed = client.createEditable(nbid, null, username)
+        List<NotebookEditableDTO> eds1 = client.listEditables(nbid, username)
+        client.deleteEditable(nbid, ed.id, username)
+        List<NotebookEditableDTO> eds2 = client.listEditables(nbid, username)
+
+        then:
+        eds0.size() == eds1.size() -1
+        eds0.size() == eds2.size()
+    }
+
     void "create savepoint"() {
 
         when:
-        editable3 = client.createSavepoint(editable2.notebookId, editable2.id)
+        editable3 = client.createSavepoint(editable2.notebookId, editable2.id, "a description")
         def sps = client.listSavepoints(editable2.notebookId)
         savepoint1 = sps[0]
 

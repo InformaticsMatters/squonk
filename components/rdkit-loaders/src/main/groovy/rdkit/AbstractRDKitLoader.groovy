@@ -20,7 +20,6 @@ class AbstractRDKitLoader {
 
     protected final RDKitTable table
     protected IConfiguration config
-    protected Predicate filter
 
     AbstractRDKitLoader(RDKitTable table, IConfiguration config) {
         this.table = table
@@ -33,9 +32,11 @@ class AbstractRDKitLoader {
         return new DataSourceConfiguration(dataSource, [:])
     }
 
+    protected Stream<MoleculeObject> prepareStream(Stream<MoleculeObject> stream) {
+        return stream
+    }
 
-
-    protected void loadSDF(String file, int limit, int reportingChunk, Map<String, Class> propertyToTypeMappings) {
+    protected void loadSDF(String file, int limit, int reportingChunk, Map<String, Class> propertyToTypeMappings, String nameFieldName) {
         SqlQuery q = new SqlQuery(table, config)
 
         println "Loading file $file"
@@ -43,15 +44,14 @@ class AbstractRDKitLoader {
         InputStream is = IOUtils.getGunzippedInputStream(new FileInputStream(file))
         try {
             SDFReader sdf = new SDFReader(is)
+            sdf.setNameFieldName(nameFieldName)
             Stream<MoleculeObject> mols = sdf.asStream()
 
             if (limit > 0) {
                 mols = mols.limit(limit)
             }
 
-            if (filter != null) {
-                mols = mols.filter(filter)
-            }
+            mols = prepareStream(mols)
 
             RDKitTableLoader loader = q.loader()
             loader.reportingSize = reportingChunk

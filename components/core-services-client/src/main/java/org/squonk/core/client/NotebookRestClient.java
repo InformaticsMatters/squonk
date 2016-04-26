@@ -158,6 +158,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
     public NotebookEditableDTO createEditable(Long notebookId, Long parentId, String username) throws IOException {
         assert notebookId != null;
         assert username != null;
+        // parent can be null
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/e")
                 .setParameter("user", username);
                 if (parentId != null) {
@@ -183,12 +184,25 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         }
     }
 
+
     @Override
-    public NotebookEditableDTO createSavepoint(Long notebookId, Long editableId) throws IOException {
+    public boolean deleteEditable(Long notebookId, Long editableId, String username) throws Exception {
+        assert notebookId != null;
+        assert editableId != null;
+        assert username != null;
+        URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/e/" + editableId)
+                .setParameter("user", username);
+        executeDelete(b, null);
+        return true;
+    }
+
+    @Override
+    public NotebookEditableDTO createSavepoint(Long notebookId, Long editableId, String description) throws IOException {
         assert notebookId != null;
         assert editableId != null;
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/s")
-                .setParameter("editableid", editableId.toString());
+                .setParameter("editableid", editableId.toString())
+                .setParameter("description", description);
 
         try (InputStream is = executePostAsInputStream(b, null)) {
             return JsonHandler.getInstance().objectFromJson(is, NotebookEditableDTO.class);
