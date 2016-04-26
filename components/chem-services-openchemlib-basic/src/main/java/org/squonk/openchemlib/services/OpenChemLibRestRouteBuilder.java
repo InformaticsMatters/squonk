@@ -10,6 +10,7 @@ import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.types.TypeResolver;
 
 import javax.inject.Inject;
@@ -76,7 +77,7 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                                 endpoint, // endpoint
                                 true, // URL is relative
                                 AsyncHttpProcessDatasetJobDefinition.class,
-                                null, null, null, null, null, null)
+                                null, null, null, null, null, StepDefinitionConstants.ServiceExecutor.CLASSNAME)
                 }
         );
     }

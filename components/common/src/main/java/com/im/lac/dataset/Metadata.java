@@ -16,7 +16,9 @@ public class Metadata implements Serializable {
 
     public enum Type {
 
-        ITEM, STREAM, TEXT, ARRAY
+        ITEM,   // input a single item
+        STREAM, // input a stream of items
+        OPTION  // read from one of the options with the key of 'body'
     }
 
     public static final String FORMAT = "format";

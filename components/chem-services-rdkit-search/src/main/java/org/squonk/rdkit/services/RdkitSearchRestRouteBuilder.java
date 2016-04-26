@@ -10,10 +10,10 @@ import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.api.MimeTypeResolver;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.rdkit.db.ChemcentralSearcher;
-import org.squonk.types.TypeResolver;
 
 import java.util.logging.Logger;
 
@@ -37,9 +37,9 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
                     null,
                     new String[]{"public"},
-                    String.class,         // inputClass - smiles or smarts
+                    MoleculeObject.class, // inputClass - smiles or smarts
                     MoleculeObject.class, // outputClass
-                    Metadata.Type.ITEM,   // inputType
+                    Metadata.Type.OPTION, // inputType - taken from the structure option
                     Metadata.Type.STREAM, // outputType
                     "icons/structure_search.png",
                     new AccessMode[]{
@@ -56,8 +56,8 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     null,
                                     new OptionDescriptor[]{
 
-                                            new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE,
-                                                    new String[] {"smiles"}), "body", "Query Structure", "Structure to use as the query as smiles or smarts")
+                                            new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.QUERY,
+                                                    new String[] {"smarts"}), "body", "Query Structure", "Structure to use as the query as smiles or smarts")
                                                     .withMinValues(1),
 
                                             new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
@@ -77,7 +77,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                                     .withValues(new String[] {"TANIMOTO", "DICE"})
 
                                      },
-                                    "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter")
+                                    StepDefinitionConstants.OutOnlyMoleculeServiceExecutor.CLASSNAME)
                     }
             )
     };

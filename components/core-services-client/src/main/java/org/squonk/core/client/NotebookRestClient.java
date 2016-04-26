@@ -192,7 +192,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         assert username != null;
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + notebookId + "/e/" + editableId)
                 .setParameter("user", username);
-        executeDelete(b, null);
+        executeDelete(b, new NameValuePair[0]);
         return true;
     }
 

@@ -21,6 +21,14 @@ public interface StepDefinitionConstants {
         public static final String OPTION_FILTER = "option.filter"; //Boolean
     }
 
+    interface OutOnlyMoleculeServiceExecutor {
+        public static final String CLASSNAME = "org.squonk.execution.steps.impl.OutOnlyMoleculeServiceExecutorStep";
+        public static final String OPTION_SERVICE_PARAMS = "serviceParams"; // Map of params for the service
+        public static final String OPTION_SERVICE_ENDPOINT = "serviceEndpoint"; // the URL for the service
+        public static final String OPTION_PRESERVE_STRUCTURE = "option.preserveStructure"; //Boolean
+        public static final String OPTION_FILTER = "option.filter"; //Boolean
+    }
+
     interface ChemblActivitiesFetcher {
         public static final String CLASSNAME = "org.squonk.execution.steps.impl.ChemblActivitiesFetcherStep";
         public static final String OPTION_ASSAY_ID = "assayId";

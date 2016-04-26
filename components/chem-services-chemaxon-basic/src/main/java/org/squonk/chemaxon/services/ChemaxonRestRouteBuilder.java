@@ -2,6 +2,7 @@ package org.squonk.chemaxon.services;
 
 import org.squonk.camel.chemaxon.processor.clustering.SphereExclusionClusteringProcessor;
 import org.squonk.camel.chemaxon.processor.screening.MoleculeScreenerProcessor;
+import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.camel.util.CamelUtils;
@@ -52,7 +53,6 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "asyncHttp",
                         "logp",
                         0.001f,
-                        null,
                         null),
                 createServiceDescriptor(
                         "chemaxon.calculators.atomcount",
@@ -64,7 +64,6 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "asyncHttp",
                         "atomCount",
                         0f,
-                        null,
                         null),
                 createServiceDescriptor(
                         "chemaxon.calculators.lipinski",
@@ -76,7 +75,6 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "asyncHttp",
                         "lipinski",
                         0.002f,
-                        null,
                         null),
                 createServiceDescriptor(
                         "chemaxon.calculators.druglikefilter",
@@ -88,7 +86,6 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         "asyncHttp",
                         "drugLikeFilter",
                         0.0025f,
-                        null,
                         null)//,
 //                createServiceDescriptor(
 //                        "chemaxon.calculators.chemterms",
@@ -119,8 +116,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         new OptionDescriptor[]{
                             new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE, new String[] {"smiles"}), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
                             new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
-                        },
-                        "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
+                        }),
                 createServiceDescriptor(
                         "chemaxon.screening.pharmacophore",
                         "Pharmacophore Screen (CXN)",
@@ -134,8 +130,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         new OptionDescriptor[]{
                             new OptionDescriptor<>(new MoleculeTypeDescriptor<>(MoleculeTypeDescriptor.MoleculeType.DISCRETE, new String[] {"smiles"}), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
                             new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
-                        },
-                        "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter"),
+                        }),
                 createServiceDescriptor(
                         "chemaxon.clustering.sperex",
                         "SpereEx Clustering (CXN)",
@@ -149,12 +144,11 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                         new OptionDescriptor[]{
                             new OptionDescriptor<>(Integer.class, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS).withDefaultValue(5),
                             new OptionDescriptor<>(Integer.class, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS).withDefaultValue(10)
-                        },
-                        "com.im.lac.services.job.service.adapters.HttpGenericParamsJobAdapter")
+                        })
             };
 
     static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String icon,
-                                                     String[] paths, String modeId, String endpoint, float cost, OptionDescriptor[] props, String adapterClass) {
+                                                     String[] paths, String modeId, String endpoint, float cost, OptionDescriptor[] props) {
         return new ServiceDescriptor(
                 serviceDescriptorId,
                 name,
@@ -183,7 +177,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                             cost,
                             new ServiceDescriptor.LicenseToken[]{ServiceDescriptor.LicenseToken.CHEMAXON},
                             props,
-                            adapterClass)
+                            StepDefinitionConstants.ServiceExecutor.CLASSNAME)
                 }
         );
     }

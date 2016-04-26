@@ -10,6 +10,7 @@ import org.squonk.camel.cdk.processor.CDKMoleculeObjectSDFileProcessor;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.types.CDKSDFile;
 import org.squonk.types.TypeResolver;
 
@@ -83,7 +84,8 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                                 endpoint, // endpoint
                                 true, // URL is relative
                                 AsyncHttpProcessDatasetJobDefinition.class,
-                                null, null, null, null, null, null)
+                                null, null, null, null, null,
+                                StepDefinitionConstants.ServiceExecutor.CLASSNAME)
                 }
         );
     }

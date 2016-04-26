@@ -9,6 +9,7 @@ import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.types.TypeResolver;
 
@@ -34,7 +35,6 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     new String[]{"/Chemistry/Toolkits/RDKit/Calculators", "/Chemistry/Calculators/Partioning"},
                     "asyncHttp",
                     "logp",
-                    null,
                     null),
             createServiceDescriptor(
                     "rdkit.calculators.frac_c_sp3",
@@ -45,7 +45,6 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Topological"},
                     "asyncHttp",
                     "frac_c_sp3",
-                    null,
                     null),
             createServiceDescriptor(
                     "rdkit.calculators.lipinski",
@@ -56,7 +55,6 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/DrugLike"},
                     "asyncHttp",
                     "lipinski",
-                    null,
                     null),
             createServiceDescriptor(
                     "rdkit.calculators.donors_acceptors",
@@ -67,7 +65,6 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Topological"},
                     "asyncHttp",
                     "lipinski",
-                    null,
                     null),
             createServiceDescriptor(
                     "rdkit.calculators.molar_refractivity",
@@ -78,7 +75,6 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Other"},
                     "asyncHttp",
                     "molar_refractivity",
-                    null,
                     null),
             createServiceDescriptor(
                     "rdkit.calculators.tpsa",
@@ -89,7 +85,6 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Other"},
                     "asyncHttp",
                     "tpsa",
-                    null,
                     null),
             createServiceDescriptor(
                     "rdkit.calculators.rings",
@@ -100,7 +95,6 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Topological"},
                     "asyncHttp",
                     "rings",
-                    null,
                     null),
             createServiceDescriptor(
                     "rdkit.calculators.rotatable_bonds",
@@ -111,13 +105,12 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Topological"},
                     "asyncHttp",
                     "rotatable_bonds",
-                    null,
                     null)
 
     };
 
     static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String icon,
-                                                     String[] paths, String modeId, String endpoint, OptionDescriptor[] props, String adapterClass) {
+                                                     String[] paths, String modeId, String endpoint, OptionDescriptor[] props) {
         return new ServiceDescriptor(
                 serviceDescriptorId,
                 name,
@@ -146,7 +139,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                                 null,
                                 null,
                                 props,
-                                adapterClass)
+                                StepDefinitionConstants.ServiceExecutor.CLASSNAME)
                 }
         );
     }

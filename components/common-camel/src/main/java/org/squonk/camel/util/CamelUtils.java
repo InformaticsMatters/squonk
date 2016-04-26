@@ -81,29 +81,6 @@ public class CamelUtils {
         return count;
     }
 
-
-//    public static InputStream doRequestUsingHeadersAndQueryParams(
-//            CamelContext context,
-//            String method,
-//            String endpoint,
-//            InputStream input,
-//            Map<String, Object> headers,
-//            Map<String, Object> queryParams) throws Exception {
-//
-//        Map<String, Object> allHeaders = new HashMap<>(headers);
-//        allHeaders.put(Exchange.HTTP_METHOD, method);
-//        String url = generateUrlUsingHeadersAndQueryParams(endpoint, queryParams, allHeaders);
-//        LOG.log(Level.INFO, "Generated URL: {0}", url);
-//        allHeaders.put(Exchange.HTTP_URI, url);
-//
-//        ProducerTemplate pt = context.createProducerTemplate();
-//
-//        LOG.info("REQUEST starting");
-//        InputStream result = pt.requestBodyAndHeaders("http4:dummy", input, allHeaders, InputStream.class);
-//        LOG.info("REQUEST complete");
-//        return result;
-//    }
-
     public static InputStream doRequestUsingHeadersAndQueryParams(
             CamelContext context,
             String method,
@@ -127,7 +104,9 @@ public class CamelUtils {
         LOG.info("REQUEST starting");
         Exchange response = pt.request("http4:dummy", exch -> {
             exch.getIn().setHeaders(allHeaders);
-            exch.getIn().setBody(input);
+            if (input != null) {
+                exch.getIn().setBody(input);
+            }
         });
         LOG.info("REQUEST complete. Response has OUT message: " + response.hasOut());
         Message msg = getMessage(response);
