@@ -79,7 +79,12 @@ keycloak:
 #
 chemservices:
     image: squonk/chem-services-basic
-
+    links:
+    - postgres:postgres
+    environment:
+        SQUONK_DB_SERVER: postgres
+        SQUONK_DB_USER:
+        SQUONK_DB_PASS:
 
 ################# rdkit server services container ##################################
 rdkitserver:
@@ -101,15 +106,14 @@ rdkitserver:
 coreservices:
     image: squonk/core-services-server
     links:
-    - postgres:db
+    - postgres:postgres
     - rabbitmq:rabbitmq
     - chemservices:chemservices
     - rdkitserver:rdkitserver
     environment:
         RABBITMQ_HOST: rabbitmq
         RABBITMQ_SQUONK_PASS:
-        SQUONK_DB_SERVER: db
-        SQUONK_DB_PORT:
+        SQUONK_DB_SERVER: postgres
         SQUONK_DB_USER:
         SQUONK_DB_PASS:
         SQUONK_SERVICES_CORE:
