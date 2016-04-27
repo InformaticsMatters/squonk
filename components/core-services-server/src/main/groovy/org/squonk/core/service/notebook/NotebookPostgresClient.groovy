@@ -729,13 +729,13 @@ class NotebookPostgresClient implements NotebookVariableClient {
         if (canvasDTO.cells.size() > 0) {
             List cellIds = canvasDTO.cells*.id
             String s = cellIds.join(',')
-            log.info("Cleaning variable data for editable $editableId for cells other than $s")
+            log.fine("Cleaning variable data for editable $editableId for cells other than $s")
             sql += " AND cell_id NOT IN (" + s + ")"
         }
-        log.info("SQL: $sql")
+        log.fine("SQL: $sql")
         int deletes = db.executeUpdate(sql, [editableId])
         if (deletes) {
-            log.info("Deleted stale data for $deletes variables")
+            log.fine("Deleted stale data for $deletes variables")
         }
     }
 

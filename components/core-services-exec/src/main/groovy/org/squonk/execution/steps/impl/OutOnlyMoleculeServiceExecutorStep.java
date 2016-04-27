@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -41,16 +42,21 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
-        MoleculeObject bodyOption = getOption("body", MoleculeObject.class);
+        dumpConfig(Level.INFO);
 
-        String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
+        String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
 
         String input = null;
-        if (bodyOption != null) {
-            JsonHandler.getInstance().objectToJson(bodyOption);
-            LOG.info("Input: " + input);
+        if (params.containsKey("body")) {
+            Object body = params.get("body");
+            LOG.info("Body type: " + body.getClass().getName());
+            //MoleculeObject bodyOption = (MoleculeObject)
+            params.remove("body");
+            //input = JsonHandler.getInstance().objectToJson(bodyOption);
+            input = body.toString();
         }
+        LOG.info("Input: " + input);
 
         Map<String, Object> requestHeaders = new HashMap<>();
         requestHeaders.put("Accept-Encoding", "gzip");
@@ -58,13 +64,15 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractStep {
         // send for execution
         Map<String, Object> responseHeaders = new HashMap<>();
 
-        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input == null ? null : new ByteArrayInputStream(input.getBytes()), requestHeaders, responseHeaders, params);
+        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint,
+                input == null ? null : new ByteArrayInputStream(input.getBytes()),
+                requestHeaders, responseHeaders, params);
 
 //        String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(output), 1000);
 //        LOG.info("Results: " + data);
 //        output = new ByteArrayInputStream(data.getBytes());
 
-        // read the response metadata, if any
+        // read the response metadata
         String responseMetadataJson = (String)responseHeaders.get(CamelCommonConstants.HEADER_METADATA);
         DatasetMetadata<MoleculeObject> responseMetadata = null;
         if (responseMetadataJson == null) {

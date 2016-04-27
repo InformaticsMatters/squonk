@@ -36,6 +36,8 @@ public class ChemcentralSearcher {
         dataSource.setUser("squonk");
         dataSource.setPassword(pw);
 
+        LOG.info("Search using server=" + s);
+
         this.chemchentralDataSource = dataSource;
     }
 
