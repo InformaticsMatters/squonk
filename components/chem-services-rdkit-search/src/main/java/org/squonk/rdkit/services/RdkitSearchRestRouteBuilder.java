@@ -107,7 +107,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     new OptionDescriptor[]{
 
                                             new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.QUERY,
-                                                    new String[] {"smarts"}), "body", "Query Structure", "Structure to use as the query as smiles or smarts")
+                                                    new String[] {"smiles"}), "body", "Query Structure", "Structure to use as the query as smiles or smarts")
                                                     .withMinValues(1),
 
                                             new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
