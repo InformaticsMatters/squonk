@@ -34,7 +34,7 @@ class ChemblSDFLoader extends AbstractRDKitLoader {
         IConfiguration config = createConfiguration(props)
 
         ChemblSDFLoader loader = new ChemblSDFLoader(table, config)
-        loader.loadSDF(file, loadOnly, reportingChunk, propertyToTypeMappings)
+        loader.loadSDF(file, loadOnly, reportingChunk, propertyToTypeMappings, null)
     }
 
 }
