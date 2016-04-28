@@ -35,7 +35,7 @@ postgres:
     image: informaticsmatters/rdkit_cartridge:Release_2016_03_1
     volumes:
     - ./images/postgres/init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro
-#    - ./data/pgdata:/var/lib/postgresql/data
+    - ./data/pgdata:/var/lib/postgresql/data
     environment:
         POSTGRES_PASSWORD:
         POSTGRES_KEYCLOAK_PASS:
