@@ -35,7 +35,7 @@ postgres:
     image: informaticsmatters/rdkit_cartridge:Release_2016_03_1
     volumes:
     - ./images/postgres/init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro
-    - ./data/pgdata:/var/lib/postgresql/data
+#    - ./data/pgdata:/var/lib/postgresql/data
     environment:
         POSTGRES_PASSWORD:
         POSTGRES_KEYCLOAK_PASS:
@@ -86,17 +86,6 @@ chemservices:
         SQUONK_DB_USER:
         SQUONK_DB_PASS:
 
-################# rdkit server services container ##################################
-rdkitserver:
-    image: squonk/rdkitserver
-    restart: always
-    environment: 
-        SECRET_KEY:
-        C_FORCE_ROOT: "true"
-    command: gunicorn -w 3 -b 0.0.0.0 proj.wsgi
-    volumes:
-    - /code/static
-
 ################# core-services-server container ###################################
 # available on:
 # http://${PUBLIC_HOST}/coreservices/rest/ping
@@ -109,7 +98,6 @@ coreservices:
     - postgres:postgres
     - rabbitmq:rabbitmq
     - chemservices:chemservices
-    - rdkitserver:rdkitserver
     environment:
         RABBITMQ_HOST: rabbitmq
         RABBITMQ_SQUONK_PASS:
@@ -118,7 +106,6 @@ coreservices:
         SQUONK_DB_PASS:
         SQUONK_SERVICES_CORE:
         SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
-        SQUONK_RDKIT_CHEM_SERVICES_URL: "http://rdkitserver:8000"  # internal port
 
 ################# cell-executor container #########################################
 cellexecutor:
@@ -127,7 +114,6 @@ cellexecutor:
     - coreservices:coreservices
     - rabbitmq:rabbitmq
     - chemservices:chemservices
-    - rdkitserver:rdkitserver
     - portal:portal
     environment:
         RABBITMQ_HOST: rabbitmq

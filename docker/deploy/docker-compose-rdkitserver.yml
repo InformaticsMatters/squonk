@@ -1,0 +1,21 @@
+
+################# rdkit server services container ##################################
+rdkitserver:
+    image: squonk/rdkitserver
+    restart: always
+    ports:
+    - "8000:8000"
+    environment: 
+        SECRET_KEY:
+        C_FORCE_ROOT: "true"
+    command: gunicorn -w 3 -b 0.0.0.0 proj.wsgi
+    volumes:
+    - /code/static
+
+coreservices:
+    - rdkitserver:rdkitserver
+    environment:
+        SQUONK_RDKIT_CHEM_SERVICES_URL: "http://rdkitserver:8000"  # internal port
+
+cellexecutor:
+    - rdkitserver:rdkitserver

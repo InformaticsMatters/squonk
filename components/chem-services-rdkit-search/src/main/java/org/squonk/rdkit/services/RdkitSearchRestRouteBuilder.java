@@ -28,7 +28,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
     protected static final ServiceDescriptor[] SEARCH_SERVICE_DESCRIPTOR = new ServiceDescriptor[] {
 
             new ServiceDescriptor(
-                    "rdkit.chemcentral.search",
+                    "rdkit.chemcentral.search.structure",
                     "ChemCentral structure search",
                     "Structure search in the ChemCentral database using RDKit PostgreSQL cartridge",
                     new String[]{"search", "rdkit"},
@@ -37,7 +37,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
                     null,
                     new String[]{"public"},
-                    MoleculeObject.class, // inputClass - smiles or smarts
+                    String.class, // inputClass - smiles or smarts
                     MoleculeObject.class, // outputClass
                     Metadata.Type.OPTION, // inputType - taken from the structure option
                     Metadata.Type.STREAM, // outputType
@@ -61,11 +61,62 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                                     .withMinValues(1),
 
                                             new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
-                                                    .withValues(new String[] {"emolecules_order_bb", "emolecules_order_all"})
+                                                    .withValues(new String[] {"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
                                                     .withMinValues(1),
 
                                             new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity")
-                                                    .withValues(new String[] {"exact", "sss", "sim"})
+                                                    .withValues(new String[] {"exact", "sss"})
+                                                    .withMinValues(1),
+
+                                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return")
+                                                    .withDefaultValue(100)
+
+                                     },
+                                    StepDefinitionConstants.OutOnlyMoleculeServiceExecutor.CLASSNAME)
+                    }
+            ),
+
+
+            new ServiceDescriptor(
+                    "rdkit.chemcentral.search.similarity",
+                    "ChemCentral similarity search",
+                    "Similarity search in the ChemCentral database using RDKit PostgreSQL cartridge",
+                    new String[]{"search", "rdkit"},
+                    null,
+                    new String[]{"/Chemistry/Search"},
+                    "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
+                    null,
+                    new String[]{"public"},
+                    String.class, // inputClass - smiles or smarts
+                    MoleculeObject.class, // outputClass
+                    Metadata.Type.OPTION, // inputType - taken from the structure option
+                    Metadata.Type.STREAM, // outputType
+                    "icons/structure_search.png",
+                    new AccessMode[]{
+                            new AccessMode(
+                                    "asyncHttp",
+                                    "Immediate execution",
+                                    "Execute as an asynchronous REST web service",
+                                    "search",
+                                    true, // a relative URL
+                                    AsyncHttpProcessDatasetJobDefinition.class,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    new OptionDescriptor[]{
+
+                                            new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.QUERY,
+                                                    new String[] {"smarts"}), "body", "Query Structure", "Structure to use as the query as smiles or smarts")
+                                                    .withMinValues(1),
+
+                                            new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
+                                                    .withValues(new String[] {"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
+                                                    .withMinValues(1),
+
+                                            new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity")
+                                                    .withDefaultValue("sim")
+                                                    .withAccess(true, false) // change this to false, false once the visitbility bug is fixed
                                                     .withMinValues(1),
 
                                             new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)").withDefaultValue(0.7f),
@@ -74,9 +125,12 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                                     .withValues(new String[] {"RDKIT", "MORGAN_CONNECTIVITY_2", "MORGAN_FEATURE_2"}),
 
                                             new OptionDescriptor<>(String.class, "query.metric", "Similarity Metric", "Type of metric to use for similarity distance")
-                                                    .withValues(new String[] {"TANIMOTO", "DICE"})
+                                                    .withValues(new String[] {"TANIMOTO", "DICE"})  ,
 
-                                     },
+                                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return")
+                                                    .withDefaultValue(100)
+
+                                    },
                                     StepDefinitionConstants.OutOnlyMoleculeServiceExecutor.CLASSNAME)
                     }
             )
