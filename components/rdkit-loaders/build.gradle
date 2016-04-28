@@ -20,7 +20,7 @@ task copyDependencies(type: Sync) {
 }
 
 task execute(type:JavaExec) {
-    if (project.hasProperty('special')) {
+    if (project.hasProperty('mainClass')) {
         main = mainClass
     }
     classpath = sourceSets.main.runtimeClasspath
