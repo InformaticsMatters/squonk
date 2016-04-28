@@ -32,6 +32,19 @@ class AbstractRDKitLoader {
         return new DataSourceConfiguration(dataSource, [:])
     }
 
+    static protected URL loadConfigFile() {
+
+        File f = new File('rdkit-loaders/rdkit_loader.properties')
+        if (!f.exists()) {
+            f = new File('rdkit_loader.properties')
+        }
+        if (!f.exists()) {
+            throw new FileNotFoundException("Can't find gonfig file rdkit_loader.properties")
+        }
+
+        return f.toURI().toURL()
+    }
+
     protected Stream<MoleculeObject> prepareStream(Stream<MoleculeObject> stream) {
         return stream
     }
@@ -86,10 +99,6 @@ class AbstractRDKitLoader {
 
             if (limit > 0) {
                 mols = mols.limit(limit)
-            }
-
-            if (filter != null) {
-                mols = mols.filter(filter)
             }
 
             println "setting reportingSize to $reportingChunk"

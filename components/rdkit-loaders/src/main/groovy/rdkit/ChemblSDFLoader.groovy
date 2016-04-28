@@ -17,7 +17,7 @@ class ChemblSDFLoader extends AbstractRDKitLoader {
 
     static void main(String[] args) {
 
-        URL from = new File('rdkit-loaders/rdkit_loader.properties').toURI().toURL()
+        URL from = loadConfigFile()
         println "Loading from $from"
         ConfigObject props = LoaderUtils.createConfig(from)
         String baseTable = props.chembl.table

@@ -12,3 +12,14 @@ dependencies {
     compile "org.postgresql:postgresql:$postgresDriverVersion"
 
 }
+
+task copyDependencies(type: Sync) {
+    dependsOn tasks.assemble
+    from configurations.compile
+    into 'lib'
+}
+
+task execute(type:JavaExec) {
+    main = mainClass
+    classpath = sourceSets.main.runtimeClasspath
+}
