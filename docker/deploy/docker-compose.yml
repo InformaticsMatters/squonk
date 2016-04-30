@@ -74,6 +74,8 @@ keycloak:
 # http://${PUBLIC_HOST}/chem-services-chemaxon-basic/rest/v1/calculators
 # http://${PUBLIC_HOST}/chem-services-chemaxon-basic/rest/v1/descriptors
 # http://${PUBLIC_HOST}/chem-services-rdkit-search/rest/v1/db
+# http://${PUBLIC_HOST}/chem-services-rdkit-search/rest/v1/db/search?table=emolecules_order_bb&limit=5&mode=sss&q=%5B%236%5D-1-%5B%236%5D-%5B%237%5D-%5B%236%5D-%5B%236%5D-%5B%237%5D-1
+# http://${PUBLIC_HOST}/chem-services-rdkit-search/rest/v1/db/search?table=emolecules_order_bb&limit=5&mode=sim&q=CN1C%3DNC2%3DC1C(%3DO)N(C)C(%3DO)N2C"
 #
 # Test using something like this:
 # curl -X POST -T mols.json "http://${PUBLIC_HOST}:8092/chem-services-cdk-basic/rest/v1/calculators/logp"

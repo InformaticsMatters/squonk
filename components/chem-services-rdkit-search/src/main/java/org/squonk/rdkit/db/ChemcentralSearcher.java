@@ -5,7 +5,6 @@ import org.apache.camel.Exchange;
 import org.postgresql.ds.PGPoolingDataSource;
 import org.squonk.rdkit.db.dsl.Select;
 import org.squonk.rdkit.db.dsl.WhereClause;
-import org.squonk.rdkit.db.impl.DbSearcher;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
@@ -65,14 +64,14 @@ public class ChemcentralSearcher {
 
         LOG.info("Search: table=" + table + " mode=" + mode + " q=" + query);
 
-        DbSearcher searcher = new DbSearcher(chemchentralDataSource);
+        RDKitTables searcher = new RDKitTables(chemchentralDataSource);
         RDKitTable rdkitTable = searcher.getTable(table);
         if (rdkitTable == null) {
             throw new IllegalArgumentException("Unknown table: " + table);
         }
 
         Select select = searcher.createSelectAll(rdkitTable.getName())
-                .setChiral(chiral == null ? false : chiral)
+                .setChiral((chiral == null || "sim".equals(mode)) ? false : chiral)
                 .limit(limit == null ? 1000 : Math.min(1000, limit)).select();
 
         WhereClause where = select.where();

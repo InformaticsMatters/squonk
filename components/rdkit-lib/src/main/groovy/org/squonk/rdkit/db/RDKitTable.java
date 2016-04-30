@@ -51,7 +51,7 @@ public class RDKitTable extends Table {
         return molfpsTable;
     }
 
-    public Table alias(String alias) {
+    public RDKitTable alias(String alias) {
         return new RDKitTable(alias, this);
     }
 }
