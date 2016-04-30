@@ -5,7 +5,7 @@ server {
 
 server {
     listen       443;
-    server_name  172.17.0.1;
+    server_name  __public_host__;
 
     ssl on;
     ssl_certificate           /etc/nginx/cert.crt;

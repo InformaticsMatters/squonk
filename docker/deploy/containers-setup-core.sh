@@ -18,6 +18,8 @@ sed "s/__public_host__/${PUBLIC_HOST}/g" images/squonk-realm.json.template > ima
 sed "s/__public_host__/${PUBLIC_HOST}/g" images/xwiki/server.xml.template > images/xwiki/server.xml
 # setup xwiki connection to postgres
 sed "s/__postgres_xwiki_password__/${POSTGRES_XWIKI_PASS}/g" images/xwiki/hibernate.cfg.xml.template > images/xwiki/hibernate.cfg.xml
+# setup nginx
+sed "s/__public_host__/${PUBLIC_HOST}/g" images/nginx/default.conf.template > images/nginx/default.conf
 
 images="rabbitmq postgres keycloak xwiki"
 
@@ -47,6 +49,7 @@ echo "postgres is up"
 # now we can start keycloak (needs postgres to be setup before it starts)
 docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d keycloak
 
+sleep 2
 
 echo "preparing rabbitmq docker image ..."
 ./images/rabbitmq/rabbitmq-setup.sh deploy_rabbitmq_1

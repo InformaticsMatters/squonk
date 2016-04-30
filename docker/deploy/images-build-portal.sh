@@ -5,7 +5,7 @@ echo base = $HOME
 
 touch images/portal/ROOT.war && rm images/portal/*.war
 
-cd ../../../portal/portal-app; ant -f portal.xml build-portal-app-zip
+cd ../../../portal/portal-app; ant -f portal.xml build-prod
 cd $base
 cp ../../../portal/portal-app/dist/portal-app.war images/portal/ROOT.war
 

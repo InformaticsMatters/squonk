@@ -13,9 +13,11 @@ rdkitserver:
     - /code/static
 
 coreservices:
+    links:
     - rdkitserver:rdkitserver
     environment:
         SQUONK_RDKIT_CHEM_SERVICES_URL: "http://rdkitserver:8000"  # internal port
 
 cellexecutor:
+    links:
     - rdkitserver:rdkitserver
