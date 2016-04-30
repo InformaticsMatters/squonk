@@ -3,6 +3,18 @@ apply plugin: 'groovy'
 
 def RDBASE = System.getenv('RDBASE')
 
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.2.0'
+    }
+}
+
+apply plugin: 'org.unbroken-dome.test-sets'
+
 dependencies {
     
     compile project(':common')
@@ -23,4 +35,33 @@ dependencies {
     testCompile project(':core-test')
 }
 
-tasks.test.onlyIf { RDBASE != null }
+/* Integration test setup is borrowed from here:
+ * http://www.petrikainulainen.net/programming/gradle/getting-started-with-gradle-integration-testing-with-the-testsets-plugin/
+ * */
+testSets {
+    integrationTest
+}
+
+//check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+
+tasks.withType(Test) {
+    reports.html.destination = file("${reporting.baseDir}/${name}")
+}
+
+project.integrationTest {
+    outputs.upToDateWhen { false }
+}
+
+integrationTest {
+    dependsOn rootProject.tasks.dbTestEnvPrepare,
+            tasks.getByPath(':database:flywayMigrate')
+    finalizedBy rootProject.tasks.dbTestEnvShutdown
+}
+
+task execute(type:JavaExec) {
+    if (project.hasProperty('mainClass')) {
+        main = mainClass
+    }
+    classpath = sourceSets.main.runtimeClasspath
+}

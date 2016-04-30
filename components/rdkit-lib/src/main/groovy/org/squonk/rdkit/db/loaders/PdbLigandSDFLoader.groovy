@@ -1,10 +1,9 @@
-package rdkit
+package org.squonk.rdkit.db.loaders
 
 import com.im.lac.types.MoleculeObject
 import org.RDKit.ROMol
 import org.squonk.rdkit.db.RDKitTable
 import org.squonk.rdkit.db.dsl.IConfiguration
-import org.squonk.rdkit.db.impl.DrugbankTable
 import org.squonk.rdkit.db.impl.PdbLigandTable
 import org.squonk.rdkit.mol.MolReader
 

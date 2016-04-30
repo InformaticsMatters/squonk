@@ -1,4 +1,4 @@
-package rdkit
+package org.squonk.rdkit.db.loaders
 
 import groovy.sql.Sql
 import org.postgresql.ds.PGSimpleDataSource

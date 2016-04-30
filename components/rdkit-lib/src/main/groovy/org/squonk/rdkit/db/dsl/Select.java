@@ -13,7 +13,7 @@ public class Select {
     private static final Logger LOG = Logger.getLogger(Select.class.getName());
 
     final SqlQuery query;
-    final List<IProjectionPart> projections = new ArrayList<>();
+    final List<? super IProjectionPart> projections = new ArrayList<>();
 
     final List<SimpleStatement> preExecuteStatements = new ArrayList<>();
     final FpTableJoin join;
@@ -22,12 +22,24 @@ public class Select {
     LimitClause limitClause;
 
     public Select(SqlQuery query, Column... cols) {
+        this(query, Arrays.asList(cols));
+    }
+
+    public Select(SqlQuery query, List<Column> cols) {
         this.query = query;
-        this.projections.addAll(Arrays.asList(cols));
-        this.join = new FpTableJoin(this, query.rdkTable.getMolFpTable().schemaPlusTable());
+        this.projections.addAll(cols);
+        this.join = new FpTableJoin(this);
         this.whereClause = new WhereClause(this);
         this.orderByClause = new OrderByClause(this);
         this.limitClause = new LimitClause(this, 0);
+    }
+
+    public void addProjection(IProjectionPart projection) {
+        projections.add(projection);
+    }
+
+    public void addProjections(List<? extends IProjectionPart> projection) {
+        projections.addAll(projection);
     }
 
     public void setconfiguration(IConfiguration configuration) {

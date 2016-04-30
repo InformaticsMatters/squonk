@@ -3,6 +3,7 @@ package org.squonk.rdkit.db.impl;
 import com.im.lac.types.MoleculeObject;
 import org.squonk.rdkit.db.MolSourceType;
 import org.squonk.rdkit.db.RDKitTable;
+import org.squonk.rdkit.db.dsl.Column;
 import org.squonk.rdkit.db.dsl.DataSourceConfiguration;
 import org.squonk.rdkit.db.dsl.Select;
 import org.squonk.rdkit.db.dsl.SqlQuery;
@@ -34,9 +35,9 @@ public class DbSearcher {
         return rdkitTables.get(name);
     }
 
-    public Select createSelect(String name) {
+    public Select createSelectAll(String name) {
         RDKitTable table = rdkitTables.get(name);
-        return new SqlQuery(table, null).select();
+        return new SqlQuery(table).select(table.getColumns());
     }
 
     public List<MoleculeObject> executeSelect(Select select) {

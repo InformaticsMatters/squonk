@@ -18,14 +18,25 @@ public class RDKitTable extends Table {
     }
 
     public RDKitTable(String schema, String name, MolSourceType molSourceType, Collection<FingerprintType> fptypes) {
+        this(schema, name, molSourceType, fptypes, "mfp");
+    }
+
+    public RDKitTable(String schema, String name, MolSourceType molSourceType, Collection<FingerprintType> fptypes, String molfpsAlias) {
         super(schema, name);
         addColumn("id", "SERIAL", "SERIAL PRIMARY KEY");
         addColumn("structure", "TEXT", "TEXT");
         this.molSourceType = molSourceType;
         this.fptypes.addAll(fptypes);
-        this.molfpsTable = new Table(schema, getBaseName() + "_molfps")
+        Table mfp = new Table(schema, getBaseName() + "_molfps")
                 .column("id", "INTEGER", "INTEGER NOT NULL PRIMARY KEY")
                 .column("m", "MOL", "MOL");
+        this.molfpsTable = molfpsAlias == null ? mfp : mfp.alias(molfpsAlias);
+    }
+
+    private RDKitTable(String alias, RDKitTable table) {
+        super(alias, table);
+        this.molSourceType = table.getMolSourceType();
+        this.molfpsTable = table.getMolFpTable();
     }
 
     public List<FingerprintType> getFingerprintTypes() {
@@ -38,5 +49,9 @@ public class RDKitTable extends Table {
 
     public Table getMolFpTable() {
         return molfpsTable;
+    }
+
+    public Table alias(String alias) {
+        return new RDKitTable(alias, this);
     }
 }

@@ -36,12 +36,10 @@ public final class Column implements IProjectionPart {
     }
 
     public int appendToProjections(StringBuilder builder, List bindVars) {
-        builder.append(table.name)
+        builder.append(table.aliasOrSchemaPlusTable())
                 .append(".")
                 .append(name);
         return 1;
     }
-
-
 
 }

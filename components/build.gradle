@@ -118,13 +118,11 @@ task integrationTestEnvDryRunNoShutdown {
 
 
 task dbTestEnvPrepare(type:Exec) {
-    dependsOn "core-services/core-services-server:dockerFile"
     workingDir '../docker'
     commandLine 'bash', 'db-test-env-prepare.sh'
 }
 
-task dbTestEnvShutdown(type:Exec) {    
-    dependsOn "core-services/core-services-server:dockerFile"
+task dbTestEnvShutdown(type:Exec) {
     workingDir '../docker'
     commandLine 'bash', 'db-test-env-shutdown.sh'
 }

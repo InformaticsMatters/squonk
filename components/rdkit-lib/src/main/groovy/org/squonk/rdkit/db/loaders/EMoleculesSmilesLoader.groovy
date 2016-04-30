@@ -1,4 +1,4 @@
-package rdkit
+package org.squonk.rdkit.db.loaders
 
 import org.squonk.rdkit.db.impl.EMoleculesTable
 import org.squonk.rdkit.db.MolSourceType

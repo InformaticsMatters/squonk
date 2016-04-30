@@ -73,6 +73,7 @@ keycloak:
 # http://${PUBLIC_HOST}/chem-services-cdk-basic/rest/v1/calculators
 # http://${PUBLIC_HOST}/chem-services-chemaxon-basic/rest/v1/calculators
 # http://${PUBLIC_HOST}/chem-services-chemaxon-basic/rest/v1/descriptors
+# http://${PUBLIC_HOST}/chem-services-rdkit-search/rest/v1/db
 #
 # Test using something like this:
 # curl -X POST -T mols.json "http://${PUBLIC_HOST}:8092/chem-services-cdk-basic/rest/v1/calculators/logp"

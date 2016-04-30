@@ -1,4 +1,4 @@
-package rdkit
+package org.squonk.rdkit.db.loaders
 
 import com.im.lac.types.MoleculeObject
 import org.squonk.rdkit.db.RDKitTable
@@ -10,7 +10,6 @@ import org.squonk.reader.SDFReader
 import org.squonk.util.IOUtils
 
 import javax.sql.DataSource
-import java.util.function.Predicate
 import java.util.stream.Stream
 
 /**
@@ -39,7 +38,7 @@ class AbstractRDKitLoader {
             f = new File('rdkit_loader.properties')
         }
         if (!f.exists()) {
-            throw new FileNotFoundException("Can't find gonfig file rdkit_loader.properties")
+            throw new FileNotFoundException("Can't find config file rdkit_loader.properties")
         }
 
         return f.toURI().toURL()

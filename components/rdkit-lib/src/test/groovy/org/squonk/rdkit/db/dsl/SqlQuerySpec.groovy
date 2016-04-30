@@ -207,7 +207,7 @@ class SqlQuerySpec extends Specification {
 
         then:
         sql != null
-        sql.startsWith('SELECT t.id,t.structure')
+        sql.startsWith('SELECT foo.id,foo.structure')
         sql.readLines().size() == 3
         bindVars.size() == 1
     }
@@ -226,7 +226,7 @@ class SqlQuerySpec extends Specification {
 
         then:
         sql != null
-        sql.startsWith('SELECT t.id,t.structure,')
+        sql.startsWith('SELECT foo.id,foo.structure,')
         sql.readLines().size() == 5
         bindVars.size() == 2
         q.preExecuteStatements.size() == 1
@@ -247,7 +247,7 @@ class SqlQuerySpec extends Specification {
 
         then:
         sql != null
-        sql.startsWith('SELECT t.id,t.structure,')
+        sql.startsWith('SELECT foo.id,foo.structure,')
         sql.readLines().size() == 5
         bindVars.size() == 2
         q.preExecuteStatements.size() == 1
@@ -268,7 +268,7 @@ class SqlQuerySpec extends Specification {
 
         then:
         sql != null
-        sql.startsWith('SELECT t.id,t.structure,')
+        sql.startsWith('SELECT foo.id,foo.structure,')
         sql.readLines().size() == 5
         bindVars.size() == 2
         q.preExecuteStatements.size() == 1

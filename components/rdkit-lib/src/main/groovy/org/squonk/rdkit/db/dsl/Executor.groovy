@@ -24,7 +24,7 @@ class Executor {
         // projections
         int count = 0;
         if (select.projections.size() == 0) {
-            buf.append(select.query.aliasTable.name)
+            buf.append(select.query.rdkTable.name)
                     .append(".")
                     .append("*");
             count++;
@@ -38,21 +38,19 @@ class Executor {
             }
         }
 
-        // from
-        buf.append("\n  FROM ")
-                .append(select.query.rdkTable.schemaPlusTable())
-                .append(" t");
+        // FROM clause
+        buf.append("\n  FROM ").append(select.query.rdkTable.schemaPlusTableWithAlias());
 
-        // join clause
+        // JOIN clause
         select.join.append(buf);
 
-        // where clause
+        // WHERE clause
         select.whereClause.appendToWhereClause(buf, bindVars);
 
-        // order by
+        // ORDER BY clause
         select.orderByClause.appendToOrderBy(buf);
 
-        // limit clause
+        // LIMIT clause
         select.limitClause.append(buf);
 
         String sql = buf.toString();

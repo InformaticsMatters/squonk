@@ -7,6 +7,7 @@ import com.im.lac.util.StreamProvider
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.MoleculeObjectDataset
 import org.squonk.rdkit.mol.EvaluatorDefintion
+import spock.lang.IgnoreIf
 
 import static RdkitCalculatorsRouteBuilder.*
 import java.util.stream.*
@@ -18,13 +19,14 @@ import org.apache.camel.spi.ThreadPoolProfile
 /**
  * Created by timbo on 14/04/2014.
  */
+@IgnoreIf({ System.getenv("RDBASE") == null })
 class RdkitCalculatorsRouteBuilderSpec extends CamelSpecificationBase {
 
     static MoleculeObjectDataset dataset = new MoleculeObjectDataset([
             new MoleculeObject('C'),
             new MoleculeObject('CC'),
             new MoleculeObject('CCC')])
-    
+
     def 'logp'() {
 
         when:

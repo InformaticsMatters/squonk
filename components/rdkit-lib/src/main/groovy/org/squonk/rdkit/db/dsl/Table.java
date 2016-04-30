@@ -25,13 +25,17 @@ public class Table {
         this.baseName = name;
     }
 
-    private Table(String alias, String schema, String baseTableName, List<Column> columns) {
-        this.schema = null;
+    protected Table(String alias, Table table) {
+        this.schema = table.schema;
         this.name = alias;
-        this.baseName = baseTableName;
-        for (Column col : columns) {
+        this.baseName = table.baseName;
+        for (Column col : table.columns) {
             addColumn(col.name, col.type, col.definition);
         }
+    }
+
+    public boolean isAlias() {
+        return name != baseName;
     }
 
     public Column addColumn(String name, String type, String definition) {
@@ -50,7 +54,19 @@ public class Table {
     }
 
     public Table alias(String alias) {
-        return new Table(alias, this.schema, this.baseName, this.columns);
+        return new Table(alias, this);
+    }
+
+    public String schemaPlusTableWithAlias() {
+        if (isAlias()) {
+            return schemaPlusTable() + " AS " + name;
+        } else {
+            return schemaPlusTable();
+        }
+    }
+
+    public String aliasOrSchemaPlusTable() {
+        return isAlias() ? name : schemaPlusTable();
     }
 
     public String schemaPlusTable() {

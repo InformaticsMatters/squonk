@@ -91,7 +91,8 @@ public abstract class WhereClausePart implements IExecutable, IWherePart {
         }
 
         public void appendToWhereClause(StringBuilder buf, List bindVars) {
-            buf.append("m.m = ?::mol");
+            buf.append(whereClause.select.query.rdkTable.getMolFpTable().aliasOrSchemaPlusTable())
+                    .append(".m = ?::mol");
             bindVars.add(smiles);
         }
     }
@@ -107,7 +108,8 @@ public abstract class WhereClausePart implements IExecutable, IWherePart {
         }
 
         public void appendToWhereClause(StringBuilder buf, List bindVars) {
-            buf.append("m.m @> ?::qmol");
+            buf.append(whereClause.select.query.rdkTable.getMolFpTable().aliasOrSchemaPlusTable())
+                    .append(".m @> ?::qmol");
             bindVars.add(smarts);
         }
     }
@@ -160,7 +162,8 @@ public abstract class WhereClausePart implements IExecutable, IWherePart {
 
             buf.append(String.format(type.function, "mol_from_smiles(?::cstring)"))
                     .append(metric.operator)
-                    .append("m.")
+                    .append(whereClause.select.query.rdkTable.getMolFpTable().aliasOrSchemaPlusTable())
+                    .append(".")
                     .append(type.colName);
 
             //"morganbv_fp(mol_from_smiles('CN1C=NC2=C1C(=O)N(C)C(=O)N2C'::cstring),2)#m.mfp2"

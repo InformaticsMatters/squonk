@@ -1,15 +1,20 @@
 db:
-    build: postgres/
+    image: informaticsmatters/rdkit_cartridge:Release_2016_03_1
+    volumes:
+    - ./deploy/images/postgres/init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro
     ports: 
     - "5432:5432"
-
-cs:
-    build: ../components/core-services-server/build
-    ports:
-    - 80:8080
-    links:
-    - db:db
     environment:
-        SQUONK_DB_SERVER: db
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: postgres
+
+#cs:
+#    build: ../components/core-services-server/build
+#    ports:
+#    - 80:8080
+#    links:
+#    - db:db
+#    environment:
+#        SQUONK_DB_SERVER: db
 
 

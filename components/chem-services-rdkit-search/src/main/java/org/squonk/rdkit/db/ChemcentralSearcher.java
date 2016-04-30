@@ -71,10 +71,9 @@ public class ChemcentralSearcher {
             throw new IllegalArgumentException("Unknown table: " + table);
         }
 
-        Select select = searcher.createSelect(rdkitTable.getName())
+        Select select = searcher.createSelectAll(rdkitTable.getName())
                 .setChiral(chiral == null ? false : chiral)
                 .limit(limit == null ? 1000 : Math.min(1000, limit)).select();
-
 
         WhereClause where = select.where();
         switch (mode) {

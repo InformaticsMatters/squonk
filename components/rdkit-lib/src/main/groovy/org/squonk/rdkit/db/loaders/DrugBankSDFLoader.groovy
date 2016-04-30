@@ -1,4 +1,4 @@
-package rdkit
+package org.squonk.rdkit.db.loaders
 
 import org.squonk.rdkit.db.impl.DrugbankTable
 import org.squonk.rdkit.db.RDKitTable

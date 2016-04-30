@@ -13,13 +13,15 @@ public class SqlQuery {
 
     protected RDKitTable rdkTable;
     protected IConfiguration config;
-    protected final Table aliasTable;
 
 
     public SqlQuery(RDKitTable rdkTable, IConfiguration config) {
         this.rdkTable = rdkTable;
         this.config = config;
-        this.aliasTable = rdkTable.alias("t");
+    }
+
+    public SqlQuery(RDKitTable rdkTable) {
+       this(rdkTable, null);
     }
 
     public List<FingerprintType> getFingerPrintTypes() {
@@ -27,10 +29,14 @@ public class SqlQuery {
     }
 
     List<Column> getColumns() {
-        return aliasTable.columns;
+        return rdkTable.columns;
     }
 
     public Select select(Column... cols) {
+        return cols.length == 0 ? new Select(this, rdkTable.getColumns()) : new Select(this, cols);
+    }
+
+    public Select select(List<Column> cols) {
         return new Select(this, cols);
     }
 
