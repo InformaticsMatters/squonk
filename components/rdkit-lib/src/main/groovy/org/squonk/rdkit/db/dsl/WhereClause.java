@@ -3,6 +3,7 @@ package org.squonk.rdkit.db.dsl;
 import com.im.lac.types.MoleculeObject;
 import org.squonk.rdkit.db.FingerprintType;
 import org.squonk.rdkit.db.Metric;
+import org.squonk.rdkit.db.MolSourceType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,16 +24,16 @@ public class WhereClause implements IExecutable, IWherePart {
         return select.execute();
     }
 
-    public WhereClausePart similarityStructureQuery(String smiles, FingerprintType type, Metric metric, String outputColName) {
-        return WhereClausePart.similarityStructureQuery(this, smiles, type, metric, outputColName);
+    public WhereClausePart similarityStructureQuery(String mol, MolSourceType molType, FingerprintType type, Metric metric, String outputColName) {
+        return WhereClausePart.similarityStructureQuery(this, mol, molType, type, metric, outputColName);
     }
 
-    public WhereClausePart substructureQuery(String smarts) {
-        return WhereClausePart.substructureQuery(this, smarts);
+    public WhereClausePart substructureQuery(String mol, MolSourceType molType) {
+        return WhereClausePart.substructureQuery(this, mol, molType);
     }
 
-    public WhereClausePart exactStructureQuery(String smiles) {
-        return WhereClausePart.exactStructureQuery(this, smiles);
+    public WhereClausePart exactStructureQuery(String mol, MolSourceType molType) {
+        return WhereClausePart.exactStructureQuery(this, mol, molType);
     }
 
     public WhereClausePart equals(Column col, Object value) {

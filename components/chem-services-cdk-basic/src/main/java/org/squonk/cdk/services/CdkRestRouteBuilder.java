@@ -18,8 +18,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.squonk.types.TypeResolver.*;
-
 /**
  * @author timbo
  */
@@ -85,7 +83,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                                 true, // URL is relative
                                 AsyncHttpProcessDatasetJobDefinition.class,
                                 null, null, null, null, null,
-                                StepDefinitionConstants.ServiceExecutor.CLASSNAME)
+                                StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
                 }
         );
     }

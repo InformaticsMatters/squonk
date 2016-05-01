@@ -6,8 +6,6 @@ import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.dataset.DatasetUtils;
-import org.squonk.dataset.IncompatibleMetadataException;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
@@ -18,11 +16,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 /**Thin executor either has no body or gets its body from the option whose key is 'body'
  * This is POSTed to the service and Stream<MoleculeObject> is returned
@@ -34,8 +29,8 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(OutOnlyMoleculeServiceExecutorStep.class.getName());
 
-    public static final String OPTION_SERVICE_ENDPOINT = StepDefinitionConstants.ServiceExecutor.OPTION_SERVICE_ENDPOINT;
-    public static final String OPTION_EXECUTION_PARAMS = StepDefinitionConstants.ServiceExecutor.OPTION_SERVICE_PARAMS;
+    public static final String OPTION_SERVICE_ENDPOINT = StepDefinitionConstants.MoleculeServiceThinExecutor.OPTION_SERVICE_ENDPOINT;
+    public static final String OPTION_EXECUTION_PARAMS = StepDefinitionConstants.MoleculeServiceThinExecutor.OPTION_SERVICE_PARAMS;
 
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 

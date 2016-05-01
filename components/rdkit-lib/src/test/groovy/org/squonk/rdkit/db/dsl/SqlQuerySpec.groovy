@@ -40,7 +40,7 @@ class SqlQuerySpec extends Specification {
         println "query with 1 structure part()"
 
         def q = query.select()
-                .where().exactStructureQuery("c1ccccc1").whereClause.select
+                .where().exactStructureQuery("c1ccccc1", MolSourceType.SMILES).whereClause.select
 
         when:
         List bindVars = []
@@ -56,7 +56,7 @@ class SqlQuerySpec extends Specification {
         println "query with 1 similarity part()"
 
         def q = query.select()
-                .where().similarityStructureQuery("c1ccccc1", FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
+                .where().similarityStructureQuery("c1ccccc1", MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
                 .whereClause.select
 
         when:
@@ -75,7 +75,7 @@ class SqlQuerySpec extends Specification {
 
         def q = query.select()
                 .setSimilarityThreshold(0.7, Metric.DICE)
-                .where().similarityStructureQuery("c1ccccc1", FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
+                .where().similarityStructureQuery("c1ccccc1", MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
                 .whereClause.select
 
         when:
@@ -147,7 +147,7 @@ class SqlQuerySpec extends Specification {
         println "query with 2 whereClause parts()"
 
         def q = query.select()
-                .where().equals(table.columns[0], 999).substructureQuery("CCCC")
+                .where().equals(table.columns[0], 999).substructureQuery("CCCC", MolSourceType.SMILES)
                 .whereClause.select
 
         when:
@@ -181,7 +181,7 @@ class SqlQuerySpec extends Specification {
         println "query with 2 whereClause parts and limit()"
 
         def q = query.select()
-                .where().exactStructureQuery("c1ccccc1").substructureQuery("CCCC").limit(100)
+                .where().exactStructureQuery("c1ccccc1", MolSourceType.SMILES).substructureQuery("CCCC", MolSourceType.SMILES).limit(100)
                 .select
 
         when:
@@ -217,7 +217,7 @@ class SqlQuerySpec extends Specification {
 
         def q = query.select(cols[0], cols[1])
                 .setSimilarityThreshold(0.7, Metric.DICE)
-                .where().similarityStructureQuery("c1ccccc1", FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
+                .where().similarityStructureQuery("c1ccccc1", MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
                 .whereClause.select
 
         when:
@@ -237,7 +237,7 @@ class SqlQuerySpec extends Specification {
 
         def q = query.select(cols[0], cols[1])
                 .setSimilarityThreshold(0.7, Metric.DICE)
-                .where().similarityStructureQuery("c1ccccc1", FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
+                .where().similarityStructureQuery("c1ccccc1", MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
                 .orderBy(cols[2], true)
                 .whereClause.select
 
@@ -259,7 +259,7 @@ class SqlQuerySpec extends Specification {
         def q = query.select(cols[0], cols[1])
                 .setSimilarityThreshold(0.7, Metric.DICE)
                 .orderBy(cols[2], true)
-                .where().similarityStructureQuery("c1ccccc1", FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
+                .where().similarityStructureQuery("c1ccccc1", MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
                 .whereClause.select
 
         when:

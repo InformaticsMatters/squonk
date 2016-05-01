@@ -77,7 +77,7 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                                 endpoint, // endpoint
                                 true, // URL is relative
                                 AsyncHttpProcessDatasetJobDefinition.class,
-                                null, null, null, null, null, StepDefinitionConstants.ServiceExecutor.CLASSNAME)
+                                null, null, null, null, null, StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
                 }
         );
     }

@@ -3,6 +3,7 @@ package org.squonk.rdkit.db.dsl;
 import com.im.lac.types.MoleculeObject;
 import org.squonk.rdkit.db.FingerprintType;
 import org.squonk.rdkit.db.Metric;
+import org.squonk.rdkit.db.MolSourceType;
 
 import java.util.List;
 
@@ -42,28 +43,28 @@ public abstract class WhereClausePart implements IExecutable, IWherePart {
         return new EqualsQuery(whereClause, col, value);
     }
 
-    public WhereClausePart similarityStructureQuery(String smiles, FingerprintType type, Metric metric, String outputColName) {
-        return similarityStructureQuery(whereClause, smiles, type, metric, outputColName);
+    public WhereClausePart similarityStructureQuery(String mol, MolSourceType molType, FingerprintType fpType, Metric metric, String outputColName) {
+        return similarityStructureQuery(whereClause, mol, molType, fpType, metric, outputColName);
     }
 
-    public static WhereClausePart similarityStructureQuery(WhereClause whereClause, String smiles, FingerprintType type, Metric metric, String outputColName) {
-        return new SimilarityStructureQuery(whereClause, smiles, type, metric, outputColName);
+    public static WhereClausePart similarityStructureQuery(WhereClause whereClause, String mol, MolSourceType molType, FingerprintType fpType, Metric metric, String outputColName) {
+        return new SimilarityStructureQuery(whereClause, mol, molType, fpType, metric, outputColName);
     }
 
-    public WhereClausePart substructureQuery(String smarts) {
-        return substructureQuery(whereClause, smarts);
+    public WhereClausePart substructureQuery(String mol, MolSourceType molType) {
+        return substructureQuery(whereClause, mol, molType);
     }
 
-    public static WhereClausePart substructureQuery(WhereClause whereClause, String smarts) {
-        return new SubstructureQuery(whereClause, smarts);
+    public static WhereClausePart substructureQuery(WhereClause whereClause, String mol, MolSourceType molType) {
+        return new SubstructureQuery(whereClause, mol, molType);
     }
 
-    public WhereClausePart exactStructureQuery(String smiles) {
-        return exactStructureQuery(whereClause, smiles);
+    public WhereClausePart exactStructureQuery(String mol, MolSourceType molType) {
+        return exactStructureQuery(whereClause, mol, molType);
     }
 
-    public static WhereClausePart exactStructureQuery(WhereClause whereClause, String smiles) {
-        return new ExactStructureQuery(whereClause, smiles);
+    public static WhereClausePart exactStructureQuery(WhereClause whereClause, String mol, MolSourceType molType) {
+        return new ExactStructureQuery(whereClause, mol, molType);
     }
 
     public Select orderBy(Column col, boolean ascending) {
@@ -74,57 +75,61 @@ public abstract class WhereClausePart implements IExecutable, IWherePart {
         return getWhereClause().select.execute();
     }
 
-    //abstract void appendToWhereClause(StringBuilder buf, List bindVars);
-
     public LimitClause limit(int limit) {
         return whereClause.select.limit(limit);
     }
 
     static class ExactStructureQuery extends WhereClausePart {
 
-        private final String smiles;
+        private final String mol;
+        private final MolSourceType molType;
 
-        ExactStructureQuery(WhereClause where, String smiles) {
+        ExactStructureQuery(WhereClause where, String mol, MolSourceType molType) {
             super(where);
-            this.smiles = smiles;
+            this.mol = mol;
+            this.molType = molType;
             where.select.join.enabled = true;
         }
 
         public void appendToWhereClause(StringBuilder buf, List bindVars) {
             buf.append(whereClause.select.query.rdkTable.getMolFpTable().aliasOrSchemaPlusTable())
-                    .append(".m = ?::mol");
-            bindVars.add(smiles);
+                    .append(".m = " + String.format(molType.molFunction, "?::cstring"));
+            bindVars.add(mol);
         }
     }
 
     static class SubstructureQuery extends WhereClausePart {
 
-        final String smarts;
+        private final String mol;
+        private final MolSourceType molType;
 
-        SubstructureQuery(WhereClause where, String smarts) {
+        SubstructureQuery(WhereClause where, String mol, MolSourceType molType) {
             super(where);
-            this.smarts = smarts;
+            this.mol = mol;
+            this.molType = molType;
             where.select.join.enabled = true;
         }
 
         public void appendToWhereClause(StringBuilder buf, List bindVars) {
             buf.append(whereClause.select.query.rdkTable.getMolFpTable().aliasOrSchemaPlusTable())
-                    .append(".m @> ?::qmol");
-            bindVars.add(smarts);
+                    .append(".m @> " + String.format(molType.qmolFunction, "?::cstring"));
+            bindVars.add(mol);
         }
     }
 
     static class SimilarityStructureQuery extends WhereClausePart {
 
-        private final String smiles;
-        private final FingerprintType type;
+        private final String mol;
+        private final MolSourceType molType;
+        private final FingerprintType fpType;
         private final Metric metric;
         private final String outputColName;
 
-        SimilarityStructureQuery(WhereClause where, String smiles, FingerprintType type, Metric metric, String outputColName) {
+        SimilarityStructureQuery(WhereClause where, String mol, MolSourceType molType, FingerprintType fpType, Metric metric, String outputColName) {
             super(where);
-            this.smiles = smiles;
-            this.type = type;
+            this.mol = mol;
+            this.molType = molType;
+            this.fpType = fpType;
             this.metric = metric;
             this.outputColName = outputColName;
             where.select.join.enabled = true;
@@ -137,14 +142,15 @@ public abstract class WhereClausePart implements IExecutable, IWherePart {
         class SimilarityFunction implements IProjectionPart, IOrderByPart {
             @Override
             public int appendToProjections(StringBuilder builder, List bindVars) {
-                String fpFunc = String.format(type.function + ',' + type.colName, "mol_from_smiles(?::cstring)");
+                String fpFunc = String.format(fpType.function + ',' + fpType.colName, String.format(molType.molFunction, "?::cstring"));
                 //                            morganbv_fp(%s,2)
 
                 builder.append(String.format(metric.function + " AS %s", fpFunc, outputColName));
                 //                           dice_sml(%s)
                 //                      ->   dice_sml(morganbv_fp(mol_from_smiles(?::cstring),2),mfp2)
+                //                      ->   dice_sml(morganbv_fp(mol_from_smiles(?::cstring),2),mfp2)
 
-                bindVars.add(smiles);
+                bindVars.add(mol);
                 return 1;
             }
 
@@ -160,15 +166,15 @@ public abstract class WhereClausePart implements IExecutable, IWherePart {
 
         public void appendToWhereClause(StringBuilder buf, List bindVars) {
 
-            buf.append(String.format(type.function, "mol_from_smiles(?::cstring)"))
+            buf.append(String.format(fpType.function, String.format(molType.molFunction, "?::cstring")))
                     .append(metric.operator)
                     .append(whereClause.select.query.rdkTable.getMolFpTable().aliasOrSchemaPlusTable())
                     .append(".")
-                    .append(type.colName);
+                    .append(fpType.colName);
 
             //"morganbv_fp(mol_from_smiles('CN1C=NC2=C1C(=O)N(C)C(=O)N2C'::cstring),2)#m.mfp2"
 
-            bindVars.add(smiles);
+            bindVars.add(mol);
         }
     }
 

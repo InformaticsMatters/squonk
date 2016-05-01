@@ -2,6 +2,7 @@ package org.squonk.rdkit.db.dsl;
 
 import org.squonk.rdkit.db.FingerprintType;
 import org.squonk.rdkit.db.Metric;
+import org.squonk.rdkit.db.MolSourceType;
 
 import java.util.List;
 
@@ -10,11 +11,11 @@ import java.util.List;
  */
 public interface IWherePart {
 
-    WhereClausePart similarityStructureQuery(String smiles, FingerprintType type, Metric metric, String outputColName);
+    WhereClausePart similarityStructureQuery(String mol, MolSourceType molType, FingerprintType type, Metric metric, String outputColName);
 
-    WhereClausePart substructureQuery(String smarts);
+    WhereClausePart substructureQuery(String mol, MolSourceType molType);
 
-    WhereClausePart exactStructureQuery(String smiles);
+    WhereClausePart exactStructureQuery(String mol, MolSourceType molType);
 
     WhereClausePart equals(Column col, Object value);
 

@@ -25,6 +25,39 @@ class SqlQueryDbSpec extends Specification {
     static String schema = "vendordbs"
     static RDKitTable table = new EMoleculesTable(schema, baseTable, MolSourceType.SMILES)
     static RDKitTable alias = table.alias("rdk")
+    static String qSmiles = 'OC1CC2(C(C1CC2=O)(C)C)C'
+    static String qSmarts = '[#6]C1([#6])[#6]-2-[#6]-[#6](=O)C1([#6])[#6]-[#6]-2-[#8]'
+    static String qMol = '''
+  Mrv0541 05011615002D
+
+ 12 13  0  0  0  0            999 V2000
+   -0.0249    1.4008    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0
+    0.2733    0.5639    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    0.2543   -0.2609    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    0.8472   -0.6569    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    0.6599    0.1726    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    0.8850    0.9927    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    1.5899    0.5639    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    1.5709   -0.2609    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    2.3460   -0.6496    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.3099   -0.2049    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.2996    0.5066    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    1.0407   -1.5090    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+  1  2  1  0  0  0  0
+  2  3  1  0  0  0  0
+  3  4  1  0  0  0  0
+  4  5  1  0  0  0  0
+  5  6  1  0  0  0  0
+  2  6  1  0  0  0  0
+  6  7  1  0  0  0  0
+  7  8  1  0  0  0  0
+  4  8  1  0  0  0  0
+  8  9  2  0  0  0  0
+  5 10  1  0  0  0  0
+  5 11  1  0  0  0  0
+  4 12  1  0  0  0  0
+M  END
+'''
 
     @Shared PGSimpleDataSource dataSource
 
@@ -59,7 +92,6 @@ class SqlQueryDbSpec extends Specification {
     }
 
     void "query with limit"() {
-        println "query with limit()"
 
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(table, config)
@@ -79,7 +111,6 @@ class SqlQueryDbSpec extends Specification {
     }
 
     void "query with limit using alias"() {
-        println "query with limit()"
 
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(alias, config)
@@ -99,7 +130,6 @@ class SqlQueryDbSpec extends Specification {
     }
 
     void "query with limit with projections"() {
-        println "query with limit()"
 
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(table, config)
@@ -118,13 +148,12 @@ class SqlQueryDbSpec extends Specification {
         mols[0].source != null
     }
 
-    void "query with 1 structure part"() {
-        println "query with 1 structure part()"
+    void "exact with 1 structure part smiles"() {
 
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(table, config)
         def q = query.select()
-                .where().exactStructureQuery("OC1CC2(C(C1CC2=O)(C)C)C").whereClause.select
+                .where().exactStructureQuery(qSmiles, MolSourceType.SMILES).whereClause.select
 
         when:
         def mols = q.executor.execute()
@@ -134,16 +163,31 @@ class SqlQueryDbSpec extends Specification {
         mols[0].values["id"] != null
         mols[0].values["version_id"] != null
         mols[0].source != null
-
     }
 
-    void "query with 1 structure part using alias"() {
-        println "query with 1 structure part()"
+    void "exact with 1 structure part mol"() {
+
+        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        def query = new SqlQuery(table, config)
+        def q = query.select()
+                .where().exactStructureQuery(qMol, MolSourceType.CTAB).whereClause.select
+
+        when:
+        def mols = q.executor.execute()
+
+        then:
+        mols.size() == 1
+        mols[0].values["id"] != null
+        mols[0].values["version_id"] != null
+        mols[0].source != null
+    }
+
+    void "exact with 1 structure part using alias"() {
 
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(alias, config)
         def q = query.select()
-                .where().exactStructureQuery("OC1CC2(C(C1CC2=O)(C)C)C").whereClause.select
+                .where().exactStructureQuery(qSmiles, MolSourceType.SMILES).whereClause.select
 
         when:
         def mols = q.executor.execute()
@@ -155,13 +199,12 @@ class SqlQueryDbSpec extends Specification {
         mols[0].source != null
     }
 
-    void "query with 1 structure part with projections using alias"() {
-        println "query with 1 structure part()"
+    void "exact with 1 structure part with projections using alias"() {
 
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(alias, config)
         def q = query.select(alias.columns[1], alias.columns[2]) // 1 is structure, 2 is version_id
-                .where().exactStructureQuery("OC1CC2(C(C1CC2=O)(C)C)C").whereClause.select
+                .where().exactStructureQuery(qSmiles, MolSourceType.SMILES).whereClause.select
 
         when:
         def mols = q.executor.execute()
@@ -173,13 +216,63 @@ class SqlQueryDbSpec extends Specification {
         mols[0].source != null
     }
 
-    void "query with 1 similarity part"() {
-        println "query with 1 similarity part()"
+    void "sss with 1 structure part smiles"() {
 
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(table, config)
         def q = query.select()
-                .where().similarityStructureQuery("OC1CC2(C(C1CC2=O)(C)C)C", FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
+                .where().substructureQuery(qSmiles, MolSourceType.SMILES).whereClause.select
+
+        when:
+        def mols = q.executor.execute()
+
+        then:
+        mols.size() > 0
+        mols[0].values["id"] != null
+        mols[0].values["version_id"] != null
+        mols[0].source != null
+    }
+
+    void "sss with 1 structure part smarts"() {
+
+        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        def query = new SqlQuery(table, config)
+        def q = query.select()
+                .where().substructureQuery(qSmarts, MolSourceType.SMARTS).whereClause.select
+
+        when:
+        def mols = q.executor.execute()
+
+        then:
+        mols.size() > 0
+        mols[0].values["id"] != null
+        mols[0].values["version_id"] != null
+        mols[0].source != null
+    }
+
+    void "sss with 1 structure part mol"() {
+
+        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        def query = new SqlQuery(table, config)
+        def q = query.select()
+                .where().substructureQuery(qMol, MolSourceType.CTAB).whereClause.select
+
+        when:
+        def mols = q.executor.execute()
+
+        then:
+        mols.size() > 0
+        mols[0].values["id"] != null
+        mols[0].values["version_id"] != null
+        mols[0].source != null
+    }
+
+    void "similarity with 1 part smiles"() {
+
+        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        def query = new SqlQuery(table, config)
+        def q = query.select()
+                .where().similarityStructureQuery(qSmiles, MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
                 .whereClause.select
 
         when:
@@ -193,13 +286,31 @@ class SqlQueryDbSpec extends Specification {
         mols[0].values["similarity"] != null
     }
 
-    void "query with 1 similarity part with projections"() {
-        println "query with 1 similarity part()"
+    void "similarity with 1 part mol"() {
+
+        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        def query = new SqlQuery(table, config)
+        def q = query.select()
+                .where().similarityStructureQuery(qMol, MolSourceType.CTAB, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
+                .whereClause.select
+
+        when:
+        def mols = q.executor.execute()
+
+        then:
+        mols.size() > 0
+        mols[0].values["id"] != null
+        mols[0].values["version_id"] != null
+        mols[0].source != null
+        mols[0].values["similarity"] != null
+    }
+
+    void "similarity with 1 part with projections"() {
 
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(table, config)
         def q = query.select(table.columns[1], table.columns[2]) // 1 is structure, 2 is version_id
-                .where().similarityStructureQuery("OC1CC2(C(C1CC2=O)(C)C)C", FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
+                .where().similarityStructureQuery(qSmiles, MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
                 .whereClause.select
 
         when:
@@ -213,13 +324,12 @@ class SqlQueryDbSpec extends Specification {
         mols[0].values["similarity"] != null
     }
 
-    void "query with 1 similarity part using alias"() {
-        println "query with 1 similarity part()"
+    void "similarity with 1 part using alias"() {
 
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(alias, config)
         def q = query.select()
-                .where().similarityStructureQuery("OC1CC2(C(C1CC2=O)(C)C)C", FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
+                .where().similarityStructureQuery(qSmiles, MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
                 .whereClause.select
 
         when:
@@ -233,13 +343,12 @@ class SqlQueryDbSpec extends Specification {
         mols[0].values["similarity"] != null
     }
 
-    void "query with 1 similarity part with projections using alias"() {
-        println "query with 1 similarity part()"
+    void "similarity with 1 part with projections using alias"() {
 
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(alias, config)
         def q = query.select(alias.columns[1], alias.columns[2]) // 1 is structure, 2 is version_id
-                .where().similarityStructureQuery("OC1CC2(C(C1CC2=O)(C)C)C", FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
+                .where().similarityStructureQuery(qSmiles, MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
                 .whereClause.select
 
         when:
@@ -253,14 +362,13 @@ class SqlQueryDbSpec extends Specification {
         mols[0].values["similarity"] != null
     }
 
-    void "query with 1 similarity part with threshold"() {
-        println "query with 1 similarity part()"
+    void "similarity with 1 part with threshold"() {
 
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(table, config)
         def q = query.select()
                 .setSimilarityThreshold(0.7, Metric.DICE)
-                .where().similarityStructureQuery("OC1CC2(C(C1CC2=O)(C)C)C", FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
+                .where().similarityStructureQuery(qSmiles, MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
                 .whereClause.select
 
         when:
@@ -274,14 +382,13 @@ class SqlQueryDbSpec extends Specification {
         mols[0].values["similarity"] != null
     }
 
-    void "query with 1 similarity part with threshold using alias"() {
-        println "query with 1 similarity part()"
+    void "similarity with 1 part with threshold using alias"() {
 
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(alias, config)
         def q = query.select()
                 .setSimilarityThreshold(0.7, Metric.DICE)
-                .where().similarityStructureQuery("OC1CC2(C(C1CC2=O)(C)C)C", FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
+                .where().similarityStructureQuery(qSmiles, MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
                 .whereClause.select
 
         when:
@@ -296,7 +403,6 @@ class SqlQueryDbSpec extends Specification {
     }
 
     void "query with 1 equals part"() {
-        println "query with 1 equals part()"
 
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(table, config)
@@ -314,7 +420,6 @@ class SqlQueryDbSpec extends Specification {
     }
 
     void "query with 1 equals part using alias"() {
-        println "query with 1 equals part()"
 
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(alias, config)

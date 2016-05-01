@@ -177,7 +177,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                             cost,
                             new ServiceDescriptor.LicenseToken[]{ServiceDescriptor.LicenseToken.CHEMAXON},
                             props,
-                            StepDefinitionConstants.ServiceExecutor.CLASSNAME)
+                            StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
                 }
         );
     }

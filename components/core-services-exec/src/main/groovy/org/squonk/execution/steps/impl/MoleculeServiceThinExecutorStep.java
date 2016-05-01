@@ -14,13 +14,11 @@ import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 import org.apache.camel.CamelContext;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
 
 /**Thin executor sends only the molecules (no values) to the service and combines the returned values with the
  * originals. As such the network traffic is minimised and the remote end does not need to handle values which it may
@@ -39,8 +37,8 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(MoleculeServiceThinExecutorStep.class.getName());
 
-    public static final String OPTION_SERVICE_ENDPOINT = StepDefinitionConstants.ServiceExecutor.OPTION_SERVICE_ENDPOINT;
-    public static final String OPTION_EXECUTION_PARAMS = StepDefinitionConstants.ServiceExecutor.OPTION_SERVICE_PARAMS;
+    public static final String OPTION_SERVICE_ENDPOINT = StepDefinitionConstants.MoleculeServiceThinExecutor.OPTION_SERVICE_ENDPOINT;
+    public static final String OPTION_EXECUTION_PARAMS = StepDefinitionConstants.MoleculeServiceThinExecutor.OPTION_SERVICE_PARAMS;
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
@@ -54,8 +52,8 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         Dataset<MoleculeObject> dataset = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
-        boolean preserveStructure = getOption(StepDefinitionConstants.ServiceExecutor.OPTION_PRESERVE_STRUCTURE, Boolean.class, true);
-        boolean filter = getOption(StepDefinitionConstants.ServiceExecutor.OPTION_FILTER, Boolean.class, false);
+        boolean preserveStructure = getOption(StepDefinitionConstants.MoleculeServiceThinExecutor.OPTION_PRESERVE_STRUCTURE, Boolean.class, true);
+        boolean filter = getOption(StepDefinitionConstants.MoleculeServiceThinExecutor.OPTION_FILTER, Boolean.class, false);
         LOG.info("Filter mode: " + filter);
 
         DatasetMetadata<MoleculeObject> requestMetadata = dataset.getMetadata();

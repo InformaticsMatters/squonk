@@ -139,7 +139,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                                 null,
                                 null,
                                 props,
-                                StepDefinitionConstants.ServiceExecutor.CLASSNAME)
+                                StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
                 }
         );
     }

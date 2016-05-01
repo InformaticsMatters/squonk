@@ -25,7 +25,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(RdkitSearchRestRouteBuilder.class.getName());
 
-    protected static final ServiceDescriptor[] SEARCH_SERVICE_DESCRIPTOR = new ServiceDescriptor[] {
+    protected static final ServiceDescriptor[] SEARCH_SERVICE_DESCRIPTOR = new ServiceDescriptor[]{
 
             new ServiceDescriptor(
                     "rdkit.chemcentral.search.structure",
@@ -57,26 +57,24 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     new OptionDescriptor[]{
 
                                             new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.QUERY,
-                                                    new String[] {"smarts"}), "body", "Query Structure", "Structure to use as the query as smiles or smarts")
+                                                    new String[]{"smarts"}), "body", "Query Structure", "Structure to use as the query as smiles or smarts")
                                                     .withMinValues(1),
 
                                             new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
-                                                    .withValues(new String[] {"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
+                                                    .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
                                                     .withMinValues(1),
 
                                             new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity")
-                                                    .withValues(new String[] {"exact", "sss"})
+                                                    .withValues(new String[]{"exact", "sss"})
                                                     .withMinValues(1),
 
                                             new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return")
                                                     .withDefaultValue(100)
 
-                                     },
+                                    },
                                     StepDefinitionConstants.OutOnlyMoleculeServiceExecutor.CLASSNAME)
                     }
             ),
-
-
             new ServiceDescriptor(
                     "rdkit.chemcentral.search.similarity",
                     "ChemCentral similarity search",
@@ -107,25 +105,25 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     new OptionDescriptor[]{
 
                                             new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.QUERY,
-                                                    new String[] {"smiles"}), "body", "Query Structure", "Structure to use as the query as smiles or smarts")
+                                                    new String[]{"smiles"}), "body", "Query Structure", "Structure to use as the query as smiles or smarts")
                                                     .withMinValues(1),
 
                                             new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
-                                                    .withValues(new String[] {"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
+                                                    .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
                                                     .withMinValues(1),
 
                                             new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity")
                                                     .withDefaultValue("sim")
-                                                    //.withAccess(true, false) // change this to false, false once the visitbility bug is fixed
+                                                    //.withAccess(true, false) // change this to (false, false) once the visibility bug is fixed
                                                     .withMinValues(1),
 
                                             new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)").withDefaultValue(0.7f),
 
                                             new OptionDescriptor<>(String.class, "query.fp", "Fingerprint type", "Type of fingerprint to use for similarity search")
-                                                    .withValues(new String[] {"RDKIT", "MORGAN_CONNECTIVITY_2", "MORGAN_FEATURE_2"}),
+                                                    .withValues(new String[]{"RDKIT", "MORGAN_CONNECTIVITY_2", "MORGAN_FEATURE_2"}),
 
                                             new OptionDescriptor<>(String.class, "query.metric", "Similarity Metric", "Type of metric to use for similarity distance")
-                                                    .withValues(new String[] {"TANIMOTO", "DICE"})  ,
+                                                    .withValues(new String[]{"TANIMOTO", "DICE"}),
 
                                             new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return")
                                                     .withDefaultValue(100)
@@ -134,6 +132,61 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     StepDefinitionConstants.OutOnlyMoleculeServiceExecutor.CLASSNAME)
                     }
             )
+            ,
+            new ServiceDescriptor(
+                    "rdkit.chemcentral.multisearch",
+                    "ChemCentral multi search",
+                    "Similarity search for multiple queries in the ChemCentral database using RDKit PostgreSQL cartridge",
+                    new String[]{"search", "rdkit"},
+                    null,
+                    new String[]{"/Chemistry/Search"},
+                    "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
+                    null,
+                    new String[]{"public"},
+                    MoleculeObject.class, // inputClass
+                    MoleculeObject.class, // outputClass
+                    Metadata.Type.STREAM, // inputType
+                    Metadata.Type.STREAM, // outputType
+                    "icons/structure_search.png",
+                    new AccessMode[]{
+                            new AccessMode(
+                                    "asyncHttp",
+                                    "Immediate execution",
+                                    "Execute as an asynchronous REST web service",
+                                    "search",
+                                    true, // a relative URL
+                                    AsyncHttpProcessDatasetJobDefinition.class,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    new OptionDescriptor[]{
+
+                                            new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
+                                                    .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
+                                                    .withMinValues(1),
+
+                                            new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity")
+                                                    .withDefaultValue("sim")
+                                                    //.withAccess(true, false) // change this to (false, false) once the visibility bug is fixed
+                                                    .withMinValues(1),
+
+                                            new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)").withDefaultValue(0.7f),
+
+                                            new OptionDescriptor<>(String.class, "query.fp", "Fingerprint type", "Type of fingerprint to use for similarity search")
+                                                    .withValues(new String[]{"RDKIT", "MORGAN_CONNECTIVITY_2", "MORGAN_FEATURE_2"}),
+
+                                            new OptionDescriptor<>(String.class, "query.metric", "Similarity Metric", "Type of metric to use for similarity distance")
+                                                    .withValues(new String[]{"TANIMOTO", "DICE"}),
+
+                                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return")
+                                                    .withDefaultValue(100)
+
+                                    },
+                                    StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
+                    }
+            )
+
     };
 
 
@@ -178,6 +231,14 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                 .route()
                 .process((Exchange exch) -> {
                     searcher.executeSearch(exch);
+                })
+                .endRest()
+                .get("multisearch")
+                .produces(MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON)
+                .bindingMode(RestBindingMode.off)
+                .route()
+                .process((Exchange exch) -> {
+                    searcher.executeMultiSearch(exch);
                 })
                 .endRest();
     }
