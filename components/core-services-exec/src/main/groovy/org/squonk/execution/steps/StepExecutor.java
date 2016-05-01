@@ -11,6 +11,7 @@ public class StepExecutor {
     
     private final VariableManager varman;
     private final Long  producer;
+    private volatile Step currentStep;
     
     public StepExecutor(Long  producer, VariableManager varman) {
         this.varman = varman;
@@ -31,8 +32,17 @@ public class StepExecutor {
     
     public void execute(Step[] steps, CamelContext context) throws Exception {
         for (Step step: steps) {
+            currentStep = step;
             step.execute(varman, context);
         }
+    }
+
+    public String getCurrentStatus() {
+        Step s = currentStep;
+        if (s != null) {
+            return s.getStatusMessage();
+        }
+        return null;
     }
     
 }

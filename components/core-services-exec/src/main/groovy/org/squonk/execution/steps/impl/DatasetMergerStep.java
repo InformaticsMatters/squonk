@@ -45,14 +45,13 @@ public class DatasetMergerStep extends AbstractStep {
 
         Map<Object, BasicObject> results = new LinkedHashMap<>();
         Class type = null;
-
         for (int i = 1; i <= 5; i++) {
             Dataset<? extends BasicObject> nextDataset = fetchMappedInput(VAR_INPUT_BASE + i, Dataset.class, varman);
             if (type == null) {
                 type = nextDataset.getType();
             }
             if (nextDataset != null) {
-
+                statusMessage = "Handling dataset " + i;
                 LOG.log(Level.INFO, "Handling dataset {0}", i);
                 Stream<? extends BasicObject> st = nextDataset.getStream();
                 st.forEachOrdered((BasicObject bo) -> {
@@ -77,10 +76,12 @@ public class DatasetMergerStep extends AbstractStep {
         }
 
         if (type != null) {
-
-            Dataset result = new Dataset<>(type, results.values());
-            createMappedOutput(VAR_OUTPUT, Dataset.class, result, varman);
-            LOG.info("Merge complete. Results: " + result.getMetadata());
+            Dataset output = new Dataset<>(type, results.values());
+            createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
+            statusMessage = String.format(MSG_RECORDS_PROCESSED, output.getMetadata().getSize());
+            LOG.info("Results: " + output.getMetadata());
+        } else {
+            LOG.info("No data to merge");
         }
     }
 

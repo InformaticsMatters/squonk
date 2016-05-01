@@ -43,6 +43,7 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractStep {
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
         dumpConfig(Level.INFO);
+        statusMessage = MSG_PREPARING_INPUT;
 
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
@@ -64,10 +65,12 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractStep {
         // send for execution
         Map<String, Object> responseHeaders = new HashMap<>();
 
+        statusMessage = "Executing ...";
         InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint,
                 input == null ? null : new ByteArrayInputStream(input.getBytes()),
                 requestHeaders, responseHeaders, params);
 
+        statusMessage = "Handling results ...";
 //        String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(output), 1000);
 //        LOG.info("Results: " + data);
 //        output = new ByteArrayInputStream(data.getBytes());
@@ -88,6 +91,7 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractStep {
         }
 
         createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
+        statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
     }
 
 }

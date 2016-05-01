@@ -41,10 +41,12 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
         }
 
         ChemblClient client = new ChemblClient();
-        Dataset<MoleculeObject> dataset = client.fetchActivitiesForAssay(assayID, batchSize, prefix);
+        statusMessage = "Fetching data ...";
+        Dataset<MoleculeObject> results = client.fetchActivitiesForAssay(assayID, batchSize, prefix);
 
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, dataset, varman);
-        LOG.info("ChEMBL fetch complete. Results: " + dataset.getMetadata());
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
+        statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+        LOG.info("Results: " + results.getMetadata());
     }
 
 }

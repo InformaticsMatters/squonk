@@ -44,15 +44,17 @@ public class SDFReaderStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         LOG.info("execute SDFReaderStep");
+        statusMessage = "Reading SDF";
         try (InputStream is = fetchMappedInput(VAR_SDF_INPUT, InputStream.class, varman)) {
             LOG.fine("Fetched input: " + (is != null));
             SDFReader reader = createReader(IOUtils.getGunzippedInputStream(is));
             LOG.fine("Created SDFReader");
             Stream<MoleculeObject> mols = reader.asStream();
-            Dataset dataset = new Dataset(MoleculeObject.class, mols);
+            Dataset results = new Dataset(MoleculeObject.class, mols);
             LOG.fine("Writing output");
-            createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, dataset, varman);
-            LOG.info("Writing dataset from SDF complete");
+            createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
+            statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+            LOG.info("Writing dataset from SDF complete: " + results.getMetadata());
         }
     }
 

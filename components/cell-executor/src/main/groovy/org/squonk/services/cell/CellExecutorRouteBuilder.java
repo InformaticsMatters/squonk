@@ -126,8 +126,9 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
         try {
             LOG.info("Executing job " + jobid + " for user " + username);
             executor.execute(steps, camelContext);
+            String statusMessage = executor.getCurrentStatus();
             LOG.info("Job " + jobid + " complete. Updating status");
-            jobstatusClient.updateStatus(jobid, JobStatus.Status.COMPLETED);
+            jobstatusClient.updateStatus(jobid, JobStatus.Status.COMPLETED, statusMessage);
             LOG.info("Status updated to COMPLETED");
         } catch (Exception e) {
             LOG.log(Level.WARNING, "Failed to execute job" + jobid, e);

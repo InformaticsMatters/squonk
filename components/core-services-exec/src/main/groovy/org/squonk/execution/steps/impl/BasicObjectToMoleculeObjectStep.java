@@ -48,6 +48,7 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
+        statusMessage = MSG_PREPARING_INPUT;
         String structureFieldName = getOption(OPTION_STRUCTURE_FIELD_NAME, String.class, DEFAULT_STRUCTURE_FIELD_NAME);
         String structureFormat = getOption(OPTION_STRUCTURE_FORMAT, String.class);
         boolean preserveUuid = getOption(OPTION_PRESERVE_UUID, Boolean.class, true);
@@ -57,9 +58,12 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
             LOG.fine("Input has " + input.getMetadata().getSize() + " items");
         }
 
-        Dataset<MoleculeObject> output = TypesUtils.convertBasicObjectDatasetToMoleculeObjectDataset(input, structureFieldName, structureFormat, preserveUuid);
+        statusMessage = "Appling connversions ...";
+        Dataset<MoleculeObject> results = TypesUtils.convertBasicObjectDatasetToMoleculeObjectDataset(input, structureFieldName, structureFormat, preserveUuid);
 
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, output, varman);
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
+        statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+        LOG.info("Results: " + results.getMetadata());
     }
 
 }

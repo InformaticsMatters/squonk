@@ -17,10 +17,14 @@ public abstract class AbstractStep implements Step {
 
     private static final Logger LOG = Logger.getLogger(AbstractStep.class.getName());
 
+    protected static final String MSG_PREPARING_INPUT = "Preparing input ...";
+    protected static final String MSG_RECORDS_PROCESSED = "%s records processed";
+
     protected Long outputProducerId;
     protected Map<String, Object> options;
     protected final Map<String, VariableKey> inputVariableMappings = new HashMap<>();
     protected final Map<String, String> outputVariableMappings = new HashMap<>();
+    protected String statusMessage = null;
 
 
     @Override
@@ -190,4 +194,8 @@ public abstract class AbstractStep implements Step {
         varman.putValue(key, type, value);
     }
 
+    @Override
+    public String getStatusMessage() {
+        return statusMessage;
+    }
 }

@@ -9,6 +9,7 @@ import org.squonk.reader.CSVReader;
 import org.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.apache.camel.CamelContext;
 import org.apache.commons.csv.CSVFormat;
@@ -36,6 +37,8 @@ import org.apache.commons.csv.QuoteMode;
  * @author timbo
  */
 public class CSVReaderStep extends AbstractStep {
+
+    private static final Logger LOG = Logger.getLogger(CSVReader.class.getName());
 
     /**
      * The type of CSV format. One of the CSVFormat constants found here:
@@ -120,11 +123,14 @@ public class CSVReaderStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
+        statusMessage = "Reading file ...";
         try (InputStream is = fetchMappedInput(VAR_CSV_INPUT, InputStream.class, varman)) {
             CSVReader reader = createReader(IOUtils.getGunzippedInputStream(is));
             Stream<BasicObject> mols = reader.asStream();
-            Dataset dataset = new Dataset(BasicObject.class, mols);
-            createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, dataset, varman);
+            Dataset results = new Dataset(BasicObject.class, mols);
+            createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
+            statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+            LOG.info("Results: " + results.getMetadata());
         }
     }
 

@@ -33,18 +33,22 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
+        statusMessage = MSG_PREPARING_INPUT;
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
         Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
         Map<String, Object> headers = new HashMap<>();
         headers.put("Accept-Encoding", "gzip");
         LOG.info("POSTing to service");
+        statusMessage = "Executing ...";
         InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST",  endpoint, input.getInputStream(true), headers, null, params);
         LOG.fine("Creating Dataset");
+        statusMessage = "Handling results ...";
         Dataset<MoleculeObject> results = JsonHandler.getInstance().unmarshalDataset(new DatasetMetadata(MoleculeObject.class), IOUtils.getGunzippedInputStream(output));
         LOG.fine("Dataset created");
         createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
-        LOG.info("Dataset written to variable");
+        statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+        LOG.info("Results: " + results.getMetadata());
      }
 
 }

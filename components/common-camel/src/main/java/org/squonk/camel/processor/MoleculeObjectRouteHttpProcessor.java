@@ -125,31 +125,4 @@ public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectHttp
         }
     }
 
-//    public Dataset<MoleculeObject> fetchInput(Exchange exch, RequestInfo requestInfo, HttpHandler h) throws IOException {
-//
-//        CamelRequestResponseExecutor<Dataset, MoleculeObject> executor = new CamelRequestResponseExecutor(exch);
-//
-//        Object output = h.readResponse(executor, requestInfo.isGzipContent());
-//        if (output == null) {
-//            return null;
-//        }
-//        Dataset<? extends BasicObject> ds = null;
-//        if (output instanceof Dataset) {
-//            ds = (Dataset) output;
-//        } else {
-//            ds = exch.getContext().getTypeConverter().convertTo(Dataset.class, exch, output);
-//        }
-//        if (ds == null) {
-//            return null;
-//        } else if (ds.getType() == MoleculeObject.class) {
-//            return (Dataset<MoleculeObject>) ds;
-//        } else if (h instanceof GenericHandler) {
-//            GenericHandler<Dataset, MoleculeObject> gh = (GenericHandler) h;
-//            TypeConverterRegistry tcr = exch.getContext().getTypeConverterRegistry();
-//            if (gh.canConvertGeneric(ds.getType(), tcr)) {
-//                return gh.convertGeneric(ds, ds.getType(), tcr);
-//            }
-//        }
-//        return null;
-//    }
 }

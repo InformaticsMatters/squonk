@@ -25,6 +25,7 @@ public class TrustedGroovyDatasetScriptStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
+        statusMessage = MSG_PREPARING_INPUT;
         Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman, true);
         LOG.info("Input Dataset: " + input);
         String script = getOption(OPTION_SCRIPT, String.class);
@@ -36,11 +37,12 @@ public class TrustedGroovyDatasetScriptStep extends AbstractStep {
         Map bindings = Collections.singletonMap("input", input);
 
         ScriptEngine engine = GroovyScriptExecutor.createScriptEngine(this.getClass().getClassLoader());
-        Dataset output = GroovyScriptExecutor.executeAndReturnValue(Dataset.class, engine, script, bindings);
+        statusMessage = "Executing ...";
+        Dataset results = GroovyScriptExecutor.executeAndReturnValue(Dataset.class, engine, script, bindings);
         LOG.info("Script executed");
 
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, output, varman);
-
-        LOG.info("Results: " + output.getMetadata());
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
+        statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+        LOG.info("Results: " + results.getMetadata());
     }
 }

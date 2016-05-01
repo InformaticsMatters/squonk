@@ -36,6 +36,7 @@ public class ValueTransformerStep extends AbstractStep {
      */
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
+        statusMessage = MSG_PREPARING_INPUT;
         Dataset ds = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
         if (ds == null) {
             throw new IllegalStateException("Input variable not found: " + VAR_INPUT_DATASET);
@@ -54,7 +55,7 @@ public class ValueTransformerStep extends AbstractStep {
             txs = JsonHandler.getInstance().objectFromJson(val.toString(), TransformDefinitions.class);
         }
         LOG.info("Transform Definitions: " + txs);
-
+        statusMessage = "Transforming dataset ...";
         ValueTransformerProcessor p = ValueTransformerProcessor.create(txs);
         p.execute(context.getTypeConverter(), ds);
 
@@ -65,6 +66,7 @@ public class ValueTransformerStep extends AbstractStep {
             createVariable(outFldName, Dataset.class, ds, varman);
         }
 
+        statusMessage = String.format(MSG_RECORDS_PROCESSED, ds.getMetadata().getSize());
         LOG.info("Results: " + ds.getMetadata());
     }
 

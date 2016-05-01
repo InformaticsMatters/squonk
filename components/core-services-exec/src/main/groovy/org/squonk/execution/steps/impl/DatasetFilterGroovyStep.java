@@ -26,8 +26,9 @@ public class DatasetFilterGroovyStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
+
+        statusMessage = MSG_PREPARING_INPUT;
         Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman, true);
-        LOG.info("Input Dataset: " + input);
         String script = getOption(OPTION_SCRIPT, String.class);
         if (script == null) {
             throw new IllegalStateException("Script not defined. Should be present as option named " + OPTION_SCRIPT);
@@ -39,13 +40,13 @@ public class DatasetFilterGroovyStep extends AbstractStep {
         LOG.info("Built predicate class:\n" + clsDef);
         Class<Predicate> cls = gcl.parseClass(clsDef);
         Predicate predicate = cls.newInstance();
-
+        statusMessage = "Filtering ...";
         Stream output = input.getStream().filter(predicate);
         Dataset results = new Dataset(input.getType(), output, deriveOutputDatasetMetadata(input.getMetadata()));
 
         createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
-
-        LOG.info("Results: " + results.getMetadata());
+        statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+        LOG.info("Results: " + results.getMetadata());;
     }
 
     protected DatasetMetadata deriveOutputDatasetMetadata(DatasetMetadata input) {

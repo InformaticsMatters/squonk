@@ -48,6 +48,7 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
+        statusMessage = MSG_PREPARING_INPUT;
         MoleculeObject bodyOption = getOption("body", MoleculeObject.class);
 
         Dataset<MoleculeObject> dataset = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
@@ -83,8 +84,10 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         requestHeaders.put("Content-Encoding", "gzip");
         
         // send for execution
+        statusMessage = "Posting request ...";
         Map<String, Object> responseHeaders = new HashMap<>();
         InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, requestHeaders, responseHeaders, params);
+        statusMessage = "Handling results ...";
 
 //        String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(output), 1000);
 //        LOG.info("Results: " + data);
@@ -149,6 +152,8 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         Dataset<MoleculeObject> results = new Dataset<>(MoleculeObject.class, resultMols, mergedMetadata);
 
         createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
+        statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+        LOG.info("Results: " + results.getMetadata());
     }
 
 }

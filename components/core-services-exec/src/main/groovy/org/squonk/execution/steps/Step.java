@@ -44,4 +44,10 @@ public interface Step {
      */
     void execute(VariableManager varman, CamelContext context) throws Exception;
 
+    /** Get a message indicating the current status of the execution
+     *
+     * @return
+     */
+    String getStatusMessage();
+
 }
