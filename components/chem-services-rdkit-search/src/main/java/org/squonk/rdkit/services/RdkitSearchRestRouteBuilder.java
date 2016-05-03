@@ -153,7 +153,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     "asyncHttp",
                                     "Immediate execution",
                                     "Execute as an asynchronous REST web service",
-                                    "search",
+                                    "multisearch",
                                     true, // a relative URL
                                     AsyncHttpProcessDatasetJobDefinition.class,
                                     null,
@@ -164,11 +164,6 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
 
                                             new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
                                                     .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
-                                                    .withMinValues(1),
-
-                                            new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity")
-                                                    .withDefaultValue("sim")
-                                                    //.withAccess(true, false) // change this to (false, false) once the visibility bug is fixed
                                                     .withMinValues(1),
 
                                             new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)").withDefaultValue(0.7f),
@@ -183,7 +178,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                                     .withDefaultValue(100)
 
                                     },
-                                    StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
+                                    StepDefinitionConstants.MoleculeServiceBasicExecutor.CLASSNAME)
                     }
             )
 
@@ -233,7 +228,8 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     searcher.executeSearch(exch);
                 })
                 .endRest()
-                .get("multisearch")
+                .post("multisearch")
+                .consumes(MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON)
                 .produces(MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON)
                 .bindingMode(RestBindingMode.off)
                 .route()

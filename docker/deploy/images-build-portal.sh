@@ -7,7 +7,7 @@ touch images/portal/ROOT.war && rm images/portal/*.war
 
 cd ../../../portal/portal-app; ant -f portal.xml build-prod
 cd $base
-cp ../../../portal/portal-app/dist/portal-app.war images/portal/ROOT.war
+cp ../../../portal/portal-app/dist/portal.war images/portal/ROOT.war
 
 echo "building squonk/portal docker image ..."
 cd images

@@ -5,6 +5,7 @@ import com.im.lac.types.MoleculeObject;
 import com.im.lac.util.SimpleStreamProvider;
 import com.im.lac.util.StreamProvider;
 import org.apache.camel.*;
+import org.squonk.api.MimeTypeResolver;
 import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
@@ -116,6 +117,34 @@ public class CamelUtils {
         }
         return result;
     }
+
+    public static MoleculeObject readMoleculeObjectFromBody(Exchange exch) throws IOException {
+        Message msg = (exch.hasOut() ? exch.getOut() : exch.getIn());
+        if (msg.getBody() == null) {
+            return null;
+        }
+        return readMoleculeObject(msg.getBody(String.class), msg.getHeader(Exchange.CONTENT_TYPE, String.class));
+    }
+
+    public static MoleculeObject readMoleculeObject(String value, String contentType) throws IOException {
+        if (value == null) {
+            return null;
+        }
+
+        if (contentType == null || MimeTypeResolver.MIME_TYPE_MOLECULE_OBJECT_JSON.equals(contentType)) {
+                return JsonHandler.getInstance().objectFromJson(value, MoleculeObject.class);
+        } else if (MimeTypeResolver.MIME_TYPE_MDL_MOLFILE.equals(contentType)) {
+            return new MoleculeObject(value, "mol");
+        } else if (MimeTypeResolver.MIME_TYPE_DAYLIGHT_SMILES.equals(contentType)) {
+            return new MoleculeObject(value, "smiles");
+        } else if (MimeTypeResolver.MIME_TYPE_DAYLIGHT_SMARTS.equals(contentType)) {
+            return new MoleculeObject(value, "smarts");
+        } else {
+            LOG.warning("Unrecognised Content-Type: " + contentType);
+            return null;
+        }
+    }
+
 
     public static Message getMessage(Exchange exch) {
         return exch.hasOut() ? exch.getOut() : exch.getIn();

@@ -1,9 +1,6 @@
 package org.squonk.rdkit.db;
 
 import com.im.lac.types.MoleculeObject;
-import org.squonk.rdkit.db.MolSourceType;
-import org.squonk.rdkit.db.RDKitTable;
-import org.squonk.rdkit.db.dsl.Column;
 import org.squonk.rdkit.db.dsl.DataSourceConfiguration;
 import org.squonk.rdkit.db.dsl.Select;
 import org.squonk.rdkit.db.dsl.SqlQuery;
@@ -25,7 +22,7 @@ public class RDKitTables {
         dbConfig = new DataSourceConfiguration(dataSource, Collections.emptyMap());
         rdkitTables.put("emolecules_order_bb", new EMoleculesTable(SCHEMA, "emolecules_order_bb", MolSourceType.SMILES));
         rdkitTables.put("emolecules_order_all", new EMoleculesTable(SCHEMA, "emolecules_order_all", MolSourceType.SMILES));
-        rdkitTables.put("chembl_21", new EMoleculesTable(SCHEMA, "chembl_21", MolSourceType.CTAB));
+        rdkitTables.put("chembl_21", new EMoleculesTable(SCHEMA, "chembl_21", MolSourceType.MOL));
     }
 
     public Collection<String> getTableNames() {

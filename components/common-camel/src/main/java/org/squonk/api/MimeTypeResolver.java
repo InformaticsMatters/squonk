@@ -14,6 +14,7 @@ public interface MimeTypeResolver {
     public static final String MIME_TYPE_MDL_MOLFILE = "chemical/x-mdl-molfile";
     public static final String MIME_TYPE_MDL_SDF = "chemical/x-mdl-sdfile";
     public static final String MIME_TYPE_DAYLIGHT_SMILES = "chemical/x-daylight-smiles";
+    public static final String MIME_TYPE_DAYLIGHT_SMARTS = "chemical/x-daylight-smarts"; // this is not a recognised mime type
     public static final String MIME_TYPE_TRIPOS_MOL2 = "chemical/x-mol2";
     public static final String MIME_TYPE_PDB = "chemical/x-pdb";
 

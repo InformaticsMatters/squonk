@@ -59,6 +59,8 @@ integrationTest {
     finalizedBy rootProject.tasks.dbTestEnvShutdown
 }
 
+// run the loaders with something like this:
+// ./gradlew --daemon -PmainClass=org.squonk.rdkit.db.loaders.EMoleculesSmilesLoader rdkit-lib:execute
 task execute(type:JavaExec) {
     if (project.hasProperty('mainClass')) {
         main = mainClass

@@ -10,7 +10,7 @@ import org.squonk.rdkit.db.RDKitTable
 class DrugbankTable extends RDKitTable {
 
     DrugbankTable(String schema, String baseTableName) {
-        super(schema, baseTableName, MolSourceType.CTAB, [
+        super(schema, baseTableName, MolSourceType.MOL, [
                 FingerprintType.RDKIT,
                 FingerprintType.MORGAN_CONNECTIVITY_2,
                 FingerprintType.MORGAN_FEATURE_2])

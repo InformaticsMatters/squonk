@@ -54,9 +54,9 @@ class Executor {
         select.limitClause.append(buf);
 
         String sql = buf.toString();
-        log.info("SQL: " + sql);
+        log.fine("SQL: " + sql);
         for (Object o : bindVars) {
-            log.info("  -> " + o.toString());
+            log.fine("  -> " + o.toString());
         }
         return sql;
     }
@@ -82,7 +82,7 @@ class Executor {
             String sql = buildSql(bindVars)
             // 3 execute and build results
             List<MoleculeObject> mols = []
-            String format = select.query.rdkTable.molSourceType == MolSourceType.CTAB ? 'mol' : 'smiles'
+            String format = select.query.rdkTable.molSourceType == MolSourceType.MOL ? 'mol' : 'smiles'
             println("SQL:" + sql)
             db.eachRow(sql, bindVars) {
                 mols << buildMoleculeObject(it.toRowResult(), format)

@@ -67,8 +67,10 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
             executor.setResponseBody(null);
         } else {
             DatasetMetadata md = dataset.getMetadata();
-            String json = JsonHandler.getInstance().objectToJson(md);
-            executor.setResponseHeader(CamelCommonConstants.HEADER_METADATA, json); // TODO - move this constant to this class
+            if (md != null) {
+                String json = JsonHandler.getInstance().objectToJson(md);
+                executor.setResponseHeader(CamelCommonConstants.HEADER_METADATA, json); // TODO - move this constant to this class
+            }
             executor.setResponseBody(dataset.getInputStream(gzip));
         }
     }

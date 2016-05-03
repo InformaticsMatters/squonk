@@ -42,21 +42,26 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractStep {
 
         Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
+        Object body = getOption(StepDefinitionConstants.OPTION_BODY);
+        String bodyContentType = getOption(StepDefinitionConstants.OPTION_BODY_CONTENT_TYPE, String.class);
 
         String input = null;
-        if (params.containsKey("body")) {
-            Object body = params.get("body");
+        if (body != null) {
             LOG.info("Body type: " + body.getClass().getName());
-            //MoleculeObject bodyOption = (MoleculeObject)
-            params.remove("body");
-            //input = JsonHandler.getInstance().objectToJson(bodyOption);
-            input = body.toString();
+            if (body instanceof String) {
+                input = (String)body;
+            } else {
+                input = JsonHandler.getInstance().objectToJson(body);
+            }
         }
         LOG.info("Input: " + input);
 
         Map<String, Object> requestHeaders = new HashMap<>();
         requestHeaders.put("Accept-Encoding", "gzip");
-        
+        if (bodyContentType != null) {
+            requestHeaders.put("Content-Type", bodyContentType);
+        }
+
         // send for execution
         Map<String, Object> responseHeaders = new HashMap<>();
 

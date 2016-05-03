@@ -13,8 +13,6 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
 
-import javax.sql.DataSource
-
 /**
  * Created by timbo on 30/04/16.
  */
@@ -170,7 +168,7 @@ M  END
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(table, config)
         def q = query.select()
-                .where().exactStructureQuery(qMol, MolSourceType.CTAB).whereClause.select
+                .where().exactStructureQuery(qMol, MolSourceType.MOL).whereClause.select
 
         when:
         def mols = q.executor.execute()
@@ -255,7 +253,7 @@ M  END
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(table, config)
         def q = query.select()
-                .where().substructureQuery(qMol, MolSourceType.CTAB).whereClause.select
+                .where().substructureQuery(qMol, MolSourceType.MOL).whereClause.select
 
         when:
         def mols = q.executor.execute()
@@ -291,7 +289,7 @@ M  END
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         def query = new SqlQuery(table, config)
         def q = query.select()
-                .where().similarityStructureQuery(qMol, MolSourceType.CTAB, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
+                .where().similarityStructureQuery(qMol, MolSourceType.MOL, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
                 .whereClause.select
 
         when:

@@ -11,7 +11,7 @@ import spock.lang.Specification
  */
 class SqlQuerySpec extends Specification {
 
-    Table table = new RDKitTable("foo", MolSourceType.CTAB, [])
+    Table table = new RDKitTable("foo", MolSourceType.MOL, [])
             .column("id", "SERIAL", "SERIAL PRIMARY KEY")
             .column("structure", "TEXT", "TEXT")
             .column("version_id", "INTEGER", "INTEGER NOT NULL")

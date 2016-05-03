@@ -3,9 +3,13 @@ package org.squonk.rdkit.db;
 import com.im.lac.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.postgresql.ds.PGPoolingDataSource;
+import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
+import org.squonk.dataset.MoleculeObjectDataset;
+import org.squonk.http.CamelRequestResponseExecutor;
 import org.squonk.rdkit.db.dsl.Select;
 import org.squonk.rdkit.db.dsl.WhereClause;
+import org.squonk.types.DatasetHandler;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
@@ -50,16 +54,18 @@ public class ChemcentralSearcher {
     public void executeSearch(Exchange exch) throws IOException {
 
         String query = null;
-        if (exch.getIn().getBody() != null) {
-            query = exch.getIn().getBody(String.class);
-        }
-        if (query == null || query.isEmpty()) {
+        MolSourceType molType = null;
+        MoleculeObject mo = CamelUtils.readMoleculeObjectFromBody(exch);
+        if (mo != null) {
+            query = mo.getSource();
+            molType = MolSourceType.valueOf(mo.getFormat("smiles").toUpperCase());
+        } else {
             query = exch.getIn().getHeader("q", String.class);
+            molType = MolSourceType.SMILES;
         }
-        if (query == null|| query.isEmpty()) {
+        if (query == null) {
             throw new IllegalArgumentException("Must provide query structure either as body or query param named 'q'");
         }
-        LOG.info("q=" + query);
 
         String table = exch.getIn().getHeader("table", String.class);
         String mode = exch.getIn().getHeader("mode", String.class);
@@ -76,8 +82,7 @@ public class ChemcentralSearcher {
         if (rdkitTable == null) {
             throw new IllegalArgumentException("Unknown table: " + table);
         }
-
-        List<MoleculeObject> mols = executeSearch(searcher, rdkitTable, table, query, MolSourceType.SMILES, mode, limit, chiral, fp, metric, threshold);
+        List<MoleculeObject> mols = executeSearch(searcher, rdkitTable, table, query, molType, mode, limit, chiral, fp, metric, threshold);
         InputStream json = JsonHandler.getInstance().marshalStreamToJsonArray(mols.stream(), false);
         exch.getOut().setBody(json);
     }
@@ -85,20 +90,21 @@ public class ChemcentralSearcher {
 
     public void executeMultiSearch(Exchange exch) throws IOException {
 
-        Dataset<MoleculeObject> dataset = exch.getIn().getBody(Dataset.class);
+        DatasetHandler dh = new DatasetHandler(MoleculeObject.class);
+        CamelRequestResponseExecutor executor = new CamelRequestResponseExecutor(exch);
+        Dataset<MoleculeObject> dataset = dh.readResponse(executor, true);
         if (dataset == null || dataset.getType() != MoleculeObject.class) {
             throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
         }
 
         String table = exch.getIn().getHeader("table", String.class);
-        String mode = exch.getIn().getHeader("mode", String.class);
         Integer limit = exch.getIn().getHeader("limit", Integer.class);
         Boolean chiral = exch.getIn().getHeader("chiral", Boolean.class);
         String fp = exch.getIn().getHeader("fp", String.class);
         String metric = exch.getIn().getHeader("metric", String.class);
         Double threshold = exch.getIn().getHeader("threshold", Double.class);
 
-        LOG.info("MultiSearch: table=" + table + " mode=" + mode);
+        LOG.info("MultiSearch: table=" + table);
 
         RDKitTables searcher = new RDKitTables(chemchentralDataSource);
         RDKitTable rdkitTable = searcher.getTable(table);
@@ -109,23 +115,30 @@ public class ChemcentralSearcher {
         Set uuids = new ConcurrentSkipListSet<>();
         Stream<MoleculeObject> results = dataset.getStream().flatMap((mo) -> {
             String query = mo.getSource();
-            MolSourceType molType = MolSourceType.valueOf(mo.getFormat() == null ? "SMILES" : mo.getFormat().toUpperCase());
-            List<MoleculeObject> mols = executeSearch(searcher, rdkitTable, table, query, molType, mode, limit, chiral, fp, metric, threshold);
+            MolSourceType molType;
+            try {
+                molType = MolSourceType.valueOf(mo.getFormat() == null ? "SMILES" : mo.getFormat().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid value for MolSourceType enum: " + mo.getFormat(), e);
+            }
+            List<MoleculeObject> mols = executeSearch(searcher, rdkitTable, table, query, molType, "sim", limit, chiral, fp, metric, threshold);
+            LOG.info("Found " + mols.size() + " hits");
             return mols.stream();
         }).filter((mo) -> {
             UUID uuid = mo.getUUID();
             if (uuids.contains(uuid)) {
+                LOG.fine("Rejecting " + mo.getUUID());
                 return false;
             } else {
+                LOG.fine("Accepting " + mo.getUUID());
                 uuids.add(uuid);
                 return true;
             }
         }).peek((mo) -> {
             mo.getValues().remove("sim");
         });
-
-        InputStream json = JsonHandler.getInstance().marshalStreamToJsonArray(results, false);
-        exch.getOut().setBody(json);
+        MoleculeObjectDataset modataset = new MoleculeObjectDataset(results);
+        dh.writeResponse(modataset.getDataset(), executor, true);
     }
 
     private  List<MoleculeObject> executeSearch(

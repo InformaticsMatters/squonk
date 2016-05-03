@@ -7,7 +7,7 @@ import spock.lang.Specification
  */
 class SqlQueryExecuteSpec extends Specification {
 
-//    Table table = new RDKitTable("emolecules_order_bb", MolSourceType.CTAB, [])
+//    Table table = new RDKitTable("emolecules_order_bb", MolSourceType.MOL, [])
 //            .column("id", "SERIAL", "SERIAL PRIMARY KEY")
 //            .column("structure", "TEXT", "TEXT")
 //            .column("version_id", "INTEGER", "INTEGER NOT NULL")

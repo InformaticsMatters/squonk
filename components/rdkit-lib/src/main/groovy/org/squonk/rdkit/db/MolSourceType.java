@@ -5,7 +5,7 @@ package org.squonk.rdkit.db;
  */
 public enum MolSourceType {
 
-    CTAB("mol_from_ctab(%s)", "qmol_from_ctab(%s)"), SMILES("mol_from_smiles(%s)", "qmol_from_smiles(%s)"), SMARTS("mol_from_smarts(%s)", "mol_from_smarts(%s)");
+    MOL("mol_from_ctab(%s)", "qmol_from_ctab(%s)"), SMILES("mol_from_smiles(%s)", "qmol_from_smiles(%s)"), SMARTS("mol_from_smarts(%s)", "mol_from_smarts(%s)");
 
     public String molFunction;
     public String qmolFunction;
