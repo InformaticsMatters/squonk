@@ -58,6 +58,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
                 // TODO - this can be made more efficient?
                 Long userId = fetchIdForUsername(db, username)
                 Long editableId = insertNotebookEditable(db, result.id, null, userId)
+                log.info("Created editable $editableId for notebook $id");
             }
             return result
         } finally {
@@ -79,7 +80,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
                 if (rows == 1) {
                     b = true;
                 } else {
-                    LOG.warning("Failed to delete notebook $notebookId")
+                    log.warning("Failed to delete notebook $notebookId")
                 }
             }
             return b;
@@ -125,7 +126,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
             db.withTransaction {
                 results = fetchNotebookDescriptorsByUsername(db, username)
             }
-            log.fine("Found ${results.size()} notebooks for user $username")
+            log.info("Found ${results.size()} notebooks for user $username")
             return results
         } finally {
             db.close()
@@ -187,7 +188,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
             db.withTransaction {
                 results = fetchNotebookEditablesByUsername(db, notebookId, username)
             }
-            log.fine("Found ${results.size()} editables for notebook $notebookId")
+            log.info("Found ${results.size()} editables for notebook $notebookId")
             return results
         } finally {
             db.close()
@@ -200,6 +201,9 @@ class NotebookPostgresClient implements NotebookVariableClient {
     @Override
     public NotebookEditableDTO createEditable(Long notebookId, Long parentId, String username) {
         log.fine("Creating editable for notebook $notebookId with parent $parentId for $username")
+        if (parentId == null) {
+            throw new NullPointerException("Editable must have a parent")
+        }
         Sql db = createSql()
         try {
             NotebookEditableDTO result = null
@@ -258,7 +262,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
                 if (rows == 1) {
                     b = true;
                 } else {
-                    LOG.warning("Failed to delete editable $editableId")
+                    log.warning("Failed to delete editable $editableId")
                 }
             }
             return b;
@@ -318,7 +322,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
             db.withTransaction {
                 results = fetchNotebookSavepoints(db, notebookId)
             }
-            log.fine("Found ${results.size()} savepoints for notebook $notebookId")
+            log.info("Found ${results.size()} savepoints for notebook $notebookId")
             return results
         } finally {
             db.close()
