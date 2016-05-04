@@ -24,7 +24,6 @@ class NotebookRestClientSpec extends Specification {
     @Shared NotebookDTO notebook1
     @Shared NotebookEditableDTO editable1
     @Shared NotebookEditableDTO editable2
-    @Shared NotebookEditableDTO editable3
     @Shared NotebookSavepointDTO savepoint1
 
 
@@ -141,56 +140,51 @@ class NotebookRestClientSpec extends Specification {
         notebook1.id == editable1.notebookId
     }
 
-    void "create editable"() {
-
-        when:
-        editable2 = client.createEditable(notebook1.id, null, username)
-
-        then:
-        editable2 != null
-        editable2.id > 0
-        editable2.owner == username
-    }
 
     void "update editable"() {
 
         when:
-        editable2 = client.updateEditable(editable2.notebookId, editable2.id, new NotebookCanvasDTO(1))
+        editable1 = client.updateEditable(editable1.notebookId, editable1.id, new NotebookCanvasDTO(1))
 
         then:
-        editable2 != null
-        editable2.canvasDTO != null
+        editable1 != null
+        editable1.canvasDTO != null
     }
 
     void "create and delete editable"() {
-        Long nbid = editable2.notebookId
+        NotebookDTO notebook = client.createNotebook(username, "notebook99", "create and delete editable")
+        Long nbid = notebook.id
 
         when:
         List<NotebookEditableDTO> eds0 = client.listEditables(nbid, username)
-        NotebookEditableDTO ed = client.createEditable(nbid, null, username)
+        NotebookEditableDTO ed1 = client.createSavepoint(eds0[0].notebookId, eds0[0].id, "sp1")
         List<NotebookEditableDTO> eds1 = client.listEditables(nbid, username)
-        client.deleteEditable(nbid, ed.id, username)
+        NotebookEditableDTO ed2 = client.createEditable(nbid, ed1.id, username)
         List<NotebookEditableDTO> eds2 = client.listEditables(nbid, username)
+        client.deleteEditable(nbid, ed2.id, username)
+        List<NotebookEditableDTO> eds3 = client.listEditables(nbid, username)
 
         then:
-        eds0.size() == eds1.size() -1
-        eds0.size() == eds2.size()
+        eds0.size() == 1
+        eds1.size() == 1
+        eds2.size() == 2
+        eds3.size() == 1
     }
 
     void "create savepoint"() {
 
         when:
-        editable3 = client.createSavepoint(editable2.notebookId, editable2.id, "a description")
-        def sps = client.listSavepoints(editable2.notebookId)
+        editable2 = client.createSavepoint(editable1.notebookId, editable1.id, "a description")
+        def sps = client.listSavepoints(editable1.notebookId)
         savepoint1 = sps[0]
 
         then:
         savepoint1 != null
-        savepoint1.id == editable2.id
-        editable3 != null
-        editable3.id > 0
-        editable3.owner == username
-        editable3.parentId == editable2.id
+        savepoint1.id == editable1.id
+        editable2 != null
+        editable2.id > 0
+        editable2.owner == username
+        editable2.parentId == editable1.id
     }
 
     void "set savepoint description"() {
@@ -220,9 +214,9 @@ class NotebookRestClientSpec extends Specification {
     void "write/read text variable"() {
 
         when:
-        client.writeTextValue(editable3.notebookId, editable3.id, 1, "var1", "hello world")
-        String s1 = client.readTextValue(editable3.notebookId, editable3.id, 1, "var1")
-        String s2 = client.readTextValue(editable3.notebookId, editable3.id, 1, "var1", "default")
+        client.writeTextValue(editable2.notebookId, editable2.id, 1, "var1", "hello world")
+        String s1 = client.readTextValue(editable2.notebookId, editable2.id, 1, "var1")
+        String s2 = client.readTextValue(editable2.notebookId, editable2.id, 1, "var1", "default")
 
         then:
         s1 == "hello world"
@@ -232,9 +226,9 @@ class NotebookRestClientSpec extends Specification {
     void "write/read stream variable"() {
 
         when:
-        client.writeStreamValue(editable3.notebookId, editable3.id, 1, "var2", new ByteArrayInputStream("hello mars".bytes))
-        String s1 = client.readStreamValue(editable3.notebookId, editable3.id, 1, "var2").text
-        String s2 = client.readStreamValue(editable3.notebookId, editable3.id, 1, "var2", "default").text
+        client.writeStreamValue(editable2.notebookId, editable2.id, 1, "var2", new ByteArrayInputStream("hello mars".bytes))
+        String s1 = client.readStreamValue(editable2.notebookId, editable2.id, 1, "var2").text
+        String s2 = client.readStreamValue(editable2.notebookId, editable2.id, 1, "var2", "default").text
 
         then:
         s1 == "hello mars"
@@ -243,12 +237,12 @@ class NotebookRestClientSpec extends Specification {
 
 //    void "read text variable with label"() {
 //
-//        def ed1 = client.createSavepoint(editable3.notebookId, editable3.id) // savepoint id is editable3.id
+//        def ed1 = client.createSavepoint(editable2.notebookId, editable2.id) // savepoint id is editable2.id
 //        def ed2 = client.createSavepoint(ed1.notebookId, ed1.id) // savepoint id is ed1.id
-//        def savepoint = client.setSavepointLabel(editable3.notebookId, ed1.id, "label2")
+//        def savepoint = client.setSavepointLabel(editable2.notebookId, ed1.id, "label2")
 //
 //        when:
-//        String s1 = client.readTextValue(editable3.notebookId, 1, "label2", "var1")
+//        String s1 = client.readTextValue(editable2.notebookId, 1, "label2", "var1")
 //
 //        then:
 //        s1 == "hello world"
@@ -257,7 +251,7 @@ class NotebookRestClientSpec extends Specification {
 //    void "read stream variable with label"() {
 //
 //        when:
-//        String s1 = client.readStreamValue(editable3.notebookId, 1, "label2", "var2").text
+//        String s1 = client.readStreamValue(editable2.notebookId, 1, "label2", "var2").text
 //
 //        then:
 //        s1 == "hello mars"

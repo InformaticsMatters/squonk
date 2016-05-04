@@ -123,21 +123,6 @@ class NotebookPostgresClientSpec extends Specification {
         eds[0].lastUpdatedDate < up.lastUpdatedDate
     }
 
-    void "create and delete editable"() {
-        Long nbid = notebooks[0].id
-
-        when:
-        List<NotebookEditableDTO> eds0 = client.listEditables(nbid, username)
-        NotebookEditableDTO ed = client.createEditable(nbid, null, username)
-        List<NotebookEditableDTO> eds1 = client.listEditables(nbid, username)
-        client.deleteEditable(nbid, ed.id, username)
-        List<NotebookEditableDTO> eds2 = client.listEditables(nbid, username)
-
-        then:
-        eds0.size() == eds1.size() -1
-        eds0.size() == eds2.size()
-    }
-
     void "create savepoint"() {
 
         when:
@@ -202,6 +187,26 @@ class NotebookPostgresClientSpec extends Specification {
 
         then:
         thrown(PSQLException)
+    }
+
+    void "create and delete editable"() {
+        NotebookDTO notebook = client.createNotebook(username, "notebook99", "create and delete editable")
+        Long nbid = notebook.id
+
+        when:
+        List<NotebookEditableDTO> eds0 = client.listEditables(nbid, username)
+        NotebookEditableDTO ed1 = client.createSavepoint(eds0[0].notebookId, eds0[0].id, "sp1")
+        List<NotebookEditableDTO> eds1 = client.listEditables(nbid, username)
+        NotebookEditableDTO ed2 = client.createEditable(nbid, ed1.id, username)
+        List<NotebookEditableDTO> eds2 = client.listEditables(nbid, username)
+        client.deleteEditable(nbid, ed2.id, username)
+        List<NotebookEditableDTO> eds3 = client.listEditables(nbid, username)
+
+        then:
+        eds0.size() == 1
+        eds1.size() == 1
+        eds2.size() == 2
+        eds3.size() == 1
     }
 
 
