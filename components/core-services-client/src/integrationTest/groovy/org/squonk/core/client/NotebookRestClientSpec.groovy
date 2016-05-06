@@ -157,14 +157,19 @@ class NotebookRestClientSpec extends Specification {
 
         when:
         List<NotebookEditableDTO> eds0 = client.listEditables(nbid, username)
-        NotebookEditableDTO ed1 = client.createSavepoint(eds0[0].notebookId, eds0[0].id, "sp1")
+        NotebookEditableDTO ed0 = client.updateEditable(eds0[0].notebookId, eds0[0].id, new NotebookCanvasDTO(999))
+        NotebookEditableDTO ed1 = client.createSavepoint(ed0.notebookId, ed0.id, "sp1") // savepoint now has the ID of the ed0
         List<NotebookEditableDTO> eds1 = client.listEditables(nbid, username)
-        NotebookEditableDTO ed2 = client.createEditable(nbid, ed1.id, username)
+        NotebookEditableDTO ed2 = client.createEditable(nbid, ed0.id, username)
         List<NotebookEditableDTO> eds2 = client.listEditables(nbid, username)
         client.deleteEditable(nbid, ed2.id, username)
         List<NotebookEditableDTO> eds3 = client.listEditables(nbid, username)
 
+
         then:
+        ed0.canvasDTO.lastCellId == 999
+        ed1.canvasDTO.lastCellId == 999
+        ed2.canvasDTO.lastCellId == 999
         eds0.size() == 1
         eds1.size() == 1
         eds2.size() == 2

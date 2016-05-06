@@ -110,7 +110,7 @@ class NotebookPostgresClientSpec extends Specification {
 
         when:
         List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
-        NotebookEditableDTO up = client.updateEditable(notebooks[0].id, eds[0].id, CANVAS_DTO)
+        NotebookEditableDTO up = client.updateEditable(notebooks[0].id, eds[0].id, new NotebookCanvasDTO(99))
 
         then:
         eds.size() == 1
@@ -119,6 +119,7 @@ class NotebookPostgresClientSpec extends Specification {
         up.createdDate != null
         up.lastUpdatedDate != null
         up.canvasDTO != null
+        up.canvasDTO.lastCellId == 99
         eds[0].createdDate == up.createdDate
         eds[0].lastUpdatedDate < up.lastUpdatedDate
     }
@@ -190,19 +191,25 @@ class NotebookPostgresClientSpec extends Specification {
     }
 
     void "create and delete editable"() {
-        NotebookDTO notebook = client.createNotebook(username, "notebook99", "create and delete editable")
+        NotebookDTO notebook = client.createNotebook(username, "notebook999", "create and delete editable")
         Long nbid = notebook.id
+
 
         when:
         List<NotebookEditableDTO> eds0 = client.listEditables(nbid, username)
-        NotebookEditableDTO ed1 = client.createSavepoint(eds0[0].notebookId, eds0[0].id, "sp1")
+        NotebookEditableDTO ed0 = client.updateEditable(eds0[0].notebookId, eds0[0].id, new NotebookCanvasDTO(999))
+        NotebookEditableDTO ed1 = client.createSavepoint(ed0.notebookId, ed0.id, "sp1") // savepoint now has the ID of the ed0
         List<NotebookEditableDTO> eds1 = client.listEditables(nbid, username)
-        NotebookEditableDTO ed2 = client.createEditable(nbid, ed1.id, username)
+        NotebookEditableDTO ed2 = client.createEditable(nbid, ed0.id, username)
         List<NotebookEditableDTO> eds2 = client.listEditables(nbid, username)
         client.deleteEditable(nbid, ed2.id, username)
         List<NotebookEditableDTO> eds3 = client.listEditables(nbid, username)
 
+
         then:
+        ed0.canvasDTO.lastCellId == 999
+        ed1.canvasDTO.lastCellId == 999
+        ed2.canvasDTO.lastCellId == 999
         eds0.size() == 1
         eds1.size() == 1
         eds2.size() == 2
@@ -416,6 +423,14 @@ class NotebookPostgresClientSpec extends Specification {
 
         cleanup:
         db.close()
+    }
+
+    private void dumpNotebookDetails(Long nbid) {
+        Sql db = client.createSql()
+        db.eachRow("SELECT id, parent_id, type, nb_definition FROM users.nb_version WHERE notebook_id=$nbid") {
+            println it
+        }
+
     }
 
 }

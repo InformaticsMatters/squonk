@@ -18,7 +18,7 @@ public class NotebookCanvasDTO {
 
 
     /** Create Canvas DTO of the current (latest) version
-     *
+
      * @param lastCellId
      */
     public NotebookCanvasDTO(Long lastCellId) {

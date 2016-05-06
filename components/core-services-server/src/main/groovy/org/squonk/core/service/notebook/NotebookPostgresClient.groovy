@@ -57,7 +57,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
                 // create the first editable so that we have something to work with
                 // TODO - this can be made more efficient?
                 Long userId = fetchIdForUsername(db, username)
-                Long editableId = insertNotebookEditable(db, result.id, null, userId)
+                Long editableId = insertNotebookEditable(db, result.id, userId)
                 log.info("Created editable $editableId for notebook $id");
             }
             return result
@@ -209,7 +209,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
             NotebookEditableDTO result = null
             db.withTransaction {
                 Long userId = fetchIdForUsername(db, username)
-                Long id = insertNotebookEditable(db, notebookId, parentId, userId)
+                Long id = createNotebookEditableFromSavepoint(db, notebookId, parentId, userId)
                 if (id == null) {
                     throw new IllegalStateException("Failed to create editable. Does the notebook $notebookId and parent $parentId exist?")
                 }
@@ -499,7 +499,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
 
     // ------------------- private implementation methods -----------------------
 
-    private Sql createSql() {
+    protected Sql createSql() {
         new Sql(dataSource.getConnection())
     }
 
@@ -580,13 +580,35 @@ class NotebookPostgresClient implements NotebookVariableClient {
 
     /** Create the first editable that will be the initial one that's used when a new notebook is created
      *
-     * @param editable
+     * @param db
+     * @param notebookId
+     * @param userId
      */
-    private Long insertNotebookEditable(Sql db, Long notebookId, Long parentId, Long userId) {
+    private Long insertNotebookEditable(Sql db, Long notebookId, Long userId) {
 
-        def keys = db.executeInsert("""INSERT INTO users.nb_version (notebook_id, parent_id, owner_id, created, updated, type) VALUES
-(:notebookId, :parentId, :userId, NOW(), NOW(), 'E')"""
-                , [notebookId: notebookId, userId: userId, parentId: parentId, userId: userId])
+        def keys = db.executeInsert("""INSERT INTO users.nb_version (notebook_id, owner_id, created, updated, type) VALUES
+(:notebookId, :userId, NOW(), NOW(), 'E')"""
+                , [notebookId: notebookId, userId: userId])
+        Long id = findInsertedId(keys)
+        log.fine("Created editable of ID $id")
+        return id
+    }
+
+    /** Create an editable from an existing savepoint
+     *
+     * @param db
+     * @param notebookId
+     * @param parentId
+     * @param userId
+     * @return
+     */
+    private Long createNotebookEditableFromSavepoint(Sql db, Long notebookId, Long parentId, Long userId) {
+
+        def keys = db.executeInsert("""\
+            |INSERT INTO users.nb_version (notebook_id, parent_id, owner_id, created, updated, type, nb_definition)
+            |  SELECT notebook_id, id, :userId, NOW(), NOW(), 'E', nb_definition
+            |    FROM users.nb_version WHERE notebook_id=:notebookId AND id=:parentId AND type='S'""".stripMargin(),
+                [notebookId: notebookId, parentId: parentId, userId: userId])
         Long id = findInsertedId(keys)
         log.fine("Created editable of ID $id")
         return id
