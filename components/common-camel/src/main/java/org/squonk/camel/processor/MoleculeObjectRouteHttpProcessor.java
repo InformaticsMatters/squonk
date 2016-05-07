@@ -3,17 +3,10 @@ package org.squonk.camel.processor;
 import com.im.lac.types.BasicObject;
 import com.im.lac.types.MoleculeObject;
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.spi.TypeConverterRegistry;
-import org.squonk.api.GenericHandler;
-import org.squonk.api.HttpHandler;
-import org.squonk.camel.typeConverters.MoleculeStreamTypeConverter;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
-import org.squonk.http.CamelRequestResponseExecutor;
 import org.squonk.http.RequestInfo;
 import org.squonk.types.SDFile;
 import org.squonk.types.TypeResolver;
@@ -32,9 +25,6 @@ public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectHttp
 
     private static final Logger LOG = Logger.getLogger(MoleculeObjectRouteHttpProcessor.class.getName());
 
-    protected final String route;
-    protected final Class sdfClass;
-
     public static final String[] DEFAULT_INPUT_MIME_TYPES = new String[]{
             MIME_TYPE_DATASET_MOLECULE_JSON,
             MIME_TYPE_MDL_SDF};
@@ -42,6 +32,10 @@ public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectHttp
             MIME_TYPE_DATASET_MOLECULE_JSON,
             MIME_TYPE_DATASET_BASIC_JSON,
             MIME_TYPE_MDL_SDF};
+
+    protected final String route;
+    protected final Class sdfClass;
+
 
     public MoleculeObjectRouteHttpProcessor(String route, TypeResolver resolver) {
         this(route, resolver, DEFAULT_INPUT_MIME_TYPES, DEFAULT_OUTPUT_MIME_TYPES, null);

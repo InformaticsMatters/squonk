@@ -1,11 +1,19 @@
 package org.squonk.rdkit.services;
 
+import com.im.lac.types.MoleculeObject;
+import org.apache.camel.Exchange;
+import org.apache.camel.builder.RouteBuilder;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.rdkit.RDKitMoleculeProcessor;
-import org.apache.camel.builder.RouteBuilder;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetMetadata;
+import org.squonk.dataset.MoleculeObjectDataset;
+import org.squonk.rdkit.io.RDKitMoleculeIOUtils;
 import org.squonk.rdkit.mol.EvaluatorDefintion;
 
-import static org.squonk.rdkit.mol.EvaluatorDefintion.Function.*;
+import java.util.stream.Stream;
+
+import static org.squonk.rdkit.mol.EvaluatorDefintion.Function.NUM_ROTATABLE_BONDS;
 
 /**
  * Basic services based on RDKit
@@ -22,6 +30,7 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
     static final String RDKIT_TPSA = "direct:rdk_tpsa";
     static final String RDKIT_RINGS = "direct:rdk_rings";
     static final String RDKIT_ROTATABLE_BONDS = "direct:rdk_rotatable_bonds";
+    static final String RDKIT_CANONICAL_SMILES = "direct:canonical_smiles";
 
     @Override
     public void configure() throws Exception {
@@ -84,6 +93,35 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new RDKitMoleculeProcessor().calculate(NUM_ROTATABLE_BONDS))
                 .log("RDKIT_ROTATABLE_BONDS finished");
+
+        from(RDKIT_CANONICAL_SMILES)
+                .log("RDKIT_CANONICAL_SMILES starting")
+                .process((Exchange exch) -> {
+
+                    Dataset<MoleculeObject> dataset = exch.getIn().getBody(Dataset.class);
+                    if (dataset == null || dataset.getType() != MoleculeObject.class) {
+                        throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
+                    }
+
+                    String modeS = exch.getIn().getHeader("mode", String.class);
+                    final RDKitMoleculeIOUtils.FragmentMode mode = (modeS == null ? RDKitMoleculeIOUtils.FragmentMode.WHOLE_MOLECULE : RDKitMoleculeIOUtils.FragmentMode.valueOf(modeS.toUpperCase()));
+
+                    Stream<MoleculeObject> results = dataset.getStream().peek((mo) -> {
+                        String smiles = RDKitMoleculeIOUtils.generateCanonicalSmiles(mo, mode);
+                        if (smiles != null) {
+                            mo.putValue("CanSmiles_RDKit", smiles);
+                        }
+                    });
+
+                    DatasetMetadata<MoleculeObject> meta = dataset.getMetadata();
+                    if (meta == null) {
+                        meta = new DatasetMetadata(MoleculeObject.class);
+                    }
+                    meta.getValueClassMappings().put("CanSmiles_RDKit", String.class);
+                    exch.getIn().setHeader(CamelCommonConstants.HEADER_METADATA, meta);
+                    exch.getIn().setBody(new MoleculeObjectDataset(results));
+                })
+                .log("RDKIT_CANONICAL_SMILES finished");
 
     }
 }

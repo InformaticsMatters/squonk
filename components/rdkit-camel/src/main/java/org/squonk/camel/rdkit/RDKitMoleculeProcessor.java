@@ -1,21 +1,21 @@
 package org.squonk.camel.rdkit;
 
+import com.im.lac.types.MoleculeObject;
+import org.RDKit.ROMol;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.squonk.camel.CamelCommonConstants;
-import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.rdkit.mol.EvaluatorDefintion;
 import org.squonk.rdkit.mol.MolEvaluator;
 import org.squonk.rdkit.mol.MolReader;
-import com.im.lac.types.MoleculeObject;
-import org.squonk.dataset.MoleculeObjectDataset;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.RDKit.ROMol;
 
 /**
  *

@@ -14,10 +14,6 @@ import org.squonk.types.TypeResolver;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import static org.squonk.api.MimeTypeResolver.MIME_TYPE_DATASET_BASIC_JSON;
-import static org.squonk.api.MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON;
-import static org.squonk.api.MimeTypeResolver.MIME_TYPE_MDL_SDF;
-
 /**
  * Created by timbo on 30/03/16.
  */

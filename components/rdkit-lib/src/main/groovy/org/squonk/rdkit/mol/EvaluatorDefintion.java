@@ -1,7 +1,5 @@
 package org.squonk.rdkit.mol;
 
-import org.RDKit.ROMol;
-
 /**
  *
  * @author timbo

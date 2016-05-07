@@ -11,6 +11,7 @@ import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.options.OptionDescriptor;
+import org.squonk.rdkit.io.RDKitMoleculeIOUtils.FragmentMode;
 import org.squonk.types.TypeResolver;
 
 import java.util.logging.Logger;
@@ -105,9 +106,34 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Topological"},
                     "asyncHttp",
                     "rotatable_bonds",
-                    null)
+                    null),
+            createServiceDescriptor(
+                    "rdkit.calculators.canonical_smiles",
+                    "Canonical Smiles (RDKit)",
+                    "Canonical Smiles using RDKit",
+                    new String[]{"smiles", "canonical", "rdkit"},
+                    "icons/properties_add.png",
+                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Topological"},
+                    "asyncHttp",
+                    "canonical_smiles",
+                    new OptionDescriptor[] {
+                            new OptionDescriptor<>(String.class, "query.mode", "Fragment mode", "How to handle molecules with multiple fragments")
+                                    .withValues(fragmentModesToStringArray())
+                    })
 
     };
+
+    static String[] fragmentModesToStringArray() {
+
+        String[] values = new String[FragmentMode.values().length];
+        int i=0;
+        for (FragmentMode mode: FragmentMode.values()) {
+            values[i] = mode.toString();
+            i++;
+        }
+        return values;
+    }
+
 
     static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String icon,
                                                      String[] paths, String modeId, String endpoint, OptionDescriptor[] props) {
@@ -211,6 +237,11 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                 .post("rotatable_bonds").description("Calculate rotatable bond count for the supplied MoleculeObjects")
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_ROTATABLE_BONDS, resolver))
+                .endRest()
+                //
+                .post("canonical_smiles").description("Generate canonical smiles for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_CANONICAL_SMILES, resolver))
                 .endRest();
 
     }
