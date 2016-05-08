@@ -7,7 +7,7 @@ dependencies {
 
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 
-    compile files("../../lib/openchemlib/OpenChemLib.jar")
+    compile "com.actelion.research:openchemlib:2016.5.0"
     
 
     testCompile project(':core-test')
