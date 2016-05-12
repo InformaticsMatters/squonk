@@ -33,7 +33,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
             ds)
         
         BasicObjectToMoleculeObjectStep step = new BasicObjectToMoleculeObjectStep()
-        step.configure(producer,
+        step.configure(producer, "job1",
                 [(BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FIELD_NAME):'struct'],
                 [(BasicObjectToMoleculeObjectStep.VAR_INPUT_DATASET):new VariableKey(producer, "input")],
                 [:])
@@ -64,7 +64,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
             ds)
         
         BasicObjectToMoleculeObjectStep step = new BasicObjectToMoleculeObjectStep()
-        step.configure(producer, [
+        step.configure(producer, "job1", [
                 (BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FIELD_NAME):'struct',
                 (BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FORMAT):'smiles',
                 (BasicObjectToMoleculeObjectStep.OPTION_PRESERVE_UUID):false

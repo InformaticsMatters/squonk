@@ -26,7 +26,7 @@ class DatasetWriterStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableClient(), 1, 1);
         DatasetWriterStep step = new DatasetWriterStep()
         Long producer = 1
-        step.configure(producer,
+        step.configure(producer, "job1",
                 [:],
                 [(DatasetWriterStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
                 [:])

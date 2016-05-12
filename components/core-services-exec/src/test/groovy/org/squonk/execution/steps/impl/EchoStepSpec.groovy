@@ -21,7 +21,7 @@ class EchoStepSpec extends Specification {
                 value)
 
         EchoStep step = new EchoStep()
-        step.configure(producer,
+        step.configure(producer, "job1",
                 [:],
                 ["input":new VariableKey(producer, "input")],
                 ["output":"output"])

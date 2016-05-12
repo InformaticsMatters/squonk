@@ -35,7 +35,7 @@ public class RDKitTables {
 
     public Select createSelectAll(String name) {
         RDKitTable table = rdkitTables.get(name).alias("rdk");
-        return new SqlQuery(table).select(table.getColumns().subList(1, table.getColumns().size()));
+        return new SqlQuery(table).select();
     }
 
     public List<MoleculeObject> executeSelect(Select select) {

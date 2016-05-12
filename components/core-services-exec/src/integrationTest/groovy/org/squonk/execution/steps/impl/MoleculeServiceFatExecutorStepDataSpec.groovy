@@ -42,7 +42,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         def outputMappings = [:]
 
         MoleculeServiceFatExecutorStep step = new MoleculeServiceFatExecutorStep()
-        step.configure(producer, opts, inputMappings, outputMappings)
+        step.configure(producer, "job1", opts, inputMappings, outputMappings)
         return step
     }
     

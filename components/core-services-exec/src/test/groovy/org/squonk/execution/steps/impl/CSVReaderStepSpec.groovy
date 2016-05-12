@@ -39,7 +39,7 @@ field1\tfield2\tfield3
         
         
         CSVReaderStep step = new CSVReaderStep()
-        step.configure(producer, [
+        step.configure(producer, "job1", [
                 (CSVReaderStep.OPTION_FORMAT_TYPE):'DEFAULT',
                 (CSVReaderStep.OPTION_USE_HEADER_FOR_FIELD_NAMES):true,
                 (CSVReaderStep.OPTION_SKIP_HEADER_LINE):true
@@ -68,7 +68,7 @@ field1\tfield2\tfield3
         
         CSVReaderStep step = new CSVReaderStep()
 
-        step.configure(producer,
+        step.configure(producer, "job1",
                 [(CSVReaderStep.OPTION_FORMAT_TYPE):'TDF'],
                 [(CSVReaderStep.VAR_CSV_INPUT):new VariableKey(producer, "input")],
                 [:])

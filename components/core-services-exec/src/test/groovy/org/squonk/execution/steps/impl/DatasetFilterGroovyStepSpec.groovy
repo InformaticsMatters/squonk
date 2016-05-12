@@ -99,7 +99,7 @@ class Filter {
                 ds)
 
         DatasetFilterGroovyStep step = new DatasetFilterGroovyStep()
-        step.configure(producer,
+        step.configure(producer, "job1",
                 [(DatasetFilterGroovyStep.OPTION_SCRIPT):'i < 5 && f > 2.0'],
                 [(DatasetFilterGroovyStep.VAR_INPUT_DATASET):new VariableKey(producer, "input")],
                 [:])

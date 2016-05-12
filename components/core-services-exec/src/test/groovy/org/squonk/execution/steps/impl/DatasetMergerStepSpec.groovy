@@ -70,7 +70,7 @@ class DatasetMergerStepSpec extends Specification {
             ds2)
         
         DatasetMergerStep step = new DatasetMergerStep()
-        step.configure(producer, [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
+        step.configure(producer, "job1", [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
                 [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2")],
                 [:])
         
@@ -111,7 +111,7 @@ class DatasetMergerStepSpec extends Specification {
                 ds2)
         
         DatasetMergerStep step = new DatasetMergerStep()
-        step.configure(producer,
+        step.configure(producer, "job1",
                 [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id', (DatasetMergerStep.OPTION_KEEP_FIRST):false],
                 [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2")],
                 [:])
@@ -159,7 +159,7 @@ class DatasetMergerStepSpec extends Specification {
                 ds3)
         
         DatasetMergerStep step = new DatasetMergerStep()
-        step.configure(producer,
+        step.configure(producer, "job1",
                 [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
                 [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2"), (DatasetMergerStep.VAR_INPUT_3):new VariableKey(producer, "input3")],
                 [:])
