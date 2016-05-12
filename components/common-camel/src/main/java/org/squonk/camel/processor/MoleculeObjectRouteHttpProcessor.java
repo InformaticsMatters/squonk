@@ -33,26 +33,31 @@ public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectHttp
             MIME_TYPE_DATASET_BASIC_JSON,
             MIME_TYPE_MDL_SDF};
 
-    protected final String route;
+    protected final String routeUri;
     protected final Class sdfClass;
 
 
     public MoleculeObjectRouteHttpProcessor(String route, TypeResolver resolver) {
-        this(route, resolver, DEFAULT_INPUT_MIME_TYPES, DEFAULT_OUTPUT_MIME_TYPES, null);
+        this(route, resolver, DEFAULT_INPUT_MIME_TYPES, DEFAULT_OUTPUT_MIME_TYPES, null, null);
     }
 
-    public MoleculeObjectRouteHttpProcessor(String route, TypeResolver resolver, Class<? extends SDFile> sdfClass) {
-        this(route, resolver, DEFAULT_INPUT_MIME_TYPES, DEFAULT_OUTPUT_MIME_TYPES, sdfClass);
+    public MoleculeObjectRouteHttpProcessor(String route, TypeResolver resolver, String statsRouteUri) {
+        this(route, resolver, DEFAULT_INPUT_MIME_TYPES, DEFAULT_OUTPUT_MIME_TYPES, statsRouteUri, null);
+    }
+
+    public MoleculeObjectRouteHttpProcessor(String route, TypeResolver resolver, String statsRouteUri, Class<? extends SDFile> sdfClass) {
+        this(route, resolver, DEFAULT_INPUT_MIME_TYPES, DEFAULT_OUTPUT_MIME_TYPES, statsRouteUri, sdfClass);
     }
 
     public MoleculeObjectRouteHttpProcessor(
-            String route,
+            String routeUri,
             TypeResolver resolver,
             String[] supportedInputMimeTypes,
             String[] supportedOutputMimeTypes,
+            String statsRouteUri,
             Class<? extends SDFile> sdfClass) {
-        super(resolver, supportedInputMimeTypes, supportedOutputMimeTypes);
-        this.route = route;
+        super(resolver, supportedInputMimeTypes, supportedOutputMimeTypes, statsRouteUri);
+        this.routeUri = routeUri;
         this.sdfClass = sdfClass;
     }
 
@@ -67,7 +72,7 @@ public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectHttp
 
         // send the molecules to the route for processing and get back an updated set of molecules
         ProducerTemplate pt = exch.getContext().createProducerTemplate();
-        processed = pt.requestBodyAndHeaders(route, processed, exch.getIn().getHeaders(), MoleculeObjectDataset.class);
+        processed = pt.requestBodyAndHeaders(routeUri, processed, exch.getIn().getHeaders(), MoleculeObjectDataset.class);
 
         // generate the results of the required type
         Object converted = generateOutput(exch, processed, requestInfo);

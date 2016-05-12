@@ -21,6 +21,7 @@ public abstract class AbstractStep implements Step {
     protected static final String MSG_RECORDS_PROCESSED = "%s records processed";
 
     protected Long outputProducerId;
+    protected String jobId;
     protected Map<String, Object> options;
     protected final Map<String, VariableKey> inputVariableMappings = new HashMap<>();
     protected final Map<String, String> outputVariableMappings = new HashMap<>();
@@ -69,8 +70,9 @@ public abstract class AbstractStep implements Step {
     }
 
     @Override
-    public void configure(Long outputProducerId, Map<String, Object> options, Map<String, VariableKey> inputVariableMappings, Map<String, String> outputVariableMappings) {
+    public void configure(Long outputProducerId, String jobId, Map<String, Object> options, Map<String, VariableKey> inputVariableMappings, Map<String, String> outputVariableMappings) {
         this.outputProducerId = outputProducerId;
+        this.jobId = jobId;
         this.options = options;
         this.inputVariableMappings.putAll(inputVariableMappings);
         this.outputVariableMappings.putAll(outputVariableMappings);

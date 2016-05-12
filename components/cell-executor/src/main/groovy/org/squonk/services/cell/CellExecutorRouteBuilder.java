@@ -12,6 +12,7 @@ import org.squonk.execution.steps.StepDefinition;
 import org.squonk.execution.steps.StepExecutor;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.mqueue.MessageQueueCredentials;
+import org.squonk.util.StatsRecorder;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -70,7 +71,7 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
     void processJob(Exchange exch) throws IOException {
         dumpHeaders(exch);
         StepsCellExecutorJobDefinition jobdef = exch.getIn().getBody(StepsCellExecutorJobDefinition.class);
-        String jobid = exch.getIn().getHeader("SquonkJobID", String.class);
+        String jobid = exch.getIn().getHeader(StatsRecorder.HEADER_SQUONK_JOB_ID, String.class);
         String username = exch.getIn().getHeader("SquonkUsername", String.class);
         executeJob(exch.getContext(), jobdef, jobid, username);
     }
@@ -120,7 +121,7 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
         }
 
         VariableManager varman = new VariableManager(notebookRestClient,notebookId, editableId);
-        StepExecutor executor = new StepExecutor(cellId, varman);
+        StepExecutor executor = new StepExecutor(cellId, jobid, varman);
 
         // and execute
         try {

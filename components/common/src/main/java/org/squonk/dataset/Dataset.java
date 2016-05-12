@@ -176,7 +176,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     }
 
     @Override
-    public Dataset getDataset() {
+    public Dataset<T> getDataset() {
         return this;
     }
 
@@ -185,7 +185,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
      *
      * @return
      */
-    public DatasetMetadata getMetadata() {
+    public DatasetMetadata<T> getMetadata() {
         return metadata;
     }
 

@@ -1,5 +1,6 @@
 package org.squonk.camel.cdk.processor;
 
+import com.im.lac.types.BasicObject;
 import com.im.lac.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -48,8 +49,9 @@ public class CDKMolecularDescriptorProcessor implements Processor {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void process(Exchange exch) throws Exception {
-        Dataset<MoleculeObject> dataset = exch.getIn().getBody(Dataset.class);
+        Dataset dataset = exch.getIn().getBody(Dataset.class);
         if (dataset == null || dataset.getType() != MoleculeObject.class) {
             throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
         }
@@ -58,7 +60,7 @@ public class CDKMolecularDescriptorProcessor implements Processor {
         for (DescriptorCalculator calculator : calculators) {
             mols = calculateMultiple(mols, calculator);
         }
-        mols.onClose(() -> {
+        mols = mols.onClose(() -> {
             StatsRecorder recorder = exch.getIn().getHeader("STATS_RECORDER", StatsRecorder.class);
             if (recorder != null) {
                 List<ExecutionStats> stats = new ArrayList<>();
@@ -72,9 +74,9 @@ public class CDKMolecularDescriptorProcessor implements Processor {
         exch.getIn().setBody(new MoleculeObjectDataset(mols));
     }
 
-    protected void handleMetadata(Exchange exch, DatasetMetadata meta) throws IllegalAccessException, InstantiationException {
+    protected void handleMetadata(Exchange exch, DatasetMetadata<MoleculeObject> meta) throws IllegalAccessException, InstantiationException {
         if (meta == null) {
-            meta = new DatasetMetadata(MoleculeObject.class);
+            meta = new DatasetMetadata<>(MoleculeObject.class);
         }
         List<DescriptorCalculator> calculators = getCalculators(exch);
         for (DescriptorCalculator calc : calculators) {
@@ -95,7 +97,11 @@ public class CDKMolecularDescriptorProcessor implements Processor {
             try {
                 calculator.calculate(mo);
             } catch (Exception ex) {
-                LOG.log(Level.SEVERE, "Failed to evaluate molecule", ex);
+                if (LOG.isLoggable(Level.SEVERE)) {
+                    LOG.log(Level.SEVERE, "Failed to evaluate molecule", ex);
+                } else {
+                    LOG.log(Level.INFO, "Failed to evaluate molecule " + mo.getUUID() + ": " + ex.getMessage());
+                }
             }
         });
         return input;

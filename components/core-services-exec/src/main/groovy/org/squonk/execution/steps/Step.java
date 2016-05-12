@@ -21,6 +21,7 @@ public interface Step {
      * Configure the execution details of the step.
      *
      * @param producerId             The cell ID for the producer of output variables
+     * @param jobId                  The job ID to associate the work with
      * @param options                Options that configure the execution of the step. e.g. use
      *                               specified options
      * @param inputVariableMappings  Mappings between the variable names provided by
@@ -29,7 +30,7 @@ public interface Step {
      *                               can be used to fetch the actual values from the variable manager.
      * @param outputVariableMappings The names for the output variables. The producer is determined by {@link #getOutputProducerId}
      */
-    void configure(Long producerId, Map<String, Object> options, Map<String, VariableKey> inputVariableMappings, Map<String, String> outputVariableMappings);
+    void configure(Long producerId, String jobId, Map<String, Object> options, Map<String, VariableKey> inputVariableMappings, Map<String, String> outputVariableMappings);
 
     /**
      * Perform the processing. Each implementation will expect a defined set of

@@ -65,6 +65,7 @@ public class MolecularDescriptors {
 
         public DescriptorCalculator create(String[] propNames) throws InstantiationException, IllegalAccessException {
             DescriptorCalculator inst = (DescriptorCalculator) implClass.newInstance();
+            inst.key = this.toString();
             inst.propNames = propNames;
             inst.propTypes = propTypes;
             return inst;
@@ -183,7 +184,7 @@ public class MolecularDescriptors {
                     DescriptorValue result = descriptor.calculate(mol);
                     IntegerResult retval = (IntegerResult) result.getValue();
                     mo.putValue(prop, retval.intValue());
-                    incrementExecutionCount(prop, 1);
+                    incrementExecutionCount(1);
                 } else {
                     LOG.info("Failed to prepare molecule " + mo + " for calculating " + propNames[0]);
                 }
@@ -203,7 +204,7 @@ public class MolecularDescriptors {
                     DoubleResult retval = (DoubleResult) result.getValue();
                     if (retval != null) {
                         putDoubleIfProperValue(mo, prop, retval.doubleValue());
-                        incrementExecutionCount(prop, 1);
+                        incrementExecutionCount(1);
                     }
                 } else {
                     LOG.info("Failed to prepare molecule " + mo + " for calculating " + propNames[0]);
@@ -225,8 +226,8 @@ public class MolecularDescriptors {
                         for (int i = 0; i < propNames.length; i++) {
                             String prop = propNames[i];
                             putDoubleIfProperValue(mo, prop, retval.get(i));
-                            incrementExecutionCount(prop, 1);
                         }
+                        incrementExecutionCount(1);
                     }
                 } else {
                     LOG.info("Failed to prepare molecule " + mo + " for calculating " + IOUtils.joinArray(propNames, ","));

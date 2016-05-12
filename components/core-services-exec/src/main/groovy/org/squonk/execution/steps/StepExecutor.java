@@ -11,11 +11,13 @@ public class StepExecutor {
     
     private final VariableManager varman;
     private final Long  producer;
+    private final String jobId;
     private volatile Step currentStep;
     
-    public StepExecutor(Long  producer, VariableManager varman) {
-        this.varman = varman;
+    public StepExecutor(Long  producer, String jobId, VariableManager varman) {
         this.producer = producer;
+        this.jobId = jobId;
+        this.varman = varman;
     }
     
     public void execute(StepDefinition[] defs, CamelContext context) throws Exception {
@@ -24,7 +26,7 @@ public class StepExecutor {
             StepDefinition def = defs[i];
             Class cls = Class.forName(def.getImplementationClass());
             Step step = (Step)cls.newInstance();
-            step.configure(producer, def.getOptions(), def.getInputVariableMappings(), def.getOutputVariableMappings());
+            step.configure(producer, jobId, def.getOptions(), def.getInputVariableMappings(), def.getOutputVariableMappings());
             steps[i] = step;
         }
         execute(steps, context);
