@@ -56,6 +56,7 @@ public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectHttp
         this.sdfClass = sdfClass;
     }
 
+    @Override
     protected Object processDataset(
             Exchange exch,
             MoleculeObjectDataset dataset,

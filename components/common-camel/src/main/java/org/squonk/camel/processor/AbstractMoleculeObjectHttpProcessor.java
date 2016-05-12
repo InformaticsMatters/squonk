@@ -10,6 +10,7 @@ import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.http.CamelRequestResponseExecutor;
 import org.squonk.http.RequestInfo;
 import org.squonk.types.TypeResolver;
+import org.squonk.util.StatsRecorder;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -64,6 +65,9 @@ public abstract class AbstractMoleculeObjectHttpProcessor implements Processor {
         CamelRequestResponseExecutor executor = new CamelRequestResponseExecutor(exch);
 
         MoleculeObjectDataset dataset = readInput(exch, requestInfo, contentHandler, executor);
+
+        String jobId = exch.getIn().getHeader("SquonkJobID", String.class);
+        exch.getIn().setHeader("STATS_RECORDER", new StatsRecorder(jobId));
 
         Object results = processDataset(exch, dataset, requestInfo);
 

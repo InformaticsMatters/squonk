@@ -39,7 +39,6 @@ class CDKMolecularDescriptorProcessorSpec extends CamelSpecificationBase {
         results[0].getValue(MolecularDescriptors.WIENER_PATH) != null
         results[0].getValue(MolecularDescriptors.WIENER_POLARITY) != null
         results[0].getValue(MolecularDescriptors.ALOGP_ALOPG) != null
-        results[0].getValue(MolecularDescriptors.ALOGP_ALOPG2) != null
         results[0].getValue(MolecularDescriptors.ALOGP_AMR) != null
         results[0].getValue(MolecularDescriptors.HBOND_ACCEPTOR_COUNT) != null
         results[0].getValue(MolecularDescriptors.HBOND_DONOR_COUNT) != null

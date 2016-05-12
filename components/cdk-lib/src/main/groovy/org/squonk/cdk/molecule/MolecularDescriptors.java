@@ -34,10 +34,11 @@ public class MolecularDescriptors {
 
     private static final Logger LOG = Logger.getLogger(MolecularDescriptors.class.getName());
 
+    public static final String STATS_PREFIX = "CDK";
+
     public static final String WIENER_PATH = "WienerPath_CDK";
     public static final String WIENER_POLARITY = "WienerPolarity_CDK";
     public static final String ALOGP_ALOPG = "ALogP_CDK";
-    public static final String ALOGP_ALOPG2 = "ALogP2_CDK";
     public static final String ALOGP_AMR = "AMR_CDK";
     public static final String XLOGP_XLOGP = "XLogP_CDK";
     public static final String HBOND_ACCEPTOR_COUNT = "HBA_CDK";
@@ -45,7 +46,7 @@ public class MolecularDescriptors {
 
     public enum Descriptor {
 
-        ALogP(ALogPCalculator.class, new String[]{ALOGP_ALOPG,ALOGP_ALOPG2,ALOGP_AMR}, new Class[] {Double.class,Double.class,Double.class}),
+        ALogP(ALogPCalculator.class, new String[]{ALOGP_ALOPG,ALOGP_AMR}, new Class[] {Double.class,Double.class}),
         XLogP(XLogPCalculator.class, new String[]{XLOGP_XLOGP}, new Class[] {Double.class}),
         HBondDonorCount(HBondDonorCountCalculator.class, new String[]{HBOND_DONOR_COUNT}, new Class[] {Integer.class}),
         HBondAcceptorCount(HBondAcceptorCountCalculator.class, new String[]{HBOND_ACCEPTOR_COUNT}, new Class[] {Integer.class}),
@@ -131,13 +132,13 @@ public class MolecularDescriptors {
     }
 
     public static void aLogP(MoleculeObject mo) throws Exception {
-        aLogP(mo, ALOGP_ALOPG, ALOGP_ALOPG2, ALOGP_AMR);
+        aLogP(mo, ALOGP_ALOPG, ALOGP_AMR);
     }
 
-    public static void aLogP(MoleculeObject mo, String propNameALogP, String propNameALogP2, String propNameAMR)
+    public static void aLogP(MoleculeObject mo, String propNameALogP, String propNameAMR)
             throws Exception {
         DescriptorCalculator calc = new ALogPCalculator();
-        calc.propNames = new String[]{propNameALogP, propNameALogP2, propNameAMR};
+        calc.propNames = new String[]{propNameALogP, propNameAMR};
         calc.calculate(mo);
     }
 
@@ -176,10 +177,16 @@ public class MolecularDescriptors {
         @Override
         public void calculate(MoleculeObject mo) throws Exception {
             if (mo.getSource() != null) {
-                IAtomContainer mol = getMoleculeWithExplicitHydrogens(mo, true);
-                DescriptorValue result = descriptor.calculate(prepareMolecule(mo));
-                IntegerResult retval = (IntegerResult) result.getValue();
-                mo.putValue(propNames[0], retval.intValue());
+                IAtomContainer mol = prepareMolecule(mo);
+                String prop = propNames[0];
+                if (mol != null) {
+                    DescriptorValue result = descriptor.calculate(mol);
+                    IntegerResult retval = (IntegerResult) result.getValue();
+                    mo.putValue(prop, retval.intValue());
+                    incrementExecutionCount(prop, 1);
+                } else {
+                    LOG.info("Failed to prepare molecule " + mo + " for calculating " + propNames[0]);
+                }
             }
         }
     }
@@ -190,11 +197,13 @@ public class MolecularDescriptors {
         public void calculate(MoleculeObject mo) throws Exception {
             if (mo.getSource() != null) {
                 IAtomContainer mol = prepareMolecule(mo);
+                String prop = propNames[0];
                 if (mol != null) {
                     DescriptorValue result = descriptor.calculate(mol);
                     DoubleResult retval = (DoubleResult) result.getValue();
                     if (retval != null) {
-                        putDoubleIfProperValue(mo, propNames[0], retval.doubleValue());
+                        putDoubleIfProperValue(mo, prop, retval.doubleValue());
+                        incrementExecutionCount(prop, 1);
                     }
                 } else {
                     LOG.info("Failed to prepare molecule " + mo + " for calculating " + propNames[0]);
@@ -214,7 +223,9 @@ public class MolecularDescriptors {
                     DoubleArrayResult retval = (DoubleArrayResult) result.getValue();
                     if (retval != null) {
                         for (int i = 0; i < propNames.length; i++) {
-                            putDoubleIfProperValue(mo, propNames[i], retval.get(i));
+                            String prop = propNames[i];
+                            putDoubleIfProperValue(mo, prop, retval.get(i));
+                            incrementExecutionCount(prop, 1);
                         }
                     }
                 } else {
@@ -238,7 +249,7 @@ public class MolecularDescriptors {
 
         @Override
         public IAtomContainer prepareMolecule(MoleculeObject mo) throws Exception {
-            return getMolecule(mo, true);
+            return getMoleculeWithExplicitHydrogens(mo, true);
         }
     }
 
@@ -250,7 +261,7 @@ public class MolecularDescriptors {
 
         @Override
         public IAtomContainer prepareMolecule(MoleculeObject mo) throws Exception {
-            return getMolecule(mo, true);
+            return getMoleculeWithExplicitHydrogens(mo, true);
         }
     }
 

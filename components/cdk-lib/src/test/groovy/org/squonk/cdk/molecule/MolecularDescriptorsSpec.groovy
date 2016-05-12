@@ -33,7 +33,6 @@ class MolecularDescriptorsSpec extends Specification {
         
         then:
         mo.getValue(MolecularDescriptors.ALOGP_ALOPG) != null
-        mo.getValue(MolecularDescriptors.ALOGP_ALOPG2) != null
         mo.getValue(MolecularDescriptors.ALOGP_AMR) != null
     }
     

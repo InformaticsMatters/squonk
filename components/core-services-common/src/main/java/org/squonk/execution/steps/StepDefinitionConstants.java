@@ -113,5 +113,14 @@ public interface StepDefinitionConstants {
         public static final String CLASSNAME = "org.squonk.execution.steps.impl.DatasetFilterGroovyStep";
         public static final String OPTION_SCRIPT = "script";
     }
+
+    interface SmilesDeduplicator {
+        public static final String CLASSNAME = "org.squonk.execution.steps.impl.SmilesDeduplicatorStep";
+        public static final String OPTION_CANONICAL_SMILES_FIELD = "canonicalSmilesField";
+        public static final String OPTION_KEEP_FIRST_FIELDS = "keepFirstFields";
+        public static final String OPTION_KEEP_LAST_FIELDS = "keepLastFields";
+        public static final String OPTION_APPEND_FIELDS = "appendFields";
+
+    }
     
 }

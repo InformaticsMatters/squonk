@@ -9,6 +9,8 @@ import org.squonk.cdk.molecule.MolecularDescriptors;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
+import org.squonk.util.ExecutionStats;
+import org.squonk.util.StatsRecorder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +58,16 @@ public class CDKMolecularDescriptorProcessor implements Processor {
         for (DescriptorCalculator calculator : calculators) {
             mols = calculateMultiple(mols, calculator);
         }
+        mols.onClose(() -> {
+            StatsRecorder recorder = exch.getIn().getHeader("STATS_RECORDER", StatsRecorder.class);
+            if (recorder != null) {
+                List<ExecutionStats> stats = new ArrayList<>();
+                for (DescriptorCalculator calculator: calculators) {
+                    stats.add(calculator.getExecutionStats());
+                }
+                recorder.recordStats(stats);
+            }
+        });
         handleMetadata(exch, dataset.getMetadata());
         exch.getIn().setBody(new MoleculeObjectDataset(mols));
     }

@@ -67,3 +67,5 @@ task execute(type:JavaExec) {
     }
     classpath = sourceSets.main.runtimeClasspath
 }
+
+tasks.test.onlyIf { RDBASE != null }
