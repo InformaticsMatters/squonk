@@ -66,12 +66,12 @@ class SqlQuerySpec extends Specification {
         then:
         sql != null
         sql.readLines().size() == 5
-        bindVars.size() == 2
+        bindVars.size() == 1
         q.preExecuteStatements.size() == 0
     }
 
     void "query with 1 similarity part with threshold"() {
-        println "query with 1 similarity part()"
+        println "query with 1 similarity part with threshold"
 
         def q = query.select()
                 .setSimilarityThreshold(0.7, Metric.DICE)
@@ -85,7 +85,7 @@ class SqlQuerySpec extends Specification {
         then:
         sql != null
         sql.readLines().size() == 5
-        bindVars.size() == 2
+        bindVars.size() == 1
         q.preExecuteStatements.size() == 1
     }
 
@@ -228,7 +228,7 @@ class SqlQuerySpec extends Specification {
         sql != null
         sql.startsWith('SELECT foo.id,foo.structure,')
         sql.readLines().size() == 5
-        bindVars.size() == 2
+        bindVars.size() == 1
         q.preExecuteStatements.size() == 1
     }
 
@@ -249,7 +249,7 @@ class SqlQuerySpec extends Specification {
         sql != null
         sql.startsWith('SELECT foo.id,foo.structure,')
         sql.readLines().size() == 5
-        bindVars.size() == 2
+        bindVars.size() == 1
         q.preExecuteStatements.size() == 1
     }
 
@@ -270,7 +270,7 @@ class SqlQuerySpec extends Specification {
         sql != null
         sql.startsWith('SELECT foo.id,foo.structure,')
         sql.readLines().size() == 5
-        bindVars.size() == 2
+        bindVars.size() == 1
         q.preExecuteStatements.size() == 1
     }
 }
