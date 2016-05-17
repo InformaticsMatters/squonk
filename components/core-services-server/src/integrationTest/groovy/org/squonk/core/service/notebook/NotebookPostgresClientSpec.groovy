@@ -82,6 +82,15 @@ class NotebookPostgresClientSpec extends Specification {
         nb.layers[0] == "public"
     }
 
+    void "list public"() {
+
+        when:
+        notebooks = client.listNotebooks("another_user")
+
+        then:
+        notebooks.size() == 1
+    }
+
 
     void "remove from layer"() {
 

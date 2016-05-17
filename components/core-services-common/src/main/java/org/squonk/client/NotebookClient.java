@@ -62,6 +62,7 @@ public interface NotebookClient {
      * @param notebookId
      * @return
      * @throws Exception
+     * @deprecated Layer information is now included in the NotebookDTO
      */
     List<String> listLayers(Long notebookId) throws Exception;
 

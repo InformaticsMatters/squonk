@@ -512,7 +512,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
 
     private static String SQL_NB_FETCH = "SELECT n.*, u.username FROM users.nb_descriptor n JOIN users.users u ON u.id = n.owner_id"
     private static String SQL_NB_FETCH_BY_ID = SQL_NB_FETCH + " WHERE n.id = :notebookId"
-    private static String SQL_NB_FETCH_BY_USERNAME = SQL_NB_FETCH + " WHERE u.username = :username ORDER BY n.created DESC"
+    private static String SQL_NB_FETCH_BY_USERNAME = SQL_NB_FETCH + " WHERE n.visibility > 0 OR u.username = :username ORDER BY n.created DESC"
 
     private NotebookDTO fetchNotebookDescriptorById(Sql db, Long notebookId) {
         def data = db.firstRow(SQL_NB_FETCH_BY_ID, [notebookId: notebookId])
