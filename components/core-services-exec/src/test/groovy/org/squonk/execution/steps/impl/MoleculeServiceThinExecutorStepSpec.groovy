@@ -65,7 +65,7 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
 
         MoleculeServiceThinExecutorStep step = new MoleculeServiceThinExecutorStep()
 
-        step.configure(producer,
+        step.configure(producer, "job1",
                 [(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT): 'http://localhost:8888/route1'],
                 [(MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
                 [:])
@@ -101,19 +101,19 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
                 ds)
 
         MoleculeServiceThinExecutorStep step1 = new MoleculeServiceThinExecutorStep()
-        step1.configure(producer,
+        step1.configure(producer, "job1",
                 [(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT): 'http://localhost:8888/route1'],
                 [(MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
                 [(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET): "_tmp1"])
 
         MoleculeServiceThinExecutorStep step2 = new MoleculeServiceThinExecutorStep()
-        step2.configure(producer,
+        step2.configure(producer, "job1",
                 [(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT): 'http://localhost:8888/route2'],
                 [(MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET): new VariableKey(producer, "_tmp1")],
                 [(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET): "Output"])
 
         when:
-        StepExecutor executor = new StepExecutor(producer, varman)
+        StepExecutor executor = new StepExecutor(producer, "job1", varman)
         Step[] steps = [step1, step2] as Step[]
         executor.execute(steps, context)
         Dataset result = varman.getValue(new VariableKey(producer, "Output"), Dataset.class)

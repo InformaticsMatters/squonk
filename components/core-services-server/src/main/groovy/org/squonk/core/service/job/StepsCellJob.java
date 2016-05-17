@@ -6,8 +6,10 @@ import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition;
 import org.squonk.client.JobStatusClient;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
+import org.squonk.core.CommonConstants;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.StatsRecorder;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -109,8 +111,8 @@ public class StepsCellJob  implements Job<StepsCellExecutorJobDefinition> {
         LOG.info("JSON: " + json);
         Map<String,Object> headers = new HashMap<>();
         headers.put("rabbitmq.ROUTING_KEY", "jobs.steps");
-        headers.put("SquonkJobID", jobid);
-        headers.put("SquonkUsername", username);
+        headers.put(StatsRecorder.HEADER_SQUONK_JOB_ID, jobid);
+        headers.put(CommonConstants.HEADER_SQUONK_USERNAME, username);
         // send to mqueue
         LOG.info("Sending job to queue " + mqueueUrl + " ->\n" + json);
         pt.sendBodyAndHeaders(mqueueUrl, json, headers);

@@ -18,7 +18,7 @@ class SDFReaderStepSpec extends Specification {
         SDFReaderStep step = new SDFReaderStep()
         FileInputStream is = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
         Long producer = 1
-        step.configure(producer, [:],
+        step.configure(producer, "job1", [:],
                 [(SDFReaderStep.VAR_SDF_INPUT): new VariableKey(producer, "input")],
                 [:])
         varman.putValue(

@@ -31,7 +31,9 @@ public class CdkRestRouteBuilder extends RouteBuilder {
     private static final String ROUTE_DONORS_ACCEPTORS = "donors_acceptors";
     private static final String ROUTE_WIENER_NUMBERS = "wiener_numbers";
 
-    private static final String CONVERT_TO_SDF = "convert_to_sdf";
+    private static final String ROUTE_CONVERT_TO_SDF = "convert_to_sdf";
+
+    private static final String ROUTE_STATS = "seda:post_stats";
 
 
 
@@ -60,7 +62,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                     "cdk.export.sdf", "SDF Export (CDK)", "Convert to SD file format using CDK",
                     new String[]{"export", "sdf", "sdfile", "cdk"},
                     new String[]{"/Chemistry/Toolkits/CDK/IO"},
-                    "default_icon.png", CONVERT_TO_SDF)
+                    "default_icon.png", ROUTE_CONVERT_TO_SDF)
     };
 
     private static ServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String[] paths, String icon, String endpoint) {
@@ -126,21 +128,21 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MoleculeObjectRouteHttpProcessor.DEFAULT_OUTPUT_MIME_TYPES))
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(CdkCalculatorsRouteBuilder.CDK_LOGP, resolver, CDKSDFile.class))
+                .process(new MoleculeObjectRouteHttpProcessor(CdkCalculatorsRouteBuilder.CDK_LOGP, resolver, ROUTE_STATS, CDKSDFile.class))
                 .endRest()
                 //
                 .post(ROUTE_DONORS_ACCEPTORS).description("Calculate hydrogen bond donor and acceptor counts for the supplied structures")
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MoleculeObjectRouteHttpProcessor.DEFAULT_OUTPUT_MIME_TYPES))
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(CdkCalculatorsRouteBuilder.CDK_DONORS_ACCEPTORS, resolver, CDKSDFile.class))
+                .process(new MoleculeObjectRouteHttpProcessor(CdkCalculatorsRouteBuilder.CDK_DONORS_ACCEPTORS, resolver, ROUTE_STATS, CDKSDFile.class))
                 .endRest()
                 //
                 .post(ROUTE_WIENER_NUMBERS).description("Calculate Wiener path and polarity for the supplied structures")
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MoleculeObjectRouteHttpProcessor.DEFAULT_OUTPUT_MIME_TYPES))
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(CdkCalculatorsRouteBuilder.CDK_WIENER_NUMBERS, resolver, CDKSDFile.class))
+                .process(new MoleculeObjectRouteHttpProcessor(CdkCalculatorsRouteBuilder.CDK_WIENER_NUMBERS, resolver, ROUTE_STATS, CDKSDFile.class))
                 .endRest();
 
 
@@ -157,12 +159,15 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 })
                 .endRest()
                 // Convert to SDF
-                .post(CONVERT_TO_SDF).description("Convert MoleculeObjects to SD file format using CDK")
+                .post(ROUTE_CONVERT_TO_SDF).description("Convert MoleculeObjects to SD file format using CDK")
                 .consumes(join(CDKMoleculeObjectSDFileProcessor.INPUT_MIME_TYPES))
                 .produces(join(CDKMoleculeObjectSDFileProcessor.OUTPUT_MIME_TYPES))
                 .route()
                 .process(new CDKMoleculeObjectSDFileProcessor(resolver))
                 .endRest();
+
+        from(ROUTE_STATS)
+                .log("Posting stats for ${header.SquonkJobID}");
 
     }
 

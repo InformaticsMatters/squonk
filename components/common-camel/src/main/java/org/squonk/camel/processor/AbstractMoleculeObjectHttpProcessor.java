@@ -3,6 +3,7 @@ package org.squonk.camel.processor;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.apache.camel.ProducerTemplate;
 import org.squonk.api.HttpHandler;
 import org.squonk.camel.typeConverters.MoleculeStreamTypeConverter;
 import org.squonk.dataset.Dataset;
@@ -10,6 +11,7 @@ import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.http.CamelRequestResponseExecutor;
 import org.squonk.http.RequestInfo;
 import org.squonk.types.TypeResolver;
+import org.squonk.util.CamelRouteStatsRecorder;
 import org.squonk.util.StatsRecorder;
 
 import java.io.IOException;
@@ -27,15 +29,30 @@ public abstract class AbstractMoleculeObjectHttpProcessor implements Processor {
     protected final String[] supportedInputMimeTypes;
     protected final String[] supportedOutputMimeTypes;
 
+    /**
+     * where to route the execution stats to
+     */
+    private final String statsRouteUri;
+
+
+    public AbstractMoleculeObjectHttpProcessor(
+            TypeResolver resolver,
+            String[] supportedInputMimeTypes,
+            String[] supportedOutputMimeTypes,
+            String statsRouteUri) {
+        this.resolver = resolver;
+        this.supportedInputMimeTypes = supportedInputMimeTypes;
+        this.supportedOutputMimeTypes = supportedOutputMimeTypes;
+        this.statsRouteUri = statsRouteUri;
+    }
 
     public AbstractMoleculeObjectHttpProcessor(
             TypeResolver resolver,
             String[] supportedInputMimeTypes,
             String[] supportedOutputMimeTypes) {
-        this.resolver = resolver;
-        this.supportedInputMimeTypes = supportedInputMimeTypes;
-        this.supportedOutputMimeTypes = supportedOutputMimeTypes;
+        this(resolver, supportedInputMimeTypes, supportedOutputMimeTypes, null);
     }
+
 
     @Override
     public void process(Exchange exch) throws Exception {
@@ -66,8 +83,12 @@ public abstract class AbstractMoleculeObjectHttpProcessor implements Processor {
 
         MoleculeObjectDataset dataset = readInput(exch, requestInfo, contentHandler, executor);
 
-        String jobId = exch.getIn().getHeader("SquonkJobID", String.class);
-        exch.getIn().setHeader("STATS_RECORDER", new StatsRecorder(jobId));
+        String jobId = exch.getIn().getHeader(StatsRecorder.HEADER_SQUONK_JOB_ID, String.class);
+        if (statsRouteUri != null) {
+            ProducerTemplate pt = exch.getContext().createProducerTemplate();
+            pt.setDefaultEndpointUri(statsRouteUri);
+            exch.getIn().setHeader("STATS_RECORDER", new CamelRouteStatsRecorder(jobId, pt));
+        }
 
         Object results = processDataset(exch, dataset, requestInfo);
 

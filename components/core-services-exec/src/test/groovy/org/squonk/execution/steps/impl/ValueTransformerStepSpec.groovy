@@ -42,7 +42,7 @@ class ValueTransformerStepSpec extends Specification {
             ds)
         
         ValueTransformerStep step = new ValueTransformerStep()
-        step.configure(producer,
+        step.configure(producer, "job1",
                 [(ValueTransformerStep.OPTION_TRANSFORMS):tdefs],
                 [(ValueTransformerStep.VAR_INPUT_DATASET):new VariableKey(producer, "input")],
                 [:])

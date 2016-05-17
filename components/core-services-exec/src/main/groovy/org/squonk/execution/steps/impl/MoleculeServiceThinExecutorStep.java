@@ -13,6 +13,7 @@ import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 import org.apache.camel.CamelContext;
+import org.squonk.util.StatsRecorder;
 
 import java.io.InputStream;
 import java.util.*;
@@ -80,6 +81,9 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         requestHeaders.put("Accept-Encoding", "gzip");
         // NOTE: setting the Content-Encoding will cause camel to gzip the data, we don't need to do it
         requestHeaders.put("Content-Encoding", "gzip");
+        if (jobId != null) {
+            requestHeaders.put(StatsRecorder.HEADER_SQUONK_JOB_ID, jobId);
+        }
         
         // send for execution
         statusMessage = "Posting request ...";

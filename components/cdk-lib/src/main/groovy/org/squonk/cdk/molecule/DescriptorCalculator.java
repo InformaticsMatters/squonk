@@ -12,9 +12,18 @@ import org.squonk.util.ExecutionStats;
 public abstract class DescriptorCalculator {
     
     protected IMolecularDescriptor descriptor;
+    protected String key;
     protected String[] propNames;
     protected Class[] propTypes;
     protected final ExecutionStats executionStats = new ExecutionStats();
+
+    /** The key to use when generating usage stats
+     *
+     * @return
+     */
+    public String getKey() {
+        return key;
+    }
 
     public String[] getPropertyNames() {
         return propNames;
@@ -32,8 +41,8 @@ public abstract class DescriptorCalculator {
          return executionStats;
     }
 
-    protected int incrementExecutionCount(String prop, int count) {
-        return executionStats.incrementExecutionCount(MolecularDescriptors.STATS_PREFIX + "." + prop, count);
+    protected int incrementExecutionCount(int count) {
+        return executionStats.incrementExecutionCount(MolecularDescriptors.STATS_PREFIX + "." + getKey(), count);
     }
     
 }

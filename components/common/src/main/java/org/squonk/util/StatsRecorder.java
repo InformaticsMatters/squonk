@@ -4,16 +4,28 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Created by timbo on 11/05/2016.
  */
 public class StatsRecorder {
 
+    public static final String HEADER_SQUONK_JOB_ID = "SquonkJobID";
+
+
+
+    private static final Logger LOG = Logger.getLogger(StatsRecorder.class.getName());
+
     protected final String jobId;
 
     public StatsRecorder(String jobId) {
         this.jobId = jobId;
+    }
+
+    public String getJobId() {
+        return jobId;
     }
 
     public void recordStats(ExecutionStats stats) {
@@ -43,12 +55,12 @@ public class StatsRecorder {
     }
 
 
-    private void sendStats( Map<String,Integer> executionStats) {
-
-        for (Map.Entry<String,Integer> e : executionStats.entrySet()) {
-            // TODO - send somewhere
-            System.out.println("STATS: " + jobId + ": " + e.getKey() + " -> " + e.getValue());
-        }
+    /** Default implementation just logs the stats. Override to do something more useful
+     *
+     * @param executionStats
+     */
+    protected void sendStats( Map<String,Integer> executionStats) {
+        LOG.info("STATS: " + jobId + ": " + executionStats.entrySet().stream().map((e) -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(",")));
     }
 
 }

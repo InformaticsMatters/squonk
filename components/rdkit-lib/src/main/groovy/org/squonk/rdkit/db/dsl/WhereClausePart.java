@@ -92,8 +92,9 @@ public abstract class WhereClausePart implements IExecutable, IWherePart {
         }
 
         public void appendToWhereClause(StringBuilder buf, List bindVars) {
+            String structBindVar = "?" + (bindVars.size() +1);
             buf.append(whereClause.select.query.rdkTable.getMolFpTable().aliasOrSchemaPlusTable())
-                    .append(".m = " + String.format(molType.molFunction, "?::cstring"));
+                    .append(".m = " + String.format(molType.molFunction, structBindVar+"::cstring"));
             bindVars.add(mol);
         }
     }
@@ -111,8 +112,9 @@ public abstract class WhereClausePart implements IExecutable, IWherePart {
         }
 
         public void appendToWhereClause(StringBuilder buf, List bindVars) {
+            String structBindVar = "?" + (bindVars.size() +1);
             buf.append(whereClause.select.query.rdkTable.getMolFpTable().aliasOrSchemaPlusTable())
-                    .append(".m @> " + String.format(molType.qmolFunction, "?::cstring"));
+                    .append(".m @> " + String.format(molType.qmolFunction, structBindVar+"::cstring"));
             bindVars.add(mol);
         }
     }
@@ -124,6 +126,7 @@ public abstract class WhereClausePart implements IExecutable, IWherePart {
         private final FingerprintType fpType;
         private final Metric metric;
         private final String outputColName;
+        private String structBindVar;
 
         SimilarityStructureQuery(WhereClause where, String mol, MolSourceType molType, FingerprintType fpType, Metric metric, String outputColName) {
             super(where);
@@ -139,18 +142,26 @@ public abstract class WhereClausePart implements IExecutable, IWherePart {
             where.select.orderByClause.add(func);
         }
 
+        protected String getStructParam(List bindVars) {
+            if (structBindVar == null) {
+                structBindVar = "?" + (bindVars.size() +1);
+                bindVars.add(mol);
+            }
+            return structBindVar;
+        }
+
         class SimilarityFunction implements IProjectionPart, IOrderByPart {
+
             @Override
             public int appendToProjections(StringBuilder builder, List bindVars) {
-                String fpFunc = String.format(fpType.function + ',' + fpType.colName, String.format(molType.molFunction, "?::cstring"));
+                String structParam = getStructParam(bindVars);
+                String fpFunc = String.format(fpType.function + ',' + fpType.colName, String.format(molType.molFunction, structParam+"::cstring"));
                 //                            morganbv_fp(%s,2)
 
                 builder.append(String.format(metric.function + " AS %s", fpFunc, outputColName));
                 //                           dice_sml(%s)
                 //                      ->   dice_sml(morganbv_fp(mol_from_smiles(?::cstring),2),mfp2)
                 //                      ->   dice_sml(morganbv_fp(mol_from_smiles(?::cstring),2),mfp2)
-
-                bindVars.add(mol);
                 return 1;
             }
 
@@ -159,22 +170,27 @@ public abstract class WhereClausePart implements IExecutable, IWherePart {
             }
 
             public int appendToOrderBy(StringBuilder buf) {
-                buf.append(outputColName).append(" DESC");
+
+                buf.append(String.format(fpType.function, String.format(molType.molFunction, structBindVar+"::cstring")))
+                        .append("<").append(metric.operator).append(">")
+                        .append(whereClause.select.query.rdkTable.getMolFpTable().aliasOrSchemaPlusTable())
+                        .append(".")
+                        .append(fpType.colName);
                 return 1;
+
+                //morganbv_fp(mol_from_smiles(?::cstring))<%>m.mfp2;
             }
         }
 
         public void appendToWhereClause(StringBuilder buf, List bindVars) {
-
-            buf.append(String.format(fpType.function, String.format(molType.molFunction, "?::cstring")))
+            String structParam = getStructParam(bindVars);
+            buf.append(String.format(fpType.function, String.format(molType.molFunction, structParam+"::cstring")))
                     .append(metric.operator)
                     .append(whereClause.select.query.rdkTable.getMolFpTable().aliasOrSchemaPlusTable())
                     .append(".")
                     .append(fpType.colName);
 
-            //"morganbv_fp(mol_from_smiles('CN1C=NC2=C1C(=O)N(C)C(=O)N2C'::cstring),2)#m.mfp2"
-
-            bindVars.add(mol);
+            //morganbv_fp(mol_from_smiles(?::cstring),2)%m.mfp2
         }
     }
 
@@ -190,10 +206,12 @@ public abstract class WhereClausePart implements IExecutable, IWherePart {
         }
 
         public void appendToWhereClause(StringBuilder buf, List bindVars) {
+            String bindVar = "?" + (bindVars.size() +1);
             buf.append(col.table.name)
                     .append(".")
                     .append(col.name)
-                    .append("=?");
+                    .append("=")
+                    .append(bindVar);
             bindVars.add(value);
         }
     }

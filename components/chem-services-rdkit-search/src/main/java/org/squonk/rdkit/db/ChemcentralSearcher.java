@@ -112,7 +112,7 @@ public class ChemcentralSearcher {
             throw new IllegalArgumentException("Unknown table: " + table);
         }
 
-        Set uuids = new ConcurrentSkipListSet<>();
+        Set ids = new ConcurrentSkipListSet<>();
         Stream<MoleculeObject> results = dataset.getStream().flatMap((mo) -> {
             String query = mo.getSource();
             MolSourceType molType;
@@ -125,13 +125,13 @@ public class ChemcentralSearcher {
             LOG.info("Found " + mols.size() + " hits");
             return mols.stream();
         }).filter((mo) -> {
-            UUID uuid = mo.getUUID();
-            if (uuids.contains(uuid)) {
-                LOG.fine("Rejecting " + mo.getUUID());
+            int id = mo.getValue("id", Integer.class);
+            if (ids.contains(id)) {
+                LOG.finer("Rejecting " + id);
                 return false;
             } else {
-                LOG.fine("Accepting " + mo.getUUID());
-                uuids.add(uuid);
+                LOG.finer("Accepting " + id);
+                ids.add(id);
                 return true;
             }
         }).peek((mo) -> {

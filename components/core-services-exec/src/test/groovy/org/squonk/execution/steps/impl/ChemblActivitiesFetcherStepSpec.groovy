@@ -19,7 +19,7 @@ class ChemblActivitiesFetcherStepSpec extends Specification {
         
         ChemblActivitiesFetcherStep step = new ChemblActivitiesFetcherStep()
         Long producer = 1
-        step.configure(producer,
+        step.configure(producer, "job1",
                 [(ChemblActivitiesFetcherStep.OPTION_ASSAY_ID):'CHEMBL864878'],
                 [:], [:])
         
