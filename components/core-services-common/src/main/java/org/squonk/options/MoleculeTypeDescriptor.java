@@ -27,5 +27,4 @@ public class MoleculeTypeDescriptor <T> extends SimpleTypeDescriptor<Structure> 
         return formats;
     }
 
-
 }
