@@ -1,5 +1,8 @@
 
 ################# rdkit server services container ##################################
+# test using:
+# curl -X POST -T mols.json -H "Accept: application/json" -H "Content-Type: application/json" "http://localhost:8000/rdkit_cluster/cluster_simple?metric=tanimoto&threshold=0.7
+#
 rdkitserver:
     image: squonk/rdkitserver
     restart: always

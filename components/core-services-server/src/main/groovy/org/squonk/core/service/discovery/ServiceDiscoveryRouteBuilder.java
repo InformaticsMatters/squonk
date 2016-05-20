@@ -62,6 +62,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             LOG.info("Enabling RDKit python services from " + rdkitPythonServicesUrl);
             locations.add(rdkitPythonServicesUrl + "/rdkit_screen/");
             locations.add(rdkitPythonServicesUrl + "/rdkit_cluster/");
+            locations.add(rdkitPythonServicesUrl + "/rdkit_filter/");
         } else {
             LOG.warning("Environment variable SQUONK_RDKIT_CHEM_SERVICES_URL not defined. RDKit Python services will not be available");
         }

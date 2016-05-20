@@ -5,6 +5,7 @@ import org.squonk.dataset.Dataset
 import org.squonk.execution.variable.VariableManager
 import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
+import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
 
 /**
@@ -17,6 +18,7 @@ class SDFReaderStepSpec extends Specification {
         VariableManager varman = new VariableManager(new MemoryVariableClient(), 1, 1);
         SDFReaderStep step = new SDFReaderStep()
         FileInputStream is = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
+        //FileInputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
         Long producer = 1
         step.configure(producer, "job1", [:],
                 [(SDFReaderStep.VAR_SDF_INPUT): new VariableKey(producer, "input")],
@@ -33,6 +35,11 @@ class SDFReaderStepSpec extends Specification {
         then:
         ds != null
         ds.items.size() == 36
+
+        InputStream json = JsonHandler.getInstance().marshalStreamToJsonArray(ds.getStream(), false)
+        //println json.text
+        //File f = new File("/tmp/dhfr.json")
+        //f << json.text
 
         cleanup:
         is.close()

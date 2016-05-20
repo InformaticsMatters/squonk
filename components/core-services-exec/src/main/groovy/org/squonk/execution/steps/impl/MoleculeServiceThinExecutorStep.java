@@ -1,5 +1,6 @@
 package org.squonk.execution.steps.impl;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
 import com.im.lac.types.MoleculeObject;
@@ -15,6 +16,7 @@ import org.squonk.util.IOUtils;
 import org.apache.camel.CamelContext;
 import org.squonk.util.StatsRecorder;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,7 +50,6 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
         statusMessage = MSG_PREPARING_INPUT;
-        MoleculeObject bodyOption = getOption("body", MoleculeObject.class);
 
         Dataset<MoleculeObject> dataset = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
@@ -73,9 +74,14 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
                 });
 
         InputStream input = JsonHandler.getInstance().marshalStreamToJsonArray(stream, false);
-//            String inputData = IOUtils.convertStreamToString(input);
-//            LOG.info("Input: " + inputData);
-//            input = new ByteArrayInputStream(inputData.getBytes());
+        // some remotes don't seem to support dat being streamed so we must materialize it
+        Boolean streamSupport = (Boolean)params.get("streamsupport");
+        if (streamSupport != null && !streamSupport) {
+            String inputData = IOUtils.convertStreamToString(input);
+            LOG.info("Materialized input of length: " + inputData.length());
+            input = new ByteArrayInputStream(inputData.getBytes());
+        }
+        // end materializing
 
         Map<String, Object> requestHeaders = new HashMap<>();
         requestHeaders.put("Accept-Encoding", "gzip");
@@ -91,9 +97,11 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, requestHeaders, responseHeaders, params);
         statusMessage = "Handling results ...";
 
+        // start debug output
 //        String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(output), 1000);
-//        LOG.info("Results: " + data);
+//        LOG.info("Results: |" + data + "|");
 //        output = new ByteArrayInputStream(data.getBytes());
+        // end debug output
 
         // merge the metadata
         String responseMetadataJson = (String)responseHeaders.get(CamelCommonConstants.HEADER_METADATA);
@@ -118,8 +126,12 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
             mergedMetadata = responseMetadata;
         }
 
-
-        Dataset<MoleculeObject> outputMols = JsonHandler.getInstance().unmarshalDataset(mergedMetadata, IOUtils.getGunzippedInputStream(output));
+        Dataset<MoleculeObject> outputMols = null;
+        try {
+            outputMols = JsonHandler.getInstance().unmarshalDataset(mergedMetadata, IOUtils.getGunzippedInputStream(output));
+        } catch (JsonParseException jpe) {
+            throw new RuntimeException("Service returned invalid JSON");
+        }
         if (outputMols.getMetadata() != null) {
             LOG.info("Response metadata: " + outputMols.getMetadata());
         }
