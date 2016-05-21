@@ -27,7 +27,6 @@ class BasicObjectJsonDeserializerSpec extends Specification {
         then:
         bo != null
         bo.values['one'] == 1
-        println bo
     }
     
     void "test simple unmarshal with mappings"() {
@@ -51,11 +50,30 @@ class BasicObjectJsonDeserializerSpec extends Specification {
         bo.values['one'] == 1
         bo.values['two'] instanceof BigDecimal
         bo.values['two'] == 2.2
-        println bo
     }
-    
-    
-    
-    
+
+
+    void "test simple unmarshal with array value"() {
+
+        String json = '{"uuid":"e5c7aff8-1512-43b7-ac26-693322999422","values":{"one":"hello","two":["hello","world"], "three":"three"}}'
+
+        ObjectMapper mapper = new ObjectMapper()
+        SimpleModule module = new SimpleModule()
+        module.addDeserializer(BasicObject.class, new BasicObjectJsonDeserializer())
+        mapper.registerModule(module)
+
+
+        when:
+        BasicObject bo = mapper.readerFor(BasicObject.class).readValue(json)
+
+        then:
+        bo != null
+        bo.values['one'] instanceof String
+        bo.values['one'] == "hello"
+        bo.values['two'] instanceof List
+        bo.values['two'].size() == 2
+        bo.values['three'] == "three"
+    }
+
 }
 

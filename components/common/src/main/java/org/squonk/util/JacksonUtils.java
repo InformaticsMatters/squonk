@@ -3,7 +3,9 @@ package org.squonk.util;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,6 +64,7 @@ public class JacksonUtils {
      * @throws IOException
      */
     public static Object defaultRead(JsonParser jp) throws IOException {
+
         switch (jp.getCurrentToken()) {
             case VALUE_STRING:
                 return jp.getText();
@@ -74,6 +77,15 @@ public class JacksonUtils {
                 return jp.getBooleanValue();
             case VALUE_NULL:
                 return null;
+            case START_ARRAY:
+                JsonToken tok = jp.nextToken();
+                List values = new ArrayList();
+                while (tok != JsonToken.END_ARRAY) {
+                    Object val = defaultRead(jp);
+                    tok = jp.nextToken();
+                    values.add(val);
+                }
+                return values;
             default:
                 LOG.log(Level.INFO, "Unexpected JSON token: {0} - handling as String", jp.getCurrentToken());
                 return jp.getText();

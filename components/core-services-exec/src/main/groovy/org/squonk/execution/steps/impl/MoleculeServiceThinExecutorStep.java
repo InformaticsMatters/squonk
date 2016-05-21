@@ -74,12 +74,14 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
                 });
 
         InputStream input = JsonHandler.getInstance().marshalStreamToJsonArray(stream, false);
-        // some remotes don't seem to support dat being streamed so we must materialize it
-        Boolean streamSupport = (Boolean)params.get("streamsupport");
-        if (streamSupport != null && !streamSupport) {
-            String inputData = IOUtils.convertStreamToString(input);
-            LOG.info("Materialized input of length: " + inputData.length());
-            input = new ByteArrayInputStream(inputData.getBytes());
+        // some remotes don't seem to support data being streamed so we must materialize it
+        if (params != null) {
+            Boolean streamSupport = (Boolean) params.get("streamsupport");
+            if (streamSupport != null && !streamSupport) {
+                String inputData = IOUtils.convertStreamToString(input);
+                LOG.info("Materialized input of length: " + inputData.length());
+                input = new ByteArrayInputStream(inputData.getBytes());
+            }
         }
         // end materializing
 

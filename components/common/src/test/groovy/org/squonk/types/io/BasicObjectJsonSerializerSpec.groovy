@@ -26,7 +26,6 @@ class BasicObjectJsonSerializerSpec extends Specification {
         
         then:
         json != null
-        println json
     }
     
     void "test generate mappings"() {
@@ -45,7 +44,6 @@ class BasicObjectJsonSerializerSpec extends Specification {
         
         then:
         json != null
-        println json
         mappings['one'] == Integer.class
         mappings['two'] == BigDecimal.class
 

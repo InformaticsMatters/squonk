@@ -79,7 +79,7 @@ public class BasicObject implements Serializable {
 
   public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append("MoleculeObject uuid: ")
+        b.append("BasicObject uuid: ")
                 .append(uuid)
                 .append(" values: [");
         for (Map.Entry<String, Object> e : values.entrySet()) {
