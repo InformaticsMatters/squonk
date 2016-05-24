@@ -1,6 +1,7 @@
 package org.squonk.execution.steps.impl;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.im.lac.types.BasicObject;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
 import com.im.lac.types.MoleculeObject;
@@ -20,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -62,11 +64,10 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
 
         LOG.info("Initial metadata: " + requestMetadata);
 
-        // TODO - improve the caching to handle large sets when filtering
-        Map<UUID, MoleculeObject> cache = new ConcurrentHashMap<>();
+        Cache cache = filter ? new QueueCache() : new MapCache();
         Stream<MoleculeObject> stream = dataset.getStream().sequential()
                 .map(fat -> {
-                    cache.put(fat.getUUID(), fat);
+                    cache.put(fat);
                     //LOG.info("Fat molecule:  " + fat);
                     MoleculeObject thin = new MoleculeObject(fat.getUUID(), fat.getSource(), fat.getFormat());
                     //LOG.info("Thin molecule: " + thin);
@@ -144,11 +145,8 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
             UUID uuid = m.getUUID();
             MoleculeObject o = cache.get(uuid);
             if (o == null) {
-                // TODO - when filtering remove intervening items
-                if (!filter) {
-                    LOG.warning("Molecule " + uuid + " not found and service does not filter. Strange!");
-                }
-                return m;
+                LOG.warning("Molecule " + uuid + " not found in cache. Strange!");
+                return null;
             } else {
                 //LOG.fine("Found Mol " + uuid);
                 MoleculeObject neu;
@@ -160,16 +158,57 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
                     neu.getValues().putAll(o.getValues());
                     neu.getValues().putAll(m.getValues());
                 }
-                cache.remove(uuid);
                 return neu;
             }
-        });
+        }).filter(m -> m != null);
 
         Dataset<MoleculeObject> results = new Dataset<>(MoleculeObject.class, resultMols, mergedMetadata);
 
         createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
         statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
         LOG.info("Results: " + results.getMetadata());
+    }
+
+    // TODO - make this handle generics so BasicObjects can also be handled
+    interface Cache {
+        MoleculeObject get(UUID uuid);
+        void put(MoleculeObject bo);
+    }
+
+    class QueueCache implements Cache {
+
+        private final Queue<MoleculeObject> queue = new ConcurrentLinkedQueue<>();
+
+        @Override
+        public MoleculeObject get(UUID uuid) {
+            MoleculeObject mo;
+            while ((mo = queue.poll()) != null) {
+                if (uuid.equals(mo.getUUID())) {
+                    return mo;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public void put(MoleculeObject bo) {
+            queue.offer(bo);
+        }
+    }
+
+    class MapCache implements Cache {
+
+        private final Map<UUID,MoleculeObject> map = new ConcurrentHashMap<>();
+
+        @Override
+        public MoleculeObject get(UUID uuid) {
+            return map.remove(uuid);
+        }
+
+        @Override
+        public void put(MoleculeObject bo) {
+            map.put(bo.getUUID(), bo);
+        }
     }
 
 }
