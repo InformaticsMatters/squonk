@@ -99,7 +99,7 @@ rdkitserver:
     environment: 
         SECRET_KEY:
         C_FORCE_ROOT: "true"
-    command: gunicorn -w 3 -b 0.0.0.0 proj.wsgi
+    command: gunicorn --workers 3 --timeout 240 -b 0.0.0.0 proj.wsgi
     volumes:
     - /code/static
 
