@@ -17,3 +17,7 @@ coreservices:
 chemservices:
     ports:
     - "8092:8080"
+    
+rdkitserver:
+    ports:
+    - "8000:8000"

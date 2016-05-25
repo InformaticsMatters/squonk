@@ -89,6 +89,20 @@ chemservices:
         SQUONK_DB_USER:
         SQUONK_DB_PASS:
 
+################# rdkit server services container ##################################
+# test using:
+# curl -X POST -T mols.json -H "Accept: application/json" -H "Content-Type: application/json" "http://localhost:8000/rdkit_cluster/cluster_simple?metric=tanimoto&threshold=0.7
+#
+rdkitserver:
+    image: squonk/rdkitserver
+    restart: always
+    environment: 
+        SECRET_KEY:
+        C_FORCE_ROOT: "true"
+    command: gunicorn -w 3 -b 0.0.0.0 proj.wsgi
+    volumes:
+    - /code/static
+
 ################# core-services-server container ###################################
 # available on:
 # http://${PUBLIC_HOST}/coreservices/rest/ping
@@ -101,6 +115,7 @@ coreservices:
     - postgres:postgres
     - rabbitmq:rabbitmq
     - chemservices:chemservices
+    - rdkitserver:rdkitserver
     environment:
         RABBITMQ_HOST: rabbitmq
         RABBITMQ_SQUONK_PASS:
@@ -109,6 +124,7 @@ coreservices:
         SQUONK_DB_PASS:
         SQUONK_SERVICES_CORE:
         SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
+        SQUONK_RDKIT_CHEM_SERVICES_URL: "http://rdkitserver:8000"  # internal port
 
 ################# cell-executor container #########################################
 cellexecutor:
@@ -118,6 +134,7 @@ cellexecutor:
     - rabbitmq:rabbitmq
     - chemservices:chemservices
     - portal:portal
+    - rdkitserver:rdkitserver
     environment:
         RABBITMQ_HOST: rabbitmq
         RABBITMQ_SQUONK_PASS:
