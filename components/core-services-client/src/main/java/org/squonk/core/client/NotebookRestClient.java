@@ -31,6 +31,8 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
     public NotebookRestClient(String baseUrl) {
         this.baseUrl = baseUrl;
         LOG.info("NotebookRestClient is using base URL of " + baseUrl);
+        debugConnections = false;
+        purpose = "NotebookRestClient";
     }
 
     public NotebookRestClient() {
@@ -310,8 +312,13 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         assert editableId != null;
         assert cellId != null;
         assert variableName != null;
-        URIBuilder b = createURIBuilder(notebookId, editableId, cellId, variableName, key, VarType.s);
-        executePost(b, new InputStreamEntity(value));
+        try {
+            URIBuilder b = createURIBuilder(notebookId, editableId, cellId, variableName, key, VarType.s);
+            executePost(b, new InputStreamEntity(value));
+            LOG.info("writeStreamValue completed");
+        } finally {
+            value.close();
+        }
     }
 
     private URIBuilder createURIBuilder(Long notebookId, Long sourceId, Long cellId, String variableName, String key, VarType t) {

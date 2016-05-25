@@ -78,8 +78,7 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
     @Override
     public void writeVariable(Dataset dataset, WriteContext context) throws Exception {
         Dataset.DatasetMetadataGenerator generator = dataset.createDatasetMetadataGenerator();
-        try (Stream s = generator.getAsStream()) {
-            InputStream is = generator.getAsInputStream(s, false);
+        try (Stream s = generator.getAsStream(); InputStream is = generator.getAsInputStream(s, false);) {
             context.writeStreamValue(is);
         } // stream now closed
         DatasetMetadata md = generator.getDatasetMetadata();

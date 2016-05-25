@@ -5,12 +5,15 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
@@ -28,7 +31,44 @@ import java.util.logging.Logger;
 public class AbstractHttpClient {
 
     private static final Logger LOG = Logger.getLogger(AbstractHttpClient.class.getName());
-    protected final CloseableHttpClient httpclient = HttpClients.createDefault();
+    protected final CloseableHttpClient httpclient;
+    protected final PoolingHttpClientConnectionManager connectionManager;
+    protected boolean debugConnections = false;
+    protected String purpose;
+
+    public AbstractHttpClient() {
+
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectionRequestTimeout(4000)
+                .setConnectTimeout(4000)
+                .setSocketTimeout(4000).build();
+
+        connectionManager = new PoolingHttpClientConnectionManager();
+        // Increase max total connection from the default of 20
+        //connectionManager.setMaxTotal(200);
+        // Increase default max connection per route from the default of 2
+        connectionManager.setDefaultMaxPerRoute(10);
+
+        httpclient = HttpClients.custom()
+                .setConnectionManager(connectionManager)
+                .setDefaultRequestConfig(requestConfig).build();
+    }
+
+    protected void debugConnections(String method, URI uri) {
+        if (debugConnections) {
+            StringBuilder b = new StringBuilder("============================== POOL STATS FOR ")
+                    .append(method)
+                    .append(" ")
+                    .append(uri.toString())
+                    .append(" ==============================");
+            b.append("\nTotal Stats: " + connectionManager.getTotalStats().toString());
+            for (HttpRoute route : connectionManager.getRoutes()) {
+                b.append("\nRoute Stats: " + route + " " + connectionManager.getStats(route).toString());
+            }
+            b.append("\n============================== POOL STATS END ================================\n");
+            LOG.info(b.toString());
+        }
+    }
 
     protected String executeGetAsString(URIBuilder b) throws IOException {
         return executeGetAsString(b, new NameValuePair[0]);
@@ -40,7 +80,9 @@ public class AbstractHttpClient {
 
     protected void executeDelete(URIBuilder b, NameValuePair... headers) throws IOException {
         try {
-            HttpDelete httpDelete = new HttpDelete(b.build());
+            URI uri = b.build();
+            debugConnections("DELETE", uri);
+            HttpDelete httpDelete = new HttpDelete(uri);
             if (headers != null && headers.length > 0) {
                 addHeaders(httpDelete, headers);
             }
@@ -55,7 +97,9 @@ public class AbstractHttpClient {
 
     protected InputStream executeDeleteAsInputStream(URIBuilder b, NameValuePair... headers) throws IOException {
         try {
-            HttpDelete httpDelete = new HttpDelete(b.build());
+            URI uri = b.build();
+            debugConnections("DELETE", uri);
+            HttpDelete httpDelete = new HttpDelete(uri);
             if (headers != null && headers.length > 0) {
                 addHeaders(httpDelete, headers);
             }
@@ -72,7 +116,9 @@ public class AbstractHttpClient {
 
     protected String executeGetAsString(URIBuilder b, NameValuePair... headers) throws IOException {
         try {
-            HttpGet httpGet = new HttpGet(b.build());
+            URI uri = b.build();
+            debugConnections("GET", uri);
+            HttpGet httpGet = new HttpGet(uri);
             if (headers != null && headers.length > 0) {
                 addHeaders(httpGet, headers);
             }
@@ -97,7 +143,7 @@ public class AbstractHttpClient {
     protected InputStream executeGetAsInputStream(URIBuilder b, NameValuePair... headers) throws IOException {
         try {
             URI uri = b.build();
-            LOG.info("GET " + uri);
+            debugConnections("GET", uri);;
             HttpGet httpGet = new HttpGet(uri);
             if (headers != null && headers.length > 0) {
                 addHeaders(httpGet, headers);
@@ -135,7 +181,6 @@ public class AbstractHttpClient {
     }
 
     protected InputStream executePutAsInputStream(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
-
         CloseableHttpResponse response = doPut(b, body, headers);
         LOG.finer(response.getStatusLine().toString());
         checkResponse(response);
@@ -153,15 +198,16 @@ public class AbstractHttpClient {
     }
 
     protected void executePost(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
-
-        CloseableHttpResponse response = doPost(b, body, headers);
-        LOG.finer(response.getStatusLine().toString());
-        checkResponse(response);
+        try (CloseableHttpResponse response = doPost(b, body, headers)) {
+            LOG.finer(response.getStatusLine().toString());
+            checkResponse(response);
+        }
     }
 
     protected CloseableHttpResponse doPost(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
         try {
             URI uri = b.build();
+            debugConnections("POST", uri);
             LOG.info("POSTing to " + uri);
             HttpPost httpPost = new HttpPost(uri);
             if (headers != null && headers.length > 0) {
@@ -180,7 +226,7 @@ public class AbstractHttpClient {
     protected CloseableHttpResponse doPut(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
         try {
             URI uri = b.build();
-            LOG.info("PUTing to " + uri);
+            debugConnections("PUT", uri);
             HttpPut httpPut = new HttpPut(uri);
             if (headers != null && headers.length > 0) {
                 addHeaders(httpPut, headers);
