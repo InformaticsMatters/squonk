@@ -68,6 +68,14 @@ public class MolEvaluator {
                 return cooerceInt(RDKFuncs.calcNumRotatableBonds(rdkitMol));
             case TPSA:
                 return cooerceFloat(RDKFuncs.calcTPSA(rdkitMol));
+            case BOND_COUNT:
+                return cooerceInt(rdkitMol.getNumBonds());
+            case ATOM_COUNT:
+                return cooerceInt(rdkitMol.getNumAtoms());
+            case HEAVY_ATOM_COUNT:
+                return cooerceInt(rdkitMol.getNumHeavyAtoms());
+            case FORMAL_CHARGE:
+                return cooerceInt(RDKFuncs.getFormalCharge(rdkitMol));
         }
         LOG.log(Level.WARNING, "Function {0} not handled", function);
         return null;

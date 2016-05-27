@@ -2,11 +2,8 @@ package org.squonk.camel.processor;
 
 import com.im.lac.types.BasicObject;
 import org.squonk.dataset.Dataset;
-import org.squonk.dataset.transform.AbstractTransform;
-import org.squonk.dataset.transform.ConvertFieldTransform;
-import org.squonk.dataset.transform.DeleteFieldTransform;
-import org.squonk.dataset.transform.RenameFieldTransform;
-import org.squonk.dataset.transform.TransformDefinitions;
+import org.squonk.dataset.transform.*;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -71,6 +68,9 @@ public class ValueTransformerProcessor implements Processor {
             } else if (tx instanceof ConvertFieldTransform) {
                 ConvertFieldTransform cf = (ConvertFieldTransform) tx;
                 vtp.convertValueType(cf.getFieldName(), cf.getNewType(), cf.getGenericType());
+            } else if (tx instanceof TransformValueTransform) {
+                TransformValueTransform cf = (TransformValueTransform) tx;
+                vtp.transformValue(cf.getFieldName(), cf.getMatch(), cf.getResult());
             }
         }
         return vtp;

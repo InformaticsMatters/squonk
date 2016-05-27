@@ -122,5 +122,17 @@ public interface StepDefinitionConstants {
         public static final String OPTION_APPEND_FIELDS = "appendFields";
 
     }
+
+    interface DatasetSelectSlice {
+        public static final String CLASSNAME = "org.squonk.execution.steps.impl.DatasetSelectSliceStep";
+        public static final String OPTION_SKIP = "skip";
+        public static final String OPTION_COUNT = "count";
+    }
+
+    interface DatasetSelectRandom {
+        public static final String CLASSNAME = "org.squonk.execution.steps.impl.DatasetSelectRandomStep";
+        public static final String OPTION_RANDOM = "random";
+        public static final String OPTION_COUNT = "count";
+    }
     
 }

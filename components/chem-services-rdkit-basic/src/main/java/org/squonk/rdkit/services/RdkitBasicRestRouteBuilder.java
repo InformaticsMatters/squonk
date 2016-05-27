@@ -12,8 +12,11 @@ import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.rdkit.io.RDKitMoleculeIOUtils.FragmentMode;
+import org.squonk.rdkit.mol.EvaluatorDefintion;
 import org.squonk.types.TypeResolver;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -58,6 +61,16 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "lipinski",
                     null),
             createServiceDescriptor(
+                    "rdkit.calculators.reos",
+                    "REOS (RDKit)",
+                    "Rapid Elimination Of Swill (REOS) using RDKit",
+                    new String[]{"reos", "hbond", "donors", "acceptors", "logp", "molecularweight", "rotatablebonds", "charge", "formalcharge", "druglike", "molecularproperties", "rdkit"},
+                    "icons/properties_add.png",
+                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/DrugLike"},
+                    "asyncHttp",
+                    "reos",
+                    createReosOptionDescriptors()),
+            createServiceDescriptor(
                     "rdkit.calculators.donors_acceptors",
                     "HBA & HBD (RDKit)",
                     "H-bond donor and acceptor counts using RDKit",
@@ -65,7 +78,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Topological"},
                     "asyncHttp",
-                    "lipinski",
+                    "donors_acceptors",
                     null),
             createServiceDescriptor(
                     "rdkit.calculators.molar_refractivity",
@@ -81,7 +94,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "rdkit.calculators.tpsa",
                     "TPSA (RDKit)",
                     "Topological surface area using RDKit",
-                    new String[]{"tpsa", "psa", "molarrefractivity", "molecularproperties", "rdkit"},
+                    new String[]{"tpsa", "psa", "molecularproperties", "rdkit"},
                     "icons/properties_add.png",
                     new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Other"},
                     "asyncHttp",
@@ -122,6 +135,39 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     })
 
     };
+
+    static void appendIntegerMinMaxOptionDescriptors(List<OptionDescriptor> list, EvaluatorDefintion.Function function, Integer min, Integer max, String name, String desc) {
+        list.add(new OptionDescriptor<>(Integer.class, "query." + function.getName().toLowerCase()+".min",
+                name + " min", "Min " + desc).withMinValues(0).withMaxValues(1).withDefaultValue(min));
+        list.add(new OptionDescriptor<>(Integer.class, "query." + function.getName().toLowerCase()+".max",
+                name + " max", "Max " + desc).withMinValues(0).withMaxValues(1).withDefaultValue(max));
+    }
+
+    static void appendFloatMinMaxOptionDescriptors(List<OptionDescriptor> list, EvaluatorDefintion.Function function, Float min, Float max, String name, String desc) {
+        list.add(new OptionDescriptor<>(Float.class, "query." + function.getName().toLowerCase()+".min",
+                name + "min", "Min " + desc).withMinValues(0).withMaxValues(1).withDefaultValue(min));
+        list.add(new OptionDescriptor<>(Float.class, "query." + function.getName().toLowerCase()+".max",
+                name + "max", "Max " + desc).withMinValues(0).withMaxValues(1).withDefaultValue(max));
+    }
+
+    static OptionDescriptor[] createReosOptionDescriptors() {
+        List<OptionDescriptor> list = new ArrayList<>();
+
+        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
+        list.add(new OptionDescriptor<>(String.class, "query.mode", "Filter mode", "How to filter results")
+                        .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
+                        .withMinValues(1).withMaxValues(1));
+
+        appendFloatMinMaxOptionDescriptors(list, EvaluatorDefintion.Function.EXACT_MW, 200.0f, 500.0f, "MW", "molweight");
+        appendFloatMinMaxOptionDescriptors(list, EvaluatorDefintion.Function.LOGP, -5.0f, 5.0f, "LogP", "LogP");
+        appendIntegerMinMaxOptionDescriptors(list, EvaluatorDefintion.Function.NUM_HBD, 0, 5, "HBD count", "h-bond donor count");
+        appendIntegerMinMaxOptionDescriptors(list, EvaluatorDefintion.Function.NUM_HBA, 0, 10, "HBA count", "h-bond acceptor count");
+        appendIntegerMinMaxOptionDescriptors(list, EvaluatorDefintion.Function.FORMAL_CHARGE, -2, 2, "Formal charge", "formal charge");
+        appendIntegerMinMaxOptionDescriptors(list, EvaluatorDefintion.Function.NUM_ROTATABLE_BONDS, 0, 8, "Rot bond count", "rotatable bond count");
+        appendIntegerMinMaxOptionDescriptors(list, EvaluatorDefintion.Function.HEAVY_ATOM_COUNT, 15, 50, "Heavy atom count", "heavy atom count");
+
+        return list.toArray(new OptionDescriptor[0]);
+    }
 
     static String[] fragmentModesToStringArray() {
 
@@ -204,7 +250,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                 .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_LOGP, resolver))
                 .endRest()
                 //
-                .post("frac_c_sp3").description("Calculate the fraction of SP3 hybrised carbons for the supplied MoleculeObjects")
+                .post("frac_c_sp3").description("Calculate the fraction of SP3 hybridised carbons for the supplied MoleculeObjects")
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_FRACTION_C_SP3, resolver))
                 .endRest()
@@ -212,6 +258,11 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                 .post("lipinski").description("Calculate Lipinski properties for the supplied MoleculeObjects")
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_LIPINSKI, resolver))
+                .endRest()
+                //
+                .post("reos").description("Calculate REOS properties for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_REOS, resolver))
                 .endRest()
                 //
                 .post("donors_acceptors").description("Calculate H-bond donor and acceptor counts for the supplied MoleculeObjects")

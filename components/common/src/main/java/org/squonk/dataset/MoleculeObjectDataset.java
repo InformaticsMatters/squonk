@@ -24,10 +24,18 @@ public class MoleculeObjectDataset implements DatasetProvider, StreamProvider {
         this.mods = mods;
     }
 
+    public MoleculeObjectDataset(Stream<MoleculeObject> stream, DatasetMetadata meta) {
+        this.mods = new Dataset(MoleculeObject.class, stream, meta);
+    }
+
     public MoleculeObjectDataset(Stream<MoleculeObject> stream) {
         this.mods = new Dataset(MoleculeObject.class, stream);
     }
     
+    public MoleculeObjectDataset(Collection<MoleculeObject> objs, DatasetMetadata meta) {
+        this.mods = new Dataset(MoleculeObject.class, objs, meta);
+    }
+
     public MoleculeObjectDataset(Collection<MoleculeObject> objs) {
         this.mods = new Dataset(MoleculeObject.class, objs);
     }

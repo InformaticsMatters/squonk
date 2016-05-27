@@ -21,7 +21,11 @@ public class EvaluatorDefintion {
         NUM_RINGS(Integer.class, "RingCount_RDKit"),
         NUM_AROMATIC_RINGS(Integer.class, "AromaticRingCount_RDKit"),
         NUM_ROTATABLE_BONDS(Integer.class, "RotBondCount_RDKit"),
-        TPSA(Float.class, "TPSA_RDKit");
+        TPSA(Float.class, "TPSA_RDKit"),
+        BOND_COUNT(Integer.class, "BondCount_RDKit"),
+        ATOM_COUNT(Integer.class, "AtomCount_RDKit"),
+        HEAVY_ATOM_COUNT(Integer.class, "HeavyAtomCount_RDKit"),
+        FORMAL_CHARGE(Integer.class, "FormalCharge_RDKit");
 
         Class type;
         String name;
