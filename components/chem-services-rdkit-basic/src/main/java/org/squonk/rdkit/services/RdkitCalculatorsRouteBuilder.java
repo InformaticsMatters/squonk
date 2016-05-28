@@ -5,15 +5,18 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.rdkit.RDKitMoleculeProcessor;
+import org.squonk.camel.processor.VerifyStructureProcessor;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.property.PropertyFilter;
 import org.squonk.rdkit.io.RDKitMoleculeIOUtils;
 import org.squonk.rdkit.mol.EvaluatorDefintion;
+import org.squonk.rdkit.mol.MolReader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static org.squonk.rdkit.mol.EvaluatorDefintion.Function.FORMAL_CHARGE;
@@ -26,6 +29,9 @@ import static org.squonk.rdkit.mol.EvaluatorDefintion.Function.NUM_ROTATABLE_BON
  */
 public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
 
+    private static final Logger LOG = Logger.getLogger(RdkitCalculatorsRouteBuilder.class.getName());
+
+    static final String RDKIT_STRUCTURE_VERIFY = "direct:structure_verify";
     static final String RDKIT_LOGP = "direct:rdk_logp";
     static final String RDKIT_FRACTION_C_SP3 = "direct:rdk_fraction_c_sp3";
     static final String RDKIT_LIPINSKI = "direct:rdk_lipinski";
@@ -40,6 +46,17 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+
+        from(RDKIT_STRUCTURE_VERIFY)
+                .log("RDKIT_STRUCTURE_VERIFY starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new VerifyStructureProcessor("ValidMol_RDKit") {
+                    protected boolean validateMolecule(MoleculeObject mo) {
+                        return MolReader.findROMol(mo, false) != null;
+                    }
+                })
+                .log("RDKIT_STRUCTURE_VERIFY finished");
+
 
         from(RDKIT_LOGP)
                 .log("RDKIT_LOGP starting")

@@ -7,6 +7,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
+import static org.squonk.camel.processor.VerifyStructureProcessor.*;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
@@ -30,6 +31,24 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
 
     protected static final ServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
             = new ServiceDescriptor[]{
+            createServiceDescriptor(
+                    "rdkit.calculators.verify",
+                    "Verify structure (RDKit)",
+                    "Verify that the molecules are valid according to RDKit",
+                    new String[]{"verify", "rdkit"},
+                    "icons/properties_add.png",
+                    new String[]{"/Chemistry/Toolkits/RDKit/Verify", "/Chemistry/Verify"},
+                    "asyncHttp",
+                    "verify",
+                    new OptionDescriptor[] {
+                            new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode")
+                                    .withDefaultValue(true).withAccess(false, false),
+                            new OptionDescriptor<>(String.class,
+                                    "query." + OPTION_FILTER_MODE, "Filter mode", "How to filter results")
+                                    .withValues(new String[] {VALUE_INCLUDE_PASS, VALUE_INCLUDE_FAIL, VALUE_INCLUDE_ALL})
+                                    .withDefaultValue(VALUE_INCLUDE_FAIL)
+                                    .withMinValues(1).withMaxValues(1)
+                    }),
             createServiceDescriptor(
                     "rdkit.calculators.logp",
                     "LogP (RDKit)",
@@ -243,6 +262,11 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                 .process((Exchange exch) -> {
                     exch.getIn().setBody(CALCULATORS_SERVICE_DESCRIPTOR);
                 })
+                .endRest()
+                //
+                .post("verify").description("Verify as RDKit molecules")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_STRUCTURE_VERIFY, resolver))
                 .endRest()
                 //
                 .post("logp").description("Calculate the logP for the supplied MoleculeObjects")
