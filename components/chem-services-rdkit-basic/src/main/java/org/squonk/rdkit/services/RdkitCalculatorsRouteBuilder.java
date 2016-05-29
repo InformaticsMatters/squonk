@@ -6,6 +6,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.rdkit.RDKitMoleculeProcessor;
 import org.squonk.camel.processor.VerifyStructureProcessor;
+import org.squonk.camel.rdkit.processor.RDKitVerifyStructureProcessor;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
@@ -50,11 +51,7 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
         from(RDKIT_STRUCTURE_VERIFY)
                 .log("RDKIT_STRUCTURE_VERIFY starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new VerifyStructureProcessor("ValidMol_RDKit") {
-                    protected boolean validateMolecule(MoleculeObject mo) {
-                        return MolReader.findROMol(mo, false) != null;
-                    }
-                })
+                .process(new RDKitVerifyStructureProcessor())
                 .log("RDKIT_STRUCTURE_VERIFY finished");
 
 
