@@ -23,10 +23,6 @@ import java.util.stream.Stream;
  */
 public class RDKitMoleculeProcessor implements Processor {
 
-    static {
-        System.loadLibrary("GraphMolWrap");
-    }
-
     private static final Logger LOG = Logger.getLogger(RDKitMoleculeProcessor.class.getName());
 
     List<EvaluatorDefintion> definitions = new ArrayList<>();

@@ -4,6 +4,7 @@ import com.im.lac.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.squonk.camel.CamelCommonConstants;
+import org.squonk.camel.rdkit.processor.RDKitCanonicalSmilesGeneratorProcessor;
 import org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor;
 import org.squonk.camel.processor.PropertyFilterProcessor;
 import org.squonk.camel.rdkit.processor.RDKitVerifyStructureProcessor;
@@ -134,31 +135,7 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
 
         from(RDKIT_CANONICAL_SMILES)
                 .log("RDKIT_CANONICAL_SMILES starting")
-                .process((Exchange exch) -> {
-
-                    Dataset<MoleculeObject> dataset = exch.getIn().getBody(Dataset.class);
-                    if (dataset == null || dataset.getType() != MoleculeObject.class) {
-                        throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
-                    }
-
-                    String modeS = exch.getIn().getHeader("mode", String.class);
-                    final RDKitMoleculeIOUtils.FragmentMode mode = (modeS == null ? RDKitMoleculeIOUtils.FragmentMode.WHOLE_MOLECULE : RDKitMoleculeIOUtils.FragmentMode.valueOf(modeS.toUpperCase()));
-
-                    Stream<MoleculeObject> results = dataset.getStream().peek((mo) -> {
-                        String smiles = RDKitMoleculeIOUtils.generateCanonicalSmiles(mo, mode);
-                        if (smiles != null) {
-                            mo.putValue("CanSmiles_RDKit", smiles);
-                        }
-                    });
-
-                    DatasetMetadata<MoleculeObject> meta = dataset.getMetadata();
-                    if (meta == null) {
-                        meta = new DatasetMetadata(MoleculeObject.class);
-                    }
-                    meta.getValueClassMappings().put("CanSmiles_RDKit", String.class);
-                    exch.getIn().setHeader(CamelCommonConstants.HEADER_METADATA, meta);
-                    exch.getIn().setBody(new MoleculeObjectDataset(results));
-                })
+                .process(new RDKitCanonicalSmilesGeneratorProcessor("CanSmiles_RDKit"))
                 .log("RDKIT_CANONICAL_SMILES finished");
 
         from(RDKIT_FORMAL_CHARGE)
