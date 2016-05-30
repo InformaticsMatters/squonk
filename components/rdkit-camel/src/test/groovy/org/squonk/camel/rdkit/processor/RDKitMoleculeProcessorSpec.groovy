@@ -1,6 +1,8 @@
-package org.squonk.camel.rdkit
+package org.squonk.camel.rdkit.processor
 
 import com.im.lac.types.MoleculeObject
+import org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor
+
 import java.util.stream.*
 import spock.lang.Specification
 

@@ -1,4 +1,4 @@
-package org.squonk.camel.rdkit;
+package org.squonk.camel.rdkit.processor;
 
 import com.im.lac.types.MoleculeObject;
 import org.RDKit.ROMol;

@@ -4,7 +4,7 @@ import com.im.lac.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.squonk.camel.CamelCommonConstants;
-import org.squonk.camel.rdkit.RDKitMoleculeProcessor;
+import org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor;
 import org.squonk.camel.processor.PropertyFilterProcessor;
 import org.squonk.camel.rdkit.processor.RDKitVerifyStructureProcessor;
 import org.squonk.dataset.Dataset;
