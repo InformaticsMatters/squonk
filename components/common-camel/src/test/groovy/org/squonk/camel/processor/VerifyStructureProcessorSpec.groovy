@@ -7,6 +7,7 @@ import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.MoleculeObjectDataset
+import org.squonk.util.CommonConstants
 import spock.lang.Specification
 
 /**
@@ -52,13 +53,13 @@ class VerifyStructureProcessorSpec extends Specification {
         ProducerTemplate pt = context.createProducerTemplate()
 
         expect:
-        pt.requestBodyAndHeaders("direct:myroute", new Dataset(MoleculeObject.class, mols), [(VerifyStructureProcessor.OPTION_FILTER_MODE): mode]).getItems().size() == count
+        pt.requestBodyAndHeaders("direct:myroute", new Dataset(MoleculeObject.class, mols), [(CommonConstants.OPTION_FILTER_MODE): mode]).getItems().size() == count
 
         where:
         count | mode
-        3     | VerifyStructureProcessor.VALUE_INCLUDE_PASS
-        1     | VerifyStructureProcessor.VALUE_INCLUDE_FAIL
-        4     | VerifyStructureProcessor.VALUE_INCLUDE_ALL
+        3     | CommonConstants.VALUE_INCLUDE_PASS
+        1     | CommonConstants.VALUE_INCLUDE_FAIL
+        4     | CommonConstants.VALUE_INCLUDE_ALL
 
     }
 
@@ -68,7 +69,7 @@ class VerifyStructureProcessorSpec extends Specification {
         ProducerTemplate pt = context.createProducerTemplate()
 
         when:
-        def result = pt.requestBodyAndHeaders("direct:myroute", new Dataset(MoleculeObject.class, mols), [(VerifyStructureProcessor.OPTION_FILTER_MODE): VerifyStructureProcessor.VALUE_INCLUDE_PASS])
+        def result = pt.requestBodyAndHeaders("direct:myroute", new Dataset(MoleculeObject.class, mols), [(CommonConstants.OPTION_FILTER_MODE): CommonConstants.VALUE_INCLUDE_PASS])
 
         then:
         result instanceof MoleculeObjectDataset

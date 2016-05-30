@@ -7,7 +7,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
-import static org.squonk.camel.processor.VerifyStructureProcessor.*;
+import static org.squonk.util.CommonConstants.*;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
@@ -15,6 +15,7 @@ import org.squonk.options.OptionDescriptor;
 import org.squonk.rdkit.io.RDKitMoleculeIOUtils.FragmentMode;
 import org.squonk.rdkit.mol.EvaluatorDefintion;
 import org.squonk.types.TypeResolver;
+import org.squonk.util.CommonConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -156,24 +157,24 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     };
 
     static void appendIntegerMinMaxOptionDescriptors(List<OptionDescriptor> list, EvaluatorDefintion.Function function, Integer min, Integer max, String name, String desc) {
-        list.add(new OptionDescriptor<>(Integer.class, "query." + function.getName().toLowerCase()+".min",
+        list.add(new OptionDescriptor<>(Integer.class, "query." + function.getName()+".min",
                 name + " min", "Min " + desc).withMinValues(0).withMaxValues(1).withDefaultValue(min));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + function.getName().toLowerCase()+".max",
+        list.add(new OptionDescriptor<>(Integer.class, "query." + function.getName()+".max",
                 name + " max", "Max " + desc).withMinValues(0).withMaxValues(1).withDefaultValue(max));
     }
 
     static void appendFloatMinMaxOptionDescriptors(List<OptionDescriptor> list, EvaluatorDefintion.Function function, Float min, Float max, String name, String desc) {
-        list.add(new OptionDescriptor<>(Float.class, "query." + function.getName().toLowerCase()+".min",
-                name + "min", "Min " + desc).withMinValues(0).withMaxValues(1).withDefaultValue(min));
-        list.add(new OptionDescriptor<>(Float.class, "query." + function.getName().toLowerCase()+".max",
-                name + "max", "Max " + desc).withMinValues(0).withMaxValues(1).withDefaultValue(max));
+        list.add(new OptionDescriptor<>(Float.class, "query." + function.getName()+".min",
+                name + " min", "Min " + desc).withMinValues(0).withMaxValues(1).withDefaultValue(min));
+        list.add(new OptionDescriptor<>(Float.class, "query." + function.getName()+".max",
+                name + " max", "Max " + desc).withMinValues(0).withMaxValues(1).withDefaultValue(max));
     }
 
     static OptionDescriptor[] createReosOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
         list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
-        list.add(new OptionDescriptor<>(String.class, "query.mode", "Filter mode", "How to filter results")
+        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
                         .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
                         .withMinValues(1).withMaxValues(1));
 

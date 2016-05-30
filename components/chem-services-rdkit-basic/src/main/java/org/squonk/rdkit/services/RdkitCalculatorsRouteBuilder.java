@@ -5,23 +5,18 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.rdkit.RDKitMoleculeProcessor;
-import org.squonk.camel.processor.VerifyStructureProcessor;
+import org.squonk.camel.processor.PropertyFilterProcessor;
 import org.squonk.camel.rdkit.processor.RDKitVerifyStructureProcessor;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
-import org.squonk.property.PropertyFilter;
 import org.squonk.rdkit.io.RDKitMoleculeIOUtils;
 import org.squonk.rdkit.mol.EvaluatorDefintion;
-import org.squonk.rdkit.mol.MolReader;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-import static org.squonk.rdkit.mol.EvaluatorDefintion.Function.FORMAL_CHARGE;
-import static org.squonk.rdkit.mol.EvaluatorDefintion.Function.NUM_ROTATABLE_BONDS;
+import static org.squonk.rdkit.mol.EvaluatorDefintion.Function.*;
 
 /**
  * Basic services based on RDKit
@@ -81,58 +76,25 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
         from(RDKIT_REOS)
                 .log("RDKIT_REOS starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new RDKitMoleculeProcessor()
-                        .calculate(EvaluatorDefintion.Function.EXACT_MW)
-                        .calculate(EvaluatorDefintion.Function.LOGP)
-                        .calculate(EvaluatorDefintion.Function.NUM_HBD)
-                        .calculate(EvaluatorDefintion.Function.NUM_HBA)
+                .process(new RDKitMoleculeProcessor() // calculate
+                        .calculate(EXACT_MW)
+                        .calculate(LOGP)
+                        .calculate(NUM_HBD)
+                        .calculate(NUM_HBA)
                         .calculate(FORMAL_CHARGE)
                         .calculate(NUM_ROTATABLE_BONDS)
-                        .calculate(EvaluatorDefintion.Function.HEAVY_ATOM_COUNT)
-
-                ).process((exch) -> {
-            Dataset<MoleculeObject> dataset = exch.getIn().getBody(Dataset.class);
-            Stream<MoleculeObject> mols = dataset.getStream();
-
-            String filterMode = exch.getIn().getHeader("mode", String.class);
-            boolean inverse = filterMode != null && "INCLUDE_FAIL".equals(filterMode.toUpperCase());
-            boolean filter = filterMode == null || !"INCLUDE_ALL".equals(filterMode.toUpperCase());
-
-            List<PropertyFilter> filters = new ArrayList<>();
-
-            appendDoubleFilter(exch, filters, EvaluatorDefintion.Function.EXACT_MW);
-            appendDoubleFilter(exch, filters, EvaluatorDefintion.Function.LOGP);
-            appendIntegerFilter(exch, filters, EvaluatorDefintion.Function.NUM_HBD);
-            appendIntegerFilter(exch, filters, EvaluatorDefintion.Function.NUM_HBA);
-            appendIntegerFilter(exch, filters, EvaluatorDefintion.Function.FORMAL_CHARGE);
-            appendIntegerFilter(exch, filters, EvaluatorDefintion.Function.NUM_ROTATABLE_BONDS);
-            appendIntegerFilter(exch, filters, EvaluatorDefintion.Function.HEAVY_ATOM_COUNT);
-
-            mols = mols.peek((mo) -> {
-                int fails = 0;
-                for (PropertyFilter f : filters) {
-                    if (!f.test(mo)) {
-                        fails++;
-                    }
-                }
-                mo.putValue("REOS_FAILS_RDKit", fails);
-            });
-
-            if (filter) {
-                mols = mols.filter((mo) -> {
-                    int count = mo.getValue("REOS_FAILS_RDKit", Integer.class);
-                    return inverse ? count > 0 : count == 0;
-                });
-            }
-
-            DatasetMetadata meta = dataset.getMetadata();
-            if (meta == null) {
-                meta = new DatasetMetadata(MoleculeObject.class);
-            }
-            meta.setSize(0);
-            exch.getIn().setBody(new MoleculeObjectDataset(mols, meta));
-
-        }).log("RDKIT_REOS finished");
+                        .calculate(HEAVY_ATOM_COUNT)
+                )
+                .process(new PropertyFilterProcessor("REOS_FAILS_RDKit") // filter
+                        .filterDouble(EXACT_MW.getName())
+                        .filterDouble(LOGP.getName())
+                        .filterInteger(NUM_HBD.getName())
+                        .filterInteger(NUM_HBA.getName())
+                        .filterInteger(FORMAL_CHARGE.getName())
+                        .filterInteger(NUM_ROTATABLE_BONDS.getName())
+                        .filterInteger(HEAVY_ATOM_COUNT.getName())
+                )
+                .log("RDKIT_REOS finished");
 
         from(RDKIT_DONORS_ACCEPTORS)
                 .log("RDKIT_DONORS_ACCEPTORS starting")
@@ -207,19 +169,4 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
 
     }
 
-    private void appendIntegerFilter(Exchange exch, List<PropertyFilter> filters, EvaluatorDefintion.Function function) {
-        Integer min = exch.getIn().getHeader(function.getName().toLowerCase() + ".min", Integer.class);
-        Integer max = exch.getIn().getHeader(function.getName().toLowerCase() + ".max", Integer.class);
-        if (min != null || max != null) {
-            filters.add(new PropertyFilter.IntegerRangeFilter(function.getName(), false, min, max));
-        }
-    }
-
-    private void appendDoubleFilter(Exchange exch, List<PropertyFilter> filters, EvaluatorDefintion.Function function) {
-        Double min = exch.getIn().getHeader(function.getName().toLowerCase() + ".min", Double.class);
-        Double max = exch.getIn().getHeader(function.getName().toLowerCase() + ".max", Double.class);
-        if (min != null || max != null) {
-            filters.add(new PropertyFilter.DoubleRangeFilter(function.getName(), false, min, max));
-        }
-    }
 }

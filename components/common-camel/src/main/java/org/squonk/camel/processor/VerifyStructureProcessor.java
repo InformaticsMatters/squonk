@@ -6,6 +6,8 @@ import org.apache.camel.Processor;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
+import static org.squonk.util.CommonConstants.*;
+
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -26,10 +28,6 @@ import java.util.stream.Stream;
 public abstract class VerifyStructureProcessor implements Processor {
 
     private static final Logger LOG = Logger.getLogger(VerifyStructureProcessor.class.getName());
-    public static final String OPTION_FILTER_MODE = "mode";
-    public static final String VALUE_INCLUDE_PASS = "INCLUDE_PASS";
-    public static final String VALUE_INCLUDE_FAIL = "INCLUDE_FAIL";
-    public static final String VALUE_INCLUDE_ALL = "INCLUDE_ALL";
 
     protected final String fieldName;
 
