@@ -142,6 +142,7 @@ class NotebookRestClientSpec extends Specification {
 
 
     void "update editable"() {
+        println "update editable()"
 
         when:
         editable1 = client.updateEditable(editable1.notebookId, editable1.id, new NotebookCanvasDTO(1))

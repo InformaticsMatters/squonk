@@ -340,7 +340,9 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest()
                 //
                 .put("/{notebookid}/e/{editableid}").description("Update the definition of an editable")
-                .bindingMode(RestBindingMode.json).produces("application/json")
+                //.bindingMode(RestBindingMode.json)
+                .bindingMode(RestBindingMode.off)
+                .consumes("application/json").produces("application/json")
                 .type(NotebookCanvasDTO.class)
                 .outType(NotebookEditableDTO.class)
                 .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
@@ -350,12 +352,16 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .process((Exchange exch) -> {
                     Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
                     Long editableid = exch.getIn().getHeader("editableid", Long.class);
-                    NotebookCanvasDTO canvasDTO = exch.getIn().getBody(NotebookCanvasDTO.class);
+                    //NotebookCanvasDTO canvasDTO = exch.getIn().getBody(NotebookCanvasDTO.class);
+                    String json1 = exch.getIn().getBody(String.class);
+                    NotebookCanvasDTO canvasDTO = JsonHandler.getInstance().objectFromJson(json1, NotebookCanvasDTO.class);
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     checkNotNull(editableid, "Editable ID must be specified");
                     checkNotNull(canvasDTO, "Canvas definition must be specified as body");
                     NotebookEditableDTO result = notebookClient.updateEditable(notebookid, editableid, canvasDTO);
-                    exch.getIn().setBody(result);
+                    String json2 = JsonHandler.getInstance().objectToJson(result);
+                    exch.getIn().setBody(json2);
+                    //exch.getIn().setBody(result);
                 })
                 .endRest()
                 .delete("/{notebookid}/e/{editableid}").description("Delete an editable")

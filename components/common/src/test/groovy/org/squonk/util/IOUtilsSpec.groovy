@@ -72,6 +72,25 @@ class IOUtilsSpec extends Specification {
         converted.close()
     
     }
+
+
+    void "test truncate"() {
+
+        expect:
+        IOUtils.truncateString(str, 10) == result
+
+        where:
+        str | result
+        '0123456'       | '0123456'
+        '01234567'      | '01234567'
+        '012345678'     | '012345678'
+        '0123456789'    | '0123456789'
+        '01234567890'   | '012345 ...'
+        '012345678901'  | '012345 ...'
+        '0123456789012' | '012345 ...'
+        null            | null
+
+    }
 	
 }
 
