@@ -28,6 +28,8 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(RdkitBasicRestRouteBuilder.class.getName());
 
+    private static final String ROUTE_STATS = "seda:post_stats";
+
     private static final TypeResolver resolver = new TypeResolver();
 
     protected static final ServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
@@ -241,6 +243,9 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
 
         restConfiguration().component("servlet").host("0.0.0.0");
 
+        from(ROUTE_STATS)
+                .log("Posting stats for ${header.SquonkJobID} ${body}");
+
         /* These are the REST endpoints - exposed as public web services 
          */
 
@@ -267,57 +272,57 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                 //
                 .post("verify").description("Verify as RDKit molecules")
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_STRUCTURE_VERIFY, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_STRUCTURE_VERIFY, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("logp").description("Calculate the logP for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_LOGP, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_LOGP, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("frac_c_sp3").description("Calculate the fraction of SP3 hybridised carbons for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_FRACTION_C_SP3, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_FRACTION_C_SP3, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("lipinski").description("Calculate Lipinski properties for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_LIPINSKI, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_LIPINSKI, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("reos").description("Calculate REOS properties for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_REOS, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_REOS, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("donors_acceptors").description("Calculate H-bond donor and acceptor counts for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_DONORS_ACCEPTORS, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_DONORS_ACCEPTORS, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("molar_refractivity").description("Calculate molar refractivity for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_MOLAR_REFRACTIVITY, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_MOLAR_REFRACTIVITY, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("tpsa").description("Calculate TPSA for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_TPSA, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_TPSA, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("rings").description("Calculate ring counts for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_RINGS, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_RINGS, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("rotatable_bonds").description("Calculate rotatable bond count for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_ROTATABLE_BONDS, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_ROTATABLE_BONDS, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("canonical_smiles").description("Generate canonical smiles for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_CANONICAL_SMILES, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_CANONICAL_SMILES, resolver, ROUTE_STATS))
                 .endRest();
 
     }

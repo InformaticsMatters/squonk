@@ -12,7 +12,10 @@ import chemaxon.struc.MPropertyContainer;
 import chemaxon.struc.MolAtom;
 import chemaxon.struc.Molecule;
 import chemaxon.struc.MoleculeGraph;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.im.lac.types.MoleculeObject;
+import org.squonk.types.io.JsonHandler;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -377,5 +380,30 @@ public class MoleculeUtils {
 
     public static boolean isNotEmpty(MRecord r) throws MolFormatException {
         return !isEmpty(r);
+    }
+
+    public static Molecule tryCreateMoleculeFromJsonOrString(String input) {
+        try {
+            MoleculeObject mo = JsonHandler.getInstance().objectFromJson(input, MoleculeObject.class);
+            return MoleculeUtils.fetchMolecule(mo, false);
+        } catch (IOException e) {
+            try {
+                return convertToMolecule(input);
+            } catch (MolFormatException mfe) {
+            }
+        }
+        return null;
+    }
+
+    public static Molecule tryCreateMoleculeFromObject(Object h) {
+        Molecule mol;
+        if (h instanceof Molecule) {
+            mol = (Molecule)h;
+        } else if (h instanceof MoleculeObject) {
+            mol = MoleculeUtils.fetchMolecule((MoleculeObject)h, false);
+        } else {
+            mol = MoleculeUtils.tryCreateMoleculeFromJsonOrString(h.toString());
+        }
+        return mol;
     }
 }

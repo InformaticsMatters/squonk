@@ -12,7 +12,10 @@ import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 import org.squonk.chemaxon.molecule.MoleculeEvaluator;
 import org.squonk.chemaxon.molecule.StandardizerEvaluator;
+import org.squonk.dataset.Dataset;
 import org.squonk.dataset.MoleculeObjectDataset;
+import org.squonk.util.ExecutionStats;
+import org.squonk.util.StatsRecorder;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -40,13 +43,13 @@ import java.util.stream.Stream;
  * <li>Transformation of the Molecule using a Standardizer</li>
  * </ol>
  * <p>
- *
+ * <p>
  * <b>Calculations</b>. The expressions can either be statically set using the
  * #calculate(String, String) method, of can be defined dynamically by setting a
  * header property. The property is added to the Molecule using the given
  * property name.
  * <p>
- *
+ * <p>
  * <b>Filtering</b>. This class can also be used to filter molecules. To do so
  * use the one-argument form of the constructor, or specify a filter in text
  * format using a syntax like this: filter=logP()&lt;5.
@@ -64,7 +67,7 @@ import java.util.stream.Stream;
  * carefully. Put your most selective filters first, and your slowest filters
  * last. You probably want to benchmark this if performance is a concern.
  * <p>
- *
+ * <p>
  * <b>Transforming</b>. Some chemical terms expressions generate structures. You
  * can utilise these to transform your input molecule. For instance you can use
  * the leconformer() expression to generate the lowest energy conformer of your
@@ -77,7 +80,7 @@ import java.util.stream.Stream;
  * or use the "transform=chemTermsExpression()" syntax in an manner analogous to
  * defining filters.
  * <p>
- *
+ * <p>
  * <b>Standardizing</b>. The molecule can be standardized using a standardizer
  * configuration that is
  * <a href="https://docs.chemaxon.com/display/standardizer/Standardizer+Actions">
@@ -85,7 +88,7 @@ import java.util.stream.Stream;
  * Note that there is also a separate {@link StandardizerProcessor} that is more
  * flexible in terms of configuration that should be used for more complex
  * scenarios.
- *
+ * <p>
  * <br>
  * <b>Headers</b>. If any expressions are set using the #calculate(string,
  * String) , #filter(String), #transform(String) or #standardize(String) methods
@@ -119,7 +122,7 @@ import java.util.stream.Stream;
  * Iterable&lt;Molecule&gt; or Iterator&lt;Molecule&gt; and process them all in
  * one Exchange.
  * <p>
- *
+ * <p>
  * <b>Accepted molecule formats</b>. The following inputs are supported (tried
  * in this order) with the corresponding outputs
  * <ol>
@@ -143,7 +146,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
      * Note: the return type is the instance, to allow the fluent builder
      * pattern to be used.
      *
-     * @param name The name for the calculated property
+     * @param name         The name for the calculated property
      * @param ctExpression The chemical terms expression e.g. logP()
      * @return
      * @throws ParseException
@@ -187,63 +190,71 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
     }
 
     @Override
-    public void process(final Exchange exchange) throws Exception {
-        final List<MoleculeEvaluator> evals = createEvaluators(exchange);
-        StreamingMoleculeObjectSourcer sourcer = new StreamingMoleculeObjectSourcer() {
-            @Override
-            public void handleSingle(Exchange exchange, MoleculeObject mo) throws Exception {
-                for (MoleculeEvaluator evaluator : evals) {
-                    mo = evaluator.processMoleculeObject(mo);
-                }
-                exchange.getIn().setBody(mo);
-            }
+    public void process(final Exchange exch) throws Exception {
+        final List<MoleculeEvaluator> evals = createEvaluators(exch);
 
-            @Override
-            public void handleMultiple(Exchange exchange, Stream<MoleculeObject> input) throws Exception {
-                //LOG.info("Calculating for stream " + input);
-
-                Stream<MoleculeObject> result = input;
-                for (MoleculeEvaluator evaluator : evals) {
-                    LOG.log(Level.INFO, "Handling evaluator {0}", evaluator);
-                    AtomicInteger count = new AtomicInteger(0);
-                    switch (evaluator.getMode()) {
-                        case Filter:
-                            result = result.filter((mo) -> {
-                                int i = count.incrementAndGet();
-                                if (i % 5000 == 0) {
-                                    LOG.info("Processed molecule " + i + " " + Thread.currentThread());
-                                }
-                                try {
-                                    return evaluator.processMoleculeObject(mo) != null;
-                                } catch (IOException ex) {
-                                    LOG.log(Level.SEVERE, "Failed to evaluate molecule", ex);
-                                }
-                                return false;
-                            });
-                            break;
-                        default:
-                            result = result.map((mo) -> {
-                                //LOG.log(Level.INFO, "Processing molecule {0}", mo);
-                                int i = count.incrementAndGet();
-                                if (i % 5000 == 0) {
-                                    LOG.info("Processed molecule " + i + " " + Thread.currentThread());
-                                }
-                                try {
-                                    return evaluator.processMoleculeObject(mo);
-                                } catch (IOException ex) {
-                                    LOG.log(Level.SEVERE, "Failed to evaluate molecule", ex);
-                                }
-                                return mo;
-                            });
-                    }
-                }
-                //LOG.info("Calculation results " + result);
-                exchange.getIn().setBody(new MoleculeObjectDataset(result));
-            }
-        };
-        LOG.info("Handling data");
-        sourcer.handle(exchange);
+        Dataset dataset = exch.getIn().getBody(Dataset.class);
+        if (dataset == null || dataset.getType() != MoleculeObject.class) {
+            throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
+        }
+        Stream<MoleculeObject> mols = dataset.getStream();
+        ExecutionStats stats = new ExecutionStats();
+        for (MoleculeEvaluator eval : evals) {
+            mols = calculateMultiple(mols, eval, stats);
+        }
+        StatsRecorder recorder = exch.getIn().getHeader(StatsRecorder.HEADER_STATS_RECORDER, StatsRecorder.class);
+        if (recorder != null) {
+            mols = mols.onClose(() -> {
+                recorder.recordStats(stats);
+            });
+        }
+        //handleMetadata(exch, dataset.getMetadata());
+        exch.getIn().setBody(new MoleculeObjectDataset(mols));
     }
+
+    private Stream<MoleculeObject> calculateMultiple(Stream<MoleculeObject> input, MoleculeEvaluator evaluator, ExecutionStats stats) throws Exception {
+        //LOG.info("Calculating for stream " + input);
+
+        Stream<MoleculeObject> result = input;
+        LOG.log(Level.INFO, "Handling evaluator {0}", evaluator);
+        AtomicInteger count = new AtomicInteger(0);
+        switch (evaluator.getMode()) {
+            case Filter:
+                result = result.filter((mo) -> {
+                    int i = count.incrementAndGet();
+                    if (i % 5000 == 0) {
+                        LOG.info("Processed molecule " + i + " " + Thread.currentThread());
+                    }
+                    try {
+                        boolean b = evaluator.processMoleculeObject(mo) != null;
+                        stats.incrementExecutionCount(evaluator.getKey(),1);
+                        return b;
+                    } catch (IOException ex) {
+                        LOG.log(Level.SEVERE, "Failed to evaluate molecule", ex);
+                    }
+                    return false;
+                });
+                break;
+            default:
+                result = result.map((mo) -> {
+                    //LOG.log(Level.INFO, "Processing molecule {0}", mo);
+                    int i = count.incrementAndGet();
+                    if (i % 5000 == 0) {
+                        LOG.info("Processed molecule " + i + " " + Thread.currentThread());
+                    }
+                    try {
+                        MoleculeObject r = evaluator.processMoleculeObject(mo);
+                        stats.incrementExecutionCount(evaluator.getKey(),1);
+                        return r;
+                    } catch (IOException ex) {
+                        LOG.log(Level.SEVERE, "Failed to evaluate molecule", ex);
+                    }
+                    return mo;
+                });
+        }
+        return result;
+    }
+
 
     /**
      * Get or create the evaluators by whatever means we can. If these have been

@@ -1,6 +1,7 @@
 package org.squonk.camel.chemaxon.processor
 
 import com.im.lac.types.MoleculeObject
+import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.MoleculeObjectDataset
 import java.util.stream.*
@@ -24,107 +25,67 @@ class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
 
      String file = "../../data/testfiles/Kinase_inhibs.sdf.gz"
     int count = 36
-    
-    long sleep = 0
 
     
     void "propcalc sequential streaming"() {
         setup:
-        Thread.sleep(sleep)
-        println "propcalc sequential streaming"
-        InputStream input = new FileInputStream(file)
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(false);
-        
+        Dataset dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
+        dataset.replaceStream(dataset.getStream().sequential())
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:streaming', mols, Dataset.class).getStream()
+        Stream results = template.requestBody('direct:streaming', dataset).getStream()
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
-        println "  ...done"
-        Thread.sleep(sleep)
         
         then:
         println "  number of mols: ${all.size()} generated in ${t1-t0}ms"
         all.size() == count
         
         
-        cleanup: 
-        input.close()
+        cleanup:
+        results.close()
         
     }
     
     void "propcalc parallel streaming"() {
         setup:
-        Thread.sleep(sleep)
-        println "propcalc parallel streaming"
-        InputStream input = new FileInputStream(file)
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(true);
+        Dataset dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
+        dataset.replaceStream(dataset.getStream().parallel())
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:streaming', mols, Dataset.class).getStream()
+        Stream results = template.requestBody('direct:streaming', dataset, Dataset.class).getStream()
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
-        println "  ...done"
-        Thread.sleep(sleep)
         
         then:
         println "  number of mols: ${all.size()} generated in ${t1-t0}ms"
         all.size() == count
         
-        cleanup: 
-        input.close()
+        cleanup:
+        results.close()
     }
     
     void "noop parallel streaming"() {
         setup:
-        Thread.sleep(sleep)
-        println "noop parallel streaming"
-        InputStream input = new FileInputStream(file)
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(true);
+        Dataset dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
+        dataset.replaceStream(dataset.getStream().parallel())
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:noop', mols, Dataset.class).getStream()
+        Stream results = template.requestBody('direct:noop', dataset, Dataset.class).getStream()
         List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
         long t1 = System.currentTimeMillis()
-        println "  ...done"
-        Thread.sleep(sleep)
         
         then:
         println "  number of mols: ${all.size()} generated in ${t1-t0}ms"
         all.size() == count
         
-        cleanup: 
-        input.close()
+        cleanup:
+        results.close()
     }
-    
-    
-    void "dataset streaming"() {
-        setup:
-        Thread.sleep(sleep)
-        println "dataset streaming"
-        InputStream input = new FileInputStream(file)
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(true);
-        MoleculeObjectDataset mods = new MoleculeObjectDataset(mols)
-        
-        when:
-        long t0 = System.currentTimeMillis()
-        Stream results = template.requestBody('direct:noop', mods, Dataset.class).getStream()
-        List all = Collections.unmodifiableList(results.collect(Collectors.toList()))
-        long t1 = System.currentTimeMillis()
-        println "  ...done"
-        Thread.sleep(sleep)
-        
-        then:
-        println "  number of mols: ${all.size()} generated in ${t1-t0}ms"
-        all.size() == count
-        
-        cleanup: 
-        input.close()
-    }
-    
+
     
     @Override
     RouteBuilder createRouteBuilder() {

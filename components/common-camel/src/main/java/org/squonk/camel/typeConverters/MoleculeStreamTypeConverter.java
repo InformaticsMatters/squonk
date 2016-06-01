@@ -1,5 +1,6 @@
 package org.squonk.camel.typeConverters;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.im.lac.types.BasicObject;
 import com.im.lac.types.MoleculeObject;
 import org.apache.camel.Converter;
@@ -89,6 +90,19 @@ public class MoleculeStreamTypeConverter {
     public static DatasetMetadata convertJsonToDatasetMetadata(String json, Exchange exchange) throws IOException {
         return JsonHandler.getInstance().objectFromJson(json, DatasetMetadata.class);
     }
+
+//    @Converter
+//    public static MoleculeObject convertJsonToMoleculeObject(String json, Exchange exchange) throws IOException {
+//        System.out.println("==================================================================");
+//        MoleculeObject mo = null;
+//        try {
+//            mo = JsonHandler.getInstance().objectFromJson(json, MoleculeObject.class);
+//        } catch (JsonParseException e) {
+//            //fail
+//        }
+//        return mo;
+//    }
+
 
 
 }

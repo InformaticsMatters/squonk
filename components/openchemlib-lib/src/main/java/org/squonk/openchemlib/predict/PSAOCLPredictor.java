@@ -40,7 +40,9 @@ public class PSAOCLPredictor extends AbstractOCLPredictor<Float> {
         }
 
         protected Float doCalculate(StereoMolecule mol) {
-            return getPredictor().assessPSA(mol);
+            float result = getPredictor().assessPSA(mol);
+            incrementExecutionCount(NAME, 1);
+            return result;
         }
 
     }

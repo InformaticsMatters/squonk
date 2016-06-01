@@ -1,66 +1,68 @@
 package org.squonk.chemaxon.services
 
-import chemaxon.struc.Molecule
 import chemaxon.struc.MolBond
-import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor
-import org.squonk.camel.testsupport.CamelSpecificationBase
+import chemaxon.struc.Molecule
 import com.im.lac.types.MoleculeObject
-import org.squonk.camel.CamelCommonConstants
-import com.im.lac.util.StreamProvider
 import org.apache.camel.CamelContext
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.builder.ThreadPoolProfileBuilder
 import org.apache.camel.spi.ThreadPoolProfile
+import org.squonk.camel.CamelCommonConstants
+import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor
+import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator
+import org.squonk.data.Molecules
+import org.squonk.dataset.MoleculeObjectDataset
 
 /**
  * Created by timbo on 14/04/2014.
  */
 class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
-    
-    static final String FILE_SMILES_100 = "../../data/testfiles/nci100.smiles";
+
+    def mols = [
+        new MoleculeObject('C'),
+        new MoleculeObject('CC'),
+        new MoleculeObject('CCC')
+            ]
 
     def 'logp multiple MoleculeObject as stream'() {
-        def mols = []
-        mols << new MoleculeObject('C')
-        mols << new MoleculeObject('CC')        
-        mols << new MoleculeObject('CCC')
+
         
         when:
-        def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, mols)
+        def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, new MoleculeObjectDataset(mols))
 
         then:
-        results instanceof StreamProvider
+        results instanceof MoleculeObjectDataset
         results.stream.count() == 3
     }
-    
-    
+
     def 'logp file as stream'() {
-        
+
         when:
-        def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, new FileInputStream(FILE_SMILES_100))
+        def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, Molecules.nci100Dataset())
+        println results
 
         then:
-        results instanceof StreamProvider
+        results instanceof MoleculeObjectDataset
         results.stream.count() == 100
     }
     
     def 'filter as stream'() {
         
         when:
-        def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_DRUG_LIKE_FILTER, new FileInputStream(FILE_SMILES_100))
+        def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_DRUG_LIKE_FILTER,  new MoleculeObjectDataset(mols))
                 
         then:
-        results.stream.count() < 100
+        results.stream.count() < 4
        
     }
     
     def 'filter dynamic'() {
-        
+
         when:
         long t0 = System.currentTimeMillis()
         def results = template.requestBodyAndHeader(
-            ChemaxonCalculatorsRouteBuilder.CHEMAXON_CHEMTERMS, new FileInputStream(FILE_SMILES_100),
+            ChemaxonCalculatorsRouteBuilder.CHEMAXON_CHEMTERMS,  Molecules.nci100Dataset(),
             ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION, "filter=mass()<250"
         )
         long t1 = System.currentTimeMillis()
@@ -70,19 +72,19 @@ class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
         then:
         size < 100
         size > 0
-       
+
     }
-    
+
     def 'filter as stream concurrent'() {
         println "filter as stream concurrent()"
-        
+
         when:
         def results = []
         (1..10).each {
             // asyncRequestBody() returns a Future
-            results << template.asyncRequestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_DRUG_LIKE_FILTER, new FileInputStream(FILE_SMILES_100))
+            results << template.asyncRequestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_DRUG_LIKE_FILTER,  Molecules.nci100Dataset())
         }
-        
+
         then:
         results.size() == 10
         int s0 = results[0].get().getStream().count()
@@ -93,28 +95,26 @@ class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
             assert count == s0
         }
     }
-    
+
     def 'multiple props'() {
 
         when:
-        def mol = new MoleculeObject('c1ccccc1')
-        def result = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_ATOM_BOND_COUNT, mol)
+        def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_ATOM_BOND_COUNT, new MoleculeObjectDataset(mols))
+        def result0 = results.items[0]
 
         then:
-        result instanceof MoleculeObject
-        result.getValue(ChemTermsEvaluator.ATOM_COUNT) != null
-        result.getValue(ChemTermsEvaluator.BOND_COUNT) != null
-    } 
-    
+        result0.getValue(ChemTermsEvaluator.ATOM_COUNT) != null
+        result0.getValue(ChemTermsEvaluator.BOND_COUNT) != null
+    }
+
     def 'aromatize molecule'() {
 
         when:
-        def mol = new MoleculeObject('C1=CC=CC=C1')
-        def result = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_AROMATIZE, mol)
+        def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_AROMATIZE, new MoleculeObjectDataset([new MoleculeObject('C1=CC=CC=C1')]))
+        def result0 = results.items[0]
 
         then:
-        result instanceof MoleculeObject
-        result.getRepresentation(Molecule.class.getName()).getBond(0).getType() == MolBond.AROMATIC
+        result0.getRepresentation(Molecule.class.getName()).getBond(0).getType() == MolBond.AROMATIC
     }
     
      @Override

@@ -10,6 +10,8 @@ import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.openchemlib.predict.AbstractOCLPredictor;
 import org.squonk.property.Calculator;
 import org.squonk.property.MoleculeCalculator;
+import org.squonk.util.ExecutionStats;
+import org.squonk.util.StatsRecorder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +49,17 @@ public class PredictorProcessor implements Processor {
                 mols = calculateMultiple(mols, calc);
                 // TODO - handle the stats from the calculator, but bear in mind that the calculations won't happen until the stream is processed.
             }
+        }
+        StatsRecorder recorder = exch.getIn().getHeader(StatsRecorder.HEADER_STATS_RECORDER, StatsRecorder.class);
+        if (recorder != null) {
+            mols = mols.onClose(() -> {
+
+                List<ExecutionStats> stats = new ArrayList<>();
+                for (AbstractOCLPredictor predictor : predictors) {
+                    stats.add(predictor.getExecutionStats());
+                }
+                recorder.recordStats(stats);
+            });
         }
         handleMetadata(exch, dataset.getMetadata());
         exch.getIn().setBody(new MoleculeObjectDataset(mols));

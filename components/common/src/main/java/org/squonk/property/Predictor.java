@@ -1,5 +1,7 @@
 package org.squonk.property;
 
+import org.squonk.util.ExecutionStats;
+
 /**
  * Created by timbo on 05/04/16.
  */
@@ -7,6 +9,7 @@ public abstract class Predictor<V extends Object, T extends Object, C extends Ca
 
     private final String[] resultNames;
     private final Property<V,T>[] propertyTypes;
+    protected final ExecutionStats executionStats = new ExecutionStats();
 
     public Predictor(String resultName, Property<V,T> propertyType) {
         resultNames = new String[] {resultName};
@@ -28,5 +31,13 @@ public abstract class Predictor<V extends Object, T extends Object, C extends Ca
     }
 
     public abstract C[] getCalculators();
+
+    public ExecutionStats getExecutionStats() {
+        return executionStats;
+    }
+
+    protected int incrementExecutionCount(String key, int count) {
+        return executionStats.incrementExecutionCount(key, count);
+    }
 
 }

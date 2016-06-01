@@ -11,6 +11,8 @@ import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.rdkit.mol.EvaluatorDefintion;
 import org.squonk.rdkit.mol.MolEvaluator;
 import org.squonk.rdkit.mol.MolReader;
+import org.squonk.util.ExecutionStats;
+import org.squonk.util.StatsRecorder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,18 +30,26 @@ public class RDKitMoleculeProcessor implements Processor {
     List<EvaluatorDefintion> definitions = new ArrayList<>();
 
     @Override
-    public void process(Exchange exchange) throws Exception {
-        Dataset<MoleculeObject> dataset = exchange.getIn().getBody(Dataset.class);
+    public void process(Exchange exch) throws Exception {
+        Dataset<MoleculeObject> dataset = exch.getIn().getBody(Dataset.class);
         if (dataset == null || dataset.getType() != MoleculeObject.class) {
             throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
         }
         List<EvaluatorDefintion> defs = definitions;
         Stream<MoleculeObject> mols = dataset.getStream();
 
-        Stream<MoleculeObject> results = evaluate(exchange, mols, defs);
+        ExecutionStats stats = new ExecutionStats();
+        Stream<MoleculeObject> results = evaluate(exch, mols, defs, stats);
 
-        handleMetadata(exchange, dataset.getMetadata(), defs);
-        exchange.getIn().setBody(new MoleculeObjectDataset(results));
+        StatsRecorder recorder = exch.getIn().getHeader(StatsRecorder.HEADER_STATS_RECORDER, StatsRecorder.class);
+        if (recorder != null) {
+            results = results.onClose(() -> {
+                recorder.recordStats(stats);
+            });
+        }
+
+        handleMetadata(exch, dataset.getMetadata(), defs);
+        exch.getIn().setBody(new MoleculeObjectDataset(results));
     }
 
     protected void handleMetadata(Exchange exch, DatasetMetadata meta, List<EvaluatorDefintion> definitions) throws IllegalAccessException, InstantiationException {
@@ -54,13 +64,14 @@ public class RDKitMoleculeProcessor implements Processor {
         exch.getIn().setHeader(CamelCommonConstants.HEADER_METADATA, meta);
     }
 
-    Stream<MoleculeObject> evaluate(Exchange exchange, Stream<MoleculeObject> mols, List<EvaluatorDefintion> definitions) {
+    Stream<MoleculeObject> evaluate(Exchange exchange, Stream<MoleculeObject> mols, List<EvaluatorDefintion> definitions, ExecutionStats stats) {
 
         return mols.peek((mo) -> {
             ROMol rdkitMol = MolReader.findROMol(mo);
             if (rdkitMol != null) {
                 definitions.stream().forEach((definition) -> {
                     MolEvaluator.evaluate(mo, rdkitMol, definition);
+                    stats.incrementExecutionCount(definition.function.getName(), 1);
                 });
             } else {
                 LOG.warning("No molecule found to process");

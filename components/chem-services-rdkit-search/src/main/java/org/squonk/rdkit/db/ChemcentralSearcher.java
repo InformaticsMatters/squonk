@@ -2,6 +2,7 @@ package org.squonk.rdkit.db;
 
 import com.im.lac.types.MoleculeObject;
 import org.apache.camel.Exchange;
+import org.apache.camel.ProducerTemplate;
 import org.postgresql.ds.PGPoolingDataSource;
 import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
@@ -11,18 +12,19 @@ import org.squonk.rdkit.db.dsl.Select;
 import org.squonk.rdkit.db.dsl.WhereClause;
 import org.squonk.types.DatasetHandler;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.CamelRouteStatsRecorder;
 import org.squonk.util.IOUtils;
+import org.squonk.util.StatsRecorder;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -32,9 +34,15 @@ public class ChemcentralSearcher {
 
     private static final Logger LOG = Logger.getLogger(ChemcentralSearcher.class.getName());
 
-    private DataSource chemchentralDataSource;
+    private final DataSource chemchentralDataSource;
+    private final String statsRouteUri;
 
     public ChemcentralSearcher() {
+        this(null);
+    }
+
+    public ChemcentralSearcher(String statsRouteUri) {
+        this.statsRouteUri =statsRouteUri;
         String s = IOUtils.getConfiguration("SQUONK_DB_SERVER", "localhost");
         String po = IOUtils.getConfiguration("SQUONK_DB_PORT", "5432");
         String pw = IOUtils.getConfiguration("POSTGRES_SQUONK_PASS", "squonk");
@@ -75,7 +83,7 @@ public class ChemcentralSearcher {
         String metric = exch.getIn().getHeader("metric", String.class);
         Double threshold = exch.getIn().getHeader("threshold", Double.class);
 
-        LOG.info("Search: table=" + table + " mode=" + mode + " q=" + query);
+        LOG.info("Search: table=" + table + " mode=" + mode);
 
         RDKitTables searcher = new RDKitTables(chemchentralDataSource);
         RDKitTable rdkitTable = searcher.getTable(table);
@@ -85,6 +93,7 @@ public class ChemcentralSearcher {
         List<MoleculeObject> mols = executeSearch(searcher, rdkitTable, table, query, molType, mode, limit, chiral, fp, metric, threshold);
         InputStream json = JsonHandler.getInstance().marshalStreamToJsonArray(mols.stream(), false);
         exch.getOut().setBody(json);
+        sendStats(exch, "RDKCart_" + mode, mols.size());
     }
 
 
@@ -113,6 +122,7 @@ public class ChemcentralSearcher {
         }
 
         Set ids = new ConcurrentSkipListSet<>();
+        AtomicInteger count = new AtomicInteger(0);
         Stream<MoleculeObject> results = dataset.getStream().flatMap((mo) -> {
             String query = mo.getSource();
             MolSourceType molType;
@@ -122,6 +132,7 @@ public class ChemcentralSearcher {
                 throw new IllegalArgumentException("Invalid value for MolSourceType enum: " + mo.getFormat(), e);
             }
             List<MoleculeObject> mols = executeSearch(searcher, rdkitTable, table, query, molType, "sim", limit, chiral, fp, metric, threshold);
+            count.addAndGet(mols.size());
             LOG.info("Found " + mols.size() + " hits");
             return mols.stream();
         }).filter((mo) -> {
@@ -136,9 +147,24 @@ public class ChemcentralSearcher {
             }
         }).peek((mo) -> {
             mo.getValues().remove("sim");
+        }).onClose(() -> {
+            sendStats(exch, "RDKCart_multisearch", count.get());
         });
         MoleculeObjectDataset modataset = new MoleculeObjectDataset(results);
         dh.writeResponse(modataset.getDataset(), executor, true);
+    }
+
+    private void sendStats(Exchange exch, String key, int count) {
+        sendStats(exch, Collections.singletonMap(key, count));
+    }
+
+    private void sendStats(Exchange exch, Map<String,Integer> stats) {
+        String jobId = exch.getIn().getHeader(StatsRecorder.HEADER_SQUONK_JOB_ID, String.class);
+        if (statsRouteUri != null) {
+            ProducerTemplate pt = exch.getContext().createProducerTemplate();
+            pt.setDefaultEndpointUri(statsRouteUri);
+            pt.sendBodyAndHeader(stats, StatsRecorder.HEADER_SQUONK_JOB_ID, jobId);
+        }
     }
 
     private  List<MoleculeObject> executeSearch(

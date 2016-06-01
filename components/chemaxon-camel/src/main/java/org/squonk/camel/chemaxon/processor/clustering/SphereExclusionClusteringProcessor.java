@@ -7,14 +7,18 @@ import org.squonk.camel.chemaxon.processor.ProcessorUtils;
 import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import org.squonk.chemaxon.clustering.SphereExclusionClusterer;
 import com.im.lac.types.MoleculeObject;
+import org.squonk.dataset.Dataset;
 import org.squonk.dataset.MoleculeObjectDataset;
+
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.squonk.util.ExecutionStats;
+import org.squonk.util.StatsRecorder;
 
 /**
- *
  * @author timbo
  */
 public class SphereExclusionClusteringProcessor<T extends Descriptor> implements Processor {
@@ -63,18 +67,29 @@ public class SphereExclusionClusteringProcessor<T extends Descriptor> implements
     }
 
     @Override
-    public void process(Exchange exchange) throws Exception {
+    public void process(Exchange exch) throws Exception {
 
-        SphereExclusionClusterer clusterer = createClusterer(exchange);
-        Stream<MoleculeObject> results = null;
-        try (Stream<MoleculeObject> stream = StreamingMoleculeObjectSourcer.bodyAsMoleculeObjectStream(exchange)) {
-            results = clusterer.clusterMoleculeObjects(stream);
+        SphereExclusionClusterer clusterer = createClusterer(exch);
+
+        Dataset dataset = exch.getIn().getBody(Dataset.class);
+        if (dataset == null || dataset.getType() != MoleculeObject.class) {
+            throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
         }
-        MoleculeObjectDataset dataset = new MoleculeObjectDataset(results);
-        // TODO - work out why the stream needs to be materialized
-        int size = dataset.getDataset().getItems().size();
-        //LOG.info("Putting " + size + " clustering results: " + dataset);
-        exchange.getIn().setBody(dataset);
+
+        Stream<MoleculeObject> results = null;
+        try (Stream<MoleculeObject> mols = dataset.getStream()) {
+            results = clusterer.clusterMoleculeObjects(mols);
+        }
+        MoleculeObjectDataset output = new MoleculeObjectDataset(results);
+        int count = output.getDataset().getItems().size();
+        //LOG.info("Putting " + count + " clustering results: " + dataset);
+        exch.getIn().setBody(output);
+        StatsRecorder recorder = exch.getIn().getHeader(StatsRecorder.HEADER_STATS_RECORDER, StatsRecorder.class);
+        if (recorder != null) {
+            ExecutionStats stats = new ExecutionStats();
+            stats.incrementExecutionCount("Cluster_CXN", count);
+            recorder.recordStats(stats);
+        }
     }
 
     SphereExclusionClusterer createClusterer(Exchange exchange) {

@@ -98,6 +98,9 @@ public class CdkRestRouteBuilder extends RouteBuilder {
 //                .apiProperty("api.title", "CDK Basic services").apiProperty("api.version", "1.0")
 //                .apiProperty("cors", "true");
 
+        from(ROUTE_STATS)
+                .log("Posting stats for ${header.SquonkJobID} ${body}");
+
         //These are the REST endpoints - exposed as public web services
         //
         // test like this:
@@ -166,8 +169,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 .process(new CDKMoleculeObjectSDFileProcessor(resolver))
                 .endRest();
 
-        from(ROUTE_STATS)
-                .log("Posting stats for ${header.SquonkJobID}");
+
 
     }
 

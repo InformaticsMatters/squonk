@@ -6,6 +6,10 @@ import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.squonk.chemaxon.molecule.MoleculeObjectUtils
 import com.im.lac.types.MoleculeObject;
 import org.apache.camel.builder.RouteBuilder
+import org.squonk.data.Molecules
+import org.squonk.dataset.Dataset
+import org.squonk.dataset.MoleculeObjectDataset
+
 import java.util.stream.Stream
 
 /**
@@ -16,18 +20,17 @@ class SphereExclusionClusteringProcessorSpec extends CamelSpecificationBase {
     
     def "cluster stream"() {
         given:
-        def input = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(false);
+        Dataset dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
         def resultEndpoint = camelContext.getEndpoint('mock:result')
         resultEndpoint.expectedMessageCount(1)
             
         when:
-        template.sendBody('direct:simple', mols)
+        template.sendBody('direct:simple', dataset)
 
         then:
         resultEndpoint.assertIsSatisfied()
         def result = resultEndpoint.receivedExchanges.in.body[0].getStream().collect()
-        result.size() == 756
+        result.size() == 36
         int max = 0
         result.each {
             Integer cluster = it.getValue('cluster')
@@ -35,9 +38,6 @@ class SphereExclusionClusteringProcessorSpec extends CamelSpecificationBase {
             if (cluster > max) { max = cluster }
         }
         max > 0
-        
-        cleanup:
-        input.close()
 
     }
     
@@ -60,7 +60,7 @@ class SphereExclusionClusteringProcessorSpec extends CamelSpecificationBase {
         resultEndpoint.expectedMessageCount(1)
             
         when:
-        template.sendBody('direct:renamed', mols)
+        template.sendBody('direct:renamed', new MoleculeObjectDataset(mols))
 
         then:
         resultEndpoint.assertIsSatisfied()

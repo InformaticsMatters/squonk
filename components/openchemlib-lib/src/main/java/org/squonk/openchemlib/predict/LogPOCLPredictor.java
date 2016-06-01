@@ -39,7 +39,9 @@ public class LogPOCLPredictor extends AbstractOCLPredictor<Float> {
 
 
         protected Float doCalculate(StereoMolecule mol) {
-            return getPredictor().assessCLogP(mol);
+            float result = getPredictor().assessCLogP(mol);
+            incrementExecutionCount(NAME, 1);
+            return result;
         }
 
     }

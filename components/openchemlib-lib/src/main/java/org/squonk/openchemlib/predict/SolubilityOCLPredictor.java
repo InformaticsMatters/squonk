@@ -41,7 +41,9 @@ public class SolubilityOCLPredictor extends AbstractOCLPredictor<Float> {
 
 
         protected Float doCalculate(StereoMolecule mol) {
-            return getPredictor().assessSolubility(mol);
+            float result = getPredictor().assessSolubility(mol);
+            incrementExecutionCount(NAME, 1);
+            return result;
         }
 
     }

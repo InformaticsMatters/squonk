@@ -2,6 +2,7 @@ package org.squonk.camel.chemaxon.converters;
 
 import chemaxon.formats.MolFormatException;
 import chemaxon.struc.Molecule;
+import org.apache.camel.Converter;
 import org.squonk.chemaxon.molecule.MoleculeIterable;
 import org.squonk.chemaxon.molecule.MoleculeUtils;
 import com.im.lac.types.MoleculeObject;
@@ -11,7 +12,6 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.Iterator;
-import org.apache.camel.Converter;
 import org.apache.camel.Exchange;
 
 /**
@@ -25,10 +25,10 @@ public class MoleculeConvertor {
         return MoleculeUtils.fetchMolecule(mo, false);
     }
 
-    @Converter
-    public static MoleculeObject convertToMoleculeObject(String s, Exchange exchange) {
-        return new MoleculeObject(s);
-    }
+//    @Converter
+//    public static MoleculeObject convertToMoleculeObject(String s, Exchange exchange) {
+//        return new MoleculeObject(s);
+//    }
 
     @Converter
     public static Molecule convertToMolecule(String s, Exchange exchange) throws MolFormatException {

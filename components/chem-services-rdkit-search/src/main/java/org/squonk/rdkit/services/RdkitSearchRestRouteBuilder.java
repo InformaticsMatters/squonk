@@ -25,6 +25,8 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(RdkitSearchRestRouteBuilder.class.getName());
 
+    private static final String ROUTE_STATS = "seda:post_stats";
+
     protected static final ServiceDescriptor[] SEARCH_SERVICE_DESCRIPTOR = new ServiceDescriptor[]{
 
             new ServiceDescriptor(
@@ -185,12 +187,15 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
     };
 
 
-    ChemcentralSearcher searcher = new ChemcentralSearcher();
+    ChemcentralSearcher searcher = new ChemcentralSearcher(ROUTE_STATS);
 
     @Override
     public void configure() throws Exception {
 
         restConfiguration().component("servlet").host("0.0.0.0");
+
+        from(ROUTE_STATS)
+                .log("Posting stats for ${header.SquonkJobID} ${body}");
 
         /* These are the REST endpoints - exposed as public web services 
          */

@@ -78,6 +78,11 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
         return mode;
     }
 
+    @Override
+    public String getKey() {
+        return propName;
+    }
+
     /**
      * Process a molecule. If this is a standard evaluator the result of the
      * chemical terms evaluation is added as a property of the molecule. If the

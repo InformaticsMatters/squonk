@@ -56,8 +56,12 @@ public class StandardizerEvaluator implements MoleculeEvaluator {
         // could handle the actions that were performed? 
         return Collections.emptyMap();
     }
-    
-    
+
+    @Override
+    public String getKey() {
+        return "CXN_Standardizer";
+    }
+
     class StandardizerPool extends Pool<Standardizer> {
         
         final String szr;

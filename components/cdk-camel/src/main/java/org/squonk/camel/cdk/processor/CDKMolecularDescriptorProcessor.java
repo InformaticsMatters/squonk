@@ -60,16 +60,18 @@ public class CDKMolecularDescriptorProcessor implements Processor {
         for (DescriptorCalculator calculator : calculators) {
             mols = calculateMultiple(mols, calculator);
         }
-        mols = mols.onClose(() -> {
-            StatsRecorder recorder = exch.getIn().getHeader("STATS_RECORDER", StatsRecorder.class);
-            if (recorder != null) {
+        StatsRecorder recorder = exch.getIn().getHeader(StatsRecorder.HEADER_STATS_RECORDER, StatsRecorder.class);
+        if (recorder != null) {
+            mols = mols.onClose(() -> {
+
                 List<ExecutionStats> stats = new ArrayList<>();
-                for (DescriptorCalculator calculator: calculators) {
+                for (DescriptorCalculator calculator : calculators) {
                     stats.add(calculator.getExecutionStats());
                 }
                 recorder.recordStats(stats);
-            }
-        });
+
+            });
+        }
         handleMetadata(exch, dataset.getMetadata());
         exch.getIn().setBody(new MoleculeObjectDataset(mols));
     }

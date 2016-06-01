@@ -25,5 +25,7 @@ public interface MoleculeEvaluator {
     public Map<String,Object> getResults(Molecule mol);
     
     public Mode getMode();
+
+    public String getKey();
     
 }

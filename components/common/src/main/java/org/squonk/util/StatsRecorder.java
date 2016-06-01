@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 public class StatsRecorder {
 
     public static final String HEADER_SQUONK_JOB_ID = "SquonkJobID";
+    public static final String HEADER_STATS_RECORDER = "StatsRecorder";
 
 
 

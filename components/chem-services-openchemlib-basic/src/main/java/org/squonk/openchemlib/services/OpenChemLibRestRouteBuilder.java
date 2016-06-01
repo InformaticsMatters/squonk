@@ -36,6 +36,8 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
     private static final String ROUTE_LOGS = "logs";
     private static final String ROUTE_PSA = "psa";
 
+    private static final String ROUTE_STATS = "seda:post_stats";
+
 
     protected static final ServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
             = new ServiceDescriptor[]{
@@ -88,8 +90,10 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
         restConfiguration().component("servlet").host("0.0.0.0")
                 .apiContextPath("/api-doc")
                 .apiProperty("api.title", "OpenChemLib Basic services").apiProperty("api.version", "1.0")
-                .apiProperty("cors", "true")
-        ;
+                .apiProperty("cors", "true");
+
+        from(ROUTE_STATS)
+                .log("Posting stats for ${header.SquonkJobID} ${body}");
 
         //These are the REST endpoints - exposed as public web services
         //
@@ -121,24 +125,22 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_DATASET_BASIC_JSON))
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(OpenChemLibCalculatorsRouteBuilder.OCL_LOGP, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(OpenChemLibCalculatorsRouteBuilder.OCL_LOGP, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post(ROUTE_LOGS).description("Calculate the aqueous solubility of the supplied structures")
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_DATASET_BASIC_JSON))
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(OpenChemLibCalculatorsRouteBuilder.OCL_LOGS, resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(OpenChemLibCalculatorsRouteBuilder.OCL_LOGS, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post(ROUTE_PSA).description("Calculate the polar surface area of the supplied structures")
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_DATASET_BASIC_JSON))
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(OpenChemLibCalculatorsRouteBuilder.OCL_PSA, resolver))
-                .endRest()
-
-        ;
+                .process(new MoleculeObjectRouteHttpProcessor(OpenChemLibCalculatorsRouteBuilder.OCL_PSA, resolver, ROUTE_STATS))
+                .endRest();
 
     }
 

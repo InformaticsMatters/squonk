@@ -1,9 +1,19 @@
 package org.squonk.data
 
+import com.im.lac.types.MoleculeObject
+import org.squonk.dataset.Dataset
+import org.squonk.dataset.DatasetMetadata
+import org.squonk.dataset.MoleculeObjectDataset
+import org.squonk.reader.SDFReader
+
 /**
  * Created by timbo on 24/01/2016.
  */
 class Molecules {
+
+    static final String DHFR_STANDARDIZED_SDF = "../../data/testfiles/dhfr_standardized.sdf.gz"
+    static final String KINASE_INHIBS_SDF = "../../data/testfiles/Kinase_inhibs.sdf.gz"
+    static final String SMILES_100 = "../../data/testfiles/nci100.smiles";
 
     static def ethanol = [
 
@@ -125,4 +135,25 @@ M  V30 END CTAB
 M  END
 '''
     ]
+
+    static List<MoleculeObject> nci100Molecules() {
+        List mols = []
+        File f = new File(SMILES_100)
+        f.eachLine {
+            String[] tokens = it.split("\t")
+            mols << new MoleculeObject(tokens[0], 'smiles')
+        }
+        return mols
+    }
+
+    static Dataset<MoleculeObject> nci100Dataset() {
+        return new MoleculeObjectDataset(nci100Molecules(), new DatasetMetadata(MoleculeObject.class, [:], 100)).getDataset()
+    }
+
+    static Dataset<MoleculeObject> datasetFromSDF(String file) {
+        SDFReader reader = new SDFReader(new FileInputStream(file))
+        return new MoleculeObjectDataset(reader.asStream()).getDataset()
+
+    }
+
 }

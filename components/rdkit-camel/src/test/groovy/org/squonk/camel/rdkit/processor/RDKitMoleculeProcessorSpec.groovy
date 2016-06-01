@@ -2,6 +2,7 @@ package org.squonk.camel.rdkit.processor
 
 import com.im.lac.types.MoleculeObject
 import org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor
+import org.squonk.util.ExecutionStats
 
 import java.util.stream.*
 import spock.lang.Specification
@@ -25,7 +26,7 @@ class RDKitMoleculeProcessorSpec extends Specification {
         
         
         when: 
-        Stream<MoleculeObject> result = p.evaluate(null, mols, p.definitions)
+        Stream<MoleculeObject> result = p.evaluate(null, mols, p.definitions, new ExecutionStats())
         def list = result.collect(Collectors.toList())
         
         then:

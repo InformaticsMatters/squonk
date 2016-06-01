@@ -1,12 +1,13 @@
-apply plugin: 'java'
 apply plugin: 'groovy'
 
-group = 'im.camelish.core-test'
-description = 'Camelish test utilities' 
-
+description = 'Test utilities'
 
 
 dependencies {
+
+    compile project(':common')
+    compile project(':common-utils')
+
 
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.spockframework:spock-core:1.0-groovy-2.4"

@@ -8,6 +8,10 @@ import org.squonk.chemaxon.screening.MoleculeScreener
 import org.squonk.chemaxon.molecule.MoleculeObjectUtils;
 import com.im.lac.types.MoleculeObject
 import org.apache.camel.builder.RouteBuilder
+import org.squonk.data.Molecules
+import org.squonk.dataset.Dataset
+import org.squonk.dataset.MoleculeObjectDataset
+
 import java.util.stream.*
 
 /**
@@ -15,76 +19,47 @@ import java.util.stream.*
  */
 class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
 
-    String file = "../../data/testfiles/dhfr_standardized.sdf.gz"
-    int resultCount = 4
-    //String file = "../../data/testfiles/Building_blocks_GBP.sdf.gz"
+
+    // bb
     //int resultCount = 235
-    
-    String target = "CCN(C)C1=C(Br)C(=O)C2=C(C=CC=C2)C1=O"
 
-
-    def resultEndpoint
-    
-    def 'screen for single fixed'() {
-
-        setup:
-        def mol = new MoleculeObject("CN(C)C1=C(Cl)C(=O)C2=C(C=CC=C2)C1=O")
-
-        when:
-        MoleculeObject result = template.requestBody('direct:pharmacophore/streaming', mol)
-
-        then:
-        double similarity = result.getValue('similarity')
-        similarity > 0 && similarity < 1
-    }
-    
-    def 'dynamic target'() {
-
-        setup:
-        def mol1 = new MoleculeObject("NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O")
-        def mol2 = new MoleculeObject(target)
-        
-        when:
-        MoleculeObject result = template.requestBodyAndHeader('direct:pharmacophore/streaming', mol1, MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE, mol2)
-
-        then:
-        Double similarity = result.getValue('similarity')
-        similarity > 0 && similarity < 1 // if header not read then would be 1.0
-    }
-    
+    //dhrf
+    //int resultCount = 4
+    //String target = "CCN(C)C1=C(Br)C(=O)C2=C(C=CC=C2)C1=O"
+    String target = 'OC1=CC(=CC=C1)C1=NC2=C(OC3=NC=CC=C23)C(=N1)N1CCOCC1'
+    int resultCount = 8
     
     void "pharmacophore sequential streaming"() {
         setup:
-        println "pharmacophore sequential streaming"
-        InputStream input = new FileInputStream(file)
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(false);
+        Dataset dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
+        dataset.replaceStream(dataset.getStream().sequential())
         def mol2 = new MoleculeObject(target)
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBodyAndHeader('direct:pharmacophore/streaming', mols, MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE, mol2).getStream()
+        Stream results = template.requestBodyAndHeader(
+                'direct:pharmacophore/streaming', dataset, MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE, mol2).getStream()
         long count = results.count()
         long t1 = System.currentTimeMillis()
-        println "...done"
         
         then:
         println "Number of mols: $count generated in ${t1-t0}ms"
         count == resultCount
         
-        cleanup: 
-        input.close()
+        cleanup:
+        results.close()
     }
     
     void "pharmacophore parallel streaming"() {
         setup:
-        println "pharmacophore parallel streaming"
-        InputStream input = new FileInputStream(file)
-        Stream<MoleculeObject> mols = MoleculeObjectUtils.createStreamGenerator(input).getStream(true);
+        Dataset dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
+        dataset.replaceStream(dataset.getStream().parallel())
         def mol2 = new MoleculeObject(target)
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBodyAndHeader('direct:pharmacophore/streaming', mols, MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE, mol2)getStream()
+        Stream results = template.requestBodyAndHeader(
+                'direct:pharmacophore/streaming', dataset, MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE, mol2).getStream()
         long count = results.count()
         long t1 = System.currentTimeMillis()
         println "...done"
@@ -95,7 +70,7 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         count == resultCount
         
         cleanup:
-        input.close()
+        results.close()
     }
     
     @Override

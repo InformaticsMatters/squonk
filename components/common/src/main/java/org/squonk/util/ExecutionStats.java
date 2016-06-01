@@ -1,9 +1,7 @@
 package org.squonk.util;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by timbo on 11/05/2016.

@@ -87,7 +87,7 @@ public abstract class AbstractMoleculeObjectHttpProcessor implements Processor {
         if (statsRouteUri != null) {
             ProducerTemplate pt = exch.getContext().createProducerTemplate();
             pt.setDefaultEndpointUri(statsRouteUri);
-            exch.getIn().setHeader("STATS_RECORDER", new CamelRouteStatsRecorder(jobId, pt));
+            exch.getIn().setHeader(StatsRecorder.HEADER_STATS_RECORDER, new CamelRouteStatsRecorder(jobId, pt));
         }
 
         Object results = processDataset(exch, dataset, requestInfo);

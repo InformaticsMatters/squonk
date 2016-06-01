@@ -68,7 +68,7 @@ class CDKMolecularDescriptorProcessorSpec extends CamelSpecificationBase {
 
         when:
         Stream st = mols.stream()
-        def results = template.requestBodyAndHeaders('direct:start', new MoleculeObjectDataset(st), [STATS_RECORDER:recorder])
+        def results = template.requestBodyAndHeaders('direct:start', new MoleculeObjectDataset(st), [(StatsRecorder.HEADER_STATS_RECORDER):recorder])
         def items = results.dataset.items // need to get the items so that the stream is processed and closed
 
         then:

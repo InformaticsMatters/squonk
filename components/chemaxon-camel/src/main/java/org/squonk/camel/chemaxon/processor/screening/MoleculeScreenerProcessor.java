@@ -3,20 +3,24 @@ package org.squonk.camel.chemaxon.processor.screening;
 import chemaxon.formats.MolFormatException;
 import chemaxon.struc.Molecule;
 import com.chemaxon.descriptors.common.Descriptor;
-import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
-import org.squonk.chemaxon.molecule.MoleculeUtils;
-import org.squonk.chemaxon.screening.MoleculeScreener;
 import com.im.lac.types.MoleculeObject;
-import org.squonk.dataset.MoleculeObjectDataset;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.util.IOHelper;
+import org.squonk.chemaxon.molecule.MoleculeUtils;
+import org.squonk.chemaxon.screening.MoleculeScreener;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.MoleculeObjectDataset;
+import org.squonk.util.ExecutionStats;
+import org.squonk.util.StatsRecorder;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * Processor for performing screening.
@@ -82,29 +86,48 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
     }
 
     @Override
-    public void process(Exchange exchange) throws Exception {
+    public void process(Exchange exch) throws Exception {
 
-        final T targetFp = findTargetFromHeader(exchange);
+        final T targetFp = findTargetFromHeader(exch);
         if (targetFp == null && screener.getTargetDescriptor() == null) {
             throw new IllegalStateException("No target molecule found");
         }
-        final double thresh = exchange.getIn().getHeader(HEADER_THRESHOLD, threshold, Double.class);
+        final double thresh = exch.getIn().getHeader(HEADER_THRESHOLD, threshold, Double.class);
 
-        StreamingMoleculeObjectSourcer sourcer = new StreamingMoleculeObjectSourcer() {
-            @Override
-            public void handleSingle(Exchange exchange, MoleculeObject mo) throws MolFormatException {
 
-                compareMolecule(mo, targetFp);
-                exchange.getIn().setBody(mo);
+        Dataset dataset = exch.getIn().getBody(Dataset.class);
+        if (dataset == null || dataset.getType() != MoleculeObject.class) {
+            throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
+        }
+        Stream<MoleculeObject> mols = dataset.getStream();
+
+        AtomicInteger count = new AtomicInteger(0);
+        Stream<MoleculeObject> results = mols.filter((mo) -> {
+            if (mo.getSource() == null) {
+                return false;
             }
-
-            @Override
-            public void handleMultiple(Exchange exchange, Stream<MoleculeObject> mols) {
-                Stream<MoleculeObject> stream = compareMultiple(mols, targetFp, thresh);
-                exchange.getIn().setBody(new MoleculeObjectDataset(stream));
+            boolean b = false;
+            try {
+                double sim = compareMolecule(mo, targetFp);
+                b = (sim > thresh);
+                count.incrementAndGet();
+                LOG.log(Level.FINER, "Similarity score = {0}", sim);
+            } catch (MolFormatException ex) {
+                LOG.log(Level.SEVERE, "Bad molecule format", ex);
             }
-        };
-        sourcer.handle(exchange);
+            return b;
+        });
+
+        StatsRecorder recorder = exch.getIn().getHeader(StatsRecorder.HEADER_STATS_RECORDER, StatsRecorder.class);
+        if (recorder != null) {
+            mols = mols.onClose(() -> {
+                ExecutionStats stats = new ExecutionStats();
+                stats.incrementExecutionCount("Screen_CXN", count.get());
+                recorder.recordStats(stats);
+            });
+        }
+        //handleMetadata(exch, dataset.getMetadata());
+        exch.getIn().setBody(new MoleculeObjectDataset(results));
     }
 
     double compareMolecule(MoleculeObject query, T targetFp) throws MolFormatException {
@@ -149,12 +172,11 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
 
     private T findTargetFromHeader(Exchange exchange) {
         Object h = exchange.getIn().getHeader(HEADER_QUERY_MOLECULE);
-        LOG.log(Level.FINE, "HEADER_TARGET_MOLECULE: {0}", h);
-        Molecule header = exchange.getIn().getHeader(HEADER_QUERY_MOLECULE, Molecule.class);
-        if (header != null) {
-            return screener.generateDescriptor(header);
+        LOG.log(Level.INFO, "HEADER_QUERY_MOLECULE: {0}", h.getClass().getName() + " " + h);
+        Molecule mol = MoleculeUtils.tryCreateMoleculeFromObject(h);
+        if (mol != null) {
+            return screener.generateDescriptor(mol);
         }
-
         return null;
     }
     
