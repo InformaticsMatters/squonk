@@ -8,6 +8,19 @@ apply plugin: 'com.bmuschko.docker-remote-api'
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.2.0'
+    }
+}
+
+
+apply plugin: 'org.unbroken-dome.test-sets'
+
 dependencies {
     compile project(':common')
     compile project(':common-camel')
@@ -23,11 +36,32 @@ dependencies {
     compile "org.apache.camel:camel-cdi:$camelVersion"
     
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+
+    testCompile project(':core-test')
     
     def tomcatVersion = '7.0.59'
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
            "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+}
+
+/* Integration test setup is borrowed from here:
+ * http://www.petrikainulainen.net/programming/gradle/getting-started-with-gradle-integration-testing-with-the-testsets-plugin/
+ * */
+testSets {
+    integrationTest
+}
+
+//check.dependsOn integrationTest
+integrationTest.mustRunAfter test
+
+tasks.withType(Test) {
+    reports.html.destination = file("${reporting.baseDir}/${name}")
+}
+
+integrationTest {
+    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean
+    finalizedBy rootProject.tasks.integrationTestEnvShutdown
 }
 
 tomcat {
