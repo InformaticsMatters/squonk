@@ -11,6 +11,37 @@ import java.util.stream.Stream
  * @author timbo
  */
 class JsonHandlerSpec extends Specification {
+
+    void "write simple types to json"() {
+
+        expect:
+        JsonHandler.instance.objectToJson(value) == json
+
+        where:
+        value | json
+        'Hello'           | '"Hello"'   // gets quoted
+        new Integer(123)  | '123'
+        new Float(123.4)  | '123.4'
+        new Double(123.4) | '123.4'
+        true              | 'true'
+        false             | 'false'
+    }
+
+    void "read simple types from json"() {
+
+        expect:
+        JsonHandler.instance.objectFromJson(json, cls) == value
+
+        where:
+        value | json | cls
+        'Hello'           | '"Hello"' | String.class
+        //'Hello'           | 'Hello'   | String.class
+        new Integer(123)  | '123'     | Integer.class
+        new Float(123.4)  | '123.4'   | Float.class
+        new Double(123.4) | '123.4'   | Double.class
+        true              | 'true'    | Boolean.class
+        false             | 'false'   | Boolean.class
+    }
     
     void "generateJsonForDataset"() {
         println "generateJsonForDataset()"

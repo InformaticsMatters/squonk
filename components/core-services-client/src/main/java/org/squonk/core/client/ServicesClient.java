@@ -31,7 +31,7 @@ public class ServicesClient extends AbstractHttpClient {
     }
 
     public ServicesClient() {
-        this(SquonkClientConfig.INSTANCE.getCoreServiceBaseUrl() + "/services");
+        this(SquonkClientConfig.INSTANCE.getCoreServicesBaseUrl() + "/services");
     }
 
     /**

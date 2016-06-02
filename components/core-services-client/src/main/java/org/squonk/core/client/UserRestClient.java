@@ -38,7 +38,7 @@ public class UserRestClient implements UserClient, Serializable {
     }
 
     public UserRestClient() {
-        this(SquonkClientConfig.INSTANCE.getCoreServiceBaseUrl() + "/users");
+        this(SquonkClientConfig.INSTANCE.getCoreServicesBaseUrl() + "/users");
     }
 
     /**

@@ -17,11 +17,10 @@ dependencies {
     
     compile 'org.apache.httpcomponents:httpclient:4.5'
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
-    
-    compile 'com.sun.jersey:jersey-client:1.19'
-    //compile 'com.sun.jersey:jersey-server:1.19'
-    //compile 'com.sun.jersey:jersey-servlet:1.19'
-    compile 'com.sun.jersey:jersey-json:1.19'
+
+    testCompile project(':common-camel')
+    testCompile project(':core-services-exec')
+    testCompile project(':core-test')
     
 }
 
@@ -44,9 +43,9 @@ project.integrationTest {
 }
 
 integrationTest {
-    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean, 
+    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean,
     tasks.getByPath(':database:flywayMigrate')
-    finalizedBy rootProject.tasks.integrationTestEnvShutdown
+    //finalizedBy rootProject.tasks.integrationTestEnvShutdown
 }
 
 task copyDependencies(type: Sync) {

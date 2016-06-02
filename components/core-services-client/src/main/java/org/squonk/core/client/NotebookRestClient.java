@@ -36,7 +36,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
     }
 
     public NotebookRestClient() {
-        this(SquonkClientConfig.INSTANCE.getCoreServiceBaseUrl() + "/notebooks");
+        this(SquonkClientConfig.INSTANCE.getCoreServicesBaseUrl() + "/notebooks");
     }
 
     @Override

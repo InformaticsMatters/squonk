@@ -42,7 +42,7 @@ public class JobClient {
     }
 
     public JobClient() {
-        this(SquonkClientConfig.INSTANCE.getCoreServiceBaseUrl() + "/jobs");
+        this(SquonkClientConfig.INSTANCE.getCoreServicesBaseUrl() + "/jobs");
     }
 
     /**

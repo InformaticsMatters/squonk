@@ -13,16 +13,37 @@ public class SquonkClientConfig {
 
     public static final SquonkClientConfig INSTANCE = new SquonkClientConfig();
 
-    private final String coreServiceBaseUrl;
+    private final String coreServicesBaseUrl, chemServicesBaseUrl;
 
 
     private SquonkClientConfig() {
-        coreServiceBaseUrl = IOUtils.getConfiguration("SQUONK_SERVICES_CORE", "http://localhost:8091/coreservices/rest/v1");
-        LOG.info("Using core services base URL: " + coreServiceBaseUrl);
-
+        coreServicesBaseUrl = IOUtils.getConfiguration("SQUONK_SERVICES_CORE", "http://" + IOUtils.getDockerGateway() + ":8091/coreservices/rest/v1");
+        //chemServicesBaseUrl = "http://" + IOUtils.getConfiguration("PRIVATE_HOST", "localhost") + ":8092/";
+        chemServicesBaseUrl = "http://chemservices:8080/";
+        LOG.info("Using core services base URL: " + coreServicesBaseUrl);
     }
 
-    public String getCoreServiceBaseUrl() {
-        return coreServiceBaseUrl;
+    public String getCoreServicesBaseUrl() {
+        return coreServicesBaseUrl;
+    }
+
+    public String getBasicChemServicesBaseUrl() {
+        return chemServicesBaseUrl;
+    }
+
+    public String getBasicCdkChemServicesBaseUrl() {
+        return chemServicesBaseUrl + "chem-services-cdk-basic/rest/v1";
+    }
+
+    public String getBasicChemaxonChemServicesBaseUrl() {
+        return chemServicesBaseUrl + "chem-services-chemaxon-basic/rest/v1";
+    }
+
+    public String getBasicRDKitChemServicesBaseUrl() {
+        return chemServicesBaseUrl + "chem-services-rdkit-basic/rest/v1";
+    }
+
+    public String getBasicOpenChemLibChemServicesBaseUrl() {
+        return chemServicesBaseUrl + "chem-services-openchemlib-basic/rest/v1";
     }
 }

@@ -1,4 +1,4 @@
 #!/bin/bash 
 
-docker exec docker_mq_1 bash /usr/local/etc/clean.sh
+docker exec docker_rabbitmq_1 bash /usr/local/etc/clean.sh
 

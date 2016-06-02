@@ -67,6 +67,8 @@ public class AbstractHttpClient {
             }
             b.append("\n============================== POOL STATS END ================================\n");
             LOG.info(b.toString());
+        } else {
+            LOG.info(method + " ==========================> " + uri.toString());
         }
     }
 

@@ -48,7 +48,7 @@ public class DatasetClient {
     }
 
     public DatasetClient() {
-        this(SquonkClientConfig.INSTANCE.getCoreServiceBaseUrl() + "/datasets");
+        this(SquonkClientConfig.INSTANCE.getCoreServicesBaseUrl() + "/datasets");
     }
 
     /**

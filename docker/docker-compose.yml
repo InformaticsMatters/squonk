@@ -8,7 +8,7 @@ db:
        POSTGRES_USER: postgres
        POSTGRES_PASSWORD: postgres
 
-mq:
+rabbitmq:
     image: squonk/rabbitmq
     ports:
     - "5672:5672"
@@ -21,19 +21,31 @@ mq:
         RABBITMQ_DEFAULT_PASS: squonk
 
 chemservices:
-    image: squonk/chem-services-basic
+    build: ../components/build/chem-services-basic
     ports:
     - "8092:8080"
 
-cs:
+coreservices:
     build: ../components/core-services-server/build
     ports:
     - 8091:8080
     links:
     - db:db
-    - mq:rabbitmq
+    - rabbitmq:rabbitmq
     - chemservices:chemservices
     environment:
-        RABBITMQ_HOST: mq
+        RABBITMQ_HOST: rabbitmq
         SQUONK_DB_SERVER: db
+
+cellexecutor:
+    build: ../components/cell-executor/build/docker
+    links:
+    - coreservices:coreservices
+    - rabbitmq:rabbitmq
+    - chemservices:chemservices
+    environment:
+        RABBITMQ_HOST: rabbitmq
+        RABBITMQ_SQUONK_PASS: squonk
+        SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
+
 

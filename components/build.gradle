@@ -86,8 +86,8 @@ task wrapper(type: Wrapper) {
 */
 
 task integrationTestEnvPrepare(type:Exec) {
-    dependsOn "core-services-server:dockerFile"
-    
+    dependsOn 'dockerFileChemServices', 'core-services-server:dockerFile', 'cell-executor:dockerBuildImage'
+
     workingDir '../docker'
     commandLine 'bash', 'int-test-env-prepare.sh'
 }
@@ -143,9 +143,9 @@ task createEbsBackendServicesZip(type: Zip) {
     
     dependsOn = [
         createEbsBackendServicesRootZip, 
-       'chem-services-cdk-basic:war',
-       'chem-services-chemaxon-basic:war',
-       'chem-services-rdkit-basic:war',
+        'chem-services-cdk-basic:war',
+        'chem-services-chemaxon-basic:war',
+        'chem-services-rdkit-basic:war',
         'chem-services-openchemlib-basic:war'
     ]
     archiveName = 'ebs.zip'

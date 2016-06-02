@@ -148,13 +148,23 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "Canonical Smiles using RDKit",
                     new String[]{"smiles", "canonical", "rdkit"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Topological"},
+                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Other"},
                     "asyncHttp",
                     "canonical_smiles",
                     new OptionDescriptor[] {
                             new OptionDescriptor<>(String.class, "query.mode", "Fragment mode", "How to handle molecules with multiple fragments")
                                     .withValues(fragmentModesToStringArray())
-                    })
+                    }),
+            createServiceDescriptor(
+                    "rdkit.calculators.formal_charge",
+                    "Formal Charge (RDKit)",
+                    "Formal Charge using RDKit",
+                    new String[]{"charge", "formalcharge", "rdkit"},
+                    "icons/properties_add.png",
+                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Other"},
+                    "asyncHttp",
+                    "formal_charge",
+                    null)
 
     };
 

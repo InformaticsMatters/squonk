@@ -10,6 +10,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.squonk.client.JobStatusClient;
+import org.squonk.core.client.config.SquonkClientConfig;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
@@ -35,7 +36,8 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
     }
 
     public JobStatusRestClient() {
-        this.baseUrl = IOUtils.getConfiguration("SQUONK_SERVICES_CORE", "http://localhost/coreservices/rest/v1") + "/jobs";
+        //this.baseUrl = IOUtils.getConfiguration("SQUONK_SERVICES_CORE", "http://localhost/coreservices/rest/v1") + "/jobs";
+        this.baseUrl = SquonkClientConfig.INSTANCE.getCoreServicesBaseUrl() + "/jobs";
         LOG.info("JobStatusRestClient is using base URL of " + baseUrl);
     }
 

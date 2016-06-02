@@ -7,3 +7,5 @@ bash wait-postgres.sh
 
 sleep 6
 
+
+
