@@ -41,9 +41,25 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
 
     private static final Logger LOG = Logger.getLogger(RestRouteBuilder.class.getName());
 
+    private static final String NOTEBOOKID = "notebookid";
+    private static final String SAVEPOINTID = "savepointid";
+    private static final String SOURCEID = "sourceid";
+    private static final String USER = "user";
+    private static final String PARENT = "parent";
+    private static final String EDITABLEID = "editableid";
+    private static final String DESCRIPTION = "description";
+    private static final String NAME ="name";
+    private static final String CELLID = "cellid";
+    private static final String VARNAME = "varname";
+    private static final String KEY = "key";
+    private static final String TYPE = "type";
+    private static final String LAYER = "layer";
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String TEXT_PLAIN = "text/plain";
+
     private final JobStatusClient jobstatusClient;
     private final NotebookPostgresClient notebookClient;
-    private MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials();
+    private final MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials();
     private final String userNotifyMqueueUrl = rabbitmqCredentials.generateUrl(MQUEUE_USERS_EXCHANGE_NAME, MQUEUE_USERS_EXCHANGE_PARAMS);
 
 
@@ -68,7 +84,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
         onException(IllegalStateException.class)
                 .handled(true)
                 .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(400))
-                .setHeader(Exchange.CONTENT_TYPE, constant("text/plain"))
+                .setHeader(Exchange.CONTENT_TYPE, constant(TEXT_PLAIN))
                 .process((Exchange exch) -> {
                     Throwable caused = exch.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
                     if (caused == null || caused.getMessage() == null) {
@@ -81,7 +97,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
         onException(NotFoundException.class)
                 .handled(true)
                 .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(404))
-                .setHeader(Exchange.CONTENT_TYPE, constant("text/plain"))
+                .setHeader(Exchange.CONTENT_TYPE, constant(TEXT_PLAIN))
                 .process((Exchange exch) -> {
                     Throwable caused = exch.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
                     if (caused == null || caused.getMessage() == null) {
@@ -95,15 +111,13 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
          */
         rest("/ping")
                 .get().description("Simple ping service to check things are running")
-                .produces("text/plain")
+                .produces(TEXT_PLAIN)
                 .route()
                 .transform(constant("OK\n")).endRest();
 
         rest("/echo")
                 .post().description("Simple echo service for testing")
                 .bindingMode(RestBindingMode.off)
-                //.consumes("application/json")
-                //.produces("application/json")
                 .route()
                 .process((Exchange exch) -> {
                     Object body = exch.getIn().getBody();
@@ -116,7 +130,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .get().description("Get service definitions for the available services")
                 .bindingMode(RestBindingMode.json)
                 .outType(ServiceDescriptor.class)
-                .produces("application/json")
+                .produces(APPLICATION_JSON)
                 .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST);
 
 
@@ -125,7 +139,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 // GET statuses
                 // TODO - handle filter criteria
                 .get("/").description("Get the statuses of all jobs")
-                .bindingMode(RestBindingMode.json).produces("application/json")
+                .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
                 .outType(JobStatus.class)
                 .route()
                 .process((Exchange exch) -> {
@@ -135,7 +149,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 //
                 // get a particular status
                 .get("/{id}").description("Get the latest status of an individual job")
-                .bindingMode(RestBindingMode.json).produces("application/json")
+                .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
                 .outType(JobStatus.class)
                 .route()
                 .process((Exchange exch) -> {
@@ -146,7 +160,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 //
                 // submit new job
                 .post("/").description("Submit a new job")
-                .bindingMode(RestBindingMode.off).produces("application/json")
+                .bindingMode(RestBindingMode.off).produces(APPLICATION_JSON)
                 .outType(JobStatus.class)
                 .route()
                 .process((Exchange exch) -> {
@@ -173,7 +187,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 //
                 // update
                 .post("/{id}").description("Update the status of a job")
-                .bindingMode(RestBindingMode.off).produces("application/json")
+                .bindingMode(RestBindingMode.off).produces(APPLICATION_JSON)
                 .outType(JobStatus.class)
                 .route()
                 .log("Updating status of job ${header.id} to status ${header.Status} and processed count of ${header.ProcessedCount}")
@@ -201,12 +215,12 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
         rest("/v1/notebooks").description("Notebook services")
                 //
                 .get("/").description("Get all notebooks for the user")
-                .bindingMode(RestBindingMode.json).produces("application/json")
+                .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
                 .outType(NotebookDTO.class)
-                .param().name("user").type(query).description("The username").dataType("string").required(true).endParam()
+                .param().name(USER).type(query).description("The username").dataType("string").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    String user = exch.getIn().getHeader("user", String.class);
+                    String user = exch.getIn().getHeader(USER, String.class);
                     checkNotNull(user, "Username must be specified");
                     List<NotebookDTO> results = notebookClient.listNotebooks(user);
                     exch.getIn().setBody(results);
@@ -214,14 +228,14 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest()
                 //
                 .get("/{notebookid}/e").description("List the editables for a notebook for the user")
-                .bindingMode(RestBindingMode.json).produces("application/json")
+                .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
                 .outType(NotebookEditableDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
-                .param().name("user").type(query).description("The username").dataType("string").required(true).endParam()
+                .param().name(NOTEBOOKID).type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name(USER).type(query).description("The username").dataType("string").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
-                    String user = exch.getIn().getHeader("user", String.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
+                    String user = exch.getIn().getHeader(USER, String.class);
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     checkNotNull(user, "Username must be specified");
                     List<NotebookEditableDTO> results = notebookClient.listEditables(notebookid, user);
@@ -230,12 +244,12 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest()
                 //
                 .get("/{notebookid}/s").description("List all savepoints for a notebook")
-                .bindingMode(RestBindingMode.json).produces("application/json")
+                .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
                 .outType(NotebookSavepointDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name(NOTEBOOKID).type(path).description("Notebook ID").dataType("long").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     List<NotebookSavepointDTO> results = notebookClient.listSavepoints(notebookid);
                     exch.getIn().setBody(results);
@@ -243,16 +257,16 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest()
                 //
                 .post("/").description("Create a new notebook")
-                .bindingMode(RestBindingMode.json).produces("application/json")
+                .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
                 .outType(NotebookDTO.class)
-                .param().name("user").type(query).description("The owner of the new notebook").dataType("string").required(true).endParam()
-                .param().name("name").type(query).description("The name for the new notebook").dataType("string").required(true).endParam()
-                .param().name("description").type(query).description("A description for the new notebook").dataType("string").required(false).endParam()
+                .param().name(USER).type(query).description("The owner of the new notebook").dataType("string").required(true).endParam()
+                .param().name(NAME).type(query).description("The name for the new notebook").dataType("string").required(true).endParam()
+                .param().name(DESCRIPTION).type(query).description("A description for the new notebook").dataType("string").required(false).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    String user = exch.getIn().getHeader("user", String.class);
-                    String name = exch.getIn().getHeader("name", String.class);
-                    String description = exch.getIn().getHeader("description", String.class);
+                    String user = exch.getIn().getHeader(USER, String.class);
+                    String name = exch.getIn().getHeader(NAME, String.class);
+                    String description = exch.getIn().getHeader(DESCRIPTION, String.class);
                     checkNotNull(user, "Username must be specified");
                     checkNotNull(name, "Notebook name must be specified");
                     NotebookDTO result = notebookClient.createNotebook(user, name, description);
@@ -262,11 +276,11 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 //
                 .delete("/{notebookid}").description("Delete a notebook")
                 .bindingMode(RestBindingMode.off)
-                .produces("text/plain")
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .produces(TEXT_PLAIN)
+                .param().name(NOTEBOOKID).type(path).description("Notebook ID").dataType("long").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     boolean result = notebookClient.deleteNotebook(notebookid);
                     exch.getIn().setBody(null);
@@ -279,12 +293,12 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest()
                 //
                 .get("/{notebookid}/layer").description("List the layers a notebook belongs to")
-                .bindingMode(RestBindingMode.json).produces("application/json")
+                .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
                 .outType(List.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name(NOTEBOOKID).type(path).description("Notebook ID").dataType("long").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     List<String> results = notebookClient.listLayers(notebookid);
                     exch.getIn().setBody(results);
@@ -292,13 +306,13 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest()
                 //
                 .post("/{notebookid}/layer/{layer}").description("Add notebook to this layer")
-                .bindingMode(RestBindingMode.json).produces("application/json")
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
-                .param().name("layer").type(path).description("The name of the layer").dataType("string").required(true).endParam()
+                .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
+                .param().name(NOTEBOOKID).type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name(LAYER).type(path).description("The name of the layer").dataType("string").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    String layer = exch.getIn().getHeader("layer", String.class);
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    String layer = exch.getIn().getHeader(LAYER, String.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     checkNotNull(layer, "Layer name must be specified");
                     NotebookDTO result = notebookClient.addNotebookToLayer(notebookid, layer);
@@ -307,13 +321,14 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest()
                 //
                 .delete("/{notebookid}/layer/{layer}").description("Remove notebook from this layer")
-                .bindingMode(RestBindingMode.json).produces("application/json")
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
-                .param().name("layer").type(path).description("The name of the layer").dataType("string").required(true).endParam()
+                .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
+                .outType(NotebookDTO.class)
+                .param().name(NOTEBOOKID).type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name(LAYER).type(path).description("The name of the layer").dataType("string").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    String layer = exch.getIn().getHeader("layer", String.class);
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    String layer = exch.getIn().getHeader(LAYER, String.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
                     checkNotNull(layer, "Layer name must be specified");
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     NotebookDTO result = notebookClient.removeNotebookFromLayer(notebookid, layer);
@@ -322,16 +337,16 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest()
                 //
                 .post("/{notebookid}/e").description("Create a new editable for a notebook")
-                .bindingMode(RestBindingMode.json).produces("application/json")
+                .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
                 .outType(NotebookEditableDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
-                .param().name("user").type(query).description("The owner of the new notebook").dataType("string").required(true).endParam()
-                .param().name("parent").type(query).description("The parent savepoint").dataType("long").required(false).endParam()
+                .param().name(NOTEBOOKID).type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name(USER).type(query).description("The owner of the new notebook").dataType("string").required(true).endParam()
+                .param().name(PARENT).type(query).description("The parent savepoint").dataType("long").required(false).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    String user = exch.getIn().getHeader("user", String.class);
-                    Long parent = exch.getIn().getHeader("parent", Long.class);
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    String user = exch.getIn().getHeader(USER, String.class);
+                    Long parent = exch.getIn().getHeader(PARENT, Long.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     checkNotNull(user, "Username must be specified");
                     NotebookEditableDTO result = notebookClient.createEditable(notebookid, parent, user);
@@ -342,16 +357,16 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .put("/{notebookid}/e/{editableid}").description("Update the definition of an editable")
                 //.bindingMode(RestBindingMode.json)
                 .bindingMode(RestBindingMode.off)
-                .consumes("application/json").produces("application/json")
+                .consumes(APPLICATION_JSON).produces(APPLICATION_JSON)
                 .type(NotebookCanvasDTO.class)
                 .outType(NotebookEditableDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
-                .param().name("editableid").type(path).description("Editable ID").dataType("long").required(true).endParam()
+                .param().name(NOTEBOOKID).type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name(EDITABLEID).type(path).description("Editable ID").dataType("long").required(true).endParam()
                 .param().name("json").type(body).description("Content (as JSON)").dataType("string").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
-                    Long editableid = exch.getIn().getHeader("editableid", Long.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
+                    Long editableid = exch.getIn().getHeader(EDITABLEID, Long.class);
                     //NotebookCanvasDTO canvasDTO = exch.getIn().getBody(NotebookCanvasDTO.class);
                     String json1 = exch.getIn().getBody(String.class);
                     NotebookCanvasDTO canvasDTO = JsonHandler.getInstance().objectFromJson(json1, NotebookCanvasDTO.class);
@@ -366,15 +381,15 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest()
                 .delete("/{notebookid}/e/{editableid}").description("Delete an editable")
                 .bindingMode(RestBindingMode.off)
-                .produces("text/plain")
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
-                .param().name("editableid").type(path).description("Editable ID").dataType("long").required(true).endParam()
-                .param().name("user").type(query).description("The owner of the editable").dataType("string").required(true).endParam()
+                .produces(TEXT_PLAIN)
+                .param().name(NOTEBOOKID).type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name(EDITABLEID).type(path).description("Editable ID").dataType("long").required(true).endParam()
+                .param().name(USER).type(query).description("The owner of the editable").dataType("string").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
-                    Long editableid = exch.getIn().getHeader("editableid", Long.class);
-                    String user = exch.getIn().getHeader("user", String.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
+                    Long editableid = exch.getIn().getHeader(EDITABLEID, Long.class);
+                    String user = exch.getIn().getHeader(USER, String.class);
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     checkNotNull(editableid, "Editable ID must be specified");
                     checkNotNull(user, "Username must be specified");
@@ -388,16 +403,16 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest()
                 //
                 .post("/{notebookid}/s").description("Create a new savepoint for a notebook")
-                .bindingMode(RestBindingMode.json).produces("application/json")
+                .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
                 .outType(NotebookEditableDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
-                .param().name("editableid").type(query).description("The editable ID to make the savepoint from").dataType("long").required(true).endParam()
-                .param().name("description").type(query).description("The description of the savepoint").dataType("string").required(false).endParam()
+                .param().name(NOTEBOOKID).type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name(EDITABLEID).type(query).description("The editable ID to make the savepoint from").dataType("long").required(true).endParam()
+                .param().name(DESCRIPTION).type(query).description("The description of the savepoint").dataType("string").required(false).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
-                    Long editableid = exch.getIn().getHeader("editableid", Long.class);
-                    String description = exch.getIn().getHeader("description", String.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
+                    Long editableid = exch.getIn().getHeader(EDITABLEID, Long.class);
+                    String description = exch.getIn().getHeader(DESCRIPTION, String.class);
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     checkNotNull(editableid, "Editable ID must be specified");
                     NotebookEditableDTO result = notebookClient.createSavepoint(notebookid, editableid, description);
@@ -406,16 +421,16 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest()
                 //
                 .put("/{notebookid}/s/{savepointid}/description").description("Update the description of a savepoint")
-                .bindingMode(RestBindingMode.json).produces("application/json")
+                .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
                 .outType(NotebookSavepointDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
-                .param().name("savepointid").type(path).description("Savepoint ID").dataType("long").required(true).endParam()
-                .param().name("description").type(query).description("New description").dataType("string").required(true).endParam()
+                .param().name(NOTEBOOKID).type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name(SAVEPOINTID).type(path).description("Savepoint ID").dataType("long").required(true).endParam()
+                .param().name(DESCRIPTION).type(query).description("New description").dataType("string").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    String description = exch.getIn().getHeader("description", String.class);
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
-                    Long savepointid = exch.getIn().getHeader("savepointid", Long.class);
+                    String description = exch.getIn().getHeader(DESCRIPTION, String.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
+                    Long savepointid = exch.getIn().getHeader(SAVEPOINTID, Long.class);
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     checkNotNull(savepointid, "Savepoint ID must be specified");
                     checkNotNull(description, "Description must be specified");
@@ -425,16 +440,16 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest()
                 //
                 .put("/{notebookid}/s/{savepointid}/label").description("Update the label of a savepoint")
-                .bindingMode(RestBindingMode.json).produces("application/json")
+                .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
                 .outType(NotebookSavepointDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
-                .param().name("savepointid").type(path).description("Savepoint ID").dataType("long").required(true).endParam()
+                .param().name(NOTEBOOKID).type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name(SAVEPOINTID).type(path).description("Savepoint ID").dataType("long").required(true).endParam()
                 .param().name("label").type(query).description("New Label").dataType("string").required(false).endParam()
                 .route()
                 .process((Exchange exch) -> {
                     String label = exch.getIn().getHeader("label", String.class);
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
-                    Long savepointid = exch.getIn().getHeader("savepointid", Long.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
+                    Long savepointid = exch.getIn().getHeader(SAVEPOINTID, Long.class);
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     checkNotNull(savepointid, "Savepoint ID must be specified");
                     NotebookSavepointDTO result = notebookClient.setSavepointLabel(notebookid, savepointid, label);
@@ -443,16 +458,16 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest()
                 //
                 .put("/{notebookid}").description("Update the name and description of a notebook")
-                .bindingMode(RestBindingMode.json).produces("application/json")
+                .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
                 .outType(NotebookDTO.class)
-                .param().name("notebookid").type(path).description("Notebook ID").dataType("long").required(true).endParam()
-                .param().name("name").type(query).description("New name").dataType("string").required(true).endParam()
-                .param().name("description").type(query).description("New description").dataType("string").required(false).endParam()
+                .param().name(NOTEBOOKID).type(path).description("Notebook ID").dataType("long").required(true).endParam()
+                .param().name(NAME).type(query).description("New name").dataType("string").required(true).endParam()
+                .param().name(DESCRIPTION).type(query).description("New description").dataType("string").required(false).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    String name = exch.getIn().getHeader("name", String.class);
-                    String description = exch.getIn().getHeader("description", String.class);
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
+                    String name = exch.getIn().getHeader(NAME, String.class);
+                    String description = exch.getIn().getHeader(DESCRIPTION, String.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     checkNotNull(name, "Notebook name must be specified");
                     NotebookDTO result = notebookClient.updateNotebook(notebookid, name, description);
@@ -465,21 +480,21 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 // GET
                 .get("/{notebookid}/v/{sourceid}/{cellid}/{varname}/{type}/{key}").description("Read a variable value using either its label or its editable/savepoint id")
                 .bindingMode(RestBindingMode.off)
-                .param().name("notebookid").type(path).description("The notebook ID").dataType("long").required(true).endParam()
-                .param().name("sourceid").type(path).description("The editable/savepoint ID").dataType("long").required(true).endParam()
-                .param().name("cellid").type(path).description("The cell ID").dataType("long").required(true).endParam()
-                .param().name("varname").type(path).description("The name of the variable").dataType("string").required(true).endParam()
-                .param().name("key").type(path).description("Optional key for the variable. If not provide key of 'default' is assumed").dataType("string").required(false).endParam()
-                .param().name("type").type(path).description("The type of variable (s = stream, t = text)").dataType("string").required(true).allowableValues("s", "t").endParam()
+                .param().name(NOTEBOOKID).type(path).description("The notebook ID").dataType("long").required(true).endParam()
+                .param().name(SOURCEID).type(path).description("The editable/savepoint ID").dataType("long").required(true).endParam()
+                .param().name(CELLID).type(path).description("The cell ID").dataType("long").required(true).endParam()
+                .param().name(VARNAME).type(path).description("The name of the variable").dataType("string").required(true).endParam()
+                .param().name(KEY).type(path).description("Optional key for the variable. If not provide key of 'default' is assumed").dataType("string").required(false).endParam()
+                .param().name(TYPE).type(path).description("The type of variable (s = stream, t = text)").dataType("string").required(true).allowableValues("s", "t").endParam()
                 //.param().name("label").type(query).description("The label of the variable").dataType("string").required(false).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    String varname = exch.getIn().getHeader("varname", String.class);
-                    String key = exch.getIn().getHeader("key", String.class);
-                    VarType type = VarType.valueOf(exch.getIn().getHeader("type", String.class));
-                    Long sourceid = exch.getIn().getHeader("sourceid", Long.class);
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
-                    Long cellid = exch.getIn().getHeader("cellid", Long.class);
+                    String varname = exch.getIn().getHeader(VARNAME, String.class);
+                    String key = exch.getIn().getHeader(KEY, String.class);
+                    VarType type = VarType.valueOf(exch.getIn().getHeader(TYPE, String.class));
+                    Long sourceid = exch.getIn().getHeader(SOURCEID, Long.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
+                    Long cellid = exch.getIn().getHeader(CELLID, Long.class);
 
                     if (notebookid == null) {
                         throw new IllegalArgumentException("Must specify notebookid");
@@ -514,21 +529,21 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 // write a variable
                 .post("/{notebookid}/v/{editableid}/{cellid}/{varname}/{type}/{key}").description("Write a variable value")
                 .bindingMode(RestBindingMode.off)
-                .param().name("notebookid").type(path).description("The notebook ID").dataType("long").required(true).endParam()
-                .param().name("varname").type(path).description("The name of the variable").dataType("string").required(true).endParam()
-                .param().name("key").type(path).description("Optional key for the variable. If not provide key of 'default' is assumed").dataType("string").required(false).endParam()
-                .param().name("type").type(path).description("The type of variable (s = stream, t = text)").dataType("string").required(true).allowableValues("s", "t").endParam()
-                .param().name("editableid").type(path).description("The editable ID").dataType("long").required(true).endParam()
-                .param().name("cellid").type(path).description("The cell ID that produces the value").dataType("long").required(true).endParam()
+                .param().name(NOTEBOOKID).type(path).description("The notebook ID").dataType("long").required(true).endParam()
+                .param().name(VARNAME).type(path).description("The name of the variable").dataType("string").required(true).endParam()
+                .param().name(KEY).type(path).description("Optional key for the variable. If not provide key of 'default' is assumed").dataType("string").required(false).endParam()
+                .param().name(TYPE).type(path).description("The type of variable (s = stream, t = text)").dataType("string").required(true).allowableValues("s", "t").endParam()
+                .param().name(EDITABLEID).type(path).description("The editable ID").dataType("long").required(true).endParam()
+                .param().name(CELLID).type(path).description("The cell ID that produces the value").dataType("long").required(true).endParam()
                 .param().name("body").type(body).description("The value").required(true).endParam()
                 .route()
                 .process((Exchange exch) -> {
-                    String varname = exch.getIn().getHeader("varname", String.class);
-                    String key = exch.getIn().getHeader("key", String.class);
-                    VarType type = VarType.valueOf(exch.getIn().getHeader("type", String.class));
-                    Long notebookid = exch.getIn().getHeader("notebookid", Long.class);
-                    Long editableid = exch.getIn().getHeader("editableid", Long.class);
-                    Long cellid = exch.getIn().getHeader("cellid", Long.class);
+                    String varname = exch.getIn().getHeader(VARNAME, String.class);
+                    String key = exch.getIn().getHeader(KEY, String.class);
+                    VarType type = VarType.valueOf(exch.getIn().getHeader(TYPE, String.class));
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
+                    Long editableid = exch.getIn().getHeader(EDITABLEID, Long.class);
+                    Long cellid = exch.getIn().getHeader(CELLID, Long.class);
 
                     if (notebookid == null) {
                         throw new IllegalArgumentException("Must specify notebookid");
@@ -573,8 +588,8 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 // GET statuses
                 .get("/{" + HEADER_SQUONK_USERNAME + "}").description("Get the User object for this username (spceified as the query parameter named " + HEADER_SQUONK_USERNAME)
                 .bindingMode(RestBindingMode.json)
-                .produces("application/json")
-                .produces("application/json")
+                .produces(APPLICATION_JSON)
+                .produces(APPLICATION_JSON)
                 .outType(User.class)
                 .route()
                 .process((Exchange exch) -> UserHandler.putUser(exch))

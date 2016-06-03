@@ -136,6 +136,10 @@ public class OptionDescriptor<T> implements Serializable {
         return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
     }
 
+    public OptionDescriptor<T> withMinMaxValues(int minValues, int maxValues) {
+        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
+    }
+
     /**
      * The code name for the parameter. Will be returned as the key, with the user chosen value as
      * the value.

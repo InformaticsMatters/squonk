@@ -7,12 +7,7 @@ import chemaxon.formats.MolFormatException;
 import chemaxon.formats.MolImporter;
 import chemaxon.marvin.io.MPropHandler;
 import chemaxon.marvin.io.MRecord;
-import chemaxon.struc.MProp;
-import chemaxon.struc.MPropertyContainer;
-import chemaxon.struc.MolAtom;
-import chemaxon.struc.Molecule;
-import chemaxon.struc.MoleculeGraph;
-import com.fasterxml.jackson.core.JsonParseException;
+import chemaxon.struc.*;
 import com.im.lac.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
 
@@ -22,13 +17,7 @@ import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -301,6 +290,10 @@ public class MoleculeUtils {
         return MolImporter.importMol(s);
     }
 
+    public static Molecule convertToMolecule(String s, String format) throws MolFormatException {
+        return MolImporter.importMol(s, format);
+    }
+
     public static Molecule convertToMolecule(byte[] b) throws MolFormatException {
         return MolImporter.importMol(b);
     }
@@ -395,15 +388,26 @@ public class MoleculeUtils {
         return null;
     }
 
-    public static Molecule tryCreateMoleculeFromObject(Object h) {
-        Molecule mol;
-        if (h instanceof Molecule) {
-            mol = (Molecule)h;
-        } else if (h instanceof MoleculeObject) {
-            mol = MoleculeUtils.fetchMolecule((MoleculeObject)h, false);
-        } else {
-            mol = MoleculeUtils.tryCreateMoleculeFromJsonOrString(h.toString());
-        }
-        return mol;
-    }
+//    public static Molecule tryCreateMoleculeFromObject(Object h) {
+//        LOG.info("Object: " + h + " " + h.getClass().getName());
+//        Molecule mol;
+//        if (h instanceof Molecule) {
+//            mol = (Molecule)h;
+//        } else if (h instanceof SimpleMolecule) {
+//            LOG.info("Trying as SimpleMolecule");
+//            SimpleMolecule sm = (SimpleMolecule)h;
+//            try {
+//                mol = convertToMolecule(sm.getSource(), sm.getFormat());
+//                LOG.info("Generated Molecule from SimpleMolecule");
+//            } catch (MolFormatException mfe) {
+//                LOG.info("Bad molecule format: " + mfe.getMessage());
+//                mol = null;
+//            }
+//        } else if (h instanceof MoleculeObject) {
+//            mol = fetchMolecule((MoleculeObject)h, false);
+//        } else {
+//            mol = tryCreateMoleculeFromJsonOrString(h.toString());
+//        }
+//        return mol;
+//    }
 }

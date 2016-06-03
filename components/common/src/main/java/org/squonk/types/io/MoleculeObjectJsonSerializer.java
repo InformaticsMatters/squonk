@@ -36,4 +36,9 @@ public class MoleculeObjectJsonSerializer extends BasicObjectJsonSerializer<Mole
         }
     }
 
+    @Override
+    public Class<MoleculeObject> handledType() {
+        return MoleculeObject.class;
+    }
+
 }

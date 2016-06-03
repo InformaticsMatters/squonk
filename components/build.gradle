@@ -189,17 +189,15 @@ docker {
     certPath = null
 }
 
-task dockerFileChemServices(type: Dockerfile) {
-    
+task chemServicesWars(type: Copy) {
     dependsOn = [
-        tasks.getByPath(':chem-services-cdk-basic:war'),
-        tasks.getByPath(':chem-services-chemaxon-basic:war'),
-        tasks.getByPath(':chem-services-rdkit-basic:war'),
-        tasks.getByPath(':chem-services-rdkit-search:war'),
-        tasks.getByPath(':chem-services-openchemlib-basic:war')
+            tasks.getByPath(':chem-services-cdk-basic:war'),
+            tasks.getByPath(':chem-services-chemaxon-basic:war'),
+            tasks.getByPath(':chem-services-rdkit-basic:war'),
+            tasks.getByPath(':chem-services-rdkit-search:war'),
+            tasks.getByPath(':chem-services-openchemlib-basic:war')
     ]
-    
-    copy{
+
         from "../data/licenses/license.cxl"
         from ("chem-services-cdk-basic/build/libs") {
             include '*.war'
@@ -222,7 +220,12 @@ task dockerFileChemServices(type: Dockerfile) {
             rename '.*', 'chem-services-openchemlib-basic.war'
         }
         into 'build/chem-services-basic'
-    }
+
+}
+
+task dockerFileChemServices(type: Dockerfile) {
+
+    dependsOn = [chemServicesWars]
     
     
     destFile = project.file('build/chem-services-basic/Dockerfile')

@@ -45,7 +45,7 @@ project.integrationTest {
 integrationTest {
     dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean,
     tasks.getByPath(':database:flywayMigrate')
-    //finalizedBy rootProject.tasks.integrationTestEnvShutdown
+    finalizedBy rootProject.tasks.integrationTestEnvShutdown
 }
 
 task copyDependencies(type: Sync) {

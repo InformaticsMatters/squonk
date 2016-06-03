@@ -1,6 +1,5 @@
-package com.im.lac.job.client;
+package org.squonk.core.client;
 
-import org.squonk.core.client.AbstractHttpClient;
 import com.im.lac.job.jobdef.JobDefinition;
 import com.im.lac.job.jobdef.JobQuery;
 import com.im.lac.job.jobdef.JobStatus;
@@ -12,7 +11,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.squonk.client.JobStatusClient;
 import org.squonk.core.client.config.SquonkClientConfig;
 import org.squonk.types.io.JsonHandler;
-import org.squonk.util.IOUtils;
 
 import javax.enterprise.inject.Default;
 import java.io.IOException;

@@ -1,6 +1,7 @@
 package org.squonk.execution.steps;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.squonk.notebook.api.VariableKey;
 
 import java.io.Serializable;
@@ -15,6 +16,7 @@ import java.util.Map;
 public final class StepDefinition implements Serializable {
 
     private String implementationClass;
+    @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
     private final Map<String, Object> options = new LinkedHashMap<>();
     private final Map<String, VariableKey> inputVariableMappings = new LinkedHashMap<>();
     private final Map<String, String> outputVariableMappings = new LinkedHashMap<>();

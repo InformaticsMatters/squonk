@@ -26,7 +26,6 @@ public class MoleculeServiceBasicExecutorStep extends AbstractStep {
     private static final Logger LOG = Logger.getLogger(MoleculeServiceBasicExecutorStep.class.getName());
 
     public static final String OPTION_SERVICE_ENDPOINT = StepDefinitionConstants.OPTION_SERVICE_ENDPOINT;
-    public static final String OPTION_EXECUTION_PARAMS = StepDefinitionConstants.OPTION_SERVICE_PARAMS;
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
@@ -38,7 +37,6 @@ public class MoleculeServiceBasicExecutorStep extends AbstractStep {
 
         Dataset<MoleculeObject> dataset = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
-        Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
 
         InputStream input = JsonHandler.getInstance().marshalStreamToJsonArray(dataset.getStream(), false);
 //            String inputData = IOUtils.convertStreamToString(input);
@@ -53,7 +51,7 @@ public class MoleculeServiceBasicExecutorStep extends AbstractStep {
         // send for execution
         statusMessage = "Posting request ...";
         Map<String, Object> responseHeaders = new HashMap<>();
-        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, requestHeaders, responseHeaders, params);
+        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, requestHeaders, responseHeaders, options);
         statusMessage = "Handling results ...";
 
 //        String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(output), 1000);

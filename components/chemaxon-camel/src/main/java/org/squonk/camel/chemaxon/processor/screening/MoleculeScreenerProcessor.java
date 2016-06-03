@@ -11,6 +11,8 @@ import org.squonk.chemaxon.molecule.MoleculeUtils;
 import org.squonk.chemaxon.screening.MoleculeScreener;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.MoleculeObjectDataset;
+import org.squonk.options.MoleculeTypeDescriptor;
+import org.squonk.options.types.Structure;
 import org.squonk.util.ExecutionStats;
 import org.squonk.util.StatsRecorder;
 
@@ -32,7 +34,8 @@ import java.util.stream.Stream;
 public class MoleculeScreenerProcessor<T extends Descriptor> implements Processor {
 
     private static final Logger LOG = Logger.getLogger(MoleculeScreenerProcessor.class.getName());
-    public static final String HEADER_QUERY_MOLECULE = "query_structure";
+
+    public static final String HEADER_QUERY_MOLECULE = "structure";
     public static final String HEADER_THRESHOLD = "threshold";
 
     private final MoleculeScreener<T> screener;
@@ -166,14 +169,19 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
             return screener.compare(query);
         } else {
             return screener.compare(query, targetFp);
-
         }
     }
 
     private T findTargetFromHeader(Exchange exchange) {
-        Object h = exchange.getIn().getHeader(HEADER_QUERY_MOLECULE);
-        LOG.log(Level.INFO, "HEADER_QUERY_MOLECULE: {0}", h.getClass().getName() + " " + h);
-        Molecule mol = MoleculeUtils.tryCreateMoleculeFromObject(h);
+
+        Structure structure = MoleculeTypeDescriptor.DISCRETE.readOptionValue(exchange.getIn().getHeaders(), HEADER_QUERY_MOLECULE);
+
+        Molecule mol = null;
+        try {
+            mol = MoleculeUtils.convertToMolecule(structure.getSource(), structure.getFormat());
+        } catch (MolFormatException mfe) {
+            LOG.log(Level.SEVERE, "Bad molecule", mfe);
+        }
         if (mol != null) {
             return screener.generateDescriptor(mol);
         }

@@ -89,11 +89,11 @@ public class CamelUtils {
             InputStream input,
             Map<String, Object> requestHeaders,
             Map<String, Object> responseHeaders,
-            Map<String, Object> queryParams) throws Exception {
+            Map<String, Object> options) throws Exception {
 
         Map<String, Object> allHeaders = new HashMap<>(requestHeaders);
         allHeaders.put(Exchange.HTTP_METHOD, method);
-        String url = generateUrlUsingHeadersAndQueryParams(endpoint, queryParams, allHeaders);
+        String url = generateUrlUsingHeadersAndQueryParams(endpoint, options, allHeaders);
         LOG.log(Level.INFO, "Generated URL: {0}", url);
         allHeaders.put(Exchange.HTTP_URI, url);
         LOG.info("Using headers: " + allHeaders.entrySet().stream()
@@ -132,7 +132,7 @@ public class CamelUtils {
         }
 
         if (contentType == null || MimeTypeResolver.MIME_TYPE_MOLECULE_OBJECT_JSON.equals(contentType)) {
-                return JsonHandler.getInstance().objectFromJson(value, MoleculeObject.class);
+            return JsonHandler.getInstance().objectFromJson(value, MoleculeObject.class);
         } else if (MimeTypeResolver.MIME_TYPE_MDL_MOLFILE.equals(contentType)) {
             return new MoleculeObject(value, "mol");
         } else if (MimeTypeResolver.MIME_TYPE_DAYLIGHT_SMILES.equals(contentType)) {
@@ -150,11 +150,11 @@ public class CamelUtils {
         return exch.hasOut() ? exch.getOut() : exch.getIn();
     }
 
-    public static String generateUrlUsingHeadersAndQueryParams(String endpoint, Map<String, Object> params, Map<String, Object> headers) throws UnsupportedEncodingException, URISyntaxException {
+    public static String generateUrlUsingHeadersAndQueryParams(String endpoint, Map<String, Object> options, Map<String, Object> headers) throws UnsupportedEncodingException, URISyntaxException {
         int qcount = 0;
         StringBuilder b = new StringBuilder();
-        if (params != null) {
-            for (Map.Entry<String, Object> e : params.entrySet()) {
+        if (options != null) {
+            for (Map.Entry<String, Object> e : options.entrySet()) {
                 String key = e.getKey();
                 Object val = e.getValue();
                 if (key.startsWith("header.")) {

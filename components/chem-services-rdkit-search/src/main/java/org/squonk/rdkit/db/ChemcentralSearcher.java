@@ -8,6 +8,8 @@ import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.http.CamelRequestResponseExecutor;
+import org.squonk.options.MoleculeTypeDescriptor;
+import org.squonk.options.types.Structure;
 import org.squonk.rdkit.db.dsl.Select;
 import org.squonk.rdkit.db.dsl.WhereClause;
 import org.squonk.types.DatasetHandler;
@@ -33,6 +35,8 @@ import java.util.stream.Stream;
 public class ChemcentralSearcher {
 
     private static final Logger LOG = Logger.getLogger(ChemcentralSearcher.class.getName());
+
+
 
     private final DataSource chemchentralDataSource;
     private final String statsRouteUri;
@@ -61,20 +65,6 @@ public class ChemcentralSearcher {
 
     public void executeSearch(Exchange exch) throws IOException {
 
-        String query = null;
-        MolSourceType molType = null;
-        MoleculeObject mo = CamelUtils.readMoleculeObjectFromBody(exch);
-        if (mo != null) {
-            query = mo.getSource();
-            molType = MolSourceType.valueOf(mo.getFormat("smiles").toUpperCase());
-        } else {
-            query = exch.getIn().getHeader("q", String.class);
-            molType = MolSourceType.SMILES;
-        }
-        if (query == null) {
-            throw new IllegalArgumentException("Must provide query structure either as body or query param named 'q'");
-        }
-
         String table = exch.getIn().getHeader("table", String.class);
         String mode = exch.getIn().getHeader("mode", String.class);
         Integer limit = exch.getIn().getHeader("limit", Integer.class);
@@ -82,8 +72,25 @@ public class ChemcentralSearcher {
         String fp = exch.getIn().getHeader("fp", String.class);
         String metric = exch.getIn().getHeader("metric", String.class);
         Double threshold = exch.getIn().getHeader("threshold", Double.class);
-
         LOG.info("Search: table=" + table + " mode=" + mode);
+
+        String query = null;
+        MolSourceType molType = null;
+        MoleculeObject mo = CamelUtils.readMoleculeObjectFromBody(exch);
+        if (mo != null) {
+            query = mo.getSource();
+            molType = MolSourceType.valueOf(mo.getFormat("smiles").toUpperCase());
+        } else {
+            // either typedescriptor will do the job
+            Structure structure = MoleculeTypeDescriptor.QUERY.readOptionValue(exch.getIn().getHeaders(), "structure");;
+            if (structure != null) {
+                molType = MolSourceType.valueOf(structure.getFormat().toUpperCase());
+                query = structure.getSource();
+            }
+        }
+        if (query == null) {
+            throw new IllegalArgumentException("Must provide query structure either as body or as header or query param named 'structure'");
+        }
 
         RDKitTables searcher = new RDKitTables(chemchentralDataSource);
         RDKitTable rdkitTable = searcher.getTable(table);

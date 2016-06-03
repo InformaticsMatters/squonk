@@ -30,7 +30,6 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractStep {
     private static final Logger LOG = Logger.getLogger(OutOnlyMoleculeServiceExecutorStep.class.getName());
 
     public static final String OPTION_SERVICE_ENDPOINT = StepDefinitionConstants.OPTION_SERVICE_ENDPOINT;
-    public static final String OPTION_EXECUTION_PARAMS = StepDefinitionConstants.OPTION_SERVICE_PARAMS;
 
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
@@ -40,7 +39,6 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractStep {
         dumpConfig(Level.INFO);
         statusMessage = MSG_PREPARING_INPUT;
 
-        Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
         Object body = getOption(StepDefinitionConstants.OPTION_BODY);
         String bodyContentType = getOption(StepDefinitionConstants.OPTION_BODY_CONTENT_TYPE, String.class);
@@ -68,7 +66,7 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractStep {
         statusMessage = "Executing ...";
         InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint,
                 input == null ? null : new ByteArrayInputStream(input.getBytes()),
-                requestHeaders, responseHeaders, params);
+                requestHeaders, responseHeaders, options);
 
         statusMessage = "Handling results ...";
 //        String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(output), 1000);

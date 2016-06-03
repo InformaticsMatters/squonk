@@ -1,5 +1,6 @@
 package org.squonk.types.io;
 
+import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.im.lac.dataset.Metadata;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -62,6 +63,16 @@ public class BasicObjectJsonDeserializer<T extends BasicObject> extends StdDeser
         }
         return result;
     }
+
+//    @Override
+//    public Object deserializeWithType(JsonParser jp, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
+//        return typeDeserializer.deserializeTypedFromObject(jp, ctxt);
+//    }
+//
+//    @Override
+//    public Class<?> handledType() {
+//        return BasicObject.class;
+//    }
 
     private T read(JsonParser jp, DeserializationContext dc) throws IOException {
 

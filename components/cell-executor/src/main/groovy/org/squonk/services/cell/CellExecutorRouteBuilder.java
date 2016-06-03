@@ -1,6 +1,6 @@
 package org.squonk.services.cell;
 
-import com.im.lac.job.client.JobStatusRestClient;
+import org.squonk.core.client.JobStatusRestClient;
 import com.im.lac.job.jobdef.JobStatus;
 import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition;
 import org.apache.camel.CamelContext;

@@ -27,7 +27,6 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
     private static final Logger LOG = Logger.getLogger(MoleculeServiceFatExecutorStep.class.getName());
 
     public static final String OPTION_SERVICE_ENDPOINT = StepDefinitionConstants.OPTION_SERVICE_ENDPOINT;
-    public static final String OPTION_EXECUTION_PARAMS = StepDefinitionConstants.OPTION_SERVICE_PARAMS;
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
@@ -38,7 +37,7 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
         statusMessage = MSG_PREPARING_INPUT;
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
         Dataset dataset = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
-        Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
+
         Map<String, Object> requestHeaders = new HashMap<>();
         Map<String, Object> responseHeaders = new HashMap<>();
         requestHeaders.put("Accept-Encoding", "gzip");
@@ -46,7 +45,7 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
         requestHeaders.put("Content-Encoding", "gzip");
         statusMessage = "Executing ...";
         try (InputStream input =  dataset.getInputStream(false)) {
-            InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, requestHeaders, responseHeaders, params);
+            InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, requestHeaders, responseHeaders, options);
 
             // start debug output
 //          String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(output), 1000);

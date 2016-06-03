@@ -59,4 +59,10 @@ public class MoleculeObjectJsonDeserializer extends BasicObjectJsonDeserializer<
 
     }
 
+
+    @Override
+    public Class<?> handledType() {
+        return MoleculeObject.class;
+    }
+
 }

@@ -43,7 +43,6 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
     private static final Logger LOG = Logger.getLogger(MoleculeServiceThinExecutorStep.class.getName());
 
     public static final String OPTION_SERVICE_ENDPOINT = StepDefinitionConstants.OPTION_SERVICE_ENDPOINT;
-    public static final String OPTION_EXECUTION_PARAMS = StepDefinitionConstants.OPTION_SERVICE_PARAMS;
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
@@ -55,7 +54,6 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
 
         Dataset<MoleculeObject> dataset = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
-        Map<String, Object> params = getOption(OPTION_EXECUTION_PARAMS, Map.class);
         boolean preserveStructure = getOption(StepDefinitionConstants.MoleculeServiceThinExecutor.OPTION_PRESERVE_STRUCTURE, Boolean.class, true);
         boolean filter = getOption(StepDefinitionConstants.MoleculeServiceThinExecutor.OPTION_FILTER, Boolean.class, false);
         LOG.info("Filter mode: " + filter);
@@ -76,13 +74,11 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
 
         InputStream input = JsonHandler.getInstance().marshalStreamToJsonArray(stream, false);
         // some remotes don't seem to support data being streamed so we must materialize it
-        if (params != null) {
-            Boolean streamSupport = (Boolean) params.get("streamsupport");
-            if (streamSupport != null && !streamSupport) {
-                String inputData = IOUtils.convertStreamToString(input);
-                LOG.info("Materialized input of length: " + inputData.length());
-                input = new ByteArrayInputStream(inputData.getBytes());
-            }
+        boolean streamSupport = getOption("option.streamsupport", Boolean.class, true);
+        if (!streamSupport) {
+            String inputData = IOUtils.convertStreamToString(input);
+            LOG.info("Materialized input of length: " + inputData.length());
+            input = new ByteArrayInputStream(inputData.getBytes());
         }
         // end materializing
 
@@ -97,7 +93,7 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         // send for execution
         statusMessage = "Posting request ...";
         Map<String, Object> responseHeaders = new HashMap<>();
-        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, requestHeaders, responseHeaders, params);
+        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, requestHeaders, responseHeaders, options);
         statusMessage = "Handling results ...";
 
         // start debug output

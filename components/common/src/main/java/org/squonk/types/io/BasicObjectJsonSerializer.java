@@ -1,11 +1,12 @@
 package org.squonk.types.io;
 
-import com.im.lac.dataset.Metadata;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.im.lac.dataset.Metadata;
 import com.im.lac.types.BasicObject;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +48,33 @@ public class BasicObjectJsonSerializer<T extends BasicObject> extends StdSeriali
         writeData((T)bo, jg, sp, propTypes);
         jg.writeEndObject();
     }
+
+//    @Override
+//    public void serializeWithType(BasicObject value, JsonGenerator gen, SerializerProvider provider, TypeSerializer typeSer)
+//            throws IOException {
+//
+//        typeSer.writeTypePrefixForObject(value, gen);
+//        //serialize(value, gen, provider); // call your customized serialize method
+//        Map<String, Class> propTypes = null;
+//        Metadata meta = (Metadata) provider.getAttribute(JsonHandler.ATTR_METADATA);
+//        if (meta != null) {
+//            propTypes = meta.getPropertyTypes();
+//        }
+//        if (propTypes == null) {
+//            propTypes = (Map<String, Class>) provider.getAttribute(JsonHandler.ATTR_VALUE_MAPPINGS);
+//        }
+//        if (propTypes == null) {
+//            LOG.fine("Serializing without metadata - complex types will not be handled");
+//            propTypes = new HashMap<>();
+//        }
+//        writeData((T)value, gen, provider, propTypes);
+//        typeSer.writeTypeSuffixForObject(value, gen);
+//    }
+//
+//    @Override
+//    public Class<T> handledType() {
+//        return (Class<T>)BasicObject.class;
+//    }
 
     void writeData(T bo, JsonGenerator jg, SerializerProvider sp, Map<String, Class> propTypes) throws IOException, JsonGenerationException {
         writeUUID(bo, jg, sp);

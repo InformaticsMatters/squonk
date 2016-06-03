@@ -68,7 +68,7 @@ public class AbstractHttpClient {
             b.append("\n============================== POOL STATS END ================================\n");
             LOG.info(b.toString());
         } else {
-            LOG.info(method + " ==========================> " + uri.toString());
+            LOG.info(method + " ----------> " + uri.toString());
         }
     }
 
@@ -105,12 +105,12 @@ public class AbstractHttpClient {
             if (headers != null && headers.length > 0) {
                 addHeaders(httpDelete, headers);
             }
-            try (CloseableHttpResponse response = httpclient.execute(httpDelete)) {
-                LOG.finer(response.getStatusLine().toString());
-                checkResponse(response);
-                HttpEntity entity = response.getEntity();
-                return entity.getContent();
-            }
+            CloseableHttpResponse response = httpclient.execute(httpDelete);
+            LOG.finer(response.getStatusLine().toString());
+            checkResponse(response);
+            HttpEntity entity = response.getEntity();
+            return entity.getContent();
+
         } catch (URISyntaxException e) {
             throw new IOException("Bad URI. Really?", e);
         }

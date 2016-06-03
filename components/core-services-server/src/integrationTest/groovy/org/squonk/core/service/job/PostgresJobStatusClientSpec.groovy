@@ -19,6 +19,10 @@ class PostgresJobStatusClientSpec extends Specification {
     @Shared long inTheFuture = System.currentTimeMillis() + 1000000
     @Shared  PostgresJobStatusClient client = new PostgresJobStatusClient()
 
+    void setupSpec() {
+        client.db.executeUpdate("DELETE FROM users.jobstatus")
+    }
+
     void "create job"() {
 
         JobDefinition jobdef = new DoNothingJobDefinition()
