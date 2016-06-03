@@ -26,7 +26,7 @@ public class OCLMoleculeUtils {
                     return importMolfile(molecule);
                 }
             } catch (Exception ex) {
-                LOG.info("Failed to parse molecule " + ex.getMessage());
+                LOG.fine("Failed to parse molecule " + ex.getMessage());
                 return null;
             }
         try {
@@ -55,7 +55,7 @@ public class OCLMoleculeUtils {
 
     public static StereoMolecule fetchMolecule(MoleculeObject mo, boolean store) {
         StereoMolecule mol = importString(mo.getSource(), mo.getFormat());
-        if (store) {
+        if (store && mol != null) {
             mo.putRepresentation(StereoMolecule.class.getName(), mol);
         }
         return mol;

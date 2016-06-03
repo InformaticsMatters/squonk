@@ -63,17 +63,21 @@ public class CDKMoleculeIOUtils {
         return containersList;
     }
 
-    public static IAtomContainer fetchMolecule(MoleculeObject mo, boolean store) throws CDKException, CloneNotSupportedException {
+    public static IAtomContainer fetchMolecule(MoleculeObject mo, boolean store) {
         IAtomContainer mol = mo.getRepresentation(IAtomContainer.class.getName(), IAtomContainer.class);
-        if (mol == null) {
-            mol = CDKMoleculeIOUtils.readMolecule(mo.getSource());
-        }
-        if (mol != null) {
-            AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
-            if (store) {
-                mo.putRepresentation(IAtomContainer.class.getName(), mol);
+        try {
+            if (mol == null) {
+                mol = CDKMoleculeIOUtils.readMolecule(mo.getSource());
             }
-            return mol.clone();
+            if (mol != null) {
+                AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
+                if (store) {
+                    mo.putRepresentation(IAtomContainer.class.getName(), mol);
+                }
+                return mol.clone();
+            }
+        } catch (CDKException | CloneNotSupportedException e) {
+            LOG.log(Level.INFO, "CDK unable to generate molecule: " + e.getMessage());
         }
         return null;
     }
@@ -187,7 +191,7 @@ public class CDKMoleculeIOUtils {
                             mol.removeProperty("cdk:Title");
                             //LOG.info("WRITING MOL");
                             writer.write(mol);
-                        } catch (CDKException | CloneNotSupportedException e) {
+                        } catch (CDKException e) {
                             if (haltOnError) {
                                 throw new RuntimeException("Failed to read molecule " + mo.getUUID(), e);
                             } else {

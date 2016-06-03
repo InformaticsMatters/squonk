@@ -9,6 +9,8 @@ import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static org.squonk.util.CommonConstants.*;
+
 /**
  * Describes an option that needs to be defined in order to execute a service.
  * <br>e.g. the threshold for a similarity search
@@ -31,6 +33,15 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public class OptionDescriptor<T> implements Serializable {
+
+    public static OptionDescriptor IS_FILTER = new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode")
+            .withDefaultValue(true).withAccess(false, false);
+
+    public static OptionDescriptor FILTER_MODE = new OptionDescriptor<>(String.class,
+            "query." + OPTION_FILTER_MODE, "Filter mode", "How to filter results")
+            .withValues(new String[] {VALUE_INCLUDE_PASS, VALUE_INCLUDE_FAIL, VALUE_INCLUDE_ALL})
+            .withDefaultValue(VALUE_INCLUDE_FAIL)
+            .withMinMaxValues(1,1);
 
     private final TypeDescriptor<T> typeDescriptor;
     private final String key;

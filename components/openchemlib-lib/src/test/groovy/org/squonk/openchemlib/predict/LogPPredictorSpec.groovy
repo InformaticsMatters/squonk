@@ -12,7 +12,7 @@ class LogPPredictorSpec extends Specification {
 
     void "test with smiles"() {
 
-        LogPOCLPredictor predictor = new LogPOCLPredictor()
+        OCLLogPPredictor predictor = new OCLLogPPredictor()
 
         when:
         def result = predictor.calculators[0].calculate(new MoleculeObject(Molecules.ethanol.smiles, "smiles"))
@@ -23,7 +23,7 @@ class LogPPredictorSpec extends Specification {
 
     void "test with molfile"() {
 
-        LogPOCLPredictor predictor = new LogPOCLPredictor()
+        OCLLogPPredictor predictor = new OCLLogPPredictor()
         Calculator calc = predictor.calculators[0]
 
         when:

@@ -2,6 +2,7 @@ package org.squonk.cdk.services;
 
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.cdk.processor.CDKMolecularDescriptorProcessor;
+import org.squonk.camel.cdk.processor.CDKVerifyStructureProcessor;
 import org.squonk.cdk.molecule.MolecularDescriptors;
 import org.apache.camel.builder.RouteBuilder;
 
@@ -12,12 +13,20 @@ import org.apache.camel.builder.RouteBuilder;
  */
 public class CdkCalculatorsRouteBuilder extends RouteBuilder {
 
+
+    static final String CDK_STRUCTURE_VERIFY = "direct:structure_verify";
     static final String CDK_LOGP = "direct:logp";
     static final String CDK_DONORS_ACCEPTORS = "direct:donors_acceptors";
     static final String CDK_WIENER_NUMBERS = "direct:wiener_numbers";
 
     @Override
     public void configure() throws Exception {
+
+        from(CDK_STRUCTURE_VERIFY)
+                .log("CDK_STRUCTURE_VERIFY starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new CDKVerifyStructureProcessor())
+                .log("CDK_STRUCTURE_VERIFY finished");
 
         from(CDK_LOGP )
                 .log("CDK_LOGP starting")

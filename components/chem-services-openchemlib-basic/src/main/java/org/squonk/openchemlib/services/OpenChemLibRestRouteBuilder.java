@@ -11,6 +11,7 @@ import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.options.OptionDescriptor;
 import org.squonk.types.TypeResolver;
 
 import javax.inject.Inject;
@@ -20,6 +21,8 @@ import java.util.stream.Stream;
 
 import static org.squonk.api.MimeTypeResolver.MIME_TYPE_DATASET_BASIC_JSON;
 import static org.squonk.api.MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON;
+import static org.squonk.util.CommonConstants.*;
+import static org.squonk.util.CommonConstants.VALUE_INCLUDE_FAIL;
 
 /**
  * @author timbo
@@ -32,6 +35,7 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
     @Inject
     private TypeResolver resolver;
 
+    private static final String ROUTE_VERIFY = "verify";
     private static final String ROUTE_LOGP = "logp";
     private static final String ROUTE_LOGS = "logs";
     private static final String ROUTE_PSA = "psa";
@@ -42,25 +46,33 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
     protected static final ServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
             = new ServiceDescriptor[]{
             createServiceDescriptor(
+                    "ocl.calculators.verify",
+                    "Verify structure (OCL)",
+                    "Verify that the molecules are valid according to OpenChemLib",
+                    new String[]{"verify", "openchemlib"},
+                    new String[]{"/Chemistry/Toolkits/RDKit/Verify", "/Chemistry/Verify"},
+                    "icons/properties_add.png",
+                    ROUTE_VERIFY,
+                    new OptionDescriptor[] {OptionDescriptor.IS_FILTER, OptionDescriptor.FILTER_MODE}),
+            createServiceDescriptor(
                     "ocl.logp", "LogP (OpenChemLib)", "OpenChemLib LogP prediction",
                     new String[]{"logp", "partitioning", "molecularproperties", "openchemlib"},
                     new String[]{"/Chemistry/Toolkits/OpenChemLib/Calculators", "/Chemistry/Calculators/Partioning"},
-                    "icons/properties_add.png", ROUTE_LOGP),
+                    "icons/properties_add.png", ROUTE_LOGP, null),
             createServiceDescriptor(
                     "ocl.logs", "LogS (OpenChemLib)", "OpenChemLib Aqueous Solubility prediction",
                     new String[]{"logp", "solubility", "molecularproperties", "openchemlib"},
                     new String[]{"/Chemistry/Toolkits/OpenChemLib/Calculators", "/Chemistry/Calculators/Solubility"},
-                    "icons/properties_add.png", ROUTE_LOGS),
+                    "icons/properties_add.png", ROUTE_LOGS, null),
             createServiceDescriptor(
                     "ocl.psa", "PSA (OpenChemLib)", "OpenChemLib Polar Surface Area prediction",
                     new String[]{"logp", "psa", "molecularproperties", "openchemlib"},
                     new String[]{"/Chemistry/Toolkits/OpenChemLib/Calculators", "/Chemistry/Calculators/Other"},
-                    "icons/properties_add.png", ROUTE_PSA)
-
+                    "icons/properties_add.png", ROUTE_PSA, null)
     };
 
 
-    private static ServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String[] paths, String icon, String endpoint) {
+    private static ServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String[] paths, String icon, String endpoint, OptionDescriptor[] options) {
         return new ServiceDescriptor(
                 id, name, description, tags, null, paths,
                 "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
@@ -79,7 +91,7 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                                 endpoint, // endpoint
                                 true, // URL is relative
                                 AsyncHttpProcessDatasetJobDefinition.class,
-                                null, null, null, null, null, StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
+                                null, null, null, null, options, StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
                 }
         );
     }
@@ -119,6 +131,13 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                 .process((Exchange exch) -> {
                     exch.getIn().setBody(CALCULATORS_SERVICE_DESCRIPTOR);
                 })
+                .endRest()
+                //
+                .post(ROUTE_VERIFY).description("Verify as OpenChemLib molecules")
+                .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
+                .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_DATASET_BASIC_JSON))
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(OpenChemLibCalculatorsRouteBuilder.OCL_STRUCTURE_VERIFY, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post(ROUTE_LOGP).description("Calculate the LogP of the supplied structures")

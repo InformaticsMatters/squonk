@@ -1,27 +1,29 @@
 package org.squonk.openchemlib.predict;
 
 import com.actelion.research.chem.StereoMolecule;
-import com.actelion.research.chem.prediction.CLogPPredictor;
-import org.squonk.property.LogPProperty;
+import com.actelion.research.chem.prediction.PolarSurfaceAreaPredictor;
+import com.im.lac.types.MoleculeObject;
+import org.squonk.property.Calculator;
 import org.squonk.property.MoleculeCalculator;
+import org.squonk.property.PSAProperty;
 
 /**
  * Created by timbo on 05/04/16.
  */
-public class LogPOCLPredictor extends AbstractOCLPredictor<Float> {
+public class OCLPSAPredictor extends AbstractOCLPredictor<Float> {
 
-    private static final String NAME = "LogP_OCL";
+    private static final String NAME = "PSA_OCL";
 
-    private CLogPPredictor predictor;
+    private PolarSurfaceAreaPredictor predictor;
 
-    public LogPOCLPredictor() {
-        super(NAME, new LogPProperty());
+    public OCLPSAPredictor() {
+        super(NAME, new PSAProperty());
     }
 
 
-    private CLogPPredictor getPredictor() {
+    private PolarSurfaceAreaPredictor getPredictor() {
         if (predictor == null) {
-            predictor = new CLogPPredictor();
+            predictor = new PolarSurfaceAreaPredictor();
         }
         return predictor;
     }
@@ -37,9 +39,8 @@ public class LogPOCLPredictor extends AbstractOCLPredictor<Float> {
             super(resultName, Float.class);
         }
 
-
         protected Float doCalculate(StereoMolecule mol) {
-            float result = getPredictor().assessCLogP(mol);
+            float result = getPredictor().assessPSA(mol);
             incrementExecutionCount(NAME, 1);
             return result;
         }

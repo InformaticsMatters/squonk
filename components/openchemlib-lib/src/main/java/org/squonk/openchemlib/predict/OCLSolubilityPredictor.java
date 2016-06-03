@@ -10,13 +10,13 @@ import org.squonk.property.MoleculeCalculator;
 /**
  * Created by timbo on 05/04/16.
  */
-public class SolubilityOCLPredictor extends AbstractOCLPredictor<Float> {
+public class OCLSolubilityPredictor extends AbstractOCLPredictor<Float> {
 
     private static final String NAME = "AqSol_OCL";
 
     private SolubilityPredictor predictor;
 
-    public SolubilityOCLPredictor() {
+    public OCLSolubilityPredictor() {
         super(NAME, new AqueousSolubilityProperty());
     }
 

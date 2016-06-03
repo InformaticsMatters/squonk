@@ -163,7 +163,8 @@ public class MoleculeUtils {
             try {
                 mol = convertToMolecule(mo.getSource());
             } catch (MolFormatException ex) {
-                throw new RuntimeException("Bad format for Molecule", ex);
+                LOG.info("Bad format for Molecule" + ex.getMessage());
+                return null;
             }
             if (store) {
                 mo.putRepresentation(Molecule.class.getName(), mol);

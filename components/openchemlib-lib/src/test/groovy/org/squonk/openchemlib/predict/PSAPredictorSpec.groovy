@@ -11,7 +11,7 @@ class PSAPredictorSpec extends Specification {
 
     void "test with smiles"() {
 
-        PSAOCLPredictor predictor = new PSAOCLPredictor()
+        OCLPSAPredictor predictor = new OCLPSAPredictor()
 
         when:
         def result = predictor.calculators[0].calculate(new MoleculeObject(Molecules.ethanol.smiles, "smiles"))
@@ -22,7 +22,7 @@ class PSAPredictorSpec extends Specification {
 
     void "test with molfile"() {
 
-        PSAOCLPredictor predictor = new PSAOCLPredictor()
+        OCLPSAPredictor predictor = new OCLPSAPredictor()
 
         when:
         def result = predictor.calculators[0].calculate(new MoleculeObject(Molecules.ethanol.v2000, "mol"))

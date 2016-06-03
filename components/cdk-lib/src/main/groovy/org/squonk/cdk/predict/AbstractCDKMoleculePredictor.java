@@ -31,13 +31,7 @@ public abstract class AbstractCDKMoleculePredictor<V> extends Predictor<V,Molecu
 
         @Override
         public V calculate(MoleculeObject mo, boolean storeResult, boolean storeMol) {
-            IAtomContainer mol = null;
-            try {
-                mol = CDKMoleculeIOUtils.fetchMolecule(mo, storeMol);
-            } catch (CDKException | CloneNotSupportedException e) {
-                errorCount.incrementAndGet();
-                LOG.log(Level.INFO, "CDK calculation " + resultName + " failed", e);
-            }
+            IAtomContainer mol = CDKMoleculeIOUtils.fetchMolecule(mo, storeMol);
             V result = calculate(mol);
             if (storeResult) {
                 mo.putValue(resultName, result);

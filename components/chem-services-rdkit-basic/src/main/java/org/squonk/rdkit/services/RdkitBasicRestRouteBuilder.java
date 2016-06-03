@@ -43,15 +43,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     new String[]{"/Chemistry/Toolkits/RDKit/Verify", "/Chemistry/Verify"},
                     "asyncHttp",
                     "verify",
-                    new OptionDescriptor[] {
-                            new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode")
-                                    .withDefaultValue(true).withAccess(false, false),
-                            new OptionDescriptor<>(String.class,
-                                    "query." + OPTION_FILTER_MODE, "Filter mode", "How to filter results")
-                                    .withValues(new String[] {VALUE_INCLUDE_PASS, VALUE_INCLUDE_FAIL, VALUE_INCLUDE_ALL})
-                                    .withDefaultValue(VALUE_INCLUDE_FAIL)
-                                    .withMinValues(1).withMaxValues(1)
-                    }),
+                    new OptionDescriptor[] {OptionDescriptor.IS_FILTER, OptionDescriptor.FILTER_MODE}),
             createServiceDescriptor(
                     "rdkit.calculators.logp",
                     "LogP (RDKit)",

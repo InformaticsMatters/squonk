@@ -20,6 +20,9 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.types.TypeResolver;
 
+import static org.squonk.util.CommonConstants.*;
+import static org.squonk.util.CommonConstants.VALUE_INCLUDE_FAIL;
+
 /**
  * @author timbo
  */
@@ -50,6 +53,17 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
 
     protected static final ServiceDescriptor[] SERVICE_DESCRIPTOR_CALCULATORS
             = new ServiceDescriptor[]{
+            createServiceDescriptor(
+                    "chemaxon.calculators.verify",
+                    "Verify structure (ChemAxon)",
+                    "Verify that the molecules are valid according to ChemAxon's Marvin",
+                    new String[]{"verify", "chemaxon"},
+                    "icons/properties_add.png",
+                    new String[]{"/Chemistry/Toolkits/RDKit/Verify", "/Chemistry/Verify"},
+                    "asyncHttp",
+                    "verify",
+                    0f,
+                    new OptionDescriptor[] {OptionDescriptor.IS_FILTER, OptionDescriptor.FILTER_MODE}),
             createServiceDescriptor(
                     "chemaxon.calculators.logp",
                     "LogP (CXN)",
@@ -222,7 +236,12 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 })
                 .endRest()
                 //
-                .post("logp").description("Calculate the calculated logP for the supplied MoleculeObjects")
+                .post("verify").description("Verify as Marvin molecules")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_STRUCTURE_VERIFY, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("logp").description("Calculate the logP for the supplied MoleculeObjects")
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, resolver, ROUTE_STATS))
                 .endRest()

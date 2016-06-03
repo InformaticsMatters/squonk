@@ -11,12 +11,16 @@ import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.options.OptionDescriptor;
 import org.squonk.types.CDKSDFile;
 import org.squonk.types.TypeResolver;
 
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.squonk.util.CommonConstants.*;
+import static org.squonk.util.CommonConstants.VALUE_INCLUDE_FAIL;
 
 /**
  * @author timbo
@@ -27,6 +31,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
 
     private static final TypeResolver resolver = new TypeResolver();
 
+    private static final String ROUTE_VERIFY = "verify";
     private static final String ROUTE_LOGP = "logp";
     private static final String ROUTE_DONORS_ACCEPTORS = "donors_acceptors";
     private static final String ROUTE_WIENER_NUMBERS = "wiener_numbers";
@@ -40,20 +45,29 @@ public class CdkRestRouteBuilder extends RouteBuilder {
     protected static final ServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
             = new ServiceDescriptor[]{
             createServiceDescriptor(
+                    "cdk.calculators.verify",
+                    "Verify structure (CDK)",
+                    "Verify that the molecules are valid according to CDK",
+                    new String[]{"verify", "cdk"},
+                    new String[]{"/Chemistry/Toolkits/CDK/Verify", "/Chemistry/Verify"},
+                    "icons/properties_add.png",
+                    ROUTE_VERIFY,
+                    new OptionDescriptor[] {OptionDescriptor.IS_FILTER, OptionDescriptor.FILTER_MODE}),
+            createServiceDescriptor(
                     "cdk.logp", "LogP (CDK)", "LogP predictions for XLogP, ALogP and AMR using CDK",
                     new String[]{"logp", "partitioning", "molecularproperties", "cdk"},
                     new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Partioning"},
-                    "icons/properties_add.png", ROUTE_LOGP),
+                    "icons/properties_add.png", ROUTE_LOGP, null),
             createServiceDescriptor(
                     "cdk.donors_acceptors", "HBA & HBD (CDK)", "H-bond donor and acceptor counts using CDK",
                     new String[]{"hbd", "donors", "hba", "acceptors", "topology", "molecularproperties", "cdk"},
                     new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Topological"},
-                    "icons/properties_add.png", ROUTE_DONORS_ACCEPTORS),
+                    "icons/properties_add.png", ROUTE_DONORS_ACCEPTORS, null),
             createServiceDescriptor(
                     "cdk.wiener_numbers", "Wiener Numbers (CDK)", "Wiener path and polarity numbers using CDK",
                     new String[]{"wiener", "topology", "molecularproperties", "cdk"},
                     new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Topological"},
-                    "icons/properties_add.png", ROUTE_WIENER_NUMBERS)
+                    "icons/properties_add.png", ROUTE_WIENER_NUMBERS, null)
     };
 
     protected static final ServiceDescriptor[] CONVERTERS_SERVICE_DESCRIPTOR
@@ -62,10 +76,10 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                     "cdk.export.sdf", "SDF Export (CDK)", "Convert to SD file format using CDK",
                     new String[]{"export", "sdf", "sdfile", "cdk"},
                     new String[]{"/Chemistry/Toolkits/CDK/IO"},
-                    "default_icon.png", ROUTE_CONVERT_TO_SDF)
+                    "default_icon.png", ROUTE_CONVERT_TO_SDF, null)
     };
 
-    private static ServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String[] paths, String icon, String endpoint) {
+    private static ServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String[] paths, String icon, String endpoint, OptionDescriptor[] options) {
         return new ServiceDescriptor(
                 id, name, description, tags, null, paths,
                 "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
@@ -84,7 +98,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                                 endpoint, // endpoint
                                 true, // URL is relative
                                 AsyncHttpProcessDatasetJobDefinition.class,
-                                null, null, null, null, null,
+                                null, null, null, null, options,
                                 StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
                 }
         );
@@ -125,6 +139,11 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 .process((Exchange exch) -> {
                     exch.getIn().setBody(CALCULATORS_SERVICE_DESCRIPTOR);
                 })
+                .endRest()
+                //
+                .post(ROUTE_VERIFY).description("Verify as CDK molecules")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(CdkCalculatorsRouteBuilder.CDK_STRUCTURE_VERIFY, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post(ROUTE_LOGP).description("Calculate the logP for the supplied structures")

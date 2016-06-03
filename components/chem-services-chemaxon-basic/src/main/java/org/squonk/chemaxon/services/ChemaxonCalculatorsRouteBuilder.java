@@ -4,6 +4,7 @@ import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.squonk.camel.chemaxon.processor.ChemAxonVerifyStructureProcessor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 
 /**
@@ -18,6 +19,7 @@ import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
  */
 public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
 
+    public static final String CHEMAXON_STRUCTURE_VERIFY = "direct:structure_verify";
     public static final String CHEMAXON_LOGP = "direct:logp";
     public static final String CHEMAXON_ATOM_COUNT = "direct:atomcount";
     public static final String CHEMAXON_ATOM_BOND_COUNT = "direct:atomcount_bondcount";
@@ -28,6 +30,13 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+
+        from(CHEMAXON_STRUCTURE_VERIFY)
+                .log("CHEMAXON_STRUCTURE_VERIFY starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new ChemAxonVerifyStructureProcessor())
+                .log("CHEMAXON_STRUCTURE_VERIFY finished");
+
 
         // Simple route that calculates the LogP of molecules
         from(CHEMAXON_LOGP)
