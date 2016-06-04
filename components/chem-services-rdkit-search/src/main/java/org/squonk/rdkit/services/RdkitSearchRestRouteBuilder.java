@@ -117,7 +117,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
 
                                             new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity")
                                                     .withDefaultValue("sim")
-                                                    .withAccess(true, true) // needs to be invisible
+                                                    .withAccess(false, false) // needs to be invisible
                                                     .withMinMaxValues(1,1),
 
                                             new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)")

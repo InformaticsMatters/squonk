@@ -37,8 +37,10 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBodyAndHeader(
-                'direct:pharmacophore/streaming', dataset, MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE, mol2).getStream()
+        Stream results = template.requestBodyAndHeaders(
+                'direct:pharmacophore/streaming', dataset,
+                [(MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE+"_source"): target,
+                 (MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE+"_format"): "smiles"]).getStream()
         long count = results.count()
         long t1 = System.currentTimeMillis()
         
@@ -58,8 +60,10 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         
         when:
         long t0 = System.currentTimeMillis()
-        Stream results = template.requestBodyAndHeader(
-                'direct:pharmacophore/streaming', dataset, MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE, mol2).getStream()
+        Stream results = template.requestBodyAndHeaders(
+                'direct:pharmacophore/streaming', dataset,
+                [(MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE+"_source"): target,
+                 (MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE+"_format"): "smiles"]).getStream()
         long count = results.count()
         long t1 = System.currentTimeMillis()
         println "...done"

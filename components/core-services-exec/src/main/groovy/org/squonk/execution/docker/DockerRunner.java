@@ -1,11 +1,5 @@
 package org.squonk.execution.docker;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.UUID;
-import java.util.logging.Logger;
-
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.model.AccessMode;
@@ -13,6 +7,12 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.UUID;
+import java.util.logging.Logger;
 
 /**
  * Simple Docker executor that expects inputs and outputs.
@@ -47,12 +47,15 @@ public class DockerRunner {
      * @param hostPathBase The directory on the host where the input and outputs will be written. Must exist and be writeable.
      * @throws IOException
      */
-    public DockerRunner(String imageName, String hostPathBase) throws IOException {
+    public DockerRunner(String imageName, String hostPathBase) {
         this.imageName = imageName;
         this.baseDir = new File(hostPathBase + "/" + UUID.randomUUID().toString());
         LOG.fine("Base dir is " + baseDir.getPath());
         this.inputDir = new File(baseDir, "input");
         this.outputDir = new File(baseDir, "output");
+    }
+
+    public void init() throws IOException {
         if (!this.baseDir.mkdir()) {
             throw new IOException("Could not create base dir");
         }
@@ -61,6 +64,28 @@ public class DockerRunner {
         }
         if (!this.outputDir.mkdir()) {
             throw new IOException("Could not create output dir");
+        }
+    }
+
+    public long writeInput(String filename, InputStream content) throws IOException {
+        File file = new File(getInputDir(), filename);
+        try {
+            return Files.copy(content, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } finally {
+            content.close();
+        }
+    }
+
+    public long writeInput(String filename, String content) throws IOException {
+        return writeInput(filename, new ByteArrayInputStream(content.getBytes()));
+    }
+
+    public InputStream readOutput(String filename) throws IOException {
+        File f = new File(getOutputDir(), filename);
+        if (f.exists()) {
+            return new FileInputStream(f);
+        } else {
+            return null;
         }
     }
 
@@ -121,19 +146,16 @@ public class DockerRunner {
     public static void main(String[] args) throws IOException {
 
         DockerRunner runner = new DockerRunner("busybox", "/home/timbo/tmp/work/");
+        runner.init();
+        runner.writeInput("run.sh", "touch /tmp/output/IWasHere\n");
 
-        File input = runner.getInputDir();
-        FileWriter shellScript = new FileWriter(new File(input, "run.sh"));
-        shellScript.write("touch /tmp/output/superman\n");
-        shellScript.flush();
-        shellScript.close();
-
-
+        long t0 = System.currentTimeMillis();
         runner.execute("/bin/sh", "/tmp/input/run.sh");
+        long t1 = System.currentTimeMillis();
+        System.out.println("Execution completed in " + (t1-t0) + "ms");
         System.out.println("Results found in " + runner.getOutputDir().getPath());
-
         runner.clean();
-        System.out.println("Results cleaned up");
+        System.out.println("All data deleted");
 
     }
 

@@ -16,6 +16,8 @@ public interface StepDefinitionConstants {
     String OPTION_BODY = "body";
     String OPTION_BODY_CONTENT_TYPE = "body-content-type";
     String OPTION_SERVICE_ENDPOINT = "serviceEndpoint"; // the URL for the service
+    String OPTION_MEDIA_TYPE_INPUT = "inputMediaType"; // the format for the input
+    String OPTION_MEDIA_TYPE_OUTPUT = "outputMediaType"; // the format for the output
 
     interface MoleculeServiceThinExecutor {
         String CLASSNAME = "org.squonk.execution.steps.impl.MoleculeServiceThinExecutorStep";

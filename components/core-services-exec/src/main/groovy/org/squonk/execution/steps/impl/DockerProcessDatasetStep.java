@@ -3,7 +3,7 @@ package org.squonk.execution.steps.impl;
 import com.im.lac.types.MoleculeObject;
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
-import org.squonk.dataset.DatasetMetadata;
+import org.squonk.dataset.DatasetMetadata;;
 import org.squonk.execution.docker.DockerRunner;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
@@ -40,55 +40,38 @@ public class DockerProcessDatasetStep extends AbstractStep {
         }
         LOG.info("Docker image: " + image);
         DockerRunner runner = new DockerRunner(image, "/tmp/");
+        try {
+            JsonHandler jh = JsonHandler.getInstance();
 
-        // create files
-        File inputDir = runner.getInputDir();
-        DatasetMetadata meta = input.getMetadata();
-        File metaF = new File(inputDir, "input.meta");
-        boolean success = metaF.createNewFile();
-        if (!success) {
-            throw new IOException("Could not create input file for metadata");
-        }
-        File dataF = new File(inputDir, "input.data");
-        success = dataF.createNewFile();
-        if (!success) {
-            throw new IOException("Could not create input file for data");
-        }
-        // copy metadata
-        JsonHandler.getInstance().objectToFile(meta, metaF);
+            // create input files
+            // note - we should be able to do this directly from the varman, not needing to go via the Dataset
+            runner.writeInput("input.meta", jh.objectToJson(input.getMetadata()));
+            runner.writeInput("input.data", input.getInputStream(true));
 
-        // copy data
-        try (InputStream is = input.getInputStream(false)) {
-            Files.copy(is, dataF.toPath());
-        }
+            // run the command
+            runner.execute(command);
+            LOG.info("Results found in " + runner.getOutputDir().getPath());
 
-        // run the command
-        runner.execute(command);
-        LOG.info("Results found in " + runner.getOutputDir().getPath());
-
-        // grab output
-        File outputDir = runner.getOutputDir();
-        File resultsF = new File(inputDir, "output.data");
-        if (!resultsF.exists()) {
-            throw new IOException("Results file not found. Expected file named output.data in directory output");
-        }
-        File resultsMF = new File(inputDir, "output.meta");
-        DatasetMetadata<MoleculeObject> resultsMeta = null;
-        if (resultsMF.exists()) {
-            try (InputStream mis = new FileInputStream(resultsMF)) {
-                resultsMeta = JsonHandler.getInstance().objectFromJson(mis, DatasetMetadata.class);
+            // handle the output
+            DatasetMetadata meta;
+            try (InputStream is = runner.readOutput("output.meta")) {
+                if (is == null) {
+                    meta = input.getMetadata();
+                } else {
+                    meta = jh.objectFromJson(is, DatasetMetadata.class);
+                }
             }
-        } else {
-            resultsMeta = new DatasetMetadata(MoleculeObject.class);
-        }
-        try (FileInputStream fis = new FileInputStream(resultsF)) {
-            Dataset<MoleculeObject> dataset = new Dataset(MoleculeObject.class, fis, resultsMeta);
-            createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, dataset, varman);
-            LOG.info("Results: " + dataset.getMetadata());
-        }
 
-        // cleanup
-        runner.clean();
-        LOG.info("Results cleaned up");
+            try (InputStream is = runner.readOutput("output.data")) {
+                Dataset<MoleculeObject> dataset = new Dataset(MoleculeObject.class, is, meta);
+                createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, dataset, varman);
+                LOG.info("Results: " + dataset.getMetadata());
+            }
+
+        } finally {
+            // cleanup
+            runner.clean();
+            LOG.info("Results cleaned up");
+        }
     }
 }
