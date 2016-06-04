@@ -5,7 +5,6 @@ import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
 import com.im.lac.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.cdi.ContextName;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.core.AccessMode;
@@ -21,13 +20,10 @@ import java.util.stream.Stream;
 
 import static org.squonk.api.MimeTypeResolver.MIME_TYPE_DATASET_BASIC_JSON;
 import static org.squonk.api.MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON;
-import static org.squonk.util.CommonConstants.*;
-import static org.squonk.util.CommonConstants.VALUE_INCLUDE_FAIL;
 
 /**
  * @author timbo
  */
-@ContextName("openchemlib")
 public class OpenChemLibRestRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(OpenChemLibRestRouteBuilder.class.getName());

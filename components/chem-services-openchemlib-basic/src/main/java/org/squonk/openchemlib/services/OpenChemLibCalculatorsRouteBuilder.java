@@ -1,8 +1,6 @@
 package org.squonk.openchemlib.services;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.cdi.ContextName;
-import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.openchemlib.processor.OCLVerifyStructureProcessor;
 import org.squonk.camel.openchemlib.processor.PredictorProcessor;
 import org.squonk.openchemlib.predict.OCLLogPPredictor;
@@ -12,7 +10,6 @@ import org.squonk.openchemlib.predict.OCLSolubilityPredictor;
 /**
  * Created by timbo on 06/04/16.
  */
-@ContextName("openchemlib")
 public class OpenChemLibCalculatorsRouteBuilder extends RouteBuilder {
 
     static final String OCL_STRUCTURE_VERIFY = "direct:structure_verify";
@@ -25,7 +22,7 @@ public class OpenChemLibCalculatorsRouteBuilder extends RouteBuilder {
 
         from(OCL_STRUCTURE_VERIFY)
                 .log("OCL_STRUCTURE_VERIFY starting")
-                //.threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .threads().executorServiceRef(CustomCamelContext.THREAD_POOL_PROFILE)
                 .process(new OCLVerifyStructureProcessor());
 
         from(OCL_LOGP )
