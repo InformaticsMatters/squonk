@@ -151,7 +151,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     0.004f,
                     new OptionDescriptor[]{
                             new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false),
-                            new OptionDescriptor<>(new MoleculeTypeDescriptor<>(MoleculeTypeDescriptor.MoleculeType.DISCRETE, new String[]{"smiles"}), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
+                            new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE, new String[]{"smiles"}), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
                             new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
                     }),
             createServiceDescriptor(

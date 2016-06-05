@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Created by timbo on 03/02/16.
  */
-public class MoleculeTypeDescriptor<T> extends SimpleTypeDescriptor<Structure> {
+public class MoleculeTypeDescriptor extends SimpleTypeDescriptor<Structure> {
 
     public enum MoleculeType {DISCRETE, QUERY, REACTION}
 
