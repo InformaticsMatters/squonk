@@ -11,7 +11,7 @@ import java.util.Map;
  *
  * Created by timbo on 03/02/16.
  */
-public class FieldActionTypeDescriptor<T> extends SimpleTypeDescriptor<FieldActionMapping> {
+public class FieldActionTypeDescriptor extends SimpleTypeDescriptor<FieldActionMapping> {
 
     private final String[] actions;
 

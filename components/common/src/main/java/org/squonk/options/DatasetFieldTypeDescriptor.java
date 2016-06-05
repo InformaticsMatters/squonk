@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * Created by timbo on 03/02/16.
  */
-public class DatasetFieldTypeDescriptor<T> extends SimpleTypeDescriptor<String> {
+public class DatasetFieldTypeDescriptor extends SimpleTypeDescriptor<String> {
 
     private final Class[] typeFilters;
 

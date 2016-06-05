@@ -8,7 +8,7 @@ import java.io.File;
 /** Type descriptor for a File that has to be uploaded
  * Created by timbo on 03/02/16.
  */
-public class FileTypeDescriptor<T> extends SimpleTypeDescriptor<File> {
+public class FileTypeDescriptor extends SimpleTypeDescriptor<File> {
 
     private final String[] fileTypes;
 
