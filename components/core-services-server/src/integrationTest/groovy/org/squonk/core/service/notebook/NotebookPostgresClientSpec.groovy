@@ -45,6 +45,9 @@ class NotebookPostgresClientSpec extends Specification {
         nb1.description == "notebook one"
         nb1.createdDate != null
         nb1.lastUpdatedDate != null
+        nb1.savepointCount == 0
+        nb1.totalEditableCount == 1
+        nb1.ownerEditableCount == 1
     }
 
     void "list notebooks"() {

@@ -20,7 +20,9 @@ public class NotebookDTO {
     private final Date createdDate;
     private final Date lastUpdatedDate;
     private final List<String> layers = new ArrayList<>();
-
+    private int savepointCount;
+    private int ownerEditableCount;
+    private int totalEditableCount;
 
     public NotebookDTO(
             @JsonProperty("id") Long id,
@@ -29,7 +31,10 @@ public class NotebookDTO {
             @JsonProperty("owner") String owner,
             @JsonProperty("createdDate") Date createdDate,
             @JsonProperty("lastUpdatedDate") Date lastUpdatedDate,
-            @JsonProperty("layers") List<String> layers) {
+            @JsonProperty("layers") List<String> layers,
+            @JsonProperty("savepointCount") int savepointCount,
+            @JsonProperty("ownerEditableCount") int ownerEditableCount,
+            @JsonProperty("totalEditableCount") int totalEditableCount) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -39,6 +44,9 @@ public class NotebookDTO {
         if (layers != null && !layers.isEmpty()) {
             this.layers.addAll(layers);
         }
+        this.savepointCount = savepointCount;
+        this.ownerEditableCount = ownerEditableCount;
+        this.totalEditableCount = totalEditableCount;
     }
 
 
@@ -68,5 +76,17 @@ public class NotebookDTO {
 
     public List<String> getLayers() {
         return layers;
+    }
+
+    public int getSavepointCount() {
+        return savepointCount;
+    }
+
+    public int getOwnerEditableCount() {
+        return ownerEditableCount;
+    }
+
+    public int getTotalEditableCount() {
+        return totalEditableCount;
     }
 }

@@ -52,13 +52,15 @@ class NotebookPostgresClient implements NotebookVariableClient {
                 if (id == null) {
                     throw new IllegalStateException("Failed to insert notebook for user $username. Is username valid?")
                 }
-                // fetch the nb definition
-                result = fetchNotebookDescriptorById(db, id)
+
                 // create the first editable so that we have something to work with
                 // TODO - this can be made more efficient?
                 Long userId = fetchIdForUsername(db, username)
-                Long editableId = insertNotebookEditable(db, result.id, userId)
+                Long editableId = insertNotebookEditable(db, id, userId)
                 log.info("Created editable $editableId for notebook $id");
+
+                // fetch the nb definition
+                result = fetchNotebookDescriptorById(db, id)
             }
             return result
         } finally {
@@ -510,9 +512,25 @@ class NotebookPostgresClient implements NotebookVariableClient {
         return null
     }
 
-    private static String SQL_NB_FETCH = "SELECT n.*, u.username FROM users.nb_descriptor n JOIN users.users u ON u.id = n.owner_id"
-    private static String SQL_NB_FETCH_BY_ID = SQL_NB_FETCH + " WHERE n.id = :notebookId"
-    private static String SQL_NB_FETCH_BY_USERNAME = SQL_NB_FETCH + " WHERE n.visibility > 0 OR u.username = :username ORDER BY n.created DESC"
+    private static String SQL_NB_FETCH_PREFIX = '''\
+        |SELECT u.username, s.* FROM users.users u
+        |  JOIN (SELECT n.*,
+        |    sum(case v.type when 'S' then 1 else 0 end) sp_count,
+        |    sum(case v.type when 'E' then 1 else 0 end) ed_count,
+        |    sum((case v.type when 'E' THEN 1 else 0 end) * (case v.owner_id when n.owner_id THEN 1 else 0 end)) my_count
+        |  FROM users.nb_descriptor n
+        |  JOIN users.nb_version v ON v.notebook_id = n.id'''.stripMargin()
+
+    private static String SQL_NB_FETCH_BY_ID = SQL_NB_FETCH_PREFIX + '''
+        |  WHERE n.id = :notebookId
+        |  GROUP BY n.id) AS s
+        |  ON s.owner_id = u.id'''.stripMargin()
+
+    private static String SQL_NB_FETCH_BY_USERNAME = SQL_NB_FETCH_PREFIX + '''
+        |  GROUP BY n.id) AS s
+        |  ON s.owner_id = u.id
+        |  WHERE s.visibility > 0 OR u.username = :username
+        |  ORDER BY s.created DESC'''.stripMargin()
 
     private NotebookDTO fetchNotebookDescriptorById(Sql db, Long notebookId) {
         def data = db.firstRow(SQL_NB_FETCH_BY_ID, [notebookId: notebookId])
@@ -520,6 +538,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
     }
 
     private List<NotebookDTO> fetchNotebookDescriptorsByUsername(Sql db, String username) {
+        log.info("SQL: " + SQL_NB_FETCH_BY_USERNAME)
         List<NotebookDTO> results = new ArrayList<>()
         def data = db.eachRow(SQL_NB_FETCH_BY_USERNAME, [username: username]) {
             results << buildNotebookDescriptor(it)
@@ -533,7 +552,8 @@ class NotebookPostgresClient implements NotebookVariableClient {
         if (data.visibility > 0) {
             layers << 'public'
         }
-        return new NotebookDTO(data.id, data.name, data.description, data.username, data.created, data.updated, layers)
+        return new NotebookDTO(data.id, data.name, data.description, data.username, data.created, data.updated, layers,
+                (int)data.sp_count, (int)data.my_count, (int)data.ed_count)
     }
 
     private NotebookDTO doNotebookLayerChange(Long notebookId, int value) throws Exception {

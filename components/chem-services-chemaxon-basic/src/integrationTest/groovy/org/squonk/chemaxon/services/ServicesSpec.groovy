@@ -10,6 +10,8 @@ import org.squonk.camel.chemaxon.processor.screening.MoleculeScreenerProcessor
 import org.squonk.core.ServiceDescriptor
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
+import org.squonk.options.MoleculeTypeDescriptor
+import org.squonk.options.types.Structure
 import org.squonk.types.io.JsonHandler
 import org.squonk.util.IOUtils
 import spock.lang.Shared
@@ -119,15 +121,14 @@ class ServicesSpec extends Specification {
         Dataset dataset = Molecules.nci100Dataset()
         InputStream json = dataset.getInputStream(false)
         ProducerTemplate pt = context.createProducerTemplate()
-        String qJson = JsonHandler.instance.objectToJson(new MoleculeObject('CC1=CC(=O)C=CC1=O', 'smiles'))
-
 
         expect:
         def headers = [
                 (Exchange.HTTP_METHOD):"POST",
                 "Content-Type":c,
                 "Accept": a,
-                (MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE): qJson,
+                (MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE+"_source"): 'CC1=CC(=O)C=CC1=O',
+                (MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE+"_format"): 'smiles',
                 (MoleculeScreenerProcessor.HEADER_THRESHOLD): 0.4
         ]
 

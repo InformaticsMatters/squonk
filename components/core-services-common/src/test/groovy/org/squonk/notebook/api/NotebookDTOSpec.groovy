@@ -11,7 +11,7 @@ class NotebookDTOSpec extends Specification {
     void "to and from json"() {
 
         when:
-        NotebookDTO d1 = new NotebookDTO(1, "name", "description", "owner", new Date(), new Date(), ['public', 'banana'])
+        NotebookDTO d1 = new NotebookDTO(1, "name", "description", "owner", new Date(), new Date(), ['public', 'banana'], 0, 0, 0)
         String json = JsonHandler.getInstance().objectToJson(d1)
         NotebookDTO d2 = JsonHandler.getInstance().objectFromJson(json, NotebookDTO.class)
 
