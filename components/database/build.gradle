@@ -16,9 +16,7 @@ buildscript {
 }
 
 flyway {
-    //          jdbc:postgresql://localhost:5432/squonk'
-    url =      'jdbc:postgresql://' +
-            (System.getenv('SQUONK_DB_SERVER') ?: 'localhost') + ':5432/squonk'
+    url = 'jdbc:postgresql://' + (System.getenv('SQUONK_DB_SERVER') ?: 'localhost') + ':5432/squonk'
     user = 'postgres'
     password = System.getenv('POSTGRES_PASSWORD') ?: 'postgres'
     schemas = ['users']

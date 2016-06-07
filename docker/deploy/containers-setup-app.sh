@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # sets up the containers ready for use.
-# once comple run them with run-containers.sh
+# once complete run them with run-containers.sh
 
 if [ ! $PUBLIC_HOST ]; then
 	echo "environment variables not set? Run 'source setenv.sh' to set them"
@@ -9,6 +9,11 @@ if [ ! $PUBLIC_HOST ]; then
 fi
 
 base=$PWD
+
+if [ ! -d /tmp/work ]; then
+  mkdir /tmp/work
+fi
+
 
 echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 

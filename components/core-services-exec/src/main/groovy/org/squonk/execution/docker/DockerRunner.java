@@ -18,13 +18,12 @@ import java.util.logging.Logger;
  * Simple Docker executor that expects inputs and outputs.
  * This uses the docker-java library (https://github.com/docker-java/docker-java).
  *
- * A temporary work dir is created under the specified host path. The name is randomly generated and the input and output
- * dirs available once the constructor has been called. Those directories are bound to the container dirs /tmp/input and
- * /tmp/output. Typically you would write any input variables and other content (e.g. a shell script to execute) into
- * the host input dir (obtained from {@link #getInputDir()}}) and then execute the container as appropriate (e.g. execute
- * the shell script you put in the input dir) writing the output to /tmp/output.
+ * A temporary work dir is created under the specified host path. The name is randomly generated. This directories is bound
+ * to the container dirs /tmp/work. Typically you would write any input variables and other content (e.g. a shell script to execute) into
+ * the host dir (obtained from {@link #getWorkDir()}}) and then execute the container as appropriate (e.g. execute
+ * the shell script you put in the work dir) writing the output to that dir.
  *
- * Then once execution is complete you will find the output in the host dir obtained from {@link #getOutputDir()}}.
+ * Then once execution is complete you will find the output in the host dir.
  *
  * Finally, once you are finished with the inputs and outputs you can call the {@link #clean()} method to delete the
  * directories that were created
@@ -37,9 +36,8 @@ public class DockerRunner {
     private static final Logger LOG = Logger.getLogger(DockerRunner.class.getName());
 
     private final String imageName;
-    private final File baseDir;
-    private final File inputDir;
-    private final File outputDir;
+    private final File workDir;
+
 
     /**
      *
@@ -49,27 +47,26 @@ public class DockerRunner {
      */
     public DockerRunner(String imageName, String hostPathBase) {
         this.imageName = imageName;
-        this.baseDir = new File(hostPathBase + "/" + UUID.randomUUID().toString());
-        LOG.fine("Base dir is " + baseDir.getPath());
-        this.inputDir = new File(baseDir, "input");
-        this.outputDir = new File(baseDir, "output");
+        this.workDir = new File(hostPathBase + "/" + UUID.randomUUID().toString());
+        LOG.fine("Work dir is " + workDir.getPath());
+
     }
 
     public void init() throws IOException {
-        if (!this.baseDir.mkdir()) {
-            throw new IOException("Could not create base dir");
+        if (!this.workDir.mkdir()) {
+            throw new IOException("Could not create work dir");
         }
-        if (!this.inputDir.mkdir()) {
-            throw new IOException("Could not create input dir");
-        }
-        if (!this.outputDir.mkdir()) {
-            throw new IOException("Could not create output dir");
-        }
+
     }
 
     public long writeInput(String filename, InputStream content) throws IOException {
-        File file = new File(getInputDir(), filename);
+        File file = new File(getWorkDir(), filename);
         try {
+            if (!file.exists()) {
+                if (!file.createNewFile()) {
+                    throw new IOException("Failed to create input file " + filename);
+                }
+            }
             return Files.copy(content, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } finally {
             content.close();
@@ -81,7 +78,7 @@ public class DockerRunner {
     }
 
     public InputStream readOutput(String filename) throws IOException {
-        File f = new File(getOutputDir(), filename);
+        File f = new File(getWorkDir(), filename);
         if (f.exists()) {
             return new FileInputStream(f);
         } else {
@@ -89,20 +86,12 @@ public class DockerRunner {
         }
     }
 
-    public File getBaseDir() {
-        return baseDir;
-    }
-
-    public File getInputDir() {
-        return inputDir;
-    }
-
-    public File getOutputDir() {
-        return outputDir;
+    public File getWorkDir() {
+        return workDir;
     }
 
     public void clean() {
-        deleteRecursive(baseDir);
+        deleteRecursive(workDir);
     }
 
     private boolean deleteRecursive(File path) {
@@ -128,35 +117,33 @@ public class DockerRunner {
         DockerClientConfig config = DockerClientConfig.createDefaultConfigBuilder().build();
         DockerClient dockerClient = DockerClientBuilder.getInstance(config).build();
 
-        Volume input = new Volume("/tmp/input");
-        Volume output = new Volume("/tmp/output");
+        Volume work = new Volume("/tmp/work");
 
         CreateContainerResponse container = dockerClient.createContainerCmd(imageName)
-                .withVolumes(input, output)
-                .withBinds(new Bind(inputDir.getPath(), input, AccessMode.ro), new Bind(outputDir.getPath(), output, AccessMode.rw))
+                .withVolumes(work)
+                .withBinds(new Bind(workDir.getPath(), work, AccessMode.rw))
                 .withCmd(cmd)
                 .exec();
 
         dockerClient.startContainerCmd(container.getId()).exec();
         int resp = dockerClient.waitContainerCmd(container.getId()).exec();
-        LOG.fine("Docker execution completed. Results written to " + outputDir.getPath());
+        LOG.fine("Docker execution completed. Results written to " + workDir.getPath());
         return resp;
     }
 
     public static void main(String[] args) throws IOException {
 
-        DockerRunner runner = new DockerRunner("busybox", "/home/timbo/tmp/work/");
+        DockerRunner runner = new DockerRunner("busybox", "/tmp/work/");
         runner.init();
-        runner.writeInput("run.sh", "touch /tmp/output/IWasHere\n");
+        runner.writeInput("run.sh", "touch /tmp/work/IWasHere\n");
 
         long t0 = System.currentTimeMillis();
-        runner.execute("/bin/sh", "/tmp/input/run.sh");
+        runner.execute("/bin/sh", "/tmp/work/run.sh");
         long t1 = System.currentTimeMillis();
         System.out.println("Execution completed in " + (t1-t0) + "ms");
-        System.out.println("Results found in " + runner.getOutputDir().getPath());
+        System.out.println("Results found in " + runner.getWorkDir().getPath());
         runner.clean();
         System.out.println("All data deleted");
-
     }
 
 }

@@ -20,10 +20,7 @@ dependencies {
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-rabbitmq:$camelVersion"
     compile "org.apache.camel:camel-jackson:$camelVersion"
-    compile "io.astefanutti.camel.cdi:camel-cdi:1.2.0"
-
-    compile 'com.sun.jersey:jersey-client:1.19'
-    compile 'com.sun.jersey:jersey-json:1.19'
+    compile "org.apache.camel:camel-cdi:$camelVersion"
 
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 }
@@ -56,7 +53,8 @@ docker {
     certPath = null
 
     javaApplication {
-        baseImage = 'java:openjdk-8-jre'
+        //baseImage = 'java:openjdk-8-jre'
+        baseImage = 'informaticsmatters/openjdk_docker'
         maintainer = 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
         tag = 'squonk/cellexecutor'
     }

@@ -24,10 +24,9 @@ import spock.lang.Stepwise
  * Created by timbo on 01/06/16.
  */
 @Stepwise
-class ExecuteServicesAsJobsSpec extends Specification {
+class ExecuteCellsAsJobsSpec extends Specification {
 
     static String username = 'squonkuser'
-    static SquonkClientConfig CONFIG = new SquonkClientConfig()
     static JsonHandler JSON = JsonHandler.instance
 
     @Shared
@@ -45,7 +44,7 @@ class ExecuteServicesAsJobsSpec extends Specification {
 
     void setupSpec() {
         sleep(10000) // need to wait for everything to start
-        NotebookDTO notebookDTO = notebookClient.createNotebook(username, "ExecuteServicesAsJobsSpec name", "ExecuteServicesAsJobsSpec description")
+        NotebookDTO notebookDTO = notebookClient.createNotebook(username, "ExecuteCellsAsJobsSpec name", "ExecuteCellsAsJobsSpec description")
         editable = notebookClient.listEditables(notebookDTO.getId(), username)[0]
         DatasetHandler dh = new DatasetHandler(MoleculeObject.class)
         Dataset dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
@@ -87,12 +86,11 @@ class ExecuteServicesAsJobsSpec extends Specification {
         jobs != null
     }
 
-    void "cdk logp"() {
+    void "noop cell"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
+        StepDefinition step = new StepDefinition("org.squonk.execution.steps.impl.NoopStep")
                 .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "cdklogp")
-                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, CONFIG.basicCdkChemServicesBaseUrl+"/calculators/logp")
+                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "noop")
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(notebookId, editableId, cellId, step)
         jobdef.configureCellAndSteps(notebookId, editableId, cellId, step)
@@ -100,7 +98,7 @@ class ExecuteServicesAsJobsSpec extends Specification {
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)
         JobStatus status2 = waitForJob(status1.jobId)
-        int count = findResultSize(notebookId, editableId, cellId, "cdklogp")
+        int count = findResultSize(notebookId, editableId, cellId, "noop")
 
         then:
         status1.status == JobStatus.Status.RUNNING
@@ -108,13 +106,14 @@ class ExecuteServicesAsJobsSpec extends Specification {
         count == 36
     }
 
-    void "chemaxon logp"() {
+    void "docker cell"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
+        StepDefinition step = new StepDefinition(StepDefinitionConstants.DockerProcessDataset.CLASSNAME)
                 .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "cxnlogp")
-                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, CONFIG.basicChemaxonChemServicesBaseUrl+"/calculators/logp")
-
+                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "docker")
+                .withOption(StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_IMAGE, "busybox")
+                .withOption(StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_COMMAND,
+                    "mv /tmp/work/input.meta /tmp/work/output.meta\nmv /tmp/work/input.data.gz /tmp/work/output.data.gz\n")
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(notebookId, editableId, cellId, step)
         jobdef.configureCellAndSteps(notebookId, editableId, cellId, step)
@@ -122,7 +121,7 @@ class ExecuteServicesAsJobsSpec extends Specification {
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)
         JobStatus status2 = waitForJob(status1.jobId)
-        int count = findResultSize(notebookId, editableId, cellId, "cxnlogp")
+        int count = findResultSize(notebookId, editableId, cellId, "docker")
 
         then:
         status1.status == JobStatus.Status.RUNNING
@@ -130,52 +129,4 @@ class ExecuteServicesAsJobsSpec extends Specification {
         count == 36
     }
 
-    void "chemaxon spherex"() {
-
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
-                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "spherex")
-                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, CONFIG.basicChemaxonChemServicesBaseUrl+"/descriptors/clustering/spherex/ecfp4")
-                .withOption('header.min_clusters', 3)
-                .withOption('header.max_clusters', 6)
-
-        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(notebookId, editableId, cellId, step)
-        jobdef.configureCellAndSteps(notebookId, editableId, cellId, step)
-
-        when:
-        JobStatus status1 = jobClient.submit(jobdef, username, null)
-        JobStatus status2 = waitForJob(status1.jobId)
-        int count = findResultSize(notebookId, editableId, cellId, "spherex")
-
-        then:
-        status1.status == JobStatus.Status.RUNNING
-        status2.status == JobStatus.Status.COMPLETED
-        count == 36
-    }
-
-    void "chemaxon screen"() {
-
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
-                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "screen")
-                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, CONFIG.basicChemaxonChemServicesBaseUrl+"/descriptors/screening/ecfp4")
-                .withOption('option.filter', true)
-                .withOption('header.threshold', 0.5)
-                .withOption('header.structure_source', 'Oc1cccc(c1)c2nc(N3CCOCC3)c4oc5ncccc5c4n2')
-                .withOption('header.structure_format', 'smiles')
-
-        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(notebookId, editableId, cellId, step)
-        jobdef.configureCellAndSteps(notebookId, editableId, cellId, step)
-
-        when:
-        JobStatus status1 = jobClient.submit(jobdef, username, null)
-        JobStatus status2 = waitForJob(status1.jobId)
-        int count = findResultSize(notebookId, editableId, cellId, "screen")
-
-        then:
-        status1.status == JobStatus.Status.RUNNING
-        status2.status == JobStatus.Status.COMPLETED
-        count >= 1
-        count < 36
-    }
 }

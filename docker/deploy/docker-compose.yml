@@ -135,11 +135,16 @@ cellexecutor:
     - chemservices:chemservices
     - portal:portal
     - rdkitserver:rdkitserver
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /tmp/work:/tmp/work
     environment:
         RABBITMQ_HOST: rabbitmq
         RABBITMQ_SQUONK_PASS:
         SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
         SERVICE_CALLBACK: http://portal:8080/portal
+        DOCKER_HOST: unix:///var/run/docker.sock
+        registry.url: https://index.docker.io/v1/
 
 ################# portal ##########################################################
 # available on http://${PUBLIC_HOST}/portal

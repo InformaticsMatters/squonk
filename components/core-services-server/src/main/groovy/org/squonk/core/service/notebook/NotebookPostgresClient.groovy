@@ -538,7 +538,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
     }
 
     private List<NotebookDTO> fetchNotebookDescriptorsByUsername(Sql db, String username) {
-        log.info("SQL: " + SQL_NB_FETCH_BY_USERNAME)
+        log.fine("SQL: " + SQL_NB_FETCH_BY_USERNAME)
         List<NotebookDTO> results = new ArrayList<>()
         def data = db.eachRow(SQL_NB_FETCH_BY_USERNAME, [username: username]) {
             results << buildNotebookDescriptor(it)
