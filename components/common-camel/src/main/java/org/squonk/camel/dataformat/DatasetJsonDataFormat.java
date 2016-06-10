@@ -19,7 +19,7 @@ public class DatasetJsonDataFormat implements DataFormat {
      * Writes the {@link Dataset} items to the OutputStream.
      * Generates the {@link DatasetMetadata} as it does so,
      * and then sets the DatasetMetadata as a header named by the value of the
-     * {@link JsonHandler.ATTR_DATASET_METADATA} constant.
+     * {@link JsonHandler#ATTR_DATASET_METADATA} constant.
      *
      * @param exch
      * @param o
@@ -43,7 +43,7 @@ public class DatasetJsonDataFormat implements DataFormat {
      * Reads the InputStream as objects into a new
      * {@link Dataset}. The DatasetMetadata MUST be defined
      * as a header named by the value of the
-     * {@link JsonHandler.ATTR_DATASET_METADATA} constant.
+     * {@link JsonHandler#ATTR_DATASET_METADATA} constant.
      *
      * @param exch
      * @param in

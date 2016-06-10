@@ -14,7 +14,6 @@ if [ ! -d /tmp/work ]; then
   mkdir /tmp/work
 fi
 
-
 echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 
 # set up the proxy details in the tomcat apps 

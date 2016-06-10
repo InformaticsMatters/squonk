@@ -223,6 +223,8 @@ task chemServicesWars(type: Copy) {
 
 }
 
+
+
 task dockerFileChemServices(type: Dockerfile) {
 
     dependsOn = [chemServicesWars]

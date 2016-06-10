@@ -46,6 +46,7 @@ cellexecutor:
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     - /tmp/work:/tmp/work
+    - /var/grape_repo
     environment:
         RABBITMQ_HOST: rabbitmq
         RABBITMQ_SQUONK_PASS: squonk

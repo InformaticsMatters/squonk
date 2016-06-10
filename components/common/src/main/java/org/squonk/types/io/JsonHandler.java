@@ -174,6 +174,10 @@ public class JsonHandler {
         mapper.writeValue(f, o);
     }
 
+    public void objectToOutputStream(Object o, OutputStream out) throws JsonProcessingException, IOException {
+        mapper.writeValue(out, o);
+    }
+
     public <T> T objectFromJson(InputStream is, Class<T> type) throws IOException {
         return mapper.readValue(is, type);
     }

@@ -18,6 +18,7 @@ public interface StepDefinitionConstants {
     String OPTION_SERVICE_ENDPOINT = "serviceEndpoint"; // the URL for the service
     String OPTION_MEDIA_TYPE_INPUT = "inputMediaType"; // the format for the input
     String OPTION_MEDIA_TYPE_OUTPUT = "outputMediaType"; // the format for the output
+    String OPTION_DOCKER_IMAGE = "dockerImage";
 
     interface MoleculeServiceThinExecutor {
         String CLASSNAME = "org.squonk.execution.steps.impl.MoleculeServiceThinExecutorStep";
@@ -102,7 +103,6 @@ public interface StepDefinitionConstants {
 
     interface DockerProcessDataset {
          String CLASSNAME = "org.squonk.execution.steps.impl.DockerProcessDatasetStep";
-         String OPTION_DOCKER_IMAGE = "dockerImage";
          String OPTION_DOCKER_COMMAND  = "dockerCommand";
     }
 

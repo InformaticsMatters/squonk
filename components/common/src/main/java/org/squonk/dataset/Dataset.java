@@ -444,10 +444,10 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
      * <code>
      * Dataset ds = ...
      * Stream stream = ds.getStream();
-     * // add operations to the stream if required. these happend prior to metadata generation
+     * // add operations to the stream if required. these happen prior to metadata generation
      * DatasetMetadataGenerator generator = ds.createDatasetMetadataGenerator(stream);
      * try (Stream s = generator.getAsStream())) {
-     *     // add operations to the stream if required. these happend after to metadata generation
+     *     // add operations to the stream if required. these happen after to metadata generation
      *     long size = s.count(); // must perform a terminal operation on the stream
      * }
      * DatasetMetadata meta = generator.getDatasetMetadata(); // this can be blocking

@@ -4,8 +4,6 @@ dependencies {
         
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
-    
-    
+
+    testCompile project(':core-test')
 }
-
-

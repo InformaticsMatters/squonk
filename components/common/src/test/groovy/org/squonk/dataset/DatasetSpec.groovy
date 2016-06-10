@@ -1,9 +1,9 @@
 package org.squonk.dataset
 
-import spock.lang.Specification
+import com.fasterxml.jackson.databind.ObjectReader
 import com.im.lac.types.BasicObject
 import org.squonk.types.io.JsonHandler
-import com.fasterxml.jackson.databind.ObjectReader
+import spock.lang.Specification
 
 /**
  *
@@ -109,4 +109,6 @@ class DatasetSpec extends Specification {
         ds.getStream().count()
         ds.getStream().count()
     }
+
+
 }

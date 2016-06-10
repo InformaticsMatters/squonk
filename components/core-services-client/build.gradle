@@ -54,4 +54,8 @@ task copyDependencies(type: Sync) {
     into 'lib'
 }
 
+clean.doFirst {
+    delete "${projectDir}/lib/"
+}
+
 

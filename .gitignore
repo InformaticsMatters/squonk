@@ -20,6 +20,7 @@ data/testfiles/emols*
 data/testfiles/all-sdf.sdf.gz
 data/testfiles/chembl_21.sdf.gz
 
+components/common/lib
 components/chemcentral/chemcentral.properties
 components/chemcentral/database.properties
 components/chemcentral/users.properties

@@ -13,7 +13,7 @@ docker-compose rm -fv chemservices
 
 cd ../../components
 
-./gradlew --daemon assemble 
+./gradlew --daemon assemble common:uploadArchives
 
 docker rmi squonk/core-services-server squonk/chem-services-basic squonk/cellexecutor
 
@@ -33,4 +33,5 @@ echo "building cell-executor docker image ..."
 echo "... cell-executor docker image built"
 
 cd $base
+
 echo finished

@@ -100,12 +100,11 @@ class ExecuteServicesAsJobsSpec extends Specification {
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)
         JobStatus status2 = waitForJob(status1.jobId)
-        int count = findResultSize(notebookId, editableId, cellId, "cdklogp")
 
         then:
         status1.status == JobStatus.Status.RUNNING
         status2.status == JobStatus.Status.COMPLETED
-        count == 36
+        findResultSize(notebookId, editableId, cellId, "cdklogp") == 36
     }
 
     void "chemaxon logp"() {
@@ -122,12 +121,11 @@ class ExecuteServicesAsJobsSpec extends Specification {
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)
         JobStatus status2 = waitForJob(status1.jobId)
-        int count = findResultSize(notebookId, editableId, cellId, "cxnlogp")
 
         then:
         status1.status == JobStatus.Status.RUNNING
         status2.status == JobStatus.Status.COMPLETED
-        count == 36
+        findResultSize(notebookId, editableId, cellId, "cxnlogp") == 36
     }
 
     void "chemaxon spherex"() {
@@ -145,12 +143,11 @@ class ExecuteServicesAsJobsSpec extends Specification {
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)
         JobStatus status2 = waitForJob(status1.jobId)
-        int count = findResultSize(notebookId, editableId, cellId, "spherex")
 
         then:
         status1.status == JobStatus.Status.RUNNING
         status2.status == JobStatus.Status.COMPLETED
-        count == 36
+        findResultSize(notebookId, editableId, cellId, "spherex") == 36
     }
 
     void "chemaxon screen"() {
@@ -170,11 +167,11 @@ class ExecuteServicesAsJobsSpec extends Specification {
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)
         JobStatus status2 = waitForJob(status1.jobId)
-        int count = findResultSize(notebookId, editableId, cellId, "screen")
 
         then:
         status1.status == JobStatus.Status.RUNNING
         status2.status == JobStatus.Status.COMPLETED
+        int count = findResultSize(notebookId, editableId, cellId, "screen")
         count >= 1
         count < 36
     }

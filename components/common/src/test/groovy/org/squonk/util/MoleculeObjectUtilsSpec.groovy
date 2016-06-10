@@ -1,9 +1,13 @@
 package org.squonk.util
 
 import com.im.lac.types.MoleculeObject
+import org.squonk.data.Molecules
+import org.squonk.dataset.Dataset
+import org.squonk.dataset.DatasetMetadata
 import spock.lang.Specification
 
 import java.util.stream.Collectors
+import java.util.stream.Stream
 
 /**
  * Created by timbo on 09/05/2016.
@@ -105,6 +109,36 @@ class MoleculeObjectUtilsSpec extends Specification {
         then:
         results.size() == 1
         results[0].source == 'CC'
+    }
+
+    void "read dataset from files"() {
+        when:
+        Dataset dataset = MoleculeObjectUtils.readDatasetFromFiles("../../data/testfiles/input")
+
+        then:
+        dataset.getMetadata().size == 36
+        dataset.items.size() == 36
+    }
+
+    void "write dataset"() {
+
+        Dataset<MoleculeObject> dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
+        ByteArrayOutputStream outData = new ByteArrayOutputStream();
+        ByteArrayOutputStream outMeta = new ByteArrayOutputStream();
+        Stream<MoleculeObject> stream = dataset.stream.peek() { MoleculeObject mo ->
+            mo.putValue("hello", "world")
+        }
+        dataset.replaceStream(stream)
+
+        when:
+        MoleculeObjectUtils.writeDataset(dataset, outData, outMeta, false)
+        byte[] byteData = outData.toByteArray()
+        byte[] byteMeta = outMeta.toByteArray()
+
+        then:
+        byteData.length > 0
+        byteMeta.length > 0
+
     }
 
 
