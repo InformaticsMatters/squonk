@@ -156,21 +156,28 @@ public class DockerRunner {
                 .withCmd(cmd)
                 .exec();
 
-        dockerClient.startContainerCmd(container.getId()).exec();
-        LOG.info("Executing command");
+        try {
+            dockerClient.startContainerCmd(container.getId()).exec();
+            LOG.info("Executing command");
 
-        loggingCallback = new LogContainerTestCallback(true);
-        dockerClient.logContainerCmd(container.getId())
-                .withStdErr(true)
-                .withStdOut(true)
-                .withFollowStream(true)
-                .withTailAll()
-                .exec(loggingCallback);
+            loggingCallback = new LogContainerTestCallback(true);
+            dockerClient.logContainerCmd(container.getId())
+                    .withStdErr(true)
+                    .withStdOut(true)
+                    .withFollowStream(true)
+                    .withTailAll()
+                    .exec(loggingCallback);
 
-        int resp = dockerClient.waitContainerCmd(container.getId()).exec();
-
-        LOG.fine("Docker execution completed. Results written to " + getHostWorkDir().getPath());
-        return resp;
+            int resp = dockerClient.waitContainerCmd(container.getId()).exec();
+            LOG.fine("Docker execution completed. Results written to " + getHostWorkDir().getPath());
+            return resp;
+        } finally {
+            try {
+                dockerClient.removeContainerCmd(container.getId()).exec();
+            } catch (Exception e) {
+                LOG.warning("Failed to removed container " + container.getId());
+            }
+        }
     }
 
     public String getLog() {
