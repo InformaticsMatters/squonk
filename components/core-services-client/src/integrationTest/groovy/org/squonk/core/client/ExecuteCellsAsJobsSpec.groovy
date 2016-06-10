@@ -3,82 +3,19 @@ package org.squonk.core.client
 import com.im.lac.job.jobdef.ExecuteCellUsingStepsJobDefinition
 import com.im.lac.job.jobdef.JobStatus
 import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition
-import com.im.lac.types.MoleculeObject
-import org.squonk.core.client.config.SquonkClientConfig
-import org.squonk.data.Molecules
-import org.squonk.dataset.Dataset
-import org.squonk.dataset.DatasetMetadata
 import org.squonk.execution.steps.StepDefinition
 import org.squonk.execution.steps.StepDefinitionConstants
-import org.squonk.execution.variable.impl.VariableWriteContext
-import org.squonk.notebook.api.NotebookDTO
-import org.squonk.notebook.api.NotebookEditableDTO
 import org.squonk.notebook.api.VariableKey
-import org.squonk.types.DatasetHandler
-import org.squonk.types.io.JsonHandler
-import spock.lang.Shared
-import spock.lang.Specification
 import spock.lang.Stepwise
 
 /**
  * Created by timbo on 01/06/16.
  */
 @Stepwise
-class ExecuteCellsAsJobsSpec extends Specification {
-
-    static String username = 'squonkuser'
-    static JsonHandler JSON = JsonHandler.instance
-
-    @Shared
-    JobStatusRestClient jobClient = new JobStatusRestClient()
-    @Shared
-    NotebookRestClient notebookClient = new NotebookRestClient()
-    @Shared
-    NotebookEditableDTO editable
-    @Shared
-    Long notebookId
-    @Shared
-    Long editableId
-    @Shared
-    Long cellId = 1
+class ExecuteCellsAsJobsSpec extends AbstractExecuteDocker {
 
     void setupSpec() {
-        NotebookDTO notebookDTO = notebookClient.createNotebook(username, "ExecuteCellsAsJobsSpec name", "ExecuteCellsAsJobsSpec description")
-        editable = notebookClient.listEditables(notebookDTO.getId(), username)[0]
-        DatasetHandler dh = new DatasetHandler(MoleculeObject.class)
-        Dataset dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
-        VariableWriteContext vhcontext = new VariableWriteContext(notebookClient, editable.notebookId, editable.id, 1, "input")
-        dh.writeVariable(dataset, vhcontext)
-        notebookId = editable.notebookId
-        editableId = editable.id
-    }
-
-    void cleanupSpec() {
-        notebookClient.deleteNotebook(editable.getNotebookId())
-    }
-
-    int findResultSize(notebookId, editableId, cellId, varname) {
-        def metaJson = notebookClient.readTextValue(notebookId, editableId, cellId, varname)
-        return metaJson ? JSON.objectFromJson(metaJson, DatasetMetadata.class).size : -1
-    }
-
-    DatasetMetadata readMetadata(notebookId, editableId, cellId, varname) {
-        def metaJson = notebookClient.readTextValue(notebookId, editableId, cellId, varname)
-        return metaJson ? JSON.objectFromJson(metaJson, DatasetMetadata.class) : null
-    }
-
-    JobStatus waitForJob(def jobId) {
-        JobStatus status
-        for (int i=0; i<20; i++) {
-            sleep(500)
-            status = jobClient.get(jobId)
-            if (status.status == JobStatus.Status.COMPLETED || status.status == JobStatus.Status.ERROR) {
-                //println "job completed"
-                break
-            }
-            //println "trying again ..."
-        }
-        return status
+        doSetupSpec("ExecuteCellsAsJobsSpec")
     }
 
     void "list jobs"() {
@@ -173,7 +110,6 @@ file2.renameTo '/source/output.data.gz'
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
-import org.squonk.dataset.Dataset
 import com.im.lac.types.MoleculeObject
 import static org.squonk.util.MoleculeObjectUtils.*
 import java.util.function.Consumer

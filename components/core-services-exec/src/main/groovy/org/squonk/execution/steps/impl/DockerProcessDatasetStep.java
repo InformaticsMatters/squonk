@@ -21,12 +21,16 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
+        statusMessage = MSG_PREPARING_CONTAINER;
+
         String image = getOption(OPTION_DOCKER_IMAGE, String.class);
         String command = getOption(OPTION_DOCKER_COMMAND, String.class);
         if (image == null) {
+            statusMessage = "Error: Docker image not defined";
             throw new IllegalStateException("Docker image not defined. Should be present as option named " + OPTION_DOCKER_IMAGE);
         }
         if (command == null) {
+            statusMessage = "Error: Docker command not defined";
             throw new IllegalStateException("Command to run is not defined. Should be present as option named " + OPTION_DOCKER_COMMAND);
         }
         String hostWorkDir = "/tmp/work";
@@ -35,18 +39,28 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
         DockerRunner runner = createDockerRunner(image, hostWorkDir, localWorkDir);
         try {
             // create input files
+            statusMessage = MSG_PREPARING_INPUT;
             DatasetMetadata inputMetadata = handleInput(varman, runner);
 
             LOG.info("Writing command file");
             runner.writeInput("run.sh", command);
 
             // run the command
+            statusMessage = MSG_RUNNING_CONTAINER;
             LOG.info("Executing ...");
-            int retval = runner.execute("/bin/sh", localWorkDir + "/run.sh");
-            LOG.info("Command executed with return status of " + retval);
+            int status = runner.execute("/bin/sh", localWorkDir + "/run.sh");
+            LOG.info("Script executed with return status of " + status);
+            if (status != 0) {
+                String log = runner.getLog();
+                statusMessage = "Error: " + log;
+                LOG.warning("Execution errors: " + log);
+                throw new RuntimeException("Container execution failed:\n" + log);
+            }
 
             // handle the output
-            handleOutput(inputMetadata, varman, runner);
+            statusMessage = MSG_PREPARING_OUTPUT;
+            DatasetMetadata meta = handleOutput(inputMetadata, varman, runner);
+            statusMessage = String.format(MSG_RECORDS_PROCESSED, meta.getSize());
 
         } finally {
             // cleanup
@@ -54,7 +68,5 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
             LOG.info("Results cleaned up");
         }
     }
-
-
 
 }

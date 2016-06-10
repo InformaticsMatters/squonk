@@ -18,7 +18,10 @@ public abstract class AbstractStep implements Step {
     private static final Logger LOG = Logger.getLogger(AbstractStep.class.getName());
 
     protected static final String MSG_PREPARING_INPUT = "Preparing input ...";
+    protected static final String MSG_PREPARING_OUTPUT = "Writing output ...";
     protected static final String MSG_RECORDS_PROCESSED = "%s records processed";
+    protected static final String MSG_PREPARING_CONTAINER = "Preparing Docker container";
+    protected static final String MSG_RUNNING_CONTAINER = "Running Docker container";
 
     protected Long outputProducerId;
     protected String jobId;

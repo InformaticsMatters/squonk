@@ -24,12 +24,15 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
+        statusMessage = MSG_PREPARING_CONTAINER;
+
         String image = getOption(OPTION_DOCKER_IMAGE, String.class);
         String script = getOption(OPTION_SCRIPT, String.class);
         if (image == null) {
             image = "squonk/groovy";
         }
         if (script == null) {
+            statusMessage = "Error: Script to execute is not defined";
             throw new IllegalStateException("Script to execute is not defined. Should be present as option named " + OPTION_SCRIPT);
         }
         LOG.info("Docker image: " + image + ", script: " + script);
@@ -38,6 +41,8 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerStep {
         DockerRunner runner = createDockerRunner(image, hostWorkDir, localWorkDir);
         Volume maven = runner.addVolume("/var/maven_repo");
         runner.addBind("/var/maven_repo", maven, AccessMode.ro);
+        statusMessage = MSG_PREPARING_INPUT;
+
         try {
             // create input files
             DatasetMetadata inputMetadata = handleInput(varman, runner);
@@ -47,11 +52,21 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerStep {
 
             // run the command
             LOG.info("Executing ...");
-            int retval = runner.execute("run.groovy");
-            LOG.info("Script executed with return status of " + retval);
+            statusMessage = MSG_RUNNING_CONTAINER;
 
-            // handle the output
-            handleOutput(inputMetadata, varman, runner);
+            int status = runner.execute("run.groovy");
+            LOG.info("Script executed with return status of " + status);
+            if (status != 0) {
+                String log = runner.getLog();
+                statusMessage = "Error: " + log;
+                LOG.warning("Execution errors: " + log);
+                throw new RuntimeException("Container execution failed:\n" + log);
+            } else {
+                // handle the output
+                statusMessage = MSG_PREPARING_OUTPUT;
+                DatasetMetadata meta = handleOutput(inputMetadata, varman, runner);
+                statusMessage = String.format(MSG_RECORDS_PROCESSED, meta.getSize());
+            }
 
         } finally {
             // cleanup

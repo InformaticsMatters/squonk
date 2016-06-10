@@ -39,7 +39,7 @@ public abstract class AbstractDockerStep extends AbstractStep {
         return input.getMetadata();
     }
 
-    protected void handleOutput(DatasetMetadata inputMetadata, VariableManager varman, DockerRunner runner) throws Exception {
+    protected DatasetMetadata handleOutput(DatasetMetadata inputMetadata, VariableManager varman, DockerRunner runner) throws Exception {
         DatasetMetadata meta;
         try (InputStream is = runner.readOutput("output.meta")) {
             if (is == null) {
@@ -53,6 +53,7 @@ public abstract class AbstractDockerStep extends AbstractStep {
             Dataset<MoleculeObject> dataset = new Dataset(MoleculeObject.class, IOUtils.getGunzippedInputStream(is), meta);
             createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, dataset, varman);
             LOG.info("Results: " + dataset.getMetadata());
+            return dataset.getMetadata();
         }
     }
 }

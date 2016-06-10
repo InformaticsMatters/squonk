@@ -7,6 +7,7 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.command.AttachContainerResultCallback;
 import com.github.dockerjava.core.command.EventsResultCallback;
+import com.github.dockerjava.core.command.LogContainerResultCallback;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -46,6 +47,7 @@ public class DockerRunner {
 
     private final List<Volume> volumes = new ArrayList<>();
     private final List<Bind> binds = new ArrayList<>();
+    private LogContainerTestCallback loggingCallback;
 
 
     /**
@@ -157,11 +159,22 @@ public class DockerRunner {
         dockerClient.startContainerCmd(container.getId()).exec();
         LOG.info("Executing command");
 
-        int resp = dockerClient.waitContainerCmd(container.getId()).exec();
+        loggingCallback = new LogContainerTestCallback(true);
+        dockerClient.logContainerCmd(container.getId())
+                .withStdErr(true)
+                .withStdOut(true)
+                .withFollowStream(true)
+                .withTailAll()
+                .exec(loggingCallback);
 
+        int resp = dockerClient.waitContainerCmd(container.getId()).exec();
 
         LOG.fine("Docker execution completed. Results written to " + getHostWorkDir().getPath());
         return resp;
+    }
+
+    public String getLog() {
+        return loggingCallback == null ? null : loggingCallback.toString();
     }
 
     public static void main(String[] args) throws IOException {
@@ -178,6 +191,39 @@ public class DockerRunner {
         runner.cleanWorkDir();
         System.out.println("All data deleted");
 
+    }
+
+
+    public static class LogContainerTestCallback extends LogContainerResultCallback {
+        protected final StringBuffer log = new StringBuffer();
+
+        List<Frame> collectedFrames = new ArrayList<Frame>();
+
+        boolean collectFrames = false;
+
+        public LogContainerTestCallback() {
+            this(false);
+        }
+
+        public LogContainerTestCallback(boolean collectFrames) {
+            this.collectFrames = collectFrames;
+        }
+
+        @Override
+        public void onNext(Frame frame) {
+            if(collectFrames) collectedFrames.add(frame);
+            log.append(new String(frame.getPayload()));
+        }
+
+        @Override
+        public String toString() {
+            return log.toString();
+        }
+
+
+        public List<Frame> getCollectedFrames() {
+            return collectedFrames;
+        }
     }
 
 }
