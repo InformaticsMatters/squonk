@@ -78,6 +78,7 @@ public abstract class AbstractMoleculeObjectHttpProcessor implements Processor {
                 throw new IllegalStateException("No HttpHandler for accept mime type " + requestInfo.getContentType());
             }
         }
+        LOG.info("Using accept handler of " + acceptHandler.getClass().getName() + " for mime type " + requestInfo.getAcceptType());
 
         CamelRequestResponseExecutor executor = new CamelRequestResponseExecutor(exch);
 

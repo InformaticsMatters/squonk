@@ -6,7 +6,10 @@ import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition
 import org.squonk.execution.steps.StepDefinition
 import org.squonk.execution.steps.StepDefinitionConstants
 import org.squonk.notebook.api.VariableKey
+import org.squonk.util.CommonMimeTypes
 import spock.lang.Stepwise
+
+import java.util.zip.GZIPInputStream
 
 /**
  * Created by timbo on 01/06/16.
@@ -53,17 +56,86 @@ class ExecuteCellsAsJobsSpec extends AbstractExecuteDocker {
         findResultSize(notebookId, editableId, cellId, "noop") == 36
     }
 
-    void "docker cell"() {
+    void "docker cell no conversion"() {
 
         StepDefinition step = new StepDefinition(StepDefinitionConstants.DockerProcessDataset.CLASSNAME)
                 .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
                 .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "docker")
                 .withOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE, "busybox")
+                .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_INPUT, CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
+                .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_OUTPUT, CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
                 .withOption(StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_COMMAND,
-                    "mv /source/input.meta /source/output.meta\nmv /source/input.data.gz /source/output.data.gz\n")
+                    "cp /source/input.meta /source/output.meta\ncp /source/input.data.gz /source/output.data.gz\n")
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(notebookId, editableId, cellId, step)
-        jobdef.configureCellAndSteps(notebookId, editableId, cellId, step)
+
+        when:
+        JobStatus status1 = jobClient.submit(jobdef, username, null)
+        JobStatus status2 = waitForJob(status1.jobId)
+
+        then:
+        status1.status == JobStatus.Status.RUNNING
+        status2.status == JobStatus.Status.COMPLETED
+        findResultSize(notebookId, editableId, cellId, "docker") == 36
+    }
+
+    void "sdf convert"() {
+
+        StepDefinition step1 = new StepDefinition(StepDefinitionConstants.DatasetServiceExecutor.CLASSNAME)
+                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
+                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "sdf")
+                .withOption("header.Content-Encoding", "gzip")
+                .withOption("header.Accept-Encoding", "gzip")
+                .withOption("header.Content-Type", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
+                .withOption("header.Accept", CommonMimeTypes.MIME_TYPE_MDL_SDF)
+                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, "http://chemservices:8080/chem-services-cdk-basic/rest/v1/converters/convert_to_sdf")
+
+
+        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
+        jobdef.configureCellAndSteps(notebookId, editableId, cellId, step1)
+
+        when:
+        JobStatus status1 = jobClient.submit(jobdef, username, null)
+        JobStatus status2 = waitForJob(status1.jobId)
+
+        InputStream is = notebookClient.readStreamValue(notebookId, editableId, cellId, "sdf")
+        is = new GZIPInputStream(is)
+        def sdf = is.text
+        def parts = sdf.split("END")
+
+        then:
+        status1.status == JobStatus.Status.RUNNING
+        status2.status == JobStatus.Status.COMPLETED
+        parts.length == 37
+
+    }
+
+    void "docker cell sdf conversion"() {
+
+        StepDefinition step1 = new StepDefinition(StepDefinitionConstants.DatasetServiceExecutor.CLASSNAME)
+                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
+                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "_docker_input")
+                .withOption("header.Content-Encoding", "gzip")
+                .withOption("header.Accept-Encoding", "gzip")
+                .withOption("header.Content-Type", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
+                .withOption("header.Accept", CommonMimeTypes.MIME_TYPE_MDL_SDF)
+                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, "http://chemservices:8080/chem-services-cdk-basic/rest/v1/converters/convert_to_sdf")
+
+        StepDefinition step2 = new StepDefinition(StepDefinitionConstants.DockerProcessDataset.CLASSNAME)
+                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "_docker_input"))
+                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "_docker_output")
+                .withOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE, "busybox")
+                .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_INPUT, CommonMimeTypes.MIME_TYPE_MDL_SDF)
+                .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_OUTPUT, CommonMimeTypes.MIME_TYPE_MDL_SDF)
+                .withOption(StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_COMMAND,
+                "cp /source/input.sdf.gz /source/output.sdf.gz\n")
+
+        StepDefinition step3 = new StepDefinition(StepDefinitionConstants.SdfUpload.CLASSNAME)
+                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_FILE_INPUT, new VariableKey(cellId, "_docker_output"))
+                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "docker");
+
+        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
+        jobdef.configureCellAndSteps(notebookId, editableId, cellId, step1, step2, step3)
 
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)

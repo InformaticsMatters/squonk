@@ -185,10 +185,8 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 .consumes(join(CDKMoleculeObjectSDFileProcessor.INPUT_MIME_TYPES))
                 .produces(join(CDKMoleculeObjectSDFileProcessor.OUTPUT_MIME_TYPES))
                 .route()
-                .process(new CDKMoleculeObjectSDFileProcessor(resolver))
+                .process(new MoleculeObjectRouteHttpProcessor(null, resolver, ROUTE_STATS, CDKSDFile.class))
                 .endRest();
-
-
 
     }
 

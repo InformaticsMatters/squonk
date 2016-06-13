@@ -2,7 +2,6 @@ package org.squonk.execution.variable
 
 import com.im.lac.types.*
 import org.squonk.dataset.Dataset
-import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
@@ -16,7 +15,7 @@ class VariableManagerSpec extends Specification {
     
     void "simple put/get variable"() {
 
-        VariableManager manager = new VariableManager(new MemoryVariableClient(), 1, 1);
+        VariableManager manager = new VariableManager(null, 1, 1);
 
         when:
 
@@ -39,8 +38,7 @@ class VariableManagerSpec extends Specification {
 
         Dataset ds1 = new Dataset(BasicObject.class, objs1)
 
-        MemoryVariableClient loader = new MemoryVariableClient()
-        VariableManager manager = new VariableManager(loader, 1, 1);
+        VariableManager manager = new VariableManager(null, 1, 1);
 
         when:
         manager.putValue(new VariableKey(producer, "ds1"), Dataset.class, ds1)

@@ -5,7 +5,6 @@ import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
 
 import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
@@ -57,7 +56,7 @@ class DatasetMergerStepSpec extends Specification {
         Dataset ds2 = new Dataset(BasicObject.class, objs2())
         
         
-        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1);
+        VariableManager varman = new VariableManager(null,1,1);
         
         varman.putValue(
             new VariableKey(producer, "input1"),
@@ -98,7 +97,7 @@ class DatasetMergerStepSpec extends Specification {
         Dataset ds2 = new Dataset(BasicObject.class, objs2())
         
         
-        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1);
+        VariableManager varman = new VariableManager(null,1,1);
 
         varman.putValue(
                 new VariableKey(producer, "input1"),
@@ -141,7 +140,7 @@ class DatasetMergerStepSpec extends Specification {
         Dataset ds2 = new Dataset(BasicObject.class, objs2())
         Dataset ds3 = new Dataset(BasicObject.class, objs3())
         
-        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1);
+        VariableManager varman = new VariableManager(null,1,1);
 
         varman.putValue(
                 new VariableKey(producer, "input1"),

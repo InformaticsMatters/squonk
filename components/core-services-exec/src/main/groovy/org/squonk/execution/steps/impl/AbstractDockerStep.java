@@ -7,7 +7,9 @@ import org.squonk.execution.docker.DockerRunner;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.types.SDFile;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 
 import java.io.IOException;
@@ -30,16 +32,55 @@ public abstract class AbstractDockerStep extends AbstractStep {
         return runner;
     }
 
-    protected DatasetMetadata handleInput(VariableManager varman, DockerRunner runner) throws Exception {
-        Dataset input = fetchMappedInput(StepDefinitionConstants.VARIABLE_INPUT_DATASET, Dataset.class, varman, true);
+    protected DatasetMetadata handleInput(VariableManager varman, DockerRunner runner, String mediaType) throws Exception {
+
+        if (mediaType == null) {
+            mediaType = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON;
+        }
+
+        switch (mediaType) {
+            case CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON:
+                Dataset dataset = fetchMappedInput(StepDefinitionConstants.VARIABLE_INPUT_DATASET, Dataset.class, varman, true);
+                writeAsMoleculeObjectDataset(dataset, runner);
+                return dataset.getMetadata();
+            case CommonMimeTypes.MIME_TYPE_MDL_SDF:
+                InputStream sdf = fetchMappedInput(StepDefinitionConstants.VARIABLE_INPUT_DATASET, InputStream.class, varman, true);
+                writeAsSDF(sdf, runner);
+                return null; // TODO can we get the metadata somehow?
+            default:
+                throw new IllegalArgumentException("Unsupported media type: " + mediaType);
+        }
+    }
+
+    protected DatasetMetadata handleOutput(DatasetMetadata inputMetadata, VariableManager varman, DockerRunner runner, String mediaType) throws Exception {
+
+        if (mediaType == null) {
+            mediaType = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON;
+        }
+
+        switch (mediaType) {
+            case CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON:
+                return readAsDataset(inputMetadata, varman, runner);
+            case CommonMimeTypes.MIME_TYPE_MDL_SDF:
+                return readAsSDF(inputMetadata, varman, runner);
+            default:
+                throw new IllegalArgumentException("Unsupported media type: " + mediaType);
+        }
+    }
+
+    protected void writeAsMoleculeObjectDataset(Dataset input, DockerRunner runner) throws IOException {
         LOG.info("Writing metadata");
         runner.writeInput("input.meta", JsonHandler.getInstance().objectToJson(input.getMetadata()));
         LOG.info("Writing data");
         runner.writeInput("input.data.gz", input.getInputStream(true));
-        return input.getMetadata();
     }
 
-    protected DatasetMetadata handleOutput(DatasetMetadata inputMetadata, VariableManager varman, DockerRunner runner) throws Exception {
+    protected void writeAsSDF(InputStream sdf, DockerRunner runner) throws IOException {
+        LOG.info("Writing SDF");
+        runner.writeInput("input.sdf.gz", IOUtils.getGzippedInputStream(sdf));
+    }
+
+    protected DatasetMetadata readAsDataset(DatasetMetadata inputMetadata, VariableManager varman, DockerRunner runner) throws Exception {
         DatasetMetadata meta;
         try (InputStream is = runner.readOutput("output.meta")) {
             if (is == null) {
@@ -56,4 +97,15 @@ public abstract class AbstractDockerStep extends AbstractStep {
             return dataset.getMetadata();
         }
     }
+
+
+    protected DatasetMetadata readAsSDF(DatasetMetadata inputMetadata, VariableManager varman, DockerRunner runner) throws Exception {
+
+        try (InputStream is = runner.readOutput("output.sdf.gz")) {
+            createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, InputStream.class, is, varman);
+        }
+        // TODO can we get the metadata somehow?
+        return null;
+    }
+
 }

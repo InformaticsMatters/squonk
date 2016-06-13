@@ -6,9 +6,9 @@ import org.apache.camel.CamelContext
 import org.apache.camel.Exchange
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.impl.DefaultCamelContext
+import org.squonk.util.CommonMimeTypes
 import org.squonk.util.IOUtils
 
-import static org.squonk.api.MimeTypeResolver.*
 import org.squonk.core.ServiceDescriptor
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
@@ -19,9 +19,12 @@ import spock.lang.Specification
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-class ServicesSpec extends Specification {
+class ServicesSpec extends Specification implements CommonMimeTypes{
 
     static String calculatorsbase = "//" + IOUtils.getDockerGateway() + ":8092/chem-services-cdk-basic/rest/v1/calculators"
+
+    static String B = CommonMimeTypes.MIME_TYPE_DATASET_BASIC_JSON
+    static String M = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON
 
 
     @Shared CamelContext context = new DefaultCamelContext()
@@ -71,13 +74,13 @@ class ServicesSpec extends Specification {
         json.close()
 
         where:
-        contentType                     | accept                          | path                | cls                  | props
-        MIME_TYPE_DATASET_MOLECULE_JSON | MIME_TYPE_DATASET_BASIC_JSON    | '/logp'             | BasicObject.class    | 3 // XLogP_CDK, AMR_CDK, ALogP_CDK
-        MIME_TYPE_DATASET_MOLECULE_JSON | MIME_TYPE_DATASET_MOLECULE_JSON | '/logp'             | MoleculeObject.class | 3 // XLogP_CDK, AMR_CDK, ALogP_CDK
-        MIME_TYPE_DATASET_MOLECULE_JSON | MIME_TYPE_DATASET_BASIC_JSON    | '/donors_acceptors' | BasicObject.class    | 2
-        MIME_TYPE_DATASET_MOLECULE_JSON | MIME_TYPE_DATASET_MOLECULE_JSON | '/donors_acceptors' | MoleculeObject.class | 2
-        MIME_TYPE_DATASET_MOLECULE_JSON | MIME_TYPE_DATASET_BASIC_JSON    | '/wiener_numbers'   | BasicObject.class    | 2
-        MIME_TYPE_DATASET_MOLECULE_JSON | MIME_TYPE_DATASET_MOLECULE_JSON | '/wiener_numbers'   | MoleculeObject.class | 2
+        contentType | accept  | path                | cls                  | props
+        M           | B       | '/logp'             | BasicObject.class    | 3 // XLogP_CDK, AMR_CDK, ALogP_CDK
+        M           | M       | '/logp'             | MoleculeObject.class | 3 // XLogP_CDK, AMR_CDK, ALogP_CDK
+        M           | B       | '/donors_acceptors' | BasicObject.class    | 2
+        M           | M       | '/donors_acceptors' | MoleculeObject.class | 2
+        M           | B       | '/wiener_numbers'   | BasicObject.class    | 2
+        M           | M       | '/wiener_numbers'   | MoleculeObject.class | 2
     }
 
 }

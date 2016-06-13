@@ -10,9 +10,8 @@ import org.squonk.camel.chemaxon.processor.screening.MoleculeScreenerProcessor
 import org.squonk.core.ServiceDescriptor
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
-import org.squonk.options.MoleculeTypeDescriptor
-import org.squonk.options.types.Structure
 import org.squonk.types.io.JsonHandler
+import org.squonk.util.CommonMimeTypes
 import org.squonk.util.IOUtils
 import spock.lang.Shared
 import spock.lang.Specification
@@ -20,15 +19,12 @@ import spock.lang.Specification
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-import static org.squonk.api.MimeTypeResolver.MIME_TYPE_DATASET_BASIC_JSON
-import static org.squonk.api.MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON
-
 class ServicesSpec extends Specification {
 
     static String calculatorsbase = "//" + IOUtils.getDockerGateway() + ":8092/chem-services-chemaxon-basic/rest/v1/calculators"
     static String descriptorsbase = "//" + IOUtils.getDockerGateway() + ":8092/chem-services-chemaxon-basic/rest/v1/descriptors"
-    static String B = MIME_TYPE_DATASET_BASIC_JSON
-    static String M = MIME_TYPE_DATASET_MOLECULE_JSON
+    static String B = CommonMimeTypes.MIME_TYPE_DATASET_BASIC_JSON
+    static String M = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON
 
 
     @Shared CamelContext context = new DefaultCamelContext()

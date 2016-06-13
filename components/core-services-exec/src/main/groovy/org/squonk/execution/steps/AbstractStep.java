@@ -20,6 +20,7 @@ public abstract class AbstractStep implements Step {
     protected static final String MSG_PREPARING_INPUT = "Preparing input ...";
     protected static final String MSG_PREPARING_OUTPUT = "Writing output ...";
     protected static final String MSG_RECORDS_PROCESSED = "%s records processed";
+    protected static final String MSG_PROCESSING_COMPLETE = "Processing complete";
     protected static final String MSG_PREPARING_CONTAINER = "Preparing Docker container";
     protected static final String MSG_RUNNING_CONTAINER = "Running Docker container";
 
@@ -193,8 +194,6 @@ public abstract class AbstractStep implements Step {
      */
     protected <T> void createVariable(String mappedName, Class<T> type, T value, VariableManager varman) throws Exception {
         LOG.fine("Creating variable " + mappedName + "  for producer " + getOutputProducerId());
-        boolean isTmp = mappedName.startsWith("_");
-        // TODO restore ability to handle tmp variables
         VariableKey key = new VariableKey(getOutputProducerId(), mappedName);
         varman.putValue(key, type, value);
     }

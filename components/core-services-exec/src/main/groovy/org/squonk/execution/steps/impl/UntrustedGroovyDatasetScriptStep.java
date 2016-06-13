@@ -3,6 +3,7 @@ package org.squonk.execution.steps.impl;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Volume;
 import org.apache.camel.CamelContext;
+import org.squonk.api.MimeTypeResolver;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.docker.DockerRunner;
 import org.squonk.execution.steps.StepDefinitionConstants;
@@ -45,7 +46,7 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerStep {
 
         try {
             // create input files
-            DatasetMetadata inputMetadata = handleInput(varman, runner);
+            DatasetMetadata inputMetadata = handleInput(varman, runner, MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON);
 
             LOG.info("Writing script file");
             runner.writeInput("run.groovy", script);
@@ -64,7 +65,7 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerStep {
             } else {
                 // handle the output
                 statusMessage = MSG_PREPARING_OUTPUT;
-                DatasetMetadata meta = handleOutput(inputMetadata, varman, runner);
+                DatasetMetadata meta = handleOutput(inputMetadata, varman, runner, MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON);
                 statusMessage = String.format(MSG_RECORDS_PROCESSED, meta.getSize());
             }
 

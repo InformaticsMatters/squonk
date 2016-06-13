@@ -5,13 +5,11 @@ import org.squonk.execution.steps.StepExecutor
 
 import org.squonk.notebook.api.VariableKey
 import org.squonk.dataset.Dataset
-import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.execution.variable.VariableManager
 
 
-        
-MemoryVariableClient loader = new MemoryVariableClient()
-VariableManager varman = new VariableManager(loader)
+
+VariableManager varman = new VariableManager(null)
         
 // cell 1
 // step 1: read Cyp2C19 data

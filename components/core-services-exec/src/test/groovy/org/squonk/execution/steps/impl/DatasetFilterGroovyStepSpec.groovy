@@ -5,7 +5,6 @@ import groovy.transform.Canonical
 import org.squonk.dataset.Dataset
 
 import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
@@ -91,7 +90,7 @@ class Filter {
 
     void "simple filter step"() {
 
-        VariableManager varman = new VariableManager(new MemoryVariableClient(), 1, 1);
+        VariableManager varman = new VariableManager(null, 1, 1);
 
         varman.putValue(
                 new VariableKey(producer,"input"),

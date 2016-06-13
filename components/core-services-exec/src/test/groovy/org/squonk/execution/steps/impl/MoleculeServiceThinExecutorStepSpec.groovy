@@ -9,7 +9,6 @@ import org.squonk.execution.steps.Step
 import org.squonk.execution.steps.StepExecutor
 
 import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
@@ -56,7 +55,7 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
         Dataset ds = new Dataset(MoleculeObject.class, ServiceExecutorHelper.mols)
 
 
-        VariableManager varman = new VariableManager(new MemoryVariableClient(), 1, 1);
+        VariableManager varman = new VariableManager(null, 1, 1);
         Long producer = 1
         varman.putValue(
                 new VariableKey(producer, "input"),
@@ -92,7 +91,7 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
         Dataset ds = new Dataset(MoleculeObject.class, ServiceExecutorHelper.mols)
 
 
-        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1);
+        VariableManager varman = new VariableManager(null,1,1);
 
         Long producer = 1
         varman.putValue(

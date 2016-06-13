@@ -3,9 +3,7 @@ package org.squonk.execution.steps.impl
 import com.im.lac.types.MoleculeObject
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
-
 import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import org.squonk.reader.SDFReader
 import org.squonk.util.IOUtils
@@ -55,7 +53,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         ]
         Dataset ds = new Dataset(MoleculeObject.class, mols)
         
-        VariableManager varman = new VariableManager(new MemoryVariableClient(), 1,1)
+        VariableManager varman = new VariableManager(null, 1,1)
         varman.putValue(new VariableKey(producer,"input"), Dataset.class, ds)
 
         MoleculeServiceFatExecutorStep step = createStep(ds)
@@ -78,7 +76,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         SDFReader reader = new SDFReader(new GZIPInputStream(fis))
         Dataset ds = new Dataset(MoleculeObject.class, reader.asStream())
 
-        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1)
+        VariableManager varman = new VariableManager(null,1,1)
         varman.putValue(new VariableKey(producer,"input"), Dataset.class, ds)
 
         MoleculeServiceFatExecutorStep step = createStep(ds)
@@ -101,7 +99,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         SDFReader reader = new SDFReader(new GZIPInputStream(fis))
         Dataset ds = new Dataset(MoleculeObject.class, reader.asStream())
 
-        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1)
+        VariableManager varman = new VariableManager(null,1,1)
         varman.putValue(new VariableKey(producer,"input"), Dataset.class, ds)
 
         MoleculeServiceFatExecutorStep step = createStep(ds)

@@ -30,6 +30,10 @@ public interface StepDefinitionConstants {
         String CLASSNAME = "org.squonk.execution.steps.impl.MoleculeServiceBasicExecutorStep";
     }
 
+    interface DatasetServiceExecutor {
+        String CLASSNAME = "org.squonk.execution.steps.impl.DatasetServiceExecutorStep";
+    }
+
     interface OutOnlyMoleculeServiceExecutor {
         String CLASSNAME = "org.squonk.execution.steps.impl.OutOnlyMoleculeServiceExecutorStep";
     }

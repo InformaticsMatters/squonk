@@ -3,7 +3,6 @@ package org.squonk.execution.steps.impl
 import org.squonk.dataset.Dataset
 
 import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
@@ -15,7 +14,7 @@ import spock.lang.Specification
 class SDFReaderStepSpec extends Specification {
     
     void "test read sdf"() {
-        VariableManager varman = new VariableManager(new MemoryVariableClient(), 1, 1);
+        VariableManager varman = new VariableManager(null, 1, 1);
         SDFReaderStep step = new SDFReaderStep()
         FileInputStream is = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
         //FileInputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")

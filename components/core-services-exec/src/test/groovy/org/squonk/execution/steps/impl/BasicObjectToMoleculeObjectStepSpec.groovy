@@ -5,7 +5,6 @@ import com.im.lac.types.MoleculeObject
 import org.squonk.dataset.Dataset
 
 import org.squonk.execution.variable.VariableManager
-import org.squonk.execution.variable.impl.MemoryVariableClient
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
@@ -25,7 +24,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
     
     void "simple convert"() {
         
-        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1);
+        VariableManager varman = new VariableManager(null,1,1);
         
         varman.putValue(
             new VariableKey(producer,"input"),
@@ -56,7 +55,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
     
      void "uuid and format props"() {
         
-        VariableManager varman = new VariableManager(new MemoryVariableClient(), 1,1);
+        VariableManager varman = new VariableManager(null, 1,1);
         
         varman.putValue(
                 new VariableKey(producer,"input"),
