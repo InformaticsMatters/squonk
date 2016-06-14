@@ -5,7 +5,6 @@ cd ../components
 ./gradlew --daemon assemble common:uploadArchives
 cd $base
 
-#docker build -t 'squonk/groovy' deploy/images/groovy
 
 docker-compose stop
 docker-compose rm -vf
