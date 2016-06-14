@@ -13,7 +13,8 @@ public class MultiLineTextTypeDescriptor extends SimpleTypeDescriptor<String> {
 
     public static final String MIME_TYPE_TEXT_PLAIN = "text/plain";
     public static final String MIME_TYPE_TEXT_HTML = "text/html";
-    public static final String MIME_TYPE_SCRIPT_GROOVY = "script/groovy";
+    public static final String MIME_TYPE_SCRIPT_GROOVY = "text/x-groovy";
+    public static final String MIME_TYPE_SCRIPT_SHELL = "text/x-shellscript";
 
 
     private final Integer rows;
