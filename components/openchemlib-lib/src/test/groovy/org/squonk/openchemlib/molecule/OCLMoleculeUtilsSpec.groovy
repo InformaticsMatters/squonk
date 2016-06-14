@@ -48,21 +48,18 @@ class OCLMoleculeUtilsSpec extends Specification {
 
     void "read tdt stream"() {
 
-        Stream mols = Molecules.nci1000Molecules().stream().parallel()
+        Stream mols = Molecules.nci10000Molecules().stream().parallel()
 
         when:
         AtomicInteger total = new AtomicInteger(0)
         AtomicInteger fails = new AtomicInteger(0)
         long count = mols.map() { mo ->
-            int lTot = total.incrementAndGet()
-            StereoMolecule mol = new StereoMolecule();
+            total.incrementAndGet()
+            StereoMolecule mol
             try {
                 mol = OCLMoleculeUtils.importSmiles(mo.source)
-                String idCode = mol.IDCode
-                //println "$smiles -> $idCode"
             } catch (Exception e) {
                 fails.incrementAndGet()
-                //println "$smiles -> $idCode"
                 println e.getMessage()
             }
             return mol
@@ -70,7 +67,7 @@ class OCLMoleculeUtilsSpec extends Specification {
         println "count=$count total=$total fails=$fails"
 
         then:
-        total.get() == 1000
+        total.get() == 10000
         fails.get() == 0
 
         cleanup:
