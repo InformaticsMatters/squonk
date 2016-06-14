@@ -7,7 +7,11 @@ import com.im.lac.types.MoleculeObject;
 
 import java.util.logging.Logger;
 
-/**
+/** Utilies class for handling OpenChemLib molecules.
+ *
+ * IMPORTANT: OpenChemLib (or at least SmilesParser) does not appear to be thread safe. The importXxx() methods here use
+ * synchronization to accommodate this, but if using the library directly use accordingly.
+ *
  * Created by timbo on 05/04/16.
  */
 public class OCLMoleculeUtils {
@@ -43,13 +47,17 @@ public class OCLMoleculeUtils {
 
     public static StereoMolecule importSmiles(String smiles) throws Exception {
         StereoMolecule mol = new StereoMolecule();
-        SMILES_PARSER.parse(mol, smiles);
+        synchronized (SMILES_PARSER) {
+            SMILES_PARSER.parse(mol, smiles);
+        }
         return mol;
     }
 
     public static StereoMolecule importMolfile(String molfile) throws Exception {
         StereoMolecule mol = new StereoMolecule();
-        MOLFILE_PARSER.parse(mol, molfile);
+        synchronized (MOLFILE_PARSER) {
+            MOLFILE_PARSER.parse(mol, molfile);
+        }
         return mol;
     }
 

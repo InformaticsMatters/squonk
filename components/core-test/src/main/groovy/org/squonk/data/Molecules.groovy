@@ -13,6 +13,7 @@ class Molecules {
 
     static final String DHFR_STANDARDIZED_SDF = "../../data/testfiles/dhfr_standardized.sdf.gz"
     static final String KINASE_INHIBS_SDF = "../../data/testfiles/Kinase_inhibs.sdf.gz"
+    static final String SMILES_1000 = "../../data/testfiles/nci1000.smiles"
     static final String SMILES_100 = "../../data/testfiles/nci100.smiles"
     static final String SMILES_10 = "../../data/testfiles/nci10.smiles";
 
@@ -163,6 +164,20 @@ M  END
 
     static Dataset<MoleculeObject> nci100Dataset() {
         return new MoleculeObjectDataset(nci100Molecules(), new DatasetMetadata(MoleculeObject.class, [:], 100)).getDataset()
+    }
+
+    static List<MoleculeObject> nci1000Molecules() {
+        List mols = []
+        File f = new File(SMILES_1000)
+        f.eachLine {
+            String[] tokens = it.split("\t")
+            mols << new MoleculeObject(tokens[0], 'smiles')
+        }
+        return mols
+    }
+
+    static Dataset<MoleculeObject> nci1000Dataset() {
+        return new MoleculeObjectDataset(nci1000Molecules(), new DatasetMetadata(MoleculeObject.class, [:], 1000)).getDataset()
     }
 
     static Dataset<MoleculeObject> datasetFromSDF(String file) {
