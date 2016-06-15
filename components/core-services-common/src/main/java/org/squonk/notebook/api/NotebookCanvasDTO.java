@@ -2,6 +2,7 @@ package org.squonk.notebook.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.*;
 
@@ -15,6 +16,7 @@ public class NotebookCanvasDTO {
     private final Long version;
     private final Long lastCellId;
     private final List<CellDTO> cells = new ArrayList<>();
+    private final Map<String, Object> properties = new HashMap<>();
 
 
     /** Create Canvas DTO of the current (latest) version
@@ -22,8 +24,13 @@ public class NotebookCanvasDTO {
      * @param lastCellId
      */
     public NotebookCanvasDTO(Long lastCellId) {
-        this(lastCellId,LATEST_VERSION);
+        this(lastCellId,LATEST_VERSION, null);
     }
+
+    public NotebookCanvasDTO(Long lastCellId, Map<String, Object> properties) {
+        this(lastCellId,LATEST_VERSION, properties);
+    }
+
 
     /** Constructor for creating Canvas DTO for an older version.
      * Client code probably never needs to use this.
@@ -33,9 +40,13 @@ public class NotebookCanvasDTO {
      */
     public NotebookCanvasDTO(
             @JsonProperty("lastCellId") Long lastCellId,
-            @JsonProperty("version") Long version) {
+            @JsonProperty("version") Long version,
+            @JsonProperty("properties") Map<String, Object> properties) {
         this.lastCellId = lastCellId;
         this.version = version;
+        if (properties != null) {
+            this.properties.putAll(properties);
+        }
     }
 
     public List<CellDTO> getCells() {
@@ -53,6 +64,29 @@ public class NotebookCanvasDTO {
     public NotebookCanvasDTO withCell(CellDTO cell) {
         cells.add(cell);
         return this;
+    }
+
+    /** Allows to store arbitary properties
+     *
+     * @param key
+     * @param value
+     * @return
+     */
+    public Object putProperty(String key, Object value) {
+        return properties.put(key, value);
+    }
+
+    public Object getProperty(String key) {
+        return properties.get(key);
+    }
+
+    public <T> T getProperty(String key, Class<T> type) {
+        return (T)properties.get(key);
+    }
+
+    @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
+    public Map<String,Object> getProperties() {
+        return properties;
     }
 
     public void addCell(CellDTO cell) {

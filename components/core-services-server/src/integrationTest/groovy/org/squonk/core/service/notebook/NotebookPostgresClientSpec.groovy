@@ -426,12 +426,12 @@ class NotebookPostgresClientSpec extends Specification {
         client.writeTextValue(ed.notebookId, ed.id, 1, 'var99', 'val99')
         int c1 = db.firstRow("SELECT COUNT(*) FROM users.nb_variable WHERE source_id=${ed.id}")[0]
         // no cells so variables should be deleted
-        client.updateEditable(ed.notebookId, ed.id, new NotebookCanvasDTO(1, 1))
+        client.updateEditable(ed.notebookId, ed.id, new NotebookCanvasDTO(1))
         int c2 = db.firstRow("SELECT COUNT(*) FROM users.nb_variable WHERE source_id=${ed.id}")[0]
 
         then:
         c1 > 0  // there used to be variables
-        c2 == 0 // but not they've been deleted as the cell no longer exists
+        c2 == 0 // but now they've been deleted as the cell no longer exists
 
         cleanup:
         db.close()

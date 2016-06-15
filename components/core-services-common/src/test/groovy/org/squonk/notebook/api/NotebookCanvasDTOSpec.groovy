@@ -22,6 +22,33 @@ class NotebookCanvasDTOSpec extends Specification {
         canvas2.getVersion() == NotebookCanvasDTO.LATEST_VERSION
     }
 
+    void "canvas properties"() {
+
+        when:
+        NotebookCanvasDTO canvas1 = new NotebookCanvasDTO(123)
+        canvas1.putProperty("hello", "world")
+        canvas1.putProperty("earth", 3)
+        canvas1.putProperty("pi-float", 3.14f)
+        canvas1.putProperty("pi-double", 3.14d)
+        canvas1.putProperty("pi-bd", new BigDecimal(3.14))
+        canvas1.putProperty("three-int", new Integer(3))
+        canvas1.putProperty("three-float", 3f)
+        String json = JsonHandler.getInstance().objectToJson(canvas1)
+        NotebookCanvasDTO canvas2 = JsonHandler.getInstance().objectFromJson(json, NotebookCanvasDTO)
+
+        then:
+        json != null
+        canvas2 != null
+        canvas2.getLastCellId() == 123
+        canvas2.getVersion() == NotebookCanvasDTO.LATEST_VERSION
+        canvas2.getProperty("hello") == "world"
+        canvas2.getProperty("earth") == 3
+        canvas2.getProperty("pi-float") == 3.14f
+        canvas2.getProperty("pi-double") == 3.14d
+        canvas2.getProperty("pi-bd") == new BigDecimal(3.14)
+        canvas2.getProperty("three-int") == new Integer(3)
+        canvas2.getProperty("three-float") == 3f
+    }
 
     void "cell json read write"() {
 
