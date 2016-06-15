@@ -50,6 +50,8 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
             DatasetMetadata inputMetadata = handleInput(varman, runner, inputMediaType);
 
             LOG.info("Writing command file");
+            // replace windows line end characters
+            command = command.replaceAll("\\r\\n", "\n");
             runner.writeInput("execute", command, true);
 
             // run the command

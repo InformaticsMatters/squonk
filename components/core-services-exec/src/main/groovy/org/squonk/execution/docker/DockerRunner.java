@@ -164,6 +164,7 @@ public class DockerRunner {
         CreateContainerResponse container = dockerClient.createContainerCmd(imageName)
                 .withVolumes(volumes.toArray(new Volume[volumes.size()]))
                 .withBinds(binds.toArray(new Bind[binds.size()]))
+                .withWorkingDir(localWorkDir)
                 .withCmd(cmd)
                 .exec();
 

@@ -37,40 +37,45 @@ public abstract class AbstractStep implements Step {
         return outputProducerId;
     }
 
-    protected void dumpConfig(Level level) {
+    public void dumpConfig(Level level) {
         if (LOG.isLoggable(level)) {
-            StringBuilder b = new StringBuilder("Step configuration: [class:").append(this.getClass().getName())
-                    .append(" producerID:").append(outputProducerId)
-                    .append(" inputs:[");
-            int count = 0;
-            for (Map.Entry<String,VariableKey> e : inputVariableMappings.entrySet()) {
-                if (count > 0) {
-                    b.append(" ");
-                }
-                count++;
-                b.append(e.getKey()).append(" -> ").append(e.getValue());
-            }
-            b.append("] outputs:[");
-            count = 0;
-            for (Map.Entry<String,String> e : outputVariableMappings.entrySet()) {
-                if (count > 0) {
-                    b.append(" ");
-                }
-                count++;
-                b.append(e.getKey()).append(" -> ").append(e.getValue());
-            }
-            b.append("] options:[");
-            count = 0;
-            for (Map.Entry<String,Object> e: options.entrySet()) {
-                if (count > 0) {
-                    b.append(" ");
-                }
-                count++;
-                b.append(e.getKey()).append(" -> ").append(e.getValue());
-            }
-            b.append("]");
-            LOG.log(level, b.toString());
+            LOG.log(level, this.toString());
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder("Step configuration: [class:").append(this.getClass().getName())
+                .append(" producerID:").append(outputProducerId)
+                .append(" inputs:[");
+        int count = 0;
+        for (Map.Entry<String,VariableKey> e : inputVariableMappings.entrySet()) {
+            if (count > 0) {
+                b.append(" ");
+            }
+            count++;
+            b.append(e.getKey()).append(" -> ").append(e.getValue());
+        }
+        b.append("] outputs:[");
+        count = 0;
+        for (Map.Entry<String,String> e : outputVariableMappings.entrySet()) {
+            if (count > 0) {
+                b.append(" ");
+            }
+            count++;
+            b.append(e.getKey()).append(" -> ").append(e.getValue());
+        }
+        b.append("] options:[");
+        count = 0;
+        for (Map.Entry<String,Object> e: options.entrySet()) {
+            if (count > 0) {
+                b.append(" ");
+            }
+            count++;
+            b.append(e.getKey()).append(" -> ").append(e.getValue());
+        }
+        b.append("]");
+        return b.toString();
     }
 
     @Override
@@ -202,4 +207,5 @@ public abstract class AbstractStep implements Step {
     public String getStatusMessage() {
         return statusMessage;
     }
+
 }

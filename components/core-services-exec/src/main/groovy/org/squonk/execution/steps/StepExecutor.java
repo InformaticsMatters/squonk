@@ -33,6 +33,13 @@ public class StepExecutor {
     }
     
     public void execute(Step[] steps, CamelContext context) throws Exception {
+
+        StringBuilder b = new StringBuilder("Executing steps:\n");
+        for (Step step: steps) {
+            b.append(step.toString()).append("\n");
+        }
+        System.out.println(b.toString());
+
         for (Step step: steps) {
             currentStep = step;
             step.execute(varman, context);

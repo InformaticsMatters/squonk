@@ -66,7 +66,10 @@ class ExecuteCellsAsJobsSpec extends AbstractExecuteDocker {
                 .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_INPUT, CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
                 .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_OUTPUT, CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
                 .withOption(StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_COMMAND,
-                    "#!/bin/sh\ncp /source/input.meta /source/output.meta\ncp /source/input.data.gz /source/output.data.gz\n")
+                    '''#!/bin/sh
+cp input.meta output.meta
+cp input.data.gz output.data.gz
+''')
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(notebookId, editableId, cellId, step)
 
@@ -103,9 +106,9 @@ class ExecuteCellsAsJobsSpec extends AbstractExecuteDocker {
 import gzip
 from rdkit import Chem
 
-suppl = Chem.ForwardSDMolSupplier(gzip.open('/source/input.sdf.gz'))
+suppl = Chem.ForwardSDMolSupplier(gzip.open('input.sdf.gz'))
 
-outf=gzip.open('/source/output.sdf.gz','w+')
+outf=gzip.open('output.sdf.gz','w+')
 w = Chem.SDWriter(outf)
 
 for mol in suppl:
