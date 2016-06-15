@@ -76,7 +76,7 @@ public class DockerRunner {
 
     }
 
-    public long writeInput(String filename, InputStream content) throws IOException {
+    public long writeInput(String filename, InputStream content, boolean executable) throws IOException {
         File file = new File(getHostWorkDir(), filename);
         try {
             if (!file.exists()) {
@@ -84,14 +84,25 @@ public class DockerRunner {
                     throw new IOException("Failed to create input file " + filename);
                 }
             }
-            return Files.copy(content, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            long bytes =  Files.copy(content, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            file.setExecutable(executable);
+            return bytes;
         } finally {
             content.close();
         }
     }
 
+    public long writeInput(String filename, InputStream content) throws IOException {
+        return writeInput(filename, content, false);
+    }
+
+
+    public long writeInput(String filename, String content, boolean executable) throws IOException {
+        return writeInput(filename, new ByteArrayInputStream(content.getBytes()), executable);
+    }
+
     public long writeInput(String filename, String content) throws IOException {
-        return writeInput(filename, new ByteArrayInputStream(content.getBytes()));
+        return writeInput(filename, content, false);
     }
 
     public InputStream readOutput(String filename) throws IOException {

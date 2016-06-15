@@ -41,21 +41,22 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
         }
         String hostWorkDir = "/tmp/work";
         String localWorkDir = "/source";
-        LOG.info("Docker image: " + image + ", script: " + command);
+
         DockerRunner runner = createDockerRunner(image, hostWorkDir, localWorkDir);
+        LOG.info("Docker image: " + image + ", hostWorkDir: " + runner.getHostWorkDir() + ", script: " + command);
         try {
             // create input files
             statusMessage = MSG_PREPARING_INPUT;
             DatasetMetadata inputMetadata = handleInput(varman, runner, inputMediaType);
 
             LOG.info("Writing command file");
-            runner.writeInput("run.sh", command);
+            runner.writeInput("execute", command, true);
 
             // run the command
             statusMessage = MSG_RUNNING_CONTAINER;
             LOG.info("Executing ...");
-            int status = runner.execute("/bin/sh", localWorkDir + "/run.sh");
-            LOG.info("Script executed with return status of " + status);
+            int status = runner.execute(localWorkDir + "/execute");
+            LOG.info("Executed with return status of " + status);
             if (status != 0) {
                 String log = runner.getLog();
                 statusMessage = "Error: " + log;
