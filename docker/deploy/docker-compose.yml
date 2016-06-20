@@ -16,6 +16,7 @@
 #
 rabbitmq:
     image: rabbitmq:3-management
+    restart: on-failure:10
     ports:
     - "15672:15672"
     volumes:
@@ -56,6 +57,7 @@ postgres:
 keycloak:
     build: images/
     dockerfile: Dockerfile-keycloak
+    restart: on-failure:10
     links:
     - postgres:postgres
     environment:
@@ -82,6 +84,7 @@ keycloak:
 #
 chemservices:
     image: squonk/chem-services-basic
+    restart: on-failure:10
     links:
     - postgres:postgres
     environment:
@@ -95,7 +98,7 @@ chemservices:
 #
 rdkitserver:
     image: squonk/rdkitserver
-    restart: always
+    restart: on-failure:10
     environment: 
         SECRET_KEY:
         C_FORCE_ROOT: "true"
@@ -111,6 +114,7 @@ rdkitserver:
 # 
 coreservices:
     image: squonk/core-services-server
+    restart: on-failure:10
     links:
     - postgres:postgres
     - rabbitmq:rabbitmq
@@ -129,6 +133,7 @@ coreservices:
 ################# cell-executor container #########################################
 cellexecutor:
     image: squonk/cellexecutor
+    restart: on-failure:10
     links:
     - coreservices:coreservices
     - rabbitmq:rabbitmq
@@ -151,6 +156,7 @@ cellexecutor:
 # available on http://${PUBLIC_HOST}/portal
 portal:
     image: squonk/portal
+    restart: on-failure:10
     links:
     - postgres:postgres
     - coreservices:coreservices
@@ -172,6 +178,7 @@ portal:
 # available on http://${PUBLIC_HOST}/xwiki
 xwiki:
     build: images/
+    restart: on-failure:10
     dockerfile: Dockerfile-xwiki
     volumes:
     - ./data/xwiki:/var/local/xwiki
@@ -186,6 +193,7 @@ xwiki:
 # openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/cert.key -out images/nginx/cert.crt
 nginx:
     image: nginx
+    restart: on-failure:10
     ports:
     - 80:80
     - 443:443
