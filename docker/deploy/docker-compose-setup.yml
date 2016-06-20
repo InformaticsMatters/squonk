@@ -1,23 +1,27 @@
-keycloak:
-    environment:
-        KEYCLOAK_USER: admin
-        KEYCLOAK_PASSWORD:
-    ports: 
-    - "8080:8080"
-    - "8443:8443"
+version: '2'
 
-postgres:
-    ports: 
-    - "5432:5432"
+services:
 
-coreservices:
-    ports: 
-    - "8091:8080"
+    keycloak:
+        environment:
+            KEYCLOAK_USER: admin
+            KEYCLOAK_PASSWORD:
+        ports: 
+        - "8080:8080"
+        - "8443:8443"
 
-chemservices:
-    ports:
-    - "8092:8080"
+    postgres:
+        ports: 
+        - "5432:5432"
+
+    coreservices:
+        ports: 
+        - "8091:8080"
+
+    chemservices:
+        ports:
+        - "8092:8080"
     
-rdkitserver:
-    ports:
-    - "8000:8000"
+    rdkitserver:
+        ports:
+        - "8000:8000"
