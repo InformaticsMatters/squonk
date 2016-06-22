@@ -1,6 +1,6 @@
 package org.squonk.cdk.io;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.openscience.cdk.ChemFile;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;

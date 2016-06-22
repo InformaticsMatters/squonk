@@ -2,7 +2,7 @@ package org.squonk.chemaxon.molecule;
 
 import chemaxon.formats.MolExporter;
 import chemaxon.struc.Molecule;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;

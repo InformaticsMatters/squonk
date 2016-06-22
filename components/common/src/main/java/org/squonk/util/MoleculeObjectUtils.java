@@ -1,6 +1,6 @@
 package org.squonk.util;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.types.io.JsonHandler;

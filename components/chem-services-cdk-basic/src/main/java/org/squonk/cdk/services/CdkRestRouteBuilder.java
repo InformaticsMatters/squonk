@@ -2,7 +2,7 @@ package org.squonk.cdk.services;
 
 import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
@@ -18,9 +18,6 @@ import org.squonk.types.TypeResolver;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.squonk.util.CommonConstants.*;
-import static org.squonk.util.CommonConstants.VALUE_INCLUDE_FAIL;
 
 /**
  * @author timbo

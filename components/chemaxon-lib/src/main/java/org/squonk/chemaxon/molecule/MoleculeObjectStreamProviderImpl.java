@@ -1,7 +1,7 @@
 package org.squonk.chemaxon.molecule;
 
-import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.StreamGenerator;
+import org.squonk.types.MoleculeObject;
+import org.squonk.util.StreamGenerator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;

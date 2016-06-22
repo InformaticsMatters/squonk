@@ -1,7 +1,7 @@
 package org.squonk.chemaxon.services
 
-import com.im.lac.types.BasicObject
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.BasicObject
+import org.squonk.types.MoleculeObject
 import org.apache.camel.CamelContext
 import org.apache.camel.Exchange
 import org.apache.camel.ProducerTemplate

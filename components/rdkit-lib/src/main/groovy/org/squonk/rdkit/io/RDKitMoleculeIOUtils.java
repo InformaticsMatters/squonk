@@ -1,6 +1,6 @@
 package org.squonk.rdkit.io;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.RDKit.*;
 import org.squonk.rdkit.mol.MolReader;
 import org.squonk.types.RDKitSDFile;

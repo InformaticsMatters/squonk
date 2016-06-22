@@ -1,15 +1,12 @@
 package org.squonk.execution.steps.impl;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.apache.camel.CamelContext;
-import org.squonk.camel.processor.ValueTransformerProcessor;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.MoleculeObjectDataset;
-import org.squonk.dataset.transform.TransformDefinitions;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
-import org.squonk.types.io.JsonHandler;
 import org.squonk.util.MoleculeObjectUtils;
 
 import java.util.ArrayList;

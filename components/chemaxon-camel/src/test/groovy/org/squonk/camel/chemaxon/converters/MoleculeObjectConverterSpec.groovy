@@ -6,7 +6,7 @@ import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.impl.DefaultCamelContext
 import spock.lang.Shared
 import spock.lang.Specification
-import com.im.lac.types.MoleculeObjectIterable
+import org.squonk.types.MoleculeObjectIterable
 import java.util.zip.GZIPInputStream
 
 /**

@@ -4,7 +4,7 @@ import chemaxon.struc.Molecule;
 import org.squonk.chemaxon.enumeration.ReactorExecutor;
 import org.squonk.chemaxon.molecule.MoleculeObjectUtils;
 import org.squonk.chemaxon.molecule.MoleculeUtils;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.MoleculeObjectDataset;
 import java.io.IOException;
 import java.io.InputStream;

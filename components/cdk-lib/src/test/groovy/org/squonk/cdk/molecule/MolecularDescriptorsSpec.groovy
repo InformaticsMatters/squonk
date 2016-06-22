@@ -1,6 +1,6 @@
 package org.squonk.cdk.molecule
 
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import spock.lang.Specification
 
 /**

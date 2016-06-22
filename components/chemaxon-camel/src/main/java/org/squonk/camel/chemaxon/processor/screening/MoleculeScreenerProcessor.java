@@ -3,7 +3,7 @@ package org.squonk.camel.chemaxon.processor.screening;
 import chemaxon.formats.MolFormatException;
 import chemaxon.struc.Molecule;
 import com.chemaxon.descriptors.common.Descriptor;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.util.IOHelper;

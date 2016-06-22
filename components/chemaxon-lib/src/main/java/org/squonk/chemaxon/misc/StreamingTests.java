@@ -1,12 +1,12 @@
 package org.squonk.chemaxon.misc;
 
-import com.im.lac.util.Pool;
+import org.squonk.util.Pool;
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.struc.Molecule;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 import org.squonk.chemaxon.molecule.MoleculeObjectUtils;
 import org.squonk.chemaxon.molecule.MoleculeUtils;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 
 import java.io.FileInputStream;
 import java.io.IOException;

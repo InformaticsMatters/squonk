@@ -1,6 +1,6 @@
 package org.squonk.rdkit.db;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.postgresql.ds.PGPoolingDataSource;
@@ -14,7 +14,6 @@ import org.squonk.rdkit.db.dsl.Select;
 import org.squonk.rdkit.db.dsl.WhereClause;
 import org.squonk.types.DatasetHandler;
 import org.squonk.types.io.JsonHandler;
-import org.squonk.util.CamelRouteStatsRecorder;
 import org.squonk.util.IOUtils;
 import org.squonk.util.StatsRecorder;
 
@@ -22,11 +21,9 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**

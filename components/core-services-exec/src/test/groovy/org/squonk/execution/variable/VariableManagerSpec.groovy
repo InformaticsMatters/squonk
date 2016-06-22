@@ -1,8 +1,8 @@
 package org.squonk.execution.variable
 
-import com.im.lac.types.*
 import org.squonk.dataset.Dataset
 import org.squonk.notebook.api.VariableKey
+import org.squonk.types.BasicObject
 import spock.lang.Specification
 
 /**
@@ -31,9 +31,9 @@ class VariableManagerSpec extends Specification {
     void "put/get dataset"() {
 
         def objs1 = [
-            new BasicObject([id:1,a:"1",hello:'world']),
-            new BasicObject([id:2,a:"99",hello:'mars',foo:'bar']),
-            new BasicObject([id:3,a:"100",hello:'mum'])
+                new BasicObject([id:1, a:"1", hello:'world']),
+                new BasicObject([id:2,a:"99",hello:'mars',foo:'bar']),
+                new BasicObject([id:3,a:"100",hello:'mum'])
         ]
 
         Dataset ds1 = new Dataset(BasicObject.class, objs1)

@@ -1,16 +1,15 @@
 package org.squonk.camel.util;
 
 import com.im.lac.dataset.Metadata;
-import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.SimpleStreamProvider;
-import com.im.lac.util.StreamProvider;
+import org.squonk.types.MoleculeObject;
+import org.squonk.util.SimpleStreamProvider;
+import org.squonk.util.StreamProvider;
 import org.apache.camel.*;
 import org.squonk.api.MimeTypeResolver;
 import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
-import javax.servlet.http.HttpServlet;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;

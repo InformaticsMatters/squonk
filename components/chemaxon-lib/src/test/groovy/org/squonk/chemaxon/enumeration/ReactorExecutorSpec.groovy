@@ -8,7 +8,7 @@ import chemaxon.reaction.Reactor
 import chemaxon.reaction.ConcurrentReactorProcessor
 import org.squonk.chemaxon.molecule.MoleculeObjectUtils
 import org.squonk.chemaxon.molecule.MoleculeUtils
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 
 import java.util.stream.Collectors
 import java.util.stream.Stream

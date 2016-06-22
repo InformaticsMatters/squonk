@@ -1,4 +1,4 @@
-package com.im.lac.types;
+package org.squonk.types;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -9,7 +9,7 @@ import java.util.UUID;
 
 /**
  * Simple generic object that only has values. Specialized types can be created by sub-classing
- * this class. For instance, see {@link com.im.lac.types.MoleculeObject}.
+ * this class. For instance, see {@link MoleculeObject}.
  *
  * @author Tim Dudgeon
  */

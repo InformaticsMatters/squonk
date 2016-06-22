@@ -2,13 +2,12 @@ package org.squonk.camel.chemaxon.processor;
 
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.struc.Molecule;
-import com.im.lac.types.MoleculeObject;
-import com.im.lac.util.ResultExtractor;
+import org.squonk.types.MoleculeObject;
+import org.squonk.util.ResultExtractor;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 import org.squonk.chemaxon.molecule.MoleculeEvaluator;
 import org.squonk.chemaxon.molecule.StandardizerEvaluator;

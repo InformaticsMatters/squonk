@@ -1,5 +1,6 @@
 package com.im.lac.util
 
+import org.squonk.util.CloseableQueue
 import spock.lang.Specification
 
 /**

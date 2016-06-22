@@ -1,6 +1,6 @@
 package org.squonk.rdkit.db;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.rdkit.db.dsl.DataSourceConfiguration;
 import org.squonk.rdkit.db.dsl.Select;
 import org.squonk.rdkit.db.dsl.SqlQuery;

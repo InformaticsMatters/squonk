@@ -1,7 +1,6 @@
 package org.squonk.options;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.im.lac.types.MoleculeObject;
 import org.squonk.options.types.Structure;
 
 import java.util.Map;

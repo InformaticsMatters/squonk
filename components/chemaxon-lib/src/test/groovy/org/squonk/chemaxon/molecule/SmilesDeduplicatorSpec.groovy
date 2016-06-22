@@ -1,7 +1,7 @@
 package org.squonk.chemaxon.molecule
 
 import spock.lang.Specification
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import java.util.stream.Stream;
 
 /**

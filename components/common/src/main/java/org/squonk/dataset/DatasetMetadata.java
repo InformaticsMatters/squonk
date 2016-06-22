@@ -3,7 +3,7 @@ package org.squonk.dataset;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.im.lac.types.BasicObject;
+import org.squonk.types.BasicObject;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;

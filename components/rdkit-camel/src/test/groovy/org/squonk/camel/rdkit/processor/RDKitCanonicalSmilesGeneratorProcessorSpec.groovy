@@ -1,15 +1,13 @@
 package org.squonk.camel.rdkit.processor
 
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import org.apache.camel.CamelContext
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.impl.DefaultCamelContext
-import org.squonk.camel.processor.VerifyStructureProcessor
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.MoleculeObjectDataset
 import org.squonk.rdkit.io.RDKitMoleculeIOUtils
-import org.squonk.util.CommonConstants
 import spock.lang.Specification
 
 /**

@@ -1,7 +1,6 @@
 package org.squonk.camel.cdk.processor;
 
-import com.im.lac.types.BasicObject;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.squonk.camel.CamelCommonConstants;

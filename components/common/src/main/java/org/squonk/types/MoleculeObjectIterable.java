@@ -1,5 +1,7 @@
-package com.im.lac.types;
+package org.squonk.types;
 
+
+import org.squonk.types.MoleculeObject;
 
 /**
  * Interface that wraps an Iterable&lt;MoleculeObject&gt; to allow stronger typing.

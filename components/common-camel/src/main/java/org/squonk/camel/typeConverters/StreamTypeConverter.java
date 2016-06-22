@@ -1,6 +1,6 @@
 package org.squonk.camel.typeConverters;
 
-import com.im.lac.util.StreamProvider;
+import org.squonk.util.StreamProvider;
 import org.apache.camel.Converter;
 import org.apache.camel.Exchange;
 

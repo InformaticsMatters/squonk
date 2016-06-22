@@ -1,6 +1,6 @@
 package org.squonk.execution.steps.impl
 
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
 

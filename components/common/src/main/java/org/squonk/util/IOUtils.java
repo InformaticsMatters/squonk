@@ -1,7 +1,5 @@
 package org.squonk.util;
 
-import com.im.lac.util.SimpleStreamProvider;
-
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
@@ -19,7 +17,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -194,7 +191,7 @@ public class IOUtils {
      * @param iter
      * @param type
      * @return
-     * @see {@link com.im.lac.util.SimpleStreamProvider} for more control over
+     * @see {@link SimpleStreamProvider} for more control over
      * this.
      */
     public static <T> Stream<T> streamFromIterator(Iterator<T> iter, Class<T> type) {
@@ -211,7 +208,7 @@ public class IOUtils {
      * @param iter
      * @param type
      * @return
-     * @see {@link com.im.lac.util.SimpleStreamProvider} for more control over
+     * @see {@link SimpleStreamProvider} for more control over
      * this.
      */
     public static <T> Stream<T> streamFromIterator(Iterator<T> iter, Class<T> type, int batchSize) {

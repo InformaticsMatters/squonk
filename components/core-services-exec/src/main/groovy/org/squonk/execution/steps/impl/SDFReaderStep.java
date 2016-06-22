@@ -3,7 +3,7 @@ package org.squonk.execution.steps.impl;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.reader.SDFReader;
 import org.squonk.util.IOUtils;
@@ -15,7 +15,7 @@ import org.apache.camel.CamelContext;
 
 /**
  * Reads a SDFile and generates a {@link Dataset} of
- * {@link com.im.lac.types.MoleculeObject}s. The SDFile is passed as an
+ * {@link MoleculeObject}s. The SDFile is passed as an
  * {@link java.io.InputStream} (can be gzipped). By default the
  input is expected in the variable named by the VAR_SDF_INPUT
  constant, though that name can be mapped to a different name. The resulting

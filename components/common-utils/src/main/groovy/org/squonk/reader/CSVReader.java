@@ -1,6 +1,6 @@
 package org.squonk.reader;
 
-import com.im.lac.types.BasicObject;
+import org.squonk.types.BasicObject;
 import org.squonk.util.IOUtils;
 import java.io.*;
 import java.util.*;

@@ -1,6 +1,6 @@
 package org.squonk.openchemlib.predict
 
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import org.squonk.data.Molecules
 import org.squonk.property.Calculator
 import spock.lang.Specification

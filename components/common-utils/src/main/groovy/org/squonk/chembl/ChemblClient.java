@@ -2,7 +2,7 @@ package org.squonk.chembl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 import java.io.IOException;
 import java.net.URL;

@@ -3,7 +3,7 @@ package org.squonk.types.io;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import java.io.IOException;
 import java.util.Map;
 

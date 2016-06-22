@@ -2,8 +2,6 @@ package org.squonk.openchemlib.predict;
 
 import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.prediction.PolarSurfaceAreaPredictor;
-import com.im.lac.types.MoleculeObject;
-import org.squonk.property.Calculator;
 import org.squonk.property.MoleculeCalculator;
 import org.squonk.property.PSAProperty;
 

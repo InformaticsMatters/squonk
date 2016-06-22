@@ -1,4 +1,4 @@
-package com.im.lac.util;
+package org.squonk.util;
 
 import org.squonk.stream.FixedBatchSpliterator;
 import java.util.Iterator;

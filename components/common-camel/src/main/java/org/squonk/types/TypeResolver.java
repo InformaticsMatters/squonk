@@ -1,7 +1,5 @@
 package org.squonk.types;
 
-import com.im.lac.types.BasicObject;
-import com.im.lac.types.MoleculeObject;
 import org.squonk.api.GenericHandler;
 import org.squonk.api.HttpHandler;
 import org.squonk.api.MimeTypeResolver;

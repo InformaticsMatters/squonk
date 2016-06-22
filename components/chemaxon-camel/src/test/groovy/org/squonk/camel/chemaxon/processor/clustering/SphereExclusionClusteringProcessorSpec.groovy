@@ -3,14 +3,11 @@ package org.squonk.camel.chemaxon.processor.clustering
 import com.chemaxon.descriptors.fingerprints.ecfp.*
 import com.chemaxon.descriptors.metrics.BinaryMetrics
 import org.squonk.camel.testsupport.CamelSpecificationBase
-import org.squonk.chemaxon.molecule.MoleculeObjectUtils
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.apache.camel.builder.RouteBuilder
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.MoleculeObjectDataset
-
-import java.util.stream.Stream
 
 /**
  * Created by timbo on 14/04/2014.

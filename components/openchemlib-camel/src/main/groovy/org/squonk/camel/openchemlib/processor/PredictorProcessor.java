@@ -1,6 +1,6 @@
 package org.squonk.camel.openchemlib.processor;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.squonk.camel.CamelCommonConstants;
@@ -8,7 +8,6 @@ import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.openchemlib.predict.AbstractOCLPredictor;
-import org.squonk.property.Calculator;
 import org.squonk.property.MoleculeCalculator;
 import org.squonk.util.ExecutionStats;
 import org.squonk.util.StatsRecorder;

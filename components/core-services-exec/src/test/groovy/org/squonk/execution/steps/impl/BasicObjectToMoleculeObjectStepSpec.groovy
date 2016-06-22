@@ -1,7 +1,7 @@
 package org.squonk.execution.steps.impl
 
-import com.im.lac.types.BasicObject
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.BasicObject
+import org.squonk.types.MoleculeObject
 import org.squonk.dataset.Dataset
 
 import org.squonk.execution.variable.VariableManager

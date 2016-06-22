@@ -1,13 +1,12 @@
 package org.squonk.execution.steps.impl;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.docker.DockerRunner;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
-import org.squonk.types.SDFile;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;

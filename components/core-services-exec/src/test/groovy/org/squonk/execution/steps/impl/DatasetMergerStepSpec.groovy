@@ -1,11 +1,12 @@
 package org.squonk.execution.steps.impl
 
-import com.im.lac.types.*
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
 
 import org.squonk.execution.variable.VariableManager
 import org.squonk.notebook.api.VariableKey
+import org.squonk.types.BasicObject
+import org.squonk.types.MoleculeObject
 import spock.lang.Specification
 
 /**
@@ -15,9 +16,9 @@ import spock.lang.Specification
 class DatasetMergerStepSpec extends Specification {
     
     def objs1() { [
-        new BasicObject([id:1,a:"1",hello:'world']),
-        new BasicObject([id:2,a:"99",hello:'mars',foo:'bar']),
-        new BasicObject([id:3,a:"100",hello:'mum'])
+            new BasicObject([id:1, a:"1", hello:'world']),
+            new BasicObject([id:2,a:"99",hello:'mars',foo:'bar']),
+            new BasicObject([id:3,a:"100",hello:'mum'])
     ]}
         
     def objs2() { [
@@ -33,9 +34,9 @@ class DatasetMergerStepSpec extends Specification {
     ]}
     
     def mols1() { [
-        new MoleculeObject("C", "smiles", [id:1,c:"11"]),
-        new MoleculeObject("CC", "smiles", [id:2,c:"999"]),
-        new MoleculeObject("CCC", "smiles", [id:4,c:"100"])
+            new MoleculeObject("C", "smiles", [id:1,c:"11"]),
+            new MoleculeObject("CC", "smiles", [id:2, c:"999"]),
+            new MoleculeObject("CCC", "smiles", [id:4,c:"100"])
     ]}
 
     Long producer = 1

@@ -1,7 +1,7 @@
 package org.squonk.dataset
 
 import com.fasterxml.jackson.databind.ObjectReader
-import com.im.lac.types.BasicObject
+import org.squonk.types.BasicObject
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
 

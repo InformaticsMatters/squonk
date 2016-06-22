@@ -12,11 +12,11 @@ import chemaxon.util.ConnectionHandler;
 import chemaxon.util.HitColoringAndAlignmentOptions;
 import org.squonk.camel.chemaxon.processor.ProcessorUtils;
 import org.squonk.chemaxon.molecule.MoleculeUtils;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 
-import com.im.lac.util.CollectionUtils;
-import com.im.lac.util.SimpleStreamProvider;
-import com.im.lac.util.StreamProvider;
+import org.squonk.util.CollectionUtils;
+import org.squonk.util.SimpleStreamProvider;
+import org.squonk.util.StreamProvider;
 import org.squonk.dataset.MoleculeObjectDataset;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

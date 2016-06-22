@@ -240,7 +240,7 @@ file2.renameTo '/source/output.data.gz'
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import static org.squonk.util.MoleculeObjectUtils.*
 import java.util.function.Consumer
 
@@ -272,7 +272,7 @@ processDataset('/source/input','/source/output') { MoleculeObject mo ->
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import static org.squonk.util.MoleculeObjectUtils.*
 import java.util.stream.Stream
 import java.util.function.Function
@@ -307,7 +307,7 @@ processDatasetStream('/source/input','/source/output') { Stream<MoleculeObject> 
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
 import org.squonk.dataset.Dataset
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import static org.squonk.util.MoleculeObjectUtils.*
 import java.util.stream.Stream
 

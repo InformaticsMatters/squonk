@@ -1,6 +1,6 @@
 package org.squonk.rdkit.mol;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.RDKit.RDKFuncs;
 import org.RDKit.ROMol;
 

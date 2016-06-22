@@ -1,10 +1,15 @@
 package org.squonk.cdk.io
 
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import org.openscience.cdk.ChemFile
 import org.openscience.cdk.interfaces.IAtomContainer
+import org.openscience.cdk.interfaces.IPDBPolymer
 import org.openscience.cdk.io.formats.IChemFormat
 import org.openscience.cdk.silent.AtomContainer
+import org.openscience.cdk.silent.SilentChemObjectBuilder
+import org.openscience.cdk.smiles.SmilesParser
+import org.openscience.cdk.tools.CDKHydrogenAdder
+import org.openscience.cdk.tools.manipulator.AtomContainerManipulator
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator
 import org.squonk.data.Molecules
 import org.squonk.types.CDKSDFile
@@ -168,6 +173,102 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         content.length() > 0
         content.split('fruit').length == 6
 
+
+    }
+
+    void "read pdb write mol2"() {
+        InputStream is = new GZIPInputStream(new FileInputStream("../../data/testfiles/1cx2.pdb.gz"))
+        PDBReader reader = new PDBReader(is);
+        ChemFile file = reader.read(new ChemFile());
+        IPDBPolymer structure = (IPDBPolymer)ChemFileManipulator
+                .getAllAtomContainers(file).get(0);
+
+        println structure.getClass().name
+
+        structure.structures.each {
+            println "${it.getClass().name} ${it.structureType} ${it.startChainID} ${it.endChainID}"
+        }
+
+        structure.strands.each { k,v ->
+            println "$k $v.strandType $v.monomerCount"
+            v.monomers.each { n, m ->
+                println "  $m.monomerName $m.monomerType $m.atoms.length"
+            }
+        }
+
+        def out = new ByteArrayOutputStream()
+
+
+        when:
+        Mol2Writer writer = new Mol2Writer(out)
+        writer.write(structure)
+        writer.close()
+
+        then:
+        String result = new String(out.toByteArray())
+        //println result
+        result.length() > 0
+
+        cleanup:
+        is.close()
+    }
+
+    void "read smiles write mol2"() {
+        SmilesParser   sp  = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        IAtomContainer m   = sp.parseSmiles("c1ccccc1");
+
+        def out = new ByteArrayOutputStream()
+
+
+        when:
+        Mol2Writer writer = new Mol2Writer(out)
+        writer.write(m)
+        writer.close()
+
+        then:
+        String result = new String(out.toByteArray())
+        println result
+        result.length() > 0
+
+    }
+
+    void "read mol2 protein"() {
+        InputStream is = new GZIPInputStream(new FileInputStream("../../data/testfiles/protein.mol2.gz"))
+        Mol2Reader reader = new Mol2Reader(is);
+
+
+        when:
+        ChemFile file = reader.read(new ChemFile());
+        def mols = ChemFileManipulator.getAllAtomContainers(file)
+
+
+        then:
+        mols.size() == 1
+        println mols[0].getClass().name
+
+    }
+
+
+    void "read mol2 ligand"() {
+        InputStream is = new FileInputStream("../../data/testfiles/ligand.mol2")
+        Mol2Reader reader = new Mol2Reader(is)
+
+        when:
+        def file = reader.read(new ChemFile())
+        def mol = ChemFileManipulator.getAllAtomContainers(file).get(0)
+        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol)
+        CDKHydrogenAdder.getInstance(mol.getBuilder()).addImplicitHydrogens(mol)
+        mol.atoms().each {
+            it.implicitHydrogenCount = 0
+        }
+        def out = new ByteArrayOutputStream()
+        def writer = new SMILESWriter(out)
+        writer.writeAtomContainer(mol)
+        def result = new String(out.toByteArray())
+
+        then:
+        println result
+        result.length() > 0
 
     }
     

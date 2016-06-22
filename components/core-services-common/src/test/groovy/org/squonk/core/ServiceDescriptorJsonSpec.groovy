@@ -5,7 +5,7 @@ import com.im.lac.dataset.Metadata
 import spock.lang.Specification
 
 import com.im.lac.job.jobdef.*
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 
 /**
  *

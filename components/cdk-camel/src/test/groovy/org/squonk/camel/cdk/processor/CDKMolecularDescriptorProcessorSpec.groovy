@@ -3,7 +3,7 @@ package org.squonk.camel.cdk.processor
 import org.squonk.cdk.molecule.MolecularDescriptors
 
 import org.squonk.camel.testsupport.CamelSpecificationBase
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import org.squonk.dataset.MoleculeObjectDataset
 import org.apache.camel.builder.RouteBuilder
 import org.squonk.util.StatsRecorder

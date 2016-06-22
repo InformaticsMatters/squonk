@@ -2,7 +2,7 @@ package org.squonk.camel.chemaxon.processor;
 
 import chemaxon.formats.MolExporter;
 import chemaxon.struc.Molecule;
-import com.im.lac.util.CloseableQueue;
+import org.squonk.util.CloseableQueue;
 import java.io.IOException;
 import org.apache.camel.Exchange;
 

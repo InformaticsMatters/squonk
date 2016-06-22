@@ -1,6 +1,6 @@
 package org.squonk.execution.steps.impl
 
-import com.im.lac.types.BasicObject
+import org.squonk.types.BasicObject
 import groovy.transform.Canonical
 import org.squonk.dataset.Dataset
 

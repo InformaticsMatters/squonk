@@ -2,7 +2,7 @@ package org.squonk.chemaxon.services
 
 import chemaxon.struc.MolBond
 import chemaxon.struc.Molecule
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import org.apache.camel.CamelContext
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.builder.ThreadPoolProfileBuilder

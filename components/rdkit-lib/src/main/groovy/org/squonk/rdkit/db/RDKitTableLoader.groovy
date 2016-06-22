@@ -1,6 +1,6 @@
 package org.squonk.rdkit.db
 
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import groovy.sql.Sql
 import groovy.util.logging.Log
 import org.squonk.rdkit.db.dsl.IConfiguration

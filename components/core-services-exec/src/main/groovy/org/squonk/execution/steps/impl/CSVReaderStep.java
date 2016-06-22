@@ -3,7 +3,7 @@ package org.squonk.execution.steps.impl;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
-import com.im.lac.types.BasicObject;
+import org.squonk.types.BasicObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.reader.CSVReader;
 import org.squonk.util.IOUtils;
@@ -17,7 +17,7 @@ import org.apache.commons.csv.QuoteMode;
 
 /**
  * Reads a CSV or Tab delimited file and generates a
- * {@link Dataset} of {@link com.im.lac.types.BasicObject}s.
+ * {@link Dataset} of {@link BasicObject}s.
  * <p>
  * The SDFile is passed as an {@link java.io.InputStream} (can be gzipped). By
  default the input is expected in the variable named by the VAR_CSV_INPUT

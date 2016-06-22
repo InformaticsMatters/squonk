@@ -1,4 +1,4 @@
-package com.im.lac.types;
+package org.squonk.types;
 
 import java.util.HashMap;
 import java.util.Map;

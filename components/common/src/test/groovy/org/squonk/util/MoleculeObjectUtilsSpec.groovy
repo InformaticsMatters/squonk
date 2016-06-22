@@ -1,9 +1,8 @@
 package org.squonk.util
 
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
-import org.squonk.dataset.DatasetMetadata
 import spock.lang.Specification
 
 import java.util.stream.Collectors

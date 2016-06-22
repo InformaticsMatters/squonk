@@ -1,4 +1,4 @@
-package com.im.lac.util;
+package org.squonk.util;
 
 import java.util.concurrent.ArrayBlockingQueue;
 

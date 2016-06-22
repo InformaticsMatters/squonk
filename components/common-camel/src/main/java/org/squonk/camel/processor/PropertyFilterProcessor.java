@@ -1,6 +1,6 @@
 package org.squonk.camel.processor;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.squonk.dataset.Dataset;
@@ -9,9 +9,7 @@ import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.property.PropertyFilter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;

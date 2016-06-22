@@ -3,7 +3,7 @@ package org.squonk.execution.steps.impl;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.chembl.ChemblClient;
 import org.squonk.dataset.Dataset;
 import org.apache.camel.CamelContext;

@@ -1,11 +1,9 @@
 package org.squonk.camel.typeConverters;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.im.lac.types.BasicObject;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.BasicObject;
+import org.squonk.types.MoleculeObject;
 import org.apache.camel.Converter;
 import org.apache.camel.Exchange;
-import org.squonk.camel.CamelCommonConstants;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
@@ -14,7 +12,6 @@ import org.squonk.types.SDFile;
 import org.squonk.types.io.JsonHandler;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Stream;
 

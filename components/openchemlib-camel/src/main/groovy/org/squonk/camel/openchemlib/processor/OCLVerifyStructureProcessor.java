@@ -1,6 +1,6 @@
 package org.squonk.camel.openchemlib.processor;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.camel.processor.VerifyStructureProcessor;
 import org.squonk.openchemlib.molecule.OCLMoleculeUtils;
 

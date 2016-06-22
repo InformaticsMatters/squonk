@@ -1,6 +1,6 @@
 package org.squonk.property;
 
-import com.im.lac.types.BasicObject;
+import org.squonk.types.BasicObject;
 
 import java.util.function.Predicate;
 

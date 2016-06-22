@@ -1,6 +1,6 @@
 package org.squonk.camel.chemaxon.processor;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.camel.processor.VerifyStructureProcessor;
 import org.squonk.chemaxon.molecule.MoleculeUtils;
 

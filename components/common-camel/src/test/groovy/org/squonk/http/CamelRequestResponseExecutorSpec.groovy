@@ -1,9 +1,8 @@
 package org.squonk.http
 
-import com.im.lac.types.BasicObject
+import org.squonk.types.BasicObject
 import org.apache.camel.Exchange
 import org.apache.camel.builder.RouteBuilder
-import org.apache.camel.component.http4.HttpMethods
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.DatasetMetadata

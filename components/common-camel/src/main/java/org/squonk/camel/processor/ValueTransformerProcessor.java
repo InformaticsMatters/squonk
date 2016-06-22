@@ -1,6 +1,6 @@
 package org.squonk.camel.processor;
 
-import com.im.lac.types.BasicObject;
+import org.squonk.types.BasicObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.transform.*;
 
@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.TypeConverter;
-import org.squonk.types.QualifiedValue;
 
 /**
  * Processor that handles transforming values of{@link BasicObject}s. Follows

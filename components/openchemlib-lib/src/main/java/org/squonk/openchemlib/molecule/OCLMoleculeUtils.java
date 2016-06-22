@@ -3,7 +3,7 @@ package org.squonk.openchemlib.molecule;
 import com.actelion.research.chem.MolfileParser;
 import com.actelion.research.chem.SmilesParser;
 import com.actelion.research.chem.StereoMolecule;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 
 import java.util.logging.Logger;
 

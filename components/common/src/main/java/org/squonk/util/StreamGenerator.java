@@ -1,4 +1,4 @@
-package com.im.lac.util;
+package org.squonk.util;
 
 import java.io.IOException;
 import java.util.stream.Stream;
@@ -13,10 +13,10 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public interface StreamProvider<T> {
+public interface StreamGenerator<T> extends StreamProvider<T> {
+        
+    Stream<T> getStream(boolean parallel, int batchSize) throws IOException;
     
-    Stream<T> getStream() throws IOException;
-    
-    Class<T> getType();
+    Stream<T> getStream(boolean parallel) throws IOException;
     
 }

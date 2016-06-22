@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.im.lac.dataset.Metadata;
-import com.im.lac.types.BasicObject;
+import org.squonk.types.BasicObject;
 
 import java.io.IOException;
 import java.util.HashMap;

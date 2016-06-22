@@ -1,7 +1,8 @@
 package org.squonk.types.io
 
-import com.im.lac.types.*
 import org.squonk.dataset.*
+import org.squonk.types.BasicObject
+import org.squonk.types.MoleculeObject
 import spock.lang.Specification
 
 import java.util.stream.Stream

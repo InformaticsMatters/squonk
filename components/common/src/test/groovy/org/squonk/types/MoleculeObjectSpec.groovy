@@ -1,9 +1,8 @@
-package com.im.lac.types
+package org.squonk.types
 
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.DatasetMetadata
 import org.squonk.types.io.JsonHandler
-import org.squonk.util.IOUtils
 import spock.lang.Specification
 
 /**

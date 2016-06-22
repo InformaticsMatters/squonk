@@ -3,16 +3,13 @@ package org.squonk.execution.steps.impl;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
-import com.im.lac.types.BasicObject;
+import org.squonk.types.BasicObject;
 import org.squonk.dataset.Dataset;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.camel.CamelContext;
 

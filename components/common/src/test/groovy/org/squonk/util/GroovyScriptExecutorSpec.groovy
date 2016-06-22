@@ -1,6 +1,6 @@
 package org.squonk.util
 
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import org.squonk.dataset.Dataset
 import spock.lang.Specification
 
@@ -23,7 +23,7 @@ new TransformDefinitions()
         .convertField("A", Integer.class)"""
 
         String script2 = '''
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 new MoleculeObject("C", "smiles")'''
 
         ScriptEngineManager manager = new ScriptEngineManager(this.getClass().getClassLoader());
@@ -69,7 +69,7 @@ new MoleculeObject("C", "smiles")'''
 
         String script = '''
 import org.squonk.dataset.Dataset
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 
 println "input: $input ${input.metadata}"
 def s = input.stream.peek {

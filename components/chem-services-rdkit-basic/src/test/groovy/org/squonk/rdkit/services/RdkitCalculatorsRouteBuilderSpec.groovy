@@ -1,16 +1,14 @@
 package org.squonk.rdkit.services
 
 import org.squonk.camel.testsupport.CamelSpecificationBase
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import org.squonk.camel.CamelCommonConstants
-import com.im.lac.util.StreamProvider
-import org.squonk.dataset.Dataset
 import org.squonk.dataset.MoleculeObjectDataset
 import org.squonk.rdkit.mol.EvaluatorDefintion
 import spock.lang.IgnoreIf
 
 import static RdkitCalculatorsRouteBuilder.*
-import java.util.stream.*
+
 import org.apache.camel.CamelContext
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.builder.ThreadPoolProfileBuilder

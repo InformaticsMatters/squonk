@@ -1,6 +1,6 @@
 package org.squonk.chemaxon.molecule
 
-import com.im.lac.types.MoleculeObjectIterable
+import org.squonk.types.MoleculeObjectIterable
 import spock.lang.Specification
 
 /**

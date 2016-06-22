@@ -1,6 +1,6 @@
 package org.squonk.execution.steps.impl;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.apache.camel.CamelContext;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
@@ -12,7 +12,6 @@ import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;

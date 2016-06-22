@@ -1,9 +1,9 @@
 package org.squonk.camel.chemaxon.converters;
 
 import org.squonk.chemaxon.molecule.MoleculeObjectUtils;
-import com.im.lac.types.MoleculeObject;
-import com.im.lac.types.MoleculeObjectIterable;
-import com.im.lac.util.StreamProvider;
+import org.squonk.types.MoleculeObject;
+import org.squonk.types.MoleculeObjectIterable;
+import org.squonk.util.StreamProvider;
 import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.types.SDFile;
 import java.io.File;

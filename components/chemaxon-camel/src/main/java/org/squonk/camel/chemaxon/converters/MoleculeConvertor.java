@@ -5,7 +5,7 @@ import chemaxon.struc.Molecule;
 import org.apache.camel.Converter;
 import org.squonk.chemaxon.molecule.MoleculeIterable;
 import org.squonk.chemaxon.molecule.MoleculeUtils;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;

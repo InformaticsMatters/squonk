@@ -16,6 +16,7 @@ dependencies {
     compile "org.openscience.cdk:cdk-ioformats:$cdkVersion"
     compile "org.openscience.cdk:cdk-smiles:$cdkVersion"
     compile "org.openscience.cdk:cdk-inchi:$cdkVersion"
+    compile "org.openscience.cdk:cdk-pdb:$cdkVersion"
     compile "org.openscience.cdk:cdk-qsarmolecular:$cdkVersion"
     compile "org.openscience.cdk:cdk-extra:$cdkVersion"
     compile "org.openscience.cdk:cdk-renderbasic:$cdkVersion"

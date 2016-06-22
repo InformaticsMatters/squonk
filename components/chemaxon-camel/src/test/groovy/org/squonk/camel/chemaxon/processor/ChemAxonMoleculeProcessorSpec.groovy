@@ -1,11 +1,10 @@
 package org.squonk.camel.chemaxon.processor
 
-import com.im.lac.types.MoleculeObject
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
-import org.squonk.dataset.MoleculeObjectDataset
+
 import java.util.stream.*
-import org.squonk.chemaxon.molecule.MoleculeObjectUtils
+
 import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
 

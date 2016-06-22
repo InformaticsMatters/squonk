@@ -4,9 +4,8 @@ import com.chemaxon.descriptors.common.Descriptor;
 import com.chemaxon.descriptors.common.DescriptorComparator;
 import com.chemaxon.descriptors.common.DescriptorGenerator;
 import org.squonk.camel.chemaxon.processor.ProcessorUtils;
-import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import org.squonk.chemaxon.clustering.SphereExclusionClusterer;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.MoleculeObjectDataset;
 

@@ -5,12 +5,10 @@ import com.chemaxon.descriptors.fingerprints.pf2d.PfGenerator
 import com.chemaxon.descriptors.fingerprints.pf2d.PfParameters
 import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.squonk.chemaxon.screening.MoleculeScreener
-import org.squonk.chemaxon.molecule.MoleculeObjectUtils;
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import org.apache.camel.builder.RouteBuilder
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
-import org.squonk.dataset.MoleculeObjectDataset
 
 import java.util.stream.*
 

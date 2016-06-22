@@ -1,6 +1,6 @@
 package org.squonk.camel.cdk.typeConverters
 
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import org.apache.camel.CamelContext
 import org.apache.camel.TypeConverter
 import org.apache.camel.impl.DefaultCamelContext

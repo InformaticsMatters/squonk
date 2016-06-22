@@ -1,7 +1,6 @@
 package org.squonk.cdk.predict;
 
-import com.im.lac.types.MoleculeObject;
-import org.openscience.cdk.exception.CDKException;
+import org.squonk.types.MoleculeObject;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.squonk.cdk.io.CDKMoleculeIOUtils;
 import org.squonk.property.MoleculeCalculator;

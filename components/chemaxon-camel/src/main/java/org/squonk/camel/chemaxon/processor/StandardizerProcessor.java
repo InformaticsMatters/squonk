@@ -2,7 +2,7 @@ package org.squonk.camel.chemaxon.processor;
 
 import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
 import org.squonk.chemaxon.molecule.StandardizerEvaluator;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.MoleculeObjectDataset;
 
 import java.io.File;

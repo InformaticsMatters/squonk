@@ -1,24 +1,18 @@
 package org.squonk.types.io;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.im.lac.dataset.Metadata;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SequenceWriter;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.ContextAttributes;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.im.lac.dataset.JsonMetadataPair;
-import com.im.lac.types.BasicObject;
-import com.im.lac.types.MoleculeObject;
+import com.im.lac.dataset.Metadata;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.types.BasicObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.util.IOUtils;
 
 import java.io.*;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -254,38 +248,38 @@ public class JsonHandler {
         }
     }
 
-    /**
-     * Takes the object(s) and generates JSON and corresponding metadata.
-     *
-     * @param item The Object, Stream or List to marshal to JSON.
-     * @param gzip Whether to gzip the stream. Usually this inputStream best as
-     * it reduces IO.
-     * @return the marshal results, with the metadata complete once the
-     * InputStream has been fully read. You are responsible for closing the
-     * InputStream when complete.
-     * @throws IOException
-     */
-    public JsonMetadataPair generateJsonForItem(Object item, boolean gzip) throws IOException {
-        final PipedInputStream pis = new PipedInputStream();
-        final OutputStream out = new PipedOutputStream(pis);
-        final Metadata meta = new Metadata();
-
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
-        Callable c = (Callable) () -> {
-            if (item instanceof Stream) {
-                marshalItems((Stream) item, meta, gzip ? new GZIPOutputStream(out) : out);
-            } else if (item instanceof List) {
-                marshalItems(((List) item).stream(), meta, gzip ? new GZIPOutputStream(out) : out);
-            } else {
-                marshalItem(item, meta, gzip ? new GZIPOutputStream(out) : out);
-            }
-            return true;
-        };
-        executor.submit(c);
-        executor.shutdown();
-        return new JsonMetadataPair(pis, meta);
-
-    }
+//    /**
+//     * Takes the object(s) and generates JSON and corresponding metadata.
+//     *
+//     * @param item The Object, Stream or List to marshal to JSON.
+//     * @param gzip Whether to gzip the stream. Usually this inputStream best as
+//     * it reduces IO.
+//     * @return the marshal results, with the metadata complete once the
+//     * InputStream has been fully read. You are responsible for closing the
+//     * InputStream when complete.
+//     * @throws IOException
+//     */
+//    public JsonMetadataPair generateJsonForItem(Object item, boolean gzip) throws IOException {
+//        final PipedInputStream pis = new PipedInputStream();
+//        final OutputStream out = new PipedOutputStream(pis);
+//        final Metadata meta = new Metadata();
+//
+//        final ExecutorService executor = Executors.newSingleThreadExecutor();
+//        Callable c = (Callable) () -> {
+//            if (item instanceof Stream) {
+//                marshalItems((Stream) item, meta, gzip ? new GZIPOutputStream(out) : out);
+//            } else if (item instanceof List) {
+//                marshalItems(((List) item).stream(), meta, gzip ? new GZIPOutputStream(out) : out);
+//            } else {
+//                marshalItem(item, meta, gzip ? new GZIPOutputStream(out) : out);
+//            }
+//            return true;
+//        };
+//        executor.submit(c);
+//        executor.shutdown();
+//        return new JsonMetadataPair(pis, meta);
+//
+//    }
 
     public <T> InputStream marshalStreamToJsonArray(Stream<T> stream, boolean gzip) throws IOException {
         final PipedInputStream pis = new PipedInputStream();

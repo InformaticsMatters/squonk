@@ -2,7 +2,7 @@ package org.squonk.chemaxon.molecule;
 
 import chemaxon.formats.MolFormatException;
 import chemaxon.struc.Molecule;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import java.io.IOException;
 import java.util.Map;
 

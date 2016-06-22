@@ -1,21 +1,14 @@
 package org.squonk.rdkit.services;
 
-import com.im.lac.types.MoleculeObject;
-import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.rdkit.processor.RDKitCanonicalSmilesGeneratorProcessor;
 import org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor;
 import org.squonk.camel.processor.PropertyFilterProcessor;
 import org.squonk.camel.rdkit.processor.RDKitVerifyStructureProcessor;
-import org.squonk.dataset.Dataset;
-import org.squonk.dataset.DatasetMetadata;
-import org.squonk.dataset.MoleculeObjectDataset;
-import org.squonk.rdkit.io.RDKitMoleculeIOUtils;
 import org.squonk.rdkit.mol.EvaluatorDefintion;
 
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 import static org.squonk.rdkit.mol.EvaluatorDefintion.Function.*;
 

@@ -1,5 +1,6 @@
 package com.im.lac.util
 
+import org.squonk.util.CollectionUtils
 import spock.lang.Specification
 
 /**

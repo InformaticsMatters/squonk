@@ -7,7 +7,7 @@ import chemaxon.struc.Molecule;
 import chemaxon.util.iterator.MoleculeIterator;
 import chemaxon.util.iterator.MoleculeIteratorFactory;
 import org.squonk.chemaxon.molecule.MoleculeUtils;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import java.io.IOException;
 import java.util.Spliterator;
 import java.util.Spliterators.AbstractSpliterator;

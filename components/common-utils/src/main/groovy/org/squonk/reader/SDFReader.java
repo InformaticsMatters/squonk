@@ -1,7 +1,7 @@
 package org.squonk.reader;
 
-import com.im.lac.types.MoleculeObject;
-import com.im.lac.types.MoleculeObjectIterable;
+import org.squonk.types.MoleculeObject;
+import org.squonk.types.MoleculeObjectIterable;
 import org.squonk.util.IOUtils;
 import java.io.*;
 import java.util.*;

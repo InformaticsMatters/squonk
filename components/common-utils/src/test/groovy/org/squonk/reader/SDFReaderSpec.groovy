@@ -1,6 +1,6 @@
 package org.squonk.reader
 
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import org.squonk.util.IOUtils
 import spock.lang.Specification
 

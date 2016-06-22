@@ -3,7 +3,7 @@ package org.squonk.types.io
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.cfg.ContextAttributes
 import com.fasterxml.jackson.databind.module.SimpleModule
-import com.im.lac.types.BasicObject
+import org.squonk.types.BasicObject
 import spock.lang.Specification
 
 /**

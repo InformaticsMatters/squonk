@@ -1,8 +1,8 @@
 package org.squonk.camel.processor;
 
-import com.im.lac.types.MoleculeObject;
-import com.im.lac.types.MoleculeObjectIterable;
-import com.im.lac.util.StreamProvider;
+import org.squonk.types.MoleculeObject;
+import org.squonk.types.MoleculeObjectIterable;
+import org.squonk.util.StreamProvider;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.logging.Level;

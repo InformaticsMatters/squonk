@@ -6,12 +6,11 @@ import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
-import org.squonk.camel.util.CamelUtils;
 import com.im.lac.dataset.Metadata;
 import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 
 import java.util.logging.Logger;
 
@@ -19,9 +18,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.types.TypeResolver;
-
-import static org.squonk.util.CommonConstants.*;
-import static org.squonk.util.CommonConstants.VALUE_INCLUDE_FAIL;
 
 /**
  * @author timbo

@@ -1,7 +1,7 @@
 package org.squonk.openchemlib.predict;
 
 import com.actelion.research.chem.StereoMolecule;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.openchemlib.molecule.OCLMoleculeUtils;
 import org.squonk.property.MoleculeCalculator;
 import org.squonk.property.Predictor;

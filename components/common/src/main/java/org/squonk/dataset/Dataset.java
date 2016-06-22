@@ -1,7 +1,7 @@
 package org.squonk.dataset;
 
-import com.im.lac.types.BasicObject;
-import com.im.lac.util.StreamProvider;
+import org.squonk.types.BasicObject;
+import org.squonk.util.StreamProvider;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 

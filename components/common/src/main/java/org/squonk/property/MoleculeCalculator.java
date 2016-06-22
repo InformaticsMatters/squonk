@@ -1,6 +1,6 @@
 package org.squonk.property;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

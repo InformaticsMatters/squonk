@@ -1,6 +1,6 @@
 package org.squonk.camel.dataformat;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
@@ -23,7 +23,7 @@ public class MoleculeObjectDatasetJsonDataFormat implements DataFormat {
 
     /**
      * Writes a {@link Dataset} of @{link
-     * com.im.lac.types.MoleculeObject}s or a
+     * org.squonk.types.MoleculeObject}s or a
      * {@link MoleculeObjectDataset} to the OutputStream.
      * Generates the {@link DatasetMetadata} as it does so,
      * and then sets that DatasetMetadata as a header named by the value of the

@@ -1,6 +1,5 @@
 package org.squonk.types
 
-import com.im.lac.types.MoleculeObject
 import org.squonk.api.HttpHandler
 import org.squonk.api.MimeTypeResolver
 import org.squonk.api.VariableHandler

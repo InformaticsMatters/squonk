@@ -1,6 +1,6 @@
 package org.squonk.execution.steps.impl;
 
-import com.im.lac.types.BasicObject;
+import org.squonk.types.BasicObject;
 import groovy.lang.GroovyClassLoader;
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;

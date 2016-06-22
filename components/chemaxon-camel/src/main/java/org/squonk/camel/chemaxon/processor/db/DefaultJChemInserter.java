@@ -4,7 +4,7 @@ import chemaxon.jchem.db.UpdateHandler;
 import chemaxon.marvin.io.MPropHandler;
 import chemaxon.marvin.io.MRecord;
 import chemaxon.struc.MPropertyContainer;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.logging.Level;

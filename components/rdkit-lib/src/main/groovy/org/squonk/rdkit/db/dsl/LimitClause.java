@@ -1,6 +1,6 @@
 package org.squonk.rdkit.db.dsl;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 
 import java.util.List;
 

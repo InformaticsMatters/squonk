@@ -11,7 +11,7 @@ import com.chemaxon.descriptors.common.Descriptor;
 import com.chemaxon.descriptors.common.DescriptorComparator;
 import com.chemaxon.descriptors.common.DescriptorGenerator;
 import org.squonk.chemaxon.molecule.MoleculeUtils;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import java.util.Spliterator;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;

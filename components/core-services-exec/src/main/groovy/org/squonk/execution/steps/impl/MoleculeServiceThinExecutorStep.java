@@ -1,10 +1,9 @@
 package org.squonk.execution.steps.impl;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.im.lac.types.BasicObject;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.DatasetUtils;

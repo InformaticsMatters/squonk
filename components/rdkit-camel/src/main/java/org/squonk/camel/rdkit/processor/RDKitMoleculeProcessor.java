@@ -1,6 +1,6 @@
 package org.squonk.camel.rdkit.processor;
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import org.RDKit.ROMol;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;

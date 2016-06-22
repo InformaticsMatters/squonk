@@ -1,7 +1,7 @@
 package org.squonk.property;
 
 
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 
 /**
  * Created by timbo on 05/04/16.

@@ -1,6 +1,6 @@
 package org.squonk.chemaxon.molecule
 
-import com.im.lac.types.MoleculeObject
+import org.squonk.types.MoleculeObject
 import org.squonk.reader.SDFReader
 import spock.lang.Specification
 import chemaxon.formats.MolImporter

@@ -5,9 +5,8 @@ import static org.squonk.cdk.molecule.CDKMoleculeUtils.AROMATICITY;
 import static org.squonk.cdk.molecule.CDKMoleculeUtils.CDK_MOLECULE_WITH_ALL_EXPLICIT_HYDROGENS;
 import static org.squonk.cdk.molecule.CDKMoleculeUtils.CDK_MOLECULE_WITH_ALL_IMPLICIT_HYDROGENS;
 import static org.squonk.cdk.molecule.CDKMoleculeUtils.HYDROGEN_ADDER;
-import com.im.lac.types.MoleculeObject;
+import org.squonk.types.MoleculeObject;
 import java.io.IOException;
-import java.util.List;
 import java.util.logging.Logger;
 
 import org.openscience.cdk.exception.CDKException;
