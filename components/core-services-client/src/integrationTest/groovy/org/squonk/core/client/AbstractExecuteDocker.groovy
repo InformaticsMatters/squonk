@@ -1,6 +1,6 @@
 package org.squonk.core.client
 
-import com.im.lac.job.jobdef.JobStatus
+import org.squonk.jobdef.JobStatus
 import org.squonk.types.MoleculeObject
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset

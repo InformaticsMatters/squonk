@@ -3,7 +3,7 @@ package org.squonk.core;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.im.lac.dataset.Metadata;
+
 import java.io.Serializable;
 
 /**
@@ -28,6 +28,13 @@ import java.io.Serializable;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ServiceDescriptor implements Serializable {
 
+    public enum DataType {
+
+        ITEM,   // input a single item
+        STREAM, // input a stream of items
+        OPTION  // read from one of the options with the key of 'body'
+    }
+
     /**
      * A license token the user must have to be able to use the service. Should this really be an
      * enum? - probably need to be able to define new token types on the fly so it might be better
@@ -50,8 +57,8 @@ public class ServiceDescriptor implements Serializable {
     private final String[] layers;
     private final Class inputClass;
     private final Class outputClass;
-    private final Metadata.Type inputType;
-    private final Metadata.Type outputType;
+    private final DataType inputType;
+    private final DataType outputType;
     private final String icon;
     private final AccessMode[] accessModes;
 
@@ -68,8 +75,8 @@ public class ServiceDescriptor implements Serializable {
             @JsonProperty("layers") String[] layers,
             @JsonProperty("inputClass") Class inputClass,
             @JsonProperty("outputClass") Class outputClass,
-            @JsonProperty("inputType") Metadata.Type inputType,
-            @JsonProperty("outputType") Metadata.Type outputType,
+            @JsonProperty("inputType") DataType inputType,
+            @JsonProperty("outputType") DataType outputType,
             @JsonProperty("icon") String icon,
             @JsonProperty("accessModes") AccessMode[] accessModes
     ) {
@@ -195,7 +202,7 @@ public class ServiceDescriptor implements Serializable {
      *
      * @return
      */
-    public Metadata.Type getInputType() {
+    public DataType getInputType() {
         return inputType;
     }
 
@@ -204,7 +211,7 @@ public class ServiceDescriptor implements Serializable {
      *
      * @return
      */
-    public Metadata.Type getOutputType() {
+    public DataType getOutputType() {
         return outputType;
     }
 

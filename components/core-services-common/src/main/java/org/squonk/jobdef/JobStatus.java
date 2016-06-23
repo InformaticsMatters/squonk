@@ -1,7 +1,7 @@
-package com.im.lac.job.jobdef;
+package org.squonk.jobdef;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.im.lac.dataset.DataItem;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,12 +38,11 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
     private final Date started;
     private final Date completed;
     private final T jobDefinition;
-    private final DataItem result;
     private final List<String> events = new ArrayList<>();
 
     public static <T extends JobDefinition> JobStatus<T> create(T jobDef, String username, Date started, Integer totalCount) {
         String jobId = UUID.randomUUID().toString();
-        return new JobStatus(jobId, username, Status.PENDING, totalCount == null ? 0 : totalCount, 0, 0, started, null, jobDef, null, null);
+        return new JobStatus(jobId, username, Status.PENDING, totalCount == null ? 0 : totalCount, 0, 0, started, null, jobDef, null);
     }
 
     public JobStatus(
@@ -56,7 +55,6 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
             @JsonProperty("started") Date started,
             @JsonProperty("completed") Date completed,
             @JsonProperty("jobDefinition") T jobDefinition,
-            @JsonProperty("result") DataItem result,
             @JsonProperty("events") List<String> events
     ) {
         this.jobId = jobId;
@@ -68,7 +66,6 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         this.started = started;
         this.completed = completed;
         this.jobDefinition = jobDefinition;
-        this.result = result;
         if (events != null) {
             this.events.addAll(events);
         }
@@ -110,15 +107,6 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         return jobDefinition;
     }
 
-    /**
-     * @deprecated Result will be removed or converted to a more general type
-     * @return
-     */
-    @Deprecated
-    public DataItem getResult() {
-        return result;
-    }
-
     public List<String> getEvents() {
         return events;
     }
@@ -127,7 +115,7 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         List neu = new ArrayList<>();
         neu.addAll(events);
         neu.add(event);
-        return new JobStatus(jobId, username, status, totalCount, processedCount, errorCount, started, completed, jobDefinition, result, neu);
+        return new JobStatus(jobId, username, status, totalCount, processedCount, errorCount, started, completed, jobDefinition, neu);
     }
 
     public JobStatus withCounts(Integer processedCount, Integer errorCount) {
@@ -148,7 +136,7 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
         if (event != null) {
             neu.add(event);
         }
-        return new JobStatus(jobId, username, status, totalCount, processed, error, started, completed, jobDefinition, result, neu);
+        return new JobStatus(jobId, username, status, totalCount, processed, error, started, completed, jobDefinition, neu);
     }
 
     @Override

@@ -1,8 +1,8 @@
 package org.squonk.core.service.job;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.im.lac.job.jobdef.JobStatus;
-import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition;
+import org.squonk.jobdef.JobStatus;
+import org.squonk.jobdef.StepsCellExecutorJobDefinition;
 import org.squonk.client.JobStatusClient;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;

@@ -1,8 +1,8 @@
 package org.squonk.client;
 
-import com.im.lac.job.jobdef.JobDefinition;
-import com.im.lac.job.jobdef.JobQuery;
-import com.im.lac.job.jobdef.JobStatus;
+import org.squonk.jobdef.JobDefinition;
+import org.squonk.jobdef.JobQuery;
+import org.squonk.jobdef.JobStatus;
 
 import java.io.IOException;
 import java.util.List;

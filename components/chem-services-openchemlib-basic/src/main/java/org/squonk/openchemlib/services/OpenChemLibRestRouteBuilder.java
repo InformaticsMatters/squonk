@@ -1,12 +1,12 @@
 package org.squonk.openchemlib.services;
 
-import com.im.lac.dataset.Metadata;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.types.MoleculeObject;
@@ -75,8 +75,8 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                 new String[]{"public"},
                 MoleculeObject.class, // inputClass
                 MoleculeObject.class, // outputClass
-                Metadata.Type.STREAM, // inputTypes
-                Metadata.Type.STREAM, // outputTypes
+                DataType.STREAM, // inputTypes
+                DataType.STREAM, // outputTypes
                 icon,
                 new AccessMode[]{
                         new AccessMode(

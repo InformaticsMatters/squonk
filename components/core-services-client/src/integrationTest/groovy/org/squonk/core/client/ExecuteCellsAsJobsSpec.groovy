@@ -1,13 +1,12 @@
 package org.squonk.core.client
 
-import com.im.lac.job.jobdef.ExecuteCellUsingStepsJobDefinition
-import com.im.lac.job.jobdef.JobStatus
-import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition
+import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition
+import org.squonk.jobdef.JobStatus
+import org.squonk.jobdef.StepsCellExecutorJobDefinition
 import org.squonk.execution.steps.StepDefinition
 import org.squonk.execution.steps.StepDefinitionConstants
 import org.squonk.notebook.api.VariableKey
 import org.squonk.util.CommonMimeTypes
-import spock.lang.IgnoreRest
 import spock.lang.Stepwise
 
 import java.util.zip.GZIPInputStream

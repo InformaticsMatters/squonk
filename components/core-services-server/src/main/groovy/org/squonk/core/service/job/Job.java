@@ -1,7 +1,7 @@
 package org.squonk.core.service.job;
 
-import com.im.lac.job.jobdef.JobStatus;
-import com.im.lac.job.jobdef.JobDefinition;
+import org.squonk.jobdef.JobStatus;
+import org.squonk.jobdef.JobDefinition;
 import org.apache.camel.CamelContext;
 
 /**

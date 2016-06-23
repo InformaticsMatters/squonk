@@ -1,14 +1,12 @@
 package org.squonk.camel.util;
 
-import com.im.lac.dataset.Metadata;
-import org.squonk.types.MoleculeObject;
-import org.squonk.util.SimpleStreamProvider;
-import org.squonk.util.StreamProvider;
-import org.apache.camel.*;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.camel.ProducerTemplate;
 import org.squonk.api.MimeTypeResolver;
-import org.squonk.camel.processor.StreamingMoleculeObjectSourcer;
+import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
-import org.squonk.util.IOUtils;
 
 import java.io.*;
 import java.net.URI;
@@ -21,7 +19,6 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  *
@@ -37,30 +34,30 @@ public class CamelUtils {
 
 
 
-    public static void handleMoleculeObjectStreamInput(Exchange exch) throws IOException, ClassNotFoundException {
-
-        InputStream maybeGzippedInputStream = exch.getIn().getBody(InputStream.class);
-        final InputStream is = IOUtils.getGunzippedInputStream(maybeGzippedInputStream);
-
-        // TODO - grab the metadata from the header if present
-        Metadata meta = new Metadata(MoleculeObject.class.getName(), Metadata.Type.STREAM, 0);
-        Stream<MoleculeObject> stream = (Stream<MoleculeObject>) jsonHandler.unmarshalItemsAsStream(meta, is);
-        StreamProvider sp = new SimpleStreamProvider<>(stream.onClose(() -> {
-            LOG.fine("Stream closed. Closing underlying InputStream");
-            IOUtils.close(is);
-        }), MoleculeObject.class);
-        exch.getIn().setBody(sp);
-    }
-
-    public static void handleMoleculeObjectStreamOutput(Exchange exch) throws IOException {
-        String acceptEncoding = exch.getIn().getHeader("Accept-Encoding", String.class);
-        // TODO - handle other formats like SDF is the Accept header is set.
-        boolean gzip = acceptEncoding == null ? false : "gzip".equals(acceptEncoding.toLowerCase());
-        LOG.fine("GZIP: " + gzip);
-        Stream<MoleculeObject> mols = StreamingMoleculeObjectSourcer.bodyAsMoleculeObjectStream(exch);
-        InputStream is = jsonHandler.marshalStreamToJsonArray(mols,  gzip);
-        exch.getIn().setBody(is);
-    }
+//    public static void handleMoleculeObjectStreamInput(Exchange exch) throws IOException, ClassNotFoundException {
+//
+//        InputStream maybeGzippedInputStream = exch.getIn().getBody(InputStream.class);
+//        final InputStream is = IOUtils.getGunzippedInputStream(maybeGzippedInputStream);
+//
+//        // TODO - grab the metadata from the header if present
+//        Metadata meta = new Metadata(MoleculeObject.class.getName(), Metadata.Type.STREAM, 0);
+//        Stream<MoleculeObject> stream = (Stream<MoleculeObject>) jsonHandler.unmarshalItemsAsStream(meta, is);
+//        StreamProvider sp = new SimpleStreamProvider<>(stream.onClose(() -> {
+//            LOG.fine("Stream closed. Closing underlying InputStream");
+//            IOUtils.close(is);
+//        }), MoleculeObject.class);
+//        exch.getIn().setBody(sp);
+//    }
+//
+//    public static void handleMoleculeObjectStreamOutput(Exchange exch) throws IOException {
+//        String acceptEncoding = exch.getIn().getHeader("Accept-Encoding", String.class);
+//        // TODO - handle other formats like SDF is the Accept header is set.
+//        boolean gzip = acceptEncoding == null ? false : "gzip".equals(acceptEncoding.toLowerCase());
+//        LOG.fine("GZIP: " + gzip);
+//        Stream<MoleculeObject> mols = StreamingMoleculeObjectSourcer.bodyAsMoleculeObjectStream(exch);
+//        InputStream is = jsonHandler.marshalStreamToJsonArray(mols,  gzip);
+//        exch.getIn().setBody(is);
+//    }
 
     public static int putPropertiesAsHeaders(Message message, File propertiesFile) throws FileNotFoundException, IOException {
         try (InputStream is = new FileInputStream(propertiesFile)) {

@@ -1,8 +1,8 @@
 package org.squonk.core.service.job;
 
-import com.im.lac.job.jobdef.JobDefinition;
-import com.im.lac.job.jobdef.JobQuery;
-import com.im.lac.job.jobdef.JobStatus;
+import org.squonk.jobdef.JobDefinition;
+import org.squonk.jobdef.JobQuery;
+import org.squonk.jobdef.JobStatus;
 import org.squonk.client.JobStatusClient;
 
 import java.util.*;

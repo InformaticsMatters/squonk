@@ -1,6 +1,6 @@
 package org.squonk.core.service.user
 
-import com.im.lac.services.util.*
+
 import groovy.sql.Sql
 import org.squonk.core.user.User
 import org.squonk.core.util.TestUtils

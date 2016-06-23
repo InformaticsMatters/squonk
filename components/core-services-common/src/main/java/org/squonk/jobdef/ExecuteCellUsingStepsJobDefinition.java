@@ -1,4 +1,4 @@
-package com.im.lac.job.jobdef;
+package org.squonk.jobdef;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.squonk.execution.steps.StepDefinition;

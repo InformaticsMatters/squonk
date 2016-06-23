@@ -3,7 +3,6 @@ package org.squonk.core;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.im.lac.job.jobdef.JobDefinition;
 import org.squonk.options.OptionDescriptor;
 
 import java.io.Serializable;

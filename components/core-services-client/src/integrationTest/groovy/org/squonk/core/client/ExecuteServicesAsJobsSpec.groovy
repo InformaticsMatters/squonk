@@ -1,8 +1,8 @@
 package org.squonk.core.client
 
-import com.im.lac.job.jobdef.ExecuteCellUsingStepsJobDefinition
-import com.im.lac.job.jobdef.JobStatus
-import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition
+import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition
+import org.squonk.jobdef.JobStatus
+import org.squonk.jobdef.StepsCellExecutorJobDefinition
 import org.squonk.core.client.config.SquonkClientConfig
 import org.squonk.execution.steps.StepDefinition
 import org.squonk.execution.steps.StepDefinitionConstants

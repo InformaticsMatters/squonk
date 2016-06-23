@@ -1,4 +1,4 @@
-package com.im.lac.job.jobdef;
+package org.squonk.jobdef;
 
 import org.squonk.execution.steps.StepDefinition;
 

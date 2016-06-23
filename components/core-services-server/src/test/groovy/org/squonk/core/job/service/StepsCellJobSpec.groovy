@@ -1,8 +1,8 @@
 package org.squonk.core.job.service
 
-import com.im.lac.job.jobdef.ExecuteCellUsingStepsJobDefinition
-import com.im.lac.job.jobdef.JobStatus
-import com.im.lac.job.jobdef.StepsCellExecutorJobDefinition
+import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition
+import org.squonk.jobdef.JobStatus
+import org.squonk.jobdef.StepsCellExecutorJobDefinition
 import org.apache.camel.CamelContext
 import org.squonk.client.JobStatusClient
 import org.squonk.core.service.job.MemoryJobStatusClient
@@ -63,7 +63,7 @@ class StepsCellJobSpec extends Specification {
 //        context.start()
 //
 //        ProducerTemplate pt = context.createProducerTemplate()
-//        String body = '''{"@class":"com.im.lac.job.jobdef.ExecuteCellUsingStepsJobDefinition","notebookId":1,"cellName":"cell1","steps":[{"implementationClass":"org.squonk.execution.steps.impl.EchoStep","inputVariableMappings":{"input":{"producerName":"p","name":"input"}},"outputVariableMappings":{"output":"output"}}]}'''
+//        String body = '''{"@class":"org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition","notebookId":1,"cellName":"cell1","steps":[{"implementationClass":"org.squonk.execution.steps.impl.EchoStep","inputVariableMappings":{"input":{"producerName":"p","name":"input"}},"outputVariableMappings":{"output":"output"}}]}'''
 //
 //
 //        when:

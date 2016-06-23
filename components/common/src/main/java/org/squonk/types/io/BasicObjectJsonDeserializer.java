@@ -1,11 +1,11 @@
 package org.squonk.types.io;
 
-import com.im.lac.dataset.Metadata;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import org.squonk.dataset.DatasetMetadata;
 import org.squonk.types.BasicObject;
 import org.squonk.util.JacksonUtils;
 import java.io.IOException;
@@ -80,9 +80,9 @@ public class BasicObjectJsonDeserializer<T extends BasicObject> extends StdDeser
         int depth = 0;
 
         Map<String, Class> mappings = null;
-        Metadata metadata = (Metadata) dc.getAttribute(JsonHandler.ATTR_METADATA);
+        DatasetMetadata metadata = (DatasetMetadata) dc.getAttribute(JsonHandler.ATTR_DATASET_METADATA);
         if (metadata != null) {
-            mappings = metadata.getPropertyTypes();
+            mappings = metadata.getValueClassMappings();
         }
         if (mappings == null) {
             mappings = (Map<String, Class>) dc.getAttribute(JsonHandler.ATTR_VALUE_MAPPINGS);

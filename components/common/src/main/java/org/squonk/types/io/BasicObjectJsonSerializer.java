@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.im.lac.dataset.Metadata;
+import org.squonk.dataset.DatasetMetadata;
 import org.squonk.types.BasicObject;
 
 import java.io.IOException;
@@ -33,9 +33,9 @@ public class BasicObjectJsonSerializer<T extends BasicObject> extends StdSeriali
     public void serialize(BasicObject bo, JsonGenerator jg, SerializerProvider sp) throws IOException, JsonGenerationException {
 
         Map<String, Class> propTypes = null;
-        Metadata meta = (Metadata) sp.getAttribute(JsonHandler.ATTR_METADATA);
+        DatasetMetadata meta = (DatasetMetadata) sp.getAttribute(JsonHandler.ATTR_DATASET_METADATA);
         if (meta != null) {
-            propTypes = meta.getPropertyTypes();
+            propTypes = meta.getValueClassMappings();
         }
         if (propTypes == null) {
             propTypes = (Map<String, Class>) sp.getAttribute(JsonHandler.ATTR_VALUE_MAPPINGS);

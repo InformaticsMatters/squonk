@@ -1,4 +1,4 @@
-package com.im.lac.job.jobdef;
+package org.squonk.jobdef;
 
 /**
  * Created by timbo on 31/12/15.

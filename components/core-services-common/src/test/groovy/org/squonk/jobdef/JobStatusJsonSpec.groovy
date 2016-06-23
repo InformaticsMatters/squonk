@@ -1,9 +1,7 @@
-package com.im.lac.job.jobdef
+package org.squonk.jobdef
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import spock.lang.Specification
-
-import com.im.lac.job.jobdef.*
 
 /**
  *
@@ -25,7 +23,6 @@ class JobStatusJsonSpec extends Specification {
             new Date(),
             new Date(),
             new DoNothingJobDefinition(),
-            null,
             null)
         
         when:

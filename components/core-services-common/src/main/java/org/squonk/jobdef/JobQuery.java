@@ -1,4 +1,4 @@
-package com.im.lac.job.jobdef;
+package org.squonk.jobdef;
 
 import java.util.Date;
 import java.util.List;

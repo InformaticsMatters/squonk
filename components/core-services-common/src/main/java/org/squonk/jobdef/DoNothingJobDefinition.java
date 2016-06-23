@@ -1,6 +1,4 @@
-package com.im.lac.job.jobdef;
-
-import com.im.lac.job.jobdef.JobDefinition;
+package org.squonk.jobdef;
 
 /**
  * Job for testing purposes only. 

@@ -1,8 +1,8 @@
 package org.squonk.core.service.job;
 
-import com.im.lac.job.jobdef.JobDefinition
-import com.im.lac.job.jobdef.JobQuery
-import com.im.lac.job.jobdef.JobStatus
+import org.squonk.jobdef.JobDefinition
+import org.squonk.jobdef.JobQuery
+import org.squonk.jobdef.JobStatus
 import groovy.sql.Sql
 import groovy.util.logging.Log
 import org.squonk.client.JobStatusClient
@@ -108,7 +108,7 @@ public class PostgresJobStatusClient implements JobStatusClient {
                 errorCount == null ? 0 : errorCount.intValue(),
                 started,
                 completed,
-                jobDefinition, null,
+                jobDefinition,
                 Arrays.asList(eventsStr))
     }
 

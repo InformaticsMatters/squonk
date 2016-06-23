@@ -1,8 +1,8 @@
 package org.squonk.core;
 
-import com.im.lac.job.jobdef.ExecuteCellUsingStepsJobDefinition;
-import com.im.lac.job.jobdef.JobDefinition;
-import com.im.lac.job.jobdef.JobStatus;
+import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition;
+import org.squonk.jobdef.JobDefinition;
+import org.squonk.jobdef.JobStatus;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;

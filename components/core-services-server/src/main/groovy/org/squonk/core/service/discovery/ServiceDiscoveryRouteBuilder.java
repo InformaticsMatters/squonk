@@ -1,10 +1,9 @@
 package org.squonk.core.service.discovery;
 
-import com.im.lac.dataset.Metadata;
-import com.im.lac.job.jobdef.DoNothingJobDefinition;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServerConstants;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.types.io.JsonHandler;
 
 import java.util.*;
@@ -86,8 +85,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                     new String[]{"testing"},
                     Object.class, // inputClass
                     Object.class, // outputClass
-                    Metadata.Type.ITEM, // inputType
-                    Metadata.Type.ITEM, // outputType
+                    DataType.ITEM, // inputType
+                    DataType.ITEM, // outputType
                     "default_icon.png",
                     new AccessMode[]{
                             new AccessMode(

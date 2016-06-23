@@ -1,10 +1,9 @@
 package org.squonk.core
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.im.lac.dataset.Metadata
+import org.squonk.core.ServiceDescriptor.DataType;
 import spock.lang.Specification
 
-import com.im.lac.job.jobdef.*
 import org.squonk.types.MoleculeObject
 
 /**
@@ -30,8 +29,8 @@ class ServiceDescriptorJsonSpec extends Specification {
             ["public"] as String[],
             MoleculeObject.class, // inputClass
             MoleculeObject.class, // outputClass
-            Metadata.Type.STREAM, // inputTypes
-            Metadata.Type.STREAM, // outputType
+            DataType.STREAM, // inputTypes
+            DataType.STREAM, // outputType
             "icon.png",
             [new AccessMode(
                 "async",
