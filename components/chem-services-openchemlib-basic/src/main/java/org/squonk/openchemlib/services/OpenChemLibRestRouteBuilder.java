@@ -1,8 +1,6 @@
 package org.squonk.openchemlib.services;
 
 import com.im.lac.dataset.Metadata;
-import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
-import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
@@ -11,6 +9,7 @@ import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.options.OptionDescriptor;
+import org.squonk.types.MoleculeObject;
 import org.squonk.types.TypeResolver;
 
 import javax.inject.Inject;
@@ -86,7 +85,6 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                                 "Execute as an asynchronous REST web service",
                                 endpoint, // endpoint
                                 true, // URL is relative
-                                AsyncHttpProcessDatasetJobDefinition.class,
                                 null, null, null, null, options, StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
                 }
         );

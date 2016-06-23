@@ -48,7 +48,7 @@ public class ServiceDescriptorUtils {
         String absoluteUrl = getAbsoluteUrl(baseUrl, mode);
         return new AccessMode(mode.getId(), mode.getName(), mode.getDescription(),
                 absoluteUrl, false, // these are new - all else are the original values
-                mode.getJobType(), mode.getMinSize(), mode.getMaxSize(), mode.getCost(),
+                mode.getMinSize(), mode.getMaxSize(), mode.getCost(),
                 mode.getRequiredLicenseTokens(), mode.getParameters(), mode.getAdapterClassName()
         );
     }

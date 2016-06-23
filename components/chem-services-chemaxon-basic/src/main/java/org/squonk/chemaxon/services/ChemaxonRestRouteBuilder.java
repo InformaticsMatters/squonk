@@ -1,23 +1,21 @@
 package org.squonk.chemaxon.services;
 
-import org.squonk.camel.chemaxon.processor.clustering.SphereExclusionClusteringProcessor;
-import org.squonk.camel.chemaxon.processor.screening.MoleculeScreenerProcessor;
-import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
-import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.options.MoleculeTypeDescriptor;
-import org.squonk.options.OptionDescriptor;
 import com.im.lac.dataset.Metadata;
-import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
-import org.squonk.core.AccessMode;
-import org.squonk.core.ServiceDescriptor;
-import org.squonk.types.MoleculeObject;
-
-import java.util.logging.Logger;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
+import org.squonk.camel.chemaxon.processor.clustering.SphereExclusionClusteringProcessor;
+import org.squonk.camel.chemaxon.processor.screening.MoleculeScreenerProcessor;
+import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
+import org.squonk.core.AccessMode;
+import org.squonk.core.ServiceDescriptor;
+import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.options.MoleculeTypeDescriptor;
+import org.squonk.options.OptionDescriptor;
+import org.squonk.types.MoleculeObject;
 import org.squonk.types.TypeResolver;
+
+import java.util.logging.Logger;
 
 /**
  * @author timbo
@@ -190,7 +188,6 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                                 "Execute as an asynchronous REST web service",
                                 endpoint,
                                 true, // a relative URL
-                                AsyncHttpProcessDatasetJobDefinition.class,
                                 null,
                                 null,
                                 cost,

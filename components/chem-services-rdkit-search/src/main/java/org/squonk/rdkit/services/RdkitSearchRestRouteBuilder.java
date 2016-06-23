@@ -1,8 +1,6 @@
 package org.squonk.rdkit.services;
 
 import com.im.lac.dataset.Metadata;
-import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
-import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.cdi.ContextName;
@@ -14,6 +12,7 @@ import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.rdkit.db.ChemcentralSearcher;
+import org.squonk.types.MoleculeObject;
 
 import java.util.logging.Logger;
 
@@ -51,7 +50,6 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     "Execute as an asynchronous REST web service",
                                     "search",
                                     true, // a relative URL
-                                    AsyncHttpProcessDatasetJobDefinition.class,
                                     null,
                                     null,
                                     null,
@@ -100,7 +98,6 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     "Execute as an asynchronous REST web service",
                                     "search",
                                     true, // a relative URL
-                                    AsyncHttpProcessDatasetJobDefinition.class,
                                     null,
                                     null,
                                     null,
@@ -165,7 +162,6 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     "Execute as an asynchronous REST web service",
                                     "multisearch",
                                     true, // a relative URL
-                                    AsyncHttpProcessDatasetJobDefinition.class,
                                     null,
                                     null,
                                     null,

@@ -71,7 +71,7 @@ abstract class AbstractExecuteDocker extends Specification {
 
     JobStatus waitForJob(def jobId) {
         JobStatus status
-        for (int i=0; i<30; i++) {
+        for (int i=0; i<100; i++) {
             sleep(500)
             status = jobClient.get(jobId)
             if (status.status == JobStatus.Status.COMPLETED || status.status == JobStatus.Status.ERROR) {

@@ -96,7 +96,6 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                                     "Execute as an asynchronous REST web service",
                                     "valueIsIgnored", // endpoint
                                     true, // URL is relative
-                                    DoNothingJobDefinition.class,
                                     null,
                                     null,
                                     null,

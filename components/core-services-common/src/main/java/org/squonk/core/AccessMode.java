@@ -21,7 +21,6 @@ public class AccessMode implements Serializable {
     final String description;
     final String executionEndpoint;
     final boolean endpointRelative;
-    final Class<? extends JobDefinition> jobType;
     final Integer minSize;
     final Integer maxSize;
     final Float cost;
@@ -36,7 +35,6 @@ public class AccessMode implements Serializable {
             @JsonProperty("description") String description,
             @JsonProperty("executionEndpoint") String executionEndpoint,
             @JsonProperty("endpointRelative") boolean endpointRelative,
-            @JsonProperty("jobType") Class<? extends JobDefinition> jobType,
             @JsonProperty("minSize") Integer minSize,
             @JsonProperty("maxSize") Integer maxSize,
             @JsonProperty("cost") Float cost,
@@ -53,7 +51,6 @@ public class AccessMode implements Serializable {
         this.description = description;
         this.executionEndpoint = executionEndpoint;
         this.endpointRelative = endpointRelative;
-        this.jobType = jobType;
         this.minSize = minSize;
         this.maxSize = maxSize;
         this.cost = cost;
@@ -106,15 +103,6 @@ public class AccessMode implements Serializable {
      */
     public boolean isEndpointRelative() {
         return endpointRelative;
-    }
-
-    /**
-     * The JobDefinition class for this mode. This is used to submit a job to this service.
-     *
-     * @return
-     */
-    public Class<? extends JobDefinition> getJobType() {
-        return jobType;
     }
 
     /**

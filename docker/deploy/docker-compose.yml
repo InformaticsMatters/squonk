@@ -95,6 +95,8 @@ services:
             SQUONK_DB_PASS:
 
     ################# rdkit server services container ##################################
+    # This is a separate github project https://github.com/InformaticsMatters/rdkit-compose
+    # Build the image from that project dir using: docker build -t "squonk/rdkitserver" .
     # test using:
     # curl -X POST -T mols.json -H "Accept: application/json" -H "Content-Type: application/json" "http://localhost:8000/rdkit_cluster/cluster_simple?metric=tanimoto&threshold=0.7
     #

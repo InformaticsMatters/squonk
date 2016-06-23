@@ -1,8 +1,6 @@
 package org.squonk.rdkit.services;
 
 import com.im.lac.dataset.Metadata;
-import com.im.lac.job.jobdef.AsyncHttpProcessDatasetJobDefinition;
-import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
@@ -13,6 +11,7 @@ import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.rdkit.io.RDKitMoleculeIOUtils.FragmentMode;
 import org.squonk.rdkit.mol.EvaluatorDefintion;
+import org.squonk.types.MoleculeObject;
 import org.squonk.types.TypeResolver;
 import org.squonk.util.CommonConstants;
 
@@ -228,7 +227,6 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                                 "Execute as an asynchronous REST web service",
                                 endpoint,
                                 true, // a relative URL
-                                AsyncHttpProcessDatasetJobDefinition.class,
                                 null,
                                 null,
                                 null,
