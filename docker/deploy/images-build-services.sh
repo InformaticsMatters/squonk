@@ -13,7 +13,7 @@ docker-compose rm -fv chemservices
 
 cd ../../components
 
-./gradlew --daemon assemble common:uploadArchives
+./gradlew --daemon common:assemble common:publish
 
 docker rmi squonk/core-services-server squonk/chem-services-basic squonk/cellexecutor
 

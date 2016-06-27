@@ -1,9 +1,41 @@
 description = 'Common utilities'
 
+apply plugin: 'maven-publish'
+
 dependencies {
-        
+
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
 
     testCompile project(':core-test')
+}
+
+// this publishes artifacts to a local maven repo. If used make sure /var/maven_repo exists and is writeable
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url "file:///var/maven_repo/"
+        }
+    }
+}
+
+// this ensures the project's dependencies are also added to the maven repo.
+configurations.compile.resolvedConfiguration.resolvedArtifacts.eachWithIndex { resolvedArtifact, n ->
+    project.publishing {
+        publications {
+            "maven${n}"(MavenPublication) {
+                artifact(resolvedArtifact.file) {
+                    groupId = resolvedArtifact.moduleVersion.id.group
+                    artifactId = resolvedArtifact.moduleVersion.id.name
+                    version = resolvedArtifact.moduleVersion.id.version
+                    classifier = resolvedArtifact.classifier
+                }
+            }
+        }
+    }
 }
