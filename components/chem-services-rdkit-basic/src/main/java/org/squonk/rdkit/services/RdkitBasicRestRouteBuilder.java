@@ -2,12 +2,14 @@ package org.squonk.rdkit.services;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.rdkit.io.RDKitMoleculeIOUtils.FragmentMode;
 import org.squonk.rdkit.mol.EvaluatorDefintion;
@@ -19,6 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_NAME;
+import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_PARAMS;
+
 /**
  * @author timbo
  */
@@ -29,6 +34,9 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     private static final String ROUTE_STATS = "seda:post_stats";
 
     private static final TypeResolver resolver = new TypeResolver();
+
+    private final String mqueueUrl = new MessageQueueCredentials().generateUrl(MQUEUE_JOB_METRICS_EXCHANGE_NAME, MQUEUE_JOB_METRICS_EXCHANGE_PARAMS) +
+            "&routingKey=tokens.rdkit";
 
     protected static final ServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
             = new ServiceDescriptor[]{
@@ -242,8 +250,10 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
 
         restConfiguration().component("servlet").host("0.0.0.0");
 
+        // send usage metrics to the message queue
         from(ROUTE_STATS)
-                .log("Posting stats for ${header.SquonkJobID} ${body}");
+                .marshal().json(JsonLibrary.Jackson)
+                .to(mqueueUrl);
 
         /* These are the REST endpoints - exposed as public web services 
          */

@@ -62,6 +62,11 @@ public class StandardizerEvaluator implements MoleculeEvaluator {
         return "CXN_Standardizer";
     }
 
+    @Override
+    public String getMetricsCode() {
+        return "CXN.Standardize";
+    }
+
     class StandardizerPool extends Pool<Standardizer> {
         
         final String szr;

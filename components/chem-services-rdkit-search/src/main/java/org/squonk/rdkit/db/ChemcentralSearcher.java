@@ -14,7 +14,10 @@ import org.squonk.rdkit.db.dsl.Select;
 import org.squonk.rdkit.db.dsl.WhereClause;
 import org.squonk.types.DatasetHandler;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.ExecutionStats;
 import org.squonk.util.IOUtils;
+import org.squonk.util.Metrics;
+import static org.squonk.util.Metrics.*;
 import org.squonk.util.StatsRecorder;
 
 import javax.sql.DataSource;
@@ -33,7 +36,9 @@ public class ChemcentralSearcher {
 
     private static final Logger LOG = Logger.getLogger(ChemcentralSearcher.class.getName());
 
-
+    private static final String CODE_SIM = Metrics.generate(PROVIDER_RDKIT, METRICS_STRUCTURE_SEARCH_SIMILARITY);
+    private static final String CODE_SSS = Metrics.generate(PROVIDER_RDKIT, METRICS_STRUCTURE_SEARCH_SSS);
+    private static final String CODE_EXACT = Metrics.generate(PROVIDER_RDKIT, METRICS_STRUCTURE_SEARCH_EXACT);
 
     private final DataSource chemchentralDataSource;
     private final String statsRouteUri;
@@ -43,7 +48,7 @@ public class ChemcentralSearcher {
     }
 
     public ChemcentralSearcher(String statsRouteUri) {
-        this.statsRouteUri =statsRouteUri;
+        this.statsRouteUri = statsRouteUri;
         String s = IOUtils.getConfiguration("SQUONK_DB_SERVER", "localhost");
         String po = IOUtils.getConfiguration("SQUONK_DB_PORT", "5432");
         String pw = IOUtils.getConfiguration("POSTGRES_SQUONK_PASS", "squonk");
@@ -97,7 +102,22 @@ public class ChemcentralSearcher {
         List<MoleculeObject> mols = executeSearch(searcher, rdkitTable, table, query, molType, mode, limit, chiral, fp, metric, threshold);
         InputStream json = JsonHandler.getInstance().marshalStreamToJsonArray(mols.stream(), false);
         exch.getOut().setBody(json);
-        sendStats(exch, "RDKCart_" + mode, mols.size());
+
+        String code = null;
+        switch (mode) {
+            case "exact":
+                code = CODE_EXACT;
+                break;
+            case "sss":
+                code = CODE_SSS;
+                break;
+            case "sim":
+                code = CODE_SIM;
+                break;
+        }
+        if (code != null) {
+            sendStats(exch, code, mols.size(), table);
+        }
     }
 
 
@@ -152,22 +172,29 @@ public class ChemcentralSearcher {
         }).peek((mo) -> {
             mo.getValues().remove("sim");
         }).onClose(() -> {
-            sendStats(exch, "RDKCart_multisearch", count.get());
+            sendStats(exch, CODE_SIM, count.get(), table);
         });
         MoleculeObjectDataset modataset = new MoleculeObjectDataset(results);
         dh.writeResponse(modataset.getDataset(), executor, true);
     }
 
-    private void sendStats(Exchange exch, String key, int count) {
-        sendStats(exch, Collections.singletonMap(key, count));
-    }
+    private void sendStats(Exchange exch, String key, int count, String table) {
 
-    private void sendStats(Exchange exch, Map<String,Integer> stats) {
         String jobId = exch.getIn().getHeader(StatsRecorder.HEADER_SQUONK_JOB_ID, String.class);
         if (statsRouteUri != null) {
+            if (jobId == null) {
+                LOG.info("No job ID defined - can't post usage stats");
+                return;
+            }
             ProducerTemplate pt = exch.getContext().createProducerTemplate();
             pt.setDefaultEndpointUri(statsRouteUri);
-            pt.sendBodyAndHeader(stats, StatsRecorder.HEADER_SQUONK_JOB_ID, jobId);
+            Map<String,Integer> stats = new HashMap<>();
+            stats.put(key, count);
+            stats.put(PROVIDER_DATA_TABLE + "." + table, count);
+            ExecutionStats es = new ExecutionStats(jobId, stats);
+            pt.sendBody(es);
+        } else {
+            LOG.info("No stats route defined - can't post usage stats");
         }
     }
 

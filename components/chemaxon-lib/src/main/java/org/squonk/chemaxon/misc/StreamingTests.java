@@ -98,7 +98,7 @@ public class StreamingTests {
 
     static void calculateSequential() throws Exception {
         System.out.println("calculateSequential");
-        ChemTermsEvaluator cte = new ChemTermsEvaluator("logd", "logD('7.4')");
+        ChemTermsEvaluator cte = new ChemTermsEvaluator("logd", "logD('7.4')", "CXN.LogD");
         try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(f)).getStream(false)) {
             long t0 = System.currentTimeMillis();
             long results = stream
@@ -247,7 +247,7 @@ public class StreamingTests {
         protected ChemTermsEvaluator create() {
             System.out.println("  Pool.create() [" + Thread.currentThread() + "]");
             try {
-                return new ChemTermsEvaluator("logd", "logD('7.4')");
+                return new ChemTermsEvaluator("logd", "logD('7.4')", "CXN.LogD");
             } catch (ParseException ex) {
                 throw new RuntimeException("Failed to create", ex);
             }

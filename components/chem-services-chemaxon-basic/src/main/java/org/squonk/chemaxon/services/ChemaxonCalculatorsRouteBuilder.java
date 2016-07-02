@@ -6,6 +6,8 @@ import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 import org.apache.camel.builder.RouteBuilder;
 import org.squonk.camel.chemaxon.processor.ChemAxonVerifyStructureProcessor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
+import org.squonk.util.Metrics;
+import static org.squonk.util.Metrics.*;
 
 /**
  * These are routes that provide basic property calculation services. The input to the route is a
@@ -43,7 +45,7 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                 .log("CHEMAXON_LOGP starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
-                        .calculate(ChemTermsEvaluator.LOGP, "logP()"))
+                        .logP())
                 .log("CHEMAXON_LOGP finished");
 
         // Calculate atom count
@@ -51,7 +53,8 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                 .log("CHEMAXON_ATOM_COUNT starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
-                        .calculate(ChemTermsEvaluator.ATOM_COUNT, "atomCount()"))
+                        .atomCount()
+                )
                 .log("CHEMAXON_ATOM_COUNT finished");
 
         // Calculate LogP, atom count and bond count
@@ -59,8 +62,8 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                 .log("CHEMAXON_ATOM_BOND_COUNT starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
-                        .calculate(ChemTermsEvaluator.ATOM_COUNT, "atomCount()")
-                        .calculate(ChemTermsEvaluator.BOND_COUNT, "bondCount()")
+                        .atomCount()
+                        .bondCount()
                 )
                 .log("CHEMAXON_ATOM_BOND_COUNT finished");
 
@@ -69,10 +72,10 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                 .log("CHEMAXON_LIPINSKI starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
-                        .calculate(ChemTermsEvaluator.MOLECULAR_WEIGHT, "mass()")
-                        .calculate(ChemTermsEvaluator.LOGP, "logP()")
-                        .calculate(ChemTermsEvaluator.HBOND_DONOR_COUNT, "donorCount()")
-                        .calculate(ChemTermsEvaluator.HBOND_ACCEPTOR_COUNT, "acceptorCount()")
+                        .calculate(ChemTermsEvaluator.MOLECULAR_WEIGHT, "mass()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_MASS))
+                        .logP()
+                        .donorCount()
+                        .acceptorCount()
                 )
                 .log("CHEMAXON_LIPINSKI finished");
 
@@ -81,12 +84,12 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                 .log("CHEMAXON_DRUG_LIKE_FILTER starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
-                        .filter("mass()<400")
-                        .filter("ringCount()>0")
-                        .filter("rotatableBondCount()<5")
-                        .filter("donorCount()<=5")
-                        .filter("acceptorCount()<=10")
-                        .filter("logP()<5")
+                        .filter("mass()<400", Metrics.generate(PROVIDER_CHEMAXON, METRICS_MASS))
+                        .filter("ringCount()>0", Metrics.generate(PROVIDER_CHEMAXON, METRICS_RING_COUNT))
+                        .filter("rotatableBondCount()<5", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ROTATABLE_BOND_COUNT))
+                        .filter("donorCount()<=5", Metrics.generate(PROVIDER_CHEMAXON, METRICS_HBD))
+                        .filter("acceptorCount()<=10", Metrics.generate(PROVIDER_CHEMAXON, METRICS_HBA))
+                        .filter("logP()<5", Metrics.generate(PROVIDER_CHEMAXON, METRICS_LOGP))
                 )
                 .log("CHEMAXON_DRUG_LIKE_FILTER finished");
 

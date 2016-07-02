@@ -2,6 +2,7 @@ package org.squonk.chemaxon.services;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.chemaxon.processor.clustering.SphereExclusionClusteringProcessor;
 import org.squonk.camel.chemaxon.processor.screening.MoleculeScreenerProcessor;
@@ -10,12 +11,16 @@ import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.TypeResolver;
 
 import java.util.logging.Logger;
+
+import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_NAME;
+import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_PARAMS;
 
 /**
  * @author timbo
@@ -44,6 +49,9 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     private static final String DESC_MAX_CLUSTERS = "Target maximum number of clusters to generate";
 
     private static final TypeResolver resolver = new TypeResolver();
+
+    private final String mqueueUrl = new MessageQueueCredentials().generateUrl(MQUEUE_JOB_METRICS_EXCHANGE_NAME, MQUEUE_JOB_METRICS_EXCHANGE_PARAMS) +
+            "&routingKey=tokens.chemaxon";
 
     protected static final ServiceDescriptor[] SERVICE_DESCRIPTOR_CALCULATORS
             = new ServiceDescriptor[]{
@@ -203,8 +211,10 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
 
         restConfiguration().component("servlet").host("0.0.0.0");
 
+        // send usage metrics to the message queue
         from(ROUTE_STATS)
-                .log("Posting stats for ${header.SquonkJobID} ${body}");
+                .marshal().json(JsonLibrary.Jackson)
+                .to(mqueueUrl);
 
         /* These are the REST endpoints - exposed as public web services 
          */

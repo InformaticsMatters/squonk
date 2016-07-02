@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Created by timbo on 11/05/2016.
@@ -14,7 +13,6 @@ public class StatsRecorder {
 
     public static final String HEADER_SQUONK_JOB_ID = "SquonkJobID";
     public static final String HEADER_STATS_RECORDER = "StatsRecorder";
-
 
 
     private static final Logger LOG = Logger.getLogger(StatsRecorder.class.getName());
@@ -29,18 +27,16 @@ public class StatsRecorder {
         return jobId;
     }
 
-    public void recordStats(ExecutionStats stats) {
+    public void recordStats(Map<String,Integer> stats) {
         recordStats(Collections.singletonList(stats));
     }
 
-    public void recordStats(List<ExecutionStats> stats) {
+    public void recordStats(List<Map<String,Integer>> stats) {
         Map<String,Integer> accumulatedExecutionStats = new HashMap<>();
-        for (ExecutionStats stat : stats) {
-            if (stat != null) {
-                updateStats(accumulatedExecutionStats, stat.getExecutionStats());
-            }
+        for (Map<String,Integer> stat : stats) {
+                updateStats(accumulatedExecutionStats, stat);
         }
-        sendStats(accumulatedExecutionStats);
+        sendStats(new ExecutionStats(jobId, accumulatedExecutionStats));
     }
 
     private void updateStats(Map<String,Integer> accumulated, Map<String,Integer> toAdd) {
@@ -60,8 +56,8 @@ public class StatsRecorder {
      *
      * @param executionStats
      */
-    protected void sendStats( Map<String,Integer> executionStats) {
-        LOG.info("STATS: " + jobId + ": " + executionStats.entrySet().stream().map((e) -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(",")));
+    protected void sendStats(ExecutionStats executionStats) {
+        LOG.info(executionStats.toString());
     }
 
 }

@@ -19,6 +19,8 @@ import org.squonk.util.StatsRecorder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -124,8 +126,8 @@ public class MoleculeScreenerProcessor<T extends Descriptor> implements Processo
         StatsRecorder recorder = exch.getIn().getHeader(StatsRecorder.HEADER_STATS_RECORDER, StatsRecorder.class);
         if (recorder != null) {
             mols = mols.onClose(() -> {
-                ExecutionStats stats = new ExecutionStats();
-                stats.incrementExecutionCount("Screen_CXN", count.get());
+                Map<String,Integer> stats = new HashMap<>();
+                ExecutionStats.increment(stats, "Screen_CXN", count.get());
                 recorder.recordStats(stats);
             });
         }

@@ -22,6 +22,7 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
 
     private static final Logger LOG = Logger.getLogger(ChemTermsEvaluator.class.getName());
     private final String propName;
+    private final String metricsCode;
     private final ChemJEPPool pool;
     private final Mode mode;
     private final String chemTermsFunction;
@@ -29,9 +30,11 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
     public static final String LOGP = "LogP_CXN";
     public static final String ATOM_COUNT = "AtomCount_CXN";
     public static final String BOND_COUNT = "BondCount_CXN";
+    public static final String RING_COUNT = "Ring_CXN";
     public static final String HBOND_ACCEPTOR_COUNT = "HBA_CXN";
     public static final String HBOND_DONOR_COUNT = "HBD_CXN";
     public static final String MOLECULAR_WEIGHT = "MolWeight_CXN";
+    public static final String ROTATABLE_BOND_COUNT = "RotatableBondCount_CXN";
 
     /**
      * Constructor to standard ChemTerms evaluator. The property is calculated
@@ -41,8 +44,8 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
      * @param chemTermsFunction Chemical terms expression
      * @throws ParseException
      */
-    public ChemTermsEvaluator(String propName, String chemTermsFunction) throws ParseException {
-        this(propName, chemTermsFunction, Mode.Calculate);
+    public ChemTermsEvaluator(String propName, String chemTermsFunction, String metricsCode) throws ParseException {
+        this(propName, chemTermsFunction, Mode.Calculate, metricsCode);
     }
 
     /**
@@ -53,14 +56,15 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
      * @param mode Should be Filter or Transform
      * @throws ParseException
      */
-    public ChemTermsEvaluator(String chemTermsFunction, Mode mode) throws ParseException {
-        this("filter", chemTermsFunction, mode);
+    public ChemTermsEvaluator(String chemTermsFunction, Mode mode, String metricsCode) throws ParseException {
+        this("filter", chemTermsFunction, mode, metricsCode);
     }
 
-    ChemTermsEvaluator(String propName, String chemTermsFunction, Mode mode) throws ParseException {
+    ChemTermsEvaluator(String propName, String chemTermsFunction, Mode mode, String metricsCode) throws ParseException {
         this.propName = propName;
         this.chemTermsFunction = chemTermsFunction;
         this.mode = mode;
+        this.metricsCode = metricsCode;
         // create ChemJEP pool, compile the Chemical Terms expression
         this.pool = new ChemJEPPool(chemTermsFunction, 25);
     }
@@ -81,6 +85,11 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
     @Override
     public String getKey() {
         return propName;
+    }
+
+    @Override
+    public String getMetricsCode() {
+        return metricsCode;
     }
 
     /**
@@ -180,6 +189,7 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
             return Collections.emptyMap();
         }
     }
+
 
     class ChemJEPPool extends Pool<ChemJEP> {
 

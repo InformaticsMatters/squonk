@@ -2,12 +2,14 @@ package org.squonk.openchemlib.services;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.TypeResolver;
@@ -19,6 +21,8 @@ import java.util.stream.Stream;
 
 import static org.squonk.api.MimeTypeResolver.MIME_TYPE_DATASET_BASIC_JSON;
 import static org.squonk.api.MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON;
+import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_NAME;
+import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_PARAMS;
 
 /**
  * @author timbo
@@ -26,6 +30,9 @@ import static org.squonk.api.MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON;
 public class OpenChemLibRestRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(OpenChemLibRestRouteBuilder.class.getName());
+
+    private final String mqueueUrl = new MessageQueueCredentials().generateUrl(MQUEUE_JOB_METRICS_EXCHANGE_NAME, MQUEUE_JOB_METRICS_EXCHANGE_PARAMS) +
+            "&routingKey=tokens.ocl";
 
     @Inject
     private TypeResolver resolver;
@@ -98,8 +105,10 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                 .apiProperty("api.title", "OpenChemLib Basic services").apiProperty("api.version", "1.0")
                 .apiProperty("cors", "true");
 
+        // send usage metrics to the message queue
         from(ROUTE_STATS)
-                .log("Posting stats for ${header.SquonkJobID} ${body}");
+                .marshal().json(JsonLibrary.Jackson)
+                .to(mqueueUrl);
 
         //These are the REST endpoints - exposed as public web services
         //

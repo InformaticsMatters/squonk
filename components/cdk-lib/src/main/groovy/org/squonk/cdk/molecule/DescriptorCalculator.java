@@ -5,6 +5,9 @@ import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.qsar.IMolecularDescriptor;
 import org.squonk.util.ExecutionStats;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  * @author timbo
@@ -15,7 +18,7 @@ public abstract class DescriptorCalculator {
     protected String key;
     protected String[] propNames;
     protected Class[] propTypes;
-    protected final ExecutionStats executionStats = new ExecutionStats();
+    protected final Map<String,Integer> executionStats = new HashMap<>();
 
     /** The key to use when generating usage stats
      *
@@ -37,12 +40,12 @@ public abstract class DescriptorCalculator {
     
     public abstract IAtomContainer prepareMolecule(MoleculeObject mo) throws Exception;
 
-    public ExecutionStats getExecutionStats() {
+    public Map<String,Integer> getExecutionStats() {
          return executionStats;
     }
 
     protected int incrementExecutionCount(int count) {
-        return executionStats.incrementExecutionCount(MolecularDescriptors.STATS_PREFIX + "." + getKey(), count);
+        return ExecutionStats.increment(executionStats, MolecularDescriptors.STATS_PREFIX + "." + getKey(), count);
     }
     
 }

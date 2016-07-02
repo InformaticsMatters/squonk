@@ -17,7 +17,7 @@ class ChemTermsEvaluatorSpec extends Specification {
      def 'ChemTerms processor for Molecule'() {
 
         given:
-        def atomCount = new ChemTermsEvaluator('atom_count', 'atomCount()')
+        def atomCount = new ChemTermsEvaluator('atom_count', 'atomCount()', "")
         
 
         when: 
@@ -35,7 +35,7 @@ class ChemTermsEvaluatorSpec extends Specification {
     def 'ChemTerms filter for Molecule'() {
 
         given:
-        def atomCountLt6 = new ChemTermsEvaluator('atomCount()<6', MoleculeEvaluator.Mode.Filter)
+        def atomCountLt6 = new ChemTermsEvaluator('atomCount()<6', MoleculeEvaluator.Mode.Filter, "")
         
 
         when:  
@@ -58,7 +58,7 @@ class ChemTermsEvaluatorSpec extends Specification {
                 new MoleculeObject("CCCC", "smiles")
         ]
 
-        def atomCountLt6 = new ChemTermsEvaluator('atoms', 'atomCount()<6')
+        def atomCountLt6 = new ChemTermsEvaluator('atoms', 'atomCount()<6', "")
 
 
         when:
@@ -79,7 +79,7 @@ class ChemTermsEvaluatorSpec extends Specification {
         FileInputStream fis = new FileInputStream('../../data/testfiles/Kinase_inhibs.sdf.gz')
         //FileInputStream fis = new FileInputStream('../../data/testfiles/Building_blocks_GBP.sdf.gz')
         SDFReader reader = new SDFReader(new GZIPInputStream(fis))
-        def atomCountLt6 = new ChemTermsEvaluator('atoms', 'atomCount()<6')
+        def atomCountLt6 = new ChemTermsEvaluator('atoms', 'atomCount()<6', "")
 
 
         when:

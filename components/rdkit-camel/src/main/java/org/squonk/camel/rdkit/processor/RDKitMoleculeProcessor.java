@@ -12,10 +12,13 @@ import org.squonk.rdkit.mol.EvaluatorDefintion;
 import org.squonk.rdkit.mol.MolEvaluator;
 import org.squonk.rdkit.mol.MolReader;
 import org.squonk.util.ExecutionStats;
+import org.squonk.util.Metrics;
 import org.squonk.util.StatsRecorder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -38,7 +41,7 @@ public class RDKitMoleculeProcessor implements Processor {
         List<EvaluatorDefintion> defs = definitions;
         Stream<MoleculeObject> mols = dataset.getStream();
 
-        ExecutionStats stats = new ExecutionStats();
+        Map<String,Integer> stats = new HashMap<>();
         Stream<MoleculeObject> results = evaluate(exch, mols, defs, stats);
 
         StatsRecorder recorder = exch.getIn().getHeader(StatsRecorder.HEADER_STATS_RECORDER, StatsRecorder.class);
@@ -64,14 +67,14 @@ public class RDKitMoleculeProcessor implements Processor {
         exch.getIn().setHeader(CamelCommonConstants.HEADER_METADATA, meta);
     }
 
-    Stream<MoleculeObject> evaluate(Exchange exchange, Stream<MoleculeObject> mols, List<EvaluatorDefintion> definitions, ExecutionStats stats) {
+    Stream<MoleculeObject> evaluate(Exchange exchange, Stream<MoleculeObject> mols, List<EvaluatorDefintion> definitions,  Map<String,Integer> stats) {
 
         return mols.peek((mo) -> {
             ROMol rdkitMol = MolReader.findROMol(mo);
             if (rdkitMol != null) {
                 definitions.stream().forEach((definition) -> {
                     MolEvaluator.evaluate(mo, rdkitMol, definition);
-                    stats.incrementExecutionCount(definition.function.getName(), 1);
+                    ExecutionStats.increment(stats, Metrics.generate(Metrics.PROVIDER_RDKIT, definition.function.getMetricsCode()), 1);
                 });
             } else {
                 LOG.warning("No molecule found to process");

@@ -93,6 +93,8 @@ services:
             SQUONK_DB_SERVER: postgres
             SQUONK_DB_USER:
             SQUONK_DB_PASS:
+            RABBITMQ_HOST: rabbitmq
+            RABBITMQ_SQUONK_PASS:
 
     ################# rdkit server services container ##################################
     # This is a separate github project https://github.com/InformaticsMatters/rdkit-compose

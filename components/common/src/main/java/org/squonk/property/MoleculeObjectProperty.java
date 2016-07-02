@@ -9,8 +9,8 @@ import org.squonk.types.MoleculeObject;
 public abstract class MoleculeObjectProperty<V> extends Property<V,MoleculeObject> {
 
 
-    public MoleculeObjectProperty(String standardName, String description, Class<V> valueClass) {
-        super(standardName, description, valueClass, MoleculeObject.class);
+    public MoleculeObjectProperty(String standardName, String description, String metricsCode, Class<V> valueClass) {
+        super(standardName, description, metricsCode, valueClass, MoleculeObject.class);
     }
 
 

@@ -28,6 +28,7 @@ dependencies {
     compile "org.apache.camel:camel-swagger:$camelVersion"
     compile "org.apache.camel:camel-swagger-java:$camelVersion"
     compile "org.apache.camel:camel-cdi:$camelVersion"
+    compile "org.apache.camel:camel-rabbitmq:$camelVersion"
     
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 

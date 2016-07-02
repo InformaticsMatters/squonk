@@ -27,5 +27,7 @@ public interface MoleculeEvaluator {
     public Mode getMode();
 
     public String getKey();
+
+    public String getMetricsCode();
     
 }

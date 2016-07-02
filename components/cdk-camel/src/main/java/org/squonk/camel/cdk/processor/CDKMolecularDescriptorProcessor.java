@@ -14,6 +14,7 @@ import org.squonk.util.StatsRecorder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -62,13 +63,11 @@ public class CDKMolecularDescriptorProcessor implements Processor {
         StatsRecorder recorder = exch.getIn().getHeader(StatsRecorder.HEADER_STATS_RECORDER, StatsRecorder.class);
         if (recorder != null) {
             mols = mols.onClose(() -> {
-
-                List<ExecutionStats> stats = new ArrayList<>();
+                List<Map<String,Integer>> stats = new ArrayList<>();
                 for (DescriptorCalculator calculator : calculators) {
                     stats.add(calculator.getExecutionStats());
                 }
                 recorder.recordStats(stats);
-
             });
         }
         handleMetadata(exch, dataset.getMetadata());

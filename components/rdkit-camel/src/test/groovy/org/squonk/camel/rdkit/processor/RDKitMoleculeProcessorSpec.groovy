@@ -1,13 +1,12 @@
 package org.squonk.camel.rdkit.processor
 
 import org.squonk.types.MoleculeObject
-import org.squonk.util.ExecutionStats
-
-import java.util.stream.*
 import spock.lang.Specification
 
-import static org.squonk.rdkit.mol.EvaluatorDefintion.Function.*
+import java.util.stream.Collectors
+import java.util.stream.Stream
 
+import static org.squonk.rdkit.mol.EvaluatorDefintion.Function.LOGP
 
 /**
  *
@@ -23,17 +22,14 @@ class RDKitMoleculeProcessorSpec extends Specification {
         p.calculate(LOGP, 'logp')
         def mols = Stream.of(new MoleculeObject("C", "smiles"), new MoleculeObject("CC", "smiles"))
         
-        
         when: 
-        Stream<MoleculeObject> result = p.evaluate(null, mols, p.definitions, new ExecutionStats())
+        Stream<MoleculeObject> result = p.evaluate(null, mols, p.definitions, [:])
         def list = result.collect(Collectors.toList())
         
         then:
         list.size() == 2
         list[0].getValue("logp") != null
         list[1].getValue("logp") != null
-        
     }
 	
 }
-

@@ -15,6 +15,10 @@ public class MessageQueueCredentials {
     public static final String MQUEUE_USERS_EXCHANGE_NAME = "users.topic";
     public static final String MQUEUE_USERS_EXCHANGE_PARAMS = "&exchangeType=topic&autoDelete=false&durable=true&queue=allusers&routingKey=users.#";
 
+    public static final String MQUEUE_JOB_METRICS_EXCHANGE_NAME = "metrics.topic";
+    public static final String MQUEUE_JOB_METRICS_EXCHANGE_PARAMS = "&exchangeType=topic&autoDelete=false&durable=true&queue=metrics";
+
+
     private String hostname;
     private String username;
     private String password;

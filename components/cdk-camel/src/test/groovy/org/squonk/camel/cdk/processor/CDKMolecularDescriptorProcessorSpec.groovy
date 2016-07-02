@@ -6,6 +6,7 @@ import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.squonk.types.MoleculeObject
 import org.squonk.dataset.MoleculeObjectDataset
 import org.apache.camel.builder.RouteBuilder
+import org.squonk.util.ExecutionStats
 import org.squonk.util.StatsRecorder
 
 import java.util.stream.Stream
@@ -57,12 +58,11 @@ class CDKMolecularDescriptorProcessorSpec extends CamelSpecificationBase {
 
         StatsRecorder recorder = new StatsRecorder("job1") {
 
-            Map<String, Integer> executionStats
+            Map data
 
             @Override
-            protected void sendStats(Map<String, Integer> executionStats) {
-                super.sendStats(executionStats)
-                this.executionStats = executionStats
+            protected void sendStats(ExecutionStats executionStats) {
+                this.data = executionStats.getData()
             }
         }
 
@@ -73,8 +73,8 @@ class CDKMolecularDescriptorProcessorSpec extends CamelSpecificationBase {
 
         then:
         resultEndpoint.assertIsSatisfied()
-        recorder.executionStats.size() == 5
-        recorder.executionStats*.value == [2, 2, 2, 2, 2]
+        recorder.data.size() == 5
+        recorder.data*.value == [2, 2, 2, 2, 2]
     }
     
     

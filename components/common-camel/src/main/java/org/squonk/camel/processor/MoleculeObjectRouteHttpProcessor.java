@@ -75,7 +75,7 @@ public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectHttp
             ProducerTemplate pt = exch.getContext().createProducerTemplate();
             processed = pt.requestBodyAndHeaders(routeUri, processed, exch.getIn().getHeaders(), MoleculeObjectDataset.class);
         } else {
-            LOG.info("No route URL provided - hust doing format conversion");
+            LOG.info("No route URL provided - just doing format conversion");
         }
 
         // generate the results of the required type

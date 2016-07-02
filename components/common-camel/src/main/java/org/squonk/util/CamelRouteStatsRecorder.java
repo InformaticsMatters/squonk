@@ -17,8 +17,8 @@ public class CamelRouteStatsRecorder extends StatsRecorder {
     }
 
     @Override
-    protected void sendStats(Map<String, Integer> executionStats) {
+    protected void sendStats(ExecutionStats executionStats) {
         super.sendStats(executionStats);
-        pt.sendBodyAndHeader(executionStats, StatsRecorder.HEADER_SQUONK_JOB_ID, getJobId());
+        pt.sendBody(executionStats);
     }
 }

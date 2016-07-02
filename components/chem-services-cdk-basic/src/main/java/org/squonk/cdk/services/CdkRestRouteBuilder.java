@@ -2,6 +2,7 @@ package org.squonk.cdk.services;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.cdk.processor.CDKMoleculeObjectSDFileProcessor;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
@@ -9,6 +10,7 @@ import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.types.CDKSDFile;
 import org.squonk.types.MoleculeObject;
@@ -17,6 +19,9 @@ import org.squonk.types.TypeResolver;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_NAME;
+import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_PARAMS;
 
 /**
  * @author timbo
@@ -36,6 +41,8 @@ public class CdkRestRouteBuilder extends RouteBuilder {
 
     private static final String ROUTE_STATS = "seda:post_stats";
 
+    private final String mqueueUrl = new MessageQueueCredentials().generateUrl(MQUEUE_JOB_METRICS_EXCHANGE_NAME, MQUEUE_JOB_METRICS_EXCHANGE_PARAMS) +
+            "&routingKey=tokens.cdk";
 
 
     protected static final ServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
@@ -48,7 +55,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                     new String[]{"/Chemistry/Toolkits/CDK/Verify", "/Chemistry/Verify"},
                     "icons/properties_add.png",
                     ROUTE_VERIFY,
-                    new OptionDescriptor[] {OptionDescriptor.IS_FILTER, OptionDescriptor.FILTER_MODE}),
+                    new OptionDescriptor[]{OptionDescriptor.IS_FILTER, OptionDescriptor.FILTER_MODE}),
             createServiceDescriptor(
                     "cdk.logp", "LogP (CDK)", "LogP predictions for XLogP, ALogP and AMR using CDK",
                     new String[]{"logp", "partitioning", "molecularproperties", "cdk"},
@@ -107,8 +114,10 @@ public class CdkRestRouteBuilder extends RouteBuilder {
 //                .apiProperty("api.title", "CDK Basic services").apiProperty("api.version", "1.0")
 //                .apiProperty("cors", "true");
 
+        // send usage metrics to the message queue
         from(ROUTE_STATS)
-                .log("Posting stats for ${header.SquonkJobID} ${body}");
+                .marshal().json(JsonLibrary.Jackson)
+                .to(mqueueUrl);
 
         //These are the REST endpoints - exposed as public web services
         //
@@ -188,5 +197,6 @@ public class CdkRestRouteBuilder extends RouteBuilder {
     String join(String... args) {
         return Stream.of(args).collect(Collectors.joining(","));
     }
+
 
 }

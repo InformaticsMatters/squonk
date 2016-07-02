@@ -4,6 +4,9 @@ import com.actelion.research.chem.StereoMolecule;
 import com.actelion.research.chem.prediction.CLogPPredictor;
 import org.squonk.property.LogPProperty;
 import org.squonk.property.MoleculeCalculator;
+import org.squonk.util.Metrics;
+
+import static org.squonk.util.Metrics.PROVIDER_OPENCHEMLIB;
 
 /**
  * Created by timbo on 05/04/16.
@@ -11,6 +14,7 @@ import org.squonk.property.MoleculeCalculator;
 public class OCLLogPPredictor extends AbstractOCLPredictor<Float> {
 
     private static final String NAME = "LogP_OCL";
+    private static final String CODE = Metrics.generate(PROVIDER_OPENCHEMLIB, LogPProperty.METRICS_CODE);
 
     private CLogPPredictor predictor;
 
@@ -40,7 +44,7 @@ public class OCLLogPPredictor extends AbstractOCLPredictor<Float> {
 
         protected Float doCalculate(StereoMolecule mol) {
             float result = getPredictor().assessCLogP(mol);
-            incrementExecutionCount(NAME, 1);
+            incrementExecutionCount(CODE, 1);
             return result;
         }
 

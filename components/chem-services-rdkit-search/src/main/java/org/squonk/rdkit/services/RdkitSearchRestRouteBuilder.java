@@ -3,18 +3,23 @@ package org.squonk.rdkit.services;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.cdi.ContextName;
+import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.api.MimeTypeResolver;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.rdkit.db.ChemcentralSearcher;
 import org.squonk.types.MoleculeObject;
 
 import java.util.logging.Logger;
+
+import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_NAME;
+import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_PARAMS;
 
 /**
  * @author timbo
@@ -23,6 +28,8 @@ import java.util.logging.Logger;
 public class RdkitSearchRestRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(RdkitSearchRestRouteBuilder.class.getName());
+    private final String mqueueUrl = new MessageQueueCredentials().generateUrl(MQUEUE_JOB_METRICS_EXCHANGE_NAME, MQUEUE_JOB_METRICS_EXCHANGE_PARAMS) +
+            "&routingKey=tokens.rdkit";
 
     private static final String ROUTE_STATS = "seda:post_stats";
 
@@ -205,11 +212,13 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
 
         restConfiguration().component("servlet").host("0.0.0.0");
 
+        // send usage metrics to the message queue
         from(ROUTE_STATS)
-                .log("Posting stats for ${header.SquonkJobID} ${body}");
+                .log("Posting stats: ${body}")
+                .marshal().json(JsonLibrary.Jackson)
+                .to(mqueueUrl);
 
-        /* These are the REST endpoints - exposed as public web services 
-         */
+        // These are the REST endpoints - exposed as public web services
 
         rest("/ping").description("Simple ping service to check things are running")
                 .get()

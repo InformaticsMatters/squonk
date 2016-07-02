@@ -24,6 +24,7 @@ dependencies {
     compile "org.apache.camel:camel-servletlistener:$camelVersion"
     compile "org.apache.camel:camel-servlet:$camelVersion"
     compile "org.apache.camel:camel-swagger:$camelVersion"
+    compile "org.apache.camel:camel-rabbitmq:$camelVersion"
     
     testCompile project(':core-test')
     

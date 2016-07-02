@@ -9,6 +9,8 @@ import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.MoleculeObjectDataset;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -85,8 +87,8 @@ public class SphereExclusionClusteringProcessor<T extends Descriptor> implements
         exch.getIn().setBody(output);
         StatsRecorder recorder = exch.getIn().getHeader(StatsRecorder.HEADER_STATS_RECORDER, StatsRecorder.class);
         if (recorder != null) {
-            ExecutionStats stats = new ExecutionStats();
-            stats.incrementExecutionCount("Cluster_CXN", count);
+            Map<String,Integer> stats = new HashMap<>();
+            ExecutionStats.increment(stats, "Cluster_CXN", count);
             recorder.recordStats(stats);
         }
     }

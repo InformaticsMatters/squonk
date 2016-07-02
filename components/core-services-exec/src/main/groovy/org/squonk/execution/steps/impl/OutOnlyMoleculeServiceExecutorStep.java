@@ -11,6 +11,7 @@ import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
+import org.squonk.util.StatsRecorder;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -58,6 +59,9 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractStep {
         requestHeaders.put("Accept-Encoding", "gzip");
         if (bodyContentType != null) {
             requestHeaders.put("Content-Type", bodyContentType);
+        }
+        if (jobId != null) {
+            requestHeaders.put(StatsRecorder.HEADER_SQUONK_JOB_ID, jobId);
         }
 
         // send for execution
