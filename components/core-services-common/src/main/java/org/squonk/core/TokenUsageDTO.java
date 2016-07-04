@@ -11,16 +11,16 @@ public class TokenUsageDTO {
 
     private final String username;
     private final String jobId;
-    private final int units;
+    private final Integer units;
     private final String key;
-    private final float tokens;
+    private final Float tokens;
     private final Date created;
 
     public TokenUsageDTO(@JsonProperty("username") String username,
                          @JsonProperty("jobId") String jobId,
                          @JsonProperty("key") String key,
-                         @JsonProperty("units") int units,
-                         @JsonProperty("tokens") float tokens,
+                         @JsonProperty("units") Integer units,
+                         @JsonProperty("tokens") Float tokens,
                          @JsonProperty("created") Date created) {
         this.username = username;
         this.jobId = jobId;
@@ -47,7 +47,7 @@ public class TokenUsageDTO {
         return units;
     }
 
-    public float getTokenCount() {
+    public Float getTokenCount() {
         return tokens;
     }
 

@@ -1,13 +1,18 @@
 package org.squonk.execution.docker;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.model.AccessMode;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Frame;
+import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-import com.github.dockerjava.core.command.AttachContainerResultCallback;
-import com.github.dockerjava.core.command.EventsResultCallback;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
+import com.github.dockerjava.core.command.WaitContainerResultCallback;
+import org.squonk.util.IOUtils;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -15,26 +20,26 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Simple Docker executor that expects inputs and outputs.
  * This uses the docker-java library (https://github.com/docker-java/docker-java).
- *
+ * <p>
  * A temporary work dir is created under the specified host path. The name is randomly generated. This directories is bound
  * to the container dir specified by the {@link #localWorkDir} property. Typically you would write any input variables and
  * other content (e.g. a shell script to execute) into the host dir (obtained from {@link #getHostWorkDir()}}) and then
  * execute the container as appropriate (e.g. execute the shell script you put in the work dir) writing the output to that dir.
- *
+ * <p>
  * Additional volumes and binds can be added prior to execution using the @{link #addVolume} and @{link #addBind} methods
- *
+ * <p>
  * Then once execution is complete you will find the output in the host dir.
- *
- * Finally, once you are finished with the inputs and outputs you can call the {@link #cleanWorkDir()} method to delete the
+ * <p>
+ * Finally, once you are finished with the inputs and outputs you can call the {@link #cleanup()} method to delete the
  * directories that were created
- *
- *
+ * <p>
+ * <p>
  * Created by timbo on 30/12/15.
  */
 public class DockerRunner {
@@ -44,17 +49,27 @@ public class DockerRunner {
     private final String imageName;
     private final String localWorkDir;
     private final File hostWorkDir;
+    private String networkName = "none";
 
     private final List<Volume> volumes = new ArrayList<>();
     private final List<Bind> binds = new ArrayList<>();
     private LogContainerTestCallback loggingCallback;
 
+    private DockerClientConfig config;
+    private DockerClient dockerClient;
+    private String containerId;
+    /**
+     * 0 = not started
+     * 1, running
+     * 2 = finished
+     */
+    private int isRunning = 0;
+
 
     /**
-     *
-     * @param imageName The Docker image to run. Must already be pulled
+     * @param imageName       The Docker image to run. Must already be pulled
      * @param hostBaseWorkDir The directory on the host that will be used to create a work dir. Must exist and be writeable.
-     * @param localWorkDir The name under which the host work dir will be mounted in the new container
+     * @param localWorkDir    The name under which the host work dir will be mounted in the new container
      * @throws IOException
      */
     public DockerRunner(String imageName, String hostBaseWorkDir, String localWorkDir) {
@@ -62,7 +77,19 @@ public class DockerRunner {
         this.hostWorkDir = new File(hostBaseWorkDir + "/" + UUID.randomUUID().toString());
         this.localWorkDir = localWorkDir;
         LOG.fine("Host Work dir is " + hostWorkDir.getPath());
+    }
 
+    protected DockerClient getDockerClient() {
+        return dockerClient;
+    }
+
+    protected String getContainerId() {
+        return containerId;
+    }
+
+    public DockerRunner withNetwork(String networkName) {
+        this.networkName = networkName;
+        return this;
     }
 
     public void init() throws IOException {
@@ -74,7 +101,11 @@ public class DockerRunner {
         Bind b = new Bind(getHostWorkDir().getPath(), work, AccessMode.rw);
         binds.add(b);
 
+        // properties read from environment variables
+        config = DockerClientConfig.createDefaultConfigBuilder().build();
+        dockerClient = DockerClientBuilder.getInstance(config).build();
     }
+
 
     public long writeInput(String filename, InputStream content, boolean executable) throws IOException {
         File file = new File(getHostWorkDir(), filename);
@@ -84,7 +115,7 @@ public class DockerRunner {
                     throw new IOException("Failed to create input file " + filename);
                 }
             }
-            long bytes =  Files.copy(content, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            long bytes = Files.copy(content, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
             file.setExecutable(executable);
             return bytes;
         } finally {
@@ -122,14 +153,25 @@ public class DockerRunner {
         return localWorkDir;
     }
 
-    public void cleanWorkDir() {
+    public void cleanup() {
+        if (dockerClient != null) {
+            if (containerId != null) {
+                try {
+                    dockerClient.removeContainerCmd(containerId).withForce(true).exec();
+                } catch (Exception e) {
+                    LOG.log(Level.WARNING, "Failed to remove container", e);
+                }
+            }
+            IOUtils.close(dockerClient);
+        }
+
         deleteRecursive(hostWorkDir);
     }
 
     private boolean deleteRecursive(File path) {
         boolean ret = true;
-        if (path.isDirectory()){
-            for (File f : path.listFiles()){
+        if (path.isDirectory()) {
+            for (File f : path.listFiles()) {
                 ret = ret && deleteRecursive(f);
             }
         }
@@ -157,59 +199,72 @@ public class DockerRunner {
      */
     public int execute(String... cmd) {
 
-        // properties read from environment variables
-        DockerClientConfig config = DockerClientConfig.createDefaultConfigBuilder().build();
-        DockerClient dockerClient = DockerClientBuilder.getInstance(config).build();
+        if (isRunning != 0) {
+            throw new IllegalStateException("Already started");
+        }
+        isRunning = 1;
 
-        CreateContainerResponse container = dockerClient.createContainerCmd(imageName)
+        CreateContainerCmd createContainerCmd = dockerClient.createContainerCmd(imageName)
                 .withVolumes(volumes.toArray(new Volume[volumes.size()]))
                 .withBinds(binds.toArray(new Bind[binds.size()]))
                 .withWorkingDir(localWorkDir)
-                .withCmd(cmd)
-                .exec();
+                .withNetworkMode(networkName == null ? "none" : networkName)
+                .withCmd(cmd);
 
-        try {
-            dockerClient.startContainerCmd(container.getId()).exec();
-            LOG.info("Executing command");
+        CreateContainerResponse container = createContainerCmd.exec();
+        containerId = container.getId();
+        LOG.info("Created container " + containerId);
 
-            loggingCallback = new LogContainerTestCallback(true);
-            dockerClient.logContainerCmd(container.getId())
-                    .withStdErr(true)
-                    .withStdOut(true)
-                    .withFollowStream(true)
-                    .withTailAll()
-                    .exec(loggingCallback);
+        LOG.info("Executing command");
+        dockerClient.startContainerCmd(containerId).exec();
 
-            int resp = dockerClient.waitContainerCmd(container.getId()).exec();
-            LOG.fine("Docker execution completed. Results written to " + getHostWorkDir().getPath());
-            return resp;
-        } finally {
-            try {
-                dockerClient.removeContainerCmd(container.getId()).exec();
-            } catch (Exception e) {
-                LOG.warning("Failed to removed container " + container.getId());
-            }
+        loggingCallback = new LogContainerTestCallback(true);
+        dockerClient.logContainerCmd(containerId)
+                .withStdErr(true)
+                .withStdOut(true)
+                .withFollowStream(true)
+                .withTailAll()
+                .exec(loggingCallback);
+
+        int resp = dockerClient.waitContainerCmd(containerId).exec(new WaitContainerResultCallback()).awaitStatusCode();
+        LOG.info("Docker execution completed. Results written to " + getHostWorkDir().getPath());
+        return resp;
+    }
+
+    public void stop() {
+        if (isRunning != 1 || containerId == null) {
+            // not started or already finished
+            LOG.info("Can't stop container that is not running. Current status is " + isRunning + " container ID is " + containerId);
+        } else {
+            LOG.info("Stopping container " + containerId);
+            DockerClient client = DockerClientBuilder.getInstance(config).build();
+            client.stopContainerCmd(containerId).exec();
+            LOG.info("Container " + containerId + " stopped");
+            isRunning = 2;
         }
+    }
+
+    public InspectContainerResponse inspectContainer() {
+        if (containerId == null) {
+            return null;
+        } else {
+            DockerClient client = DockerClientBuilder.getInstance(config).build();
+            InspectContainerResponse resp = client.inspectContainerCmd(containerId).exec();
+            IOUtils.close(client);
+            return resp;
+        }
+    }
+
+    public boolean isRunning() {
+        return isRunning == 1;
+    }
+
+    protected int getCurrentStatus() {
+        return isRunning;
     }
 
     public String getLog() {
         return loggingCallback == null ? null : loggingCallback.toString();
-    }
-
-    public static void main(String[] args) throws IOException {
-
-        DockerRunner runner = new DockerRunner("busybox", "/tmp/work/", "/source");
-        runner.init();
-        runner.writeInput("run.sh", "touch /source/IWasHere\n");
-
-        long t0 = System.currentTimeMillis();
-        runner.execute("/bin/sh", "/source/run.sh");
-        long t1 = System.currentTimeMillis();
-        System.out.println("Execution completed in " + (t1-t0) + "ms");
-        System.out.println("Results found in " + runner.getHostWorkDir().getPath());
-        runner.cleanWorkDir();
-        System.out.println("All data deleted");
-
     }
 
 
@@ -230,7 +285,7 @@ public class DockerRunner {
 
         @Override
         public void onNext(Frame frame) {
-            if(collectFrames) collectedFrames.add(frame);
+            if (collectFrames) collectedFrames.add(frame);
             log.append(new String(frame.getPayload()));
         }
 

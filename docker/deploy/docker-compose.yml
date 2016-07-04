@@ -10,7 +10,21 @@
 
 version: '2'
 
+networks:
+    squonk_front:
+        driver: bridge
+    squonk_back:
+        driver: bridge  
+    squonk_isolated:
+        driver: bridge
+        
 services:
+
+    # temp container that makes sure the squonk_isolated network is created
+    isolated:
+         image: busybox
+         networks:
+         - squonk_isolated
 
     ################# Rabbit MQ container #############################################
     #
@@ -32,6 +46,8 @@ services:
             RABBITMQ_DEFAULT_USER: admin
             RABBITMQ_DEFAULT_PASS:
             RABBITMQ_SQUONK_PASS:
+        networks:
+        - squonk_back
 
     ################# PostgreSQL container ############################################
     # based on PostgreSQL 9.5 with RDKit cartridge support
@@ -46,7 +62,8 @@ services:
             POSTGRES_KEYCLOAK_PASS:
             POSTGRES_XWIKI_PASS:
             POSTGRES_SQUONK_PASS:
-
+        networks:
+        - squonk_back
 
     ################# swagger container ###############################################
     #swagger:
@@ -71,7 +88,9 @@ services:
             POSTGRES_PASSWORD:
         volumes:
         - ./images/keycloak/standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml:ro
-    
+        networks:
+        - squonk_front
+        - squonk_back    
 
     ################# chem services container #########################################
     # available on
@@ -95,7 +114,9 @@ services:
             SQUONK_DB_PASS:
             RABBITMQ_HOST: rabbitmq
             RABBITMQ_SQUONK_PASS:
-
+        networks:
+        - squonk_back
+        
     ################# rdkit server services container ##################################
     # This is a separate github project https://github.com/InformaticsMatters/rdkit-compose
     # Build the image from that project dir using: docker build -t "squonk/rdkitserver" .
@@ -111,7 +132,9 @@ services:
         command: gunicorn --workers 5 --timeout 1000 -b 0.0.0.0 proj.wsgi
         volumes:
         - /code/static
-
+        networks:
+        - squonk_back
+        
     ################# core-services-server container ###################################
     # available on:
     # http://${PUBLIC_HOST}/coreservices/rest/ping
@@ -133,6 +156,8 @@ services:
             SQUONK_SERVICES_CORE:
             SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
             SQUONK_RDKIT_CHEM_SERVICES_URL: "http://rdkitserver:8000"  # internal port
+        networks:
+        - squonk_back
 
     ################# cell-executor container #########################################
     cellexecutor:
@@ -151,7 +176,9 @@ services:
             SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
             DOCKER_HOST: unix:///var/run/docker.sock
             registry.url: https://index.docker.io/v1/
-    
+        networks:
+        - squonk_back
+            
     ################# portal ##########################################################
     # available on http://${PUBLIC_HOST}/portal
     portal:
@@ -173,7 +200,10 @@ services:
             PUBLIC_HOST_URL:
             SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
             SERVICE_CALLBACK: http://localhost:8080/portal
-
+        networks:
+        - squonk_front
+        - squonk_back
+        
     ################# xwiki container ###################################################
     # available on http://${PUBLIC_HOST}/xwiki
     xwiki:
@@ -188,7 +218,10 @@ services:
         - postgres
         environment:
         - KEYCLOAK_SERVER_URL
-
+        networks:
+        - squonk_front
+        - squonk_back
+        
     ################# nginx container ###################################################
     # create a SSL cert/key using:
     # openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/cert.key -out images/nginx/cert.crt
@@ -207,6 +240,7 @@ services:
         - xwiki
         - keycloak
         - portal
-        - coreservices
-        - chemservices
+        networks:
+        - squonk_front
+
 

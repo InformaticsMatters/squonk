@@ -94,7 +94,7 @@ class TokensPostgresClientSpec extends Specification{
         // usage comes back in descending order (most recent first)
         usage.size() == 4
         usage[0].units == 10
-        usage[0].tokenCount == 0f // no unit cost defined so token usage should be zero
+        usage[0].tokenCount == null // no unit cost defined so token usage should be null
         usage[1].units == 11
         usage[1].tokenCount == 24.2f
         usage[2].units == 10

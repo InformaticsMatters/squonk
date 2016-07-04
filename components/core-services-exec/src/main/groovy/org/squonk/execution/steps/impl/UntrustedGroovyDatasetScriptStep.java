@@ -8,6 +8,7 @@ import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.docker.DockerRunner;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.util.IOUtils;
 
 import java.util.logging.Logger;
 
@@ -20,6 +21,8 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerStep {
 
     public static final String OPTION_DOCKER_IMAGE = StepDefinitionConstants.OPTION_DOCKER_IMAGE;
     public static final String OPTION_SCRIPT = StepDefinitionConstants.TrustedGroovyDataset.OPTION_SCRIPT;
+
+    private static String ISOLATED_NETWORK_NAME = IOUtils.getConfiguration("ISOLATED_NETWORK_NAME", "deploy_squonk_isolated");
 
 
     @Override
@@ -39,7 +42,8 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerStep {
         LOG.fine("Docker image: " + image + ", script: " + script);
         String hostWorkDir = "/tmp/work";
         String localWorkDir = "/source";
-        DockerRunner runner = createDockerRunner(image, hostWorkDir, localWorkDir);
+        DockerRunner runner = createDockerRunner(image, hostWorkDir, localWorkDir)
+                .withNetwork(ISOLATED_NETWORK_NAME);
         Volume maven = runner.addVolume("/var/maven_repo");
         runner.addBind("/var/maven_repo", maven, AccessMode.ro);
         statusMessage = MSG_PREPARING_INPUT;
@@ -71,7 +75,7 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerStep {
 
         } finally {
             // cleanup
-            runner.cleanWorkDir();
+            runner.cleanup();
             LOG.info("Results cleaned up");
         }
     }

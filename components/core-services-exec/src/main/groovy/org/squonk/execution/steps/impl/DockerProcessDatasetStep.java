@@ -77,7 +77,7 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
 
         } finally {
             // cleanup
-            runner.cleanWorkDir();
+            runner.cleanup();
             LOG.info("Results cleaned up");
         }
     }

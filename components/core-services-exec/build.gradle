@@ -22,8 +22,8 @@ dependencies {
 
     compile project(':core-services-common')
     compile project(':core-services-client')
-
-    compile 'com.github.docker-java:docker-java:2.2.3'
+    
+    compile 'com.github.docker-java:docker-java:3.0.0'
 
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 
