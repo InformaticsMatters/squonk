@@ -1,21 +1,24 @@
 package org.squonk.camel.chemaxon.processor.enumeration;
 
+import chemaxon.formats.MolImporter;
+import chemaxon.reaction.Reactor;
 import chemaxon.struc.Molecule;
-import org.squonk.chemaxon.enumeration.ReactorExecutor;
-import org.squonk.chemaxon.molecule.MoleculeObjectUtils;
-import org.squonk.chemaxon.molecule.MoleculeUtils;
-import org.squonk.types.MoleculeObject;
-import org.squonk.dataset.MoleculeObjectDataset;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.ProducerTemplate;
+import org.squonk.chemaxon.enumeration.ReactorExecutor;
+import org.squonk.dataset.Dataset;
+
+import org.squonk.dataset.MoleculeObjectDataset;
+import org.squonk.types.MoleculeObject;
+import org.squonk.util.CamelRouteStatsRecorder;
+import org.squonk.util.IOUtils;
+import org.squonk.util.StatsRecorder;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  *
@@ -23,67 +26,79 @@ import org.apache.camel.Processor;
  */
 public class ReactorProcessor implements Processor {
 
-    private int ignoreRules = 0;
+    private static Logger LOG = Logger.getLogger(ReactorProcessor.class.getName());
 
-    public ReactorProcessor ignoreRules(int ignoreRules) {
-        this.ignoreRules = ignoreRules;
-        return this;
+    private final String statsRouteUri;
+
+    public static final String OPTION_REACTOR_REACTION = "reaction";
+    public static final String OPTION_IGNORE_REACTIVITY = "ignoreReactivityRules";
+    public static final String OPTION_IGNORE_SELECTIVITY = "ignoreSelectivityRules";
+    public static final String OPTION_IGNORE_TOLERANCE = "ignoreToleranceRules";
+    public static final String OPTION_REACTOR_OUTPUT = "reactorOutput";
+
+    public ReactorProcessor(String statsRouteUri) {
+        this.statsRouteUri = statsRouteUri;
     }
 
     @Override
-    public void process(Exchange exchange) throws Exception {
-        Molecule reaction = readReaction(exchange);
-        if (reaction == null) {
-            throw new IllegalStateException("Could not read reaction. Must be set as body or as header property named 'Reaction'");
+    public void process(Exchange exch) throws Exception {
+
+        // 1. the reaction
+        String reactionName = exch.getIn().getHeader(OPTION_REACTOR_REACTION, String.class);
+        if (reactionName == null) {
+            throw new IllegalStateException("No reaction name specified. Should be present as header named " + OPTION_REACTOR_REACTION);
         }
-        Molecule[][] reactants = readReactants(exchange);
-        if (reactants == null || reactants.length == 0) {
-            throw new IllegalStateException("Could not read reactants. Must be set as header property named 'Reactants1', 'Reactants2' ...'");
+        String reactionMrv = readReaction(reactionName);
+        if (reactionMrv == null) {
+            throw new IllegalStateException("Reaction " + reactionMrv + " could not be found");
         }
-        ReactorExecutor.Output output = readOutputType(exchange);
-        ReactorExecutor exec = new ReactorExecutor();
-        Stream<MoleculeObject> results = exec.enumerate(reaction, output, ignoreRules, reactants);
-        exchange.getIn().setBody(new MoleculeObjectDataset(results));
+        Molecule rxn = MolImporter.importMol(reactionMrv);
+
+        // 2. the reactants
+        Dataset<MoleculeObject> dataset = exch.getIn().getBody(Dataset.class);
+
+        // 3. other options
+        Boolean ignoreReactivity = exch.getIn().getHeader(OPTION_IGNORE_REACTIVITY, Boolean.class);
+        Boolean ignoreSelectivity = exch.getIn().getHeader(OPTION_IGNORE_SELECTIVITY, Boolean.class);
+        Boolean ignoreTolerance = exch.getIn().getHeader(OPTION_IGNORE_TOLERANCE, Boolean.class);
+
+        int ignoreRules = (ignoreReactivity == null || !ignoreReactivity ? 0 : Reactor.IGNORE_REACTIVITY)
+                | (ignoreSelectivity == null || !ignoreSelectivity  ? 0 : Reactor.IGNORE_SELECTIVITY)
+                | (ignoreTolerance == null || !ignoreTolerance  ? 0 : Reactor.IGNORE_TOLERANCE);
+
+        LOG.info(String.format("Rules: %s [%s %s %s]", ignoreRules, ignoreReactivity, ignoreSelectivity, ignoreTolerance));
+
+        String header = exch.getIn().getHeader(OPTION_REACTOR_OUTPUT, String.class);
+        ReactorExecutor.Output output =  (header == null ? ReactorExecutor.Output.Product1 : ReactorExecutor.Output.valueOf(header));
+
+        // stats generation
+        String jobId = exch.getIn().getHeader(StatsRecorder.HEADER_SQUONK_JOB_ID, String.class);
+        StatsRecorder statsRecorder = null;
+        if (statsRouteUri != null) {
+            ProducerTemplate pt = exch.getContext().createProducerTemplate();
+            pt.setDefaultEndpointUri(statsRouteUri);
+            statsRecorder = new CamelRouteStatsRecorder(jobId, pt);
+        }
+
+        // perform the enumeration
+        ReactorExecutor exec = new ReactorExecutor(rxn, statsRecorder);
+        Stream<MoleculeObject> results = exec.enumerateMoleculeObjects(output, ignoreRules, dataset.getStream());
+        results = results.onClose(() -> {
+
+        });
+
+        // TODO - handle stats
+
+        exch.getIn().setBody(new MoleculeObjectDataset(results));
     }
 
-    Molecule[][] readReactants(Exchange exchange) throws MalformedURLException, IOException {
-        String header;
-        List<Molecule[]> reactants = new ArrayList<>();
-        int i = 1;
-        while ((header = exchange.getIn().getHeader("Reactants" + i, String.class)) != null) {
-            URL url = new URL(header);
-            InputStream is = url.openStream();
-            try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(is).getStream(true)) {
-                Molecule[] mols = stream
-                        .map(mo -> MoleculeUtils.cloneMolecule(mo, true))
-                        .collect(Collectors.toList()).toArray(new Molecule[0]);
-
-                reactants.add(mols);
-                i++;
-            }
-        }
-        return reactants.toArray(new Molecule[0][0]);
+    private String readReaction(String name) throws IOException {
+        String resource = "/reactions/" + name + ".mrv";
+        LOG.info("Reading reaction from " + resource);
+        InputStream is = this.getClass().getResourceAsStream(resource);
+        return is == null ? null : IOUtils.convertStreamToString(is);
     }
 
-    ReactorExecutor.Output readOutputType(Exchange exchange) {
-        String header = exchange.getIn().getHeader("OutputType", String.class);
-        if (header == null) {
-            return ReactorExecutor.Output.Product1;
-        } else {
-            return ReactorExecutor.Output.valueOf(header);
-        }
-    }
 
-    Molecule readReaction(Exchange exchange) throws MalformedURLException, IOException {
-        String header = exchange.getIn().getHeader("Reaction", String.class);
-        if (header != null) {
-            URL url = new URL(header);
-            try (InputStream is = url.openStream()) {
-                return exchange.getContext().getTypeConverter().convertTo(Molecule.class, is);
-            }
-        } else {
-            return exchange.getIn().getBody(Molecule.class);
-        }
 
-    }
 }

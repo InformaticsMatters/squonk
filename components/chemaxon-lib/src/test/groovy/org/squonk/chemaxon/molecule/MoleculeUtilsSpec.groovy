@@ -1,5 +1,6 @@
 package org.squonk.chemaxon.molecule
 
+import org.squonk.types.MoleculeObject
 import spock.lang.Specification
 import chemaxon.formats.MolImporter
 import chemaxon.formats.MolExporter
@@ -60,6 +61,52 @@ class MoleculeUtilsSpec extends Specification {
         Molecule parent = MoleculeUtils.findParentStructure(mol)
         String smi = MolExporter.exportToFormat(parent, 'smiles')
         return smi
+    }
+
+    def "concatenate molecule streams"() {
+
+        List mols1 = [
+                new MoleculeObject("C", "smiles", [a:1]),
+                new MoleculeObject("CC", "smiles", [a:2]),
+                new MoleculeObject("CCC", "smiles", [a:3])
+        ]
+
+        List mols2 = [
+                new MoleculeObject("CCCC", "smiles", [a:4]),
+                new MoleculeObject("CCCCC", "smiles", [a:5]),
+                new MoleculeObject("CCCCCC", "smiles", [a:6]),
+                new MoleculeObject("CCCCCCC", "smiles", [a:7])
+        ]
+
+        when:
+        def is = MoleculeUtils.concatenateMoleculeStreams("sdf", null, mols1.stream(), mols2.stream())
+        def text = is.text
+
+        then:
+        text.split("M  END").size() == 8
+
+
+    }
+
+
+    def "concatenate reaction and stream as mrv"() {
+
+        List mols = [
+                new MoleculeObject("C", "smiles", [a:1]),
+                new MoleculeObject("CC", "smiles", [a:2]),
+                new MoleculeObject("CCC", "smiles", [a:3])
+        ]
+
+        Molecule mol = MolImporter.importMol("CCCCC>>CCC")
+
+        when:
+        def is = MoleculeUtils.concatenateMoleculeStreams("mrv", mol, mols.stream())
+        def text = is.text
+
+        then:
+        text.split("<MDocument>").size() == 5
+
+
     }
         
   

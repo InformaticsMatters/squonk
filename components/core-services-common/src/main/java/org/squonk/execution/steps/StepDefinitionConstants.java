@@ -135,5 +135,16 @@ public interface StepDefinitionConstants {
          String OPTION_RANDOM = "random";
          String OPTION_COUNT = "count";
     }
+
+    interface CxnReactor {
+        String CLASSNAME = "org.squonk.execution.steps.impl.CxnReactorStep";
+        String VARIABLE_R1 = "R1";
+        String VARIABLE_R2 = "R2";
+        String OPTION_REACTION = "reaction";
+        String OPTION_IGNORE_REACTIVITY = "ignoreReactivityRules";
+        String OPTION_IGNORE_SELECTIVITY = "ignoreSelectivityRules";
+        String OPTION_IGNORE_TOLERANCE = "ignoreToleranceRules";
+        String OPTION_REACTOR_OUTPUT = "reactorOutput";
+    }
     
 }

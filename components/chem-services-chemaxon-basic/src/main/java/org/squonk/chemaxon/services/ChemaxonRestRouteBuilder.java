@@ -1,21 +1,27 @@
 package org.squonk.chemaxon.services;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.chemaxon.processor.clustering.SphereExclusionClusteringProcessor;
+import org.squonk.camel.chemaxon.processor.enumeration.ReactorProcessor;
 import org.squonk.camel.chemaxon.processor.screening.MoleculeScreenerProcessor;
+import org.squonk.camel.processor.DatasetToJsonProcessor;
+import org.squonk.camel.processor.JsonToDatasetProcessor;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptor.DataType;
+import org.squonk.dataset.Dataset;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.TypeResolver;
+import org.squonk.types.io.JsonHandler;
 
 import java.util.logging.Logger;
 
@@ -286,26 +292,28 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 //
                 .post("screening/ecfp4").description("Screen using ECFP4 fingerprints")
                 .route()
-//                .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamInput(exch))
-//                .to(ChemaxonDescriptorsRouteBuilder.CHEMAXON_SCREENING_ECFP4)
-//                .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
                 .process(new MoleculeObjectRouteHttpProcessor(ChemaxonDescriptorsRouteBuilder.CHEMAXON_SCREENING_ECFP4, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("screening/pharmacophore").description("Screen using pharmacophore fingerprints")
                 .route()
-//                .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamInput(exch))
-//                .to(ChemaxonDescriptorsRouteBuilder.CHEMAXON_SCREENING_PHARMACOPHORE)
-//                .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
                 .process(new MoleculeObjectRouteHttpProcessor(ChemaxonDescriptorsRouteBuilder.CHEMAXON_SCREENING_PHARMACOPHORE, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("clustering/spherex/ecfp4").description("Sphere exclusion clustering using ECFP4 fingerprints")
                 .route()
-//                .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamInput(exch))
-//                .to(ChemaxonDescriptorsRouteBuilder.CHEMAXON_CLUSTERING_SPHEREX_ECFP4)
-//                .process((Exchange exch) -> CamelUtils.handleMoleculeObjectStreamOutput(exch))
                 .process(new MoleculeObjectRouteHttpProcessor(ChemaxonDescriptorsRouteBuilder.CHEMAXON_CLUSTERING_SPHEREX_ECFP4, resolver, ROUTE_STATS))
+                .endRest();
+
+        rest("v1/reactor").description("Library enumeration using ChemAxon Reactor")
+                .bindingMode(RestBindingMode.off)
+                .consumes("application/json")
+                .produces("application/json")
+                .post("react").description("Simple enumeration")
+                .route()
+                .process(new JsonToDatasetProcessor(MoleculeObject.class))
+                .process(new ReactorProcessor(ROUTE_STATS))
+                .process(new DatasetToJsonProcessor(MoleculeObject.class))
                 .endRest();
 
     }

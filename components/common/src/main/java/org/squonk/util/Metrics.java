@@ -27,6 +27,8 @@ public interface Metrics {
     String METRICS_MOLAR_REFRACTIVITY = "MolarRefractivity";
     String METRICS_PSA = "PSA";
     String METRICS_CHARGE = "Charge";
+    String METRICS_RXN_ENUM = "ReactionEnumeration";
+
 
     String METRICS_STRUCTURE_SEARCH_EXACT = "StructureSearch.Exact";
     String METRICS_STRUCTURE_SEARCH_SSS = "StructureSearch.SSS";

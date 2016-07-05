@@ -1,30 +1,39 @@
 package org.squonk.camel.chemaxon.processor.enumeration
 
+import chemaxon.formats.MolImporter
+import chemaxon.struc.Molecule
 import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
+import org.squonk.chemaxon.molecule.MoleculeUtils
+import org.squonk.data.Molecules
+import org.squonk.dataset.Dataset
+import org.squonk.types.MoleculeObject
 
 /**
  *
  * @author timbo
  */
 class ReactorProcessorSpec extends CamelSpecificationBase {
-	
-    
+
+
     void "react using files"() {
         setup:
-        String file1 = new File("../../data/testfiles/nci100.smiles").getCanonicalFile().toURI().toURL()
-        String file2 = new File("../../data/testfiles/nci100.smiles").getCanonicalFile().toURI().toURL()
-        String reaction = new File("../../data/testfiles/amine-acylation.mrv").getCanonicalFile().toURI().toURL()
-        println "file1: $file1"
-        println "file2: $file2"
-        println "reaction: $reaction"
+        List mols = Molecules.nci100Molecules()
+        mols.eachWithIndex { mo, c ->
+            mo.putValue("R1_REACTANT", "R1_" + (c+1))
+            mo.putValue("R2_REACTANT", "R2_" + (c+1))
+        }
+        Dataset dataset = new Dataset(MoleculeObject.class, mols)
+
+        println "Read: ${mols.size()} reactants"
+        def headers = [(ReactorProcessor.OPTION_REACTOR_REACTION):"amine-acylation"]
+
         def resultEndpoint = camelContext.getEndpoint('mock:result')
         resultEndpoint.expectedMessageCount(1)
         
         when:
         long t0 = System.currentTimeMillis()
-        template.sendBodyAndHeaders('direct:start', null, 
-            [Reaction:reaction, Reactants1: file1, Reactants2: file2])
+        template.sendBodyAndHeaders('direct:start', dataset.getInputStream(false), headers)
         
         then:
         resultEndpoint.assertIsSatisfied()

@@ -27,6 +27,10 @@ public class StatsRecorder {
         return jobId;
     }
 
+    public void recordStats(String key,Integer count) {
+        recordStats(Collections.singletonMap(key, count));
+    }
+
     public void recordStats(Map<String,Integer> stats) {
         recordStats(Collections.singletonList(stats));
     }

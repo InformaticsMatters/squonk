@@ -11,15 +11,16 @@ import chemaxon.struc.*;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  *
@@ -411,4 +412,61 @@ public class MoleculeUtils {
 //        }
 //        return mol;
 //    }
+
+
+    /** Contatentate the specified streams of MoleculeObjects and write out in the specified format (e.g. sdf, mrv ...)
+     *
+     * @param initialMol an intial molecule to write as the first molecule. If null then ignored
+     * @param options
+     * @param streams
+     * @return
+     * @throws IOException
+     */
+    public static InputStream concatenateMoleculeStreams(String options, Molecule initialMol, Stream<MoleculeObject>... streams) throws IOException {
+
+        PipedOutputStream out = new PipedOutputStream();
+        PipedInputStream in = new PipedInputStream(out);
+
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        Callable c = new Callable() {
+
+            public Integer call() throws IOException {
+                LOG.info("Callable called");
+                final MolExporter exporter = new MolExporter(out, options);
+                if (initialMol != null) {
+                    exporter.write(initialMol);
+                }
+                final AtomicInteger count = new AtomicInteger(0);
+                try {
+                    int s = 0;
+                    for (Stream<MoleculeObject> stream : streams) {
+                        s++;
+                        LOG.info("Handling stream " + s);
+                        stream.forEachOrdered((mo) -> {
+                            int i = count.incrementAndGet();
+                            Molecule mol = cloneMolecule(mo, true);
+                            try {
+                                exporter.write(mol);
+                            } catch (IOException e) {
+                                throw new UncheckedIOException(e);
+                            }
+                        });
+                        stream.close();
+                    }
+                    int c = count.get();
+                    LOG.info(String.format("Handled % molecules", c));
+                    return c;
+                } finally {
+                    exporter.close();
+                    executorService.shutdown();
+                }
+            }
+        };
+
+        executorService.submit(c);
+
+        return in;
+
+    }
 }

@@ -1,14 +1,15 @@
 package org.squonk.chemaxon.enumeration
 
-import spock.lang.Specification
 import chemaxon.formats.MolImporter
-import chemaxon.util.iterator.MoleculeIteratorFactory
-import chemaxon.struc.Molecule
-import chemaxon.reaction.Reactor
 import chemaxon.reaction.ConcurrentReactorProcessor
+import chemaxon.reaction.Reactor
+import chemaxon.struc.Molecule
+import chemaxon.util.iterator.MoleculeIteratorFactory
 import org.squonk.chemaxon.molecule.MoleculeObjectUtils
 import org.squonk.chemaxon.molecule.MoleculeUtils
+import org.squonk.data.Molecules
 import org.squonk.types.MoleculeObject
+import spock.lang.Specification
 
 import java.util.stream.Collectors
 import java.util.stream.Stream
@@ -38,28 +39,54 @@ class ReactorExecutorSpec extends Specification {
     void "simple enumerate"() {
         
         setup:
-        println "simple enumerate"
         Molecule rxn = MolImporter.importMol(new File(reaction).text)
         Molecule[] r1 = getMoleculeArrayFromFile(new FileInputStream(reactants))     
         Molecule[] r2 = getMoleculeArrayFromFile(new FileInputStream(reactants))
-        ReactorExecutor exec = new ReactorExecutor()
+        ReactorExecutor exec = new ReactorExecutor(rxn)
         
         when:
-        println "reacting"
-        long t0 = System.currentTimeMillis()
-        def results = exec.enumerate(rxn, ReactorExecutor.Output.Product1, Reactor.IGNORE_REACTIVITY | Reactor.IGNORE_SELECTIVITY, r1, r2)
-        println "collecting"
+        //long t0 = System.currentTimeMillis()
+        def results = exec.enumerate(ReactorExecutor.Output.Product1, Reactor.IGNORE_REACTIVITY | Reactor.IGNORE_SELECTIVITY, r1, r2)
         def list = results.collect(Collectors.toList())
-        long t1 = System.currentTimeMillis()
-        println "Number of products: ${list.size()} generated in ${t1-t0}ms"
+        //long t1 = System.currentTimeMillis()
+        //println "Number of products: ${list.size()} generated in ${t1-t0}ms"
                 
         then:
         list.size() > 0
     }
+
+    void "enumerate as stream"() {
+
+        setup:
+        Molecule rxn = MolImporter.importMol(new File(reaction).text)
+        List mols = Molecules.nci100Molecules()
+        mols.eachWithIndex { mo, c ->
+            mo.putValue("R1_REACTANT", "R1_" + (c+1))
+            mo.putValue("R2_REACTANT", "R2_" + (c+1))
+        }
+
+
+        ReactorExecutor exec = new ReactorExecutor(rxn)
+
+        when:
+        //long t0 = System.currentTimeMillis()
+        def results = exec.enumerateMoleculeObjects(ReactorExecutor.Output.Product1, Reactor.IGNORE_REACTIVITY | Reactor.IGNORE_SELECTIVITY, mols.stream())
+        def list = results.collect(Collectors.toList())
+        //long t1 = System.currentTimeMillis()
+        //println "Number of products: ${list.size()} generated in ${t1-t0}ms"
+
+        then:
+        list.size() == 252
+        list[0].values.size() == 4
+        list[0].values['R1_REACTANT'] != null
+        list[0].values['R1_INDEX'] != null
+        list[0].values['R2_REACTANT'] != null
+        list[0].values['R2_INDEX'] != null
+
+    }
     
     void "chemaxon concurrent reactor"() {
         setup:
-        println "chemaxon concurrent reactor"
         Molecule rxnmol = new MolImporter(reaction).read();
         MolImporter[] importers = [new MolImporter(reactants), new MolImporter(reactants)] as MolImporter[]
         Reactor reactor = new Reactor();
@@ -72,14 +99,14 @@ class ReactorExecutorSpec extends Specification {
         when:
         int count = 0
         Molecule[] products
-        long t0 = System.currentTimeMillis()
+        //long t0 = System.currentTimeMillis()
         while ((products = crp.react()) != null) {
             for (Molecule product : products) {
                 count++
             }
         }
-        long t1 = System.currentTimeMillis()
-        println "Number of products: $count generated in ${t1-t0}ms"
+        //long t1 = System.currentTimeMillis()
+        //println "Number of products: $count generated in ${t1-t0}ms"
  
         then:
         count > 0;
@@ -87,29 +114,24 @@ class ReactorExecutorSpec extends Specification {
         cleanup:
         importers.each { it.close() }
     }
-    
-    //    void "combinatorialIterator speed"() {
-    //        
-    //        setup:
-    //        println "combinatorialIterator speed"
-    //        MoleculeObjectIterable r1 = MoleculeObjectUtils.createIterable(new File("../../data/testfiles/nci100.smiles"))
-    //        MoleculeObjectIterable r2 = MoleculeObjectUtils.createIterable(new File("../../data/testfiles/nci100.smiles"))
-    //        
-    //        when:
-    //        long t0 = System.currentTimeMillis()
-    //        def it = CollectionUtils.combinatorialIterator(25, r1, r2);
-    //        def list = it.collect()
-    //        long t1 = System.currentTimeMillis()
-    //        
-    //        then:
-    //        println "Number of products: ${list.size()} generated in ${t1-t0}ms"
-    //        list.size() == 10000
-    //        
-    //        cleanup:
-    //        r1?.close()
-    //        r2?.close()
-    //    
-    //    }
-    
+
+    void "ignore options"() {
+
+        println "ignore reactivity " + Reactor.IGNORE_REACTIVITY
+        println "ignore slectivity " + Reactor.IGNORE_SELECTIVITY
+        println "ignore tolerance " + Reactor.IGNORE_TOLERANCE
+
+
+        when:
+        int a = Reactor.IGNORE_REACTIVITY | Reactor.IGNORE_SELECTIVITY | Reactor.IGNORE_TOLERANCE
+        int b = Reactor.IGNORE_REACTIVITY | Reactor.IGNORE_SELECTIVITY | Reactor.IGNORE_TOLERANCE | 0
+        println "a " + a
+        println "b " + b
+
+        then:
+        a == 7
+
+    }
+
 }
 
