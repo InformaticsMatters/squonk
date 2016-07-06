@@ -15,6 +15,7 @@ java/*.log.*
 **/private
 **/derby.log
 **/*~
+
 data/licenses
 data/testfiles/emols*
 data/testfiles/all-sdf.sdf.gz
@@ -47,6 +48,8 @@ docker/deploy/images/nginx/cert.crt
 docker/deploy/images/nginx/default.conf
 
 docker/deploy/images/keycloak/keycloak.jks
+
+docker/deploy/images/chemservices/*.zip
 
 
 docker/deploy/nginx

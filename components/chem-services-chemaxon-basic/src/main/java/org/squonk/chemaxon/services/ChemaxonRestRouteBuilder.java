@@ -312,7 +312,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 .post("react").description("Simple enumeration")
                 .route()
                 .process(new JsonToDatasetProcessor(MoleculeObject.class))
-                .process(new ReactorProcessor(ROUTE_STATS))
+                .process(new ReactorProcessor("/chemaxon_reaction_library.zip", ROUTE_STATS))
                 .process(new DatasetToJsonProcessor(MoleculeObject.class))
                 .endRest();
 

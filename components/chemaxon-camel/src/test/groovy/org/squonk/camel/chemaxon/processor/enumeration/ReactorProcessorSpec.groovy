@@ -16,7 +16,7 @@ import org.squonk.types.MoleculeObject
 class ReactorProcessorSpec extends CamelSpecificationBase {
 
 
-    void "react using files"() {
+    void "react simple"() {
         setup:
         List mols = Molecules.nci100Molecules()
         mols.eachWithIndex { mo, c ->
@@ -26,14 +26,14 @@ class ReactorProcessorSpec extends CamelSpecificationBase {
         Dataset dataset = new Dataset(MoleculeObject.class, mols)
 
         println "Read: ${mols.size()} reactants"
-        def headers = [(ReactorProcessor.OPTION_REACTOR_REACTION):"amine-acylation"]
+        def headers = [(ReactorProcessor.OPTION_REACTOR_REACTION):"Acylation_of_amines"]
 
         def resultEndpoint = camelContext.getEndpoint('mock:result')
         resultEndpoint.expectedMessageCount(1)
         
         when:
         long t0 = System.currentTimeMillis()
-        template.sendBodyAndHeaders('direct:start', dataset.getInputStream(false), headers)
+        template.sendBodyAndHeaders('direct:start', dataset, headers)
         
         then:
         resultEndpoint.assertIsSatisfied()
@@ -51,7 +51,7 @@ class ReactorProcessorSpec extends CamelSpecificationBase {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:start")
-                .process(new ReactorProcessor())
+                .process(new ReactorProcessor("../../docker/deploy/images/chemservices/chemaxon_reaction_library.zip", null))
                 .to('mock:result')
             }
         }

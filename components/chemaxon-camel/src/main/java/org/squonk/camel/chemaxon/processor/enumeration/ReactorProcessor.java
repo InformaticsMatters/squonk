@@ -6,6 +6,7 @@ import chemaxon.struc.Molecule;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
+import org.squonk.chemaxon.enumeration.ReactionLibrary;
 import org.squonk.chemaxon.enumeration.ReactorExecutor;
 import org.squonk.dataset.Dataset;
 
@@ -15,6 +16,7 @@ import org.squonk.util.CamelRouteStatsRecorder;
 import org.squonk.util.IOUtils;
 import org.squonk.util.StatsRecorder;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
@@ -36,8 +38,12 @@ public class ReactorProcessor implements Processor {
     public static final String OPTION_IGNORE_TOLERANCE = "ignoreToleranceRules";
     public static final String OPTION_REACTOR_OUTPUT = "reactorOutput";
 
-    public ReactorProcessor(String statsRouteUri) {
+    private ReactionLibrary rxnlib;
+
+    public ReactorProcessor(String rxnLibZipFile, String statsRouteUri) throws IOException {
         this.statsRouteUri = statsRouteUri;
+        rxnlib = new ReactionLibrary(rxnLibZipFile);
+        LOG.info("Using reaction lib from " + rxnLibZipFile + " exists: " + new File(rxnLibZipFile).exists());
     }
 
     @Override
@@ -50,7 +56,7 @@ public class ReactorProcessor implements Processor {
         }
         String reactionMrv = readReaction(reactionName);
         if (reactionMrv == null) {
-            throw new IllegalStateException("Reaction " + reactionMrv + " could not be found");
+            throw new IllegalStateException("Reaction " + reactionName + " could not be found");
         }
         Molecule rxn = MolImporter.importMol(reactionMrv);
 
@@ -93,10 +99,12 @@ public class ReactorProcessor implements Processor {
     }
 
     private String readReaction(String name) throws IOException {
-        String resource = "/reactions/" + name + ".mrv";
-        LOG.info("Reading reaction from " + resource);
-        InputStream is = this.getClass().getResourceAsStream(resource);
-        return is == null ? null : IOUtils.convertStreamToString(is);
+//        String resource = "/reactions/" + name + ".mrv";
+//        LOG.info("Reading reaction from " + resource);
+//        InputStream is = this.getClass().getResourceAsStream(resource);
+//        return is == null ? null : IOUtils.convertStreamToString(is);
+
+        return rxnlib.getReaction(name);
     }
 
 

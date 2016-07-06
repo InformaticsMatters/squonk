@@ -114,6 +114,8 @@ services:
             SQUONK_DB_PASS:
             RABBITMQ_HOST: rabbitmq
             RABBITMQ_SQUONK_PASS:
+        volumes:
+        - ./images/chemservices/chemaxon_reaction_library.zip:/chemaxon_reaction_library.zip:ro
         networks:
         - squonk_back
         
