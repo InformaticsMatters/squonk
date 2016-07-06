@@ -191,6 +191,8 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
                 mo.putValue(name, sb.toString());
             } else if (line.equals("$$$$")) {
                 break fields;
+            } else if (line.equals("")) {
+                // ignore - buggy SDF with multiple empty lines
             } else {
                 throw new IOException("Error parsing at line " + String.valueOf(rdr.getLineNumber() + 1));
             }

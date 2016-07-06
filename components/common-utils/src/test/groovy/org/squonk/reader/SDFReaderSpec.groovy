@@ -94,7 +94,7 @@ class SDFReaderSpec extends Specification {
     
     
      void "as stream"() {
-        FileInputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
+        FileInputStream is = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
         SDFReader reader = new SDFReader(IOUtils.getGunzippedInputStream(is))
         
         when:
@@ -102,11 +102,26 @@ class SDFReaderSpec extends Specification {
         
         then:
         //println "found $count items"
-        count == 756
+        count == 36
         
         cleanup:
         reader.close()
-        
-    }	
+    }
+
+    void "multiple bank lines issue"() {
+        FileInputStream is = new FileInputStream("../../data/testfiles/buggy_with_multiple_blank_lines.sdf.gz")
+        SDFReader reader = new SDFReader(IOUtils.getGunzippedInputStream(is))
+
+        when:
+        long count = reader.asStream().count()
+
+        then:
+        //println "found $count items"
+        count == 11
+
+        cleanup:
+        reader.close()
+    }
+
 }
 
