@@ -175,7 +175,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         this.metadata = metadata;
     }
 
-    /** Intems as InputStream using default metadata that just specified the generic type
+    /** Items as InputStream using default metadata that just specifies the generic type
     *
      */
     public Dataset(Class<T> type, InputStream inputStream) {

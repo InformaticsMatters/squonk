@@ -51,4 +51,6 @@ public interface Step {
      */
     String getStatusMessage();
 
+    Map<String, Integer> getUsageStats();
+
 }

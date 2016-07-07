@@ -2,6 +2,7 @@ package org.squonk.chemaxon.enumeration;
 
 import org.squonk.util.IOUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +22,10 @@ public class ReactionLibrary {
 
     public ReactionLibrary(String path) throws IOException {
         this.zipFile = new ZipFile(path);
+    }
+
+    public ReactionLibrary(File file) throws IOException {
+        this.zipFile = new ZipFile(file);
     }
 
     public List<String> getReactionNames() {

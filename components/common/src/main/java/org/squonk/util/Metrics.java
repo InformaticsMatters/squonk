@@ -5,6 +5,7 @@ package org.squonk.util;
  */
 public interface Metrics {
 
+    String PROVIDER_SQUONK = "Squonk";
     String PROVIDER_CHEMAXON = "CXN";
     String PROVIDER_CDK = "CDK";
     String PROVIDER_RDKIT = "RDKit";
@@ -12,6 +13,7 @@ public interface Metrics {
     String PROVIDER_DATA = "Data";
     String PROVIDER_DATA_TABLE = PROVIDER_DATA + ".Table";
 
+    String METRICS_CPU_MINUTES = "CpuMinutes";
     String METRICS_MASS = "Mass";
     String METRICS_LOGP = "LogP";
     String METRICS_LOGD = "LogD";

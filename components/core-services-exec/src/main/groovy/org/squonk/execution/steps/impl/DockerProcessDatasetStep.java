@@ -57,8 +57,12 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
             // run the command
             statusMessage = MSG_RUNNING_CONTAINER;
             LOG.info("Executing ...");
+            long t0 = System.currentTimeMillis();
             int status = runner.execute(localWorkDir + "/execute");
-            LOG.info("Executed with return status of " + status);
+            long t1 = System.currentTimeMillis();
+            float duration = (t1 - t0) / 1000.0f;
+            LOG.info(String.format("Executed in %s seconds with return status of %s", duration, status));
+
             if (status != 0) {
                 String log = runner.getLog();
                 statusMessage = "Error: " + log;
@@ -74,6 +78,8 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
             } else {
                 statusMessage = String.format(MSG_RECORDS_PROCESSED, meta.getSize());
             }
+
+            generateMetrics(runner, duration);
 
         } finally {
             // cleanup

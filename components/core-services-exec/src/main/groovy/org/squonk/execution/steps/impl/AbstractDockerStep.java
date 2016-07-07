@@ -1,18 +1,19 @@
 package org.squonk.execution.steps.impl;
 
-import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.docker.DockerRunner;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.types.BasicObject;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
@@ -38,9 +39,10 @@ public abstract class AbstractDockerStep extends AbstractStep {
         }
 
         switch (mediaType) {
+            case CommonMimeTypes.MIME_TYPE_DATASET_BASIC_JSON:
             case CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON:
                 Dataset dataset = fetchMappedInput(StepDefinitionConstants.VARIABLE_INPUT_DATASET, Dataset.class, varman, true);
-                writeAsMoleculeObjectDataset(dataset, runner);
+                writeAsDataset(dataset, runner);
                 return dataset.getMetadata();
             case CommonMimeTypes.MIME_TYPE_MDL_SDF:
                 InputStream sdf = fetchMappedInput(StepDefinitionConstants.VARIABLE_INPUT_DATASET, InputStream.class, varman, true);
@@ -58,6 +60,7 @@ public abstract class AbstractDockerStep extends AbstractStep {
         }
 
         switch (mediaType) {
+            case CommonMimeTypes.MIME_TYPE_DATASET_BASIC_JSON:
             case CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON:
                 return readAsDataset(inputMetadata, varman, runner);
             case CommonMimeTypes.MIME_TYPE_MDL_SDF:
@@ -67,7 +70,7 @@ public abstract class AbstractDockerStep extends AbstractStep {
         }
     }
 
-    protected void writeAsMoleculeObjectDataset(Dataset input, DockerRunner runner) throws IOException {
+    protected void writeAsDataset(Dataset input, DockerRunner runner) throws IOException {
         LOG.info("Writing metadata");
         runner.writeInput("input.meta", JsonHandler.getInstance().objectToJson(input.getMetadata()));
         LOG.info("Writing data");
@@ -90,7 +93,7 @@ public abstract class AbstractDockerStep extends AbstractStep {
         }
 
         try (InputStream is = runner.readOutput("output.data.gz")) {
-            Dataset<MoleculeObject> dataset = new Dataset(MoleculeObject.class, IOUtils.getGunzippedInputStream(is), meta);
+            Dataset<? extends BasicObject> dataset = new Dataset(meta.getType(), IOUtils.getGunzippedInputStream(is), meta);
             createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, dataset, varman);
             LOG.info("Results: " + dataset.getMetadata());
             return dataset.getMetadata();
@@ -105,6 +108,19 @@ public abstract class AbstractDockerStep extends AbstractStep {
         }
         // TODO can we get the metadata somehow?
         return null;
+    }
+
+    protected void generateMetrics(DockerRunner runner, float executionTimeSeconds) throws IOException {
+        try (InputStream is = runner.readOutput("metrics.txt")) {
+            if (is != null) {
+                Properties props = new Properties();
+                props.load(is);
+                for (String key : props.stringPropertyNames()) {
+                    usageStats.put(key, new Integer(props.getProperty(key)));
+                }
+            }
+        }
+        generateExecutionTimeMetrics(executionTimeSeconds);
     }
 
 }

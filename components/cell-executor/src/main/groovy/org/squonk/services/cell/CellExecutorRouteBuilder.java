@@ -22,8 +22,7 @@ import java.util.logging.Logger;
 
 import static org.squonk.core.CommonConstants.HEADER_JOB_ID;
 import static org.squonk.core.CommonConstants.HEADER_SQUONK_USERNAME;
-import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_NAME;
-import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_PARAMS;
+import static org.squonk.mqueue.MessageQueueCredentials.*;
 
 //import org.squonk.notebook.client.CellClient;
 
@@ -33,6 +32,7 @@ import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANG
 public class CellExecutorRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(CellExecutorRouteBuilder.class.getName());
+    private static final String ROUTE_STATS = "seda:post_stats";
 
     @Inject
     private JobStatusRestClient jobstatusClient;
@@ -46,11 +46,19 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        String mqueue = rabbitmqCredentials.generateUrl(MQUEUE_JOB_STEPS_EXCHANGE_NAME, MQUEUE_JOB_STEPS_EXCHANGE_PARAMS) +
+        String jobsMqueueUrl = rabbitmqCredentials.generateUrl(MQUEUE_JOB_STEPS_EXCHANGE_NAME, MQUEUE_JOB_STEPS_EXCHANGE_PARAMS) +
                 "&concurrentConsumers=10";
 
-        LOG.info("Starting to consume from " + mqueue);
-        from(mqueue)
+        String metricsMqueueUrl = rabbitmqCredentials.generateUrl(MQUEUE_JOB_METRICS_EXCHANGE_NAME, MQUEUE_JOB_METRICS_EXCHANGE_PARAMS) +
+                "&routingKey=tokens.squonk";
+
+        // send usage metrics to the message queue
+        from(ROUTE_STATS)
+                .marshal().json(JsonLibrary.Jackson)
+                .to(metricsMqueueUrl);
+
+        LOG.info("Starting to consume from " + jobsMqueueUrl);
+        from(jobsMqueueUrl)
                 .log("consumed message ${body}")
                 .unmarshal().json(JsonLibrary.Jackson, StepsCellExecutorJobDefinition.class)
                 .log("JOBDEF: ${body}")
@@ -121,7 +129,7 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
         }
 
         VariableManager varman = new VariableManager(notebookRestClient,notebookId, editableId);
-        StepExecutor executor = new StepExecutor(cellId, jobid, varman);
+        StepExecutor executor = new StepExecutor(cellId, jobid, varman, ROUTE_STATS);
 
         // and execute
         try {

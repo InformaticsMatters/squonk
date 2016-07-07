@@ -9,16 +9,14 @@ import org.apache.camel.ProducerTemplate;
 import org.squonk.chemaxon.enumeration.ReactionLibrary;
 import org.squonk.chemaxon.enumeration.ReactorExecutor;
 import org.squonk.dataset.Dataset;
-
 import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.types.MoleculeObject;
 import org.squonk.util.CamelRouteStatsRecorder;
-import org.squonk.util.IOUtils;
 import org.squonk.util.StatsRecorder;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -38,16 +36,32 @@ public class ReactorProcessor implements Processor {
     public static final String OPTION_IGNORE_TOLERANCE = "ignoreToleranceRules";
     public static final String OPTION_REACTOR_OUTPUT = "reactorOutput";
 
+    private final String rxnLibZipFile;
     private ReactionLibrary rxnlib;
 
-    public ReactorProcessor(String rxnLibZipFile, String statsRouteUri) throws IOException {
+    public ReactorProcessor(String rxnLibZipFile, String statsRouteUri) {
+        this.rxnLibZipFile = rxnLibZipFile;
         this.statsRouteUri = statsRouteUri;
-        rxnlib = new ReactionLibrary(rxnLibZipFile);
-        LOG.info("Using reaction lib from " + rxnLibZipFile + " exists: " + new File(rxnLibZipFile).exists());
+
+        File f = new File(rxnLibZipFile);
+        if (f.exists()) {
+            try {
+                rxnlib = new ReactionLibrary(f);
+                LOG.info("Using reaction library from " + rxnLibZipFile);
+            } catch (IOException ioe) {
+                LOG.warning("Could not load reaction library from " + rxnLibZipFile);
+            }
+        } else {
+            LOG.warning("Reaction library not found at " + rxnLibZipFile);
+        }
     }
 
     @Override
     public void process(Exchange exch) throws Exception {
+
+        if (rxnlib == null) {
+            throw new FileNotFoundException("Reaction library could not be found at " + rxnLibZipFile);
+        }
 
         // 1. the reaction
         String reactionName = exch.getIn().getHeader(OPTION_REACTOR_REACTION, String.class);

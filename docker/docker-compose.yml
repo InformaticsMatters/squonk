@@ -24,6 +24,9 @@ chemservices:
     build: ../components/build/chem-services-basic
     ports:
     - "8092:8080"
+    volumes:
+    - ./deploy/images/chemservices/chemaxon_reaction_library.zip:/chemaxon_reaction_library.zip:ro
+
 
 coreservices:
     build: ../components/core-services-server/build

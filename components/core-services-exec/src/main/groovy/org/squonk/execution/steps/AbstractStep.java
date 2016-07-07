@@ -2,6 +2,7 @@ package org.squonk.execution.steps;
 
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.notebook.api.VariableKey;
+import org.squonk.util.Metrics;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,6 +31,12 @@ public abstract class AbstractStep implements Step {
     protected final Map<String, VariableKey> inputVariableMappings = new HashMap<>();
     protected final Map<String, String> outputVariableMappings = new HashMap<>();
     protected String statusMessage = null;
+
+    protected Map<String,Integer> usageStats = new HashMap<>();
+
+    public Map<String, Integer> getUsageStats() {
+        return usageStats;
+    }
 
 
     @Override
@@ -207,5 +214,13 @@ public abstract class AbstractStep implements Step {
     public String getStatusMessage() {
         return statusMessage;
     }
+
+    protected void generateExecutionTimeMetrics(float executionTimeSeconds) {
+        float mins = executionTimeSeconds / 60f;
+        if (mins > 1) {
+            usageStats.put(Metrics.generate(Metrics.PROVIDER_SQUONK, Metrics.METRICS_CPU_MINUTES), Math.round(mins));
+        }
+    }
+
 
 }
