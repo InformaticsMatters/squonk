@@ -95,9 +95,19 @@ public interface StepDefinitionConstants {
          String OPTION_SCRIPT = "script";
     }
 
-    interface UnrustedGroovyDataset {
+    interface UntrustedGroovyDatasetScript {
          String CLASSNAME = "org.squonk.execution.steps.impl.UntrustedGroovyDatasetScriptStep";
          String OPTION_SCRIPT = "script";
+    }
+
+    interface UntrustedPythonDatasetScript {
+        String CLASSNAME = "org.squonk.execution.steps.impl.UntrustedPythonDatasetScriptStep";
+        String OPTION_SCRIPT = "script";
+    }
+
+    interface UntrustedRDatasetScript {
+        String CLASSNAME = "org.squonk.execution.steps.impl.UntrustedRDatasetScriptStep";
+        String OPTION_SCRIPT = "script";
     }
 
     interface ValueTransformer {
@@ -121,7 +131,6 @@ public interface StepDefinitionConstants {
          String OPTION_KEEP_FIRST_FIELDS = "keepFirstFields";
          String OPTION_KEEP_LAST_FIELDS = "keepLastFields";
          String OPTION_APPEND_FIELDS = "appendFields";
-
     }
 
     interface DatasetSelectSlice {

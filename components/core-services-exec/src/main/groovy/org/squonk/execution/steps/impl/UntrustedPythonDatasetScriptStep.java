@@ -1,7 +1,5 @@
 package org.squonk.execution.steps.impl;
 
-import com.github.dockerjava.api.model.AccessMode;
-import com.github.dockerjava.api.model.Volume;
 import org.squonk.execution.docker.DockerRunner;
 
 import java.io.IOException;
@@ -10,14 +8,13 @@ import java.util.logging.Logger;
 /**
  * Created by timbo on 29/12/15.
  */
-public class UntrustedGroovyDatasetScriptStep extends AbstractDockerScriptRunnerStep {
+public class UntrustedPythonDatasetScriptStep extends AbstractDockerScriptRunnerStep {
 
-    private static final Logger LOG = Logger.getLogger(UntrustedGroovyDatasetScriptStep.class.getName());
-
+    private static final Logger LOG = Logger.getLogger(UntrustedPythonDatasetScriptStep.class.getName());
 
 
     protected int executeRunner() {
-        return runner.execute("run.groovy");
+        return runner.execute("run.py");
     }
 
     protected DockerRunner createRunner() throws IOException {
@@ -25,7 +22,7 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerScriptRunner
 
         String image = getOption(OPTION_DOCKER_IMAGE, String.class);
         if (image == null) {
-            image = "squonk/groovy";
+            image = "python:2.7";
         }
 
         String script = getOption(OPTION_SCRIPT, String.class);
@@ -39,11 +36,9 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerScriptRunner
         String localWorkDir = "/source";
         DockerRunner runner = createDockerRunner(image, hostWorkDir, localWorkDir)
                 .withNetwork(ISOLATED_NETWORK_NAME);
-        Volume maven = runner.addVolume("/var/maven_repo");
-        runner.addBind("/var/maven_repo", maven, AccessMode.ro);
 
         LOG.info("Writing script file");
-        runner.writeInput("run.groovy", script);
+        runner.writeInput("run.py", script);
 
         return runner;
     }
