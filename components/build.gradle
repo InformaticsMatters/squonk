@@ -12,7 +12,7 @@ buildscript {
 
     dependencies {
         classpath 'com.bmuschko:gradle-tomcat-plugin:2.2.2'
-        classpath 'com.bmuschko:gradle-docker-plugin:2.4.1'
+        classpath 'com.bmuschko:gradle-docker-plugin:3.0.1'
 
         classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.2.0'
     }
@@ -33,7 +33,7 @@ allprojects {
     // https://github.com/apache/camel/blob/master/parent/pom.xml
     project.ext.set('jacksonVersion', '2.7.2')
     project.ext.set('cdkVersion', '1.5.12')
-    project.ext.set('groovyVersion', '2.4.1')
+    project.ext.set('groovyVersion', '2.4.4')
     project.ext.set('weldVersion', '2.3.2.Final')
     project.ext.set('postgresDriverVersion', '9.4-1201-jdbc41')
 
@@ -78,7 +78,7 @@ subprojects {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.12'
+    gradleVersion = '2.14.1'
     jarFile = 'wrapper/wrapper.jar'
 }
 
@@ -88,7 +88,7 @@ task wrapper(type: Wrapper) {
 */
 
 task integrationTestEnvPrepare(type:Exec) {
-    dependsOn 'dockerFileChemServices', 'core-services-server:dockerFile', 'cell-executor:dockerBuildImage'
+    dependsOn 'dockerFileChemServices', 'core-services-server:buildDockerFile', 'cell-executor:dockerBuildImage'
 
     workingDir '../docker'
     commandLine 'bash', 'int-test-env-prepare.sh'

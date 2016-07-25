@@ -5,6 +5,7 @@ apply plugin: 'war'
 apply plugin: 'com.bmuschko.tomcat'
 apply plugin: 'com.bmuschko.docker-remote-api'
 
+
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
@@ -64,7 +65,7 @@ docker {
     certPath = null
 }
 
-task dockerFile(type: Dockerfile, dependsOn: war) {
+task buildDockerFile(type: Dockerfile, dependsOn: war) {
     
     destFile = project.file('build/Dockerfile')
     from "tomcat:7-jre8"
@@ -78,8 +79,7 @@ task dockerFile(type: Dockerfile, dependsOn: war) {
     exposePort(8080)
 }
 
-task dockerImage(type: DockerBuildImage) {
-    dependsOn war, dockerFile
-    inputDir = dockerFile.destFile.parentFile
+task buildDockerImage(type: DockerBuildImage, dependsOn: buildDockerFile) {
+    inputDir = buildDockerFile.destFile.parentFile
     tag = "squonk/${contextName}"
 }
