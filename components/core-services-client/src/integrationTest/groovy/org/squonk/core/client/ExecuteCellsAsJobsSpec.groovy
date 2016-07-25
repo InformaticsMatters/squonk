@@ -206,10 +206,10 @@ outf.close()
 
     void "groovy in docker cell noop"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.UnrustedGroovyDataset.CLASSNAME)
+        StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
                 .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "groovy-noop")
-                .withOption(StepDefinitionConstants.UnrustedGroovyDataset.OPTION_SCRIPT,
+                .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 def file1 = new File('/source/input.meta')
 file1.renameTo '/source/output.meta'
@@ -232,10 +232,10 @@ file2.renameTo '/source/output.data.gz'
 
     void "groovy in docker cell using consumer"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.UnrustedGroovyDataset.CLASSNAME)
+        StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
                 .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "groovy-api-consumer")
-                .withOption(StepDefinitionConstants.UnrustedGroovyDataset.OPTION_SCRIPT,
+                .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
@@ -264,10 +264,10 @@ processDataset('/source/input','/source/output') { MoleculeObject mo ->
 
     void "groovy in docker cell using function"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.UnrustedGroovyDataset.CLASSNAME)
+        StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
                 .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "groovy-api-function")
-                .withOption(StepDefinitionConstants.UnrustedGroovyDataset.OPTION_SCRIPT,
+                .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
@@ -298,10 +298,10 @@ processDatasetStream('/source/input','/source/output') { Stream<MoleculeObject> 
 
     void "groovy in docker cell using strong typing"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.UnrustedGroovyDataset.CLASSNAME)
+        StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
                 .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "groovy-api-strong")
-                .withOption(StepDefinitionConstants.UnrustedGroovyDataset.OPTION_SCRIPT,
+                .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
@@ -335,10 +335,10 @@ writeDatasetToFiles(dataset, '/source/output', true)
 
     void "groovy in docker cell using weak typing"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.UnrustedGroovyDataset.CLASSNAME)
+        StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
                 .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "groovy-api-weak")
-                .withOption(StepDefinitionConstants.UnrustedGroovyDataset.OPTION_SCRIPT,
+                .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')

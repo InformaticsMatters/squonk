@@ -8,16 +8,6 @@ apply plugin: 'com.bmuschko.docker-remote-api'
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.2.0'
-    }
-}
-
 
 apply plugin: 'org.unbroken-dome.test-sets'
 
