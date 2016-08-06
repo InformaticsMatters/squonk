@@ -4,7 +4,7 @@ import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.squonk.types.MoleculeObject
 import org.squonk.camel.CamelCommonConstants
 import org.squonk.dataset.MoleculeObjectDataset
-import org.squonk.rdkit.mol.EvaluatorDefintion
+import org.squonk.rdkit.mol.EvaluatorDefinition
 import spock.lang.IgnoreIf
 
 import static RdkitCalculatorsRouteBuilder.*
@@ -34,7 +34,7 @@ class RdkitCalculatorsRouteBuilderSpec extends CamelSpecificationBase {
         results instanceof MoleculeObjectDataset
         def list = results.dataset.items
         list.size == 3
-        list[0].getValue(EvaluatorDefintion.Function.LOGP.name) instanceof Float
+        list[0].getValue(EvaluatorDefinition.Function.LOGP.name) instanceof Float
     }
     
     def 'frac c sp3'() {
@@ -46,7 +46,7 @@ class RdkitCalculatorsRouteBuilderSpec extends CamelSpecificationBase {
         results instanceof MoleculeObjectDataset
         def list = results.dataset.items
         list.size == 3
-        list[0].getValue(EvaluatorDefintion.Function.FRACTION_C_SP3.name) instanceof Float
+        list[0].getValue(EvaluatorDefinition.Function.FRACTION_C_SP3.name) instanceof Float
     }
 
     def 'lipinski'() {
@@ -58,10 +58,10 @@ class RdkitCalculatorsRouteBuilderSpec extends CamelSpecificationBase {
         results instanceof MoleculeObjectDataset
         def list = results.dataset.items
         list.size == 3
-        list[0].getValue(EvaluatorDefintion.Function.LIPINSKI_HBA.name) instanceof Integer
-        list[0].getValue(EvaluatorDefintion.Function.LIPINSKI_HBD.name) instanceof Integer
-        list[0].getValue(EvaluatorDefintion.Function.LOGP.name) instanceof Float
-        list[0].getValue(EvaluatorDefintion.Function.EXACT_MW.name) instanceof Float
+        list[0].getValue(EvaluatorDefinition.Function.LIPINSKI_HBA.name) instanceof Integer
+        list[0].getValue(EvaluatorDefinition.Function.LIPINSKI_HBD.name) instanceof Integer
+        list[0].getValue(EvaluatorDefinition.Function.LOGP.name) instanceof Float
+        list[0].getValue(EvaluatorDefinition.Function.EXACT_MW.name) instanceof Float
     }
 
     

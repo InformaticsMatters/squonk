@@ -6,7 +6,7 @@ import static org.squonk.util.Metrics.*;
  *
  * @author timbo
  */
-public class EvaluatorDefintion {
+public class EvaluatorDefinition {
 
     public enum Function {
 
@@ -77,14 +77,14 @@ public class EvaluatorDefintion {
     public final String propName;
     public final Function function;
 
-    EvaluatorDefintion(Mode mode, String propName, Function function) {
+    EvaluatorDefinition(Mode mode, String propName, Function function) {
         this.mode = mode;
         this.propName = propName;
         this.function = function;
     }
 
-    public static EvaluatorDefintion calculate(Function func, String propName) {
-        return new EvaluatorDefintion(Mode.Calculate, propName, func);
+    public static EvaluatorDefinition calculate(Function func, String propName) {
+        return new EvaluatorDefinition(Mode.Calculate, propName, func);
     }
 
     @Override

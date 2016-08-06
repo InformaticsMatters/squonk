@@ -6,11 +6,11 @@ import org.squonk.camel.rdkit.processor.RDKitCanonicalSmilesGeneratorProcessor;
 import org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor;
 import org.squonk.camel.processor.PropertyFilterProcessor;
 import org.squonk.camel.rdkit.processor.RDKitVerifyStructureProcessor;
-import org.squonk.rdkit.mol.EvaluatorDefintion;
+import org.squonk.rdkit.mol.EvaluatorDefinition;
 
 import java.util.logging.Logger;
 
-import static org.squonk.rdkit.mol.EvaluatorDefintion.Function.*;
+import static org.squonk.rdkit.mol.EvaluatorDefinition.Function.*;
 
 /**
  * Basic services based on RDKit
@@ -47,23 +47,23 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
         from(RDKIT_LOGP)
                 .log("RDKIT_LOGP starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new RDKitMoleculeProcessor().calculate(EvaluatorDefintion.Function.LOGP))
+                .process(new RDKitMoleculeProcessor().calculate(EvaluatorDefinition.Function.LOGP))
                 .log("RDKIT_LOGP finished");
 
         from(RDKIT_FRACTION_C_SP3)
                 .log("RDKIT_FRACTION_C_SP3 starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new RDKitMoleculeProcessor().calculate(EvaluatorDefintion.Function.FRACTION_C_SP3))
+                .process(new RDKitMoleculeProcessor().calculate(EvaluatorDefinition.Function.FRACTION_C_SP3))
                 .log("RDKIT_FRACTION_C_SP3 finished");
 
         from(RDKIT_LIPINSKI)
                 .log("RDKIT_LIPINSKI starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new RDKitMoleculeProcessor()
-                        .calculate(EvaluatorDefintion.Function.LIPINSKI_HBA)
-                        .calculate(EvaluatorDefintion.Function.LIPINSKI_HBD)
-                        .calculate(EvaluatorDefintion.Function.LOGP)
-                        .calculate(EvaluatorDefintion.Function.EXACT_MW)
+                        .calculate(EvaluatorDefinition.Function.LIPINSKI_HBA)
+                        .calculate(EvaluatorDefinition.Function.LIPINSKI_HBD)
+                        .calculate(EvaluatorDefinition.Function.LOGP)
+                        .calculate(EvaluatorDefinition.Function.EXACT_MW)
                 )
                 .log("RDKIT_LIPINSKI finished");
 
@@ -94,29 +94,29 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
                 .log("RDKIT_DONORS_ACCEPTORS starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new RDKitMoleculeProcessor()
-                        .calculate(EvaluatorDefintion.Function.NUM_HBD)
-                        .calculate(EvaluatorDefintion.Function.NUM_HBA)
+                        .calculate(EvaluatorDefinition.Function.NUM_HBD)
+                        .calculate(EvaluatorDefinition.Function.NUM_HBA)
                 )
                 .log("RDKIT_DONORS_ACCEPTORS finished");
 
         from(RDKIT_MOLAR_REFRACTIVITY)
                 .log("RDKIT_MOLAR_REFRACTIVITY starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new RDKitMoleculeProcessor().calculate(EvaluatorDefintion.Function.MOLAR_REFRACTIVITY))
+                .process(new RDKitMoleculeProcessor().calculate(EvaluatorDefinition.Function.MOLAR_REFRACTIVITY))
                 .log("RDKIT_MOLAR_REFRACTIVITY finished");
 
         from(RDKIT_TPSA)
                 .log("RDKIT_TPSA starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new RDKitMoleculeProcessor().calculate(EvaluatorDefintion.Function.TPSA))
+                .process(new RDKitMoleculeProcessor().calculate(EvaluatorDefinition.Function.TPSA))
                 .log("RDKIT_TPSA finished");
 
         from(RDKIT_RINGS)
                 .log("RDKIT_NUM_RINGS starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new RDKitMoleculeProcessor()
-                        .calculate(EvaluatorDefintion.Function.NUM_RINGS)
-                        .calculate(EvaluatorDefintion.Function.NUM_AROMATIC_RINGS)
+                        .calculate(EvaluatorDefinition.Function.NUM_RINGS)
+                        .calculate(EvaluatorDefinition.Function.NUM_AROMATIC_RINGS)
                 )
                 .log("RDKIT_NUM_RINGS finished");
 
@@ -134,7 +134,7 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
         from(RDKIT_FORMAL_CHARGE)
                 .log("RDKIT_FORMAL_CHARGE starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new RDKitMoleculeProcessor().calculate(EvaluatorDefintion.Function.FORMAL_CHARGE))
+                .process(new RDKitMoleculeProcessor().calculate(EvaluatorDefinition.Function.FORMAL_CHARGE))
                 .log("RDKIT_FORMAL_CHARGE finished");
 
     }

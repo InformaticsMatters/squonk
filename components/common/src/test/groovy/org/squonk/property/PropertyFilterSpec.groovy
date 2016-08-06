@@ -1,6 +1,7 @@
 package org.squonk.property
 
 import org.squonk.types.BasicObject
+import org.squonk.types.NumberRange
 import spock.lang.Specification
 
 /**
@@ -11,7 +12,7 @@ class PropertyFilterSpec extends Specification {
     void "filter integer"() {
 
         expect:
-        new PropertyFilter.IntegerRangeFilter("prop", incl, min, max).test(new BasicObject([prop:val])) == result
+        new PropertyFilter("prop", incl, new NumberRange.Integer(min, max)).test(new BasicObject([prop:val])) == result
 
         where:
         val  | incl  | min  | max | result
@@ -28,7 +29,7 @@ class PropertyFilterSpec extends Specification {
     void "filter double"() {
 
         expect:
-        new PropertyFilter.DoubleRangeFilter("prop", incl, min, max).test(new BasicObject([prop:val])) == result
+        new PropertyFilter("prop", incl, new NumberRange.Double(min, max)).test(new BasicObject([prop:val])) == result
 
         where:
         val  | incl  | min  | max | result

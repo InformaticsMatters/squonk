@@ -106,6 +106,7 @@ public class NotebookCanvasDTO {
 
         private final Integer top, left, width, height;
 
+        @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
         private final Map<String,Object> options = new LinkedHashMap<>();
 
         private final  List<BindingDTO> bindings = new ArrayList<>();

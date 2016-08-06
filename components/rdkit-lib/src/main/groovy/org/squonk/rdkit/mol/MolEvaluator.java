@@ -19,7 +19,7 @@ public class MolEvaluator {
 
     private static final Logger LOG = Logger.getLogger(MolEvaluator.class.getName());
 
-    public static void evaluate(MoleculeObject mo, ROMol rdkitMol, EvaluatorDefintion definition) {
+    public static void evaluate(MoleculeObject mo, ROMol rdkitMol, EvaluatorDefinition definition) {
         if (mo.getSource() != null || definition == null) {
             LOG.log(Level.FINER, "Evaluating {0}", definition);
             Object result = calculate(rdkitMol, definition.function);
@@ -33,7 +33,7 @@ public class MolEvaluator {
         }
     }
 
-    public static Object calculate(ROMol rdkitMol, EvaluatorDefintion.Function function) {
+    public static Object calculate(ROMol rdkitMol, EvaluatorDefinition.Function function) {
 
         if (rdkitMol == null || function == null) {
             return null;

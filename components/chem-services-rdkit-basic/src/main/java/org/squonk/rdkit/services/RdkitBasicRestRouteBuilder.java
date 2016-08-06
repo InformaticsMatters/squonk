@@ -12,8 +12,9 @@ import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.rdkit.io.RDKitMoleculeIOUtils.FragmentMode;
-import org.squonk.rdkit.mol.EvaluatorDefintion;
+import org.squonk.rdkit.mol.EvaluatorDefinition;
 import org.squonk.types.MoleculeObject;
+import org.squonk.types.NumberRange;
 import org.squonk.types.TypeResolver;
 import org.squonk.util.CommonConstants;
 
@@ -166,35 +167,28 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
 
     };
 
-    static void appendIntegerMinMaxOptionDescriptors(List<OptionDescriptor> list, EvaluatorDefintion.Function function, Integer min, Integer max, String name, String desc) {
-        list.add(new OptionDescriptor<>(Integer.class, "query." + function.getName()+".min",
-                name + " min", "Min " + desc).withMinValues(0).withMaxValues(1).withDefaultValue(min));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + function.getName()+".max",
-                name + " max", "Max " + desc).withMinValues(0).withMaxValues(1).withDefaultValue(max));
-    }
-
-    static void appendFloatMinMaxOptionDescriptors(List<OptionDescriptor> list, EvaluatorDefintion.Function function, Float min, Float max, String name, String desc) {
-        list.add(new OptionDescriptor<>(Float.class, "query." + function.getName()+".min",
-                name + " min", "Min " + desc).withMinValues(0).withMaxValues(1).withDefaultValue(min));
-        list.add(new OptionDescriptor<>(Float.class, "query." + function.getName()+".max",
-                name + " max", "Max " + desc).withMinValues(0).withMaxValues(1).withDefaultValue(max));
-    }
-
     static OptionDescriptor[] createReosOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
         list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
         list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
                         .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
-                        .withMinValues(1).withMaxValues(1));
+                        .withMinMaxValues(1,1));
 
-        appendFloatMinMaxOptionDescriptors(list, EvaluatorDefintion.Function.EXACT_MW, 200.0f, 500.0f, "MW", "molweight");
-        appendFloatMinMaxOptionDescriptors(list, EvaluatorDefintion.Function.LOGP, -5.0f, 5.0f, "LogP", "LogP");
-        appendIntegerMinMaxOptionDescriptors(list, EvaluatorDefintion.Function.NUM_HBD, 0, 5, "HBD count", "h-bond donor count");
-        appendIntegerMinMaxOptionDescriptors(list, EvaluatorDefintion.Function.NUM_HBA, 0, 10, "HBA count", "h-bond acceptor count");
-        appendIntegerMinMaxOptionDescriptors(list, EvaluatorDefintion.Function.FORMAL_CHARGE, -2, 2, "Formal charge", "formal charge");
-        appendIntegerMinMaxOptionDescriptors(list, EvaluatorDefintion.Function.NUM_ROTATABLE_BONDS, 0, 8, "Rot bond count", "rotatable bond count");
-        appendIntegerMinMaxOptionDescriptors(list, EvaluatorDefintion.Function.HEAVY_ATOM_COUNT, 15, 50, "Heavy atom count", "heavy atom count");
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EvaluatorDefinition.Function.EXACT_MW.getName(),
+                "MolWeight", "molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(200f, 500f)));
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EvaluatorDefinition.Function.LOGP.getName(),
+                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-5.0f, 5.0f)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.NUM_HBD.getName(),
+                "HBD count", "h-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.NUM_HBA.getName(),
+                "HBA count", "h-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.FORMAL_CHARGE.getName(),
+                "Formal charge", "formal charge").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(-2, 2)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.NUM_ROTATABLE_BONDS.getName(),
+                "Rot bond count", "rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 8)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.HEAVY_ATOM_COUNT.getName(),
+                "Heavy atom count", "heavy atom count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(15, 50)));
 
         return list.toArray(new OptionDescriptor[0]);
     }

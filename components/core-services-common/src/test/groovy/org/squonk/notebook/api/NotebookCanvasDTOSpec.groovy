@@ -1,5 +1,6 @@
 package org.squonk.notebook.api
 
+import org.squonk.types.NumberRange
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
 
@@ -73,7 +74,10 @@ class NotebookCanvasDTOSpec extends Specification {
         when:
         NotebookCanvasDTO canvas1 = new NotebookCanvasDTO(123)
                 .withCell(new NotebookCanvasDTO.CellDTO(99, 3, 'key', 'name', 10,20,30,40)
-                    .withOption('key1', 'value1'))
+                    .withOption('key1', 'value1')
+                    .withOption("range1", new NumberRange.Integer(1,10))
+                    .withOption("range2", new NumberRange.Integer(0,10))
+                )
         String json = JsonHandler.getInstance().objectToJson(canvas1)
         println json
         NotebookCanvasDTO canvas2 = JsonHandler.getInstance().objectFromJson(json, NotebookCanvasDTO)
@@ -82,8 +86,10 @@ class NotebookCanvasDTOSpec extends Specification {
         json != null
         canvas2 != null
         canvas2.cells.size() == 1
-        canvas2.cells[0].options.size() == 1
+        canvas2.cells[0].options.size() == 3
         canvas2.cells[0].options['key1'] == 'value1'
+        canvas2.cells[0].options['range1'].toString() == '1|10'
+        canvas2.cells[0].options['range2'].toString() == '0|10'
     }
 
     void "binding json read write"() {

@@ -6,7 +6,7 @@ import spock.lang.Specification
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-import static org.squonk.rdkit.mol.EvaluatorDefintion.Function.LOGP
+import static org.squonk.rdkit.mol.EvaluatorDefinition.Function.LOGP
 
 /**
  *

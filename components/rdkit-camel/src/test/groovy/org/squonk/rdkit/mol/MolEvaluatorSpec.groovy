@@ -13,7 +13,7 @@ class MolEvaluatorSpec extends Specification {
     void "calc logp"() {
         
         when:
-        def logp = MolEvaluator.calculate(RWMol.MolFromSmiles('CCCC'), EvaluatorDefintion.Function.LOGP)
+        def logp = MolEvaluator.calculate(RWMol.MolFromSmiles('CCCC'), EvaluatorDefinition.Function.LOGP)
         
         then:
         logp != null

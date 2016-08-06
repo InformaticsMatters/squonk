@@ -7,6 +7,7 @@ import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.property.PropertyFilter;
+import org.squonk.types.NumberRange;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,7 @@ public class PropertyFilterProcessor implements Processor {
 
 
     public PropertyFilterProcessor filterInteger(String propName, boolean includeNull, Integer min, Integer max) {
-        filters.add(new PropertyFilter.IntegerRangeFilter(propName, includeNull, min, max));
+        filters.add(new PropertyFilter(propName, includeNull, new NumberRange.Integer(min, max)));
         return this;
     }
 
@@ -48,9 +49,19 @@ public class PropertyFilterProcessor implements Processor {
     }
 
     public PropertyFilterProcessor filterDouble(String propName, boolean includeNull, Double min, Double max) {
-        filters.add(new PropertyFilter.DoubleRangeFilter(propName, includeNull, min, max));
+        filters.add(new PropertyFilter(propName, includeNull, new NumberRange.Double(min, max)));
         return this;
     }
+
+    public PropertyFilterProcessor filterFloat(String propName) {
+        return filterFloat(propName, false, null, null);
+    }
+
+    public PropertyFilterProcessor filterFloat(String propName, boolean includeNull, Float min, Float max) {
+        filters.add(new PropertyFilter(propName, includeNull, new NumberRange.Float(min, max)));
+        return this;
+    }
+
 
     @Override
     public void process(Exchange exch) throws Exception {
@@ -69,9 +80,14 @@ public class PropertyFilterProcessor implements Processor {
         LOG.info("Configuring " + filters.size() + " filters");
         final List<PropertyFilter> filtersToUse = new ArrayList<>();
         for (PropertyFilter f : filters) {
-            Object min = exch.getIn().getHeader(f.getPropertyName() + ".min", f.getDataType());
-            Object max = exch.getIn().getHeader(f.getPropertyName() + ".max", f.getDataType());
-            PropertyFilter d = f.derrive(min, max);
+            String range = exch.getIn().getHeader(f.getPropertyName(), String.class);
+            LOG.fine("Filtering for " + f.getPropertyName() + " is " + range);
+            PropertyFilter d = null;
+            if (range == null) {
+                d = f;
+            } else {
+                d = f.derive(range);
+            }
             if (d.isActive()) {
                 LOG.fine("Adding filter " + d);
                 filtersToUse.add(d);

@@ -47,7 +47,9 @@ public class OptionDescriptor<T> implements Serializable {
     private final String key;
     private final String label;
     private final String description;
+    @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
     private final T[] values;
+    @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
     private final T defaultValue;
     private final boolean editable;
     private final boolean visible;

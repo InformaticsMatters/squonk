@@ -8,7 +8,7 @@ import org.squonk.camel.CamelCommonConstants;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
-import org.squonk.rdkit.mol.EvaluatorDefintion;
+import org.squonk.rdkit.mol.EvaluatorDefinition;
 import org.squonk.rdkit.mol.MolEvaluator;
 import org.squonk.rdkit.mol.MolReader;
 import org.squonk.util.ExecutionStats;
@@ -30,7 +30,7 @@ public class RDKitMoleculeProcessor implements Processor {
 
     private static final Logger LOG = Logger.getLogger(RDKitMoleculeProcessor.class.getName());
 
-    List<EvaluatorDefintion> definitions = new ArrayList<>();
+    List<EvaluatorDefinition> definitions = new ArrayList<>();
 
     @Override
     public void process(Exchange exch) throws Exception {
@@ -38,7 +38,7 @@ public class RDKitMoleculeProcessor implements Processor {
         if (dataset == null || dataset.getType() != MoleculeObject.class) {
             throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
         }
-        List<EvaluatorDefintion> defs = definitions;
+        List<EvaluatorDefinition> defs = definitions;
         Stream<MoleculeObject> mols = dataset.getStream();
 
         Map<String,Integer> stats = new HashMap<>();
@@ -55,11 +55,11 @@ public class RDKitMoleculeProcessor implements Processor {
         exch.getIn().setBody(new MoleculeObjectDataset(results));
     }
 
-    protected void handleMetadata(Exchange exch, DatasetMetadata meta, List<EvaluatorDefintion> definitions) throws IllegalAccessException, InstantiationException {
+    protected void handleMetadata(Exchange exch, DatasetMetadata meta, List<EvaluatorDefinition> definitions) throws IllegalAccessException, InstantiationException {
         if (meta == null) {
             meta = new DatasetMetadata(MoleculeObject.class);
         }
-        for (EvaluatorDefintion eval : definitions) {
+        for (EvaluatorDefinition eval : definitions) {
             String name = eval.propName;
             Class type = eval.function.getType();
             meta.getValueClassMappings().put(name, type);
@@ -67,7 +67,7 @@ public class RDKitMoleculeProcessor implements Processor {
         exch.getIn().setHeader(CamelCommonConstants.HEADER_METADATA, meta);
     }
 
-    Stream<MoleculeObject> evaluate(Exchange exchange, Stream<MoleculeObject> mols, List<EvaluatorDefintion> definitions,  Map<String,Integer> stats) {
+    Stream<MoleculeObject> evaluate(Exchange exchange, Stream<MoleculeObject> mols, List<EvaluatorDefinition> definitions, Map<String,Integer> stats) {
 
         return mols.peek((mo) -> {
             ROMol rdkitMol = MolReader.findROMol(mo);
@@ -94,13 +94,13 @@ public class RDKitMoleculeProcessor implements Processor {
      * @param function The RDKit function to execute
      * @return
      */
-    public RDKitMoleculeProcessor calculate(EvaluatorDefintion.Function function, String name) {
-        definitions.add(EvaluatorDefintion.calculate(function, name));
+    public RDKitMoleculeProcessor calculate(EvaluatorDefinition.Function function, String name) {
+        definitions.add(EvaluatorDefinition.calculate(function, name));
         return this;
     }
 
-    public RDKitMoleculeProcessor calculate(EvaluatorDefintion.Function function) {
-        definitions.add(EvaluatorDefintion.calculate(function, function.getName()));
+    public RDKitMoleculeProcessor calculate(EvaluatorDefinition.Function function) {
+        definitions.add(EvaluatorDefinition.calculate(function, function.getName()));
         return this;
     }
 
