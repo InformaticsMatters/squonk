@@ -96,11 +96,11 @@ class PropertyFilterProcessorSpec extends Specification {
 
         where:
         count | headers
-        2     | [(OPTION_FILTER_MODE): VALUE_INCLUDE_PASS, "a.min": 2, "a.max": 4, "b.min": 3.0d, "b.max":10.0d]
-        4     | [(OPTION_FILTER_MODE): VALUE_INCLUDE_FAIL, "a.min": 2, "a.max": 4, "b.min": 3.0d, "b.max":10.0d]
-        6     | [(OPTION_FILTER_MODE): VALUE_INCLUDE_ALL, "a.min": 2, "a.max": 4, "b.min": 3.0d, "b.max":10.0d]
-        4     | [(OPTION_FILTER_MODE): VALUE_INCLUDE_PASS, "a.max": 4, "b.max":10.0d]
-        2     | [(OPTION_FILTER_MODE): VALUE_INCLUDE_PASS, "a.min": 2, "a.max":3]
+        2     | [(OPTION_FILTER_MODE): VALUE_INCLUDE_PASS, "a": "2|4", "b": "3.0|10.0"]
+        4     | [(OPTION_FILTER_MODE): VALUE_INCLUDE_FAIL, "a": "2|4", "b": "3.0|10.0"]
+        6     | [(OPTION_FILTER_MODE): VALUE_INCLUDE_ALL, "a": "2|4", "b": "3.0|10.0"]
+        4     | [(OPTION_FILTER_MODE): VALUE_INCLUDE_PASS, "a": "|4", "b": "|10.0"]
+        2     | [(OPTION_FILTER_MODE): VALUE_INCLUDE_PASS, "a": "2|3"]
 
     }
 

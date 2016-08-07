@@ -11,14 +11,48 @@ import java.util.List;
  */
 public class TransformDefinitions {
 
-    private final List<AbstractTransform> transforms;
+    private final List<AbstractTransform> transforms = new ArrayList<>();
+    private final List<Message> messages = new ArrayList();
 
     public TransformDefinitions(@JsonProperty("transforms") List<AbstractTransform> transforms) {
-        this.transforms = transforms;
+        this.transforms.addAll(transforms);
     }
 
     public TransformDefinitions() {
-        transforms = new ArrayList<>();
+
+    }
+
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public static TransformDefinitions parse(String recipe) {
+        /* Support language as follows:
+
+        # a comment
+
+        <field> delete
+        <field> delete IF <predicate>
+
+        <field> rename <new name>
+
+        <field> integer
+        <field> float
+        <field> float <precision>
+        <field> double
+        <field> double <precision>
+        <field> string
+        <field> molecule <format>
+
+        <field> replace <from text> <to text>
+
+        <field> = <expression>
+        <field> = <expression> IF <predicate>
+
+         */
+
+        throw new UnsupportedOperationException("NYI");
     }
 
     public TransformDefinitions deleteField(String fieldName) {

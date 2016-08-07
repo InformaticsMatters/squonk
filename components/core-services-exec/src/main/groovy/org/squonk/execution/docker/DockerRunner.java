@@ -8,6 +8,7 @@ import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
@@ -101,8 +102,10 @@ public class DockerRunner {
         Bind b = new Bind(getHostWorkDir().getPath(), work, AccessMode.rw);
         binds.add(b);
 
+
         // properties read from environment variables
-        config = DockerClientConfig.createDefaultConfigBuilder().build();
+        config = DefaultDockerClientConfig.createDefaultConfigBuilder()
+                .build();
         dockerClient = DockerClientBuilder.getInstance(config).build();
     }
 
