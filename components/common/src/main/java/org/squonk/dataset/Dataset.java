@@ -558,6 +558,9 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
                     metadata.setSize(count.get());
                     metadata.getValueClassMappings().clear();
                     metadata.getValueClassMappings().putAll(mappings);
+                    // clean out metadata for fields that no longer exist
+                    Map<String, Map<String,Object>> props = metadata.getFieldMetaProps();
+                    props.entrySet().removeIf(e -> !mappings.containsKey(e.getKey()));
                 }
                 future.complete(metadata);
             });

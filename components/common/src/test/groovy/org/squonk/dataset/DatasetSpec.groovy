@@ -83,6 +83,20 @@ class DatasetSpec extends Specification {
         ds.list.size() == 3
         ds.@stream == null
     }
+
+    void "not present field meta removed"() {
+
+        setup:
+        DatasetMetadata meta = new DatasetMetadata(BasicObject.class)
+        meta.putFieldMetaProp("notpresent", "foo", "bar")
+        Dataset ds = new Dataset(BasicObject.class, objects.stream(), meta)
+
+        when:
+        ds.generateMetadata()
+
+        then:
+        !ds.metadata.fieldMetaProps.containsKey("notpresent")
+    }
     
     void "can't read stream twice"() {
         
