@@ -8,19 +8,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author timbo
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class DeleteFieldTransform extends AbstractTransform {
+public class DeleteRowTransform extends AbstractTransform {
 
-    private final String fieldName;
     private final String condition;
 
-    protected DeleteFieldTransform(@JsonProperty("fieldName") String fieldName,
-                                   @JsonProperty("condition") String condition) {
-        this.fieldName = fieldName;
+    protected DeleteRowTransform(@JsonProperty("condition") String condition) {
         this.condition = condition;
-    }
-
-    public String getFieldName() {
-        return fieldName;
     }
 
     public String getCondition() {

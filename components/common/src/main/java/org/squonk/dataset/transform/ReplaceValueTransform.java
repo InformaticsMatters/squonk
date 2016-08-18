@@ -8,13 +8,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author timbo
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class TransformValueTransform extends AbstractTransform {
+public class ReplaceValueTransform extends AbstractTransform {
 
     private final String fieldName;
     private final Object match;
     private final Object result;
 
-    protected TransformValueTransform(
+    protected ReplaceValueTransform(
             @JsonProperty("fieldName") String fieldName,
             @JsonProperty("match") Object match,
             @JsonProperty("result") Object result) {

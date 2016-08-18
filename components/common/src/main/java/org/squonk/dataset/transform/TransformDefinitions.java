@@ -2,11 +2,12 @@ package org.squonk.dataset.transform;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
- *
  * @author timbo
  */
 public class TransformDefinitions {
@@ -27,44 +28,68 @@ public class TransformDefinitions {
         return messages;
     }
 
-    public static TransformDefinitions parse(String recipe) {
-        /* Support language as follows:
+    /**
+     * Parse a potion in String form.  Support language as follows:
+     * <p>
+     * <pre>
+     * # a comment
+     *
+     * # row operations
+     * delete
+     * delete IF <predicate>
+     *
+     * # field operations
+     * <field> delete
+     * <field> delete IF <predicate>
+     *
+     * <field> rename <new name>
+     *
+     * <field> integer
+     * <field> float
+     * <field> double
+     * <field> string
+     *
+     * <field> replace <from value> <to value>
+     *
+     * <field> = <expression>
+     * <field> = <expression> IF <predicate>
+     * <field> = <expression> IF <predicate> ONERROR (fail|continue)
+     *
+     * </pre>
+     *
+     * Before executing you must check for errors.
+     *
+     * @param potion    The potion to parse
+     * @param fieldDefs Field definitions that allow the potion to better validated.
+     * @return The PotionParser from which the Transforms and/or info, warnings and errors can be retrieved.
+     */
+    public static PotionParser parse(String potion, Map<String, Class> fieldDefs) {
+        /* TODO - other statements to support:
 
-        # a comment
-
-        <field> delete
-        <field> delete IF <predicate>
-
-        <field> rename <new name>
-
-        <field> integer
-        <field> float
-        <field> float <precision>
-        <field> double
-        <field> double <precision>
-        <field> string
-        <field> molecule <format>
-
-        <field> replace <from text> <to text>
-
-        <field> = <expression>
-        <field> = <expression> IF <predicate>
+             <field> molecule <format>
 
          */
 
-        throw new UnsupportedOperationException("NYI");
+        PotionParser p = new PotionParser(potion, fieldDefs);
+        p.parse();
+
+        return p;
+    }
+
+    public TransformDefinitions deleteField(String fieldName, String condition) {
+        transforms.add(new DeleteFieldTransform(fieldName, condition));
+        return this;
     }
 
     public TransformDefinitions deleteField(String fieldName) {
-        transforms.add(new DeleteFieldTransform(fieldName));
-        return this;
+        return deleteField(fieldName, null);
     }
-    
+
     public TransformDefinitions renameField(String fieldName, String newName) {
         transforms.add(new RenameFieldTransform(fieldName, newName));
         return this;
     }
-    
+
     public TransformDefinitions convertField(String fieldName, Class type) {
         transforms.add(new ConvertFieldTransform(fieldName, type));
         return this;
@@ -75,11 +100,23 @@ public class TransformDefinitions {
         return this;
     }
 
-    public TransformDefinitions transformValue(String fieldName, String match, String result) {
-        transforms.add(new TransformValueTransform(fieldName, match, result));
+    public TransformDefinitions replaceValue(String fieldName, String match, String result) {
+        transforms.add(new ReplaceValueTransform(fieldName, match, result));
         return this;
     }
 
+    /**
+     * @deprecated use replaceValue()
+     */
+    @Deprecated
+    public TransformDefinitions transformValue(String fieldName, String match, String result) {
+        return replaceValue(fieldName, match, result);
+    }
+
+    public TransformDefinitions assignValue(String fieldName, String expression, String condition, String onError) {
+        transforms.add(new AssignValueTransform(fieldName, expression, condition, onError));
+        return this;
+    }
 
     public List<AbstractTransform> getTransforms() {
         return transforms;
@@ -87,7 +124,7 @@ public class TransformDefinitions {
 
     public static void main(String[] args) throws Exception {
         TransformDefinitions o = new TransformDefinitions();
-        o.deleteField("foo").renameField("bar", "baz");
+        o.deleteField("foo", null).renameField("bar", "baz");
         ObjectMapper mapper = new ObjectMapper();
 
         String json = mapper.writeValueAsString(o);
@@ -96,10 +133,10 @@ public class TransformDefinitions {
         TransformDefinitions b = mapper.readValue(json, TransformDefinitions.class);
         System.out.println("OBJ:  " + b);
         System.out.println("SIZE: " + b.getTransforms().size());
-        
-        for (AbstractTransform t: b.getTransforms()) {
+
+        for (AbstractTransform t : b.getTransforms()) {
             System.out.println("T: " + t);
-        }   
+        }
     }
 
 }

@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.squonk.types.BasicObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -35,9 +37,13 @@ import java.util.Map;
 @JsonPropertyOrder({"type", "size", "valueClassMappings"})
 public class DatasetMetadata<T extends BasicObject> {
 
-    public static final String PROP_FIELD_DISPLAY_NAME = "displayName";
-    public static final String PROP_FIELD_DESCRIPTION = "description";
-    public static final String PROP_FIELD_SOURCE = "source";
+    public static final String PROP_DISPLAY_NAME = "displayName";
+    public static final String PROP_DESCRIPTION = "description";
+    public static final String PROP_SOURCE = "source";
+    public static final String PROP_CREATED = "created";
+    public static final String PROP_HISTORY = "history";
+
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss z");
 
     /**
      * The number of records present, or -1 if unknown
@@ -64,6 +70,10 @@ public class DatasetMetadata<T extends BasicObject> {
 
     @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
     private final Map<String, Map<String,Object>> fieldMetaProps = new LinkedHashMap<>();
+
+    public static String formatDate() {
+        return DATE_FORMAT.format(new Date());
+    }
 
     public DatasetMetadata(
             @JsonProperty("type") Class<T> type,
@@ -159,6 +169,10 @@ public class DatasetMetadata<T extends BasicObject> {
         }
     }
 
+    public <S> S getFieldMetaProp(String fieldName, String propertyName, Class<S> type) {
+        return (S)getFieldMetaProp(fieldName, propertyName);
+    }
+
     /** Utility method that collects all the values for the specified property. The resulting map is keyed by field name.
      * NOTE: modifying the returned Map has no impact on the underlying Metadata
      *
@@ -210,6 +224,33 @@ public class DatasetMetadata<T extends BasicObject> {
             }
             count++;
             b.append(e.getKey()).append(":").append(e.getValue());
+        }
+    }
+
+    public String now() {
+        return DATE_FORMAT.format(new Date());
+    }
+
+    public String nowFormatted() {
+        return "[" + now() + "] ";
+    }
+
+    public void appendFieldHistory(String fldName, String msg) {
+
+        String old = (String)getFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY);
+        if (old == null) {
+            putFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY, nowFormatted() + msg);
+        } else {
+            putFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY, old + "\n" + nowFormatted() + msg);
+        }
+    }
+
+    public void appendDatasetHistory(String msg) {
+        String old = (String)getProperties().get(DatasetMetadata.PROP_HISTORY);
+        if (old == null) {
+            getProperties().put(DatasetMetadata.PROP_HISTORY, nowFormatted() + msg);
+        } else {
+            getProperties().put(DatasetMetadata.PROP_HISTORY, old + "\n" + nowFormatted() + msg);
         }
     }
 }
