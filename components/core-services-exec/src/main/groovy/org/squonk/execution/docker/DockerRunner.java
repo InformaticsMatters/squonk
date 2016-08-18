@@ -105,6 +105,7 @@ public class DockerRunner {
 
         // properties read from environment variables
         config = DefaultDockerClientConfig.createDefaultConfigBuilder()
+                .withApiVersion("1.23") // use old (pre Docker 1.12) API until the HostConfig issue in docker-java is resolved
                 .build();
         dockerClient = DockerClientBuilder.getInstance(config).build();
     }

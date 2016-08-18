@@ -2,6 +2,7 @@ package org.squonk.execution.docker
 
 import com.github.dockerjava.api.command.CreateContainerResponse
 import com.github.dockerjava.api.command.InspectContainerResponse
+import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientBuilder
 import com.github.dockerjava.core.DockerClientConfig
 import spock.lang.Specification
@@ -71,7 +72,9 @@ class DockerRunnerSpec extends Specification {
     void "basic bridge network"() {
 
         setup:
-        def config = DockerClientConfig.createDefaultConfigBuilder().build();
+        def config = DefaultDockerClientConfig.createDefaultConfigBuilder()
+                .withApiVersion("1.23")
+                .build();
         def dockerClient = DockerClientBuilder.getInstance(config).build();
         CreateContainerResponse container = dockerClient.createContainerCmd("busybox")
                 .withCmd("sleep", "5")
