@@ -48,7 +48,7 @@ public class StandardizerEvaluator implements MoleculeEvaluator {
 
         Molecule mol = MoleculeUtils.fetchMolecule(mo, false);
         mol = processMolecule(mol);
-        return MoleculeUtils.derriveMoleculeObject(mo, mol, mo.getFormat("mol"));
+        return MoleculeUtils.deriveMoleculeObject(mo, mol, mo.getFormat("mol"));
     }
     
      @Override

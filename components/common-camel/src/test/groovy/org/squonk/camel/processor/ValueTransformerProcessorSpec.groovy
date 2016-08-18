@@ -5,6 +5,7 @@ import org.squonk.types.BasicObject
 import org.squonk.dataset.Dataset
 import org.apache.camel.CamelContext
 import org.apache.camel.impl.DefaultCamelContext
+import org.squonk.types.MoleculeObject
 import org.squonk.types.QualifiedValue
 import spock.lang.Specification
 
@@ -29,13 +30,13 @@ class ValueTransformerProcessorSpec extends Specification {
         .convertValueType('two', Float.class)
         
         when:
-        converter.execute(context.getTypeConverter(), ds)    
+        def nue = converter.execute(context.getTypeConverter(), ds)
         
         then:
-        ds.items.size() == 2
-        ds.items[0].getValue('one') instanceof Integer
-        ds.items[0].getValue('two') instanceof Float
-        ds.items[0].getValue('with space') == 99
+        nue.items.size() == 2
+        nue.items[0].getValue('one') instanceof Integer
+        nue.items[0].getValue('two') instanceof Float
+        nue.items[0].getValue('with space') == 99
     }
 
     void "basic delete values"() {
@@ -44,13 +45,13 @@ class ValueTransformerProcessorSpec extends Specification {
                 .deleteValue('one', null)
 
         when:
-        converter.execute(context.getTypeConverter(), ds)
-        println ds.items[0].values
+        def nue = converter.execute(context.getTypeConverter(), ds)
+        //println nue.items[0].values
 
         then:
-        ds.items.size() == 2
-        ds.items[0].getValue('one') == null
-        ds.items[0].getValue('two') != null
+        nue.items.size() == 2
+        nue.items[0].getValue('one') == null
+        nue.items[0].getValue('two') != null
     }
 
     void "delete values space"() {
@@ -59,12 +60,12 @@ class ValueTransformerProcessorSpec extends Specification {
                 .deleteValue('with space', null)
 
         when:
-        converter.execute(context.getTypeConverter(), ds)
-        println ds.items[0].values
+        def nue = converter.execute(context.getTypeConverter(), ds)
+        //println nue.items[0].values
 
         then:
-        ds.items.size() == 2
-        ds.items[0].getValue('with space') == null
+        nue.items.size() == 2
+        nue.items[0].getValue('with space') == null
     }
 
     void "conditional delete values"() {
@@ -73,15 +74,15 @@ class ValueTransformerProcessorSpec extends Specification {
                 .deleteValue('one', "two == '2.4'")
 
         when:
-        converter.execute(context.getTypeConverter(), ds)
-        println ds.items[0].values
+        def nue = converter.execute(context.getTypeConverter(), ds)
+        //println nue.items[0].values
 
         then:
-        ds.items.size() == 2
-        ds.items[0].getValue('one') == null
-        ds.items[0].getValue('two') != null
-        ds.items[1].getValue('one') != null
-        ds.items[1].getValue('two') != null
+        nue.items.size() == 2
+        nue.items[0].getValue('one') == null
+        nue.items[0].getValue('two') != null
+        nue.items[1].getValue('one') != null
+        nue.items[1].getValue('two') != null
     }
 
     void "conditional delete values space"() {
@@ -90,15 +91,15 @@ class ValueTransformerProcessorSpec extends Specification {
                 .deleteValue('with space', "two == '2.4'")
 
         when:
-        converter.execute(context.getTypeConverter(), ds)
-        println ds.items[0].values
+        def nue = converter.execute(context.getTypeConverter(), ds)
+        //println nue.items[0].values
 
         then:
-        ds.items.size() == 2
-        ds.items[0].getValue('with space') == null
-        ds.items[0].getValue('two') != null
-        ds.items[1].getValue('with space') != null
-        ds.items[1].getValue('two') != null
+        nue.items.size() == 2
+        nue.items[0].getValue('with space') == null
+        nue.items[0].getValue('two') != null
+        nue.items[1].getValue('with space') != null
+        nue.items[1].getValue('two') != null
     }
 
     void "conditional delete values multiple"() {
@@ -108,15 +109,15 @@ class ValueTransformerProcessorSpec extends Specification {
                 .deleteValue('one', "1 == 2")
 
         when:
-        converter.execute(context.getTypeConverter(), ds)
-        println ds.items[0].values
+        def nue = converter.execute(context.getTypeConverter(), ds)
+        //println nue.items[0].values
 
         then:
-        ds.items.size() == 2
-        ds.items[0].getValue('one') == null
-        ds.items[0].getValue('two') != null
-        ds.items[1].getValue('one') != null
-        ds.items[1].getValue('two') != null
+        nue.items.size() == 2
+        nue.items[0].getValue('one') == null
+        nue.items[0].getValue('two') != null
+        nue.items[1].getValue('one') != null
+        nue.items[1].getValue('two') != null
     }
 
     void "basic replace values"() {
@@ -125,16 +126,16 @@ class ValueTransformerProcessorSpec extends Specification {
                 .replaceValue('two', '2.4', '99.9')
 
         when:
-        converter.execute(context.getTypeConverter(), ds)
-        println ds.metadata.getFieldMetaProp('two', DatasetMetadata.PROP_HISTORY)
+        def nue = converter.execute(context.getTypeConverter(), ds)
+        //println nue.metadata.getFieldMetaProp('two', DatasetMetadata.PROP_HISTORY)
 
         then:
-        ds.items.size() == 2
-        ds.items[0].getValue('one') == '1'
-        ds.items[0].getValue('two') == '99.9'
-        ds.items[1].getValue('one') == '2'
-        ds.items[1].getValue('two') == '3.4'
-        ds.metadata.getFieldMetaProp('two', DatasetMetadata.PROP_HISTORY) != null
+        nue.items.size() == 2
+        nue.items[0].getValue('one') == '1'
+        nue.items[0].getValue('two') == '99.9'
+        nue.items[1].getValue('one') == '2'
+        nue.items[1].getValue('two') == '3.4'
+        nue.metadata.getFieldMetaProp('two', DatasetMetadata.PROP_HISTORY) != null
     }
 
     void "basic convert names"() {
@@ -143,12 +144,12 @@ class ValueTransformerProcessorSpec extends Specification {
         .convertValueName('one', 'three')
         
         when:
-        converter.execute(context.getTypeConverter(), ds)    
+        def nue = converter.execute(context.getTypeConverter(), ds)
         
         then:
-        ds.items.size() == 2
-        ds.items[0].getValue('one') == null
-        ds.items[0].getValue('two') == '2.4'
+        nue.items.size() == 2
+        nue.items[0].getValue('one') == null
+        nue.items[0].getValue('two') == '2.4'
     }
 
     void "convert names spaces"() {
@@ -157,12 +158,12 @@ class ValueTransformerProcessorSpec extends Specification {
                 .convertValueName('with space', 'three')
 
         when:
-        converter.execute(context.getTypeConverter(), ds)
+        def nue = converter.execute(context.getTypeConverter(), ds)
 
         then:
-        ds.items.size() == 2
-        ds.items[0].getValue('three') == 99
-        ds.items[0].getValue('two') == '2.4'
+        nue.items.size() == 2
+        nue.items[0].getValue('three') == 99
+        nue.items[0].getValue('two') == '2.4'
     }
 
 
@@ -179,24 +180,24 @@ class ValueTransformerProcessorSpec extends Specification {
                 .convertValueType('two', QualifiedValue.class, Float.class)
 
         when:
-        converter.execute(context.getTypeConverter(), ds)
+        def nue = converter.execute(context.getTypeConverter(), ds)
 
         then:
-        ds.items.size() == 2
-        ds.items[0].getValue('one') instanceof QualifiedValue
-        ds.items[0].getValue('two') instanceof QualifiedValue
-        ds.items[1].getValue('one') instanceof QualifiedValue
-        ds.items[1].getValue('two') instanceof QualifiedValue
+        nue.items.size() == 2
+        nue.items[0].getValue('one') instanceof QualifiedValue
+        nue.items[0].getValue('two') instanceof QualifiedValue
+        nue.items[1].getValue('one') instanceof QualifiedValue
+        nue.items[1].getValue('two') instanceof QualifiedValue
 
-        ds.items[0].getValue('one').value instanceof Integer
-        ds.items[0].getValue('two').value instanceof Float
-        ds.items[1].getValue('one').value instanceof Integer
-        ds.items[1].getValue('two').value instanceof Float
+        nue.items[0].getValue('one').value instanceof Integer
+        nue.items[0].getValue('two').value instanceof Float
+        nue.items[1].getValue('one').value instanceof Integer
+        nue.items[1].getValue('two').value instanceof Float
 
-        ds.items[0].getValue('one').qualifier == QualifiedValue.Qualifier.EQUALS
-        ds.items[0].getValue('two').qualifier == QualifiedValue.Qualifier.EQUALS
-        ds.items[1].getValue('one').qualifier == QualifiedValue.Qualifier.LESS_THAN
-        ds.items[1].getValue('two').qualifier == QualifiedValue.Qualifier.LESS_THAN
+        nue.items[0].getValue('one').qualifier == QualifiedValue.Qualifier.EQUALS
+        nue.items[0].getValue('two').qualifier == QualifiedValue.Qualifier.EQUALS
+        nue.items[1].getValue('one').qualifier == QualifiedValue.Qualifier.LESS_THAN
+        nue.items[1].getValue('two').qualifier == QualifiedValue.Qualifier.LESS_THAN
 
 
     }
@@ -207,10 +208,10 @@ class ValueTransformerProcessorSpec extends Specification {
                 .deleteRow(null)
 
         when:
-        converter.execute(context.getTypeConverter(), ds)
+        def nue = converter.execute(context.getTypeConverter(), ds)
 
         then:
-        ds.items.size() == 0
+        nue.items.size() == 0
     }
 
 
@@ -220,30 +221,35 @@ class ValueTransformerProcessorSpec extends Specification {
                 .deleteRow("one == '1'")
 
         when:
-        converter.execute(context.getTypeConverter(), ds)
+        def nue = converter.execute(context.getTypeConverter(), ds)
 
         then:
-        ds.items.size() == 1
+        nue.items.size() == 1
+        nue.items.size() == 1
     }
 
-//    void "convert to molecule"() {
-//
-//        Dataset mols = new Dataset(BasicObject.class, [
-//                new BasicObject([smiles:'C', one:'1', two:'2.4']),
-//                new BasicObject([smiles:'CC', one:'2', two:'3.4'])
-//        ])
-//
-//        ValueTransformerProcessor converter = new ValueTransformerProcessor()
-//                .convertToMolecule("smiles", "smiles")
-//
-//        when:
-//        converter.execute(context.getTypeConverter(), mols)
-//
-//        then:
-//        mols.items.size() == 2
-//        mols.items[0].class == MoleculeObject.class
-//        mols.items[0].values.size == 2
-//    }
+    void "convert to molecule"() {
+
+        DatasetMetadata meta = new DatasetMetadata(BasicObject.class, null, null, -1, [token:'property'])
+        meta.putFieldMetaProp('one', 'foo' , 'bar')
+        Dataset mols = new Dataset(BasicObject.class, [
+                new BasicObject([smiles:'C', one:'1', two:'2.4']),
+                new BasicObject([smiles:'CC', one:'2', two:'3.4'])
+        ], meta)
+
+        ValueTransformerProcessor converter = new ValueTransformerProcessor()
+                .convertToMolecule("smiles", "smiles")
+
+        when:
+        def nue = converter.execute(context.getTypeConverter(), mols)
+
+        then:
+        nue.items.size() == 2
+        nue.items[0].class == MoleculeObject.class
+        nue.items[0].values.size() == 2
+        nue.metadata.getFieldMetaProp('one','foo') == 'bar'
+        nue.metadata.getProperty('token') == 'property'
+    }
 
 
     void "assign values"() {
@@ -253,13 +259,13 @@ class ValueTransformerProcessorSpec extends Specification {
                 new BasicObject([one:2, two:3.4, 'with space':20])
                 ])
 
-        new ValueTransformerProcessor()
+        def nue = new ValueTransformerProcessor()
                 .assignValue('foo', expression, condition, "fail")
                 .execute(context.getTypeConverter(), data)
 
         expect:
-        data.items[0].values.foo == rec0
-        data.items[1].values.foo == rec1
+        nue.items[0].values.foo == rec0
+        nue.items[1].values.foo == rec1
 
         where:
         expression         | condition | rec0  | rec1
@@ -276,13 +282,13 @@ class ValueTransformerProcessorSpec extends Specification {
                 new BasicObject([one:10, two:3.4])
         ])
 
-        new ValueTransformerProcessor()
+        def nue = new ValueTransformerProcessor()
                 .assignValue('foo', expression, condition, "fail")
                 .execute(context.getTypeConverter(), data)
 
         expect:
-        data.items[0].values.foo == rec0
-        data.items[1].values.foo == rec1
+        nue.items[0].values.foo == rec0
+        nue.items[1].values.foo == rec1
 
         where:
         expression                | condition | rec0  | rec1
@@ -299,18 +305,17 @@ class ValueTransformerProcessorSpec extends Specification {
                 new BasicObject([one:3, two:'5.4'])
         ])
 
-        new ValueTransformerProcessor()
+        def nue = new ValueTransformerProcessor()
                 .assignValue('foo', expression, condition, "continue")
                 .execute(context.getTypeConverter(), data)
 
         expect:
-        data.items[0].values.foo == rec0
-        data.items[1].values.foo == rec1
-        data.items[2].values.foo == rec2
-        data.items[0].values.TransformErrors == null
-        data.items[1].values.TransformErrors != err
-        data.items[2].values.TransformErrors == null
-        println data.items[1].values
+        nue.items[0].values.foo == rec0
+        nue.items[1].values.foo == rec1
+        nue.items[2].values.foo == rec2
+        nue.items[0].values.TransformErrors == null
+        nue.items[1].values.TransformErrors != err
+        nue.items[2].values.TransformErrors == null
 
         where:
         expression        | condition | rec0  | rec1 | rec2 | err

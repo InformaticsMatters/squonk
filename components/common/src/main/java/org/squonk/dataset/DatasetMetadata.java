@@ -1,16 +1,10 @@
 package org.squonk.dataset;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.*;
 import org.squonk.types.BasicObject;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /** Metadata for a Dataset. Allows 3 main types of information to be managed.
  *
@@ -22,9 +16,10 @@ import java.util.Map;
  * </p>
  *
  * <p><b>2. Other Field metadata</b></p>
- * <p>Any other metadata relating to fields is handled by the fieldMetaProps Map. Values of this Map are a Map (keyed by
- * field name), and this Map has keys of property names and values of the value for that property. All values must be serializable
- * as JSON.</p>
+ * <p>Any other metadata relating to fields is handled by the fieldMetaProps Map. Keys of this Map are the field names)
+ * and the values are a PropertiesHolder which is essentially a wrapper around a Map that allows type information to handled
+ * in JSON. The keys of this inner Map are the property names and values are the value for that property. All values must be
+ * serializable as JSON.</p>
  *
  * p><b>3. Metadata of the dataset as a whole</b></p>
  * <p>Metadata that related to the entire dataset (as opposed to fields in the dataset) are handled in the properties Map.
@@ -68,8 +63,8 @@ public class DatasetMetadata<T extends BasicObject> {
     @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
     private final Map<String, Object> properties = new LinkedHashMap<>();
 
-    @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-    private final Map<String, Map<String,Object>> fieldMetaProps = new LinkedHashMap<>();
+    //@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
+    private final Map<String, PropertiesHolder> fieldMetaProps = new LinkedHashMap<>();
 
     public static String formatDate() {
         return DATE_FORMAT.format(new Date());
@@ -78,7 +73,7 @@ public class DatasetMetadata<T extends BasicObject> {
     public DatasetMetadata(
             @JsonProperty("type") Class<T> type,
             @JsonProperty("valueClassMappings") Map<String, Class> valueClassMappings,
-            @JsonProperty("fieldMetaProps") Map<String, Map<String,Object>> fieldMetaProps,
+            @JsonProperty("fieldMetaProps") List<PropertiesHolder> fieldMetaProps,
             @JsonProperty("size") int size,
             @JsonProperty("properties") Map<String, Object> properties) {
         assert type != null;
@@ -87,7 +82,9 @@ public class DatasetMetadata<T extends BasicObject> {
             this.valueClassMappings.putAll(valueClassMappings);
         }
         if (fieldMetaProps != null && !fieldMetaProps.isEmpty()){
-            this.fieldMetaProps.putAll(fieldMetaProps);
+            for (PropertiesHolder h : fieldMetaProps) {
+                this.fieldMetaProps.put(h.getFieldName(), h);
+            }
         }
         this.size = size;
         if (properties != null) {
@@ -135,37 +132,47 @@ public class DatasetMetadata<T extends BasicObject> {
         return properties;
     }
 
-    public Map<String, Map<String,Object>> getFieldMetaProps() {
+    public Object getProperty(String propName) {
+        return properties.get(propName);
+    }
+
+    public List<PropertiesHolder> getFieldMetaProps() {
+        return new ArrayList(fieldMetaProps.values());
+    }
+
+    @JsonIgnore
+    public Map<String, PropertiesHolder> getFieldMetaPropsMap() {
         return fieldMetaProps;
     }
+
 
     public Object putFieldMetaProp(String fieldName, String propertyName, Object value) {
         if (value == null) {
             return clearFieldMetaProp(fieldName, propertyName);
         }
-        Map<String,Object> map = fieldMetaProps.get(fieldName);
-        if (map == null) {
-            map = new LinkedHashMap<>();
-            fieldMetaProps.put(fieldName, map);
+        PropertiesHolder h = fieldMetaProps.get(fieldName);
+        if (h == null) {
+            h = new PropertiesHolder(fieldName);
+            fieldMetaProps.put(fieldName, h);
         }
-        return map.put(propertyName, value);
+        return h.putValue(propertyName, value);
     }
 
     public Object clearFieldMetaProp(String fieldName, String propertyName) {
-        Map<String,Object> map = fieldMetaProps.get(fieldName);
-        if (map == null) {
+        PropertiesHolder h = fieldMetaProps.get(fieldName);
+        if (h == null) {
             return null;
         } else {
-            return map.remove(propertyName);
+            return h.removeValue(propertyName);
         }
     }
 
     public Object getFieldMetaProp(String fieldName, String propertyName) {
-        Map<String,Object> map = fieldMetaProps.get(fieldName);
-        if (map == null) {
+        PropertiesHolder h = fieldMetaProps.get(fieldName);
+        if (h == null) {
             return null;
         } else {
-            return map.get(propertyName);
+            return h.getValue(propertyName);
         }
     }
 
@@ -181,9 +188,9 @@ public class DatasetMetadata<T extends BasicObject> {
      */
     public Map<String,Object> collectFieldMetaProps(String propName) {
         Map<String,Object> results = new LinkedHashMap<>();
-        for (Map.Entry<String,Map<String,Object>> e: fieldMetaProps.entrySet()) {
-            Map<String,Object> map = e.getValue();
-            Object value = map.get(propName);
+        for (Map.Entry<String,PropertiesHolder> e: fieldMetaProps.entrySet()) {
+            PropertiesHolder h = e.getValue();
+            Object value = h.getValue(propName);
             if (value != null) {
                 results.put(e.getKey(), value);
             }
@@ -252,5 +259,44 @@ public class DatasetMetadata<T extends BasicObject> {
         } else {
             getProperties().put(DatasetMetadata.PROP_HISTORY, old + "\n" + nowFormatted() + msg);
         }
+    }
+
+    public static class PropertiesHolder {
+
+        @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
+        private final Map<String, Object> values = new LinkedHashMap<>();
+        private final String fieldName;
+
+        public PropertiesHolder(
+                @JsonProperty("fieldName") String fieldName,
+                @JsonProperty("values") Map<String, Object> values) {
+            this(fieldName);
+            if (values != null) {
+                this.values.putAll(values);
+            }
+        }
+
+        public PropertiesHolder(String fieldName) { this.fieldName = fieldName; }
+
+        public String getFieldName() {
+            return fieldName;
+        }
+
+        public Object getValue(String name) {
+            return values.get(name);
+        }
+
+        public Object putValue(String name, Object value) {
+            return values.put(name, value);
+        }
+
+        public Object removeValue(String name) {
+            return values.remove(name);
+        }
+
+        public Map<String, Object> getValues() {
+            return values;
+        }
+
     }
 }

@@ -125,7 +125,7 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
             return null;
         } else {
             Map<String, Object> results = getResults(mol);
-            MoleculeObject neu = MoleculeUtils.derriveMoleculeObject(mo, mol, mo.getFormat("mol"));
+            MoleculeObject neu = MoleculeUtils.deriveMoleculeObject(mo, mol, mo.getFormat("mol"));
             neu.putValues(results);
             return neu;
         }

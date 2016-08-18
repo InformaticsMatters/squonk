@@ -57,17 +57,17 @@ public class ValueTransformerStep extends AbstractStep {
         LOG.info("Transform Definitions: " + txs);
         statusMessage = "Transforming dataset ...";
         ValueTransformerProcessor p = ValueTransformerProcessor.create(txs);
-        p.execute(context.getTypeConverter(), ds);
+        Dataset result = p.execute(context.getTypeConverter(), ds);
 
         LOG.info("Transforms complete");
         
         String outFldName = mapOutputVariable(VAR_OUTPUT_DATASET);
         if (outFldName != null) {
-            createVariable(outFldName, Dataset.class, ds, varman);
+            createVariable(outFldName, Dataset.class, result, varman);
         }
 
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, ds.getMetadata().getSize());
-        LOG.info("Results: " + ds.getMetadata());
+        statusMessage = String.format(MSG_RECORDS_PROCESSED, result.getMetadata().getSize());
+        LOG.info("Results: " + result.getMetadata());
     }
 
 }

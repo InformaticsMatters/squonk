@@ -480,7 +480,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         private final CompletableFuture<DatasetMetadata<T>> future = new CompletableFuture<>();
 
         DatasetMetadataGenerator(Stream<T> source) {
-            this.source = derriveStream(source);
+            this.source = deriveStream(source);
         }
 
         /**
@@ -518,7 +518,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
             return JsonHandler.getInstance().marshalStreamToJsonArray(s, gzip);
         }
 
-        private Stream<T> derriveStream(Stream<T> stream) {
+        private Stream<T> deriveStream(Stream<T> stream) {
             AtomicInteger count = new AtomicInteger(0);
             AtomicReference<Class> type = new AtomicReference<>();
             Map<String, Class> mappings = Collections.synchronizedMap(new HashMap<>());
@@ -559,7 +559,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
                     metadata.getValueClassMappings().clear();
                     metadata.getValueClassMappings().putAll(mappings);
                     // clean out metadata for fields that no longer exist
-                    Map<String, Map<String,Object>> props = metadata.getFieldMetaProps();
+                    Map<String, DatasetMetadata.PropertiesHolder> props = metadata.getFieldMetaPropsMap();
                     props.entrySet().removeIf(e -> !mappings.containsKey(e.getKey()));
                 }
                 future.complete(metadata);

@@ -3,14 +3,12 @@ package org.squonk.dataset.transform;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/** Not in use as this invovles converting a Dataset<BasicObject> to Dataset</MoleculeObject> and some
- * refactoring will be need to handle this.
- * Constructor made protected until this is resolved.
+/** Convert the Dataset to a Dataset<MoleculeObject> using the specified field and format
  *
  * @author timbo
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-class ConvertToMoleculeTransform extends AbstractTransform {
+public class ConvertToMoleculeTransform extends AbstractTransform {
 
     private final String structureFieldName;
     private final String structureFormat;

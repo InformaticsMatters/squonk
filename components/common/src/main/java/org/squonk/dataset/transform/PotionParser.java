@@ -84,11 +84,10 @@ class PotionParser {
 
     private static Pattern ROW_ACTIONS = Pattern.compile("\\s*(delete)\\s*(.*)");
     private static Pattern FIELD_ACTIONS = Pattern.compile("\\s*(=|delete|integer|float|double|string|text|molecule|rename|replace)\\s*(.*)");
-    //private static Pattern FIELD_NAME = Pattern.compile("\\s*([\"'])?\\s*(\\w+)\\1?\\s*(.*)");
-    //private static Pattern FIELD_NAME = Pattern.compile("(\\s*)(\\w+)\\s*(.*)");
     private static Pattern FIELD_NAME = Pattern.compile("\\s*((\\w+)|'([^']+)'|\"([^\"]+)\")\\s*(.*)");
     private static Pattern IF = Pattern.compile("\\s*IF\\s*(.*)");
     private static Pattern ASSIGNMENT_IF = Pattern.compile("\\s*(.*)\\s+IF\\s+(.*)");
+    private static Pattern TOKEN = Pattern.compile("\\s*(\\w+)\\s*(.*)");
 
     private boolean readFieldOrRowAction() {
 
@@ -143,6 +142,15 @@ class PotionParser {
             } else if (m.group(4) != null) { // double quotes
                 return m.group(4);
             }
+        }
+        return null;
+    }
+
+    private String readToken() {
+        Matcher m = TOKEN.matcher(currentLineRemaining);
+        if (m.matches()) {
+            currentLineRemaining = m.group(2);
+            return m.group(1);
         }
         return null;
     }
@@ -205,9 +213,23 @@ class PotionParser {
                 }
                 transforms.add(new ConvertFieldTransform(fieldName, String.class));
             } else if ("molecule".equals(action)) {
-                // TODO - handle
-                addError("convert to molecule not yet supported");
-                return false;
+                if (remainder == null || remainder.length() == 0) {
+                    addError("molecule action must specify the structure format");
+                    return false;
+                }
+                String format = readToken();
+                if (format != null && format.length() > 0) {
+                    if (currentLineRemaining == null || currentLineRemaining.length() ==0) {
+                        transforms.add(new ConvertToMoleculeTransform(fieldName, format));
+                    } else {
+                        addError("unexpected extra content for molecule action");
+                        return false;
+                    }
+                } else {
+                    addError("invalid structure format");
+                    return false;
+                }
+                return true;
             } else if ("rename".equals(action)) {
                 if (remainder == null || remainder.length() == 0) {
                     addError("rename action must specify new field name");

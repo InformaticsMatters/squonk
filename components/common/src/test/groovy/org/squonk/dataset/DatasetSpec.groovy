@@ -95,7 +95,7 @@ class DatasetSpec extends Specification {
         ds.generateMetadata()
 
         then:
-        !ds.metadata.fieldMetaProps.containsKey("notpresent")
+        !ds.metadata.fieldMetaPropsMap.containsKey("notpresent")
     }
     
     void "can't read stream twice"() {

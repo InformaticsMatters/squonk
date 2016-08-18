@@ -192,7 +192,7 @@ public class MoleculeUtils {
         return mol;
     }
 
-    public static MoleculeObject derriveMoleculeObject(MoleculeObject old, Molecule neu, String format)
+    public static MoleculeObject deriveMoleculeObject(MoleculeObject old, Molecule neu, String format)
             throws IOException {
         String s = MoleculeUtils.exportAsString(neu, format);
         MoleculeObject mo = new MoleculeObject(old.getUUID(), s, format);

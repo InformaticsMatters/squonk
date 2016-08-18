@@ -8,6 +8,7 @@ import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.transform.*;
 import org.squonk.types.BasicObject;
+import org.squonk.types.MoleculeObject;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -46,7 +47,8 @@ public class ValueTransformerProcessor implements Processor {
     public void process(Exchange exch) throws Exception {
         TypeConverter typeConverter = exch.getContext().getTypeConverter();
         Dataset ds = exch.getIn().getBody(Dataset.class);
-        execute(typeConverter, ds);
+        Dataset neu = execute(typeConverter, ds);
+        exch.getIn().setBody(neu);
     }
 
     /**
@@ -60,9 +62,18 @@ public class ValueTransformerProcessor implements Processor {
      * @param dataset
      * @throws IOException
      */
-    public void execute(TypeConverter typeConverter, Dataset<BasicObject> dataset) throws IOException {
+    public Dataset<? extends BasicObject> execute(TypeConverter typeConverter, Dataset<BasicObject> dataset) throws IOException {
         Stream<BasicObject> stream = addConversions(typeConverter, dataset);
-        dataset.replaceStream(stream);
+
+        Class type = dataset.getType();
+        for (Conversion conversion : conversions) {
+            type = conversion.getObjectType(type);
+        }
+        DatasetMetadata oldMeta = dataset.getMetadata();
+        DatasetMetadata newMeta = new DatasetMetadata(type, null, oldMeta == null ? null : oldMeta.getFieldMetaProps(), -1,  oldMeta == null ? null : oldMeta.getProperties());
+        Dataset newData = new Dataset(type, stream, newMeta);
+
+       return newData;
     }
 
     public Stream<BasicObject> addConversions(TypeConverter typeConverter, Dataset<BasicObject> dataset) throws IOException {
@@ -95,10 +106,10 @@ public class ValueTransformerProcessor implements Processor {
             } else if (tx instanceof ReplaceValueTransform) {
                 ReplaceValueTransform cf = (ReplaceValueTransform) tx;
                 vtp.replaceValue(cf.getFieldName(), cf.getMatch(), cf.getResult());
-            } //else if (tx instanceof ConvertToMoleculeTransform) {
-//                ConvertToMoleculeTransform cf = (ConvertToMoleculeTransform) tx;
-//                vtp.convertToMolecule(cf.getStructureFieldName(), cf.getStructureFormat());
-//            }
+            } else if (tx instanceof ConvertToMoleculeTransform) {
+                ConvertToMoleculeTransform cf = (ConvertToMoleculeTransform) tx;
+                vtp.convertToMolecule(cf.getStructureFieldName(), cf.getStructureFormat());
+            }
             else if (tx instanceof AssignValueTransform) {
                 AssignValueTransform cf = (AssignValueTransform) tx;
                  vtp.assignValue(cf.getFieldName(), cf.getExpression(), cf.getCondition(), cf.getOnError());
@@ -152,10 +163,10 @@ public class ValueTransformerProcessor implements Processor {
         return this;
     }
 
-//    public ValueTransformerProcessor convertToMolecule(String structureField, String sturctureFormat) {
-//        conversions.add(new ConvertToMoleculeConversion(structureField, sturctureFormat));
-//        return this;
-//    }
+    public ValueTransformerProcessor convertToMolecule(String structureField, String sturctureFormat) {
+        conversions.add(new ConvertToMoleculeConversion(structureField, sturctureFormat));
+        return this;
+    }
 
 
     private abstract class Conversion {
@@ -163,6 +174,10 @@ public class ValueTransformerProcessor implements Processor {
         abstract Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream);
 
         abstract void updateMetadata(DatasetMetadata meta);
+
+        Class getObjectType(Class input) {
+            return input;
+        }
 
     }
 
@@ -360,7 +375,7 @@ public class ValueTransformerProcessor implements Processor {
         private Consumer createConsumer() throws IllegalAccessException, InstantiationException {
 
             String clsDef = createConsumerClassDefinition();
-            LOG.info("Built Consumer class:\n" + clsDef);
+            LOG.fine("Built Consumer class:\n" + clsDef);
             Class<Consumer> cls = getGroovyClassLoader().parseClass(clsDef);
             Consumer consumer = cls.newInstance();
             return consumer;
@@ -396,34 +411,44 @@ public class ValueTransformerProcessor implements Processor {
         }
     }
 
-// on hold as the converts BasicObject to MoleculeObject
-//    class ConvertToMoleculeConversion implements Conversion {
-//
-//        final String field, format;
-//
-//        ConvertToMoleculeConversion(String structureField, String structureFormat) {
-//            this.field = structureField;
-//            this.format = structureFormat;
-//        }
-//
-//        @Override
-//        public Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream) {
-//
-//            if (field == null) {
-//                throw new NullPointerException("Field containing structure must be specified");
-//            }
-//            if (format == null) {
-//                throw new NullPointerException("Structure format must be specified");
-//            }
-//
-//            return stream.map((o) -> {
-//                Object mol = o.getValue(field);
-//                MoleculeObject mo = new MoleculeObject(o.getUUID(), mol == null ? null : mol.toString(), format, o.getValues());
-//                o.getValues().remove(field);
-//                return mo;
-//            });
-//        }
-//    }
+
+    class ConvertToMoleculeConversion extends Conversion {
+
+        final String field, format;
+
+        ConvertToMoleculeConversion(String structureField, String structureFormat) {
+            this.field = structureField;
+            this.format = structureFormat;
+        }
+
+        @Override
+        public Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream) {
+
+            if (field == null) {
+                throw new NullPointerException("Field containing structure must be specified");
+            }
+            if (format == null) {
+                throw new NullPointerException("Structure format must be specified");
+            }
+
+            return stream.map((o) -> {
+                Object mol = o.getValue(field);
+                MoleculeObject mo = new MoleculeObject(o.getUUID(), mol == null ? null : mol.toString(), format, o.getValues());
+                mo.getValues().remove(field);
+                return mo;
+            });
+        }
+
+        @Override
+        void updateMetadata(DatasetMetadata meta) {
+            meta.appendDatasetHistory("Converted to molecules using field " + field + " and format " + format);
+        }
+
+        @Override
+        Class getObjectType(Class input) {
+            return MoleculeObject.class;
+        }
+    }
 
     class DeleteRowConversion extends Conversion {
 
@@ -468,7 +493,7 @@ public class ValueTransformerProcessor implements Processor {
     private Predicate createPredicteClass(String condition)
             throws IllegalAccessException, InstantiationException {
         String clsdef = createPredicateClassDefinition(condition);
-        LOG.info("Predicate class: \n" + clsdef);
+        LOG.fine("Predicate class: \n" + clsdef);
         Class<Predicate> cls = getGroovyClassLoader().parseClass(clsdef);
         Predicate predicate = cls.newInstance();
         return predicate;

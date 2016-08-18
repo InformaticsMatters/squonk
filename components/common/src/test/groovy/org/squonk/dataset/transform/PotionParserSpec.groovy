@@ -215,6 +215,23 @@ class PotionParserSpec extends Specification {
         p.getMessages().size() == 0
     }
 
+    void "convert to molecule action"() {
+
+        def potion = "foo molecule smiles"
+        PotionParser p = new PotionParser(potion, [foo:String.class])
+
+        when:
+        p.parse()
+        def transforms = p.transforms
+
+        then:
+        transforms.size() == 1
+        transforms[0].class == ConvertToMoleculeTransform.class
+        transforms[0].structureFieldName == 'foo'
+        transforms[0].structureFormat == 'smiles'
+        p.getMessages().size() == 0
+    }
+
     void "rename field action"() {
 
         def potion = "foo rename bar"
@@ -232,20 +249,5 @@ class PotionParserSpec extends Specification {
         p.getMessages().size() == 0
     }
 
-    void "regexp"() {
-
-        Pattern p = Pattern.compile("\\s*(.*)\\s+IF\\s+(.*)");
-
-        when:
-        Matcher m = p.matcher(' field2 * 2 IF field3 == null')
-
-        then:
-        m.matches()
-        println m.group(1)
-        println m.group(2)
-        //println m.group(3)
-
-
-    }
 
 }
