@@ -499,7 +499,20 @@ class NotebookPostgresClient implements NotebookVariableClient {
         }
     }
 
-    // ------------------- private implementation methods -----------------------
+    @Override
+    void deleteVariable(Long notebookId, Long editableId, Long cellId, String variableName) throws Exception {
+        Sql db = createSql()
+        try {
+            InputStream result = null
+            db.withTransaction {
+                log.info("Deleting variable $editableId, $cellId, $variableName")
+                db.executeUpdate("DELETE FROM users.nb_variable WHERE source_id=$editableId AND cell_id=$cellId AND var_name=$variableName")
+            }
+        } finally {
+            db.close()
+        }
+    }
+// ------------------- private implementation methods -----------------------
 
     protected Sql createSql() {
         new Sql(dataSource.getConnection())

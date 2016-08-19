@@ -107,11 +107,11 @@ public class VariableManager {
         }
 
         String generateTextKey(String key) {
-            return "T" + "#" + notebookId + "#" + sourceId + "#" + cellId + "#" + variableName + "#" + key;
+            return "T#" + notebookId + "#" + sourceId + "#" + cellId + "#" + variableName + "#" + key;
         }
 
         String generateStreamKey(String key) {
-            return "S" + "#" + notebookId + "#" + sourceId + "#" + cellId + "#" + variableName + "#" + key;
+            return "S#" + notebookId + "#" + sourceId + "#" + cellId + "#" + variableName + "#" + key;
         }
 
         @Override
@@ -141,6 +141,7 @@ public class VariableManager {
             }
         }
 
+
         @Override
         public void writeStreamValue(InputStream value, String key) throws Exception {
             String storeKey = generateStreamKey(key);
@@ -150,6 +151,12 @@ public class VariableManager {
             } else {
                 tmpValues.put(storeKey, IOUtils.convertStreamToBytes(value));
             }
+        }
+
+        @Override
+        public void deleteVariable() throws Exception {
+            tmpValues.entrySet().removeIf(e -> e.getKey().startsWith("T#" + notebookId + "#" + sourceId + "#" + cellId + "#" + variableName + "#")
+            || e.getKey().startsWith("S#" + notebookId + "#" + sourceId + "#" + cellId + "#" + variableName + "#"));
         }
     }
 

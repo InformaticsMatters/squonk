@@ -115,6 +115,11 @@ public interface StepDefinitionConstants {
          String OPTION_TRANSFORMS = "transformDefinitions";
     }
 
+    interface DataTransformPotion {
+        String CLASSNAME = "org.squonk.execution.steps.impl.DataTransformPotionStep";
+        String OPTION_POTION = "potion";
+    }
+
     interface DockerProcessDataset {
          String CLASSNAME = "org.squonk.execution.steps.impl.DockerProcessDatasetStep";
          String OPTION_DOCKER_COMMAND  = "dockerCommand";

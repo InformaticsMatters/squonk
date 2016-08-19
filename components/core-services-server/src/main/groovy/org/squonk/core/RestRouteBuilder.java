@@ -48,7 +48,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
     private static final String PARENT = "parent";
     private static final String EDITABLEID = "editableid";
     private static final String DESCRIPTION = "description";
-    private static final String NAME ="name";
+    private static final String NAME = "name";
     private static final String CELLID = "cellid";
     private static final String VARNAME = "varname";
     private static final String KEY = "key";
@@ -575,7 +575,37 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     }
 
                 })
-                .endRest();
+                .endRest()
+                .delete("/{notebookid}/v/{editableid}/{cellid}/{varname}").description("Delete a variable")
+                .bindingMode(RestBindingMode.off)
+                .param().name(NOTEBOOKID).type(path).description("The notebook ID").dataType("long").required(true).endParam()
+                .param().name(VARNAME).type(path).description("The name of the variable").dataType("string").required(true).endParam()
+                .param().name(EDITABLEID).type(path).description("The editable ID").dataType("long").required(true).endParam()
+                .param().name(CELLID).type(path).description("The cell ID that produces the value").dataType("long").required(true).endParam().route()
+                .process((Exchange exch) -> {
+                    String varname = exch.getIn().getHeader(VARNAME, String.class);
+                    Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
+                    Long editableid = exch.getIn().getHeader(EDITABLEID, Long.class);
+                    Long cellid = exch.getIn().getHeader(CELLID, Long.class);
+
+                    LOG.info("DELETE: " + notebookid + " " + editableid + " " + cellid + " " + varname);
+
+                    if (notebookid == null) {
+                        throw new IllegalArgumentException("Must specify notebookid");
+                    }
+                    if (editableid == null) {
+                        throw new IllegalArgumentException("Must specify editableid");
+                    }
+                    if (cellid == null) {
+                        throw new IllegalArgumentException("Must specify cellid");
+                    }
+                    if (varname == null) {
+                        throw new IllegalArgumentException("Must specify variable name");
+                    }
+
+                    notebookClient.deleteVariable(notebookid, editableid, cellid, varname);
+
+                });
 
         from("seda:notifyJobStatusUpdate")
                 .setHeader("rabbitmq.ROUTING_KEY", simple("users.${header[" + HEADER_SQUONK_USERNAME + "]}.jobstatus"))

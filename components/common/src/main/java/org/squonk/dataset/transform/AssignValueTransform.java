@@ -16,10 +16,10 @@ public class AssignValueTransform extends AbstractTransform {
     private final String onError;
 
 
-    protected AssignValueTransform(@JsonProperty("fieldName")String fieldName,
-                                   @JsonProperty("expression")String expression,
-                                   @JsonProperty("condition")String condition,
-                                   @JsonProperty("onError")String onError) {
+    protected AssignValueTransform(@JsonProperty("fieldName") String fieldName,
+                                   @JsonProperty("expression") String expression,
+                                   @JsonProperty("condition") String condition,
+                                   @JsonProperty("onError") String onError) {
         this.fieldName = fieldName;
         this.expression = expression;
         this.condition = condition;
@@ -49,4 +49,5 @@ public class AssignValueTransform extends AbstractTransform {
     public String getOnError() {
         return onError;
     }
+
 }

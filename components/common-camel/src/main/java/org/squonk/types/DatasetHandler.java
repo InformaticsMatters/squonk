@@ -12,6 +12,8 @@ import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -77,9 +79,31 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
     @Override
     public void writeVariable(Dataset dataset, WriteContext context) throws Exception {
         Dataset.DatasetMetadataGenerator generator = dataset.createDatasetMetadataGenerator();
-        try (Stream s = generator.getAsStream(); InputStream is = generator.getAsInputStream(s, false);) {
+        Stream s = null;
+        InputStream is = null;
+        JsonHandler.MarshalData data = null;
+        try {
+             s = generator.getAsStream();
+             data = generator.marshalData(s, false);
+             is = data.getInputStream();
             context.writeStreamValue(is);
-        } // stream now closed
+            try {
+                data.getFuture().get();
+            } catch (ExecutionException ex) { // reading Stream failed?
+                //LOG.log(Level.SEVERE, "Writing failed", ex);
+                try {
+                    // clear the variable
+                    context.deleteVariable();
+                } catch (Exception e) {
+                    LOG.log(Level.SEVERE, "Failed to delete variable after error", e);
+                }
+                throw ex;
+            }
+        } finally {// stream now closed
+            if (s != null ) { s.close(); }
+            if (is != null ) { is.close(); }
+        }
+
         DatasetMetadata md = generator.getDatasetMetadata();
         String json = JsonHandler.getInstance().objectToJson(md);
         context.writeTextValue(json);

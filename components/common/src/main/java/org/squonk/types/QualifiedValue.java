@@ -1,6 +1,8 @@
 package org.squonk.types;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,7 +16,7 @@ import java.util.regex.Pattern;
  * first answer is probably the right one.
  *
  */
-public class QualifiedValue<T extends Number> implements Comparable<T> {
+public class QualifiedValue<T extends Number> implements Comparable<T>, Serializable {
 
     private static final Pattern patt = Pattern.compile("\\s*(=|<|>|~|<=|>=)?\\s*(\\-?[0-9,\\.]+)\\s*");
 

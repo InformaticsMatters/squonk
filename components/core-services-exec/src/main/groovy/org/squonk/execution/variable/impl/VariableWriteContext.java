@@ -32,9 +32,16 @@ public class VariableWriteContext implements VariableHandler.WriteContext {
         client.writeTextValue(notebookId, editableId, cellId, variableName, val, key);
     }
 
+
     @Override
     public void writeStreamValue(InputStream val, String key) throws Exception {
         client.writeStreamValue(notebookId, editableId, cellId, variableName, IOUtils.getGzippedInputStream(val), key);
     }
+
+    @Override
+    public void deleteVariable() throws Exception {
+
+    }
+
 
 }

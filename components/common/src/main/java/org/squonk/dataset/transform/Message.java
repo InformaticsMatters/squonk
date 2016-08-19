@@ -22,4 +22,9 @@ public class Message {
     public Severity getLevel() {
         return level;
     }
+
+    @Override
+    public String toString() {
+        return level + ": " + message;
+    }
 }

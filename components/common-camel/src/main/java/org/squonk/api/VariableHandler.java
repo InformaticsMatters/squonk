@@ -55,5 +55,6 @@ public interface VariableHandler<T> {
         void writeStreamValue(InputStream value, String key) throws Exception;
         default void writeTextValue(String value) throws Exception { writeTextValue(value, null);}
         default void writeStreamValue(InputStream value) throws Exception { writeStreamValue(value, null);}
+        void deleteVariable() throws Exception;
     }
 }

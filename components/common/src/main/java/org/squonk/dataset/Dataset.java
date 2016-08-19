@@ -379,7 +379,8 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
                 return is;
             }
         } else {
-            return JsonHandler.getInstance().marshalStreamToJsonArray(getStream(), gzip);
+            JsonHandler.MarshalData data = JsonHandler.getInstance().marshalData(getStream(), gzip);
+            return data.getInputStream();
         }
     }
 
@@ -511,12 +512,18 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
          * the metadata.
          * @param s
          * @param gzip
-         * @return
-         * @throws IOException 
+         * @return A holder class for the InputStream and the Future that allows Exceptions to be handled
+         * @throws IOException
+         * @deprecated Use marshalData as this allows exceptions to be handled
          */
         public InputStream getAsInputStream(Stream<T> s, boolean gzip) throws IOException {
             return JsonHandler.getInstance().marshalStreamToJsonArray(s, gzip);
         }
+
+        public JsonHandler.MarshalData marshalData(Stream<T> s, boolean gzip) throws IOException {
+            return JsonHandler.getInstance().marshalData(s, gzip);
+        }
+
 
         private Stream<T> deriveStream(Stream<T> stream) {
             AtomicInteger count = new AtomicInteger(0);

@@ -154,4 +154,7 @@ public interface VariableClient {
      * @throws Exception
      */
     void writeStreamValue(Long notebookId, Long editableId, Long cellId, String variableName, InputStream value, String key) throws Exception;
+
+    void deleteVariable(Long notebookId, Long editableId, Long cellId, String variableName) throws Exception;
+
 }

@@ -18,13 +18,14 @@ import java.util.Spliterators;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import java.util.zip.GZIPOutputStream;
 
 /**
- *
  * @author timbo
  */
 public class JsonHandler {
@@ -132,19 +133,62 @@ public class JsonHandler {
         final OutputStream pout = new PipedOutputStream(pis);
         final OutputStream out = (gzip ? new GZIPOutputStream(pout) : pout);
         final ExecutorService executor = Executors.newSingleThreadExecutor();
-        Callable c = (Callable) () -> {
-            marshalStreamToJsonArray(stream, out);
-            return true;
+        Callable<Boolean> c = new Callable() {
+            public Boolean call() throws Exception {
+                marshalStreamToJsonArray(stream, out);
+                return true;
+            }
         };
-        executor.submit(c);
+        Future<Boolean> future = executor.submit(c);
         executor.shutdown();
         return pis;
+    }
+
+    /** Holder class that allows InputStream and Future to be returned. In the case of an error writing to the InputStream
+     * the Future.get() method will throw an ExecutionException with the thrown exception. Note that this will only happen
+     * after the InputStream is read so some rollback may be required
+     *
+     */
+    public class MarshalData {
+        private final InputStream inputStream;
+        private final Future<Boolean> future;
+
+        MarshalData(InputStream inputStream, Future<Boolean> future) {
+            this.inputStream = inputStream;
+            this.future = future;
+        }
+
+        public InputStream getInputStream() {
+            return inputStream;
+        }
+
+        public Future<Boolean> getFuture() {
+            return future;
+        }
+    }
+
+    public <T> MarshalData marshalData(Stream<T> stream, boolean gzip) throws IOException {
+        final PipedInputStream pis = new PipedInputStream();
+        final OutputStream pout = new PipedOutputStream(pis);
+        final OutputStream out = (gzip ? new GZIPOutputStream(pout) : pout);
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        Callable<Boolean> c = new Callable() {
+            public Boolean call() throws Exception {
+                marshalStreamToJsonArray(stream, out);
+                return true;
+            }
+        };
+        Future<Boolean> future = executor.submit(c);
+        executor.shutdown();
+
+        return new MarshalData(pis, future);
     }
 
     public <T> void marshalStreamToJsonArray(Stream<T> stream, OutputStream out) throws IOException {
 
         ObjectWriter ow = mapper.writer();
         try (SequenceWriter sw = ow.writeValuesAsArray(out)) {
+
             stream.forEachOrdered((i) -> {
                 //LOG.info("Writing to json: "  + i);
                 try {
@@ -153,6 +197,7 @@ public class JsonHandler {
                     throw new RuntimeException("Failed to write object: " + i, ex);
                 }
             });
+
         } finally {
             out.close();
             stream.close();
@@ -163,9 +208,9 @@ public class JsonHandler {
      * Use the metadata to deserialize the JSON in the InputStream to a Dataset
      * of the right type.
      *
-     * @param <T> The type of objects in the Dataset
+     * @param <T>      The type of objects in the Dataset
      * @param metadata The metadata describing the Dataset
-     * @param json The JSON
+     * @param json     The JSON
      * @return
      * @throws IOException
      */

@@ -54,9 +54,8 @@ public class ValueTransformerProcessor implements Processor {
     /**
      * Add operations to perform the conversions, updating the dataset with the
      * transformed stream, and adding appropriate field metadata. NOTE: this does NOT perform a terminal operation on
-     * the stream, so after calling this method the values are not yet
-     * transformed. The resulting stream must be processed by performing a
-     * terminal operation.
+     * the stream, so after calling this method the values are not yet transformed. The resulting stream must be processed
+     * by performing a terminal operation.
      *
      * @param typeConverter
      * @param dataset
@@ -70,15 +69,16 @@ public class ValueTransformerProcessor implements Processor {
             type = conversion.getObjectType(type);
         }
         DatasetMetadata oldMeta = dataset.getMetadata();
-        DatasetMetadata newMeta = new DatasetMetadata(type, null, oldMeta == null ? null : oldMeta.getFieldMetaProps(), -1,  oldMeta == null ? null : oldMeta.getProperties());
+        DatasetMetadata newMeta = new DatasetMetadata(type, null, oldMeta == null ? null : oldMeta.getFieldMetaProps(), -1, oldMeta == null ? null : oldMeta.getProperties());
         Dataset newData = new Dataset(type, stream, newMeta);
 
-       return newData;
+        return newData;
     }
 
     public Stream<BasicObject> addConversions(TypeConverter typeConverter, Dataset<BasicObject> dataset) throws IOException {
         Stream<BasicObject> stream = dataset.getStream();
         for (Conversion conversion : conversions) {
+            LOG.info("Handling conversion: " + conversion);
             stream = conversion.execute(typeConverter, stream);
             if (dataset.getMetadata() != null) {
                 conversion.updateMetadata(dataset.getMetadata());
@@ -102,17 +102,16 @@ public class ValueTransformerProcessor implements Processor {
                 vtp.convertValueName(rf.getFieldName(), rf.getNewName());
             } else if (tx instanceof ConvertFieldTransform) {
                 ConvertFieldTransform cf = (ConvertFieldTransform) tx;
-                vtp.convertValueType(cf.getFieldName(), cf.getNewType(), cf.getGenericType());
+                vtp.convertValueType(cf.getFieldName(), cf.getNewType(), cf.getGenericType(), cf.getOnError());
             } else if (tx instanceof ReplaceValueTransform) {
                 ReplaceValueTransform cf = (ReplaceValueTransform) tx;
                 vtp.replaceValue(cf.getFieldName(), cf.getMatch(), cf.getResult());
             } else if (tx instanceof ConvertToMoleculeTransform) {
                 ConvertToMoleculeTransform cf = (ConvertToMoleculeTransform) tx;
                 vtp.convertToMolecule(cf.getStructureFieldName(), cf.getStructureFormat());
-            }
-            else if (tx instanceof AssignValueTransform) {
+            } else if (tx instanceof AssignValueTransform) {
                 AssignValueTransform cf = (AssignValueTransform) tx;
-                 vtp.assignValue(cf.getFieldName(), cf.getExpression(), cf.getCondition(), cf.getOnError());
+                vtp.assignValue(cf.getFieldName(), cf.getExpression(), cf.getCondition(), cf.getOnError());
             }
         }
         return vtp;
@@ -130,10 +129,10 @@ public class ValueTransformerProcessor implements Processor {
     }
 
     public ValueTransformerProcessor convertValueType(String fldName, Class newClass) {
-        return convertValueType(fldName, newClass, null);
+        return convertValueType(fldName, newClass, null, null);
     }
 
-    public ValueTransformerProcessor convertValueType(String fldName, Class newClass, Class genericType) {
+    public ValueTransformerProcessor convertValueType(String fldName, Class newClass, Class genericType, String onError) {
 
         if (genericType != null) {
             // check that its got the right constructor to save nasty exceptions later
@@ -144,12 +143,12 @@ public class ValueTransformerProcessor implements Processor {
             }
         }
 
-        conversions.add(new TypeConversion(fldName, newClass, genericType));
+        conversions.add(new TypeConversion(fldName, newClass, genericType, onError));
         return this;
     }
 
     public ValueTransformerProcessor convertValueName(String oldName, String newName) {
-        conversions.add(new NameConversion(oldName, newName));
+        conversions.add(new RenameFieldConversion(oldName, newName));
         return this;
     }
 
@@ -215,6 +214,11 @@ public class ValueTransformerProcessor implements Processor {
             });
         }
 
+        @Override
+        public String toString() {
+            return "ReplaceValueConversion [fldName:" + fldName + " match: " + match + " result: " + result + "]";
+        }
+
     }
 
     class TypeConversion extends Conversion {
@@ -222,11 +226,15 @@ public class ValueTransformerProcessor implements Processor {
         final String fldName;
         final Class newClass;
         final Class genericClass;
+        final String onError;
 
-        TypeConversion(String fldName, Class newClass, Class genericClass) {
+        TypeConversion(String fldName, Class newClass, Class genericClass, String onError) {
+            validateOnError(onError);
+
             this.fldName = fldName;
             this.newClass = newClass;
             this.genericClass = genericClass;
+            this.onError = onError;
         }
 
         @Override
@@ -242,15 +250,31 @@ public class ValueTransformerProcessor implements Processor {
         public Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream) {
 
             return stream.peek((o) -> {
+
                 Object old = o.getValue(fldName);
                 if (old != null) {
-                    Object neu = null;
-                    if (genericClass != null) {
-                        neu = genericCreate(old, newClass, genericClass);
-                    } else {
-                        neu = converter.convertTo(newClass, old);
+                    try {
+                        Object neu = null;
+                        if (genericClass != null) {
+                            neu = genericCreate(old, newClass, genericClass);
+                        } else {
+                            neu = converter.convertTo(newClass, old);
+                        }
+                        o.putValue(fldName, neu);
+                    } catch (Exception e) {
+                        if (onError == null || "fail".equals(onError)) {
+                            throw e;
+                        } else if ("continue".equals(onError)) {
+                            o.getValues().remove(fldName);
+                            String current = o.getValue(errorFieldName, String.class);
+                            String msg = "Failed to convert " + old + " for field " + fldName + " to " + newClass.getSimpleName();
+                            if (current == null) {
+                                o.putValue(errorFieldName, msg);
+                            } else {
+                                o.putValue(errorFieldName, current + "\n" + msg);
+                            }
+                        }
                     }
-                    o.putValue(fldName, neu);
                 }
             });
         }
@@ -263,21 +287,30 @@ public class ValueTransformerProcessor implements Processor {
                 throw new RuntimeException("Failed to instantiate value", e);
             }
         }
+
+        @Override
+        public String toString() {
+            return "TypeConversion [fldName:" + fldName + " newClass: " + newClass + " genericClass: " + genericClass + " onError: " + onError + "]";
+        }
     }
 
-    class NameConversion extends Conversion {
+    class RenameFieldConversion extends Conversion {
 
         final String oldName;
         final String newName;
 
-        NameConversion(String oldName, String newName) {
+        RenameFieldConversion(String oldName, String newName) {
             this.oldName = oldName;
             this.newName = newName;
         }
 
         @Override
         void updateMetadata(DatasetMetadata meta) {
-            meta.appendFieldHistory(oldName, "Renamed from  " + oldName + " to " + newName);
+            String old = (String) meta.getFieldMetaProp(oldName, DatasetMetadata.PROP_HISTORY);
+            if (old != null) {
+                meta.appendFieldHistory(newName, old);
+            }
+            meta.appendFieldHistory(newName, "Renamed from  " + oldName + " to " + newName);
         }
 
         @Override
@@ -290,6 +323,11 @@ public class ValueTransformerProcessor implements Processor {
                     o.getValues().remove(oldName);
                 }
             });
+        }
+
+        @Override
+        public String toString() {
+            return "RenameFieldConversion [oldName:" + oldName + " newName: " + newName + "]";
         }
     }
 
@@ -305,7 +343,7 @@ public class ValueTransformerProcessor implements Processor {
         @Override
         void updateMetadata(DatasetMetadata meta) {
             if (condition != null) {
-                meta.appendFieldHistory(fldName,  "Deleted values matching condition: " + condition);
+                meta.appendFieldHistory(fldName, "Deleted values matching condition: " + condition);
             } else {
                 meta.appendDatasetHistory("Deleted field " + fldName);
             }
@@ -331,6 +369,11 @@ public class ValueTransformerProcessor implements Processor {
                 }
             }
         }
+
+        @Override
+        public String toString() {
+            return "DeleteFieldConversion [fldName:" + fldName + " condition: " + condition + "]";
+        }
     }
 
     class AssignConversion extends Conversion {
@@ -341,6 +384,7 @@ public class ValueTransformerProcessor implements Processor {
         final String onError;
 
         AssignConversion(String fldName, String expression, String condition, String onError) {
+            validateOnError(onError);
             this.fldName = fldName;
             this.expression = expression;
             this.condition = condition;
@@ -351,6 +395,7 @@ public class ValueTransformerProcessor implements Processor {
         void updateMetadata(DatasetMetadata meta) {
             if (meta.getValueClassMappings().get(fldName) == null) {
                 meta.putFieldMetaProp(fldName, DatasetMetadata.PROP_CREATED, meta.now());
+                meta.putFieldMetaProp(fldName, DatasetMetadata.PROP_SOURCE, "Squonk assignment potion");
             }
             if (condition == null) {
                 meta.appendFieldHistory(fldName, "Assignment: " + expression);
@@ -375,7 +420,7 @@ public class ValueTransformerProcessor implements Processor {
         private Consumer createConsumer() throws IllegalAccessException, InstantiationException {
 
             String clsDef = createConsumerClassDefinition();
-            LOG.fine("Built Consumer class:\n" + clsDef);
+            LOG.info("Built Consumer class:\n" + clsDef);
             Class<Consumer> cls = getGroovyClassLoader().parseClass(clsDef);
             Consumer consumer = cls.newInstance();
             return consumer;
@@ -398,7 +443,7 @@ public class ValueTransformerProcessor implements Processor {
 
             if ("continue".equals(onError)) {
                 b1.append(wrapErrorHandler(b2.toString(), "Failed to evaluate field " + fldName));
-            } else if ("fail".equals(onError)) {
+            } else if (onError == null || "fail".equals(onError)) {
                 b1.append(b2.toString());
             }
 
@@ -408,6 +453,11 @@ public class ValueTransformerProcessor implements Processor {
 
             b1.append("\n    }\n  }\n}");
             return b1.toString();
+        }
+
+        @Override
+        public String toString() {
+            return "AssignConversion [fldName:" + fldName + " expression: " + expression + " condition: " + condition + " orError: " + onError + "]";
         }
     }
 
@@ -448,6 +498,11 @@ public class ValueTransformerProcessor implements Processor {
         Class getObjectType(Class input) {
             return MoleculeObject.class;
         }
+
+        @Override
+        public String toString() {
+            return "ConvertToMoleculeConversion [field:" + field + " format: " + format + "]";
+        }
     }
 
     class DeleteRowConversion extends Conversion {
@@ -467,7 +522,6 @@ public class ValueTransformerProcessor implements Processor {
             }
         }
 
-
         @Override
         public Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream) {
             Predicate p;
@@ -484,16 +538,21 @@ public class ValueTransformerProcessor implements Processor {
             if (condition == null) {
                 return o -> false;
             } else {
-                Predicate predicate = createPredicteClass(condition);
+                Predicate predicate = createPredicteClass("!(" + condition + ")");
                 return predicate;
             }
+        }
+
+        @Override
+        public String toString() {
+            return "DeleteRowConversion [condition:" + condition + "]";
         }
     }
 
     private Predicate createPredicteClass(String condition)
             throws IllegalAccessException, InstantiationException {
         String clsdef = createPredicateClassDefinition(condition);
-        LOG.fine("Predicate class: \n" + clsdef);
+        LOG.info("Predicate class: \n" + clsdef);
         Class<Predicate> cls = getGroovyClassLoader().parseClass(clsdef);
         Predicate predicate = cls.newInstance();
         return predicate;
@@ -526,6 +585,19 @@ public class ValueTransformerProcessor implements Processor {
                 .append(" + ']' )\n}");
 
         return b.toString();
+    }
+
+    /**
+     * @param onError
+     * @throws IllegalArgumentException if not fail or continue
+     */
+    void validateOnError(String onError) {
+        if (onError != null) {
+            if ("fail".equals(onError) || "continue".equals(onError)) {
+                return;
+            }
+            throw new IllegalArgumentException("Bad onError value: " + onError);
+        }
     }
 
 }

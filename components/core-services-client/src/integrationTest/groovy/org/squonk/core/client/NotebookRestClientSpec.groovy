@@ -241,6 +241,26 @@ class NotebookRestClientSpec extends Specification {
         s2 == "hello mars"
     }
 
+    void "delete variable"() {
+
+        when:
+        client.writeTextValue(editable2.notebookId, editable2.id, 1, "var3", "bananas")
+        def t1 = client.readTextValue(editable2.notebookId, editable2.id, 1, "var3")
+        client.deleteVariable(editable2.notebookId, editable2.id, 1, "var3")
+        boolean deleted
+        try {
+            // this will now throw exception
+            client.readTextValue(editable2.notebookId, editable2.id, 1, "var3")
+            deleted = false
+        } catch (Exception e) {
+            deleted = true
+        }
+
+        then:
+        t1 == "bananas"
+        deleted == true
+    }
+
 //    void "read text variable with label"() {
 //
 //        def ed1 = client.createSavepoint(editable2.notebookId, editable2.id) // savepoint id is editable2.id

@@ -37,7 +37,7 @@ public class DatasetServiceExecutorStep extends AbstractStep {
         Dataset<MoleculeObject> dataset = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
         String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
 
-        InputStream input = JsonHandler.getInstance().marshalStreamToJsonArray(dataset.getStream(), false);
+        InputStream is = JsonHandler.getInstance().marshalStreamToJsonArray(dataset.getStream(), false);
 //            String inputData = IOUtils.convertStreamToString(input);
 //            LOG.info("Input: " + inputData);
 //            input = new ByteArrayInputStream(inputData.getBytes());
@@ -50,7 +50,7 @@ public class DatasetServiceExecutorStep extends AbstractStep {
         // send for execution
         statusMessage = "Posting request ...";
         Map<String, Object> responseHeaders = new HashMap<>();
-        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, requestHeaders, responseHeaders, options);
+        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, is, requestHeaders, responseHeaders, options);
         statusMessage = "Handling results ...";
 
 //        String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(output), 1000);

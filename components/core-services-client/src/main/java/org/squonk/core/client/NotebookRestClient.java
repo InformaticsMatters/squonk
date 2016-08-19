@@ -321,6 +321,16 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         }
     }
 
+    @Override
+    public void deleteVariable(Long notebookId, Long editableId, Long cellId, String variableName) throws IOException {
+        String url =  baseUrl + "/" + notebookId + "/v/" + editableId + "/" + cellId + "/" + variableName;
+        LOG.info("DELETE: " + url);
+        URIBuilder b = new URIBuilder().setPath(url);
+        executeDelete(b);
+        LOG.info("deleteVariable completed");
+    }
+
+
     private URIBuilder createURIBuilder(Long notebookId, Long sourceId, Long cellId, String variableName, String key, VarType t) {
         return new URIBuilder().setPath(buildVariableUrl(notebookId, sourceId, cellId, variableName, key, t));
     }

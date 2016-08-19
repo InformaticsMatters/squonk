@@ -417,6 +417,20 @@ class NotebookPostgresClientSpec extends Specification {
 //        var == 'val3'
 //    }
 
+    void "delete variable"() {
+
+        when:
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
+        client.writeTextValue(eds[0].notebookId, eds[0].id, 1, 'var88', 'val88')
+        String var1 = client.readTextValue(eds[0].notebookId, eds[0].id, 1, 'var88')
+        client.deleteVariable(eds[0].notebookId, eds[0].id, 1, 'var88')
+        String var2 = client.readTextValue(eds[0].notebookId, eds[0].id, 1, 'var88')
+
+        then:
+        var1 == 'val88'
+        var2 == null
+    }
+
     void "delete stale variable"() {
 
         Sql db = client.createSql()
@@ -440,6 +454,16 @@ class NotebookPostgresClientSpec extends Specification {
     private void dumpNotebookDetails(Long nbid) {
         Sql db = client.createSql()
         db.eachRow("SELECT id, parent_id, type, nb_definition FROM users.nb_version WHERE notebook_id=$nbid") {
+            println it
+        }
+
+    }
+
+
+    private void dumpVariableDetails(Long sourceId) {
+        Sql db = client.createSql()
+        println "Variable details for $sourceId"
+        db.eachRow("SELECT id, source_id, cell_id, var_name, var_key FROM users.nb_variable WHERE source_id=$sourceId") {
             println it
         }
 

@@ -42,15 +42,28 @@ public class TransformDefinitions {
      * <field> delete
      * <field> delete IF <predicate>
      *
+     * # rename field
      * <field> rename <new name>
      *
-     * <field> integer
-     * <field> float
-     * <field> double
-     * <field> string
-     *
+     * # value replacement
      * <field> replace <from value> <to value>
      *
+     * # data type conversions
+     * <field> integer
+     * <field> integer ONERROR (fail|continue)
+     * <field> float
+     * <field> float ONERROR (fail|continue)
+     * <field> double
+     * <field> double ONERROR (fail|continue)
+     * <field> (string|text)
+     * <field> (string|text) ONERROR (fail|continue)
+     * <field> qvalue (float|double|integer)
+     * <field> qvalue (float|double|integer) ONERROR (fail|continue)
+     *
+     * # convert BasicObject to MoleculeObject
+     * <field> molecule <format>
+     *
+     * # Assignment
      * <field> = <expression>
      * <field> = <expression> IF <predicate>
      * <field> = <expression> IF <predicate> ONERROR (fail|continue)
@@ -64,11 +77,6 @@ public class TransformDefinitions {
      * @return The PotionParser from which the Transforms and/or info, warnings and errors can be retrieved.
      */
     public static PotionParser parse(String potion, Map<String, Class> fieldDefs) {
-        /* TODO - other statements to support:
-
-             <field> molecule <format>
-
-         */
 
         PotionParser p = new PotionParser(potion, fieldDefs);
         p.parse();
@@ -95,8 +103,8 @@ public class TransformDefinitions {
         return this;
     }
 
-    public TransformDefinitions convertField(String fieldName, Class type, Class genericType) {
-        transforms.add(new ConvertFieldTransform(fieldName, type, genericType));
+    public TransformDefinitions convertField(String fieldName, Class type, Class genericType, String onError) {
+        transforms.add(new ConvertFieldTransform(fieldName, type, genericType, onError));
         return this;
     }
 

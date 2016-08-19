@@ -23,8 +23,7 @@ class ValueTransformerProcessorSpec extends Specification {
     Dataset ds = new Dataset(BasicObject.class, objs, new DatasetMetadata(BasicObject.class))
     
     void "basic convert types"() {
-        
-       
+
         ValueTransformerProcessor converter = new ValueTransformerProcessor()
         .convertValueType('one', Integer.class)
         .convertValueType('two', Float.class)
@@ -38,6 +37,30 @@ class ValueTransformerProcessorSpec extends Specification {
         nue.items[0].getValue('two') instanceof Float
         nue.items[0].getValue('with space') == 99
     }
+
+    void "convert types continue on error"() {
+
+        Dataset data = new Dataset(BasicObject.class,
+                [
+                        new BasicObject([one:'1', two:'2.4']),
+                        new BasicObject([one:'2', two:'>200'])
+                ], new DatasetMetadata(BasicObject.class))
+
+        ValueTransformerProcessor converter = new ValueTransformerProcessor()
+                .convertValueType('one', Integer.class, null, "continue")
+                .convertValueType('two', Float.class, null, "continue")
+
+        when:
+        def nue = converter.execute(context.getTypeConverter(), data)
+
+        then:
+        nue.items.size() == 2
+        nue.items[0].getValue('one') instanceof Integer
+        nue.items[0].getValue('two') instanceof Float
+        nue.items[1].getValue('one') instanceof Integer
+        nue.items[1].getValue('two') == null
+    }
+
 
     void "basic delete values"() {
 
@@ -176,8 +199,8 @@ class ValueTransformerProcessorSpec extends Specification {
 
 
         ValueTransformerProcessor converter = new ValueTransformerProcessor()
-                .convertValueType('one', QualifiedValue.class, Integer.class)
-                .convertValueType('two', QualifiedValue.class, Float.class)
+                .convertValueType('one', QualifiedValue.class, Integer.class, null)
+                .convertValueType('two', QualifiedValue.class, Float.class, null)
 
         when:
         def nue = converter.execute(context.getTypeConverter(), ds)
@@ -198,8 +221,28 @@ class ValueTransformerProcessorSpec extends Specification {
         nue.items[0].getValue('two').qualifier == QualifiedValue.Qualifier.EQUALS
         nue.items[1].getValue('one').qualifier == QualifiedValue.Qualifier.LESS_THAN
         nue.items[1].getValue('two').qualifier == QualifiedValue.Qualifier.LESS_THAN
+    }
+
+    void "convert qualified values continue onError"() {
+
+        Dataset ds = new Dataset(BasicObject.class, [
+                new BasicObject([one:'1', two:'random text']),
+                new BasicObject([one:'<1', two:'<3.4'])
+        ])
 
 
+        ValueTransformerProcessor converter = new ValueTransformerProcessor()
+                .convertValueType('two', QualifiedValue.class, Float.class, "continue")
+
+        when:
+        def nue = converter.execute(context.getTypeConverter(), ds)
+
+        then:
+        nue.items.size() == 2
+
+        nue.items[0].getValue('two') == null
+        nue.items[0].getValue('TransformErrors') != null
+        nue.items[1].getValue('two') instanceof QualifiedValue
     }
 
     void "basic delete rows"() {
@@ -225,7 +268,7 @@ class ValueTransformerProcessorSpec extends Specification {
 
         then:
         nue.items.size() == 1
-        nue.items.size() == 1
+        nue.items[0].getValue('one') == '2'
     }
 
     void "convert to molecule"() {
@@ -260,7 +303,7 @@ class ValueTransformerProcessorSpec extends Specification {
                 ])
 
         def nue = new ValueTransformerProcessor()
-                .assignValue('foo', expression, condition, "fail")
+                .assignValue('foo', expression, condition, onError)
                 .execute(context.getTypeConverter(), data)
 
         expect:
@@ -268,11 +311,12 @@ class ValueTransformerProcessorSpec extends Specification {
         nue.items[1].values.foo == rec1
 
         where:
-        expression         | condition | rec0  | rec1
-        "one + 10"         | null      | 11    | 12
-        "one + two"        | null      | 3.4   | 5.4
-        "one + 10"         | "two < 3" | 11    | null
-        "one + two"        | "two < 3" | 3.4   | null
+        expression         | condition | rec0  | rec1 | onError
+        "one + 10"         | null      | 11    | 12   | "fail"
+        "one + two"        | null      | 3.4   | 5.4  | "fail"
+        "one + 10"         | "two < 3" | 11    | null | "fail"
+        "one + two"        | "two < 3" | 3.4   | null | "fail"
+        "one + two"        | "two < 3" | 3.4   | null | null
     }
 
     void "math functions"() {
