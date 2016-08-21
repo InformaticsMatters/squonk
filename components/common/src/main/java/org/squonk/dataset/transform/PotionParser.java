@@ -327,17 +327,21 @@ public class PotionParser {
                 }
                 Object oFrom = null;
                 Object oTo = null;
-                try {
-                    oFrom = convert(from, type);
-                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
-                    addError("unable to convert " + from + " to " + type.getSimpleName());
-                    return false;
+                if (!"null".equals(from)) {
+                    try {
+                        oFrom = convert(from, type);
+                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+                        addError("unable to convert " + from + " to " + type.getSimpleName());
+                        return false;
+                    }
                 }
-                try {
-                    oTo = convert(to, type);
-                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
-                    addError("unable to convert " + to + " to " + type.getSimpleName());
-                    return false;
+                if (!"null".equals(to)) {
+                    try {
+                        oTo = convert(to, type);
+                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+                        addError("unable to convert " + to + " to " + type.getSimpleName());
+                        return false;
+                    }
                 }
 
                 transforms.add(new ReplaceValueTransform(fieldName, oFrom, oTo));
@@ -365,6 +369,6 @@ public class PotionParser {
 
     static private <C> C convert(String value, Class<C> type) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Constructor c = type.getConstructor(String.class);
-        return (C)c.newInstance(value);
+        return (C) c.newInstance(value);
     }
 }

@@ -193,7 +193,9 @@ public class ValueTransformerProcessor implements Processor {
         }
 
         void updateMetadata(DatasetMetadata meta) {
-            meta.appendFieldHistory(fldName, "Value conversion: " + match.toString() + " -> " + result.toString());
+            meta.appendFieldHistory(fldName, "Value conversion: " +
+                    (match == null ? "null" : match.toString()) + " -> " +
+                    (result == null ? "null" : result.toString()));
         }
 
         @Override
