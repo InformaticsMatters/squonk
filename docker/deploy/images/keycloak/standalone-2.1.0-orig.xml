@@ -134,7 +134,7 @@
                            use-java-context="true"
                            pool-name="KeycloakDS"
                            use-ccm="true">
-               <ds:connection-url>jdbc:postgresql://postgres:5432/${env.POSTGRES_DATABASE:keycloak}</ds:connection-url>
+               <ds:connection-url>jdbc:postgresql://${env.POSTGRES_PORT_5432_TCP_ADDR}:${env.POSTGRES_PORT_5432_TCP_PORT:5432}/${env.POSTGRES_DATABASE:keycloak}</ds:connection-url>
                <ds:driver>postgresql</ds:driver>
                <ds:security>
                   <ds:user-name>${env.POSTGRES_USER:keycloak}</ds:user-name>
@@ -397,7 +397,7 @@
         <subsystem xmlns="urn:jboss:domain:undertow:3.0">
             <buffer-cache name="default"/>
             <server name="default-server">
-                <http-listener name="default" socket-binding="http" proxy-address-forwarding="true" redirect-socket="proxy-https"/>
+                <http-listener name="default" socket-binding="http" redirect-socket="https"/>
                 <host name="default-host" alias="localhost">
                     <location name="/" handler="welcome-content"/>
                     <filter-ref name="server-header"/>
@@ -439,7 +439,6 @@
         <socket-binding name="https" port="${jboss.https.port:8443}"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
-        <socket-binding name="proxy-https" port="443"/>
         <outbound-socket-binding name="mail-smtp">
             <remote-destination host="localhost" port="25"/>
         </outbound-socket-binding>

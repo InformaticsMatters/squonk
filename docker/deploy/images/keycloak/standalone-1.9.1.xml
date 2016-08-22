@@ -111,10 +111,7 @@
             <formatter name="COLOR-PATTERN">
                 <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
             </formatter>
-        <log:logger xmlns:log="urn:jboss:domain:logging:3.0" xmlns="" category="org.keycloak">
-            <log:level name="${env.KEYCLOAK_LOGLEVEL:INFO}"/>
-         </log:logger>
-      </subsystem>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:bean-validation:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:4.0">
             <datasources>
@@ -243,15 +240,13 @@
         <subsystem xmlns="urn:jboss:domain:infinispan:4.0">
             <cache-container name="keycloak" jndi-name="infinispan/Keycloak">
                 <local-cache name="realms"/>
-                <local-cache name="users">
-                    <eviction max-entries="10000" strategy="LRU"/>
-                </local-cache>
+                <local-cache name="users"/>
                 <local-cache name="sessions"/>
                 <local-cache name="offlineSessions"/>
                 <local-cache name="loginFailures"/>
                 <local-cache name="work"/>
-                <local-cache name="authorization">
-                    <eviction max-entries="100" strategy="LRU"/>
+                <local-cache name="realmVersions">
+                    <transaction mode="BATCH" locking="PESSIMISTIC"/>
                 </local-cache>
             </cache-container>
             <cache-container name="server" default-cache="default" module="org.wildfly.clustering.server">
