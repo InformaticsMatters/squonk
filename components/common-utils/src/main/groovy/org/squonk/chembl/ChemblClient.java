@@ -2,6 +2,7 @@ package org.squonk.chembl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.squonk.dataset.DatasetMetadata;
 import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 import java.io.IOException;
@@ -22,8 +23,11 @@ public class ChemblClient {
 
     private static final Logger LOG = Logger.getLogger(ChemblClient.class.getName());
 
+    private static final String CHEMBL_ID = "ChemblID";
+
     private final ObjectMapper mapper = new ObjectMapper();
     private static final String BASE_URL = "https://www.ebi.ac.uk";
+    private static final String PATH = "/chembl/api/data/activity.json?assay_chembl_id=";
 
     private int maxIterations = 1000;
 
@@ -85,32 +89,41 @@ public class ChemblClient {
         }
         LOG.info("Querying ChEMBL for " + assayId);
 
+        DatasetMetadata<MoleculeObject> meta = new DatasetMetadata<>(MoleculeObject.class);
+        String now = DatasetMetadata.formatDate();
+        meta.appendDatasetHistory("Created from ChEMBL assay " + assayId);
+        meta.getProperties().put(DatasetMetadata.PROP_CREATED, now);
+        meta.getProperties().put(DatasetMetadata.PROP_SOURCE, BASE_URL + PATH + assayId);
+        meta.getProperties().put(DatasetMetadata.PROP_DESCRIPTION, "Fetched assay " + assayId + " using ChEMBL web services");
+
         int iteration = 0;
         if (prefix == null) {
             prefix = assayId;
         }
         Map<String, MoleculeObject> mols = new HashMap<>();
-        String path = "/chembl/api/data/activity.json?assay_chembl_id=" + assayId + "&limit=" + batchSize;
-        JsonNode meta = handleRequest(path, prefix, mols);
+        String path = PATH + assayId + "&limit=" + batchSize;
+        JsonNode node = handleRequest(path, prefix, mols, meta, now);
         iteration++;
-        String next = readStringValue(meta, "next");
+        String next = readStringValue(node, "next");
         LOG.log(Level.INFO, "Next:  {0}", next);
         while (next != null && iteration <= maxIterations) {
-            meta = handleRequest(next, prefix, mols);
+            node = handleRequest(next, prefix, mols, meta, now);
             iteration++;
-            next = readStringValue(meta, "next");
+            next = readStringValue(node, "next");
             LOG.log(Level.INFO, "Next:  {0}", next);
         }
 
-        return new Dataset(MoleculeObject.class, mols.values());
+        return new Dataset(MoleculeObject.class, mols.values(), meta);
     }
 
-    private JsonNode handleRequest(String path, String prefix, Map<String, MoleculeObject> mols) throws IOException {
+    private JsonNode handleRequest(String path, String prefix, Map<String, MoleculeObject> mols, DatasetMetadata<MoleculeObject> meta, String now) throws IOException {
         URL url = new URL(BASE_URL + path);
         LOG.info("GET: " + url.toString());
 
         JsonNode root = mapper.readTree(url);
         JsonNode activities = root.get("activities");
+
+        addFieldPropertyIfNotPresent(meta, now, CHEMBL_ID, "ChEMBL web services", "ChEMBL molecule_chembl_id property");
 
         Iterator<JsonNode> elements = activities.elements();
         while (elements.hasNext()) {
@@ -126,12 +139,14 @@ public class ChemblClient {
             MoleculeObject mo = mols.get(moleculeId);
             if (mo == null) {
                 mo = new MoleculeObject(smiles, "smiles");
-                mo.putValue("ChemblID", moleculeId);
+                mo.putValue(CHEMBL_ID, moleculeId);
                 mols.put(moleculeId, mo);
             }
 
             if (validityComment != null) {
-                mo.putValue(prefix + "_validity_comment", validityComment);
+                String validityFieldName = prefix + "_validity_comment";
+                addFieldPropertyIfNotPresent(meta, now, validityFieldName, "ChEMBL web services", "ChEMBL data_validity_comment property");
+                mo.putValue(validityFieldName, validityComment);
             }
 
             if (stdValue != null) {
@@ -141,11 +156,12 @@ public class ChemblClient {
                 } else {
                     fldName = prefix + "_" + stdType + "_" + stdUnits;
                 }
-
+                addFieldPropertyIfNotPresent(meta, now, fldName, "ChEMBL web services", "ChEMBL standard_value, standard_type, standard_units properties");
                 mo.putValue(fldName, new Float(stdValue));
                 if (stdRel != null && !stdRel.equals("=")) {
-                    mo.putValue(prefix + "_Mod", stdRel);
-                    System.out.println("Mod: " + stdRel + " Value: " + stdValue);
+                    String modifierFieldName = prefix + "_Mod";
+                    mo.putValue(modifierFieldName, stdRel);
+                    addFieldPropertyIfNotPresent(meta, now, modifierFieldName, "ChEMBL web services", "ChEMBL standard_relation property");
                 }
 
 //                QualifiedValue.Qualifier q = QualifiedValue.Qualifier.create(stdRel);
@@ -156,6 +172,15 @@ public class ChemblClient {
 
         JsonNode pageMeta = root.get("page_meta");
         return pageMeta;
+    }
+
+    private void addFieldPropertyIfNotPresent(DatasetMetadata<MoleculeObject> meta, String now, String fieldName, String source, String description) {
+        if (meta.getFieldMetaProp(fieldName,DatasetMetadata.PROP_CREATED) == null) {
+            meta.putFieldMetaProp(fieldName, DatasetMetadata.PROP_CREATED, now);
+            meta.putFieldMetaProp(fieldName, DatasetMetadata.PROP_SOURCE, source);
+            meta.putFieldMetaProp(fieldName, DatasetMetadata.PROP_DESCRIPTION, description);
+            meta.appendDatasetHistory("Added field " + fieldName);
+        }
     }
 
     private String readStringValue(JsonNode node, String name) {

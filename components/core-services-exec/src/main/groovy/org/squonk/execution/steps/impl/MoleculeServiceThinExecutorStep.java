@@ -106,7 +106,9 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         DatasetMetadata responseMetadata = null;
         if (responseMetadataJson == null) {
             responseMetadata = new DatasetMetadata(MoleculeObject.class);
+            LOG.info("No Metadata retuened from service");
         } else {
+            LOG.info("Using response metadata: " + responseMetadataJson);
             responseMetadata = JsonHandler.getInstance().objectFromJson(responseMetadataJson,DatasetMetadata.class);
         }
         DatasetMetadata mergedMetadata = null;
@@ -161,7 +163,7 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
 
         createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
         statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
-        LOG.info("Results: " + results.getMetadata());
+        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
     }
 
     // TODO - make this handle generics so BasicObjects can also be handled

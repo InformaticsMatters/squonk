@@ -1,6 +1,6 @@
 package org.squonk.camel.rdkit.processor;
 
-import org.squonk.types.MoleculeObject;
+import org.RDKit.RDKFuncs;
 import org.RDKit.ROMol;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -11,6 +11,8 @@ import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.rdkit.mol.EvaluatorDefinition;
 import org.squonk.rdkit.mol.MolEvaluator;
 import org.squonk.rdkit.mol.MolReader;
+import org.squonk.types.MoleculeObject;
+import org.squonk.types.io.JsonHandler;
 import org.squonk.util.ExecutionStats;
 import org.squonk.util.Metrics;
 import org.squonk.util.StatsRecorder;
@@ -51,20 +53,29 @@ public class RDKitMoleculeProcessor implements Processor {
             });
         }
 
-        handleMetadata(exch, dataset.getMetadata(), defs);
-        exch.getIn().setBody(new MoleculeObjectDataset(results));
+        DatasetMetadata meta = handleMetadata(exch, dataset.getMetadata(), defs);
+        LOG.info("Generated metadata: " + JsonHandler.getInstance().objectToJson(meta));
+        exch.getIn().setBody(new MoleculeObjectDataset(results, meta));
     }
 
-    protected void handleMetadata(Exchange exch, DatasetMetadata meta, List<EvaluatorDefinition> definitions) throws IllegalAccessException, InstantiationException {
-        if (meta == null) {
-            meta = new DatasetMetadata(MoleculeObject.class);
+    protected DatasetMetadata handleMetadata(Exchange exch, DatasetMetadata original, List<EvaluatorDefinition> definitions) throws IllegalAccessException, InstantiationException {
+        if (original == null) {
+            original = new DatasetMetadata(MoleculeObject.class);
         }
+        String now = DatasetMetadata.formatDate();
+        //String version = "RDKit version " + RDKFuncs.getRdkitVersion();
+        String version = "RDKit version xyz";
+        System.out.println(version);
         for (EvaluatorDefinition eval : definitions) {
             String name = eval.propName;
             Class type = eval.function.getType();
-            meta.getValueClassMappings().put(name, type);
+            original.getValueClassMappings().put(name, type);
+            original.putFieldMetaProp(name, DatasetMetadata.PROP_CREATED, now);
+            original.putFieldMetaProp(name, DatasetMetadata.PROP_SOURCE, version);
+            original.putFieldMetaProp(name, DatasetMetadata.PROP_DESCRIPTION, "Molecular property calculation: " + eval.function.toString());
+            original.appendDatasetHistory("Added field " + name);
         }
-        exch.getIn().setHeader(CamelCommonConstants.HEADER_METADATA, meta);
+        return original;
     }
 
     Stream<MoleculeObject> evaluate(Exchange exchange, Stream<MoleculeObject> mols, List<EvaluatorDefinition> definitions, Map<String,Integer> stats) {

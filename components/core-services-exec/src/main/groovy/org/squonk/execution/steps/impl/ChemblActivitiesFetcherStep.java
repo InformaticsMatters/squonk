@@ -7,6 +7,7 @@ import org.squonk.types.MoleculeObject;
 import org.squonk.chembl.ChemblClient;
 import org.squonk.dataset.Dataset;
 import org.apache.camel.CamelContext;
+import org.squonk.types.io.JsonHandler;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,7 +47,7 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
 
         createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
         statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
-        LOG.info("Results: " + results.getMetadata());
+        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
     }
 
 }

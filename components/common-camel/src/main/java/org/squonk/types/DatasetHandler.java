@@ -70,7 +70,10 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
             DatasetMetadata md = dataset.getMetadata();
             if (md != null) {
                 String json = JsonHandler.getInstance().objectToJson(md);
+                LOG.info("Metadata is present: " + json);
                 executor.setResponseHeader(CamelCommonConstants.HEADER_METADATA, json); // TODO - move this constant to this class
+            } else {
+                LOG.warning("No metadata present");
             }
             executor.setResponseBody(dataset.getInputStream(gzip));
         }

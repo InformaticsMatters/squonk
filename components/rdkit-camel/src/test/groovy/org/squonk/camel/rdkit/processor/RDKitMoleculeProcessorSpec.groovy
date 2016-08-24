@@ -1,5 +1,6 @@
 package org.squonk.camel.rdkit.processor
 
+import org.RDKit.RDKFuncs
 import org.squonk.types.MoleculeObject
 import spock.lang.Specification
 
@@ -31,5 +32,15 @@ class RDKitMoleculeProcessorSpec extends Specification {
         list[0].getValue("logp") != null
         list[1].getValue("logp") != null
     }
+
+//    void "rdkit version"() {
+//
+//        when:
+//        def ver =  RDKFuncs.getRdkitVersion()
+//        println ver
+//
+//        then:
+//        ver != null
+//    }
 	
 }
