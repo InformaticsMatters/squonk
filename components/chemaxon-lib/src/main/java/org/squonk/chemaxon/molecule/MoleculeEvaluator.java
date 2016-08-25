@@ -12,22 +12,31 @@ import java.util.Map;
  */
 public interface MoleculeEvaluator {
     
-    public enum Mode {
+    enum Mode {
 
         Calculate, Filter, Transform
     }
 
     
-    public Molecule processMolecule(Molecule mol);
+    Molecule processMolecule(Molecule mol);
     
-    public MoleculeObject processMoleculeObject(MoleculeObject mol) throws MolFormatException, IOException;
+    MoleculeObject processMoleculeObject(MoleculeObject mol) throws IOException;
     
-    public Map<String,Object> getResults(Molecule mol);
+    Map<String,Object> getResults(Molecule mol);
     
-    public Mode getMode();
+    Mode getMode();
 
-    public String getKey();
+    String getKey();
 
-    public String getMetricsCode();
+    String getMetricsCode();
+
+    String getDescription();
+
+    /** Return the name of the field that is created by execution of this evaluator.
+     * This will be null when filtering or transforms are involved
+     *
+     * @return The property name, which might be null.
+     */
+    String getPropName();
     
 }

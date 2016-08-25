@@ -28,6 +28,7 @@ public class ChemblClient {
     private final ObjectMapper mapper = new ObjectMapper();
     private static final String BASE_URL = "https://www.ebi.ac.uk";
     private static final String PATH = "/chembl/api/data/activity.json?assay_chembl_id=";
+    private static final String CHEMBL_WS = "ChEMBL web services";
 
     private int maxIterations = 1000;
 
@@ -102,12 +103,12 @@ public class ChemblClient {
         }
         Map<String, MoleculeObject> mols = new HashMap<>();
         String path = PATH + assayId + "&limit=" + batchSize;
-        JsonNode node = handleRequest(path, prefix, mols, meta, now);
+        JsonNode node = handleRequest(path, prefix, mols, meta);
         iteration++;
         String next = readStringValue(node, "next");
         LOG.log(Level.INFO, "Next:  {0}", next);
         while (next != null && iteration <= maxIterations) {
-            node = handleRequest(next, prefix, mols, meta, now);
+            node = handleRequest(next, prefix, mols, meta);
             iteration++;
             next = readStringValue(node, "next");
             LOG.log(Level.INFO, "Next:  {0}", next);
@@ -116,14 +117,14 @@ public class ChemblClient {
         return new Dataset(MoleculeObject.class, mols.values(), meta);
     }
 
-    private JsonNode handleRequest(String path, String prefix, Map<String, MoleculeObject> mols, DatasetMetadata<MoleculeObject> meta, String now) throws IOException {
+    private JsonNode handleRequest(String path, String prefix, Map<String, MoleculeObject> mols, DatasetMetadata<MoleculeObject> meta) throws IOException {
         URL url = new URL(BASE_URL + path);
         LOG.info("GET: " + url.toString());
 
         JsonNode root = mapper.readTree(url);
         JsonNode activities = root.get("activities");
 
-        addFieldPropertyIfNotPresent(meta, now, CHEMBL_ID, "ChEMBL web services", "ChEMBL molecule_chembl_id property");
+        addFieldPropertyIfNotPresent(meta, CHEMBL_ID, CHEMBL_WS, "ChEMBL property: molecule_chembl_id", String.class);
 
         Iterator<JsonNode> elements = activities.elements();
         while (elements.hasNext()) {
@@ -145,7 +146,7 @@ public class ChemblClient {
 
             if (validityComment != null) {
                 String validityFieldName = prefix + "_validity_comment";
-                addFieldPropertyIfNotPresent(meta, now, validityFieldName, "ChEMBL web services", "ChEMBL data_validity_comment property");
+                addFieldPropertyIfNotPresent(meta, validityFieldName, CHEMBL_WS, "ChEMBL property: data_validity_comment", String.class);
                 mo.putValue(validityFieldName, validityComment);
             }
 
@@ -156,12 +157,12 @@ public class ChemblClient {
                 } else {
                     fldName = prefix + "_" + stdType + "_" + stdUnits;
                 }
-                addFieldPropertyIfNotPresent(meta, now, fldName, "ChEMBL web services", "ChEMBL standard_value, standard_type, standard_units properties");
+                addFieldPropertyIfNotPresent(meta,  fldName, CHEMBL_WS, "ChEMBL properties: standard_value, standard_type, standard_units", Float.class);
                 mo.putValue(fldName, new Float(stdValue));
                 if (stdRel != null && !stdRel.equals("=")) {
                     String modifierFieldName = prefix + "_Mod";
                     mo.putValue(modifierFieldName, stdRel);
-                    addFieldPropertyIfNotPresent(meta, now, modifierFieldName, "ChEMBL web services", "ChEMBL standard_relation property");
+                    addFieldPropertyIfNotPresent(meta,  modifierFieldName, CHEMBL_WS, "ChEMBL property: standard_relation", String.class);
                 }
 
 //                QualifiedValue.Qualifier q = QualifiedValue.Qualifier.create(stdRel);
@@ -174,12 +175,9 @@ public class ChemblClient {
         return pageMeta;
     }
 
-    private void addFieldPropertyIfNotPresent(DatasetMetadata<MoleculeObject> meta, String now, String fieldName, String source, String description) {
+    private void addFieldPropertyIfNotPresent(DatasetMetadata<MoleculeObject> meta, String fieldName, String source, String description, Class type) {
         if (meta.getFieldMetaProp(fieldName,DatasetMetadata.PROP_CREATED) == null) {
-            meta.putFieldMetaProp(fieldName, DatasetMetadata.PROP_CREATED, now);
-            meta.putFieldMetaProp(fieldName, DatasetMetadata.PROP_SOURCE, source);
-            meta.putFieldMetaProp(fieldName, DatasetMetadata.PROP_DESCRIPTION, description);
-            meta.appendDatasetHistory("Added field " + fieldName);
+            meta.createField(fieldName, source, description, type);
         }
     }
 

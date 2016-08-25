@@ -53,6 +53,18 @@ public class PropertyFilter implements Predicate<BasicObject> {
         return new PropertyFilter(propertyName, includeNull, range.derive(min, max));
     }
 
+    public String asText() {
+        if (range.getMinValue() != null && range.getMaxValue() != null) {
+            return range.getMinValue() + " <= " + propertyName + " >= " + range.getMaxValue();
+        } else if (range.getMinValue() == null && range.getMaxValue() != null) {
+            return propertyName + " >= " + range.getMaxValue();
+        }  else if (range.getMinValue() != null && range.getMaxValue() == null) {
+            return range.getMinValue() + " <= " + propertyName;
+        } else {
+            return "";
+        }
+    }
+
     @Override
     public String toString() {
         return "PropertyFilter [" + getClass().getName() + " propertyName=" + propertyName + " range=" + range + "]";

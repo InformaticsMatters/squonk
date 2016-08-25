@@ -144,6 +144,25 @@ public class DatasetMetadata<T extends BasicObject> {
         return fieldMetaProps;
     }
 
+    /** Helper method for adding a new field
+     *
+     * @param name
+     * @param source
+     * @param description
+     * @param type
+     * @return The formatted date that can be used for adding addition properties
+     */
+    public String createField(String name, String source, String description, Class type) {
+        String now = now();
+        putFieldMetaProp(name, DatasetMetadata.PROP_CREATED, now);
+        if (type != null) { getValueClassMappings().put(name, type); }
+        if (source != null) { putFieldMetaProp(name, DatasetMetadata.PROP_SOURCE, source); }
+        if (description != null) { putFieldMetaProp(name, DatasetMetadata.PROP_DESCRIPTION, description); }
+        appendDatasetHistory("Added field " + name);
+
+        return now;
+    }
+
 
     public Object putFieldMetaProp(String fieldName, String propertyName, Object value) {
         if (value == null) {
@@ -234,27 +253,32 @@ public class DatasetMetadata<T extends BasicObject> {
         return DATE_FORMAT.format(new Date());
     }
 
-    public String nowFormatted() {
-        return "[" + now() + "] ";
-    }
 
     public void appendDatasetHistory(String msg) {
+        appendDatasetHistory(msg, now());
+    }
+
+    public void appendDatasetHistory(String msg, String now) {
 
         String old = (String) properties.get(DatasetMetadata.PROP_HISTORY);
         if (old == null) {
-            properties.put(DatasetMetadata.PROP_HISTORY, nowFormatted() + msg);
+            properties.put(DatasetMetadata.PROP_HISTORY, "[" + now + "]" + msg);
         } else {
-            properties.put(DatasetMetadata.PROP_HISTORY, old + "\n" + nowFormatted() + msg);
+            properties.put(DatasetMetadata.PROP_HISTORY, old + "\n" + "[" + now + "]" + msg);
         }
     }
 
     public void appendFieldHistory(String fldName, String msg) {
+        appendFieldHistory(fldName, msg, now());
+    }
+
+    public void appendFieldHistory(String fldName, String msg, String now) {
 
         String old = (String) getFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY);
         if (old == null) {
-            putFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY, nowFormatted() + msg);
+            putFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY, "[" + now + "]" + msg);
         } else {
-            putFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY, old + "\n" + nowFormatted() + msg);
+            putFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY, old + "\n" + "[" + now + "]" + msg);
         }
     }
 

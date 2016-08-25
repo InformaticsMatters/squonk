@@ -23,7 +23,7 @@ dependencies {
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 
     if (RDBASE) {
-        //println "$RDBASE defined - using that location for RDkit"
+        //println "$RDBASE defined - using that location for RDKit"
         compile files("$RDBASE/Code/JavaWrappers/gmwrapper/org.RDKit.jar")
     } else {
         //println "Using local org.RDKit.jar"

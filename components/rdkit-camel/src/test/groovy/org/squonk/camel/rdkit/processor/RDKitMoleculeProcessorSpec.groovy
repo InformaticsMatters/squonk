@@ -37,10 +37,11 @@ class RDKitMoleculeProcessorSpec extends Specification {
 //
 //        when:
 //        def ver =  RDKFuncs.getRdkitVersion()
-//        println ver
+//        println "version $ver"
 //
 //        then:
 //        ver != null
+//
 //    }
 	
 }

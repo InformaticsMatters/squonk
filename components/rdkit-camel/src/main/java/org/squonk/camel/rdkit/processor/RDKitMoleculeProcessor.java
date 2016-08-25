@@ -58,22 +58,15 @@ public class RDKitMoleculeProcessor implements Processor {
         exch.getIn().setBody(new MoleculeObjectDataset(results, meta));
     }
 
-    protected DatasetMetadata handleMetadata(Exchange exch, DatasetMetadata original, List<EvaluatorDefinition> definitions) throws IllegalAccessException, InstantiationException {
+    protected DatasetMetadata handleMetadata(Exchange exch, DatasetMetadata original, List<EvaluatorDefinition> definitions) {
         if (original == null) {
             original = new DatasetMetadata(MoleculeObject.class);
         }
         String now = DatasetMetadata.formatDate();
-        //String version = "RDKit version " + RDKFuncs.getRdkitVersion();
-        String version = "RDKit version xyz";
-        System.out.println(version);
+        //String source = "RDKit " + RDKFuncs.getRdkitVersion();
+        String source = "RDKit 2016.03.1";
         for (EvaluatorDefinition eval : definitions) {
-            String name = eval.propName;
-            Class type = eval.function.getType();
-            original.getValueClassMappings().put(name, type);
-            original.putFieldMetaProp(name, DatasetMetadata.PROP_CREATED, now);
-            original.putFieldMetaProp(name, DatasetMetadata.PROP_SOURCE, version);
-            original.putFieldMetaProp(name, DatasetMetadata.PROP_DESCRIPTION, "Molecular property calculation: " + eval.function.toString());
-            original.appendDatasetHistory("Added field " + name);
+            original.createField(eval.propName, source, "Molecular property calculation: " + eval.function.toString(), eval.function.getType());
         }
         return original;
     }
