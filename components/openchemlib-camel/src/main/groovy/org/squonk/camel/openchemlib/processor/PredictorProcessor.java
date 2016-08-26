@@ -1,5 +1,6 @@
 package org.squonk.camel.openchemlib.processor;
 
+import com.actelion.research.chem.Molecule;
 import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -69,7 +70,7 @@ public class PredictorProcessor implements Processor {
         if (meta == null) {
             meta = new DatasetMetadata(MoleculeObject.class);
         }
-        String source = "OpenChemLib";
+        String source = "OpenChemLib " + Molecule.class.getPackage().getImplementationVersion();
         for (AbstractOCLPredictor<?> predictor : predictors) {
             int i = 0;
             for (MoleculeCalculator<?> calc : predictor.getCalculators()) {

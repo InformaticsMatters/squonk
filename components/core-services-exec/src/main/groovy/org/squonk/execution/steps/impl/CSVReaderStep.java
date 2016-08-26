@@ -6,6 +6,7 @@ import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.BasicObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.reader.CSVReader;
+import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -127,17 +128,17 @@ public class CSVReaderStep extends AbstractStep {
         try (InputStream is = fetchMappedInput(VAR_CSV_INPUT, InputStream.class, varman)) {
             CSVReader reader = createReader(IOUtils.getGunzippedInputStream(is));
             Stream<BasicObject> mols = reader.asStream();
-            Dataset results = new Dataset(BasicObject.class, mols);
+            Dataset results = new Dataset(BasicObject.class, mols, reader.getDatasetMetadata());
             createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
             statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
-            LOG.info("Results: " + results.getMetadata());
+            LOG.info("Results: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
         }
     }
 
     private CSVReader createReader(InputStream input) throws IOException {
 
         String csvFormatOption = getOption(OPTION_FORMAT_TYPE, String.class);
-        System.out.println("CSVFormat string = " + csvFormatOption);
+        LOG.fine("CSVFormat string = " + csvFormatOption);
         CSVFormat csv;
         if (csvFormatOption == null) {
             csv = CSVFormat.DEFAULT;
@@ -215,9 +216,9 @@ public class CSVReaderStep extends AbstractStep {
         if (allowMisingColNames != null) {
             csv = csv.withAllowMissingColumnNames(allowMisingColNames);
         }
-        System.out.println("CSV: " + csv);
+        LOG.info("CSV: " + csv);
 
-        return new CSVReader(input, csv);
+        return new CSVReader(input, csv, csvFormatOption);
     }
 
 }

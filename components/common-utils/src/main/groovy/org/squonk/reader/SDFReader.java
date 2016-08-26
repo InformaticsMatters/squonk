@@ -26,7 +26,6 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
     private boolean started = false;
     private String nameFieldName = "name";
     private final DatasetMetadata meta;
-    private final String now;
     private final Set<String> fields;
     private final String source = "SD file"; // TODO try to get the file name passed through
 
@@ -34,8 +33,7 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
         this.reader = new LineNumberReader(new InputStreamReader(IOUtils.getGunzippedInputStream(is)));
         this.meta = new DatasetMetadata(MoleculeObject.class);
         this.fields = new HashSet<>();
-        this.now = DatasetMetadata.now();
-        meta.getProperties().put(DatasetMetadata.PROP_CREATED, now);
+        meta.getProperties().put(DatasetMetadata.PROP_CREATED, DatasetMetadata.now());
         meta.getProperties().put(DatasetMetadata.PROP_DESCRIPTION, "Created from SD file");
     }
 
@@ -169,6 +167,7 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
             if (!fields.contains(nameFieldName)) {
                 fields.add(nameFieldName);
                 meta.createField(nameFieldName, source, "Name field from SDF", String.class);
+                meta.appendFieldHistory(nameFieldName, "Value read from SF file name property");
             }
         }
         return mo;
@@ -213,7 +212,8 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
                 mo.putValue(name, sb.toString());
                 if (!fields.contains(name)) {
                     fields.add(name);
-                    meta.createField(name, source, "Field from SDF", String.class);
+                    meta.createField(name, source, "Data field from SDF", String.class);
+                    meta.appendFieldHistory(name, "Value read from SD file property");
                 }
             } else if (line.equals("$$$$")) {
                 break fields;

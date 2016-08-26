@@ -178,6 +178,7 @@ public class ChemblClient {
     private void addFieldPropertyIfNotPresent(DatasetMetadata<MoleculeObject> meta, String fieldName, String source, String description, Class type) {
         if (meta.getFieldMetaProp(fieldName,DatasetMetadata.PROP_CREATED) == null) {
             meta.createField(fieldName, source, description, type);
+            meta.appendFieldHistory(fieldName, "Value read from " + description);
         }
     }
 

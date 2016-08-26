@@ -82,7 +82,7 @@ public class DataTransformPotionStep extends AbstractStep {
         }
 
         statusMessage = String.format(MSG_RECORDS_PROCESSED, result.getMetadata().getSize());
-        LOG.info("Results: " + result.getMetadata());
+        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
     }
 
 }
