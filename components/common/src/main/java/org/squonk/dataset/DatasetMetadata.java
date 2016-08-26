@@ -249,10 +249,9 @@ public class DatasetMetadata<T extends BasicObject> {
         }
     }
 
-    public String now() {
+    public static String now() {
         return DATE_FORMAT.format(new Date());
     }
-
 
     public void appendDatasetHistory(String msg) {
         appendDatasetHistory(msg, now());

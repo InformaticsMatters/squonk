@@ -1,11 +1,13 @@
 package org.squonk.execution.steps.impl;
 
+import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.reader.SDFReader;
+import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,11 +52,12 @@ public class SDFReaderStep extends AbstractStep {
             SDFReader reader = createReader(IOUtils.getGunzippedInputStream(is));
             LOG.fine("Created SDFReader");
             Stream<MoleculeObject> mols = reader.asStream();
-            Dataset results = new Dataset(MoleculeObject.class, mols);
+            DatasetMetadata meta = reader.getDatasetMetadata();
+            Dataset results = new Dataset(MoleculeObject.class, mols, meta);
             LOG.fine("Writing output");
             createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
             statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
-            LOG.info("Writing dataset from SDF complete: " + results.getMetadata());
+            LOG.info("Writing dataset from SDF complete: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
         }
     }
 

@@ -1,5 +1,6 @@
 package org.squonk.reader;
 
+import org.squonk.dataset.DatasetMetadata;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.MoleculeObjectIterable;
 import org.squonk.util.IOUtils;
@@ -24,9 +25,18 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
     private MoleculeObject molobj;
     private boolean started = false;
     private String nameFieldName = "name";
+    private final DatasetMetadata meta;
+    private final String now;
+    private final Set<String> fields;
+    private final String source = "SD file"; // TODO try to get the file name passed through
 
     public SDFReader(InputStream is) throws IOException {
         this.reader = new LineNumberReader(new InputStreamReader(IOUtils.getGunzippedInputStream(is)));
+        this.meta = new DatasetMetadata(MoleculeObject.class);
+        this.fields = new HashSet<>();
+        this.now = DatasetMetadata.now();
+        meta.getProperties().put(DatasetMetadata.PROP_CREATED, now);
+        meta.getProperties().put(DatasetMetadata.PROP_DESCRIPTION, "Created from SD file");
     }
 
     /**
@@ -48,6 +58,15 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
      */
     public void setNameFieldName(String nameFieldName) {
         this.nameFieldName = nameFieldName;
+    }
+
+    /** Get the metadata associated with parsing the data.
+     * Can be obtained once parsing is complete.
+     *
+     * @return
+     */
+    public DatasetMetadata getDatasetMetadata() {
+        return meta;
     }
 
     @Override
@@ -83,7 +102,6 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
             started = true;
             this.molobj = readRow();
         }
-        
         MoleculeObject row = this.molobj;
         if (row == null) {
             throw new NoSuchElementException();
@@ -148,6 +166,10 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
         MoleculeObject mo = new MoleculeObject(molfile, "mol");
         if (nameFieldName != null && !first.trim().isEmpty()) {
             mo.putValue(nameFieldName, first);
+            if (!fields.contains(nameFieldName)) {
+                fields.add(nameFieldName);
+                meta.createField(nameFieldName, source, "Name field from SDF", String.class);
+            }
         }
         return mo;
     }
@@ -189,6 +211,10 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
                     sb.append(line);
                 }
                 mo.putValue(name, sb.toString());
+                if (!fields.contains(name)) {
+                    fields.add(name);
+                    meta.createField(name, source, "Field from SDF", String.class);
+                }
             } else if (line.equals("$$$$")) {
                 break fields;
             } else if (line.equals("")) {
