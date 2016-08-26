@@ -103,12 +103,12 @@ public class ChemblClient {
         }
         Map<String, MoleculeObject> mols = new HashMap<>();
         String path = PATH + assayId + "&limit=" + batchSize;
-        JsonNode node = handleRequest(path, prefix, mols, meta);
+        JsonNode node = handleRequest(assayId, path, prefix, mols, meta);
         iteration++;
         String next = readStringValue(node, "next");
         LOG.log(Level.INFO, "Next:  {0}", next);
         while (next != null && iteration <= maxIterations) {
-            node = handleRequest(next, prefix, mols, meta);
+            node = handleRequest(assayId, next, prefix, mols, meta);
             iteration++;
             next = readStringValue(node, "next");
             LOG.log(Level.INFO, "Next:  {0}", next);
@@ -117,7 +117,7 @@ public class ChemblClient {
         return new Dataset(MoleculeObject.class, mols.values(), meta);
     }
 
-    private JsonNode handleRequest(String path, String prefix, Map<String, MoleculeObject> mols, DatasetMetadata<MoleculeObject> meta) throws IOException {
+    private JsonNode handleRequest(String assayId, String path, String prefix, Map<String, MoleculeObject> mols, DatasetMetadata<MoleculeObject> meta) throws IOException {
         URL url = new URL(BASE_URL + path);
         LOG.info("GET: " + url.toString());
 
@@ -146,7 +146,7 @@ public class ChemblClient {
 
             if (validityComment != null) {
                 String validityFieldName = prefix + "_validity_comment";
-                addFieldPropertyIfNotPresent(meta, validityFieldName, CHEMBL_WS, "ChEMBL property: data_validity_comment", String.class);
+                addFieldPropertyIfNotPresent(meta, validityFieldName, CHEMBL_WS, assayId + " property: data_validity_comment", String.class);
                 mo.putValue(validityFieldName, validityComment);
             }
 
@@ -157,12 +157,12 @@ public class ChemblClient {
                 } else {
                     fldName = prefix + "_" + stdType + "_" + stdUnits;
                 }
-                addFieldPropertyIfNotPresent(meta,  fldName, CHEMBL_WS, "ChEMBL properties: standard_value, standard_type, standard_units", Float.class);
+                addFieldPropertyIfNotPresent(meta,  fldName, CHEMBL_WS, assayId + " properties: standard_value, standard_type, standard_units", Float.class);
                 mo.putValue(fldName, new Float(stdValue));
                 if (stdRel != null && !stdRel.equals("=")) {
                     String modifierFieldName = prefix + "_Mod";
                     mo.putValue(modifierFieldName, stdRel);
-                    addFieldPropertyIfNotPresent(meta,  modifierFieldName, CHEMBL_WS, "ChEMBL property: standard_relation", String.class);
+                    addFieldPropertyIfNotPresent(meta,  modifierFieldName, CHEMBL_WS, assayId + " property: standard_relation", String.class);
                 }
 
 //                QualifiedValue.Qualifier q = QualifiedValue.Qualifier.create(stdRel);
