@@ -8,8 +8,10 @@ import org.squonk.util.Metrics;
 public class AqueousSolubilityProperty extends MoleculeObjectProperty {
 
     public static final String METRICS_CODE = Metrics.METRICS_LOGS;
+    public static final String PROP_NAME = "Solubility";
+    public static final String PROP_DESC = "Aqueous Solubility";
 
     public AqueousSolubilityProperty() {
-        super("Solubility", "Aqueous solubility", METRICS_CODE, Float.class);
+        super(PROP_NAME, PROP_DESC, METRICS_CODE, Float.class);
     }
 }

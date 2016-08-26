@@ -8,8 +8,10 @@ import org.squonk.util.Metrics;
 public class PSAProperty extends MoleculeObjectProperty {
 
     public static final String METRICS_CODE = Metrics.METRICS_PSA;
+    public static final String PROP_NAME = "PSA";
+    public static final String PROP_DESC = "Polar surface area";
 
     public PSAProperty() {
-        super("PSA", "Polar surface area", METRICS_CODE, Float.class);
+        super(PROP_NAME, PROP_DESC, METRICS_CODE, Float.class);
     }
 }

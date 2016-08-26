@@ -62,7 +62,6 @@ public class RDKitMoleculeProcessor implements Processor {
         if (original == null) {
             original = new DatasetMetadata(MoleculeObject.class);
         }
-        String now = DatasetMetadata.formatDate();
         //String source = "RDKit " + RDKFuncs.getRdkitVersion();
         String source = "RDKit 2016.03.1";
         for (EvaluatorDefinition eval : definitions) {

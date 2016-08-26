@@ -17,6 +17,7 @@ public abstract class DescriptorCalculator {
     protected IMolecularDescriptor descriptor;
     protected String key;
     protected String[] propNames;
+    protected String[] descriptions;
     protected Class[] propTypes;
     protected final Map<String,Integer> executionStats = new HashMap<>();
 
@@ -30,6 +31,10 @@ public abstract class DescriptorCalculator {
 
     public String[] getPropertyNames() {
         return propNames;
+    }
+
+    public String[] getDescriptions() {
+        return descriptions;
     }
 
     public Class[] getPropertyTypes() {

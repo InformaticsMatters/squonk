@@ -8,8 +8,10 @@ import org.squonk.util.Metrics;
 public class LogPProperty extends MoleculeObjectProperty {
 
     public static final String METRICS_CODE = Metrics.METRICS_LOGP;
+    public static final String PROP_NAME = "LogP";
+    public static final String PROP_DESC = "Octanol water partition coefficient";
 
     public LogPProperty() {
-        super("LogP", "Octanol water partition coefficient", METRICS_CODE, Float.class);
+        super(PROP_NAME, PROP_DESC, METRICS_CODE, Float.class);
     }
 }
