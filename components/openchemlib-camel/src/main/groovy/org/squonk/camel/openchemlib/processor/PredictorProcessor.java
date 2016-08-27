@@ -70,8 +70,7 @@ public class PredictorProcessor implements Processor {
         if (meta == null) {
             meta = new DatasetMetadata(MoleculeObject.class);
         }
-        //String source = "OpenChemLib " + Molecule.class.getPackage().getImplementationVersion();
-        String source = "OpenChemLib 2016.8.0";
+        String source = "OpenChemLib " + Molecule.class.getPackage().getImplementationVersion();
         for (AbstractOCLPredictor<?> predictor : predictors) {
             int i = 0;
             for (MoleculeCalculator<?> calc : predictor.getCalculators()) {
