@@ -37,7 +37,7 @@ public class ValueTransformerProcessor implements Processor {
 
     private final List<Conversion> conversions = new ArrayList<>();
     private GroovyClassLoader groovyClassLoader;
-    private String errorFieldName = "TransformErrors";
+    private String errorFieldName = "Errors";
     private boolean hasErrorField = false;
 
     private GroovyClassLoader getGroovyClassLoader() {
