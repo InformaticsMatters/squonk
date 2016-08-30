@@ -262,9 +262,9 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable {
 
         String old = (String) properties.get(DatasetMetadata.PROP_HISTORY);
         if (old == null) {
-            properties.put(DatasetMetadata.PROP_HISTORY, "[" + now + "]" + msg);
+            properties.put(DatasetMetadata.PROP_HISTORY, "[" + now + "] " + msg);
         } else {
-            properties.put(DatasetMetadata.PROP_HISTORY, old + "\n" + "[" + now + "]" + msg);
+            properties.put(DatasetMetadata.PROP_HISTORY, old + "\n" + "[" + now + "] " + msg);
         }
     }
 
@@ -276,9 +276,9 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable {
 
         String old = (String) getFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY);
         if (old == null) {
-            putFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY, "[" + now + "]" + msg);
+            putFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY, "[" + now + "] " + msg);
         } else {
-            putFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY, old + "\n" + "[" + now + "]" + msg);
+            putFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY, old + "\n" + "[" + now + "] " + msg);
         }
     }
 
