@@ -1,5 +1,6 @@
 package org.squonk.camel.openchemlib.processor
 
+import com.actelion.research.chem.Molecule
 import org.squonk.types.MoleculeObject
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.builder.RouteBuilder
@@ -61,6 +62,18 @@ class PredictorProcessorSpec extends Specification {
         results.items.size() == 2
         results.items[0].values.size() == 3
         results.items[1].values.size() == 3
+
+    }
+
+    void "version number"() {
+
+        when:
+        def ver = Molecule.class.getPackage().getImplementationVersion()
+        println "version $ver"
+
+        then:
+        ver != null
+
 
     }
 

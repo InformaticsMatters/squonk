@@ -15,6 +15,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -29,6 +30,8 @@ import java.util.stream.Stream;
 public class ValueTransformerProcessor implements Processor {
 
     private static final Logger LOG = Logger.getLogger(ValueTransformerProcessor.class.getName());
+
+    private static final String SOURCE = "Squonk assignment potion";
 
     private int classCount = 0;
 
@@ -242,9 +245,9 @@ public class ValueTransformerProcessor implements Processor {
         @Override
         void updateMetadata(DatasetMetadata meta) {
             if (genericClass == null) {
-                meta.appendFieldHistory(fldName, "Type conversion to " + newClass.getName());
+                meta.appendFieldHistory(fldName, "Type converted to " + newClass.getName());
             } else {
-                meta.appendFieldHistory(fldName, "Type conversion to " + newClass.getName() + "<" + genericClass.getName() + ">");
+                meta.appendFieldHistory(fldName, "Type converted to " + newClass.getName() + "<" + genericClass.getName() + ">");
             }
         }
 
@@ -308,10 +311,16 @@ public class ValueTransformerProcessor implements Processor {
 
         @Override
         void updateMetadata(DatasetMetadata meta) {
-            String old = (String) meta.getFieldMetaProp(oldName, DatasetMetadata.PROP_HISTORY);
-            if (old != null) {
-                meta.appendFieldHistory(newName, old);
+
+            // transfer the old
+            Map<String, DatasetMetadata.PropertiesHolder> phs = meta.getFieldMetaPropsMap();
+            DatasetMetadata.PropertiesHolder ph = phs.get(oldName);
+            if (ph != null) {
+                for (Map.Entry<String, Object> e : ph.getValues().entrySet()) {
+                    meta.putFieldMetaProp(newName, e.getKey(), e.getValue());
+                }
             }
+            // add rename event to history
             meta.appendFieldHistory(newName, "Renamed from  " + oldName + " to " + newName);
         }
 
@@ -395,16 +404,26 @@ public class ValueTransformerProcessor implements Processor {
 
         @Override
         void updateMetadata(DatasetMetadata meta) {
+
+            String expr = formatExpression();
             if (meta.getValueClassMappings().get(fldName) == null) {
-                meta.putFieldMetaProp(fldName, DatasetMetadata.PROP_CREATED, meta.now());
-                meta.putFieldMetaProp(fldName, DatasetMetadata.PROP_SOURCE, "Squonk assignment potion");
-            }
-            if (condition == null) {
-                meta.appendFieldHistory(fldName, "Assignment: " + expression);
+                // new field
+                meta.createField(fldName, SOURCE, "Assignment: " + expr, null);
             } else {
-                meta.appendFieldHistory(fldName, "Assignment: " + expression + " IF " + condition);
+                meta.putFieldMetaProp(fldName, DatasetMetadata.PROP_SOURCE, SOURCE);
+                meta.appendFieldProperty(fldName, DatasetMetadata.PROP_DESCRIPTION, "Re-assigned: " + expr);
+            }
+            meta.appendFieldHistory(fldName, "Assignment: " + expr);
+        }
+
+        private String formatExpression() {
+            if (condition == null) {
+                return expression;
+            } else {
+                return expression + " IF " + condition;
             }
         }
+
 
         @Override
         public Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream) {

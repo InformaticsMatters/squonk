@@ -7,25 +7,25 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-/** Metadata for a Dataset. Allows 3 main types of information to be managed.
- *
+/**
+ * Metadata for a Dataset. Allows 3 main types of information to be managed.
+ * <p>
  * <p><b>1. Field data types</b></p>
  * <p>
  * The Classes of the dataset's data are manged using the valueClassMappings which is a Map keyed by field name whose
  * values are the Classes of the data for that field. Implicit in this is that all values for a single field must be of
  * the same data type. This is handled separately to other field metadata for practical and historical reasons.
  * </p>
- *
+ * <p>
  * <p><b>2. Other Field metadata</b></p>
  * <p>Any other metadata relating to fields is handled by the fieldMetaProps Map. Keys of this Map are the field names)
  * and the values are a PropertiesHolder which is essentially a wrapper around a Map that allows type information to handled
  * in JSON. The keys of this inner Map are the property names and values are the value for that property. All values must be
  * serializable as JSON.</p>
- *
+ * <p>
  * p><b>3. Metadata of the dataset as a whole</b></p>
  * <p>Metadata that related to the entire dataset (as opposed to fields in the dataset) are handled in the properties Map.
  * All values must be serializable as JSON.</p>
- *
  *
  * @author timbo
  */
@@ -33,7 +33,6 @@ import java.util.*;
 @JsonPropertyOrder({"type", "size", "valueClassMappings"})
 public class DatasetMetadata<T extends BasicObject> implements Serializable {
 
-    public static final String PROP_DISPLAY_NAME = "displayName";
     public static final String PROP_DESCRIPTION = "description";
     public static final String PROP_SOURCE = "source";
     public static final String PROP_CREATED = "created";
@@ -61,7 +60,7 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable {
      * dataset.
      * Note: the values must be serializable/deserializable to/from JSON by Jackson
      */
-    @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
     private final Map<String, Object> properties = new LinkedHashMap<>();
 
     //@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
@@ -79,10 +78,10 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable {
             @JsonProperty("properties") Map<String, Object> properties) {
         assert type != null;
         this.type = type;
-        if (valueClassMappings != null && !valueClassMappings.isEmpty()){
+        if (valueClassMappings != null && !valueClassMappings.isEmpty()) {
             this.valueClassMappings.putAll(valueClassMappings);
         }
-        if (fieldMetaProps != null && !fieldMetaProps.isEmpty()){
+        if (fieldMetaProps != null && !fieldMetaProps.isEmpty()) {
             for (PropertiesHolder h : fieldMetaProps) {
                 this.fieldMetaProps.put(h.getFieldName(), h);
             }
@@ -146,16 +145,31 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable {
         return fieldMetaProps;
     }
 
+    /** Helper method for adding a new field
+     *
+     * @param name
+     * @param source
+     * @param description
+     * @param type
+     * @return The formatted date that can be used for adding addition properties
+     */
+    public String createField(String name, String source, String description, Class type) {
+        String now = now();
+        putFieldMetaProp(name, DatasetMetadata.PROP_CREATED, now);
+        if (type != null) { getValueClassMappings().put(name, type); }
+        if (source != null) { putFieldMetaProp(name, DatasetMetadata.PROP_SOURCE, source); }
+        if (description != null) { putFieldMetaProp(name, DatasetMetadata.PROP_DESCRIPTION, description); }
+        appendDatasetHistory("Added field " + name);
+
+        return now;
+    }
+
 
     public Object putFieldMetaProp(String fieldName, String propertyName, Object value) {
         if (value == null) {
             return clearFieldMetaProp(fieldName, propertyName);
         }
-        PropertiesHolder h = fieldMetaProps.get(fieldName);
-        if (h == null) {
-            h = new PropertiesHolder(fieldName);
-            fieldMetaProps.put(fieldName, h);
-        }
+        PropertiesHolder h = getOrCreatePropertiesHolder(fieldName);
         return h.putValue(propertyName, value);
     }
 
@@ -178,18 +192,19 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable {
     }
 
     public <S> S getFieldMetaProp(String fieldName, String propertyName, Class<S> type) {
-        return (S)getFieldMetaProp(fieldName, propertyName);
+        return (S) getFieldMetaProp(fieldName, propertyName);
     }
 
-    /** Utility method that collects all the values for the specified property. The resulting map is keyed by field name.
+    /**
+     * Utility method that collects all the values for the specified property. The resulting map is keyed by field name.
      * NOTE: modifying the returned Map has no impact on the underlying Metadata
      *
      * @param propName
      * @return
      */
-    public Map<String,Object> collectFieldMetaProps(String propName) {
-        Map<String,Object> results = new LinkedHashMap<>();
-        for (Map.Entry<String,PropertiesHolder> e: fieldMetaProps.entrySet()) {
+    public Map<String, Object> collectFieldMetaProps(String propName) {
+        Map<String, Object> results = new LinkedHashMap<>();
+        for (Map.Entry<String, PropertiesHolder> e : fieldMetaProps.entrySet()) {
             PropertiesHolder h = e.getValue();
             Object value = h.getValue(propName);
             if (value != null) {
@@ -235,36 +250,186 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable {
         }
     }
 
-    public String now() {
+    public static String now() {
         return DATE_FORMAT.format(new Date());
     }
 
-    public String nowFormatted() {
-        return "[" + now() + "] ";
+    public void appendDatasetHistory(String msg) {
+        appendDatasetHistory(msg, now());
     }
 
-    public void appendFieldHistory(String fldName, String msg) {
+    public void appendDatasetHistory(String msg, String now) {
 
-        String old = (String)getFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY);
+        String old = (String) properties.get(DatasetMetadata.PROP_HISTORY);
         if (old == null) {
-            putFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY, nowFormatted() + msg);
+            properties.put(DatasetMetadata.PROP_HISTORY, "[" + now + "]" + msg);
         } else {
-            putFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY, old + "\n" + nowFormatted() + msg);
+            properties.put(DatasetMetadata.PROP_HISTORY, old + "\n" + "[" + now + "]" + msg);
         }
     }
 
-    public void appendDatasetHistory(String msg) {
-        String old = (String)getProperties().get(DatasetMetadata.PROP_HISTORY);
+    public void appendFieldHistory(String fldName, String msg) {
+        appendFieldHistory(fldName, msg, now());
+    }
+
+    public void appendFieldHistory(String fldName, String msg, String now) {
+
+        String old = (String) getFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY);
         if (old == null) {
-            getProperties().put(DatasetMetadata.PROP_HISTORY, nowFormatted() + msg);
+            putFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY, "[" + now + "]" + msg);
         } else {
-            getProperties().put(DatasetMetadata.PROP_HISTORY, old + "\n" + nowFormatted() + msg);
+            putFieldMetaProp(fldName, DatasetMetadata.PROP_HISTORY, old + "\n" + "[" + now + "]" + msg);
+        }
+    }
+
+    public void concatDatasetProperty(String propName, Object value) {
+
+        Object old = properties.get(propName);
+        if (old == null) {
+            properties.put(propName, value);
+        } else {
+            properties.put(propName, old + "\n" + value);
+        }
+    }
+
+    public void concatFieldProperty(String fldName, String propName, Object value) {
+
+        Object old = getFieldMetaProp(fldName, propName);
+        if (old == null) {
+            putFieldMetaProp(fldName, propName, value);
+        } else {
+            putFieldMetaProp(fldName, propName, old + "\n" + value);
+        }
+    }
+
+    /** Merge these properties assuming they are existing ones and correctly formatted
+     *
+     * @param propName
+     * @param value
+     */
+    public void mergeDatasetProperty(String propName, Object value) {
+
+        if (value == null) {
+            return;
+        }
+
+        // handle the well known properties
+        if (PROP_HISTORY.equals(propName) || PROP_DESCRIPTION.equals(propName)) {
+            concatDatasetProperty(propName, value);
+            return;
+        }
+
+        handleMerge(properties, propName, value);
+    }
+
+    /** Append these properties assuming the value isa  new property and might need formatting
+     *
+     * @param propName
+     * @param value
+     */
+    public void appendDatasetProperty(String propName, Object value) {
+
+        if (value == null) {
+            return;
+        }
+
+        // handle the well known properties
+        if (PROP_HISTORY.equals(propName)) {
+            appendDatasetHistory(value.toString());
+            return;
+        } else if (PROP_DESCRIPTION.equals(propName)) {
+            concatDatasetProperty(propName, value);
+            return;
+        }
+
+        handleMerge(properties, propName, value);
+    }
+
+    public void mergeFieldProperty(String fieldName, String propName, Object value) {
+
+        if (value == null) {
+            return;
+        }
+
+        // handle the well known properties
+        if (PROP_HISTORY.equals(propName) || PROP_DESCRIPTION.equals(propName)) {
+            concatFieldProperty(fieldName, propName, value);
+            return;
+        }
+
+        PropertiesHolder h = getOrCreatePropertiesHolder(fieldName);
+        handleMerge(h.getValues(), propName, value);
+    }
+
+    public void appendFieldProperty(String fieldName, String propName, Object value) {
+
+        if (value == null) {
+            return;
+        }
+
+        // handle the well known properties
+        if (PROP_HISTORY.equals(propName)) {
+            appendFieldHistory(fieldName, value.toString());
+            return;
+        } else if (PROP_DESCRIPTION.equals(propName)) {
+            concatFieldProperty(fieldName, propName, value);
+            return;
+        }
+
+        PropertiesHolder h = getOrCreatePropertiesHolder(fieldName);
+        handleMerge(h.getValues(), propName, value);
+    }
+
+    private PropertiesHolder getOrCreatePropertiesHolder(String fieldName) {
+        PropertiesHolder h = fieldMetaProps.get(fieldName);
+        if (h == null) {
+            h = new PropertiesHolder(fieldName);
+            fieldMetaProps.put(fieldName, h);
+        }
+        return h;
+    }
+
+    private void handleMerge(Map<String,Object> map, String propName, Object value) {
+        Object old = map.get(propName);
+
+        if (old == null) {
+            map.put(propName, value);
+        } else {
+            if (old instanceof String) {
+                map.put(propName, old + "\n" + value);
+            } else if (old instanceof Integer) {
+                if (value instanceof Integer) {
+                    map.put(propName, ((Number)old).intValue() + ((Number)value).intValue());
+                } else if (value instanceof Float) {
+                    map.put(propName, ((Number)old).floatValue() + ((Number)value).floatValue());
+                } else if (value instanceof Double) {
+                    map.put(propName, ((Number)old).doubleValue() + ((Number)value).doubleValue());
+                } else {
+                    map.put(propName, old + "\n" + value);
+                }
+            } else if (old instanceof Float) {
+                if (value instanceof Double) {
+                    map.put(propName, ((Number)old).doubleValue() + ((Number)value).doubleValue());
+                } else if (value instanceof Number) {
+                    map.put(propName, ((Number)old).floatValue() + ((Number)value).floatValue());
+                } else {
+                    map.put(propName, old + "\n" + value);
+                }
+            } else if (old instanceof Double) {
+                if (value instanceof Number) {
+                    map.put(propName, ((Number)old).doubleValue() + ((Number)value).doubleValue());
+                } else {
+                    map.put(propName, old + "\n" + value);
+                }
+            } else {
+                map.put(propName, old + "\n" + value);
+            }
         }
     }
 
     public static class PropertiesHolder implements Serializable {
 
-        @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
+        @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
         private final Map<String, Object> values = new LinkedHashMap<>();
         private final String fieldName;
 
@@ -277,7 +442,9 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable {
             }
         }
 
-        public PropertiesHolder(String fieldName) { this.fieldName = fieldName; }
+        public PropertiesHolder(String fieldName) {
+            this.fieldName = fieldName;
+        }
 
         public String getFieldName() {
             return fieldName;

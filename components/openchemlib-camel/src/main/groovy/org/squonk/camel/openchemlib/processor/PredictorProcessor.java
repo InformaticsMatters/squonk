@@ -1,5 +1,6 @@
 package org.squonk.camel.openchemlib.processor;
 
+import com.actelion.research.chem.Molecule;
 import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -61,8 +62,24 @@ public class PredictorProcessor implements Processor {
                 recorder.recordStats(stats);
             });
         }
-        handleMetadata(exch, dataset.getMetadata());
-        exch.getIn().setBody(new MoleculeObjectDataset(mols));
+        DatasetMetadata meta = handleMetadata(exch, dataset.getMetadata());
+        exch.getIn().setBody(new MoleculeObjectDataset(mols, meta));
+    }
+
+    protected DatasetMetadata handleMetadata(Exchange exch, DatasetMetadata meta) throws IllegalAccessException, InstantiationException {
+        if (meta == null) {
+            meta = new DatasetMetadata(MoleculeObject.class);
+        }
+        String source = "OpenChemLib " + Molecule.class.getPackage().getImplementationVersion();
+        for (AbstractOCLPredictor<?> predictor : predictors) {
+            int i = 0;
+            for (MoleculeCalculator<?> calc : predictor.getCalculators()) {
+                String desc = predictor.getPropertyTypes()[i].getDescription();
+                meta.createField(calc.getResultName(), source, "Molecular property calculation: " + desc, calc.getResultType());
+                i++;
+            }
+        }
+        return meta;
     }
 
     protected Stream<MoleculeObject> calculateMultiple(Stream<MoleculeObject> input, MoleculeCalculator<?> calc) {
@@ -76,17 +93,4 @@ public class PredictorProcessor implements Processor {
         });
         return input;
     }
-
-    protected void handleMetadata(Exchange exch, DatasetMetadata meta) throws IllegalAccessException, InstantiationException {
-        if (meta == null) {
-            meta = new DatasetMetadata(MoleculeObject.class);
-        }
-        for (AbstractOCLPredictor<?> predictor : predictors) {
-            for (MoleculeCalculator<?> calc : predictor.getCalculators()) {
-                meta.getValueClassMappings().put(calc.getResultName(), calc.getResultType());
-            }
-        }
-        exch.getIn().setHeader(CamelCommonConstants.HEADER_METADATA, meta);
-    }
-
 }

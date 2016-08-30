@@ -57,7 +57,7 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
      * @throws ParseException
      */
     public ChemTermsEvaluator(String chemTermsFunction, Mode mode, String metricsCode) throws ParseException {
-        this("filter", chemTermsFunction, mode, metricsCode);
+        this(null, chemTermsFunction, mode, metricsCode);
     }
 
     ChemTermsEvaluator(String propName, String chemTermsFunction, Mode mode, String metricsCode) throws ParseException {
@@ -69,6 +69,21 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
         this.pool = new ChemJEPPool(chemTermsFunction, 25);
     }
 
+    @Override
+    public String getDescription() {
+        switch (mode) {
+            case Filter:
+                return "Chemical Terms filter: " + chemTermsFunction;
+            case Calculate:
+                return "Chemical Terms expression: " + chemTermsFunction;
+            case Transform:
+                return "Chemical Terms transform: " + chemTermsFunction;
+            default:
+                return "unknown";
+        }
+    }
+
+    @Override
     public String getPropName() {
         return propName;
     }

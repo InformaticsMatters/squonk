@@ -20,7 +20,18 @@ public class StandardizerEvaluator implements MoleculeEvaluator {
     public StandardizerEvaluator(String szr, int poolSize) {
         this.pool = new StandardizerPool(szr, poolSize);
     }
-    
+
+
+    @Override
+    public String getDescription() {
+        return "Standardizer: " + pool.szr;
+    }
+
+    @Override
+    public String getPropName() {
+        return null;
+    }
+
     @Override
     public MoleculeEvaluator.Mode getMode() {
         return MoleculeEvaluator.Mode.Transform;

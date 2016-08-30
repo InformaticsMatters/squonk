@@ -28,7 +28,7 @@ field1 field2 field3
         //println "simple csv reader with header"
         InputStream is = new ByteArrayInputStream(CSV1.bytes)
         CSVFormat format = CSVFormat.DEFAULT.withHeader()
-        CSVReader reader = new CSVReader(is, format)
+        CSVReader reader = new CSVReader(is, format, '')
         
         when:
         Stream<BasicObject> stream = reader.asStream()
@@ -43,7 +43,7 @@ field1 field2 field3
         //println "simple csv reader no header"
         InputStream is = new ByteArrayInputStream(CSV1.bytes)
         CSVFormat format = CSVFormat.DEFAULT
-        CSVReader reader = new CSVReader(is, format)
+        CSVReader reader = new CSVReader(is, format, '')
         
         when:
         Stream<BasicObject> stream = reader.asStream()
@@ -58,7 +58,7 @@ field1 field2 field3
         //println "simple csv reader specified header"
         InputStream is = new ByteArrayInputStream(CSV1.bytes)
         CSVFormat format = CSVFormat.DEFAULT.withHeader("X1","X2","X3")
-        CSVReader reader = new CSVReader(is, format)
+        CSVReader reader = new CSVReader(is, format, '')
         
         when:
         Stream<BasicObject> stream = reader.asStream()
@@ -73,7 +73,7 @@ field1 field2 field3
         //println "simple csv reader specified header skip first row"
         InputStream is = new ByteArrayInputStream(CSV1.bytes)
         CSVFormat format = CSVFormat.DEFAULT.withHeader("X1","X2","X3").withSkipHeaderRecord()
-        CSVReader reader = new CSVReader(is, format)
+        CSVReader reader = new CSVReader(is, format, '')
         
         when:
         Stream<BasicObject> stream = reader.asStream()
@@ -88,7 +88,7 @@ field1 field2 field3
         //println "pubchem tab reader"
         InputStream is = new FileInputStream("../../data/testfiles/Pubchem.tab.gz")
         CSVFormat format = CSVFormat.TDF.withHeader()
-        CSVReader reader = new CSVReader(is, format)
+        CSVReader reader = new CSVReader(is, format, '')
         
         when:
         Stream<BasicObject> stream = reader.asStream()
@@ -107,7 +107,7 @@ field1 field2 field3
         //println "single space reader with header"
         InputStream is = new ByteArrayInputStream(SPACE1.bytes)
         CSVFormat format = CSVFormat.DEFAULT.withDelimiter(' ' as char)
-        CSVReader reader = new CSVReader(is, format)
+        CSVReader reader = new CSVReader(is, format, '')
         
         when:
         Stream<BasicObject> stream = reader.asStream()
@@ -122,7 +122,7 @@ field1 field2 field3
         //println "kinase tab reader"
         InputStream is = new FileInputStream("../../data/testfiles/Nature-SAR-100.txt.gz")
         CSVFormat format = CSVFormat.TDF.withHeader()
-        CSVReader reader = new CSVReader(is, format)
+        CSVReader reader = new CSVReader(is, format, '')
 
         when:
         Stream<BasicObject> stream = reader.asStream()

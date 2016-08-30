@@ -2,7 +2,10 @@ package org.squonk.camel.chemaxon.processor;
 
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.struc.Molecule;
+import com.chemaxon.version.VersionInfo;
+import org.squonk.dataset.DatasetMetadata;
 import org.squonk.types.MoleculeObject;
+import org.squonk.types.io.JsonHandler;
 import org.squonk.util.Metrics;
 import org.squonk.util.ResultExtractor;
 import org.apache.camel.Exchange;
@@ -210,9 +213,28 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
                 recorder.recordStats(stats);
             });
         }
-        //handleMetadata(exch, dataset.getMetadata());
-        exch.getIn().setBody(new MoleculeObjectDataset(mols));
+        DatasetMetadata meta = handleMetadata(exch, dataset.getMetadata(), evals);
+        LOG.info("Generated metadata: " + JsonHandler.getInstance().objectToJson(meta));
+        exch.getIn().setBody(new MoleculeObjectDataset(mols, meta));
     }
+
+    protected DatasetMetadata handleMetadata(Exchange exch, DatasetMetadata meta, List<MoleculeEvaluator> evals) {
+        if (meta == null) {
+            meta = new DatasetMetadata(MoleculeObject.class);
+        }
+        String source = "JChem " + VersionInfo.getVersion();
+        for (MoleculeEvaluator eval : evals) {
+            String fieldName = eval.getPropName();
+            if (fieldName == null) {
+                // a filter or transform
+                meta.appendDatasetHistory(eval.getDescription() + "[" + source + "]");
+            } else {
+                meta.createField(fieldName, source, eval.getDescription(), null);
+            }
+        }
+        return meta;
+    }
+
 
     private Stream<MoleculeObject> calculateMultiple(Stream<MoleculeObject> input, MoleculeEvaluator evaluator, Map<String,Integer> stats) throws Exception {
         //LOG.info("Calculating for stream " + input);

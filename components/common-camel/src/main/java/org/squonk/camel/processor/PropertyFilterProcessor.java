@@ -79,6 +79,7 @@ public class PropertyFilterProcessor implements Processor {
 
         LOG.info("Configuring " + filters.size() + " filters");
         final List<PropertyFilter> filtersToUse = new ArrayList<>();
+        String filterString = "";
         for (PropertyFilter f : filters) {
             String range = exch.getIn().getHeader(f.getPropertyName(), String.class);
             LOG.fine("Filtering for " + f.getPropertyName() + " is " + range);
@@ -91,6 +92,10 @@ public class PropertyFilterProcessor implements Processor {
             if (d.isActive()) {
                 LOG.fine("Adding filter " + d);
                 filtersToUse.add(d);
+                if (filterString.length() > 0) {
+                    filterString += " && ";
+                }
+                filterString += d.asText();
             }
         }
         LOG.info("Generated " + filtersToUse.size() + " active filters");
@@ -126,7 +131,15 @@ public class PropertyFilterProcessor implements Processor {
         if (meta == null) {
             meta = new DatasetMetadata(MoleculeObject.class);
         }
-        meta.setSize(0);
+        meta.setSize(-1);
+        meta.createField(resultPropertyName, "Filter: " + filterString, "Property filter fail count", Integer.class);
+        if (filter) {
+            if (inverse) {
+                meta.appendDatasetHistory("Filter rows where " + resultPropertyName + " > 0" );
+            } else {
+                meta.appendDatasetHistory("Filter rows where " + resultPropertyName + " = 0" );
+            }
+        }
         exch.getIn().setBody(new MoleculeObjectDataset(mols, meta));
     }
 }

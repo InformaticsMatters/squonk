@@ -1,5 +1,6 @@
 package org.squonk.camel.cdk.processor;
 
+import org.openscience.cdk.CDK;
 import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -70,26 +71,32 @@ public class CDKMolecularDescriptorProcessor implements Processor {
                 recorder.recordStats(stats);
             });
         }
-        handleMetadata(exch, dataset.getMetadata());
-        exch.getIn().setBody(new MoleculeObjectDataset(mols));
+        DatasetMetadata meta = handleMetadata(exch, dataset.getMetadata());
+        exch.getIn().setBody(new MoleculeObjectDataset(mols, meta));
     }
 
-    protected void handleMetadata(Exchange exch, DatasetMetadata<MoleculeObject> meta) throws IllegalAccessException, InstantiationException {
+    protected DatasetMetadata handleMetadata(Exchange exch, DatasetMetadata<MoleculeObject> meta) throws IllegalAccessException, InstantiationException {
         if (meta == null) {
             meta = new DatasetMetadata<>(MoleculeObject.class);
         }
+        String source = "CDK " + CDK.getVersion();
         List<DescriptorCalculator> calculators = getCalculators(exch);
         for (DescriptorCalculator calc : calculators) {
             String[] names = calc.getPropertyNames();
+            String[] descriptions = calc.getDescriptions();
             Class[] types = calc.getPropertyTypes();
             if (names.length != types.length) {
                 throw new IllegalStateException("Names and types differ in length");
             }
+            if (names.length != descriptions.length) {
+                throw new IllegalStateException("Names and descriptions differ in length");
+            }
             for (int i=0; i<names.length; i++) {
                 meta.getValueClassMappings().put(names[i], types[i]);
+                meta.createField(names[i], source, descriptions[i], types[i]);
             }
         }
-        exch.getIn().setHeader(CamelCommonConstants.HEADER_METADATA, meta);
+        return meta;
     }
 
     protected Stream<MoleculeObject> calculateMultiple(Stream<MoleculeObject> input, DescriptorCalculator calculator) {

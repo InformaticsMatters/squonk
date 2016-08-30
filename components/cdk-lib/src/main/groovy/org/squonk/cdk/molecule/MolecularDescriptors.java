@@ -245,6 +245,7 @@ public class MolecularDescriptors {
 
         HBondDonorCountCalculator() {
             descriptor = new HBondDonorCountDescriptor();
+            descriptions = new String[]{"H-bond donor count"};
         }
 
         @Override
@@ -257,6 +258,7 @@ public class MolecularDescriptors {
 
         HBondAcceptorCountCalculator() {
             descriptor = new HBondAcceptorCountDescriptor();
+            descriptions = new String[]{"H-bond acceptor count"};
         }
 
         @Override
@@ -269,6 +271,7 @@ public class MolecularDescriptors {
 
         WienerNumberCalculator() {
             descriptor = new WienerNumbersDescriptor();
+            descriptions = new String[]{"Wiener path", "Wiener polarity"};
         }
 
         @Override
@@ -281,6 +284,7 @@ public class MolecularDescriptors {
 
         ALogPCalculator() throws CDKException {
             descriptor = new ALOGPDescriptor();
+            descriptions = new String[]{"ALogP", "AMR"};
         }
 
         @Override
@@ -293,6 +297,7 @@ public class MolecularDescriptors {
 
         public XLogPCalculator() {
             descriptor = new XLogPDescriptor();
+            descriptions = new String[]{"XLogP"};
         }
 
         @Override
