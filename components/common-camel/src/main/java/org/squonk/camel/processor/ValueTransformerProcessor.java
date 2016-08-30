@@ -38,6 +38,7 @@ public class ValueTransformerProcessor implements Processor {
     private final List<Conversion> conversions = new ArrayList<>();
     private GroovyClassLoader groovyClassLoader;
     private String errorFieldName = "TransformErrors";
+    private boolean hasErrorField = false;
 
     private GroovyClassLoader getGroovyClassLoader() {
         if (groovyClassLoader == null) {
@@ -65,13 +66,19 @@ public class ValueTransformerProcessor implements Processor {
      * @throws IOException
      */
     public Dataset<? extends BasicObject> execute(TypeConverter typeConverter, Dataset<BasicObject> dataset) throws IOException {
+
+        DatasetMetadata oldMeta = dataset.getMetadata();
+        if (oldMeta != null) {
+            hasErrorField = oldMeta.getValueClassMappings().containsKey(errorFieldName);
+        }
+
         Stream<BasicObject> stream = addConversions(typeConverter, dataset);
 
         Class type = dataset.getType();
         for (Conversion conversion : conversions) {
             type = conversion.getObjectType(type);
         }
-        DatasetMetadata oldMeta = dataset.getMetadata();
+
         DatasetMetadata newMeta = new DatasetMetadata(type, null, oldMeta == null ? null : oldMeta.getFieldMetaProps(), -1, oldMeta == null ? null : oldMeta.getProperties());
         Dataset newData = new Dataset(type, stream, newMeta);
 
@@ -80,12 +87,17 @@ public class ValueTransformerProcessor implements Processor {
 
     public Stream<BasicObject> addConversions(TypeConverter typeConverter, Dataset<BasicObject> dataset) throws IOException {
         Stream<BasicObject> stream = dataset.getStream();
+        DatasetMetadata meta = dataset.getMetadata();
         for (Conversion conversion : conversions) {
             LOG.info("Handling conversion: " + conversion);
             stream = conversion.execute(typeConverter, stream);
-            if (dataset.getMetadata() != null) {
-                conversion.updateMetadata(dataset.getMetadata());
+
+            if (meta!= null) {
+                conversion.updateMetadata(meta);
             }
+        }
+        if (!hasErrorField && meta != null) {
+            meta.createField(errorFieldName, "Squonk potion", "Errors from data transforms", String.class);
         }
         return stream;
     }
