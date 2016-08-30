@@ -3,6 +3,7 @@ package org.squonk.dataset;
 import com.fasterxml.jackson.annotation.*;
 import org.squonk.types.BasicObject;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -30,7 +31,7 @@ import java.util.*;
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonPropertyOrder({"type", "size", "valueClassMappings"})
-public class DatasetMetadata<T extends BasicObject> {
+public class DatasetMetadata<T extends BasicObject> implements Serializable {
 
     public static final String PROP_DISPLAY_NAME = "displayName";
     public static final String PROP_DESCRIPTION = "description";
@@ -261,7 +262,7 @@ public class DatasetMetadata<T extends BasicObject> {
         }
     }
 
-    public static class PropertiesHolder {
+    public static class PropertiesHolder implements Serializable {
 
         @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
         private final Map<String, Object> values = new LinkedHashMap<>();
