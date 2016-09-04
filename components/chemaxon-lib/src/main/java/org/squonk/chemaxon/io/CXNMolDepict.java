@@ -44,6 +44,11 @@ public class CXNMolDepict extends AbstractMolDepict<Molecule> {
     }
 
     @Override
+    public Molecule stringToMolecule(String molecule, String molFormat) throws Exception {
+        return MolImporter.importMol(molecule, molFormat);
+    }
+
+    @Override
     public BufferedImage moleculeToImage(Molecule molecule, DepictionParameters params) throws Exception {
 
         DepictionParameters p = depictionParameters(params);

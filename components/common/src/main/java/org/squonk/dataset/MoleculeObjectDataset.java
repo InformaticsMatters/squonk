@@ -45,7 +45,12 @@ public class MoleculeObjectDataset implements DatasetProvider, StreamProvider {
         return mods;
     }
 
-    /** Get the items from the wrapped dataset as a List. 
+    @Override
+    public DatasetMetadata getMetadata() throws Exception {
+        return mods.getMetadata();
+    }
+
+    /** Get the items from the wrapped dataset as a List.
      * See comments in {@link Dataset} for concerns about scalability for large datasets.
      * 
      * @return

@@ -32,7 +32,6 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         this.baseUrl = baseUrl;
         LOG.info("NotebookRestClient is using base URL of " + baseUrl);
         debugConnections = false;
-        purpose = "NotebookRestClient";
     }
 
     public NotebookRestClient() {

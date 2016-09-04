@@ -241,7 +241,7 @@ class ValueTransformerProcessorSpec extends Specification {
         nue.items.size() == 2
 
         nue.items[0].getValue('two') == null
-        nue.items[0].getValue('TransformErrors') != null
+        nue.items[0].getValue('Errors') != null
         nue.items[1].getValue('two') instanceof QualifiedValue
     }
 

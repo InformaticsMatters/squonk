@@ -148,7 +148,6 @@ public class CdkMolDepictServlet extends HttpServlet {
         String paramHeight = req.getParameter("h");
         String paramExpand = req.getParameter("expand");
         String paramBg = req.getParameter("bg");
-        String paramAlpha = req.getParameter("alpha");
 
         // size
         Integer width = null;
@@ -165,16 +164,9 @@ public class CdkMolDepictServlet extends HttpServlet {
 
         // background
         Color col = null;
-        if (paramBg != null || paramAlpha != null) {
+        if (paramBg != null) {
             try {
-
                 col = new Color(Long.decode(paramBg).intValue(), true);
-
-//                col = Color.decode(paramBg == null ? "#FFFFFF" : paramBg);
-//                if (paramAlpha != null) {
-//                    int alpha = Integer.decode(paramAlpha);
-//                    col = new Color(col.getRed(), col.getGreen(), col.getBlue(), alpha);
-//                }
             } catch (NumberFormatException ex) {
                 LOG.log(Level.INFO, "Can't interpret color parameters: " + paramBg, ex);
             }

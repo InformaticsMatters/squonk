@@ -31,10 +31,9 @@ import java.util.logging.Logger;
 public class AbstractHttpClient {
 
     private static final Logger LOG = Logger.getLogger(AbstractHttpClient.class.getName());
-    protected final CloseableHttpClient httpclient;
-    protected final PoolingHttpClientConnectionManager connectionManager;
+    protected transient final CloseableHttpClient httpclient;
+    protected transient final PoolingHttpClientConnectionManager connectionManager;
     protected boolean debugConnections = false;
-    protected String purpose;
 
     public AbstractHttpClient() {
 

@@ -40,6 +40,19 @@ public abstract class AbstractMolDepict<T extends Object> {
 
     public abstract T stringToMolecule(String molecule) throws Exception;
 
+    public T stringToMolecule(String s, String molFormat) throws Exception {
+        if (molFormat != null) {
+            if (molFormat.toLowerCase().startsWith("smiles")) {
+                return smilesToMolecule(s);
+            } else if (molFormat.toLowerCase().startsWith("mol:v2")) {
+                return v2000ToMolecule(s);
+            } else if (molFormat.toLowerCase().startsWith("mol:v3")) {
+                return v3000ToMolecule(s);
+            }
+        }
+        return stringToMolecule(s);
+    }
+
     public abstract BufferedImage moleculeToImage(T molecule, DepictionParameters params) throws Exception;
 
     public BufferedImage moleculeToImage(T molecule) throws Exception {
@@ -63,8 +76,16 @@ public abstract class AbstractMolDepict<T extends Object> {
         return moleculeToSVG(stringToMolecule(mol), params);
     }
 
+    public String stringToSVG(String mol, String molFormat, DepictionParameters params) throws Exception {
+        return moleculeToSVG(stringToMolecule(mol, molFormat), params);
+    }
+
     public String stringToSVG(String mol) throws Exception {
         return moleculeToSVG(stringToMolecule(mol), null);
+    }
+
+    public String stringToSVG(String mol, String molFormat) throws Exception {
+        return moleculeToSVG(stringToMolecule(mol, molFormat), null);
     }
 
     public String smilesToSVG(String mol, DepictionParameters params) throws Exception {
