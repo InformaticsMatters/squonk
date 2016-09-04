@@ -209,7 +209,7 @@ public class AbstractHttpClient {
         try {
             URI uri = b.build();
             debugConnections("POST", uri);
-            LOG.info("POSTing to " + uri);
+            LOG.fine("POSTing to " + uri);
             HttpPost httpPost = new HttpPost(uri);
             if (headers != null && headers.length > 0) {
                 addHeaders(httpPost, headers);
