@@ -16,7 +16,9 @@ public class NotebookCanvasDTO {
     private final Long version;
     private final Long lastCellId;
     private final List<CellDTO> cells = new ArrayList<>();
-    private final Map<String, Object> properties = new HashMap<>();
+
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+    private final Map<String, Object> properties = new LinkedHashMap<>();
 
 
     /** Create Canvas DTO of the current (latest) version
@@ -84,7 +86,6 @@ public class NotebookCanvasDTO {
         return (T)properties.get(key);
     }
 
-    @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
     public Map<String,Object> getProperties() {
         return properties;
     }
@@ -106,8 +107,14 @@ public class NotebookCanvasDTO {
 
         private final Integer top, left, width, height;
 
+        /**
+         *
+         */
         @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
         private final Map<String,Object> options = new LinkedHashMap<>();
+
+        @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
+        private final Map<String,Object> settings = new LinkedHashMap<>();
 
         private final  List<BindingDTO> bindings = new ArrayList<>();
         // does the state need to be stored e.g. execution failed?
@@ -200,6 +207,10 @@ public class NotebookCanvasDTO {
 
         public Integer getHeight() {
             return height;
+        }
+
+        public Map<String, Object> getSettings() {
+            return settings;
         }
     }
 
