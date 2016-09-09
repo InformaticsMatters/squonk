@@ -25,13 +25,17 @@ public class CSVReader implements Iterator<BasicObject>, AutoCloseable {
     private Map<String, Integer> headermap;
     private final DatasetMetadata meta;
     private final Set<String> fields;
-    private final String source = "CSV file"; // TODO try to get the file name passed through
+    private String source = "CSV file (source unknown)"; // TODO try to get the file name passed through
 
     public CSVReader(InputStream is, String type) throws IOException {
-        this(is, CSVFormat.DEFAULT, type);
+        this(is, CSVFormat.DEFAULT, type, null);
     }
 
     public CSVReader(InputStream is, CSVFormat csvFormat, String type) throws IOException {
+        this(is, csvFormat, type, null);
+    }
+
+    public CSVReader(InputStream is, CSVFormat csvFormat, String type, String filename) throws IOException {
         this.reader = new InputStreamReader(IOUtils.getGunzippedInputStream(is));
         this.format = csvFormat;
         this.type = type;
@@ -40,9 +44,13 @@ public class CSVReader implements Iterator<BasicObject>, AutoCloseable {
         this.headermap = parser.getHeaderMap();
         this.meta = new DatasetMetadata(BasicObject.class);
         this.fields = new HashSet<>();
+        if (filename != null) {
+            this.source = "CSV file: " + filename;
+        }
 
         meta.getProperties().put(DatasetMetadata.PROP_CREATED, DatasetMetadata.now());
-        meta.getProperties().put(DatasetMetadata.PROP_DESCRIPTION, "Created from CSV file of type " + type);
+        meta.getProperties().put(DatasetMetadata.PROP_SOURCE, source);
+        meta.getProperties().put(DatasetMetadata.PROP_DESCRIPTION, "Read from " + source + " of type " + type);
     }
 
     public DatasetMetadata getDatasetMetadata() {

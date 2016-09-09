@@ -47,22 +47,24 @@ public class SDFReaderStep extends AbstractStep {
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         LOG.info("execute SDFReaderStep");
         statusMessage = "Reading SDF";
+        String filename = fetchMappedInput(VAR_SDF_INPUT, String.class, varman);
         try (InputStream is = fetchMappedInput(VAR_SDF_INPUT, InputStream.class, varman)) {
-            LOG.fine("Fetched input: " + (is != null));
-            SDFReader reader = createReader(IOUtils.getGunzippedInputStream(is));
+            LOG.info("Fetched input for: " + filename);
+            SDFReader reader = createReader(IOUtils.getGunzippedInputStream(is), filename);
             LOG.fine("Created SDFReader");
-            Stream<MoleculeObject> mols = reader.asStream();
-            DatasetMetadata meta = reader.getDatasetMetadata();
-            Dataset results = new Dataset(MoleculeObject.class, mols, meta);
-            LOG.fine("Writing output");
-            createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
-            statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
-            LOG.info("Writing dataset from SDF complete: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
+            try (Stream<MoleculeObject> mols = reader.asStream()) {
+                DatasetMetadata meta = reader.getDatasetMetadata();
+                Dataset results = new Dataset(MoleculeObject.class, mols, meta);
+                LOG.fine("Writing output");
+                createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
+                statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+                LOG.info("Writing dataset from SDF complete: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
+            }
         }
     }
 
-    private SDFReader createReader(InputStream input) throws IOException {
-        SDFReader reader = new SDFReader(input);
+    private SDFReader createReader(InputStream input, String filename) throws IOException {
+        SDFReader reader = new SDFReader(input, filename);
         String nameFieldName = getOption(OPTION_NAME_FIELD_NAME, String.class);
         if (nameFieldName != null && nameFieldName.length() > 0) {
             reader.setNameFieldName(nameFieldName);

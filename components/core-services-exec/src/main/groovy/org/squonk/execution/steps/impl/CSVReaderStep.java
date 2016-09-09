@@ -125,8 +125,9 @@ public class CSVReaderStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         statusMessage = "Reading file ...";
+        String filename = fetchMappedInput(VAR_CSV_INPUT, String.class, varman);
         try (InputStream is = fetchMappedInput(VAR_CSV_INPUT, InputStream.class, varman)) {
-            CSVReader reader = createReader(IOUtils.getGunzippedInputStream(is));
+            CSVReader reader = createReader(IOUtils.getGunzippedInputStream(is), filename);
             Stream<BasicObject> mols = reader.asStream();
             Dataset results = new Dataset(BasicObject.class, mols, reader.getDatasetMetadata());
             createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
@@ -135,7 +136,7 @@ public class CSVReaderStep extends AbstractStep {
         }
     }
 
-    private CSVReader createReader(InputStream input) throws IOException {
+    private CSVReader createReader(InputStream input, String filename) throws IOException {
 
         String csvFormatOption = getOption(OPTION_FORMAT_TYPE, String.class);
         LOG.fine("CSVFormat string = " + csvFormatOption);
@@ -218,7 +219,7 @@ public class CSVReaderStep extends AbstractStep {
         }
         LOG.info("CSV: " + csv);
 
-        return new CSVReader(input, csv, csvFormatOption);
+        return new CSVReader(input, csv, csvFormatOption, filename);
     }
 
 }

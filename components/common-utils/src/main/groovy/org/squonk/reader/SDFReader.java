@@ -27,14 +27,22 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
     private String nameFieldName = "name";
     private final DatasetMetadata meta;
     private final Set<String> fields;
-    private final String source = "SD file"; // TODO try to get the file name passed through
+    private String source = "SD file (source unknown)";
 
-    public SDFReader(InputStream is) throws IOException {
+    public SDFReader(InputStream is, String filename) throws IOException {
         this.reader = new LineNumberReader(new InputStreamReader(IOUtils.getGunzippedInputStream(is)));
         this.meta = new DatasetMetadata(MoleculeObject.class);
         this.fields = new HashSet<>();
+        if (filename != null) {
+            this.source = "SD file: " + filename;
+        }
         meta.getProperties().put(DatasetMetadata.PROP_CREATED, DatasetMetadata.now());
-        meta.getProperties().put(DatasetMetadata.PROP_DESCRIPTION, "Created from SD file");
+        meta.getProperties().put(DatasetMetadata.PROP_SOURCE, source);
+        meta.getProperties().put(DatasetMetadata.PROP_DESCRIPTION, "Read from " + source);
+    }
+
+    public SDFReader(InputStream is) throws IOException {
+        this(is, null);
     }
 
     /**

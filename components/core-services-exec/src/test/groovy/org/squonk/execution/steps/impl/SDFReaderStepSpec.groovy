@@ -26,16 +26,21 @@ class SDFReaderStepSpec extends Specification {
             new VariableKey(producer,"input"),
             InputStream.class, 
             is)
+        varman.putValue(new VariableKey(producer,"input"),
+                String.class,
+                "some filename")
         
         when:
         step.execute(varman, null)
         Dataset ds = varman.getValue(new VariableKey(producer, SDFReaderStep.VAR_DATASET_OUTPUT), Dataset.class)
-        
+
         then:
         ds != null
         ds.items.size() == 36
+        ds.metadata.getProperties()['source'].contains("some filename")
 
-        InputStream json = JsonHandler.getInstance().marshalStreamToJsonArray(ds.getStream(), false)
+
+        //InputStream json = JsonHandler.getInstance().marshalStreamToJsonArray(ds.getStream(), false)
         //println json.text
         //File f = new File("/tmp/dhfr.json")
         //f << json.text

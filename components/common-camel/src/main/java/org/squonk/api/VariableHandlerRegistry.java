@@ -2,6 +2,7 @@ package org.squonk.api;
 
 import org.squonk.types.DatasetHandler;
 import org.squonk.types.InputStreamHandler;
+import org.squonk.types.StringHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +20,7 @@ public class VariableHandlerRegistry {
     public VariableHandlerRegistry() {
         register(new DatasetHandler());
         register(new InputStreamHandler());
+        register(new StringHandler());
     }
 
     public void register(VariableHandler handler) {
