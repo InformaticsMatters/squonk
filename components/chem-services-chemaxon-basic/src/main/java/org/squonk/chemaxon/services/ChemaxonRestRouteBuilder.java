@@ -99,7 +99,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
             createServiceDescriptor(
                     "chemaxon.calculators.lipinski",
                     "Lipinski (CXN)",
-                    "Lipinski properties using ChemAxon calculators",
+                    "Lipinski rule of 5 filter using ChemAxon calculators",
                     new String[]{"lipinski", "filter", "druglike", "molecularproperties", "chemaxon"},
                     "icons/filter_molecules.png",
                     new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/DrugLike"},
@@ -143,7 +143,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
             createServiceDescriptor(
                     "chemaxon.calculators.reosfilter",
                     "REOS (CXN)",
-                    "Rapid Elimination Of Swill (REOS) using CXN",
+                    "Rapid Elimination Of Swill (REOS) using ChemAxon calculators",
                     new String[]{"reos", "hbond", "donors", "acceptors", "logp", "molecularweight", "rotatablebonds", "charge", "formalcharge", "leadlike", "molecularproperties", "filter", "chemaxon"},
                     "icons/filter_molecules.png",
                     new String[]{"/Vendors/ChemAxon/Calculators", "/Chemistry/Calculators/DrugLike"},
