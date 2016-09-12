@@ -29,6 +29,7 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
 
     public static final String LOGP = "LogP_CXN";
     public static final String ATOM_COUNT = "AtomCount_CXN";
+    public static final String HEAVY_ATOM_COUNT = "HeavyAtomCount_CXN";
     public static final String BOND_COUNT = "BondCount_CXN";
     public static final String RING_COUNT = "Ring_CXN";
     public static final String HBOND_ACCEPTOR_COUNT = "HBA_CXN";
@@ -36,6 +37,7 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
     public static final String MOLECULAR_WEIGHT = "MolWeight_CXN";
     public static final String ROTATABLE_BOND_COUNT = "RotatableBondCount_CXN";
     public static final String MOLAR_REFRACTIVITY = "MolarRefractivity_CXN";
+    public static final String FORMAL_CHARGE = "FormalCharge_CXN";
 
     /**
      * Constructor to standard ChemTerms evaluator. The property is calculated

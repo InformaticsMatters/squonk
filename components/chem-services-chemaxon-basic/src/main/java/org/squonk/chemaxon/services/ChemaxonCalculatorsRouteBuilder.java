@@ -31,6 +31,9 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
     public static final String CHEMAXON_GHOSE_FILTER = "direct:ghose_filter";
     public static final String CHEMAXON_CHEMTERMS = "direct:chemterms";
     public static final String CHEMAXON_AROMATIZE = "direct:aromatize";
+    public static final String CHEMAXON_RULE_OF_THREE = "direct:rule_of_3_filter";
+    public static final String CHEMAXON_REOS = "direct:reos_filter";
+
 
     @Override
     public void configure() throws Exception {
@@ -121,6 +124,50 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                 .filterInteger(ChemTermsEvaluator.ATOM_COUNT)
                 .filterDouble(ChemTermsEvaluator.MOLAR_REFRACTIVITY)
         ).log("CHEMAXON_GHOSE_FILTER finished");
+
+        from(CHEMAXON_RULE_OF_THREE)
+                .log("CHEMAXON_RULE_OF_THREE starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new ChemAxonMoleculeProcessor() // calculate
+                        .logP()
+                        .molWeight()
+                        .acceptorCount()
+                        .donorCount()
+                        .rotatableBondCount()
+
+                )
+                .process(new PropertyFilterProcessor("RO3_FAILS_CDK") // filter
+                        .filterDouble(ChemTermsEvaluator.LOGP)
+                        .filterDouble(ChemTermsEvaluator.MOLECULAR_WEIGHT)
+                        .filterInteger(ChemTermsEvaluator.HBOND_ACCEPTOR_COUNT)
+                        .filterInteger(ChemTermsEvaluator.HBOND_DONOR_COUNT)
+                        .filterInteger(ChemTermsEvaluator.ROTATABLE_BOND_COUNT)
+                )
+                .log("CHEMAXON_RULE_OF_THREE finished");
+
+        from(CHEMAXON_REOS)
+                .log("CHEMAXON_REOS starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new ChemAxonMoleculeProcessor() // calculate
+                        .molWeight()
+                        .logP()
+                        .donorCount()
+                        .acceptorCount()
+                        .formalCharge()
+                        .rotatableBondCount()
+                        .heavyAtomCount()
+                )
+                .process(new PropertyFilterProcessor("REOS_FAILS_CXN") // filter
+                        .filterDouble(ChemTermsEvaluator.MOLECULAR_WEIGHT)
+                        .filterDouble(ChemTermsEvaluator.LOGP)
+                        .filterInteger(ChemTermsEvaluator.HBOND_DONOR_COUNT)
+                        .filterInteger(ChemTermsEvaluator.HBOND_ACCEPTOR_COUNT)
+                        .filterInteger(ChemTermsEvaluator.FORMAL_CHARGE)
+                        .filterInteger(ChemTermsEvaluator.ROTATABLE_BOND_COUNT)
+                        .filterInteger(ChemTermsEvaluator.HEAVY_ATOM_COUNT)
+                )
+                .log("CHEMAXON_REOS finished");
+
 
         // Dynamic route that requires the chem terms configuration to be set using the
         // ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION header property. 

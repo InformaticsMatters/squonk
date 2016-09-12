@@ -101,7 +101,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Lipinski (CXN)",
                     "Lipinski properties using ChemAxon calculators",
                     new String[]{"lipinski", "filter", "druglike", "molecularproperties", "chemaxon"},
-                    "icons/properties_add.png",
+                    "icons/filter_molecules.png",
                     new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/DrugLike"},
                     "asyncHttp",
                     "lipinski",
@@ -112,7 +112,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Drug-like Filter (CXN)",
                     "Drug-like filter using ChemAxon calculators",
                     new String[]{"druglike", "filter", "molecularproperties", "chemaxon"},
-                    "icons/properties_filter.png",
+                    "icons/filter_molecules.png",
                     new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/DrugLike"},
                     "asyncHttp",
                     "drugLikeFilter",
@@ -123,12 +123,34 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Ghose Filter (CXN)",
                     "Ghose filter using ChemAxon calculators",
                     new String[]{"ghose", "filter", "druglike", "molecularproperties", "chemaxon"},
-                    "icons/properties_filter.png",
+                    "icons/filter_molecules.png",
                     new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/GhoseFilter"},
                     "asyncHttp",
                     "ghosefilter",
                     0.0025f,
-                    createGhoseFilterOptionDescriptors())//,
+                    createGhoseFilterOptionDescriptors()),
+            createServiceDescriptor(
+                    "chemaxon.calculators.ruleofthreefilter",
+                    "Rule of 3 Filter (CXN)",
+                    "Astex Rule of 3 filter using ChemAxon calculators",
+                    new String[]{"ruleofthree", "ro3", "hbond", "donors", "acceptors", "logp", "molecularweight", "rotatablebonds", "leadlike", "molecularproperties", "filter", "chemaxon"},
+                    "icons/filter_molecules.png",
+                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/DrugLike"},
+                    "asyncHttp",
+                    "ruleOfThreeFilter",
+                    0.0025f,
+                    createRuleOfThreeOptionDescriptors()),
+            createServiceDescriptor(
+                    "chemaxon.calculators.reosfilter",
+                    "REOS (CXN)",
+                    "Rapid Elimination Of Swill (REOS) using CXN",
+                    new String[]{"reos", "hbond", "donors", "acceptors", "logp", "molecularweight", "rotatablebonds", "charge", "formalcharge", "leadlike", "molecularproperties", "filter", "chemaxon"},
+                    "icons/filter_molecules.png",
+                    new String[]{"/Vendors/ChemAxon/Calculators", "/Chemistry/Calculators/DrugLike"},
+                    "asyncHttp",
+                    "reosFilter",
+                    0.0025f,
+                    createReosFilterOptionDescriptors())//,
 //                createServiceDescriptor(
 //                        "chemaxon.calculators.chemterms",
 //                        "CXN Chemical Terms",
@@ -206,6 +228,55 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
 
         return list.toArray(new OptionDescriptor[0]);
     }
+
+    static private OptionDescriptor[] createRuleOfThreeOptionDescriptors() {
+        List<OptionDescriptor> list = new ArrayList<>();
+
+        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
+        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
+                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
+                .withMinMaxValues(1,1));
+
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.LOGP,
+                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 3.0f)));
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.MOLECULAR_WEIGHT,
+                "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 300f)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HBOND_DONOR_COUNT,
+                "HBD count", "H-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HBOND_ACCEPTOR_COUNT,
+                "HBA count", "H-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.ROTATABLE_BOND_COUNT,
+                "Rot bond count", "Rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+
+        return list.toArray(new OptionDescriptor[0]);
+    }
+
+    static private OptionDescriptor[] createReosFilterOptionDescriptors() {
+        List<OptionDescriptor> list = new ArrayList<>();
+
+        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
+        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
+                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
+                .withMinMaxValues(1,1));
+
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.MOLECULAR_WEIGHT,
+                "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(200f, 500f)));
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.LOGP,
+                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-5.0f, 5.0f)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HBOND_DONOR_COUNT,
+                "HBD count", "H-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HBOND_ACCEPTOR_COUNT,
+                "HBA count", "H-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.FORMAL_CHARGE,
+                "Formal charge", "Formal charge").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(-2, 2)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.ROTATABLE_BOND_COUNT,
+                "Rot bond count", "Rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 8)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HEAVY_ATOM_COUNT,
+                "Heavy atom count", "Heavy atom count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(15, 50)));
+
+        return list.toArray(new OptionDescriptor[0]);
+    }
+
 
     private static final ServiceDescriptor[] SERVICE_DESCRIPTOR_DESCRIPTORS
             = new ServiceDescriptor[]{
@@ -350,6 +421,16 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 .post("ghoseFilter").description("Apply a Ghose filter to the supplied MoleculeObjects")
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_GHOSE_FILTER, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("ruleOfThreeFilter").description("Apply a Rule of 3 filter to the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_RULE_OF_THREE, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("reosFilter").description("Apply a REOS filter to the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_REOS, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("chemTerms").description("Calculate a chemical terms expression for the supplied MoleculeObjects")

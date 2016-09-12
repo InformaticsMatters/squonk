@@ -372,6 +372,11 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         return this;
     }
 
+    public ChemAxonMoleculeProcessor heavyAtomCount() throws ParseException {
+        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.HEAVY_ATOM_COUNT, "atomCount() - atomCount('1')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ATOM_COUNT)));
+        return this;
+    }
+
     public ChemAxonMoleculeProcessor bondCount() throws ParseException {
         evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.BOND_COUNT, "bondCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_BOND_COUNT)));
         return this;
@@ -394,6 +399,11 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
 
     public ChemAxonMoleculeProcessor molarRefractivity() throws ParseException {
         evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.MOLAR_REFRACTIVITY, "refractivity()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_MOLAR_REFRACTIVITY)));
+        return this;
+    }
+
+    public ChemAxonMoleculeProcessor formalCharge() throws ParseException {
+        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.FORMAL_CHARGE, "formalCharge()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_CHARGE)));
         return this;
     }
 
