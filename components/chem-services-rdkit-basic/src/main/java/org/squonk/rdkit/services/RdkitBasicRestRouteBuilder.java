@@ -12,8 +12,6 @@ import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.rdkit.io.RDKitMoleculeIOUtils.FragmentMode;
-import org.squonk.rdkit.mol.EvaluatorDefinition;
-import static org.squonk.rdkit.mol.EvaluatorDefinition.Function.*;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.NumberRange;
 import org.squonk.types.TypeResolver;
@@ -25,6 +23,7 @@ import java.util.logging.Logger;
 
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_NAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_PARAMS;
+import static org.squonk.rdkit.mol.EvaluatorDefinition.Function.*;
 
 /**
  * @author timbo
@@ -197,13 +196,13 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
-                "MolWeight", "molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 500f)));
+                "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 500f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
                 "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 5.0f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + LIPINSKI_HBD.getName(),
-                "HBD count", "h-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
+                "HBD count", "H-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + LIPINSKI_HBA.getName(),
-                "HBA count", "h-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+                "HBA count", "H-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -219,13 +218,13 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
                 "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 3.0f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
-                "MolWeight", "molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 300f)));
+                "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 300f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBD.getName(),
-                "HBD count", "h-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+                "HBD count", "H-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBA.getName(),
-                "HBA count", "h-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+                "HBA count", "H-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_ROTATABLE_BONDS.getName(),
-                "Rot bond count", "rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+                "Rot bond count", "Rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -241,7 +240,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
                 "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-0.4f, 5.6f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
-                "MolWeight", "molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(160f, 480f)));
+                "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(160f, 480f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ATOM_COUNT.getName(),
                 "Atom count", "Atom count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(20, 70)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + MOLAR_REFRACTIVITY.getName(),
@@ -260,19 +259,19 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                         .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
-                "MolWeight", "molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(200f, 500f)));
+                "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(200f, 500f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
                 "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-5.0f, 5.0f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBD.getName(),
-                "HBD count", "h-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
+                "HBD count", "H-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBA.getName(),
-                "HBA count", "h-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+                "HBA count", "H-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + FORMAL_CHARGE.getName(),
-                "Formal charge", "formal charge").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(-2, 2)));
+                "Formal charge", "Formal charge").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(-2, 2)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_ROTATABLE_BONDS.getName(),
-                "Rot bond count", "rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 8)));
+                "Rot bond count", "Rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 8)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + HEAVY_ATOM_COUNT.getName(),
-                "Heavy atom count", "heavy atom count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(15, 50)));
+                "Heavy atom count", "Heavy atom count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(15, 50)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
