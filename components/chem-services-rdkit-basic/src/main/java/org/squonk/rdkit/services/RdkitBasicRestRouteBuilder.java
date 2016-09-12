@@ -74,19 +74,29 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
             createServiceDescriptor(
                     "rdkit.calculators.lipinski",
                     "Lipinski (RDKit)",
-                    "Lipinski properties using RDKit",
-                    new String[]{"lipinski", "hbond", "donors", "acceptors", "logp", "molecularweight", "druglike", "molecularproperties", "rdkit"},
-                    "icons/properties_add.png",
+                    "Lipinski rule of 5 filter using RDKit",
+                    new String[]{"lipinski", "ruleoffive", "ro5", "hbond", "donors", "acceptors", "logp", "molecularweight", "druglike", "molecularproperties", "filter", "rdkit"},
+                    "icons/filter_molecules.png",
                     new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/DrugLike"},
                     "asyncHttp",
                     "lipinski",
-                    null),
+                    createLipinskiOptionDescriptors()),
+            createServiceDescriptor(
+                    "rdkit.calculators.ruleofthree",
+                    "Rule of 3 (RDKit)",
+                    "Rule of 3 filter using RDKit",
+                    new String[]{"ruleofthree", "ro3", "hbond", "donors", "acceptors", "logp", "molecularweight", "rotatablebonds", "leadlike", "molecularproperties", "filter", "rdkit"},
+                    "icons/filter_molecules.png",
+                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/DrugLike"},
+                    "asyncHttp",
+                    "ruleofthree",
+                    createRuleOfThreeOptionDescriptors()),
             createServiceDescriptor(
                     "rdkit.calculators.reos",
                     "REOS (RDKit)",
                     "Rapid Elimination Of Swill (REOS) using RDKit",
-                    new String[]{"reos", "hbond", "donors", "acceptors", "logp", "molecularweight", "rotatablebonds", "charge", "formalcharge", "druglike", "molecularproperties", "rdkit"},
-                    "icons/properties_add.png",
+                    new String[]{"reos", "hbond", "donors", "acceptors", "logp", "molecularweight", "rotatablebonds", "charge", "formalcharge", "leadlike", "molecularproperties", "filter", "rdkit"},
+                    "icons/filter_molecules.png",
                     new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/DrugLike"},
                     "asyncHttp",
                     "reos",
@@ -167,7 +177,50 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
 
     };
 
-    static OptionDescriptor[] createReosOptionDescriptors() {
+    static private OptionDescriptor[] createLipinskiOptionDescriptors() {
+        List<OptionDescriptor> list = new ArrayList<>();
+
+        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
+        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
+                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
+                .withMinMaxValues(1,1));
+
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EvaluatorDefinition.Function.EXACT_MW.getName(),
+                "MolWeight", "molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 500f)));
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EvaluatorDefinition.Function.LOGP.getName(),
+                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 5.0f)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.LIPINSKI_HBD.getName(),
+                "HBD count", "h-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.LIPINSKI_HBA.getName(),
+                "HBA count", "h-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+
+        return list.toArray(new OptionDescriptor[0]);
+    }
+
+    static private OptionDescriptor[] createRuleOfThreeOptionDescriptors() {
+        List<OptionDescriptor> list = new ArrayList<>();
+
+        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
+        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
+                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
+                .withMinMaxValues(1,1));
+
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EvaluatorDefinition.Function.LOGP.getName(),
+                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 3.0f)));
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EvaluatorDefinition.Function.EXACT_MW.getName(),
+                "MolWeight", "molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 300f)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.NUM_HBD.getName(),
+                "HBD count", "h-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.NUM_HBA.getName(),
+                "HBA count", "h-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.NUM_ROTATABLE_BONDS.getName(),
+                "Rot bond count", "rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+
+        return list.toArray(new OptionDescriptor[0]);
+    }
+
+
+    static private OptionDescriptor[] createReosOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
         list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
@@ -288,12 +341,17 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                 .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_FRACTION_C_SP3, resolver, ROUTE_STATS))
                 .endRest()
                 //
-                .post("lipinski").description("Calculate Lipinski properties for the supplied MoleculeObjects")
+                .post("lipinski").description("Lipinski filter for the supplied MoleculeObjects")
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_LIPINSKI, resolver, ROUTE_STATS))
                 .endRest()
                 //
-                .post("reos").description("Calculate REOS properties for the supplied MoleculeObjects")
+                .post("ruleofthree").description("Rule of three filter for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_RULE_OF_THREE, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("reos").description("REOS filter for the supplied MoleculeObjects")
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_REOS, resolver, ROUTE_STATS))
                 .endRest()

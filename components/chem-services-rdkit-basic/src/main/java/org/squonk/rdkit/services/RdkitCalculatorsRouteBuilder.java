@@ -25,6 +25,7 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
     static final String RDKIT_LOGP = "direct:rdk_logp";
     static final String RDKIT_FRACTION_C_SP3 = "direct:rdk_fraction_c_sp3";
     static final String RDKIT_LIPINSKI = "direct:rdk_lipinski";
+    static final String RDKIT_RULE_OF_THREE = "direct:rdk_rule_of_three";
     static final String RDKIT_REOS = "direct:rdk_reos";
     static final String RDKIT_DONORS_ACCEPTORS = "direct:rdk_donors_acceptors";
     static final String RDKIT_MOLAR_REFRACTIVITY = "direct:rdk_molar_refractivity";
@@ -56,16 +57,53 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
                 .process(new RDKitMoleculeProcessor().calculate(EvaluatorDefinition.Function.FRACTION_C_SP3))
                 .log("RDKIT_FRACTION_C_SP3 finished");
 
+//        from(RDKIT_LIPINSKI)
+//                .log("RDKIT_LIPINSKI starting")
+//                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+//                .process(new RDKitMoleculeProcessor()
+//                        .calculate(EvaluatorDefinition.Function.LIPINSKI_HBA)
+//                        .calculate(EvaluatorDefinition.Function.LIPINSKI_HBD)
+//                        .calculate(EvaluatorDefinition.Function.LOGP)
+//                        .calculate(EvaluatorDefinition.Function.EXACT_MW)
+//                )
+//                .log("RDKIT_LIPINSKI finished");
+
         from(RDKIT_LIPINSKI)
                 .log("RDKIT_LIPINSKI starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new RDKitMoleculeProcessor()
+                .process(new RDKitMoleculeProcessor() // calculate
                         .calculate(EvaluatorDefinition.Function.LIPINSKI_HBA)
                         .calculate(EvaluatorDefinition.Function.LIPINSKI_HBD)
                         .calculate(EvaluatorDefinition.Function.LOGP)
                         .calculate(EvaluatorDefinition.Function.EXACT_MW)
                 )
+                .process(new PropertyFilterProcessor("Lipinski_FAILS_RDKit") // filter
+                        .filterInteger(LIPINSKI_HBA.getName())
+                        .filterInteger(LIPINSKI_HBD.getName())
+                        .filterDouble(LOGP.getName())
+                        .filterDouble(EXACT_MW.getName())
+                )
                 .log("RDKIT_LIPINSKI finished");
+
+        from(RDKIT_RULE_OF_THREE)
+                .log("RDKIT_RULE_OF_THREE starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new RDKitMoleculeProcessor() // calculate
+                        .calculate(EvaluatorDefinition.Function.LOGP)
+                        .calculate(EvaluatorDefinition.Function.EXACT_MW)
+                        .calculate(EvaluatorDefinition.Function.NUM_HBA)
+                        .calculate(EvaluatorDefinition.Function.NUM_HBD)
+                        .calculate(NUM_ROTATABLE_BONDS)
+
+                )
+                .process(new PropertyFilterProcessor("RO3_FAILS_RDKit") // filter
+                        .filterDouble(LOGP.getName())
+                        .filterDouble(EXACT_MW.getName())
+                        .filterInteger(NUM_HBA.getName())
+                        .filterInteger(NUM_HBD.getName())
+                        .filterInteger(NUM_ROTATABLE_BONDS.getName())
+                )
+                .log("RDKIT_RULE_OF_THREE finished");
 
         from(RDKIT_REOS)
                 .log("RDKIT_REOS starting")
