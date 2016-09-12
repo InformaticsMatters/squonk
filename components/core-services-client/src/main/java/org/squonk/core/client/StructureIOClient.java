@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,7 +75,7 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
 
         if (imgFormat == svg) {
             String svg = renderSVG(mol, molFormat, depict);
-            return svg.getBytes();
+            return svg.getBytes(StandardCharsets.UTF_8);
         } else if (molFormat.startsWith("smiles")) {
             return createImageUsingGet(mol, molFormat, imgFormat, depict);
         } else {

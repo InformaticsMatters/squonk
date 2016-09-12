@@ -79,8 +79,8 @@ class ServicesSpec extends Specification {
         M | M | '/logp'             | MoleculeObject.class | 1
         M | B | '/atomCount'        | BasicObject.class    | 1
         M | M | '/atomCount'        | MoleculeObject.class | 1
-        M | B | '/lipinski'         | BasicObject.class    | 4
-        M | M | '/lipinski'         | MoleculeObject.class | 4
+        M | B | '/lipinski'         | BasicObject.class    | 5 // 4 + error count
+        M | M | '/lipinski'         | MoleculeObject.class | 5 // 4 + error count
     }
 
     void "rest clustering json/json"() {
