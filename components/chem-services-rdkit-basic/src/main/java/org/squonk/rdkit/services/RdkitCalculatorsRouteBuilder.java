@@ -27,6 +27,7 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
     static final String RDKIT_LIPINSKI = "direct:rdk_lipinski";
     static final String RDKIT_RULE_OF_THREE = "direct:rdk_rule_of_three";
     static final String RDKIT_REOS = "direct:rdk_reos";
+    static final String RDKIT_GHOSE_FILTER = "direct:rdk_ghose";
     static final String RDKIT_DONORS_ACCEPTORS = "direct:rdk_donors_acceptors";
     static final String RDKIT_MOLAR_REFRACTIVITY = "direct:rdk_molar_refractivity";
     static final String RDKIT_TPSA = "direct:rdk_tpsa";
@@ -56,17 +57,6 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new RDKitMoleculeProcessor().calculate(EvaluatorDefinition.Function.FRACTION_C_SP3))
                 .log("RDKIT_FRACTION_C_SP3 finished");
-
-//        from(RDKIT_LIPINSKI)
-//                .log("RDKIT_LIPINSKI starting")
-//                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-//                .process(new RDKitMoleculeProcessor()
-//                        .calculate(EvaluatorDefinition.Function.LIPINSKI_HBA)
-//                        .calculate(EvaluatorDefinition.Function.LIPINSKI_HBD)
-//                        .calculate(EvaluatorDefinition.Function.LOGP)
-//                        .calculate(EvaluatorDefinition.Function.EXACT_MW)
-//                )
-//                .log("RDKIT_LIPINSKI finished");
 
         from(RDKIT_LIPINSKI)
                 .log("RDKIT_LIPINSKI starting")
@@ -104,6 +94,21 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
                         .filterInteger(NUM_ROTATABLE_BONDS.getName())
                 )
                 .log("RDKIT_RULE_OF_THREE finished");
+
+        from(RDKIT_GHOSE_FILTER)
+                .log("RDKIT_GHOSE_FILTER starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new RDKitMoleculeProcessor()
+                        .calculate(LOGP)
+                        .calculate(EXACT_MW)
+                        .calculate(ATOM_COUNT)
+                        .calculate(MOLAR_REFRACTIVITY)
+                ).process(new PropertyFilterProcessor("Ghose_FAILS_RDKit")
+                .filterDouble(LOGP.getName())
+                .filterDouble(EXACT_MW.getName())
+                .filterInteger(ATOM_COUNT.getName())
+                .filterDouble(MOLAR_REFRACTIVITY.getName())
+        ).log("RDKIT_GHOSE_FILTER finished");
 
         from(RDKIT_REOS)
                 .log("RDKIT_REOS starting")

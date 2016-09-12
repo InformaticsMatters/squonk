@@ -5,8 +5,10 @@ import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.squonk.camel.chemaxon.processor.ChemAxonVerifyStructureProcessor;
+import org.squonk.camel.processor.PropertyFilterProcessor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 import org.squonk.util.Metrics;
+
 import static org.squonk.util.Metrics.*;
 
 /**
@@ -15,7 +17,6 @@ import static org.squonk.util.Metrics.*;
  * can be converted to these by the Camel TypeConvertor mechanism. The output is a
  * StreamProvider&lt;MoleculeObject&gt; with the (possibly filtered) molecules having the
  * corresponding properties added.
- *
  *
  * @author timbo
  */
@@ -27,6 +28,7 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
     public static final String CHEMAXON_ATOM_BOND_COUNT = "direct:atomcount_bondcount";
     public static final String CHEMAXON_LIPINSKI = "direct:lipinski";
     public static final String CHEMAXON_DRUG_LIKE_FILTER = "direct:drug_like_filter";
+    public static final String CHEMAXON_GHOSE_FILTER = "direct:ghose_filter";
     public static final String CHEMAXON_CHEMTERMS = "direct:chemterms";
     public static final String CHEMAXON_AROMATIZE = "direct:aromatize";
 
@@ -72,26 +74,53 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                 .log("CHEMAXON_LIPINSKI starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
-                        .calculate(ChemTermsEvaluator.MOLECULAR_WEIGHT, "mass()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_MASS))
+                        .molWeight()
                         .logP()
                         .donorCount()
                         .acceptorCount()
                 )
+                .process(new PropertyFilterProcessor("Lipinski_FAILS_CXN") // filter
+                        .filterInteger(ChemTermsEvaluator.HBOND_ACCEPTOR_COUNT)
+                        .filterInteger(ChemTermsEvaluator.HBOND_DONOR_COUNT)
+                        .filterDouble(ChemTermsEvaluator.LOGP)
+                        .filterDouble(ChemTermsEvaluator.MOLECULAR_WEIGHT)
+                )
                 .log("CHEMAXON_LIPINSKI finished");
 
-        // Simple route that exemplifies filtering using a basic drug-like filter
+
         from(CHEMAXON_DRUG_LIKE_FILTER)
                 .log("CHEMAXON_DRUG_LIKE_FILTER starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
                 .process(new ChemAxonMoleculeProcessor()
-                        .filter("mass()<400", Metrics.generate(PROVIDER_CHEMAXON, METRICS_MASS))
-                        .filter("ringCount()>0", Metrics.generate(PROVIDER_CHEMAXON, METRICS_RING_COUNT))
-                        .filter("rotatableBondCount()<5", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ROTATABLE_BOND_COUNT))
-                        .filter("donorCount()<=5", Metrics.generate(PROVIDER_CHEMAXON, METRICS_HBD))
-                        .filter("acceptorCount()<=10", Metrics.generate(PROVIDER_CHEMAXON, METRICS_HBA))
-                        .filter("logP()<5", Metrics.generate(PROVIDER_CHEMAXON, METRICS_LOGP))
-                )
+                        .molWeight()
+                        .ringCount()
+                        .rotatableBondCount()
+                        .donorCount()
+                        .acceptorCount()
+                        .logP()
+                ).process(new PropertyFilterProcessor("Lipinski_FAILS_CXN") // filter
+                .filterDouble(ChemTermsEvaluator.MOLECULAR_WEIGHT)
+                .filterInteger(ChemTermsEvaluator.RING_COUNT)
+                .filterInteger(ChemTermsEvaluator.ROTATABLE_BOND_COUNT)
+                .filterInteger(ChemTermsEvaluator.HBOND_DONOR_COUNT)
+                .filterInteger(ChemTermsEvaluator.HBOND_ACCEPTOR_COUNT)
+                .filterDouble(ChemTermsEvaluator.LOGP))
                 .log("CHEMAXON_DRUG_LIKE_FILTER finished");
+
+        from(CHEMAXON_GHOSE_FILTER)
+                .log("CHEMAXON_GHOSE_FILTER starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new ChemAxonMoleculeProcessor()
+                        .logP()
+                        .molWeight()
+                        .atomCount()
+                        .molarRefractivity()
+                ).process(new PropertyFilterProcessor("Ghose_FAILS_CXN")
+                .filterDouble(ChemTermsEvaluator.LOGP)
+                .filterDouble(ChemTermsEvaluator.MOLECULAR_WEIGHT)
+                .filterInteger(ChemTermsEvaluator.ATOM_COUNT)
+                .filterDouble(ChemTermsEvaluator.MOLAR_REFRACTIVITY)
+        ).log("CHEMAXON_GHOSE_FILTER finished");
 
         // Dynamic route that requires the chem terms configuration to be set using the
         // ChemAxonMoleculeProcessor.PROP_EVALUATORS_DEFINTION header property. 

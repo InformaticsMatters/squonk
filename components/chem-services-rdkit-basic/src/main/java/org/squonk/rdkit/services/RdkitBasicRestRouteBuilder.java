@@ -13,6 +13,7 @@ import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.rdkit.io.RDKitMoleculeIOUtils.FragmentMode;
 import org.squonk.rdkit.mol.EvaluatorDefinition;
+import static org.squonk.rdkit.mol.EvaluatorDefinition.Function.*;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.NumberRange;
 import org.squonk.types.TypeResolver;
@@ -91,6 +92,16 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "asyncHttp",
                     "ruleofthree",
                     createRuleOfThreeOptionDescriptors()),
+            createServiceDescriptor(
+                    "rdkit.calculators.ghose",
+                    "Ghose filter (RDKit)",
+                    "Ghose filter using RDKit",
+                    new String[]{"ghose", "logp", "molecularweight", "atomcount", "druglike", "molecularproperties", "molarrefractivity", "refractivity", "filter", "rdkit"},
+                    "icons/filter_molecules.png",
+                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/DrugLike"},
+                    "asyncHttp",
+                    "ghose",
+                    createGhoseFilterOptionDescriptors()),
             createServiceDescriptor(
                     "rdkit.calculators.reos",
                     "REOS (RDKit)",
@@ -185,13 +196,13 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                 .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
                 .withMinMaxValues(1,1));
 
-        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EvaluatorDefinition.Function.EXACT_MW.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
                 "MolWeight", "molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 500f)));
-        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EvaluatorDefinition.Function.LOGP.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
                 "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 5.0f)));
-        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.LIPINSKI_HBD.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + LIPINSKI_HBD.getName(),
                 "HBD count", "h-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
-        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.LIPINSKI_HBA.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + LIPINSKI_HBA.getName(),
                 "HBA count", "h-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
 
         return list.toArray(new OptionDescriptor[0]);
@@ -205,16 +216,36 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                 .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
                 .withMinMaxValues(1,1));
 
-        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EvaluatorDefinition.Function.LOGP.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
                 "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 3.0f)));
-        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EvaluatorDefinition.Function.EXACT_MW.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
                 "MolWeight", "molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 300f)));
-        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.NUM_HBD.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBD.getName(),
                 "HBD count", "h-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
-        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.NUM_HBA.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBA.getName(),
                 "HBA count", "h-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
-        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.NUM_ROTATABLE_BONDS.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_ROTATABLE_BONDS.getName(),
                 "Rot bond count", "rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+
+        return list.toArray(new OptionDescriptor[0]);
+    }
+
+    static private OptionDescriptor[] createGhoseFilterOptionDescriptors() {
+        List<OptionDescriptor> list = new ArrayList<>();
+
+        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
+        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
+                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
+                .withMinMaxValues(1,1));
+
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
+                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-0.4f, 5.6f)));
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
+                "MolWeight", "molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(160f, 480f)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ATOM_COUNT.getName(),
+                "Atom count", "Atom count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(20, 70)));
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + MOLAR_REFRACTIVITY.getName(),
+                "Refractivity", "Molar Refractivity").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(40f, 130f)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -228,19 +259,19 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                         .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
                         .withMinMaxValues(1,1));
 
-        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EvaluatorDefinition.Function.EXACT_MW.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
                 "MolWeight", "molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(200f, 500f)));
-        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EvaluatorDefinition.Function.LOGP.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
                 "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-5.0f, 5.0f)));
-        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.NUM_HBD.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBD.getName(),
                 "HBD count", "h-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
-        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.NUM_HBA.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBA.getName(),
                 "HBA count", "h-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
-        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.FORMAL_CHARGE.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + FORMAL_CHARGE.getName(),
                 "Formal charge", "formal charge").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(-2, 2)));
-        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.NUM_ROTATABLE_BONDS.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_ROTATABLE_BONDS.getName(),
                 "Rot bond count", "rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 8)));
-        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + EvaluatorDefinition.Function.HEAVY_ATOM_COUNT.getName(),
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + HEAVY_ATOM_COUNT.getName(),
                 "Heavy atom count", "heavy atom count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(15, 50)));
 
         return list.toArray(new OptionDescriptor[0]);
@@ -349,6 +380,11 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                 .post("ruleofthree").description("Rule of three filter for the supplied MoleculeObjects")
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_RULE_OF_THREE, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("ghose").description("Ghose filter for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_GHOSE_FILTER, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("reos").description("REOS filter for the supplied MoleculeObjects")

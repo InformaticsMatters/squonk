@@ -35,6 +35,7 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
     public static final String HBOND_DONOR_COUNT = "HBD_CXN";
     public static final String MOLECULAR_WEIGHT = "MolWeight_CXN";
     public static final String ROTATABLE_BOND_COUNT = "RotatableBondCount_CXN";
+    public static final String MOLAR_REFRACTIVITY = "MolarRefractivity_CXN";
 
     /**
      * Constructor to standard ChemTerms evaluator. The property is calculated

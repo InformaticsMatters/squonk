@@ -392,5 +392,10 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         return this;
     }
 
+    public ChemAxonMoleculeProcessor molarRefractivity() throws ParseException {
+        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.MOLAR_REFRACTIVITY, "refractivity()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_MOLAR_REFRACTIVITY)));
+        return this;
+    }
+
 
 }
