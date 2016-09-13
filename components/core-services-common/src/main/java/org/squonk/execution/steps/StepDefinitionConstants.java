@@ -120,6 +120,11 @@ public interface StepDefinitionConstants {
         String OPTION_POTION = "potion";
     }
 
+    interface DatasetSorter {
+        String CLASSNAME = "org.squonk.execution.steps.impl.DatasetSorterStep";
+        String OPTION_DIRECTIVES = "directives";
+    }
+
     interface DockerProcessDataset {
          String CLASSNAME = "org.squonk.execution.steps.impl.DockerProcessDatasetStep";
          String OPTION_DOCKER_COMMAND  = "dockerCommand";

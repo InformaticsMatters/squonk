@@ -46,7 +46,6 @@ public class DataTransformPotionStep extends AbstractStep {
         if (ds == null) {
             throw new IllegalStateException("Input variable not found: " + VAR_INPUT_DATASET);
         }
-        LOG.info("Input Dataset: " + ds);
 
         String potion = getOption(OPTION_POTION, String.class);
         if (potion == null) {
@@ -75,11 +74,8 @@ public class DataTransformPotionStep extends AbstractStep {
         Dataset result = p.execute(context.getTypeConverter(), ds);
 
         LOG.info("Transforms defined");
-        
-        String outFldName = mapOutputVariable(VAR_OUTPUT_DATASET);
-        if (outFldName != null) {
-            createVariable(outFldName, Dataset.class, result, varman);
-        }
+
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, result, varman);
 
         statusMessage = String.format(MSG_RECORDS_PROCESSED, result.getMetadata().getSize());
         LOG.info("Results: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
