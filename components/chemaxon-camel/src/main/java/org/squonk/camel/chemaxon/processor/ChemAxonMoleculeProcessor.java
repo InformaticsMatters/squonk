@@ -407,5 +407,10 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         return this;
     }
 
+    public ChemAxonMoleculeProcessor tpsa() throws ParseException {
+        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.TPSA, "topologicalPolarSurfaceArea()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_PSA)));
+        return this;
+    }
+
 
 }

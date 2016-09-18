@@ -29,6 +29,7 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
     public static final String CHEMAXON_LIPINSKI = "direct:lipinski";
     public static final String CHEMAXON_DRUG_LIKE_FILTER = "direct:drug_like_filter";
     public static final String CHEMAXON_GHOSE_FILTER = "direct:ghose_filter";
+    public static final String CHEMAXON_VEBER_FILTER = "direct:veber_filter";
     public static final String CHEMAXON_CHEMTERMS = "direct:chemterms";
     public static final String CHEMAXON_AROMATIZE = "direct:aromatize";
     public static final String CHEMAXON_RULE_OF_THREE = "direct:rule_of_3_filter";
@@ -124,6 +125,18 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                 .filterInteger(ChemTermsEvaluator.ATOM_COUNT)
                 .filterDouble(ChemTermsEvaluator.MOLAR_REFRACTIVITY)
         ).log("CHEMAXON_GHOSE_FILTER finished");
+
+        from(CHEMAXON_VEBER_FILTER)
+                .log("CHEMAXON_VEBER_FILTER starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new ChemAxonMoleculeProcessor()
+                        .rotatableBondCount()
+                        .tpsa()
+
+                ).process(new PropertyFilterProcessor("Veber_FAILS_CXN")
+                .filterInteger(ChemTermsEvaluator.ROTATABLE_BOND_COUNT)
+                .filterDouble(ChemTermsEvaluator.TPSA)
+        ).log("CHEMAXON_VEBER_FILTER finished");
 
         from(CHEMAXON_RULE_OF_THREE)
                 .log("CHEMAXON_RULE_OF_THREE starting")

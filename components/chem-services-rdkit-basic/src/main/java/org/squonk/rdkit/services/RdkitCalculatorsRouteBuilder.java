@@ -28,6 +28,7 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
     static final String RDKIT_RULE_OF_THREE = "direct:rdk_rule_of_three";
     static final String RDKIT_REOS = "direct:rdk_reos";
     static final String RDKIT_GHOSE_FILTER = "direct:rdk_ghose";
+    static final String RDKIT_VEBER_FILTER = "direct:rdk_veber";
     static final String RDKIT_DONORS_ACCEPTORS = "direct:rdk_donors_acceptors";
     static final String RDKIT_MOLAR_REFRACTIVITY = "direct:rdk_molar_refractivity";
     static final String RDKIT_TPSA = "direct:rdk_tpsa";
@@ -109,6 +110,18 @@ public class RdkitCalculatorsRouteBuilder extends RouteBuilder {
                 .filterInteger(ATOM_COUNT.getName())
                 .filterDouble(MOLAR_REFRACTIVITY.getName())
         ).log("RDKIT_GHOSE_FILTER finished");
+
+        from(RDKIT_VEBER_FILTER)
+                .log("RDKIT_VEBER_FILTER starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new RDKitMoleculeProcessor()
+                        .calculate(TPSA)
+                        .calculate(NUM_ROTATABLE_BONDS)
+                ).process(new PropertyFilterProcessor("Veber_FAILS_RDKit")
+                .filterDouble(TPSA.getName())
+                .filterInteger(NUM_ROTATABLE_BONDS.getName())
+        ).log("RDKIT_VEBER_FILTER finished");
+
 
         from(RDKIT_REOS)
                 .log("RDKIT_REOS starting")

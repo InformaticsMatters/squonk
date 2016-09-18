@@ -72,6 +72,7 @@ public class PropertyFilterProcessor implements Processor {
         Stream<MoleculeObject> mols = dataset.getStream();
 
         String filterMode = exch.getIn().getHeader(OPTION_FILTER_MODE, String.class);
+        Integer filterThreshold = exch.getIn().getHeader(OPTION_FILTER_THRESHOLD, Integer.class);
         LOG.info("Filter mode: " + filterMode);
         boolean inverse = filterMode != null && VALUE_INCLUDE_FAIL.equals(filterMode.toUpperCase());
         boolean filter = filterMode == null || !VALUE_INCLUDE_ALL.equals(filterMode.toUpperCase());
@@ -120,10 +121,11 @@ public class PropertyFilterProcessor implements Processor {
         });
 
         if (filter) {
-            LOG.info("Adding filter " + filterMode);
+            int threshold = (filterThreshold == null ? 0 : filterThreshold);
+            LOG.info("Adding filter " + filterMode + " with threshold of " + threshold);
             mols = mols.filter((mo) -> {
                 int count = mo.getValue(resultPropertyName, Integer.class);
-                return inverse ? count > 0 : count == 0;
+                return inverse ? count > threshold : count <= threshold;
             });
         }
 

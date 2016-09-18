@@ -101,6 +101,18 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "asyncHttp",
                     "ghose",
                     createGhoseFilterOptionDescriptors()),
+
+            createServiceDescriptor(
+                    "rdkit.calculators.veber",
+                    "Veber filter (RDKit)",
+                    "Veber filter using RDKit",
+                    new String[]{"veber", "druglike", "molecularproperties", "rotatablebonds", "tpsa", "psa", "filter", "rdkit"},
+                    "icons/filter_molecules.png",
+                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/DrugLike"},
+                    "asyncHttp",
+                    "veber",
+                    createVeberFilterOptionDescriptors()),
+
             createServiceDescriptor(
                     "rdkit.calculators.reos",
                     "REOS (RDKit)",
@@ -194,6 +206,9 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
         list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
                 .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
                 .withMinMaxValues(1,1));
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+                .withDefaultValue(1)
+                .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
                 "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 500f)));
@@ -213,6 +228,9 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
         list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
         list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
                 .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
+                .withMinMaxValues(1,1));
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+                .withDefaultValue(0)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
@@ -236,6 +254,9 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
         list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
                 .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
                 .withMinMaxValues(1,1));
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+                .withDefaultValue(0)
+                .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
                 "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-0.4f, 5.6f)));
@@ -257,6 +278,9 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
         list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
                         .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
                         .withMinMaxValues(1,1));
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+                .withDefaultValue(0)
+                .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
                 "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(200f, 500f)));
@@ -275,6 +299,26 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
 
         return list.toArray(new OptionDescriptor[0]);
     }
+
+    static private OptionDescriptor[] createVeberFilterOptionDescriptors() {
+        List<OptionDescriptor> list = new ArrayList<>();
+
+        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
+        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
+                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
+                .withMinMaxValues(1,1));
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+                .withDefaultValue(0)
+                .withMinMaxValues(1,1));
+
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + TPSA.getName(),
+                "TPSA", "Topological polar surface area").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 140f)));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_ROTATABLE_BONDS.getName(),
+                "Rot bond count", "Rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+
+        return list.toArray(new OptionDescriptor[0]);
+    }
+
 
     static String[] fragmentModesToStringArray() {
 
@@ -384,6 +428,11 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                 .post("ghose").description("Ghose filter for the supplied MoleculeObjects")
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_GHOSE_FILTER, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("veber").description("Veber filter for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(RdkitCalculatorsRouteBuilder.RDKIT_VEBER_FILTER, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("reos").description("REOS filter for the supplied MoleculeObjects")

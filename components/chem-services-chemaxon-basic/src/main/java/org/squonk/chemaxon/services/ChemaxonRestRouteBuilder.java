@@ -130,6 +130,17 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     0.0025f,
                     createGhoseFilterOptionDescriptors()),
             createServiceDescriptor(
+                    "chemaxon.calculators.veberfilter",
+                    "Veber Filter (CXN)",
+                    "Veber filter using ChemAxon calculators",
+                    new String[]{"veber", "filter", "druglike", "psa", "tpsa", "rotatablebonds", "molecularproperties", "chemaxon"},
+                    "icons/filter_molecules.png",
+                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/GhoseFilter"},
+                    "asyncHttp",
+                    "veberfilter",
+                    0.0025f,
+                    createVeberFilterOptionDescriptors()),
+            createServiceDescriptor(
                     "chemaxon.calculators.ruleofthreefilter",
                     "Rule of 3 Filter (CXN)",
                     "Astex Rule of 3 filter using ChemAxon calculators",
@@ -172,6 +183,9 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
         list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
                 .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
                 .withMinMaxValues(1,1));
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+                .withDefaultValue(1)
+                .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.MOLECULAR_WEIGHT,
                 "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 500f)));
@@ -191,6 +205,9 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
         list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
         list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
                 .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
+                .withMinMaxValues(1,1));
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+                .withDefaultValue(0)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.MOLECULAR_WEIGHT,
@@ -216,6 +233,9 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
         list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
                 .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
                 .withMinMaxValues(1,1));
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+                .withDefaultValue(0)
+                .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.LOGP,
                 "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-0.4f, 5.6f)));
@@ -229,12 +249,36 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
         return list.toArray(new OptionDescriptor[0]);
     }
 
+    static private OptionDescriptor[] createVeberFilterOptionDescriptors() {
+        List<OptionDescriptor> list = new ArrayList<>();
+
+        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
+        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
+                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
+                .withMinMaxValues(1,1));
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+                .withDefaultValue(0)
+                .withMinMaxValues(1,1));
+
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.TPSA,
+                "TPSA", "Topological polar surfacearea").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 140f)));
+
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.ROTATABLE_BOND_COUNT,
+                "Rotatable bond count", "Rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+
+
+        return list.toArray(new OptionDescriptor[0]);
+    }
+
     static private OptionDescriptor[] createRuleOfThreeOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
         list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
         list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
                 .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
+                .withMinMaxValues(1,1));
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+                .withDefaultValue(0)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.LOGP,
@@ -257,6 +301,9 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
         list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
         list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
                 .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
+                .withMinMaxValues(1,1));
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+                .withDefaultValue(0)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.MOLECULAR_WEIGHT,
@@ -421,6 +468,11 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 .post("ghoseFilter").description("Apply a Ghose filter to the supplied MoleculeObjects")
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_GHOSE_FILTER, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("veberFilter").description("Apply a Veber filter to the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_VEBER_FILTER, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("ruleOfThreeFilter").description("Apply a Rule of 3 filter to the supplied MoleculeObjects")

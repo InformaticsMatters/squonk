@@ -38,6 +38,7 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
     public static final String ROTATABLE_BOND_COUNT = "RotatableBondCount_CXN";
     public static final String MOLAR_REFRACTIVITY = "MolarRefractivity_CXN";
     public static final String FORMAL_CHARGE = "FormalCharge_CXN";
+    public static final String TPSA = "TPSA_CXN";
 
     /**
      * Constructor to standard ChemTerms evaluator. The property is calculated
