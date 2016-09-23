@@ -66,7 +66,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
             createServiceDescriptor(
                     "chemaxon.calculators.verify",
                     "Verify structure (ChemAxon)",
-                    "Verify that the molecules are valid according to ChemAxon's Marvin",
+                    "Verify that molecules are valid according to ChemAxon's Marvin",
                     new String[]{"verify", "chemaxon"},
                     "icons/properties_add.png",
                     new String[]{"/Chemistry/Toolkits/ChemAxon/Verify", "/Chemistry/Verify"},
@@ -77,18 +77,62 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
             createServiceDescriptor(
                     "chemaxon.calculators.logp",
                     "LogP (CXN)",
-                    "LogP using ChemAxon calculators. See http://www.chemaxon.com/products/calculator-plugins/property-predictors/#logp_logd",
+                    "LogP using ChemAxon calculators",
                     new String[]{"logp", "partitioning", "molecularproperties", "chemaxon"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Partioning"},
+                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Partitioning"},
                     "asyncHttp",
                     "logp",
                     0.001f,
                     null),
             createServiceDescriptor(
+                    "chemaxon.calculators.logd",
+                    "LogD (CXN)",
+                    "LogD at specified pH using ChemAxon calculators",
+                    new String[]{"logd", "partitioning", "molecularproperties", "chemaxon"},
+                    "icons/properties_add.png",
+                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Partitioning"},
+                    "asyncHttp",
+                    "logd",
+                    0.005f,
+                    createLogDOptionDescriptors()),
+            createServiceDescriptor(
+                    "chemaxon.calculators.logs",
+                    "LogS (CXN)",
+                    "Solubility (logS) at specified pH using ChemAxon calculators",
+                    new String[]{"logs", "solubility", "molecularproperties", "chemaxon"},
+                    "icons/properties_add.png",
+                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Solubility"},
+                    "asyncHttp",
+                    "logs",
+                    0.005f,
+                    createLogSOptionDescriptors()),
+            createServiceDescriptor(
+                    "chemaxon.calculators.apka",
+                    "Acidic pKa (CXN)",
+                    "Most acidic pKa using ChemAxon calculators",
+                    new String[]{"pka", "charge", "molecularproperties", "chemaxon"},
+                    "icons/properties_add.png",
+                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Charge"},
+                    "asyncHttp",
+                    "apka",
+                    0.004f,
+                    null),
+            createServiceDescriptor(
+                    "chemaxon.calculators.bpka",
+                    "Basic pKa (CXN)",
+                    "Most basic pKa using ChemAxon calculators",
+                    new String[]{"pka", "charge", "molecularproperties", "chemaxon"},
+                    "icons/properties_add.png",
+                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Charge"},
+                    "asyncHttp",
+                    "bpka",
+                    0.004f,
+                    null),
+            createServiceDescriptor(
                     "chemaxon.calculators.atomcount",
                     "Atom Count (CXN)",
-                    "Atom Count using ChemAxon calculators. See http://www.chemaxon.com/products/calculator-plugins/property-calculations/#topology_analysis",
+                    "Atom Count using ChemAxon calculators",
                     new String[]{"atomcount", "topology", "molecularproperties", "chemaxon"},
                     "icons/properties_add.png",
                     new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Topological"},
@@ -154,7 +198,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
             createServiceDescriptor(
                     "chemaxon.calculators.reosfilter",
                     "REOS (CXN)",
-                    "Rapid Elimination Of Swill (REOS) using ChemAxon calculators",
+                    "Rapid Elimination Of Swill filter using ChemAxon calculators",
                     new String[]{"reos", "hbond", "donors", "acceptors", "logp", "molecularweight", "rotatablebonds", "charge", "formalcharge", "leadlike", "molecularproperties", "filter", "chemaxon"},
                     "icons/filter_molecules.png",
                     new String[]{"/Vendors/ChemAxon/Calculators", "/Chemistry/Calculators/DrugLike"},
@@ -175,6 +219,31 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
 //                            new ServicePropertyDescriptor(ServicePropertyDescriptor.Type.STRING, KEY_CT_EXPR, LABEL_CT_EXPR, DESC_CT_EXPR)
 //                        })
     };
+
+    static private OptionDescriptor[] createLogDOptionDescriptors() {
+        List<OptionDescriptor> list = new ArrayList<>();
+
+        list.add(new OptionDescriptor<>(Float.class, "query.pH",
+                "pH", "pH value").withMinMaxValues(1,1).withDefaultValue(7.4f));
+
+        return list.toArray(new OptionDescriptor[0]);
+    }
+
+    static private OptionDescriptor[] createLogSOptionDescriptors() {
+        List<OptionDescriptor> list = new ArrayList<>();
+
+        list.add(new OptionDescriptor<>(Float.class, "query.pH",
+                "pH", "pH value").withMinMaxValues(1,1).withDefaultValue(7.4f));
+
+// result type does not seem to be handled by this version of JChem
+//        list.add(new OptionDescriptor<>(String.class, "query.result",
+//                "Result type", "Result type")
+//                .withMinMaxValues(1,1)
+//                .withValues(new String[] {"logS", "mol/l", "mg/ml"})
+//                .withDefaultValue("logS"));
+
+        return list.toArray(new OptionDescriptor[0]);
+    }
 
     static private OptionDescriptor[] createLipinskiOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
@@ -448,6 +517,26 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 .post("logp").description("Calculate the logP for the supplied MoleculeObjects")
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("logd").description("Calculate the logD at specified pH for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGD, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("logs").description("Calculate the solubility (LogS) at specified pH for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGS, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("apka").description("Calculate the most acidic pKa value for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_APKA, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("bpka").description("Calculate the most basic pKa value for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_BPKA, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("atomCount").description("Calculate the atom count for the supplied MoleculeObjects")

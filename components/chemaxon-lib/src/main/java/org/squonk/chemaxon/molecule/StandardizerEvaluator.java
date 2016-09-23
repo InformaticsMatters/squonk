@@ -4,6 +4,7 @@ import chemaxon.formats.MolFormatException;
 import chemaxon.standardizer.Standardizer;
 import chemaxon.struc.Molecule;
 import org.squonk.types.MoleculeObject;
+import org.squonk.util.ExecutionStats;
 import org.squonk.util.Pool;
 import java.io.IOException;
 import java.util.Collections;
@@ -38,13 +39,14 @@ public class StandardizerEvaluator implements MoleculeEvaluator {
     }
     
     @Override
-    public Molecule processMolecule(Molecule mol) {
+    public Molecule processMolecule(Molecule mol, Map<String,Integer> stats) {
         if (mol == null) {
             return null;
         }
         Standardizer szr = pool.checkout();
         try {
             szr.standardize(mol);
+            ExecutionStats.increment(stats, getMetricsCode(),1);
         } finally {
             pool.checkin(szr);
         }
@@ -52,13 +54,13 @@ public class StandardizerEvaluator implements MoleculeEvaluator {
     }
    
     @Override
-    public MoleculeObject processMoleculeObject(MoleculeObject mo) throws MolFormatException, IOException {
+    public MoleculeObject processMoleculeObject(MoleculeObject mo, Map<String,Integer> stats) throws MolFormatException, IOException {
         if (mo == null || mo.getSource() == null) {
             return mo;
         }
 
         Molecule mol = MoleculeUtils.fetchMolecule(mo, false);
-        mol = processMolecule(mol);
+        mol = processMolecule(mol, stats);
         return MoleculeUtils.deriveMoleculeObject(mo, mol, mo.getFormat("mol"));
     }
     

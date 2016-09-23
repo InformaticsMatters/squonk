@@ -13,6 +13,8 @@ import java.util.regex.Pattern;
  */
 public class PotionParser {
 
+    public static final String ERORRS_FIELD_NAME = "Errors";
+
     private String potion;
     private final Map<String, Class> fieldDefs = new LinkedHashMap();
     private List<Message> messages = new ArrayList<>();
@@ -197,7 +199,7 @@ public class PotionParser {
                 return true;
             }
 
-            if (!fieldDefs.containsKey(fieldName)) {
+            if (!ERORRS_FIELD_NAME.equals(fieldName) && !fieldDefs.containsKey(fieldName)) {
                 addError("field " + fieldName + " does not exist");
                 return false;
             }

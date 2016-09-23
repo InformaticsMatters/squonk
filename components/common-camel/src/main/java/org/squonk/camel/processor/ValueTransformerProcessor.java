@@ -37,7 +37,8 @@ public class ValueTransformerProcessor implements Processor {
 
     private final List<Conversion> conversions = new ArrayList<>();
     private GroovyClassLoader groovyClassLoader;
-    private String errorFieldName = "Errors";
+
+    private String errorFieldName = PotionParser.ERORRS_FIELD_NAME;
     private boolean hasErrorField = false;
 
     private GroovyClassLoader getGroovyClassLoader() {

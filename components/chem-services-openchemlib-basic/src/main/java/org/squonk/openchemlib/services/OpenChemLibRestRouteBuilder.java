@@ -63,7 +63,7 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png", ROUTE_LOGP, null),
             createServiceDescriptor(
                     "ocl.logs", "LogS (OpenChemLib)", "OpenChemLib Aqueous Solubility prediction",
-                    new String[]{"logp", "solubility", "molecularproperties", "openchemlib"},
+                    new String[]{"logs", "solubility", "molecularproperties", "openchemlib"},
                     new String[]{"/Chemistry/Toolkits/OpenChemLib/Calculators", "/Chemistry/Calculators/Solubility"},
                     "icons/properties_add.png", ROUTE_LOGS, null),
             createServiceDescriptor(

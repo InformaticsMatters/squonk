@@ -10,6 +10,9 @@ import org.squonk.types.MoleculeObject;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.stream.IntStream;
@@ -101,10 +104,11 @@ public class StreamingTests {
         ChemTermsEvaluator cte = new ChemTermsEvaluator("logd", "logD('7.4')", "CXN.LogD");
         try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(f)).getStream(false)) {
             long t0 = System.currentTimeMillis();
+            final Map<String,Integer> stats = new HashMap<>();
             long results = stream
                     .map(mo -> MoleculeUtils.fetchMolecule(mo, false))
                     .peek(mol -> {
-                        cte.processMolecule(mol);
+                        cte.processMolecule(mol, stats);
                     })
                     .count();
             long t1 = System.currentTimeMillis();
@@ -117,12 +121,13 @@ public class StreamingTests {
         EvaluatorPool pool = new EvaluatorPool(25);
         try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(f)).getStream(false)) {
             long t0 = System.currentTimeMillis();
+            final Map<String,Integer> stats = new HashMap<>();
             long results = stream
                     .map(mo -> MoleculeUtils.fetchMolecule(mo, false))
                     .peek(mol -> {
                         ChemTermsEvaluator cte = pool.checkout();
                         try {
-                            cte.processMolecule(mol);
+                            cte.processMolecule(mol, stats);
                         } finally {
                             pool.checkin(cte);
                         }
@@ -138,12 +143,13 @@ public class StreamingTests {
         EvaluatorPool pool = new EvaluatorPool(25);
         try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(f)).getStream(true)) {
             long t0 = System.currentTimeMillis();
+            final Map<String,Integer> stats = new HashMap<>();
             long results = stream
                     .map(mo -> MoleculeUtils.fetchMolecule(mo, false))
                     .peek(mol -> {
                         ChemTermsEvaluator cte = pool.checkout();
                         try {
-                            cte.processMolecule(mol);
+                            cte.processMolecule(mol, stats);
                         } finally {
                             pool.checkin(cte);
                         }
@@ -161,6 +167,7 @@ public class StreamingTests {
         try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(f)).getStream(true)) {
             long t0 = System.currentTimeMillis();
             System.out.println("Submitting");
+            final Map<String,Integer> stats = new HashMap<>();
             ForkJoinTask<Long> task = forkJoinPool.submit(()
                     -> stream
                     .map(mo -> {
@@ -174,7 +181,7 @@ public class StreamingTests {
                         ChemTermsEvaluator cte = pool.checkout();
                         try {
                             //long c0 = System.nanoTime();
-                            cte.processMolecule(mol);
+                            cte.processMolecule(mol, stats);
                             //long c1 = System.nanoTime();
                             //System.out.println("Calc took + " + (c1 - c0));
                         } finally {
@@ -194,7 +201,7 @@ public class StreamingTests {
         EvaluatorPool pool = new EvaluatorPool(25);
         try (Stream<MoleculeObject> stream = MoleculeObjectUtils.createStreamGenerator(new FileInputStream(f)).getStream(true)) {
             long t0 = System.currentTimeMillis();
-
+            final Map<String,Integer> stats = new HashMap<>();
             ForkJoinTask<Long> task = forkJoinPool.submit(()
                     -> stream
                     .map(mo -> {
@@ -208,7 +215,7 @@ public class StreamingTests {
                         ChemTermsEvaluator cte = pool.checkout();
                         try {
                             //long c0 = System.nanoTime();
-                            cte.processMolecule(mol);
+                            cte.processMolecule(mol, stats);
                         //long c1 = System.nanoTime();
                             //System.out.println("Calc took + " + (c1 - c0));
                         } finally {

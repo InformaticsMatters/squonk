@@ -1,5 +1,7 @@
 package org.squonk.chemaxon.services;
 
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 
@@ -24,6 +26,10 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
 
     public static final String CHEMAXON_STRUCTURE_VERIFY = "direct:structure_verify";
     public static final String CHEMAXON_LOGP = "direct:logp";
+    public static final String CHEMAXON_LOGD = "direct:logd";
+    public static final String CHEMAXON_LOGS = "direct:logs";
+    public static final String CHEMAXON_APKA = "direct:apka";
+    public static final String CHEMAXON_BPKA = "direct:bpka";
     public static final String CHEMAXON_ATOM_COUNT = "direct:atomcount";
     public static final String CHEMAXON_ATOM_BOND_COUNT = "direct:atomcount_bondcount";
     public static final String CHEMAXON_LIPINSKI = "direct:lipinski";
@@ -53,6 +59,48 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                 .process(new ChemAxonMoleculeProcessor()
                         .logP())
                 .log("CHEMAXON_LOGP finished");
+
+        // Calculates the LogD at a particular pH
+        from(CHEMAXON_LOGD)
+                .log("CHEMAXON_LOGD starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process((Exchange exch) ->  {
+                    Float pH = exch.getIn().getHeader("pH", Float.class);
+                    Processor p = new ChemAxonMoleculeProcessor().logD(pH);
+                    p.process(exch);
+                })
+                .log("CHEMAXON_LOGD finished");
+
+        // Calculates the LogD at a particular pH
+        from(CHEMAXON_LOGS)
+                .log("CHEMAXON_LOGS starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process((Exchange exch) ->  {
+                    Float pH = exch.getIn().getHeader("pH", Float.class);
+                    String result = exch.getIn().getHeader("result", String.class);
+                    Processor p = new ChemAxonMoleculeProcessor().logS(pH, result);
+                    p.process(exch);
+                })
+                .log("CHEMAXON_LOGS finished");
+
+
+        // Calculate most acidic pKa
+        from(CHEMAXON_APKA)
+                .log("CHEMAXON_APKA starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new ChemAxonMoleculeProcessor()
+                        .apKa()
+                )
+                .log("CHEMAXON_APKA finished");
+
+        // Calculate most basic pKa
+        from(CHEMAXON_BPKA)
+                .log("CHEMAXON_BPKA starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new ChemAxonMoleculeProcessor()
+                        .bpKa()
+                )
+                .log("CHEMAXON_BPKA finished");
 
         // Calculate atom count
         from(CHEMAXON_ATOM_COUNT)

@@ -3,11 +3,6 @@ package org.squonk.camel.chemaxon.processor;
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.struc.Molecule;
 import com.chemaxon.version.VersionInfo;
-import org.squonk.dataset.DatasetMetadata;
-import org.squonk.types.MoleculeObject;
-import org.squonk.types.io.JsonHandler;
-import org.squonk.util.Metrics;
-import org.squonk.util.ResultExtractor;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.http.NameValuePair;
@@ -16,8 +11,12 @@ import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 import org.squonk.chemaxon.molecule.MoleculeEvaluator;
 import org.squonk.chemaxon.molecule.StandardizerEvaluator;
 import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
-import org.squonk.util.ExecutionStats;
+import org.squonk.types.MoleculeObject;
+import org.squonk.types.io.JsonHandler;
+import org.squonk.util.Metrics;
+import org.squonk.util.ResultExtractor;
 import org.squonk.util.StatsRecorder;
 
 import java.io.IOException;
@@ -250,8 +249,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
                         LOG.info("Processed molecule " + i + " " + Thread.currentThread());
                     }
                     try {
-                        boolean b = evaluator.processMoleculeObject(mo) != null;
-                        ExecutionStats.increment(stats, evaluator.getKey(),1);
+                        boolean b = evaluator.processMoleculeObject(mo, stats) != null;
                         return b;
                     } catch (IOException ex) {
                         LOG.log(Level.SEVERE, "Failed to evaluate molecule", ex);
@@ -267,8 +265,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
                         LOG.info("Processed molecule " + i + " " + Thread.currentThread());
                     }
                     try {
-                        MoleculeObject r = evaluator.processMoleculeObject(mo);
-                        ExecutionStats.increment(stats, evaluator.getMetricsCode(),1);
+                        MoleculeObject r = evaluator.processMoleculeObject(mo, stats);
                         return r;
                     } catch (IOException ex) {
                         LOG.log(Level.SEVERE, "Failed to evaluate molecule", ex);
@@ -357,6 +354,24 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         return this;
     }
 
+    public ChemAxonMoleculeProcessor logD(Float pH) throws ParseException {
+        String pHString = pH == null ? "7.4" : pH.toString();
+        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.LOGD + "_" + pHString, "logD('" + pHString + "')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_LOGD)));
+        return this;
+    }
+
+    public ChemAxonMoleculeProcessor logS(Float pH, String result) throws ParseException {
+        String pHString = pH == null ? "7.4" : pH.toString();
+        String resultString = result == null ? "logs" : result;
+        // result type does not seem to be handled by this version of JChem
+//        String propName = ChemTermsEvaluator.LOGS + "_" + pHString + "_" + resultString;
+//        String ctExpr = "logS('" + pHString + "','" + resultString + "')";
+        String propName = ChemTermsEvaluator.LOGS + "_" + pHString;
+        String ctExpr = "logS('" + pHString + "')";
+        evaluators.add(new ChemTermsEvaluator(propName, ctExpr, Metrics.generate(PROVIDER_CHEMAXON, METRICS_LOGS)));
+        return this;
+    }
+
     public ChemAxonMoleculeProcessor donorCount() throws ParseException {
         evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.HBOND_DONOR_COUNT, "donorCount()",Metrics.generate(PROVIDER_CHEMAXON, METRICS_HBD)));
         return this;
@@ -412,5 +427,13 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         return this;
     }
 
+    public ChemAxonMoleculeProcessor apKa() throws ParseException {
+        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.APKA, "acidicpKa('1')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_PKA)));
+        return this;
+    }
 
+    public ChemAxonMoleculeProcessor bpKa() throws ParseException {
+        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.BPKA, "basicpKa('1')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_PKA)));
+        return this;
+    }
 }

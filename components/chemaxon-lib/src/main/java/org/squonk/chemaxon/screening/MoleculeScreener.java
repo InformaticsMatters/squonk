@@ -6,6 +6,9 @@ import com.chemaxon.descriptors.common.DescriptorComparator;
 import com.chemaxon.descriptors.common.DescriptorGenerator;
 import org.squonk.chemaxon.molecule.StandardizerEvaluator;
 
+import java.util.Collections;
+import java.util.HashMap;
+
 /**
  * Allows molecules to be screened based on similarity using a variety of
  * ChemAxon molecular descriptors. Needs to be provided with a descriptor
@@ -130,7 +133,8 @@ public class MoleculeScreener<T extends Descriptor> {
             return mol;
         } else {
             Molecule clone = mol.cloneMolecule();
-            szr.processMolecule(clone);
+            // TODO - do we want to record this in the metrics?
+            szr.processMolecule(clone, new HashMap<>());
             return clone;
         }
     }

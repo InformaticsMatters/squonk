@@ -13,6 +13,8 @@ import java.util.zip.GZIPInputStream
  */
 class ChemTermsEvaluatorSpec extends Specification {
 
+    static Map<String,Integer> stats = new HashMap<>();
+
 
      def 'ChemTerms processor for Molecule'() {
 
@@ -23,8 +25,9 @@ class ChemTermsEvaluatorSpec extends Specification {
         when: 
         def mol0 = MolImporter.importMol('C')
         def mol1 = MolImporter.importMol('CC')
-        atomCount.processMolecule(mol0)
-        atomCount.processMolecule(mol1)
+
+        atomCount.processMolecule(mol0, stats)
+        atomCount.processMolecule(mol1, stats)
 
         then:
         mol0.getPropertyObject('atom_count') == 5
@@ -39,8 +42,8 @@ class ChemTermsEvaluatorSpec extends Specification {
         
 
         when:  
-        def mol0 = atomCountLt6.processMolecule(MolImporter.importMol('C'))
-        def mol1 = atomCountLt6.processMolecule(MolImporter.importMol('CC'))
+        def mol0 = atomCountLt6.processMolecule(MolImporter.importMol('C'), stats)
+        def mol1 = atomCountLt6.processMolecule(MolImporter.importMol('CC'), stats)
 
         then:
         mol0 != null
@@ -63,7 +66,7 @@ class ChemTermsEvaluatorSpec extends Specification {
 
         when:
         Stream s = mols.stream().map() {
-            def result = atomCountLt6.processMoleculeObject(it)
+            def result = atomCountLt6.processMoleculeObject(it, stats)
             println result
         }
 
@@ -84,7 +87,7 @@ class ChemTermsEvaluatorSpec extends Specification {
 
         when:
         Stream s = reader.asStream().map() {
-            def result = atomCountLt6.processMoleculeObject(it)
+            def result = atomCountLt6.processMoleculeObject(it, stats)
             //println result
         }
 

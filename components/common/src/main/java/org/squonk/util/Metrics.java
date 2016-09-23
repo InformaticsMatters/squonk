@@ -17,7 +17,7 @@ public interface Metrics {
     String METRICS_MASS = "Mass";
     String METRICS_LOGP = "LogP";
     String METRICS_LOGD = "LogD";
-    String METRICS_LOGS = "LOGS";
+    String METRICS_LOGS = "LogS";
     String METRICS_HBD = "HBondDonorCount";
     String METRICS_HBA = "HBondAcceptorCount";
     String METRICS_RING_COUNT = "RingCount";
@@ -29,6 +29,7 @@ public interface Metrics {
     String METRICS_MOLAR_REFRACTIVITY = "MolarRefractivity";
     String METRICS_PSA = "PSA";
     String METRICS_CHARGE = "Charge";
+    String METRICS_PKA = "pKa";
     String METRICS_RXN_ENUM = "ReactionEnumeration";
 
 

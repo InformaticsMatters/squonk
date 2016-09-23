@@ -18,9 +18,9 @@ public interface MoleculeEvaluator {
     }
 
     
-    Molecule processMolecule(Molecule mol);
+    Molecule processMolecule(Molecule mol, Map<String,Integer> stats);
     
-    MoleculeObject processMoleculeObject(MoleculeObject mol) throws IOException;
+    MoleculeObject processMoleculeObject(MoleculeObject mol, Map<String,Integer> stats) throws IOException;
     
     Map<String,Object> getResults(Molecule mol);
     

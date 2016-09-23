@@ -11,6 +11,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.apache.camel.Exchange;
@@ -45,30 +47,33 @@ public class StandardizerProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
+        // TODO - handle the metrics
+        final Map<String,Integer> stats = new HashMap<>();
         StreamingMoleculeObjectSourcer sourcer = new StreamingMoleculeObjectSourcer() {
             @Override
             public void handleSingle(Exchange exchange, MoleculeObject mo) throws IOException {
-                MoleculeObject neu = standardizeMolecule(exchange, mo);
+                MoleculeObject neu = standardizeMolecule(exchange, mo, stats);
                 exchange.getIn().setBody(neu);
             }
 
             @Override
             public void handleMultiple(Exchange exchange, Stream<MoleculeObject> mols) {
-                Stream<MoleculeObject> s = standardizeMultiple(exchange, mols);
+                Stream<MoleculeObject> s = standardizeMultiple(exchange, mols, stats);
                 exchange.getIn().setBody(new MoleculeObjectDataset(s));
             }
         };
         sourcer.handle(exchange);
     }
 
-    MoleculeObject standardizeMolecule(Exchange exchange, MoleculeObject mo) throws IOException {
-        return evaluator.processMoleculeObject(mo);
+    MoleculeObject standardizeMolecule(Exchange exchange, MoleculeObject mo, Map<String,Integer> stats) throws IOException {
+        return evaluator.processMoleculeObject(mo, stats);
     }
 
-    Stream<MoleculeObject> standardizeMultiple(final Exchange exchange, final Stream<MoleculeObject> mols) {
+    Stream<MoleculeObject> standardizeMultiple(final Exchange exchange, final Stream<MoleculeObject> mols, Map<String,Integer> stats) {
+
         return mols.map((mo) -> {
             try {
-                return standardizeMolecule(exchange, mo);
+                return standardizeMolecule(exchange, mo, stats);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }

@@ -1,13 +1,14 @@
 package org.squonk.chemaxon.molecule;
 
-import chemaxon.formats.MolFormatException;
 import chemaxon.jep.ChemJEP;
 import chemaxon.jep.Evaluator;
 import chemaxon.jep.context.MolContext;
 import chemaxon.nfunk.jep.ParseException;
 import chemaxon.struc.Molecule;
 import org.squonk.types.MoleculeObject;
+import org.squonk.util.ExecutionStats;
 import org.squonk.util.Pool;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
@@ -28,6 +29,8 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
     private final String chemTermsFunction;
 
     public static final String LOGP = "LogP_CXN";
+    public static final String LOGD = "LogD_CXN";
+    public static final String LOGS = "AqSol_CXN";
     public static final String ATOM_COUNT = "AtomCount_CXN";
     public static final String HEAVY_ATOM_COUNT = "HeavyAtomCount_CXN";
     public static final String BOND_COUNT = "BondCount_CXN";
@@ -39,6 +42,8 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
     public static final String MOLAR_REFRACTIVITY = "MolarRefractivity_CXN";
     public static final String FORMAL_CHARGE = "FormalCharge_CXN";
     public static final String TPSA = "TPSA_CXN";
+    public static final String APKA = "ApKa_CXN";
+    public static final String BPKA = "BpKa_CXN";
 
     /**
      * Constructor to standard ChemTerms evaluator. The property is calculated
@@ -122,23 +127,23 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
      * evaluator is a filter and the filter fails.
      */
     @Override
-    public Molecule processMolecule(Molecule mol) {
+    public Molecule processMolecule(Molecule mol, Map<String,Integer> stats) {
         if (mol == null) {
             return null;
         }
         MolContext context = new MolContext();
         context.setMolecule(mol);
-        return evaluateMoleculeImpl(context);
+        return evaluateMoleculeImpl(context, stats);
     }
 
     @Override
-    public MoleculeObject processMoleculeObject(MoleculeObject mo) throws MolFormatException, IOException {
+    public MoleculeObject processMoleculeObject(MoleculeObject mo, Map<String,Integer> stats) throws IOException {
         if (mo == null || mo.getSource() == null) {
             return mo;
         }
 
         Molecule mol = MoleculeUtils.fetchMolecule(mo, true);
-        mol = processMolecule(mol);
+        mol = processMolecule(mol, stats);
 
         if (mol == null) {
             return null;
@@ -150,12 +155,13 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
         }
     }
 
-    private Molecule evaluateMoleculeImpl(MolContext context) {
+    private Molecule evaluateMoleculeImpl(MolContext context, Map<String,Integer> stats) {
         final ChemJEP chemJEP = pool.checkout();
         try {
             if (mode == Mode.Filter) {
                 try {
                     boolean b = chemJEP.evaluate_boolean(context);
+                    ExecutionStats.increment(stats, getMetricsCode(),1);
                     if (b) {
                         return context.getMolecule();
                     }
@@ -167,6 +173,7 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
                 Molecule oldMol = context.getMolecule();
                 try {
                     Molecule newMol = (Molecule) chemJEP.evaluate(context);
+                    ExecutionStats.increment(stats, getMetricsCode(),1);
                     newMol.clearProperties();
                     for (int i = 0; i < oldMol.getPropertyCount(); i++) {
                         String key = oldMol.getPropertyKey(i);
@@ -181,6 +188,9 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
                 try {
                     Object result = chemJEP.evaluate(context);
                     context.getMolecule().setPropertyObject(propName, result);
+                    if (result != null) {
+                        ExecutionStats.increment(stats, getMetricsCode(),1);
+                    }
                 } catch (ParseException ex) {
                     LOG.log(Level.WARNING, "Failed to evaluate chem terms expression. Property will be missing.", ex);
                 }
