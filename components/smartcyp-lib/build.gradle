@@ -1,0 +1,15 @@
+description = 'CDK lib'
+
+
+dependencies {
+    
+    compile project(':common')
+
+    compile files("../../lib/smartcyp/smartcyp.jar")
+
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+
+    testCompile project(':core-test')
+
+}
+
