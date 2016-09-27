@@ -12,6 +12,7 @@ import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
+import org.squonk.options.OptionDescriptor.Mode;
 import org.squonk.rdkit.db.ChemcentralSearcher;
 import org.squonk.types.MoleculeObject;
 
@@ -49,15 +50,15 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     true, // a relative URL
                     new OptionDescriptor[]{
                             new OptionDescriptor<>(MoleculeTypeDescriptor.QUERY,
-                                    "body", "Query Structure", "Structure to use as the query as mol, smarts or smiles")
+                                    "body", "Query Structure", "Structure to use as the query as mol, smarts or smiles", Mode.User)
                                     .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
+                            new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search", Mode.User)
                                     .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
                                     .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity")
+                            new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity", Mode.User)
                                     .withValues(new String[]{"exact", "sss"})
                                     .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return")
+                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return", Mode.User)
                                     .withDefaultValue(100)
                                     .withMinMaxValues(1, 1)
                     },
@@ -79,27 +80,27 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     true, // a relative URL
                     new OptionDescriptor[]{
                             new OptionDescriptor<>(MoleculeTypeDescriptor.DISCRETE,
-                                    "body", "Query Structure", "Structure to use as the query as smiles or smarts")
+                                    "body", "Query Structure", "Structure to use as the query as smiles or smarts", Mode.User)
                                     .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
+                            new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search", Mode.User)
                                     .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
                                     .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity")
+                            new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity)", Mode.User)
                                     .withDefaultValue("sim")
                                     .withAccess(false, false) // needs to be invisible
                                     .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)")
+                            new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)", Mode.User)
                                     .withDefaultValue(0.7f)
                                     .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(String.class, "query.fp", "Fingerprint type", "Type of fingerprint to use for similarity search")
+                            new OptionDescriptor<>(String.class, "query.fp", "Fingerprint type", "Type of fingerprint to use for similarity search", Mode.User)
                                     .withValues(new String[]{"RDKIT", "MORGAN_CONNECTIVITY_2", "MORGAN_FEATURE_2"})
                                     .withDefaultValue("RDKIT")
                                     .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(String.class, "query.metric", "Similarity Metric", "Type of metric to use for similarity distance")
+                            new OptionDescriptor<>(String.class, "query.metric", "Similarity Metric", "Type of metric to use for similarity distance", Mode.User)
                                     .withValues(new String[]{"TANIMOTO", "DICE"})
                                     .withDefaultValue("TANIMOTO")
                                     .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return")
+                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return", Mode.User)
                                     .withDefaultValue(100)
                                     .withMinMaxValues(1, 1)
                     },
@@ -122,21 +123,21 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     "multisearch",
                     true, // a relative UR
                     new OptionDescriptor[]{
-                            new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
+                            new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search", Mode.User)
                                     .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
                                     .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)")
+                            new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)", Mode.User)
                                     .withDefaultValue(0.7f)
                                     .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(String.class, "query.fp", "Fingerprint type", "Type of fingerprint to use for similarity search")
+                            new OptionDescriptor<>(String.class, "query.fp", "Fingerprint type", "Type of fingerprint to use for similarity search", Mode.User)
                                     .withValues(new String[]{"RDKIT", "MORGAN_CONNECTIVITY_2", "MORGAN_FEATURE_2"})
                                     .withDefaultValue("RDKIT")
                                     .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(String.class, "query.metric", "Similarity Metric", "Type of metric to use for similarity distance")
+                            new OptionDescriptor<>(String.class, "query.metric", "Similarity Metric", "Type of metric to use for similarity distance", Mode.User)
                                     .withValues(new String[]{"TANIMOTO", "DICE"})
                                     .withDefaultValue("TANIMOTO")
                                     .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return")
+                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return", Mode.User)
                                     .withDefaultValue(100)
                                     .withMinMaxValues(1, 1)
                     },

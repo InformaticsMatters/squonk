@@ -17,6 +17,7 @@ import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
+import org.squonk.options.OptionDescriptor.Mode;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.NumberRange;
 import org.squonk.types.TypeResolver;
@@ -197,7 +198,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
         List<OptionDescriptor> list = new ArrayList<>();
 
         list.add(new OptionDescriptor<>(Float.class, "query.pH",
-                "pH", "pH value").withMinMaxValues(1,1).withDefaultValue(7.4f));
+                "pH", "pH value", Mode.User).withMinMaxValues(1,1).withDefaultValue(7.4f));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -206,7 +207,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
         List<OptionDescriptor> list = new ArrayList<>();
 
         list.add(new OptionDescriptor<>(Float.class, "query.pH",
-                "pH", "pH value").withMinMaxValues(1,1).withDefaultValue(7.4f));
+                "pH", "pH value", Mode.User).withMinMaxValues(1,1).withDefaultValue(7.4f));
 
 // result type does not seem to be handled by this version of JChem
 //        list.add(new OptionDescriptor<>(String.class, "query.result",
@@ -221,22 +222,20 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createLipinskiOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
-        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
-                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
-                .withMinMaxValues(1,1));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+        list.add(OptionDescriptor.IS_FILTER);
+        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(1)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.MOLECULAR_WEIGHT,
-                "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 500f)));
+                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 500f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.LOGP,
-                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 5.0f)));
+                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 5.0f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HBOND_DONOR_COUNT,
-                "HBD count", "H-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
+                "HBD count", "H-bond donor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HBOND_ACCEPTOR_COUNT,
-                "HBA count", "H-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+                "HBA count", "H-bond acceptor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -244,26 +243,24 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createDrugLikeFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
-        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
-                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
-                .withMinMaxValues(1,1));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+        list.add(OptionDescriptor.IS_FILTER);
+        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.MOLECULAR_WEIGHT,
-                "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 400f)));
+                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 400f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.RING_COUNT,
-                "Ring count", "Ring count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(1, null)));
+                "Ring count", "Ring count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(1, null)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.ROTATABLE_BOND_COUNT,
-                "Rotatable bond count", "Rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
+                "Rotatable bond count", "Rotatable bond count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HBOND_DONOR_COUNT,
-                "HBD count", "H-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
+                "HBD count", "H-bond donor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HBOND_ACCEPTOR_COUNT,
-                "HBA count", "H-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+                "HBA count", "H-bond acceptor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.LOGP,
-                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 5.0f)));
+                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 5.0f)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -271,22 +268,20 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createGhoseFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
-        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
-                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
-                .withMinMaxValues(1,1));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+        list.add(OptionDescriptor.IS_FILTER);
+        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.LOGP,
-                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-0.4f, 5.6f)));
+                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-0.4f, 5.6f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.MOLECULAR_WEIGHT,
-                "MolWeight", "molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(160f, 480f)));
+                "MolWeight", "molecular weight", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(160f, 480f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.ATOM_COUNT,
-                "Atom count", "Atom count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(20, 70)));
+                "Atom count", "Atom count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(20, 70)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.MOLAR_REFRACTIVITY,
-                "Refractivity", "Molar Refractivity").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(40f, 130f)));
+                "Refractivity", "Molar Refractivity", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(40f, 130f)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -294,19 +289,17 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createVeberFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
-        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
-                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
-                .withMinMaxValues(1,1));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+        list.add(OptionDescriptor.IS_FILTER);
+        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.TPSA,
-                "TPSA", "Topological polar surfacearea").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 140f)));
+                "TPSA", "Topological polar surfacearea", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 140f)));
 
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.ROTATABLE_BOND_COUNT,
-                "Rotatable bond count", "Rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+                "Rotatable bond count", "Rotatable bond count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
 
 
         return list.toArray(new OptionDescriptor[0]);
@@ -315,24 +308,22 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createRuleOfThreeOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
-        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
-                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
-                .withMinMaxValues(1,1));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+        list.add(OptionDescriptor.IS_FILTER);
+        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.LOGP,
-                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 3.0f)));
+                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 3.0f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.MOLECULAR_WEIGHT,
-                "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 300f)));
+                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 300f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HBOND_DONOR_COUNT,
-                "HBD count", "H-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+                "HBD count", "H-bond donor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HBOND_ACCEPTOR_COUNT,
-                "HBA count", "H-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+                "HBA count", "H-bond acceptor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.ROTATABLE_BOND_COUNT,
-                "Rot bond count", "Rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+                "Rot bond count", "Rotatable bond count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -340,28 +331,26 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createReosFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
-        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
-                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
-                .withMinMaxValues(1,1));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+        list.add(OptionDescriptor.IS_FILTER);
+        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.MOLECULAR_WEIGHT,
-                "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(200f, 500f)));
+                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(200f, 500f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + ChemTermsEvaluator.LOGP,
-                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-5.0f, 5.0f)));
+                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-5.0f, 5.0f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HBOND_DONOR_COUNT,
-                "HBD count", "H-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
+                "HBD count", "H-bond donor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HBOND_ACCEPTOR_COUNT,
-                "HBA count", "H-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+                "HBA count", "H-bond acceptor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.FORMAL_CHARGE,
-                "Formal charge", "Formal charge").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(-2, 2)));
+                "Formal charge", "Formal charge", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(-2, 2)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.ROTATABLE_BOND_COUNT,
-                "Rot bond count", "Rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 8)));
+                "Rot bond count", "Rotatable bond count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 8)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HEAVY_ATOM_COUNT,
-                "Heavy atom count", "Heavy atom count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(15, 50)));
+                "Heavy atom count", "Heavy atom count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(15, 50)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -378,9 +367,9 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/ECFP4+Screen+%28CXN%29",
                     "screening/ecfp4",
                     new OptionDescriptor[]{
-                            new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false),
-                            new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE, new String[]{"smiles"}), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
-                            new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
+                            OptionDescriptor.IS_FILTER,
+                            new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE, new String[]{"smiles"}), KEY_QMOL, LABEL_QMOL, DESC_QMOL, Mode.User),
+                            new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF, Mode.User).withDefaultValue(0.7f)
                     }),
             createServiceDescriptor(
                     "chemaxon.screening.pharmacophore",
@@ -391,9 +380,9 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Pharmacophore+Screen+%28CXN%29",
                     "screening/pharmacophore",
                     new OptionDescriptor[]{
-                            new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false),
-                            new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE, new String[]{"smiles"}), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
-                            new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF).withDefaultValue(0.7f)
+                            OptionDescriptor.IS_FILTER,
+                            new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE, new String[]{"smiles"}), KEY_QMOL, LABEL_QMOL, DESC_QMOL, Mode.User),
+                            new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF, Mode.User).withDefaultValue(0.7f)
                     }),
             createServiceDescriptor(
                     "chemaxon.clustering.sperex",
@@ -404,8 +393,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/SphereEx+Clustering+%28CXN%29",
                     "clustering/spherex/ecfp4",
                     new OptionDescriptor[]{
-                            new OptionDescriptor<>(Integer.class, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS).withDefaultValue(5),
-                            new OptionDescriptor<>(Integer.class, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS).withDefaultValue(10)
+                            new OptionDescriptor<>(Integer.class, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS, Mode.User).withDefaultValue(5),
+                            new OptionDescriptor<>(Integer.class, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS, Mode.User).withDefaultValue(10)
                     })
     };
 

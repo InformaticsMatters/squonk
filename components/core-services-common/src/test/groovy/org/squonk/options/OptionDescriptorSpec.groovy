@@ -11,7 +11,7 @@ class OptionDescriptorSpec extends Specification {
 
     void "test json"() {
 
-        def std1 = new OptionDescriptor(Integer.class, "key", "label", "description");
+        def std1 = new OptionDescriptor(Integer.class, "key", "label", "description", OptionDescriptor.Mode.User);
 
         when:
         def json = JsonHandler.getInstance().objectToJson(std1)
@@ -29,7 +29,7 @@ class OptionDescriptorSpec extends Specification {
 
     void "test values json"() {
 
-        def std1 = new OptionDescriptor(Integer.class, "key", "label", "description")
+        def std1 = new OptionDescriptor(Integer.class, "key", "label", "description", OptionDescriptor.Mode.User)
                 .withDefaultValue(1)
                 .withValues([1, 2, 3] as Integer[]);
 
@@ -52,7 +52,7 @@ class OptionDescriptorSpec extends Specification {
 
     void "test number range"() {
 
-        def std1 = new OptionDescriptor(NumberRange.Integer.class, "key", "label", "description")
+        def std1 = new OptionDescriptor(NumberRange.Integer.class, "key", "label", "description", OptionDescriptor.Mode.User)
             .withValues([new NumberRange.Integer(1, 10), new NumberRange.Integer(2, 10)] as NumberRange.Integer[] )
             .withDefaultValue(new NumberRange.Integer(1, 10))
 

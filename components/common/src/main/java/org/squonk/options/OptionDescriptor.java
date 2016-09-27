@@ -34,17 +34,17 @@ import static org.squonk.util.CommonConstants.*;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public class OptionDescriptor<T> implements Serializable {
 
-    public static OptionDescriptor IS_FILTER = new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode")
+    public static OptionDescriptor IS_FILTER = new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode", Mode.User)
             .withDefaultValue(true).withAccess(false, false);
 
     public static OptionDescriptor FILTER_MODE = new OptionDescriptor<>(String.class,
-            "query." + OPTION_FILTER_MODE, "Filter mode", "How to filter results")
+            "query." + OPTION_FILTER_MODE, "Filter mode", "How to filter results", Mode.User)
             .withValues(new String[] {VALUE_INCLUDE_PASS, VALUE_INCLUDE_FAIL, VALUE_INCLUDE_ALL})
             .withDefaultValue(VALUE_INCLUDE_FAIL)
             .withMinMaxValues(1,1);
 
     public enum Mode {
-        User, Advanced, Input, Output
+        User, Advanced, Input, Output, Ignore
     }
 
     private final TypeDescriptor<T> typeDescriptor;
@@ -117,12 +117,13 @@ public class OptionDescriptor<T> implements Serializable {
             boolean visible,
             boolean editable,
             Integer minValues,
-            Integer maxValues) {
-        this(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, new Mode[] {Mode.User}, null);
+            Integer maxValues,
+            Mode mode) {
+        this(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, new Mode[] {mode}, null);
     }
 
-    public OptionDescriptor(TypeDescriptor<T> type, String key, String label, String description) {
-        this(type, key, label, description, null, null, true, true, 1, null);
+    public OptionDescriptor(TypeDescriptor<T> type, String key, String label, String description, Mode mode) {
+        this(type, key, label, description, null, null, true, true, 1, null, mode);
     }
 
     /** Create an OptionDescriptor whose typeDescriptor is a {@link SimpleTypeDescriptor&lt;T&gt;}
@@ -131,33 +132,34 @@ public class OptionDescriptor<T> implements Serializable {
      * @param key
      * @param label
      * @param description
+     * @param mode
      */
-    public OptionDescriptor(Class<T> type, String key, String label, String description) {
-        this(new SimpleTypeDescriptor<T>(type), key, label, description, null, null, true, true, 1, null);
+    public OptionDescriptor(Class<T> type, String key, String label, String description, Mode mode) {
+        this(new SimpleTypeDescriptor<T>(type), key, label, description, null, null, true, true, 1, null, mode);
     }
 
     public OptionDescriptor<T> withDefaultValue(T defaultValue) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
+        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, Mode.User);
     }
 
     public OptionDescriptor<T> withValues(T[] values) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
+        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, Mode.User);
     }
 
     public OptionDescriptor<T> withAccess(boolean visible, boolean editable) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
+        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, Mode.User);
     }
 
     public OptionDescriptor<T> withMinValues(int minValues) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
+        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, Mode.User);
     }
 
     public OptionDescriptor<T> withMaxValues(int maxValues) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
+        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, Mode.User);
     }
 
     public OptionDescriptor<T> withMinMaxValues(int minValues, int maxValues) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues);
+        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, Mode.User);
     }
 
     /**
@@ -263,5 +265,16 @@ public class OptionDescriptor<T> implements Serializable {
     public boolean isRequired() {
         return minValues == null || minValues > 0;
     }
+
+    @JsonIgnore
+    public boolean isMode(Mode mode) {
+        for (Mode m : getModes()) {
+            if (mode == m) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 }

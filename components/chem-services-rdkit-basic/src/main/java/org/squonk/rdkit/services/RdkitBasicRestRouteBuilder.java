@@ -10,6 +10,7 @@ import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.OptionDescriptor;
+import org.squonk.options.OptionDescriptor.Mode;
 import org.squonk.rdkit.io.RDKitMoleculeIOUtils.FragmentMode;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.NumberRange;
@@ -166,7 +167,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Canonical+Smiles+%28RDKit%29",
                     "canonical_smiles",
                     new OptionDescriptor[] {
-                            new OptionDescriptor<>(String.class, "query.mode", "Fragment mode", "How to handle molecules with multiple fragments")
+                            new OptionDescriptor<>(String.class, "query.mode", "Fragment mode", "How to handle molecules with multiple fragments", Mode.User)
                                     .withValues(fragmentModesToStringArray())
                     }),
             createServiceDescriptor(
@@ -184,22 +185,20 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createLipinskiOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
-        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
-                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
-                .withMinMaxValues(1,1));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+        list.add(OptionDescriptor.IS_FILTER);
+        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(1)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
-                "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 500f)));
+                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 500f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
-                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 5.0f)));
+                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 5.0f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + LIPINSKI_HBD.getName(),
-                "HBD count", "H-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
+                "HBD count", "H-bond donor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + LIPINSKI_HBA.getName(),
-                "HBA count", "H-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+                "HBA count", "H-bond acceptor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -207,24 +206,22 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createRuleOfThreeOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
-        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
-                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
-                .withMinMaxValues(1,1));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+        list.add(OptionDescriptor.IS_FILTER);
+        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
-                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 3.0f)));
+                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 3.0f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
-                "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 300f)));
+                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 300f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBD.getName(),
-                "HBD count", "H-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+                "HBD count", "H-bond donor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBA.getName(),
-                "HBA count", "H-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+                "HBA count", "H-bond acceptor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_ROTATABLE_BONDS.getName(),
-                "Rot bond count", "Rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+                "Rot bond count", "Rotatable bond count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -232,22 +229,20 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createGhoseFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
-        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
-                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
-                .withMinMaxValues(1,1));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+        list.add(OptionDescriptor.IS_FILTER);
+        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
-                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-0.4f, 5.6f)));
+                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-0.4f, 5.6f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
-                "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(160f, 480f)));
+                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(160f, 480f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ATOM_COUNT.getName(),
-                "Atom count", "Atom count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(20, 70)));
+                "Atom count", "Atom count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(20, 70)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + MOLAR_REFRACTIVITY.getName(),
-                "Refractivity", "Molar Refractivity").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(40f, 130f)));
+                "Refractivity", "Molar Refractivity", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(40f, 130f)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -256,28 +251,26 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createReosOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
-        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
-                        .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
-                        .withMinMaxValues(1,1));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+        list.add(OptionDescriptor.IS_FILTER);
+        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
-                "Mol weight", "Molecular weight").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(200f, 500f)));
+                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(200f, 500f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
-                "LogP", "LogP partition coefficient").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-5.0f, 5.0f)));
+                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-5.0f, 5.0f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBD.getName(),
-                "HBD count", "H-bond donor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
+                "HBD count", "H-bond donor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBA.getName(),
-                "HBA count", "H-bond acceptor count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+                "HBA count", "H-bond acceptor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + FORMAL_CHARGE.getName(),
-                "Formal charge", "Formal charge").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(-2, 2)));
+                "Formal charge", "Formal charge", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(-2, 2)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_ROTATABLE_BONDS.getName(),
-                "Rot bond count", "Rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 8)));
+                "Rot bond count", "Rotatable bond count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 8)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + HEAVY_ATOM_COUNT.getName(),
-                "Heavy atom count", "Heavy atom count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(15, 50)));
+                "Heavy atom count", "Heavy atom count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(15, 50)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -285,18 +278,16 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createVeberFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false));
-        list.add(new OptionDescriptor<>(String.class, "query." + CommonConstants.OPTION_FILTER_MODE, "Filter mode", "How to filter results")
-                .withValues(new String[] {"INCLUDE_PASS", "INCLUDE_FAIL", "INCLUDE_ALL"}).withDefaultValue("INCLUDE_PASS")
-                .withMinMaxValues(1,1));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept")
+        list.add(OptionDescriptor.IS_FILTER);
+        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1,1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + TPSA.getName(),
-                "TPSA", "Topological polar surface area").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 140f)));
+                "TPSA", "Topological polar surface area", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 140f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_ROTATABLE_BONDS.getName(),
-                "Rot bond count", "Rotatable bond count").withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+                "Rot bond count", "Rotatable bond count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -314,7 +305,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     }
 
 
-    static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String resourceUrl, String icon,
+    static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String icon, String resourceUrl,
                                                      String endpoint, OptionDescriptor[] options) {
 
         return new ServiceDescriptor(
