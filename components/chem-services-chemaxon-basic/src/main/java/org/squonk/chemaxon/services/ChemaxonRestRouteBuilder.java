@@ -11,7 +11,6 @@ import org.squonk.camel.processor.DatasetToJsonProcessor;
 import org.squonk.camel.processor.JsonToDatasetProcessor;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
-import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.execution.steps.StepDefinitionConstants;
@@ -69,10 +68,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Verify that molecules are valid according to ChemAxon's Marvin",
                     new String[]{"verify", "chemaxon"},
                     "icons/properties_add.png",
-                    new String[]{"/Chemistry/Toolkits/ChemAxon/Verify", "/Chemistry/Verify"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Verify+structure+%28CXN%29",
                     "verify",
-                    0f,
                     new OptionDescriptor[] {OptionDescriptor.IS_FILTER, OptionDescriptor.FILTER_MODE}),
             createServiceDescriptor(
                     "chemaxon.calculators.logp",
@@ -80,10 +77,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "LogP using ChemAxon calculators",
                     new String[]{"logp", "partitioning", "molecularproperties", "chemaxon"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Partitioning"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/LogP+%28CXN%29",
                     "logp",
-                    0.001f,
                     null),
             createServiceDescriptor(
                     "chemaxon.calculators.logd",
@@ -91,10 +86,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "LogD at specified pH using ChemAxon calculators",
                     new String[]{"logd", "partitioning", "molecularproperties", "chemaxon"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Partitioning"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/LogD+%28CXN%29",
                     "logd",
-                    0.005f,
                     createLogDOptionDescriptors()),
             createServiceDescriptor(
                     "chemaxon.calculators.logs",
@@ -102,10 +95,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Solubility (logS) at specified pH using ChemAxon calculators",
                     new String[]{"logs", "solubility", "molecularproperties", "chemaxon"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Solubility"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/LogS+%28CXN%29",
                     "logs",
-                    0.005f,
                     createLogSOptionDescriptors()),
             createServiceDescriptor(
                     "chemaxon.calculators.apka",
@@ -113,10 +104,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Most acidic pKa using ChemAxon calculators",
                     new String[]{"pka", "charge", "molecularproperties", "chemaxon"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Charge"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/pKa+%28CXN%29",
                     "apka",
-                    0.004f,
                     null),
             createServiceDescriptor(
                     "chemaxon.calculators.bpka",
@@ -124,10 +113,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Most basic pKa using ChemAxon calculators",
                     new String[]{"pka", "charge", "molecularproperties", "chemaxon"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Charge"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/pKa+%28CXN%29",
                     "bpka",
-                    0.004f,
                     null),
             createServiceDescriptor(
                     "chemaxon.calculators.atomcount",
@@ -135,10 +122,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Atom Count using ChemAxon calculators",
                     new String[]{"atomcount", "topology", "molecularproperties", "chemaxon"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/Topological"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Atom+Count+%28CXN%29",
                     "atomCount",
-                    0f,
                     null),
             createServiceDescriptor(
                     "chemaxon.calculators.lipinski",
@@ -146,10 +131,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Lipinski rule of 5 filter using ChemAxon calculators",
                     new String[]{"lipinski", "filter", "druglike", "molecularproperties", "chemaxon"},
                     "icons/filter_molecules.png",
-                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/DrugLike"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Lipinski+filter+%28CXN%29",
                     "lipinski",
-                    0.002f,
                     createLipinskiOptionDescriptors()),
             createServiceDescriptor(
                     "chemaxon.calculators.druglikefilter",
@@ -157,10 +140,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Drug-like filter using ChemAxon calculators",
                     new String[]{"druglike", "filter", "molecularproperties", "chemaxon"},
                     "icons/filter_molecules.png",
-                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/DrugLike"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Drug-like+Filter+%28CXN%29",
                     "drugLikeFilter",
-                    0.0025f,
                     createDrugLikeFilterOptionDescriptors()),
             createServiceDescriptor(
                     "chemaxon.calculators.ghosefilter",
@@ -168,10 +149,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Ghose filter using ChemAxon calculators",
                     new String[]{"ghose", "filter", "druglike", "molecularproperties", "chemaxon"},
                     "icons/filter_molecules.png",
-                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/GhoseFilter"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Ghose+filter+%28CXN%29",
                     "ghosefilter",
-                    0.0025f,
                     createGhoseFilterOptionDescriptors()),
             createServiceDescriptor(
                     "chemaxon.calculators.veberfilter",
@@ -179,10 +158,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Veber filter using ChemAxon calculators",
                     new String[]{"veber", "filter", "druglike", "psa", "tpsa", "rotatablebonds", "molecularproperties", "chemaxon"},
                     "icons/filter_molecules.png",
-                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/GhoseFilter"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Veber+filter+%28CXN%29",
                     "veberfilter",
-                    0.0025f,
                     createVeberFilterOptionDescriptors()),
             createServiceDescriptor(
                     "chemaxon.calculators.ruleofthreefilter",
@@ -190,10 +167,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Astex Rule of 3 filter using ChemAxon calculators",
                     new String[]{"ruleofthree", "ro3", "hbond", "donors", "acceptors", "logp", "molecularweight", "rotatablebonds", "leadlike", "molecularproperties", "filter", "chemaxon"},
                     "icons/filter_molecules.png",
-                    new String[]{"/Vendors/ChemAxon/Calculators", "Chemistry/Calculators/DrugLike"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Rule+of+3+filter+%28CXN%29",
                     "ruleOfThreeFilter",
-                    0.0025f,
                     createRuleOfThreeOptionDescriptors()),
             createServiceDescriptor(
                     "chemaxon.calculators.reosfilter",
@@ -201,10 +176,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Rapid Elimination Of Swill filter using ChemAxon calculators",
                     new String[]{"reos", "hbond", "donors", "acceptors", "logp", "molecularweight", "rotatablebonds", "charge", "formalcharge", "leadlike", "molecularproperties", "filter", "chemaxon"},
                     "icons/filter_molecules.png",
-                    new String[]{"/Vendors/ChemAxon/Calculators", "/Chemistry/Calculators/DrugLike"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/REOS+filter+%28CXN%29",
                     "reosFilter",
-                    0.0025f,
                     createReosFilterOptionDescriptors())//,
 //                createServiceDescriptor(
 //                        "chemaxon.calculators.chemterms",
@@ -402,10 +375,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Virtual screening using ChemAxon ECFP4 fingerprints. See http://www.chemaxon.com/products/screen/",
                     new String[]{"virtualscreening", "screening", "ecfp", "ecfp4", "moleculardescriptors", "fingerprints", "chemaxon"},
                     "icons/filter_molecules.png",
-                    new String[]{"/Vendors/ChemAxon/Screening", "Chemistry/Screening"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/ECFP4+Screen+%28CXN%29",
                     "screening/ecfp4",
-                    0.001f,
                     new OptionDescriptor[]{
                             new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false),
                             new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE, new String[]{"smiles"}), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
@@ -417,10 +388,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Virtual screening using ChemAxon 2D pharmacophore fingerprints. See http://www.chemaxon.com/products/screen/",
                     new String[]{"virtualscreening", "screening", "parmacophore", "moleculardescriptors", "fingerprints", "chemaxon"},
                     "icons/filter_molecules.png",
-                    new String[]{"/Vendors/ChemAxon/Screening", "Chemistry/Screening"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Pharmacophore+Screen+%28CXN%29",
                     "screening/pharmacophore",
-                    0.004f,
                     new OptionDescriptor[]{
                             new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode").withDefaultValue(true).withAccess(false, false),
                             new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE, new String[]{"smiles"}), KEY_QMOL, LABEL_QMOL, DESC_QMOL),
@@ -432,10 +401,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "Sphere exclusion clustering using ChemAxon ECFP4 fingerprints. See http://www.chemaxon.com/products/jklustor/",
                     new String[]{"clustering", "ecfp", "ecfp4", "chemaxon"},
                     "icons/clustering.png",
-                    new String[]{"/Vendors/ChemAxon/Clustering", "Chemistry/Clustering"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/SphereEx+Clustering+%28CXN%29",
                     "clustering/spherex/ecfp4",
-                    0.002f,
                     new OptionDescriptor[]{
                             new OptionDescriptor<>(Integer.class, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS).withDefaultValue(5),
                             new OptionDescriptor<>(Integer.class, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS).withDefaultValue(10)
@@ -443,36 +410,22 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     };
 
     static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String icon,
-                                                     String[] paths, String modeId, String endpoint, float cost, OptionDescriptor[] props) {
+                                                     String resourceUrl, String endpoint, OptionDescriptor[] options) {
         return new ServiceDescriptor(
                 serviceDescriptorId,
                 name,
                 desc,
                 tags,
-                null,
-                paths,
-                "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
-                null,
-                new String[]{"public"},
+                resourceUrl,
                 MoleculeObject.class, // inputClass
                 MoleculeObject.class, // outputClass
                 DataType.STREAM, // inputType
                 DataType.STREAM, // outputType
                 icon,
-                new AccessMode[]{
-                        new AccessMode(
-                                modeId,
-                                "Immediate execution",
-                                "Execute as an asynchronous REST web service",
-                                endpoint,
-                                true, // a relative URL
-                                null,
-                                null,
-                                cost,
-                                new ServiceDescriptor.LicenseToken[]{ServiceDescriptor.LicenseToken.CHEMAXON},
-                                props,
-                                StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
-                }
+                endpoint,
+                true, // a relative URL
+                options,
+                StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME
         );
     }
 

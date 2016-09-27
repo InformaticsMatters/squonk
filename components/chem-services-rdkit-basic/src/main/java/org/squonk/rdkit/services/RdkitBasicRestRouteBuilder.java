@@ -5,7 +5,6 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
-import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.execution.steps.StepDefinitionConstants;
@@ -47,8 +46,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "Verify that the molecules are valid according to RDKit",
                     new String[]{"verify", "rdkit"},
                     "icons/properties_add.png",
-                    new String[]{"/Chemistry/Toolkits/RDKit/Verify", "/Chemistry/Verify"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Verify+structure+%28RDKit%29",
                     "verify",
                     new OptionDescriptor[] {OptionDescriptor.IS_FILTER, OptionDescriptor.FILTER_MODE}),
             createServiceDescriptor(
@@ -57,8 +55,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "RDKit LogP prediction",
                     new String[]{"logp", "partitioning", "molecularproperties", "rdkit"},
                     "icons/properties_add.png",
-                    new String[]{"/Chemistry/Toolkits/RDKit/Calculators", "/Chemistry/Calculators/Partioning"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/LogP+%28RDKit%29",
                     "logp",
                     null),
             createServiceDescriptor(
@@ -67,8 +64,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "Fraction sp3 hybridised carbons using RDKit",
                     new String[]{"fraccsp3", "topology", "molecularproperties", "rdkit"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Topological"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Frac+sp3+C+%28RDKit%29",
                     "frac_c_sp3",
                     null),
             createServiceDescriptor(
@@ -77,8 +73,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "Lipinski rule of 5 filter using RDKit",
                     new String[]{"lipinski", "ruleoffive", "ro5", "hbond", "donors", "acceptors", "logp", "molecularweight", "druglike", "molecularproperties", "filter", "rdkit"},
                     "icons/filter_molecules.png",
-                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/DrugLike"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Lipinski+filter+%28RDKit%29",
                     "lipinski",
                     createLipinskiOptionDescriptors()),
             createServiceDescriptor(
@@ -87,8 +82,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "Rule of 3 filter using RDKit",
                     new String[]{"ruleofthree", "ro3", "hbond", "donors", "acceptors", "logp", "molecularweight", "rotatablebonds", "leadlike", "molecularproperties", "filter", "rdkit"},
                     "icons/filter_molecules.png",
-                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/DrugLike"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Rule+of+3+filter+%28RDKit%29",
                     "ruleofthree",
                     createRuleOfThreeOptionDescriptors()),
             createServiceDescriptor(
@@ -97,30 +91,25 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "Ghose filter using RDKit",
                     new String[]{"ghose", "logp", "molecularweight", "atomcount", "druglike", "molecularproperties", "molarrefractivity", "refractivity", "filter", "rdkit"},
                     "icons/filter_molecules.png",
-                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/DrugLike"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Ghose+filter+%28RDKit%29",
                     "ghose",
                     createGhoseFilterOptionDescriptors()),
-
             createServiceDescriptor(
                     "rdkit.calculators.veber",
                     "Veber filter (RDKit)",
                     "Veber filter using RDKit",
                     new String[]{"veber", "druglike", "molecularproperties", "rotatablebonds", "tpsa", "psa", "filter", "rdkit"},
                     "icons/filter_molecules.png",
-                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/DrugLike"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Veber+filter+%28RDKit%29",
                     "veber",
                     createVeberFilterOptionDescriptors()),
-
             createServiceDescriptor(
                     "rdkit.calculators.reos",
                     "REOS (RDKit)",
                     "Rapid Elimination Of Swill (REOS) using RDKit",
                     new String[]{"reos", "hbond", "donors", "acceptors", "logp", "molecularweight", "rotatablebonds", "charge", "formalcharge", "leadlike", "molecularproperties", "filter", "rdkit"},
                     "icons/filter_molecules.png",
-                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/DrugLike"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/REOS+Filter+%28RDKit%29",
                     "reos",
                     createReosOptionDescriptors()),
             createServiceDescriptor(
@@ -129,8 +118,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "H-bond donor and acceptor counts using RDKit",
                     new String[]{"hbond", "donors", "acceptors", "druglike", "molecularproperties", "rdkit"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Topological"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/HBA+%26+HBD+%28RDKit%29",
                     "donors_acceptors",
                     null),
             createServiceDescriptor(
@@ -139,8 +127,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "Molar Refractivity using RDKit",
                     new String[]{"refractivity", "molarrefractivity", "molecularproperties", "rdkit"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Other"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Molar+Refractivity+%28RDKit%29",
                     "molar_refractivity",
                     null),
             createServiceDescriptor(
@@ -149,8 +136,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "Topological surface area using RDKit",
                     new String[]{"tpsa", "psa", "molecularproperties", "rdkit"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Other"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/TPSA+%28RDKit%29",
                     "tpsa",
                     null),
             createServiceDescriptor(
@@ -159,8 +145,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "Ring count and aromatic ring count using RDKit",
                     new String[]{"rings", "aromatic", "molecularproperties", "rdkit"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Topological"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Rotatable+bonds+%28RDKit%29",
                     "rings",
                     null),
             createServiceDescriptor(
@@ -169,8 +154,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "Rotatable bond count using RDKit",
                     new String[]{"rotatablebonds", "molecularproperties", "rdkit"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Topological"},
-                    "asyncHttp",
+                    "",
                     "rotatable_bonds",
                     null),
             createServiceDescriptor(
@@ -179,8 +163,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "Canonical Smiles using RDKit",
                     new String[]{"smiles", "canonical", "rdkit"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Other"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Canonical+Smiles+%28RDKit%29",
                     "canonical_smiles",
                     new OptionDescriptor[] {
                             new OptionDescriptor<>(String.class, "query.mode", "Fragment mode", "How to handle molecules with multiple fragments")
@@ -192,8 +175,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "Formal Charge using RDKit",
                     new String[]{"charge", "formalcharge", "rdkit"},
                     "icons/properties_add.png",
-                    new String[]{"/Vendors/RDKit/Calculators", "/Chemistry/Calculators/Other"},
-                    "asyncHttp",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Formal+Charge+%28RDKit%29",
                     "formal_charge",
                     null)
 
@@ -332,37 +314,24 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     }
 
 
-    static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String icon,
-                                                     String[] paths, String modeId, String endpoint, OptionDescriptor[] props) {
+    static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String resourceUrl, String icon,
+                                                     String endpoint, OptionDescriptor[] options) {
+
         return new ServiceDescriptor(
                 serviceDescriptorId,
                 name,
                 desc,
                 tags,
-                null,
-                paths,
-                "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
-                null,
-                new String[]{"public"},
+                resourceUrl,
                 MoleculeObject.class, // inputClass
                 MoleculeObject.class, // outputClass
                 DataType.STREAM, // inputType
                 DataType.STREAM, // outputType
                 icon,
-                new AccessMode[]{
-                        new AccessMode(
-                                modeId,
-                                "Immediate execution",
-                                "Execute as an asynchronous REST web service",
-                                endpoint,
-                                true, // a relative URL
-                                null,
-                                null,
-                                null,
-                                null,
-                                props,
-                                StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
-                }
+                endpoint,
+                true, // a relative URL
+                options,
+                StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME
         );
     }
 

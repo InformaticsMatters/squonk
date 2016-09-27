@@ -6,7 +6,6 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.cdk.processor.CDKMoleculeObjectSDFileProcessor;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
-import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.execution.steps.StepDefinitionConstants;
@@ -52,24 +51,24 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                     "Verify structure (CDK)",
                     "Verify that the molecules are valid according to CDK",
                     new String[]{"verify", "cdk"},
-                    new String[]{"/Chemistry/Toolkits/CDK/Verify", "/Chemistry/Verify"},
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Verify+structure+%28CDK%29",
                     "icons/properties_add.png",
                     ROUTE_VERIFY,
                     new OptionDescriptor[]{OptionDescriptor.IS_FILTER, OptionDescriptor.FILTER_MODE}),
             createServiceDescriptor(
                     "cdk.logp", "LogP (CDK)", "LogP predictions for XLogP, ALogP and AMR using CDK",
                     new String[]{"logp", "partitioning", "molecularproperties", "cdk"},
-                    new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Partioning"},
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/LogP+%28CDK%29",
                     "icons/properties_add.png", ROUTE_LOGP, null),
             createServiceDescriptor(
                     "cdk.donors_acceptors", "HBA & HBD (CDK)", "H-bond donor and acceptor counts using CDK",
                     new String[]{"hbd", "donors", "hba", "acceptors", "topology", "molecularproperties", "cdk"},
-                    new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Topological"},
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/HBA+%26+HBD+%28CDK%29",
                     "icons/properties_add.png", ROUTE_DONORS_ACCEPTORS, null),
             createServiceDescriptor(
                     "cdk.wiener_numbers", "Wiener Numbers (CDK)", "Wiener path and polarity numbers using CDK",
                     new String[]{"wiener", "topology", "molecularproperties", "cdk"},
-                    new String[]{"/Chemistry/Toolkits/CDK/Calculators", "/Chemistry/Calculators/Topological"},
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Wiener+Numbers+%28CDK%29",
                     "icons/properties_add.png", ROUTE_WIENER_NUMBERS, null)
     };
 
@@ -78,31 +77,27 @@ public class CdkRestRouteBuilder extends RouteBuilder {
             createServiceDescriptor(
                     "cdk.export.sdf", "SDF Export (CDK)", "Convert to SD file format using CDK",
                     new String[]{"export", "sdf", "sdfile", "cdk"},
-                    new String[]{"/Chemistry/Toolkits/CDK/IO"},
+                    null,
                     "default_icon.png", ROUTE_CONVERT_TO_SDF, null)
     };
 
-    private static ServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String[] paths, String icon, String endpoint, OptionDescriptor[] options) {
+    private static ServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String resourceUrl, String icon, String endpoint, OptionDescriptor[] options) {
+
         return new ServiceDescriptor(
-                id, name, description, tags, null, paths,
-                "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
-                null,
-                new String[]{"public"},
+                id,
+                name,
+                description,
+                tags,
+                resourceUrl,
                 MoleculeObject.class, // inputClass
                 MoleculeObject.class, // outputClass
-                DataType.STREAM, // inputTypes
-                DataType.STREAM, // outputTypes
+                DataType.STREAM, // inputType
+                DataType.STREAM, // outputType
                 icon,
-                new AccessMode[]{
-                        new AccessMode(
-                                "asyncHttp",
-                                "Immediate execution",
-                                "Execute as an asynchronous REST web service",
-                                endpoint, // endpoint
-                                true, // URL is relative
-                                null, null, null, null, options,
-                                StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
-                }
+                endpoint,
+                true, // a relative URL
+                options,
+                StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME
         );
     }
 

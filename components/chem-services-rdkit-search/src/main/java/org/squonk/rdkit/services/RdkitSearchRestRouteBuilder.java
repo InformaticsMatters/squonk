@@ -6,7 +6,6 @@ import org.apache.camel.cdi.ContextName;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.api.MimeTypeResolver;
-import org.squonk.core.AccessMode;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.execution.steps.StepDefinitionConstants;
@@ -40,168 +39,109 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     "ChemCentral structure search",
                     "Structure search in the ChemCentral database using RDKit PostgreSQL cartridge",
                     new String[]{"search", "rdkit"},
-                    null,
-                    new String[]{"/Chemistry/Search"},
-                    "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
-                    null,
-                    new String[]{"public"},
-                    String.class, // inputClass - smiles or smarts
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Chemcentral+Structure+Search",
+                    String.class, // inputClass - smiles, smarts or molfile
                     MoleculeObject.class, // outputClass
                     DataType.OPTION, // inputType - taken from the structure option
                     DataType.STREAM, // outputType
                     "icons/structure_search.png",
-                    new AccessMode[]{
-                            new AccessMode(
-                                    "asyncHttp",
-                                    "Immediate execution",
-                                    "Execute as an asynchronous REST web service",
-                                    "search",
-                                    true, // a relative URL
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    new OptionDescriptor[]{
+                    "search",
+                    true, // a relative URL
+                    new OptionDescriptor[]{
+                            new OptionDescriptor<>(MoleculeTypeDescriptor.QUERY,
+                                    "body", "Query Structure", "Structure to use as the query as mol, smarts or smiles")
+                                    .withMinMaxValues(1, 1),
+                            new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
+                                    .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
+                                    .withMinMaxValues(1, 1),
+                            new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity")
+                                    .withValues(new String[]{"exact", "sss"})
+                                    .withMinMaxValues(1, 1),
+                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return")
+                                    .withDefaultValue(100)
+                                    .withMinMaxValues(1, 1)
+                    },
+                    StepDefinitionConstants.OutOnlyMoleculeServiceExecutor.CLASSNAME
 
-                                            new OptionDescriptor<>(MoleculeTypeDescriptor.QUERY,
-                                                    "body", "Query Structure", "Structure to use as the query as mol, smarts or smiles")
-                                                    .withMinMaxValues(1,1),
-
-                                            new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
-                                                    .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
-                                                    .withMinMaxValues(1,1),
-
-                                            new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity")
-                                                    .withValues(new String[]{"exact", "sss"})
-                                                    .withMinMaxValues(1,1),
-
-                                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return")
-                                                    .withDefaultValue(100)
-                                                    .withMinMaxValues(1,1)
-
-                                    },
-                                    StepDefinitionConstants.OutOnlyMoleculeServiceExecutor.CLASSNAME)
-                    }
             ),
             new ServiceDescriptor(
                     "rdkit.chemcentral.search.similarity",
                     "ChemCentral similarity search",
                     "Similarity search in the ChemCentral database using RDKit PostgreSQL cartridge",
                     new String[]{"search", "rdkit"},
-                    null,
-                    new String[]{"/Chemistry/Search"},
-                    "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
-                    null,
-                    new String[]{"public"},
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Chemcentral+Similarity+Search",
                     String.class, // inputClass - smiles or smarts
                     MoleculeObject.class, // outputClass
                     DataType.OPTION, // inputType - taken from the structure option
                     DataType.STREAM, // outputType
                     "icons/structure_search.png",
-                    new AccessMode[]{
-                            new AccessMode(
-                                    "asyncHttp",
-                                    "Immediate execution",
-                                    "Execute as an asynchronous REST web service",
-                                    "search",
-                                    true, // a relative URL
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    new OptionDescriptor[]{
+                    "search",
+                    true, // a relative URL
+                    new OptionDescriptor[]{
+                            new OptionDescriptor<>(MoleculeTypeDescriptor.DISCRETE,
+                                    "body", "Query Structure", "Structure to use as the query as smiles or smarts")
+                                    .withMinMaxValues(1, 1),
+                            new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
+                                    .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
+                                    .withMinMaxValues(1, 1),
+                            new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity")
+                                    .withDefaultValue("sim")
+                                    .withAccess(false, false) // needs to be invisible
+                                    .withMinMaxValues(1, 1),
+                            new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)")
+                                    .withDefaultValue(0.7f)
+                                    .withMinMaxValues(1, 1),
+                            new OptionDescriptor<>(String.class, "query.fp", "Fingerprint type", "Type of fingerprint to use for similarity search")
+                                    .withValues(new String[]{"RDKIT", "MORGAN_CONNECTIVITY_2", "MORGAN_FEATURE_2"})
+                                    .withDefaultValue("RDKIT")
+                                    .withMinMaxValues(1, 1),
+                            new OptionDescriptor<>(String.class, "query.metric", "Similarity Metric", "Type of metric to use for similarity distance")
+                                    .withValues(new String[]{"TANIMOTO", "DICE"})
+                                    .withDefaultValue("TANIMOTO")
+                                    .withMinMaxValues(1, 1),
+                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return")
+                                    .withDefaultValue(100)
+                                    .withMinMaxValues(1, 1)
+                    },
+                    StepDefinitionConstants.OutOnlyMoleculeServiceExecutor.CLASSNAME
 
-                                            new OptionDescriptor<>(MoleculeTypeDescriptor.DISCRETE,
-                                                    "body", "Query Structure", "Structure to use as the query as smiles or smarts")
-                                                    .withMinMaxValues(1,1),
-
-                                            new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
-                                                    .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
-                                                    .withMinMaxValues(1,1),
-
-                                            new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity")
-                                                    .withDefaultValue("sim")
-                                                    .withAccess(false, false) // needs to be invisible
-                                                    .withMinMaxValues(1,1),
-
-                                            new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)")
-                                                    .withDefaultValue(0.7f)
-                                                    .withMinMaxValues(1,1),
-
-                                            new OptionDescriptor<>(String.class, "query.fp", "Fingerprint type", "Type of fingerprint to use for similarity search")
-                                                    .withValues(new String[]{"RDKIT", "MORGAN_CONNECTIVITY_2", "MORGAN_FEATURE_2"})
-                                                    .withDefaultValue("RDKIT")
-                                                    .withMinMaxValues(1,1),
-
-                                            new OptionDescriptor<>(String.class, "query.metric", "Similarity Metric", "Type of metric to use for similarity distance")
-                                                    .withValues(new String[]{"TANIMOTO", "DICE"})
-                                                    .withDefaultValue("TANIMOTO")
-                                                    .withMinMaxValues(1,1),
-
-                                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return")
-                                                    .withDefaultValue(100)
-                                                    .withMinMaxValues(1,1)
-
-                                    },
-                                    StepDefinitionConstants.OutOnlyMoleculeServiceExecutor.CLASSNAME)
-                    }
-            )
-            ,
+            ),
             new ServiceDescriptor(
                     "rdkit.chemcentral.multisearch",
                     "ChemCentral multi search",
                     "Similarity search for multiple queries in the ChemCentral database using RDKit PostgreSQL cartridge",
-                    new String[]{"search", "rdkit"},
-                    null,
-                    new String[]{"/Chemistry/Search"},
-                    "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
-                    null,
-                    new String[]{"public"},
+                    new String[]{
+                            "search", "rdkit"
+                    },
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Chemcentral+multi-search",
                     MoleculeObject.class, // inputClass
                     MoleculeObject.class, // outputClass
                     DataType.STREAM, // inputType
                     DataType.STREAM, // outputType
                     "icons/structure_search.png",
-                    new AccessMode[]{
-                            new AccessMode(
-                                    "asyncHttp",
-                                    "Immediate execution",
-                                    "Execute as an asynchronous REST web service",
-                                    "multisearch",
-                                    true, // a relative URL
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    new OptionDescriptor[]{
-
-                                            new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
-                                                    .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
-                                                    .withMinMaxValues(1,1),
-
-                                            new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)")
-                                                    .withDefaultValue(0.7f)
-                                                    .withMinMaxValues(1,1),
-
-                                            new OptionDescriptor<>(String.class, "query.fp", "Fingerprint type", "Type of fingerprint to use for similarity search")
-                                                    .withValues(new String[]{"RDKIT", "MORGAN_CONNECTIVITY_2", "MORGAN_FEATURE_2"})
-                                                    .withDefaultValue("RDKIT")
-                                                    .withMinMaxValues(1,1),
-
-                                            new OptionDescriptor<>(String.class, "query.metric", "Similarity Metric", "Type of metric to use for similarity distance")
-                                                    .withValues(new String[]{"TANIMOTO", "DICE"})
-                                                    .withDefaultValue("TANIMOTO")
-                                                    .withMinMaxValues(1,1),
-
-                                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return")
-                                                    .withDefaultValue(100)
-                                                    .withMinMaxValues(1,1)
-
-                                    },
-                                    StepDefinitionConstants.MoleculeServiceBasicExecutor.CLASSNAME)
-                    }
+                    "multisearch",
+                    true, // a relative UR
+                    new OptionDescriptor[]{
+                            new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search")
+                                    .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
+                                    .withMinMaxValues(1, 1),
+                            new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)")
+                                    .withDefaultValue(0.7f)
+                                    .withMinMaxValues(1, 1),
+                            new OptionDescriptor<>(String.class, "query.fp", "Fingerprint type", "Type of fingerprint to use for similarity search")
+                                    .withValues(new String[]{"RDKIT", "MORGAN_CONNECTIVITY_2", "MORGAN_FEATURE_2"})
+                                    .withDefaultValue("RDKIT")
+                                    .withMinMaxValues(1, 1),
+                            new OptionDescriptor<>(String.class, "query.metric", "Similarity Metric", "Type of metric to use for similarity distance")
+                                    .withValues(new String[]{"TANIMOTO", "DICE"})
+                                    .withDefaultValue("TANIMOTO")
+                                    .withMinMaxValues(1, 1),
+                            new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return")
+                                    .withDefaultValue(100)
+                                    .withMinMaxValues(1, 1)
+                    },
+                    StepDefinitionConstants.MoleculeServiceBasicExecutor.CLASSNAME
             )
-
     };
 
 

@@ -1,19 +1,20 @@
 package org.squonk.core.service.discovery;
 
-import org.squonk.core.AccessMode;
-import org.squonk.core.ServerConstants;
-import org.squonk.core.ServiceDescriptor;
-import org.squonk.core.ServiceDescriptor.DataType;
-import org.squonk.types.io.JsonHandler;
-
-import java.util.*;
-import java.util.logging.Logger;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
+import org.squonk.core.ServerConstants;
+import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.ServiceDescriptor.DataType;
+import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * @author timbo
@@ -78,30 +79,16 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                     "NOOP Service",
                     "Does nothing other than submit a Job",
                     new String[]{"testing"},
-                    null,
-                    new String[]{"/Testing"},
-                    "Tim Dudgeon <tdudgeon@informaticsmatters.com>",
-                    null,
-                    new String[]{"testing"},
+                    "http://foo.com/something",
                     Object.class, // inputClass
                     Object.class, // outputClass
                     DataType.ITEM, // inputType
                     DataType.ITEM, // outputType
                     "default_icon.png",
-                    new AccessMode[]{
-                            new AccessMode(
-                                    "donothing",
-                                    "Immediate execution",
-                                    "Execute as an asynchronous REST web service",
-                                    "valueIsIgnored", // endpoint
-                                    true, // URL is relative
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    null)
-                    }
+                    "valueIsIgnored", // endpoint
+                    true, // URL is relative
+                    null,
+                    null
             )
     };
 

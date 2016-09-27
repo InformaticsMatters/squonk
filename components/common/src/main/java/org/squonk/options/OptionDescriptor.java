@@ -43,6 +43,10 @@ public class OptionDescriptor<T> implements Serializable {
             .withDefaultValue(VALUE_INCLUDE_FAIL)
             .withMinMaxValues(1,1);
 
+    public enum Mode {
+        User, Advanced, Input, Output
+    }
+
     private final TypeDescriptor<T> typeDescriptor;
     private final String key;
     private final String label;
@@ -55,6 +59,7 @@ public class OptionDescriptor<T> implements Serializable {
     private final boolean visible;
     private final Integer minValues;
     private final Integer maxValues;
+    private final Mode[] modes;
     private final Map<String,Object> properties = new LinkedHashMap<>();
 
     /** Full constructor.
@@ -83,6 +88,7 @@ public class OptionDescriptor<T> implements Serializable {
             @JsonProperty("editable") boolean editable,
             @JsonProperty("minValues") Integer minValues,
             @JsonProperty("maxValues") Integer maxValues,
+            @JsonProperty("modes") Mode[] modes,
             @JsonProperty("properties") Map<String,Object> properties
     ) {
         this.typeDescriptor = typeDescriptor;
@@ -95,6 +101,7 @@ public class OptionDescriptor<T> implements Serializable {
         this.editable = editable;
         this.minValues = minValues;
         this.maxValues = maxValues;
+        this.modes = (modes == null ? new Mode[] {Mode.User} : modes);
         if (properties != null) {
             this.properties.putAll(properties);
         }
@@ -111,7 +118,7 @@ public class OptionDescriptor<T> implements Serializable {
             boolean editable,
             Integer minValues,
             Integer maxValues) {
-        this(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, null);
+        this(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, new Mode[] {Mode.User}, null);
     }
 
     public OptionDescriptor(TypeDescriptor<T> type, String key, String label, String description) {
@@ -223,6 +230,10 @@ public class OptionDescriptor<T> implements Serializable {
      */
     public boolean isEditable() {
         return editable;
+    }
+
+    public Mode[] getModes() {
+        return modes;
     }
 
     /** Get the custom properties of this descriptor.

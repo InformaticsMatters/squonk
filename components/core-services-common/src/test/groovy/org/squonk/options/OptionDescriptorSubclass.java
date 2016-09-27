@@ -26,9 +26,10 @@ public class OptionDescriptorSubclass extends OptionDescriptor<Integer> {
             @JsonProperty("editable") boolean editable,
             @JsonProperty("minValues") Integer minValues,
             @JsonProperty("maxValues") Integer maxValues,
+            @JsonProperty("modes") Mode[] modes,
             @JsonProperty("properties") Map<String,Object> properties
     ) {
-        super(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, properties);
+        super(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, modes, properties);
     }
 
     public String getPlanet() {
