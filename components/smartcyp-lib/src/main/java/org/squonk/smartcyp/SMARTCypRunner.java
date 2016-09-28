@@ -1,285 +1,294 @@
 package org.squonk.smartcyp;
 
-import org.openscience.cdk.CDKConstants;
-import org.openscience.cdk.DefaultChemObjectBuilder;
-import org.openscience.cdk.MoleculeSet;
+import org.openscience.cdk.*;
 import org.openscience.cdk.aromaticity.CDKHueckelAromaticityDetector;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.interfaces.*;
-import org.openscience.cdk.io.ISimpleChemObjectReader;
-import org.openscience.cdk.io.MDLReader;
-import org.openscience.cdk.io.ReaderFactory;
-import org.openscience.cdk.io.SMILESReader;
+import org.openscience.cdk.io.*;
+import org.openscience.cdk.io.formats.IChemFormat;
 import org.openscience.cdk.smiles.DeduceBondSystemTool;
+import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.CDKHydrogenAdder;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetMetadata;
 import org.squonk.types.MoleculeObject;
 import smartcyp.*;
 
-import java.io.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.io.*;;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * Created by timbo on 26/09/2016.
  */
 public class SMARTCypRunner {
 
+    private static final Logger LOG = Logger.getLogger(SMARTCypRunner.class.getName());
 
-    public void execute(Dataset<MoleculeObject> dataset) throws Exception {
+    private final FormatFactory factory = new FormatFactory();
+    private final DeduceBondSystemTool dbst = new DeduceBondSystemTool();
+    private final CDKHydrogenAdder hydrogenAdder = CDKHydrogenAdder.getInstance(DefaultChemObjectBuilder.getInstance());
+    private final SMARTSnEnergiesTable SMARTSnEnergiesTable = new SMARTSnEnergiesTable();
 
-        String[] arguments = null;
+    private final boolean performGeneral, perform2D6, perform2C9;
 
-        long ms = System.currentTimeMillis();
-
-        // Check that the arguments (molecule files) have been given
-        if (arguments.length < 1) {
-            System.out.println("Wrong number of arguments!" + '\n' + "Usage: SMARTCyp <One or more moleculeFiles>");
-            System.exit(0);
-        }
-
-        //check for input flags and copy input files to filenames array
-        boolean smilesinput = false;
-        int nohtml = 0;
-        int dirwanted = 0;
-        int filewanted = 0;
-        int nocsv = 0;
-        int printall = 0;
-        int png = 0; //png means use old html and image output
-        int filter = 0;
-        int noempcorr = 0;
-        int smilesstringinput = 0;
-        double filtercutoffvalue = 0;
-        String filtercutoff = "";
-        String outputdir = "";
-        String outputfile = "";
-        for (int i = 0; i < arguments.length; i++) {
-            if (arguments[i].equals("-nohtml")) {
-                nohtml = 1;
-            }
-            if (arguments[i].equals("-nocsv")) {
-                nocsv = 1;
-            }
-            if (arguments[i].equals("-printall")) {
-                printall = 1;
-            }
-            if (arguments[i].equals("-outputdir")) {
-                outputdir = arguments[i + 1];
-                dirwanted = 1;
-            }
-            if (arguments[i].equals("-outputfile")) {
-                outputfile = arguments[i + 1];
-                filewanted = 1;
-            }
-            if (arguments[i].equals("-png")) {
-                png = 1;
-            }
-            if (arguments[i].equals("-filter")) {
-                filtercutoff = arguments[i + 1];
-                filter = 1;
-            }
-            if (arguments[i].equals("-noempcorr")) {
-                noempcorr = 1;
-            }
-            if (arguments[i].equals("-smiles")) {
-                smilesstringinput = 1;
-                //make a file out of arguments[i+1] and modify arguments[i+1] to end with .smiles
-                String smilesfilename = "smartcypxyz.smiles";
-                String smilesstring = arguments[i + 1];
-                arguments[i + 1] = smilesfilename;
-                PrintWriter smilesfile;
-                try {
-                    smilesfile = new PrintWriter(new BufferedWriter(new FileWriter("smartcypxyz.smiles")));
-                    smilesfile.println(smilesstring);
-                    smilesfile.close();
-                } catch (IOException e) {
-                    System.out.println("Could not create temporary smiles file");
-                    e.printStackTrace();
-                }
-            }
-        }
-        String[] filenames;
-        if (nohtml == 1 || dirwanted == 1 || filewanted == 1 || nocsv == 1 || printall == 1 || png == 1 || filter == 1 || smilesstringinput == 1 || noempcorr == 1) {
-            ArrayList<String> tmplist = new ArrayList<String>();
-            Collections.addAll(tmplist, arguments);
-            if (dirwanted == 1) {
-                //a specific output directory has been requested
-                tmplist.remove(outputdir);
-                tmplist.remove("-outputdir");
-                File dir = new File(outputdir);
-                //check if the directory exists, otherwise create it
-                if (!dir.exists()) {
-                    dir.mkdir();
-                }
-                outputdir = outputdir + File.separator;
-            }
-            if (filewanted == 1) {
-                //a specific filename base has been requested
-                tmplist.remove(outputfile);
-                tmplist.remove("-outputfile");
-            }
-            if (nohtml == 1) tmplist.remove("-nohtml");
-            if (nocsv == 1) tmplist.remove("-nocsv");
-            if (printall == 1) tmplist.remove("-printall");
-            if (png == 1) tmplist.remove("-png");
-            if (smilesstringinput == 1) tmplist.remove("-smiles");
-            if (noempcorr == 1) tmplist.remove("-noempcorr");
-            if (filter == 1) {
-                //filtering with a cutoff number has been requested
-                tmplist.remove(filtercutoff);
-                tmplist.remove("-filter");
-                filtercutoffvalue = Double.parseDouble(filtercutoff);
-            }
-            filenames = (String[]) tmplist.toArray(new String[0]);
-        } else {
-            filenames = arguments;
-        }
-        //check if there are any smiles-files in the input, for use with filtering output
-        for (int filecount = 0; filecount < filenames.length; filecount++) {
-            if (filenames[filecount].endsWith(".smi")) smilesinput = true;
-        }
-        //end of input flags
-
-        // Date and Time is used as part of the names of outfiles
-        String dateAndTime = getDateAndTime();
+    private final Float scoreFilter;
+    private final boolean addEmpiricalNitrogenOxidationCorrections;
+    private final Integer maxRank;
 
 
-        // Produce SMARTSnEnergiesTable object
-        System.out.println("\n ************** Processing SMARTS and Energies **************");
-        SMARTSnEnergiesTable SMARTSnEnergiesTable = new SMARTSnEnergiesTable();
+    public SMARTCypRunner(boolean performGeneral, boolean perform2D6, boolean perform2C9, Float scoreFilter, Integer maxRank, boolean addEmpiricalNitrogenOxidationCorrections) {
+        this.performGeneral = performGeneral;
+        this.perform2D6 = perform2D6;
+        this.perform2C9 = perform2C9;
+        this.scoreFilter = scoreFilter;
+        this.maxRank = maxRank;
+        this.addEmpiricalNitrogenOxidationCorrections = addEmpiricalNitrogenOxidationCorrections;
+    }
 
-
-        // Read in structures/molecules
-        System.out.println("\n ************** Reading molecule structures **************");
-        MoleculeSet moleculeSet = SMARTCyp.readInStructures(filenames, SMARTSnEnergiesTable.getSMARTSnEnergiesTable());
-
-        MoleculeKU moleculeKU;
-        for (int moleculeIndex = 0; moleculeIndex < moleculeSet.getMoleculeCount(); moleculeIndex++) {
-            moleculeKU = (MoleculeKU) moleculeSet.getMolecule(moleculeIndex);
-
-            System.out.println("\n ************** Molecule " + (moleculeIndex + 1) + " **************");
-
-            //System.out.println("\n ************** Matching SMARTS to assign Energies **************");
-            moleculeKU.assignAtomEnergies(SMARTSnEnergiesTable.getSMARTSnEnergiesTable());
-
-            //System.out.println("\n ************** Calculating shortest distance to protonated amine **************");
-            moleculeKU.calculateDist2ProtAmine();
-
-            //System.out.println("\n ************** Calculating shortest distance to carboxylic acid **************");
-            moleculeKU.calculateDist2CarboxylicAcid();
-
-            //System.out.println("\n ************** Calculating Span2End**************");
-            moleculeKU.calculateSpan2End();
-
-            if (noempcorr == 0) {
-                //System.out.println("\n ************** Add Empirical Nitrogen Oxidation Corrections **************");
-                moleculeKU.unlikelyNoxidationCorrection();
-            }
-
-            //System.out.println("\n ************** Calculating Accessabilities and Atom Scores**************");
-            moleculeKU.calculateAtomAccessabilities();
-            //compute 2DSASA
-            double[] SASA = moleculeKU.calculateSASA();
-            moleculeKU.calculateAtomScores();
-            moleculeKU.calculate2D6AtomScores();
-            moleculeKU.calculate2C9AtomScores();
-
-
-            //System.out.println("\n ************** Identifying, sorting and ranking C, N, P and S atoms **************");
-            moleculeKU.sortAtoms();
-            moleculeKU.rankAtoms();
-            moleculeKU.sortAtoms2D6();
-            moleculeKU.rankAtoms2D6();
-            moleculeKU.sortAtoms2C9();
-            moleculeKU.rankAtoms2C9();
-
-            if (filter == 1) {
-                moleculeKU.setFilterValue();
-            }
-
-        }
-
-
-        //System.out.println(System.currentTimeMillis() - ms);
-
-
-        //don't write csv file if there are no molecules in the input
-        if (moleculeSet.getMoleculeCount() > 0) {
-            if (nocsv == 0) {
-                // Write results as CSV
-                System.out.println("\n ************** Writing Results as CSV **************");
-                WriteResultsAsCSV writeResultsAsCSV = new WriteResultsAsCSV(dateAndTime, arguments, outputdir, outputfile, printall);
-                writeResultsAsCSV.writeCSV(moleculeSet);
-            }
-        }
-
-
-        if (nohtml == 0 && png == 1) {
-            //use old html and png output
-            // Write Images
-            System.out.println("\n ************** Writing Images **************");
-            GenerateImages generateImages = new GenerateImages(dateAndTime, outputdir);
-            generateImages.generateAndWriteImages(moleculeSet);
-
-            // Write results as HTML
-            System.out.println("\n ************** Writing Results as HTML **************");
-            WriteResultsAsHTML writeResultsAsHTML = new WriteResultsAsHTML(dateAndTime, filenames, outputdir, outputfile);
-            writeResultsAsHTML.writeHTML(moleculeSet);
-        }
-
-        if (nohtml == 0 && png == 0) {
-            //use ChemDoodle HTML output
-            System.out.println("\n ************** Writing Results as ChemDoodle HTML **************");
-            WriteResultsAsChemDoodleHTML writeResultsAsChemDoodle = new WriteResultsAsChemDoodleHTML(dateAndTime, filenames, outputdir, outputfile);
-            writeResultsAsChemDoodle.writeHTML(moleculeSet);
-        }
-
-        if (filter == 1) {
-            WriteFilterValuesAsCSV writeFilterValuesAsCSV = new WriteFilterValuesAsCSV(dateAndTime, arguments, outputdir, outputfile);
-            writeFilterValuesAsCSV.writeCSV(moleculeSet);
-            double FilterValue;
-            MoleculeSet filteredmoleculeSet = new MoleculeSet();
-            ;
-            for (int moleculeIndex = 0; moleculeIndex < moleculeSet.getMoleculeCount(); moleculeIndex++) {
-                MoleculeKU filtermolecule = (MoleculeKU) moleculeSet.getMolecule(moleculeIndex);
-                //System.out.println(test.getProperty("FilterValue"));
-                FilterValue = (Double) filtermolecule.getProperty("FilterValue");
-                if (FilterValue > filtercutoffvalue) {
-                    filteredmoleculeSet.addAtomContainer(filtermolecule);
-                    //System.out.println(moleculeIndex);
-                }
-            }
-
-            //now save an outputfile in smiles or sdf format
-            WriteFilterStructures writeFilterStructures = new WriteFilterStructures(dateAndTime, arguments, outputdir, outputfile, smilesinput);
-            writeFilterStructures.write(filteredmoleculeSet);
-        }
-
-        //we're done, if smilesinput then remove the temporary smiles file
-        if (smilesstringinput == 1) {
-            try {
-                File smilesfile = new File("smartcypxyz.smiles");
-                if (smilesfile.delete()) {
-                    System.out.println("The temporary file " + smilesfile.getName() + " has been deleted!");
-                } else {
-                    System.out.println("Delete operation of temporary smiles fil failed.");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+    public SMARTCypRunner() {
+        this(true, true, true, 100f, 3, true);
     }
 
 
-    // The Date and Time is used as part of the output filenames
-    private String getDateAndTime() {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-        Date date = new Date();
-        return dateFormat.format(date);
+    public Dataset<MoleculeObject> execute(Dataset<MoleculeObject> dataset) throws Exception {
+
+
+        LOG.fine("\n ************** Processing SMARTS and Energies **************");
+
+        Stream<MoleculeObject> stream = dataset.getStream();
+
+        stream = stream.peek((mo) -> {
+            try {
+                MoleculeKU moleculeKU = readMoleculeKU(mo);
+                if (moleculeKU != null) {
+                    moleculeKU.assignAtomEnergies(SMARTSnEnergiesTable.getSMARTSnEnergiesTable());
+
+                    LOG.finer("\n ************** Calculating shortest distance to protonated amine **************");
+                    moleculeKU.calculateDist2ProtAmine();
+
+                    LOG.finer("\n ************** Calculating shortest distance to carboxylic acid **************");
+                    moleculeKU.calculateDist2CarboxylicAcid();
+
+                    LOG.finer("\n ************** Calculating Span2End**************");
+                    moleculeKU.calculateSpan2End();
+
+                    if (addEmpiricalNitrogenOxidationCorrections) {
+                        LOG.finer("\n ************** Add Empirical Nitrogen Oxidation Corrections **************");
+                        moleculeKU.unlikelyNoxidationCorrection();
+                    }
+
+                    LOG.finer("\n ************** Calculating Accessabilities and Atom Scores **************");
+                    moleculeKU.calculateAtomAccessabilities();
+                    //compute 2DSASA
+                    double[] SASA = moleculeKU.calculateSASA();
+
+                    if (performGeneral) moleculeKU.calculateAtomScores();
+                    if (perform2D6) moleculeKU.calculate2D6AtomScores();
+                    if (perform2C9) moleculeKU.calculate2C9AtomScores();
+
+
+                    LOG.finer("\n ************** Identifying, sorting and ranking C, N, P and S atoms **************");
+                    if (performGeneral) {
+                        moleculeKU.sortAtoms();
+                        moleculeKU.rankAtoms();
+                    }
+                    if (perform2D6) {
+                        moleculeKU.sortAtoms2D6();
+                        moleculeKU.rankAtoms2D6();
+                    }
+                    if (perform2C9) {
+                        moleculeKU.sortAtoms2C9();
+                        moleculeKU.rankAtoms2C9();
+                    }
+
+                    writeData(mo, moleculeKU);
+
+                }
+            } catch (Exception e) {
+                LOG.log(Level.SEVERE, "Failed to read molecule", e);
+            }
+
+        });
+
+        DatasetMetadata<MoleculeObject> meta = new DatasetMetadata(MoleculeObject.class);
+        Dataset<MoleculeObject> results = new Dataset<>(MoleculeObject.class, stream, meta);
+        return results;
+    }
+
+    private void writeData(MoleculeObject mo, MoleculeKU moleculeKU) {
+
+        List<CypScore> scoresGeneral = new ArrayList<>();
+        List<CypScore> scores2D6 = new ArrayList<>();
+        List<CypScore> scores2C9 = new ArrayList<>();
+
+        for (int atomIndex = 0; atomIndex < moleculeKU.getAtomCount(); ++atomIndex) {
+            Atom currentAtom = (Atom) moleculeKU.getAtom(atomIndex);
+            String currentAtomType = currentAtom.getSymbol();
+            if (currentAtomType.equals("C") || currentAtomType.equals("N") || currentAtomType.equals("P") || currentAtomType.equals("S")) {
+                Number score = MoleculeKU.SMARTCYP_PROPERTY.Score.get(currentAtom);
+                int rank = MoleculeKU.SMARTCYP_PROPERTY.Ranking.get(currentAtom).intValue();
+                if (filter(score, rank)) {
+                    scoresGeneral.add(new CypScore(atomIndex + 1, currentAtomType, score, rank));
+                }
+
+                score = MoleculeKU.SMARTCYP_PROPERTY.Score2D6.get(currentAtom);
+                rank = MoleculeKU.SMARTCYP_PROPERTY.Ranking2D6.get(currentAtom).intValue();
+                if (filter(score, rank)) {
+                    scores2D6.add(new CypScore(atomIndex + 1, currentAtomType, score, rank));
+                }
+
+//                this.outfile.print("," + this.twoDecimalFormat.format(MoleculeKU.SMARTCYP_PROPERTY.Span2End.get(currentAtom)));
+//                if (MoleculeKU.SMARTCYP_PROPERTY.Dist2ProtAmine.get(currentAtom) != null) {
+//                    this.outfile.print("," + this.twoDecimalFormat.format(MoleculeKU.SMARTCYP_PROPERTY.Dist2ProtAmine.get(currentAtom)));
+//                } else {
+//                    this.outfile.print(",0");
+//                }
+
+                score = MoleculeKU.SMARTCYP_PROPERTY.Score2C9.get(currentAtom);
+                rank = MoleculeKU.SMARTCYP_PROPERTY.Ranking2C9.get(currentAtom).intValue();
+                if (filter(score, rank)) {
+                    scores2C9.add(new CypScore(atomIndex + 1, currentAtomType, score, rank));
+                }
+
+//                if (MoleculeKU.SMARTCYP_PROPERTY.Dist2CarboxylicAcid.get(currentAtom) != null) {
+//                    this.outfile.print("," + this.twoDecimalFormat.format(MoleculeKU.SMARTCYP_PROPERTY.Dist2CarboxylicAcid.get(currentAtom)));
+//                } else {
+//                    this.outfile.print(",0");
+//                }
+//
+//                if (MoleculeKU.SMARTCYP_PROPERTY.SASA2D.get(currentAtom) != null) {
+//                    this.outfile.print("," + this.twoDecimalFormat.format(MoleculeKU.SMARTCYP_PROPERTY.SASA2D.get(currentAtom)));
+//                } else {
+//                    this.outfile.print(",0");
+//                }
+
+            }
+        }
+
+        if (scoresGeneral.size() > 0) {
+            sortByRank(scoresGeneral);
+            mo.putValue("SMARTCyp_general", scoresGeneral);
+        }
+        if (scores2D6.size() > 0) {
+            sortByRank(scores2D6);
+            mo.putValue("SMARTCyp_2D6", scores2D6);
+        }
+        if (scores2C9.size() > 0) {
+            sortByRank(scores2C9);
+            mo.putValue("SMARTCyp_2C9", scores2C9);
+        }
+
+    }
+
+    private boolean filter(Number score, int rank) {
+        return score != null &&
+                (scoreFilter == null || scoreFilter.floatValue() > score.floatValue()) &&
+                (maxRank == null || rank <= maxRank.intValue());
+    }
+
+    private void sortByRank(List<CypScore> list) {
+        list.sort((i, j) -> i.ranking.compareTo(j.ranking));
+    }
+
+
+    private MoleculeKU readMoleculeKU(MoleculeObject mo) throws Exception {
+
+        String format = mo.getFormat();
+        String mol = mo.getSource();
+        IAtomContainer iAtomContainer = null;
+        boolean deducebonds = false;
+        if (format != null && format.startsWith("smiles")) {
+            iAtomContainer = readAsSmiles(mol);
+            deducebonds = true;
+
+        } else {
+            ISimpleChemObjectReader reader = null;
+            if (format != null && (format.equals("mol") || format.startsWith("mol:"))) {
+                reader = new MDLReader();
+            } else {
+                IChemFormat chemFormat = factory.guessFormat(new StringReader(mol));
+                if (chemFormat == null) {
+                    // give up and assume smiles
+                    iAtomContainer = readAsSmiles(mol);
+                    deducebonds = true;
+                } else {
+
+                    reader = (ISimpleChemObjectReader) (Class.forName(chemFormat.getReaderClassName()).newInstance());
+
+                }
+            }
+            if (reader != null) {
+                reader.setReader(new ByteArrayInputStream(mol.getBytes()));
+                //iAtomContainer = reader.read(new AtomContainer());
+                iAtomContainer = reader.read(new Molecule());
+            }
+        }
+
+        MoleculeKU moleculeKU = null;
+
+        if (iAtomContainer != null) {
+            // Remove salts or solvents... Keep only the largest molecule
+            if (!ConnectivityChecker.isConnected(iAtomContainer)) {
+                //System.out.println(atomContainerNr);
+                IMoleculeSet fragments = ConnectivityChecker.partitionIntoMolecules(iAtomContainer);
+
+                int maxID = 0;
+                int maxVal = -1;
+                for (int i = 0; i < fragments.getMoleculeCount(); i++) {
+                    if (fragments.getMolecule(i).getAtomCount() > maxVal) {
+                        maxID = i;
+                        maxVal = fragments.getMolecule(i).getAtomCount();
+                    }
+                }
+                iAtomContainer = fragments.getMolecule(maxID);
+            }
+            //end of salt removal
+
+            iAtomContainer = AtomContainerManipulator.removeHydrogens(iAtomContainer);
+
+            //check number of atoms, if less than 2 don't add molecule
+            if (iAtomContainer.getAtomCount() > 1) {
+                //System.out.println(iAtomContainer.getProperties());
+
+                AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(iAtomContainer);
+
+
+                if (deducebonds) {
+                    DeduceBondSystemTool dbst = new DeduceBondSystemTool();
+                    iAtomContainer = dbst.fixAromaticBondOrders((IMolecule) iAtomContainer);
+                }
+
+
+                hydrogenAdder.addImplicitHydrogens(iAtomContainer);
+                CDKHueckelAromaticityDetector.detectAromaticity(iAtomContainer);
+
+                moleculeKU = new MoleculeKU(iAtomContainer, SMARTSnEnergiesTable.getSMARTSnEnergiesTable());
+                moleculeKU.setID(mo.getUUID().toString());
+                //set the molecule title in the moleculeKU object
+                if (iAtomContainer.getProperty("SMIdbNAME") != "" && iAtomContainer.getProperty("SMIdbNAME") != null) {
+                    iAtomContainer.setProperty(CDKConstants.TITLE, iAtomContainer.getProperty("SMIdbNAME"));
+                }
+                moleculeKU.setProperty(CDKConstants.TITLE, iAtomContainer.getProperty(CDKConstants.TITLE));
+                moleculeKU.setProperties(iAtomContainer.getProperties());
+            }
+
+
+        }
+        return moleculeKU;
+    }
+
+    private IAtomContainer readAsSmiles(String smiles) throws CDKException {
+        SmilesParser parser = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+        IAtomContainer iAtomContainer = parser.parseSmiles(smiles);
+        iAtomContainer = dbst.fixAromaticBondOrders((IMolecule) iAtomContainer);
+
+        return iAtomContainer;
     }
 
 
@@ -429,5 +438,24 @@ public class SMARTCypRunner {
         return moleculeSet;
     }
 
-}
+    class CypScore {
 
+        int atomNumber;
+        String atomSymbol;
+        Number score;
+        Integer ranking;
+
+        CypScore(int atomNumber, String atomSymbol, Number score, Integer ranking) {
+            this.atomNumber = atomNumber;
+            this.atomSymbol = atomSymbol;
+            this.score = score;
+            this.ranking = ranking;
+        }
+
+        @Override
+        public String toString() {
+            return atomSymbol + "." + atomNumber + " " + score + " [" + ranking + "]";
+        }
+    }
+
+}

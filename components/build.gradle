@@ -52,6 +52,7 @@ allprojects {
             }
             url "https://repository.chemaxon.com/artifactory/libs-release"
         }
+
     }
 
     // In this section you declare the dependencies for your production and test code
