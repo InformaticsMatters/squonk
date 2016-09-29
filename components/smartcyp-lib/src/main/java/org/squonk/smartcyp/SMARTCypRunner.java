@@ -1,24 +1,34 @@
 package org.squonk.smartcyp;
 
-import org.openscience.cdk.*;
+import org.openscience.cdk.CDKConstants;
+import org.openscience.cdk.DefaultChemObjectBuilder;
+import org.openscience.cdk.Molecule;
 import org.openscience.cdk.aromaticity.CDKHueckelAromaticityDetector;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.ConnectivityChecker;
-import org.openscience.cdk.interfaces.*;
-import org.openscience.cdk.io.*;
+import org.openscience.cdk.interfaces.IAtom;
+import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.interfaces.IMoleculeSet;
+import org.openscience.cdk.io.FormatFactory;
+import org.openscience.cdk.io.ISimpleChemObjectReader;
+import org.openscience.cdk.io.MDLReader;
 import org.openscience.cdk.io.formats.IChemFormat;
 import org.openscience.cdk.smiles.DeduceBondSystemTool;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.CDKHydrogenAdder;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
-import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.types.AtomPropertySet;
 import org.squonk.types.MoleculeObject;
-import smartcyp.*;
+import smartcyp.MoleculeKU;
+import smartcyp.SMARTSnEnergiesTable;
 
-import java.io.*;;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -29,6 +39,7 @@ import java.util.stream.Stream;
 public class SMARTCypRunner {
 
     private static final Logger LOG = Logger.getLogger(SMARTCypRunner.class.getName());
+    private static final String ORIG_ATOM_INDEX = "__OrigAtomIndex__";
 
     private final FormatFactory factory = new FormatFactory();
     private final DeduceBondSystemTool dbst = new DeduceBondSystemTool();
@@ -116,31 +127,31 @@ public class SMARTCypRunner {
 
         });
 
-        DatasetMetadata<MoleculeObject> meta = new DatasetMetadata(MoleculeObject.class);
-        Dataset<MoleculeObject> results = new Dataset<>(MoleculeObject.class, stream, meta);
-        return results;
+        DatasetMetadata<MoleculeObject> meta = new DatasetMetadata<>(MoleculeObject.class);
+        return new Dataset<>(MoleculeObject.class, stream, meta);
     }
 
     private void writeData(MoleculeObject mo, MoleculeKU moleculeKU) {
 
-        List<CypScore> scoresGeneral = new ArrayList<>();
-        List<CypScore> scores2D6 = new ArrayList<>();
-        List<CypScore> scores2C9 = new ArrayList<>();
-
+        List<AtomPropertySet.Score> scoresGeneral = new ArrayList<>();
+        List<AtomPropertySet.Score> scores2D6 = new ArrayList<>();
+        List<AtomPropertySet.Score> scores2C9 = new ArrayList<>();
         for (int atomIndex = 0; atomIndex < moleculeKU.getAtomCount(); ++atomIndex) {
-            Atom currentAtom = (Atom) moleculeKU.getAtom(atomIndex);
+            IAtom currentAtom = moleculeKU.getAtom(atomIndex);
             String currentAtomType = currentAtom.getSymbol();
             if (currentAtomType.equals("C") || currentAtomType.equals("N") || currentAtomType.equals("P") || currentAtomType.equals("S")) {
                 Number score = MoleculeKU.SMARTCYP_PROPERTY.Score.get(currentAtom);
                 int rank = MoleculeKU.SMARTCYP_PROPERTY.Ranking.get(currentAtom).intValue();
                 if (filter(score, rank)) {
-                    scoresGeneral.add(new CypScore(atomIndex + 1, currentAtomType, score, rank));
+                    Integer origAtomIndex = (Integer)currentAtom.getProperty(ORIG_ATOM_INDEX);
+                    scoresGeneral.add(AtomPropertySet.createScore(origAtomIndex, currentAtomType, score.floatValue(), rank));
                 }
 
                 score = MoleculeKU.SMARTCYP_PROPERTY.Score2D6.get(currentAtom);
                 rank = MoleculeKU.SMARTCYP_PROPERTY.Ranking2D6.get(currentAtom).intValue();
                 if (filter(score, rank)) {
-                    scores2D6.add(new CypScore(atomIndex + 1, currentAtomType, score, rank));
+                    Integer origAtomIndex = (Integer)currentAtom.getProperty(ORIG_ATOM_INDEX);
+                    scores2D6.add(AtomPropertySet.createScore(origAtomIndex, currentAtomType, score.floatValue(), rank));
                 }
 
 //                this.outfile.print("," + this.twoDecimalFormat.format(MoleculeKU.SMARTCYP_PROPERTY.Span2End.get(currentAtom)));
@@ -153,7 +164,8 @@ public class SMARTCypRunner {
                 score = MoleculeKU.SMARTCYP_PROPERTY.Score2C9.get(currentAtom);
                 rank = MoleculeKU.SMARTCYP_PROPERTY.Ranking2C9.get(currentAtom).intValue();
                 if (filter(score, rank)) {
-                    scores2C9.add(new CypScore(atomIndex + 1, currentAtomType, score, rank));
+                    Integer origAtomIndex = (Integer)currentAtom.getProperty(ORIG_ATOM_INDEX);
+                    scores2C9.add(AtomPropertySet.createScore(origAtomIndex, currentAtomType, score.floatValue(), rank));
                 }
 
 //                if (MoleculeKU.SMARTCYP_PROPERTY.Dist2CarboxylicAcid.get(currentAtom) != null) {
@@ -173,27 +185,27 @@ public class SMARTCypRunner {
 
         if (scoresGeneral.size() > 0) {
             sortByRank(scoresGeneral);
-            mo.putValue("SMARTCyp_general", scoresGeneral);
+            mo.putValue("SMARTCyp_GEN", new AtomPropertySet(scoresGeneral));
         }
         if (scores2D6.size() > 0) {
             sortByRank(scores2D6);
-            mo.putValue("SMARTCyp_2D6", scores2D6);
+            mo.putValue("SMARTCyp_2D6", new AtomPropertySet(scores2D6));
         }
         if (scores2C9.size() > 0) {
             sortByRank(scores2C9);
-            mo.putValue("SMARTCyp_2C9", scores2C9);
+            mo.putValue("SMARTCyp_2C9", new AtomPropertySet(scores2C9));
         }
 
     }
 
     private boolean filter(Number score, int rank) {
         return score != null &&
-                (scoreFilter == null || scoreFilter.floatValue() > score.floatValue()) &&
-                (maxRank == null || rank <= maxRank.intValue());
+                (scoreFilter == null || scoreFilter > score.floatValue()) &&
+                (maxRank == null || rank <= maxRank);
     }
 
-    private void sortByRank(List<CypScore> list) {
-        list.sort((i, j) -> i.ranking.compareTo(j.ranking));
+    private void sortByRank(List<AtomPropertySet.Score> list) {
+        list.sort((i, j) -> i.getRank().compareTo(j.getRank()));
     }
 
 
@@ -206,7 +218,6 @@ public class SMARTCypRunner {
         if (format != null && format.startsWith("smiles")) {
             iAtomContainer = readAsSmiles(mol);
             deducebonds = true;
-
         } else {
             ISimpleChemObjectReader reader = null;
             if (format != null && (format.equals("mol") || format.startsWith("mol:"))) {
@@ -218,14 +229,11 @@ public class SMARTCypRunner {
                     iAtomContainer = readAsSmiles(mol);
                     deducebonds = true;
                 } else {
-
                     reader = (ISimpleChemObjectReader) (Class.forName(chemFormat.getReaderClassName()).newInstance());
-
                 }
             }
             if (reader != null) {
                 reader.setReader(new ByteArrayInputStream(mol.getBytes()));
-                //iAtomContainer = reader.read(new AtomContainer());
                 iAtomContainer = reader.read(new Molecule());
             }
         }
@@ -233,6 +241,13 @@ public class SMARTCypRunner {
         MoleculeKU moleculeKU = null;
 
         if (iAtomContainer != null) {
+
+            // tag the atoms with the original atom indexes which we need later
+            for (int atomIndex = 0; atomIndex < iAtomContainer.getAtomCount(); ++atomIndex) {
+                IAtom atom = iAtomContainer.getAtom(atomIndex);
+                atom.setProperty(ORIG_ATOM_INDEX, atomIndex);
+            }
+
             // Remove salts or solvents... Keep only the largest molecule
             if (!ConnectivityChecker.isConnected(iAtomContainer)) {
                 //System.out.println(atomContainerNr);
@@ -258,12 +273,10 @@ public class SMARTCypRunner {
 
                 AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(iAtomContainer);
 
-
                 if (deducebonds) {
                     DeduceBondSystemTool dbst = new DeduceBondSystemTool();
                     iAtomContainer = dbst.fixAromaticBondOrders((IMolecule) iAtomContainer);
                 }
-
 
                 hydrogenAdder.addImplicitHydrogens(iAtomContainer);
                 CDKHueckelAromaticityDetector.detectAromaticity(iAtomContainer);
@@ -289,173 +302,6 @@ public class SMARTCypRunner {
         iAtomContainer = dbst.fixAromaticBondOrders((IMolecule) iAtomContainer);
 
         return iAtomContainer;
-    }
-
-
-    // Reads the molecule infiles
-    // Stores MoleculeKUs and AtomKUs
-    public static MoleculeSet readInStructures(String[] inFileNames, HashMap<String, Double> SMARTSnEnergiesTable) throws CloneNotSupportedException, CDKException {
-
-        MoleculeSet moleculeSet = new MoleculeSet();
-
-
-        List<IAtomContainer> moleculeList;
-        IChemObjectBuilder builder = DefaultChemObjectBuilder.getInstance();
-        ISimpleChemObjectReader reader;
-
-        File inputFile;
-        String infileName;
-        ReaderFactory readerFactory;
-        IChemFile emptyChemFile;
-        IChemFile chemFile;
-
-
-        // Iterate over all molecule infiles (it can be a single file)
-        int moleculeFileNr;
-        int highestMoleculeID = 1;
-        for (moleculeFileNr = 0; moleculeFileNr < inFileNames.length; moleculeFileNr++) {
-
-            infileName = inFileNames[moleculeFileNr];
-            inputFile = new File(infileName);
-
-            readerFactory = new ReaderFactory();
-
-            boolean deducebonds = false;
-
-            try {
-
-                if (infileName.endsWith(".sdf")) {
-                    /*//commented away because the V2000 reader seem to fail on many structures in sdf files
-                    //check if it is V2000or V3000 sdf format
-					boolean isV2000 = false;
-					boolean isV3000 = false;
-					FileInputStream fs= new FileInputStream(infileName);
-					BufferedReader br = new BufferedReader(new InputStreamReader(fs));
-					for(int i = 0; i < 3; ++i)
-					  br.readLine();
-					String linefour = br.readLine();
-					if (linefour.contains("V2000")) {
-						isV2000=true;
-					}
-					else if (linefour.contains("V3000")) {
-						isV3000=true;
-					}
-					fs.close();
-					//now we got the correct format
-					if (isV2000){
-						reader = new MDLV2000Reader(new FileReader(infileName));
-					}
-					else if (isV3000){
-						reader = new MDLV3000Reader(new FileReader(infileName));
-					}
-					else {
-						reader = new MDLReader(new FileReader(infileName));
-					}
-					*/
-                    reader = new MDLReader(new FileReader(infileName));
-
-                } else if (infileName.endsWith(".smi") || infileName.endsWith(".smiles")) {
-                    reader = new SMILESReader(new FileReader(infileName));
-                    deducebonds = true;
-                } else reader = readerFactory.createReader(new FileReader(inputFile));
-
-
-                emptyChemFile = builder.newInstance(IChemFile.class);
-                chemFile = (IChemFile) reader.read(emptyChemFile);
-
-                if (chemFile == null) continue;
-
-                //System.out.println(chemFile.toString());
-
-                // Get Molecules
-                moleculeList = ChemFileManipulator.getAllAtomContainers(chemFile);
-
-                // Iterate Molecules
-                MoleculeKU moleculeKU;
-                IAtomContainer iAtomContainerTmp;
-                IAtomContainer iAtomContainer;
-                CDKHydrogenAdder adder = CDKHydrogenAdder.getInstance(DefaultChemObjectBuilder.getInstance());
-                for (int atomContainerNr = 0; atomContainerNr < moleculeList.size(); atomContainerNr++) {
-                    iAtomContainerTmp = moleculeList.get(atomContainerNr);
-
-                    // Remove salts or solvents... Keep only the largest molecule
-                    if (!ConnectivityChecker.isConnected(iAtomContainerTmp)) {
-                        //System.out.println(atomContainerNr);
-                        IMoleculeSet fragments = ConnectivityChecker.partitionIntoMolecules(iAtomContainerTmp);
-
-                        int maxID = 0;
-                        int maxVal = -1;
-                        for (int i = 0; i < fragments.getMoleculeCount(); i++) {
-                            if (fragments.getMolecule(i).getAtomCount() > maxVal) {
-                                maxID = i;
-                                maxVal = fragments.getMolecule(i).getAtomCount();
-                            }
-                        }
-                        iAtomContainerTmp = fragments.getMolecule(maxID);
-                    }
-                    //end of salt removal
-
-                    iAtomContainer = AtomContainerManipulator.removeHydrogens(iAtomContainerTmp);
-
-                    //check number of atoms, if less than 2 don't add molecule
-                    if (iAtomContainer.getAtomCount() > 1) {
-                        //System.out.println(iAtomContainer.getProperties());
-
-                        AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(iAtomContainer);
-
-
-                        if (deducebonds) {
-                            DeduceBondSystemTool dbst = new DeduceBondSystemTool();
-                            iAtomContainer = dbst.fixAromaticBondOrders((IMolecule) iAtomContainer);
-                        }
-
-
-                        adder.addImplicitHydrogens(iAtomContainer);
-                        CDKHueckelAromaticityDetector.detectAromaticity(iAtomContainer);
-
-                        moleculeKU = new MoleculeKU(iAtomContainer, SMARTSnEnergiesTable);
-                        moleculeSet.addMolecule(moleculeKU);
-                        moleculeKU.setID(Integer.toString(highestMoleculeID));
-                        //set the molecule title in the moleculeKU object
-                        if (iAtomContainer.getProperty("SMIdbNAME") != "" && iAtomContainer.getProperty("SMIdbNAME") != null) {
-                            iAtomContainer.setProperty(CDKConstants.TITLE, iAtomContainer.getProperty("SMIdbNAME"));
-                        }
-                        moleculeKU.setProperty(CDKConstants.TITLE, iAtomContainer.getProperty(CDKConstants.TITLE));
-                        moleculeKU.setProperties(iAtomContainer.getProperties());
-                        highestMoleculeID++;
-                    }
-
-                }
-                System.out.println(moleculeList.size() + " molecules were read from the file " + inFileNames[moleculeFileNr]);
-
-            } catch (FileNotFoundException e) {
-                System.out.println("File " + inFileNames[moleculeFileNr] + " not found");
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return moleculeSet;
-    }
-
-    class CypScore {
-
-        int atomNumber;
-        String atomSymbol;
-        Number score;
-        Integer ranking;
-
-        CypScore(int atomNumber, String atomSymbol, Number score, Integer ranking) {
-            this.atomNumber = atomNumber;
-            this.atomSymbol = atomSymbol;
-            this.score = score;
-            this.ranking = ranking;
-        }
-
-        @Override
-        public String toString() {
-            return atomSymbol + "." + atomNumber + " " + score + " [" + ranking + "]";
-        }
     }
 
 }

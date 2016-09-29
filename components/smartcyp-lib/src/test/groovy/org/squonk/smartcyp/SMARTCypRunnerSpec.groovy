@@ -1,5 +1,10 @@
 package org.squonk.smartcyp
 
+import org.openscience.cdk.Atom
+import org.openscience.cdk.graph.ConnectivityChecker
+import org.openscience.cdk.interfaces.IAtom
+import org.openscience.cdk.interfaces.IAtomContainer
+import org.openscience.cdk.interfaces.IMoleculeSet
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
 import org.squonk.types.MoleculeObject
@@ -17,10 +22,10 @@ class SMARTCypRunnerSpec extends Specification {
         when:
         def results = runner.execute(dataset)
         def items = results.items
-        items.eachWithIndex { v, i ->
-            println "$i $v.source"
-            println v.values
-        }
+//        items.eachWithIndex { v, i ->
+//            println "$i $v.source"
+//            println v.values
+//        }
 
         then:
         items.size() == 10
@@ -34,10 +39,10 @@ class SMARTCypRunnerSpec extends Specification {
         when:
         def results = runner.execute(dataset)
         def items = results.items
-        items.eachWithIndex { v, i ->
-            println "$i $v.source"
-            println v.values
-        }
+//        items.eachWithIndex { v, i ->
+//            println "$i $v.source"
+//            println v.values
+//        }
 
         then:
         items.size() == 36
@@ -55,15 +60,16 @@ class SMARTCypRunnerSpec extends Specification {
         when:
         def results = runner.execute(dataset)
         def items = results.items
-        items.eachWithIndex { v, i ->
-            println "$i $v.source"
-            println v.values
-        }
+//        items.eachWithIndex { v, i ->
+//            println "$i $v.source"
+//            println v.values
+//        }
 
         then:
         items.size() == 2
-
-
-    }
+        items[0].getValue('SMARTCyp_GEN').scores[0].atomIndex == items[1].getValue('SMARTCyp_GEN').scores[0].atomIndex -1
+        items[0].getValue('SMARTCyp_2D6').scores[0].atomIndex == items[1].getValue('SMARTCyp_2D6').scores[0].atomIndex -1
+        items[0].getValue('SMARTCyp_2C9').scores[0].atomIndex == items[1].getValue('SMARTCyp_2C9').scores[0].atomIndex -1
+}
 
 }
