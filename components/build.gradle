@@ -52,6 +52,11 @@ allprojects {
             }
             url "https://repository.chemaxon.com/artifactory/libs-release"
         }
+
+        maven {
+            url "https://nexus.ideaconsult.net/content/repositories/thirdparty"
+        }
+
     }
 
     // In this section you declare the dependencies for your production and test code
