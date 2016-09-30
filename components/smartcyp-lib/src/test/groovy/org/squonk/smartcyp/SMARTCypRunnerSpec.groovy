@@ -67,9 +67,30 @@ class SMARTCypRunnerSpec extends Specification {
 
         then:
         items.size() == 2
-        items[0].getValue('SMARTCyp_GEN').scores[0].atomIndex == items[1].getValue('SMARTCyp_GEN').scores[0].atomIndex -1
-        items[0].getValue('SMARTCyp_2D6').scores[0].atomIndex == items[1].getValue('SMARTCyp_2D6').scores[0].atomIndex -1
-        items[0].getValue('SMARTCyp_2C9').scores[0].atomIndex == items[1].getValue('SMARTCyp_2C9').scores[0].atomIndex -1
-}
+        items[0].getValue('SMARTCyp_GEN').scores[0].atomIndex == items[1].getValue('SMARTCyp_GEN').scores[0].atomIndex - 1
+        items[0].getValue('SMARTCyp_2D6').scores[0].atomIndex == items[1].getValue('SMARTCyp_2D6').scores[0].atomIndex - 1
+        items[0].getValue('SMARTCyp_2C9').scores[0].atomIndex == items[1].getValue('SMARTCyp_2C9').scores[0].atomIndex - 1
+    }
+
+    void caffeine() {
+
+        def mols = [
+                new MoleculeObject(Molecules.caffeine.smiles, 'smiles')
+        ]
+        def dataset = new Dataset(MoleculeObject.class, mols)
+
+        SMARTCypRunner runner = new SMARTCypRunner()
+
+        when:
+        def results = runner.execute(dataset)
+        def items = results.items
+        items.eachWithIndex { v, i ->
+            println "$i $v.source"
+            println v.values
+        }
+
+        then:
+        items.size() == 1
+    }
 
 }

@@ -3,6 +3,7 @@ package org.squonk.cdk.services;
 import org.squonk.cdk.io.CDKMolDepict;
 import org.squonk.io.DepictionParameters;
 import org.squonk.util.IOUtils;
+import org.squonk.util.Utils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -83,7 +84,7 @@ public class CdkMolDepictServlet extends HttpServlet {
             return;
         }
 
-        DepictionParameters params = createDepictionParams(req);
+        DepictionParameters params = DepictionParameters.fromHttpParams(req.getParameterMap());
 
         if ("png".equalsIgnoreCase(paramFormat)) {
             generatePng(req, resp, mol, params);
@@ -140,50 +141,6 @@ public class CdkMolDepictServlet extends HttpServlet {
             resp.getWriter().flush();
             resp.getWriter().close();
         }
-    }
-
-
-    private DepictionParameters createDepictionParams(HttpServletRequest req) {
-        String paramWidth = req.getParameter("w");
-        String paramHeight = req.getParameter("h");
-        String paramExpand = req.getParameter("expand");
-        String paramBg = req.getParameter("bg");
-
-        // size
-        Integer width = null;
-        Integer height = null;
-        if (paramWidth != null && paramHeight != null) {
-            try {
-                width = Integer.parseInt(paramWidth);
-                height = Integer.parseInt(paramHeight);
-
-            } catch (NumberFormatException ex) {
-                LOG.log(Level.INFO, "Can't interpret expand parameters: " + paramWidth + " " + paramHeight, ex);
-            }
-        }
-
-        // background
-        Color col = null;
-        if (paramBg != null) {
-            try {
-                col = new Color(Long.decode(paramBg).intValue(), true);
-            } catch (NumberFormatException ex) {
-                LOG.log(Level.INFO, "Can't interpret color parameters: " + paramBg, ex);
-            }
-        }
-
-        // expand to fit
-        Boolean expand = true;
-        if (paramExpand != null) {
-            try {
-                expand = Boolean.parseBoolean(paramExpand);
-            } catch (Exception ex) {
-                LOG.log(Level.INFO, "Can't interpret expand parameter: " + paramExpand, ex);
-            }
-        }
-
-        return (expand != null || width != null || height != null || col != null) ?
-                new DepictionParameters(width, height, expand, col) : null;
     }
 
 }

@@ -81,11 +81,11 @@ public abstract class AbstractMolDepict<T extends Object> {
     }
 
     public String stringToSVG(String mol) throws Exception {
-        return moleculeToSVG(stringToMolecule(mol), null);
+        return moleculeToSVG(stringToMolecule(mol), params);
     }
 
     public String stringToSVG(String mol, String molFormat) throws Exception {
-        return moleculeToSVG(stringToMolecule(mol, molFormat), null);
+        return moleculeToSVG(stringToMolecule(mol, molFormat), params);
     }
 
     public String smilesToSVG(String mol, DepictionParameters params) throws Exception {
@@ -93,7 +93,7 @@ public abstract class AbstractMolDepict<T extends Object> {
     }
 
     public String smilesToSVG(String mol) throws Exception {
-        return moleculeToSVG(smilesToMolecule(mol), null);
+        return moleculeToSVG(smilesToMolecule(mol), params);
     }
 
     public String v2000ToSVG(String mol, DepictionParameters params) throws Exception {
@@ -101,7 +101,7 @@ public abstract class AbstractMolDepict<T extends Object> {
     }
 
     public String v2000ToSVG(String mol) throws Exception {
-        return moleculeToSVG(v2000ToMolecule(mol), null);
+        return moleculeToSVG(v2000ToMolecule(mol), params);
     }
 
     public String v3000ToSVG(String mol, DepictionParameters params) throws Exception {
@@ -109,7 +109,7 @@ public abstract class AbstractMolDepict<T extends Object> {
     }
 
     public String v3000ToSVG(String mol) throws Exception {
-        return moleculeToSVG(v3000ToMolecule(mol), null);
+        return moleculeToSVG(v3000ToMolecule(mol), params);
     }
 
     public byte[] stringToImage(String mol, String imgFormat, DepictionParameters params) throws Exception {
@@ -117,7 +117,7 @@ public abstract class AbstractMolDepict<T extends Object> {
     }
 
     public byte[] stringToImage(String mol, String imgFormat) throws Exception {
-        return writeImage(moleculeToImage(stringToMolecule(mol), null), imgFormat);
+        return writeImage(moleculeToImage(stringToMolecule(mol), params), imgFormat);
     }
 
     public byte[] smilesToImage(String mol, String imgFormat, DepictionParameters params) throws Exception {
@@ -125,7 +125,7 @@ public abstract class AbstractMolDepict<T extends Object> {
     }
 
     public byte[] smilesToImage(String mol, String imgFormat) throws Exception {
-        return writeImage(moleculeToImage(smilesToMolecule(mol), null), imgFormat);
+        return writeImage(moleculeToImage(smilesToMolecule(mol), params), imgFormat);
     }
 
     public byte[] v2000ToImage(String mol, String imgFormat, DepictionParameters params) throws Exception {
@@ -133,7 +133,7 @@ public abstract class AbstractMolDepict<T extends Object> {
     }
 
     public byte[] v2000ToImage(String mol, String imgFormat) throws Exception {
-        return writeImage(moleculeToImage(v2000ToMolecule(mol), null), imgFormat);
+        return writeImage(moleculeToImage(v2000ToMolecule(mol), params), imgFormat);
     }
 
     public byte[] v3000ToImage(String mol, String imgFormat, DepictionParameters params) throws Exception {
@@ -141,7 +141,7 @@ public abstract class AbstractMolDepict<T extends Object> {
     }
 
     public byte[] v3000ToImage(String mol, String imgFormat) throws Exception {
-        return writeImage(moleculeToImage(v3000ToMolecule(mol), null), imgFormat);
+        return writeImage(moleculeToImage(v3000ToMolecule(mol), params), imgFormat);
     }
 
     protected DepictionParameters depictionParameters(DepictionParameters maybeNull) {

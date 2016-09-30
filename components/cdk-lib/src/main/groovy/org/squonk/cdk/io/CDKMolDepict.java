@@ -3,23 +3,50 @@ package org.squonk.cdk.io;
 import org.openscience.cdk.depict.Depiction;
 import org.openscience.cdk.depict.DepictionGenerator;
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IBond;
+import org.openscience.cdk.interfaces.IChemObject;
 import org.openscience.cdk.io.MDLV2000Reader;
 import org.openscience.cdk.io.MDLV3000Reader;
+import org.openscience.cdk.renderer.color.CDK2DAtomColors;
+import org.openscience.cdk.renderer.color.CPKAtomColors;
+import org.openscience.cdk.renderer.color.IAtomColorer;
+import org.openscience.cdk.renderer.color.UniColor;
 import org.openscience.cdk.silent.AtomContainer;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.squonk.io.AbstractMolDepict;
 import org.squonk.io.DepictionParameters;
+import org.squonk.io.DepictionParameters.ColorScheme;
+import org.squonk.io.DepictionParameters.AtomHighlight;
+import org.squonk.io.DepictionParameters.Highlight;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Created by timbo on 17/01/2016.
  */
 public class CDKMolDepict extends AbstractMolDepict<IAtomContainer> {
+
+    private static final Logger LOG = Logger.getLogger(CDKMolDepict.class.getName());
+
+    private static Map<ColorScheme, IAtomColorer> colorers = new HashMap<>();
+
+    static {
+        colorers.put(ColorScheme.black, new UniColor(Color.BLACK));
+        colorers.put(ColorScheme.white, new UniColor(Color.WHITE));
+        colorers.put(ColorScheme.cpk, new CPKAtomColors());
+        colorers.put(ColorScheme.toolkit_default, new CDK2DAtomColors());
+    }
 
 
     private final DepictionGenerator generator;
@@ -36,21 +63,86 @@ public class CDKMolDepict extends AbstractMolDepict<IAtomContainer> {
         generator = createDepictionGenerator(params);
     }
 
+
     DepictionGenerator createDepictionGenerator(DepictionParameters params) {
         DepictionGenerator dg = new DepictionGenerator()
-                .withAtomColors()
                 .withTerminalCarbons()
                 //.withParam(BasicAtomGenerator.ShowExplicitHydrogens.class, true)
                 .withBackgroundColor(params.getBackgroundColor() != null ? params.getBackgroundColor() : DEFAULT_BACKGROUND);
 
-        if (params.getWidth() != null || params.getHeight() != null) {
-            dg = dg.withSize(params.getWidth(), params.getHeight());
-        } else {
-            dg = dg.withSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        Integer w = params.getWidth();
+        Integer h = params.getHeight();
+        dg = dg.withSize(w == null ? DEFAULT_WIDTH: w, h == null ? DEFAULT_HEIGHT : h);
+
+        double m = params.getMargin();
+        if (m > 0) {
+            dg = dg.withMargin(m);
         }
+
+        ColorScheme colorScheme = params.getColorScheme();
+        if (colorScheme == null) {
+            colorScheme = ColorScheme.toolkit_default;
+        }
+        dg.withAtomColors(colorers.get(colorScheme));
+
         if (params.isExpandToFit()) {
             dg = dg.withFillToFit();
         }
+        return dg;
+    }
+
+    DepictionGenerator configureForMolecule(IAtomContainer mol, DepictionParameters params, DepictionGenerator dg) {
+
+        for (Highlight highlight : params.getHighlights()) {
+            if (highlight instanceof AtomHighlight) {
+                AtomHighlight atomHighlight = (AtomHighlight) highlight;
+                if (atomHighlight.getAtomIndexes() == null || atomHighlight.getAtomIndexes().length == 0) {
+                    LOG.warning("No atom indexes found");
+                    continue;
+                }
+                if (atomHighlight.getColor() == null) {
+                    LOG.warning("No color found");
+                    continue;
+                }
+
+                List<IAtom> atoms = new ArrayList<>();
+                for (int index : atomHighlight.getAtomIndexes()) {
+                    if (index >= 0 && index < mol.getAtomCount()) {
+                        IAtom atom = mol.getAtom(index);
+                        if (atom != null) {
+                            atoms.add(atom);
+                        }
+                    }
+                }
+                List<IBond> bonds = new ArrayList<>();
+                if (atomHighlight.isHighlightBonds()) {
+                    for (int bondIndex = 0; bondIndex < mol.getBondCount(); ++bondIndex) {
+                        IBond bond = mol.getBond(bondIndex);
+                        boolean allAtomsMatch = true;
+                        for (IAtom atom : bond.atoms()) {
+                            if (!atoms.contains(atom)) {
+                                allAtomsMatch = false;
+                                break;
+                            }
+                        }
+                        if (allAtomsMatch) {
+                            bonds.add(bond);
+                        }
+                    }
+                }
+
+                if (atoms.size() > 0) {
+                    List<IChemObject> highlights = new ArrayList<>();
+                    highlights.addAll(atoms);
+                    highlights.addAll(bonds);
+                    dg = dg.withHighlight(highlights, atomHighlight.getColor());
+                    if (atomHighlight.getMode() == DepictionParameters.HighlightMode.region) {
+                        dg = dg.withOuterGlowHighlight();
+                    }
+                }
+            }
+        }
+
         return dg;
     }
 
@@ -83,7 +175,9 @@ public class CDKMolDepict extends AbstractMolDepict<IAtomContainer> {
 
 
     public Depiction depict(IAtomContainer mol, DepictionParameters params) throws CDKException {
-        Depiction depiction = getDepictionGenerator(params).depict(mol);
+        DepictionGenerator dg = getDepictionGenerator(params);
+        dg = configureForMolecule(mol, params, dg);
+        Depiction depiction = dg.depict(mol);
         return depiction;
     }
 

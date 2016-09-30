@@ -2,6 +2,8 @@ package org.squonk.cdk.io
 
 import org.squonk.data.Molecules
 import org.squonk.io.DepictionParameters
+import org.squonk.io.DepictionParameters.HighlightMode
+import org.squonk.io.DepictionParameters.ColorScheme
 import spock.lang.Specification
 
 import java.awt.Color
@@ -15,9 +17,6 @@ class CDKMolDepictSpec extends Specification {
     void f() {
 
         when:
-        //int i = Integer.parseInt('FFFFFF', 16)
-        //println i
-        //Color col = new Color(i, true)
 
         println Integer.toHexString(Integer.MAX_VALUE);
 
@@ -28,9 +27,6 @@ class CDKMolDepictSpec extends Specification {
 
         then:
         col != null
-
-
-
     }
 
     void "smiles to svg"() {
@@ -66,6 +62,22 @@ class CDKMolDepictSpec extends Specification {
 
         when:
         String svg1 = d.smilesToSVG(Molecules.ethanol.smiles, params)
+        //println svg1
+
+        then:
+        svg1 != null
+    }
+
+    void "smiles to svg highlight"() {
+
+        DepictionParameters params = new DepictionParameters(200, 150, true, new Color(255, 255, 255, 0), ColorScheme.black)
+                .addAtomHighlight([0,1,2] as int[], Color.cyan, HighlightMode.region, true)
+                .addAtomHighlight([5,6,7] as int[], Color.orange, HighlightMode.region, true)
+        params.setMargin(5d)
+        CDKMolDepict d = new CDKMolDepict(params)
+
+        when:
+        String svg1 = d.smilesToSVG(Molecules.caffeine.smiles)
         //println svg1
 
         then:

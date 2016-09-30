@@ -5,6 +5,7 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.squonk.dataset.Dataset;
 import org.squonk.io.DepictionParameters;
+import org.squonk.io.QueryParams;
 import org.squonk.types.MoleculeObject;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
@@ -131,13 +132,11 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
 
     private byte[] createImageUsingGet(String mol, String molFormat, OutputFormat imgFormat, DepictionParameters depict) {
         URIBuilder b = createURIBuilder(getMolDepictBase());
-        Map<String, String> queryParams = depict.asQueryParams();
-        queryParams.put("mol", mol);
-        queryParams.put("molFormat", molFormat);
-        queryParams.put("format", imgFormat.toString());
-        queryParams.forEach((k, v) -> {
-            b.addParameter(k, v);
-        });
+        QueryParams queryParams = depict.asQueryParams();
+        queryParams.add("mol", mol);
+        queryParams.add("molFormat", molFormat);
+        queryParams.add("format", imgFormat.toString());
+        queryParams.consume((k, v) -> b.addParameter(k, v));
         try (InputStream is = executeGetAsInputStream(b)) {
             return IOUtils.convertStreamToBytes(is);
         } catch (IOException e) {
@@ -148,12 +147,10 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
 
     private String createSVGUsingPost(String mol, String molFormat, DepictionParameters depict) {
         URIBuilder b = createURIBuilder(getMolDepictBase());
-        Map<String, String> queryParams = depict.asQueryParams();
-        queryParams.put("molFormat", molFormat);
-        queryParams.put("format", "svg");
-        queryParams.forEach((k, v) -> {
-            b.addParameter(k, v);
-        });
+        QueryParams queryParams = depict.asQueryParams();
+        queryParams.add("molFormat", molFormat);
+        queryParams.add("format", "svg");
+        queryParams.consume((k, v) -> b.addParameter(k, v));
         try (InputStream is = executePostAsInputStream(b, new StringEntity(mol))) {
             return IOUtils.convertStreamToString(is);
         } catch (IOException e) {
@@ -164,12 +161,11 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
 
     private String createSVGUsingGet(String mol, String molFormat, DepictionParameters depict) {
         URIBuilder b = createURIBuilder(getMolDepictBase());
-        Map<String, String> queryParams = depict.asQueryParams();
-        queryParams.put("mol", mol);
-        queryParams.put("format", "svg");
-        queryParams.forEach((k, v) -> {
-            b.addParameter(k, v);
-        });
+        QueryParams queryParams = depict.asQueryParams();
+        queryParams.add("mol", mol);
+        queryParams.add("molFormat", molFormat);
+        queryParams.add("format", "svg");
+        queryParams.consume((k, v) -> b.addParameter(k, v));
         try (InputStream is = executeGetAsInputStream(b)) {
             return IOUtils.convertStreamToString(is);
         } catch (IOException e) {
@@ -180,12 +176,10 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
 
     private byte[] createImageUsingPost(String mol, String molFormat, OutputFormat imgFormat, DepictionParameters depict) {
         URIBuilder b = createURIBuilder(getMolDepictBase());
-        Map<String, String> queryParams = depict.asQueryParams();
-        queryParams.put("molFormat", molFormat);
-        queryParams.put("format", imgFormat.toString());
-        queryParams.forEach((k, v) -> {
-            b.addParameter(k, v);
-        });
+        QueryParams queryParams = depict.asQueryParams();
+        queryParams.add("molFormat", molFormat);
+        queryParams.add("format", imgFormat.toString());
+        queryParams.consume((k, v) -> b.addParameter(k, v));
         try (InputStream is = executePostAsInputStream(b, new StringEntity(mol))) {
             return IOUtils.convertStreamToBytes(is);
         } catch (IOException e) {
