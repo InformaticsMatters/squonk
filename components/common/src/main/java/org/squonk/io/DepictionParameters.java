@@ -23,6 +23,19 @@ import java.util.logging.Logger;
  */
 public class DepictionParameters implements Serializable {
 
+    public static final String PROP_WIDTH = "w";
+    public static final String PROP_HEIGHT = "h";
+    public static final String PROP_BG_COL = "bg";
+    public static final String PROP_EXPAND_TO_FIT = "expand";
+    public static final String PROP_MARGIN = "margin";
+    public static final String PROP_IMG_FORMAT = "imgFormat";
+    public static final String PROP_MOL_FORMAT = "molFormat";
+    public static final String PROP_MOL = "mol";
+
+    public static final String IMG_FORMAT_SVG = "svg";
+    public static final String IMG_FORMAT_PNG = "png";
+
+
     private static final Logger LOG = Logger.getLogger(DepictionParameters.class.getName());
 
     private static final Color DEFAULT_BACKGROUND = new Color(255, 255, 255, 0);
@@ -139,19 +152,19 @@ public class DepictionParameters implements Serializable {
     public QueryParams asQueryParams() {
         QueryParams params = new QueryParams();
         if (width != null) {
-            params.add("w", width.toString());
+            params.add(PROP_WIDTH, width.toString());
         }
         if (height != null) {
-            params.add("h", height.toString());
+            params.add(PROP_HEIGHT, height.toString());
         }
         if (backgroundColor != null) {
-            params.add("bg", Colors.rgbaColorToHex(backgroundColor));
+            params.add(PROP_BG_COL, Colors.rgbaColorToHex(backgroundColor));
         }
         if (expandToFit != null) {
-            params.add("expand", expandToFit ? "1" : "0");
+            params.add(PROP_EXPAND_TO_FIT, expandToFit ? "1" : "0");
         }
         if (margin > 0) {
-            params.add("margin", "" + margin);
+            params.add(PROP_MARGIN, "" + margin);
         }
         highlights.stream().forEachOrdered((h) -> h.append(params));
         return params;
@@ -171,12 +184,12 @@ public class DepictionParameters implements Serializable {
     }
 
     public static DepictionParameters fromHttpParams(Map<String, String[]> params) {
-        String paramWidth = getHttpParameter("w", params);
-        String paramHeight = getHttpParameter("h", params);
-        String paramExpand = getHttpParameter("expand", params);
-        String paramBg = getHttpParameter("bg", params);
+        String paramWidth = getHttpParameter(PROP_WIDTH, params);
+        String paramHeight = getHttpParameter(PROP_HEIGHT, params);
+        String paramExpand = getHttpParameter(PROP_EXPAND_TO_FIT, params);
+        String paramBg = getHttpParameter(PROP_BG_COL, params);
         String paramColorScheme = getHttpParameter("colorScheme", params);
-        String paramMargin = getHttpParameter("margin", params);
+        String paramMargin = getHttpParameter(PROP_MARGIN, params);
 
         // size
         Integer width = null;

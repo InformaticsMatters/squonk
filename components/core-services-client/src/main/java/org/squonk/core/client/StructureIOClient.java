@@ -133,9 +133,9 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
     private byte[] createImageUsingGet(String mol, String molFormat, OutputFormat imgFormat, DepictionParameters depict) {
         URIBuilder b = createURIBuilder(getMolDepictBase());
         QueryParams queryParams = depict.asQueryParams();
-        queryParams.add("mol", mol);
-        queryParams.add("molFormat", molFormat);
-        queryParams.add("format", imgFormat.toString());
+        queryParams.add(DepictionParameters.PROP_MOL, mol);
+        queryParams.add(DepictionParameters.PROP_MOL_FORMAT, molFormat);
+        queryParams.add(DepictionParameters.PROP_IMG_FORMAT, imgFormat.toString());
         queryParams.consume((k, v) -> b.addParameter(k, v));
         try (InputStream is = executeGetAsInputStream(b)) {
             return IOUtils.convertStreamToBytes(is);
@@ -148,8 +148,8 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
     private String createSVGUsingPost(String mol, String molFormat, DepictionParameters depict) {
         URIBuilder b = createURIBuilder(getMolDepictBase());
         QueryParams queryParams = depict.asQueryParams();
-        queryParams.add("molFormat", molFormat);
-        queryParams.add("format", "svg");
+        queryParams.add(DepictionParameters.PROP_MOL_FORMAT, molFormat);
+        queryParams.add(DepictionParameters.PROP_IMG_FORMAT, DepictionParameters.IMG_FORMAT_SVG);
         queryParams.consume((k, v) -> b.addParameter(k, v));
         try (InputStream is = executePostAsInputStream(b, new StringEntity(mol))) {
             return IOUtils.convertStreamToString(is);
@@ -162,9 +162,9 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
     private String createSVGUsingGet(String mol, String molFormat, DepictionParameters depict) {
         URIBuilder b = createURIBuilder(getMolDepictBase());
         QueryParams queryParams = depict.asQueryParams();
-        queryParams.add("mol", mol);
-        queryParams.add("molFormat", molFormat);
-        queryParams.add("format", "svg");
+        queryParams.add(DepictionParameters.PROP_MOL, mol);
+        queryParams.add(DepictionParameters.PROP_MOL_FORMAT, molFormat);
+        queryParams.add(DepictionParameters.PROP_IMG_FORMAT, DepictionParameters.IMG_FORMAT_SVG);
         queryParams.consume((k, v) -> b.addParameter(k, v));
         try (InputStream is = executeGetAsInputStream(b)) {
             return IOUtils.convertStreamToString(is);
@@ -177,8 +177,8 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
     private byte[] createImageUsingPost(String mol, String molFormat, OutputFormat imgFormat, DepictionParameters depict) {
         URIBuilder b = createURIBuilder(getMolDepictBase());
         QueryParams queryParams = depict.asQueryParams();
-        queryParams.add("molFormat", molFormat);
-        queryParams.add("format", imgFormat.toString());
+        queryParams.add(DepictionParameters.PROP_MOL_FORMAT, molFormat);
+        queryParams.add(DepictionParameters.PROP_IMG_FORMAT, imgFormat.toString());
         queryParams.consume((k, v) -> b.addParameter(k, v));
         try (InputStream is = executePostAsInputStream(b, new StringEntity(mol))) {
             return IOUtils.convertStreamToBytes(is);

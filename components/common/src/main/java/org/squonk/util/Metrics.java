@@ -10,6 +10,7 @@ public interface Metrics {
     String PROVIDER_CDK = "CDK";
     String PROVIDER_RDKIT = "RDKit";
     String PROVIDER_OPENCHEMLIB = "OCL";
+    String PROVIDER_UNI_COPENHAGEN = "UniCPH";
     String PROVIDER_DATA = "Data";
     String PROVIDER_DATA_TABLE = PROVIDER_DATA + ".Table";
 
@@ -31,6 +32,7 @@ public interface Metrics {
     String METRICS_CHARGE = "Charge";
     String METRICS_PKA = "pKa";
     String METRICS_RXN_ENUM = "ReactionEnumeration";
+    String METRICS_SMARTCyp = "SMARTCyp";
 
 
     String METRICS_STRUCTURE_SEARCH_EXACT = "StructureSearch.Exact";

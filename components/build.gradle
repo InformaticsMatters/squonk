@@ -19,15 +19,15 @@ buildscript {
 }
 
 allprojects {
-    
+
     group = 'org.squonk.components'
-    
+
     apply plugin: 'groovy' // Apply the groovy plugin (also adds support for Java)
     apply plugin: 'maven'  // Maven repo stuff
 
     sourceCompatibility = 1.8
     version = '0.2-SNAPSHOT'
-    
+
     project.ext.set('camelVersion', '2.17.1')
     // look at the jackson2-version property here (with correct tag) to get the right Jackson version
     // https://github.com/apache/camel/blob/master/parent/pom.xml
@@ -37,13 +37,12 @@ allprojects {
     project.ext.set('weldVersion', '2.3.2.Final')
     project.ext.set('postgresDriverVersion', '9.4-1201-jdbc41')
 
-
     // In this section you declare where to find the dependencies of your project
     repositories {
         // Use 'jcenter' for resolving your dependencies.
         // You can declare any Maven/Ivy/file repository here.
         jcenter()
-        
+
         maven {
             credentials {
                 // define username and password as environment variables 
@@ -92,24 +91,24 @@ task wrapper(type: Wrapper) {
 ./configure-external.sh
 */
 
-task integrationTestEnvPrepare(type:Exec) {
+task integrationTestEnvPrepare(type: Exec) {
     dependsOn 'dockerFileChemServices', 'core-services-server:buildDockerFile', 'cell-executor:dockerBuildImage'
 
     workingDir '../docker'
     commandLine 'bash', 'int-test-env-prepare.sh'
 }
 
-task integrationTestEnvPrepareAndClean(type:Exec) {
+task integrationTestEnvPrepareAndClean(type: Exec) {
     dependsOn integrationTestEnvPrepare
     commandLine 'bash', '../docker/int-test-env-clean.sh'
 }
 
-task integrationTestEnvShutdown(type:Exec) { 
+task integrationTestEnvShutdown(type: Exec) {
     workingDir '../docker'
     commandLine 'bash', 'int-test-env-shutdown.sh'
 }
 
-task integrationTestEnvClean(type:Exec) { 
+task integrationTestEnvClean(type: Exec) {
     commandLine 'bash', '../docker/int-test-env-clean.sh'
 }
 
@@ -124,51 +123,51 @@ task integrationTestEnvDryRunNoShutdown {
 }
 
 
-task dbTestEnvPrepare(type:Exec) {
+task dbTestEnvPrepare(type: Exec) {
     workingDir '../docker'
     commandLine 'bash', 'db-test-env-prepare.sh'
 }
 
-task dbTestEnvShutdown(type:Exec) {
+task dbTestEnvShutdown(type: Exec) {
     workingDir '../docker'
     commandLine 'bash', 'db-test-env-shutdown.sh'
 }
 
 task createEbsBackendServicesRootZip(type: Zip) {
-    
+
     copy {
         from '../data/licenses/license.cxl'
         into 'chem-services-root/src/main/html/licenses'
     }
-    
+
     archiveName = 'ROOT.war'
     destinationDir = file('build/ebs/')
     from 'chem-services-root/src/main/html'
 }
 
 task createEbsBackendServicesZip(type: Zip) {
-    
+
     dependsOn = [
-        createEbsBackendServicesRootZip, 
-        'chem-services-cdk-basic:war',
-        'chem-services-chemaxon-basic:war',
-        'chem-services-rdkit-basic:war',
-        'chem-services-openchemlib-basic:war'
+            createEbsBackendServicesRootZip,
+            'chem-services-cdk-basic:war',
+            'chem-services-chemaxon-basic:war',
+            'chem-services-rdkit-basic:war',
+            'chem-services-openchemlib-basic:war'
     ]
     archiveName = 'ebs.zip'
     destinationDir = file('build/ebs/')
     from files(
-        'chem-services-cdk-basic/build/libs/chem-services-cdk-basic-' + version + '.war',
-        'chem-services-chemaxon-basic/build/libs/chem-services-chemaxon-basic-' + version + '.war',
-        'chem-services-rdkit-basic/build/libs/chem-services-rdkit-basic-' + version + '.war',
+            'chem-services-cdk-basic/build/libs/chem-services-cdk-basic-' + version + '.war',
+            'chem-services-chemaxon-basic/build/libs/chem-services-chemaxon-basic-' + version + '.war',
+            'chem-services-rdkit-basic/build/libs/chem-services-rdkit-basic-' + version + '.war',
             'chem-services-openchemlib-basic/build/libs/chem-services-openchemlib-basic-' + version + '.war',
-        'build/ebs/ROOT.war',
-    
+            'build/ebs/ROOT.war',
+
     )
     rename { String fileName ->
         fileName.replace('-' + version, '')
     }
-        
+
 }
 
 project.ext.set('dockerHost', getDockerHost())
@@ -202,31 +201,36 @@ task chemServicesWars(type: Copy) {
             tasks.getByPath(':chem-services-chemaxon-basic:war'),
             tasks.getByPath(':chem-services-rdkit-basic:war'),
             tasks.getByPath(':chem-services-rdkit-search:war'),
-            tasks.getByPath(':chem-services-openchemlib-basic:war')
+            tasks.getByPath(':chem-services-openchemlib-basic:war'),
+            tasks.getByPath(':chem-services-smartcyp:war')
     ]
 
-        from "../data/licenses/license.cxl"
-        from ("chem-services-cdk-basic/build/libs") {
-            include '*.war'
-            rename '.*', 'chem-services-cdk-basic.war'
-        }
-        from ("chem-services-chemaxon-basic/build/libs") {
-            include '*.war'
-            rename '.*', 'chem-services-chemaxon-basic.war'
-        }
-        from ("chem-services-rdkit-basic/build/libs") {
-            include '*.war'
-            rename '.*', 'chem-services-rdkit-basic.war'
-        }
-        from ("chem-services-rdkit-search/build/libs") {
-            include '*.war'
-            rename '.*', 'chem-services-rdkit-search.war'
-        }
-        from ("chem-services-openchemlib-basic/build/libs") {
-            include '*.war'
-            rename '.*', 'chem-services-openchemlib-basic.war'
-        }
-        into 'build/chem-services-basic'
+    from "../data/licenses/license.cxl"
+    from("chem-services-cdk-basic/build/libs") {
+        include '*.war'
+        rename '.*', 'chem-services-cdk-basic.war'
+    }
+    from("chem-services-chemaxon-basic/build/libs") {
+        include '*.war'
+        rename '.*', 'chem-services-chemaxon-basic.war'
+    }
+    from("chem-services-rdkit-basic/build/libs") {
+        include '*.war'
+        rename '.*', 'chem-services-rdkit-basic.war'
+    }
+    from("chem-services-rdkit-search/build/libs") {
+        include '*.war'
+        rename '.*', 'chem-services-rdkit-search.war'
+    }
+    from("chem-services-openchemlib-basic/build/libs") {
+        include '*.war'
+        rename '.*', 'chem-services-openchemlib-basic.war'
+    }
+    from("chem-services-smartcyp/build/libs") {
+        include '*.war'
+        rename '.*', 'chem-services-smartcyp.war'
+    }
+    into 'build/chem-services-basic'
 
 }
 
@@ -235,18 +239,18 @@ task chemServicesWars(type: Copy) {
 task dockerFileChemServices(type: Dockerfile) {
 
     dependsOn = [chemServicesWars]
-    
-    
+
+
     destFile = project.file('build/chem-services-basic/Dockerfile')
     from "informaticsmatters/rdkit_java_tomcat:Release_2016_03_1"
     maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
-    
+
     runCommand("rm -rf /usr/local/tomcat/webapps/*")
-    
+
     addFile('*.war', "/usr/local/tomcat/webapps/")
     addFile('license.cxl', 'license.cxl')
     environmentVariable("CHEMAXON_LICENSE_URL", "/usr/local/tomcat/license.cxl")
-    
+
     exposePort(8080)
 }
 

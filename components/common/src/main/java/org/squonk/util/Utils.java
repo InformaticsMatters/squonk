@@ -47,4 +47,44 @@ public class Utils {
         }
     }
 
+    public static boolean parseBoolean(Object value, boolean defaultValue) {
+        if (value == null) {
+            return defaultValue;
+        } else {
+            try {
+                return Boolean.parseBoolean(value.toString());
+            } catch (Exception e) {
+                LOG.warning("Failed to parse boolean: " + value);
+                return defaultValue;
+            }
+        }
+    }
+
+    public static Integer parseInt(Object value, Integer defaultValue) {
+        if (value == null) {
+            return defaultValue;
+        } else {
+            try {
+                return Integer.parseInt(value.toString());
+            } catch (Exception e) {
+                LOG.warning("Failed to parse int: " + value);
+                return defaultValue;
+            }
+        }
+    }
+
+    public static Float parseFloat(Object value, Float defaultValue) {
+        if (value == null) {
+            return defaultValue;
+        } else {
+            try {
+                return Float.parseFloat(value.toString());
+            } catch (Exception e) {
+                LOG.warning("Failed to parse float: " + value);
+                return defaultValue;
+            }
+        }
+    }
+
+
 }

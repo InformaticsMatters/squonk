@@ -18,7 +18,7 @@ public class QueryParams {
     public List<Pair> getPairs() { return pairs; }
 
     public void consume(BiConsumer<String,String> consumer) {
-        pairs.stream().peek((p) -> consumer.accept(p.getKey(), p.getValue()));
+        pairs.forEach((p) -> consumer.accept(p.getKey(), p.getValue()));
     }
 
     public class Pair {

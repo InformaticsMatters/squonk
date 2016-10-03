@@ -10,6 +10,8 @@ import org.squonk.dataset.Dataset
 import org.squonk.types.MoleculeObject
 import spock.lang.Specification
 
+import java.util.stream.Collectors
+
 /**
  * Created by timbo on 28/09/2016.
  */
@@ -20,8 +22,8 @@ class SMARTCypRunnerSpec extends Specification {
         SMARTCypRunner runner = new SMARTCypRunner()
 
         when:
-        def results = runner.execute(dataset)
-        def items = results.items
+        def results = runner.execute(dataset.stream)
+        def items = results.collect(Collectors.toList())
 //        items.eachWithIndex { v, i ->
 //            println "$i $v.source"
 //            println v.values
@@ -37,8 +39,8 @@ class SMARTCypRunnerSpec extends Specification {
         SMARTCypRunner runner = new SMARTCypRunner()
 
         when:
-        def results = runner.execute(dataset)
-        def items = results.items
+        def results = runner.execute(dataset.stream)
+        def items = results.collect(Collectors.toList())
 //        items.eachWithIndex { v, i ->
 //            println "$i $v.source"
 //            println v.values
@@ -58,8 +60,8 @@ class SMARTCypRunnerSpec extends Specification {
         SMARTCypRunner runner = new SMARTCypRunner()
 
         when:
-        def results = runner.execute(dataset)
-        def items = results.items
+        def results = runner.execute(dataset.stream)
+        def items = results.collect(Collectors.toList())
 //        items.eachWithIndex { v, i ->
 //            println "$i $v.source"
 //            println v.values
@@ -82,8 +84,8 @@ class SMARTCypRunnerSpec extends Specification {
         SMARTCypRunner runner = new SMARTCypRunner()
 
         when:
-        def results = runner.execute(dataset)
-        def items = results.items
+        def results = runner.execute(dataset.stream)
+        def items = results.collect(Collectors.toList())
         items.eachWithIndex { v, i ->
             println "$i $v.source"
             println v.values

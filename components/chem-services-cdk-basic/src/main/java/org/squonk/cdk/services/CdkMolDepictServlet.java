@@ -2,6 +2,7 @@ package org.squonk.cdk.services;
 
 import org.squonk.cdk.io.CDKMolDepict;
 import org.squonk.io.DepictionParameters;
+import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 import org.squonk.util.Utils;
 
@@ -65,7 +66,7 @@ public class CdkMolDepictServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        String paramMol = req.getParameter("mol");
+        String paramMol = req.getParameter(DepictionParameters.PROP_MOL);
         if (paramMol == null) {
             LOG.info("No molecule specified. Cannot render");
             return;
@@ -78,7 +79,7 @@ public class CdkMolDepictServlet extends HttpServlet {
             HttpServletResponse resp,
             String mol) throws IOException {
 
-        String paramFormat = req.getParameter("format");
+        String paramFormat = req.getParameter(DepictionParameters.PROP_IMG_FORMAT);
         if (paramFormat == null) {
             LOG.info("No format specified. Cannot render");
             return;
@@ -86,9 +87,9 @@ public class CdkMolDepictServlet extends HttpServlet {
 
         DepictionParameters params = DepictionParameters.fromHttpParams(req.getParameterMap());
 
-        if ("png".equalsIgnoreCase(paramFormat)) {
+        if (DepictionParameters.IMG_FORMAT_PNG.equalsIgnoreCase(paramFormat)) {
             generatePng(req, resp, mol, params);
-        } else if ("svg".equalsIgnoreCase(paramFormat)) {
+        } else if (DepictionParameters.IMG_FORMAT_SVG.equalsIgnoreCase(paramFormat)) {
             generateSvg(req, resp, mol, params);
         }
     }
@@ -102,7 +103,7 @@ public class CdkMolDepictServlet extends HttpServlet {
 
         byte[] bytes = null;
         try {
-            bytes = moldepict.stringToImage(mol, "PNG", params);
+            bytes = moldepict.stringToImage(mol, DepictionParameters.IMG_FORMAT_PNG.toUpperCase(), params);
 
         } catch (Exception e) {
             LOG.log(Level.WARNING, "Error in png depiction", e);
@@ -110,7 +111,7 @@ public class CdkMolDepictServlet extends HttpServlet {
         }
         if (bytes != null) {
 
-            resp.setHeader("Content-Type", "image/png");
+            resp.setHeader("Content-Type",  CommonMimeTypes.MIME_TYPE_PNG);
             resp.setHeader("Content-Length", "" + bytes.length);
 
             resp.getOutputStream().write(bytes);
@@ -134,7 +135,7 @@ public class CdkMolDepictServlet extends HttpServlet {
             return;
         }
         if (svg != null) {
-            resp.setHeader("Content-Type", "image/svg+xml");
+            resp.setHeader("Content-Type", CommonMimeTypes.MIME_TYPE_SVG);
             resp.setHeader("Content-Length", "" + svg.getBytes().length);
 
             resp.getWriter().print(svg);

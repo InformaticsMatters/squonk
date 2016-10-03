@@ -22,13 +22,18 @@ import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.types.AtomPropertySet;
 import org.squonk.types.MoleculeObject;
+import org.squonk.util.Metrics;
+import org.squonk.util.Utils;
 import smartcyp.MoleculeKU;
 import smartcyp.SMARTSnEnergiesTable;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -41,6 +46,20 @@ public class SMARTCypRunner {
     private static final Logger LOG = Logger.getLogger(SMARTCypRunner.class.getName());
     private static final String ORIG_ATOM_INDEX = "__OrigAtomIndex__";
 
+    public static final String PARAM_GEN = "GEN";
+    public static final String PARAM_2D6 = "2D6";
+    public static final String PARAM_2C9 = "2C9";
+    public static final String PARAM_SCORE = "score";
+    public static final String PARAM_MAX_RANK = "rank";
+    public static final String PARAM_NOXID_CORRECTION = "noxid";
+
+    private static final String FIELD_PREFIX = "SMARTCyp_";
+    public static final String FIELD_NAME_GEN = FIELD_PREFIX + PARAM_GEN;
+    public static final String FIELD_NAME_2D6 = FIELD_PREFIX + PARAM_2D6;
+    public static final String FIELD_NAME_2C9 = FIELD_PREFIX + PARAM_2C9;
+
+
+
     private final FormatFactory factory = new FormatFactory();
     private final DeduceBondSystemTool dbst = new DeduceBondSystemTool();
     private final CDKHydrogenAdder hydrogenAdder = CDKHydrogenAdder.getInstance(DefaultChemObjectBuilder.getInstance());
@@ -51,6 +70,7 @@ public class SMARTCypRunner {
     private final Float scoreFilter;
     private final boolean addEmpiricalNitrogenOxidationCorrections;
     private final Integer maxRank;
+    private AtomicInteger count = new AtomicInteger(0);
 
 
     public SMARTCypRunner(boolean performGeneral, boolean perform2D6, boolean perform2C9, Float scoreFilter, Integer maxRank, boolean addEmpiricalNitrogenOxidationCorrections) {
@@ -66,15 +86,51 @@ public class SMARTCypRunner {
         this(true, true, true, 100f, 3, true);
     }
 
+    /** Create from the parameters as a Map, typically from HTTP request parameters
+     *
+     * @param params
+     */
+    public SMARTCypRunner(Map<String,Object> params) {
+        this.performGeneral = Utils.parseBoolean(params.get(PARAM_GEN), false);
+        this.perform2D6 = Utils.parseBoolean(params.get(PARAM_2D6), false);
+        this.perform2C9 = Utils.parseBoolean(params.get(PARAM_2C9), false);
+        this.scoreFilter = Utils.parseFloat(params.get(PARAM_SCORE) ,null);
+        this.maxRank = Utils.parseInt(params.get(PARAM_MAX_RANK) ,3);
+        this.addEmpiricalNitrogenOxidationCorrections = Utils.parseBoolean(params.get(PARAM_NOXID_CORRECTION), true);
+    }
 
-    public Dataset<MoleculeObject> execute(Dataset<MoleculeObject> dataset) throws Exception {
+
+    public boolean isPerformGeneral() {
+        return performGeneral;
+    }
+
+    public boolean isPerform2D6() {
+        return perform2D6;
+    }
+
+    public boolean isPerform2C9() {
+        return perform2C9;
+    }
+
+    public Float getScoreFilter() {
+        return scoreFilter;
+    }
+
+    public Integer getMaxRank() {
+        return maxRank;
+    }
+
+    public boolean isAddEmpiricalNitrogenOxidationCorrections() {
+        return addEmpiricalNitrogenOxidationCorrections;
+    }
+
+    public Stream<MoleculeObject> execute(Stream<MoleculeObject> mols) throws Exception {
 
 
         LOG.fine("\n ************** Processing SMARTS and Energies **************");
 
-        Stream<MoleculeObject> stream = dataset.getStream();
 
-        stream = stream.peek((mo) -> {
+        Stream<MoleculeObject> stream = mols.peek((mo) -> {
             try {
                 MoleculeKU moleculeKU = readMoleculeKU(mo);
                 if (moleculeKU != null) {
@@ -127,8 +183,7 @@ public class SMARTCypRunner {
 
         });
 
-        DatasetMetadata<MoleculeObject> meta = new DatasetMetadata<>(MoleculeObject.class);
-        return new Dataset<>(MoleculeObject.class, stream, meta);
+        return stream;
     }
 
     private void writeData(MoleculeObject mo, MoleculeKU moleculeKU) {
@@ -183,18 +238,23 @@ public class SMARTCypRunner {
             }
         }
 
+        int num = 0;
         if (scoresGeneral.size() > 0) {
             sortByRank(scoresGeneral);
-            mo.putValue("SMARTCyp_GEN", new AtomPropertySet(scoresGeneral));
+            mo.putValue(FIELD_NAME_GEN, new AtomPropertySet(scoresGeneral));
+            num++;
         }
         if (scores2D6.size() > 0) {
             sortByRank(scores2D6);
-            mo.putValue("SMARTCyp_2D6", new AtomPropertySet(scores2D6));
+            mo.putValue(FIELD_NAME_2D6, new AtomPropertySet(scores2D6));
+            num++;
         }
         if (scores2C9.size() > 0) {
             sortByRank(scores2C9);
-            mo.putValue("SMARTCyp_2C9", new AtomPropertySet(scores2C9));
+            mo.putValue(FIELD_NAME_2C9, new AtomPropertySet(scores2C9));
+            num++;
         }
+        count.addAndGet(num);
 
     }
 
@@ -302,6 +362,10 @@ public class SMARTCypRunner {
         iAtomContainer = dbst.fixAromaticBondOrders((IMolecule) iAtomContainer);
 
         return iAtomContainer;
+    }
+
+    public Map<String,Integer> getExecutionStats() {
+        return Collections.singletonMap(Metrics.PROVIDER_UNI_COPENHAGEN + "." + Metrics.METRICS_SMARTCyp, count.get());
     }
 
 }

@@ -17,4 +17,7 @@ public interface CommonMimeTypes {
     public static final String MIME_TYPE_DAYLIGHT_SMARTS = "chemical/x-daylight-smarts"; // this is not a recognised mime type
     public static final String MIME_TYPE_TRIPOS_MOL2 = "chemical/x-mol2";
     public static final String MIME_TYPE_PDB = "chemical/x-pdb";
+    public static final String MIME_TYPE_SVG = "image/svg+xml";
+    public static final String MIME_TYPE_PNG = "image/png";
+
 }

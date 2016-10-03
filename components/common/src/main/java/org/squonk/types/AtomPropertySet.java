@@ -26,7 +26,7 @@ public class AtomPropertySet implements Serializable {
 
     @Override
     public String toString() {
-        return scores.stream().map((s) -> s.toString()).collect(Collectors.joining(", "));
+        return scores.stream().map((s) -> s.toString()).collect(Collectors.joining("\n"));
     }
 
     public static Score createScore(int atomIndex, String atomSymbol, Float score, Integer rank) {
