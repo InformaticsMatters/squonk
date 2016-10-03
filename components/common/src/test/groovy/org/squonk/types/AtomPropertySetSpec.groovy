@@ -1,6 +1,8 @@
 package org.squonk.types
 
+import org.squonk.io.DepictionParameters
 import org.squonk.types.io.JsonHandler
+import org.squonk.util.Colors
 import spock.lang.Specification
 
 /**
@@ -27,6 +29,24 @@ class AtomPropertySetSpec extends Specification {
         aps2.getScores()[0].atomSymbol == 'C'
         aps2.getScores()[0].score == 1.1f
         aps2.getScores()[0].rank == 1
+
+    }
+
+    void "generate highlights"() {
+
+        List<AtomPropertySet.Score> scores = []
+        scores.add(AtomPropertySet.createScore(2, 'C', 49.85, 1))
+        scores.add(AtomPropertySet.createScore(0, 'C', 53.65, 2))
+        scores.add(AtomPropertySet.createScore(9, 'C', 67.01, 3))
+        AtomPropertySet aps = new AtomPropertySet(scores)
+
+        DepictionParameters p = new DepictionParameters()
+
+        when:
+        aps.highlight(p, Colors.BROWN, Colors.STEELBLUE, 40, 100, DepictionParameters.HighlightMode.region, false)
+
+        then:
+        p.getHighlights().size() == 3
 
     }
 
