@@ -43,25 +43,5 @@ public class Colors {
         }
     }
 
-    public static void generateHighlights(
-            AtomPropertySet atomPropertySet, DepictionParameters dp,
-            Color startColor, Color endColor,
-            float startValue, float endValue,
-            DepictionParameters.HighlightMode mode, boolean highlightBonds) {
-
-        for (AtomPropertySet.Score score : atomPropertySet.getScores()) {
-            int atomIndex = score.getAtomIndex();
-            Float value = score.getScore();
-            if (value != null) {
-                float f = (value - startValue) / (endValue - startValue);
-                Color color = Colors.interpolateRGBLinear(startColor, endColor, f);
-                LOG.info("Highlighting atom " + atomIndex + " as " + Colors.rgbaColorToHex(color) );
-                dp.addAtomHighlight(new int[] {atomIndex}, color, mode, highlightBonds);
-            }
-        }
-    }
-
-
-
 
 }
