@@ -24,6 +24,7 @@ class SMARTCypRunnerSpec extends Specification {
         when:
         def results = runner.execute(dataset.stream)
         def items = results.collect(Collectors.toList())
+        def range = runner.getGeneralRange()
 //        items.eachWithIndex { v, i ->
 //            println "$i $v.source"
 //            println v.values
@@ -31,6 +32,9 @@ class SMARTCypRunnerSpec extends Specification {
 
         then:
         items.size() == 10
+        range.getMinValue() < 100
+        range.getMaxValue() > 0
+
     }
 
 

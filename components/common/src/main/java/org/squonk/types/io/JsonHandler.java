@@ -10,6 +10,7 @@ import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
 import org.squonk.util.IOUtils;
 
+import java.awt.*;
 import java.io.*;
 import java.util.Iterator;
 import java.util.Map;
@@ -19,7 +20,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -48,6 +48,8 @@ public class JsonHandler {
         module.addSerializer(MoleculeObject.class, new MoleculeObjectJsonSerializer());
         module.addDeserializer(BasicObject.class, new BasicObjectJsonDeserializer());
         module.addSerializer(BasicObject.class, new BasicObjectJsonSerializer());
+        module.addDeserializer(Color.class, new ColorJsonDeserializer());
+        module.addSerializer(Color.class, new ColorJsonSerializer());
         mapper.registerModule(module);
     }
 

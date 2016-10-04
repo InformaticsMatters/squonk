@@ -18,10 +18,9 @@ import org.openscience.cdk.smiles.DeduceBondSystemTool;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.CDKHydrogenAdder;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
-import org.squonk.dataset.Dataset;
-import org.squonk.dataset.DatasetMetadata;
 import org.squonk.types.AtomPropertySet;
 import org.squonk.types.MoleculeObject;
+import org.squonk.types.NumberRange;
 import org.squonk.util.Metrics;
 import org.squonk.util.Utils;
 import smartcyp.MoleculeKU;
@@ -71,6 +70,12 @@ public class SMARTCypRunner {
     private final boolean addEmpiricalNitrogenOxidationCorrections;
     private final Integer maxRank;
     private AtomicInteger count = new AtomicInteger(0);
+    private float minGeneral = Float.MAX_VALUE;
+    private float min2D6 = Float.MAX_VALUE;
+    private float min2C9 = Float.MAX_VALUE;
+    private float maxGeneral = Float.MIN_VALUE;
+    private float max2D6 = Float.MIN_VALUE;
+    private float max2C9 = Float.MIN_VALUE;
 
 
     public SMARTCypRunner(boolean performGeneral, boolean perform2D6, boolean perform2C9, Float scoreFilter, Integer maxRank, boolean addEmpiricalNitrogenOxidationCorrections) {
@@ -91,12 +96,12 @@ public class SMARTCypRunner {
      * @param params
      */
     public SMARTCypRunner(Map<String,Object> params) {
-        this.performGeneral = Utils.parseBoolean(params.get(PARAM_GEN), false);
-        this.perform2D6 = Utils.parseBoolean(params.get(PARAM_2D6), false);
-        this.perform2C9 = Utils.parseBoolean(params.get(PARAM_2C9), false);
-        this.scoreFilter = Utils.parseFloat(params.get(PARAM_SCORE) ,null);
-        this.maxRank = Utils.parseInt(params.get(PARAM_MAX_RANK) ,3);
-        this.addEmpiricalNitrogenOxidationCorrections = Utils.parseBoolean(params.get(PARAM_NOXID_CORRECTION), true);
+        performGeneral = Utils.parseBoolean(params.get(PARAM_GEN), false);
+        perform2D6 = Utils.parseBoolean(params.get(PARAM_2D6), false);
+        perform2C9 = Utils.parseBoolean(params.get(PARAM_2C9), false);
+        scoreFilter = Utils.parseFloat(params.get(PARAM_SCORE) ,null);
+        maxRank = Utils.parseInt(params.get(PARAM_MAX_RANK) ,3);
+        addEmpiricalNitrogenOxidationCorrections = Utils.parseBoolean(params.get(PARAM_NOXID_CORRECTION), true);
     }
 
 
@@ -122,6 +127,20 @@ public class SMARTCypRunner {
 
     public boolean isAddEmpiricalNitrogenOxidationCorrections() {
         return addEmpiricalNitrogenOxidationCorrections;
+    }
+
+    public NumberRange<Float> getGeneralRange() {
+        return createRange(minGeneral, maxGeneral);
+    }
+    public NumberRange<Float> get2D6Range() {
+        return createRange(min2D6, max2D6);
+    }
+    public NumberRange<Float> get2C9Range() {
+        return createRange(min2C9, max2C9);
+    }
+
+    private NumberRange<Float> createRange(float min, float max) {
+        return new NumberRange.Float(min == Float.MAX_VALUE ? null : min, max == Float.MIN_VALUE ? null : max);
     }
 
     public Stream<MoleculeObject> execute(Stream<MoleculeObject> mols) throws Exception {
@@ -195,18 +214,27 @@ public class SMARTCypRunner {
             IAtom currentAtom = moleculeKU.getAtom(atomIndex);
             String currentAtomType = currentAtom.getSymbol();
             if (currentAtomType.equals("C") || currentAtomType.equals("N") || currentAtomType.equals("P") || currentAtomType.equals("S")) {
-                Number score = MoleculeKU.SMARTCYP_PROPERTY.Score.get(currentAtom);
-                int rank = MoleculeKU.SMARTCYP_PROPERTY.Ranking.get(currentAtom).intValue();
-                if (filter(score, rank)) {
-                    Integer origAtomIndex = (Integer)currentAtom.getProperty(ORIG_ATOM_INDEX);
-                    scoresGeneral.add(AtomPropertySet.createScore(origAtomIndex, currentAtomType, score.floatValue(), rank));
+                if (performGeneral) {
+                    Number score = MoleculeKU.SMARTCYP_PROPERTY.Score.get(currentAtom);
+                    int rank = MoleculeKU.SMARTCYP_PROPERTY.Ranking.get(currentAtom).intValue();
+                    if (filter(score, rank)) {
+                        Integer origAtomIndex = (Integer) currentAtom.getProperty(ORIG_ATOM_INDEX);
+                        float f = score.floatValue();
+                        scoresGeneral.add(AtomPropertySet.createScore(origAtomIndex, currentAtomType, f, rank));
+                        if (f < minGeneral) minGeneral = f;
+                        if (f > maxGeneral) maxGeneral = f;
+                    }
                 }
-
-                score = MoleculeKU.SMARTCYP_PROPERTY.Score2D6.get(currentAtom);
-                rank = MoleculeKU.SMARTCYP_PROPERTY.Ranking2D6.get(currentAtom).intValue();
-                if (filter(score, rank)) {
-                    Integer origAtomIndex = (Integer)currentAtom.getProperty(ORIG_ATOM_INDEX);
-                    scores2D6.add(AtomPropertySet.createScore(origAtomIndex, currentAtomType, score.floatValue(), rank));
+                if (perform2D6) {
+                    Number score = MoleculeKU.SMARTCYP_PROPERTY.Score2D6.get(currentAtom);
+                    int rank = MoleculeKU.SMARTCYP_PROPERTY.Ranking2D6.get(currentAtom).intValue();
+                    if (filter(score, rank)) {
+                        Integer origAtomIndex = (Integer) currentAtom.getProperty(ORIG_ATOM_INDEX);
+                        float f = score.floatValue();
+                        scores2D6.add(AtomPropertySet.createScore(origAtomIndex, currentAtomType, f, rank));
+                        if (f < min2D6) min2D6 = f;
+                        if (f > max2D6) max2D6 = f;
+                    }
                 }
 
 //                this.outfile.print("," + this.twoDecimalFormat.format(MoleculeKU.SMARTCYP_PROPERTY.Span2End.get(currentAtom)));
@@ -216,11 +244,16 @@ public class SMARTCypRunner {
 //                    this.outfile.print(",0");
 //                }
 
-                score = MoleculeKU.SMARTCYP_PROPERTY.Score2C9.get(currentAtom);
-                rank = MoleculeKU.SMARTCYP_PROPERTY.Ranking2C9.get(currentAtom).intValue();
-                if (filter(score, rank)) {
-                    Integer origAtomIndex = (Integer)currentAtom.getProperty(ORIG_ATOM_INDEX);
-                    scores2C9.add(AtomPropertySet.createScore(origAtomIndex, currentAtomType, score.floatValue(), rank));
+                if (perform2C9) {
+                    Number score = MoleculeKU.SMARTCYP_PROPERTY.Score2C9.get(currentAtom);
+                    int rank = MoleculeKU.SMARTCYP_PROPERTY.Ranking2C9.get(currentAtom).intValue();
+                    if (filter(score, rank)) {
+                        Integer origAtomIndex = (Integer) currentAtom.getProperty(ORIG_ATOM_INDEX);
+                        float f = score.floatValue();
+                        scores2C9.add(AtomPropertySet.createScore(origAtomIndex, currentAtomType, f, rank));
+                        if (f < min2C9) min2C9 = f;
+                        if (f > max2C9) max2C9 = f;
+                    }
                 }
 
 //                if (MoleculeKU.SMARTCYP_PROPERTY.Dist2CarboxylicAcid.get(currentAtom) != null) {

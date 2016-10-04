@@ -3,8 +3,11 @@ package org.squonk.types.io
 import org.squonk.dataset.*
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
+import org.squonk.util.Colors
 import spock.lang.Specification
 
+import java.awt.Color
+import java.util.stream.Collectors
 import java.util.stream.Stream
 
 /**
@@ -86,10 +89,36 @@ class JsonHandlerSpec extends Specification {
 
         then:
         results.items.size() == count
-
-
     }
 
+    void "to/from color"() {
+
+        when:
+        String json = JsonHandler.getInstance().objectToJson(Colors.BROWN)
+        println json
+        Color c = JsonHandler.getInstance().objectFromJson(json, Color.class)
+
+        then:
+        c != null
+        c.getRGB() == Colors.BROWN.getRGB()
+        c.getAlpha() == Colors.BROWN.getAlpha()
+    }
+
+    void "to/from colors"() {
+
+        when:
+        String json = JsonHandler.getInstance().objectToJson([Colors.BROWN, Colors.STEELBLUE])
+        println json
+        def colors = JsonHandler.getInstance().streamFromJson(json, Color.class).collect(Collectors.toList())
+
+        then:
+        colors != null
+        colors.size() == 2
+        colors[0].getRGB() == Colors.BROWN.getRGB()
+        colors[0].getAlpha() == Colors.BROWN.getAlpha()
+        colors[1].getRGB() == Colors.STEELBLUE.getRGB()
+        colors[1].getAlpha() == Colors.STEELBLUE.getAlpha()
+    }
 
 }
 

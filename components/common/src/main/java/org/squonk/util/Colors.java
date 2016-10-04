@@ -24,6 +24,17 @@ public class Colors {
                 color.getBlue());
     }
 
+    public static String rgbColorToHex(Color color) {
+        return String.format("#%02x%02x%02x",
+                color.getRed(),
+                color.getGreen(),
+                color.getBlue());
+    }
+
+    public static Color rgbaHexToColor(String hex) {
+        return new Color(Long.decode(hex).intValue(), true);
+    }
+
     public static Color interpolateRGBLinear(Color start, Color end, float value) {
         int r = interpolateRGBLinear(start.getRed(), end.getRed(), value);
         int g = interpolateRGBLinear(start.getGreen(), end.getGreen(), value);

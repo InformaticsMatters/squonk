@@ -37,6 +37,8 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable {
     public static final String PROP_SOURCE = "source";
     public static final String PROP_CREATED = "created";
     public static final String PROP_HISTORY = "history";
+    public static final String PROP_RANGE = "range";
+    public static final String PROP_SCALE = "scale";
 
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss z");
 

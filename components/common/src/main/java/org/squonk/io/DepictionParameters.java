@@ -218,7 +218,7 @@ public class DepictionParameters implements Serializable {
         Color col = null;
         if (paramBg != null) {
             try {
-                col = new Color(Long.decode(paramBg).intValue(), true);
+                col = Colors.rgbaHexToColor(paramBg);
             } catch (NumberFormatException ex) {
                 LOG.log(Level.INFO, "Can't interpret color parameters: " + paramBg, ex);
             }
@@ -236,7 +236,7 @@ public class DepictionParameters implements Serializable {
 
         // colorScheme
         ColorScheme colorScheme = ColorScheme.cpk;
-        if (paramColorScheme == null) {
+        if (paramColorScheme != null) {
             try {
                 colorScheme = ColorScheme.valueOf(paramColorScheme);
             } catch (Exception e) {

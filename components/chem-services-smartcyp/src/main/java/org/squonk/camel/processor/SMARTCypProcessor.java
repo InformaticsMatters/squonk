@@ -5,10 +5,10 @@ import org.apache.camel.Processor;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
-import org.squonk.property.MoleculeCalculator;
 import org.squonk.smartcyp.SMARTCypRunner;
 import org.squonk.types.AtomPropertySet;
 import org.squonk.types.MoleculeObject;
+import org.squonk.types.Scales;
 import org.squonk.util.StatsRecorder;
 
 import java.util.logging.Logger;
@@ -48,12 +48,18 @@ public class SMARTCypProcessor implements Processor {
         String source = "SMARTCyp 2.4.2";
         if (runner.isPerformGeneral()) {
             meta.createField(SMARTCypRunner.FIELD_NAME_GEN, source, "General P450 metabolism prediction", AtomPropertySet.class);
+            //meta.appendFieldProperty(SMARTCypRunner.FIELD_NAME_GEN, DatasetMetadata.PROP_RANGE, runner.getGeneralRange());
+            meta.appendFieldProperty(SMARTCypRunner.FIELD_NAME_GEN, DatasetMetadata.PROP_SCALE, Scales.SMARTCyp);
         }
         if (runner.isPerform2D6()) {
             meta.createField(SMARTCypRunner.FIELD_NAME_2D6, source, "Cytochrome 2D6 metabolism prediction", AtomPropertySet.class);
+            //meta.appendFieldProperty(SMARTCypRunner.FIELD_NAME_2D6, DatasetMetadata.PROP_RANGE, runner.get2D6Range());
+            meta.appendFieldProperty(SMARTCypRunner.FIELD_NAME_2D6, DatasetMetadata.PROP_SCALE, Scales.SMARTCyp);
         }
         if (runner.isPerform2C9()) {
             meta.createField(SMARTCypRunner.FIELD_NAME_2C9, source, "Cytochrome 2C9 metabolism prediction", AtomPropertySet.class);
+            //meta.appendFieldProperty(SMARTCypRunner.FIELD_NAME_2C9, DatasetMetadata.PROP_RANGE, runner.get2C9Range());
+            meta.appendFieldProperty(SMARTCypRunner.FIELD_NAME_2C9, DatasetMetadata.PROP_SCALE, Scales.SMARTCyp);
         }
 
         return meta;

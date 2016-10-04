@@ -49,7 +49,7 @@ public class AtomPropertySet implements Serializable, MoleculeObjectHighlightabl
             if (value != null) {
                 float f = (value - startValue) / (endValue - startValue);
                 Color color = Colors.interpolateRGBLinear(startColor, endColor, f);
-                LOG.info("Highlighting atom " + atomIndex + " as " + Colors.rgbaColorToHex(color));
+                LOG.finer("Highlighting atom " + atomIndex + " as " + Colors.rgbaColorToHex(color));
                 dp.addAtomHighlight(new int[]{atomIndex}, color, mode, highlightBonds);
             }
         }
