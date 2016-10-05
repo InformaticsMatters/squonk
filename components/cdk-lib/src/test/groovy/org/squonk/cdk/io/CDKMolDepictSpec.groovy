@@ -1,5 +1,9 @@
 package org.squonk.cdk.io
 
+import org.openscience.cdk.depict.DepictionGenerator
+import org.openscience.cdk.renderer.color.CDK2DAtomColors
+import org.openscience.cdk.renderer.color.CPKAtomColors
+import org.openscience.cdk.renderer.color.UniColor
 import org.squonk.data.Molecules
 import org.squonk.io.DepictionParameters
 import org.squonk.io.DepictionParameters.HighlightMode
@@ -12,6 +16,21 @@ import java.awt.Color
  * Created by timbo on 17/01/2016.
  */
 class CDKMolDepictSpec extends Specification {
+
+//    void "dg test"() {
+//
+//        DepictionGenerator dg = new DepictionGenerator()
+//        dg = dg.withAtomColors(new CPKAtomColors())
+//        CDKMolDepict md = new CDKMolDepict()
+//        def mol = md.smilesToMolecule(Molecules.caffeine.smiles)
+//
+//        when:
+//        def depiction = dg.depict(mol)
+//        println depiction.toSvgStr()
+//
+//        then:
+//        1 == 1
+//    }
 
 
     void f() {
@@ -32,12 +51,12 @@ class CDKMolDepictSpec extends Specification {
     void "smiles to svg"() {
 
         //DepictionParameters params = new DepictionParameters(new Dimension(40, 30), true, Color.YELLOW)
-        DepictionParameters params = new DepictionParameters(40, 30, true, new Color(255, 255, 255, 0))
+        DepictionParameters params = new DepictionParameters(40, 30, true, new Color(255, 255, 255, 0), ColorScheme.toolkit_default)
         CDKMolDepict d = new CDKMolDepict(params)
 
         when:
         String svg1 = d.smilesToSVG(Molecules.ethanol.smiles)
-        //println svg1
+        println svg1
 
         then:
         svg1 != null

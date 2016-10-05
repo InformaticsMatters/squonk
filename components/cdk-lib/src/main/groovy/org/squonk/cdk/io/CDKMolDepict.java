@@ -83,7 +83,7 @@ public class CDKMolDepict extends AbstractMolDepict<IAtomContainer> {
         if (colorScheme == null) {
             colorScheme = ColorScheme.toolkit_default;
         }
-        dg.withAtomColors(colorers.get(colorScheme));
+        dg = dg.withAtomColors(colorers.get(colorScheme));
 
         if (params.isExpandToFit()) {
             dg = dg.withFillToFit();

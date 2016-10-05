@@ -64,7 +64,7 @@ public class DepictionParameters implements Serializable {
      *
      */
     public DepictionParameters() {
-        this(200, 150, true, DEFAULT_BACKGROUND, ColorScheme.cpk);
+        this(200, 150, true, DEFAULT_BACKGROUND);
     }
 
     public DepictionParameters(Integer width, Integer height, Boolean expandToFit, Color backgroundColor, ColorScheme colorScheme) {
@@ -76,7 +76,7 @@ public class DepictionParameters implements Serializable {
     }
 
     public DepictionParameters(Integer width, Integer height, Boolean expandToFit, Color backgroundColor) {
-        this(width, height, expandToFit, backgroundColor, ColorScheme.cpk);
+        this(width, height, expandToFit, backgroundColor, ColorScheme.toolkit_default);
     }
 
     public DepictionParameters(Integer width, Integer height) {
@@ -235,7 +235,7 @@ public class DepictionParameters implements Serializable {
         }
 
         // colorScheme
-        ColorScheme colorScheme = ColorScheme.cpk;
+        ColorScheme colorScheme = ColorScheme.toolkit_default;
         if (paramColorScheme != null) {
             try {
                 colorScheme = ColorScheme.valueOf(paramColorScheme);
