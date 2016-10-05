@@ -201,7 +201,8 @@ task chemServicesWars(type: Copy) {
             tasks.getByPath(':chem-services-chemaxon-basic:war'),
             tasks.getByPath(':chem-services-rdkit-basic:war'),
             tasks.getByPath(':chem-services-rdkit-search:war'),
-            tasks.getByPath(':chem-services-openchemlib-basic:war')
+            tasks.getByPath(':chem-services-openchemlib-basic:war'),
+            tasks.getByPath(':chem-services-smartcyp:war')
     ]
 
     from "../data/licenses/license.cxl"
