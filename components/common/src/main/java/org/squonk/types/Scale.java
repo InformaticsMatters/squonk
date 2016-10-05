@@ -4,20 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.squonk.io.DepictionParameters;
 import org.squonk.util.Colors;
 
-import java.awt.*;
+import java.awt.Color;
 import java.io.Serializable;
 
 /**
  * Created by timbo on 03/10/16.
  */
-public class Scale implements Serializable, HTMLRenderable {
-
-    private static final String HTML = "<div>\n" +
-            "<div style=\"float:left;padding:3px;\">%s:</div>\n" +
-            "<div style=\"float:left;text-align: center;width:50px;background:%s;border-style:solid;border-width:1px;padding:2px;\">%s</div>\n" +
-            "<div style=\"float:left;padding:3px;\">-</div>\n" +
-            "<div style=\"float:left;text-align: center;width:50px;background:%s;border-style:solid;border-width:1px;padding:2px;\">%s</div>\n" +
-            "</div>";
+public class Scale implements Serializable {
 
     private final String name;
     private final Color fromColor, toColor;
@@ -76,8 +69,4 @@ public class Scale implements Serializable, HTMLRenderable {
                 + ", " + toValue + " -> " + Colors.rgbaColorToHex(toColor);
     }
 
-    @Override
-    public String renderAsHTML() {
-        return String.format(HTML, name, Colors.rgbColorToHex(fromColor), fromValue, Colors.rgbColorToHex(toColor), toValue);
-    }
 }
