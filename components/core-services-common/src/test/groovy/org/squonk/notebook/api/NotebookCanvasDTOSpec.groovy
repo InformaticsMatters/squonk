@@ -97,7 +97,10 @@ class NotebookCanvasDTOSpec extends Specification {
         when:
         NotebookCanvasDTO canvas1 = new NotebookCanvasDTO(123)
                 .withCell(new NotebookCanvasDTO.CellDTO(99, 3, 'key', 'name', 10,20,30,40)
-                .withBinding(new NotebookCanvasDTO.BindingDTO('variablekey', 77, 'producervariablename')))
+                .withBinding(new NotebookCanvasDTO.BindingDTO('variablekey', 77, 'producervariablename'))
+                .withOptionBinding(new NotebookCanvasDTO.OptionBindingDTO("optionKey", 77, "producerKey"))
+        )
+
         String json = JsonHandler.getInstance().objectToJson(canvas1)
         println json
         NotebookCanvasDTO canvas2 = JsonHandler.getInstance().objectFromJson(json, NotebookCanvasDTO)

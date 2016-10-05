@@ -28,14 +28,4 @@ class ScaleSpec extends Specification {
     }
 
 
-    void "to html"() {
-        when:
-        Scale scale1 = new Scale("foo", Color.RED, Color.GREEN, 0f, 100f, DepictionParameters.HighlightMode.direct, false)
-        def html = scale1.renderAsHTML()
-        println html
-
-        then:
-        html != null
-
-    }
 }
