@@ -50,4 +50,104 @@ class AtomPropertySetSpec extends Specification {
 
     }
 
+    void "compare descending first"() {
+
+        AtomPropertySet aps1 = new AtomPropertySet([
+                AtomPropertySet.createScore(2, 'C', 49.85, 1),
+                AtomPropertySet.createScore(0, 'C', 53.65, 2),
+                AtomPropertySet.createScore(9, 'C', 67.01, 3)
+        ])
+        AtomPropertySet aps2 = new AtomPropertySet([
+                AtomPropertySet.createScore(2, 'C', 39.85, 1),
+                AtomPropertySet.createScore(3, 'C', 53.65, 2),
+                AtomPropertySet.createScore(4, 'C', 67.01, 3)
+        ])
+
+        when:
+        int c = aps1.compareTo(aps2)
+
+        then:
+        c == 1
+    }
+
+    void "compare ascending first"() {
+
+        AtomPropertySet aps1 = new AtomPropertySet([
+                AtomPropertySet.createScore(2, 'C', 49.85, 1),
+                AtomPropertySet.createScore(0, 'C', 53.65, 2),
+                AtomPropertySet.createScore(9, 'C', 67.01, 3)
+        ])
+        AtomPropertySet aps2 = new AtomPropertySet([
+                AtomPropertySet.createScore(2, 'C', 59.85, 1),
+                AtomPropertySet.createScore(3, 'C', 53.65, 2),
+                AtomPropertySet.createScore(4, 'C', 67.01, 3)
+        ])
+
+        when:
+        int c = aps1.compareTo(aps2)
+
+        then:
+        c == -1
+    }
+
+    void "compare descending second"() {
+
+        AtomPropertySet aps1 = new AtomPropertySet([
+                AtomPropertySet.createScore(2, 'C', 49.85, 1),
+                AtomPropertySet.createScore(0, 'C', 43.65, 2),
+                AtomPropertySet.createScore(9, 'C', 67.01, 3)
+        ])
+        AtomPropertySet aps2 = new AtomPropertySet([
+                AtomPropertySet.createScore(2, 'C', 49.85, 1),
+                AtomPropertySet.createScore(3, 'C', 33.65, 2),
+                AtomPropertySet.createScore(4, 'C', 67.01, 3)
+        ])
+
+        when:
+        int c = aps1.compareTo(aps2)
+
+        then:
+        c == 1
+    }
+
+    void "compare ascending second"() {
+
+        AtomPropertySet aps1 = new AtomPropertySet([
+                AtomPropertySet.createScore(2, 'C', 49.85, 1),
+                AtomPropertySet.createScore(0, 'C', 13.65, 2),
+                AtomPropertySet.createScore(9, 'C', 67.01, 3)
+        ])
+        AtomPropertySet aps2 = new AtomPropertySet([
+                AtomPropertySet.createScore(2, 'C', 49.85, 1),
+                AtomPropertySet.createScore(3, 'C', 33.65, 2),
+                AtomPropertySet.createScore(4, 'C', 67.01, 3)
+        ])
+
+        when:
+        int c = aps1.compareTo(aps2)
+
+        then:
+        c == -1
+    }
+
+    void "compare unbalanced"() {
+
+        AtomPropertySet aps1 = new AtomPropertySet([
+                AtomPropertySet.createScore(2, 'C', 49.85, 1),
+                AtomPropertySet.createScore(0, 'C', 13.65, 2),
+                AtomPropertySet.createScore(9, 'C', 67.01, 3)
+        ])
+        AtomPropertySet aps2 = new AtomPropertySet([
+                AtomPropertySet.createScore(2, 'C', 49.85, 1),
+                AtomPropertySet.createScore(3, 'C', 13.65, 2),
+        ])
+
+        when:
+        int c = aps1.compareTo(aps2)
+
+        then:
+        c == 1
+    }
+
+
 }

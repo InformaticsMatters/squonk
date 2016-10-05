@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * Created by timbo on 29/09/2016.
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class AtomPropertySet implements Serializable, MoleculeObjectHighlightable {
+public class AtomPropertySet implements Serializable, Comparable<AtomPropertySet>, MoleculeObjectHighlightable {
 
     private static final Logger LOG = Logger.getLogger(AtomPropertySet.class.getName());
 
@@ -53,6 +53,23 @@ public class AtomPropertySet implements Serializable, MoleculeObjectHighlightabl
                 dp.addAtomHighlight(new int[]{atomIndex}, color, mode, highlightBonds);
             }
         }
+    }
+
+    @Override
+    public int compareTo(AtomPropertySet o) {
+        List<Float> mine = scores.stream().map((s) -> s.getScore()).sorted().collect(Collectors.toList());
+        List<Float> others = o.getScores().stream().map((s) -> s.getScore()).sorted().collect(Collectors.toList());
+        for (int i=0; i < mine.size(); i++) {
+            if (others.size() > i) {
+                int c = mine.get(i).compareTo(others.get(i));
+                if (c != 0) {
+                    return c;
+                }
+            } else {
+                return 1;
+            }
+        }
+        return 0;
     }
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
