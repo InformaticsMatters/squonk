@@ -117,6 +117,7 @@ public class NotebookCanvasDTO {
         private final Map<String,Object> settings = new LinkedHashMap<>();
 
         private final  List<BindingDTO> bindings = new ArrayList<>();
+        private final  List<OptionBindingDTO> optionBindings = new ArrayList<>();
         // does the state need to be stored e.g. execution failed?
 
         public CellDTO(
@@ -159,6 +160,10 @@ public class NotebookCanvasDTO {
             return Collections.unmodifiableList(bindings);
         }
 
+        public List<OptionBindingDTO> getOptionBindings() {
+            return Collections.unmodifiableList(optionBindings);
+        }
+
         public CellDTO withOption(String key, Object value) {
             options.put(key, value);
             return this;
@@ -175,6 +180,15 @@ public class NotebookCanvasDTO {
 
         public void addBinding(BindingDTO binding) {
             bindings.add(binding);
+        }
+
+        public CellDTO withOptionBinding(OptionBindingDTO binding) {
+            optionBindings.add(binding);
+            return this;
+        }
+
+        public void addOptionBinding(OptionBindingDTO binding) {
+            optionBindings.add(binding);
         }
 
         public Long getId() {
@@ -247,17 +261,34 @@ public class NotebookCanvasDTO {
         }
     }
 
-//    /** Definition of a variable that is output by a cell.
-//     * Unclear if this is strictly necessary, but it would be needed if we want strict control over writing variables.
-//     * If we had this we could have a variable_definition table that listed each defined variable so that only variable
-//     * values whose names were in this table could be written.
-//     * Might also be useful for variables that are dynamic in nature (presence depends on the state of the cell).
-//     *
-//     */
-//    public class VariableDTO {
-//        String variableKey; // e.g. "output"
-//        Class primaryType;  // e.g. Dataset.class
-//        Class genericType;  // e.g. MoleculeObject.class or null for simple types
-//    }
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public static class OptionBindingDTO {
+
+        private final String optionKey;
+        private final Long producerId;
+        private final String producerKey;
+
+        public OptionBindingDTO(
+                @JsonProperty("optionKey") String optionKey,
+                @JsonProperty("producerId") Long producerId,
+                @JsonProperty("producerKey") String producerKey) {
+            this.optionKey = optionKey;
+            this.producerId = producerId;
+            this.producerKey = producerKey;
+        }
+
+        public String getOptionKey() {
+            return optionKey;
+        }
+
+        public Long getProducerId() {
+            return producerId;
+        }
+
+        public String getProducerKey() {
+            return producerKey;
+        }
+    }
 
 }

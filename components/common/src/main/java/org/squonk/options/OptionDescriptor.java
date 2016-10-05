@@ -168,7 +168,7 @@ public class OptionDescriptor<T> implements Serializable {
      *
      * @return
      */
-    public String getkey() {
+    public String getKey() {
         return key;
     }
 
