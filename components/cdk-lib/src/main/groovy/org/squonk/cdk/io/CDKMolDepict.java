@@ -65,25 +65,19 @@ public class CDKMolDepict extends AbstractMolDepict<IAtomContainer> {
 
 
     DepictionGenerator createDepictionGenerator(DepictionParameters params) {
-        DepictionGenerator dg = new DepictionGenerator()
-                .withTerminalCarbons()
-                //.withParam(BasicAtomGenerator.ShowExplicitHydrogens.class, true)
-                .withBackgroundColor(params.getBackgroundColor() != null ? params.getBackgroundColor() : DEFAULT_BACKGROUND);
 
         Integer w = params.getWidth();
         Integer h = params.getHeight();
-        dg = dg.withSize(w == null ? DEFAULT_WIDTH: w, h == null ? DEFAULT_HEIGHT : h);
-
         double m = params.getMargin();
-        if (m > 0) {
-            dg = dg.withMargin(m);
-        }
-
         ColorScheme colorScheme = params.getColorScheme();
-        if (colorScheme == null) {
-            colorScheme = ColorScheme.toolkit_default;
-        }
-        dg = dg.withAtomColors(colorers.get(colorScheme));
+
+        DepictionGenerator dg = new DepictionGenerator()
+                .withTerminalCarbons()
+                //.withParam(BasicAtomGenerator.ShowExplicitHydrogens.class, true)
+                .withBackgroundColor(params.getBackgroundColor() != null ? params.getBackgroundColor() : DEFAULT_BACKGROUND)
+                .withSize(w == null ? DEFAULT_WIDTH: w, h == null ? DEFAULT_HEIGHT : h)
+                .withAtomColors(colorers.get(colorScheme == null ? ColorScheme.toolkit_default : colorScheme))
+                .withMargin(m > 0 ? m : 0);
 
         if (params.isExpandToFit()) {
             dg = dg.withFillToFit();
