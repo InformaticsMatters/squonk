@@ -155,6 +155,11 @@ public interface StepDefinitionConstants {
          String OPTION_COUNT = "count";
     }
 
+    interface SmilesStructures {
+        String CLASSNAME = "org.squonk.execution.steps.impl.SmilesStructuresStep";
+        String OPTION_SMILES = "smiles";
+    }
+
     interface CxnReactor {
         String CLASSNAME = "org.squonk.execution.steps.impl.CxnReactorStep";
         String VARIABLE_R1 = "R1";
