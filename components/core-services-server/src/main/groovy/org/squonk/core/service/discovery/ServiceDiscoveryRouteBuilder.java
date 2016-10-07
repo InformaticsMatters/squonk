@@ -61,8 +61,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 
         if (rdkitPythonServicesUrl != null) {
             LOG.info("Enabling RDKit python services from " + rdkitPythonServicesUrl);
-            //locations.add(rdkitPythonServicesUrl + "/rdkit_screen/");
-            //locations.add(rdkitPythonServicesUrl + "/rdkit_cluster/");
+            locations.add(rdkitPythonServicesUrl + "/rdkit_screen/");
+            locations.add(rdkitPythonServicesUrl + "/rdkit_cluster/");
             locations.add(rdkitPythonServicesUrl + "/rdkit_filter/");
             locations.add(rdkitPythonServicesUrl + "/rdkit_conf/");
         } else {

@@ -24,6 +24,15 @@ cd ..
 ./containers-setup-app.sh          # setup of the applciation containers. This will need doing whenever the code udpates
 ./containers-run.sh                # start the containers
 
+Build the rdkitservices image
+-----------------------------
+This is in separate github project: https://github.com/InformaticsMatters/rdkit-compose
+To build image, form the base dir of that project:
+docker build -t squonk/rdkitserver .
+Then in this directory, with service not running:
+docker-compose rm -fv rdkitserver
+Then carry on from the containers-setup-app.sh step.
+
 To run:
 =======
 
