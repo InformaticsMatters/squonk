@@ -7,6 +7,7 @@ import org.apache.camel.ProducerTemplate;
 import org.squonk.api.MimeTypeResolver;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.IOUtils;
 
 import java.io.*;
 import java.net.URI;
@@ -105,13 +106,22 @@ public class CamelUtils {
                 exch.getIn().setBody(input);
             }
         });
-        LOG.info("REQUEST complete. Response has OUT message: " + response.hasOut());
+
         Message msg = getMessage(response);
+        // this error code does not seem to being set correctly?
+        Integer code = msg.getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
+        LOG.info("REQUEST complete. RESPONSE code: " + code);
         InputStream result = msg.getBody(InputStream.class);
-        if (responseHeaders != null) {
-            responseHeaders.putAll(msg.getHeaders());
+
+        if (code != null && code != 200) {
+            String err = (result == null ? "Cause unknown" : IOUtils.convertStreamToString(result));
+            throw new IOException(code + " ERROR: " + err);
+        } else {
+            if (responseHeaders != null) {
+                responseHeaders.putAll(msg.getHeaders());
+            }
+            return result;
         }
-        return result;
     }
 
     public static MoleculeObject readMoleculeObjectFromBody(Exchange exch) throws IOException {

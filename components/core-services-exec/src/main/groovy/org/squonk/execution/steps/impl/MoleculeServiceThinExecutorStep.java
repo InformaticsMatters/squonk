@@ -106,7 +106,7 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         DatasetMetadata responseMetadata = null;
         if (responseMetadataJson == null) {
             responseMetadata = new DatasetMetadata(MoleculeObject.class);
-            LOG.info("No Metadata retuened from service");
+            LOG.info("No Metadata returned from service");
         } else {
             LOG.info("Using response metadata: " + responseMetadataJson);
             responseMetadata = JsonHandler.getInstance().objectFromJson(responseMetadataJson,DatasetMetadata.class);
