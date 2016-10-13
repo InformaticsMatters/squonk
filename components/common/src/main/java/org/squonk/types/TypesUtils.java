@@ -37,4 +37,59 @@ public class TypesUtils {
 
         return new Dataset<>(MoleculeObject.class, stream2);
     }
+
+
+    /** Utility function to do out best to convert to float.
+     *
+     * @param o
+     * @return
+     */
+    public static java.lang.Float convertFloat(Object o) {
+        if (o == null) {
+            return null;
+        } else if (o instanceof java.lang.Float) {
+            return (java.lang.Float)o;
+        } else if (o instanceof Number) {
+            return ((Number)o).floatValue();
+        } else {
+            return new java.lang.Float(o.toString());
+        }
+    }
+
+    /** Utility function to do out best to convert to double.
+     *
+     * @param o
+     * @return
+     */
+    public static java.lang.Double convertDouble(Object o) {
+        if (o == null) {
+            return null;
+        } else if (o instanceof java.lang.Double) {
+            return (java.lang.Double)o;
+        } else if (o instanceof Number) {
+            return ((Number)o).doubleValue();
+        } else {
+            return new java.lang.Double(o.toString());
+        }
+    }
+
+    /** Utility function to do out best to convert to integer.
+     *
+     * @param o
+     * @return
+     */
+    public static java.lang.Integer convertInteger(Object o) {
+        if (o == null) {
+            return null;
+        } else if (o instanceof java.lang.Integer) {
+            return (java.lang.Integer)o;
+        } else if (o instanceof Number) {
+            // create via double so that we round numbers and handle scientific notation
+            java.lang.Double d = ((Number)o).doubleValue();
+            return d.intValue();
+        } else {
+            return new java.lang.Integer(o.toString());
+        }
+    }
+
 }

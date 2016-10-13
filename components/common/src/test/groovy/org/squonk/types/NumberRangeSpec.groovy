@@ -16,7 +16,6 @@ class NumberRangeSpec extends Specification {
 
         when:
         def json = mapper.writeValueAsString(r1)
-        println json
         def r2 = mapper.readValue(json, NumberRange.class)
 
         then:
@@ -47,7 +46,6 @@ class NumberRangeSpec extends Specification {
         when:
 
         def json = mapper.writeValueAsString(r1)
-        println json
         def r2 = mapper.readValue(json, NumberRange.class)
 
         then:
@@ -65,11 +63,11 @@ class NumberRangeSpec extends Specification {
         r.maxValue == b
 
         where:
-        s      || a    | b
-        "0|2"  || 0    | 2
-        "1|2"  || 1    | 2
-        "-1|2" || -1   | 2
-        "1|"   || 1    | null
+        s      || a | b
+        "0|2"  || 0 | 2
+        "1|2"  || 1 | 2
+        "-1|2" || -1 | 2
+        "1|"   || 1 | null
         "|2"   || null | 2
         "|"    || null | null
     }
@@ -83,13 +81,13 @@ class NumberRangeSpec extends Specification {
         r.maxValue == b
 
         where:
-        s        || a     | b
-        "0|2"    || 0f    | 2f
-        "1.1|2"  || 1.1f  | 2f
+        s        || a | b
+        "0|2"    || 0f | 2f
+        "1.1|2"  || 1.1f | 2f
         "-1.1|2" || -1.1f | 2f
-        "1.1|"   || 1.1f  | null
-        "|2.2"   || null  | 2.2f
-        "|"      || null  | null
+        "1.1|"   || 1.1f | null
+        "|2.2"   || null | 2.2f
+        "|"      || null | null
     }
 
     void "double from string"() {
@@ -101,13 +99,13 @@ class NumberRangeSpec extends Specification {
         r.maxValue == b
 
         where:
-        s        || a     | b
-        "0|2"    || 0d  | 2d
-        "1.1|2"  || 1.1d  | 2d
+        s        || a | b
+        "0|2"    || 0d | 2d
+        "1.1|2"  || 1.1d | 2d
         "-1.1|2" || -1.1d | 2d
-        "1.1|"   || 1.1d  | null
-        "|2.2"   || null  | 2.2d
-        "|"      || null  | null
+        "1.1|"   || 1.1d | null
+        "|2.2"   || null | 2.2d
+        "|"      || null | null
     }
 
     void "integer to string"() {
@@ -118,11 +116,11 @@ class NumberRangeSpec extends Specification {
         s.equals(r.toString())
 
         where:
-        s      || a    | b
-        "0|2"  || 0    | 2
-        "1|2"  || 1    | 2
-        "-1|2" || -1   | 2
-        "1|"   || 1    | null
+        s      || a | b
+        "0|2"  || 0 | 2
+        "1|2"  || 1 | 2
+        "-1|2" || -1 | 2
+        "1|"   || 1 | null
         "|2"   || null | 2
         "|"    || null | null
     }
@@ -135,93 +133,102 @@ class NumberRangeSpec extends Specification {
         s.equals(r.toString())
 
         where:
-        s          || a     | b
-        "0.0|2.0"  || 0f    | 2f
-        "1.1|2.0"  || 1.1f  | 2f
+        s          || a | b
+        "0.0|2.0"  || 0f | 2f
+        "1.1|2.0"  || 1.1f | 2f
         "-1.1|2.0" || -1.1f | 2f
-        "1.1|"     || 1.1f  | null
-        "|2.2"     || null  | 2.2f
-        "|"        || null  | null
+        "1.1|"     || 1.1f | null
+        "|2.2"     || null | 2.2f
+        "|"        || null | null
     }
 
     void "double to string"() {
 
-        def r = new NumberRange.Double(a,b)
+        def r = new NumberRange.Double(a, b)
 
         expect:
         s.equals(r.toString())
 
         where:
-        s          || a     | b
-        "0.0|2.0"  || 0d    | 2d
-        "1.1|2.0"  || 1.1d  | 2d
+        s          || a | b
+        "0.0|2.0"  || 0d | 2d
+        "1.1|2.0"  || 1.1d | 2d
         "-1.1|2.0" || -1.1d | 2d
-        "1.1|"     || 1.1d  | null
-        "|2.2"     || null  | 2.2d
-        "|"        || null  | null
+        "1.1|"     || 1.1d | null
+        "|2.2"     || null | 2.2d
+        "|"        || null | null
     }
 
     void "predicate integer"() {
 
-        def r = new NumberRange.Integer(a,b)
+        def r = new NumberRange.Integer(a, b)
 
         expect:
         r.test(c) == z
 
         where:
-        a    | b    | c  | z
-        0    | 10   | 5  | true
-        0    | 10   | 15 | false
-        0    | null | 5  | true
-        null | 10   | 5  | true
-        null | null | 5  | true
-        0    | 10   | 5f | true
-        0    | 10   | 15f| false
-        0    | 10   | 5d | true
-        0    | 10   | 15d| false
+        a    | b    | c   | z
+        0    | 10   | 5   | true
+        0    | 10   | 15  | false
+        0    | null | 5   | true
+        null | 10   | 5   | true
+        null | null | 5   | true
+        0    | 10   | 5f  | true
+        0    | 10   | 15f | false
+        0    | 10   | 5d  | true
+        0    | 10   | 15d | false
 
     }
 
     void "predicate float"() {
 
-        def r = new NumberRange.Float(a,b)
+        def r = new NumberRange.Float(a, b)
 
         expect:
         r.test(c) == z
 
         where:
-        a    | b    | c  | z
-        0f   | 10f  | 5f | true
-        0f   | 10f  | 15f| false
-        0f   | null | 5f | true
-        null | 10f  | 5f | true
+        a    | b    | c   | z
+        0f   | 10f  | 5f  | true
+        0f   | 10f  | 15f | false
+        0f   | null | 5f  | true
+        null | 10f  | 5f  | true
         null | null | 5f  | true
-        0f   | 10f  | 5i | true
-        0f   | 10f  | 15i| false
-        0f   | 10f  | 5d | true
-        0f   | 10f  | 15d| false
+        0f   | 10f  | 5i  | true
+        0f   | 10f  | 15i | false
+        0f   | 10f  | 5d  | true
+        0f   | 10f  | 15d | false
 
     }
 
     void "predicate double"() {
 
-        def r = new NumberRange.Double(a,b)
+        def r = new NumberRange.Double(a, b)
 
         expect:
         r.test(c) == z
 
         where:
-        a    | b    | c  | z
-        0d   | 10d  | 5d | true
-        0d   | 10d  | 15d| false
-        0d   | null | 5d | true
-        null | 10d  | 5d | true
+        a    | b    | c   | z
+        0d   | 10d  | 5d  | true
+        0d   | 10d  | 15d | false
+        0d   | null | 5d  | true
+        null | 10d  | 5d  | true
         null | null | 5d  | true
-        0d   | 10d  | 5i | true
-        0d   | 10d  | 15i| false
-        0d   | 10d  | 5f | true
-        0d   | 10d  | 15f| false
+        0d   | 10d  | 5i  | true
+        0d   | 10d  | 15i | false
+        0d   | 10d  | 5f  | true
+        0d   | 10d  | 15f | false
 
+    }
+
+    void "invalid range"() {
+
+        when:
+        r = new NumberRange.Double(2d, 1d)
+
+        then:
+        thrown(IllegalArgumentException.class)
     }
 
 }

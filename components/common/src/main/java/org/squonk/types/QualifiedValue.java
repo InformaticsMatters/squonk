@@ -1,8 +1,11 @@
 package org.squonk.types;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,7 +19,10 @@ import java.util.regex.Pattern;
  * first answer is probably the right one.
  *
  */
-public class QualifiedValue<T extends Number> implements Comparable<T>, Serializable {
+public class QualifiedValue<T extends Number> implements Comparable<T>, Serializable, CompositeType {
+
+    private static final String PROP_VALUE = "Value";
+    private static final String PROP_QUALIFIER = "Qualifier";
 
     private static final Pattern patt = Pattern.compile("\\s*(=|<|>|~|<=|>=)?\\s*(\\-?[0-9,\\.]+)\\s*");
 
@@ -150,6 +156,24 @@ public class QualifiedValue<T extends Number> implements Comparable<T>, Serializ
             throw new IllegalArgumentException("Type " + cls.getName() + " not supported");
         }
         return (Q) num;
+    }
+
+    @Override
+    @JsonIgnore
+    public Map<String, Class> getSimpleTypeDefinitions() {
+        Map<String,Class> map = new HashMap<>();
+        map.put(PROP_VALUE, getType());
+        map.put(PROP_QUALIFIER, String.class);
+        return map;
+    }
+
+    @Override
+    @JsonIgnore
+    public Map<String, Object> getSimpleTypes() {
+        Map<String,Object> map = new HashMap<>();
+        map.put(PROP_VALUE, value);
+        map.put(PROP_QUALIFIER, qualifier.getSymbol());
+        return map;
     }
 
     @Override

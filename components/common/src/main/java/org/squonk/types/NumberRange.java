@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Predicate;
 
 /** A numeric range bounded by min and max values. Also allows values to be tested to determine in they are within those
@@ -15,15 +17,45 @@ import java.util.function.Predicate;
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public abstract class NumberRange<T extends Number & Comparable<T>> implements Serializable, Predicate {
+public abstract class NumberRange<T extends Number & Comparable<T>> implements Serializable, Predicate, CompositeType {
+
+    private static final String PROP_MIN_VALUE = "MinValue";
+    private static final String PROP_MAX_VALUE = "MaxValue";
 
     protected T minValue;
     protected T maxValue;
 
-    public NumberRange() {}
+    private NumberRange() {}
     public NumberRange(T minValue, T maxValue) {
+        validate(minValue, maxValue);
         this.minValue = minValue;
         this.maxValue = maxValue;
+    }
+
+    private NumberRange(String str) {
+        T min = null, max = null;
+        String[] parts = str.split("\\|");
+        if (parts.length > 0) {
+            if (parts[0].trim().length() > 0) {
+                min = convert(parts[0]);
+            }
+            if (parts.length == 2 && parts[1].trim().length() > 0) {
+                max = convert(parts[1]);
+            }
+        } else if ("|".equals(str)) {
+            // this is OK - min and max are undefined
+        } else {
+            throw new IllegalArgumentException("Can't parse range value: " + str);
+        }
+        validate(min, max);
+        this.minValue = min;
+        this.maxValue = max;
+    }
+
+    private void validate(T min, T max) {
+        if (min != null && max != null && min.compareTo(max) > 0) {
+            throw new IllegalArgumentException("Min value must be less than max value");
+        }
     }
 
     /** Create a new instance of the appropriate type.
@@ -55,10 +87,16 @@ public abstract class NumberRange<T extends Number & Comparable<T>> implements S
     }
 
     public T getMinValue() { return minValue; }
-    public void setMinValue(T value) { this.minValue = value; }
+    public void setMinValue(T value) {
+        validate(value, maxValue);
+        this.minValue = value;
+    }
 
     public T getMaxValue() { return maxValue; }
-    public void setMaxValue(T value) { this.maxValue = value; }
+    public void setMaxValue(T value) {
+        validate(minValue, value);
+        this.maxValue = value;
+    }
 
     /** Is the specified value within the range.
      * All comparisons are performed as the double values to allow comparison of different types of number to be performed.
@@ -80,7 +118,7 @@ public abstract class NumberRange<T extends Number & Comparable<T>> implements S
     @Override
     public boolean test(Object o) {
         try {
-            java.lang.Double n = convertDouble(o);
+            java.lang.Double n = TypesUtils.convertDouble(o);
             if (n == null) {
                 return false;
             }
@@ -113,58 +151,6 @@ public abstract class NumberRange<T extends Number & Comparable<T>> implements S
      */
     public abstract NumberRange derive(String s);
 
-    /** Utility function to do out best to convert to integer.
-     *
-     * @param o
-     * @return
-     */
-    public static java.lang.Integer convertInteger(Object o) {
-        if (o == null) {
-            return null;
-        } else if (o instanceof java.lang.Integer) {
-            return (java.lang.Integer)o;
-        } else if (o instanceof Number) {
-            // create via double so that we round numbers and handle scientific notation
-            java.lang.Double d = ((Number)o).doubleValue();
-            return d.intValue();
-        } else {
-            return new java.lang.Integer(o.toString());
-        }
-    }
-
-    /** Utility function to do out best to convert to float.
-     *
-     * @param o
-     * @return
-     */
-    public static java.lang.Float convertFloat(Object o) {
-        if (o == null) {
-            return null;
-        } else if (o instanceof java.lang.Float) {
-            return (java.lang.Float)o;
-        } else if (o instanceof Number) {
-            return ((Number)o).floatValue();
-        } else {
-            return new java.lang.Float(o.toString());
-        }
-    }
-
-    /** Utility function to do out best to convert to double.
-     *
-     * @param o
-     * @return
-     */
-    public static java.lang.Double convertDouble(Object o) {
-        if (o == null) {
-            return null;
-        } else if (o instanceof java.lang.Double) {
-            return (java.lang.Double)o;
-        } else if (o instanceof Number) {
-            return ((Number)o).doubleValue();
-        } else {
-            return new java.lang.Double(o.toString());
-        }
-    }
 
     protected void updateIfNull(NumberRange neu) {
         if (neu.minValue == null) {
@@ -175,31 +161,37 @@ public abstract class NumberRange<T extends Number & Comparable<T>> implements S
         }
     }
 
+    @Override
+    @JsonIgnore
+    public Map<String, Class> getSimpleTypeDefinitions() {
+        Map<String,Class> map = new HashMap<>();
+        map.put(PROP_MIN_VALUE, getType());
+        map.put(PROP_MAX_VALUE, getType());
+        return map;
+    }
+
+    @Override
+    @JsonIgnore
+    public Map<String, Object> getSimpleTypes() {
+        Map<String,Object> map = new HashMap<>();
+        map.put(PROP_MIN_VALUE, minValue);
+        map.put(PROP_MAX_VALUE, maxValue);
+        return map;
+    }
+
     /** Number range for Integers
      *
      */
     public static class Integer extends NumberRange<java.lang.Integer> {
 
-        public Integer() {}
+        private Integer() {}
         public Integer(
                 @JsonProperty("minValue") java.lang.Integer minValue,
                 @JsonProperty("maxValue") java.lang.Integer maxValue) {
             super(minValue, maxValue);
         }
         public Integer(String str) {
-            String[] parts = str.split("\\|");
-            if (parts.length > 0) {
-                if (parts[0].trim().length() > 0) {
-                    setMinValue(convert(parts[0]));
-                }
-                if (parts.length == 2 && parts[1].trim().length() > 0) {
-                    setMaxValue(convert(parts[1]));
-                }
-            } else if ("|".equals(str)) {
-                // this is OK - min and max are undefined
-            } else {
-                throw new IllegalArgumentException("Can't parse range value: " + str);
-            }
+            super(str);
         }
 
         public Class getType() {
@@ -219,7 +211,7 @@ public abstract class NumberRange<T extends Number & Comparable<T>> implements S
         }
 
         protected java.lang.Integer convert(Object o) {
-            return convertInteger(o);
+            return TypesUtils.convertInteger(o);
         }
     }
 
@@ -228,26 +220,14 @@ public abstract class NumberRange<T extends Number & Comparable<T>> implements S
      */
     public static class Double extends NumberRange<java.lang.Double> {
 
-        public Double() {}
+        private Double() {}
         public Double(
                 @JsonProperty("minValue") java.lang.Double minValue,
                 @JsonProperty("maxValue") java.lang.Double maxValue) {
             super(minValue, maxValue);
         }
         public Double(String str) {
-            String[] parts = str.split("\\|");
-            if (parts.length > 0) {
-                if (parts[0].trim().length() > 0) {
-                    setMinValue(convert(parts[0]));
-                }
-                if (parts.length == 2 && parts[1].trim().length() > 0) {
-                    setMaxValue(convert(parts[1]));
-                }
-            } else if ("|".equals(str)) {
-                // this is OK - min and max are undefined
-            } else {
-                throw new IllegalArgumentException("Can't parse range value: " + str);
-            }
+            super(str);
         }
 
         public Class getType() {
@@ -266,7 +246,7 @@ public abstract class NumberRange<T extends Number & Comparable<T>> implements S
 
 
         protected java.lang.Double convert(Object o) {
-            return convertDouble(o);
+            return TypesUtils.convertDouble(o);
         }
     }
 
@@ -275,26 +255,14 @@ public abstract class NumberRange<T extends Number & Comparable<T>> implements S
      */
     public static class Float extends NumberRange<java.lang.Float> {
 
-        public Float() {}
+        private Float() {}
         public Float(
                 @JsonProperty("minValue") java.lang.Float minValue,
                 @JsonProperty("maxValue") java.lang.Float maxValue) {
             super(minValue, maxValue);
         }
         public Float(String str) {
-            String[] parts = str.split("\\|");
-            if (parts.length > 0) {
-                if (parts[0].trim().length() > 0) {
-                    setMinValue(convert(parts[0]));
-                }
-                if (parts.length == 2 && parts[1].trim().length() > 0) {
-                    setMaxValue(convert(parts[1]));
-                }
-            } else if ("|".equals(str)) {
-                // this is OK - min and max are undefined
-            } else {
-                throw new IllegalArgumentException("Can't parse range value: " + str);
-            }
+            super(str);
         }
 
         public Class getType() {
@@ -312,9 +280,7 @@ public abstract class NumberRange<T extends Number & Comparable<T>> implements S
         }
 
         protected java.lang.Float convert(Object o) {
-            return convertFloat(o);
+            return TypesUtils.convertFloat(o);
         }
-
-
     }
 }
