@@ -13,6 +13,8 @@ dependencies {
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-jackson:$camelVersion"
     compile "org.apache.camel:camel-http4:$camelVersion"
+    compile "org.apache.camel:camel-mail:$camelVersion"
+
 
     compile "org.jboss.weld.se:weld-se:$weldVersion"
 
