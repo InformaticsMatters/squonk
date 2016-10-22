@@ -1,6 +1,5 @@
 package org.squonk.types
 
-import org.squonk.types.GenericModel
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
 
