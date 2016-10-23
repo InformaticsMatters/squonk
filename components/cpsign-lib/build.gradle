@@ -1,0 +1,17 @@
+description = 'CPSign lib'
+
+
+dependencies {
+    
+    compile project(':common')
+    compile project(':cdk-lib')
+
+    compile files("../../lib/cpsign/cpsign-0.3.15.jar")
+
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+    
+
+    testCompile project(':core-test')
+
+}
+

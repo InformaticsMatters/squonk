@@ -19,5 +19,6 @@ public interface CommonMimeTypes {
     public static final String MIME_TYPE_PDB = "chemical/x-pdb";
     public static final String MIME_TYPE_SVG = "image/svg+xml";
     public static final String MIME_TYPE_PNG = "image/png";
+    public static final String MIME_TYPE_CPSIGN_TRAIN_RESULT = "application/x-squonk-cpsign-train+json";;
 
 }

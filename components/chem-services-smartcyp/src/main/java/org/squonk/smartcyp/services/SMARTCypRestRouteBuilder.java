@@ -34,7 +34,7 @@ public class SMARTCypRestRouteBuilder extends RouteBuilder {
     private static final Logger LOG = Logger.getLogger(SMARTCypRestRouteBuilder.class.getName());
 
     private final String mqueueUrl = new MessageQueueCredentials().generateUrl(MQUEUE_JOB_METRICS_EXCHANGE_NAME, MQUEUE_JOB_METRICS_EXCHANGE_PARAMS) +
-            "&routingKey=tokens.ocl";
+            "&routingKey=tokens.smartcyp";
 
     @Inject
     private TypeResolver resolver;

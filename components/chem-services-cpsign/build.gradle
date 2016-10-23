@@ -1,0 +1,30 @@
+description = 'CPSign services'
+
+apply plugin: 'war'
+
+dependencies {
+    
+    compile project(':common')
+    compile project(':common-camel')
+    compile project(':core-services-common')
+    compile project(':cpsign-lib')
+
+
+    compile "org.jboss.weld.servlet:weld-servlet-core:$weldVersion"
+
+    compile "org.apache.camel:camel-core:$camelVersion"
+    compile "org.apache.camel:camel-jackson:$camelVersion"
+    compile "org.apache.camel:camel-servlet:$camelVersion"
+    compile "org.apache.camel:camel-swagger:$camelVersion"
+    compile "org.apache.camel:camel-swagger-java:$camelVersion"
+    compile "org.apache.camel:camel-cdi:$camelVersion"
+    compile "org.apache.camel:camel-rabbitmq:$camelVersion"
+
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+
+    testCompile project(':core-test')
+
+}
+
