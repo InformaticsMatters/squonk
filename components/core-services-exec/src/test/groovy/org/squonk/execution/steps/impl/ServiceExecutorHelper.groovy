@@ -1,5 +1,6 @@
 package org.squonk.execution.steps.impl
 
+import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
 import org.apache.camel.CamelContext
 import org.apache.camel.Exchange
@@ -37,6 +38,10 @@ class ServiceExecutorHelper {
                 rest("/route2").post().route().process() { exch ->
                     handle(exch, "route2", 88)
                 }
+
+                rest("/route3").post().route().process() { exch ->
+                    convertToBasic(exch, "route3", 999)
+                }
             }
 
             void handle(Exchange exch, String prop, Object value) {
@@ -44,6 +49,19 @@ class ServiceExecutorHelper {
                 Dataset ds = JsonHandler.getInstance().unmarshalDataset(new DatasetMetadata(MoleculeObject.class), IOUtils.getGunzippedInputStream(is))
                 Stream s = ds.stream.peek() { it.putValue(prop, value) }
                 InputStream out = JsonHandler.getInstance().marshalStreamToJsonArray(s, false)
+                exch.in.body = out
+            }
+
+            void convertToBasic(Exchange exch, String prop, Object value) {
+                InputStream is = exch.in.getBody(InputStream.class)
+                Dataset ds = JsonHandler.getInstance().unmarshalDataset(new DatasetMetadata(MoleculeObject.class), IOUtils.getGunzippedInputStream(is))
+                println "Found " + ds.items.size()
+                List list = ds.items.collect() {
+                    println "Adding BasicObject"
+                    return new BasicObject([(prop): value])
+                }
+                println "Generated " + list.size()
+                InputStream out = JsonHandler.getInstance().marshalStreamToJsonArray(list.stream(), false)
                 exch.in.body = out
             }
         })
