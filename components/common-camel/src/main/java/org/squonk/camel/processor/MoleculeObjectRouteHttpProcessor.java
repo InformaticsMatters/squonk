@@ -1,39 +1,34 @@
 package org.squonk.camel.processor;
 
-import org.squonk.types.BasicObject;
-import org.squonk.types.MoleculeObject;
-import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.squonk.types.BasicObject;
+import org.apache.camel.Exchange;
 import org.squonk.dataset.Dataset;
-import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.http.RequestInfo;
 import org.squonk.types.SDFile;
 import org.squonk.types.TypeResolver;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static org.squonk.types.TypeResolver.*;
 
-/**
+/** HttpProcessor that reads molecules, sends to a route for processing and receives back molecules.
+ *
  * Created by timbo on 26/03/2016.
  */
-public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectHttpProcessor {
+public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectRouteHttpProcessor {
 
     private static final Logger LOG = Logger.getLogger(MoleculeObjectRouteHttpProcessor.class.getName());
 
-    public static final String[] DEFAULT_INPUT_MIME_TYPES = new String[]{
-            MIME_TYPE_DATASET_MOLECULE_JSON,
-            MIME_TYPE_MDL_SDF};
+
     public static final String[] DEFAULT_OUTPUT_MIME_TYPES = new String[]{
             MIME_TYPE_DATASET_MOLECULE_JSON,
             MIME_TYPE_DATASET_BASIC_JSON,
             MIME_TYPE_MDL_SDF};
 
-    protected final String routeUri;
     protected final Class sdfClass;
 
 
@@ -56,9 +51,12 @@ public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectHttp
             String[] supportedOutputMimeTypes,
             String statsRouteUri,
             Class<? extends SDFile> sdfClass) {
-        super(resolver, supportedInputMimeTypes, supportedOutputMimeTypes, statsRouteUri);
-        this.routeUri = routeUri;
+        super(routeUri, resolver, supportedInputMimeTypes, supportedOutputMimeTypes, statsRouteUri);
         this.sdfClass = sdfClass;
+    }
+
+    protected boolean isThin(RequestInfo requestInfo) {
+        return requestInfo.getAcceptType().equalsIgnoreCase(MIME_TYPE_DATASET_BASIC_JSON);
     }
 
     @Override
@@ -68,7 +66,7 @@ public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectHttp
             RequestInfo requestInfo) throws IOException {
 
         // prepare it
-        MoleculeObjectDataset processed = prepareDataset(dataset, requestInfo);
+        MoleculeObjectDataset processed = prepareDataset(dataset, requestInfo.getAcceptType().equalsIgnoreCase(MIME_TYPE_DATASET_BASIC_JSON));
 
         if (routeUri != null) {
             // send the molecules to the route for processing and get back an updated set of molecules
@@ -82,22 +80,6 @@ public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectHttp
         Object converted = generateOutput(exch, processed, requestInfo);
 
         return converted;
-    }
-
-
-    protected MoleculeObjectDataset prepareDataset(MoleculeObjectDataset mods, RequestInfo requestInfo) throws IOException {
-        if (requestInfo.getAcceptType().equalsIgnoreCase(MIME_TYPE_DATASET_BASIC_JSON)) {
-            // thin service so strip out everything except the molecule
-            Dataset<MoleculeObject> dataset = mods.getDataset();
-            Stream<MoleculeObject> mols = dataset.getStream().map((mo) -> new MoleculeObject(mo.getUUID(), mo.getSource(), mo.getFormat()));
-            DatasetMetadata oldMeta = dataset.getMetadata();
-            DatasetMetadata newMeta = new DatasetMetadata(MoleculeObject.class, Collections.emptyMap(),
-                    oldMeta == null ? 0 : oldMeta.getSize(),
-                    oldMeta == null ? Collections.emptyMap() : oldMeta.getProperties());
-            return new MoleculeObjectDataset(new Dataset<>(MoleculeObject.class, mols, newMeta));
-        } else {
-            return mods;
-        }
     }
 
     protected Object generateOutput(Exchange exch, MoleculeObjectDataset results, RequestInfo requestInfo)

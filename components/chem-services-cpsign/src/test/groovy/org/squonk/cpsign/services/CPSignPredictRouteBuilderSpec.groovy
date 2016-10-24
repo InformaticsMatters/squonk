@@ -4,7 +4,7 @@ import org.apache.camel.CamelContext
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.camel.processor.CPSignTrainProcessor
-import org.squonk.cpsign.TrainResult
+import org.squonk.types.CPSignTrainResult
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
 import org.squonk.types.MoleculeObject
@@ -40,14 +40,14 @@ class CPSignPredictRouteBuilderSpec extends Specification {
         ProducerTemplate pt = context.createProducerTemplate()
         def headers = [
                 (CPSignTrainProcessor.HEADER_FIELD_NAME): 'prop',
-                (CPSignTrainProcessor.HEADER_PREDICT_METHOD): TrainResult.Method.CCP,
-                (CPSignTrainProcessor.HEADER_PREDICT_TYPE): TrainResult.Type.Classification,
+                (CPSignTrainProcessor.HEADER_PREDICT_METHOD): CPSignTrainResult.Method.CCP,
+                (CPSignTrainProcessor.HEADER_PREDICT_TYPE): CPSignTrainResult.Type.Classification,
                 (CPSignTrainProcessor.HEADER_VALUE_1): 'T',
                 (CPSignTrainProcessor.HEADER_VALUE_2): 'F'
         ]
 
         when:
-        TrainResult results = pt.requestBodyAndHeaders(CPSignPredictRouteBuilder.CPSign_train, data, headers)
+        CPSignTrainResult results = pt.requestBodyAndHeaders(CPSignPredictRouteBuilder.CPSign_train, data, headers)
 
         then:
         results != null
@@ -66,12 +66,12 @@ class CPSignPredictRouteBuilderSpec extends Specification {
         ProducerTemplate pt = context.createProducerTemplate()
         def headers = [
                 (CPSignTrainProcessor.HEADER_FIELD_NAME): 'prop',
-                (CPSignTrainProcessor.HEADER_PREDICT_METHOD): TrainResult.Method.CCP,
-                (CPSignTrainProcessor.HEADER_PREDICT_TYPE): TrainResult.Type.Regression
+                (CPSignTrainProcessor.HEADER_PREDICT_METHOD): CPSignTrainResult.Method.CCP,
+                (CPSignTrainProcessor.HEADER_PREDICT_TYPE): CPSignTrainResult.Type.Regression
         ]
 
         when:
-        TrainResult results = pt.requestBodyAndHeaders(CPSignPredictRouteBuilder.CPSign_train, data, headers)
+        CPSignTrainResult results = pt.requestBodyAndHeaders(CPSignPredictRouteBuilder.CPSign_train, data, headers)
 
         then:
         results != null

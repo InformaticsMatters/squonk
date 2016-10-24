@@ -2,6 +2,7 @@ package org.squonk.cpsign
 
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
+import org.squonk.types.CPSignTrainResult
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -14,7 +15,7 @@ import java.util.stream.Collectors
 @Stepwise
 class CCPRegressionRunnerSpec extends Specification {
 
-    @Shared TrainResult trainResult
+    @Shared CPSignTrainResult trainResult
 
     static int cvFolds = 3
 

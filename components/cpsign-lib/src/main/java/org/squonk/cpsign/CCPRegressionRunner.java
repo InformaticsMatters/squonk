@@ -10,6 +10,7 @@ import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.squonk.cdk.io.CDKMoleculeIOUtils;
 import org.squonk.types.BoundedValue;
+import org.squonk.types.CPSignTrainResult;
 import org.squonk.types.MoleculeObject;
 
 import java.io.*;
@@ -30,10 +31,10 @@ public class CCPRegressionRunner extends AbstractCCPRunner {
 
 
     public CCPRegressionRunner(File license, File dataDir) throws IOException {
-        this(license, dataDir, TrainResult.Library.LibSVM, 1, 3);
+        this(license, dataDir, CPSignTrainResult.Library.LibSVM, 1, 3);
     }
 
-    public CCPRegressionRunner(File license, File dataDir, TrainResult.Library library, int signatureStartHeight, int signatureEndHeight) throws IOException {
+    public CCPRegressionRunner(File license, File dataDir, CPSignTrainResult.Library library, int signatureStartHeight, int signatureEndHeight) throws IOException {
         super(license, dataDir, library, signatureStartHeight, signatureEndHeight);
     }
 
@@ -88,7 +89,7 @@ public class CCPRegressionRunner extends AbstractCCPRunner {
     }
 
 
-    public TrainResult train(
+    public CPSignTrainResult train(
             List<MoleculeObject> mols, String fieldName,
             int cvFolds, double confidence)
             throws Exception {
@@ -96,7 +97,7 @@ public class CCPRegressionRunner extends AbstractCCPRunner {
         CVResult cvr = crossValidate(mols, fieldName, cvFolds, confidence);
         String path = trainModels(mols, fieldName, cvFolds);
 
-        return new TrainResult(TrainResult.Method.CCP, TrainResult.Type.Regression, library,
+        return new CPSignTrainResult(CPSignTrainResult.Method.CCP, CPSignTrainResult.Type.Regression, library,
                 signatureStartHeight, signatureEndHeight, cvFolds,
                 cvr.getEfficiency(), cvr.getValidity(), cvr.getRmse(),
                 path);

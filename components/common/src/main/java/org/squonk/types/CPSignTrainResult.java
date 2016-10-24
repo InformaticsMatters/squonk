@@ -1,14 +1,14 @@
-package org.squonk.cpsign;
+package org.squonk.types;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.genettasoft.modeling.CVResult;
 
-/**
+/** Represents a CPSign predictive model, the output of training, the input for prediction.
+ *
  * Created by timbo on 21/10/2016.
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class TrainResult {
+public class CPSignTrainResult {
 
     public enum Library {LibLinear, LibSVM}
 
@@ -28,16 +28,17 @@ public class TrainResult {
     private final Double rmse;
 
 
-    TrainResult(@JsonProperty("method") Method method,
-                @JsonProperty("type") Type type,
-                @JsonProperty("library") Library library,
-                @JsonProperty("signatureStartHeight") int signatureStartHeight,
-                @JsonProperty("signatureEndHeight") int signatureEndHeight,
-                @JsonProperty("cvFolds") int cvFolds,
-                @JsonProperty("efficiency") Double efficiency,
-                @JsonProperty("validity") Double validity,
-                @JsonProperty("rmse") Double rmse,
-                @JsonProperty("path") String path) {
+    public CPSignTrainResult(
+            @JsonProperty("method") Method method,
+            @JsonProperty("type") Type type,
+            @JsonProperty("library") Library library,
+            @JsonProperty("signatureStartHeight") int signatureStartHeight,
+            @JsonProperty("signatureEndHeight") int signatureEndHeight,
+            @JsonProperty("cvFolds") int cvFolds,
+            @JsonProperty("efficiency") Double efficiency,
+            @JsonProperty("validity") Double validity,
+            @JsonProperty("rmse") Double rmse,
+            @JsonProperty("path") String path) {
         this.method = method;
         this.type = type;
         this.library = library;

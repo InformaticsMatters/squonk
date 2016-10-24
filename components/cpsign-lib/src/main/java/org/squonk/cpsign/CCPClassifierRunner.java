@@ -8,6 +8,7 @@ import org.javatuples.Pair;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.squonk.cdk.io.CDKMoleculeIOUtils;
+import org.squonk.types.CPSignTrainResult;
 import org.squonk.types.MoleculeObject;
 
 import java.io.*;
@@ -25,10 +26,10 @@ public class CCPClassifierRunner extends AbstractCCPRunner {
     private static final Logger LOG = Logger.getLogger(CCPClassifierRunner.class.getName());
 
     public CCPClassifierRunner(File license, File dataDir) throws IOException {
-        this(license, dataDir, TrainResult.Library.LibSVM, 1, 3);
+        this(license, dataDir, CPSignTrainResult.Library.LibSVM, 1, 3);
     }
 
-    public CCPClassifierRunner(File license, File dataDir, TrainResult.Library library, int signatureStartHeight, int signatureEndHeight) throws IOException {
+    public CCPClassifierRunner(File license, File dataDir, CPSignTrainResult.Library library, int signatureStartHeight, int signatureEndHeight) throws IOException {
         super(license, dataDir, library, signatureStartHeight, signatureEndHeight);
     }
 
@@ -81,7 +82,7 @@ public class CCPClassifierRunner extends AbstractCCPRunner {
     }
 
 
-    public TrainResult train(
+    public CPSignTrainResult train(
             List<MoleculeObject> mols, String fieldName,
             Object trueValue, Object falseValue,
             int cvFolds, double confidence)
@@ -90,7 +91,7 @@ public class CCPClassifierRunner extends AbstractCCPRunner {
         CVResult cvr = crossValidate(mols, fieldName, trueValue, falseValue, cvFolds, confidence);
         String path = trainModels(mols, fieldName, trueValue, falseValue, cvFolds);
 
-        return new TrainResult(TrainResult.Method.CCP, TrainResult.Type.Classification,library,
+        return new CPSignTrainResult(CPSignTrainResult.Method.CCP, CPSignTrainResult.Type.Classification,library,
                 signatureStartHeight, signatureEndHeight, cvFolds,
                 cvr.getEfficiency(), cvr.getValidity(), null,
                 path);

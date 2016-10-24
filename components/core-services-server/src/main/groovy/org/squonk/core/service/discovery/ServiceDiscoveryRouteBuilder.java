@@ -55,6 +55,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             locations.add(basicChemServicesUrl + "/chem-services-rdkit-search/rest/v1/db");
             locations.add(basicChemServicesUrl + "/chem-services-openchemlib-basic/rest/v1/calculators");
             locations.add(basicChemServicesUrl + "/chem-services-smartcyp/rest/v1");
+            locations.add(basicChemServicesUrl + "/chem-services-cpsign/rest/v1");
         } else {
             LOG.warning("Environment variable SQUONK_BASIC_CHEM_SERVICES_URL not defined. Basic Chem services will not be available");
         }

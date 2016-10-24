@@ -5,16 +5,20 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.CPSignTrainProcessor;
-import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
+import org.squonk.camel.processor.AbstractMoleculeObjectRouteHttpProcessor;
+import org.squonk.camel.processor.DefaultMoleculeObjectRouteHttpProcessor;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptor.DataType;
-import org.squonk.cpsign.TrainResult;
+import org.squonk.types.CPSignTrainResult;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.DatasetFieldTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.types.MoleculeObject;
+import org.squonk.types.NumberRange;
 import org.squonk.types.TypeResolver;
+import org.squonk.types.io.JsonHandler;
+import org.squonk.util.CommonMimeTypes;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -72,7 +76,7 @@ public class CPSignRestRouteBuilder extends RouteBuilder {
                 tags,
                 resourceUrl,
                 MoleculeObject.class, // inputClass
-                TrainResult.class, // outputClass
+                CPSignTrainResult.class, // outputClass
                 DataType.STREAM, // inputType
                 DataType.ITEM, // outputType
                 icon,
@@ -115,7 +119,7 @@ public class CPSignRestRouteBuilder extends RouteBuilder {
 
         addModelTypeOptions(list);
 
-        list.add(new OptionDescriptor<>(new DatasetFieldTypeDescriptor(new Class[]{Float.class, Double.class, Integer.class}),
+        list.add(new OptionDescriptor<>(new DatasetFieldTypeDescriptor(new Class[0]),
                 "query." + CPSignTrainProcessor.HEADER_FIELD_NAME, "Field with values",
                 "Name of the field containing the values to train with", OptionDescriptor.Mode.User)
                 .withMinMaxValues(1, 1));
@@ -153,18 +157,14 @@ public class CPSignRestRouteBuilder extends RouteBuilder {
                 "Cross validation folds", "Number of cross validation folds", OptionDescriptor.Mode.User)
                 .withMinMaxValues(1, 1)
                 .withDefaultValue(5));
-        list.add(new OptionDescriptor<>(Double.class, "query." + CPSignTrainProcessor.HEADER_CONFIDENCE,
+        list.add(new OptionDescriptor<>(Float.class, "query." + CPSignTrainProcessor.HEADER_CONFIDENCE,
                 "Cross validation confidence level", "Cross validation confidence level", OptionDescriptor.Mode.User)
                 .withMinMaxValues(1, 1)
-                .withDefaultValue(0.7d));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + CPSignTrainProcessor.HEADER_SIGNATURE_START_HEIGHT,
-                "Signature start height", "Start height for chemical signature", OptionDescriptor.Mode.User)
-                .withMinMaxValues(1, 1)
-                .withDefaultValue(1));
-        list.add(new OptionDescriptor<>(Integer.class, "query." + CPSignTrainProcessor.HEADER_SIGNATURE_END_HEIGHT,
-                "Signature end height", "End height for chemical signature", OptionDescriptor.Mode.User)
-                .withMinMaxValues(1, 1)
-                .withDefaultValue(3));
+                .withDefaultValue(0.7f));
+        list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + CPSignTrainProcessor.HEADER_SIGNATURE_HEIGHT,
+                "Signature height", "Signature height range", OptionDescriptor.Mode.User)
+                .withMinMaxValues(1,1)
+                .withDefaultValue(new NumberRange.Integer(1, 3)));
     }
 
 
@@ -199,11 +199,12 @@ public class CPSignRestRouteBuilder extends RouteBuilder {
                 //
                 // service descriptor
                 .get().description("ServiceDescriptors for CPSign predictive modeling tools")
-                .bindingMode(RestBindingMode.json)
+                .bindingMode(RestBindingMode.off)
                 .produces("application/json")
                 .route()
                 .process((Exchange exch) -> {
-                    exch.getIn().setBody(SERVICE_DESCRIPTORS);
+                    String json = JsonHandler.getInstance().objectToJson(SERVICE_DESCRIPTORS);
+                    exch.getIn().setBody(json);
                 })
                 .endRest()
                 //
@@ -211,9 +212,9 @@ public class CPSignRestRouteBuilder extends RouteBuilder {
                 .consumes(join(MIME_TYPE_DATASET_MOLECULE_JSON))
                 .produces(join(MIME_TYPE_CPSIGN_TRAIN_RESULT))
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(CPSignPredictRouteBuilder.CPSign_train, resolver, ROUTE_STATS))
+                .process(new DefaultMoleculeObjectRouteHttpProcessor(CPSignPredictRouteBuilder.CPSign_train, resolver,
+                        new String[] {CommonMimeTypes.MIME_TYPE_CPSIGN_TRAIN_RESULT}, ROUTE_STATS, false))
                 .endRest();
-
     }
 
     String join(String... args) {

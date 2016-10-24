@@ -13,7 +13,7 @@ import java.util.stream.Stream
  */
 class MoleculeObjectUtilsSpec extends Specification {
 
-    void "two different mols"() {
+    void "dedup two different mols"() {
         def mols = [
                 new MoleculeObject('CC', 'smiles', [canon: 'CC']),
                 new MoleculeObject('CCC', 'smiles', [canon: 'CCC'])
@@ -28,7 +28,7 @@ class MoleculeObjectUtilsSpec extends Specification {
         results[1].values.size() == 0
     }
 
-    void "two identical mols"() {
+    void "dedup two identical mols"() {
         def mols = [
                 new MoleculeObject('CC', 'smiles', [canon: 'CC']),
                 new MoleculeObject('CC', 'smiles', [canon: 'CC'])
@@ -42,7 +42,7 @@ class MoleculeObjectUtilsSpec extends Specification {
         results[0].values.size() == 0
     }
 
-    void "keep first, last, append, lose"() {
+    void "dedup keep first, last, append, lose"() {
         def mols = [
                 new MoleculeObject('CC', 'smiles', [canon: 'CC', a: 'first', b: 'first', c: 1, d: 'random']),
                 new MoleculeObject('CC', 'smiles', [canon: 'CC', a: 'second', b: 'second', c: 2, d: 'noise'])
@@ -60,7 +60,7 @@ class MoleculeObjectUtilsSpec extends Specification {
         results[0].getValue('c').size() == 2
     }
 
-    void "first null"() {
+    void "dedup first null"() {
         def mols = [
                 new MoleculeObject('CC', 'smiles', [canon: 'CC']),
                 new MoleculeObject('CC', 'smiles', [canon: 'CC', a: 'second', b: 'second', c: 2, d: 'noise'])
@@ -78,7 +78,7 @@ class MoleculeObjectUtilsSpec extends Specification {
         results[0].getValue('c').size() == 1
     }
 
-    void "second null"() {
+    void "dedup second null"() {
         def mols = [
                 new MoleculeObject('CC', 'smiles', [canon: 'CC', a: 'first', b: 'first', c: 1, d: 'random']),
                 new MoleculeObject('CC', 'smiles', [canon: 'CC'])
@@ -96,7 +96,7 @@ class MoleculeObjectUtilsSpec extends Specification {
         results[0].getValue('c').size() == 1
     }
 
-    void "structure replaced"() {
+    void "dedup structure replaced"() {
         def mols = [
                 new MoleculeObject('XX', 'smiles', [canon: 'CC', a: 'first', b: 'first', c: 1, d: 'random']),
                 new MoleculeObject('XX', 'smiles', [canon: 'CC'])
