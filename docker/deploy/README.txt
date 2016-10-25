@@ -24,6 +24,11 @@ cd ..
 ./containers-setup-app.sh          # setup of the applciation containers. This will need doing whenever the code udpates
 ./containers-run.sh                # start the containers
 
+Postgres memory
+---------------
+See data/pgdata/postgresql.conf
+edit shared_buffers property
+
 Build the rdkitservices image
 -----------------------------
 This is in separate github project: https://github.com/InformaticsMatters/rdkit-compose

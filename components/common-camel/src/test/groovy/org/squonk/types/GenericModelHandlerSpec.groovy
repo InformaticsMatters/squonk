@@ -12,6 +12,8 @@ import spock.lang.Specification
 
 import javax.activation.DataHandler
 import javax.activation.DataSource
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 
 /**
  * Created by timbo on 18/10/2016.
@@ -33,14 +35,19 @@ class GenericModelHandlerSpec extends Specification {
                 //.log('foo attachments: ${exchange.in.attachmentNames.size()}')
                         .process() { exch ->
                     println "foo attachments: " + exch.in.attachmentNames.size()
-                    //exch.in.setHeader(Exchange.CONTENT_TYPE, 'multipart/form-data')
 
                 }
-                .marshal().mimeMultipart("mixed", false, false, null, false)
+                // String multipartSubType, boolean multipartWithoutAttachment, boolean headersInline, String includeHeaders, boolean binaryContent
+                .marshal().mimeMultipart("mixed", false, false, null, true)
+                .setHeader("Content-Encoding", constant("gzip"))
+                .marshal().gzip()
                 .to('jetty:http://localhost:8889/bar')
 
                 from('jetty:http://localhost:8889/bar')
                         .process() { exch ->
+                    exch.in.headers.each { k,v ->
+                        println "header: $k $v"
+                    }
                     println "exch: " + exch.in.body
                     exch.in.body = exch.in.body.text
                     println exch.in.body
@@ -75,6 +82,7 @@ class GenericModelHandlerSpec extends Specification {
             @Override
             void process(Exchange exch) throws Exception {
                 exch.in.setHeader(Exchange.HTTP_METHOD, "POST")
+                exch.in.setHeader(Exchange.CONTENT_TYPE, "application/json")
                 exch.in.setBody(JsonHandler.instance.objectToJson(h))
                 println "setting body"
                 for (String name : h.streamNames) {
@@ -95,10 +103,24 @@ class GenericModelHandlerSpec extends Specification {
         then:
         def msg = resultEndpoint.receivedExchanges.in[0]
         msg != null
-        println 'body: ' + msg.body.text
+        //println 'body: ' + msg.body.text
         println "unmarshalled attachements: " + msg.attachmentNames.size()
         msg.attachmentNames.size() == 2
-        println 'attachment 0: ' + msg.attachments[msg.attachmentNames[0]]
+        println 'attachment 0: ' + msg.getAttachment(msg.attachmentNames[0]).inputStream.text
+    }
+
+    InputStream gzip(String s) {
+        println "String bytes: " + s.bytes
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        GZIPOutputStream gzip = new GZIPOutputStream(out)
+        gzip.write(s.bytes)
+        gzip.close()
+        return new ByteArrayInputStream(out.toByteArray())
+    }
+
+    String gunzip(InputStream is) {
+        def gzip =  new GZIPInputStream(is)
+        return gzip.text
     }
 
     class ModelStreamDataSource implements DataSource {
