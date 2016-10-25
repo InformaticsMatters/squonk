@@ -123,15 +123,9 @@ public class AbstractCCPRunner {
     }
 
 
-    protected interface RegressionPredictor {
+    protected interface Predictor {
 
         Stream<MoleculeObject> predict(Stream<MoleculeObject> mols, String label, double confidence) throws Exception;
-
-    }
-
-    protected interface ClassificationPredictor {
-
-        Stream<MoleculeObject> predict(Stream<MoleculeObject> mols, String label) throws Exception;
 
     }
 

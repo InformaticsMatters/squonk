@@ -52,7 +52,7 @@ public class CCPRegressionRunner extends AbstractCCPRunner {
         return factory.createSignCCPRegression(ccpImpl, signatureStartHeight, signatureEndHeight);
     }
 
-    public RegressionPredictor createPredictor(int numModels, String path) throws Exception {
+    public Predictor createPredictor(int numModels, String path) throws Exception {
         ISignCCPRegression signCCP = createCCPRegression();
         File dir = new File(dataDir, path);
         if (!dir.exists()) {
@@ -62,7 +62,7 @@ public class CCPRegressionRunner extends AbstractCCPRunner {
         // Load models previously trained
         signCCP.loadModelFiles(new File(dir, modelFilebase), numModels);
         signCCP.loadSignatures(new FileInputStream(new File(dir, signaturesFilename)));
-        return new RegressionPredictor() {
+        return new Predictor() {
             @Override
             public Stream<MoleculeObject> predict(Stream<MoleculeObject> mols, String label, double confidence) throws Exception {
                 return mols.peek((mo) -> {
@@ -94,8 +94,13 @@ public class CCPRegressionRunner extends AbstractCCPRunner {
             int cvFolds, double confidence)
             throws Exception {
 
-        CVResult cvr = crossValidate(mols, fieldName, cvFolds, confidence);
-        String path = trainModels(mols, fieldName, cvFolds);
+        ISignCCPRegression signCCP = createCCPRegression();
+        Iterator<Pair<IAtomContainer, Double>> molsIterator = createMolsIterator(mols, fieldName);
+        // Load data
+        signCCP.fromMolsIterator(molsIterator);
+
+        CVResult cvr = crossValidate(signCCP, fieldName, cvFolds, confidence);
+        String path = trainModels(signCCP, fieldName, cvFolds);
 
         return new CPSignTrainResult(CPSignTrainResult.Method.CCP, CPSignTrainResult.Type.Regression, library,
                 signatureStartHeight, signatureEndHeight, cvFolds,
@@ -105,16 +110,9 @@ public class CCPRegressionRunner extends AbstractCCPRunner {
 
 
     public CVResult crossValidate(
-            List<MoleculeObject> mols, String fieldName,
+            ISignCCPRegression signCCP, String fieldName,
             int cvFolds, double confidence)
             throws IllegalArgumentException, IOException, IllegalAccessException {
-
-        ISignCCPRegression signCCP = createCCPRegression();
-
-        Iterator<Pair<IAtomContainer, Double>> molsIterator = createMolsIterator(mols, fieldName);
-
-        // Load data
-        signCCP.fromMolsIterator(molsIterator);
 
         //Do cross-validation with cvFolds nr of folds
         CVResult result = signCCP.cross_validate(cvFolds, confidence);
@@ -125,18 +123,9 @@ public class CCPRegressionRunner extends AbstractCCPRunner {
 
 
     public String trainModels(
-            List<MoleculeObject> mols, String fieldName,
+            ISignCCPRegression signCCP, String fieldName,
             int cvFolds)
             throws IllegalAccessException, IOException {
-
-        ISignCCPRegression signCCP = createCCPRegression();
-
-
-
-        Iterator<Pair<IAtomContainer, Double>> molsIterator = createMolsIterator(mols, fieldName);
-
-        // Load data
-        signCCP.fromMolsIterator(molsIterator);
 
         // Train the Cross-Conformal Prediction problem
         signCCP.trainCCP(cvFolds);

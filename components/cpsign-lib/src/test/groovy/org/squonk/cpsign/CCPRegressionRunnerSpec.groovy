@@ -57,7 +57,7 @@ class CCPRegressionRunnerSpec extends Specification {
 
 
         when:
-        def AbstractCCPRunner.RegressionPredictor predictor = runner.createPredictor(trainResult.cvFolds, trainResult.path)
+        def AbstractCCPRunner.Predictor predictor = runner.createPredictor(trainResult.cvFolds, trainResult.path)
         def list = predictor.predict(dataset.stream.limit(10), "Activity", 0.7).collect(Collectors.toList())
         //list.forEach { println it }
 

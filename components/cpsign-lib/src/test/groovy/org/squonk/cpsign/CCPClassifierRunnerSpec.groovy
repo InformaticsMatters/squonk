@@ -56,13 +56,14 @@ class CCPClassifierRunnerSpec extends Specification {
 
 
         when:
-        def AbstractCCPRunner.ClassificationPredictor predictor = runner.createPredictor(trainResult.cvFolds, trainResult.path)
-        def list = predictor.predict(dataset.getStream().limit(10), "Mutagen").collect(Collectors.toList())
+        def AbstractCCPRunner.Predictor predictor = runner.createPredictor(trainResult.cvFolds, trainResult.path)
+        def list = predictor.predict(dataset.getStream().limit(10), "Mutagen", 0.7).collect(Collectors.toList())
         //list.forEach { println it }
 
 
         then:
         list.size() == 10
+        list[0].values['Mutagen_Result'] != null
         list[0].values['Mutagen_PVal_F'] != null
         list[0].values['Mutagen_PVal_T'] != null
         list[0].values['Mutagen_AtomScores'] != null
