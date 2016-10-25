@@ -64,9 +64,9 @@ public class AbstractCCPRunner {
             IAtomContainer mol = CDKMoleculeIOUtils.fetchMolecule(mo, false);
             if (mol == null) {
                 return null;
-            } else if (o.equals(falseValue)) {
-                return new Pair<>(mol, 0d);
             } else if (o.equals(trueValue)) {
+                return new Pair<>(mol, 0d);
+            } else if (o.equals(falseValue)) {
                 return new Pair<>(mol, 1d);
             } else {
                 return null;
