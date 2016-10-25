@@ -131,6 +131,8 @@ public class CCPRegressionRunner extends AbstractCCPRunner {
 
         ISignCCPRegression signCCP = createCCPRegression();
 
+
+
         Iterator<Pair<IAtomContainer, Double>> molsIterator = createMolsIterator(mols, fieldName);
 
         // Load data
