@@ -39,6 +39,8 @@ public class ServiceDescriptorUtils {
                     serviceDescriptor.getIcon(),
                     makeAbsoluteUrl(baseUrl, serviceDescriptor),
                     serviceDescriptor.isEndpointRelative(),
+                    serviceDescriptor.getStatus(),
+                    serviceDescriptor.getStatusLastChecked(),
                     serviceDescriptor.getOptions(),
                     serviceDescriptor.getExecutorClassName()
             );

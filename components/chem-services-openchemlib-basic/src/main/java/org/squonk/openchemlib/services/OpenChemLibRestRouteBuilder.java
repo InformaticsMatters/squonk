@@ -5,12 +5,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
-import org.squonk.core.ServiceDescriptor;
-import org.squonk.core.ServiceDescriptor.DataType;
-import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.mqueue.MessageQueueCredentials;
-import org.squonk.options.OptionDescriptor;
-import org.squonk.types.MoleculeObject;
 import org.squonk.types.TypeResolver;
 
 import javax.inject.Inject;
@@ -36,62 +31,7 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
     @Inject
     private TypeResolver resolver;
 
-    private static final String ROUTE_VERIFY = "verify";
-    private static final String ROUTE_LOGP = "logp";
-    private static final String ROUTE_LOGS = "logs";
-    private static final String ROUTE_PSA = "psa";
-
     private static final String ROUTE_STATS = "seda:post_stats";
-
-
-    protected static final ServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
-            = new ServiceDescriptor[]{
-            createServiceDescriptor(
-                    "ocl.calculators.verify",
-                    "Verify structure (OCL)",
-                    "Verify that the molecules are valid according to OpenChemLib",
-                    new String[]{"verify", "openchemlib"},
-                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Verify+structure+%28OCL%29",
-                    "icons/properties_add.png",
-                    ROUTE_VERIFY,
-                    new OptionDescriptor[] {OptionDescriptor.IS_FILTER, OptionDescriptor.FILTER_MODE}),
-            createServiceDescriptor(
-                    "ocl.logp", "LogP (OpenChemLib)", "OpenChemLib LogP prediction",
-                    new String[]{"logp", "partitioning", "molecularproperties", "openchemlib"},
-                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/LogP+%28OpenChemLib%29",
-                    "icons/properties_add.png", ROUTE_LOGP, null),
-            createServiceDescriptor(
-                    "ocl.logs", "LogS (OpenChemLib)", "OpenChemLib Aqueous Solubility prediction",
-                    new String[]{"logs", "solubility", "molecularproperties", "openchemlib"},
-                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/LogS+%28OpenChemLib%29",
-                    "icons/properties_add.png", ROUTE_LOGS, null),
-            createServiceDescriptor(
-                    "ocl.psa", "PSA (OpenChemLib)", "OpenChemLib Polar Surface Area prediction",
-                    new String[]{"logp", "psa", "molecularproperties", "openchemlib"},
-                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/PSA+%28OpenChemLib%29",
-                    "icons/properties_add.png", ROUTE_PSA, null)
-    };
-
-
-    private static ServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String resourceUrl, String icon, String endpoint, OptionDescriptor[] options) {
-
-        return new ServiceDescriptor(
-                id,
-                name,
-                description,
-                tags,
-                resourceUrl,
-                MoleculeObject.class, // inputClass
-                MoleculeObject.class, // outputClass
-                DataType.STREAM, // inputType
-                DataType.STREAM, // outputType
-                icon,
-                endpoint,
-                true, // a relative URL
-                options,
-                StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME
-        );
-    }
 
     @Override
     public void configure() throws Exception {
@@ -121,39 +61,42 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
         // curl -X POST -T mols.json "http://localhost:8080/chem-services-openchemlib-basic/rest/v1/calculators/logp"
         rest("/v1/calculators").description("Property calculation services using OpenChemLib")
                 .bindingMode(RestBindingMode.off)
-                //
                 // service descriptor
                 .get().description("ServiceDescriptors for OpenChemLib calculators")
                 .bindingMode(RestBindingMode.json)
                 .produces("application/json")
                 .route()
                 .process((Exchange exch) -> {
-                    exch.getIn().setBody(CALCULATORS_SERVICE_DESCRIPTOR);
+                    exch.getIn().setBody(OpenChemLibBasicServices.ALL);
                 })
                 .endRest()
                 //
-                .post(ROUTE_VERIFY).description("Verify as OpenChemLib molecules")
+                .post(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_VERIFY.getExecutionEndpoint())
+                .description(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_VERIFY.getDescription())
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_DATASET_BASIC_JSON))
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(OpenChemLibCalculatorsRouteBuilder.OCL_STRUCTURE_VERIFY, resolver, ROUTE_STATS))
                 .endRest()
                 //
-                .post(ROUTE_LOGP).description("Calculate the LogP of the supplied structures")
+                .post(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_LOGP.getExecutionEndpoint())
+                .description(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_LOGP.getDescription())
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_DATASET_BASIC_JSON))
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(OpenChemLibCalculatorsRouteBuilder.OCL_LOGP, resolver, ROUTE_STATS))
                 .endRest()
                 //
-                .post(ROUTE_LOGS).description("Calculate the aqueous solubility of the supplied structures")
+                .post(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_LOGS.getExecutionEndpoint())
+                .description(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_LOGS.getDescription())
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_DATASET_BASIC_JSON))
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(OpenChemLibCalculatorsRouteBuilder.OCL_LOGS, resolver, ROUTE_STATS))
                 .endRest()
                 //
-                .post(ROUTE_PSA).description("Calculate the polar surface area of the supplied structures")
+                .post(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_PSA.getExecutionEndpoint())
+                .description(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_PSA.getDescription())
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_DATASET_BASIC_JSON))
                 .route()

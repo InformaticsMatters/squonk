@@ -20,7 +20,7 @@ class ServiceDiscoveryRouteBuilderSpec extends Specification {
         setup:     
         SimpleRegistry registry = new SimpleRegistry()
         ServiceDescriptorStore serviceDescriptorStore = new ServiceDescriptorStore();
-        serviceDescriptorStore.addServiceDescriptors("ignored", TEST_SERVICE_DESCRIPTORS);
+        serviceDescriptorStore.updateServiceDescriptors("ignored", null, Arrays.asList(TEST_SERVICE_DESCRIPTORS))
         registry.put(ServerConstants.SERVICE_DESCRIPTOR_STORE, serviceDescriptorStore)
         DefaultCamelContext context = new DefaultCamelContext(registry)
         ServiceDiscoveryRouteBuilder rb = new ServiceDiscoveryRouteBuilder()

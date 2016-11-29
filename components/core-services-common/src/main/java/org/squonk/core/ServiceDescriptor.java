@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.squonk.options.OptionDescriptor;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Descriptor of a service that can be used to parameterise a request to this service. The basic
@@ -36,6 +37,10 @@ public class ServiceDescriptor implements Serializable {
         OPTION  // read from one of the options with the key of 'body'
     }
 
+    public enum Status {
+        ACTIVE, INACTIVE, UNKNOWN
+    }
+
     private final String id;
     private final String name;
     private final String description;
@@ -50,6 +55,8 @@ public class ServiceDescriptor implements Serializable {
     private final boolean endpointRelative;
     private final OptionDescriptor[] options;
     private final String executorClassName;
+    private Status status;
+    private Date statusLastChecked;
 
     @JsonCreator
     public ServiceDescriptor(
@@ -65,6 +72,8 @@ public class ServiceDescriptor implements Serializable {
             @JsonProperty("icon") String icon,
             @JsonProperty("executionEndpoint") String executionEndpoint,
             @JsonProperty("endpointRelative") boolean endpointRelative,
+            @JsonProperty("status") Status status,
+            @JsonProperty("statusLastChecked") Date statusLastChecked,
             @JsonProperty("options") OptionDescriptor[] options,
             @JsonProperty("executorClassName") String executorClassName
     ) {
@@ -80,9 +89,44 @@ public class ServiceDescriptor implements Serializable {
         this.icon = icon;
         this.executionEndpoint = executionEndpoint;
         this.endpointRelative = endpointRelative;
+        this.status = status;
         this.options = options;
         this.executorClassName = executorClassName;
     }
+
+    public ServiceDescriptor(
+            String id,
+            String name,
+            String description,
+            String[] tags,
+            String resourceUrl,
+            Class inputClass,
+            Class outputClass,
+            DataType inputType,
+            DataType outputType,
+            String icon,
+            String executionEndpoint,
+            boolean endpointRelative,
+            OptionDescriptor[] options,
+            String executorClassName
+    ) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.tags = tags;
+        this.resourceUrl = resourceUrl;
+        this.inputClass = inputClass;
+        this.outputClass = outputClass;
+        this.inputType = inputType;
+        this.outputType = outputType;
+        this.icon = icon;
+        this.executionEndpoint = executionEndpoint;
+        this.endpointRelative = endpointRelative;
+        this.status = Status.UNKNOWN;
+        this.options = options;
+        this.executorClassName = executorClassName;
+    }
+
 
     /**
      * The ID of this service
@@ -166,7 +210,8 @@ public class ServiceDescriptor implements Serializable {
         return outputType;
     }
 
-    /** The relative or absolute path to an icon that describes the service
+    /**
+     * The relative or absolute path to an icon that describes the service
      *
      * @return
      */
@@ -180,6 +225,22 @@ public class ServiceDescriptor implements Serializable {
 
     public boolean isEndpointRelative() {
         return endpointRelative;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public Date getStatusLastChecked() {
+        return statusLastChecked;
+    }
+
+    public void setStatusLastChecked(Date statusLastChecked) {
+        this.statusLastChecked = statusLastChecked;
     }
 
     public OptionDescriptor[] getOptions() {

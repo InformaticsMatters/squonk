@@ -1,8 +1,10 @@
 package org.squonk.core.service.discovery;
 
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.ServiceDescriptorSet;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -10,71 +12,35 @@ import java.util.*;
  */
 public class ServiceDescriptorStore {
 
-    private final Map<String, Item> items = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String,ServiceDescriptorSet> items = new ConcurrentHashMap<>();
 
     public List<ServiceDescriptor> getServiceDescriptors() {
         List<ServiceDescriptor> list = new ArrayList<>();
-        for (Item item : items.values()) {
-            list.add(item.serviceDescriptor);
+        for (ServiceDescriptorSet item : items.values()) {
+            list.addAll(item.getServiceDescriptors());
         }
         return list;
     }
 
-    /**
-     * Get the endpoint, converting to absolute URL if needed
-     *
-     * @param serviceDescId
-     * @return
-     */
-    public String resolveEndpoint(String serviceDescId) {
-        Item item = items.get(serviceDescId);
-        if (item == null) {
-            return null;
+    public List<ServiceDescriptorSet> getServiceDescriptorSets() {
+        List<ServiceDescriptorSet> list = new ArrayList<>();
+        list.addAll(items.values());
+        return list;
+    }
+
+    public void updateServiceDescriptors(String baseUrl, String healthUrl, List<ServiceDescriptor> serviceDescriptors) {
+        ServiceDescriptorSet sdset = items.get(baseUrl);
+        if (sdset == null) {
+            items.put(baseUrl, new ServiceDescriptorSet(baseUrl, healthUrl, serviceDescriptors));
         } else {
-            return ServiceDescriptorUtils.makeAbsoluteUrl(item.baseUrl, item.serviceDescriptor);
+            sdset.updateServiceDescriptors(serviceDescriptors);
         }
     }
 
-    public void addServiceDescriptors(String baseUrl, ServiceDescriptor[] serviceDescriptors) {
-        for (ServiceDescriptor serviceDescriptor : serviceDescriptors) {
-            addServiceDescriptor(baseUrl, serviceDescriptor);
-        }
-    }
-
-    public void addServiceDescriptor(String baseUrl, ServiceDescriptor serviceDescriptor) {
-        Item item = new Item(baseUrl, serviceDescriptor);
-        items.put(serviceDescriptor.getId(), item);
-    }
 
     public void removeServiceDescriptors(String baseUrl) {
-        Iterator<Map.Entry<String, Item>> it = items.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Item> e = it.next();
-            if (baseUrl.equals(e.getValue().baseUrl)) {
-                it.remove();
-            }
-        }
+        items.remove(baseUrl);
     }
 
-    public ServiceDescriptor getServiceDescriptor(String id) {
-        Item item = items.get(id);
-        if (item == null) {
-            return null;
-        } else {
-            return item.serviceDescriptor;
-
-        }
-    }
-
-    class Item {
-
-        final String baseUrl;
-        final ServiceDescriptor serviceDescriptor;
-
-        Item(String baseUrl, ServiceDescriptor serviceDescriptor) {
-            this.baseUrl = baseUrl;
-            this.serviceDescriptor = serviceDescriptor;
-        }
-    }
 
 }

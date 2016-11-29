@@ -13,6 +13,7 @@ import org.squonk.core.service.user.UserPostgresClient;
 import org.squonk.core.util.Utils;
 
 import javax.sql.DataSource;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 /**
@@ -60,7 +61,7 @@ public class CamelLifeCycle {
         LOG.fine("beforeAddRoutes()");
         
         ServiceDescriptorStore serviceDescriptorStore = new ServiceDescriptorStore();
-        serviceDescriptorStore.addServiceDescriptors("ignored", ServiceDiscoveryRouteBuilder.TEST_SERVICE_DESCRIPTORS);
+        serviceDescriptorStore.updateServiceDescriptors("ignored", null, Arrays.asList(ServiceDiscoveryRouteBuilder.TEST_SERVICE_DESCRIPTORS));
         r.put(ServerConstants.SERVICE_DESCRIPTOR_STORE, serviceDescriptorStore);
         r.put(ServerConstants.USER_HANDLER, new UserHandler(new UserPostgresClient(dataSource)));
     }

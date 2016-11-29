@@ -22,30 +22,17 @@ class CdkRestRouteBuilderSpec extends Specification {
 
     @Shared CamelContext context = new DefaultCamelContext()
 
-    void setupSpec() {
+//    void setupSpec() {
 //        context.addRoutes(new CdkCalculatorsRouteBuilder())
 //        context.addRoutes(new CdkRestRouteBuilder())
 //        ThreadPoolProfile profile = new ThreadPoolProfileBuilder(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME).poolSize(4).maxPoolSize(10).build();
 //        context.getExecutorServiceManager().registerThreadPoolProfile(profile);
-        context.start()
-    }
+//        context.start()
+//    }
 
-    void cleanup() {
-        context?.stop()
-    }
-
-    void "serviceDescriptor to/from json"() {
-
-        when:
-        String json = JsonHandler.getInstance().objectToJson(CdkRestRouteBuilder.CALCULATORS_SERVICE_DESCRIPTOR)
-        Stream<ServiceDescriptor> sds = JsonHandler.getInstance().streamFromJson(json, ServiceDescriptor.class)
-
-        then:
-        json.length() > 0
-        sds.count() > 0
-
-    }
-
+//    void cleanup() {
+//        context?.stop()
+//    }
 
 
 //    void "logp"() {
