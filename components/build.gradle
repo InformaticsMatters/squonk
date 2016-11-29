@@ -28,10 +28,10 @@ allprojects {
     sourceCompatibility = 1.8
     version = '0.2-SNAPSHOT'
 
-    project.ext.set('camelVersion', '2.17.1')
+    project.ext.set('camelVersion', '2.18.0')
     // look at the jackson2-version property here (with correct tag) to get the right Jackson version
     // https://github.com/apache/camel/blob/master/parent/pom.xml
-    project.ext.set('jacksonVersion', '2.7.2')
+    project.ext.set('jacksonVersion', '2.8.4')
     project.ext.set('cdkVersion', '1.5.14')
     project.ext.set('groovyVersion', '2.4.4')
     project.ext.set('weldVersion', '2.3.2.Final')

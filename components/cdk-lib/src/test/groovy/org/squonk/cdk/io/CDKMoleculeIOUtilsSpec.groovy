@@ -1,5 +1,7 @@
 package org.squonk.cdk.io
 
+import org.openscience.cdk.fingerprint.SignatureFingerprinter
+import org.openscience.cdk.signature.MoleculeSignature
 import org.squonk.types.MoleculeObject
 import org.openscience.cdk.ChemFile
 import org.openscience.cdk.interfaces.IAtomContainer
@@ -270,6 +272,38 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         println result
         result.length() > 0
 
+    }
+
+
+    void "signatures for sdf"() {
+
+        //String file = '../../data/testfiles/Kinase_inhibs.sdf.gz'
+        String file = "../../data/testfiles/dhfr_standardized.sdf.gz"
+        GZIPInputStream gzip = new GZIPInputStream(new FileInputStream(file))
+
+        when:
+        def iter = CDKMoleculeIOUtils.moleculeIterable(gzip)
+        SignatureFingerprinter fingerprinter = new SignatureFingerprinter(3)
+        def soFar = [] as HashSet
+        int i = 0
+        def sigs = iter.collect { m ->
+            MoleculeSignature moleculeSignature = new MoleculeSignature(m);
+            String canonicalSignature = moleculeSignature.toCanonicalString();
+            //println "================================================"
+            //println canonicalSignature
+            def fp = fingerprinter.getRawFingerprint(m)
+            //println "------------------------------------------------"
+            fp.each { k,v ->
+                soFar << k
+                //println "$v $k"
+            }
+            println "$i ${soFar.size()}"
+            i++
+            return canonicalSignature
+        }
+
+        then:
+        sigs.size() == 756
     }
     
 }

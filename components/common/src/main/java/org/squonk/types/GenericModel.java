@@ -6,6 +6,7 @@ import org.squonk.util.IOUtils;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -17,7 +18,7 @@ import java.util.Map;
  * in size. These items are identified by the streamNames property.
  * When reading values using this class all streams MUST be closed when finished, even if they are not read. The
  * close() method can be used to do this.
- *
+ * <p>
  * <p>
  * <p>
  * Created by timbo on 18/10/2016.
@@ -56,4 +57,43 @@ public class GenericModel<T> implements AutoCloseable {
     public void close() {
         streams.values().forEach(is -> IOUtils.close(is));
     }
+
+    public interface StreamIterator {
+
+        boolean hasNext();
+        void next();
+        String currentName();
+        InputStream currentInputStream();
+    }
+
+    public static class DefaultStreamProvider implements StreamIterator {
+
+        private final Iterator<Map.Entry<String, InputStream>> iterator;
+        private Map.Entry<String, InputStream> current;
+
+        public DefaultStreamProvider(Map<String, InputStream> streamsMap) {
+            this.iterator = streamsMap.entrySet().iterator();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        @Override
+        public void next() {
+            current = iterator.next();
+        }
+
+        @Override
+        public String currentName() {
+            return current.getKey();
+        }
+
+        @Override
+        public InputStream currentInputStream() {
+            return current.getValue();
+        }
+    }
+
 }

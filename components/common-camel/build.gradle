@@ -16,8 +16,10 @@ dependencies {
     compile "org.apache.camel:camel-mail:$camelVersion"
 
 
+
     compile "org.jboss.weld.se:weld-se:$weldVersion"
 
     testCompile "org.apache.camel:camel-jetty:$camelVersion"
+    testCompile "org.jvnet.mimepull:mimepull:1.9.6"
 
 }

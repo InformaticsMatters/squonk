@@ -58,7 +58,7 @@ class CCPClassifierRunnerSpec extends Specification {
         when:
         def AbstractCCPRunner.Predictor predictor = runner.createPredictor(trainResult.cvFolds, trainResult.path)
         def list = predictor.predict(dataset.getStream().limit(10), "Mutagen", 0.7).collect(Collectors.toList())
-        //list.forEach { println it }
+        list.forEach { println it }
 
 
         then:
