@@ -100,29 +100,29 @@ class ExecuteServicesAsJobsSpec extends AbstractExecuteDocker {
         findResultSize(notebookId, editableId, cellId, "spherex") == 36
     }
 
-    void "chemaxon screen"() {
-
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
-                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "screen")
-                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, CONFIG.basicChemaxonChemServicesBaseUrl+"/descriptors/screening/ecfp4")
-                .withOption('option.filter', true)
-                .withOption('header.threshold', 0.5)
-                .withOption('header.structure_source', 'Oc1cccc(c1)c2nc(N3CCOCC3)c4oc5ncccc5c4n2')
-                .withOption('header.structure_format', 'smiles')
-
-        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(notebookId, editableId, cellId, step)
-        jobdef.configureCellAndSteps(notebookId, editableId, cellId, step)
-
-        when:
-        JobStatus status1 = jobClient.submit(jobdef, username, null)
-        JobStatus status2 = waitForJob(status1.jobId)
-
-        then:
-        status1.status == JobStatus.Status.RUNNING
-        status2.status == JobStatus.Status.COMPLETED
-        int count = findResultSize(notebookId, editableId, cellId, "screen")
-        count >= 1
-        count < 36
-    }
+//    void "chemaxon screen"() {
+//
+//        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
+//                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
+//                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "screen")
+//                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, CONFIG.basicChemaxonChemServicesBaseUrl+"/descriptors/screening/ecfp4")
+//                .withOption('option.filter', true)
+//                .withOption('header.threshold', 0.5)
+//                .withOption('header.structure_source', 'Oc1cccc(c1)c2nc(N3CCOCC3)c4oc5ncccc5c4n2')
+//                .withOption('header.structure_format', 'smiles')
+//
+//        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(notebookId, editableId, cellId, step)
+//        jobdef.configureCellAndSteps(notebookId, editableId, cellId, step)
+//
+//        when:
+//        JobStatus status1 = jobClient.submit(jobdef, username, null)
+//        JobStatus status2 = waitForJob(status1.jobId)
+//
+//        then:
+//        status1.status == JobStatus.Status.RUNNING
+//        status2.status == JobStatus.Status.COMPLETED
+//        int count = findResultSize(notebookId, editableId, cellId, "screen")
+//        count >= 1
+//        count < 36
+//    }
 }

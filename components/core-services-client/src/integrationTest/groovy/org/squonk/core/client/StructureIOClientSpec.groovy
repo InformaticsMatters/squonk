@@ -23,7 +23,7 @@ class StructureIOClientSpec extends Specification {
     }
 
     void "simple get"() {
-        URL url = new URL(baseurl + "moldepict?w=200&h=200&bg=%2300ffffff&expand=1&mol=C1%3DCC%3DCC%3DC1&molFormat=smiles&format=png")
+        URL url = new URL(baseurl + "moldepict?w=200&h=200&bg=%2300ffffff&expand=1&mol=C1%3DCC%3DCC%3DC1&molFormat=smiles&imgFormat=png")
 
         when:
         InputStream is = url.openStream()

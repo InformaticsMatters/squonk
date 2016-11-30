@@ -118,8 +118,13 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                             List<ServiceDescriptor> sds = loadServiceDescriptors(u);
                             checkHealth(u, p, sds);
                             updateServiceDescriptors(u, p, sds);
-                        } catch (Exception e) {
-                            LOG.warning("Failed to update service descriptors for " + u + " cause " + e.getMessage());
+                        } catch (Exception ex1) {
+                            LOG.warning("Failed to update service descriptors for " + u + " cause " + ex1.getMessage());
+                            try {
+                                client.updateServiceDescriptorStatus(u, ServiceDescriptor.Status.INACTIVE, new Date());
+                            } catch (Exception ex2) {
+                                LOG.warning("Failed to update status of service descriptors for " + u + " cause " + ex2.getMessage());
+                            }
                         }
                     });
                 });
@@ -131,7 +136,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     }
 
     private void checkHealth(String baseUrl, String healthUrl, List<ServiceDescriptor> serviceDescriptors) {
-        int s = 0;
+        boolean b = true;
         final Date now = new Date();
         if (healthUrl != null) {
             try {
@@ -140,18 +145,16 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                 connection.setRequestMethod("GET");
                 connection.connect();
                 int code = connection.getResponseCode();
-                s = code == 200 ? 1 : 2;
+                b = code == 200;
             } catch (Exception ex) {
                 LOG.log(Level.INFO, "Health check failed for " + healthUrl, ex);
             }
         }
-        ServiceDescriptor.Status status = (s == 0 ? ServiceDescriptor.Status.UNKNOWN : (s == 1 ? ServiceDescriptor.Status.ACTIVE : ServiceDescriptor.Status.INACTIVE));
+        ServiceDescriptor.Status status = (b? ServiceDescriptor.Status.ACTIVE : ServiceDescriptor.Status.INACTIVE);
         LOG.info("Setting status of " + serviceDescriptors.size() + " service descriptors from " + baseUrl + " with health URL of " + healthUrl + " to " + status);
         serviceDescriptors.forEach(sd -> {
             sd.setStatus(status);
-            if (status !=  ServiceDescriptor.Status.UNKNOWN) {
-                sd.setStatusLastChecked(now);
-            }
+            sd.setStatusLastChecked(now);
         });
     }
 

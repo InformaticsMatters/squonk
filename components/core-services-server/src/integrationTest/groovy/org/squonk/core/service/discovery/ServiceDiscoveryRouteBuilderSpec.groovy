@@ -31,10 +31,15 @@ class ServiceDiscoveryRouteBuilderSpec extends Specification {
         
         then:
         println "Discovered ${results.size()} active service definitions"
-        results.size() == 1 // confirm we get the one service descriptor back
+        results.size() > 1 // confirm we get at least that one service descriptor back
+        boolean b = false
         results.each {
             println "  SD ${it.id}"
+            if (it.id == "test.noop") {
+                b = true
+            }
         }
+        b == true
                 
         cleanup:
         context.stop()

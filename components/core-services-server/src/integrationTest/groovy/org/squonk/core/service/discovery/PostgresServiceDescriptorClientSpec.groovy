@@ -2,7 +2,6 @@ package org.squonk.core.service.discovery
 
 import org.squonk.core.ServiceDescriptor
 import org.squonk.core.ServiceDescriptorSet
-import org.squonk.options.OptionDescriptor
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -113,6 +112,31 @@ class PostgresServiceDescriptorClientSpec extends Specification {
         list[1].baseUrl == "http://somewhere.com/baseurl/2"
 
     }
+
+    void "test fetch one"() {
+
+        when:
+        def list = client.fetch("http://somewhere.com/baseurl/1")
+
+        then:
+        list.size() == 3
+
+    }
+
+    void "test update status"() {
+
+        when:
+        client.updateServiceDescriptorStatus("http://somewhere.com/baseurl/1", ServiceDescriptor.Status.INACTIVE, new Date())
+        def list = client.fetch("http://somewhere.com/baseurl/1")
+
+        then:
+        list.each {
+            assert it.status == ServiceDescriptor.Status.INACTIVE
+        }
+
+    }
+
+
 
 
 }
