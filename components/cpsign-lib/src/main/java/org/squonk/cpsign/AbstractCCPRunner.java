@@ -6,6 +6,7 @@ import org.javatuples.Pair;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.squonk.cdk.io.CDKMoleculeIOUtils;
 import org.squonk.types.AtomPropertySet;
+import org.squonk.types.CPSignTrainResult;
 import org.squonk.types.MoleculeObject;
 
 import java.io.File;
@@ -16,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
@@ -23,21 +25,23 @@ import java.util.stream.Stream;
  */
 public class AbstractCCPRunner {
 
+    private static final Logger LOG = Logger.getLogger(AbstractCCPRunner.class.getName());
+
     protected static final String signaturesFilename = "signatures.signs";
     protected static final String modelFilebase = "model";
 
     protected final File dataDir;
     protected final CPSignFactory factory;
-    protected final TrainResult.Library library;
+    protected final CPSignTrainResult.Library library;
     protected final int signatureStartHeight;
     protected final int signatureEndHeight;
     protected boolean compress = false;
 
     public AbstractCCPRunner(File license, File dataDir) throws IOException {
-        this(license, dataDir, TrainResult.Library.LibSVM, 1, 3);
+        this(license, dataDir, CPSignTrainResult.Library.LibSVM, 1, 3);
     }
 
-    public AbstractCCPRunner(File license, File dataDir, TrainResult.Library library, int signatureStartHeight, int signatureEndHeight) throws IOException {
+    public AbstractCCPRunner(File license, File dataDir, CPSignTrainResult.Library library, int signatureStartHeight, int signatureEndHeight) throws IOException {
         this.dataDir = dataDir;
         this.factory = new CPSignFactory(new FileInputStream(license));
         this.library = library;
@@ -49,17 +53,20 @@ public class AbstractCCPRunner {
             List<MoleculeObject> mols, String fieldName,
             Object trueValue, Object falseValue) {
 
+        LOG.info("Looking for field " + fieldName + " with values " + trueValue +" and " + falseValue + " from " + mols.size() + " mols");
+
         Stream<Pair<IAtomContainer, Double>> pairs = mols.stream().map((mo) -> {
             Object o = mo.getValue(fieldName);
+            //System.out.println("Mol: " + mo.getUUID() + " -> " + o);
             if (o == null) {
                 return null;
             }
             IAtomContainer mol = CDKMoleculeIOUtils.fetchMolecule(mo, false);
             if (mol == null) {
                 return null;
-            } else if (o.equals(falseValue)) {
-                return new Pair<>(mol, 0d);
             } else if (o.equals(trueValue)) {
+                return new Pair<>(mol, 0d);
+            } else if (o.equals(falseValue)) {
                 return new Pair<>(mol, 1d);
             } else {
                 return null;
@@ -72,8 +79,11 @@ public class AbstractCCPRunner {
     protected Iterator<Pair<IAtomContainer, Double>> createMolsIterator(
             List<MoleculeObject> mols, String fieldName) {
 
+        LOG.info("Looking for field " + fieldName + " from " + mols.size() + " mols");
+
         Stream<Pair<IAtomContainer, Double>> pairs = mols.stream().map((mo) -> {
             Object o = mo.getValue(fieldName);
+            //System.out.println("Mol: " + mo.getUUID() + " -> " + o);
             if (o == null) {
                 return null;
             }
@@ -113,15 +123,9 @@ public class AbstractCCPRunner {
     }
 
 
-    protected interface RegressionPredictor {
+    protected interface Predictor {
 
         Stream<MoleculeObject> predict(Stream<MoleculeObject> mols, String label, double confidence) throws Exception;
-
-    }
-
-    protected interface ClassificationPredictor {
-
-        Stream<MoleculeObject> predict(Stream<MoleculeObject> mols, String label) throws Exception;
 
     }
 

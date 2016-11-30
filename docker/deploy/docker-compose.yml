@@ -116,6 +116,7 @@ services:
             RABBITMQ_SQUONK_PASS:
         volumes:
         - ./images/chemservices/chemaxon_reaction_library.zip:/chemaxon_reaction_library.zip:ro
+        - /cpsign_data # TODO make this persistent
         networks:
         - squonk_back
         

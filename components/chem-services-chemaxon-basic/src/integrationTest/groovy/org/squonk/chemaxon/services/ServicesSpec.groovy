@@ -38,7 +38,7 @@ class ServicesSpec extends Specification {
     }
 
 
-    void "fetch ServiceDescriptors"() {
+    void "fetch calculators ServiceDescriptors"() {
 
         when:
         InputStream json = new URL("http:"+calculatorsbase).openStream()
@@ -51,6 +51,21 @@ class ServicesSpec extends Specification {
         json?.close()
 
     }
+
+    void "fetch descriptors ServiceDescriptors"() {
+
+        when:
+        InputStream json = new URL("http:"+descriptorsbase).openStream()
+        Stream<ServiceDescriptor> sds = JsonHandler.getInstance().streamFromJson(json, ServiceDescriptor.class, false)
+
+        then:
+        sds.count() > 0
+
+        cleanup:
+        json?.close()
+
+    }
+
 
     void "rest calculators json/json"() {
 
@@ -83,7 +98,7 @@ class ServicesSpec extends Specification {
         M | M | '/lipinski'         | MoleculeObject.class | 5 // 4 + error count
     }
 
-    void "rest clustering json/json"() {
+    void "test clustering json/json"() {
 
         Dataset dataset = Molecules.nci100Dataset()
         InputStream json = dataset.getInputStream(false)
@@ -112,7 +127,7 @@ class ServicesSpec extends Specification {
     }
 
 
-    void "rest screening json/json"() {
+    void "test screening json/json"() {
 
         Dataset dataset = Molecules.nci100Dataset()
         InputStream json = dataset.getInputStream(false)

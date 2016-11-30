@@ -1,8 +1,10 @@
 package org.squonk.chemaxon.screening
 
 import chemaxon.formats.MolImporter
+import chemaxon.standardizer.Standardizer
 import chemaxon.struc.Molecule
 import chemaxon.struc.MoleculeGraph
+import chemaxon.util.standardizer.StandardizerUtil
 import com.chemaxon.descriptors.fingerprints.ecfp.EcfpGenerator
 import com.chemaxon.descriptors.fingerprints.ecfp.EcfpParameters
 import spock.lang.Shared
@@ -19,6 +21,17 @@ class MoleculeScreenerSpec extends Specification {
         "CN(C)C1=C(Cl)C(=O)C2=C(C=CC=C2)C1=O",
         "CN(C)C1=C(Cl)C(=O)C2=C(C=CC=C2)C1=O.Cl"
     ]
+
+    void "test read default standardizer"() {
+        String xml = StandardizerUtil.DEFAULT_STANDARDIZER_CONFIG
+        println xml
+
+        when:
+        Standardizer szr = new Standardizer(xml)
+
+        then:
+        szr != null
+    }
 	
     void "test identical"() {
         setup:

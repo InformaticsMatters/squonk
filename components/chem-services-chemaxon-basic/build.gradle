@@ -38,7 +38,7 @@ dependencies {
  * http://www.petrikainulainen.net/programming/gradle/getting-started-with-gradle-integration-testing-with-the-testsets-plugin/
  * */
 testSets {
-    integrationTest
+    [integrationTest, integrationTestNoShutdown]
 }
 
 //check.dependsOn integrationTest
@@ -51,6 +51,10 @@ tasks.withType(Test) {
 integrationTest {
     dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean
     finalizedBy rootProject.tasks.integrationTestEnvShutdown
+}
+
+integrationTestNoShutdown {
+    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean
 }
 
 tomcat {

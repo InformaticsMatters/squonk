@@ -2,11 +2,8 @@ package org.squonk.core.service.discovery;
 
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
-import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
-import org.squonk.core.ServerConstants;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.core.ServiceDescriptorSet;
@@ -28,15 +25,16 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     private static final Logger LOG = Logger.getLogger(ServiceDiscoveryRouteBuilder.class.getName());
 
     public static final String ROUTE_REQUEST = "direct:request";
-    private static final String DOCKER_IP = System.getenv("DOCKER_IP") != null ? System.getenv("DOCKER_IP") : "localhost";
 
     private final JsonHandler jsonHandler = JsonHandler.getInstance();
+    private final PostgresServiceDescriptorClient client = new PostgresServiceDescriptorClient();
 
     /**
      * This allows the timer to be turned off or set to only run a certain
      * number of times, primarily to allow easy testing
      */
     protected int timerRepeats = 0;
+
     /**
      * This allows the timer delay to be set, primarily to allow easy testing
      */
@@ -51,6 +49,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 
         if (basicChemServicesUrl != null) {
             LOG.info("Enabling basic chem services from " + basicChemServicesUrl);
+
             locations.put(basicChemServicesUrl + "/chem-services-cdk-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-cdk-basic/rest/ping");
             locations.put(basicChemServicesUrl + "/chem-services-cdk-basic/rest/v1/converters", basicChemServicesUrl + "/chem-services-cdk-basic/rest/ping");
             locations.put(basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/ping");
@@ -59,12 +58,15 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             locations.put(basicChemServicesUrl + "/chem-services-rdkit-search/rest/v1/db", basicChemServicesUrl + "/chem-services-rdkit-search/rest/ping");
             locations.put(basicChemServicesUrl + "/chem-services-openchemlib-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-openchemlib-basic/rest/ping");
             locations.put(basicChemServicesUrl + "/chem-services-smartcyp/rest/v1", basicChemServicesUrl + "/chem-services-smartcyp/rest/ping");
+            locations.put(basicChemServicesUrl + "/chem-services-cpsign/rest/v1", basicChemServicesUrl + "/chem-services-cpsign/rest/ping");
+
         } else {
             LOG.warning("Environment variable SQUONK_BASIC_CHEM_SERVICES_URL not defined. Basic Chem services will not be available");
         }
 
         if (rdkitPythonServicesUrl != null) {
             LOG.info("Enabling RDKit python services from " + rdkitPythonServicesUrl);
+
             locations.put(rdkitPythonServicesUrl + "/rdkit_screen/", null);
             locations.put(rdkitPythonServicesUrl + "/rdkit_cluster/", null);
             locations.put(rdkitPythonServicesUrl + "/rdkit_filter/", null);
@@ -99,10 +101,11 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         from(ROUTE_REQUEST)
                 .log("ROUTE_REQUEST")
                 .process((Exchange exch) -> {
-                    ServiceDescriptorStore store = getServiceDescriptorStore(exch.getContext());
+                    List<ServiceDescriptorSet> sets = client.list();
                     List<ServiceDescriptor> list = new ArrayList<>();
-                    //list.addAll(Arrays.asList(TEST_SERVICE_DESCRIPTORS));
-                    list.addAll(store.getServiceDescriptors());
+                    for (ServiceDescriptorSet set : sets) {
+                        list.addAll(set.getServiceDescriptors());
+                    }
                     exch.getIn().setBody(list);
                 });
 
@@ -110,22 +113,21 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         from("timer:discover?period=" + timerDelay + "&repeatCount=" + timerRepeats)
 
                 .process((Exchange exch) -> {
-                    ServiceDescriptorStore store = getServiceDescriptorStore(exch.getContext());
-                    loadAllServiceDescriptors(store);
+                    locations.forEach((u, p) -> {
+                        try {
+                            List<ServiceDescriptor> sds = loadServiceDescriptors(u);
+                            checkHealth(u, p, sds);
+                            updateServiceDescriptors(u, p, sds);
+                        } catch (Exception e) {
+                            LOG.warning("Failed to update service descriptors for " + u + " cause " + e.getMessage());
+                        }
+                    });
                 });
 
     }
 
-    private void loadAllServiceDescriptors(ServiceDescriptorStore store) {
-        locations.forEach((u, p) -> {
-            try {
-                List<ServiceDescriptor> sds = loadServiceDescriptors(u);
-                checkHealth(u, p, sds);
-                store.updateServiceDescriptors(u, p, sds);
-            } catch (Exception e) {
-                LOG.warning("Failed to load service descriptors for " + u);
-            }
-        });
+    protected void updateServiceDescriptors(String baseUrl, String healthUrl, List<ServiceDescriptor> sds) throws Exception {
+        client.update(new ServiceDescriptorSet(baseUrl, healthUrl, sds));
     }
 
     private void checkHealth(String baseUrl, String healthUrl, List<ServiceDescriptor> serviceDescriptors) {
@@ -151,21 +153,16 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                 sd.setStatusLastChecked(now);
             }
         });
-
     }
 
     private List<ServiceDescriptor> loadServiceDescriptors(String url) throws IOException {
-        ObjectReader reader = JsonHandler.getInstance().getObjectMapper().readerFor(ServiceDescriptor.class);
+        ObjectReader reader = jsonHandler.getObjectMapper().readerFor(ServiceDescriptor.class);
         MappingIterator<ServiceDescriptor> iter = reader.readValues(new URL(url));
         List<ServiceDescriptor> list = new ArrayList<>();
         while (iter.hasNext()) {
             list.add(iter.next());
         }
         return list;
-    }
-
-    final ServiceDescriptorStore getServiceDescriptorStore(CamelContext context) {
-        return context.getRegistry().lookupByNameAndType(ServerConstants.SERVICE_DESCRIPTOR_STORE, ServiceDescriptorStore.class);
     }
 
 }

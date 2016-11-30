@@ -6,14 +6,11 @@ import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.spi.ThreadPoolProfile;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.core.ServerConstants;
-import org.squonk.core.service.discovery.ServiceDescriptorStore;
-import org.squonk.core.service.discovery.ServiceDiscoveryRouteBuilder;
 import org.squonk.core.service.user.UserHandler;
 import org.squonk.core.service.user.UserPostgresClient;
 import org.squonk.core.util.Utils;
 
 import javax.sql.DataSource;
-import java.util.Arrays;
 import java.util.logging.Logger;
 
 /**
@@ -59,10 +56,6 @@ public class CamelLifeCycle {
 
     public void beforeAddRoutes(CamelContext context, SimpleRegistry r) throws Exception {
         LOG.fine("beforeAddRoutes()");
-        
-        ServiceDescriptorStore serviceDescriptorStore = new ServiceDescriptorStore();
-        serviceDescriptorStore.updateServiceDescriptors("ignored", null, Arrays.asList(ServiceDiscoveryRouteBuilder.TEST_SERVICE_DESCRIPTORS));
-        r.put(ServerConstants.SERVICE_DESCRIPTOR_STORE, serviceDescriptorStore);
         r.put(ServerConstants.USER_HANDLER, new UserHandler(new UserPostgresClient(dataSource)));
     }
 

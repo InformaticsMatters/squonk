@@ -17,12 +17,19 @@ import org.squonk.util.StatsRecorder;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import static org.squonk.util.CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON;
+import static org.squonk.util.CommonMimeTypes.MIME_TYPE_MDL_SDF;
+
 /**
  * Created by timbo on 30/03/16.
  */
 public abstract class AbstractMoleculeObjectHttpProcessor implements Processor {
 
     private static final Logger LOG = Logger.getLogger(MoleculeObjectRouteHttpProcessor.class.getName());
+
+    public static final String[] DEFAULT_INPUT_MIME_TYPES = new String[]{
+            MIME_TYPE_DATASET_MOLECULE_JSON,
+            MIME_TYPE_MDL_SDF};
 
     protected final TypeResolver resolver;
 
@@ -59,12 +66,11 @@ public abstract class AbstractMoleculeObjectHttpProcessor implements Processor {
 
         // get all the info about the requested input and output
         RequestInfo requestInfo = RequestInfo.build(supportedInputMimeTypes, supportedOutputMimeTypes, exch);
-        LOG.fine(requestInfo.toString());
+        LOG.info(requestInfo.toString());
 
         // work out what handlers are needed for the input and output
         // might as well fail now if we can't handle input or output
-        HttpHandler contentHandler;
-        contentHandler = resolver.createHttpHandler(requestInfo.getContentType());
+        HttpHandler contentHandler = resolver.createHttpHandler(requestInfo.getContentType());
         if (contentHandler == null) {
             throw new IllegalStateException("No HttpHandler for content mime type " + requestInfo.getContentType());
         }

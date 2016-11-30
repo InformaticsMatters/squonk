@@ -5,9 +5,11 @@ import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.squonk.cpsign.CCPClassifierRunner;
 import org.squonk.cpsign.CCPRegressionRunner;
-import org.squonk.cpsign.TrainResult;
+import org.squonk.types.CPSignTrainResult;
 import org.squonk.dataset.Dataset;
 import org.squonk.types.MoleculeObject;
+import org.squonk.types.NumberRange;
+import org.squonk.util.IOUtils;
 
 import java.io.File;
 import java.util.List;
@@ -26,19 +28,18 @@ public class CPSignTrainProcessor implements Processor {
     public static final String HEADER_PREDICT_TYPE = "predictType";
     public static final String HEADER_VALUE_1 = "value1";
     public static final String HEADER_VALUE_2 = "value2";
-    public static final String HEADER_SIGNATURE_START_HEIGHT = "sigStart";
-    public static final String HEADER_SIGNATURE_END_HEIGHT = "sigEnd";
+    public static final String HEADER_SIGNATURE_HEIGHT = "sigHeight";
 
     private static final Logger LOG = Logger.getLogger(CPSignTrainProcessor.class.getName());
 
-    private File workDir = new File("/Users/timbo/tmp/cpsign");
-    private File license = new File("/Users/timbo/dev/git/lac/data/licenses/cpsign0.3pro.license");
+    private String license = IOUtils.getConfiguration("CPSIGN_LICENSE_URL", null);
+    private String workDir = IOUtils.getConfiguration("CPSIGN_MODEL_DIR", null);
 
     @Override
     public void process(Exchange exch) throws Exception {
 
         Handler h = new Handler(exch.getIn());
-        TrainResult result = h.train();
+        CPSignTrainResult result = h.train();
         if (result == null) {
             throw new IllegalStateException("Options cannot be interpreted");
         }
@@ -75,19 +76,25 @@ public class CPSignTrainProcessor implements Processor {
     class Handler {
 
         Dataset<MoleculeObject> dataset;
-        TrainResult.Method method;
-        TrainResult.Library library;
-        TrainResult.Type type;
+        CPSignTrainResult.Method method;
+        CPSignTrainResult.Library library;
+        CPSignTrainResult.Type type;
         String fieldName;
         Integer cvFolds;
         Double confidence;
-        Integer startHeight;
-        Integer endHeight;
+        NumberRange.Integer sigHeight;
         String value1 = null;
         String value2 = null;
 
+        File licenseFile = new File(license);
+        File workDirFile = new File(workDir);
 
         Handler(Message msg) {
+
+            LOG.info("Using license file " + license);
+            LOG.info("Using work dir " + workDir);
+
+
             dataset = msg.getBody(Dataset.class);
             if (dataset == null || dataset.getType() != MoleculeObject.class) {
                 throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
@@ -99,18 +106,18 @@ public class CPSignTrainProcessor implements Processor {
             }
 
             String methodStr = msg.getHeader(HEADER_PREDICT_METHOD, String.class);
-            method = methodStr == null ? TrainResult.Method.CCP : TrainResult.Method.valueOf(methodStr);
+            method = methodStr == null ? CPSignTrainResult.Method.CCP : CPSignTrainResult.Method.valueOf(methodStr);
 
             String libraryStr = msg.getHeader(HEADER_PREDICT_LIBRARY, String.class);
-            library = libraryStr == null ? TrainResult.Library.LibSVM : TrainResult.Library.valueOf(libraryStr);
+            library = libraryStr == null ? CPSignTrainResult.Library.LibSVM : CPSignTrainResult.Library.valueOf(libraryStr);
 
             String typeStr = msg.getHeader(HEADER_PREDICT_TYPE, String.class);
             if (typeStr == null || typeStr.isEmpty()) {
                 throw new IllegalStateException("Prediction type must specified as Regression or Classification");
             }
 
-            type = TrainResult.Type.valueOf(typeStr);
-            if (type == TrainResult.Type.Classification) {
+            type = CPSignTrainResult.Type.valueOf(typeStr);
+            if (type == CPSignTrainResult.Type.Classification) {
                 value1 = msg.getHeader(HEADER_VALUE_1, String.class);
                 if (value1 == null || value1.isEmpty()) {
                     throw new IllegalStateException("Value 1 must be specified for regression");
@@ -129,26 +136,23 @@ public class CPSignTrainProcessor implements Processor {
             if (confidence == null) {
                 confidence = 0.7d;
             }
-            startHeight = msg.getHeader(HEADER_SIGNATURE_START_HEIGHT, Integer.class);
-            if (startHeight == null) {
-                startHeight = 1;
+            sigHeight = msg.getHeader(HEADER_SIGNATURE_HEIGHT, NumberRange.Integer.class);
+            if (sigHeight == null) {
+                sigHeight = new NumberRange.Integer(1,3);
             }
-            endHeight = msg.getHeader(HEADER_SIGNATURE_END_HEIGHT, Integer.class);
-            if (endHeight == null) {
-                endHeight = 3;
-            }
+
         }
 
-        TrainResult train() throws Exception {
-            TrainResult result;
+        CPSignTrainResult train() throws Exception {
+            CPSignTrainResult result;
             List<MoleculeObject> mols = dataset.getItems();
             switch (method) {
                 case CCP:
-                    if (type == TrainResult.Type.Regression) {
-                        CCPRegressionRunner runner = new CCPRegressionRunner(license, workDir, library, startHeight, endHeight);
+                    if (type == CPSignTrainResult.Type.Regression) {
+                        CCPRegressionRunner runner = new CCPRegressionRunner(licenseFile, workDirFile, library, sigHeight.getMinValue(), sigHeight.getMaxValue());
                         result = runner.train(mols, fieldName, cvFolds, confidence);
                     } else {
-                        CCPClassifierRunner runner = new CCPClassifierRunner(license, workDir, library, startHeight, endHeight);
+                        CCPClassifierRunner runner = new CCPClassifierRunner(licenseFile, workDirFile, library, sigHeight.getMinValue(), sigHeight.getMaxValue());
                         result = runner.train(mols, fieldName, value1, value2, cvFolds, confidence);
                     }
                     break;

@@ -65,6 +65,10 @@ public class JsonHandler {
         return mapper.writeValueAsString(o);
     }
 
+    public byte[] objectToBytes(Object o) throws JsonProcessingException {
+        return mapper.writeValueAsBytes(o);
+    }
+
     public void objectToFile(Object o, File f) throws JsonProcessingException, IOException {
         mapper.writeValue(f, o);
     }

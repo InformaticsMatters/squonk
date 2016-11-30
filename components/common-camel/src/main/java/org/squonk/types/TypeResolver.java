@@ -27,9 +27,12 @@ public class TypeResolver implements MimeTypeResolver {
         registerMimeType(MIME_TYPE_DATASET_BASIC_JSON, Dataset.class, BasicObject.class);
         registerMimeType(MIME_TYPE_DATASET_MOLECULE_JSON, Dataset.class, MoleculeObject.class);
         registerMimeType(MIME_TYPE_MDL_SDF, SDFile.class);
+        registerMimeType(MIME_TYPE_CPSIGN_TRAIN_RESULT, CPSignTrainResult.class);
         registerHttpHandler(Dataset.class, DatasetHandler.class);
         registerHttpHandler(SDFile.class, SDFileHandler.class);
+        registerHttpHandler(CPSignTrainResult.class, CPSignTrainResultHandler.class);
         registerVariableHandler(Dataset.class, DatasetHandler.class);
+        registerVariableHandler(CPSignTrainResult.class, CPSignTrainResultHandler.class);
     }
 
     public void registerMimeType(String mimeType, Class primaryType) {

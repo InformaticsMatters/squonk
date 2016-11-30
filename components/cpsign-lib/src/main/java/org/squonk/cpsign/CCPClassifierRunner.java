@@ -8,6 +8,7 @@ import org.javatuples.Pair;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.squonk.cdk.io.CDKMoleculeIOUtils;
+import org.squonk.types.CPSignTrainResult;
 import org.squonk.types.MoleculeObject;
 
 import java.io.*;
@@ -25,10 +26,10 @@ public class CCPClassifierRunner extends AbstractCCPRunner {
     private static final Logger LOG = Logger.getLogger(CCPClassifierRunner.class.getName());
 
     public CCPClassifierRunner(File license, File dataDir) throws IOException {
-        this(license, dataDir, TrainResult.Library.LibSVM, 1, 3);
+        this(license, dataDir, CPSignTrainResult.Library.LibSVM, 1, 3);
     }
 
-    public CCPClassifierRunner(File license, File dataDir, TrainResult.Library library, int signatureStartHeight, int signatureEndHeight) throws IOException {
+    public CCPClassifierRunner(File license, File dataDir, CPSignTrainResult.Library library, int signatureStartHeight, int signatureEndHeight) throws IOException {
         super(license, dataDir, library, signatureStartHeight, signatureEndHeight);
     }
 
@@ -37,7 +38,7 @@ public class CCPClassifierRunner extends AbstractCCPRunner {
         switch (library) {
             case LibLinear:
                 ccpImpl = factory.createCCPClassificationLibLinear();
-                break ;
+                break;
             case LibSVM:
                 ccpImpl = factory.createCCPClassificationLibSVM();
                 break;
@@ -46,7 +47,7 @@ public class CCPClassifierRunner extends AbstractCCPRunner {
         return factory.createSignCCPClassification(ccpImpl, signatureStartHeight, signatureEndHeight);
     }
 
-    public ClassificationPredictor createPredictor(int numModels, String path) throws Exception {
+    public Predictor createPredictor(int numModels, String path) throws Exception {
         ISignCCPClassification signCCP = createCCPClassifier();
         File dir = new File(dataDir, path);
         if (!dir.exists()) {
@@ -56,9 +57,9 @@ public class CCPClassifierRunner extends AbstractCCPRunner {
         // Load models previously trained
         signCCP.loadModelFiles(new File(dir, modelFilebase), numModels);
         signCCP.loadSignatures(new FileInputStream(new File(dir, signaturesFilename)));
-        return new ClassificationPredictor() {
+        return new Predictor() {
             @Override
-            public Stream<MoleculeObject> predict(Stream<MoleculeObject> mols, String label) throws Exception {
+            public Stream<MoleculeObject> predict(Stream<MoleculeObject> mols, String label, double confidence) throws Exception {
                 return mols.peek((mo) -> {
                     IAtomContainer testMol = CDKMoleculeIOUtils.fetchMolecule(mo, false);
                     try {
@@ -68,6 +69,14 @@ public class CCPClassifierRunner extends AbstractCCPRunner {
                         //LOG.info(ss.toString());
                         double[] pvals = ss.getPvals();
                         LOG.fine("Predicted pvals: [1: " + pvals[0] + ", 2: " + pvals[1] + "]");
+                        boolean t = pvals[0] >= confidence;
+                        boolean f = pvals[1] >= confidence;
+                        String r;
+                        if (t && f) r = "B";
+                        else if (t) r = "T";
+                        else if (f) r = "F";
+                        else r = "N";
+                        mo.putValue(label + "_Result", r);
                         mo.putValue(label + "_PVal_T", pvals[0]);
                         mo.putValue(label + "_PVal_F", pvals[1]);
                         mo.putValue(label + "_AtomScores", generateAtomScores(testMol, ss.getAtomValues()));
@@ -81,16 +90,21 @@ public class CCPClassifierRunner extends AbstractCCPRunner {
     }
 
 
-    public TrainResult train(
+    public CPSignTrainResult train(
             List<MoleculeObject> mols, String fieldName,
             Object trueValue, Object falseValue,
             int cvFolds, double confidence)
             throws Exception {
 
-        CVResult cvr = crossValidate(mols, fieldName, trueValue, falseValue, cvFolds, confidence);
-        String path = trainModels(mols, fieldName, trueValue, falseValue, cvFolds);
+        ISignCCPClassification signCCP = createCCPClassifier();
+        Iterator<Pair<IAtomContainer, Double>> molsIterator = createMolsIterator(mols, fieldName, trueValue, falseValue);
+        // Load data
+        signCCP.fromMolsIterator(molsIterator);
 
-        return new TrainResult(TrainResult.Method.CCP, TrainResult.Type.Classification,library,
+        CVResult cvr = crossValidate(signCCP, fieldName, trueValue, falseValue, cvFolds, confidence);
+        String path = trainModels(signCCP, fieldName, trueValue, falseValue, cvFolds);
+
+        return new CPSignTrainResult(CPSignTrainResult.Method.CCP, CPSignTrainResult.Type.Classification, library,
                 signatureStartHeight, signatureEndHeight, cvFolds,
                 cvr.getEfficiency(), cvr.getValidity(), null,
                 path);
@@ -98,17 +112,10 @@ public class CCPClassifierRunner extends AbstractCCPRunner {
 
 
     public CVResult crossValidate(
-            List<MoleculeObject> mols, String fieldName,
+            ISignCCPClassification signCCP, String fieldName,
             Object trueValue, Object falseValue,
             int cvFolds, double confidence)
             throws IllegalArgumentException, IOException, IllegalAccessException {
-
-        ISignCCPClassification signCCP = createCCPClassifier();
-
-        Iterator<Pair<IAtomContainer, Double>> molsIterator = createMolsIterator(mols, fieldName, trueValue, falseValue);
-
-        // Load data
-        signCCP.fromMolsIterator(molsIterator);
 
         //Do cross-validation with cvFolds nr of folds
         CVResult result = signCCP.cross_validate(cvFolds, confidence);
@@ -119,17 +126,10 @@ public class CCPClassifierRunner extends AbstractCCPRunner {
 
 
     public String trainModels(
-            List<MoleculeObject> mols, String fieldName,
+            ISignCCPClassification signCCP, String fieldName,
             Object trueValue, Object falseValue,
             int cvFolds)
             throws IllegalAccessException, IOException {
-
-        ISignCCPClassification signCCP = createCCPClassifier();
-
-        Iterator<Pair<IAtomContainer, Double>> molsIterator = createMolsIterator(mols, fieldName, trueValue, falseValue);
-
-        // Load data
-        signCCP.fromMolsIterator(molsIterator);
 
         // Train the Cross-Conformal Prediction problem
         signCCP.trainCCP(cvFolds);
