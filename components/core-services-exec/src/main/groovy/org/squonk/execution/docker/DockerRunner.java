@@ -102,14 +102,11 @@ public class DockerRunner {
         Bind b = new Bind(getHostWorkDir().getPath(), work, AccessMode.rw);
         binds.add(b);
 
-
         // properties read from environment variables
         config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-                .withApiVersion("1.23") // use old (pre Docker 1.12) API until the HostConfig issue in docker-java is resolved
                 .build();
         dockerClient = DockerClientBuilder.getInstance(config).build();
     }
-
 
     public long writeInput(String filename, InputStream content, boolean executable) throws IOException {
         File file = new File(getHostWorkDir(), filename);
