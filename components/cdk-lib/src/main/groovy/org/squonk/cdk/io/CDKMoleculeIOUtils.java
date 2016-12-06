@@ -107,7 +107,7 @@ public class CDKMoleculeIOUtils {
             throw new CDKException("Failed to create reader", ex);
         }
         if (reader != null) {
-            reader.setReader(new ByteArrayInputStream(mol.getBytes()));
+            reader.setReader(new StringReader(mol));
             return reader.read(new AtomContainer());
         }
         return null;
@@ -179,6 +179,7 @@ public class CDKMoleculeIOUtils {
                 try (SDFWriter writer = new SDFWriter(out)) {
                     mols.forEachOrdered((mo) -> {
                         try {
+
                             IAtomContainer mol = fetchMolecule(mo, false);
                             for (Map.Entry<String, Object> e : mo.getValues().entrySet()) {
                                 String key = e.getKey();
@@ -189,6 +190,7 @@ public class CDKMoleculeIOUtils {
                             }
                             // for some reason CDK adds this property with no value, so we remove it
                             mol.removeProperty("cdk:Title");
+                            mol.removeProperty("cdk:Remark");
                             //LOG.info("WRITING MOL");
                             writer.write(mol);
                         } catch (CDKException e) {

@@ -1,7 +1,6 @@
 package org.squonk.core
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.squonk.core.ServiceDescriptor.DataType
 import org.squonk.types.MoleculeObject
 import spock.lang.Specification
 
@@ -24,8 +23,8 @@ class ServiceDescriptorJsonSpec extends Specification {
                 null,
                 MoleculeObject.class, // inputClass
                 MoleculeObject.class, // outputClass
-                DataType.STREAM, // inputTypes
-                DataType.STREAM, // outputType
+                ServiceDescriptor.DataType.STREAM, // inputTypes
+                ServiceDescriptor.DataType.STREAM, // outputType
                 "icon.png",
                 "logp", // a URL relative to this URL?
                 true,

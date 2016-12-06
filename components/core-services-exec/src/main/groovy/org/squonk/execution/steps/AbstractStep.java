@@ -21,6 +21,7 @@ public abstract class AbstractStep implements Step {
     protected static final String MSG_PREPARING_INPUT = "Preparing input ...";
     protected static final String MSG_PREPARING_OUTPUT = "Writing output ...";
     protected static final String MSG_RECORDS_PROCESSED = "%s records processed";
+    protected static final String MSG_RECORDS_PROCESSED_AND_OUTPUT = "%s records processed, %s results";
     protected static final String MSG_PROCESSING_COMPLETE = "Processing complete";
     protected static final String MSG_PREPARING_CONTAINER = "Preparing Docker container";
     protected static final String MSG_RUNNING_CONTAINER = "Running Docker container";
@@ -128,16 +129,25 @@ public abstract class AbstractStep implements Step {
         LOG.fine("VariableKey mapped to " + internalName + " is " + mappedVar);
         if (mappedVar == null) {
             if (required) {
-                throw new IllegalStateException("Mandatory input variable " + internalName + " not mapped to a notebook variable name");
+                throw new IllegalStateException(buildVariableNotFoundMessage(internalName));
             } else {
                 return null;
             }
         }
         T input = fetchInput(mappedVar, type, varman);
         if (input == null && required) {
-            throw new IllegalStateException("Mandatory input variable " + internalName + " does not have a value");
+            throw new IllegalStateException(buildVariableNotFoundMessage(internalName));
         }
         return input;
+    }
+
+    private String buildVariableNotFoundMessage(String internalName) {
+        StringBuilder b = new StringBuilder("Mandatory input variable not found: ");
+        b.append(internalName).append(". Mappings present:");
+        inputVariableMappings.forEach((k, v) -> {
+            b.append(" ").append(k).append(" -> ").append(v);
+        });
+        return b.toString();
     }
 
     /**

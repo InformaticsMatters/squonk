@@ -123,5 +123,18 @@ class SDFReaderSpec extends Specification {
         reader.close()
     }
 
+    void "read empty"() {
+        SDFReader reader = new SDFReader(new ByteArrayInputStream(new byte[0]))
+
+        when:
+        long count = reader.asStream().count()
+
+        then:
+        count == 0
+
+        cleanup:
+        reader.close()
+    }
+
 }
 

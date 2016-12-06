@@ -57,7 +57,7 @@ public abstract class AbstractDockerScriptRunnerStep extends AbstractDockerStep 
                 statusMessage = String.format(MSG_RECORDS_PROCESSED, outputMetadata.getSize());
             }
 
-            generateMetrics(runner, duration);
+            generateMetrics(runner, "metrics.txt", duration);
 
         } finally {
             // cleanup

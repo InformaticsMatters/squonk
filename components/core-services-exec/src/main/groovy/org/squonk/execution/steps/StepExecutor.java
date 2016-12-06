@@ -1,19 +1,22 @@
 package org.squonk.execution.steps;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.squonk.execution.variable.VariableManager;
-import org.apache.camel.CamelContext;
 import org.squonk.util.CamelRouteStatsRecorder;
 import org.squonk.util.StatsRecorder;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * @author timbo
  */
 public class StepExecutor {
+
+    private static final Logger LOG = Logger.getLogger(StepExecutor.class.getName());
 
     private final VariableManager varman;
     private final Long producer;
@@ -41,8 +44,21 @@ public class StepExecutor {
             step.configure(producer, jobId, def.getOptions(), def.getInputVariableMappings(), def.getOutputVariableMappings());
             steps[i] = step;
         }
+        //steps = addConverterSteps(steps);
         execute(steps, context);
     }
+
+//    private Step[] addConverterSteps(Step[] steps) {
+//        List<Step> result = new ArrayList<>();
+//        Step previous = null;
+//        for (Step current : steps) {
+//            if (previous != null) {
+//                if (previous instanceof TypedProcessor)
+//            }
+//            previous = current;
+//        }
+//        return steps;
+//    }
 
     public void execute(Step[] steps, CamelContext context) throws Exception {
 
@@ -50,7 +66,7 @@ public class StepExecutor {
         for (Step step : steps) {
             b.append(step.toString()).append("\n");
         }
-        System.out.println(b.toString());
+        LOG.info(b.toString());
 
 
         List<Map<String, Integer>> statsList = new ArrayList<>();

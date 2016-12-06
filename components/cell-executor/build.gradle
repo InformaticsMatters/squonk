@@ -53,7 +53,8 @@ docker {
     certPath = null
 
     javaApplication {
-        //baseImage = 'java:openjdk-8-jre'
+        // this base image is found here https://hub.docker.com/r/informaticsmatters/openjdk_docker/
+        // it will need rebuilding for new versions of docker and jdk
         baseImage = 'informaticsmatters/openjdk_docker'
         maintainer = 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
         tag = 'squonk/cellexecutor'

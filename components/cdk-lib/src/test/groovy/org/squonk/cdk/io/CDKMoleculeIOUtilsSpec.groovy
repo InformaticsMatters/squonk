@@ -174,9 +174,22 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         then:
         content.length() > 0
         content.split('fruit').length == 6
-
-
     }
+
+    void "write sdf kinase"() {
+
+        def dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
+
+        when:
+        CDKSDFile sdf = CDKMoleculeIOUtils.covertToSDFile(dataset.getStream(), true)
+        String content = IOUtils.convertStreamToString(sdf.inputStream)
+        println content
+
+        then:
+        content.length() > 0
+        content.split('<mr_id>').length == 37
+    }
+
 
     void "read pdb write mol2"() {
         InputStream is = new GZIPInputStream(new FileInputStream("../../data/testfiles/1cx2.pdb.gz"))
@@ -305,6 +318,7 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         then:
         sigs.size() == 756
     }
-    
+
+
 }
 

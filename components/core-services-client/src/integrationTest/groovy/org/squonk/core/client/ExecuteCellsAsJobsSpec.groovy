@@ -204,6 +204,8 @@ outf.close()
         findResultSize(notebookId, editableId, cellId, "docker") == 36
     }
 
+
+
     void "groovy in docker cell noop"() {
 
         StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
@@ -364,6 +366,57 @@ writeDatasetToFiles(dataset, '/source/output', true)
         status1.status == JobStatus.Status.RUNNING
         status2.status == JobStatus.Status.COMPLETED
         findResultSize(notebookId, editableId, cellId, "groovy-api-weak") == 36
+    }
+
+    void "canned docker cell no conversion"() {
+
+        StepDefinition step = new StepDefinition("org.squonk.execution.steps.impl.CannedDockerProcessDatasetStep")
+                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
+                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "docker")
+                .withOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE, "busybox")
+                .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_INPUT, CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
+                .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_OUTPUT, CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
+                .withOption(StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_COMMAND,
+                '''
+cp input.meta output.meta
+cp input.data.gz output.data.gz
+''')
+
+        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(notebookId, editableId, cellId, step)
+
+        when:
+        JobStatus status1 = jobClient.submit(jobdef, username, null)
+        JobStatus status2 = waitForJob(status1.jobId)
+
+        then:
+        status1.status == JobStatus.Status.RUNNING
+        status2.status == JobStatus.Status.COMPLETED
+        findResultSize(notebookId, editableId, cellId, "docker") == 36
+        new GZIPInputStream(readData(notebookId, editableId, cellId, "docker")).text.startsWith('[{')
+    }
+
+    void "canned docker cell sdf input/output"() {
+
+        StepDefinition step = new StepDefinition("org.squonk.execution.steps.impl.CannedDockerProcessDatasetStep")
+                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
+                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "docker")
+                .withOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE, "busybox")
+                .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_INPUT, CommonMimeTypes.MIME_TYPE_MDL_SDF)
+                .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_OUTPUT, CommonMimeTypes.MIME_TYPE_MDL_SDF)
+                .withOption(StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_COMMAND,
+                'cp input.sdf.gz output.sdf.gz')
+
+        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(notebookId, editableId, cellId, step)
+
+        when:
+        JobStatus status1 = jobClient.submit(jobdef, username, null)
+        JobStatus status2 = waitForJob(status1.jobId)
+
+        then:
+        status1.status == JobStatus.Status.RUNNING
+        status2.status == JobStatus.Status.COMPLETED
+        findResultSize(notebookId, editableId, cellId, "docker") == 36
+        new GZIPInputStream(readData(notebookId, editableId, cellId, "docker")).text.startsWith('[{')
     }
 
 }

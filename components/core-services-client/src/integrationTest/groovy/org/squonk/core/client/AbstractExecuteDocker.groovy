@@ -69,6 +69,10 @@ abstract class AbstractExecuteDocker extends Specification {
         return metaJson ? JSON.objectFromJson(metaJson, DatasetMetadata.class) : null
     }
 
+    InputStream readData(notebookId, editableId, cellId, varname) {
+        return notebookClient.readStreamValue(notebookId, editableId, cellId, varname)
+    }
+
     JobStatus waitForJob(def jobId) {
         JobStatus status
         for (int i=0; i<100; i++) {

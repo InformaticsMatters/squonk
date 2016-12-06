@@ -40,9 +40,12 @@ public class MoleculeTypeDescriptor extends SimpleTypeDescriptor<Structure> {
     public void putOptionValue(Map<String, Object> options, String key, Structure value) {
         if ("body".equals(key)) {
             options.put(key, value);
-        } else if (key.startsWith("query.") || key.startsWith("header.")) {
+        } else if (key.startsWith("query.") || key.startsWith("header.") || key.startsWith("arg.")) {
             options.put(key + "_source", value.getSource());
             options.put(key + "_format", value.getFormat());
+        } else {
+            // this may lead to problems ...
+            options.put(key, value.getSource());
         }
     }
 

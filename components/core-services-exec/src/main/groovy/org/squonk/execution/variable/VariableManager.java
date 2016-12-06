@@ -40,6 +40,12 @@ public class VariableManager {
         this.sourceId = sourceId;
     }
 
+    public String getTmpVariableInfo() {
+        StringBuilder b = new StringBuilder("Temp variables:\n");
+        tmpValues.forEach((k,v) -> b.append("  ").append(k).append(" size ").append(v.length).append("\n"));
+        return b.toString();
+    }
+
     public <V> void putValue(VariableKey key, Class<V> type, V value) throws Exception {
         LOG.fine("putValue: " + key + " -> " + value);
         String variableName = key.getVariableName();
@@ -57,6 +63,7 @@ public class VariableManager {
         LOG.fine("getValue " + key + " of type " + type);
         String variableName = key.getVariableName();
         VariableHandler<V> vh = variableHandlerRegistry.lookup(type);
+        LOG.finer("Using variable handler " + vh + " for type " + type.getName());
         VariableHandler.ReadContext context = createReadContext(key);
         if (vh != null) {
             V result = (V) vh.readVariable(context);
@@ -117,7 +124,7 @@ public class VariableManager {
         @Override
         public String readTextValue(String key) throws Exception {
             String storeKey = generateTextKey(key);
-            LOG.finer("Reading tmp value " + storeKey);
+            LOG.fine("Reading tmp value " + storeKey);
             byte[] bytes = tmpValues.get(storeKey);
             return bytes == null ? null : new String(bytes);
         }
@@ -125,7 +132,7 @@ public class VariableManager {
         @Override
         public InputStream readStreamValue(String key) throws Exception {
             String storeKey = generateStreamKey(key);
-            LOG.finer("Reading tmp value " + storeKey);
+            LOG.fine("Reading tmp value " + storeKey);
             byte[] bytes = tmpValues.get(storeKey);
             return bytes == null ? null : new ByteArrayInputStream(bytes);
         }
@@ -133,7 +140,7 @@ public class VariableManager {
         @Override
         public void writeTextValue(String value, String key) throws Exception {
             String storeKey = generateTextKey(key);
-            LOG.finer("Writing tmp value " + storeKey);
+            LOG.fine("Writing tmp value " + storeKey);
             if (value == null) {
                 tmpValues.remove(storeKey);
             } else {
@@ -141,11 +148,10 @@ public class VariableManager {
             }
         }
 
-
         @Override
         public void writeStreamValue(InputStream value, String key) throws Exception {
             String storeKey = generateStreamKey(key);
-            LOG.finer("Writing tmp value " + storeKey);
+            LOG.fine("Writing tmp value " + storeKey);
             if (value == null) {
                 tmpValues.remove(storeKey);
             } else {

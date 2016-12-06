@@ -19,6 +19,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -37,7 +38,7 @@ import java.util.logging.Logger;
  * <p>
  * Then once execution is complete you will find the output in the host dir.
  * <p>
- * Finally, once you are finished with the inputs and outputs you can call the {@link #cleanup()} method to delete the
+ * Finally, once you are finished with the inputs and outputs you should call the {@link #cleanup()} method to delete the
  * directories that were created
  * <p>
  * <p>
@@ -77,7 +78,7 @@ public class DockerRunner {
         this.imageName = imageName;
         this.hostWorkDir = new File(hostBaseWorkDir + "/" + UUID.randomUUID().toString());
         this.localWorkDir = localWorkDir;
-        LOG.fine("Host Work dir is " + hostWorkDir.getPath());
+        LOG.info("Host Work dir is " + hostWorkDir.getPath());
     }
 
     protected DockerClient getDockerClient() {
@@ -216,7 +217,7 @@ public class DockerRunner {
         containerId = container.getId();
         LOG.info("Created container " + containerId);
 
-        LOG.info("Executing command");
+        LOG.info("Executing command: " + Arrays.deepToString(cmd));
         dockerClient.startContainerCmd(containerId).exec();
 
         loggingCallback = new LogContainerTestCallback(true);

@@ -49,7 +49,7 @@ public class SDFReaderStep extends AbstractStep {
         statusMessage = "Reading SDF";
         String filename = fetchMappedInput(VAR_SDF_INPUT, String.class, varman);
         try (InputStream is = fetchMappedInput(VAR_SDF_INPUT, InputStream.class, varman)) {
-            LOG.info("Fetched input for: " + filename);
+            LOG.fine("Fetched input for: " + filename);
             SDFReader reader = createReader(IOUtils.getGunzippedInputStream(is), filename);
             LOG.fine("Created SDFReader");
             try (Stream<MoleculeObject> mols = reader.asStream()) {
@@ -58,7 +58,7 @@ public class SDFReaderStep extends AbstractStep {
                 LOG.fine("Writing output");
                 createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
                 statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
-                LOG.info("Writing dataset from SDF complete: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
+                LOG.fine("Writing dataset from SDF complete: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
             }
         }
     }

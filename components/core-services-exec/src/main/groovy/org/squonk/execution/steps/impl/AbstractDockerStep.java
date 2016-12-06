@@ -22,6 +22,8 @@ import java.util.logging.Logger;
 public abstract class AbstractDockerStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(AbstractDockerStep.class.getName());
+    protected int numRecordsProcessed = -1;
+    protected int numRecordsOutput = -1;
 
 
     protected DockerRunner createDockerRunner(String image, String hostWorkDir, String localWorkDir) throws IOException {
@@ -32,7 +34,28 @@ public abstract class AbstractDockerStep extends AbstractStep {
         return runner;
     }
 
+    /** Fetch the input using the default name for the input variable
+     *
+     * @param varman
+     * @param runner
+     * @param mediaType
+     * @return
+     * @throws Exception
+     */
     protected DatasetMetadata handleInput(VariableManager varman, DockerRunner runner, String mediaType) throws Exception {
+        return handleInput(varman, runner, mediaType, StepDefinitionConstants.VARIABLE_INPUT_DATASET);
+    }
+
+    /** Fetch the input in the case that the input has been renamed from the default name
+     *
+     * @param varman
+     * @param runner
+     * @param mediaType
+     * @param varName
+     * @return
+     * @throws Exception
+     */
+    protected DatasetMetadata handleInput(VariableManager varman, DockerRunner runner, String mediaType, String varName) throws Exception {
 
         if (mediaType == null) {
             mediaType = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON;
@@ -41,11 +64,11 @@ public abstract class AbstractDockerStep extends AbstractStep {
         switch (mediaType) {
             case CommonMimeTypes.MIME_TYPE_DATASET_BASIC_JSON:
             case CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON:
-                Dataset dataset = fetchMappedInput(StepDefinitionConstants.VARIABLE_INPUT_DATASET, Dataset.class, varman, true);
+                Dataset dataset = fetchMappedInput(varName, Dataset.class, varman, true);
                 writeAsDataset(dataset, runner);
                 return dataset.getMetadata();
             case CommonMimeTypes.MIME_TYPE_MDL_SDF:
-                InputStream sdf = fetchMappedInput(StepDefinitionConstants.VARIABLE_INPUT_DATASET, InputStream.class, varman, true);
+                InputStream sdf = fetchMappedInput(varName, InputStream.class, varman, true);
                 writeAsSDF(sdf, runner);
                 return null; // TODO can we get the metadata somehow?
             default:
@@ -71,14 +94,14 @@ public abstract class AbstractDockerStep extends AbstractStep {
     }
 
     protected void writeAsDataset(Dataset input, DockerRunner runner) throws IOException {
-        LOG.info("Writing metadata");
+        LOG.fine("Writing metadata");
         runner.writeInput("input.meta", JsonHandler.getInstance().objectToJson(input.getMetadata()));
-        LOG.info("Writing data");
+        LOG.fine("Writing data");
         runner.writeInput("input.data.gz", input.getInputStream(true));
     }
 
     protected void writeAsSDF(InputStream sdf, DockerRunner runner) throws IOException {
-        LOG.info("Writing SDF");
+        LOG.fine("Writing SDF");
         runner.writeInput("input.sdf.gz", IOUtils.getGzippedInputStream(sdf));
     }
 
@@ -95,7 +118,7 @@ public abstract class AbstractDockerStep extends AbstractStep {
         try (InputStream is = runner.readOutput("output.data.gz")) {
             Dataset<? extends BasicObject> dataset = new Dataset(meta.getType(), IOUtils.getGunzippedInputStream(is), meta);
             createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, dataset, varman);
-            LOG.info("Results: " + dataset.getMetadata());
+            LOG.fine("Results: " + dataset.getMetadata());
             return dataset.getMetadata();
         }
     }
@@ -110,13 +133,20 @@ public abstract class AbstractDockerStep extends AbstractStep {
         return null;
     }
 
-    protected void generateMetrics(DockerRunner runner, float executionTimeSeconds) throws IOException {
-        try (InputStream is = runner.readOutput("metrics.txt")) {
+    protected void generateMetrics(DockerRunner runner, String filename, float executionTimeSeconds) throws IOException {
+        try (InputStream is = runner.readOutput(filename)) {
             if (is != null) {
                 Properties props = new Properties();
                 props.load(is);
                 for (String key : props.stringPropertyNames()) {
-                    usageStats.put(key, new Integer(props.getProperty(key)));
+                    int c = new Integer(props.getProperty(key));
+                    if ("__InputCount__".equals(key)) {
+                        numRecordsProcessed = c;
+                    } else  if ("__OutputCount__".equals(key)) {
+                        numRecordsOutput = c;
+                    } else {
+                        usageStats.put(key, c);
+                    }
                 }
             }
         }

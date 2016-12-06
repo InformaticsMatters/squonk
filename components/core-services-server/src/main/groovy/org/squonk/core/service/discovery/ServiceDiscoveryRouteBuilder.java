@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.squonk.core.ServiceDescriptor;
-import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.core.ServiceDescriptorSet;
+import org.squonk.execution.docker.DockerExecutorDescriptorRegistry;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
@@ -85,8 +85,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                     "http://foo.com/something",
                     Object.class, // inputClass
                     Object.class, // outputClass
-                    DataType.ITEM, // inputType
-                    DataType.ITEM, // outputType
+                    ServiceDescriptor.DataType.ITEM, // inputType
+                    ServiceDescriptor.DataType.ITEM, // outputType
                     "default_icon.png",
                     "valueIsIgnored", // endpoint
                     true, // URL is relative
@@ -106,6 +106,9 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                     for (ServiceDescriptorSet set : sets) {
                         list.addAll(set.getServiceDescriptors());
                     }
+                    List<ServiceDescriptor> dockerServiceDescriptors = DockerExecutorDescriptorRegistry.getInstance().getServiceDescriptors();
+                    list.addAll(dockerServiceDescriptors);
+                    LOG.info("Added " + dockerServiceDescriptors.size() + " docker service descriptors");
                     exch.getIn().setBody(list);
                 });
 

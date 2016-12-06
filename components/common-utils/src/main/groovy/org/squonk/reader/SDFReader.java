@@ -99,7 +99,12 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
 
     @Override
     public boolean hasNext() {
-        return this.molobj != null || !started;
+        if (!started) {
+            started = true;
+            this.molobj = readRow();
+        }
+
+        return this.molobj != null;
     }
 
     @Override

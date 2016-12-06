@@ -12,7 +12,6 @@ import org.squonk.camel.processor.JsonToDatasetProcessor;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 import org.squonk.core.ServiceDescriptor;
-import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.MoleculeTypeDescriptor;
@@ -408,8 +407,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 resourceUrl,
                 MoleculeObject.class, // inputClass
                 MoleculeObject.class, // outputClass
-                DataType.STREAM, // inputType
-                DataType.STREAM, // outputType
+                ServiceDescriptor.DataType.STREAM, // inputType
+                ServiceDescriptor.DataType.STREAM, // outputType
                 icon,
                 endpoint,
                 true, // a relative URL

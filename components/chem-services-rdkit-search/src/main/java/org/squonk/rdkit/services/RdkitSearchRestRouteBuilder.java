@@ -7,7 +7,6 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.api.MimeTypeResolver;
 import org.squonk.core.ServiceDescriptor;
-import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.MoleculeTypeDescriptor;
@@ -43,8 +42,8 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Chemcentral+Structure+Search",
                     String.class, // inputClass - smiles, smarts or molfile
                     MoleculeObject.class, // outputClass
-                    DataType.OPTION, // inputType - taken from the structure option
-                    DataType.STREAM, // outputType
+                    ServiceDescriptor.DataType.OPTION, // inputType - taken from the structure option
+                    ServiceDescriptor.DataType.STREAM, // outputType
                     "icons/structure_search.png",
                     "search",
                     true, // a relative URL
@@ -73,8 +72,8 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Chemcentral+Similarity+Search",
                     String.class, // inputClass - smiles or smarts
                     MoleculeObject.class, // outputClass
-                    DataType.OPTION, // inputType - taken from the structure option
-                    DataType.STREAM, // outputType
+                    ServiceDescriptor.DataType.OPTION, // inputType - taken from the structure option
+                    ServiceDescriptor.DataType.STREAM, // outputType
                     "icons/structure_search.png",
                     "search",
                     true, // a relative URL
@@ -117,8 +116,8 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Chemcentral+multi-search",
                     MoleculeObject.class, // inputClass
                     MoleculeObject.class, // outputClass
-                    DataType.STREAM, // inputType
-                    DataType.STREAM, // outputType
+                    ServiceDescriptor.DataType.STREAM, // inputType
+                    ServiceDescriptor.DataType.STREAM, // outputType
                     "icons/structure_search.png",
                     "multisearch",
                     true, // a relative UR

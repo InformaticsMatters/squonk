@@ -1,11 +1,9 @@
 package org.squonk.openchemlib.services;
 
 import org.squonk.core.ServiceDescriptor;
-import org.squonk.core.ServiceDescriptorSet;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.types.MoleculeObject;
-import org.squonk.util.IOUtils;
 
 /**
  * Created by timbo on 14/11/16.

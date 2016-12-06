@@ -79,11 +79,11 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
                 statusMessage = String.format(MSG_RECORDS_PROCESSED, meta.getSize());
             }
 
-            generateMetrics(runner, duration);
+            generateMetrics(runner, "metrics.txt", duration);
 
         } finally {
             // cleanup
-            runner.cleanup();
+            //runner.cleanup();
             LOG.info("Results cleaned up");
         }
     }

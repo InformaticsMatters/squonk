@@ -5,10 +5,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.CPSignTrainProcessor;
-import org.squonk.camel.processor.AbstractMoleculeObjectRouteHttpProcessor;
 import org.squonk.camel.processor.DefaultMoleculeObjectRouteHttpProcessor;
 import org.squonk.core.ServiceDescriptor;
-import org.squonk.core.ServiceDescriptor.DataType;
 import org.squonk.types.CPSignTrainResult;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.mqueue.MessageQueueCredentials;
@@ -77,8 +75,8 @@ public class CPSignRestRouteBuilder extends RouteBuilder {
                 resourceUrl,
                 MoleculeObject.class, // inputClass
                 CPSignTrainResult.class, // outputClass
-                DataType.STREAM, // inputType
-                DataType.ITEM, // outputType
+                ServiceDescriptor.DataType.STREAM, // inputType
+                ServiceDescriptor.DataType.ITEM, // outputType
                 icon,
                 endpoint,
                 true, // a relative URL
