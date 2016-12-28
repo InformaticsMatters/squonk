@@ -6,6 +6,7 @@ import org.squonk.execution.docker.DockerRunner;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 
+import java.io.File;
 import java.util.logging.Logger;
 
 /**
@@ -41,6 +42,14 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
         }
         String hostWorkDir = "/tmp/work";
         String localWorkDir = "/source";
+
+        // try to create the hostWorkDir if it doesn't already exist (which it really should in prod)
+        File f = new File(hostWorkDir);
+        if (!f.exists()) {
+            if (!f.mkdir()) {
+                LOG.warning("Host work dir doesn't exist and couldn't be created - this is not a good sign!");
+            }
+        }
 
         DockerRunner runner = createDockerRunner(image, hostWorkDir, localWorkDir);
         LOG.info("Docker image: " + image + ", hostWorkDir: " + runner.getHostWorkDir() + ", script: " + command);
@@ -83,7 +92,7 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
 
         } finally {
             // cleanup
-            //runner.cleanup();
+            runner.cleanup();
             LOG.info("Results cleaned up");
         }
     }

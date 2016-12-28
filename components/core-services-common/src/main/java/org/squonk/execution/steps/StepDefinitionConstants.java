@@ -19,6 +19,7 @@ public interface StepDefinitionConstants {
     String OPTION_MEDIA_TYPE_INPUT = "inputMediaType"; // the format for the input
     String OPTION_MEDIA_TYPE_OUTPUT = "outputMediaType"; // the format for the output
     String OPTION_DOCKER_IMAGE = "dockerImage";
+    String OPTION_DOCKER_IMAGE_VERSION = "dockerImageVersion";
 
     interface MoleculeServiceThinExecutor {
         String CLASSNAME = "org.squonk.execution.steps.impl.MoleculeServiceThinExecutorStep";

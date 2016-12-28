@@ -1,6 +1,10 @@
 package org.squonk.core
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
+import org.squonk.io.IOMultiplicity
+import org.squonk.io.IORoute
 import org.squonk.types.MoleculeObject
 import spock.lang.Specification
 
@@ -21,15 +25,12 @@ class ServiceDescriptorJsonSpec extends Specification {
                 "CDK LogP predictions for XLogP and ALogP",
                 ["logp", "partitioning", "cdk"] as String[],
                 null,
-                MoleculeObject.class, // inputClass
-                MoleculeObject.class, // outputClass
-                ServiceDescriptor.DataType.STREAM, // inputTypes
-                ServiceDescriptor.DataType.STREAM, // outputType
                 "icon.png",
-                "logp", // a URL relative to this URL?
-                true,
+                [IODescriptors.createMoleculeObjectDataset("input", IORoute.STREAM)] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output", IORoute.STREAM)] as IODescriptor[],
                 null,
-                null
+                null,
+                "logp", // a URL relative to this URL?
         )
 
         when:

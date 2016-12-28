@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.squonk.io.IOMultiplicity;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptorSet;
 import org.squonk.execution.docker.DockerExecutorDescriptorRegistry;
@@ -83,15 +84,14 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                     "Does nothing other than submit a Job",
                     new String[]{"testing"},
                     "http://foo.com/something",
+                    "default_icon.png",
                     Object.class, // inputClass
                     Object.class, // outputClass
-                    ServiceDescriptor.DataType.ITEM, // inputType
-                    ServiceDescriptor.DataType.ITEM, // outputType
-                    "default_icon.png",
-                    "valueIsIgnored", // endpoint
-                    true, // URL is relative
-                    null,
-                    null
+                    IOMultiplicity.ITEM, // inputType
+                    IOMultiplicity.ITEM, // outputType
+                    null, // options
+                    "executor",
+                    "valueIsIgnored" // endpoint
             )
     };
 

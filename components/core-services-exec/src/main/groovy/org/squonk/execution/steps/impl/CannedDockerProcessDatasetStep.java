@@ -1,7 +1,9 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
+import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.execution.docker.DescriptorRegistry;
 import org.squonk.execution.docker.DockerExecutorDescriptor;
 import org.squonk.execution.docker.DockerExecutorDescriptorRegistry;
 import org.squonk.execution.docker.DockerRunner;
@@ -9,10 +11,16 @@ import org.squonk.execution.steps.Step;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.util.GroovyUtils;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.DescriptorLoader;
+import org.squonk.io.IODescriptor;
 import org.squonk.io.Resource;
 import org.squonk.notebook.api.VariableKey;
+import org.squonk.types.BasicObject;
+import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
+import org.squonk.util.IOUtils;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -37,51 +45,57 @@ public class CannedDockerProcessDatasetStep extends AbstractDockerStep {
         if (id == null || id.isEmpty()) {
             throw new IllegalStateException("docker.executor.id must be defined in the options");
         }
-        DockerExecutorDescriptor descriptor = fetchDescriptor(id);
+        DescriptorLoader<DockerExecutorDescriptor> descriptorLoader = fetchDescriptor(id);
+        DockerExecutorDescriptor descriptor = descriptorLoader.load();
 
-        String inputMediaType = descriptor.getInputMediaType();
-        String outputMediaType = descriptor.getOutputMediaType();
+        IODescriptor[] inputDescriptors = descriptor.getInputDescriptors();
+        IODescriptor[] outputDescriptors = descriptor.getOutputDescriptors();
+        LOG.info("Input types are " + IOUtils.joinArray(inputDescriptors, ","));
+        LOG.info("Output types are " + IOUtils.joinArray(outputDescriptors, ","));
 
         // first handle any conversions
         // currently these are hard coded and only SDF is supported
+        //
+        // input conversions:
         // TODO - provide these conversions through a registry
-        if (inputMediaType == null || CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON.equals(inputMediaType)) {
+        if (inputDescriptors == null || inputDescriptors.length == 0 || CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON.equals(inputDescriptors[0].getMediaType())) {
             // do nothing
-        } else if (CommonMimeTypes.MIME_TYPE_MDL_SDF.equals(inputMediaType)) {
+        } else if (CommonMimeTypes.MIME_TYPE_MDL_SDF.equals(inputDescriptors[0].getMediaType())) {
             // convert to SDF
             Step sdfConvertStep = createSdfGeneratorStep("_converted_sdf_input");
             LOG.info("Executing SDF converter step");
             sdfConvertStep.execute(varman, context);
-            //LOG.info(varman.getTmpVariableInfo());
+            LOG.info(varman.getTmpVariableInfo());
 
         } else {
-            throw new IllegalStateException("Unsupported format conversion: " + inputMediaType);
+            throw new IllegalStateException("Unsupported format conversion: " + inputDescriptors[0]);
         }
 
+        // output conversions:
         Step readerStep = null;
-        if (outputMediaType == null || CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON.equals(outputMediaType)) {
+        if (outputDescriptors == null || inputDescriptors.length == 0 || CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON.equals(outputDescriptors[0].getMediaType())) {
             // do nothing
-        } else if (CommonMimeTypes.MIME_TYPE_MDL_SDF.equals(outputMediaType)) {
+        } else if (CommonMimeTypes.MIME_TYPE_MDL_SDF.equals(outputDescriptors[0].getMediaType())) {
             // convert from SDF
             readerStep = createSdfReaderStep("_converted_sdf_output");
         } else {
-            throw new IllegalStateException("Unsupported format conversion: " + inputMediaType);
+            throw new IllegalStateException("Unsupported format conversion: " + outputDescriptors[0]);
         }
 
         // this executes this cell
-        doExecute(varman, context, descriptor);
-        //LOG.info(varman.getTmpVariableInfo());
+        doExecute(varman, context, descriptorLoader);
+        LOG.info(varman.getTmpVariableInfo());
 
         // and now if we created a reader to convert the format then execute it
         if (readerStep != null) {
             LOG.info("Executing SDF reader step");
             readerStep.execute(varman, context);
-            //LOG.info(varman.getTmpVariableInfo());
+            LOG.info(varman.getTmpVariableInfo());
         }
     }
 
-    private DockerExecutorDescriptor fetchDescriptor(String id) {
-        DockerExecutorDescriptor d = DockerExecutorDescriptorRegistry.getInstance().fetch(id);
+    private DescriptorLoader<DockerExecutorDescriptor> fetchDescriptor(String id) {
+        DescriptorLoader<DockerExecutorDescriptor> d = DescriptorRegistry.getInstance().fetch(id);
         if (d == null) {
             throw new IllegalStateException("ID " + id + " not found");
         }
@@ -136,24 +150,30 @@ public class CannedDockerProcessDatasetStep extends AbstractDockerStep {
         return step;
     }
 
-    protected void doExecute(VariableManager varman, CamelContext context, DockerExecutorDescriptor descriptor) throws Exception {
+    protected void doExecute(VariableManager varman, CamelContext context, DescriptorLoader<DockerExecutorDescriptor> descriptorLoader) throws Exception {
 
         statusMessage = MSG_PREPARING_CONTAINER;
 
-        String image = getOption(OPTION_DOCKER_IMAGE, String.class);
-        String command = descriptor.getCommand();
-        String inputMediaType = descriptor.getInputMediaType();
-        String outputMediaType = descriptor.getOutputMediaType();
-
+        DockerExecutorDescriptor descriptor = descriptorLoader.load();
+        String image = descriptor.getServiceDescriptor().getExecutionEndpoint();
         if (image == null || image.isEmpty()) {
             statusMessage = "Error: Docker image not defined";
-            throw new IllegalStateException("Docker image not defined. Should be present as option named " + OPTION_DOCKER_IMAGE);
-        }
-        if (command == null || command.isEmpty()) {
-            statusMessage = "Error: Docker command not defined";
-            throw new IllegalStateException("Command to run is not defined. Should be present as option named " + OPTION_DOCKER_COMMAND);
+            throw new IllegalStateException("Docker image not defined. Must be set as value of the executionEndpoint property of the ServiceDescriptor");
         }
 
+        String imageVersion = getOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE_VERSION, String.class);
+        if (imageVersion != null) {
+            image = image + ":" + imageVersion;
+        }
+
+        String command = descriptor.getCommand();
+        IODescriptor[] inputDescriptors = descriptor.getInputDescriptors();
+        IODescriptor[] outputDescriptors = descriptor.getOutputDescriptors();
+
+        if (command == null || command.isEmpty()) {
+            statusMessage = "Error: Docker command not defined";
+            throw new IllegalStateException("Run command is not defined. Should be present as option named " + OPTION_DOCKER_COMMAND);
+        }
         // command will be something like:
         // screen.py 'c1(c2c(oc1)ccc(c2)OCC(=O)O)C(=O)c1ccccc1' 0.3 --d morgan2
         // screen.py '${query}' ${threshold} --d ${descriptor}
@@ -184,14 +204,21 @@ public class CannedDockerProcessDatasetStep extends AbstractDockerStep {
             runner.writeInput("execute", "#!/bin/sh\n" + expandedCommand, true);
 
             // add the resources
-            for (Map.Entry<String,Resource> e : descriptor.getResources().entrySet()) {
-                Resource r = e.getValue();
-                runner.writeInput(e.getKey(), r.get());
+            for (Map.Entry<String,String> e : descriptor.getResources().entrySet()) {
+                String name = e.getKey();
+                String resource = e.getValue();
+                try (InputStream is = descriptorLoader.loadRelative(resource)) {
+                    runner.writeInput(name, is);
+                    LOG.info("Wrote resource " + name);
+                }
             }
 
             // write the input data
-            // TODO - handle multiple inputs and don't assume names of input and output
-            DatasetMetadata inputMetadata = handleInput(varman, runner, inputMediaType);
+            if (inputDescriptors == null) {
+                for (IODescriptor d : inputDescriptors) {
+                    writeInput(varman, runner, d);
+                }
+            }
 
             // run the command
             statusMessage = MSG_RUNNING_CONTAINER;
@@ -211,7 +238,11 @@ public class CannedDockerProcessDatasetStep extends AbstractDockerStep {
 
             // handle the output
             statusMessage = MSG_PREPARING_OUTPUT;
-            handleOutput(inputMetadata, varman, runner, outputMediaType);
+            if (inputDescriptors != null) {
+                for (IODescriptor d : outputDescriptors) {
+                    readOutput(varman, runner, d);
+                }
+            }
 
             generateMetrics(runner, "output_metrics.txt", duration);
 
@@ -227,6 +258,77 @@ public class CannedDockerProcessDatasetStep extends AbstractDockerStep {
             // cleanup
             runner.cleanup();
             LOG.info("Results cleaned up");
+        }
+    }
+
+
+    protected void writeInput(VariableManager varman, DockerRunner runner, IODescriptor descriptor) throws Exception {
+
+        // conversions?
+
+        String mediaType;
+        if (descriptor.getMediaType() == null) {
+            mediaType = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON;
+        } else {
+            mediaType = descriptor.getMediaType();
+        }
+
+        switch (mediaType) {
+            case CommonMimeTypes.MIME_TYPE_DATASET_BASIC_JSON:
+            case CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON:
+                Dataset dataset = fetchMappedInput(descriptor.getName(), Dataset.class, varman, true);
+                writeAsDataset(dataset, runner);
+            case CommonMimeTypes.MIME_TYPE_MDL_SDF:
+                InputStream sdf = fetchMappedInput(descriptor.getName(), InputStream.class, varman, true);
+                writeAsSDF(sdf, runner);
+            default:
+                throw new IllegalArgumentException("Unsupported media type: " + mediaType);
+        }
+    }
+
+    protected void readOutput(VariableManager varman, DockerRunner runner, IODescriptor descriptor) throws Exception {
+
+        String mediaType;
+        if (descriptor.getMediaType() == null) {
+            mediaType = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON;
+        } else {
+            mediaType = descriptor.getMediaType();
+        }
+
+        switch (mediaType) {
+            case CommonMimeTypes.MIME_TYPE_DATASET_BASIC_JSON:
+            case CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON:
+                readDataset(varman, descriptor, runner);
+            case CommonMimeTypes.MIME_TYPE_MDL_SDF:
+                readSDF(varman, descriptor, runner);
+            default:
+                throw new IllegalArgumentException("Unsupported media type: " + mediaType);
+        }
+    }
+
+
+    protected DatasetMetadata readDataset(VariableManager varman, IODescriptor descriptor, DockerRunner runner) throws Exception {
+        DatasetMetadata meta;
+        try (InputStream is = runner.readOutput(descriptor.getName() + ".meta")) {
+            if (is == null) {
+                meta = new DatasetMetadata(descriptor.getGenericType());
+            } else {
+                meta = JsonHandler.getInstance().objectFromJson(is, DatasetMetadata.class);
+            }
+        }
+
+        try (InputStream is = runner.readOutput(descriptor.getName() + ".data.gz")) {
+            Dataset<? extends BasicObject> dataset = new Dataset(meta.getType(), IOUtils.getGunzippedInputStream(is), meta);
+            createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, dataset, varman);
+            LOG.fine("Results: " + dataset.getMetadata());
+            return dataset.getMetadata();
+        }
+    }
+
+    protected void readSDF(VariableManager varman, IODescriptor descriptor, DockerRunner runner) throws Exception {
+
+        try (InputStream is = runner.readOutput(descriptor.getName() + ".sdf.gz")) {
+            createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, InputStream.class, is, varman);
         }
     }
 

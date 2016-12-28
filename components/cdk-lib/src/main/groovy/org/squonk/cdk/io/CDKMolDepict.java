@@ -10,16 +10,16 @@ import org.openscience.cdk.interfaces.IChemObject;
 import org.openscience.cdk.io.MDLV2000Reader;
 import org.openscience.cdk.io.MDLV3000Reader;
 import org.openscience.cdk.renderer.color.CDK2DAtomColors;
-import org.openscience.cdk.renderer.color.CPKAtomColors;
 import org.openscience.cdk.renderer.color.IAtomColorer;
+import org.openscience.cdk.renderer.color.JmolColors;
 import org.openscience.cdk.renderer.color.UniColor;
 import org.openscience.cdk.silent.AtomContainer;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.squonk.io.AbstractMolDepict;
 import org.squonk.io.DepictionParameters;
-import org.squonk.io.DepictionParameters.ColorScheme;
 import org.squonk.io.DepictionParameters.AtomHighlight;
+import org.squonk.io.DepictionParameters.ColorScheme;
 import org.squonk.io.DepictionParameters.Highlight;
 
 import java.awt.*;
@@ -44,7 +44,7 @@ public class CDKMolDepict extends AbstractMolDepict<IAtomContainer> {
     static {
         colorers.put(ColorScheme.black, new UniColor(Color.BLACK));
         colorers.put(ColorScheme.white, new UniColor(Color.WHITE));
-        colorers.put(ColorScheme.cpk, new CPKAtomColors());
+        colorers.put(ColorScheme.cpk, new JmolColors());
         colorers.put(ColorScheme.toolkit_default, new CDK2DAtomColors());
     }
 

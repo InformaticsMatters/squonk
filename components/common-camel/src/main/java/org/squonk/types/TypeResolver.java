@@ -5,6 +5,9 @@ import org.squonk.api.HttpHandler;
 import org.squonk.api.MimeTypeResolver;
 import org.squonk.api.VariableHandler;
 import org.squonk.dataset.Dataset;
+import org.squonk.io.IODescriptor;
+import org.squonk.io.IORoute;
+import org.squonk.io.IOMultiplicity;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
@@ -20,14 +23,15 @@ public class TypeResolver implements MimeTypeResolver {
 
     private final Map<String, Class> primaryTypes = new HashMap<>();
     private final Map<String, Class> genericTypes = new HashMap<>();
+    private final Map<String, IOMultiplicity> ioTypes = new HashMap<>();
     private final Map<Class, Class> httpHandlers = new HashMap<>();
     private final Map<Class, Class> variableHandlers = new HashMap<>();
 
     public TypeResolver() {
-        registerMimeType(MIME_TYPE_DATASET_BASIC_JSON, Dataset.class, BasicObject.class);
-        registerMimeType(MIME_TYPE_DATASET_MOLECULE_JSON, Dataset.class, MoleculeObject.class);
-        registerMimeType(MIME_TYPE_MDL_SDF, SDFile.class);
-        registerMimeType(MIME_TYPE_CPSIGN_TRAIN_RESULT, CPSignTrainResult.class);
+        registerMimeType(MIME_TYPE_DATASET_BASIC_JSON, IOMultiplicity.STREAM, Dataset.class, BasicObject.class);
+        registerMimeType(MIME_TYPE_DATASET_MOLECULE_JSON, IOMultiplicity.STREAM, Dataset.class, MoleculeObject.class);
+        registerMimeType(MIME_TYPE_MDL_SDF, IOMultiplicity.STREAM, SDFile.class);
+        registerMimeType(MIME_TYPE_CPSIGN_TRAIN_RESULT, IOMultiplicity.ITEM, CPSignTrainResult.class);
         registerHttpHandler(Dataset.class, DatasetHandler.class);
         registerHttpHandler(SDFile.class, SDFileHandler.class);
         registerHttpHandler(CPSignTrainResult.class, CPSignTrainResultHandler.class);
@@ -35,12 +39,14 @@ public class TypeResolver implements MimeTypeResolver {
         registerVariableHandler(CPSignTrainResult.class, CPSignTrainResultHandler.class);
     }
 
-    public void registerMimeType(String mimeType, Class primaryType) {
+    public void registerMimeType(String mimeType, IOMultiplicity ioMultiplicity, Class primaryType) {
+        ioTypes.put(mimeType, ioMultiplicity);
         primaryTypes.put(mimeType, primaryType);
+
     }
 
-    public void registerMimeType(String mimeType, Class primaryType, Class genericType) {
-        registerMimeType(mimeType, primaryType);
+    public void registerMimeType(String mimeType, IOMultiplicity ioMultiplicity, Class primaryType, Class genericType) {
+        registerMimeType(mimeType, ioMultiplicity, primaryType);
         if (genericType != null) {
             genericTypes.put(mimeType, genericType);
         }
@@ -60,20 +66,33 @@ public class TypeResolver implements MimeTypeResolver {
         variableHandlers.put(primaryCls, handlerCls);
     }
 
-    public Class resolvePrimaryType(String mimeType) {
-        return primaryTypes.get(mimeType);
+    @Override
+    public Class resolvePrimaryType(String mediaType) {
+        return primaryTypes.get(mediaType);
     }
 
-    public Class resolveGenericType(String mimeType) {
-        return genericTypes.get(mimeType);
+    @Override
+    public Class resolveGenericType(String mediaType) {
+        return genericTypes.get(mediaType);
     }
 
+    @Override
+    public IOMultiplicity resolveIOType(String mediaType) {
+        return ioTypes.get(mediaType);
+    }
+
+    public IODescriptor createIODescriptor(String name, String mediaType, IORoute mode) {
+        return new IODescriptor(name, mediaType, resolvePrimaryType(mediaType), resolveGenericType(mediaType),  resolveIOType(mediaType), mode);
+    }
+
+    @Override
     public HttpHandler createHttpHandler(String mimeType) {
         Class p = resolvePrimaryType(mimeType);
         Class g = resolveGenericType(mimeType);
         return createHttpHandler(p, g);
     }
 
+    @Override
     public HttpHandler createHttpHandler(Class primaryType, Class genericType) {
 
         Class type = httpHandlers.get(primaryType);

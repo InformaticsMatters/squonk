@@ -1,5 +1,8 @@
 package org.squonk.api;
 
+import org.squonk.io.IODescriptor;
+import org.squonk.io.IORoute;
+import org.squonk.io.IOMultiplicity;
 import org.squonk.util.CommonMimeTypes;
 
 /**
@@ -10,6 +13,10 @@ public interface MimeTypeResolver extends CommonMimeTypes {
     Class resolvePrimaryType(String mimeType);
 
     Class resolveGenericType(String mimeType);
+
+    IOMultiplicity resolveIOType(String mimeType);
+
+    IODescriptor createIODescriptor(String name, String mediaType, IORoute mode);
 
     default HttpHandler createHttpHandler(String mimeType) {
         return createHttpHandler(resolvePrimaryType(mimeType), resolveGenericType(mimeType));

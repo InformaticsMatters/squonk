@@ -11,7 +11,7 @@ class ServiceDescriptorUtilsSpec extends Specification {
 
     void "relative with trailing slash"() {
         setup:
-        ServiceDescriptor sd = createServiceDescriptor("foo", true)
+        ServiceDescriptor sd = createServiceDescriptor("foo")
 
         when:
         String url = ServiceDescriptorUtils.makeAbsoluteUrl("http://localhost:8080/some/path/", sd)
@@ -22,7 +22,7 @@ class ServiceDescriptorUtilsSpec extends Specification {
 
     void "relative without trailing slash"() {
         setup:
-        ServiceDescriptor sd = createServiceDescriptor("foo", true)
+        ServiceDescriptor sd = createServiceDescriptor("foo",)
 
         when:
         String url = ServiceDescriptorUtils.makeAbsoluteUrl("http://localhost:8080/some/path", sd)
@@ -33,7 +33,7 @@ class ServiceDescriptorUtilsSpec extends Specification {
 
     void "absolute url"() {
         setup:
-        ServiceDescriptor sd = createServiceDescriptor("http://localhost:8080/some/other/path", false)
+        ServiceDescriptor sd = createServiceDescriptor("http://localhost:8080/some/other/path")
 
         when:
         String url = ServiceDescriptorUtils.makeAbsoluteUrl("http://localhost:8080/some/path", sd)
@@ -43,7 +43,7 @@ class ServiceDescriptorUtilsSpec extends Specification {
     }
 
     void "copy props when making absolute"() {
-        ServiceDescriptor sd1 = createServiceDescriptor("foo", true)
+        ServiceDescriptor sd1 = createServiceDescriptor("foo")
 
         when:
         ServiceDescriptor sd2 = ServiceDescriptorUtils.makeAbsolute("http://nowhere.com/", sd1)
@@ -54,12 +54,24 @@ class ServiceDescriptorUtilsSpec extends Specification {
         sd2.getExecutionEndpoint().startsWith("http://nowhere.com/")
     }
 
-    private ServiceDescriptor createServiceDescriptor(String endpoint, boolean isRelative) {
-        return new ServiceDescriptor("id", "name", "desc", null, null, null, null, null, null, "icon.png",
-                endpoint, isRelative,
-                null, null
+    private ServiceDescriptor createServiceDescriptor(String endpoint) {
+        return new ServiceDescriptor("id", "name", "desc", null, null, "icon.png", null, null, null, null, endpoint
         )
     }
+
+/*
+            String id,
+            String name,
+            String description,
+            String[] tags,
+            String resourceUrl,
+            String icon,
+            IODescriptor[] inputDescriptors,
+            IODescriptor[] outputDescriptors,
+            OptionDescriptor[] options,
+            String executorClassName,
+            String executionEndpoint
+*/
 
 }
 

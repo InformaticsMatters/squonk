@@ -1,7 +1,11 @@
 package org.squonk.openchemlib.services;
 
+import org.squonk.io.IODescriptor;
+import org.squonk.io.IODescriptors;
+import org.squonk.io.IOMultiplicity;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.io.IORoute;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.types.MoleculeObject;
 
@@ -55,15 +59,12 @@ public class OpenChemLibBasicServices {
                 description,
                 tags,
                 resourceUrl,
-                MoleculeObject.class, // inputClass
-                MoleculeObject.class, // outputClass
-                ServiceDescriptor.DataType.STREAM, // inputType
-                ServiceDescriptor.DataType.STREAM, // outputType
                 icon,
-                endpoint,
-                true, // a relative URL
+                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input", IORoute.STREAM)},
+                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output", IORoute.STREAM)},
                 options,
-                StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME
+                StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME,
+                endpoint
         );
     }
 

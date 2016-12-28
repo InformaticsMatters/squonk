@@ -4,11 +4,14 @@ import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.docker.impl.RDKitDockerExecutorDescriptors;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Created by timbo on 05/12/16.
  */
 public class DockerExecutorDescriptorRegistry {
+
+    private static final Logger LOG = Logger.getLogger(DockerExecutorDescriptorRegistry.class.getName());
 
 
     private static DockerExecutorDescriptorRegistry instance;
@@ -47,6 +50,7 @@ public class DockerExecutorDescriptorRegistry {
             throw new RuntimeException("Descriptor " + descriptor.getId() + " already registered");
         }
         items.put(descriptor.getId(), descriptor);
+        LOG.info("Registered DockerExecutorDescriptor " + descriptor.getId());
     }
 
     public void remove(String id) {

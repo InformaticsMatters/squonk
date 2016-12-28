@@ -179,7 +179,7 @@ public class IOUtils {
         }
         StringBuilder b = new StringBuilder(vals[0].toString());
         for (int i = 1; i < vals.length; i++) {
-            b.append(sep).append(vals[i]);
+            b.append(sep).append(vals[i].toString());
         }
         return b.toString();
     }

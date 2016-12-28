@@ -11,41 +11,51 @@ public class ServiceDescriptorUtils {
 
     private static final Logger LOG = Logger.getLogger(ServiceDescriptorUtils.class.getName());
 
-    public static String makeAbsoluteUrl(String baseUrl, ServiceDescriptor serviceDescriptor) {
-        if (serviceDescriptor.isEndpointRelative()) {
-            if (baseUrl.endsWith("/")) {
-                return baseUrl + serviceDescriptor.getExecutionEndpoint();
-            } else {
-                return baseUrl + "/" + serviceDescriptor.getExecutionEndpoint();
-            }
-        } else {
-            return serviceDescriptor.getExecutionEndpoint();
+    protected static String makeAbsoluteUrl(String baseUrl, ServiceDescriptor serviceDescriptor) {
+        String endpoint = serviceDescriptor.getExecutionEndpoint();
+        if (endpoint == null) {
+            endpoint = "";
+        } else if (isAbsoluteUrl(endpoint)) {
+            return endpoint;
         }
+
+        if (baseUrl.endsWith("/")) {
+            return baseUrl + endpoint;
+        } else {
+            return baseUrl + "/" + endpoint;
+        }
+    }
+
+    private static boolean isAbsoluteUrl(String url) {
+        return url.toLowerCase().startsWith("http:") || url.toLowerCase().startsWith("https:");
     }
 
     public static ServiceDescriptor makeAbsolute(String baseUrl, ServiceDescriptor serviceDescriptor) {
 
-        if (serviceDescriptor.isEndpointRelative()) {
-            return new ServiceDescriptor(
-                    serviceDescriptor.getId(),
-                    serviceDescriptor.getName(),
-                    serviceDescriptor.getDescription(),
-                    serviceDescriptor.getTags(),
-                    serviceDescriptor.getResourceUrl(),
-                    serviceDescriptor.getInputClass(),
-                    serviceDescriptor.getOutputClass(),
-                    serviceDescriptor.getInputType(),
-                    serviceDescriptor.getOutputType(),
-                    serviceDescriptor.getIcon(),
-                    makeAbsoluteUrl(baseUrl, serviceDescriptor),
-                    serviceDescriptor.isEndpointRelative(),
-                    serviceDescriptor.getStatus(),
-                    serviceDescriptor.getStatusLastChecked(),
-                    serviceDescriptor.getOptions(),
-                    serviceDescriptor.getExecutorClassName()
-            );
-        } else {
+        String endpoint = serviceDescriptor.getExecutionEndpoint();
+        if (endpoint == null) {
             return serviceDescriptor;
+        } else {
+
+            if (!isAbsoluteUrl(endpoint)) {
+                return new ServiceDescriptor(
+                        serviceDescriptor.getId(),
+                        serviceDescriptor.getName(),
+                        serviceDescriptor.getDescription(),
+                        serviceDescriptor.getTags(),
+                        serviceDescriptor.getResourceUrl(),
+                        serviceDescriptor.getIcon(),
+                        serviceDescriptor.getStatus(),
+                        serviceDescriptor.getStatusLastChecked(),
+                        serviceDescriptor.getInputDescriptors(),
+                        serviceDescriptor.getOutputDescriptors(),
+                        serviceDescriptor.getOptions(),
+                        serviceDescriptor.getExecutorClassName(),
+                        makeAbsoluteUrl(baseUrl, serviceDescriptor)
+                );
+            } else {
+                return serviceDescriptor;
+            }
         }
 
     }
