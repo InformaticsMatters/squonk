@@ -4,6 +4,9 @@ import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.DatasetMetadata
 import org.squonk.execution.variable.VariableManager
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
+import org.squonk.io.IORoute
 import org.squonk.notebook.api.VariableKey
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
@@ -42,8 +45,11 @@ class DatasetSorterStepSpec extends Specification {
         DatasetSorterStep step = new DatasetSorterStep()
         step.configure(producer, "job1",
                 [(DatasetSorterStep.OPTION_DIRECTIVES): expression],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [(DatasetSorterStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
-                [:])
+                [:]
+        )
         return step
     }
 

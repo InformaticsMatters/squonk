@@ -1,5 +1,8 @@
 package org.squonk.execution.steps.impl
 
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
+import org.squonk.io.IORoute
 import org.squonk.types.MoleculeObject
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
@@ -37,7 +40,9 @@ class MoleculeServiceFatExecutorStepSpec extends Specification {
         def outputMappings = [:]
         
         MoleculeServiceFatExecutorStep step = new MoleculeServiceFatExecutorStep()
-        step.configure(producer, "job1", opts, inputMappings, outputMappings)
+        step.configure(producer, "job1", opts,
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], inputMappings, outputMappings)
         
         
         when:

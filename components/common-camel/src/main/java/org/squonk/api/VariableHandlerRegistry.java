@@ -2,6 +2,7 @@ package org.squonk.api;
 
 import org.squonk.types.DatasetHandler;
 import org.squonk.types.InputStreamHandler;
+import org.squonk.types.SDFileHandler;
 import org.squonk.types.StringHandler;
 
 import java.util.HashMap;
@@ -21,6 +22,7 @@ public class VariableHandlerRegistry {
         register(new DatasetHandler());
         register(new InputStreamHandler());
         register(new StringHandler());
+        register(new SDFileHandler());
     }
 
     public void register(VariableHandler handler) {

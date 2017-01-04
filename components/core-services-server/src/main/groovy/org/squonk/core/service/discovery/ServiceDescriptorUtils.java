@@ -49,7 +49,7 @@ public class ServiceDescriptorUtils {
                         serviceDescriptor.getStatusLastChecked(),
                         serviceDescriptor.getInputDescriptors(),
                         serviceDescriptor.getOutputDescriptors(),
-                        serviceDescriptor.getOptions(),
+                        serviceDescriptor.getOptionDescriptors(),
                         serviceDescriptor.getExecutorClassName(),
                         makeAbsoluteUrl(baseUrl, serviceDescriptor)
                 );

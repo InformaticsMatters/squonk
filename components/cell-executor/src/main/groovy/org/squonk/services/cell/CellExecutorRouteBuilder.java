@@ -129,7 +129,7 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
         }
 
         VariableManager varman = new VariableManager(notebookRestClient,notebookId, editableId);
-        StepExecutor executor = new StepExecutor(cellId, jobid, varman, ROUTE_STATS);
+        StepExecutor executor = new StepExecutor(cellId, jobid, jobdef, varman, ROUTE_STATS);
 
         // and execute
         try {

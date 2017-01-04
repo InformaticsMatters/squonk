@@ -59,8 +59,8 @@ public class CdkBasicServices {
                 tags,
                 resourceUrl,
                 icon,
-                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input", IORoute.STREAM)},
-                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output", IORoute.STREAM)},
+                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input")},
+                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output")},
                 options,
                 StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME,
                 endpoint

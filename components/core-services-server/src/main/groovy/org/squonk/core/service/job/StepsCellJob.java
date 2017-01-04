@@ -1,6 +1,9 @@
 package org.squonk.core.service.job;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.squonk.execution.docker.DescriptorRegistry;
+import org.squonk.execution.docker.DockerExecutorDescriptor;
+import org.squonk.execution.steps.StepDefinition;
 import org.squonk.jobdef.JobStatus;
 import org.squonk.jobdef.StepsCellExecutorJobDefinition;
 import org.squonk.client.JobStatusClient;
@@ -17,6 +20,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.squonk.core.CommonConstants.KEY_DOCKER_SERVICE_REGISTRY;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_NAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_PARAMS;
 
@@ -94,6 +98,18 @@ public class StepsCellJob  implements Job<StepsCellExecutorJobDefinition> {
         try {
             JobStatus status = jobstatusClient.submit(jobdef, username, totalCount);
             jobid = status.getJobId();
+            for (StepDefinition stepdef : jobdef.getSteps()) {
+                String id = (String)stepdef.getOptions().get("docker.executor.id");
+                if (id != null) {
+                    LOG.info("Looking up DockerExecutorDescriptor for " + id);
+                    DescriptorRegistry reg = camelContext.getRegistry().lookupByNameAndType(KEY_DOCKER_SERVICE_REGISTRY, DescriptorRegistry.class);
+                    DockerExecutorDescriptor ded = (DockerExecutorDescriptor)reg.fetch(id);
+                    if (ded == null) {
+                        throw new IllegalStateException("DockerExecutorDescriptor not found for " + id);
+                    }
+                    stepdef.setExecutableDescriptor(ded);
+                }
+            }
             startJob(camelContext, username);
             return jobstatusClient.updateStatus(jobid, JobStatus.Status.RUNNING);
         } catch (Throwable t) {

@@ -28,14 +28,23 @@ public class VariableWriteContext implements VariableHandler.WriteContext {
     }
 
     @Override
-    public void writeTextValue(String val, String key) throws Exception {
-        client.writeTextValue(notebookId, editableId, cellId, variableName, val, key);
+    public void writeTextValue(String value, String key) throws Exception {
+        client.writeTextValue(notebookId, editableId, cellId, variableName, value, key);
     }
 
+    @Override
+    public void writeSingleTextValue(String value, String key) throws Exception {
+        writeTextValue(value, null);
+    }
 
     @Override
-    public void writeStreamValue(InputStream val, String key) throws Exception {
-        client.writeStreamValue(notebookId, editableId, cellId, variableName, IOUtils.getGzippedInputStream(val), key);
+    public void writeStreamValue(InputStream value, String key) throws Exception {
+        client.writeStreamValue(notebookId, editableId, cellId, variableName, IOUtils.getGzippedInputStream(value), key);
+    }
+
+    @Override
+    public void writeSingleStreamValue(InputStream value, String key) throws Exception {
+        writeStreamValue(value, null);
     }
 
     @Override

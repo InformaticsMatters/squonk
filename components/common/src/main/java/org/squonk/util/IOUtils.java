@@ -1,15 +1,6 @@
 package org.squonk.util;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PushbackInputStream;
-import java.io.Reader;
+import java.io.*;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.concurrent.Callable;
@@ -159,6 +150,39 @@ public class IOUtils {
             }
             return out.toByteArray();
         }
+    }
+
+    public static long transfer(final InputStream in, final OutputStream out) throws IOException {
+        return transfer(in, out, 1000);
+    }
+
+    /** Transfers the bytes in the input to the output. When finished the input is closed, but not the output as you might
+     * need to write more to it.
+     *
+     * @param in
+     * @param out
+     * @param bufferSize
+     * @return
+     * @throws IOException
+     */
+    public static long transfer(final InputStream in, final OutputStream out, final int bufferSize) throws IOException {
+        final byte[] buffer = new byte[bufferSize];
+        long count = 0;
+        try  {
+
+            while (true) {
+                int rsz = in.read(buffer, 0, buffer.length);
+                if (rsz < 0) {
+                    break;
+                }
+                out.write(buffer, 0, rsz);
+                count += (long)rsz;
+            }
+
+        } finally {
+            in.close();
+        }
+        return count;
     }
 
     public static String truncateString(String s, int maxLength) {

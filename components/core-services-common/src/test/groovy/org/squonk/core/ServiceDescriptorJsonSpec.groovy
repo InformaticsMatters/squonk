@@ -26,8 +26,8 @@ class ServiceDescriptorJsonSpec extends Specification {
                 ["logp", "partitioning", "cdk"] as String[],
                 null,
                 "icon.png",
-                [IODescriptors.createMoleculeObjectDataset("input", IORoute.STREAM)] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output", IORoute.STREAM)] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 null,
                 null,
                 "logp", // a URL relative to this URL?

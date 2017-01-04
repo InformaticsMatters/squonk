@@ -41,8 +41,8 @@ public class DatasetSelectRandomStep extends AbstractStep {
         }
         LOG.info("Input Dataset: " + ds);
 
-        Float randomOpt = getOption(OPTION_RANDOM, Float.class);
-        Integer countOpt = getOption(OPTION_COUNT, Integer.class);
+        Float randomOpt = getOption(OPTION_RANDOM, Float.class, context.getTypeConverter());
+        Integer countOpt = getOption(OPTION_COUNT, Integer.class, context.getTypeConverter());
         float random = randomOpt == null ? 0.001f : randomOpt;
         int count = countOpt == null ? 1000 : countOpt;
 

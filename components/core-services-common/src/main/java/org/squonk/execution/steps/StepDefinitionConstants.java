@@ -9,9 +9,9 @@ public interface StepDefinitionConstants {
     String STEP_DATASET_WRITER = "org.squonk.execution.steps.impl.DatasetWriterStep";
     String STEP_DATASET_READER = "org.squonk.execution.steps.impl.DatasetReaderStep";
 
-    String VARIABLE_INPUT_DATASET = "_InputDataset";
-    String VARIABLE_OUTPUT_DATASET = "_OutputDataset";
-    String VARIABLE_FILE_INPUT = "_FileInput";
+    String VARIABLE_INPUT_DATASET = "input";
+    String VARIABLE_OUTPUT_DATASET = "output";
+    String VARIABLE_FILE_INPUT = "fileContent";
 
     String OPTION_BODY = "body";
     String OPTION_BODY_CONTENT_TYPE = "body-content-type";

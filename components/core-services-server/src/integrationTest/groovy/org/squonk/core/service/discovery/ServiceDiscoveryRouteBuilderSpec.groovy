@@ -2,6 +2,9 @@ package org.squonk.core.service.discovery
 
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.impl.DefaultCamelContext
+import org.apache.camel.impl.SimpleRegistry
+import org.squonk.core.CommonConstants
+import org.squonk.execution.docker.DescriptorRegistry
 import spock.lang.Specification
 
 import static org.squonk.core.service.discovery.ServiceDiscoveryRouteBuilder.TEST_SERVICE_DESCRIPTORS
@@ -15,7 +18,9 @@ class ServiceDiscoveryRouteBuilderSpec extends Specification {
     void "test service discovery"() {
         setup:
 
-        DefaultCamelContext context = new DefaultCamelContext()
+        SimpleRegistry reg = new SimpleRegistry()
+        reg.put(CommonConstants.KEY_DOCKER_SERVICE_REGISTRY, new DescriptorRegistry())
+        DefaultCamelContext context = new DefaultCamelContext(reg)
         ServiceDiscoveryRouteBuilder rb = new ServiceDiscoveryRouteBuilder()
         rb.timerRepeats = 1
         context.addRoutes(rb)

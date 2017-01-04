@@ -33,6 +33,8 @@ dependencies {
     compile "org.apache.camel:camel-rabbitmq:$camelVersion"
      
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+
+    testCompile project(':core-test')
     
     def tomcatVersion = '7.0.59'
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",

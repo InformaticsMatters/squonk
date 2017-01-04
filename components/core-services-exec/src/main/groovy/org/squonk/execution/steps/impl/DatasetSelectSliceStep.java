@@ -18,8 +18,8 @@ public class DatasetSelectSliceStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetSelectSliceStep.class.getName());
 
-    public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
-    public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
+    //public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
+    //public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
     public static final String OPTION_SKIP = StepDefinitionConstants.DatasetSelectSlice.OPTION_SKIP;
     public static final String OPTION_COUNT = StepDefinitionConstants.DatasetSelectSlice.OPTION_COUNT;
 
@@ -34,9 +34,9 @@ public class DatasetSelectSliceStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         statusMessage = MSG_PREPARING_INPUT;
-        Dataset ds = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
+        Dataset ds = fetchMappedInput("input", Dataset.class, varman);
         if (ds == null) {
-            throw new IllegalStateException("Input variable not found: " + VAR_INPUT_DATASET);
+            throw new IllegalStateException("Input variable not found: input");
         }
         LOG.info("Input Dataset: " + ds);
 
@@ -58,7 +58,7 @@ public class DatasetSelectSliceStep extends AbstractStep {
 
         Dataset results = new Dataset(ds.getType(), stream, meta);
         
-        String outFldName = mapOutputVariable(VAR_OUTPUT_DATASET);
+        String outFldName = mapOutputVariable("output");
         if (outFldName != null) {
             createVariable(outFldName, Dataset.class, results, varman);
         }

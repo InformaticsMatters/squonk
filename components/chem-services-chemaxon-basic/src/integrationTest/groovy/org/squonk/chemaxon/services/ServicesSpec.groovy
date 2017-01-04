@@ -13,6 +13,7 @@ import org.squonk.dataset.Dataset
 import org.squonk.types.io.JsonHandler
 import org.squonk.util.CommonMimeTypes
 import org.squonk.util.IOUtils
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -126,7 +127,8 @@ class ServicesSpec extends Specification {
 
     }
 
-
+    // something broke in JChem resulting to XML parsing. Will be replaced with Dockerised version
+    @Ignore
     void "test screening json/json"() {
 
         Dataset dataset = Molecules.nci100Dataset()

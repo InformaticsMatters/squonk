@@ -2,12 +2,15 @@ package org.squonk.core.service.discovery;
 
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.squonk.io.IOMultiplicity;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptorSet;
-import org.squonk.execution.docker.DockerExecutorDescriptorRegistry;
+import org.squonk.execution.docker.DescriptorRegistry;
+import org.squonk.execution.docker.DockerExecutorDescriptor;
+import org.squonk.io.IODescriptor;
+import org.squonk.io.IODescriptors;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
@@ -17,6 +20,8 @@ import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.squonk.core.CommonConstants.KEY_DOCKER_SERVICE_REGISTRY;
 
 /**
  * @author timbo
@@ -65,16 +70,16 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             LOG.warning("Environment variable SQUONK_BASIC_CHEM_SERVICES_URL not defined. Basic Chem services will not be available");
         }
 
-        if (rdkitPythonServicesUrl != null) {
-            LOG.info("Enabling RDKit python services from " + rdkitPythonServicesUrl);
-
-            locations.put(rdkitPythonServicesUrl + "/rdkit_screen/", null);
-            locations.put(rdkitPythonServicesUrl + "/rdkit_cluster/", null);
-            locations.put(rdkitPythonServicesUrl + "/rdkit_filter/", null);
-            locations.put(rdkitPythonServicesUrl + "/rdkit_conf/", null);
-        } else {
-            LOG.warning("Environment variable SQUONK_RDKIT_CHEM_SERVICES_URL not defined. RDKit Python services will not be available");
-        }
+//        if (rdkitPythonServicesUrl != null) {
+//            LOG.info("Enabling RDKit python services from " + rdkitPythonServicesUrl);
+//
+//            locations.put(rdkitPythonServicesUrl + "/rdkit_screen/", null);
+//            locations.put(rdkitPythonServicesUrl + "/rdkit_cluster/", null);
+//            locations.put(rdkitPythonServicesUrl + "/rdkit_filter/", null);
+//            locations.put(rdkitPythonServicesUrl + "/rdkit_conf/", null);
+//        } else {
+//            LOG.warning("Environment variable SQUONK_RDKIT_CHEM_SERVICES_URL not defined. RDKit Python services will not be available");
+//        }
     }
 
     public static final ServiceDescriptor[] TEST_SERVICE_DESCRIPTORS = new ServiceDescriptor[]{
@@ -85,10 +90,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                     new String[]{"testing"},
                     "http://foo.com/something",
                     "default_icon.png",
-                    Object.class, // inputClass
-                    Object.class, // outputClass
-                    IOMultiplicity.ITEM, // inputType
-                    IOMultiplicity.ITEM, // outputType
+                    new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input")},
+                    new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output")},
                     null, // options
                     "executor",
                     "valueIsIgnored" // endpoint
@@ -106,7 +109,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                     for (ServiceDescriptorSet set : sets) {
                         list.addAll(set.getServiceDescriptors());
                     }
-                    List<ServiceDescriptor> dockerServiceDescriptors = DockerExecutorDescriptorRegistry.getInstance().getServiceDescriptors();
+                    List<ServiceDescriptor> dockerServiceDescriptors = getDockerServiceDescriptors(exch.getContext());
                     list.addAll(dockerServiceDescriptors);
                     LOG.info("Added " + dockerServiceDescriptors.size() + " docker service descriptors");
                     exch.getIn().setBody(list);
@@ -132,6 +135,16 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                     });
                 });
 
+    }
+
+    private List<ServiceDescriptor> getDockerServiceDescriptors(CamelContext context) {
+        DescriptorRegistry reg = context.getRegistry().lookupByNameAndType(KEY_DOCKER_SERVICE_REGISTRY, DescriptorRegistry.class);
+        Map<String,DockerExecutorDescriptor> items = reg.fetchAll();
+        List<ServiceDescriptor> list = new ArrayList<>(items.size());
+        for (Map.Entry<String,DockerExecutorDescriptor> e : items.entrySet()) {
+            list.add(e.getValue().getServiceDescriptor());
+        }
+        return list;
     }
 
     protected void updateServiceDescriptors(String baseUrl, String healthUrl, List<ServiceDescriptor> sds) throws Exception {
@@ -166,7 +179,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         MappingIterator<ServiceDescriptor> iter = reader.readValues(new URL(url));
         List<ServiceDescriptor> list = new ArrayList<>();
         while (iter.hasNext()) {
-            list.add(iter.next());
+            ServiceDescriptor absUrlSD = ServiceDescriptorUtils.makeAbsolute(url, iter.next());
+            list.add(absUrlSD);
         }
         return list;
     }

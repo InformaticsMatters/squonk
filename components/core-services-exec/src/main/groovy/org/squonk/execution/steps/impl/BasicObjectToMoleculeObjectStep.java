@@ -40,8 +40,6 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
     public static final String OPTION_STRUCTURE_FIELD_NAME = StepDefinitionConstants.ConvertBasicToMoleculeObject.OPTION_STRUCTURE_FIELD_NAME;
     public static final String OPTION_STRUCTURE_FORMAT = StepDefinitionConstants.ConvertBasicToMoleculeObject.OPTION_STRUCTURE_FORMAT;
     public static final String OPTION_PRESERVE_UUID = StepDefinitionConstants.ConvertBasicToMoleculeObject.OPTION_PRESERVE_UUID;
-    public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
-    public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
     public static String DEFAULT_STRUCTURE_FIELD_NAME = "structure";
 
@@ -52,15 +50,17 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
         String structureFormat = getOption(OPTION_STRUCTURE_FORMAT, String.class);
         boolean preserveUuid = getOption(OPTION_PRESERVE_UUID, Boolean.class, true);
 
-        Dataset<BasicObject> input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
-        if (LOG.isLoggable(Level.FINE) && input.getMetadata() != null) {
+        Dataset<BasicObject> input = fetchMappedInput("input", Dataset.class, varman);
+        if (input == null) {
+            throw new IllegalStateException("No input found");
+        } else if (LOG.isLoggable(Level.FINE) && input.getMetadata() != null) {
             LOG.fine("Input has " + input.getMetadata().getSize() + " items");
         }
 
-        statusMessage = "Appling connversions ...";
+        statusMessage = "Applying connversions ...";
         Dataset<MoleculeObject> results = TypesUtils.convertBasicObjectDatasetToMoleculeObjectDataset(input, structureFieldName, structureFormat, preserveUuid);
 
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
+        createMappedOutput("output", Dataset.class, results, varman);
         statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
         LOG.info("Results: " + results.getMetadata());
     }

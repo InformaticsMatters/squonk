@@ -27,7 +27,7 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
     /**
      * The variable for the resulting Dataset&lt;MoleculeObject&gt;
      */
-    public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
+    //public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
@@ -45,7 +45,7 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
         statusMessage = "Fetching data ...";
         Dataset<MoleculeObject> results = client.fetchActivitiesForAssay(assayID, batchSize, prefix);
 
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
+        createMappedOutput("output", Dataset.class, results, varman);
         statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
         LOG.info("Results: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
     }

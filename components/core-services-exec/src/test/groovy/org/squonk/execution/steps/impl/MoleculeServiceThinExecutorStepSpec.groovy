@@ -1,15 +1,17 @@
 package org.squonk.execution.steps.impl
 
-import org.squonk.types.MoleculeObject
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.DatasetMetadata
 import org.squonk.execution.steps.Step
 import org.squonk.execution.steps.StepExecutor
-
 import org.squonk.execution.variable.VariableManager
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
+import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition
 import org.squonk.notebook.api.VariableKey
+import org.squonk.types.MoleculeObject
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
 
@@ -66,8 +68,11 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
 
         step.configure(producer, "job1",
                 [(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT): 'http://localhost:8888/route1'],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [(MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
-                [:])
+                [:]
+        )
 
         when:
         step.execute(varman, context)
@@ -102,17 +107,23 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
         MoleculeServiceThinExecutorStep step1 = new MoleculeServiceThinExecutorStep()
         step1.configure(producer, "job1",
                 [(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT): 'http://localhost:8888/route1'],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [(MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
-                [(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET): "_tmp1"])
+                [(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET): "_tmp1"]
+        )
 
         MoleculeServiceThinExecutorStep step2 = new MoleculeServiceThinExecutorStep()
         step2.configure(producer, "job1",
                 [(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT): 'http://localhost:8888/route2'],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [(MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET): new VariableKey(producer, "_tmp1")],
-                [(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET): "Output"])
+                [(MoleculeServiceThinExecutorStep.VAR_OUTPUT_DATASET): "Output"]
+        )
 
         when:
-        StepExecutor executor = new StepExecutor(producer, "job1", varman)
+        StepExecutor executor = new StepExecutor(producer, "job1", new ExecuteCellUsingStepsJobDefinition(), varman)
         Step[] steps = [step1, step2] as Step[]
         executor.execute(steps, context)
         Dataset result = varman.getValue(new VariableKey(producer, "Output"), Dataset.class)

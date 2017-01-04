@@ -2,6 +2,9 @@ package org.squonk.execution.steps.impl
 
 import org.squonk.dataset.Dataset
 import org.squonk.execution.variable.VariableManager
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
+import org.squonk.io.IORoute
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
@@ -21,6 +24,8 @@ class SmilesStructuresStepSpec extends Specification {
 
         step.configure(producer, "job1",
                 [(SmilesStructuresStep.OPTION_SMILES): text],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [:], [:])
 
         when:
@@ -43,6 +48,8 @@ class SmilesStructuresStepSpec extends Specification {
 
         step.configure(producer, "job1",
                 [(SmilesStructuresStep.OPTION_SMILES): text],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [:], [:])
 
         when:

@@ -6,18 +6,15 @@ import org.apache.camel.cdi.ContextName;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.api.MimeTypeResolver;
-import org.squonk.io.IODescriptor;
-import org.squonk.io.IODescriptors;
-import org.squonk.io.IOMultiplicity;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.io.IORoute;
+import org.squonk.io.IODescriptor;
+import org.squonk.io.IODescriptors;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.options.OptionDescriptor.Mode;
 import org.squonk.rdkit.db.ChemcentralSearcher;
-import org.squonk.types.MoleculeObject;
 
 import java.util.logging.Logger;
 
@@ -46,7 +43,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Chemcentral+Structure+Search",
                     "icons/structure_search.png",
                     null, // inputType - taken from the structure option
-                    new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output", IORoute.STREAM)},
+                    new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output")},
                     new OptionDescriptor[]{
                             new OptionDescriptor<>(MoleculeTypeDescriptor.QUERY,
                                     "body", "Query Structure", "Structure to use as the query as mol, smarts or smiles", Mode.User)
@@ -73,7 +70,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Chemcentral+Similarity+Search",
                     "icons/structure_search.png",
                     null, // inputType - taken from the structure option
-                    new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output", IORoute.STREAM)},
+                    new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output")},
                     new OptionDescriptor[]{
                             new OptionDescriptor<>(MoleculeTypeDescriptor.DISCRETE,
                                     "body", "Query Structure", "Structure to use as the query as smiles or smarts", Mode.User)
@@ -113,8 +110,8 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     },
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Chemcentral+multi-search",
                     "icons/structure_search.png",
-                    new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input", IORoute.STREAM)},
-                    new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output", IORoute.STREAM)},
+                    new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input")},
+                    new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output")},
                     new OptionDescriptor[]{
                             new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search", Mode.User)
                                     .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})

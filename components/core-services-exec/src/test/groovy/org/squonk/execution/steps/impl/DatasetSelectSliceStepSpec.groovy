@@ -1,5 +1,8 @@
 package org.squonk.execution.steps.impl
 
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
+import org.squonk.io.IORoute
 import org.squonk.types.MoleculeObject
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
@@ -38,6 +41,8 @@ class DatasetSelectSliceStepSpec extends Specification {
         DatasetSelectSliceStep step = new DatasetSelectSliceStep()
         step.configure(producer, "job1",
                 [(DatasetSelectSliceStep.OPTION_SKIP):skip, (DatasetSelectSliceStep.OPTION_COUNT):count],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [(DatasetSelectSliceStep.VAR_INPUT_DATASET):new VariableKey(producer, "input")],
                 [:])
         return step

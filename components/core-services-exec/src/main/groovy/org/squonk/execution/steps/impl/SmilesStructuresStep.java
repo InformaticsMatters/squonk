@@ -20,7 +20,6 @@ public class SmilesStructuresStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(SmilesStructuresStep.class.getName());
 
-    protected static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
     protected static final String OPTION_SMILES = StepDefinitionConstants.SmilesStructures.OPTION_SMILES;
     protected static final String FIELD_NAME = "Name";
 
@@ -64,7 +63,7 @@ public class SmilesStructuresStep extends AbstractStep {
 
         Dataset<MoleculeObject> result = new Dataset<>(MoleculeObject.class, mols, meta);
 
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, result, varman);
+        createMappedOutput("output", Dataset.class, result, varman);
 
         statusMessage = String.format(MSG_RECORDS_PROCESSED, result.getMetadata().getSize());
         LOG.info("Results: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));

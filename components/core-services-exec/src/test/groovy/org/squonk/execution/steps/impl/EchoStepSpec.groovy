@@ -2,6 +2,9 @@ package org.squonk.execution.steps.impl
 
 
 import org.squonk.execution.variable.VariableManager
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
+import org.squonk.io.IORoute
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
@@ -22,6 +25,8 @@ class EchoStepSpec extends Specification {
         EchoStep step = new EchoStep()
         step.configure(producer, "job1",
                 [:],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 ["input":new VariableKey(producer, "input")],
                 ["output":"output"])
 

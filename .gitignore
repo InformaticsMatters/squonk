@@ -20,6 +20,7 @@ data/licenses
 data/testfiles/emols*
 data/testfiles/all-sdf.sdf.gz
 data/testfiles/chembl_21.sdf.gz
+data/testfiles/docker-services/
 
 components/common/lib
 components/chemcentral/chemcentral.properties

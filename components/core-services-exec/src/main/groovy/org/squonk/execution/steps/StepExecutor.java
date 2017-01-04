@@ -3,6 +3,9 @@ package org.squonk.execution.steps;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.ExecutableDescriptor;
+import org.squonk.io.IODescriptor;
+import org.squonk.jobdef.StepsCellExecutorJobDefinition;
 import org.squonk.util.CamelRouteStatsRecorder;
 import org.squonk.util.StatsRecorder;
 
@@ -20,31 +23,62 @@ public class StepExecutor {
 
     private final VariableManager varman;
     private final Long producer;
+    private final StepsCellExecutorJobDefinition jobdef;
     private final String jobId;
     private final String statsRoute;
     private volatile Step currentStep;
 
-    public StepExecutor(Long producer, String jobId, VariableManager varman) {
-        this(producer, jobId, varman, null);
+    public StepExecutor(Long producer, String jobid, StepsCellExecutorJobDefinition jobdef, VariableManager varman) {
+        this(producer, jobid, jobdef, varman, null);
     }
 
-    public StepExecutor(Long producer, String jobId, VariableManager varman, String statsRoute) {
+    public StepExecutor(Long producer, String jobid, StepsCellExecutorJobDefinition jobdef, VariableManager varman, String statsRoute) {
         this.producer = producer;
-        this.jobId = jobId;
+        this.jobdef = jobdef;
+        this.jobId = jobid;
         this.varman = varman;
         this.statsRoute = statsRoute;
     }
 
     public void execute(StepDefinition[] defs, CamelContext context) throws Exception {
         Step[] steps = new Step[defs.length];
+
+        // TODO - handle conversions
+
         for (int i = 0; i < defs.length; i++) {
             StepDefinition def = defs[i];
             Class cls = Class.forName(def.getImplementationClass());
             Step step = (Step) cls.newInstance();
-            step.configure(producer, jobId, def.getOptions(), def.getInputVariableMappings(), def.getOutputVariableMappings());
+//            IODescriptor[] inputs;
+//            if (i == 0) {
+//                // first step so use the input of the job (the data to be processed)
+//                inputs = jobdef.getInputs();
+//            } else {
+//                // subsequent step so use the output of the previous step
+//                ExecutableDescriptor d = defs[i - 1].getExecutableDescriptor();
+//                if (d != null) {
+//                    inputs = d.getOutputDescriptors();
+//                } else {
+//                    inputs = null;
+//                }
+//            }
+//            IODescriptor[] outputs;
+//            if (i == (defs.length - 1)) {
+//                // last step so we need to ask for the output type the job wants
+//                outputs = jobdef.getOutputs();
+//            } else {
+//                // an earlier step so we need the input of the next step
+//                ExecutableDescriptor d = defs[i + 1].getExecutableDescriptor();
+//                if (d != null) {
+//                    outputs = d.getInputDescriptors();
+//                } else {
+//                    outputs = null;
+//                }
+//            }
+
+            step.configure(producer, jobId, def.getOptions(), def.getInputs(), def.getOutputs(), def.getInputVariableMappings(), def.getOutputVariableMappings(), def.getExecutableDescriptor());
             steps[i] = step;
         }
-        //steps = addConverterSteps(steps);
         execute(steps, context);
     }
 

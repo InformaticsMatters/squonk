@@ -4,6 +4,9 @@ import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
 
 import org.squonk.execution.variable.VariableManager
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
+import org.squonk.io.IORoute
 import org.squonk.notebook.api.VariableKey
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
@@ -71,6 +74,8 @@ class DatasetMergerStepSpec extends Specification {
         
         DatasetMergerStep step = new DatasetMergerStep()
         step.configure(producer, "job1", [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2")],
                 [:])
         
@@ -113,6 +118,8 @@ class DatasetMergerStepSpec extends Specification {
         DatasetMergerStep step = new DatasetMergerStep()
         step.configure(producer, "job1",
                 [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id', (DatasetMergerStep.OPTION_KEEP_FIRST):false],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2")],
                 [:])
         
@@ -161,6 +168,8 @@ class DatasetMergerStepSpec extends Specification {
         DatasetMergerStep step = new DatasetMergerStep()
         step.configure(producer, "job1",
                 [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2"), (DatasetMergerStep.VAR_INPUT_3):new VariableKey(producer, "input3")],
                 [:])
         

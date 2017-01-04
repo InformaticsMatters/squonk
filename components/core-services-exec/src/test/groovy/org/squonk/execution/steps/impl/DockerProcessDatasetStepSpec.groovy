@@ -4,6 +4,9 @@ import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
 import org.squonk.execution.steps.StepDefinitionConstants
 import org.squonk.execution.variable.VariableManager
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
+import org.squonk.io.IORoute
 import org.squonk.notebook.api.VariableKey
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
@@ -43,6 +46,8 @@ class DockerProcessDatasetStepSpec extends Specification {
         DockerProcessDatasetStep step = new DockerProcessDatasetStep()
         step.configure(producer, "job1",
                 args,
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [(DatasetSorterStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
                 [:])
         return step
@@ -71,7 +76,7 @@ class DockerProcessDatasetStepSpec extends Specification {
 //    void "simple execute sdf"() {
 //
 //        DefaultCamelContext context = new DefaultCamelContext()
-//        VariableManager varman = createVariableManager()
+//        VariableManager varman = createVariableManager()#
 //        Map args = [dockerCommand: '#!/bin/sh\ncp input.sdf.gz output.sdf.gz\n', dockerImage:'busybox',
 //                    (StepDefinitionConstants.OPTION_MEDIA_TYPE_INPUT): CommonMimeTypes.MIME_TYPE_MDL_SDF,
 //                    (StepDefinitionConstants.OPTION_MEDIA_TYPE_OUTPUT): CommonMimeTypes.MIME_TYPE_MDL_SDF]

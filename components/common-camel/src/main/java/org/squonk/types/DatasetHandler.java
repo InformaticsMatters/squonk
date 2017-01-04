@@ -89,7 +89,7 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
              s = generator.getAsStream();
              data = generator.marshalData(s, false);
              is = data.getInputStream();
-            context.writeStreamValue(is);
+            context.writeSingleStreamValue(is, "data.gz");
             try {
                 data.getFuture().get();
             } catch (ExecutionException ex) { // reading Stream failed?
@@ -109,12 +109,15 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
 
         DatasetMetadata md = generator.getDatasetMetadata();
         String json = JsonHandler.getInstance().objectToJson(md);
-        context.writeTextValue(json);
+        context.writeSingleTextValue(json, "metadata");
     }
 
     @Override
     public Dataset<T> readVariable(ReadContext context) throws Exception {
-        Dataset<T> result = create(context.readTextValue(), context.readStreamValue());
+        Dataset<T> result = create(
+                context.readSingleTextValue("metadata"),
+                context.readSingleStreamValue("data.gz")
+        );
 //        LOG.info("Read dataset:");
 //        result.getItems().forEach((o) -> {
 //            LOG.info("Item: " + o);

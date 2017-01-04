@@ -11,7 +11,7 @@ public enum IOMultiplicity {
     /**
      * A stream of items
      */
-    STREAM,
+    ARRAY,
     /**
      * Read from one of the options with the key of 'body'
      */

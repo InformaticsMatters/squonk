@@ -1,5 +1,8 @@
 package org.squonk.execution.steps.impl
 
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
+import org.squonk.io.IORoute
 import org.squonk.types.MoleculeObject
 import org.squonk.dataset.Dataset
 
@@ -27,8 +30,11 @@ class DatasetWriterStepSpec extends Specification {
         Long producer = 1
         step.configure(producer, "job1",
                 [:],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [(DatasetWriterStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
-                [:])
+                [:]
+        )
         varman.putValue(
                 new VariableKey(producer, "input"),
                 Dataset.class,

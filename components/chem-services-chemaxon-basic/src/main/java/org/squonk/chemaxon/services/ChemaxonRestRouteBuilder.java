@@ -11,11 +11,10 @@ import org.squonk.camel.processor.DatasetToJsonProcessor;
 import org.squonk.camel.processor.JsonToDatasetProcessor;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
-import org.squonk.io.IODescriptor;
-import org.squonk.io.IODescriptors;
-import org.squonk.io.IOMultiplicity;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.io.IODescriptor;
+import org.squonk.io.IODescriptors;
 import org.squonk.io.IORoute;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.MoleculeTypeDescriptor;
@@ -410,8 +409,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 tags,
                 resourceUrl,
                 icon,
-                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input", IORoute.STREAM)},
-                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output", IORoute.STREAM)},
+                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input")},
+                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output")},
                 options,
                 StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME,
                 endpoint

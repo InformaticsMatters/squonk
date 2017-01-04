@@ -28,9 +28,9 @@ public class TypeResolver implements MimeTypeResolver {
     private final Map<Class, Class> variableHandlers = new HashMap<>();
 
     public TypeResolver() {
-        registerMimeType(MIME_TYPE_DATASET_BASIC_JSON, IOMultiplicity.STREAM, Dataset.class, BasicObject.class);
-        registerMimeType(MIME_TYPE_DATASET_MOLECULE_JSON, IOMultiplicity.STREAM, Dataset.class, MoleculeObject.class);
-        registerMimeType(MIME_TYPE_MDL_SDF, IOMultiplicity.STREAM, SDFile.class);
+        registerMimeType(MIME_TYPE_DATASET_BASIC_JSON, IOMultiplicity.ARRAY, Dataset.class, BasicObject.class);
+        registerMimeType(MIME_TYPE_DATASET_MOLECULE_JSON, IOMultiplicity.ARRAY, Dataset.class, MoleculeObject.class);
+        registerMimeType(MIME_TYPE_MDL_SDF, IOMultiplicity.ARRAY, SDFile.class);
         registerMimeType(MIME_TYPE_CPSIGN_TRAIN_RESULT, IOMultiplicity.ITEM, CPSignTrainResult.class);
         registerHttpHandler(Dataset.class, DatasetHandler.class);
         registerHttpHandler(SDFile.class, SDFileHandler.class);
@@ -81,8 +81,8 @@ public class TypeResolver implements MimeTypeResolver {
         return ioTypes.get(mediaType);
     }
 
-    public IODescriptor createIODescriptor(String name, String mediaType, IORoute mode) {
-        return new IODescriptor(name, mediaType, resolvePrimaryType(mediaType), resolveGenericType(mediaType),  resolveIOType(mediaType), mode);
+    public IODescriptor createIODescriptor(String name, String mediaType) {
+        return new IODescriptor(name, mediaType, resolvePrimaryType(mediaType), resolveGenericType(mediaType),  resolveIOType(mediaType));
     }
 
     @Override

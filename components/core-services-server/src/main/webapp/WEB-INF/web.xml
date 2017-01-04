@@ -22,6 +22,7 @@
         <!--param-value>com.im.lac.demo.SimpleRouteBuilder</param-value-->
         <param-value>
             org.squonk.core.service.discovery.ServiceDiscoveryRouteBuilder,
+            org.squonk.core.service.discovery.DockerServicesDiscoveryRouteBuilder,
             org.squonk.core.RestRouteBuilder,
             org.squonk.core.MetricsRouteBuilder</param-value>
     </context-param>

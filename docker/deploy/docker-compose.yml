@@ -147,6 +147,8 @@ services:
     coreservices:
         image: squonk/core-services-server
         restart: on-failure:10
+        volumes:
+        - ./data/docker-services:/var/local/squonk-docker-services
         depends_on:
         - postgres
         - rabbitmq
@@ -159,6 +161,7 @@ services:
             SQUONK_SERVICES_CORE:
             SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
             SQUONK_RDKIT_CHEM_SERVICES_URL: "http://rdkitserver:8000"  # internal port
+            SQUONK_DOCKER_SERVICES_DIR: "/var/local/squonk-docker-services"
         networks:
         - squonk_back
 
@@ -173,11 +176,13 @@ services:
         - /var/run/docker.sock:/var/run/docker.sock
         - /tmp/work:/tmp/work
         - /var/maven_repo
+        #- ./data/docker-services:/var/local/squonk-docker-services
         environment:
             RABBITMQ_HOST: rabbitmq
             RABBITMQ_SQUONK_PASS:
             SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
             DOCKER_HOST: unix:///var/run/docker.sock
+            SQUONK_DOCKER_SERVICES_DIR:
             registry.url: https://index.docker.io/v1/
         networks:
         - squonk_back

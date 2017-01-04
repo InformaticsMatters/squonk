@@ -198,7 +198,7 @@ class PostgresServiceDescriptorClient {
                 |      WHERE t.set_id=EXCLUDED.set_id AND t.sd_id=EXCLUDED.sd_id""".stripMargin()) { ps ->
 
                 sds.each { sd ->
-                    log.fine("udpating service descriptor " + sd.id)
+                    log.info("udpating service descriptor " + sd.id + " " + sd.getExecutionEndpoint())
                     String json = jsonHandler.objectToJson(sd)
                     ps.addBatch([setId, sd.id, json])
                 }

@@ -172,7 +172,8 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     Integer count = exch.getIn().getHeader(HEADER_JOB_SIZE, Integer.class);
                     Job job = null;
                     if (jobdef instanceof ExecuteCellUsingStepsJobDefinition) {
-                        job = new StepsCellJob(jobstatusClient, (ExecuteCellUsingStepsJobDefinition) jobdef);
+                        ExecuteCellUsingStepsJobDefinition stepsJopbDef = (ExecuteCellUsingStepsJobDefinition) jobdef;
+                        job = new StepsCellJob(jobstatusClient, stepsJopbDef);
                     } else {
                         throw new IllegalStateException("Job definition type " + jobdef.getClass().getName() + " not currently supported");
                     }

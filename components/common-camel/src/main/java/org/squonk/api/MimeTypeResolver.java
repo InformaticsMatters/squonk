@@ -16,7 +16,7 @@ public interface MimeTypeResolver extends CommonMimeTypes {
 
     IOMultiplicity resolveIOType(String mimeType);
 
-    IODescriptor createIODescriptor(String name, String mediaType, IORoute mode);
+    IODescriptor createIODescriptor(String name, String mediaType);
 
     default HttpHandler createHttpHandler(String mimeType) {
         return createHttpHandler(resolvePrimaryType(mimeType), resolveGenericType(mimeType));
@@ -36,7 +36,7 @@ public interface MimeTypeResolver extends CommonMimeTypes {
         return createVariableHandler(primaryType, null);
     }
 
-    VariableHandler createVariableHandler(Class cls, Class genericType);
+    VariableHandler createVariableHandler(Class primaryType, Class secondaryType);
 }
 
 

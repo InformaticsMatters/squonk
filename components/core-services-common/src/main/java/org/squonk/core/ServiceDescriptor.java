@@ -3,18 +3,20 @@ package org.squonk.core;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.squonk.io.ExecutableDescriptor;
 import org.squonk.io.IODescriptor;
 import org.squonk.options.OptionDescriptor;
 
 import java.io.Serializable;
 import java.util.Date;
 
-/** Descriptor of some sort of service that can be executed. Currently there are two types:
+/**
+ * Descriptor of some sort of service that can be executed. Currently there are two types:
  * <ol>
- *     <li>REST (or plain HTTP) services</li>
- *     <li>Docker containers</li>
+ * <li>REST (or plain HTTP) services</li>
+ * <li>Docker containers</li>
  * </ol>
- *
+ * <p>
  * The basic process for REST services goes as follows:
  * <ol>
  * <li>The service implementation provides a URL that returns a List of ServiceDescriptors for
@@ -34,27 +36,17 @@ import java.util.Date;
  * image name to use, though executors may allow this to be overridden with one ot the options. The
  * orchestration is handled by the defined executorClassName.
  *
- *
  * @author timbo
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ServiceDescriptor implements Serializable {
+public class ServiceDescriptor extends ExecutableDescriptor implements Serializable {
 
     public enum Status {
         ACTIVE, INACTIVE, UNKNOWN
     }
 
-    private final String id;
-    private final String name;
-    private final String description;
-    private final String[] tags;
-    private final String resourceUrl;
-    private final String icon;
     private Status status;
     private Date statusLastChecked;
-    private final IODescriptor[] inputDescriptors;
-    private final IODescriptor[] outputDescriptors;
-    private final OptionDescriptor[] options;
     private final String executorClassName;
     private final String executionEndpoint;
 
@@ -73,17 +65,10 @@ public class ServiceDescriptor implements Serializable {
             @JsonProperty("options") OptionDescriptor[] options,
             @JsonProperty("executorClassName") String executorClassName,
             @JsonProperty("executionEndpoint") String executionEndpoint) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.tags = tags;
-        this.resourceUrl = resourceUrl;
-        this.icon = icon;
+
+        super(id, name, description, tags, resourceUrl, icon, inputDescriptors, outputDescriptors, options);
         this.status = status;
         this.statusLastChecked = statusLastChecked;
-        this.inputDescriptors = inputDescriptors;
-        this.outputDescriptors = outputDescriptors;
-        this.options = options;
         this.executorClassName = executorClassName;
         this.executionEndpoint = executionEndpoint;
     }
@@ -103,118 +88,20 @@ public class ServiceDescriptor implements Serializable {
         this(id, name, description, tags, resourceUrl, icon, Status.UNKNOWN, null, inputDescriptors, outputDescriptors, options, executorClassName, executionEndpoint);
     }
 
-//    public ServiceDescriptor(
-//            String id,
-//            String name,
-//            String description,
-//            String[] tags,
-//            String resourceUrl,
-//            String icon,
-//            Status status,
-//            Date statusLastChecked,
-//            Class inputClass,
-//            Class outputClass,
-//            IOType inputType,
-//            IOType outputType,
-//            OptionDescriptor[] options,
-//            String executorClassName,
-//            String executionEndpoint) {
-//        this(id, name, description, tags, resourceUrl, icon, status, statusLastChecked,
-//                new IODescriptor[] { new IODescriptor("input", inputClass, inputType, IOMode.STREAM) },
-//                new IODescriptor[] { new IODescriptor("output", outputClass, outputType, IOMode.STREAM) },
-//                options, executorClassName, executionEndpoint);
-//    }
-//
-//    public ServiceDescriptor(
-//            String id,
-//            String name,
-//            String description,
-//            String[] tags,
-//            String resourceUrl,
-//            String icon,
-//            Class inputClass,
-//            Class outputClass,
-//            IOType inputType,
-//            IOType outputType,
-//            OptionDescriptor[] options,
-//            String executorClassName,
-//            String executionEndpoint) {
-//        this(id, name, description, tags, resourceUrl, icon, Status.UNKNOWN, null, inputClass, outputClass, inputType, outputType, options, executorClassName, executionEndpoint);
-//    }
-
-
-
-    /**
-     * The ID of this service
-     *
-     * @return
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * The short name of this service
-     *
-     * @return
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * A meaningful description of the service
-     *
-     * @return
-     */
-    public String getDescription() {
-        return description;
-    }
-
-
-    /**
-     * A set of tags that describe the service and can be used for searching/discovery
-     *
-     * @return
-     */
-    public String[] getTags() {
-        return tags;
-    }
-
-    /**
-     * The URL to call to get documentation on the service. e.g. the services "home page"
-     *
-     * @return
-     */
-    public String getResourceUrl() {
-        return resourceUrl;
-    }
-
-    /** Get the definitions of the inputs for this service. Typically there will be one input and it will be named 'input'
-     * but there can be more complex scenarios
-     *
-     * @return
-     */
-    public IODescriptor[] getInputDescriptors() {
-        return inputDescriptors;
-    }
-
-    /** Get the definitions of the outputs for this service. Typically there will be one output and it will be named 'output'
-     * but there can be more complex scenarios
-     *
-     * @return
-     */
-    public IODescriptor[] getOutputDescriptors() {
-        return outputDescriptors;
-    }
-
-    /**
-     * The relative or absolute path to an icon that describes the service
-     *
-     * @return
-     */
-    public String getIcon() {
-        return icon;
+    public ServiceDescriptor(
+            String id,
+            String name,
+            String description,
+            String[] tags,
+            String resourceUrl,
+            String icon,
+            IODescriptor inputDescriptor,
+            IODescriptor outputDescriptor,
+            OptionDescriptor[] options,
+            String executorClassName,
+            String executionEndpoint) {
+        this(id, name, description, tags, resourceUrl, icon,
+                new IODescriptor[]{inputDescriptor}, new IODescriptor[]{outputDescriptor}, options, executorClassName, executionEndpoint);
     }
 
     public String getExecutionEndpoint() {
@@ -237,10 +124,6 @@ public class ServiceDescriptor implements Serializable {
         this.statusLastChecked = statusLastChecked;
     }
 
-    public OptionDescriptor[] getOptions() {
-        return options;
-    }
-
     public String getExecutorClassName() {
         return executorClassName;
     }
@@ -248,8 +131,8 @@ public class ServiceDescriptor implements Serializable {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder("ServiceDescriptor[")
-                .append("id:").append(id)
-                .append(" name:").append(name)
+                .append("id:").append(getId())
+                .append(" name:").append(getName())
                 .append(" executor:").append(executorClassName)
                 .append(" endpoint:").append(executionEndpoint)
                 .append("]");

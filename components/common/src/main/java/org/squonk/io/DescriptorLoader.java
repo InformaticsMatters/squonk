@@ -1,23 +1,25 @@
 package org.squonk.io;
 
+import org.squonk.core.Descriptor;
 import org.squonk.types.io.JsonHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
  * Created by timbo on 27/12/16.
  */
-public class DescriptorLoader<T> {
+public class DescriptorLoader<T extends Descriptor> {
 
-    private final Class<T> type;
+    private final String id;
     private final URL url;
+    private final Class<T> type;
     private volatile T descriptor;
 
-    public DescriptorLoader(URL url, Class<T> type) {
+    public DescriptorLoader(URL url, String id, Class<T> type) {
         this.url = url;
+        this.id = id;
         this.type = type;
     }
 
@@ -25,8 +27,12 @@ public class DescriptorLoader<T> {
         this.url = url;
         this.type = (Class<T>)(descriptor.getClass());
         this.descriptor = descriptor;
+        this.id = descriptor.getId();
     }
 
+    public String getId() {
+        return id;
+    }
 
     public URL getURL() {
         return url;

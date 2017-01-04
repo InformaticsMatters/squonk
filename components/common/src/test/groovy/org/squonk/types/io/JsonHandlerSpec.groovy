@@ -1,5 +1,6 @@
 package org.squonk.types.io
 
+import org.squonk.data.Molecules
 import org.squonk.dataset.*
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
@@ -119,6 +120,18 @@ class JsonHandlerSpec extends Specification {
         colors[1].getRGB() == Colors.STEELBLUE.getRGB()
         colors[1].getAlpha() == Colors.STEELBLUE.getAlpha()
     }
+
+//    void "write json"() {
+//        Dataset ds = Molecules.nci100Dataset()
+//        int i = 1
+//        List mols = ds.getItems().each { it.values.index = i++}
+//
+//        when:
+//        JsonHandler.getInstance().marshalStreamToJsonArray(mols.stream(), System.out)
+//
+//        then:
+//        1 == 1
+//    }
 
 }
 

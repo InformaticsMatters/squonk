@@ -46,25 +46,67 @@ public class VariableManager {
         return b.toString();
     }
 
+    /** Write the value as a variable e.g. using the VariableHandler.WriteContext for this variableManager
+     *
+     * @param key
+     * @param type
+     * @param value
+     * @param <V>
+     * @throws Exception
+     */
     public <V> void putValue(VariableKey key, Class<V> type, V value) throws Exception {
         LOG.fine("putValue: " + key + " -> " + value);
-        String variableName = key.getVariableName();
-        VariableHandler<V> vh = variableHandlerRegistry.lookup(type);
         VariableHandler.WriteContext context = createWriteContext(key);
+        putValue(type, value, context);
+    }
+
+    /** Write the value using the specified context. Useful for writing to files etc.
+     *
+     * @param type
+     * @param value
+     * @param <V>
+     * @param context The context to write the data to
+     * @throws Exception
+     */
+    public <V> void putValue(Class<V> type, V value, VariableHandler.WriteContext context) throws Exception {
+
+        VariableHandler<V> vh = variableHandlerRegistry.lookup(type);
         if (vh != null) {
             vh.writeVariable(value, context);
         } else if (canBeHandledAsString(value.getClass())) {
             context.writeTextValue(value.toString());
+        } else {
+            throw new IllegalArgumentException("Don't know how to handle value of type " + type.getName());
         }
     }
 
-
+    /** Read the value as a variable e.g. using the VariableHandler.ReadContext for this variableManager
+     *
+     * @param key
+     * @param type
+     * @param <V>
+     * @return
+     * @throws Exception
+     */
     public <V> V getValue(VariableKey key, Class<V> type) throws Exception {
         LOG.fine("getValue " + key + " of type " + type);
-        String variableName = key.getVariableName();
+        VariableHandler.ReadContext context = createReadContext(key);
+        return getValue(type, context);
+    }
+
+    /**  Read the value using the specified context. Useful for reading from files etc.
+     *
+     * @param type
+     * @param context
+     * @param <V>
+     * @return
+     * @throws Exception
+     */
+    public <V> V getValue(Class<V> type, VariableHandler.ReadContext context) throws Exception {
+
         VariableHandler<V> vh = variableHandlerRegistry.lookup(type);
         LOG.finer("Using variable handler " + vh + " for type " + type.getName());
-        VariableHandler.ReadContext context = createReadContext(key);
+
         if (vh != null) {
             V result = (V) vh.readVariable(context);
             return result;
@@ -76,6 +118,7 @@ public class VariableManager {
         }
         throw new IllegalArgumentException("Don't know how to handle value of type " + type.getName());
     }
+
 
     boolean canBeHandledAsString(Class cls) {
         for (Constructor c : cls.getConstructors()) {

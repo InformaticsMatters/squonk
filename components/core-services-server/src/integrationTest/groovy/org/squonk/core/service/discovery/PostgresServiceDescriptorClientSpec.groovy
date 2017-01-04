@@ -2,6 +2,8 @@ package org.squonk.core.service.discovery
 
 import org.squonk.core.ServiceDescriptor
 import org.squonk.core.ServiceDescriptorSet
+import org.squonk.io.IODescriptor
+import org.squonk.io.IOMultiplicity
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -37,21 +39,19 @@ class PostgresServiceDescriptorClientSpec extends Specification {
             String description,
             String[] tags,
             String resourceUrl,
-            Class inputClass,
-            Class outputClass,
-            DataType inputType,
-            DataType outputType,
             String icon,
-            String executionEndpoint,
-            boolean endpointRelative,
+            IODescriptor inputDescriptor,
+            IODescriptor outputDescriptor,
             OptionDescriptor[] options,
-            String executorClassName
+            String executorClassName,
+            String executionEndpoint
      */
     static ServiceDescriptor createServiceDescriptor(String id) {
         return new ServiceDescriptor(id, id, id, ["t1", "t2"] as String[], "resourceurl",
-                String.class, String.class,
-                ServiceDescriptor.DataType.ITEM, ServiceDescriptor.DataType.ITEM,
-                "icon", "foo/bar", true, null, "executor")
+                "icon",
+                new IODescriptor("input", "text/plain", String.class, null, IOMultiplicity.ITEM),
+                new IODescriptor("output", "text/plain", String.class, null, IOMultiplicity.ITEM),
+                null, null, "executor")
     }
 
     void setupSpec() {

@@ -115,7 +115,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
      * <br>
      * NOTE: this builds the entire String in memory so is only suitable for small result sets.
      * <br>
-     * STREAM allows the resulting structures to be read as an InputStream. This is similar in
+     * ARRAY allows the resulting structures to be read as an InputStream. This is similar in
      * nature to the TEXT option but suitable for large numbers of structures. Typically SDF format
      * would be used allowing results to be passed into non-ChemAxon components or across remote
      * interfaces. This format generally is streamed, with the first results being available
@@ -179,7 +179,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Include data for these database columns in the output. This only applies to MOLECULES, STREAM
+     * Include data for these database columns in the output. This only applies to MOLECULES, ARRAY
      * and TEXT outputs.
      *
      * @param outputColumns
@@ -216,7 +216,7 @@ public class JChemDBSearcher extends AbstractJChemDBSearcher {
     }
 
     /**
-     * Specifies the default file format when using TEXT or STREAM as the output mode. e.g.
+     * Specifies the default file format when using TEXT or ARRAY as the output mode. e.g.
      * "smiles", "cxsmiles:a-H", "sdf". Default is "sdf"
      *
      * @param structureFormat The format for output in Chemaxon syntax

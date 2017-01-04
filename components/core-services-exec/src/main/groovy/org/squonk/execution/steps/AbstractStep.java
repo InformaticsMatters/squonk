@@ -1,6 +1,9 @@
 package org.squonk.execution.steps;
 
+import org.apache.camel.TypeConverter;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.ExecutableDescriptor;
+import org.squonk.io.IODescriptor;
 import org.squonk.notebook.api.VariableKey;
 import org.squonk.util.Metrics;
 
@@ -29,9 +32,12 @@ public abstract class AbstractStep implements Step {
     protected Long outputProducerId;
     protected String jobId;
     protected Map<String, Object> options;
+    protected IODescriptor[] inputs;
+    protected IODescriptor[] outputs;
     protected final Map<String, VariableKey> inputVariableMappings = new HashMap<>();
-    protected final Map<String, String> outputVariableMappings = new HashMap<>();
+    protected final Map<String, String> outputVariableMappings = new HashMap<>();;
     protected String statusMessage = null;
+    protected ExecutableDescriptor executableDescriptor;
 
     protected Map<String,Integer> usageStats = new HashMap<>();
 
@@ -87,17 +93,27 @@ public abstract class AbstractStep implements Step {
     }
 
     @Override
-    public void configure(Long outputProducerId, String jobId, Map<String, Object> options, Map<String, VariableKey> inputVariableMappings, Map<String, String> outputVariableMappings) {
+    public void configure(
+            Long outputProducerId,
+            String jobId,
+            Map<String, Object> options,
+            IODescriptor[] inputs,
+            IODescriptor[] outputs,
+            Map<String, VariableKey> inputVariableMappings,
+            Map<String, String> outputVariableMappings,
+            ExecutableDescriptor executableDescriptor) {
         this.outputProducerId = outputProducerId;
         this.jobId = jobId;
         this.options = options;
+        this.inputs = inputs;
+        this.outputs = outputs;
         this.inputVariableMappings.putAll(inputVariableMappings);
         this.outputVariableMappings.putAll(outputVariableMappings);
+        this.executableDescriptor = executableDescriptor;
     }
 
     protected VariableKey mapInputVariable(String name) {
         VariableKey mapped = inputVariableMappings.get(name);
-        //if (mapped == null) {throw new IllegalArgumentException("Input variable mapping for " + name + " not present");}
         return mapped;
     }
 
@@ -126,7 +142,7 @@ public abstract class AbstractStep implements Step {
      */
     protected <T> T fetchMappedInput(String internalName, Class<T> type, VariableManager varman, boolean required) throws Exception {
         VariableKey mappedVar = mapInputVariable(internalName);
-        LOG.fine("VariableKey mapped to " + internalName + " is " + mappedVar);
+        LOG.info("VariableKey mapped to " + internalName + " is " + mappedVar);
         if (mappedVar == null) {
             if (required) {
                 throw new IllegalStateException(buildVariableNotFoundMessage(internalName));
@@ -140,6 +156,7 @@ public abstract class AbstractStep implements Step {
         }
         return input;
     }
+
 
     private String buildVariableNotFoundMessage(String internalName) {
         StringBuilder b = new StringBuilder("Mandatory input variable not found: ");
@@ -185,6 +202,36 @@ public abstract class AbstractStep implements Step {
             return val;
         }
     }
+
+    protected <T> T getOption(String name, Class<T> type, TypeConverter converter) {
+        return getOption(name, type, converter, null);
+    }
+
+    /** Get the option value, performing a type conversion if needed
+     *
+     * @param name
+     * @param type
+     * @param converter
+     * @param defaultValue
+     * @param <T>
+     * @return
+     */
+    protected <T> T getOption(String name, Class<T> type, TypeConverter converter, T defaultValue) {
+        Object val = getOption(name);
+        if (val == null) {
+            return defaultValue;
+        } else {
+            if (type.isAssignableFrom(val.getClass())) {
+                return (T)val;
+            } else {
+                LOG.info("Unexpected option type. Trying to convert from " + val.getClass().getName() + " to " + type.getName());
+                return converter.convertTo(type, val);
+            }
+        }
+    }
+
+
+    //
 
     /**
      * Map the variable name and then submit it. See {@link #createVariable} for

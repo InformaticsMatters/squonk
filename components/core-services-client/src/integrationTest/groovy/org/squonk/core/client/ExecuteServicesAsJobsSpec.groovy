@@ -1,5 +1,7 @@
 package org.squonk.core.client
 
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
 import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition
 import org.squonk.jobdef.JobStatus
 import org.squonk.jobdef.StepsCellExecutorJobDefinition
@@ -14,6 +16,9 @@ import spock.lang.Stepwise
  */
 @Stepwise
 class ExecuteServicesAsJobsSpec extends AbstractExecuteDocker {
+
+    static def inputs = [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[]
+    static def outputs = [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[]
 
     static SquonkClientConfig CONFIG = new SquonkClientConfig()
 
@@ -40,12 +45,14 @@ class ExecuteServicesAsJobsSpec extends AbstractExecuteDocker {
     void "cdk logp"() {
 
         StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
+                .withInputs(inputs)
+                .withOutputs(outputs)
                 .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
                 .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "cdklogp")
                 .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, CONFIG.basicCdkChemServicesBaseUrl+"/calculators/logp")
 
-        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(notebookId, editableId, cellId, step)
-        jobdef.configureCellAndSteps(notebookId, editableId, cellId, step)
+        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
+        jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, outputs, step)
 
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)
@@ -60,13 +67,15 @@ class ExecuteServicesAsJobsSpec extends AbstractExecuteDocker {
     void "chemaxon logp"() {
 
         StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
+                .withInputs(inputs)
+                .withOutputs(outputs)
                 .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
                 .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "cxnlogp")
                 .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, CONFIG.basicChemaxonChemServicesBaseUrl+"/calculators/logp")
 
 
-        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(notebookId, editableId, cellId, step)
-        jobdef.configureCellAndSteps(notebookId, editableId, cellId, step)
+        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
+        jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, outputs, step)
 
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)
@@ -81,14 +90,16 @@ class ExecuteServicesAsJobsSpec extends AbstractExecuteDocker {
     void "chemaxon spherex"() {
 
         StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
+                .withInputs(inputs)
+                .withOutputs(outputs)
                 .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
                 .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "spherex")
                 .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, CONFIG.basicChemaxonChemServicesBaseUrl+"/descriptors/clustering/spherex/ecfp4")
                 .withOption('header.min_clusters', 3)
                 .withOption('header.max_clusters', 6)
 
-        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(notebookId, editableId, cellId, step)
-        jobdef.configureCellAndSteps(notebookId, editableId, cellId, step)
+        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
+        jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, outputs, step)
 
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)
@@ -103,6 +114,8 @@ class ExecuteServicesAsJobsSpec extends AbstractExecuteDocker {
 //    void "chemaxon screen"() {
 //
 //        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
+//                .withInputs(inputs)
+//                .withOutputs(outputs)
 //                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
 //                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "screen")
 //                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, CONFIG.basicChemaxonChemServicesBaseUrl+"/descriptors/screening/ecfp4")

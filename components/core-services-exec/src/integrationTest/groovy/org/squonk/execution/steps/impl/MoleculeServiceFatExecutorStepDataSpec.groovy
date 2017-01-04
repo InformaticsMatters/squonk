@@ -1,5 +1,7 @@
 package org.squonk.execution.steps.impl
 
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
 import org.squonk.types.MoleculeObject
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
@@ -19,6 +21,9 @@ import java.util.zip.GZIPInputStream
 class MoleculeServiceFatExecutorStepDataSpec extends Specification {
 
     static String HOST_CDK_CALCULATORS = "http://" + IOUtils.getDockerGateway() + ":8092/chem-services-cdk-basic/rest/v1/calculators"
+    static def inputs = [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[]
+    static def outputs = [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[]
+
 
     Long producer = 1
 
@@ -40,7 +45,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         def outputMappings = [:]
 
         MoleculeServiceFatExecutorStep step = new MoleculeServiceFatExecutorStep()
-        step.configure(producer, "job1", opts, inputMappings, outputMappings)
+        step.configure(producer, "job1", opts, inputs, outputs, inputMappings, outputMappings)
         return step
     }
     

@@ -1,5 +1,8 @@
 package org.squonk.execution.steps.impl
 
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
+import org.squonk.io.IORoute
 import org.squonk.types.MoleculeObject
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.DatasetMetadata
@@ -43,8 +46,11 @@ class ValueTransformerStepSpec extends Specification {
         ValueTransformerStep step = new ValueTransformerStep()
         step.configure(producer, "job1",
                 [(ValueTransformerStep.OPTION_TRANSFORMS):tdefs],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [(ValueTransformerStep.VAR_INPUT_DATASET):new VariableKey(producer, "input")],
-                [:])
+                [:]
+        )
         
         when:
         step.execute(varman, context)

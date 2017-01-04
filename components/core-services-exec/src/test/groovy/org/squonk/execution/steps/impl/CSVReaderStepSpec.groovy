@@ -3,6 +3,9 @@ package org.squonk.execution.steps.impl
 import org.squonk.dataset.Dataset
 
 import org.squonk.execution.variable.VariableManager
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
+import org.squonk.io.IORoute
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
@@ -46,7 +49,10 @@ field1\tfield2\tfield3
                 (CSVReaderStep.OPTION_FORMAT_TYPE)               : 'DEFAULT',
                 (CSVReaderStep.OPTION_USE_HEADER_FOR_FIELD_NAMES): true,
                 (CSVReaderStep.OPTION_SKIP_HEADER_LINE)          : true
-        ], [(CSVReaderStep.VAR_CSV_INPUT): new VariableKey(producer, "input")], [:])
+        ],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], [(CSVReaderStep.VAR_CSV_INPUT): new VariableKey(producer, "input")], [:]
+        )
 
         when:
         step.execute(varman, null)
@@ -74,6 +80,8 @@ field1\tfield2\tfield3
 
         step.configure(producer, "job1",
                 [(CSVReaderStep.OPTION_FORMAT_TYPE): 'TDF'],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [(CSVReaderStep.VAR_CSV_INPUT): new VariableKey(producer, "input")],
                 [:])
 

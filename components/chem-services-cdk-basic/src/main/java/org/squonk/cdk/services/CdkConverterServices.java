@@ -1,13 +1,10 @@
 package org.squonk.cdk.services;
 
-import org.squonk.io.IODescriptor;
-import org.squonk.io.IODescriptors;
-import org.squonk.io.IOMultiplicity;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.io.IORoute;
+import org.squonk.io.IODescriptor;
+import org.squonk.io.IODescriptors;
 import org.squonk.options.OptionDescriptor;
-import org.squonk.types.MoleculeObject;
 
 /**
  * Created by timbo on 14/11/16.
@@ -35,8 +32,8 @@ public class CdkConverterServices {
                 tags,
                 resourceUrl,
                 icon,
-                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input", IORoute.STREAM)},
-                new IODescriptor[] {IODescriptors.createSDF("output", IORoute.STREAM)},
+                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input")},
+                new IODescriptor[] {IODescriptors.createSDF("output")},
                 options,
                 StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME,
                 endpoint

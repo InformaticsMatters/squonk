@@ -33,9 +33,18 @@ public class VariableReadContext implements VariableHandler.ReadContext{
     }
 
     @Override
+    public String readSingleTextValue(String key) throws Exception {
+        return readTextValue(null);
+    }
+
+    @Override
     public InputStream readStreamValue(String key) throws Exception {
         InputStream is = client.readStreamValue(notebookId, sourceId, cellId, variableName, key);
         return (is == null ? null : IOUtils.getGunzippedInputStream(is));
     }
 
+    @Override
+    public InputStream readSingleStreamValue(String key) throws Exception {
+        return readStreamValue(null);
+    }
 }

@@ -18,11 +18,11 @@ public class NoopStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        Dataset input = fetchMappedInput(StepDefinitionConstants.VARIABLE_INPUT_DATASET, Dataset.class, varman, true);
+        Dataset input = fetchMappedInput("input", Dataset.class, varman, true);
         if (input == null) {
             throw new IllegalStateException("Input variable not found");
         }
-        createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, input, varman);
+        createMappedOutput("output", Dataset.class, input, varman);
         LOG.info("Wrote input as output");
     }
 }

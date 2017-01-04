@@ -5,10 +5,12 @@ import org.apache.camel.builder.ThreadPoolProfileBuilder;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.spi.ThreadPoolProfile;
 import org.squonk.camel.CamelCommonConstants;
+import org.squonk.core.CommonConstants;
 import org.squonk.core.ServerConstants;
 import org.squonk.core.service.user.UserHandler;
 import org.squonk.core.service.user.UserPostgresClient;
 import org.squonk.core.util.Utils;
+import org.squonk.execution.docker.DescriptorRegistry;
 
 import javax.sql.DataSource;
 import java.util.logging.Logger;
@@ -57,6 +59,7 @@ public class CamelLifeCycle {
     public void beforeAddRoutes(CamelContext context, SimpleRegistry r) throws Exception {
         LOG.fine("beforeAddRoutes()");
         r.put(ServerConstants.USER_HANDLER, new UserHandler(new UserPostgresClient(dataSource)));
+        r.put(CommonConstants.KEY_DOCKER_SERVICE_REGISTRY, new DescriptorRegistry());
     }
 
     public void afterAddRoutes(CamelContext context, SimpleRegistry r) throws Exception {

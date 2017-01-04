@@ -3,6 +3,9 @@ package org.squonk.execution.steps.impl
 import org.squonk.dataset.Dataset
 
 import org.squonk.execution.variable.VariableManager
+import org.squonk.io.IODescriptor
+import org.squonk.io.IODescriptors
+import org.squonk.io.IORoute
 import org.squonk.notebook.api.VariableKey
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
@@ -20,8 +23,11 @@ class SDFReaderStepSpec extends Specification {
         //FileInputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
         Long producer = 1
         step.configure(producer, "job1", [:],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [(SDFReaderStep.VAR_SDF_INPUT): new VariableKey(producer, "input")],
-                [:])
+                [:]
+        )
         varman.putValue(
             new VariableKey(producer,"input"),
             InputStream.class, 
