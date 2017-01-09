@@ -1,6 +1,6 @@
 package org.squonk.chemaxon.services
 
-import org.squonk.core.ServiceDescriptor
+import org.squonk.core.HttpServiceDescriptor
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
 
@@ -15,7 +15,7 @@ class ChemaxonRestRouteBuilderSpec extends Specification {
 
         when:
         String json = JsonHandler.getInstance().objectToJson(ChemaxonRestRouteBuilder.SERVICE_DESCRIPTOR_CALCULATORS)
-        Stream<ServiceDescriptor> sds = JsonHandler.getInstance().streamFromJson(json, ServiceDescriptor.class)
+        Stream<HttpServiceDescriptor> sds = JsonHandler.getInstance().streamFromJson(json, HttpServiceDescriptor.class)
 
         then:
         json.length() > 0
@@ -27,7 +27,7 @@ class ChemaxonRestRouteBuilderSpec extends Specification {
 
         when:
         String json = JsonHandler.getInstance().objectToJson(ChemaxonRestRouteBuilder.SERVICE_DESCRIPTOR_DESCRIPTORS)
-        Stream<ServiceDescriptor> sds = JsonHandler.getInstance().streamFromJson(json, ServiceDescriptor.class)
+        Stream<HttpServiceDescriptor> sds = JsonHandler.getInstance().streamFromJson(json, HttpServiceDescriptor.class)
 
         then:
         json.length() > 0

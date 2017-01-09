@@ -22,7 +22,7 @@ public class Launcher {
 //        final WeldContainer container = weld.initialize();
 //
 //        LOG.info("Launching ...");
-//        final CamelRoutes routes = container.select(CamelRoutes.class).get();
+//        final CamelRoutes routes = container.select(CamelRoutes.class).getServiceDescriptors();
 //        routes.init();
 //        routes.start();
 //

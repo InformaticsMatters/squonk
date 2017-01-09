@@ -30,7 +30,7 @@ class SmilesStructuresStepSpec extends Specification {
 
         when:
         step.execute(varman, null)
-        Dataset dataset = varman.getValue(new VariableKey(producer, SmilesStructuresStep.VAR_OUTPUT_DATASET), Dataset.class)
+        Dataset dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
 
         then:
         dataset != null
@@ -54,7 +54,7 @@ class SmilesStructuresStepSpec extends Specification {
 
         when:
         step.execute(varman, null)
-        Dataset dataset = varman.getValue(new VariableKey(producer, SmilesStructuresStep.VAR_OUTPUT_DATASET), Dataset.class)
+        Dataset dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
 
         then:
         dataset != null

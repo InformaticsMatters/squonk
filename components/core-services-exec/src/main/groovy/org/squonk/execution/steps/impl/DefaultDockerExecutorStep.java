@@ -5,7 +5,7 @@ import com.github.dockerjava.api.model.Volume;
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.docker.DockerExecutorDescriptor;
+import org.squonk.core.DockerServiceDescriptor;
 import org.squonk.execution.docker.DockerRunner;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.util.GroovyUtils;
@@ -13,7 +13,6 @@ import org.squonk.execution.variable.VariableManager;
 import org.squonk.execution.variable.impl.FilesystemReadContext;
 import org.squonk.execution.variable.impl.FilesystemWriteContext;
 import org.squonk.io.IODescriptor;
-import org.squonk.notebook.api.VariableKey;
 import org.squonk.types.BasicObject;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
@@ -43,12 +42,12 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
         if (id == null || id.isEmpty()) {
             throw new IllegalStateException("docker.executor.id must be defined in the options");
         }
-        if (executableDescriptor == null) {
+        if (serviceDescriptor == null) {
             throw new IllegalStateException("No executableDescriptor present ");
-        } else if (!(executableDescriptor instanceof DockerExecutorDescriptor)) {
-            throw new IllegalStateException("executableDescriptor is not a DockerExecutorDescriptor: " + executableDescriptor.getClass().getName());
+        } else if (!(serviceDescriptor instanceof DockerServiceDescriptor)) {
+            throw new IllegalStateException("executableDescriptor is not a DockerExecutorDescriptor: " + serviceDescriptor.getClass().getName());
         }
-        DockerExecutorDescriptor descriptor = (DockerExecutorDescriptor) executableDescriptor;
+        DockerServiceDescriptor descriptor = (DockerServiceDescriptor) serviceDescriptor;
 
         IODescriptor[] inputDescriptors = descriptor.getInputDescriptors();
         IODescriptor[] outputDescriptors = descriptor.getOutputDescriptors();
@@ -117,7 +116,7 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
 //        opts.put(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, "http://chemservices:8080/chem-services-cdk-basic/rest/v1/converters/convert_to_sdf");
 //
 //        Map<String, VariableKey> inputs = new HashMap<>();
-//        VariableKey origInputKey = inputVariableMappings.get(origInputName);
+//        VariableKey origInputKey = inputVariableMappings.getServiceDescriptors(origInputName);
 //        inputs.put(origInputName, origInputKey);
 //
 //        // tell the main cell to read its input to the tmp variable name
@@ -136,12 +135,12 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
 //
 //        Map<String, VariableKey> inputs = new HashMap<>();
 //        // tell the converter cell to read its data from the tmp variable
-//        //VariableKey origInputKey = inputVariableMappings.get(origInputName);
+//        //VariableKey origInputKey = inputVariableMappings.getServiceDescriptors(origInputName);
 //        inputs.put(origInputName, new VariableKey(outputProducerId, tmpVarName));
 //
 //        Map<String, String> outputs = new HashMap<>();
 //        // tell the converter cell to write its output to whatever the original cell was to use
-//        String origOutput = outputVariableMappings.get(origOutputName);
+//        String origOutput = outputVariableMappings.getServiceDescriptors(origOutputName);
 //        outputs.put(origOutputName, origOutput);
 //
 //        // tell the main cell to write its output to the tmp variable
@@ -151,11 +150,11 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
 //        return step;
 //    }
 
-    protected void doExecute(VariableManager varman, CamelContext context, DockerExecutorDescriptor descriptor) throws Exception {
+    protected void doExecute(VariableManager varman, CamelContext context, DockerServiceDescriptor descriptor) throws Exception {
 
         statusMessage = MSG_PREPARING_CONTAINER;
 
-        String image = descriptor.getServiceDescriptor().getExecutionEndpoint();
+        String image = descriptor.getImageName();
         if (image == null || image.isEmpty()) {
             statusMessage = "Error: Docker image not defined";
             throw new IllegalStateException("Docker image not defined. Must be set as value of the executionEndpoint property of the ServiceDescriptor");

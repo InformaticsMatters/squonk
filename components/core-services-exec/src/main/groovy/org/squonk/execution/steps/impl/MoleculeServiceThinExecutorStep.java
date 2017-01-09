@@ -3,6 +3,7 @@ package org.squonk.execution.steps.impl;
 import com.fasterxml.jackson.core.JsonParseException;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
+import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
@@ -41,18 +42,14 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(MoleculeServiceThinExecutorStep.class.getName());
 
-    public static final String OPTION_SERVICE_ENDPOINT = StepDefinitionConstants.OPTION_SERVICE_ENDPOINT;
-
-    //public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
-    //public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
-
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
         statusMessage = MSG_PREPARING_INPUT;
 
         Dataset<MoleculeObject> dataset = fetchMappedInput("input", Dataset.class, varman);
-        String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
+
+        String endpoint = getHttpExecutionEndpoint();
         boolean preserveStructure = getOption(StepDefinitionConstants.MoleculeServiceThinExecutor.OPTION_PRESERVE_STRUCTURE, Boolean.class, true);
         boolean filter = getOption(StepDefinitionConstants.MoleculeServiceThinExecutor.OPTION_FILTER, Boolean.class, false);
         LOG.info("Filter mode: " + filter);

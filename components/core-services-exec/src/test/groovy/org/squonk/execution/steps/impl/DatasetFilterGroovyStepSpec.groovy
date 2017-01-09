@@ -105,13 +105,13 @@ class Filter {
                 [(DatasetFilterGroovyStep.OPTION_SCRIPT):'i < 5 && f > 2.0'],
                 [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
                 [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                [(DatasetFilterGroovyStep.VAR_INPUT_DATASET):new VariableKey(producer, "input")],
+                ["input":new VariableKey(producer, "input")],
                 [:]
         )
 
         when:
         step.execute(varman, null)
-        Dataset output = varman.getValue(new VariableKey(producer, DatasetFilterGroovyStep.VAR_OUTPUT_DATASET), Dataset.class)
+        Dataset output = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
 
         then:
 

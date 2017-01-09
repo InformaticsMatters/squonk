@@ -3,7 +3,7 @@ package org.squonk.execution.steps.impl
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.io.IODescriptor
 import org.squonk.dataset.Dataset
-import org.squonk.execution.docker.DockerExecutorDescriptor
+import org.squonk.core.DockerServiceDescriptor
 import org.squonk.execution.variable.VariableManager
 import org.squonk.io.IODescriptors
 import org.squonk.io.IORoute
@@ -41,7 +41,7 @@ class DefaultDockerExecutorStepSpec extends Specification {
     }
 
     def createStep(args, cmd, inputRead, inputWrite, outputRead, outputWrite) {
-        DockerExecutorDescriptor ded = new DockerExecutorDescriptor("id.busybox", "name", "desc",  null, null, null,
+        DockerServiceDescriptor ded = new DockerServiceDescriptor("id.busybox", "name", "desc",  null, null, null, null, null,
                 [IODescriptors.createMoleculeObjectDataset(inputWrite)] as IODescriptor[], [IORoute.FILE] as IORoute[],
                 [IODescriptors.createMoleculeObjectDataset(outputRead)] as IODescriptor[], [IORoute.FILE] as IORoute[],
                 null, "executor", 'busybox', cmd, [:])

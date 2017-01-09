@@ -43,7 +43,7 @@ class DatasetSelectSliceStepSpec extends Specification {
                 [(DatasetSelectSliceStep.OPTION_SKIP):skip, (DatasetSelectSliceStep.OPTION_COUNT):count],
                 [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
                 [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                [(DatasetSelectSliceStep.VAR_INPUT_DATASET):new VariableKey(producer, "input")],
+                ["input":new VariableKey(producer, "input")],
                 [:])
         return step
     }
@@ -56,7 +56,7 @@ class DatasetSelectSliceStepSpec extends Specification {
         
         when:
         step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, ValueTransformerStep.VAR_OUTPUT_DATASET), Dataset.class)
+        Dataset dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
         
         then:
         dataset != null
@@ -74,7 +74,7 @@ class DatasetSelectSliceStepSpec extends Specification {
 
         when:
         step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, ValueTransformerStep.VAR_OUTPUT_DATASET), Dataset.class)
+        Dataset dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
 
         then:
         dataset != null
@@ -92,7 +92,7 @@ class DatasetSelectSliceStepSpec extends Specification {
 
         when:
         step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, ValueTransformerStep.VAR_OUTPUT_DATASET), Dataset.class)
+        Dataset dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
 
         then:
         dataset != null

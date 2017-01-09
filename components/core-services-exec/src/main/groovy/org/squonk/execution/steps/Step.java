@@ -5,8 +5,8 @@ import org.squonk.execution.variable.VariableManager;
 import java.util.Map;
 
 import org.apache.camel.CamelContext;
-import org.squonk.io.ExecutableDescriptor;
 import org.squonk.io.IODescriptor;
+import org.squonk.core.ServiceDescriptor;
 import org.squonk.notebook.api.VariableKey;
 
 /**
@@ -31,7 +31,7 @@ public interface Step {
      *                               are the names needed by the implementation, values are the VariableKeys that
      *                               can be used to fetch the actual values from the variable manager.
      * @param outputVariableMappings The names for the output variables. The producer is determined by {@link #getOutputProducerId}
-     * @param executableDescriptor   Descriptor of the executable service. Can be null if no service to execute
+     * @param serviceDescriptor   Descriptor of the executable service. Can be null if no service to execute
      */
     void configure(
             Long producerId,
@@ -41,7 +41,7 @@ public interface Step {
             IODescriptor[] outputs,
             Map<String, VariableKey> inputVariableMappings,
             Map<String, String> outputVariableMappings,
-            ExecutableDescriptor executableDescriptor);
+            ServiceDescriptor serviceDescriptor);
 
     /** Configure where there is no external service to execute
      *

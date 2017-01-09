@@ -11,11 +11,10 @@ import org.squonk.camel.processor.DatasetToJsonProcessor;
 import org.squonk.camel.processor.JsonToDatasetProcessor;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
-import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
-import org.squonk.io.IORoute;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
@@ -63,8 +62,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     private final String mqueueUrl = new MessageQueueCredentials().generateUrl(MQUEUE_JOB_METRICS_EXCHANGE_NAME, MQUEUE_JOB_METRICS_EXCHANGE_PARAMS) +
             "&routingKey=tokens.chemaxon";
 
-    protected static final ServiceDescriptor[] SERVICE_DESCRIPTOR_CALCULATORS
-            = new ServiceDescriptor[]{
+    protected static final HttpServiceDescriptor[] SERVICE_DESCRIPTOR_CALCULATORS
+            = new HttpServiceDescriptor[]{
             createServiceDescriptor(
                     "chemaxon.calculators.verify",
                     "Verify structure (ChemAxon)",
@@ -358,8 +357,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     }
 
 
-    private static final ServiceDescriptor[] SERVICE_DESCRIPTOR_DESCRIPTORS
-            = new ServiceDescriptor[]{
+    private static final HttpServiceDescriptor[] SERVICE_DESCRIPTOR_DESCRIPTORS
+            = new HttpServiceDescriptor[]{
             createServiceDescriptor(
                     "chemaxon.screening.ecpf4",
                     "ECFP4 Screen (CXN)",
@@ -400,9 +399,9 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     })
     };
 
-    static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String icon,
-                                                     String resourceUrl, String endpoint, OptionDescriptor[] options) {
-        return new ServiceDescriptor(
+    static HttpServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String icon,
+                                                         String resourceUrl, String endpoint, OptionDescriptor[] options) {
+        return new HttpServiceDescriptor(
                 serviceDescriptorId,
                 name,
                 desc,

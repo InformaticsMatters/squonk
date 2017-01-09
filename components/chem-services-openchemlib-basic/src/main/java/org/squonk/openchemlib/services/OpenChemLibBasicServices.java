@@ -1,6 +1,6 @@
 package org.squonk.openchemlib.services;
 
-import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
@@ -12,7 +12,7 @@ import org.squonk.options.OptionDescriptor;
 public class OpenChemLibBasicServices {
 
 
-    static final ServiceDescriptor SERVICE_DESCRIPTOR_VERIFY = createServiceDescriptor(
+    static final HttpServiceDescriptor SERVICE_DESCRIPTOR_VERIFY = createServiceDescriptor(
             "ocl.calculators.verify",
             "Verify structure (OCL)",
             "Verify that the molecules are valid according to OpenChemLib",
@@ -22,35 +22,35 @@ public class OpenChemLibBasicServices {
             "verify",
             new OptionDescriptor[]{OptionDescriptor.IS_FILTER, OptionDescriptor.FILTER_MODE});
 
-    static final ServiceDescriptor SERVICE_DESCRIPTOR_LOGP = createServiceDescriptor(
+    static final HttpServiceDescriptor SERVICE_DESCRIPTOR_LOGP = createServiceDescriptor(
             "ocl.logp", "LogP (OpenChemLib)", "OpenChemLib LogP prediction",
             new String[]{"logp", "partitioning", "molecularproperties", "openchemlib"},
             "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/LogP+%28OpenChemLib%29",
             "icons/properties_add.png", "logp", null);
 
-    static final ServiceDescriptor SERVICE_DESCRIPTOR_LOGS = createServiceDescriptor(
+    static final HttpServiceDescriptor SERVICE_DESCRIPTOR_LOGS = createServiceDescriptor(
             "ocl.logs", "LogS (OpenChemLib)", "OpenChemLib Aqueous Solubility prediction",
             new String[]{"logs", "solubility", "molecularproperties", "openchemlib"},
             "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/LogS+%28OpenChemLib%29",
             "icons/properties_add.png", "logs", null);
 
-    static final ServiceDescriptor SERVICE_DESCRIPTOR_PSA = createServiceDescriptor(
+    static final HttpServiceDescriptor SERVICE_DESCRIPTOR_PSA = createServiceDescriptor(
             "ocl.psa", "PSA (OpenChemLib)", "OpenChemLib Polar Surface Area prediction",
             new String[]{"psa", "tpsa", "molecularproperties", "openchemlib"},
             "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/PSA+%28OpenChemLib%29",
             "icons/properties_add.png", "psa", null);
 
 
-    static final ServiceDescriptor[] ALL = new ServiceDescriptor[] {
+    static final HttpServiceDescriptor[] ALL = new HttpServiceDescriptor[] {
             SERVICE_DESCRIPTOR_VERIFY,
             SERVICE_DESCRIPTOR_LOGP,
             SERVICE_DESCRIPTOR_LOGS,
             SERVICE_DESCRIPTOR_PSA
     };
 
-    private static ServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String resourceUrl, String icon, String endpoint, OptionDescriptor[] options) {
+    private static HttpServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String resourceUrl, String icon, String endpoint, OptionDescriptor[] options) {
 
-        return new ServiceDescriptor(
+        return new HttpServiceDescriptor(
                 id,
                 name,
                 description,

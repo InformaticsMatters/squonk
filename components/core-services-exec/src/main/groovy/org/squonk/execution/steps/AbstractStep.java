@@ -1,9 +1,10 @@
 package org.squonk.execution.steps;
 
 import org.apache.camel.TypeConverter;
+import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.execution.variable.VariableManager;
-import org.squonk.io.ExecutableDescriptor;
 import org.squonk.io.IODescriptor;
+import org.squonk.core.ServiceDescriptor;
 import org.squonk.notebook.api.VariableKey;
 import org.squonk.util.Metrics;
 
@@ -37,7 +38,7 @@ public abstract class AbstractStep implements Step {
     protected final Map<String, VariableKey> inputVariableMappings = new HashMap<>();
     protected final Map<String, String> outputVariableMappings = new HashMap<>();;
     protected String statusMessage = null;
-    protected ExecutableDescriptor executableDescriptor;
+    protected ServiceDescriptor serviceDescriptor;
 
     protected Map<String,Integer> usageStats = new HashMap<>();
 
@@ -79,14 +80,18 @@ public abstract class AbstractStep implements Step {
             count++;
             b.append(e.getKey()).append(" -> ").append(e.getValue());
         }
-        b.append("] options:[");
-        count = 0;
-        for (Map.Entry<String,Object> e: options.entrySet()) {
-            if (count > 0) {
-                b.append(" ");
+        b.append("]");
+        if (options != null) {
+            b.append(" options:[");
+            count = 0;
+            for (Map.Entry<String, Object> e : options.entrySet()) {
+                if (count > 0) {
+                    b.append(" ");
+                }
+                count++;
+                b.append(e.getKey()).append(" -> ").append(e.getValue());
             }
-            count++;
-            b.append(e.getKey()).append(" -> ").append(e.getValue());
+            b.append("]");
         }
         b.append("]");
         return b.toString();
@@ -101,7 +106,7 @@ public abstract class AbstractStep implements Step {
             IODescriptor[] outputs,
             Map<String, VariableKey> inputVariableMappings,
             Map<String, String> outputVariableMappings,
-            ExecutableDescriptor executableDescriptor) {
+            ServiceDescriptor serviceDescriptor) {
         this.outputProducerId = outputProducerId;
         this.jobId = jobId;
         this.options = options;
@@ -109,7 +114,7 @@ public abstract class AbstractStep implements Step {
         this.outputs = outputs;
         this.inputVariableMappings.putAll(inputVariableMappings);
         this.outputVariableMappings.putAll(outputVariableMappings);
-        this.executableDescriptor = executableDescriptor;
+        this.serviceDescriptor = serviceDescriptor;
     }
 
     protected VariableKey mapInputVariable(String name) {
@@ -279,5 +284,17 @@ public abstract class AbstractStep implements Step {
         }
     }
 
+    protected HttpServiceDescriptor getHttpServiceDescriptor() {
+        if (serviceDescriptor == null) {
+            throw new IllegalStateException("Service descriptor not found");
+        } else if (!(serviceDescriptor instanceof HttpServiceDescriptor)) {
+            throw new IllegalStateException("Invalid service descriptor. Expected HttpServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
+        }
+        return (HttpServiceDescriptor)serviceDescriptor;
+    }
+
+    protected String getHttpExecutionEndpoint() {
+        return getHttpServiceDescriptor().getExecutionEndpoint();
+    }
 
 }

@@ -237,9 +237,9 @@ public class SMARTCypRunner {
                     }
                 }
 
-//                this.outfile.print("," + this.twoDecimalFormat.format(MoleculeKU.SMARTCYP_PROPERTY.Span2End.get(currentAtom)));
-//                if (MoleculeKU.SMARTCYP_PROPERTY.Dist2ProtAmine.get(currentAtom) != null) {
-//                    this.outfile.print("," + this.twoDecimalFormat.format(MoleculeKU.SMARTCYP_PROPERTY.Dist2ProtAmine.get(currentAtom)));
+//                this.outfile.print("," + this.twoDecimalFormat.format(MoleculeKU.SMARTCYP_PROPERTY.Span2End.getServiceDescriptors(currentAtom)));
+//                if (MoleculeKU.SMARTCYP_PROPERTY.Dist2ProtAmine.getServiceDescriptors(currentAtom) != null) {
+//                    this.outfile.print("," + this.twoDecimalFormat.format(MoleculeKU.SMARTCYP_PROPERTY.Dist2ProtAmine.getServiceDescriptors(currentAtom)));
 //                } else {
 //                    this.outfile.print(",0");
 //                }
@@ -256,14 +256,14 @@ public class SMARTCypRunner {
                     }
                 }
 
-//                if (MoleculeKU.SMARTCYP_PROPERTY.Dist2CarboxylicAcid.get(currentAtom) != null) {
-//                    this.outfile.print("," + this.twoDecimalFormat.format(MoleculeKU.SMARTCYP_PROPERTY.Dist2CarboxylicAcid.get(currentAtom)));
+//                if (MoleculeKU.SMARTCYP_PROPERTY.Dist2CarboxylicAcid.getServiceDescriptors(currentAtom) != null) {
+//                    this.outfile.print("," + this.twoDecimalFormat.format(MoleculeKU.SMARTCYP_PROPERTY.Dist2CarboxylicAcid.getServiceDescriptors(currentAtom)));
 //                } else {
 //                    this.outfile.print(",0");
 //                }
 //
-//                if (MoleculeKU.SMARTCYP_PROPERTY.SASA2D.get(currentAtom) != null) {
-//                    this.outfile.print("," + this.twoDecimalFormat.format(MoleculeKU.SMARTCYP_PROPERTY.SASA2D.get(currentAtom)));
+//                if (MoleculeKU.SMARTCYP_PROPERTY.SASA2D.getServiceDescriptors(currentAtom) != null) {
+//                    this.outfile.print("," + this.twoDecimalFormat.format(MoleculeKU.SMARTCYP_PROPERTY.SASA2D.getServiceDescriptors(currentAtom)));
 //                } else {
 //                    this.outfile.print(",0");
 //                }

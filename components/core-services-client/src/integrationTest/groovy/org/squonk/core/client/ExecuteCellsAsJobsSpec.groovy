@@ -17,7 +17,7 @@ import java.util.zip.GZIPInputStream
  * Created by timbo on 01/06/16.
  */
 @Stepwise
-class ExecuteCellsAsJobsSpec extends AbstractExecuteDocker {
+class ExecuteCellsAsJobsSpec extends ClientSpecBase {
 
     void setupSpec() {
         doSetupSpec("ExecuteCellsAsJobsSpec")
@@ -25,6 +25,17 @@ class ExecuteCellsAsJobsSpec extends AbstractExecuteDocker {
 
     static def inputs = [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[]
     static def outputs = [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[]
+
+    // get the services first as we need these to be loaded to execute
+    void "list services"() {
+        when:
+        def configs = getServiceConfigs()
+        println "found ${configs.size()} service configs"
+
+        then:
+        configs.size() > 20
+    }
+
 
     void "list jobs"() {
         when:
@@ -67,8 +78,8 @@ class ExecuteCellsAsJobsSpec extends AbstractExecuteDocker {
         StepDefinition step = new StepDefinition(StepDefinitionConstants.DockerProcessDataset.CLASSNAME)
                 .withInputs(inputs)
                 .withOutputs(outputs)
-                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "docker")
+                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
+                .withOutputVariableMapping("output", "docker")
                 .withOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE, "busybox")
                 .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_INPUT, CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
                 .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_OUTPUT, CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
@@ -155,8 +166,8 @@ cp input.data.gz output.data.gz
         StepDefinition step1 = new StepDefinition(StepDefinitionConstants.DatasetServiceExecutor.CLASSNAME)
                 .withInputs(inputs)
                 .withOutputs(outputs)
-                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "sdf")
+                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
+                .withOutputVariableMapping("output", "sdf")
                 .withOption("header.Content-Encoding", "gzip")
                 .withOption("header.Accept-Encoding", "gzip")
                 .withOption("header.Content-Type", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
@@ -227,8 +238,8 @@ cp input.data.gz output.data.gz
         StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputs(inputs)
                 .withOutputs(outputs)
-                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "groovy-noop")
+                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
+                .withOutputVariableMapping("output", "groovy-noop")
                 .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 def file1 = new File('/source/input.meta')
@@ -255,8 +266,8 @@ file2.renameTo '/source/output.data.gz'
         StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputs(inputs)
                 .withOutputs(outputs)
-                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "groovy-api-consumer")
+                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
+                .withOutputVariableMapping("output", "groovy-api-consumer")
                 .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
@@ -288,8 +299,8 @@ processDataset('/source/input','/source/output') { MoleculeObject mo ->
         StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputs(inputs)
                 .withOutputs(outputs)
-                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "groovy-api-function")
+                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
+                .withOutputVariableMapping("output", "groovy-api-function")
                 .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
@@ -324,8 +335,8 @@ processDatasetStream('/source/input','/source/output') { Stream<MoleculeObject> 
         StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputs(inputs)
                 .withOutputs(outputs)
-                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "groovy-api-strong")
+                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
+                .withOutputVariableMapping("output", "groovy-api-strong")
                 .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
@@ -363,8 +374,8 @@ writeDatasetToFiles(dataset, '/source/output', true)
         StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputs(inputs)
                 .withOutputs(outputs)
-                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "groovy-api-weak")
+                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
+                .withOutputVariableMapping("output", "groovy-api-weak")
                 .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')

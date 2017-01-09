@@ -39,12 +39,12 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
                 [(BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FIELD_NAME): 'struct'],
                 [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
                 [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                [(BasicObjectToMoleculeObjectStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
+                ["input": new VariableKey(producer, "input")],
                 [:])
 
         when:
         step.execute(varman, null)
-        def molsds = varman.getValue(new VariableKey(producer, BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET), Dataset.class)
+        def molsds = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
 
         then:
 
@@ -74,12 +74,12 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
                 (BasicObjectToMoleculeObjectStep.OPTION_PRESERVE_UUID)       : false
         ],
                 [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], [(BasicObjectToMoleculeObjectStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], ["input": new VariableKey(producer, "input")],
                 [:])
 
         when:
         step.execute(varman, null)
-        def molsds = varman.getValue(new VariableKey(producer, BasicObjectToMoleculeObjectStep.VAR_OUTPUT_DATASET), Dataset.class)
+        def molsds = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
 
         then:
 

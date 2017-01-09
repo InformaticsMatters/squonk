@@ -129,7 +129,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
         rest("/v1/services")
                 .get().description("Get service definitions for the available services")
                 .bindingMode(RestBindingMode.json)
-                .outType(ServiceDescriptor.class)
+                .outType(HttpServiceDescriptor.class)
                 .produces(APPLICATION_JSON)
                 .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST);
 
@@ -147,7 +147,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 })
                 .endRest()
                 //
-                // get a particular status
+                // getServiceDescriptors a particular status
                 .get("/{id}").description("Get the latest status of an individual job")
                 .bindingMode(RestBindingMode.json).produces(APPLICATION_JSON)
                 .outType(JobStatus.class)

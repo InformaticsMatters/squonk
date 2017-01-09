@@ -17,6 +17,6 @@ public interface CommonConstants {
     String HEADER_JOB_ERROR_COUNT = "ErrorCount";
     String HEADER_JOB_STATUS = "Status";
 
-    String KEY_DOCKER_SERVICE_REGISTRY = "KEY_DOCKER_SERVICE_REGISTRY";
+    String KEY_SERVICE_REGISTRY = "KEY_SERVICE_REGISTRY";
 
 }

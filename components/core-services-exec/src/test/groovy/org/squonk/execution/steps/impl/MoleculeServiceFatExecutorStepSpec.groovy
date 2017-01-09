@@ -1,5 +1,6 @@
 package org.squonk.execution.steps.impl
 
+import org.squonk.core.HttpServiceDescriptor
 import org.squonk.io.IODescriptor
 import org.squonk.io.IODescriptors
 import org.squonk.io.IORoute
@@ -30,26 +31,25 @@ class MoleculeServiceFatExecutorStepSpec extends Specification {
         VariableManager varman = new VariableManager(null,1,1)
         varman.putValue(new VariableKey(producer,"input"), Dataset.class, ds)
 
-
-        def opts = [
-            (MoleculeServiceFatExecutorStep.OPTION_SERVICE_ENDPOINT): "http://localhost:8888/route1"
-        ]
-
-
-        def inputMappings = [(MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET):new VariableKey(producer,"input")]
+        def inputMappings = ["input":new VariableKey(producer,"input")]
         def outputMappings = [:]
+
+        HttpServiceDescriptor sd = new HttpServiceDescriptor("id.busybox", "name", "desc",  null, null, null, null, null,
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
+                null, "executor", 'http://localhost:8888/route1')
         
         MoleculeServiceFatExecutorStep step = new MoleculeServiceFatExecutorStep()
-        step.configure(producer, "job1", opts,
+        step.configure(producer, "job1", null,
                 [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], inputMappings, outputMappings)
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], inputMappings, outputMappings, sd)
         
         
         when:
         step.execute(varman, context)
         
         then:
-        def output = varman.getValue(new VariableKey(producer, MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET), Dataset.class)
+        def output = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
         output instanceof Dataset
         def items = output.items
         items.size() == 3

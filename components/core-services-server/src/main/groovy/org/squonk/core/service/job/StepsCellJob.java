@@ -1,15 +1,15 @@
 package org.squonk.core.service.job;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.squonk.execution.docker.DescriptorRegistry;
-import org.squonk.execution.docker.DockerExecutorDescriptor;
-import org.squonk.execution.steps.StepDefinition;
-import org.squonk.jobdef.JobStatus;
-import org.squonk.jobdef.StepsCellExecutorJobDefinition;
-import org.squonk.client.JobStatusClient;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
+import org.squonk.client.JobStatusClient;
 import org.squonk.core.CommonConstants;
+import org.squonk.core.service.discovery.ServiceDescriptorRegistry;
+import org.squonk.execution.steps.StepDefinition;
+import org.squonk.core.ServiceDescriptor;
+import org.squonk.jobdef.JobStatus;
+import org.squonk.jobdef.StepsCellExecutorJobDefinition;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.StatsRecorder;
@@ -20,14 +20,14 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.squonk.core.CommonConstants.KEY_DOCKER_SERVICE_REGISTRY;
+import static org.squonk.core.CommonConstants.KEY_SERVICE_REGISTRY;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_NAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_PARAMS;
 
 /**
  * Created by timbo on 31/12/15.
  */
-public class StepsCellJob  implements Job<StepsCellExecutorJobDefinition> {
+public class StepsCellJob implements Job<StepsCellExecutorJobDefinition> {
 
     private static final Logger LOG = Logger.getLogger(StepsCellJob.class.getName());
 
@@ -35,16 +35,16 @@ public class StepsCellJob  implements Job<StepsCellExecutorJobDefinition> {
     protected String jobid;
     protected final JobStatusClient jobstatusClient;
     private static MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials();
-    private static final String mqueueUrl = rabbitmqCredentials.generateUrl(MQUEUE_JOB_STEPS_EXCHANGE_NAME,MQUEUE_JOB_STEPS_EXCHANGE_PARAMS);
+    private static final String mqueueUrl = rabbitmqCredentials.generateUrl(MQUEUE_JOB_STEPS_EXCHANGE_NAME, MQUEUE_JOB_STEPS_EXCHANGE_PARAMS);
 
 
     public StepsCellJob(JobStatusClient jobstatusClient, StepsCellExecutorJobDefinition jobdef) {
-        this.jobstatusClient =jobstatusClient;
+        this.jobstatusClient = jobstatusClient;
         this.jobdef = jobdef;
     }
 
     public StepsCellJob(JobStatusClient jobstatusClient, JobStatus<StepsCellExecutorJobDefinition> jobStatus) {
-        this.jobstatusClient =jobstatusClient;
+        this.jobstatusClient = jobstatusClient;
         this.jobdef = jobStatus.getJobDefinition();
         this.jobid = jobStatus.getJobId();
     }
@@ -99,15 +99,12 @@ public class StepsCellJob  implements Job<StepsCellExecutorJobDefinition> {
             JobStatus status = jobstatusClient.submit(jobdef, username, totalCount);
             jobid = status.getJobId();
             for (StepDefinition stepdef : jobdef.getSteps()) {
-                String id = (String)stepdef.getOptions().get("docker.executor.id");
-                if (id != null) {
-                    LOG.info("Looking up DockerExecutorDescriptor for " + id);
-                    DescriptorRegistry reg = camelContext.getRegistry().lookupByNameAndType(KEY_DOCKER_SERVICE_REGISTRY, DescriptorRegistry.class);
-                    DockerExecutorDescriptor ded = (DockerExecutorDescriptor)reg.fetch(id);
-                    if (ded == null) {
-                        throw new IllegalStateException("DockerExecutorDescriptor not found for " + id);
-                    }
-                    stepdef.setExecutableDescriptor(ded);
+                String serviceId = stepdef.getServiceId();
+                if (serviceId != null) {
+                    LOG.info("Looking up ServiceDescriptor for " + serviceId);
+                    ServiceDescriptorRegistry reg = camelContext.getRegistry().lookupByNameAndType(KEY_SERVICE_REGISTRY, ServiceDescriptorRegistry.class);
+                    ServiceDescriptor sd = reg.fetchServiceDescriptor(serviceId);
+                    stepdef.setServiceDescriptor(sd);
                 }
             }
             startJob(camelContext, username);
@@ -125,7 +122,7 @@ public class StepsCellJob  implements Job<StepsCellExecutorJobDefinition> {
         ProducerTemplate pt = camelContext.createProducerTemplate();
         String json = JsonHandler.getInstance().objectToJson(jobdef);
         LOG.info("JSON: " + json);
-        Map<String,Object> headers = new HashMap<>();
+        Map<String, Object> headers = new HashMap<>();
         headers.put("rabbitmq.ROUTING_KEY", "jobs.steps");
         headers.put(StatsRecorder.HEADER_SQUONK_JOB_ID, jobid);
         headers.put(CommonConstants.HEADER_SQUONK_USERNAME, username);

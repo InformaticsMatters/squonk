@@ -1,5 +1,6 @@
 package org.squonk.execution.steps.impl
 
+import org.squonk.core.HttpServiceDescriptor
 import org.squonk.io.IODescriptor
 import org.squonk.io.IODescriptors
 import org.squonk.types.MoleculeObject
@@ -40,12 +41,17 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
 
     MoleculeServiceFatExecutorStep createStep(Dataset ds) {
 
-        def opts = [(MoleculeServiceFatExecutorStep.OPTION_SERVICE_ENDPOINT): HOST_CDK_CALCULATORS + '/logp']
-        def inputMappings = [(MoleculeServiceFatExecutorStep.VAR_INPUT_DATASET):new VariableKey(producer,"input")]
+        def inputMappings = ["input":new VariableKey(producer,"input")]
         def outputMappings = [:]
 
+        HttpServiceDescriptor sd = new HttpServiceDescriptor("id.http", "name", "desc", null, null, null, null, null,
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
+                null, "executor", HOST_CDK_CALCULATORS + '/logp')
+
+
         MoleculeServiceFatExecutorStep step = new MoleculeServiceFatExecutorStep()
-        step.configure(producer, "job1", opts, inputs, outputs, inputMappings, outputMappings)
+        step.configure(producer, "job1", null, inputs, outputs, inputMappings, outputMappings, sd)
         return step
     }
     
@@ -68,7 +74,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         step.execute(varman, context)
         
         then:
-        def output = varman.getValue(new VariableKey(producer, MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET), Dataset.class)
+        def output = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
         output instanceof Dataset
         def items = output.items
         items.size() == 3
@@ -91,7 +97,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         step.execute(varman, context)
 
         then:
-        def output = varman.getValue(new VariableKey(producer, MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET), Dataset.class)
+        def output = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
         output instanceof Dataset
         def items = output.items
         items.size() == 36
@@ -114,7 +120,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
         step.execute(varman, context)
 
         then:
-        def output = varman.getValue(new VariableKey(producer, MoleculeServiceFatExecutorStep.VAR_OUTPUT_DATASET), Dataset.class)
+        def output = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
         output instanceof Dataset
         long  size = output.getStream().count()
         size == 7003

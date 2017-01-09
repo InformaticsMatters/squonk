@@ -18,14 +18,12 @@ public class DatasetSelectSliceStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetSelectSliceStep.class.getName());
 
-    //public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
-    //public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
     public static final String OPTION_SKIP = StepDefinitionConstants.DatasetSelectSlice.OPTION_SKIP;
     public static final String OPTION_COUNT = StepDefinitionConstants.DatasetSelectSlice.OPTION_COUNT;
 
     /**
      * Create a slice of the dataset skipping a number of records specified by the skip option (or 0 if not specified)
-     * and including only the number of records specified by teh count option (or till teh end if not specified).
+     * and including only the number of records specified by the count option (or till teh end if not specified).
      *
      * @param varman
      * @param context

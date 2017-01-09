@@ -2,6 +2,7 @@ package org.squonk.execution.steps.impl
 
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.impl.DefaultCamelContext
+import org.squonk.core.HttpServiceDescriptor
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.DatasetMetadata
 import org.squonk.execution.variable.VariableManager
@@ -64,16 +65,22 @@ class MoleculeServiceToBasicObjectThinExecutorStepSpec extends Specification {
 
         MoleculeServiceToBasicObjectThinExecutorStep step = new MoleculeServiceToBasicObjectThinExecutorStep()
 
-        step.configure(producer, "job1",
-                [(MoleculeServiceThinExecutorStep.OPTION_SERVICE_ENDPOINT): 'http://localhost:8888/route3'],
+        HttpServiceDescriptor sd = new HttpServiceDescriptor("id.busybox", "name", "desc", null, null, null, null, null,
                 [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
                 [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                [(MoleculeServiceThinExecutorStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
-                [:])
+                null, "executor", 'http://localhost:8888/route3')
+
+        step.configure(producer, "job1",
+                null,
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
+                ["input": new VariableKey(producer, "input")],
+                [:],
+                sd)
 
         when:
         step.execute(varman, context)
-        Dataset result = varman.getValue(new VariableKey(producer, MoleculeServiceToBasicObjectThinExecutorStep.VAR_OUTPUT_DATASET), Dataset.class)
+        Dataset result = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
 
         then:
         result.items.size() == 3

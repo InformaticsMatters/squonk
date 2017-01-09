@@ -6,11 +6,10 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.CPSignTrainProcessor;
 import org.squonk.camel.processor.DefaultMoleculeObjectRouteHttpProcessor;
-import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
-import org.squonk.io.IORoute;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.DatasetFieldTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
@@ -50,8 +49,8 @@ public class CPSignRestRouteBuilder extends RouteBuilder {
     private static final String ROUTE_STATS = "seda:post_stats";
 
 
-    protected static final ServiceDescriptor[] SERVICE_DESCRIPTORS
-            = new ServiceDescriptor[]{
+    protected static final HttpServiceDescriptor[] SERVICE_DESCRIPTORS
+            = new HttpServiceDescriptor[]{
             createServiceDescriptor(
                     "cpsign.regression.train", "CPSign Regression Train", "Train a regression predictive model using CPSign",
                     new String[]{"predictivemodel", "machinelearning", "cpsign"},
@@ -66,9 +65,9 @@ public class CPSignRestRouteBuilder extends RouteBuilder {
     };
 
 
-    private static ServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String resourceUrl, String icon, String endpoint, OptionDescriptor[] options) {
+    private static HttpServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String resourceUrl, String icon, String endpoint, OptionDescriptor[] options) {
 
-        return new ServiceDescriptor(
+        return new HttpServiceDescriptor(
                 id,
                 name,
                 description,

@@ -1,7 +1,8 @@
 package org.squonk.core.client;
 
 import org.squonk.core.CommonConstants;
-import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.core.ServiceConfig;
 import org.squonk.core.client.config.SquonkClientConfig;
 import org.squonk.types.io.JsonHandler;
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class ServicesClient extends AbstractHttpClient {
      * @return A list of job statuses matching the filters
      * @throws java.io.IOException
      */
-    public List<ServiceDescriptor> getServiceDescriptors(String username) throws IOException {
+    public List<ServiceConfig> getServiceConfigs(String username) throws IOException {
         if (username == null) {
             throw new IllegalStateException("Username must be specified");
         }
@@ -56,7 +57,7 @@ public class ServicesClient extends AbstractHttpClient {
                 throw new IOException("Request failed: " + response.getStatusLine().toString());
             }
             InputStream is = entity.getContent();
-            return JsonHandler.getInstance().streamFromJson(is, ServiceDescriptor.class, true).collect(Collectors.toList());
+            return JsonHandler.getInstance().streamFromJson(is, ServiceConfig.class, true).collect(Collectors.toList());
         }
     }
 

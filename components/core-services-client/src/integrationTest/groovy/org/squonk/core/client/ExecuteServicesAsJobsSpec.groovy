@@ -15,15 +15,33 @@ import spock.lang.Stepwise
  * Created by timbo on 01/06/16.
  */
 @Stepwise
-class ExecuteServicesAsJobsSpec extends AbstractExecuteDocker {
+class ExecuteServicesAsJobsSpec extends ClientSpecBase {
 
     static def inputs = [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[]
     static def outputs = [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[]
 
-    static SquonkClientConfig CONFIG = new SquonkClientConfig()
+
 
     void setupSpec() {
         doSetupSpec("ExecuteServicesAsJobsSpec")
+    }
+
+    // get the services first as we need these to be loaded to execute
+    void "list services"() {
+        when:
+        def configs = getServiceConfigs()
+        println "found ${configs.size()} service configs"
+
+        then:
+        configs.size() > 20
+    }
+
+    void "get specified service"() {
+        when:
+        def config = getServiceConfigs()["cdk.logp"]
+
+        then:
+        config != null
     }
 
     void "list jobs"() {
@@ -44,12 +62,11 @@ class ExecuteServicesAsJobsSpec extends AbstractExecuteDocker {
 
     void "cdk logp"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
+        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME, "cdk.logp")
                 .withInputs(inputs)
                 .withOutputs(outputs)
-                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "cdklogp")
-                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, CONFIG.basicCdkChemServicesBaseUrl+"/calculators/logp")
+                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
+                .withOutputVariableMapping("output", "cdklogp")
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
         jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, outputs, step)
@@ -66,12 +83,11 @@ class ExecuteServicesAsJobsSpec extends AbstractExecuteDocker {
 
     void "chemaxon logp"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
+        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME, "chemaxon.calculators.logp")
                 .withInputs(inputs)
                 .withOutputs(outputs)
-                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "cxnlogp")
-                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, CONFIG.basicChemaxonChemServicesBaseUrl+"/calculators/logp")
+                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
+                .withOutputVariableMapping("output", "cxnlogp")
 
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
@@ -89,12 +105,11 @@ class ExecuteServicesAsJobsSpec extends AbstractExecuteDocker {
 
     void "chemaxon spherex"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
+        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME, "chemaxon.clustering.sperex")
                 .withInputs(inputs)
                 .withOutputs(outputs)
-                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "spherex")
-                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, CONFIG.basicChemaxonChemServicesBaseUrl+"/descriptors/clustering/spherex/ecfp4")
+                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
+                .withOutputVariableMapping("output", "spherex")
                 .withOption('header.min_clusters', 3)
                 .withOption('header.max_clusters', 6)
 

@@ -1,6 +1,6 @@
 package org.squonk.core.service.discovery;
 
-import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.HttpServiceDescriptor;
 
 import java.util.logging.Logger;
 
@@ -11,8 +11,8 @@ public class ServiceDescriptorUtils {
 
     private static final Logger LOG = Logger.getLogger(ServiceDescriptorUtils.class.getName());
 
-    protected static String makeAbsoluteUrl(String baseUrl, ServiceDescriptor serviceDescriptor) {
-        String endpoint = serviceDescriptor.getExecutionEndpoint();
+    protected static String makeAbsoluteUrl(String baseUrl, HttpServiceDescriptor httpHttpServiceDescriptor) {
+        String endpoint = httpHttpServiceDescriptor.getExecutionEndpoint();
         if (endpoint == null) {
             endpoint = "";
         } else if (isAbsoluteUrl(endpoint)) {
@@ -30,31 +30,31 @@ public class ServiceDescriptorUtils {
         return url.toLowerCase().startsWith("http:") || url.toLowerCase().startsWith("https:");
     }
 
-    public static ServiceDescriptor makeAbsolute(String baseUrl, ServiceDescriptor serviceDescriptor) {
+    public static HttpServiceDescriptor makeAbsolute(String baseUrl, HttpServiceDescriptor httpHttpServiceDescriptor) {
 
-        String endpoint = serviceDescriptor.getExecutionEndpoint();
+        String endpoint = httpHttpServiceDescriptor.getExecutionEndpoint();
         if (endpoint == null) {
-            return serviceDescriptor;
+            return httpHttpServiceDescriptor;
         } else {
 
             if (!isAbsoluteUrl(endpoint)) {
-                return new ServiceDescriptor(
-                        serviceDescriptor.getId(),
-                        serviceDescriptor.getName(),
-                        serviceDescriptor.getDescription(),
-                        serviceDescriptor.getTags(),
-                        serviceDescriptor.getResourceUrl(),
-                        serviceDescriptor.getIcon(),
-                        serviceDescriptor.getStatus(),
-                        serviceDescriptor.getStatusLastChecked(),
-                        serviceDescriptor.getInputDescriptors(),
-                        serviceDescriptor.getOutputDescriptors(),
-                        serviceDescriptor.getOptionDescriptors(),
-                        serviceDescriptor.getExecutorClassName(),
-                        makeAbsoluteUrl(baseUrl, serviceDescriptor)
+                return new HttpServiceDescriptor(
+                        httpHttpServiceDescriptor.getId(),
+                        httpHttpServiceDescriptor.getName(),
+                        httpHttpServiceDescriptor.getDescription(),
+                        httpHttpServiceDescriptor.getTags(),
+                        httpHttpServiceDescriptor.getResourceUrl(),
+                        httpHttpServiceDescriptor.getIcon(),
+                        httpHttpServiceDescriptor.getStatus(),
+                        httpHttpServiceDescriptor.getStatusLastChecked(),
+                        httpHttpServiceDescriptor.getInputDescriptors(),
+                        httpHttpServiceDescriptor.getOutputDescriptors(),
+                        httpHttpServiceDescriptor.getOptionDescriptors(),
+                        httpHttpServiceDescriptor.getExecutorClassName(),
+                        makeAbsoluteUrl(baseUrl, httpHttpServiceDescriptor)
                 );
             } else {
-                return serviceDescriptor;
+                return httpHttpServiceDescriptor;
             }
         }
 

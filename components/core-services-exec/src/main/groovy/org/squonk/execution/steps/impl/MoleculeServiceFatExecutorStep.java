@@ -26,17 +26,12 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(MoleculeServiceFatExecutorStep.class.getName());
 
-    public static final String OPTION_SERVICE_ENDPOINT = StepDefinitionConstants.OPTION_SERVICE_ENDPOINT;
-
-    public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
-    public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
-
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
         statusMessage = MSG_PREPARING_INPUT;
-        String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
-        Dataset dataset = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
+        String endpoint = getHttpExecutionEndpoint();
+        Dataset dataset = fetchMappedInput("input", Dataset.class, varman);
 
         Map<String, Object> requestHeaders = new HashMap<>();
         Map<String, Object> responseHeaders = new HashMap<>();
@@ -68,7 +63,7 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
             }
             Dataset<MoleculeObject> results = JsonHandler.getInstance().unmarshalDataset(responseMetadata, IOUtils.getGunzippedInputStream(output));
             LOG.fine("Dataset created");
-            createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
+            createMappedOutput("output", Dataset.class, results, varman);
             statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
             LOG.info("Results: " + results.getMetadata());
         }

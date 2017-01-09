@@ -33,6 +33,7 @@ components/chem-services-root/src/main/html/licenses
 components/security-keycloak/lib/
 docker/**/*.war
 docker/xwiki-site/yyy.json
+docker/docker-services
 docker/deploy/setenv.sh
 docker/deploy/images/yyy.json
 

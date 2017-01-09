@@ -3,8 +3,6 @@ package org.squonk.execution.steps;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.squonk.execution.variable.VariableManager;
-import org.squonk.io.ExecutableDescriptor;
-import org.squonk.io.IODescriptor;
 import org.squonk.jobdef.StepsCellExecutorJobDefinition;
 import org.squonk.util.CamelRouteStatsRecorder;
 import org.squonk.util.StatsRecorder;
@@ -76,7 +74,7 @@ public class StepExecutor {
 //                }
 //            }
 
-            step.configure(producer, jobId, def.getOptions(), def.getInputs(), def.getOutputs(), def.getInputVariableMappings(), def.getOutputVariableMappings(), def.getExecutableDescriptor());
+            step.configure(producer, jobId, def.getOptions(), def.getInputs(), def.getOutputs(), def.getInputVariableMappings(), def.getOutputVariableMappings(), def.getServiceDescriptor());
             steps[i] = step;
         }
         execute(steps, context);

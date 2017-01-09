@@ -70,7 +70,7 @@ public abstract class AbstractDockerStep extends AbstractStep {
             case CommonMimeTypes.MIME_TYPE_MDL_SDF:
                 InputStream sdf = fetchMappedInput(varName, InputStream.class, varman, true);
                 writeAsSDF(sdf, runner);
-                return null; // TODO can we get the metadata somehow?
+                return null; // TODO can we getServiceDescriptors the metadata somehow?
             default:
                 throw new IllegalArgumentException("Unsupported media type: " + mediaType);
         }
@@ -129,7 +129,7 @@ public abstract class AbstractDockerStep extends AbstractStep {
         try (InputStream is = runner.readOutput("output.sdf.gz")) {
             createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, InputStream.class, is, varman);
         }
-        // TODO can we get the metadata somehow?
+        // TODO can we getServiceDescriptors the metadata somehow?
         return null;
     }
 

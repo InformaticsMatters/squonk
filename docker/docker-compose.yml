@@ -32,6 +32,8 @@ coreservices:
     build: ../components/core-services-server/build
     ports:
     - 8091:8080
+    volumes:
+    - ./docker-services:/var/local/squonk-docker-services
     links:
     - db:db
     - rabbitmq:rabbitmq
@@ -39,6 +41,8 @@ coreservices:
     environment:
         RABBITMQ_HOST: rabbitmq
         SQUONK_DB_SERVER: db
+        SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
+        SQUONK_DOCKER_SERVICES_DIR: "/var/local/squonk-docker-services"
 
 cellexecutor:
     build: ../components/cell-executor/build/docker

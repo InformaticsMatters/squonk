@@ -226,7 +226,7 @@ public class MoleculeKU extends AtomContainer implements IMolecule {
 							indexOfMatchingAtom = matchingAtomsIndicesList_2.get(atomNr);
 
 							// An atom can be matched by several SMARTS and thus assigned several energies
-							// The if clause assures that atoms will get the lowest possible energy
+							// The if clause assures that atoms will getServiceDescriptors the lowest possible energy
 							matchingAtom = (Atom) this.getAtom(indexOfMatchingAtom);
 
 							if(SMARTCYP_PROPERTY.Energy.get(matchingAtom) == null 
@@ -324,9 +324,9 @@ public class MoleculeKU extends AtomContainer implements IMolecule {
 			if(SMARTCYP_PROPERTY.Accessibility.get(refAtom)!=null) {
 				if(SMARTCYP_PROPERTY.Energy.get(refAtom) != null){
 					if(SMARTCYP_PROPERTY.Dist2ProtAmine.get(refAtom) != null){
-						//x = SMARTCYP_PROPERTY.Dist2ProtAmine.get(refAtom).intValue();
-						//if(SMARTCYP_PROPERTY.Dist2ProtAmine.get(refAtom).intValue()>4 && SMARTCYP_PROPERTY.Dist2ProtAmine.get(refAtom).intValue()<10) Correction2D6 = 30 * Math.exp(-0.5 * (x - 7.5) * (x - 7.5)) + 15 * Math.exp(-0.05 * (x - 7.5) * (x - 7.5));
-						//x = Math.abs(SMARTCYP_PROPERTY.Dist2ProtAmine.get(refAtom).doubleValue() - 7.5);
+						//x = SMARTCYP_PROPERTY.Dist2ProtAmine.getServiceDescriptors(refAtom).intValue();
+						//if(SMARTCYP_PROPERTY.Dist2ProtAmine.getServiceDescriptors(refAtom).intValue()>4 && SMARTCYP_PROPERTY.Dist2ProtAmine.getServiceDescriptors(refAtom).intValue()<10) Correction2D6 = 30 * Math.exp(-0.5 * (x - 7.5) * (x - 7.5)) + 15 * Math.exp(-0.05 * (x - 7.5) * (x - 7.5));
+						//x = Math.abs(SMARTCYP_PROPERTY.Dist2ProtAmine.getServiceDescriptors(refAtom).doubleValue() - 7.5);
 						double ProtAmineDist = SMARTCYP_PROPERTY.Dist2ProtAmine.get(refAtom).doubleValue();
 						CorrectionDist2ProtAmine = 0;
 						if(ProtAmineDist < cutoff) CorrectionDist2ProtAmine = constant*(cutoff - ProtAmineDist);
@@ -715,8 +715,8 @@ public class MoleculeKU extends AtomContainer implements IMolecule {
 			if(previousAtom == null){}				// Do nothing												
 
 			// Atoms have no score, compare Accessibility instead
-			//else if(SMARTCYP_PROPERTY.Score2D6.get(currentAtom) == null){
-			//	if(SMARTCYP_PROPERTY.Accessibility.get(currentAtom) != SMARTCYP_PROPERTY.Accessibility.get(previousAtom)) rankNr = loopNr;
+			//else if(SMARTCYP_PROPERTY.Score2D6.getServiceDescriptors(currentAtom) == null){
+			//	if(SMARTCYP_PROPERTY.Accessibility.getServiceDescriptors(currentAtom) != SMARTCYP_PROPERTY.Accessibility.getServiceDescriptors(previousAtom)) rankNr = loopNr;
 			//} 
 
 			// Compare scores
@@ -748,8 +748,8 @@ public class MoleculeKU extends AtomContainer implements IMolecule {
 			if(previousAtom == null){}				// Do nothing												
 
 			// Atoms have no score, compare Accessibility instead
-			//else if(SMARTCYP_PROPERTY.Score2D6.get(currentAtom) == null){
-			//	if(SMARTCYP_PROPERTY.Accessibility.get(currentAtom) != SMARTCYP_PROPERTY.Accessibility.get(previousAtom)) rankNr = loopNr;
+			//else if(SMARTCYP_PROPERTY.Score2D6.getServiceDescriptors(currentAtom) == null){
+			//	if(SMARTCYP_PROPERTY.Accessibility.getServiceDescriptors(currentAtom) != SMARTCYP_PROPERTY.Accessibility.getServiceDescriptors(previousAtom)) rankNr = loopNr;
 			//} 
 
 			// Compare scores

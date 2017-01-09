@@ -1,5 +1,7 @@
 package org.squonk.core.service.discovery
 
+import org.squonk.core.HttpServiceDescriptor
+import org.squonk.core.ServiceConfig
 import org.squonk.core.ServiceDescriptor
 import org.squonk.core.ServiceDescriptorSet
 import org.squonk.io.IODescriptor
@@ -46,8 +48,8 @@ class PostgresServiceDescriptorClientSpec extends Specification {
             String executorClassName,
             String executionEndpoint
      */
-    static ServiceDescriptor createServiceDescriptor(String id) {
-        return new ServiceDescriptor(id, id, id, ["t1", "t2"] as String[], "resourceurl",
+    static HttpServiceDescriptor createServiceDescriptor(String id) {
+        return new HttpServiceDescriptor(id, id, id, ["t1", "t2"] as String[], "resourceurl",
                 "icon",
                 new IODescriptor("input", "text/plain", String.class, null, IOMultiplicity.ITEM),
                 new IODescriptor("output", "text/plain", String.class, null, IOMultiplicity.ITEM),
@@ -106,8 +108,8 @@ class PostgresServiceDescriptorClientSpec extends Specification {
 
         then:
         list.size() == 2
-        list[0].serviceDescriptors.size() == 3
-        list[1].serviceDescriptors.size() == 3
+        list[0].asServiceConfigs.size() == 3
+        list[1].asServiceConfigs.size() == 3
         list[0].baseUrl == "http://somewhere.com/baseurl/1"
         list[1].baseUrl == "http://somewhere.com/baseurl/2"
 
@@ -122,21 +124,5 @@ class PostgresServiceDescriptorClientSpec extends Specification {
         list.size() == 3
 
     }
-
-    void "test update status"() {
-
-        when:
-        client.updateServiceDescriptorStatus("http://somewhere.com/baseurl/1", ServiceDescriptor.Status.INACTIVE, new Date())
-        def list = client.fetch("http://somewhere.com/baseurl/1")
-
-        then:
-        list.each {
-            assert it.status == ServiceDescriptor.Status.INACTIVE
-        }
-
-    }
-
-
-
 
 }

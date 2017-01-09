@@ -6,7 +6,7 @@ import org.apache.camel.cdi.ContextName;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.api.MimeTypeResolver;
-import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
@@ -33,9 +33,9 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
 
     private static final String ROUTE_STATS = "seda:post_stats";
 
-    protected static final ServiceDescriptor[] SEARCH_SERVICE_DESCRIPTOR = new ServiceDescriptor[]{
+    protected static final HttpServiceDescriptor[] SEARCH_SERVICE_DESCRIPTOR = new HttpServiceDescriptor[]{
 
-            new ServiceDescriptor(
+            new HttpServiceDescriptor(
                     "rdkit.chemcentral.search.structure",
                     "ChemCentral structure search",
                     "Structure search in the ChemCentral database using RDKit PostgreSQL cartridge",
@@ -62,7 +62,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     "search"
 
             ),
-            new ServiceDescriptor(
+            new HttpServiceDescriptor(
                     "rdkit.chemcentral.search.similarity",
                     "ChemCentral similarity search",
                     "Similarity search in the ChemCentral database using RDKit PostgreSQL cartridge",
@@ -101,7 +101,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     "search"
 
             ),
-            new ServiceDescriptor(
+            new HttpServiceDescriptor(
                     "rdkit.chemcentral.multisearch",
                     "ChemCentral multi search",
                     "Similarity search for multiple queries in the ChemCentral database using RDKit PostgreSQL cartridge",

@@ -1,16 +1,15 @@
 package org.squonk.core;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.json.PackageVersion;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.io.Serializable;
 import java.util.*;
 
 /**
  * Definition of set of ServiceDescriptors. Each set is defined at a specific URL, with the
- * individual ServiceDescriptor endpoint possibly being relative to this base URL. The
- * {@link org.squonk.core.ServiceDescriptor#isEndpointRelative} method defined whether the defined endpoint is absolute or
- * relative.
+ * individual ServiceDescriptor endpoint possibly being relative to this base URL.
  *
  *
  * @author timbo
@@ -18,7 +17,9 @@ import java.util.*;
 public class ServiceDescriptorSet implements Serializable {
 
     private final String baseUrl;
-    private final String healthUrl;
+    private String healthUrl;
+
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
     private final Map<String,ServiceDescriptor> serviceDescriptorsMap = new LinkedHashMap<>();
 
     public ServiceDescriptorSet(
@@ -27,9 +28,16 @@ public class ServiceDescriptorSet implements Serializable {
             @JsonProperty("serviceDescriptors") List<ServiceDescriptor> serviceDescriptors) {
         this.baseUrl = baseUrl;
         this.healthUrl = healthUrl;
-        serviceDescriptors.forEach(sd -> {
-            serviceDescriptorsMap.put(sd.getId(), sd);
-        });
+        if (serviceDescriptors != null) {
+            serviceDescriptors.forEach(sd -> {
+                serviceDescriptorsMap.put(sd.getId(), sd);
+            });
+        }
+    }
+
+    public ServiceDescriptorSet(String baseUrl, String healthUrl) {
+        this.baseUrl = baseUrl;
+        this.healthUrl = healthUrl;
     }
 
     public String getBaseUrl() {
@@ -45,13 +53,32 @@ public class ServiceDescriptorSet implements Serializable {
         return healthUrl;
     }
 
+    public void setHealthUrl(String healthUrl) {
+        this.healthUrl = healthUrl;
+    }
+
     public List<ServiceDescriptor> getServiceDescriptors() {
         List<ServiceDescriptor> list = new ArrayList<>();
         list.addAll(serviceDescriptorsMap.values());
         return list;
     }
 
-    public void updateServiceDescriptors(List<ServiceDescriptor> sds) {
+    public ServiceDescriptor findServiceDescriptor(String id) {
+        return serviceDescriptorsMap.get(id);
+    }
+
+    @JsonIgnore
+    public List<ServiceConfig> getAsServiceConfigs() {
+        final List<ServiceConfig> list = new ArrayList<>();
+        getServiceDescriptors().forEach(h -> list.add(h.getServiceConfig()));
+        return list;
+    }
+
+    public void updateServiceDescriptor(ServiceDescriptor sd) {
+        serviceDescriptorsMap.put(sd.getId(), sd);
+    }
+
+    public void updateServiceDescriptors(List<? extends ServiceDescriptor> sds) {
         sds.forEach(sd -> serviceDescriptorsMap.put(sd.getId(), sd));
     }
 

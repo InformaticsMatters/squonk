@@ -118,7 +118,7 @@ class DockerRunnerSpec extends Specification {
 //
 //        then:
 //        runner.isRunning()
-//        networksMap.get("bridge") != null
+//        networksMap.getServiceDescriptors("bridge") != null
 //        networksMap.size() == 1
 //
 //        cleanup:

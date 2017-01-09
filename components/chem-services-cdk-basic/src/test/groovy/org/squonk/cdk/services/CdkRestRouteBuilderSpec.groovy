@@ -1,19 +1,9 @@
 package org.squonk.cdk.services
 
 import org.apache.camel.CamelContext
-import org.apache.camel.ProducerTemplate
-import org.apache.camel.builder.ThreadPoolProfileBuilder
 import org.apache.camel.impl.DefaultCamelContext
-import org.apache.camel.spi.ThreadPoolProfile
-import org.squonk.camel.CamelCommonConstants
-import org.squonk.core.ServiceDescriptor
-import org.squonk.data.Molecules
-import org.squonk.dataset.Dataset
-import org.squonk.types.io.JsonHandler
 import spock.lang.Shared
 import spock.lang.Specification
-
-import java.util.stream.Stream
 
 /**
  * Created by timbo on 12/02/16.

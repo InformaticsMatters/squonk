@@ -5,7 +5,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
-import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
@@ -39,8 +39,8 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     private final String mqueueUrl = new MessageQueueCredentials().generateUrl(MQUEUE_JOB_METRICS_EXCHANGE_NAME, MQUEUE_JOB_METRICS_EXCHANGE_PARAMS) +
             "&routingKey=tokens.rdkit";
 
-    protected static final ServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
-            = new ServiceDescriptor[]{
+    protected static final HttpServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
+            = new HttpServiceDescriptor[]{
             createServiceDescriptor(
                     "rdkit.calculators.verify",
                     "Verify structure (RDKit)",
@@ -305,10 +305,10 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     }
 
 
-    static ServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String icon, String resourceUrl,
-                                                     String endpoint, OptionDescriptor[] options) {
+    static HttpServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String icon, String resourceUrl,
+                                                         String endpoint, OptionDescriptor[] options) {
 
-        return new ServiceDescriptor(
+        return new HttpServiceDescriptor(
                 serviceDescriptorId,
                 name,
                 desc,

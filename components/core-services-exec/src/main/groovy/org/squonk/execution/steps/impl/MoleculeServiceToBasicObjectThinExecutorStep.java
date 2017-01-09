@@ -38,18 +38,13 @@ public class MoleculeServiceToBasicObjectThinExecutorStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(MoleculeServiceToBasicObjectThinExecutorStep.class.getName());
 
-    public static final String OPTION_SERVICE_ENDPOINT = StepDefinitionConstants.OPTION_SERVICE_ENDPOINT;
-
-    public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
-    public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
-
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
         statusMessage = MSG_PREPARING_INPUT;
 
-        Dataset<MoleculeObject> dataset = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
-        String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
+        Dataset<MoleculeObject> dataset = fetchMappedInput("input", Dataset.class, varman);
+        String endpoint = getHttpExecutionEndpoint();
 
         DatasetMetadata<MoleculeObject> requestMetadata = dataset.getMetadata();
 
@@ -98,7 +93,7 @@ public class MoleculeServiceToBasicObjectThinExecutorStep extends AbstractStep {
 
         Dataset<BasicObject> results = new Dataset<>(BasicObject.class, output, metadata);
 
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
+        createMappedOutput("output", Dataset.class, results, varman);
         statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
         LOG.info("Results: " + results.getMetadata());
     }

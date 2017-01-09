@@ -1,7 +1,13 @@
 package org.squonk.core.service.discovery
 
-import org.squonk.core.ServiceDescriptor
+import org.squonk.core.HttpServiceDescriptor
+import org.squonk.io.IODescriptor
 import spock.lang.Specification
+
+import java.nio.file.FileSystems
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.stream.Stream
 
 /**
  *
@@ -11,7 +17,7 @@ class ServiceDescriptorUtilsSpec extends Specification {
 
     void "relative with trailing slash"() {
         setup:
-        ServiceDescriptor sd = createServiceDescriptor("foo")
+        HttpServiceDescriptor sd = createServiceDescriptor("foo")
 
         when:
         String url = ServiceDescriptorUtils.makeAbsoluteUrl("http://localhost:8080/some/path/", sd)
@@ -22,7 +28,7 @@ class ServiceDescriptorUtilsSpec extends Specification {
 
     void "relative without trailing slash"() {
         setup:
-        ServiceDescriptor sd = createServiceDescriptor("foo",)
+        HttpServiceDescriptor sd = createServiceDescriptor("foo",)
 
         when:
         String url = ServiceDescriptorUtils.makeAbsoluteUrl("http://localhost:8080/some/path", sd)
@@ -33,7 +39,7 @@ class ServiceDescriptorUtilsSpec extends Specification {
 
     void "absolute url"() {
         setup:
-        ServiceDescriptor sd = createServiceDescriptor("http://localhost:8080/some/other/path")
+        HttpServiceDescriptor sd = createServiceDescriptor("http://localhost:8080/some/other/path")
 
         when:
         String url = ServiceDescriptorUtils.makeAbsoluteUrl("http://localhost:8080/some/path", sd)
@@ -43,10 +49,10 @@ class ServiceDescriptorUtilsSpec extends Specification {
     }
 
     void "copy props when making absolute"() {
-        ServiceDescriptor sd1 = createServiceDescriptor("foo")
+        HttpServiceDescriptor sd1 = createServiceDescriptor("foo")
 
         when:
-        ServiceDescriptor sd2 = ServiceDescriptorUtils.makeAbsolute("http://nowhere.com/", sd1)
+        HttpServiceDescriptor sd2 = ServiceDescriptorUtils.makeAbsolute("http://nowhere.com/", sd1)
 
         then:
         sd2.id == "id"
@@ -54,24 +60,22 @@ class ServiceDescriptorUtilsSpec extends Specification {
         sd2.getExecutionEndpoint().startsWith("http://nowhere.com/")
     }
 
-    private ServiceDescriptor createServiceDescriptor(String endpoint) {
-        return new ServiceDescriptor("id", "name", "desc", null, null, "icon.png", null, null, null, null, endpoint
+    private HttpServiceDescriptor createServiceDescriptor(String endpoint) {
+        return new HttpServiceDescriptor("id", "name", "desc", null, null, "icon.png", new IODescriptor[0], new IODescriptor[0], null, null, endpoint
         )
     }
 
-/*
-            String id,
-            String name,
-            String description,
-            String[] tags,
-            String resourceUrl,
-            String icon,
-            IODescriptor[] inputDescriptors,
-            IODescriptor[] outputDescriptors,
-            OptionDescriptor[] options,
-            String executorClassName,
-            String executionEndpoint
-*/
 
+    void "walk tree"() {
+        when:
+        Stream paths = Files.walk(FileSystems.getDefault().getPath("../../data/testfiles/docker-services"))
+        long count = paths.peek() {
+            println it
+        }.count()
+
+        then:
+        count > 0
+
+    }
 }
 

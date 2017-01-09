@@ -2,8 +2,8 @@ package org.squonk.execution.steps;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.squonk.io.ExecutableDescriptor;
 import org.squonk.io.IODescriptor;
+import org.squonk.core.ServiceDescriptor;
 import org.squonk.notebook.api.VariableKey;
 
 import java.io.Serializable;
@@ -46,12 +46,16 @@ public final class StepDefinition implements Serializable {
     @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
     private final Map<String, Object> options = new LinkedHashMap<>();
 
+    /** the ID of the service to execute (if any)
+     */
+    private String serviceId;
+
     /**
      * Optional descriptor that defines execution criteria for cells that use external services (e.g. REST or Docker)
      *
      */
     @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
-    private ExecutableDescriptor executableDescriptor;
+    private ServiceDescriptor serviceDescriptor;
 
     public StepDefinition() {
     }
@@ -60,18 +64,37 @@ public final class StepDefinition implements Serializable {
         this.implementationClass = implementationClass;
     }
 
-    public StepDefinition(String implementationClass, Map<String, Object> options, IODescriptor[] inputs, IODescriptor[] outputs, Map<String, VariableKey> inputVariableMappings, Map<String, String> outputVariableMappings) {
+    public StepDefinition(String implementationClass, String serviceId) {
+        this.implementationClass = implementationClass;
+        this.serviceId = serviceId;
+    }
+
+    public StepDefinition(
+            String implementationClass,
+            Map<String, Object> options,
+            ServiceDescriptor serviceDescriptor) {
+        this.implementationClass = implementationClass;
+        setOptions(options);
+        this.serviceDescriptor = serviceDescriptor;
+        this.serviceId = serviceDescriptor == null ? null : serviceDescriptor.getServiceConfig().getId();
+    }
+
+    public StepDefinition(
+            String implementationClass,
+            Map<String, Object> options,
+            IODescriptor[] inputs,
+            IODescriptor[] outputs,
+            Map<String, VariableKey> inputVariableMappings,
+            Map<String, String> outputVariableMappings) {
         this(implementationClass, options, inputs, outputs, inputVariableMappings, outputVariableMappings, null);
     }
 
-    public StepDefinition(String implementationClass, Map<String, Object> options, IODescriptor[] inputs, IODescriptor[] outputs, Map<String, VariableKey> inputVariableMappings, Map<String, String> outputVariableMappings, ExecutableDescriptor executableDescriptor) {
-        this(implementationClass);
+    public StepDefinition(String implementationClass, Map<String, Object> options, IODescriptor[] inputs, IODescriptor[] outputs, Map<String, VariableKey> inputVariableMappings, Map<String, String> outputVariableMappings, ServiceDescriptor serviceDescriptor) {
+        this(implementationClass, options, serviceDescriptor);
         this.inputs = inputs;
         this.outputs = outputs;
-        setOptions(options);
         setInputVariableMappings(inputVariableMappings);
         setOutputVariableMappings(outputVariableMappings);
-        this.executableDescriptor = executableDescriptor;
     }
 
     public StepDefinition(String implementationClass, Map<String, Object> options, Map<IODescriptor, VariableKey> inputTypesAndMappings, Map<IODescriptor, String> outputTypesAndMappings) {
@@ -85,13 +108,10 @@ public final class StepDefinition implements Serializable {
      * @param options
      * @param inputTypesAndMappings
      * @param outputTypesAndMappings
-     * @param executableDescriptor
+     * @param serviceDescriptor
      */
-    public StepDefinition(String implementationClass, Map<String, Object> options, Map<IODescriptor, VariableKey> inputTypesAndMappings, Map<IODescriptor, String> outputTypesAndMappings, ExecutableDescriptor executableDescriptor) {
-        this(implementationClass);
-        setOptions(options);
-        this.executableDescriptor = executableDescriptor;
-
+    public StepDefinition(String implementationClass, Map<String, Object> options, Map<IODescriptor, VariableKey> inputTypesAndMappings, Map<IODescriptor, String> outputTypesAndMappings, ServiceDescriptor serviceDescriptor) {
+        this(implementationClass, options, serviceDescriptor);
         inputs = inputTypesAndMappings == null ? null : new IODescriptor[inputTypesAndMappings.size()];
         outputs = outputTypesAndMappings == null ? null : new IODescriptor[outputTypesAndMappings.size()];
         fillInputsOutputs(inputTypesAndMappings, inputs, inputVariableMappings);
@@ -104,13 +124,10 @@ public final class StepDefinition implements Serializable {
      * @param options
      * @param inputTypesAndMappings
      * @param outputs
-     * @param executableDescriptor
+     * @param serviceDescriptor
      */
-    public StepDefinition(String implementationClass, Map<String, Object> options, Map<IODescriptor, VariableKey> inputTypesAndMappings, IODescriptor[] outputs, ExecutableDescriptor executableDescriptor) {
-        this(implementationClass);
-        setOptions(options);
-        this.executableDescriptor = executableDescriptor;
-
+    public StepDefinition(String implementationClass, Map<String, Object> options, Map<IODescriptor, VariableKey> inputTypesAndMappings, IODescriptor[] outputs, ServiceDescriptor serviceDescriptor) {
+        this(implementationClass, options, serviceDescriptor);
         inputs = inputTypesAndMappings == null ? null : new IODescriptor[inputTypesAndMappings.size()];
         this.outputs = outputs;
         fillInputsOutputs(inputTypesAndMappings, inputs, inputVariableMappings);
@@ -226,16 +243,34 @@ public final class StepDefinition implements Serializable {
         }
     }
 
-    public ExecutableDescriptor getExecutableDescriptor() {
-        return executableDescriptor;
+    public String getServiceId() {
+        return serviceId;
     }
 
-    public void setExecutableDescriptor(ExecutableDescriptor executableDescriptor) {
-        this.executableDescriptor = executableDescriptor;
+    public void setServiceId(String serviceId) {
+        this.serviceId = serviceId;
     }
 
-    public StepDefinition withExecutableDescriptor(ExecutableDescriptor executableDescriptor) {
-        this.executableDescriptor = executableDescriptor;
+    public StepDefinition withServiceId(String serviceId) {
+        this.serviceId = serviceId;
+        return this;
+    }
+
+    public ServiceDescriptor getServiceDescriptor() {
+        return serviceDescriptor;
+    }
+
+    public void setServiceDescriptor(ServiceDescriptor serviceDescriptor) {
+        this.serviceDescriptor = serviceDescriptor;
+    }
+
+    public StepDefinition withServiceDescriptor(ServiceDescriptor serviceDescriptor) {
+        if (serviceId != null) {
+            if (!serviceId.equals(serviceDescriptor.getServiceConfig().getId())) {
+                throw new IllegalStateException("ServiceDescriptor ID does not match the service ID that is already defined");
+            }
+        }
+        this.serviceDescriptor = serviceDescriptor;
         return this;
     }
 }

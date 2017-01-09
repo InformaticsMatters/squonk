@@ -1,11 +1,17 @@
 package org.squonk.core.service.discovery
 
+import org.apache.camel.CamelContext
 import org.apache.camel.ProducerTemplate
+import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.impl.DefaultCamelContext
 import org.apache.camel.impl.SimpleRegistry
+import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.squonk.core.CommonConstants
-import org.squonk.execution.docker.DescriptorRegistry
-import spock.lang.Specification
+import org.squonk.core.DockerServiceDescriptor
+import org.squonk.core.HttpServiceDescriptor
+import org.squonk.core.ServiceDescriptorSet
+
+import java.util.regex.Pattern
 
 import static org.squonk.core.service.discovery.ServiceDiscoveryRouteBuilder.TEST_SERVICE_DESCRIPTORS
 
@@ -13,41 +19,63 @@ import static org.squonk.core.service.discovery.ServiceDiscoveryRouteBuilder.TES
  *
  * @author timbo
  */
-class ServiceDiscoveryRouteBuilderSpec extends Specification {
-	
-    void "test service discovery"() {
-        setup:
+class ServiceDiscoveryRouteBuilderSpec extends CamelSpecificationBase {
 
-        SimpleRegistry reg = new SimpleRegistry()
-        reg.put(CommonConstants.KEY_DOCKER_SERVICE_REGISTRY, new DescriptorRegistry())
-        DefaultCamelContext context = new DefaultCamelContext(reg)
+    @Override
+    CamelContext createCamelContext() {
+        SimpleRegistry reg = new SimpleRegistry();
+        ServiceDescriptorRegistry descriptorReg = new ServiceDescriptorRegistry()
+        reg.put(CommonConstants.KEY_SERVICE_REGISTRY, descriptorReg);
+        // push some dummy service descriptors. There is only one.
+        descriptorReg.updateServiceDescriptorSet(new ServiceDescriptorSet("dummy", null, Arrays.asList(TEST_SERVICE_DESCRIPTORS)))
+        new DefaultCamelContext(reg)
+    }
+
+    @Override
+    RouteBuilder createRouteBuilder() {
         ServiceDiscoveryRouteBuilder rb = new ServiceDiscoveryRouteBuilder()
         rb.timerRepeats = 1
-        context.addRoutes(rb)
-        context.start()
-        ProducerTemplate pt = context.createProducerTemplate()
-        // push some dummy service descriptors. There is only one.
-        rb.updateServiceDescriptors("ignored", null, Arrays.asList(TEST_SERVICE_DESCRIPTORS))
 
-        
+        return rb
+    }
+
+    void "pattern matcher"() {
+        Pattern pat = Pattern.compile("(\\w+)/(.*)");
+
+        when:
+        def m = pat.matcher("pipelines/rdkit/foo.ded")
+
+        then:
+        m.matches()
+        m.group(1) == 'pipelines'
+
+    }
+
+
+    void "test read  descriptors"() {
+
         when:
         sleep(4000)
-        def results = pt.requestBody(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST, null)
-        
-        then:
-        println "Discovered ${results.size()} active service definitions"
-        results.size() > 1 // confirm we get at least that one service descriptor back
+        ServiceDescriptorRegistry reg = camelContext.getRegistry().lookupByName(CommonConstants.KEY_SERVICE_REGISTRY)
+        def descs = reg.fetchServiceDescriptors()
+        int http = 0
+        int docker = 0
         boolean b = false
-        results.each {
-            println "  SD ${it.id}"
+        descs.each() {
+            if (it instanceof HttpServiceDescriptor) http++
+            if (it instanceof DockerServiceDescriptor) docker++
             if (it.id == "test.noop") {
                 b = true
             }
         }
+        println "HTTP: $http"
+        println "DOCKER: $docker"
+
+
+        then:
+        http > 0
+        docker > 0
         b == true
-                
-        cleanup:
-        context.stop()
     }
     
 }

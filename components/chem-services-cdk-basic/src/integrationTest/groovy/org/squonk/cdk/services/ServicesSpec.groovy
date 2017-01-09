@@ -9,7 +9,7 @@ import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.util.CommonMimeTypes
 import org.squonk.util.IOUtils
 
-import org.squonk.core.ServiceDescriptor
+import org.squonk.core.HttpServiceDescriptor
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
 import org.squonk.types.io.JsonHandler
@@ -42,7 +42,7 @@ class ServicesSpec extends Specification implements CommonMimeTypes{
 
         when:
         InputStream json = new URL("http:"+calculatorsbase).openStream()
-        Stream<ServiceDescriptor> sds = JsonHandler.getInstance().streamFromJson(json, ServiceDescriptor.class, false)
+        Stream<HttpServiceDescriptor> sds = JsonHandler.getInstance().streamFromJson(json, HttpServiceDescriptor.class, false)
 
         then:
         sds.count() > 0
