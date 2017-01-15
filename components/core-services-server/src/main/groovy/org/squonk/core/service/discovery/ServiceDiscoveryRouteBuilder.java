@@ -212,7 +212,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                             }
                             LOG.info("Discovered docker executor descriptor " + ded.getId() + " from file " + p);
                         } catch (IOException ex) {
-                            LOG.info("Unable to read descriptor for " + p);
+                            LOG.log(Level.INFO, "Unable to read descriptor for " + p, ex);
                         }
                     } else {
                         LOG.info("Unable to parse " + relativePath);
