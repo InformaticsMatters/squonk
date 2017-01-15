@@ -40,7 +40,7 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractStep {
         dumpConfig(Level.INFO);
         statusMessage = MSG_PREPARING_INPUT;
 
-        String endpoint = getOption(OPTION_SERVICE_ENDPOINT, String.class);
+        String endpoint = getHttpExecutionEndpoint();
         Object body = getOption(StepDefinitionConstants.OPTION_BODY);
         String bodyContentType = getOption(StepDefinitionConstants.OPTION_BODY_CONTENT_TYPE, String.class);
 
