@@ -139,7 +139,7 @@ public class SMARTCypRestRouteBuilder extends RouteBuilder {
                 })
                 .endRest()
                 //
-                .post(ROUTE_SMARTCYP).description(CALCULATORS_SERVICE_DESCRIPTOR[0].getDescription())
+                .post(ROUTE_SMARTCYP).description(CALCULATORS_SERVICE_DESCRIPTOR[0].getServiceConfig().getDescription())
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_DATASET_BASIC_JSON))
                 .route()

@@ -45,19 +45,27 @@ public class HttpServiceDescriptor extends AbstractServiceDescriptor implements 
 
     @JsonCreator
     public HttpServiceDescriptor(
-            @JsonProperty("id") String id,
-            @JsonProperty("name") String name,
-            @JsonProperty("description") String description,
-            @JsonProperty("tags") String[] tags,
-            @JsonProperty("resourceUrl") String resourceUrl,
-            @JsonProperty("icon") String icon,
-            @JsonProperty("status") ServiceConfig.Status status,
-            @JsonProperty("statusLastChecked") Date statusLastChecked,
-            @JsonProperty("inputDescriptors") IODescriptor[] inputDescriptors,
-            @JsonProperty("outputDescriptors") IODescriptor[] outputDescriptors,
-            @JsonProperty("optionDescriptors") OptionDescriptor[] optionDescriptors,
-            @JsonProperty("executorClassName") String executorClassName,
+            @JsonProperty("serviceConfig") ServiceConfig serviceConfig,
             @JsonProperty("executionEndpoint") String executionEndpoint) {
+        super(serviceConfig);
+        this.executionEndpoint = executionEndpoint;
+    }
+
+
+    public HttpServiceDescriptor(
+            String id,
+            String name,
+            String description,
+            String[] tags,
+            String resourceUrl,
+            String icon,
+            ServiceConfig.Status status,
+            Date statusLastChecked,
+            IODescriptor[] inputDescriptors,
+            IODescriptor[] outputDescriptors,
+            OptionDescriptor[] optionDescriptors,
+            String executorClassName,
+            String executionEndpoint) {
 
         super(id, name, description, tags, resourceUrl, icon, status, statusLastChecked, inputDescriptors, outputDescriptors, optionDescriptors, executorClassName);
         this.executionEndpoint = executionEndpoint;
@@ -102,8 +110,8 @@ public class HttpServiceDescriptor extends AbstractServiceDescriptor implements 
     public String toString() {
         StringBuilder b = new StringBuilder("HttpServiceDescriptor[")
                 .append("id:").append(getId())
-                .append(" name:").append(getName())
-                .append(" executor:").append(getExecutorClassName())
+                .append(" name:").append(serviceConfig.getName())
+                .append(" executor:").append(serviceConfig.getExecutorClassName())
                 .append(" endpoint:").append(executionEndpoint)
                 .append("]");
         return b.toString();

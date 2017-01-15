@@ -72,13 +72,13 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 .endRest()
                 //
                 .post(CdkBasicServices.SERVICE_DESCRIPTOR_VERIFY.getExecutionEndpoint())
-                .description(CdkBasicServices.SERVICE_DESCRIPTOR_VERIFY.getDescription())
+                .description(CdkBasicServices.SERVICE_DESCRIPTOR_VERIFY.getServiceConfig().getDescription())
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(CdkCalculatorsRouteBuilder.CDK_STRUCTURE_VERIFY, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post(CdkBasicServices.SERVICE_DESCRIPTOR_LOGP.getExecutionEndpoint())
-                .description(CdkBasicServices.SERVICE_DESCRIPTOR_LOGP.getDescription())
+                .description(CdkBasicServices.SERVICE_DESCRIPTOR_LOGP.getServiceConfig().getDescription())
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MoleculeObjectRouteHttpProcessor.DEFAULT_OUTPUT_MIME_TYPES))
                 .route()
@@ -86,7 +86,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 .endRest()
                 //
                 .post(CdkBasicServices.SERVICE_DESCRIPTOR_HBA_HBD.getExecutionEndpoint())
-                .description(CdkBasicServices.SERVICE_DESCRIPTOR_HBA_HBD.getDescription())
+                .description(CdkBasicServices.SERVICE_DESCRIPTOR_HBA_HBD.getServiceConfig().getDescription())
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MoleculeObjectRouteHttpProcessor.DEFAULT_OUTPUT_MIME_TYPES))
                 .route()
@@ -94,7 +94,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 .endRest()
                 //
                 .post(CdkBasicServices.SERVICE_DESCRIPTOR_WIENER_NUMBERS.getExecutionEndpoint())
-                .description(CdkBasicServices.SERVICE_DESCRIPTOR_WIENER_NUMBERS.getDescription())
+                .description(CdkBasicServices.SERVICE_DESCRIPTOR_WIENER_NUMBERS.getServiceConfig().getDescription())
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MoleculeObjectRouteHttpProcessor.DEFAULT_OUTPUT_MIME_TYPES))
                 .route()
@@ -115,7 +115,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 .endRest()
                 //
                 .post(CdkConverterServices.SERVICE_DESCRIPTOR_CONVERT_TO_SDF.getExecutionEndpoint())
-                .description(CdkConverterServices.SERVICE_DESCRIPTOR_CONVERT_TO_SDF.getDescription())
+                .description(CdkConverterServices.SERVICE_DESCRIPTOR_CONVERT_TO_SDF.getServiceConfig().getDescription())
                 .consumes(join(CDKMoleculeObjectSDFileProcessor.INPUT_MIME_TYPES))
                 .produces(join(CDKMoleculeObjectSDFileProcessor.OUTPUT_MIME_TYPES))
                 .route()

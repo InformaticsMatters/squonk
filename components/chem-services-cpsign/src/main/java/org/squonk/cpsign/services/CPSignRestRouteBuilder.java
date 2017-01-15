@@ -203,7 +203,7 @@ public class CPSignRestRouteBuilder extends RouteBuilder {
                 })
                 .endRest()
                 //
-                .post(ROUTE_CPSIGN_TRAIN).description(SERVICE_DESCRIPTORS[0].getDescription())
+                .post(ROUTE_CPSIGN_TRAIN).description(SERVICE_DESCRIPTORS[0].getServiceConfig().getDescription())
                 .consumes(join(MIME_TYPE_DATASET_MOLECULE_JSON))
                 .produces(join(MIME_TYPE_CPSIGN_TRAIN_RESULT))
                 .route()

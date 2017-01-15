@@ -56,13 +56,12 @@ class ServiceDescriptorUtilsSpec extends Specification {
 
         then:
         sd2.id == "id"
-        sd2.icon == "icon.png"
+        sd2.serviceConfig.icon == "icon.png"
         sd2.getExecutionEndpoint().startsWith("http://nowhere.com/")
     }
 
     private HttpServiceDescriptor createServiceDescriptor(String endpoint) {
-        return new HttpServiceDescriptor("id", "name", "desc", null, null, "icon.png", new IODescriptor[0], new IODescriptor[0], null, null, endpoint
-        )
+        return new HttpServiceDescriptor("id", "name", "desc", null, null, "icon.png", new IODescriptor[0], new IODescriptor[0], null, null, endpoint)
     }
 
 

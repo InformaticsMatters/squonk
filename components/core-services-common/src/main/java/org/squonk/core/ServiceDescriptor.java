@@ -19,19 +19,4 @@ public interface ServiceDescriptor {
      */
     ServiceConfig getServiceConfig();
 
-    /** The class name of the executor for this service
-     *
-     * @return
-     */
-    String getExecutorClassName();
-
-
-    ServiceConfig.Status getStatus();
-
-    void setStatus(ServiceConfig.Status status);
-
-    Date getStatusLastChecked();
-
-    void setStatusLastChecked(Date statusLastChecked);
-
 }

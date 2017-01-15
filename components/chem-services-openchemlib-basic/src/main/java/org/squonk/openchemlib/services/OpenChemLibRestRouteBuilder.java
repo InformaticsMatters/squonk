@@ -72,7 +72,7 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                 .endRest()
                 //
                 .post(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_VERIFY.getExecutionEndpoint())
-                .description(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_VERIFY.getDescription())
+                .description(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_VERIFY.getServiceConfig().getDescription())
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_DATASET_BASIC_JSON))
                 .route()
@@ -80,7 +80,7 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                 .endRest()
                 //
                 .post(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_LOGP.getExecutionEndpoint())
-                .description(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_LOGP.getDescription())
+                .description(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_LOGP.getServiceConfig().getDescription())
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_DATASET_BASIC_JSON))
                 .route()
@@ -88,7 +88,7 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                 .endRest()
                 //
                 .post(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_LOGS.getExecutionEndpoint())
-                .description(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_LOGS.getDescription())
+                .description(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_LOGS.getServiceConfig().getDescription())
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_DATASET_BASIC_JSON))
                 .route()
@@ -96,7 +96,7 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                 .endRest()
                 //
                 .post(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_PSA.getExecutionEndpoint())
-                .description(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_PSA.getDescription())
+                .description(OpenChemLibBasicServices.SERVICE_DESCRIPTOR_PSA.getServiceConfig().getDescription())
                 .consumes(join(MoleculeObjectRouteHttpProcessor.DEFAULT_INPUT_MIME_TYPES))
                 .produces(join(MIME_TYPE_DATASET_MOLECULE_JSON, MIME_TYPE_DATASET_BASIC_JSON))
                 .route()

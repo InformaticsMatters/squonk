@@ -1,8 +1,8 @@
 package org.squonk.core;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.squonk.core.AbstractServiceDescriptor;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IORoute;
 import org.squonk.options.OptionDescriptor;
@@ -36,6 +36,31 @@ public class DockerServiceDescriptor extends AbstractServiceDescriptor {
     private final Map<String, String> volumes;
 
     /**
+     *
+     * @param serviceConfig
+     * @param inputRoutes
+     * @param outputRoutes
+     * @param imageName
+     * @param command
+     * @param volumes
+     */
+    @JsonCreator
+    public DockerServiceDescriptor(
+            @JsonProperty("serviceConfig") ServiceConfig serviceConfig,
+            @JsonProperty("inputRoutes") IORoute[] inputRoutes,
+            @JsonProperty("outputRoutes") IORoute[] outputRoutes,
+            @JsonProperty("imageName") String imageName,
+            @JsonProperty("command") String command,
+            @JsonProperty("volumes") Map<String, String> volumes) {
+        super(serviceConfig);
+        this.inputRoutes = inputRoutes;
+        this.outputRoutes = outputRoutes;
+        this.imageName = imageName;
+        this.command = command;
+        this.volumes = volumes;
+    }
+
+    /**
      * @param id                The ID that will be used for this and the service descriptor that is generated
      * @param name              The of the service
      * @param description       A description for the service
@@ -55,25 +80,25 @@ public class DockerServiceDescriptor extends AbstractServiceDescriptor {
      *                          the container.
      */
     public DockerServiceDescriptor(
-            // these relate to the ServiceDescriptor
-            @JsonProperty("id") String id,
-            @JsonProperty("name") String name,
-            @JsonProperty("description") String description,
-            @JsonProperty("tags") String[] tags,
-            @JsonProperty("resourceUrl") String resourceUrl,
-            @JsonProperty("icon") String icon,
-            @JsonProperty("status") ServiceConfig.Status status,
-            @JsonProperty("statusLastChecked") Date statusLastChecked,
-            @JsonProperty("inputDescriptors") IODescriptor[] inputDescriptors,
-            @JsonProperty("inputRoutes") IORoute[] inputRoutes, // docker specific
-            @JsonProperty("outputDescriptors") IODescriptor[] outputDescriptors,
-            @JsonProperty("outputRoutes") IORoute[] outputRoutes, // docker specific
-            @JsonProperty("optionDescriptors") OptionDescriptor[] optionDescriptors,
+            // these relate to the ServiceConfig
+            String id,
+            String name,
+            String description,
+            String[] tags,
+            String resourceUrl,
+            String icon,
+            ServiceConfig.Status status,
+            Date statusLastChecked,
+            IODescriptor[] inputDescriptors,
+            IORoute[] inputRoutes, // docker specific
+            IODescriptor[] outputDescriptors,
+            IORoute[] outputRoutes, // docker specific
+            OptionDescriptor[] optionDescriptors,
             // these are specific to docker execution
-            @JsonProperty("executorClassName") String executorClassName,
-            @JsonProperty("imageName") String imageName,
-            @JsonProperty("command") String command,
-            @JsonProperty("volumes") Map<String, String> volumes) {
+            String executorClassName,
+            String imageName,
+            String command,
+            Map<String, String> volumes) {
 
         super(id, name, description, tags, resourceUrl, icon, status, statusLastChecked, inputDescriptors, outputDescriptors, optionDescriptors, executorClassName);
         this.inputRoutes = inputRoutes;

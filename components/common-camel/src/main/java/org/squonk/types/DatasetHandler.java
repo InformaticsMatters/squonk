@@ -128,6 +128,7 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
     protected Dataset<T> create(String meta, InputStream data) throws IOException {
         DatasetMetadata<T> metadata = null;
         if (meta != null) {
+            LOG.info("Metadata: " + meta);
             metadata = JsonHandler.getInstance().objectFromJson(meta, DatasetMetadata.class);
         }
         if (metadata == null) {

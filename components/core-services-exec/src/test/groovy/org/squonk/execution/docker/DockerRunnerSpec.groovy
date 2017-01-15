@@ -1,11 +1,16 @@
 package org.squonk.execution.docker
 
 import com.github.dockerjava.api.command.CreateContainerResponse
+import com.github.dockerjava.api.command.ExecCreateCmdResponse
 import com.github.dockerjava.api.command.InspectContainerResponse
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientBuilder
 import com.github.dockerjava.core.DockerClientConfig
+import com.github.dockerjava.core.command.ExecStartResultCallback
+import spock.lang.Ignore
 import spock.lang.Specification
+
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by timbo on 03/07/16.
@@ -125,5 +130,44 @@ class DockerRunnerSpec extends Specification {
 //        runner.cleanup();
 //
 //    }
+
+
+    @Ignore
+    void "simple input via stdin"() {
+
+        setup:
+        def config = DefaultDockerClientConfig.createDefaultConfigBuilder()
+                .build();
+        def dockerClient = DockerClientBuilder.getInstance(config).build();
+        CreateContainerResponse container = dockerClient.createContainerCmd("busybox")
+                .withCmd("sleep", "99")
+                .exec()
+        println "Created container $container"
+        InputStream stdin = new ByteArrayInputStream("STDIN\n".getBytes("UTF-8"));
+        ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+
+        when:
+        dockerClient.startContainerCmd(container.getId()).exec()
+
+        ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(container.getId())
+                .withAttachStdout(true)
+                .withAttachStdin(true)
+                .withCmd("cat")
+                .exec();
+        println "response $execCreateCmdResponse"
+
+        boolean completed = dockerClient.execStartCmd(execCreateCmdResponse.getId())
+                .withDetach(false)
+                .withTty(true)
+                .withStdIn(stdin)
+                .exec(new ExecStartResultCallback(stdout, System.err))
+                .awaitCompletion(5, TimeUnit.SECONDS);
+
+
+        then:
+        completed
+        stdout.toString("UTF-8") == "STDIN\n"
+
+    }
 
 }

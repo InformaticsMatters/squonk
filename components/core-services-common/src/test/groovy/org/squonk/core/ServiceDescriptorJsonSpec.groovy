@@ -1,8 +1,10 @@
 package org.squonk.core
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import groovy.io.FileType
 import org.squonk.io.IODescriptor
 import org.squonk.io.IODescriptors
+import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
 
 /**
@@ -39,8 +41,36 @@ class ServiceDescriptorJsonSpec extends Specification {
         json != null
         obj != null
         obj instanceof HttpServiceDescriptor
-        obj.name == "CDK LogP"
+        obj.serviceConfig.name == "CDK LogP"
+        obj.executionEndpoint != null
     }
+
+    void "docker service descriptor"() {
+
+        def list = []
+        def dir = new File("../../data/testfiles/docker-services/")
+        dir.eachFileRecurse (FileType.FILES) { file ->
+            if (file.getName().endsWith(".ded"))
+            list << file
+        }
+
+        when:
+
+        def descriptors = []
+        list.each { file ->
+            println "Trying $file"
+            descriptors << JsonHandler.getInstance().objectFromJson(new FileInputStream(file), DockerServiceDescriptor.class)
+        }
+
+
+        then:
+        descriptors.size() > 0
+
+
+
+    }
+
+
 
 }
 

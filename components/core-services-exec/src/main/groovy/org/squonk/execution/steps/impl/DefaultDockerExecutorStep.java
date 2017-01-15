@@ -3,9 +3,9 @@ package org.squonk.execution.steps.impl;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Volume;
 import org.apache.camel.CamelContext;
+import org.squonk.core.DockerServiceDescriptor;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.core.DockerServiceDescriptor;
 import org.squonk.execution.docker.DockerRunner;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.util.GroovyUtils;
@@ -38,19 +38,17 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
-        String id = getOption("docker.executor.id", String.class);
-        if (id == null || id.isEmpty()) {
-            throw new IllegalStateException("docker.executor.id must be defined in the options");
-        }
         if (serviceDescriptor == null) {
-            throw new IllegalStateException("No executableDescriptor present ");
+            throw new IllegalStateException("No service descriptor present ");
         } else if (!(serviceDescriptor instanceof DockerServiceDescriptor)) {
-            throw new IllegalStateException("executableDescriptor is not a DockerExecutorDescriptor: " + serviceDescriptor.getClass().getName());
+            throw new IllegalStateException("Expected service descriptor to be a " +
+                    DockerServiceDescriptor.class.getName() +
+                    "  but it was a " + serviceDescriptor.getClass().getName());
         }
         DockerServiceDescriptor descriptor = (DockerServiceDescriptor) serviceDescriptor;
 
-        IODescriptor[] inputDescriptors = descriptor.getInputDescriptors();
-        IODescriptor[] outputDescriptors = descriptor.getOutputDescriptors();
+        IODescriptor[] inputDescriptors = descriptor.getServiceConfig().getInputDescriptors();
+        IODescriptor[] outputDescriptors = descriptor.getServiceConfig().getOutputDescriptors();
         LOG.info("Input types are " + IOUtils.joinArray(inputDescriptors, ","));
         LOG.info("Output types are " + IOUtils.joinArray(outputDescriptors, ","));
 
@@ -166,8 +164,8 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
         }
 
         String command = descriptor.getCommand();
-        IODescriptor[] inputDescriptors = descriptor.getInputDescriptors();
-        IODescriptor[] outputDescriptors = descriptor.getOutputDescriptors();
+        IODescriptor[] inputDescriptors = descriptor.getServiceConfig().getInputDescriptors();
+        IODescriptor[] outputDescriptors = descriptor.getServiceConfig().getOutputDescriptors();
 
         if (command == null || command.isEmpty()) {
             statusMessage = "Error: Docker command not defined";
@@ -188,6 +186,7 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
         // replace windows line end characters
         command = command.replaceAll("\\r\\n", "\n");
         String expandedCommand = GroovyUtils.expandTemplate(command, args);
+        LOG.fine("Command: " + expandedCommand);
 
         String hostWorkDir = "/tmp/work";
         String localWorkDir = "/source";
@@ -214,6 +213,7 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
             // write the input data
             if (inputDescriptors != null) {
                 for (IODescriptor d : inputDescriptors) {
+                    LOG.info("Writing input for " + d.getName() + " " + d.getMediaType());
                     writeInput(varman, runner, d);
                 }
             }
@@ -300,7 +300,7 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
         runner.writeInput(descriptor.getName() + ".sdf.gz", IOUtils.getGzippedInputStream(sdf));
     }
 
-    protected <P,Q> void readOutput(VariableManager varman, DockerRunner runner, IODescriptor<P,Q> descriptor) throws Exception {
+    protected <P, Q> void readOutput(VariableManager varman, DockerRunner runner, IODescriptor<P, Q> descriptor) throws Exception {
         FilesystemReadContext context = new FilesystemReadContext(runner.getHostWorkDir(), descriptor.getName());
         P value = varman.getValue(descriptor.getPrimaryType(), context);
         createMappedOutput(descriptor.getName(), descriptor.getPrimaryType(), value, varman);

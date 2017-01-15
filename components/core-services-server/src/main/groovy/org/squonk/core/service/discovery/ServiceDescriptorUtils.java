@@ -39,18 +39,7 @@ public class ServiceDescriptorUtils {
 
             if (!isAbsoluteUrl(endpoint)) {
                 return new HttpServiceDescriptor(
-                        httpHttpServiceDescriptor.getId(),
-                        httpHttpServiceDescriptor.getName(),
-                        httpHttpServiceDescriptor.getDescription(),
-                        httpHttpServiceDescriptor.getTags(),
-                        httpHttpServiceDescriptor.getResourceUrl(),
-                        httpHttpServiceDescriptor.getIcon(),
-                        httpHttpServiceDescriptor.getStatus(),
-                        httpHttpServiceDescriptor.getStatusLastChecked(),
-                        httpHttpServiceDescriptor.getInputDescriptors(),
-                        httpHttpServiceDescriptor.getOutputDescriptors(),
-                        httpHttpServiceDescriptor.getOptionDescriptors(),
-                        httpHttpServiceDescriptor.getExecutorClassName(),
+                        httpHttpServiceDescriptor.getServiceConfig(),
                         makeAbsoluteUrl(baseUrl, httpHttpServiceDescriptor)
                 );
             } else {

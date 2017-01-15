@@ -11,7 +11,11 @@ import java.util.Date;
  */
 public class AbstractServiceDescriptor implements ServiceDescriptor {
 
-    private final ServiceConfig serviceConfig;
+    protected final ServiceConfig serviceConfig;
+
+    protected AbstractServiceDescriptor(ServiceConfig serviceConfig) {
+        this.serviceConfig = serviceConfig;
+    }
 
 
     protected AbstractServiceDescriptor(
@@ -33,70 +37,14 @@ public class AbstractServiceDescriptor implements ServiceDescriptor {
 
     }
 
+    @JsonIgnore
     @Override
     public String getId() {
         return serviceConfig.getId();
     }
 
-    public String getName() {
-        return serviceConfig.getName();
-    }
-
-    public String getDescription() {
-        return serviceConfig.getDescription();
-    }
-
-    public String[] getTags() {
-        return serviceConfig.getTags();
-    }
-
-    public String getResourceUrl() {
-        return serviceConfig.getResourceUrl();
-    }
-
-    public String getIcon() {
-        return serviceConfig.getIcon();
-    }
-
-    public IODescriptor[] getInputDescriptors() {
-        return serviceConfig.getInputDescriptors();
-    }
-
-    public IODescriptor[] getOutputDescriptors() {
-        return serviceConfig.getOutputDescriptors();
-    }
-
-    public OptionDescriptor[] getOptionDescriptors() {
-        return serviceConfig.getOptionDescriptors();
-    }
-
-    @JsonIgnore
+    @Override
     public ServiceConfig getServiceConfig() {
         return serviceConfig;
-    }
-
-    @Override
-    public String getExecutorClassName() {
-        return serviceConfig.getExecutorClassName();
-    }
-
-    @Override
-    public ServiceConfig.Status getStatus() {
-        return serviceConfig.getStatus();
-    }
-
-    @Override
-    public void setStatus(ServiceConfig.Status status) {
-        serviceConfig.setStatus(status);
-    }
-
-    @Override
-    public Date getStatusLastChecked() {
-        return serviceConfig.getStatusLastChecked();
-    }
-
-    @Override
-    public void setStatusLastChecked(Date statusLastChecked) {
-        serviceConfig.setStatusLastChecked(statusLastChecked);
     }
 }

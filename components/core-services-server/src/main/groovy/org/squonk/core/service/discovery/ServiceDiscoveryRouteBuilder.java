@@ -159,8 +159,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                 set.updateServiceDescriptors(sds);
                 for (ServiceDescriptor sd : set.getServiceDescriptors()) {
                     if (!sds.contains(sd)) {
-                        sd.setStatus(ServiceConfig.Status.INACTIVE);
-                        sd.setStatusLastChecked(now);
+                        sd.getServiceConfig().setStatus(ServiceConfig.Status.INACTIVE);
+                        sd.getServiceConfig().setStatusLastChecked(now);
                         invalid++;
                     } else {
                         valid++;
@@ -170,8 +170,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                 // failed so set status to inactive
                 LOG.log(Level.WARNING, "Failed to update service descriptors for " + u, ex);
                 set.getServiceDescriptors().forEach(sd -> {
-                    sd.setStatus(ServiceConfig.Status.INACTIVE);
-                    sd.setStatusLastChecked(now);
+                    sd.getServiceConfig().setStatus(ServiceConfig.Status.INACTIVE);
+                    sd.getServiceConfig().setStatusLastChecked(now);
                 });
                 invalid = set.getServiceDescriptors().size();
             }
@@ -187,7 +187,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         Path root = FileSystems.getDefault().getPath(DOCKER_SERVICES_DIR);
         LOG.fine("Looking for Docker descriptors in " + root);
         Stream<Path> paths = Files.walk(root);
-        List<String> basePaths = new ArrayList<>();
+        Set<String> basePaths = new LinkedHashSet<>();
         Date now = new Date();
         paths.filter(p -> p.toString().endsWith(".ded"))
                 .forEach(p -> {
@@ -204,11 +204,13 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                         try (InputStream is = new FileInputStream(p.toFile())) {
                             DockerServiceDescriptor ded = JsonHandler.getInstance().objectFromJson(is, DockerServiceDescriptor.class);
                             ServiceDescriptorSet set = reg.fetchServiceDescriptorSet(url);
-                            ded.setStatus(ServiceConfig.Status.ACTIVE);
-                            ded.setStatusLastChecked(now);
+                            ded.getServiceConfig().setStatus(ServiceConfig.Status.ACTIVE);
+                            ded.getServiceConfig().setStatusLastChecked(now);
                             set.updateServiceDescriptor(ded);
-                            basePaths.add(url);
-                            LOG.fine("Discovered docker executor descriptor " + ded.getId() + " from file " + p);
+                            if (!basePaths.contains(url)) {
+                                basePaths.add(url);
+                            }
+                            LOG.info("Discovered docker executor descriptor " + ded.getId() + " from file " + p);
                         } catch (IOException ex) {
                             LOG.info("Unable to read descriptor for " + p);
                         }
@@ -226,11 +228,11 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             // if any services were not updated then they must have been removed so we inactive them.
             // we don't delete them otherwise old notebooks will blow up. We just don't allow them to be executed again.
             for (ServiceDescriptor sd : set.getServiceDescriptors()) {
-                Date old = sd.getStatusLastChecked();
+                Date old = sd.getServiceConfig().getStatusLastChecked();
                 if (old == null || !now.equals(old)) {
                     LOG.info("Inactivating service " + sd.getId() + " as no longer present");
-                    sd.setStatus(ServiceConfig.Status.INACTIVE);
-                    sd.setStatusLastChecked(now);
+                    sd.getServiceConfig().setStatus(ServiceConfig.Status.INACTIVE);
+                    sd.getServiceConfig().setStatusLastChecked(now);
                     invalid++;
                 } else {
                     valid++;
@@ -264,8 +266,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         ServiceConfig.Status status = (b ? ServiceConfig.Status.ACTIVE : ServiceConfig.Status.INACTIVE);
         LOG.fine("Setting status of " + serviceDescriptors.size() + " service descriptors from " + baseUrl + " with health URL of " + healthUrl + " to " + status);
         serviceDescriptors.forEach(sd -> {
-            sd.setStatus(status);
-            sd.setStatusLastChecked(now);
+            sd.getServiceConfig().setStatus(status);
+            sd.getServiceConfig().setStatusLastChecked(now);
         });
     }
 
