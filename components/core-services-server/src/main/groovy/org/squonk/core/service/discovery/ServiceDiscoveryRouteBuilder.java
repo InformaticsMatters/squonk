@@ -189,7 +189,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         Stream<Path> paths = Files.walk(root);
         Set<String> basePaths = new LinkedHashSet<>();
         Date now = new Date();
-        paths.filter(p -> p.toString().endsWith(".ded"))
+        paths.filter(p -> p.toString().endsWith(".dsd"))
                 .forEach(p -> {
                     LOG.finer("Processing " + p);
                     String relativePath = p.toString().substring(root.toString().length());
@@ -202,15 +202,15 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                         LOG.finer("URL: " + url);
 
                         try (InputStream is = new FileInputStream(p.toFile())) {
-                            DockerServiceDescriptor ded = JsonHandler.getInstance().objectFromJson(is, DockerServiceDescriptor.class);
+                            DockerServiceDescriptor dsd = JsonHandler.getInstance().objectFromJson(is, DockerServiceDescriptor.class);
                             ServiceDescriptorSet set = reg.fetchServiceDescriptorSet(url);
-                            ded.getServiceConfig().setStatus(ServiceConfig.Status.ACTIVE);
-                            ded.getServiceConfig().setStatusLastChecked(now);
-                            set.updateServiceDescriptor(ded);
+                            dsd.getServiceConfig().setStatus(ServiceConfig.Status.ACTIVE);
+                            dsd.getServiceConfig().setStatusLastChecked(now);
+                            set.updateServiceDescriptor(dsd);
                             if (!basePaths.contains(url)) {
                                 basePaths.add(url);
                             }
-                            LOG.info("Discovered docker executor descriptor " + ded.getId() + " from file " + p);
+                            LOG.info("Discovered docker executor descriptor " + dsd.getId() + " from file " + p);
                         } catch (IOException ex) {
                             LOG.log(Level.INFO, "Unable to read descriptor for " + p, ex);
                         }

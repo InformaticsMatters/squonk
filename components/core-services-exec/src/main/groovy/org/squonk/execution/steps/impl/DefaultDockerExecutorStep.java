@@ -185,6 +185,7 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
 
         // replace windows line end characters
         command = command.replaceAll("\\r\\n", "\n");
+        LOG.info("Template: " + command);
         String expandedCommand = GroovyUtils.expandTemplate(command, args);
         LOG.fine("Command: " + expandedCommand);
 
