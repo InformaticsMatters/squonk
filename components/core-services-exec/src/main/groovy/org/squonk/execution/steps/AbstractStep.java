@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public abstract class AbstractStep implements Step {
+public abstract class AbstractStep implements Step, StatusUpdatable {
 
     private static final Logger LOG = Logger.getLogger(AbstractStep.class.getName());
 
@@ -50,6 +50,10 @@ public abstract class AbstractStep implements Step {
     @Override
     public Long getOutputProducerId() {
         return outputProducerId;
+    }
+
+    public void updateStatus(String status)  {
+        statusMessage = status;
     }
 
     public void dumpConfig(Level level) {

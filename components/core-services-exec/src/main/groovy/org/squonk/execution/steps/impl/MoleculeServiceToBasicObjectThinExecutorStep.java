@@ -1,15 +1,11 @@
 package org.squonk.execution.steps.impl;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import org.apache.camel.CamelContext;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.dataset.DatasetUtils;
-import org.squonk.dataset.IncompatibleMetadataException;
 import org.squonk.execution.steps.AbstractStep;
-import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
@@ -21,10 +17,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Queue;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 

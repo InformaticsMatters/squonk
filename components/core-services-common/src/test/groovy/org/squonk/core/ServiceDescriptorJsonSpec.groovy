@@ -50,7 +50,7 @@ class ServiceDescriptorJsonSpec extends Specification {
         def list = []
         def dir = new File("../../data/testfiles/docker-services/")
         dir.eachFileRecurse (FileType.FILES) { file ->
-            if (file.getName().endsWith(".ded"))
+            if (file.getName().endsWith(".dsd"))
             list << file
         }
 

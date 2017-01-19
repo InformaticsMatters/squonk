@@ -107,7 +107,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
      * @param items
      */
     public Dataset(Class<T> type, Collection<T> items) {
-        this(type, items, null);
+        this(type, items, new DatasetMetadata<T>(type, null, items.size()));
     }
 
     /**
@@ -117,7 +117,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
      * @param objects
      */
     public Dataset(Class<T> type, Stream<T> objects) {
-        this(type, objects, null);
+        this(type, objects, new DatasetMetadata<T>(type));
     }
 
     /**
@@ -127,7 +127,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
      * @param iter
      */
     public Dataset(Class<T> type, Iterator<T> iter) {
-        this(type, iter, null);
+        this(type, iter, new DatasetMetadata<T>(type));
     }
 
     public Dataset(Class<T> type, Collection<T> items, DatasetMetadata<T> metadata) {
