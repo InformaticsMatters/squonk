@@ -210,7 +210,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                             if (!basePaths.contains(url)) {
                                 basePaths.add(url);
                             }
-                            LOG.info("Discovered docker executor descriptor " + dsd.getId() + " from file " + p);
+                            LOG.fine("Discovered docker executor descriptor " + dsd.getId() + " from file " + p);
                         } catch (IOException ex) {
                             LOG.log(Level.INFO, "Unable to read descriptor for " + p, ex);
                         }
