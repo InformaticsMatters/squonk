@@ -1,7 +1,6 @@
 package org.squonk.execution.steps
 
 import org.squonk.io.IODescriptor
-import org.squonk.io.IOMultiplicity
 import org.squonk.notebook.api.VariableKey
 import org.squonk.options.types.Structure
 import org.squonk.types.io.JsonHandler
@@ -16,8 +15,8 @@ class StepDefintionSpec extends Specification {
 
         StepDefinition step1 = new StepDefinition('foo.bar.Baz')
                 .withOptions(['hello':'world'])
-                .withInputs([new IODescriptor("in", "text/plain", String.class, null, IOMultiplicity.ITEM)] as IODescriptor[])
-                .withOutputs([new IODescriptor("out", "text/plain", String.class, null, IOMultiplicity.ITEM)] as IODescriptor[])
+                .withInputs([new IODescriptor("in", "text/plain", String.class, null)] as IODescriptor[])
+                .withOutputs([new IODescriptor("out", "text/plain", String.class, null)] as IODescriptor[])
                 .withInputVariableMappings(["in": new VariableKey(1,'input')])
                 .withOutputVariableMappings(["out":'output'])
 
@@ -42,8 +41,8 @@ class StepDefintionSpec extends Specification {
                 .withOption("float", new Float(999.9))
                 .withOption("simplemol", new Structure('C', 'smiles'))
                 //.withOption("mo", new MoleculeObject('C', 'smiles'))
-                .withInputs([new IODescriptor("in", "text/plain", String.class, null, IOMultiplicity.ITEM)] as IODescriptor[])
-                .withOutputs([new IODescriptor("out", "text/plain", String.class, null, IOMultiplicity.ITEM)] as IODescriptor[])
+                .withInputs([new IODescriptor("in", "text/plain", String.class, null)] as IODescriptor[])
+                .withOutputs([new IODescriptor("out", "text/plain", String.class, null)] as IODescriptor[])
                 .withInputVariableMappings(["in":new VariableKey(1,'input')])
                 .withOutputVariableMappings(["out":'output'])
 

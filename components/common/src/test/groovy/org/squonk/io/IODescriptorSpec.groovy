@@ -10,7 +10,7 @@ class IODescriptorSpec extends Specification {
 
     void "to/from json"() {
         when:
-        def iod1 = new IODescriptor("in", "text/plain", String.class, null, IOMultiplicity.ITEM)
+        def iod1 = new IODescriptor("in", "text/plain", String.class, null)
         def json = JsonHandler.instance.objectToJson(iod1)
         println json
         def iod2 = JsonHandler.instance.objectFromJson(json, IODescriptor.class)

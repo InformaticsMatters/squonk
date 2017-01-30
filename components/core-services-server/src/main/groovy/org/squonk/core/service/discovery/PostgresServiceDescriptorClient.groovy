@@ -3,10 +3,9 @@ package org.squonk.core.service.discovery
 import groovy.sql.Sql
 import groovy.util.logging.Log
 import org.squonk.core.HttpServiceDescriptor
-import org.squonk.core.ServiceConfig
+import org.squonk.core.ServiceDescriptor
 import org.squonk.core.ServiceDescriptorSet
 import org.squonk.core.util.SquonkServerConfig
-import org.squonk.core.ServiceDescriptor
 import org.squonk.types.io.JsonHandler
 
 import javax.sql.DataSource
@@ -50,7 +49,7 @@ class PostgresServiceDescriptorClient {
                 map = [:]
                 sdsmap[set] = map
             }
-            ServiceDescriptor descriptor = buildServiceDescriptorFromJson(sd, javaClass)
+            ServiceDescriptor descriptor = buildServiceDescriptorFromJson(id, sd, javaClass)
             if (descriptor != null) {
                 map[id] = descriptor
             }
@@ -80,6 +79,8 @@ class PostgresServiceDescriptorClient {
             sdsmap = doFetch(sql, baseUrl)
         }
         List<HttpServiceDescriptor> results = sdsmap.values().collect { it }
+        log.info("Loaded ${results.size()} service descriptors for $baseUrl")
+
         return results;
     }
 
@@ -93,7 +94,7 @@ class PostgresServiceDescriptorClient {
             long id = it[0]
             String json = it[1]
             String javaClass = it[2]
-            ServiceDescriptor descriptor = buildServiceDescriptorFromJson(json, javaClass)
+            ServiceDescriptor descriptor = buildServiceDescriptorFromJson(id, json, javaClass)
             if (descriptor != null) {
                 sdJson[id] = descriptor
             }
@@ -101,37 +102,9 @@ class PostgresServiceDescriptorClient {
         return sdJson;
     }
 
-//    /** Update the status of all service descriptors for this base url
-//     *
-//     * @param baseUrl
-//     * @param status
-//     * @throws Exception
-//     */
-//    public void updateServiceDescriptorStatus(String baseUrl, ServiceConfig.Status status, Date when) throws Exception {
-//
-//        log.fine("Updating status of service descriptors for $baseUrl to $status")
-//
-//        sql.withTransaction {
-//            Map<Long, HttpServiceDescriptor> map = doFetch(sql, baseUrl);
-//            sql.withBatch("UPDATE users.service_descriptors SET sd_json = ?::jsonb WHERE id = ?") { ps ->
-//                map.each { id, sd ->
-//                    sd.status = status
-//                    sd.statusLastChecked = when
-//                    try {
-//                        String json = jsonHandler.objectToJson(sd)
-//                        ps.addBatch([json, id])
-//                    } catch (Exception ex) {
-//                        // should have no problem converting back to json, but just in case ...
-//                        log.log(Level.INFO, "Failed to update service descriptor", ex)
-//                    }
-//                }
-//            }
-//        }
-//    }
-
     private Map<String, Class> classesMap = [:]
 
-    private ServiceDescriptor buildServiceDescriptorFromJson(String json, String javaClass) {
+    private ServiceDescriptor buildServiceDescriptorFromJson(Long id, String json, String javaClass) {
         log.finer("Building service descriptor of class " + javaClass)
         Class cls = classesMap.get(javaClass)
         if (cls == null) {
@@ -146,24 +119,10 @@ class PostgresServiceDescriptorClient {
             ServiceDescriptor sd = jsonHandler.objectFromJson(json, cls)
             return sd
         } catch (Exception ex) {
-            log.log(Level.WARNING, "Failed to unmarshal ServiceDescriptor " + json, ex)
+            log.log(Level.WARNING, "Failed to unmarshal ServiceDescriptor " + id + " JSON: "+ json, ex)
             return null
         }
     }
-
-//    private Map<Long, ServiceDescriptor> buildServiceDescriptorsFromJson(Map<Long, String> sdJson) {
-//        Map<Long, ServiceDescriptor> sds = [:]
-//        sdJson.each { i, json ->
-//            try {
-//                HttpServiceDescriptor sd = jsonHandler.objectFromJson(json, HttpServiceDescriptor.class)
-//                log.fine("Retrieved service descriptor ${sd.id}")
-//                sds[i] = sd
-//            } catch (Exception ex) {
-//                log.log(Level.WARNING, "Failed to unmarshal ServiceDescriptor " + i + " -> " + json, ex)
-//            }
-//        }
-//        return sds
-//    }
 
     /** Gets the total count of service descriptor sets (ignoring their status)
      *
@@ -209,11 +168,13 @@ class PostgresServiceDescriptorClient {
                 [base_url: sdset.baseUrl, health_url: sdset.healthUrl])
 
         if (!sdset.getServiceDescriptors().isEmpty()) {
-            def row = db.firstRow("SELECT id FROM users.service_descriptor_sets WHERE base_url = ${sdset.baseUrl}")
+            def row = db.firstRow("SELECT id FROM users.service_descriptor_sets WHERE base_url = ?", [sdset.baseUrl])
             if (row != null) {
                 def setId = row[0]
                 log.fine("udpating sds for set $setId")
                 doUpdateServiceDescriptors(db, setId, sdset.getServiceDescriptors())
+            } else {
+                log.warning("ServiceDescriptorSet for ${sdset.baseUrl} not found. ServiceDescriptors will not be updated")
             }
         }
     }
@@ -225,14 +186,13 @@ class PostgresServiceDescriptorClient {
                 |INSERT INTO users.service_descriptors AS t (set_id, sd_id, status, sd_json, java_class, created, updated)
                 |  VALUES (?, ?, 'A', ?::jsonb, ?, NOW(), NOW())
                 |  ON CONFLICT ON CONSTRAINT uq_sd_id DO UPDATE
-                |    SET updated=NOW()
+                |    SET updated=NOW(), sd_json=EXCLUDED.sd_json, status='A'
                 |      WHERE t.set_id=EXCLUDED.set_id AND t.sd_id=EXCLUDED.sd_id""".stripMargin()) { ps ->
 
                 sds.each { sd ->
-                    //log.info("udpating service descriptor " + sd.id)
                     String json = jsonHandler.objectToJson(sd)
                     String javaClass = sd.getClass().getName()
-                    //log.info("Writing service descriptor of class " + javaClass)
+                    log.fine("udpating service descriptor " + sd.id + " of class " + javaClass)
                     ps.addBatch([setId, sd.id, json, javaClass])
                 }
             }

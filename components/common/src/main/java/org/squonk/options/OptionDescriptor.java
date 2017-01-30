@@ -40,7 +40,7 @@ public class OptionDescriptor<T> implements Serializable {
     public static OptionDescriptor FILTER_MODE = new OptionDescriptor<>(String.class,
             "query." + OPTION_FILTER_MODE, "Filter mode", "How to filter results", Mode.User)
             .withValues(new String[] {VALUE_INCLUDE_PASS, VALUE_INCLUDE_FAIL, VALUE_INCLUDE_ALL})
-            .withDefaultValue(VALUE_INCLUDE_FAIL)
+            .withDefaultValue(VALUE_INCLUDE_PASS)
             .withMinMaxValues(1,1);
 
     public enum Mode {
