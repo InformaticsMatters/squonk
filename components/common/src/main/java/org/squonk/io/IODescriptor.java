@@ -60,13 +60,15 @@ public class IODescriptor<P,Q> implements Serializable {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
         if (o instanceof IODescriptor) {
             IODescriptor other = (IODescriptor)o;
-            return Utils.safeEquals(name, other.getName())
-                    && Utils.safeEquals(mediaType, other.getMediaType())
-                    && Utils.safeEquals(primaryType, other.getPrimaryType())
-                    && Utils.safeEquals(secondaryType, other.getSecondaryType())
-                    && Utils.safeEquals(mediaType, other.getMediaType())
+            return Utils.safeEqualsIncludeNull(name, other.getName())
+                    && Utils.safeEqualsIncludeNull(mediaType, other.getMediaType())
+                    && Utils.safeEqualsIncludeNull(primaryType, other.getPrimaryType())
+                    && Utils.safeEqualsIncludeNull(secondaryType, other.getSecondaryType())
                     ;
         }
         return false;

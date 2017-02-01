@@ -7,6 +7,8 @@ public interface CommonMimeTypes {
 
     // For chemical mime types look here https://www.ch.ic.ac.uk/chemime/
 
+    public static final String MIME_TYPE_TEXT_PLAIN = "text/plain";
+    public static final String MIME_TYPE_TEXT_CSV = "text/csv";
     public static final String MIME_TYPE_DATASET_BASIC_JSON = "application/x-squonk-dataset-basic+json";
     public static final String MIME_TYPE_DATASET_MOLECULE_JSON = "application/x-squonk-dataset-molecule+json";
     public static final String MIME_TYPE_BASIC_OBJECT_JSON = "application/x-squonk-basic-object+json";

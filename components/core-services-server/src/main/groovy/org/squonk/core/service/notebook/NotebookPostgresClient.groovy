@@ -186,7 +186,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
         log.fine("Listing editables for notebook $notebookId and user $username")
         Sql db = createSql()
         try {
-            List<NotebookDTO> results = null
+            List<NotebookEditableDTO> results = null
             db.withTransaction {
                 results = fetchNotebookEditablesByUsername(db, notebookId, username)
             }

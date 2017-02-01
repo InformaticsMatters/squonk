@@ -21,4 +21,25 @@ class IODescriptorSpec extends Specification {
     }
 
 
+    void "equals  single"() {
+        when:
+        def iod1 = new IODescriptor("in", "text/plain", String.class, null)
+        def iod2 = new IODescriptor("in", "text/plain", String.class, null)
+
+        then:
+        iod1.equals(iod2)
+
+    }
+
+    void "equals  double"() {
+        when:
+        def iod1 = new IODescriptor("in", "text/plain", List.class, String.class)
+        def iod2 = new IODescriptor("in", "text/plain", List.class, String.class)
+
+        then:
+        iod1.equals(iod2)
+
+    }
+
+
 }

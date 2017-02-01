@@ -8,12 +8,11 @@ import java.io.InputStream;
  *
  * @author timbo
  */
-public class SDFile extends AbstractFile {
+public class CSVFile extends AbstractFile {
 
-    public static final String PROP_NAME_FIELD_NAME = "SDF_NAME_FIELD_NAME";
-    private static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_MDL_SDF;
-    
-    public SDFile(InputStream input) {
+    private static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_TEXT_CSV;
+
+    public CSVFile(InputStream input) {
         super(input);
     }
 
