@@ -12,6 +12,7 @@ import org.squonk.execution.steps.StepDefinition;
 import org.squonk.execution.steps.StepExecutor;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.mqueue.MessageQueueCredentials;
+import org.squonk.util.ServiceConstants;
 import org.squonk.util.StatsRecorder;
 
 import javax.inject.Inject;
@@ -20,8 +21,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.squonk.core.CommonConstants.HEADER_JOB_ID;
-import static org.squonk.core.CommonConstants.HEADER_SQUONK_USERNAME;
 import static org.squonk.mqueue.MessageQueueCredentials.*;
 
 //import org.squonk.notebook.client.CellClient;
@@ -105,10 +104,10 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
             throw new IllegalStateException("No Job definition found");
         }
         if (jobid == null) {
-            throw new IllegalStateException("No job ID found. Should be present as header named " + HEADER_JOB_ID);
+            throw new IllegalStateException("No job ID found. Should be present as header named " + ServiceConstants.HEADER_JOB_ID);
         }
         if (username == null) {
-            throw new IllegalStateException("No username found. Should be present as header named " + HEADER_SQUONK_USERNAME);
+            throw new IllegalStateException("No username found. Should be present as header named " + ServiceConstants.HEADER_SQUONK_USERNAME);
         }
         if (notebookId == null) {
             throw new IllegalStateException("No notebookId found. Should be defined in the job definition");

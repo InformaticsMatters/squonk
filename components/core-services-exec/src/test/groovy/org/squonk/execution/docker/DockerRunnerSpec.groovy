@@ -1,12 +1,15 @@
 package org.squonk.execution.docker
 
+import com.github.dockerjava.api.DockerClient
 import com.github.dockerjava.api.command.CreateContainerResponse
+import com.github.dockerjava.api.command.DockerCmdExecFactory
 import com.github.dockerjava.api.command.ExecCreateCmdResponse
 import com.github.dockerjava.api.command.InspectContainerResponse
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientBuilder
 import com.github.dockerjava.core.DockerClientConfig
 import com.github.dockerjava.core.command.ExecStartResultCallback
+import com.github.dockerjava.netty.NettyDockerCmdExecFactory
 import spock.lang.Ignore
 import spock.lang.Specification
 
@@ -132,13 +135,21 @@ class DockerRunnerSpec extends Specification {
 //    }
 
 
-    @Ignore
     void "simple input via stdin"() {
 
         setup:
-        def config = DefaultDockerClientConfig.createDefaultConfigBuilder()
+        def config = DefaultDockerClientConfig.createDefaultConfigBuilder() .build();
+
+        NettyDockerCmdExecFactory dockerCmdExecFactory = new NettyDockerCmdExecFactory()
+                //.withReadTimeout(1000)
+                .withConnectTimeout(1000)
+                //.withMaxTotalConnections(100)
+                //.withMaxPerRouteConnections(10)
+
+        DockerClient dockerClient = DockerClientBuilder.getInstance(config)
+                .withDockerCmdExecFactory(dockerCmdExecFactory)
                 .build();
-        def dockerClient = DockerClientBuilder.getInstance(config).build();
+
         CreateContainerResponse container = dockerClient.createContainerCmd("busybox")
                 .withCmd("sleep", "99")
                 .exec()
@@ -163,10 +174,13 @@ class DockerRunnerSpec extends Specification {
                 .exec(new ExecStartResultCallback(stdout, System.err))
                 .awaitCompletion(5, TimeUnit.SECONDS);
 
+        def result = stdout.toString("UTF-8")
+        //println result
+
 
         then:
         completed
-        stdout.toString("UTF-8") == "STDIN\n"
+        result == "STDIN\n"
 
     }
 

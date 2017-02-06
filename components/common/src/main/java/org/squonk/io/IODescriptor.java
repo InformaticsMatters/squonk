@@ -16,20 +16,17 @@ public class IODescriptor<P,Q> implements Serializable {
     private final String mediaType;
     private final Class<P> primaryType;
     private final Class<Q> secondaryType;
-    private final IOMultiplicity multiplicity;
 
     public IODescriptor(
             @JsonProperty("name") String name,
             @JsonProperty("mediaType") String mediaType,
             @JsonProperty("primaryType") Class<P> primaryType,
-            @JsonProperty("secondaryType") Class<Q> secondaryType,
-            @JsonProperty("multiplicity") IOMultiplicity multiplicity
+            @JsonProperty("secondaryType") Class<Q> secondaryType
         ) {
         this.name = name;
         this.mediaType = mediaType;
         this.primaryType = primaryType;
         this.secondaryType = secondaryType;
-        this.multiplicity = multiplicity;
     }
 
     public String getName() {
@@ -48,10 +45,6 @@ public class IODescriptor<P,Q> implements Serializable {
         return secondaryType;
     }
 
-    public IOMultiplicity getMultiplicity() {
-        return multiplicity;
-    }
-
 
     @Override
     public String toString() {
@@ -60,7 +53,6 @@ public class IODescriptor<P,Q> implements Serializable {
                 .append(" mediaType=").append(mediaType)
                 .append(" primaryType=").append(primaryType)
                 .append(" secondaryType=").append(secondaryType)
-                .append(" multiplicity=").append(multiplicity)
                 .append("]");
         return b.toString();
 
@@ -68,14 +60,15 @@ public class IODescriptor<P,Q> implements Serializable {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
         if (o instanceof IODescriptor) {
             IODescriptor other = (IODescriptor)o;
-            return Utils.safeEquals(name, other.getName())
-                    && Utils.safeEquals(mediaType, other.getMediaType())
-                    && Utils.safeEquals(primaryType, other.getPrimaryType())
-                    && Utils.safeEquals(secondaryType, other.getSecondaryType())
-                    && Utils.safeEquals(mediaType, other.getMediaType())
-                    && Utils.safeEquals(multiplicity, other.getMultiplicity())
+            return Utils.safeEqualsIncludeNull(name, other.getName())
+                    && Utils.safeEqualsIncludeNull(mediaType, other.getMediaType())
+                    && Utils.safeEqualsIncludeNull(primaryType, other.getPrimaryType())
+                    && Utils.safeEqualsIncludeNull(secondaryType, other.getSecondaryType())
                     ;
         }
         return false;

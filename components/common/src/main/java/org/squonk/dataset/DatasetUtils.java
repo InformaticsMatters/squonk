@@ -2,23 +2,26 @@ package org.squonk.dataset;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Created by timbo on 08/03/16.
  */
 public class DatasetUtils {
 
+    private static final Logger LOG = Logger.getLogger(DatasetUtils.class.getName());
+
     /**
      * Merges multiple metadatas. The value class mappings and properties are combined with later values replacing earlier ones.
      * The size is retained if all sizes are the same, otherwise size is set to zero.
      * Dataset and field properties are merged according to the behavior of the corresponding mergeDatasetProperty() and
      * mergeFieldProperty() methods of DatasetMetadata.
+     * The resulting metadata is of the type specified by the first item. Subsequent items do not have to be of the same type.
      *
      * @param meta
      * @return
-     * @throws IncompatibleMetadataException If metadatas are of different types.
      */
-    public static DatasetMetadata mergeDatasetMetadata(DatasetMetadata... meta) throws IncompatibleMetadataException {
+    public static DatasetMetadata mergeDatasetMetadata(DatasetMetadata... meta) {
 
         if (meta == null || meta.length == 0) {
             return null;
@@ -28,7 +31,7 @@ public class DatasetUtils {
             DatasetMetadata result = new DatasetMetadata(meta[0].getType(), null, -1);
             for (int i=0; i<meta.length; i++) {
                 if (meta[i].getType() != result.getType()) {
-                    throw new IncompatibleMetadataException("Can't merge metadata of different types");
+                    LOG.info("Merging metadata of type " + result.getType() + " with type " + meta[i].getType());
                 }
                 result.getValueClassMappings().putAll(meta[i].getValueClassMappings());
                 if (result.getSize() != meta[i].getSize()) {
@@ -50,7 +53,6 @@ public class DatasetUtils {
                     }
                 }
             }
-
 
             return result;
         }

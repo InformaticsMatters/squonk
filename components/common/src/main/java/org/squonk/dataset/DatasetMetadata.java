@@ -31,7 +31,7 @@ import java.util.*;
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonPropertyOrder({"type", "size", "valueClassMappings"})
-public class DatasetMetadata<T extends BasicObject> implements Serializable {
+public class DatasetMetadata<T extends BasicObject> implements Serializable, Cloneable {
 
     public static final String PROP_DESCRIPTION = "description";
     public static final String PROP_SOURCE = "source";
@@ -67,10 +67,6 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable {
 
     //@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
     private final Map<String, PropertiesHolder> fieldMetaProps = new LinkedHashMap<>();
-
-    public static String formatDate() {
-        return DATE_FORMAT.format(new Date());
-    }
 
     public DatasetMetadata(
             @JsonProperty("type") Class<T> type,
@@ -145,6 +141,11 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable {
     @JsonIgnore
     public Map<String, PropertiesHolder> getFieldMetaPropsMap() {
         return fieldMetaProps;
+    }
+
+
+    public static String formatDate() {
+        return DATE_FORMAT.format(new Date());
     }
 
     /** Helper method for adding a new field
@@ -427,6 +428,10 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable {
                 map.put(propName, old + "\n" + value);
             }
         }
+    }
+
+    public DatasetMetadata clone() {
+        return new DatasetMetadata(type, valueClassMappings, getFieldMetaProps(), size, properties);
     }
 
     public static class PropertiesHolder implements Serializable {

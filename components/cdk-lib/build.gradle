@@ -26,6 +26,7 @@ dependencies {
     compile "org.openscience.cdk:cdk-signature:$cdkVersion"
 
     testCompile project(':core-test')
+    testCompile "org.openscience.cdk:cdk-datadebug:$cdkVersion"
 
 }
 

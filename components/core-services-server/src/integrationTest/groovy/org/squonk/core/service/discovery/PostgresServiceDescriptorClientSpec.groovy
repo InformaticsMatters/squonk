@@ -2,10 +2,8 @@ package org.squonk.core.service.discovery
 
 import org.squonk.core.HttpServiceDescriptor
 import org.squonk.core.ServiceConfig
-import org.squonk.core.ServiceDescriptor
 import org.squonk.core.ServiceDescriptorSet
 import org.squonk.io.IODescriptor
-import org.squonk.io.IOMultiplicity
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -51,8 +49,8 @@ class PostgresServiceDescriptorClientSpec extends Specification {
     static HttpServiceDescriptor createServiceDescriptor(String id) {
         return new HttpServiceDescriptor(id, id, id, ["t1", "t2"] as String[], "resourceurl",
                 "icon",
-                new IODescriptor("input", "text/plain", String.class, null, IOMultiplicity.ITEM),
-                new IODescriptor("output", "text/plain", String.class, null, IOMultiplicity.ITEM),
+                new IODescriptor("input", "text/plain", String.class, null),
+                new IODescriptor("output", "text/plain", String.class, null),
                 null, null, "executor")
     }
 
@@ -88,16 +86,23 @@ class PostgresServiceDescriptorClientSpec extends Specification {
 
 
     void "test update"() {
+        def oldStatus = set1.serviceDescriptors[0].serviceConfig.status
+        set1.serviceDescriptors.each {
+            it.serviceConfig.status = ServiceConfig.Status.ACTIVE
+        }
         List sdsets = [set1]
 
         when:
         client.update(sdsets)
         int c1 = client.countServiceDescriptorSets()
         int c2 = client.countServiceDescriptors()
+        def updatedSDs = client.fetch(set1.baseUrl)
 
         then:
+        oldStatus == ServiceConfig.Status.UNKNOWN
         c1 == 2
         c2 == 6
+        updatedSDs[0].serviceConfig.status == ServiceConfig.Status.ACTIVE
 
     }
 

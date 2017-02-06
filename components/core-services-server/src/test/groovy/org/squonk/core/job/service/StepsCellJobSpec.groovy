@@ -1,7 +1,6 @@
 package org.squonk.core.job.service
 
 import org.squonk.io.IODescriptor
-import org.squonk.io.IOMultiplicity
 import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition
 import org.squonk.jobdef.JobStatus
 import org.squonk.jobdef.StepsCellExecutorJobDefinition
@@ -28,8 +27,8 @@ class StepsCellJobSpec extends Specification {
         StepDefinition steps = new StepDefinition(
                 EchoStep.class.getName(),
                 [:],
-                [(new IODescriptor("input", "text/plain", String.class, null, IOMultiplicity.ITEM)):new VariableKey(producer, "input")],
-                [(new IODescriptor("output", "text/plain", String.class, null, IOMultiplicity.ITEM)):"output"])
+                [(new IODescriptor("input", "text/plain", String.class, null)):new VariableKey(producer, "input")],
+                [(new IODescriptor("output", "text/plain", String.class, null)):"output"])
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition(1, 1, 1, null, null, steps);
         int camelCounter = 0

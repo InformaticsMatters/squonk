@@ -176,6 +176,11 @@ public class MoleculeObject extends BasicObject {
     }
 
     @Override
+    public MoleculeObject clone() {
+        return new MoleculeObject(uuid, source, format, values);
+    }
+
+    @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append("MoleculeObject uuid: ")

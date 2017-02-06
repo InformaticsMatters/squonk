@@ -4,11 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.squonk.options.types.Structure;
 
 import java.util.Map;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Created by timbo on 03/02/16.
  */
 public class MoleculeTypeDescriptor extends SimpleTypeDescriptor<Structure> {
+
+    private static final Logger LOG = Logger.getLogger(MoleculeTypeDescriptor.class.getName());
 
     public enum MoleculeType {DISCRETE, QUERY, REACTION}
 
@@ -40,11 +44,14 @@ public class MoleculeTypeDescriptor extends SimpleTypeDescriptor<Structure> {
     public void putOptionValue(Map<String, Object> options, String key, Structure value) {
         if ("body".equals(key)) {
             options.put(key, value);
+            LOG.info("Body option. Putting as Structure");
         } else if (key.startsWith("query.") || key.startsWith("header.") || key.startsWith("arg.")) {
             options.put(key + "_source", value.getSource());
             options.put(key + "_format", value.getFormat());
+            LOG.info("Param option. Putting as individual props");
         } else {
             // this may lead to problems ...
+            LOG.warning("WARNING: unable to put option correctly so just using source as String");
             options.put(key, value.getSource());
         }
     }
@@ -55,6 +62,8 @@ public class MoleculeTypeDescriptor extends SimpleTypeDescriptor<Structure> {
         if (source != null && format != null) {
             return new Structure(source.toString(), format.toString());
         }
+        LOG.warning("WARNING: failed to read Structure option for " + key + ". Keys present were: "
+                + options.keySet().stream().collect(Collectors.joining(",")));
         return null;
     }
 

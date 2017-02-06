@@ -1,5 +1,7 @@
 package org.squonk.cdk.io
 
+import org.openscience.cdk.DefaultChemObjectBuilder
+import org.openscience.cdk.debug.DebugChemObjectBuilder
 import org.openscience.cdk.fingerprint.SignatureFingerprinter
 import org.openscience.cdk.signature.MoleculeSignature
 import org.squonk.types.MoleculeObject
@@ -59,13 +61,45 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         iter.iterator().collect().size() == 756
     }
     
-    void "read molecule"() {
+    void "read molecule guess format"() {
          
         expect:
-        CDKMoleculeIOUtils.readMolecule(source).getClass() != null
+        CDKMoleculeIOUtils.readMolecule(source) instanceof IAtomContainer
 
         where:
         source << [Molecules.ethanol.smiles, Molecules.ethanol.v2000, Molecules.ethanol.v3000]
+    }
+
+    void "read molecule with format"() {
+
+        expect:
+        CDKMoleculeIOUtils.readMolecule(source, format) instanceof IAtomContainer
+
+        where:
+        source | format
+        Molecules.ethanol.smiles | "smiles"
+        Molecules.ethanol.v2000  | "mol:v2"
+        Molecules.ethanol.v3000  | "mol:v3"
+        Molecules.ethanol.v2000  | "mol"
+        Molecules.ethanol.v3000  | "mol"
+    }
+
+    void "cdk convert molecule formats"() {
+
+        SmilesParser smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+
+        expect:
+        def mol = smilesParser.parseSmiles(Molecules.ethanol.smiles)
+        String m = CDKMoleculeIOUtils.convertToFormat(mol, format)
+        m.length() > 0
+        m.contains(result)
+
+        where:
+        format   | result
+        "mol"    | "V2000"
+        "mol:v2" | "V2000"
+        //"mol:v3" | "V3000"
+        "smiles" | "CCO"
     }
 
     void "test read multiple v2000"() {
@@ -100,9 +134,7 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
 
         when:
         IChemFormat format = new FormatFactory().guessFormat(new ByteArrayInputStream(Molecules.ethanol.v3000.getBytes()));
-        println "format: " + format
         ISimpleChemObjectReader reader = (ISimpleChemObjectReader) (Class.forName(format.getReaderClassName()).newInstance());
-        println "reader: " + reader
         reader.setReader(new ByteArrayInputStream(Molecules.ethanol.v3000.getBytes()));
         IAtomContainer mol = reader.read(new AtomContainer());
 
@@ -183,7 +215,7 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         when:
         CDKSDFile sdf = CDKMoleculeIOUtils.covertToSDFile(dataset.getStream(), true)
         String content = IOUtils.convertStreamToString(sdf.inputStream)
-        println content
+        //println content
 
         then:
         content.length() > 0
@@ -198,18 +230,18 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         IPDBPolymer structure = (IPDBPolymer)ChemFileManipulator
                 .getAllAtomContainers(file).get(0);
 
-        println structure.getClass().name
+        //println structure.getClass().name
 
-        structure.structures.each {
-            println "${it.getClass().name} ${it.structureType} ${it.startChainID} ${it.endChainID}"
-        }
+//        structure.structures.each {
+//            println "${it.getClass().name} ${it.structureType} ${it.startChainID} ${it.endChainID}"
+//        }
 
-        structure.strands.each { k,v ->
-            println "$k $v.strandType $v.monomerCount"
-            v.monomers.each { n, m ->
-                println "  $m.monomerName $m.monomerType $m.atoms.length"
-            }
-        }
+//        structure.strands.each { k,v ->
+//            println "$k $v.strandType $v.monomerCount"
+//            v.monomers.each { n, m ->
+//                println "  $m.monomerName $m.monomerType $m.atoms.length"
+//            }
+//        }
 
         def out = new ByteArrayOutputStream()
 
@@ -242,7 +274,7 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
 
         then:
         String result = new String(out.toByteArray())
-        println result
+        //println result
         result.length() > 0
 
     }
@@ -259,7 +291,7 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
 
         then:
         mols.size() == 1
-        println mols[0].getClass().name
+        //println mols[0].getClass().name
 
     }
 
@@ -282,7 +314,7 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         def result = new String(out.toByteArray())
 
         then:
-        println result
+        //println result
         result.length() > 0
 
     }
@@ -310,7 +342,7 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
                 soFar << k
                 //println "$v $k"
             }
-            println "$i ${soFar.size()}"
+            //println "$i ${soFar.size()}"
             i++
             return canonicalSignature
         }
@@ -318,7 +350,6 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         then:
         sigs.size() == 756
     }
-
 
 }
 

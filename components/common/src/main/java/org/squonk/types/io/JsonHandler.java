@@ -1,6 +1,7 @@
 package org.squonk.types.io;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.ContextAttributes;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -12,10 +13,7 @@ import org.squonk.util.IOUtils;
 
 import java.awt.*;
 import java.io.*;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -86,7 +84,16 @@ public class JsonHandler {
         return mapper.readValue(s, type);
     }
 
+    public <T> T objectFromJson(String s, TypeReference<T> type) throws IOException {
+        return mapper.readValue(s, type);
+    }
+
     public <T> Iterator<T> iteratorFromJson(String s, Class<T> type) throws IOException {
+        ObjectReader reader = mapper.readerFor(type);
+        return reader.readValues(s);
+    }
+
+    public <T> Iterator<T> iteratorFromJson(String s, TypeReference<T> type) throws IOException {
         ObjectReader reader = mapper.readerFor(type);
         return reader.readValues(s);
     }
@@ -96,15 +103,31 @@ public class JsonHandler {
         return reader.readValues(is);
     }
 
-    public <T> Stream<T> streamFromJson(final String json, final Class<T> type) throws IOException {
+    public <T> Iterator<T> iteratorFromJson(InputStream is, TypeReference<T> type) throws IOException {
+        ObjectReader reader = mapper.readerFor(type);
+        return reader.readValues(is);
+    }
+
+    public <T> Stream<T> streamFromJson(String json, Class type) throws IOException {
         ObjectReader reader = mapper.readerFor(type);
         Iterator<T> iter = reader.readValues(json);
         Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iter, Spliterator.NONNULL | Spliterator.ORDERED);
         return StreamSupport.stream(spliterator, true);
     }
 
-    public <T> Stream<T> streamFromJson(final InputStream is, final Class<T> type, final boolean autoClose) throws IOException {
-        return streamFromJson(is, type, (Map) null, autoClose);
+    public <T> Stream<T> streamFromJson(String json, TypeReference<T> type) throws IOException {
+        ObjectReader reader = mapper.readerFor(type);
+        Iterator<T> iter = reader.readValues(json);
+        Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iter, Spliterator.NONNULL | Spliterator.ORDERED);
+        return StreamSupport.stream(spliterator, true);
+    }
+
+    public <T> Stream<T> streamFromJson(InputStream is, Class<T> type, boolean autoClose) throws IOException {
+        return streamFromJson(is, type, Collections.emptyMap(), autoClose);
+    }
+
+    public <T> Stream<T> streamFromJson(InputStream is, TypeReference<T> type, boolean autoClose) throws IOException {
+        return streamFromJson(is, type, Collections.emptyMap(), autoClose);
     }
 
     /**
@@ -120,8 +143,17 @@ public class JsonHandler {
      * @throws IOException
      */
     public <T> Stream<T> streamFromJson(final InputStream is, final Class<T> type, Map<String, Class> mappings, final boolean autoClose) throws IOException {
+        return streamFromJson(is, mapper.constructType(type), mappings, autoClose);
+    }
+
+    public <T> Stream<T> streamFromJson(final InputStream is, final TypeReference<T> type, Map<String, Class> mappings, final boolean autoClose) throws IOException {
+        return streamFromJson(is, mapper.constructType(type.getType()), mappings, autoClose);
+    }
+
+    public <T> Stream<T> streamFromJson(final InputStream is, final JavaType type, Map<String, Class> mappings, final boolean autoClose) throws IOException {
+
         ObjectReader reader = mapper.readerFor(type);
-        if (mappings != null) {
+        if (mappings != null && !mappings.isEmpty()) {
             reader = reader.withAttribute(ATTR_VALUE_MAPPINGS, mappings);
         }
         Iterator<T> iter = reader.readValues(is);

@@ -1,10 +1,7 @@
 package org.squonk.core.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpMessage;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
+import org.apache.http.*;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
@@ -14,6 +11,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
@@ -22,6 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -144,7 +145,8 @@ public class AbstractHttpClient {
     protected InputStream executeGetAsInputStream(URIBuilder b, NameValuePair... headers) throws IOException {
         try {
             URI uri = b.build();
-            debugConnections("GET", uri);;
+            debugConnections("GET", uri);
+            ;
             HttpGet httpGet = new HttpGet(uri);
             if (headers != null && headers.length > 0) {
                 addHeaders(httpGet, headers);
@@ -159,22 +161,34 @@ public class AbstractHttpClient {
         }
     }
 
-    protected InputStream executePostAsInputStream(URIBuilder b, String body, NameValuePair... headers) throws IOException {
-            return executePostAsInputStream(b, body == null ? null : new StringEntity(body), headers);
+    protected InputStream executePostAsInputStream(URIBuilder b, String body, NameValuePair... requestHeaders) throws IOException {
+        return executePostAsInputStream(b, body == null ? null : new StringEntity(body), requestHeaders);
     }
 
     protected InputStream executePostAsInputStream(URIBuilder b, AbstractHttpEntity body) throws IOException {
         return executePostAsInputStream(b, body, new NameValuePair[0]);
     }
 
-    protected InputStream executePostAsInputStream(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
+    protected InputStream executePostAsInputStream(URIBuilder b, AbstractHttpEntity body, NameValuePair... requestHeaders) throws IOException {
+        return executePostAsInputStream(b, body, requestHeaders == null ? null : requestHeaders, null);
+    }
 
-            CloseableHttpResponse response = doPost(b, body, headers);
-            LOG.finer(response.getStatusLine().toString());
-            checkResponse(response);
-            HttpEntity entity = response.getEntity();
-            InputStream is = entity.getContent();
-            return is;
+    protected InputStream executePostAsInputStream(URIBuilder b, AbstractHttpEntity body, NameValuePair[] requestHeaders, Map<String,String> responseHeaders) throws IOException {
+
+        CloseableHttpResponse response = doPost(b, body, requestHeaders);
+        LOG.finer(response.getStatusLine().toString());
+        checkResponse(response);
+        if (responseHeaders != null) {
+            Header[] headers = response.getAllHeaders();
+            if (headers != null) {
+                for (Header h : headers) {
+                    responseHeaders.put(h.getName(), h.getValue());
+                }
+            }
+        }
+        HttpEntity entity = response.getEntity();
+        InputStream is = entity.getContent();
+        return is;
     }
 
     protected InputStream executePutAsInputStream(URIBuilder b, AbstractHttpEntity body) throws IOException {
@@ -242,7 +256,7 @@ public class AbstractHttpClient {
         }
     }
 
-    protected void addHeaders(HttpMessage message, NameValuePair... headers) {
+    protected void addHeaders(HttpMessage message, NameValuePair[] headers) {
         if (headers != null) {
             for (NameValuePair nvp : headers) {
                 message.addHeader(nvp.getName(), nvp.getValue());
@@ -274,7 +288,8 @@ public class AbstractHttpClient {
 //        return response.getStatusLine().getStatusCode() >=200 && response.getStatusLine().getStatusCode() < 300;
 //    }
 
-    /** Throws IOException if response is not in the 200 range, providing whatever information is available as the exception message.
+    /**
+     * Throws IOException if response is not in the 200 range, providing whatever information is available as the exception message.
      * Override this if you need different behaviour.
      *
      * @param response
@@ -282,7 +297,7 @@ public class AbstractHttpClient {
      */
     protected void checkResponse(HttpResponse response) throws IOException {
 
-        if (response.getStatusLine().getStatusCode() <200 || response.getStatusLine().getStatusCode() >= 300) {
+        if (response.getStatusLine().getStatusCode() < 200 || response.getStatusLine().getStatusCode() >= 300) {
             HttpEntity entity = response.getEntity();
             InputStream is = entity.getContent();
             String err = null;

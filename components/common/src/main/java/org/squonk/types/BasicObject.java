@@ -2,6 +2,8 @@ package org.squonk.types;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.io.Closeable;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -10,23 +12,23 @@ import java.util.UUID;
 /**
  * Simple generic object that only has values. Specialized types can be created by sub-classing
  * this class. For instance, see {@link MoleculeObject}.
+ * Sub-classes must override the public clone() method.
  *
  * @author Tim Dudgeon
  */
 @JsonIgnoreProperties({"value"})
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class BasicObject implements Serializable {
+public class BasicObject implements Serializable, Cloneable {
 
     protected final UUID uuid;
 
     /**
      * Properties of the object.
      */
-    protected Map<String, Object> values;
+    protected final Map<String, Object> values = new LinkedHashMap<>();
 
     public BasicObject(UUID uuid) {
         this.uuid = (uuid == null ? UUID.randomUUID() : uuid);
-        this.values = new LinkedHashMap<>();
     }
 
     public BasicObject() {
@@ -35,7 +37,6 @@ public class BasicObject implements Serializable {
 
     public BasicObject(Map<String, Object> values) {
         this(null, values);
-        
     }
 
     public BasicObject(UUID uuid, Map<String, Object> values) {
@@ -58,7 +59,8 @@ public class BasicObject implements Serializable {
     }
 
     public void setValues(Map<String, Object> values) {
-        this.values = values;
+        this.values.clear();
+        this.values.putAll(values);
     }
 
     public <T> T getValue(String key, Class<T> type) {
@@ -75,6 +77,19 @@ public class BasicObject implements Serializable {
 
     public void putValues(Map<String, Object> values) {
         this.values.putAll(values);
+    }
+
+    public void clearValues() {
+        this.values.clear();
+    }
+
+    /** Clone this BasicObject. The resulting clone will have the same UUID as the original and have its own map of values,
+     * but the contents of the new Map will be the same as the old one (sames instances).
+     *
+     * @return
+     */
+    public BasicObject clone() {
+        return new BasicObject(this.uuid, values);
     }
 
   public String toString() {

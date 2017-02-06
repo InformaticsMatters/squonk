@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public class OptionDescriptorSubclass extends OptionDescriptor<Integer> {
 
-    OptionDescriptorSubclass(Class type, String key, String label, String description) {
+    OptionDescriptorSubclass(Class<Integer> type, String key, String label, String description) {
         super(type, key, label, description, OptionDescriptor.Mode.User);
     }
 

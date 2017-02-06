@@ -64,6 +64,7 @@ public abstract class NumberRange<T extends Number & Comparable<T>> implements S
      *             the Integer inner class of this class)
      * @return
      */
+    // TODO - should be possible to generify this properly?
     public static NumberRange create(Class type) {
         if (type == java.lang.Integer.class || type == Integer.class) {
                 return new Integer();
@@ -79,7 +80,7 @@ public abstract class NumberRange<T extends Number & Comparable<T>> implements S
     protected abstract T convert(Object o);
 
     @JsonIgnore
-    public abstract Class getType();
+    public abstract Class<T> getType();
 
     @Override
     public String toString() {

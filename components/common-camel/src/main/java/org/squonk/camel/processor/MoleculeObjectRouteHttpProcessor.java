@@ -100,7 +100,7 @@ public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectRout
             // handle as SDF
             // this relies on a type converter being registered
             Class<SDFile> cls = (sdfClass == null ? SDFile.class : sdfClass);
-            LOG.warning("Converting to cls " + cls);
+            LOG.fine("Converting to cls " + cls);
             SDFile sdf = exch.getContext().getTypeConverter().convertTo(cls, exch, results);
             if (sdf == null) {
                 throw new IllegalStateException("No type converter registered for converting to SDF?");

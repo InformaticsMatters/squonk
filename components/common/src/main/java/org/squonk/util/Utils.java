@@ -13,11 +13,23 @@ public class Utils {
     /**
      * @param a
      * @param b
-     * @return true is a and b are bothy not null and a.equals(b)
+     * @return true is a and b are both not null and a.equals(b)
      */
     public static boolean safeEquals(Object a, Object b) {
         if (a == null || b == null) {
             return false;
+        }
+        return a.equals(b);
+    }
+
+    /**
+     * @param a
+     * @param b
+     * @return true is a and b are both null or a.equals(b)
+     */
+    public static boolean safeEqualsIncludeNull(Object a, Object b) {
+        if (a == null && b == null) {
+            return true;
         }
         return a.equals(b);
     }

@@ -1,5 +1,6 @@
 package org.squonk.types.io
 
+import com.fasterxml.jackson.core.type.TypeReference
 import org.squonk.data.Molecules
 import org.squonk.dataset.*
 import org.squonk.types.BasicObject
@@ -105,7 +106,7 @@ class JsonHandlerSpec extends Specification {
         c.getAlpha() == Colors.BROWN.getAlpha()
     }
 
-    void "to/from colors"() {
+    void "to/from colors using class"() {
 
         when:
         String json = JsonHandler.getInstance().objectToJson([Colors.BROWN, Colors.STEELBLUE])
@@ -115,6 +116,24 @@ class JsonHandlerSpec extends Specification {
         then:
         colors != null
         colors.size() == 2
+        colors[0] instanceof Color
+        colors[0].getRGB() == Colors.BROWN.getRGB()
+        colors[0].getAlpha() == Colors.BROWN.getAlpha()
+        colors[1].getRGB() == Colors.STEELBLUE.getRGB()
+        colors[1].getAlpha() == Colors.STEELBLUE.getAlpha()
+    }
+
+    void "to/from colors using TypeReference"() {
+
+        when:
+        String json = JsonHandler.getInstance().objectToJson([Colors.BROWN, Colors.STEELBLUE])
+        println json
+        def colors = JsonHandler.getInstance().streamFromJson(json, new TypeReference<Color>() {}).collect(Collectors.toList())
+
+        then:
+        colors != null
+        colors.size() == 2
+        colors[0] instanceof Color
         colors[0].getRGB() == Colors.BROWN.getRGB()
         colors[0].getAlpha() == Colors.BROWN.getAlpha()
         colors[1].getRGB() == Colors.STEELBLUE.getRGB()

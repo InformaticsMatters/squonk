@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.squonk.client.JobStatusClient;
-import org.squonk.core.CommonConstants;
+
 import org.squonk.core.service.discovery.ServiceDescriptorRegistry;
 import org.squonk.execution.steps.StepDefinition;
 import org.squonk.core.ServiceDescriptor;
@@ -12,6 +12,7 @@ import org.squonk.jobdef.JobStatus;
 import org.squonk.jobdef.StepsCellExecutorJobDefinition;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.ServiceConstants;
 import org.squonk.util.StatsRecorder;
 
 import java.io.IOException;
@@ -20,7 +21,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.squonk.core.CommonConstants.KEY_SERVICE_REGISTRY;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_NAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_STEPS_EXCHANGE_PARAMS;
 
@@ -102,7 +102,7 @@ public class StepsCellJob implements Job<StepsCellExecutorJobDefinition> {
                 String serviceId = stepdef.getServiceId();
                 if (serviceId != null) {
                     LOG.info("Looking up ServiceDescriptor for " + serviceId);
-                    ServiceDescriptorRegistry reg = camelContext.getRegistry().lookupByNameAndType(KEY_SERVICE_REGISTRY, ServiceDescriptorRegistry.class);
+                    ServiceDescriptorRegistry reg = camelContext.getRegistry().lookupByNameAndType(ServiceConstants.KEY_SERVICE_REGISTRY, ServiceDescriptorRegistry.class);
                     ServiceDescriptor sd = reg.fetchServiceDescriptor(serviceId);
                     stepdef.setServiceDescriptor(sd);
                 }
@@ -125,7 +125,7 @@ public class StepsCellJob implements Job<StepsCellExecutorJobDefinition> {
         Map<String, Object> headers = new HashMap<>();
         headers.put("rabbitmq.ROUTING_KEY", "jobs.steps");
         headers.put(StatsRecorder.HEADER_SQUONK_JOB_ID, jobid);
-        headers.put(CommonConstants.HEADER_SQUONK_USERNAME, username);
+        headers.put(ServiceConstants.HEADER_SQUONK_USERNAME, username);
         // send to mqueue
         LOG.info("Sending job to queue " + mqueueUrl + " ->\n" + json);
         pt.sendBodyAndHeaders(mqueueUrl, json, headers);

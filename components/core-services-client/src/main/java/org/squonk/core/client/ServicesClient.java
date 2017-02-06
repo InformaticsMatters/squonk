@@ -1,7 +1,5 @@
 package org.squonk.core.client;
 
-import org.squonk.core.CommonConstants;
-import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.core.ServiceConfig;
 import org.squonk.core.client.config.SquonkClientConfig;
 import org.squonk.types.io.JsonHandler;
@@ -14,6 +12,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.squonk.util.ServiceConstants;
 
 /**
  * Client for ServiceDescriptors.
@@ -47,7 +46,7 @@ public class ServicesClient extends AbstractHttpClient {
             throw new IllegalStateException("Username must be specified");
         }
         HttpGet httpGet = new HttpGet(base);
-        httpGet.setHeader(CommonConstants.HEADER_SQUONK_USERNAME, username);
+        httpGet.setHeader(ServiceConstants.HEADER_SQUONK_USERNAME, username);
         try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
             LOG.fine(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
