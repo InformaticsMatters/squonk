@@ -10,6 +10,7 @@ import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
+import org.squonk.util.ServiceConstants;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -26,7 +27,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static org.squonk.core.CommonConstants.KEY_SERVICE_REGISTRY;
 
 /**
  * @author timbo
@@ -245,7 +245,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 
 
     private ServiceDescriptorRegistry fetchDescriptorRegistry(CamelContext context) {
-        return context.getRegistry().lookupByNameAndType(KEY_SERVICE_REGISTRY, ServiceDescriptorRegistry.class);
+        return context.getRegistry().lookupByNameAndType(ServiceConstants.KEY_SERVICE_REGISTRY, ServiceDescriptorRegistry.class);
     }
 
     private void checkHealth(String baseUrl, String healthUrl, List<HttpServiceDescriptor> serviceDescriptors, Date now) {

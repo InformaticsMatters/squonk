@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Exchange;
 import org.postgresql.ds.PGPoolingDataSource;
-import org.squonk.core.CommonConstants;
 import org.squonk.util.IOUtils;
+import org.squonk.util.ServiceConstants;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -61,7 +61,7 @@ public class Utils {
     }
 
     public static String fetchUsername(Exchange exchange) {
-        String username = exchange.getIn().getHeader(CommonConstants.HEADER_SQUONK_USERNAME, String.class);
+        String username = exchange.getIn().getHeader(ServiceConstants.HEADER_SQUONK_USERNAME, String.class);
         if (username == null) {
             throw new IllegalStateException("Validated username not specified");
         }

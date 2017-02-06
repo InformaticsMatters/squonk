@@ -2,8 +2,7 @@ package org.squonk.core.client
 
 import org.squonk.data.Molecules
 import org.squonk.io.DepictionParameters
-
-import java.util.zip.GZIPInputStream
+import org.squonk.options.types.Structure
 
 import static org.squonk.io.DepictionParameters.OutputFormat.*
 import spock.lang.Specification
@@ -77,7 +76,7 @@ class StructureIOClientSpec extends Specification {
     void "cdk convert to sdf"() {
 
         when:
-        String sdf = client.molConvert(Molecules.nci10Dataset(), "sdf", false).text
+        String sdf = client.datasetExport(Molecules.nci10Dataset(), "sdf", false).text
         def parts = sdf.split('END')
 
         then:
@@ -88,7 +87,7 @@ class StructureIOClientSpec extends Specification {
 //    void "cdk convert to gzipped sdf"() {
 //
 //        when:
-//        def gzip = client.molConvert(Molecules.nci10Dataset(), "sdf", true)
+//        def gzip = client.datasetExport(Molecules.nci10Dataset(), "sdf", true)
 //        String sdf = new GZIPInputStream(gzip).text
 //        def parts = sdf.split('END')
 //
@@ -96,4 +95,32 @@ class StructureIOClientSpec extends Specification {
 //        parts.length == 11
 //    }
 
+
+    void "cdk convert molecule formats"() {
+
+        expect:
+        Structure s = client.convertMol(source, format)
+        s.source.length() > 0
+        s.source.contains(result)
+        s.format == format
+
+        where:
+        source                   | format   | result
+        Molecules.ethanol.smiles | "mol"    | "V2000"
+        Molecules.ethanol.smiles | "mol:v2" | "V2000"
+        //Molecules.ethanol.smiles | "mol:v3" | "V3000"
+        Molecules.ethanol.v2000  | "smiles" | "CCO"
+        Molecules.ethanol.v3000  | "smiles" | "CCO"
+    }
+
+
+    void "cdk multiple formats"() {
+
+        when:
+        Structure m = client.convertMol(Molecules.ethanol.smiles, "carrots", "mol", "beans")
+
+        then:
+        m.source.contains("V2000")
+        m.format == "mol"
+    }
 }

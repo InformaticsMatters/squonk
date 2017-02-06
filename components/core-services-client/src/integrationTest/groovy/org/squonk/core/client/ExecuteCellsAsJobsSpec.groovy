@@ -172,7 +172,7 @@ cp input.data.gz output.data.gz
                 .withOption("header.Accept-Encoding", "gzip")
                 .withOption("header.Content-Type", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
                 .withOption("header.Accept", CommonMimeTypes.MIME_TYPE_MDL_SDF)
-                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, "http://chemservices:8080/chem-services-cdk-basic/rest/v1/converters/convert_to_sdf")
+                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, "http://chemservices:8080/chem-services-cdk-basic/rest/v1/converters/dataset_to_sdf")
 
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()

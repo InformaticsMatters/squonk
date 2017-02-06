@@ -1,15 +1,14 @@
 package org.squonk.core.service.discovery
 
 import org.apache.camel.CamelContext
-import org.apache.camel.ProducerTemplate
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.impl.DefaultCamelContext
 import org.apache.camel.impl.SimpleRegistry
 import org.squonk.camel.testsupport.CamelSpecificationBase
-import org.squonk.core.CommonConstants
 import org.squonk.core.DockerServiceDescriptor
 import org.squonk.core.HttpServiceDescriptor
 import org.squonk.core.ServiceDescriptorSet
+import org.squonk.util.ServiceConstants
 
 import java.util.regex.Pattern
 
@@ -25,7 +24,7 @@ class ServiceDiscoveryRouteBuilderSpec extends CamelSpecificationBase {
     CamelContext createCamelContext() {
         SimpleRegistry reg = new SimpleRegistry();
         ServiceDescriptorRegistry descriptorReg = new ServiceDescriptorRegistry()
-        reg.put(CommonConstants.KEY_SERVICE_REGISTRY, descriptorReg);
+        reg.put(ServiceConstants.KEY_SERVICE_REGISTRY, descriptorReg);
         // push some dummy service descriptors. There is only one.
         descriptorReg.updateServiceDescriptorSet(new ServiceDescriptorSet("dummy", null, Arrays.asList(TEST_SERVICE_DESCRIPTORS)))
         new DefaultCamelContext(reg)
@@ -43,7 +42,7 @@ class ServiceDiscoveryRouteBuilderSpec extends CamelSpecificationBase {
         Pattern pat = Pattern.compile("(\\w+)/(.*)");
 
         when:
-        def m = pat.matcher("pipelines/rdkit/foo.ded")
+        def m = pat.matcher("pipelines/rdkit/foo.dsd")
 
         then:
         m.matches()
@@ -56,7 +55,7 @@ class ServiceDiscoveryRouteBuilderSpec extends CamelSpecificationBase {
 
         when:
         sleep(4000)
-        ServiceDescriptorRegistry reg = camelContext.getRegistry().lookupByName(CommonConstants.KEY_SERVICE_REGISTRY)
+        ServiceDescriptorRegistry reg = camelContext.getRegistry().lookupByName(ServiceConstants.KEY_SERVICE_REGISTRY)
         def descs = reg.fetchServiceDescriptors()
         int http = 0
         int docker = 0
@@ -68,8 +67,8 @@ class ServiceDiscoveryRouteBuilderSpec extends CamelSpecificationBase {
                 b = true
             }
         }
-        println "HTTP: $http"
-        println "DOCKER: $docker"
+        //println "HTTP: $http"
+        //println "DOCKER: $docker"
 
 
         then:

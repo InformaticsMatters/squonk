@@ -3,14 +3,13 @@ package org.squonk.core.client;
 import org.squonk.jobdef.JobDefinition;
 import org.squonk.jobdef.JobQuery;
 import org.squonk.jobdef.JobStatus;
-import org.squonk.core.CommonConstants;
-import static org.squonk.core.CommonConstants.*;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.squonk.client.JobStatusClient;
 import org.squonk.core.client.config.SquonkClientConfig;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.ServiceConstants;
 
 import javax.enterprise.inject.Default;
 import java.io.IOException;
@@ -58,10 +57,10 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
         String json = toJson(jobdef);
         URIBuilder b = new URIBuilder().setPath(baseUrl);
         if (totalCount != null && totalCount > 0) {
-            b = b.setParameter(CommonConstants.HEADER_JOB_SIZE, totalCount.toString());
+            b = b.setParameter(ServiceConstants.HEADER_JOB_SIZE, totalCount.toString());
         }
         LOG.info("About to post job of " + json);
-        InputStream result = executePostAsInputStream( b, json, new BasicNameValuePair(CommonConstants.HEADER_SQUONK_USERNAME, username));
+        InputStream result = executePostAsInputStream( b, json, new BasicNameValuePair(ServiceConstants.HEADER_SQUONK_USERNAME, username));
         return fromJson(result, JobStatus.class);
     }
 
@@ -96,10 +95,10 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
             b.setParameter("status", status.toString());
         }
         if (processedCount != null) {
-            b.setParameter(HEADER_JOB_PROCESSED_COUNT, processedCount.toString());
+            b.setParameter(ServiceConstants.HEADER_JOB_PROCESSED_COUNT, processedCount.toString());
         }
         if (errorCount != null) {
-            b.setParameter(HEADER_JOB_ERROR_COUNT, errorCount.toString());
+            b.setParameter(ServiceConstants.HEADER_JOB_ERROR_COUNT, errorCount.toString());
         }
         InputStream result = executePostAsInputStream( b, event, new NameValuePair[0]);
         return fromJson(result, JobStatus.class);

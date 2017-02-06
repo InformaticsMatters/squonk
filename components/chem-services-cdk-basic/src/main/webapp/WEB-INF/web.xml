@@ -24,6 +24,7 @@
         <!--param-value>com.im.lac.demo.SimpleRouteBuilder</param-value-->
         <param-value>
             org.squonk.cdk.services.CdkCalculatorsRouteBuilder,
+            org.squonk.cdk.services.CdkFormatsRouteBuilder,
             org.squonk.cdk.services.CdkRestRouteBuilder</param-value>
     </context-param>
     

@@ -6,6 +6,7 @@ import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.dataset.ThinDatasetWrapper;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;

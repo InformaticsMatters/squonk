@@ -9,6 +9,7 @@ import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.types.CDKSDFile;
 import org.squonk.types.TypeResolver;
+import org.squonk.util.CommonMimeTypes;
 
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -25,8 +26,6 @@ public class CdkRestRouteBuilder extends RouteBuilder {
     private static final Logger LOG = Logger.getLogger(CdkRestRouteBuilder.class.getName());
 
     private static final TypeResolver resolver = new TypeResolver();
-
-    private static final String ROUTE_CONVERT_TO_SDF = "convert_to_sdf";
 
     private static final String ROUTE_STATS = "seda:post_stats";
 
@@ -120,6 +119,14 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 .produces(join(CDKMoleculeObjectSDFileProcessor.OUTPUT_MIME_TYPES))
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(null, resolver, ROUTE_STATS, CDKSDFile.class))
+                .endRest()
+                //
+                .post(CdkConverterServices.SERVICE_DESCRIPTOR_CONVERT_DATASET.getExecutionEndpoint())
+                .description(CdkConverterServices.SERVICE_DESCRIPTOR_CONVERT_DATASET.getServiceConfig().getDescription())
+                .consumes(CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
+                .produces(CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(CdkFormatsRouteBuilder.CDK_DATASET_CONVERT, resolver, ROUTE_STATS))
                 .endRest();
 
     }

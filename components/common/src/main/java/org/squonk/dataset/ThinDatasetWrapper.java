@@ -1,9 +1,6 @@
-package org.squonk.execution.steps.impl;
+package org.squonk.dataset;
 
 
-import org.squonk.dataset.Dataset;
-import org.squonk.dataset.DatasetMetadata;
-import org.squonk.dataset.DatasetUtils;
 import org.squonk.types.BasicObject;
 
 import java.io.IOException;
@@ -104,7 +101,7 @@ public class ThinDatasetWrapper<T extends BasicObject> {
      * @return
      * @throws Exception
      */
-    Dataset<T> generateOutput(Dataset<? extends BasicObject> results) throws Exception {
+    public Dataset<T> generateOutput(Dataset<? extends BasicObject> results) throws Exception {
 
         // we preserve the detail of the original if we are told to or the result type is not of the required type
         // (e.g. the thin service just returned BasicObjects)

@@ -48,10 +48,7 @@ public class CDKMolDepict extends AbstractMolDepict<IAtomContainer> {
         colorers.put(ColorScheme.toolkit_default, new CDK2DAtomColors());
     }
 
-
     private final DepictionGenerator generator;
-
-    private static final SmilesParser smilesParser = new SmilesParser(SilentChemObjectBuilder.getInstance());
 
     public CDKMolDepict() {
         super();
@@ -177,19 +174,17 @@ public class CDKMolDepict extends AbstractMolDepict<IAtomContainer> {
 
     @Override
     public IAtomContainer v2000ToMolecule(String molfile) throws CDKException {
-        MDLV2000Reader v2000Parser = new MDLV2000Reader(new ByteArrayInputStream(molfile.getBytes()));
-        return v2000Parser.read(new AtomContainer());
+        return CDKMoleculeIOUtils.v2000ToMolecule(molfile);
     }
 
     @Override
     public IAtomContainer v3000ToMolecule(String molfile) throws CDKException {
-        MDLV3000Reader v3000Parser = new MDLV3000Reader(new ByteArrayInputStream(molfile.getBytes()));
-        return v3000Parser.read(new AtomContainer());
+        return CDKMoleculeIOUtils.v3000ToMolecule(molfile);
     }
 
     @Override
     public IAtomContainer smilesToMolecule(String smiles) throws CDKException {
-        return smilesParser.parseSmiles(smiles);
+        return CDKMoleculeIOUtils.smilesToMolecule(smiles);
     }
 
     @Override

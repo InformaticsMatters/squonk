@@ -1,6 +1,7 @@
 package org.squonk.execution.steps.impl
 
 import org.squonk.dataset.Dataset
+import org.squonk.dataset.ThinDatasetWrapper
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
 import spock.lang.Specification

@@ -9,6 +9,7 @@ import org.squonk.dataset.DatasetMetadata;
 import org.squonk.http.RequestResponseExecutor;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
+import org.squonk.util.ServiceConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,8 +50,10 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
     @Override
     public void prepareRequest(Dataset dataset, RequestResponseExecutor executor, boolean gzip) throws IOException {
         DatasetMetadata md = dataset.getMetadata();
-        String json = JsonHandler.getInstance().objectToJson(md);
-        executor.prepareRequestHeader(CamelCommonConstants.HEADER_METADATA, json); // TODO - move this constant to this class
+        if (md != null) {
+            String json = JsonHandler.getInstance().objectToJson(md);
+            executor.prepareRequestHeader(ServiceConstants.HEADER_METADATA, json); // TODO - move this constant to this class
+        }
         executor.prepareRequestBody(dataset.getInputStream(gzip));
     }
 

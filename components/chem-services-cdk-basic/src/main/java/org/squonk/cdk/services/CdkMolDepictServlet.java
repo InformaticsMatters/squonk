@@ -41,7 +41,7 @@ import java.util.logging.Logger;
  */
 @WebServlet(
         name = "CDKMolDepictServlet",
-        description = "Moleucle depiction using CDK",
+        description = "Molecule depiction using CDK",
         urlPatterns = {"/moldepict"}
 )
 public class CdkMolDepictServlet extends HttpServlet {
@@ -143,5 +143,7 @@ public class CdkMolDepictServlet extends HttpServlet {
             resp.getWriter().close();
         }
     }
+
+
 
 }
