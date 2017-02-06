@@ -2,6 +2,7 @@ package org.squonk.chemaxon.molecule;
 
 import chemaxon.calculations.clean.Cleaner;
 import chemaxon.calculations.hydrogenize.Hydrogenize;
+import chemaxon.formats.MdlCompressor;
 import chemaxon.formats.MolExporter;
 import chemaxon.formats.MolFormatException;
 import chemaxon.formats.MolImporter;
@@ -469,4 +470,10 @@ public class MoleculeUtils {
         return in;
 
     }
+
+
+    public static String decompressMolfile(String mol) throws IOException {
+        return MdlCompressor.convert(mol, MdlCompressor.DECOMPRESS);
+    }
+
 }
