@@ -1,7 +1,6 @@
 package org.squonk.cdk.io
 
 import org.openscience.cdk.DefaultChemObjectBuilder
-import org.openscience.cdk.debug.DebugChemObjectBuilder
 import org.openscience.cdk.fingerprint.SignatureFingerprinter
 import org.openscience.cdk.signature.MoleculeSignature
 import org.squonk.types.MoleculeObject
@@ -86,7 +85,7 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
 
     void "cdk convert molecule formats"() {
 
-        SmilesParser smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+        SmilesParser smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance())
 
         expect:
         def mol = smilesParser.parseSmiles(Molecules.ethanol.smiles)
@@ -98,7 +97,7 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         format   | result
         "mol"    | "V2000"
         "mol:v2" | "V2000"
-        //"mol:v3" | "V3000"
+        "mol:v3" | "V3000"
         "smiles" | "CCO"
     }
 

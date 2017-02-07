@@ -265,7 +265,7 @@ public class CDKMoleculeIOUtils {
         return results;
     }
 
-    public static MoleculeObject convertToFormat(IAtomContainer mol, String format) throws CDKException {
+    public static MoleculeObject convertToFormat(IAtomContainer mol, String format) throws IOException, CDKException {
         if (format.equals("smiles")) {
             return convertToSmiles(mol);
         } else if (format.equals("mol") || format.startsWith("mol:")) {
@@ -292,7 +292,7 @@ public class CDKMoleculeIOUtils {
         return new MoleculeObject(smi, "smiles");
     }
 
-    public static MoleculeObject convertToMolfile(IAtomContainer mol) throws CDKException {
+    public static MoleculeObject convertToMolfile(IAtomContainer mol) throws IOException, CDKException {
         try {
             return convertToMolfileV2000(mol);
         } catch (Exception e) {
@@ -300,30 +300,30 @@ public class CDKMoleculeIOUtils {
         }
     }
 
-    public static MoleculeObject convertToMolfileV2000(IAtomContainer mol) throws CDKException {
+    public static MoleculeObject convertToMolfileV2000(IAtomContainer mol) throws IOException, CDKException {
         StringWriter writer = new StringWriter();
-        MDLV2000Writer mdl = new MDLV2000Writer(writer);
-        mdl.write(mol);
-        writer.flush();
+        try (MDLV2000Writer mdl = new MDLV2000Writer(writer)) {
+            mdl.write(mol);
+        }
         String source = writer.toString();
         return new MoleculeObject(source, "mol:v2");
     }
 
-    public static MoleculeObject convertToMolfileV3000(IAtomContainer mol) throws CDKException {
+    public static MoleculeObject convertToMolfileV3000(IAtomContainer mol) throws IOException, CDKException {
         StringWriter writer = new StringWriter();
-        MDLV3000Writer mdl = new MDLV3000Writer(writer);
-        mdl.write(mol);
-        writer.flush();
+        try (MDLV3000Writer mdl = new MDLV3000Writer(writer)) {
+            mdl.write(mol);
+        }
         String source = writer.toString();
         return new MoleculeObject(source, "mol:v3");
     }
 
 
-    public static MoleculeObject convertMolecule(IAtomContainer mol, DefaultChemObjectWriter objectWriter, String formatString) throws Exception {
+    public static MoleculeObject convertMolecule(IAtomContainer mol, DefaultChemObjectWriter objectWriter, String formatString) throws IOException, CDKException {
         StringWriter writer = new StringWriter();
         objectWriter.setWriter(writer);
         objectWriter.write(mol);
-        writer.flush();
+        writer.close();
         String source = writer.toString();
         return new MoleculeObject(source, formatString);
     }
