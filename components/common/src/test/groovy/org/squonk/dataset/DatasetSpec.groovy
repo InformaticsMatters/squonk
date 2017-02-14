@@ -2,6 +2,7 @@ package org.squonk.dataset
 
 import com.fasterxml.jackson.databind.ObjectReader
 import org.squonk.types.BasicObject
+import org.squonk.types.MoleculeObject
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
 
@@ -124,5 +125,27 @@ class DatasetSpec extends Specification {
         ds.getStream().count()
     }
 
+    void "MoleculeObject array unmapping"() {
+        def mo = new MoleculeObject("C", "smiles", [foo: "bar"])
+        def mols = [new MoleculeObject("CC", "smiles"), new MoleculeObject("CCC", "smiles")] as MoleculeObject[]
+        mo.putValue("mols", mols)
+        def dataset = new Dataset(MoleculeObject.class, [mo])
+        dataset.generateMetadata()
+        def dataJson = JsonHandler.instance.marshalData(dataset.stream, false).inputStream.text
+        def metaJson = JsonHandler.instance.objectToJson(dataset.metadata)
+        println dataJson
+        println metaJson
 
+
+        when:
+        def meta2 = JsonHandler.instance.objectFromJson(metaJson, DatasetMetadata.class)
+        def data2 = new Dataset(MoleculeObject.class, new ByteArrayInputStream(dataJson.bytes), meta2)
+        def mols2 = data2.items
+
+        then:
+        mols2.size() == 1
+        mols2[0] instanceof MoleculeObject
+        mols2[0].getValue("mols").length == 2
+        mols2[0].getValue("foo") == "bar"
+    }
 }

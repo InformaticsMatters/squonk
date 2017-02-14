@@ -1,14 +1,16 @@
 package org.squonk.types.io
 
 import com.fasterxml.jackson.core.type.TypeReference
-import org.squonk.data.Molecules
-import org.squonk.dataset.*
+import org.squonk.dataset.Dataset
+import org.squonk.dataset.DatasetMetadata
+import org.squonk.dataset.DatasetSpec
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
 import org.squonk.util.Colors
 import spock.lang.Specification
 
-import java.awt.Color
+import java.awt.*
+import java.util.List
 import java.util.stream.Collectors
 import java.util.stream.Stream
 

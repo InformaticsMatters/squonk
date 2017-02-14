@@ -34,4 +34,7 @@ class DatasetMetadataSpec extends Specification {
         meta2.getValueClassMappings().get('foo') == String.class
         meta2.size == 100
     }
+
+
+    
 }
