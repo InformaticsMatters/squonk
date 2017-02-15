@@ -22,7 +22,7 @@ public class DatasetSelectRandomStep extends AbstractStep {
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
     public static final String OPTION_RANDOM = StepDefinitionConstants.DatasetSelectRandom.OPTION_RANDOM;
-    public static final String OPTION_COUNT = StepDefinitionConstants.DatasetSelectSlice.OPTION_COUNT;
+    public static final String OPTION_COUNT = StepDefinitionConstants.DatasetSelectRandom.OPTION_COUNT;
 
     /**
      * Create a random subset of the dataset up to a maximun (count option, default 1000) number of values selecting items from the start
@@ -39,7 +39,7 @@ public class DatasetSelectRandomStep extends AbstractStep {
         if (ds == null) {
             throw new IllegalStateException("Input variable not found: " + VAR_INPUT_DATASET);
         }
-        LOG.info("Input Dataset: " + ds);
+        LOG.fine("Input Dataset: " + ds);
 
         Float randomOpt = getOption(OPTION_RANDOM, Float.class, context.getTypeConverter());
         Integer countOpt = getOption(OPTION_COUNT, Integer.class, context.getTypeConverter());

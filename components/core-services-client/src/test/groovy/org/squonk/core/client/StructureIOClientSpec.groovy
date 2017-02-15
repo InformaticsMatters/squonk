@@ -17,7 +17,7 @@ class StructureIOClientSpec extends Specification {
 
 
         when:
-        String svg =client.handleErrorSVG(new DepictionParameters(100, 75), "I am an error")
+        String svg =client.renderErrorSVG(new DepictionParameters(100, 75), "I am an error")
         println svg
 
         then:
@@ -29,7 +29,7 @@ class StructureIOClientSpec extends Specification {
 
 
         when:
-        String svg =client.handleErrorSVG(new DepictionParameters(100, 75), "I am an error", "So am I")
+        String svg =client.renderErrorSVG(new DepictionParameters(100, 75), "I am an error", "So am I")
         println svg
 
         then:

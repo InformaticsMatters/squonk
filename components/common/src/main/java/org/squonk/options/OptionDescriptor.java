@@ -235,6 +235,14 @@ public class OptionDescriptor<T> implements Serializable {
         return editable;
     }
 
+    public Integer getMinValues() {
+        return minValues;
+    }
+
+    public Integer getMaxValues() {
+        return maxValues;
+    }
+
     public Mode[] getModes() {
         return modes;
     }

@@ -156,6 +156,11 @@ public interface StepDefinitionConstants {
          String OPTION_COUNT = "count";
     }
 
+    interface DatasetMoleculesFromFieldStep {
+        String CLASSNAME = "org.squonk.execution.steps.impl.DatasetMoleculesFromFieldStep";
+        String OPTION_MOLECULES_FIELD = "moleculesField";
+    }
+
     interface SmilesStructures {
         String CLASSNAME = "org.squonk.execution.steps.impl.SmilesStructuresStep";
         String OPTION_SMILES = "smiles";

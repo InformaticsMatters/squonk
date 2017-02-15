@@ -114,16 +114,16 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
     }
 
     public String renderSVGError(DepictionParameters depict, String message) {
-        return handleErrorSVG(depict, message);
+        return renderErrorSVG(depict, message);
     }
 
     protected String doRenderSVG(String mol, String molFormat, DepictionParameters depict) {
 
         if (molFormat == null) {
-            return handleErrorSVG(depict, "Format not specified");
+            return renderErrorSVG(depict, "Format not specified");
         }
         if (mol == null || mol.isEmpty()) {
-            return handleErrorSVG(depict, "No structure specified");
+            return renderErrorSVG(depict, "No structure specified");
         }
 
         if (molFormat.startsWith("smiles")) {
@@ -248,7 +248,7 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
             return IOUtils.convertStreamToString(is);
         } catch (IOException e) {
             LOG.log(Level.FINE, "Failed to generate svg", e);
-            return handleErrorSVG(depict, "Failed to generate svg", e.getClass().getName());
+            return renderErrorSVG(depict, "Failed to generate svg", e.getClass().getName());
         }
     }
 
@@ -263,7 +263,7 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
             return IOUtils.convertStreamToString(is);
         } catch (IOException e) {
             LOG.log(Level.FINE, "Failed to generate image", e);
-            return handleErrorSVG(depict, "Failed to generate image", e.getClass().getName());
+            return renderErrorSVG(depict, "Failed to generate image", e.getClass().getName());
         }
     }
 
@@ -305,7 +305,7 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
         return new byte[0];
     }
 
-    protected String handleErrorSVG(DepictionParameters depict, String message) {
+    public String renderErrorSVG(DepictionParameters depict, String message) {
         float viewHeight = 300 * depict.getHeight() / depict.getWidth();
         String results = SVG_TEXT1_TEMPLATE
                 .replace("__width__", depict.getWidth().toString())
@@ -316,13 +316,13 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
         return results;
     }
 
-    protected String handleErrorSVG(DepictionParameters depict, String message1, String message2) {
+    public String renderErrorSVG(DepictionParameters depict, String line1, String line2) {
         float viewHeight = 300 * depict.getHeight() / depict.getWidth();
         String results = SVG_TEXT2_TEMPLATE
                 .replace("__width__", depict.getWidth().toString())
                 .replace("__height__", depict.getHeight().toString())
-                .replace("__text1__", message1)
-                .replace("__text2__", message2)
+                .replace("__text1__", line1)
+                .replace("__text2__", line2)
                 .replace("__box_height__", "" + viewHeight);
 
         return results;
@@ -354,7 +354,7 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
 
         @Override
         public String[] getSupportedMoleculeFormats() {
-            return new String[] {"smiles", "mol", "mol:v2"};
+            return new String[] {"smiles", "mol", "mol:v2", "mol:v3"};
         }
 
     }

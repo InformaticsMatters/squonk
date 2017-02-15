@@ -36,7 +36,7 @@ public class DatasetSelectSliceStep extends AbstractStep {
         if (ds == null) {
             throw new IllegalStateException("Input variable not found: input");
         }
-        LOG.info("Input Dataset: " + ds);
+        LOG.fine("Input Dataset: " + ds);
 
         Integer skip = getOption(OPTION_SKIP, Integer.class);
         Integer count = getOption(OPTION_COUNT, Integer.class);

@@ -65,7 +65,6 @@ public class DatasetMetadata<T extends BasicObject> implements Serializable, Clo
     @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
     private final Map<String, Object> properties = new LinkedHashMap<>();
 
-    //@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
     private final Map<String, PropertiesHolder> fieldMetaProps = new LinkedHashMap<>();
 
     public DatasetMetadata(
