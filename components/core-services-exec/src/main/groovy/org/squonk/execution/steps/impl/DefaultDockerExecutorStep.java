@@ -27,6 +27,7 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
 
     private static final String OPTION_DOCKER_COMMAND = StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_COMMAND;
     protected String DOCKER_SERVICES_DIR = IOUtils.getConfiguration("SQUONK_DOCKER_SERVICES_DIR", "../../data/testfiles/docker-services");
+    protected Integer DEBUG_MODE = new Integer(IOUtils.getConfiguration("SQUONK_DEBUG_MODE", "0"));
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
@@ -52,6 +53,8 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
     }
 
     protected void doExecute(VariableManager varman, CamelContext context, DockerServiceDescriptor descriptor) throws Exception {
+
+        LOG.info("Debug Mode: " + DEBUG_MODE);
 
         statusMessage = MSG_PREPARING_CONTAINER;
 
@@ -116,6 +119,7 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
 
             // write the input data
             if (inputDescriptors != null) {
+                LOG.info("Handling " + inputDescriptors.length + " inputs");
                 for (IODescriptor d : inputDescriptors) {
                     LOG.info("Writing input for " + d.getName() + " " + d.getMediaType());
                     handleInput(varman, runner, d);
@@ -141,6 +145,7 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
             // handle the output
             statusMessage = MSG_PREPARING_OUTPUT;
             if (outputDescriptors != null) {
+                LOG.info("Handling " + outputDescriptors.length + " outputs");
                 for (IODescriptor d : outputDescriptors) {
                     handleOutput(varman, runner, d);
                 }
@@ -158,8 +163,10 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
 
         } finally {
             // cleanup
-            runner.cleanup();
-            LOG.info("Results cleaned up");
+            if (DEBUG_MODE < 2) {
+                runner.cleanup();
+                LOG.info("Results cleaned up");
+            }
         }
     }
 
