@@ -6,6 +6,7 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.dataset.ThinDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
@@ -49,7 +50,8 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Verify+structure+%28RDKit%29",
                     "verify",
-                    new OptionDescriptor[] {OptionDescriptor.IS_FILTER, OptionDescriptor.FILTER_MODE}),
+                    new OptionDescriptor[]{OptionDescriptor.FILTER_MODE},
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "rdkit.calculators.logp",
                     "LogP (RDKit)",
@@ -58,7 +60,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/LogP+%28RDKit%29",
                     "logp",
-                    null),
+                    null, null),
             createServiceDescriptor(
                     "rdkit.calculators.frac_c_sp3",
                     "Frac sp3 C (RDKit)",
@@ -67,7 +69,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Frac+sp3+C+%28RDKit%29",
                     "frac_c_sp3",
-                    null),
+                    null, null),
             createServiceDescriptor(
                     "rdkit.calculators.lipinski",
                     "Lipinski (RDKit)",
@@ -76,7 +78,8 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/filter_molecules.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Lipinski+filter+%28RDKit%29",
                     "lipinski",
-                    createLipinskiOptionDescriptors()),
+                    createLipinskiOptionDescriptors(),
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "rdkit.calculators.ruleofthree",
                     "Rule of 3 (RDKit)",
@@ -85,7 +88,8 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/filter_molecules.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Rule+of+3+filter+%28RDKit%29",
                     "ruleofthree",
-                    createRuleOfThreeOptionDescriptors()),
+                    createRuleOfThreeOptionDescriptors(),
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "rdkit.calculators.ghose",
                     "Ghose filter (RDKit)",
@@ -94,7 +98,8 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/filter_molecules.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Ghose+filter+%28RDKit%29",
                     "ghose",
-                    createGhoseFilterOptionDescriptors()),
+                    createGhoseFilterOptionDescriptors(),
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "rdkit.calculators.veber",
                     "Veber filter (RDKit)",
@@ -103,7 +108,8 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/filter_molecules.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Veber+filter+%28RDKit%29",
                     "veber",
-                    createVeberFilterOptionDescriptors()),
+                    createVeberFilterOptionDescriptors(),
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "rdkit.calculators.reos",
                     "REOS (RDKit)",
@@ -112,7 +118,8 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/filter_molecules.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/REOS+Filter+%28RDKit%29",
                     "reos",
-                    createReosOptionDescriptors()),
+                    createReosOptionDescriptors(),
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "rdkit.calculators.donors_acceptors",
                     "HBA & HBD (RDKit)",
@@ -121,7 +128,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/HBA+%26+HBD+%28RDKit%29",
                     "donors_acceptors",
-                    null),
+                    null, null),
             createServiceDescriptor(
                     "rdkit.calculators.molar_refractivity",
                     "Molar Refractivity (RDKit)",
@@ -130,7 +137,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Molar+Refractivity+%28RDKit%29",
                     "molar_refractivity",
-                    null),
+                    null, null),
             createServiceDescriptor(
                     "rdkit.calculators.tpsa",
                     "TPSA (RDKit)",
@@ -139,7 +146,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/TPSA+%28RDKit%29",
                     "tpsa",
-                    null),
+                    null, null),
             createServiceDescriptor(
                     "rdkit.calculators.rings",
                     "Ring Count (RDKit)",
@@ -148,7 +155,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Rotatable+bonds+%28RDKit%29",
                     "rings",
-                    null),
+                    null, null),
             createServiceDescriptor(
                     "rdkit.calculators.rotatable_bonds",
                     "Rotatable bonds (RDKit)",
@@ -157,7 +164,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "",
                     "rotatable_bonds",
-                    null),
+                    null, null),
             createServiceDescriptor(
                     "rdkit.calculators.canonical_smiles",
                     "Canonical Smiles (RDKit)",
@@ -166,10 +173,11 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Canonical+Smiles+%28RDKit%29",
                     "canonical_smiles",
-                    new OptionDescriptor[] {
+                    new OptionDescriptor[]{
                             new OptionDescriptor<>(String.class, "query.mode", "Fragment mode", "How to handle molecules with multiple fragments", Mode.User)
                                     .withValues(fragmentModesToStringArray())
-                    }),
+                    },
+                    null),
             createServiceDescriptor(
                     "rdkit.calculators.formal_charge",
                     "Formal Charge (RDKit)",
@@ -178,27 +186,26 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Formal+Charge+%28RDKit%29",
                     "formal_charge",
-                    null)
+                    null, null)
 
     };
 
     static private OptionDescriptor[] createLipinskiOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.IS_FILTER);
         list.add(OptionDescriptor.FILTER_MODE);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(1)
-                .withMinMaxValues(1,1));
+                .withMinMaxValues(1, 1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
-                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 500f)));
+                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Float(0f, 500f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
-                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 5.0f)));
+                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Float(null, 5.0f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + LIPINSKI_HBD.getName(),
-                "HBD count", "H-bond donor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
+                "HBD count", "H-bond donor count", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Integer(0, 5)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + LIPINSKI_HBA.getName(),
-                "HBA count", "H-bond acceptor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+                "HBA count", "H-bond acceptor count", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Integer(0, 10)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -206,22 +213,21 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createRuleOfThreeOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.IS_FILTER);
         list.add(OptionDescriptor.FILTER_MODE);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
-                .withMinMaxValues(1,1));
+                .withMinMaxValues(1, 1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
-                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(null, 3.0f)));
+                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Float(null, 3.0f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
-                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 300f)));
+                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Float(0f, 300f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBD.getName(),
-                "HBD count", "H-bond donor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+                "HBD count", "H-bond donor count", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Integer(0, 3)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBA.getName(),
-                "HBA count", "H-bond acceptor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+                "HBA count", "H-bond acceptor count", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Integer(0, 3)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_ROTATABLE_BONDS.getName(),
-                "Rot bond count", "Rotatable bond count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 3)));
+                "Rot bond count", "Rotatable bond count", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Integer(0, 3)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -229,20 +235,19 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createGhoseFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.IS_FILTER);
         list.add(OptionDescriptor.FILTER_MODE);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
-                .withMinMaxValues(1,1));
+                .withMinMaxValues(1, 1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
-                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-0.4f, 5.6f)));
+                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Float(-0.4f, 5.6f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
-                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(160f, 480f)));
+                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Float(160f, 480f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ATOM_COUNT.getName(),
-                "Atom count", "Atom count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(20, 70)));
+                "Atom count", "Atom count", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Integer(20, 70)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + MOLAR_REFRACTIVITY.getName(),
-                "Refractivity", "Molar Refractivity", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(40f, 130f)));
+                "Refractivity", "Molar Refractivity", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Float(40f, 130f)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -251,26 +256,25 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createReosOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.IS_FILTER);
         list.add(OptionDescriptor.FILTER_MODE);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
-                .withMinMaxValues(1,1));
+                .withMinMaxValues(1, 1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + EXACT_MW.getName(),
-                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(200f, 500f)));
+                "Mol weight", "Molecular weight", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Float(200f, 500f)));
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + LOGP.getName(),
-                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(-5.0f, 5.0f)));
+                "LogP", "LogP partition coefficient", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Float(-5.0f, 5.0f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBD.getName(),
-                "HBD count", "H-bond donor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 5)));
+                "HBD count", "H-bond donor count", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Integer(0, 5)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_HBA.getName(),
-                "HBA count", "H-bond acceptor count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+                "HBA count", "H-bond acceptor count", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Integer(0, 10)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + FORMAL_CHARGE.getName(),
-                "Formal charge", "Formal charge", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(-2, 2)));
+                "Formal charge", "Formal charge", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Integer(-2, 2)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_ROTATABLE_BONDS.getName(),
-                "Rot bond count", "Rotatable bond count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 8)));
+                "Rot bond count", "Rotatable bond count", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Integer(0, 8)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + HEAVY_ATOM_COUNT.getName(),
-                "Heavy atom count", "Heavy atom count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(15, 50)));
+                "Heavy atom count", "Heavy atom count", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Integer(15, 50)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -278,16 +282,15 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createVeberFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.IS_FILTER);
         list.add(OptionDescriptor.FILTER_MODE);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
-                .withMinMaxValues(1,1));
+                .withMinMaxValues(1, 1));
 
         list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + TPSA.getName(),
-                "TPSA", "Topological polar surface area", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Float(0f, 140f)));
+                "TPSA", "Topological polar surface area", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Float(0f, 140f)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + NUM_ROTATABLE_BONDS.getName(),
-                "Rot bond count", "Rotatable bond count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 10)));
+                "Rot bond count", "Rotatable bond count", Mode.User).withMinMaxValues(0, 1).withDefaultValue(new NumberRange.Integer(0, 10)));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -296,8 +299,8 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static String[] fragmentModesToStringArray() {
 
         String[] values = new String[FragmentMode.values().length];
-        int i=0;
-        for (FragmentMode mode: FragmentMode.values()) {
+        int i = 0;
+        for (FragmentMode mode : FragmentMode.values()) {
             values[i] = mode.toString();
             i++;
         }
@@ -305,8 +308,9 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     }
 
 
-    static HttpServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String icon, String resourceUrl,
-                                                         String endpoint, OptionDescriptor[] options) {
+    static HttpServiceDescriptor createServiceDescriptor(
+            String serviceDescriptorId, String name, String desc, String[] tags, String icon, String resourceUrl,
+            String endpoint, OptionDescriptor[] options, ThinDescriptor thinDescriptor) {
 
         return new HttpServiceDescriptor(
                 serviceDescriptorId,
@@ -315,9 +319,10 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                 tags,
                 resourceUrl,
                 icon,
-                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input")},
-                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output")},
+                IODescriptors.createMoleculeObjectDataset("input"),
+                IODescriptors.createMoleculeObjectDataset("output"),
                 options,
+                thinDescriptor,
                 StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME,
                 endpoint
         );

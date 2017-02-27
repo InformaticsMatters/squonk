@@ -1,20 +1,25 @@
 package org.squonk.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.squonk.dataset.ThinDescriptor;
+import org.squonk.dataset.ThinFieldDescriptor;
 import org.squonk.io.IODescriptor;
 import org.squonk.options.OptionDescriptor;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Created by timbo on 04/01/17.
  */
 public class AbstractServiceDescriptor implements ServiceDescriptor {
 
-    protected final ServiceConfig serviceConfig;
+    final ServiceConfig serviceConfig;
+    final ThinDescriptor[] thinDescriptors;
 
-    protected AbstractServiceDescriptor(ServiceConfig serviceConfig) {
+    protected AbstractServiceDescriptor(ServiceConfig serviceConfig, ThinDescriptor[] thinDescriptors) {
         this.serviceConfig = serviceConfig;
+        this.thinDescriptors = thinDescriptors;
     }
 
 
@@ -30,10 +35,13 @@ public class AbstractServiceDescriptor implements ServiceDescriptor {
             IODescriptor[] inputDescriptors,
             IODescriptor[] outputDescriptors,
             OptionDescriptor[] optionDescriptors,
+            ThinDescriptor[] thinDescriptors,
             String executorClassName) {
 
-        this.serviceConfig = new ServiceConfig(id, name, description, tags, resourceUrl, icon,
-                inputDescriptors, outputDescriptors, optionDescriptors, status, statusLastChecked, executorClassName);
+        this(new ServiceConfig(id, name, description, tags, resourceUrl, icon,
+                inputDescriptors, outputDescriptors, optionDescriptors, status, statusLastChecked, executorClassName),
+                thinDescriptors);
+
 
     }
 
@@ -46,5 +54,10 @@ public class AbstractServiceDescriptor implements ServiceDescriptor {
     @Override
     public ServiceConfig getServiceConfig() {
         return serviceConfig;
+    }
+
+
+    public ThinDescriptor[] getThinDescriptors() {
+        return thinDescriptors;
     }
 }

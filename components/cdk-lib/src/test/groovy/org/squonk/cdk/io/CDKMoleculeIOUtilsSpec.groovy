@@ -63,7 +63,8 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
     void "read molecule guess format"() {
          
         expect:
-        CDKMoleculeIOUtils.readMolecule(source) instanceof IAtomContainer
+        IAtomContainer mol = CDKMoleculeIOUtils.readMolecule(source)
+        mol.getAtomCount() > 0
 
         where:
         source << [Molecules.ethanol.smiles, Molecules.ethanol.v2000, Molecules.ethanol.v3000]

@@ -44,7 +44,7 @@ class DefaultDockerExecutorStepSpec extends Specification {
         DockerServiceDescriptor ded = new DockerServiceDescriptor("id.busybox", "name", "desc",  null, null, null, null, null,
                 [IODescriptors.createMoleculeObjectDataset(inputWrite)] as IODescriptor[], [IORoute.FILE] as IORoute[],
                 [IODescriptors.createMoleculeObjectDataset(outputRead)] as IODescriptor[], [IORoute.FILE] as IORoute[],
-                null, "executor", 'busybox', cmd, [:])
+                null, null, "executor", 'busybox', cmd, [:])
 
         DefaultDockerExecutorStep step = new DefaultDockerExecutorStep()
         step.configure(producer, "job1",

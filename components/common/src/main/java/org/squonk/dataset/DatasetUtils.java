@@ -57,4 +57,14 @@ public class DatasetUtils {
             return result;
         }
     }
+
+    public static ThinDatasetWrapper createThinDatasetWrapper(ThinDescriptor td, Class type, Map<String,Object> options) {
+        Boolean isFiltering = td.isFiltering();
+        Boolean isPreserve = td.isPreserve();
+
+        return new ThinDatasetWrapper(type,
+                isFiltering == null ? false: isFiltering, // null means false - the service does not filter
+                isPreserve == null ? true : isPreserve,   // null means true - the service does not modify the core details and might return BasicObjects
+                td.getFieldDescriptors(), options);
+    }
 }

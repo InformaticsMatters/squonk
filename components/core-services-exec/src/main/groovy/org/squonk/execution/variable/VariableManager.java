@@ -71,6 +71,7 @@ public class VariableManager {
     public <V> void putValue(Class<V> type, V value, VariableHandler.WriteContext context) throws Exception {
 
         VariableHandler<V> vh = variableHandlerRegistry.lookup(type);
+        LOG.info("Using write variable handler " + vh + " for type " + type.getName());
         if (vh != null) {
             vh.writeVariable(value, context);
         } else if (canBeHandledAsString(value.getClass())) {
@@ -105,7 +106,7 @@ public class VariableManager {
     public <V> V getValue(Class<V> type, VariableHandler.ReadContext context) throws Exception {
 
         VariableHandler<V> vh = variableHandlerRegistry.lookup(type);
-        LOG.finer("Using variable handler " + vh + " for type " + type.getName());
+        LOG.info("Using read variable handler " + vh + " for type " + type.getName());
 
         if (vh != null) {
             V result = (V) vh.readVariable(context);
@@ -117,6 +118,10 @@ public class VariableManager {
             return s == null ? null : (V) c.newInstance(s);
         }
         throw new IllegalArgumentException("Don't know how to handle value of type " + type.getName());
+    }
+
+    public <S,T> T convertValue(Class<S> from, Class<T> to, S value) {
+        return null;
     }
 
 

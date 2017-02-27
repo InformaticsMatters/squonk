@@ -27,6 +27,7 @@ public class FilesystemWriteContext extends AbstractFilesystemContext implements
 
     @Override
     public void writeStreamValue(InputStream value, String key) throws Exception {
+        System.out.println("Writing to file using key " + key);
         File f = generateFile(key);
         boolean gzip = key.toLowerCase().endsWith(".gz");
         try (OutputStream out = gzip ? new GZIPOutputStream( new FileOutputStream(f)): new FileOutputStream(f)) {

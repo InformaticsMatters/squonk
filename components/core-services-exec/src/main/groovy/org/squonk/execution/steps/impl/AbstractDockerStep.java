@@ -11,6 +11,7 @@ import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -106,7 +107,12 @@ public abstract class AbstractDockerStep extends AbstractStep {
 
     protected void writeAsSDF(InputStream sdf, DockerRunner runner) throws IOException {
         LOG.fine("Writing SDF");
-        runner.writeInput("input.sdf.gz", IOUtils.getGzippedInputStream(sdf));
+        //runner.writeInput("input.sdf.gz", IOUtils.getGzippedInputStream(sdf));
+
+        String data = IOUtils.convertStreamToString(sdf);
+        LOG.info("DATA: " + data);
+
+        runner.writeInput("input.sdf.gz", IOUtils.getGzippedInputStream(new ByteArrayInputStream(data.getBytes())));
     }
 
     protected DatasetMetadata readAsDataset(DatasetMetadata inputMetadata, VariableManager varman, DockerRunner runner) throws Exception {

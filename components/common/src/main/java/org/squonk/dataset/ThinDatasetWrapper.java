@@ -4,17 +4,13 @@ package org.squonk.dataset;
 import org.squonk.types.BasicObject;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Queue;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
- *
  * Created by timbo on 19/01/17.
  */
 public class ThinDatasetWrapper<T extends BasicObject> {
@@ -24,18 +20,26 @@ public class ThinDatasetWrapper<T extends BasicObject> {
     private final boolean filtering;
     private final boolean preserve;
     private final Class<T> type;
-
+    private final ThinFieldDescriptor[] thinFieldDescriptors;
+    private final Map<String, Object> options;
 
     private Cache<T> cache;
     private DatasetMetadata<T> requestMetadata;
 
     public ThinDatasetWrapper(Class<T> type, boolean filtering, boolean preserve) {
+        this(type, filtering, preserve, new ThinFieldDescriptor[0], Collections.emptyMap());
+    }
+
+    public ThinDatasetWrapper(Class<T> type, boolean filtering, boolean preserve, ThinFieldDescriptor[] thinFieldDescriptors, Map<String, Object> options) {
         this.type = type;
         this.filtering = filtering;
         this.preserve = preserve;
+        this.thinFieldDescriptors = thinFieldDescriptors;
+        this.options = options;
     }
 
-    /** Does the service filter the input (true) or provide all the input records as output (and in the same order).
+    /**
+     * Does the service filter the input (true) or provide all the input records as output (and in the same order).
      *
      * @return
      */
@@ -44,7 +48,8 @@ public class ThinDatasetWrapper<T extends BasicObject> {
     }
 
 
-    /** Is the main element (e.g. structure for a MoleculeObject) preserved during execution (true) or is it modified and
+    /**
+     * Is the main element (e.g. structure for a MoleculeObject) preserved during execution (true) or is it modified and
      * needs to incorporated into results replacing the original.
      *
      * @return
@@ -53,16 +58,17 @@ public class ThinDatasetWrapper<T extends BasicObject> {
         return preserve;
     }
 
-//    /** Get the fields (values) that will be sent to the service. Keys are the name of the field in the input, value is the
-//     * name that the service expects.
-//     *
-//     * @return
-//     */
-//    Map<String,String> getFieldMappings();
+    /**
+     * Get the field mappings that define what will be sent to the service.
+     *
+     * @return
+     */
+    public ThinFieldDescriptor[] getThinFieldDescriptors() {
+        return thinFieldDescriptors;
+    }
 
-
-
-    /** Create the thin input whihc basically involves stripping out all values and leaving the "bare" object e.g. the
+    /**
+     * Create the thin input which basically involves stripping out all values and leaving the "bare" object e.g. the
      * MoleculeObject with its UUID and structure, but no values.
      *
      * @param inputDataset
@@ -82,9 +88,15 @@ public class ThinDatasetWrapper<T extends BasicObject> {
                 .map(fat -> {
                     cache.put(fat);
                     //LOG.info("Fat object:  " + fat);
-                    T thin = (T)fat.clone();
+                    T thin = (T) fat.clone();
                     thin.clearValues();
-                    // TODO - allow to incorporate specified values
+
+                    if (thinFieldDescriptors != null) {
+                        for (ThinFieldDescriptor mapping : thinFieldDescriptors) {
+                            mapInputField(mapping, fat, thin);
+                        }
+                    }
+
                     //LOG.info("Thin object: " + thin);
                     return thin;
                 });
@@ -95,7 +107,44 @@ public class ThinDatasetWrapper<T extends BasicObject> {
         return new Dataset<T>(type, stream, newMetadata);
     }
 
-    /** Recombine the results with the original data as needed.
+    private void mapInputField(ThinFieldDescriptor thinDescriptor, T fat, T thin) {
+        String fieldName = thinDescriptor.getFieldName();
+        String optionName = thinDescriptor.getOptionName();
+
+        LOG.fine("Incorporating thin field: " + optionName + " -> " + fieldName);
+        Object v = null;
+        if (fieldName != null && optionName != null) {
+            Object optVal = options.get(optionName);
+            LOG.finer("OptVal:" + optVal);
+            if (optVal != null) {
+                v = fat.getValue(optVal.toString());
+                if (v != null) {
+                    thin.putValue(fieldName, v);
+                }
+            }
+        } else if (fieldName != null && optionName == null) {
+            v = fat.getValue(fieldName);
+            if (v != null) {
+                thin.putValue(fieldName, v);
+            }
+        } else if (fieldName == null && optionName != null) {
+            Object optVal = options.get(optionName);
+            if (optVal != null) {
+                v = fat.getValue(optVal.toString());
+                if (v != null) {
+                    thin.putValue(optVal.toString(), v);
+                }
+            }
+        } else {
+            throw new IllegalStateException("Must specify fieldName or optionName or both");
+        }
+        if (v != null) {
+            LOG.finer("Incorproated value " + v);
+        }
+    }
+
+    /**
+     * Recombine the results with the original data as needed.
      *
      * @param results
      * @return
@@ -126,9 +175,9 @@ public class ThinDatasetWrapper<T extends BasicObject> {
                     neu = o;
                 } else {
                     // this cast is safe as we already know the results are of the type we expect
-                    neu = (T)result;
+                    neu = (T) result;
                     // use the returned object and its values but also the keep the original values if not present in the result
-                    Map<String,Object> resultValues = new LinkedHashMap<>(neu.getValues());
+                    Map<String, Object> resultValues = new LinkedHashMap<>(neu.getValues());
                     neu.clearValues();
                     neu.putValues(o.getValues());
                     neu.putValues(resultValues);
@@ -145,6 +194,7 @@ public class ThinDatasetWrapper<T extends BasicObject> {
 
     interface Cache<T extends BasicObject> {
         T get(UUID uuid);
+
         void put(T bo);
     }
 
@@ -171,7 +221,7 @@ public class ThinDatasetWrapper<T extends BasicObject> {
 
     class MapCache<T extends BasicObject> implements Cache<T> {
 
-        private final Map<UUID,T> map = new ConcurrentHashMap<>();
+        private final Map<UUID, T> map = new ConcurrentHashMap<>();
 
         @Override
         public T get(UUID uuid) {

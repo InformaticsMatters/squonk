@@ -3,6 +3,7 @@ package org.squonk.core;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.squonk.dataset.ThinDescriptor;
 import org.squonk.io.IODescriptor;
 import org.squonk.options.OptionDescriptor;
 
@@ -46,8 +47,9 @@ public class HttpServiceDescriptor extends AbstractServiceDescriptor implements 
     @JsonCreator
     public HttpServiceDescriptor(
             @JsonProperty("serviceConfig") ServiceConfig serviceConfig,
+            @JsonProperty("thinDescriptors") ThinDescriptor[] thinDescriptors,
             @JsonProperty("executionEndpoint") String executionEndpoint) {
-        super(serviceConfig);
+        super(serviceConfig, thinDescriptors);
         this.executionEndpoint = executionEndpoint;
     }
 
@@ -64,12 +66,33 @@ public class HttpServiceDescriptor extends AbstractServiceDescriptor implements 
             IODescriptor[] inputDescriptors,
             IODescriptor[] outputDescriptors,
             OptionDescriptor[] optionDescriptors,
+            ThinDescriptor[] thinDescriptors,
             String executorClassName,
             String executionEndpoint) {
 
-        super(id, name, description, tags, resourceUrl, icon, status, statusLastChecked, inputDescriptors, outputDescriptors, optionDescriptors, executorClassName);
+        super(id, name, description, tags, resourceUrl, icon, status, statusLastChecked, inputDescriptors, outputDescriptors, optionDescriptors, thinDescriptors, executorClassName);
         this.executionEndpoint = executionEndpoint;
     }
+
+    public HttpServiceDescriptor(
+            String id,
+            String name,
+            String description,
+            String[] tags,
+            String resourceUrl,
+            String icon,
+            ServiceConfig.Status status,
+            Date statusLastChecked,
+            IODescriptor[] inputDescriptors,
+            IODescriptor[] outputDescriptors,
+            OptionDescriptor[] optionDescriptors,
+            String executorClassName,
+            String executionEndpoint) {
+
+        super(id, name, description, tags, resourceUrl, icon, status, statusLastChecked, inputDescriptors, outputDescriptors, optionDescriptors, null, executorClassName);
+        this.executionEndpoint = executionEndpoint;
+    }
+
 
     public HttpServiceDescriptor(
             String id,
@@ -93,6 +116,22 @@ public class HttpServiceDescriptor extends AbstractServiceDescriptor implements 
             String[] tags,
             String resourceUrl,
             String icon,
+            IODescriptor[] inputDescriptors,
+            IODescriptor[] outputDescriptors,
+            OptionDescriptor[] options,
+            ThinDescriptor[] thinDescriptors,
+            String executorClassName,
+            String executionEndpoint) {
+        this(id, name, description, tags, resourceUrl, icon, ServiceConfig.Status.UNKNOWN, null, inputDescriptors, outputDescriptors, options, thinDescriptors, executorClassName, executionEndpoint);
+    }
+
+    public HttpServiceDescriptor(
+            String id,
+            String name,
+            String description,
+            String[] tags,
+            String resourceUrl,
+            String icon,
             IODescriptor inputDescriptor,
             IODescriptor outputDescriptor,
             OptionDescriptor[] options,
@@ -101,6 +140,27 @@ public class HttpServiceDescriptor extends AbstractServiceDescriptor implements 
         this(id, name, description, tags, resourceUrl, icon,
                 new IODescriptor[]{inputDescriptor}, new IODescriptor[]{outputDescriptor}, options, executorClassName, executionEndpoint);
     }
+
+
+    public HttpServiceDescriptor(
+            String id,
+            String name,
+            String description,
+            String[] tags,
+            String resourceUrl,
+            String icon,
+            IODescriptor inputDescriptor,
+            IODescriptor outputDescriptor,
+            OptionDescriptor[] options,
+            ThinDescriptor thinDescriptor,
+            String executorClassName,
+            String executionEndpoint) {
+        this(id, name, description, tags, resourceUrl, icon,
+                new IODescriptor[]{inputDescriptor}, new IODescriptor[]{outputDescriptor}, options,
+                thinDescriptor == null ? null : new ThinDescriptor[] {thinDescriptor},
+                executorClassName, executionEndpoint);
+    }
+
 
     public String getExecutionEndpoint() {
         return executionEndpoint;

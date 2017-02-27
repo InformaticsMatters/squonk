@@ -34,9 +34,6 @@ import static org.squonk.util.CommonConstants.*;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public class OptionDescriptor<T> implements Serializable {
 
-    public static OptionDescriptor IS_FILTER = new OptionDescriptor<>(Boolean.class, "option.filter", "filter mode", "filter mode", Mode.User)
-            .withDefaultValue(true).withAccess(false, false);
-
     public static OptionDescriptor FILTER_MODE = new OptionDescriptor<>(String.class,
             "query." + OPTION_FILTER_MODE, "Filter mode", "How to filter results", Mode.User)
             .withValues(new String[] {VALUE_INCLUDE_PASS, VALUE_INCLUDE_FAIL, VALUE_INCLUDE_ALL})

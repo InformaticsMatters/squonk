@@ -1,11 +1,12 @@
 package org.squonk.execution.steps.impl;
 
+import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.dataset.*;
+import org.squonk.io.IODescriptor;
 import org.squonk.types.MoleculeObject;
 import org.apache.camel.CamelContext;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
-import org.squonk.dataset.Dataset;
-import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
@@ -29,9 +30,24 @@ public class MoleculeServiceBasicExecutorStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
+
         statusMessage = MSG_PREPARING_INPUT;
 
-        Dataset<MoleculeObject> dataset = fetchMappedInput("input", Dataset.class, varman);
+        IODescriptor inputDescriptor = getSingleInputDescriptor();
+        ThinDescriptor td = getThinDescriptor(inputDescriptor);
+        ThinDatasetWrapper thinWrapper = null;
+        if (td != null) {
+            thinWrapper = DatasetUtils.createThinDatasetWrapper(td, inputDescriptor.getSecondaryType(), options);
+        }
+
+        Dataset<MoleculeObject> sourceDataset = fetchMappedInput("input", Dataset.class, varman);
+        Dataset<MoleculeObject> dataset;
+        if (thinWrapper != null) {
+            dataset = thinWrapper.prepareInput(sourceDataset);
+        } else {
+            dataset = sourceDataset;
+        }
+
         String endpoint = getHttpExecutionEndpoint();
 
         InputStream input = JsonHandler.getInstance().marshalStreamToJsonArray(dataset.getStream(), false);

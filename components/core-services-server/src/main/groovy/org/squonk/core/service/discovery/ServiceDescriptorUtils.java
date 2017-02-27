@@ -40,6 +40,7 @@ public class ServiceDescriptorUtils {
             if (!isAbsoluteUrl(endpoint)) {
                 return new HttpServiceDescriptor(
                         httpHttpServiceDescriptor.getServiceConfig(),
+                        httpHttpServiceDescriptor.getThinDescriptors(),
                         makeAbsoluteUrl(baseUrl, httpHttpServiceDescriptor)
                 );
             } else {

@@ -27,7 +27,6 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
 
     private static final String OPTION_DOCKER_COMMAND = StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_COMMAND;
     protected String DOCKER_SERVICES_DIR = IOUtils.getConfiguration("SQUONK_DOCKER_SERVICES_DIR", "../../data/testfiles/docker-services");
-    protected Integer DEBUG_MODE = new Integer(IOUtils.getConfiguration("SQUONK_DEBUG_MODE", "0"));
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
@@ -41,41 +40,44 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
         }
         DockerServiceDescriptor descriptor = (DockerServiceDescriptor) serviceDescriptor;
 
-        IODescriptor[] inputDescriptors = descriptor.getServiceConfig().getInputDescriptors();
-        IODescriptor[] outputDescriptors = descriptor.getServiceConfig().getOutputDescriptors();
-        LOG.info("Input types are " + IOUtils.joinArray(inputDescriptors, ","));
-        LOG.info("Output types are " + IOUtils.joinArray(outputDescriptors, ","));
+        LOG.info("Input types are " + IOUtils.joinArray(descriptor.getServiceConfig().getInputDescriptors(), ","));
+        LOG.info("Output types are " + IOUtils.joinArray(descriptor.getServiceConfig().getOutputDescriptors(), ","));
 
         // this executes this cell
         doExecute(varman, context, descriptor);
-        LOG.info(varman.getTmpVariableInfo());
+        //LOG.info(varman.getTmpVariableInfo());
 
     }
 
-    protected void doExecute(VariableManager varman, CamelContext context, DockerServiceDescriptor descriptor) throws Exception {
-
-        LOG.info("Debug Mode: " + DEBUG_MODE);
+    protected void doExecute(VariableManager varman, CamelContext camelContext, DockerServiceDescriptor descriptor) throws Exception {
 
         statusMessage = MSG_PREPARING_CONTAINER;
 
-        String image = descriptor.getImageName();
+        String image = getOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE, String.class);
+        if (image == null || image.isEmpty()) {
+            image = descriptor.getImageName();
+        }
         if (image == null || image.isEmpty()) {
             statusMessage = "Error: Docker image not defined";
-            throw new IllegalStateException("Docker image not defined. Must be set as value of the executionEndpoint property of the ServiceDescriptor");
+            throw new IllegalStateException(
+                    "Docker image not defined. Must be set as value of the executionEndpoint property of the ServiceDescriptor or as an option named "
+                    + StepDefinitionConstants.OPTION_DOCKER_IMAGE);
         }
 
         String imageVersion = getOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE_VERSION, String.class);
-        if (imageVersion != null) {
+        if (imageVersion != null && !imageVersion.isEmpty()) {
             image = image + ":" + imageVersion;
         }
 
-        String command = descriptor.getCommand();
-        IODescriptor[] inputDescriptors = descriptor.getServiceConfig().getInputDescriptors();
-        IODescriptor[] outputDescriptors = descriptor.getServiceConfig().getOutputDescriptors();
-
+        String command = getOption(OPTION_DOCKER_COMMAND, String.class);
+        if (command == null || command.isEmpty()) {
+            command = descriptor.getCommand();
+        }
         if (command == null || command.isEmpty()) {
             statusMessage = "Error: Docker command not defined";
-            throw new IllegalStateException("Run command is not defined. Should be present as option named " + OPTION_DOCKER_COMMAND);
+            throw new IllegalStateException(
+                    "Run command is not defined. Must be set as value of the command property of the ServiceDescriptor as option named "
+                    + OPTION_DOCKER_COMMAND);
         }
         // command will be something like:
         // screen.py 'c1(c2c(oc1)ccc(c2)OCC(=O)O)C(=O)c1ccccc1' 0.3 --d morgan2
@@ -108,22 +110,18 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
             runner.writeInput("execute", "#!/bin/sh\n" + expandedCommand, true);
 
             // add the resources
-            for (Map.Entry<String, String> e : descriptor.getVolumes().entrySet()) {
-                String dirToMount = e.getKey();
-                String mountAs = e.getValue();
-                Volume v = runner.addVolume(mountAs);
-                runner.addBind(DOCKER_SERVICES_DIR + "/" + dirToMount, v, AccessMode.ro);
-                LOG.info("Volume " + DOCKER_SERVICES_DIR + "/" + dirToMount + " mounted as " + mountAs);
+            if (descriptor.getVolumes() != null) {
+                for (Map.Entry<String, String> e : descriptor.getVolumes().entrySet()) {
+                    String dirToMount = e.getKey();
+                    String mountAs = e.getValue();
+                    Volume v = runner.addVolume(mountAs);
+                    runner.addBind(DOCKER_SERVICES_DIR + "/" + dirToMount, v, AccessMode.ro);
+                    LOG.info("Volume " + DOCKER_SERVICES_DIR + "/" + dirToMount + " mounted as " + mountAs);
+                }
             }
 
             // write the input data
-            if (inputDescriptors != null) {
-                LOG.info("Handling " + inputDescriptors.length + " inputs");
-                for (IODescriptor d : inputDescriptors) {
-                    LOG.info("Writing input for " + d.getName() + " " + d.getMediaType());
-                    handleInput(varman, runner, d);
-                }
-            }
+            handleInputs(camelContext, descriptor, varman, runner);
 
             // run the command
             statusMessage = MSG_RUNNING_CONTAINER;
@@ -143,12 +141,7 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
 
             // handle the output
             statusMessage = MSG_PREPARING_OUTPUT;
-            if (outputDescriptors != null) {
-                LOG.info("Handling " + outputDescriptors.length + " outputs");
-                for (IODescriptor d : outputDescriptors) {
-                    handleOutput(varman, runner, d);
-                }
-            }
+            handleOutputs(camelContext, descriptor, varman, runner);
 
             generateMetrics(runner, "output_metrics.txt", duration);
 
@@ -169,15 +162,36 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
         }
     }
 
-    protected <P,Q> void handleInput(VariableManager varman, DockerRunner runner, IODescriptor<P,Q> descriptor) throws Exception {
-        P value = fetchMappedInput(descriptor.getName(), descriptor.getPrimaryType(), varman, true);
-        FilesystemWriteContext context = new FilesystemWriteContext(runner.getHostWorkDir(), descriptor.getName());
-        varman.putValue(descriptor.getPrimaryType(), value, context);
+    protected void handleInputs(CamelContext camelContext, DockerServiceDescriptor serviceDescriptor, VariableManager varman, DockerRunner runner) throws Exception {
+        IODescriptor[] inputDescriptors = serviceDescriptor.getServiceConfig().getInputDescriptors();
+        if (inputDescriptors != null) {
+            LOG.info("Handling " + inputDescriptors.length + " inputs");
+            for (IODescriptor d : inputDescriptors) {
+                LOG.info("Writing input for " + d.getName() + " " + d.getMediaType());
+                handleInput(camelContext, serviceDescriptor, varman, runner, d);
+            }
+        }
     }
 
-    protected <P, Q> void handleOutput(VariableManager varman, DockerRunner runner, IODescriptor<P, Q> descriptor) throws Exception {
-        FilesystemReadContext context = new FilesystemReadContext(runner.getHostWorkDir(), descriptor.getName());
-        P value = varman.getValue(descriptor.getPrimaryType(), context);
-        createMappedOutput(descriptor.getName(), descriptor.getPrimaryType(), value, varman);
+    protected <P,Q> void handleInput(CamelContext camelContext, DockerServiceDescriptor serviceDescriptor, VariableManager varman, DockerRunner runner, IODescriptor<P,Q> ioDescriptor) throws Exception {
+        P value = fetchMappedInput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), varman, true);
+        FilesystemWriteContext writeContext = new FilesystemWriteContext(runner.getHostWorkDir(), ioDescriptor.getName());
+        varman.putValue(ioDescriptor.getPrimaryType(), value, writeContext);
+    }
+
+    protected <P,Q> void handleOutputs(CamelContext camelContext, DockerServiceDescriptor serviceDescriptor, VariableManager varman, DockerRunner runner) throws Exception {
+        IODescriptor[] outputDescriptors = serviceDescriptor.getServiceConfig().getOutputDescriptors();
+        if (outputDescriptors != null) {
+            LOG.info("Handling " + outputDescriptors.length + " outputs");
+            for (IODescriptor d : outputDescriptors) {
+                handleOutput(camelContext, serviceDescriptor, varman, runner, d);
+            }
+        }
+    }
+
+    protected <P,Q> void handleOutput(CamelContext camelContext, DockerServiceDescriptor serviceDescriptor, VariableManager varman, DockerRunner runner, IODescriptor<P,Q> ioDescriptor) throws Exception {
+        FilesystemReadContext readContext = new FilesystemReadContext(runner.getHostWorkDir(), ioDescriptor.getName());
+        P value = varman.getValue(ioDescriptor.getPrimaryType(), readContext);
+        createMappedOutput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), value, varman);
     }
 }

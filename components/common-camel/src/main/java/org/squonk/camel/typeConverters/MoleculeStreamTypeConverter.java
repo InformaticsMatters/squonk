@@ -11,7 +11,9 @@ import org.squonk.reader.SDFReader;
 import org.squonk.types.SDFile;
 import org.squonk.types.io.JsonHandler;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -20,6 +22,7 @@ import java.util.stream.Stream;
  */
 @Converter
 public class MoleculeStreamTypeConverter {
+
 
     @Converter
     public static Stream<MoleculeObject> convertMoleculeObjectDatasetToStream(MoleculeObjectDataset mods, Exchange exchange) throws IOException {
@@ -82,6 +85,7 @@ public class MoleculeStreamTypeConverter {
         MoleculeObjectDataset dataset = new MoleculeObjectDataset(mols);
         return dataset;
     }
+
 
     @Converter
     public static DatasetMetadata convertJsonToDatasetMetadata(String json, Exchange exchange) throws IOException {
