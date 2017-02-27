@@ -35,9 +35,9 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerScriptRunner
         }
         LOG.fine("Docker image: " + image + ", Script: " + script);
 
-        String hostWorkDir = "/tmp/work";
+
         String localWorkDir = "/source";
-        DockerRunner runner = createDockerRunner(image, hostWorkDir, localWorkDir)
+        DockerRunner runner = createDockerRunner(image, localWorkDir)
                 .withNetwork(ISOLATED_NETWORK_NAME);
         Volume maven = runner.addVolume("/var/maven_repo");
         runner.addBind("/var/maven_repo", maven, AccessMode.ro);

@@ -199,7 +199,7 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
     protected Structure doMolConvert(String mol, String toFormat) throws IOException {
         URIBuilder b = createURIBuilder(getMolConvertBase());
         b.addParameter("format", toFormat);
-        try (InputStream is = executePostAsInputStream(b, mol, null)) {
+        try (InputStream is = executePostAsInputStream(b, mol)) {
             String m = IOUtils.convertStreamToString(is);
             return new Structure(m, toFormat);
         }

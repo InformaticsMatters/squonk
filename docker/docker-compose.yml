@@ -59,6 +59,7 @@ cellexecutor:
         RABBITMQ_SQUONK_PASS: squonk
         SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
         DOCKER_HOST: unix:///var/run/docker.sock
+        SQUONK_DOCKER_WORK_DIR:
         registry.url: https://index.docker.io/v1/
 
 

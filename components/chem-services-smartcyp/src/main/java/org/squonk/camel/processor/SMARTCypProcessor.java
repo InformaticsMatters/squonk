@@ -22,6 +22,7 @@ public class SMARTCypProcessor implements Processor {
     private static final Logger LOG = Logger.getLogger(SMARTCypProcessor.class.getName());
 
     @Override
+    @SuppressWarnings("unchecked")
     public void process(Exchange exch) throws Exception {
         Dataset<MoleculeObject> dataset = exch.getIn().getBody(Dataset.class);
         if (dataset == null || dataset.getType() != MoleculeObject.class) {

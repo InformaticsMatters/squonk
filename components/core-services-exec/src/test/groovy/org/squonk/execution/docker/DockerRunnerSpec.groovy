@@ -11,6 +11,7 @@ import com.github.dockerjava.core.DockerClientConfig
 import com.github.dockerjava.core.command.ExecStartResultCallback
 import com.github.dockerjava.netty.NettyDockerCmdExecFactory
 import spock.lang.Ignore
+import spock.lang.IgnoreIf
 import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit
@@ -20,12 +21,10 @@ import java.util.concurrent.TimeUnit
  */
 class DockerRunnerSpec extends Specification {
 
-    static String TMP_DIR = System.getProperty("java.io.tmpdir")
-
     void "clean workdir"() {
 
         setup:
-        DockerRunner runner = new DockerRunner("busybox", TMP_DIR, "/source")
+        DockerRunner runner = new DockerRunner("busybox", null, "/source")
         runner.init()
 
         when:
@@ -38,7 +37,7 @@ class DockerRunnerSpec extends Specification {
     void "simple execute"() {
 
         setup:
-        DockerRunner runner = new DockerRunner("busybox", TMP_DIR, "/source")
+        DockerRunner runner = new DockerRunner("busybox", null, "/source")
         runner.init()
 
         when:
@@ -135,6 +134,7 @@ class DockerRunnerSpec extends Specification {
 //    }
 
 
+    @IgnoreIf({ !os.linux })
     void "simple input via stdin"() {
 
         setup:

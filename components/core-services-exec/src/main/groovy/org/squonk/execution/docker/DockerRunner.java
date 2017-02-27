@@ -75,6 +75,20 @@ public class DockerRunner {
      * @throws IOException
      */
     public DockerRunner(String imageName, String hostBaseWorkDir, String localWorkDir) {
+
+        LOG.info("Using hostBaseWorkDir of " + hostBaseWorkDir);
+        if (hostBaseWorkDir == null) {
+            hostBaseWorkDir = IOUtils.getConfiguration("SQUONK_DOCKER_WORK_DIR", "/tmp/work");
+        }
+        LOG.info("Using hostBaseWorkDir of " + hostBaseWorkDir);
+
+        // try to create the base dir if it doesn't already exist (which it really should in prod)
+        File f = new File(hostBaseWorkDir);
+        if (!f.exists()) {
+            if (!f.mkdir()) {
+                LOG.warning("Host work dir doesn't exist and couldn't be created - this is not a good sign!");
+            }
+        }
         this.imageName = imageName;
         this.hostWorkDir = new File(hostBaseWorkDir + "/" + UUID.randomUUID().toString());
         this.localWorkDir = localWorkDir;

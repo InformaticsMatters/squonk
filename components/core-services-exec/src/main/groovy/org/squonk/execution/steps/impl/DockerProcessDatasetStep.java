@@ -40,18 +40,10 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
             statusMessage = "Error: Docker command not defined";
             throw new IllegalStateException("Command to run is not defined. Should be present as option named " + OPTION_DOCKER_COMMAND);
         }
-        String hostWorkDir = "/tmp/work";
+
         String localWorkDir = "/source";
 
-        // try to create the hostWorkDir if it doesn't already exist (which it really should in prod)
-        File f = new File(hostWorkDir);
-        if (!f.exists()) {
-            if (!f.mkdir()) {
-                LOG.warning("Host work dir doesn't exist and couldn't be created - this is not a good sign!");
-            }
-        }
-
-        DockerRunner runner = createDockerRunner(image, hostWorkDir, localWorkDir);
+        DockerRunner runner = createDockerRunner(image, localWorkDir);
         LOG.info("Docker image: " + image + ", hostWorkDir: " + runner.getHostWorkDir() + ", script: " + command);
         try {
             // create input files

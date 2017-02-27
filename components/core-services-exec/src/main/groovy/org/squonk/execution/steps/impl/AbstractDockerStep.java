@@ -34,6 +34,10 @@ public abstract class AbstractDockerStep extends AbstractStep {
         return runner;
     }
 
+    protected DockerRunner createDockerRunner(String image, String localWorkDir) throws IOException {
+        return createDockerRunner(image, null, localWorkDir);
+    }
+
     /** Fetch the input using the default name for the input variable
      *
      * @param varman

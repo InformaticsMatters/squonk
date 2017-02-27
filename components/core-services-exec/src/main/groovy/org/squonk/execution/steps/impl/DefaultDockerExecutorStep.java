@@ -94,11 +94,10 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
         LOG.info("Template: " + command);
         String expandedCommand = GroovyUtils.expandTemplate(command, args);
         LOG.fine("Command: " + expandedCommand);
-
-        String hostWorkDir = "/tmp/work";
+        
         String localWorkDir = "/source";
 
-        DockerRunner runner = createDockerRunner(image, hostWorkDir, localWorkDir);
+        DockerRunner runner = createDockerRunner(image, localWorkDir);
         LOG.info("Docker image: " + image + ", hostWorkDir: " + runner.getHostWorkDir() + ", command: " + expandedCommand);
         try {
             // create input files

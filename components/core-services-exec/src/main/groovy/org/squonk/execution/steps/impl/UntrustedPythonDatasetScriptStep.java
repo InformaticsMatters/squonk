@@ -1,6 +1,7 @@
 package org.squonk.execution.steps.impl;
 
 import org.squonk.execution.docker.DockerRunner;
+import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -32,9 +33,8 @@ public class UntrustedPythonDatasetScriptStep extends AbstractDockerScriptRunner
         }
         LOG.fine("Docker image: " + image + ", Script: " + script);
 
-        String hostWorkDir = "/tmp/work";
         String localWorkDir = "/source";
-        DockerRunner runner = createDockerRunner(image, hostWorkDir, localWorkDir)
+        DockerRunner runner = createDockerRunner(image, localWorkDir)
                 .withNetwork(ISOLATED_NETWORK_NAME);
 
         LOG.info("Writing script file");

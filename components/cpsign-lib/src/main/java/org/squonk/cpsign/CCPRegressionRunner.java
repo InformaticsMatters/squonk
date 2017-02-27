@@ -133,7 +133,7 @@ public class CCPRegressionRunner extends AbstractCCPRunner {
         String path = UUID.randomUUID().toString();
         File dir = new File(dataDir, path);
         if (!dir.mkdir()) {
-            throw new IOException("Could not create work dir");
+            throw new IOException("Could not create work dir " + dataDir + "/" + path);
         }
         signCCP.writeModelFiles(new File(dir, modelFilebase), compress);
         signCCP.writeSignatures(new FileOutputStream(new File(dir, signaturesFilename)), compress);
