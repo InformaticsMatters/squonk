@@ -70,7 +70,7 @@ public class DockerRunner {
 
     /**
      * @param imageName       The Docker image to run. Must already be pulled
-     * @param hostBaseWorkDir The directory on the host that will be used to create a work dir. Must exist and be writeable.
+     * @param hostBaseWorkDir The directory on the host that will be used to create a work dir. Must exist or be creatable and be writeable.
      * @param localWorkDir    The name under which the host work dir will be mounted in the new container
      * @throws IOException
      */
