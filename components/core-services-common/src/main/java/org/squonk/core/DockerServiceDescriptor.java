@@ -3,6 +3,8 @@ package org.squonk.core;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.squonk.dataset.ThinDescriptor;
+import org.squonk.dataset.ThinFieldDescriptor;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IORoute;
 import org.squonk.options.OptionDescriptor;
@@ -47,12 +49,13 @@ public class DockerServiceDescriptor extends AbstractServiceDescriptor {
     @JsonCreator
     public DockerServiceDescriptor(
             @JsonProperty("serviceConfig") ServiceConfig serviceConfig,
+            @JsonProperty("thinDescriptors") ThinDescriptor[] thinDescriptors,
             @JsonProperty("inputRoutes") IORoute[] inputRoutes,
             @JsonProperty("outputRoutes") IORoute[] outputRoutes,
             @JsonProperty("imageName") String imageName,
             @JsonProperty("command") String command,
             @JsonProperty("volumes") Map<String, String> volumes) {
-        super(serviceConfig);
+        super(serviceConfig, thinDescriptors);
         this.inputRoutes = inputRoutes;
         this.outputRoutes = outputRoutes;
         this.imageName = imageName;
@@ -72,6 +75,7 @@ public class DockerServiceDescriptor extends AbstractServiceDescriptor {
      * @param outputDescriptors Descriptors for the outputs this service produces. Often a single source that e.g. can be read from a file that the container produces
      * @param outputRoutes      The route for reading the outputs (file, stdout etc). Must match the number of outputDescriptors.
      * @param optionDescriptors Option descriptors that define the UI for the user.
+     * @param thinDescriptors   Descriptors for thin execution
      * @param executorClassName The class name of the executor
      * @param imageName         Docker image to use if not overriden by one of the user defined options (e.g. if there is a choice of images to use).
      * @param command           The command to run when executing the container.
@@ -94,13 +98,15 @@ public class DockerServiceDescriptor extends AbstractServiceDescriptor {
             IODescriptor[] outputDescriptors,
             IORoute[] outputRoutes, // docker specific
             OptionDescriptor[] optionDescriptors,
+            ThinDescriptor[] thinDescriptors,
             // these are specific to docker execution
             String executorClassName,
             String imageName,
             String command,
             Map<String, String> volumes) {
 
-        super(id, name, description, tags, resourceUrl, icon, status, statusLastChecked, inputDescriptors, outputDescriptors, optionDescriptors, executorClassName);
+        super(id, name, description, tags, resourceUrl, icon, status, statusLastChecked, inputDescriptors, outputDescriptors, optionDescriptors,
+                thinDescriptors, executorClassName);
         this.inputRoutes = inputRoutes;
         this.outputRoutes = outputRoutes;
         this.imageName = imageName;

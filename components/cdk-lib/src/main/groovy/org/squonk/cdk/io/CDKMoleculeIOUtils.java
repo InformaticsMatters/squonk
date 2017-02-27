@@ -70,7 +70,7 @@ public class CDKMoleculeIOUtils {
         IAtomContainer mol = mo.getRepresentation(IAtomContainer.class.getName(), IAtomContainer.class);
         try {
             if (mol == null) {
-                mol = readMolecule(mo.getSource());
+                mol = readMolecule(mo.getSource(), mo.getFormat());
             }
             if (mol != null) {
                 AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
@@ -87,7 +87,7 @@ public class CDKMoleculeIOUtils {
 
     /**
      * Read the molecule as the specified format. The format is expected to be correct, but can be null, in which case
-     * we try to autmaatically determine the format
+     * we try to automatically determine the format
      *
      * @param mol    The molecules as a string
      * @param format The format e.g smiles, mol, mol:v2
@@ -147,7 +147,13 @@ public class CDKMoleculeIOUtils {
         }
         if (reader != null) {
             reader.setReader(new StringReader(mol));
-            return reader.read(new AtomContainer());
+            IAtomContainer m = reader.read(new AtomContainer());
+            try {
+                reader.close();
+            } catch (IOException e) {
+                LOG.log(Level.WARNING, "Failed to close reader", e);
+            }
+            return m;
         }
         return null;
     }
@@ -191,7 +197,6 @@ public class CDKMoleculeIOUtils {
                 try (SDFWriter writer = new SDFWriter(out)) {
                     mols.forEachOrdered((mo) -> {
                         try {
-
                             IAtomContainer mol = fetchMolecule(mo, false);
                             for (Map.Entry<String, Object> e : mo.getValues().entrySet()) {
                                 String key = e.getKey();

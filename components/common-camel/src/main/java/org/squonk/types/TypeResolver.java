@@ -24,6 +24,16 @@ public class TypeResolver implements MimeTypeResolver {
     private final Map<Class, Class> httpHandlers = new HashMap<>();
     private final Map<Class, Class> variableHandlers = new HashMap<>();
 
+    //TO Remove singleton usage once CDI is everywhere
+    private static TypeResolver INSTANCE;
+
+    public static TypeResolver getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new TypeResolver();
+        }
+        return INSTANCE;
+    }
+
     public TypeResolver() {
         registerMimeType(MIME_TYPE_DATASET_BASIC_JSON, Dataset.class, BasicObject.class);
         registerMimeType(MIME_TYPE_DATASET_MOLECULE_JSON, Dataset.class, MoleculeObject.class);

@@ -7,6 +7,7 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.api.MimeTypeResolver;
 import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.dataset.ThinDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
@@ -110,8 +111,8 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     },
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Chemcentral+multi-search",
                     "icons/structure_search.png",
-                    new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input")},
-                    new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output")},
+                    IODescriptors.createMoleculeObjectDataset("input"),
+                    IODescriptors.createMoleculeObjectDataset("output"),
                     new OptionDescriptor[]{
                             new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search", Mode.User)
                                     .withValues(new String[]{"emolecules_order_bb", "emolecules_order_all", "chembl_21"})
@@ -129,8 +130,9 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     .withMinMaxValues(1, 1),
                             new OptionDescriptor<>(Integer.class, "query.limit", "Limit", "Max number of hits to return", Mode.User)
                                     .withDefaultValue(100)
-                                    .withMinMaxValues(1, 1)
+                                    .withMinMaxValues(1, 1),
                     },
+                    new ThinDescriptor("input", null),
                     StepDefinitionConstants.MoleculeServiceBasicExecutor.CLASSNAME,
                     "multisearch"
             )

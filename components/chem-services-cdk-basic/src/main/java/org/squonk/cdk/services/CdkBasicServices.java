@@ -1,5 +1,6 @@
 package org.squonk.cdk.services;
 
+import org.squonk.dataset.ThinDescriptor;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
 import org.squonk.core.HttpServiceDescriptor;
@@ -19,25 +20,26 @@ public class CdkBasicServices {
             "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Verify+structure+%28CDK%29",
             "icons/properties_add.png",
             "verify",
-            new OptionDescriptor[]{OptionDescriptor.IS_FILTER, OptionDescriptor.FILTER_MODE});
+            new OptionDescriptor[]{OptionDescriptor.FILTER_MODE},
+            ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR);
 
     static final HttpServiceDescriptor SERVICE_DESCRIPTOR_LOGP = createServiceDescriptor(
             "cdk.logp", "LogP (CDK)", "LogP predictions for XLogP, ALogP and AMR using CDK",
             new String[]{"logp", "partitioning", "molecularproperties", "cdk"},
             "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/LogP+%28CDK%29",
-            "icons/properties_add.png", "logp", null);
+            "icons/properties_add.png", "logp", null, null);
 
     static final HttpServiceDescriptor SERVICE_DESCRIPTOR_HBA_HBD = createServiceDescriptor(
             "cdk.donors_acceptors", "HBA & HBD (CDK)", "H-bond donor and acceptor counts using CDK",
             new String[]{"hbd", "donors", "hba", "acceptors", "topology", "molecularproperties", "cdk"},
             "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/HBA+%26+HBD+%28CDK%29",
-            "icons/properties_add.png", "donors_acceptors", null);
+            "icons/properties_add.png", "donors_acceptors", null, null);
 
     static final HttpServiceDescriptor SERVICE_DESCRIPTOR_WIENER_NUMBERS = createServiceDescriptor(
             "cdk.wiener_numbers", "Wiener Numbers (CDK)", "Wiener path and polarity numbers using CDK",
             new String[]{"wiener", "topology", "molecularproperties", "cdk"},
             "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Wiener+Numbers+%28CDK%29",
-            "icons/properties_add.png", "wiener_numbers", null);
+            "icons/properties_add.png", "wiener_numbers", null, null);
 
     static final HttpServiceDescriptor[] ALL = new HttpServiceDescriptor[] {
             SERVICE_DESCRIPTOR_VERIFY,
@@ -47,7 +49,11 @@ public class CdkBasicServices {
     };
 
 
-    private static HttpServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String resourceUrl, String icon, String endpoint, OptionDescriptor[] options) {
+    private static HttpServiceDescriptor createServiceDescriptor(
+            String id, String name, String description, String[] tags,
+            String resourceUrl, String icon, String endpoint,
+            OptionDescriptor[] options, ThinDescriptor thinDescriptor
+            ) {
 
         return new HttpServiceDescriptor(
                 id,
@@ -56,9 +62,10 @@ public class CdkBasicServices {
                 tags,
                 resourceUrl,
                 icon,
-                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input")},
-                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output")},
+                IODescriptors.createMoleculeObjectDataset("input"),
+                IODescriptors.createMoleculeObjectDataset("output"),
                 options,
+                thinDescriptor,
                 StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME,
                 endpoint
         );

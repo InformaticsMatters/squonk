@@ -2,9 +2,12 @@ package org.squonk.execution.steps;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
+import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.IODescriptor;
 import org.squonk.jobdef.StepsCellExecutorJobDefinition;
 import org.squonk.util.CamelRouteStatsRecorder;
+import org.squonk.util.IOUtils;
 import org.squonk.util.StatsRecorder;
 
 import java.util.ArrayList;
@@ -42,37 +45,40 @@ public class StepExecutor {
         Step[] steps = new Step[defs.length];
 
         // TODO - handle conversions
-
         for (int i = 0; i < defs.length; i++) {
             StepDefinition def = defs[i];
             Class cls = Class.forName(def.getImplementationClass());
             Step step = (Step) cls.newInstance();
+//
 //            IODescriptor[] inputs;
 //            if (i == 0) {
 //                // first step so use the input of the job (the data to be processed)
 //                inputs = jobdef.getInputs();
 //            } else {
 //                // subsequent step so use the output of the previous step
-//                ExecutableDescriptor d = defs[i - 1].getExecutableDescriptor();
-//                if (d != null) {
-//                    inputs = d.getOutputDescriptors();
+//                ServiceDescriptor sd = defs[i - 1].getServiceDescriptor();
+//                if (sd != null) {
+//                    inputs = sd.getServiceConfig().getOutputDescriptors();
 //                } else {
 //                    inputs = null;
 //                }
 //            }
+//            LOG.info("Step " + i + " inputs: " + IOUtils.joinArray(inputs, ","));
+//
 //            IODescriptor[] outputs;
 //            if (i == (defs.length - 1)) {
 //                // last step so we need to ask for the output type the job wants
 //                outputs = jobdef.getOutputs();
 //            } else {
 //                // an earlier step so we need the input of the next step
-//                ExecutableDescriptor d = defs[i + 1].getExecutableDescriptor();
+//                ServiceDescriptor d = defs[i + 1].getServiceDescriptor();
 //                if (d != null) {
-//                    outputs = d.getInputDescriptors();
+//                    outputs = d.getServiceConfig().getOutputDescriptors();
 //                } else {
 //                    outputs = null;
 //                }
 //            }
+//            LOG.info("Step " + i + " outputs: " + IOUtils.joinArray(outputs, ","));
 
             step.configure(producer, jobId, def.getOptions(), def.getInputs(), def.getOutputs(), def.getInputVariableMappings(), def.getOutputVariableMappings(), def.getServiceDescriptor());
             steps[i] = step;

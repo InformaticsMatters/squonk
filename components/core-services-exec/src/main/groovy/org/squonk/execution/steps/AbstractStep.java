@@ -1,11 +1,18 @@
 package org.squonk.execution.steps;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
+import org.apache.camel.spi.TypeConverterRegistry;
 import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.core.ServiceConfig;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.ThinDescriptor;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptor;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.notebook.api.VariableKey;
+import org.squonk.types.TypeResolver;
+import org.squonk.util.IOUtils;
 import org.squonk.util.Metrics;
 
 import java.io.IOException;
@@ -21,6 +28,8 @@ import java.util.logging.Logger;
 public abstract class AbstractStep implements Step, StatusUpdatable {
 
     private static final Logger LOG = Logger.getLogger(AbstractStep.class.getName());
+
+    protected Integer DEBUG_MODE = new Integer(IOUtils.getConfiguration("SQUONK_DEBUG_MODE", "0"));
 
     protected static final String MSG_PREPARING_INPUT = "Preparing input ...";
     protected static final String MSG_PREPARING_OUTPUT = "Writing output ...";
@@ -299,6 +308,88 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
 
     protected String getHttpExecutionEndpoint() {
         return getHttpServiceDescriptor().getExecutionEndpoint();
+    }
+
+    protected IODescriptor getSingleInputDescriptor() {
+        ServiceConfig serviceConfig = getHttpServiceDescriptor().getServiceConfig();
+        IODescriptor[] inputDescriptors = serviceConfig.getInputDescriptors();
+        IODescriptor inputDescriptor;
+        if (inputDescriptors != null && inputDescriptors.length == 1) {
+            inputDescriptor = inputDescriptors[0];
+        } else if (inputDescriptors == null || inputDescriptors.length == 0 ) {
+            throw new IllegalStateException("Expected one input IODescriptor. Found none");
+        } else {
+            throw new IllegalStateException("Expected one input IODescriptor. Found " + inputDescriptors.length);
+        }
+        return inputDescriptor;
+    }
+
+    protected ThinDescriptor getThinDescriptor(IODescriptor inputDescriptor) {
+        ThinDescriptor[] tds = getHttpServiceDescriptor().getThinDescriptors();
+        ServiceConfig serviceConfig = getHttpServiceDescriptor().getServiceConfig();
+        ThinDescriptor td;
+        if (tds == null || tds.length == 0) {
+            if (inputDescriptor.getPrimaryType() == Dataset.class) {
+                td = new ThinDescriptor(inputDescriptor.getName(), serviceConfig.getOutputDescriptors()[0].getName());
+            } else {
+                throw new IllegalStateException("Thin execution only suppported for Dataset. Found " + inputDescriptor.getPrimaryType().getName());
+            }
+        } else if (tds.length == 1) {
+            if (tds[0] == null) {
+                LOG.warning("ThinDescriptor array provided including a null element. This is bad practice and can lead to problems.");
+                td = new ThinDescriptor(inputDescriptor.getName(), serviceConfig.getOutputDescriptors()[0].getName());
+            } else {
+                td = tds[0];
+            }
+        } else {
+            throw new IllegalStateException("Expected single ThinDescriptor but found " + tds.length);
+        }
+        return td;
+    }
+
+    /** Derrive a new IODescriptor of the specified media type using the specified IODescriptor as the base.
+     * If the media types are identical the base is returned. If they are different then an IODescriptor corresponding to the
+     * media type is created (if possible) with the same name as the base.
+     *
+     * @param mediaType
+     * @param base
+     * @return
+     */
+    protected IODescriptor generateIODescriptorForMediaType(String mediaType, IODescriptor base) {
+        IODescriptor result;
+        if (!base.getMediaType().equals(mediaType)) {
+            LOG.info("Required media type is " + mediaType);
+            result = TypeResolver.getInstance().createIODescriptor(base.getName(), mediaType);
+            if (result.getPrimaryType() == null) {
+                throw new IllegalStateException("Don't know how to handle " + mediaType);
+            }
+        } else {
+            result = base;
+        }
+        return result;
+    }
+
+
+    /** Converts the input value of the type specified by the from IODescriptor to the format specified by the to IODescriptor.
+     *
+     * @param camelContext
+     * @param from
+     * @param to
+     * @param value
+     * @return
+     */
+    protected Object convertValue(CamelContext camelContext, IODescriptor from, IODescriptor to, Object value) {
+
+        if (from.getMediaType().equals(to.getMediaType())) {
+            return value;
+        }
+
+        TypeConverterRegistry registry = camelContext.getTypeConverterRegistry();
+        TypeConverter typeConverter = registry.lookup(to.getPrimaryType(), from.getPrimaryType());
+        if (typeConverter == null) {
+            throw new IllegalStateException("No TypeConverter registered for " + from.getMediaType() + " to " + to.getMediaType());
+        }
+        return typeConverter.convertTo(to.getPrimaryType(), value);
     }
 
 }

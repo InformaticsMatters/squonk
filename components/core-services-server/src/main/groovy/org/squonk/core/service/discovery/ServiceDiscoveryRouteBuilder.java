@@ -8,6 +8,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.squonk.core.*;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
+import org.squonk.io.IORoute;
+import org.squonk.options.OptionDescriptor;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 import org.squonk.util.ServiceConstants;
@@ -41,6 +43,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 
     private final JsonHandler jsonHandler = JsonHandler.getInstance();
 
+
+
     /**
      * This allows the timer to be turned off or set to only run a certain
      * number of times, primarily to allow easy testing
@@ -58,7 +62,6 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     public ServiceDiscoveryRouteBuilder() {
 
         String basicChemServicesUrl = IOUtils.getConfiguration("SQUONK_BASIC_CHEM_SERVICES_URL", null);
-        String rdkitPythonServicesUrl = IOUtils.getConfiguration("SQUONK_RDKIT_CHEM_SERVICES_URL", null);
 
         if (basicChemServicesUrl != null) {
             LOG.info("Enabling basic chem services from " + basicChemServicesUrl);
@@ -77,16 +80,6 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             LOG.warning("Environment variable SQUONK_BASIC_CHEM_SERVICES_URL not defined. Basic Chem services will not be available");
         }
 
-//        if (rdkitPythonServicesUrl != null) {
-//            LOG.info("Enabling RDKit python services from " + rdkitPythonServicesUrl);
-//
-//            locations.put(rdkitPythonServicesUrl + "/rdkit_screen/", null);
-//            locations.put(rdkitPythonServicesUrl + "/rdkit_cluster/", null);
-//            locations.put(rdkitPythonServicesUrl + "/rdkit_filter/", null);
-//            locations.put(rdkitPythonServicesUrl + "/rdkit_conf/", null);
-//        } else {
-//            LOG.warning("Environment variable SQUONK_RDKIT_CHEM_SERVICES_URL not defined. RDKit Python services will not be available");
-//        }
     }
 
     public static final HttpServiceDescriptor[] TEST_SERVICE_DESCRIPTORS = new HttpServiceDescriptor[]{

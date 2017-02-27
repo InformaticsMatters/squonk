@@ -12,6 +12,7 @@ import org.squonk.camel.processor.JsonToDatasetProcessor;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.dataset.ThinDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
@@ -59,6 +60,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
 
     private static final TypeResolver resolver = new TypeResolver();
 
+
+
     private final String mqueueUrl = new MessageQueueCredentials().generateUrl(MQUEUE_JOB_METRICS_EXCHANGE_NAME, MQUEUE_JOB_METRICS_EXCHANGE_PARAMS) +
             "&routingKey=tokens.chemaxon";
 
@@ -72,7 +75,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Verify+structure+%28CXN%29",
                     "verify",
-                    new OptionDescriptor[] {OptionDescriptor.IS_FILTER, OptionDescriptor.FILTER_MODE}),
+                    new OptionDescriptor[] {OptionDescriptor.FILTER_MODE},
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "chemaxon.calculators.logp",
                     "LogP (CXN)",
@@ -81,7 +85,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/LogP+%28CXN%29",
                     "logp",
-                    null),
+                    null, null),
             createServiceDescriptor(
                     "chemaxon.calculators.logd",
                     "LogD (CXN)",
@@ -90,7 +94,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/LogD+%28CXN%29",
                     "logd",
-                    createLogDOptionDescriptors()),
+                    createLogDOptionDescriptors(),
+                    null),
             createServiceDescriptor(
                     "chemaxon.calculators.logs",
                     "LogS (CXN)",
@@ -99,7 +104,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/LogS+%28CXN%29",
                     "logs",
-                    createLogSOptionDescriptors()),
+                    createLogSOptionDescriptors(),
+                    null),
             createServiceDescriptor(
                     "chemaxon.calculators.apka",
                     "Acidic pKa (CXN)",
@@ -108,7 +114,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/pKa+%28CXN%29",
                     "apka",
-                    null),
+                    null, null),
             createServiceDescriptor(
                     "chemaxon.calculators.bpka",
                     "Basic pKa (CXN)",
@@ -117,7 +123,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/pKa+%28CXN%29",
                     "bpka",
-                    null),
+                    null, null),
             createServiceDescriptor(
                     "chemaxon.calculators.atomcount",
                     "Atom Count (CXN)",
@@ -126,7 +132,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Atom+Count+%28CXN%29",
                     "atomCount",
-                    null),
+                    null, null),
             createServiceDescriptor(
                     "chemaxon.calculators.lipinski",
                     "Lipinski (CXN)",
@@ -135,7 +141,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/filter_molecules.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Lipinski+filter+%28CXN%29",
                     "lipinski",
-                    createLipinskiOptionDescriptors()),
+                    createLipinskiOptionDescriptors(),
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "chemaxon.calculators.druglikefilter",
                     "Drug-like Filter (CXN)",
@@ -144,7 +151,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/filter_molecules.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Drug-like+Filter+%28CXN%29",
                     "drugLikeFilter",
-                    createDrugLikeFilterOptionDescriptors()),
+                    createDrugLikeFilterOptionDescriptors(),
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "chemaxon.calculators.ghosefilter",
                     "Ghose Filter (CXN)",
@@ -153,7 +161,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/filter_molecules.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Ghose+filter+%28CXN%29",
                     "ghosefilter",
-                    createGhoseFilterOptionDescriptors()),
+                    createGhoseFilterOptionDescriptors(),
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "chemaxon.calculators.veberfilter",
                     "Veber Filter (CXN)",
@@ -162,7 +171,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/filter_molecules.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Veber+filter+%28CXN%29",
                     "veberfilter",
-                    createVeberFilterOptionDescriptors()),
+                    createVeberFilterOptionDescriptors(),
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "chemaxon.calculators.ruleofthreefilter",
                     "Rule of 3 Filter (CXN)",
@@ -171,7 +181,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/filter_molecules.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Rule+of+3+filter+%28CXN%29",
                     "ruleOfThreeFilter",
-                    createRuleOfThreeOptionDescriptors()),
+                    createRuleOfThreeOptionDescriptors(),
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "chemaxon.calculators.reosfilter",
                     "REOS (CXN)",
@@ -180,7 +191,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/filter_molecules.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/REOS+filter+%28CXN%29",
                     "reosFilter",
-                    createReosFilterOptionDescriptors())//,
+                    createReosFilterOptionDescriptors(),
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR)//,
 //                createServiceDescriptor(
 //                        "chemaxon.calculators.chemterms",
 //                        "CXN Chemical Terms",
@@ -223,7 +235,6 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createLipinskiOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.IS_FILTER);
         list.add(OptionDescriptor.FILTER_MODE);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(1)
@@ -244,7 +255,6 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createDrugLikeFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.IS_FILTER);
         list.add(OptionDescriptor.FILTER_MODE);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
@@ -269,7 +279,6 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createGhoseFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.IS_FILTER);
         list.add(OptionDescriptor.FILTER_MODE);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
@@ -290,7 +299,6 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createVeberFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.IS_FILTER);
         list.add(OptionDescriptor.FILTER_MODE);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
@@ -309,7 +317,6 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createRuleOfThreeOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.IS_FILTER);
         list.add(OptionDescriptor.FILTER_MODE);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
@@ -332,7 +339,6 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createReosFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.IS_FILTER);
         list.add(OptionDescriptor.FILTER_MODE);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
@@ -368,10 +374,10 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/ECFP4+Screen+%28CXN%29",
                     "screening/ecfp4",
                     new OptionDescriptor[]{
-                            OptionDescriptor.IS_FILTER,
                             new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE, new String[]{"smiles"}), KEY_QMOL, LABEL_QMOL, DESC_QMOL, Mode.User),
                             new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF, Mode.User).withDefaultValue(0.7f)
-                    }),
+                    },
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "chemaxon.screening.pharmacophore",
                     "Pharmacophore Screen (CXN)",
@@ -381,10 +387,10 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Pharmacophore+Screen+%28CXN%29",
                     "screening/pharmacophore",
                     new OptionDescriptor[]{
-                            OptionDescriptor.IS_FILTER,
                             new OptionDescriptor<>(new MoleculeTypeDescriptor(MoleculeTypeDescriptor.MoleculeType.DISCRETE, new String[]{"smiles"}), KEY_QMOL, LABEL_QMOL, DESC_QMOL, Mode.User),
                             new OptionDescriptor<>(Float.class, KEY_SIM_CUTTOFF, LABEL_SIM_CUTTOFF, DESC_SIM_CUTTOFF, Mode.User).withDefaultValue(0.7f)
-                    }),
+                    },
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "chemaxon.clustering.sperex",
                     "SpereEx Clustering (CXN)",
@@ -396,11 +402,12 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     new OptionDescriptor[]{
                             new OptionDescriptor<>(Integer.class, KEY_MIN_CLUSTERS, LABEL_MIN_CLUSTERS, DESC_MIN_CLUSTERS, Mode.User).withDefaultValue(5),
                             new OptionDescriptor<>(Integer.class, KEY_MAX_CLUSTERS, LABEL_MAX_CLUSTERS, DESC_MAX_CLUSTERS, Mode.User).withDefaultValue(10)
-                    })
+                    },
+                    null)
     };
 
     static HttpServiceDescriptor createServiceDescriptor(String serviceDescriptorId, String name, String desc, String[] tags, String icon,
-                                                         String resourceUrl, String endpoint, OptionDescriptor[] options) {
+                                                         String resourceUrl, String endpoint, OptionDescriptor[] options, ThinDescriptor thinDescriptor) {
         return new HttpServiceDescriptor(
                 serviceDescriptorId,
                 name,
@@ -408,9 +415,10 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 tags,
                 resourceUrl,
                 icon,
-                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input")},
-                new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output")},
+                IODescriptors.createMoleculeObjectDataset("input"),
+                IODescriptors.createMoleculeObjectDataset("output"),
                 options,
+                thinDescriptor,
                 StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME,
                 endpoint
         );

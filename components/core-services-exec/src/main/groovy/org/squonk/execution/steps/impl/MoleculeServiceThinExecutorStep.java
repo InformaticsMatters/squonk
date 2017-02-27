@@ -4,12 +4,13 @@ import com.fasterxml.jackson.core.JsonParseException;
 import org.apache.camel.CamelContext;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
-import org.squonk.dataset.Dataset;
-import org.squonk.dataset.DatasetMetadata;
-import org.squonk.dataset.ThinDatasetWrapper;
+import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.core.ServiceConfig;
+import org.squonk.dataset.*;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.IODescriptor;
 import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
@@ -43,13 +44,12 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
+        HttpServiceDescriptor httpServiceDescriptor = getHttpServiceDescriptor();
+
         updateStatus(MSG_PREPARING_INPUT);
 
         Dataset<MoleculeObject> inputDataset = fetchMappedInput("input", Dataset.class, varman);
         String endpoint = getHttpExecutionEndpoint();
-        boolean preserveStructure = getOption(StepDefinitionConstants.MoleculeServiceThinExecutor.OPTION_PRESERVE_STRUCTURE, Boolean.class, true);
-        boolean filter = getOption(StepDefinitionConstants.MoleculeServiceThinExecutor.OPTION_FILTER, Boolean.class, false);
-        LOG.info("Filter mode: " + filter);
 
         Map<String, Object> requestHeaders = new HashMap<>();
         requestHeaders.put("Accept-Encoding", "gzip");
@@ -59,9 +59,13 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
             requestHeaders.put(StatsRecorder.HEADER_SQUONK_JOB_ID, jobId);
         }
 
-        ThinDatasetWrapper thinWrapper = new ThinDatasetWrapper(inputDataset.getType(), filter, preserveStructure);
+        IODescriptor inputDescriptor = getSingleInputDescriptor();
+        ThinDescriptor td = getThinDescriptor(inputDescriptor);
+        if (td == null) {
+            throw new IllegalStateException("No ThinDescriptor was provided of could be inferred");
+        }
+        ThinDatasetWrapper thinWrapper = DatasetUtils.createThinDatasetWrapper(td, inputDescriptor.getSecondaryType(), options);
         Dataset<MoleculeObject> thinDataset = thinWrapper.prepareInput(inputDataset);
-
 
         InputStream inputStream = JsonHandler.getInstance().marshalStreamToJsonArray(thinDataset.getStream(), false);
 

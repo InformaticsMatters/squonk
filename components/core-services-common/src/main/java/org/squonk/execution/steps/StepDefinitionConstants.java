@@ -23,8 +23,6 @@ public interface StepDefinitionConstants {
 
     interface MoleculeServiceThinExecutor {
         String CLASSNAME = "org.squonk.execution.steps.impl.MoleculeServiceThinExecutorStep";
-        String OPTION_PRESERVE_STRUCTURE = "option.preserveStructure"; //Boolean
-        String OPTION_FILTER = "option.filter"; //Boolean
     }
 
     interface MoleculeServiceBasicExecutor {
@@ -34,6 +32,8 @@ public interface StepDefinitionConstants {
     interface DatasetServiceExecutor {
         String CLASSNAME = "org.squonk.execution.steps.impl.DatasetServiceExecutorStep";
     }
+
+
 
     interface OutOnlyMoleculeServiceExecutor {
         String CLASSNAME = "org.squonk.execution.steps.impl.OutOnlyMoleculeServiceExecutorStep";

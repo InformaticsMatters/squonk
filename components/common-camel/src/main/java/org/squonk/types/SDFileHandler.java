@@ -45,12 +45,14 @@ public class SDFileHandler implements HttpHandler<SDFile>, VariableHandler<SDFil
 
     @Override
     public void writeVariable(SDFile sdf, WriteContext context) throws Exception {
-        context.writeStreamValue(sdf.getInputStream());
+        //context.writeStreamValue(sdf.getInputStream());
+        context.writeSingleStreamValue(sdf.getInputStream(), "sdf.gz");
     }
 
     @Override
     public SDFile readVariable(ReadContext context) throws Exception {
-        InputStream is =  context.readStreamValue();
+        //InputStream is = context.readStreamValue();
+        InputStream is = context.readSingleStreamValue("sdf.gz");
         return new SDFile(is);
     }
 }
