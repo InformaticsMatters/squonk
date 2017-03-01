@@ -8,7 +8,7 @@
 # DO NOT edit setenv-default.sh directly with confidential information like passwords as it's stored in Git.
 # Instead copy it to setenv.sh, which is .gitignore'd.
 
-version: '2'
+version: '2.1'
 
 networks:
     squonk_front:
@@ -119,24 +119,11 @@ services:
         - /cpsign_data # TODO make this persistent
         networks:
         - squonk_back
-        
-    ################# rdkit server services container ##################################
-    # This is a separate github project https://github.com/InformaticsMatters/rdkit-compose
-    # Build the image from that project dir using: docker build -t "squonk/rdkitserver" .
-    # test using:
-    # curl -X POST -T mols.json -H "Accept: application/json" -H "Content-Type: application/json" "http://localhost:8000/rdkit_cluster/cluster_simple?metric=tanimoto&threshold=0.7
-    #
-    rdkitserver:
-        image: squonk/rdkitserver
-        restart: on-failure:10
-        environment: 
-            SECRET_KEY:
-            C_FORCE_ROOT: "true"
-        command: gunicorn --workers 5 --timeout 1000 -b 0.0.0.0 proj.wsgi
-        volumes:
-        - /code/static
-        networks:
-        - squonk_back
+        healthcheck:
+            test: curl --fail http://localhost:8080/chem-services-cdk-basic/rest/ping || exit 1
+            interval: 20s
+            timeout: 5s
+            retries: 3
         
     ################# core-services-server container ###################################
     # available on:
@@ -150,8 +137,12 @@ services:
         volumes:
         - ./data/docker-services:/var/local/squonk-docker-services
         depends_on:
-        - postgres
-        - rabbitmq
+            postgres:
+                condition: service_started
+            rabbitmq:
+                condition: service_started
+            chemservices:
+                condition: service_healthy
         environment:
             RABBITMQ_HOST: rabbitmq
             RABBITMQ_SQUONK_PASS:
@@ -165,13 +156,17 @@ services:
             SQUONK_DEBUG_MODE:
         networks:
         - squonk_back
+        healthcheck:
+            test: curl --fail http://localhost:8080/coreservices/rest/ping || exit 1
+            interval: 20s
+            timeout: 5s
+            retries: 3
 
     ################# cell-executor container #########################################
     cellexecutor:
         image: squonk/cellexecutor
         restart: on-failure:10
         depends_on:
-        - coreservices
         - rabbitmq
         volumes:
         - /var/run/docker.sock:/var/run/docker.sock
@@ -214,6 +209,10 @@ services:
         networks:
         - squonk_front
         - squonk_back
+        depends_on:
+            coreservices:
+                condition: service_healthy
+
         
     ################# xwiki container ###################################################
     # available on http://${PUBLIC_HOST}/xwiki
