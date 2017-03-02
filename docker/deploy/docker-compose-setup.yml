@@ -1,4 +1,4 @@
-version: '2'
+version: '2.1'
 
 services:
 
@@ -21,7 +21,4 @@ services:
     chemservices:
         ports:
         - "8092:8080"
-    
-    rdkitserver:
-        ports:
-        - "8000:8000"
+

@@ -15,7 +15,7 @@ docker-compose stop
 docker-compose rm -vf
 docker-compose build
 docker-compose up -d chemservices
-docker-compose up -d --no-recreate db
+docker-compose up -d --no-recreate postgres
 bash wait-postgres.sh
 docker-compose up -d --no-recreate cellexecutor
 docker-compose up -d --no-recreate cellexecutor

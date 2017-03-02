@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.squonk.dataset.ThinDescriptor;
-import org.squonk.dataset.ThinFieldDescriptor;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IORoute;
 import org.squonk.options.OptionDescriptor;

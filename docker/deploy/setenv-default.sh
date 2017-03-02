@@ -19,5 +19,6 @@ export POSTGRES_XWIKI_PASS=squonk
 # generally no need to change these
 export PUBLIC_HOST_URL=https://${PUBLIC_HOST}
 export KEYCLOAK_SERVER_URL=${PUBLIC_HOST_URL}/auth
+export SQUONK_DOCKER_SERVICES_DIR=${PWD}/data/docker-services
 
 export SECRET_KEY=b8ff56a18ee8ce3500d59c083691499aba8f227dddff57c972e1f49a9eff396cc0c83bfa42a78c3cce9f379ef64e9d3c9957572d3af0fe1f432437ce3a1deb5c

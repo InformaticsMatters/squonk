@@ -31,6 +31,8 @@ dependencies {
     compile "org.apache.camel:camel-swagger:$camelVersion"
     compile "org.apache.camel:camel-http4:$camelVersion"
     compile "org.apache.camel:camel-rabbitmq:$camelVersion"
+
+    compile "org.postgresql:postgresql:$postgresDriverVersion"
      
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 
@@ -41,7 +43,7 @@ dependencies {
            "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
     
-    compile "org.postgresql:postgresql:$postgresDriverVersion"
+
   
 }
 

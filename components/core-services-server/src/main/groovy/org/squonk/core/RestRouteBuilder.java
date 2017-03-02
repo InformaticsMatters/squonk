@@ -1,5 +1,6 @@
 package org.squonk.core;
 
+import org.squonk.config.SquonkServerConfig;
 import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition;
 import org.squonk.jobdef.JobDefinition;
 import org.squonk.jobdef.JobStatus;
@@ -64,7 +65,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
 
 
     public RestRouteBuilder() {
-        String server = IOUtils.getConfiguration("SQUONK_DB_SERVER", null);
+        String server = SquonkServerConfig.SQUONK_DB_SERVER;
         if (server == null) {
             LOG.info("Using MemoryJobStatusClient");
             jobstatusClient = MemoryJobStatusClient.INSTANCE;

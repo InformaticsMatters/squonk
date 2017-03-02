@@ -4,7 +4,7 @@ import groovy.sql.Sql
 import groovy.util.logging.Log
 import org.squonk.core.TokenCostHistoryDTO
 import org.squonk.core.TokenUsageDTO
-import org.squonk.core.util.SquonkServerConfig
+import org.squonk.config.SquonkServerConfig
 import org.squonk.util.ExecutionStats
 
 import javax.annotation.Nonnull
@@ -16,7 +16,17 @@ import javax.sql.DataSource
 @Log
 class TokensPostgresClient {
 
-    protected final DataSource dataSource = SquonkServerConfig.INSTANCE.getSquonkDataSource();
+    protected final DataSource dataSource = SquonkServerConfig.getSquonkDataSource();
+
+    public TokensPostgresClient() {
+        this(SquonkServerConfig.getSquonkDataSource());
+    }
+
+
+    public TokensPostgresClient(DataSource dataSource ) {
+        this.dataSource = dataSource
+    }
+
 
 
     /** Update the cost of a particular token. Writes it as new entry in the tokens_costs_history table and then references

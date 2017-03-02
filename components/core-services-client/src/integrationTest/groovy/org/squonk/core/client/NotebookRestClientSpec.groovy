@@ -19,7 +19,7 @@ class NotebookRestClientSpec extends Specification {
     
     String username = 'squonkuser'
 
-    @Shared NotebookRestClient client = new NotebookRestClient()
+    @Shared NotebookRestClient client = ClientSpecBase.createNotebookRestClient()
 
     @Shared NotebookDTO notebook1
     @Shared NotebookEditableDTO editable1

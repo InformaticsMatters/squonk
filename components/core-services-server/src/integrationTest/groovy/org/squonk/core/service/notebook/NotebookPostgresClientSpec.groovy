@@ -17,7 +17,7 @@ import spock.lang.Stepwise
 @Stepwise
 class NotebookPostgresClientSpec extends Specification {
 
-    @Shared NotebookPostgresClient client = new NotebookPostgresClient()
+    @Shared NotebookPostgresClient client = new NotebookPostgresClient(TestUtils.createTestSquonkDataSource())
     @Shared List<NotebookDTO> notebooks
 
     static NotebookCanvasDTO CANVAS_DTO = new NotebookCanvasDTO(1)

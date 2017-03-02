@@ -10,13 +10,14 @@ buildscript {
     }
 
     dependencies {
-        classpath 'org.postgresql:postgresql:9.4-1201-jdbc41'
+        classpath "org.postgresql:postgresql:$postgresDriverVersion"
         classpath 'org.flywaydb:flyway-gradle-plugin:3.2.1'
     }
 }
 
 flyway {
-    url = 'jdbc:postgresql://' + (System.getenv('SQUONK_DB_SERVER') ?: 'localhost') + ':5432/squonk'
+    // TODO replace localhost and port with a lookup - docker host may not be on localhost in some dev environments?
+    url = 'jdbc:postgresql://localhost:5432/squonk'
     user = 'postgres'
     password = System.getenv('POSTGRES_PASSWORD') ?: 'postgres'
     schemas = ['users']

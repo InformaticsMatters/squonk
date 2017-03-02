@@ -5,6 +5,7 @@ import org.apache.camel.builder.ThreadPoolProfileBuilder;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.spi.ThreadPoolProfile;
 import org.squonk.camel.CamelCommonConstants;
+import org.squonk.config.SquonkServerConfig;
 import org.squonk.core.ServerConstants;
 import org.squonk.core.service.discovery.PostgresServiceDescriptorClient;
 import org.squonk.core.service.user.UserHandler;
@@ -28,7 +29,7 @@ public class CamelLifeCycle {
     private final DataSource dataSource;
 
     public CamelLifeCycle() {
-        this(Utils.createDataSource());
+        this(SquonkServerConfig.getSquonkDataSource());
     }
 
     public CamelLifeCycle(DataSource dataSource) {

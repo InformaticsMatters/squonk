@@ -1,7 +1,7 @@
 package org.squonk.core.client;
 
 import org.squonk.core.ServiceConfig;
-import org.squonk.core.client.config.SquonkClientConfig;
+import org.squonk.core.config.SquonkClientConfig;
 import org.squonk.types.io.JsonHandler;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,19 +19,19 @@ import org.squonk.util.ServiceConstants;
  *
  * @author timbo
  */
-public class ServicesClient extends AbstractHttpClient {
+public class ServicesRestClient extends AbstractHttpClient {
 
-    private static final Logger LOG = Logger.getLogger(ServicesClient.class.getName());
+    private static final Logger LOG = Logger.getLogger(ServicesRestClient.class.getName());
 
     private final String base;
 
-    public ServicesClient(String baseUrl) {
-        this.base = baseUrl;
-        LOG.info("ServicesClient using base URL of " + baseUrl);
+    public ServicesRestClient(String serverUrl) {
+        this.base = serverUrl + SquonkClientConfig.CORE_SERVICES_PATH + "/services";
+        LOG.info("ServicesClient using base URL of " + base);
     }
 
-    public ServicesClient() {
-        this(SquonkClientConfig.INSTANCE.getCoreServicesBaseUrl() + "/services");
+    public ServicesRestClient() {
+        this(SquonkClientConfig.CORE_SERVICES_SERVER);
     }
 
     /**
@@ -47,7 +47,7 @@ public class ServicesClient extends AbstractHttpClient {
         }
         HttpGet httpGet = new HttpGet(base);
         httpGet.setHeader(ServiceConstants.HEADER_SQUONK_USERNAME, username);
-        try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
+        try (CloseableHttpResponse response = execute(httpGet)) {
             LOG.fine(response.getStatusLine().toString());
             HttpEntity entity = response.getEntity();
             if (response.getStatusLine().getStatusCode() != 200) {

@@ -72,6 +72,11 @@ public class AbstractHttpClient {
         }
     }
 
+    protected CloseableHttpResponse execute(HttpUriRequest req) throws IOException {
+        debugConnections(req.getMethod(), req.getURI());
+        return httpclient.execute(req);
+    }
+
     protected String executeGetAsString(URIBuilder b) throws IOException {
         return executeGetAsString(b, new NameValuePair[0]);
     }

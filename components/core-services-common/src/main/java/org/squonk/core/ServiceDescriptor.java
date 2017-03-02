@@ -1,7 +1,5 @@
 package org.squonk.core;
 
-import java.util.Date;
-
 /** Interface that defined an executable service. From an instance of this class you can obtain a @{link ServiceConfig} instance
  * that defines the properties that are needed by a client of this service.
  * Implementations of this interface define the details of how the service is to be executed.

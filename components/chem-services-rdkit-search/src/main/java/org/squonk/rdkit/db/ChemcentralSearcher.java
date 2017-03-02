@@ -1,5 +1,6 @@
 package org.squonk.rdkit.db;
 
+import org.squonk.config.SquonkServerConfig;
 import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
@@ -49,20 +50,8 @@ public class ChemcentralSearcher {
 
     public ChemcentralSearcher(String statsRouteUri) {
         this.statsRouteUri = statsRouteUri;
-        String s = IOUtils.getConfiguration("SQUONK_DB_SERVER", "localhost");
-        String po = IOUtils.getConfiguration("SQUONK_DB_PORT", "5432");
         String pw = IOUtils.getConfiguration("POSTGRES_SQUONK_PASS", "squonk");
-
-        PGPoolingDataSource dataSource = new PGPoolingDataSource();
-        dataSource.setServerName(s);
-        dataSource.setPortNumber(new Integer(po));
-        dataSource.setDatabaseName("chemcentral");
-        dataSource.setUser("squonk");
-        dataSource.setPassword(pw);
-
-        LOG.info("Search using server=" + s);
-
-        this.chemchentralDataSource = dataSource;
+        this.chemchentralDataSource = SquonkServerConfig.createDataSource("postgres", new Integer(5432), "squonk", pw, "chemcentral");
     }
 
     public void executeSearch(Exchange exch) throws IOException {

@@ -16,7 +16,7 @@ import spock.lang.Stepwise
 class PostgresJobStatusClientSpec extends Specification {
 
     @Shared long inTheFuture = System.currentTimeMillis() + 1000000
-    @Shared  PostgresJobStatusClient client = new PostgresJobStatusClient()
+    @Shared  PostgresJobStatusClient client = new PostgresJobStatusClient(TestUtils.createTestSquonkDataSource())
 
     void setupSpec() {
         client.db.executeUpdate("DELETE FROM users.jobstatus")

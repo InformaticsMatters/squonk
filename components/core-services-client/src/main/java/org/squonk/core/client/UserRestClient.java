@@ -1,21 +1,21 @@
 package org.squonk.core.client;
 
-import org.squonk.client.UserClient;
-import org.squonk.core.client.config.SquonkClientConfig;
-import org.squonk.core.user.User;
-import org.squonk.types.io.JsonHandler;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.squonk.client.UserClient;
+import org.squonk.core.config.SquonkClientConfig;
+import org.squonk.core.user.User;
+import org.squonk.types.io.JsonHandler;
 
 import javax.enterprise.inject.Default;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Client for Users.
@@ -32,13 +32,13 @@ public class UserRestClient implements UserClient, Serializable {
     private final String baseUrl;
     private final CloseableHttpClient httpclient = HttpClients.createDefault();
 
-    public UserRestClient(String baseUrl) {
-        this.baseUrl = baseUrl;
+    public UserRestClient(String serverUrl) {
+        this.baseUrl = serverUrl + SquonkClientConfig.CORE_SERVICES_PATH + "/users";
         LOG.info("UserRestClient using base URL of " + baseUrl);
     }
 
     public UserRestClient() {
-        this(SquonkClientConfig.INSTANCE.getCoreServicesBaseUrl() + "/users");
+        this(SquonkClientConfig.CORE_SERVICES_SERVER);
     }
 
     /**

@@ -15,7 +15,7 @@ import spock.lang.Specification
  */
 class UserPostgresClientSpec extends Specification {
     
-    @Shared DataSource dataSource = TestUtils.createTestDataSource()
+    @Shared DataSource dataSource = TestUtils.createTestSquonkDataSource()
     @Shared UserPostgresClient service = new UserPostgresClient(dataSource)
     
     void "1. test create user"() {

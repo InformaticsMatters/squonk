@@ -1,13 +1,13 @@
 package org.squonk.core.client;
 
-import org.squonk.jobdef.JobDefinition;
-import org.squonk.jobdef.JobQuery;
-import org.squonk.jobdef.JobStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.squonk.client.JobStatusClient;
-import org.squonk.core.client.config.SquonkClientConfig;
+import org.squonk.core.config.SquonkClientConfig;
+import org.squonk.jobdef.JobDefinition;
+import org.squonk.jobdef.JobQuery;
+import org.squonk.jobdef.JobStatus;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.ServiceConstants;
 
@@ -28,14 +28,13 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
 
     private final String baseUrl;
 
-    public JobStatusRestClient(String baseUrl) {
-        this.baseUrl = baseUrl;
+    public JobStatusRestClient(String serverUrl) {
+        this.baseUrl = serverUrl + SquonkClientConfig.CORE_SERVICES_PATH + "/jobs";
+        LOG.info("JobStatusRestClient is using base URL of " + baseUrl);
     }
 
     public JobStatusRestClient() {
-        //this.baseUrl = IOUtils.getConfiguration("SQUONK_SERVICES_CORE", "http://localhost/coreservices/rest/v1") + "/jobs";
-        this.baseUrl = SquonkClientConfig.INSTANCE.getCoreServicesBaseUrl() + "/jobs";
-        LOG.info("JobStatusRestClient is using base URL of " + baseUrl);
+        this(SquonkClientConfig.CORE_SERVICES_SERVER);
     }
 
     /**

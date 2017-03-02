@@ -1,65 +1,76 @@
-db:
-    image: informaticsmatters/rdkit_cartridge:Release_2016_03_1
-    volumes:
-    - ./deploy/images/postgres/init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro
-    ports: 
-    - "5432:5432"
-    environment:
-       POSTGRES_USER: postgres
-       POSTGRES_PASSWORD: postgres
+version: '2.1'
 
-rabbitmq:
-    image: squonk/rabbitmq
-    ports:
-    - "5672:5672"
-    - "15672:15672"
-    volumes:
-    - "./rabbitmq/clean.sh:/usr/local/etc/clean.sh:ro"
-    environment: 
-        RABBITMQ_ERLANG_COOKIE: topsecret
-        RABBITMQ_DEFAULT_USER: admin
-        RABBITMQ_DEFAULT_PASS: squonk
+services:
 
-chemservices:
-    build: ../components/build/chem-services-basic
-    ports:
-    - "8092:8080"
-    volumes:
-    - ./deploy/images/chemservices/chemaxon_reaction_library.zip:/chemaxon_reaction_library.zip:ro
+    postgres:
+        image: informaticsmatters/rdkit_cartridge:Release_2016_03_1
+        volumes:
+        - ./deploy/images/postgres/init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro
+        ports: 
+        - "5432:5432"
+        environment:
+           POSTGRES_USER: postgres
+           POSTGRES_PASSWORD: postgres
 
+    rabbitmq:
+        image: squonk/rabbitmq
+        ports:
+        - "5672:5672"
+        - "15672:15672"
+        volumes:
+        - "./rabbitmq/clean.sh:/usr/local/etc/clean.sh:ro"
+        environment: 
+            RABBITMQ_ERLANG_COOKIE: topsecret
+            RABBITMQ_DEFAULT_USER: admin
+            RABBITMQ_DEFAULT_PASS: squonk
 
-coreservices:
-    build: ../components/core-services-server/build
-    ports:
-    - 8091:8080
-    volumes:
-    - ./docker-services:/var/local/squonk-docker-services
-    links:
-    - db:db
-    - rabbitmq:rabbitmq
-    - chemservices:chemservices
-    environment:
-        RABBITMQ_HOST: rabbitmq
-        SQUONK_DB_SERVER: db
-        SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
-        SQUONK_DOCKER_SERVICES_DIR: "/var/local/squonk-docker-services"
+    chemservices:
+        build: ../components/build/chem-services-basic
+        ports:
+        - "8092:8080"
+        volumes:
+        - ./deploy/images/chemservices/chemaxon_reaction_library.zip:/chemaxon_reaction_library.zip:ro
+        healthcheck:
+            test: curl --fail http://localhost:8080/chem-services-cdk-basic/rest/ping || exit 1
+            interval: 20s
+            timeout: 5s
+            retries: 3
 
-cellexecutor:
-    build: ../components/cell-executor/build/docker
-    links:
-    - coreservices:coreservices
-    - rabbitmq:rabbitmq
-    - chemservices:chemservices
-    volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
-    - /tmp/work:/tmp/work
-    - /var/grape_repo
-    environment:
-        RABBITMQ_HOST: rabbitmq
-        RABBITMQ_SQUONK_PASS: squonk
-        SQUONK_SERVICES_CORE: http://coreservices:8080/coreservices/rest/v1
-        DOCKER_HOST: unix:///var/run/docker.sock
-        SQUONK_DOCKER_WORK_DIR:
-        registry.url: https://index.docker.io/v1/
+    coreservices:
+        build: ../components/core-services-server/build
+        ports:
+        - 8091:8080
+        volumes:
+        - ./docker-services:/var/local/squonk-docker-services
+        depends_on:
+            postgres:
+                condition: service_started
+            rabbitmq:
+                condition: service_started
+            chemservices:
+                condition: service_healthy
+        environment:
+            SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
+            SQUONK_DOCKER_SERVICES_DIR: "/var/local/squonk-docker-services"
+        healthcheck:
+            test: curl --fail http://localhost:8080/coreservices/rest/ping || exit 1
+            interval: 20s
+            timeout: 5s
+            retries: 3
+
+    cellexecutor:
+        build: ../components/cell-executor/build/docker
+        depends_on:
+        - coreservices
+        - rabbitmq
+        - chemservices
+        volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - /tmp/work:/tmp/work
+        - /var/grape_repo
+        environment:
+            DOCKER_HOST: unix:///var/run/docker.sock
+            SQUONK_DOCKER_WORK_DIR:
+            registry.url: https://index.docker.io/v1/
 
 

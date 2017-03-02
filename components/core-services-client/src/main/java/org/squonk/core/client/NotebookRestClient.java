@@ -5,8 +5,11 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.squonk.client.NotebookVariableClient;
-import org.squonk.core.client.config.SquonkClientConfig;
-import org.squonk.notebook.api.*;
+import org.squonk.core.config.SquonkClientConfig;
+import org.squonk.notebook.api.NotebookCanvasDTO;
+import org.squonk.notebook.api.NotebookDTO;
+import org.squonk.notebook.api.NotebookEditableDTO;
+import org.squonk.notebook.api.NotebookSavepointDTO;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
@@ -28,14 +31,14 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
 
     private final String baseUrl;
 
-    public NotebookRestClient(String baseUrl) {
-        this.baseUrl = baseUrl;
+    public NotebookRestClient(String serverUrl) {
+        this.baseUrl =  serverUrl + SquonkClientConfig.CORE_SERVICES_PATH + "/notebooks";
         LOG.info("NotebookRestClient is using base URL of " + baseUrl);
         debugConnections = false;
     }
 
     public NotebookRestClient() {
-        this(SquonkClientConfig.INSTANCE.getCoreServicesBaseUrl() + "/notebooks");
+        this(SquonkClientConfig.CORE_SERVICES_SERVER);
     }
 
     @Override

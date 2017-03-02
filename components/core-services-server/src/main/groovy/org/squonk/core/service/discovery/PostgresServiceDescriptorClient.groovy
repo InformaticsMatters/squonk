@@ -5,7 +5,7 @@ import groovy.util.logging.Log
 import org.squonk.core.HttpServiceDescriptor
 import org.squonk.core.ServiceDescriptor
 import org.squonk.core.ServiceDescriptorSet
-import org.squonk.core.util.SquonkServerConfig
+import org.squonk.config.SquonkServerConfig
 import org.squonk.types.io.JsonHandler
 
 import javax.sql.DataSource
@@ -18,9 +18,19 @@ import java.util.logging.Level
 @Log
 class PostgresServiceDescriptorClient {
 
-    protected final DataSource dataSource = SquonkServerConfig.INSTANCE.getSquonkDataSource();
-    protected final Sql sql = new Sql(dataSource)
+    protected final DataSource dataSource
+    protected final Sql sql
     private JsonHandler jsonHandler = JsonHandler.getInstance()
+
+    public PostgresServiceDescriptorClient() {
+        this( SquonkServerConfig.getSquonkDataSource());
+    }
+
+
+    public PostgresServiceDescriptorClient(DataSource dataSource ) {
+        this.dataSource = dataSource
+        this.sql = new Sql(dataSource)
+    }
 
     /** Fetch all service descriptor sets
      *

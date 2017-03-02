@@ -6,7 +6,7 @@ import org.squonk.jobdef.JobStatus
 import groovy.sql.Sql
 import groovy.util.logging.Log
 import org.squonk.client.JobStatusClient
-import org.squonk.core.util.SquonkServerConfig
+import org.squonk.config.SquonkServerConfig
 import org.squonk.types.io.JsonHandler
 
 import javax.sql.DataSource
@@ -25,8 +25,19 @@ public class PostgresJobStatusClient implements JobStatusClient {
 
     private final Object lock = new Object();
 
-    protected final DataSource dataSource = SquonkServerConfig.INSTANCE.getSquonkDataSource();
-    protected final Sql db = new Sql(dataSource)
+    protected final DataSource dataSource;
+    protected final Sql db
+
+    public PostgresJobStatusClient() {
+        this( SquonkServerConfig.getSquonkDataSource());
+    }
+
+
+    public PostgresJobStatusClient(DataSource dataSource ) {
+        this.dataSource = dataSource
+        this.db = new Sql(dataSource)
+    }
+
 
     public JobStatus submit(JobDefinition jobdef, String username, Integer totalCount) {
         log.info("Registering JobDef: " + jobdef);

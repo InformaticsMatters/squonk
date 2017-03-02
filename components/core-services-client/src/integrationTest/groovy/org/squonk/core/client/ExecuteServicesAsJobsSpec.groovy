@@ -5,7 +5,6 @@ import org.squonk.io.IODescriptors
 import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition
 import org.squonk.jobdef.JobStatus
 import org.squonk.jobdef.StepsCellExecutorJobDefinition
-import org.squonk.core.client.config.SquonkClientConfig
 import org.squonk.execution.steps.StepDefinition
 import org.squonk.execution.steps.StepDefinitionConstants
 import org.squonk.notebook.api.VariableKey

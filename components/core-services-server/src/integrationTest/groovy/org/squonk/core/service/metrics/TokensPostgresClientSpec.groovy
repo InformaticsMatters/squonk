@@ -15,7 +15,7 @@ class TokensPostgresClientSpec extends Specification{
 
     static String username = TestUtils.TEST_USERNAME
 
-    @Shared TokensPostgresClient client = new TokensPostgresClient()
+    @Shared TokensPostgresClient client = new TokensPostgresClient(TestUtils.createTestSquonkDataSource())
     @Shared String jobId = UUID.randomUUID().toString()
 
     void setupSpec() {

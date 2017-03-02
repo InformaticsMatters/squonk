@@ -1,5 +1,7 @@
 package org.squonk.core.util
 
+import org.squonk.config.SquonkServerConfig
+
 import javax.sql.DataSource
 
 import org.squonk.jobdef.JobStatus
@@ -14,8 +16,9 @@ class TestUtils {
     public final static String TEST_USERNAME = 'squonkuser'
         
 
-    static DataSource createTestDataSource() {
-        return Utils.createDataSource()
+    static DataSource createTestSquonkDataSource() {
+        // TODO replace localhost and port with a lookup - docker host may not be on localhost in some dev environments?
+        SquonkServerConfig.createDataSource("localhost", 5432, "squonk", "squonk", "squonk")
     }
     
     static void waitForJobToComplete(Job job, long timeOutMillis) {

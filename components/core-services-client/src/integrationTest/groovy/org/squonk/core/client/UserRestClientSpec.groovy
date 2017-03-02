@@ -1,6 +1,5 @@
 package org.squonk.core.client
 
-import org.squonk.core.client.UserRestClient
 import org.squonk.core.user.User
 import spock.lang.Specification
 
@@ -14,7 +13,7 @@ class UserRestClientSpec extends Specification {
    
     void "test get user object"() {
         setup:
-        def client = new UserRestClient()
+        def client = ClientSpecBase.createUserRestClient()
         
         when:
         User user = client.getUser(username)

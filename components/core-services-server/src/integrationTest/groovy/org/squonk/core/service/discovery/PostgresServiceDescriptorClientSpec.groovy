@@ -3,6 +3,7 @@ package org.squonk.core.service.discovery
 import org.squonk.core.HttpServiceDescriptor
 import org.squonk.core.ServiceConfig
 import org.squonk.core.ServiceDescriptorSet
+import org.squonk.core.util.TestUtils
 import org.squonk.io.IODescriptor
 import spock.lang.Shared
 import spock.lang.Specification
@@ -15,7 +16,7 @@ import spock.lang.Stepwise
 class PostgresServiceDescriptorClientSpec extends Specification {
 
     @Shared
-    PostgresServiceDescriptorClient client = new PostgresServiceDescriptorClient()
+    PostgresServiceDescriptorClient client = new PostgresServiceDescriptorClient(TestUtils.createTestSquonkDataSource())
 
 
     static ServiceDescriptorSet set1 = new ServiceDescriptorSet("http://somewhere.com/baseurl/1", "http://somewhere.com/healthurl",

@@ -3,7 +3,7 @@ package org.squonk.core.service.notebook
 import groovy.sql.Sql
 import groovy.util.logging.Log
 import org.squonk.client.NotebookVariableClient
-import org.squonk.core.util.SquonkServerConfig
+import org.squonk.config.SquonkServerConfig
 import org.squonk.core.util.Utils
 import org.squonk.notebook.api.NotebookCanvasDTO
 import org.squonk.notebook.api.NotebookDTO
@@ -23,10 +23,10 @@ class NotebookPostgresClient implements NotebookVariableClient {
 
     public final static NotebookPostgresClient INSTANCE = new NotebookPostgresClient()
 
-    protected final DataSource dataSource = SquonkServerConfig.INSTANCE.getSquonkDataSource();
+    protected final DataSource dataSource = SquonkServerConfig.getSquonkDataSource();
 
     public NotebookPostgresClient() {
-        dataSource = Utils.createDataSource()
+        dataSource = SquonkServerConfig.getSquonkDataSource()
     }
 
     public NotebookPostgresClient(DataSource dataSource) {

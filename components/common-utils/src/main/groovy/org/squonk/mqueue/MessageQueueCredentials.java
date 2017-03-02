@@ -26,7 +26,7 @@ public class MessageQueueCredentials {
 
     /**
      * Default credentials pointing to prod environment. Default setting scan be overridden using
-     * the RABBITMQ_HOST, RABBITMQ_USER and RABBITMQ_PASSWORD environment variables.
+     * the RABBITMQ_USER and RABBITMQ_PASSWORD environment variables.
      */
     public MessageQueueCredentials() {
         this(null, null);
@@ -34,7 +34,7 @@ public class MessageQueueCredentials {
 
     /**
      * Specify the MQ credentials. If null then defaults for the prod environment are used, but can
-     * be overridden using the RABBITMQ_HOST, RABBITMQ_SQUONK_PASS environment
+     * be overridden using the RABBITMQ_SQUONK_PASS environment
      * variables.
      *
      * @param hostname
@@ -42,7 +42,7 @@ public class MessageQueueCredentials {
      */
     public MessageQueueCredentials(String hostname, String password) {
 
-        this.hostname = (hostname != null ? hostname : IOUtils.getConfiguration("RABBITMQ_HOST", "localhost"));
+        this.hostname = (hostname != null ? hostname : "rabbitmq");
         this.username = "squonk";
         this.password = (password != null ? password : IOUtils.getConfiguration("RABBITMQ_SQUONK_PASS", "squonk"));
         this.virtualHost = "/squonk";

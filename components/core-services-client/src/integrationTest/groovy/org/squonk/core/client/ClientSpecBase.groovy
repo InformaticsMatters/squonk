@@ -11,6 +11,7 @@ import org.squonk.notebook.api.NotebookEditableDTO
 import org.squonk.types.DatasetHandler
 import org.squonk.types.MoleculeObject
 import org.squonk.types.io.JsonHandler
+import org.squonk.util.IOUtils
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -28,6 +29,11 @@ abstract class ClientSpecBase extends Specification {
     static String username = 'squonkuser'
     static JsonHandler JSON = JsonHandler.instance
 
+    //static String coreservicesHost = System.getenv("CORESERVICES_HOST")
+    //static String coreservicesPort = System.getenv("CORESERVICES_TCP_8080")
+
+    static String coreservicesServer = "http://" + IOUtils.getDockerGateway() + ":8091"
+
     @Shared
     NotebookEditableDTO editable
     @Shared
@@ -37,12 +43,30 @@ abstract class ClientSpecBase extends Specification {
     @Shared
     Long cellId = 1
 
+    static NotebookRestClient createNotebookRestClient() {
+        //new NotebookRestClient("$coreservicesHost:$coreservicesPort")
+        new NotebookRestClient(coreservicesServer);
+    }
+
+    static JobStatusRestClient createJobStatusRestClient() {
+        new JobStatusRestClient(coreservicesServer);
+    }
+
+    static ServicesRestClient createServicesClient() {
+        new ServicesRestClient(coreservicesServer);
+    }
+
+    static UserRestClient createUserRestClient() {
+        new UserRestClient(coreservicesServer);
+    }
+
+
     @Shared
-    JobStatusRestClient jobClient = new JobStatusRestClient()
+    JobStatusRestClient jobClient = createJobStatusRestClient()
     @Shared
-    NotebookRestClient notebookClient = new NotebookRestClient()
+    NotebookRestClient notebookClient = createNotebookRestClient()
     @Shared
-    ServicesClient servicesClient = new ServicesClient()
+    ServicesRestClient servicesClient = createServicesClient()
 
     private Future<Map<String, ServiceConfig>> serviceConfigsFuture
 
@@ -73,6 +97,7 @@ abstract class ClientSpecBase extends Specification {
                 for (int i = 0; i < 60; i++) {
                     println "Trying for services attempt ${i + 1}"
                     def configs = servicesClient.getServiceConfigs(username)
+                    println "Discovered ${configs.size()} services"
                     if (configs.size() > 20) {
                         results = [:]
                         configs.each { results[it.id] = it }

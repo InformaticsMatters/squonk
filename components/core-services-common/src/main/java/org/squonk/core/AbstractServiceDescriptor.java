@@ -2,12 +2,10 @@ package org.squonk.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.squonk.dataset.ThinDescriptor;
-import org.squonk.dataset.ThinFieldDescriptor;
 import org.squonk.io.IODescriptor;
 import org.squonk.options.OptionDescriptor;
 
 import java.util.Date;
-import java.util.Map;
 
 /**
  * Created by timbo on 04/01/17.
