@@ -1,11 +1,12 @@
 #!/bin/bash
 
-docker-compose -f docker-compose-db-only.yml rm -vf
-docker-compose -f docker-compose-db-only.yml up -d
+base=$PWD
 
-bash wait-postgres.sh
+docker-compose rm -vf && docker-compose -f docker-compose-db-only.yml up -d postgres stage1 || exit 1
 
-sleep 6
+echo creating db tables
+cd ../components && ./gradlew assemble database:flywayMigrate || exit 1
+cd $base
 
 
 

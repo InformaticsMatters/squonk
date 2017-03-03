@@ -1,0 +1,25 @@
+version: '2.1'
+
+services:
+
+    coreservices:
+        build: ../components/core-services-server/build
+        ports:
+        - 8091:8080
+        volumes:
+        - ./docker-services:/var/local/squonk-docker-services
+        depends_on:
+            postgres:
+                condition: service_started
+            rabbitmq:
+                condition: service_started
+            chemservices:
+                condition: service_healthy
+        environment:
+            SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
+            SQUONK_DOCKER_SERVICES_DIR: "/var/local/squonk-docker-services"
+        healthcheck:
+            test: curl --fail http://localhost:8080/coreservices/rest/ping || exit 1
+            interval: 20s
+            timeout: 5s
+            retries: 3

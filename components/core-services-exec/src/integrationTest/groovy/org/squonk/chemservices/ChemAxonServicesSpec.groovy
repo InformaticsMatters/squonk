@@ -1,4 +1,4 @@
-package org.squonk.chemaxon.services
+package org.squonk.chemservices
 
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
@@ -6,13 +6,11 @@ import org.apache.camel.CamelContext
 import org.apache.camel.Exchange
 import org.apache.camel.ProducerTemplate
 import org.apache.camel.impl.DefaultCamelContext
-import org.squonk.camel.chemaxon.processor.screening.MoleculeScreenerProcessor
 import org.squonk.core.HttpServiceDescriptor
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
 import org.squonk.types.io.JsonHandler
 import org.squonk.util.CommonMimeTypes
-import org.squonk.util.IOUtils
 import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
@@ -20,10 +18,10 @@ import spock.lang.Specification
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-class ServicesSpec extends Specification {
+class ChemAxonServicesSpec extends Specification {
 
-    static String calculatorsbase = "//" + IOUtils.getDockerGateway() + ":8092/chem-services-chemaxon-basic/rest/v1/calculators"
-    static String descriptorsbase = "//" + IOUtils.getDockerGateway() + ":8092/chem-services-chemaxon-basic/rest/v1/descriptors"
+    static String calculatorsbase = "//localhost:8092/chem-services-chemaxon-basic/rest/v1/calculators"
+    static String descriptorsbase = "//localhost:8092/chem-services-chemaxon-basic/rest/v1/descriptors"
     static String B = CommonMimeTypes.MIME_TYPE_DATASET_BASIC_JSON
     static String M = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON
 
@@ -140,9 +138,9 @@ class ServicesSpec extends Specification {
                 (Exchange.HTTP_METHOD):"POST",
                 "Content-Type":c,
                 "Accept": a,
-                (MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE+"_source"): 'CC1=CC(=O)C=CC1=O',
-                (MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE+"_format"): 'smiles',
-                (MoleculeScreenerProcessor.HEADER_THRESHOLD): 0.4
+                "structure_source": 'CC1=CC(=O)C=CC1=O',
+                "structure_format": 'smiles',
+                "threshold": 0.4
         ]
 
         def output = pt.requestBodyAndHeaders("http4:"+descriptorsbase + path, json, headers)

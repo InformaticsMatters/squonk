@@ -5,12 +5,19 @@ services:
     postgres:
         image: informaticsmatters/rdkit_cartridge:Release_2016_03_1
         volumes:
+        - ./deploy/images/postgres/docker-healthcheck.sh:/usr/local/bin/docker-healthcheck.sh
         - ./deploy/images/postgres/init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro
         ports: 
         - "5432:5432"
         environment:
            POSTGRES_USER: postgres
            POSTGRES_PASSWORD: postgres
+        healthcheck:
+            test: docker-healthcheck.sh
+            interval: 5s
+            timeout: 2s
+            retries: 5
+
 
     rabbitmq:
         image: squonk/rabbitmq
@@ -18,11 +25,25 @@ services:
         - "5672:5672"
         - "15672:15672"
         volumes:
+        - ./deploy/images/rabbitmq/docker-healthcheck.sh:/usr/local/bin/docker-healthcheck.sh
         - "./rabbitmq/clean.sh:/usr/local/etc/clean.sh:ro"
         environment: 
             RABBITMQ_ERLANG_COOKIE: topsecret
             RABBITMQ_DEFAULT_USER: admin
             RABBITMQ_DEFAULT_PASS: squonk
+        healthcheck:
+            test: docker-healthcheck.sh
+            interval: 5s
+            timeout: 2s
+            retries: 5
+            
+    stage1:
+        image: busybox
+        depends_on:
+            postgres:
+                condition: service_healthy
+            rabbitmq:
+                condition: service_healthy
 
     chemservices:
         build: ../components/build/chem-services-basic
@@ -72,5 +93,11 @@ services:
             DOCKER_HOST: unix:///var/run/docker.sock
             SQUONK_DOCKER_WORK_DIR:
             registry.url: https://index.docker.io/v1/
+            
+    stage2:
+        image: busybox
+        depends_on:
+            coreservices:
+                condition: service_healthy
 
 

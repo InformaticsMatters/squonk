@@ -31,7 +31,9 @@ sourceSets.main.resources {
 classes {
     inputs.dir 'src/main/resources/META-INF/beans.xml'
     outputs.dir "$buildDir/classes/main/META-INF/beans.xml"
-} << {
+}
+
+classes.doLast {
     copy {
         from('src/main/resources') { include 'META-INF/beans.xml' }
         into "$buildDir/classes/main/"
@@ -41,7 +43,9 @@ classes {
 testClasses {
     inputs.dir 'src/test/resources/META-INF/beans.xml'
     outputs.dir "$buildDir/classes/test/META-INF/beans.xml"
-} << {
+}
+
+testClasses.doLast {
     copy {
         from('src/test/resources') { include 'META-INF/beans.xml' }
         into "$buildDir/classes/test/"

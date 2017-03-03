@@ -62,7 +62,7 @@ tasks.withType(Test) {
 }
 
 integrationTest {
-    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean, tasks.getByPath(':database:flywayMigrate')
+    dependsOn rootProject.tasks.integrationTestEnvPrepare
     finalizedBy rootProject.tasks.integrationTestEnvShutdown
 }
 

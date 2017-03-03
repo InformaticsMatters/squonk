@@ -1,0 +1,15 @@
+version: '2.1'
+
+services:
+
+    rabbitmq:
+        image: squonk/rabbitmq
+        ports:
+        - "5672:5672"
+        - "15672:15672"
+        volumes:
+        - "./rabbitmq/clean.sh:/usr/local/etc/clean.sh:ro"
+        environment: 
+            RABBITMQ_ERLANG_COOKIE: topsecret
+            RABBITMQ_DEFAULT_USER: admin
+            RABBITMQ_DEFAULT_PASS: squonk

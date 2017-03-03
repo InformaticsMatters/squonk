@@ -1,4 +1,4 @@
-package org.squonk.cdk.services
+package org.squonk.chemservices
 
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
@@ -19,9 +19,9 @@ import spock.lang.Specification
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-class ServicesSpec extends Specification implements CommonMimeTypes{
+class CDKServicesSpec extends Specification implements CommonMimeTypes{
 
-    static String calculatorsbase = "//" + IOUtils.getDockerGateway() + ":8092/chem-services-cdk-basic/rest/v1/calculators"
+    static String calculatorsbase = "//localhost:8092/chem-services-cdk-basic/rest/v1/calculators"
 
     static String B = CommonMimeTypes.MIME_TYPE_DATASET_BASIC_JSON
     static String M = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON

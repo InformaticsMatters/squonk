@@ -54,8 +54,7 @@ project.integrationTest {
 }
 
 integrationTest {
-    dependsOn rootProject.tasks.dbTestEnvPrepare,
-            tasks.getByPath(':database:flywayMigrate')
+    dependsOn rootProject.tasks.dbTestEnvPrepare
     finalizedBy rootProject.tasks.dbTestEnvShutdown
 }
 

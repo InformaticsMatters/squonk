@@ -19,17 +19,15 @@ dependencies {
     compile project(':common')
     compile project(':common-utils')
     compile project(':common-camel')
-
     compile project(':core-services-common')
     compile project(':core-services-client')
 
     compile 'com.github.docker-java:docker-java:3.0.7'
-
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
-
     compile "org.postgresql:postgresql:$postgresDriverVersion"
 
     testCompile "org.apache.camel:camel-jetty:$camelVersion"
+    testCompile project(':core-test')
 }
 
 
@@ -48,8 +46,7 @@ tasks.withType(Test) {
 }
 
 integrationTest {
-    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean,
-            tasks.getByPath(':database:flywayMigrate')
+    dependsOn rootProject.tasks.integrationTestEnvPrepare
     finalizedBy rootProject.tasks.integrationTestEnvShutdown
 }
 

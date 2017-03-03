@@ -1,0 +1,15 @@
+version: '2.1'
+
+services:
+
+    chemservices:
+        build: ../components/build/chem-services-basic
+        ports:
+        - "8092:8080"
+        volumes:
+        - ./deploy/images/chemservices/chemaxon_reaction_library.zip:/chemaxon_reaction_library.zip:ro
+        healthcheck:
+            test: curl --fail http://localhost:8080/chem-services-cdk-basic/rest/ping || exit 1
+            interval: 20s
+            timeout: 5s
+            retries: 3

@@ -26,31 +26,16 @@ docker-compose rm -f $images
 docker-compose build $images
 
 
-docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d postgres
-
-# we need to wait for postgres to start as the next step is to populate the database
-attempt=0
-until nc -z -w 1 $PRIVATE_HOST 5432
-do
-    if [ $attempt -gt 10 ]; then 
-        echo "Giving up on postgres"
-	    docker-compose stop
-	exit 1
-    fi
-    echo "waiting for postgres container..."
-    sleep 1
-    attempt=$(( $attempt + 1 ))
-done
-echo "postgres is up"
+docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d --no-recreate postgres rabbitmq stage1 || exit 1
 
 
-echo "creating db tables ..."
+echo "updating db tables ..."
 cd ../../components
 SQUONK_DB_SERVER=$PRIVATE_HOST
-./gradlew database:flywayMigrate
+./gradlew database:flywayMigrate || exit 1
 echo "... tables created"
 cd $base
 
-
 docker-compose stop
+
 echo finished

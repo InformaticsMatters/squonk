@@ -1,16 +1,8 @@
 description = 'Basic services based on Chemistry Development Kit'
-def contextName = 'cdk_basic_services'
 
 apply plugin: 'war'
 apply plugin: 'com.bmuschko.tomcat'
-apply plugin: 'com.bmuschko.docker-remote-api'
 
-
-import com.bmuschko.gradle.docker.tasks.image.Dockerfile
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-
-
-apply plugin: 'org.unbroken-dome.test-sets'
 
 dependencies {
     compile project(':common')
@@ -37,49 +29,6 @@ dependencies {
            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
 }
 
-/* Integration test setup is borrowed from here:
- * http://www.petrikainulainen.net/programming/gradle/getting-started-with-gradle-integration-testing-with-the-testsets-plugin/
- * */
-testSets {
-    integrationTest
-}
-
-//check.dependsOn integrationTest
-integrationTest.mustRunAfter test
-
-tasks.withType(Test) {
-    reports.html.destination = file("${reporting.baseDir}/${name}")
-}
-
-integrationTest {
-    dependsOn rootProject.tasks.integrationTestEnvPrepareAndClean
-    finalizedBy rootProject.tasks.integrationTestEnvShutdown
-}
-
 tomcat {
     enableSSL = false
-}
-
-docker {
-    url = dockerHost
-    certPath = null
-}
-
-task buildDockerFile(type: Dockerfile, dependsOn: war) {
-    
-    destFile = project.file('build/Dockerfile')
-    from "tomcat:7-jre8"
-    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
-    
-    runCommand("rm -rf /usr/local/tomcat/webapps/*")
-    
-    def warFile = tasks.war.outputs.files.singleFile
-    addFile('libs/' + warFile.name, "/usr/local/tomcat/webapps/${contextName}.war")
-    
-    exposePort(8080)
-}
-
-task buildDockerImage(type: DockerBuildImage, dependsOn: buildDockerFile) {
-    inputDir = buildDockerFile.destFile.parentFile
-    tag = "squonk/${contextName}"
 }

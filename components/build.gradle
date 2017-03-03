@@ -98,11 +98,6 @@ task integrationTestEnvPrepare(type: Exec) {
     commandLine 'bash', 'int-test-env-prepare.sh'
 }
 
-task integrationTestEnvPrepareAndClean(type: Exec) {
-    dependsOn integrationTestEnvPrepare
-    commandLine 'bash', '../docker/int-test-env-clean.sh'
-}
-
 task integrationTestEnvShutdown(type: Exec) {
     workingDir '../docker'
     commandLine 'bash', 'int-test-env-shutdown.sh'
@@ -114,12 +109,12 @@ task integrationTestEnvClean(type: Exec) {
 
 // tests integration test setup process without running any tests
 task integrationTestEnvDryRun {
-    dependsOn integrationTestEnvPrepareAndClean, 'database:flywayMigrate'
+    dependsOn integrationTestEnvPrepare
     finalizedBy integrationTestEnvShutdown
 }
 
 task integrationTestEnvDryRunNoShutdown {
-    dependsOn integrationTestEnvPrepareAndClean, 'database:flywayMigrate'
+    dependsOn integrationTestEnvPrepare
 }
 
 
