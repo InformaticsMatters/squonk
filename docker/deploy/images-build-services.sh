@@ -6,11 +6,6 @@
 
 base=$PWD
 
-docker-compose stop
-docker-compose rm -fv coreservices
-docker-compose rm -fv cellexecutor
-docker-compose rm -fv chemservices
-
 cd ../../components
 
 ./gradlew --daemon common:assemble common:publish

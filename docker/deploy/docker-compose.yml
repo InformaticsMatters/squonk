@@ -49,7 +49,7 @@ services:
             test: docker-healthcheck.sh
             interval: 10s
             timeout: 2s
-            retries: 3
+            retries: 5
 
     ################# PostgreSQL container ############################################
     # based on PostgreSQL 9.5 with RDKit cartridge support
@@ -72,7 +72,7 @@ services:
             test: docker-healthcheck.sh
             interval: 10s
             timeout: 2s
-            retries: 3
+            retries: 5
     
     ################# stage1 container ############################################
     # waits till postgres and rabbitmq are healthy and then terminates
@@ -122,7 +122,7 @@ services:
             test: curl --fail http://localhost:8080/auth || exit 1
             interval: 20s
             timeout: 5s
-            retries: 3   
+            retries: 5   
 
     ################# chem services container #########################################
     # available on
@@ -153,7 +153,7 @@ services:
             test: curl --fail http://localhost:8080/chem-services-cdk-basic/rest/ping || exit 1
             interval: 20s
             timeout: 5s
-            retries: 3
+            retries: 10 
         
     ################# core-services-server container ###################################
     # available on:
@@ -186,7 +186,7 @@ services:
             test: curl --fail http://localhost:8080/coreservices/rest/ping || exit 1
             interval: 20s
             timeout: 5s
-            retries: 3
+            retries: 5
 
     ################# cell-executor container #########################################
     cellexecutor:
