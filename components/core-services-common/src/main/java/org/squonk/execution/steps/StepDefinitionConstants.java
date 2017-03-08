@@ -76,6 +76,12 @@ public interface StepDefinitionConstants {
          String OPTION_NAME_FIRST_LINE_IS_HEADER = "firstLineIsHeader";
     }
 
+    interface StructureUpload {
+        String CLASSNAME = "org.squonk.execution.steps.impl.StructureReaderStep";
+        String OPTION_FILE_UPLOAD = "fileUpload";
+        String OPTION_FILE_FORMAT = "fileFormat";
+    }
+
     interface ConvertBasicToMoleculeObject {
          String CLASSNAME = "org.squonk.execution.steps.impl.BasicObjectToMoleculeObjectStep";
         /** The name of the value in the BasicObject that contains the structure

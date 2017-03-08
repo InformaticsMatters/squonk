@@ -29,6 +29,10 @@ public class IODescriptor<P,Q> implements Serializable {
         this.secondaryType = secondaryType;
     }
 
+    public IODescriptor(String name, String mediaType, Class<P> primaryType) {
+        this(name, mediaType, primaryType, null);
+    }
+
     public String getName() {
         return name;
     }

@@ -1,10 +1,7 @@
 package org.squonk.io;
 
 import org.squonk.dataset.Dataset;
-import org.squonk.types.BasicObject;
-import org.squonk.types.CSVFile;
-import org.squonk.types.MoleculeObject;
-import org.squonk.types.SDFile;
+import org.squonk.types.*;
 
 import static org.squonk.util.CommonMimeTypes.*;
 
@@ -36,6 +33,22 @@ public class IODescriptors {
 
     public static IODescriptor[] createBasicObjectDatasetArray(String name) {
         return new IODescriptor[] {createBasicObjectDataset(name)};
+    }
+
+    public static IODescriptor createMoleculeObject(String name) {
+        return new IODescriptor(name, MIME_TYPE_MOLECULE_OBJECT_JSON, MoleculeObject.class);
+    }
+
+    public static IODescriptor createMolfile(String name) {
+        return new IODescriptor(name, MIME_TYPE_MDL_MOLFILE, MolFile.class);
+    }
+
+    public static IODescriptor createPDB(String name) {
+        return new IODescriptor(name, MIME_TYPE_PDB, PDBFile.class);
+    }
+
+    public static IODescriptor[] createMoleculeObjectArray(String name) {
+        return new IODescriptor[] {createMoleculeObjectDataset(name)};
     }
 
     public static IODescriptor createSDF(String name) {
