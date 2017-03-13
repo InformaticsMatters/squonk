@@ -64,12 +64,43 @@ public class StandardServiceDescriptors {
                         null  // volumes
                 ),
 
+                new DefaultServiceDescriptor("core.dataset.filter.slice.v1", "Dataset slice selector", "Generate a defined slice of the dataset",
+                        new String[]{"filter", "slice", "dataset"},
+                        null, "icons/filter.png",
+                        ServiceConfig.Status.ACTIVE,
+                        new Date(),
+                        IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
+                        IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+                        new OptionDescriptor[]{
+                                new OptionDescriptor<>(Integer.class, StepDefinitionConstants.DatasetSelectSlice.OPTION_SKIP, "Number to skip", "The number of records to skip", OptionDescriptor.Mode.User),
+                                new OptionDescriptor<>(Integer.class, StepDefinitionConstants.DatasetSelectSlice.OPTION_COUNT, "Number to include", "The number of records to include after skipping", OptionDescriptor.Mode.User)
+                        },
+                        null,
+                        StepDefinitionConstants.DatasetSelectSlice.CLASSNAME
+                ),
+
+                new DefaultServiceDescriptor("core.dataset.filter.random.v1", "Dataset random selector", "Generate a random slice of the dataset",
+                        new String[]{"filter", "random", "dataset"},
+                        null, "icons/filter.png",
+                        ServiceConfig.Status.ACTIVE,
+                        new Date(),
+                        IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
+                        IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+                        new OptionDescriptor[]{
+                                new OptionDescriptor<>(Float.class, StepDefinitionConstants.DatasetSelectRandom.OPTION_RANDOM, "Random fraction (0-1)", "The fraction of records to randomly select (between 0 and 1, default 0.001)", OptionDescriptor.Mode.User),
+                                new OptionDescriptor<>(Integer.class, StepDefinitionConstants.DatasetSelectRandom.OPTION_COUNT, "Max records", "The max number of records to include, default 1000", OptionDescriptor.Mode.User)
+                        },
+                        null,
+                        StepDefinitionConstants.DatasetSelectRandom.CLASSNAME
+                ),
+
                 new DefaultServiceDescriptor("core.dataset.merger.v1", "DatasetMerger", "Merge datasets into one",
                         new String[]{"merge", "dataset"},
                         null, "icons/merge.png",
                         ServiceConfig.Status.ACTIVE,
                         new Date(),
                         new IODescriptor[]{
+                                // this is done backwards as JSPlumb displays the endpoints in reverse order.
                                 IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 5),
                                 IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 4),
                                 IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 3),
@@ -116,7 +147,7 @@ public class StandardServiceDescriptors {
                                         "Merge the main content (e.g the structure for molecules), the values or both", OptionDescriptor.Mode.User)
                                         .withValues(new String[]{"main", "values", "both"})
                                         .withDefaultValue("both")
-                                        .withMinMaxValues(1,1)
+                                        .withMinMaxValues(1, 1)
 
                         },
                         null,
