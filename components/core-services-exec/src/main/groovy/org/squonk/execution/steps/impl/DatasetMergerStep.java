@@ -15,7 +15,12 @@ import java.util.stream.Stream;
 import org.apache.camel.CamelContext;
 import org.squonk.types.io.JsonHandler;
 
-/**
+/**  Merges multiple datasets that must be of the same type. Designed for combining multiple datasets into a single
+ * dataset. New records are appended to the resulting dataset. Existing records have their data merged. How it is merged
+ * is specified by the options.
+ * Up to 5 datasets can be merged (we hope to make this more flexible in future).
+ *
+ * This step is somewhat similar to the {@link DatasetEnricherStep}
  *
  * @author timbo
  */
@@ -35,7 +40,7 @@ public class DatasetMergerStep extends AbstractStep {
 
     public static final String VAR_OUTPUT = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
-    private static final String SOURCE = "Squonk Dataset merger";
+    private static final String SOURCE = "Squonk DatasetMergerStep";
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {

@@ -63,6 +63,13 @@ public interface StepDefinitionConstants {
         String OPTION_KEEP_FIRST = "keepFirst";
     }
 
+    interface DatasetEnricher {
+        String CLASSNAME = "org.squonk.execution.steps.impl.DatasetEnricherStep";
+        String OPTION_MERGE_FIELD = "mergeField";
+        String OPTION_MERGE_MAIN = "mergeMainContent";
+        String OPTION_MERGE_VALUES = "mergeValues";
+    }
+
     interface SdfUpload {
         String CLASSNAME = "org.squonk.execution.steps.impl.SDFReaderStep";
         String OPTION_FILE_UPLOAD = "fileUpload";

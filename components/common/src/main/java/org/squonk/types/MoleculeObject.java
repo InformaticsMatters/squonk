@@ -181,6 +181,18 @@ public class MoleculeObject extends BasicObject {
     }
 
     @Override
+    public void merge(BasicObject other, boolean ignoreValues) {
+        if (other instanceof MoleculeObject) {
+            MoleculeObject mo = (MoleculeObject)other;
+            this.source = mo.getSource();
+            this.format = mo.getFormat();
+            super.merge(other, ignoreValues);
+        } else {
+             throw new IllegalStateException("Incompatible types. Required MoleculeObject found " + other.getClass().getSimpleName());
+        }
+    }
+
+    @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append("MoleculeObject uuid: ")

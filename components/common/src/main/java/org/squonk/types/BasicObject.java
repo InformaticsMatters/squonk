@@ -83,7 +83,8 @@ public class BasicObject implements Serializable, Cloneable {
         this.values.clear();
     }
 
-    /** Clone this BasicObject. The resulting clone will have the same UUID as the original and have its own map of values,
+    /**
+     * Clone this BasicObject. The resulting clone will have the same UUID as the original and have its own map of values,
      * but the contents of the new Map will be the same as the old one (sames instances).
      *
      * @return
@@ -92,7 +93,13 @@ public class BasicObject implements Serializable, Cloneable {
         return new BasicObject(this.uuid, values);
     }
 
-  public String toString() {
+    public void merge(BasicObject other, boolean ignoreValues) {
+        if (!ignoreValues) {
+            this.values.putAll(other.getValues());
+        }
+    }
+
+    public String toString() {
         StringBuilder b = new StringBuilder();
         b.append("BasicObject uuid: ")
                 .append(uuid)
@@ -107,7 +114,6 @@ public class BasicObject implements Serializable, Cloneable {
 
         return b.toString();
     }
-    
-    
+
 
 }

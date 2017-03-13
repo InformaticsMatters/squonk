@@ -137,7 +137,7 @@ public class CCPClassifierRunner extends AbstractCCPRunner {
         String path = UUID.randomUUID().toString();
         File dir = new File(dataDir, path);
         if (!dir.mkdir()) {
-            throw new IOException("Could not create work dir");
+            throw new IOException("Could not create work dir " + dir.getPath());
         }
         signCCP.writeModelFiles(new File(dir, modelFilebase), compress);
         signCCP.writeSignatures(new FileOutputStream(new File(dir, signaturesFilename)), compress);
