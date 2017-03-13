@@ -31,14 +31,14 @@ import static org.squonk.util.CommonConstants.*;
  * @author Tim Dudgeon
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class OptionDescriptor<T> implements Serializable {
 
     public static OptionDescriptor FILTER_MODE = new OptionDescriptor<>(String.class,
             "query." + OPTION_FILTER_MODE, "Filter mode", "How to filter results", Mode.User)
-            .withValues(new String[] {VALUE_INCLUDE_PASS, VALUE_INCLUDE_FAIL, VALUE_INCLUDE_ALL})
+            .withValues(new String[]{VALUE_INCLUDE_PASS, VALUE_INCLUDE_FAIL, VALUE_INCLUDE_ALL})
             .withDefaultValue(VALUE_INCLUDE_PASS)
-            .withMinMaxValues(1,1);
+            .withMinMaxValues(1, 1);
 
     public enum Mode {
         User, Advanced, Input, Output, Ignore
@@ -46,34 +46,35 @@ public class OptionDescriptor<T> implements Serializable {
 
     private final TypeDescriptor<T> typeDescriptor;
     private final String key;
-    private final String label;
-    private final String description;
-    @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-    private final T[] values;
-    @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-    private final T defaultValue;
-    private final boolean editable;
-    private final boolean visible;
-    private final Integer minValues;
-    private final Integer maxValues;
-    private final Mode[] modes;
-    private final Map<String,Object> properties = new LinkedHashMap<>();
+    private String label;
+    private String description;
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+    private T[] values;
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+    private T defaultValue;
+    private boolean editable;
+    private boolean visible;
+    private Integer minValues;
+    private Integer maxValues;
+    private Mode[] modes;
+    private final Map<String, Object> properties = new LinkedHashMap<>();
 
-    /** Full constructor.
+    /**
+     * Full constructor.
      *
      * @param typeDescriptor The TypeDescriptor of the option
-     * @param key The code name of the option. Must be unique among a set of options.
-     * @param label The name of the option as displayed to the user.
-     * @param description A description of the option e.g. to be displayed as a tooltip.
-     * @param values A list of legal values. If null then any value us allowed
-     * @param defaultValue The default value. Can be null.
-     * @param visible Is the option visible to the user.
-     * @param editable Can the user edit the option (if not then a default would normally be specified)
-     * @param minValues The minimum number of values. If 0 then the option is optional. If 1 it is required. If greater than
-     *                  1 then at least this many values need to be specified. If null then assumed to be 1.
-     * @param maxValues The maximum number of values. If null then any number are allowed.
+     * @param key            The code name of the option. Must be unique among a set of options.
+     * @param label          The name of the option as displayed to the user.
+     * @param description    A description of the option e.g. to be displayed as a tooltip.
+     * @param values         A list of legal values. If null then any value us allowed
+     * @param defaultValue   The default value. Can be null.
+     * @param visible        Is the option visible to the user.
+     * @param editable       Can the user edit the option (if not then a default would normally be specified)
+     * @param minValues      The minimum number of values. If 0 then the option is optional. If 1 it is required. If greater than
+     *                       1 then at least this many values need to be specified. If null then assumed to be 1.
+     * @param maxValues      The maximum number of values. If null then any number are allowed.
      * @param modes
-     * @param properties Any custom properties needed by subclasses
+     * @param properties     Any custom properties needed by subclasses
      */
     public OptionDescriptor(
             @JsonProperty("typeDescriptor") TypeDescriptor<T> typeDescriptor,
@@ -87,7 +88,7 @@ public class OptionDescriptor<T> implements Serializable {
             @JsonProperty("minValues") Integer minValues,
             @JsonProperty("maxValues") Integer maxValues,
             @JsonProperty("modes") Mode[] modes,
-            @JsonProperty("properties") Map<String,Object> properties
+            @JsonProperty("properties") Map<String, Object> properties
     ) {
         this.typeDescriptor = typeDescriptor;
         this.key = key;
@@ -99,7 +100,7 @@ public class OptionDescriptor<T> implements Serializable {
         this.editable = editable;
         this.minValues = minValues;
         this.maxValues = maxValues;
-        this.modes = (modes == null ? new Mode[] {Mode.User} : modes);
+        this.modes = (modes == null ? new Mode[]{Mode.User} : modes);
         if (properties != null) {
             this.properties.putAll(properties);
         }
@@ -117,14 +118,15 @@ public class OptionDescriptor<T> implements Serializable {
             Integer minValues,
             Integer maxValues,
             Mode mode) {
-        this(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, new Mode[] {mode}, null);
+        this(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, new Mode[]{mode}, null);
     }
 
     public OptionDescriptor(TypeDescriptor<T> type, String key, String label, String description, Mode mode) {
         this(type, key, label, description, null, null, true, true, 1, null, mode);
     }
 
-    /** Create an OptionDescriptor whose typeDescriptor is a {@link SimpleTypeDescriptor&lt;T&gt;}
+    /**
+     * Create an OptionDescriptor whose typeDescriptor is a {@link SimpleTypeDescriptor&lt;T&gt;}
      *
      * @param type
      * @param key
@@ -137,27 +139,35 @@ public class OptionDescriptor<T> implements Serializable {
     }
 
     public OptionDescriptor<T> withDefaultValue(T defaultValue) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, Mode.User);
+        this.defaultValue = defaultValue;
+        return this;
     }
 
     public OptionDescriptor<T> withValues(T[] values) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, Mode.User);
+        this.values = values;
+        return this;
     }
 
     public OptionDescriptor<T> withAccess(boolean visible, boolean editable) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, Mode.User);
+        this.visible = visible;
+        this.editable = editable;
+        return this;
     }
 
     public OptionDescriptor<T> withMinValues(int minValues) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, Mode.User);
+        this.minValues = minValues;
+        return this;
     }
 
     public OptionDescriptor<T> withMaxValues(int maxValues) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, Mode.User);
+        this.maxValues = maxValues;
+        return this;
     }
 
     public OptionDescriptor<T> withMinMaxValues(int minValues, int maxValues) {
-        return new OptionDescriptor(typeDescriptor, key, label, description, values, defaultValue, visible, editable, minValues, maxValues, Mode.User);
+        this.minValues = minValues;
+        this.maxValues = maxValues;
+        return this;
     }
 
     /**
@@ -215,7 +225,6 @@ public class OptionDescriptor<T> implements Serializable {
     /**
      * Is the value visible to the user.
      *
-     *
      * @return
      */
     public boolean isVisible() {
@@ -224,7 +233,6 @@ public class OptionDescriptor<T> implements Serializable {
 
     /**
      * Is the value editable.
-     *
      *
      * @return
      */
@@ -244,11 +252,12 @@ public class OptionDescriptor<T> implements Serializable {
         return modes;
     }
 
-    /** Get the custom properties of this descriptor.
+    /**
+     * Get the custom properties of this descriptor.
      *
      * @return
      */
-    public Map<String,Object> getProperties() {
+    public Map<String, Object> getProperties() {
         return properties;
     }
 
@@ -258,8 +267,8 @@ public class OptionDescriptor<T> implements Serializable {
     }
 
     @JsonIgnore
-    protected <P> P getProperty(String name, Class<P>cls) {
-        return (P)properties.get(name);
+    protected <P> P getProperty(String name, Class<P> cls) {
+        return (P) properties.get(name);
     }
 
     @JsonIgnore

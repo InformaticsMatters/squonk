@@ -11,7 +11,7 @@ class DatasetsFieldOptionDescriptorSpec extends Specification {
 
     void "test to/from json"() {
 
-        def od1 = new DatasetsFieldOptionDescriptor("key",  "name", "desc")
+        def od1 = new DatasetsFieldOptionDescriptor("key",  "name", "desc").withDefaultValue("default")
 
         when:
         def json = JsonHandler.getInstance().objectToJson(od1)
@@ -22,6 +22,7 @@ class DatasetsFieldOptionDescriptorSpec extends Specification {
         od2 != null
         od2.key == "key"
         od2.label == "name"
+        od2.defaultValue == "default"
 
     }
 
