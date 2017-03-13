@@ -10,20 +10,20 @@ cd ../../components
 
 ./gradlew --daemon common:assemble common:publish
 
-docker rmi squonk/core-services-server squonk/chem-services-basic squonk/cellexecutor
+#docker rmi squonk/core-services-server squonk/chem-services-basic squonk/cellexecutor
 
 echo "building chem-services-basic docker image ..."
-./gradlew --daemon dockerFileChemServices &&
+./gradlew dockerFileChemServices &&
   docker build -t squonk/chem-services-basic build/chem-services-basic
 echo "... chem-services-basic docker image built"
 
 echo "building core-services docker image ..."
-./gradlew --daemon core-services-server:buildDockerFile &&
+./gradlew core-services-server:buildDockerFile &&
   docker build -t squonk/core-services-server core-services-server/build
 echo "... core-services docker image built"
 
 echo "building cell-executor docker image ..."
-./gradlew --daemon cell-executor:dockerBuildImage &&
+./gradlew cell-executor:dockerBuildImage &&
   docker build -t squonk/cellexecutor cell-executor/build/docker
 echo "... cell-executor docker image built"
 

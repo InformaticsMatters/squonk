@@ -1,27 +1,36 @@
 package org.squonk.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.squonk.dataset.ThinDescriptor;
 import org.squonk.io.IODescriptor;
 import org.squonk.options.OptionDescriptor;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by timbo on 04/01/17.
  */
-public class AbstractServiceDescriptor implements ServiceDescriptor {
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class DefaultServiceDescriptor implements ServiceDescriptor, Serializable {
 
     final ServiceConfig serviceConfig;
     final ThinDescriptor[] thinDescriptors;
 
-    protected AbstractServiceDescriptor(ServiceConfig serviceConfig, ThinDescriptor[] thinDescriptors) {
+
+
+
+    public DefaultServiceDescriptor(
+            @JsonProperty("serviceConfig") ServiceConfig serviceConfig,
+            @JsonProperty("thinDescriptors") ThinDescriptor[] thinDescriptors) {
         this.serviceConfig = serviceConfig;
         this.thinDescriptors = thinDescriptors;
     }
 
 
-    protected AbstractServiceDescriptor(
+    public DefaultServiceDescriptor(
             String id,
             String name,
             String description,

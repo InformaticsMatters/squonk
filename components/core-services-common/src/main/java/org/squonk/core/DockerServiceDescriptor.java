@@ -16,7 +16,7 @@ import java.util.Map;
  * Created by timbo on 05/12/16.
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class DockerServiceDescriptor extends AbstractServiceDescriptor {
+public class DockerServiceDescriptor extends DefaultServiceDescriptor {
 
     private final IORoute[] inputRoutes;
     private final IORoute[] outputRoutes;

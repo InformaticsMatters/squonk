@@ -65,9 +65,10 @@ public interface StepDefinitionConstants {
 
     interface DatasetEnricher {
         String CLASSNAME = "org.squonk.execution.steps.impl.DatasetEnricherStep";
-        String OPTION_MERGE_FIELD = "mergeField";
-        String OPTION_MERGE_MAIN = "mergeMainContent";
-        String OPTION_MERGE_VALUES = "mergeValues";
+        String VARIABLE_NEW_DATA = "newData";
+        String OPTION_MAIN_FIELD = "mainField";
+        String OPTION_EXTRA_FIELD = "extraField";
+        String OPTION_MERGE_MODE = "mergeMode";;
     }
 
     interface SdfUpload {

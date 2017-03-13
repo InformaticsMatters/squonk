@@ -39,7 +39,7 @@ import java.util.Date;
  * @author timbo
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class HttpServiceDescriptor extends AbstractServiceDescriptor implements Serializable {
+public class HttpServiceDescriptor extends DefaultServiceDescriptor implements Serializable {
 
 
     private final String executionEndpoint;

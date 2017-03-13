@@ -83,6 +83,10 @@ public class BasicObject implements Serializable, Cloneable {
         this.values.clear();
     }
 
+    public void clearValue(String key) {
+        this.values.remove(key);
+    }
+
     /**
      * Clone this BasicObject. The resulting clone will have the same UUID as the original and have its own map of values,
      * but the contents of the new Map will be the same as the old one (sames instances).

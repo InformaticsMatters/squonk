@@ -10,6 +10,7 @@ import org.squonk.types.BasicObject;
 import org.squonk.types.io.JsonHandler;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -42,26 +43,26 @@ public class DatasetEnricherStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetEnricherStep.class.getName());
 
-    public static final String OPT_MERGE_FIELD = StepDefinitionConstants.DatasetEnricher.OPTION_MERGE_FIELD;
-    public static final String OPT_MERGE_MAIN = StepDefinitionConstants.DatasetEnricher.OPTION_MERGE_MAIN;
-    public static final String OPT_MERGE_VALUES = StepDefinitionConstants.DatasetEnricher.OPTION_MERGE_VALUES;
+    public static final String OPT_MAIN_FIELD = StepDefinitionConstants.DatasetEnricher.OPTION_MAIN_FIELD;
+    public static final String OPT_EXTRA_FIELD = StepDefinitionConstants.DatasetEnricher.OPTION_EXTRA_FIELD;
+    public static final String OPT_MERGE_MODE = StepDefinitionConstants.DatasetEnricher.OPTION_MERGE_MODE;
 
     public static final String VAR_INPUT = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
-    public static final String VAR_NEW_DATA = "newData";
+    public static final String VAR_NEW_DATA = StepDefinitionConstants.DatasetEnricher.VARIABLE_NEW_DATA;
 
 
     public static final String VAR_OUTPUT = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
     private static final String SOURCE = "Squonk DatasetEnricherStep";
 
+    private enum Mode {main, values, both};
+
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        String mergeField = getOption(OPT_MERGE_FIELD, String.class);
-        Boolean mergeMain = getOption(OPT_MERGE_MAIN, Boolean.class, true);
-        Boolean mergeValues = getOption(OPT_MERGE_VALUES, Boolean.class, true);
-        if (!mergeMain && !mergeValues) {
-            throw new IllegalStateException("Must specify to merge main content or values or both");
-        }
+        final String mainField = getOption(OPT_MAIN_FIELD, String.class);
+        final String extraField = getOption(OPT_EXTRA_FIELD, String.class);
+        final String mergeMode = getOption(OPT_MERGE_MODE, String.class, "both");
+        final Mode mode = Mode.valueOf(mergeMode);
 
         Dataset<? extends BasicObject> mainDataset = fetchMappedInput(VAR_INPUT, Dataset.class, varman);
         Dataset<? extends BasicObject> extraDataset = fetchMappedInput(VAR_NEW_DATA, Dataset.class, varman);
@@ -73,7 +74,7 @@ public class DatasetEnricherStep extends AbstractStep {
         }
         Class mainType = mainDataset.getType();
         Class extraType = extraDataset.getType();
-        if (mergeMain && mainType != extraType) {
+        if (mode != Mode.values && mainType != extraType) {
             throw new IllegalStateException("Can't merge main content if dataset types are different");
         }
         DatasetMetadata mainMeta = mainDataset.getMetadata();
@@ -86,43 +87,45 @@ public class DatasetEnricherStep extends AbstractStep {
         Set<String> updatedFields = Collections.synchronizedSet(new HashSet<>());
         try (Stream<? extends BasicObject> st = extraDataset.getStream()) {
             st.forEachOrdered((BasicObject bo) -> {
-                Object comparator = fetchValueToCompare(bo, mergeField);
+                Object comparator = fetchValueToCompare(bo, extraField);
                 if (comparator != null) {
                     BasicObject existing = newData.get(comparator);
                     if (existing != null) {
                         throw new IllegalStateException("Values to merge contain duplicate keys: " + comparator);
                     } else {
+                        bo.clearValue(extraField);
                         newData.put(comparator, bo);
-                    }
-                    if (mergeValues) {
-                        updatedFields.addAll(bo.getValues().keySet());
+                        if (mode != Mode.main) {
+                            updatedFields.addAll(bo.getValues().keySet());
+                        }
                     }
                 }
             });
         }
 
-
+        AtomicInteger count = new AtomicInteger(0);
         Stream<? extends BasicObject> enrichedStream = mainDataset.getStream().peek((BasicObject bo) -> {
-            Object comparator = fetchValueToCompare(bo, mergeField);
+            Object comparator = fetchValueToCompare(bo, mainField);
             if (comparator != null) {
                 BasicObject updates = newData.get(comparator);
                 if (updates != null) {
-                    if (mergeMain) {
-                        bo.merge(updates, !mergeValues);
+                    if (mode != Mode.values) {
+                        bo.merge(updates, mode == Mode.main);
                     } else {
                         bo.getValues().putAll(updates.getValues());
                     }
+                    count.incrementAndGet();
                 }
             }
         });
 
         Object extraDesc = extraMeta.getProperties().get(DatasetMetadata.PROP_DESCRIPTION);
         String what = null;
-        if (mergeMain && mergeValues) {
+        if (mode == Mode.both) {
             what = "Main content and values";
-        } else if (mergeMain) {
+        } else if (mode == Mode.main) {
             what = "Main content";
-        } else if (mergeValues) {
+        } else if (mode == Mode.values) {
             what = "Values";
         }
         mainMeta.appendDatasetHistory(what + " enriched with data from " +
@@ -145,7 +148,7 @@ public class DatasetEnricherStep extends AbstractStep {
         statusMessage = "Writing results";
         Dataset output = new Dataset(mainType, enrichedStream, mainMeta);
         createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, output.getMetadata().getSize());
+        statusMessage = count.get() + " records updated";
         LOG.info("Results: " + JsonHandler.getInstance().objectToJson(output.getMetadata()));
     }
 

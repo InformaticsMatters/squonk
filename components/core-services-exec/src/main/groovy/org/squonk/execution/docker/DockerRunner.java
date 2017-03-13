@@ -110,7 +110,7 @@ public class DockerRunner {
 
     public void init() throws IOException {
         if (!this.hostWorkDir.mkdir()) {
-            throw new IOException("Could not create work dir");
+            throw new IOException("Could not create work dir " + this.hostWorkDir.getPath());
         }
         Volume work = new Volume(localWorkDir);
         volumes.add(work);

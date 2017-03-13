@@ -32,43 +32,45 @@ public class ServiceDescriptorRegistry {
     private final Object writeLock = new Object();
     private boolean initialised = false;
 
-    private static ServiceDescriptorSet BUILT_IN_SERVICES = new ServiceDescriptorSet(null, null, Arrays.asList(new DockerServiceDescriptor[]{
-            new DockerServiceDescriptor("docker.generic.dataset.v1", "GenericDockerProcessDataset", "Process Dataset with command in Docker container",
-                    new String[]{"program", "code", "dataset", "docker"},
-                    null,
-                    "icons/program.png",
-                    ServiceConfig.Status.ACTIVE,
-                    new Date(),
-                    IODescriptors.createMoleculeObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
-                    new IORoute[]{IORoute.FILE},
-                    IODescriptors.createMoleculeObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
-                    new IORoute[]{IORoute.FILE},
-                    new OptionDescriptor[]{
-                            new OptionDescriptor<>(String.class, StepDefinitionConstants.OPTION_DOCKER_IMAGE,
-                                    "Docker image name", "The Docker image to use", OptionDescriptor.Mode.User)
-                                    .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(String.class, "inputMediaType",
-                                    "Input media type", "The format the input will be written as e.g. application/x-squonk-dataset-molecule+json", OptionDescriptor.Mode.User)
-                                    .withValues(new String[]{CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON, CommonMimeTypes.MIME_TYPE_MDL_SDF})
-                                    .withDefaultValue(CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
-                                    .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(String.class, "outputMediaType",
-                                    "Output media type", "The format the output will be read as e.g. chemical/x-mdl-sdfile", OptionDescriptor.Mode.User)
-                                    .withValues(new String[]{CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON, CommonMimeTypes.MIME_TYPE_MDL_SDF})
-                                    .withDefaultValue(CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
-                                    .withMinMaxValues(1, 1),
-                            new OptionDescriptor<>(new MultiLineTextTypeDescriptor(20, 60, MultiLineTextTypeDescriptor.MIME_TYPE_SCRIPT_SHELL),
-                                    StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_COMMAND,
-                                    "Command", "The command to be executed e.g. bash script to execute inside container", OptionDescriptor.Mode.User)
-                                    .withMinMaxValues(1, 1)
-                    },
-                    null, // thin descriptors
-                    GenericDatasetDockerExecutorStep.class.getName(), // executor
-                    null, // image - defined in option
-                    null, // command - defined in option
-                    null  // volumes
-            )
-    }));
+//    private static ServiceDescriptorSet BUILT_IN_SERVICES = new ServiceDescriptorSet(null, null, Arrays.asList(new DockerServiceDescriptor[]{
+//            new DockerServiceDescriptor("docker.generic.dataset.v1", "GenericDockerProcessDataset", "Process Dataset with command in Docker container",
+//                    new String[]{"program", "code", "dataset", "docker"},
+//                    null,
+//                    "icons/program.png",
+//                    ServiceConfig.Status.ACTIVE,
+//                    new Date(),
+//                    IODescriptors.createMoleculeObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
+//                    new IORoute[]{IORoute.FILE},
+//                    IODescriptors.createMoleculeObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+//                    new IORoute[]{IORoute.FILE},
+//                    new OptionDescriptor[]{
+//                            new OptionDescriptor<>(String.class, StepDefinitionConstants.OPTION_DOCKER_IMAGE,
+//                                    "Docker image name", "The Docker image to use", OptionDescriptor.Mode.User)
+//                                    .withMinMaxValues(1, 1),
+//                            new OptionDescriptor<>(String.class, "inputMediaType",
+//                                    "Input media type", "The format the input will be written as e.g. application/x-squonk-dataset-molecule+json", OptionDescriptor.Mode.User)
+//                                    .withValues(new String[]{CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON, CommonMimeTypes.MIME_TYPE_MDL_SDF})
+//                                    .withDefaultValue(CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
+//                                    .withMinMaxValues(1, 1),
+//                            new OptionDescriptor<>(String.class, "outputMediaType",
+//                                    "Output media type", "The format the output will be read as e.g. chemical/x-mdl-sdfile", OptionDescriptor.Mode.User)
+//                                    .withValues(new String[]{CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON, CommonMimeTypes.MIME_TYPE_MDL_SDF})
+//                                    .withDefaultValue(CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
+//                                    .withMinMaxValues(1, 1),
+//                            new OptionDescriptor<>(new MultiLineTextTypeDescriptor(20, 60, MultiLineTextTypeDescriptor.MIME_TYPE_SCRIPT_SHELL),
+//                                    StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_COMMAND,
+//                                    "Command", "The command to be executed e.g. bash script to execute inside container", OptionDescriptor.Mode.User)
+//                                    .withMinMaxValues(1, 1)
+//                    },
+//                    null, // thin descriptors
+//                    GenericDatasetDockerExecutorStep.class.getName(), // executor
+//                    null, // image - defined in option
+//                    null, // command - defined in option
+//                    null  // volumes
+//            )
+//    }));
+
+    private static ServiceDescriptorSet BUILT_IN_SERVICES = new StandardServiceDescriptors().get();
 
     public ServiceDescriptorRegistry() {
         this.client = null;

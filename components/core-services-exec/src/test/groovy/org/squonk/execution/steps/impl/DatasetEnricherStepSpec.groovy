@@ -77,7 +77,7 @@ class DatasetEnricherStepSpec extends Specification {
                 ds2)
 
         DatasetEnricherStep step = new DatasetEnricherStep()
-        step.configure(producer, "job1", [(DatasetEnricherStep.OPT_MERGE_FIELD): 'id'],
+        step.configure(producer, "job1", [(DatasetEnricherStep.OPT_MAIN_FIELD): 'id', (DatasetEnricherStep.OPT_EXTRA_FIELD): 'id'],
                 [IODescriptors.createBasicObjectDataset(DatasetEnricherStep.VAR_INPUT),
                  IODescriptors.createBasicObjectDataset(DatasetEnricherStep.VAR_NEW_DATA)] as IODescriptor[],
                 [IODescriptors.createBasicObjectDataset(DatasetEnricherStep.VAR_OUTPUT)] as IODescriptor[],
@@ -181,7 +181,7 @@ class DatasetEnricherStepSpec extends Specification {
                 ds2)
 
         DatasetEnricherStep step = new DatasetEnricherStep()
-        step.configure(producer, "job1", [(DatasetEnricherStep.OPT_MERGE_FIELD): 'id', (DatasetEnricherStep.OPT_MERGE_MAIN):true],
+        step.configure(producer, "job1", [(DatasetEnricherStep.OPT_MAIN_FIELD): 'id', (DatasetEnricherStep.OPT_EXTRA_FIELD): 'id', (DatasetEnricherStep.OPT_MERGE_MODE): "both"],
                 [IODescriptors.createMoleculeObjectDataset(DatasetEnricherStep.VAR_INPUT),
                  IODescriptors.createMoleculeObjectDataset(DatasetEnricherStep.VAR_NEW_DATA)] as IODescriptor[],
                 [IODescriptors.createMoleculeObjectDataset(DatasetEnricherStep.VAR_OUTPUT)] as IODescriptor[],
@@ -222,7 +222,7 @@ class DatasetEnricherStepSpec extends Specification {
                 ds2)
 
         DatasetEnricherStep step = new DatasetEnricherStep()
-        step.configure(producer, "job1", [(DatasetEnricherStep.OPT_MERGE_MAIN):true],
+        step.configure(producer, "job1", [(DatasetEnricherStep.OPT_MERGE_MODE): "both"],
                 [IODescriptors.createMoleculeObjectDataset(DatasetEnricherStep.VAR_INPUT),
                  IODescriptors.createMoleculeObjectDataset(DatasetEnricherStep.VAR_NEW_DATA)] as IODescriptor[],
                 [IODescriptors.createMoleculeObjectDataset(DatasetEnricherStep.VAR_OUTPUT)] as IODescriptor[],
