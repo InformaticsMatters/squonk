@@ -9,7 +9,7 @@ import java.io.InputStream;
  *
  * @author timbo
  */
-public class PDBFile extends AbstractFile {
+public class PDBFile extends AbstractStreamType {
 
     private static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_PDB;
 
@@ -17,9 +17,9 @@ public class PDBFile extends AbstractFile {
         super(input);
     }
 
-    public PDBFile(String input) {
-        super(new ByteArrayInputStream(input.getBytes()));
-    }
+//    public PDBFile(String input) {
+//        super(new ByteArrayInputStream(input.getBytes()));
+//    }
 
     public String getMediaType() {
         return MEDIA_TYPE;

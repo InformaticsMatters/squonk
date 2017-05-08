@@ -107,7 +107,7 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
 
             // write the command that executes everything
             LOG.info("Writing command file");
-            runner.writeInput("execute", "#!/bin/sh\n" + expandedCommand, true);
+            runner.writeInput("execute", "#!/bin/sh\n" + expandedCommand + "\n", true);
 
             // add the resources
             if (descriptor.getVolumes() != null) {

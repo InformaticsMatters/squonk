@@ -9,7 +9,7 @@ import java.io.InputStream;
  *
  * @author timbo
  */
-public class MolFile extends AbstractFile {
+public class MolFile extends AbstractStreamType {
 
     private static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_MDL_MOLFILE;
 

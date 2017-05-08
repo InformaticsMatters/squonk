@@ -8,7 +8,7 @@ import java.io.InputStream;
  *
  * @author timbo
  */
-public class SDFile extends AbstractFile {
+public class SDFile extends AbstractStreamType {
 
     public static final String PROP_NAME_FIELD_NAME = "SDF_NAME_FIELD_NAME";
     private static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_MDL_SDF;

@@ -8,7 +8,7 @@ import java.io.InputStream;
  *
  * @author timbo
  */
-public class CSVFile extends AbstractFile {
+public class CSVFile extends AbstractStreamType {
 
     private static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_TEXT_CSV;
 

@@ -6,6 +6,7 @@ import org.squonk.client.VariableClient;
 import org.squonk.execution.variable.impl.VariableReadContext;
 import org.squonk.execution.variable.impl.VariableWriteContext;
 import org.squonk.notebook.api.VariableKey;
+import org.squonk.types.AbstractStreamType;
 import org.squonk.util.IOUtils;
 
 import java.io.ByteArrayInputStream;
@@ -71,13 +72,19 @@ public class VariableManager {
     public <V> void putValue(Class<V> type, V value, VariableHandler.WriteContext context) throws Exception {
 
         VariableHandler<V> vh = variableHandlerRegistry.lookup(type);
-        LOG.info("Using write variable handler " + vh + " for type " + type.getName());
+
         if (vh != null) {
+            LOG.info("Using write variable handler " + vh + " for type " + type.getName());
             vh.writeVariable(value, context);
-        } else if (canBeHandledAsString(value.getClass())) {
-            context.writeTextValue(value.toString());
         } else {
-            throw new IllegalArgumentException("Don't know how to handle value of type " + type.getName());
+
+            if (value instanceof AbstractStreamType) {
+                LOG.info("No variable handler for type " + type.getName() + ". Handling as stream");
+                context.writeStreamValue(((AbstractStreamType)value).getInputStream());
+            } else {
+                LOG.info("No variable handler for type " + type.getName() + ". Handling as text");
+                context.writeTextValue(value.toString());
+            }
         }
     }
 
@@ -112,7 +119,11 @@ public class VariableManager {
             V result = (V) vh.readVariable(context);
             return result;
 
-        } else if (canBeHandledAsString(type)) {
+        } else if (canBeHandledAs(type, InputStream .class)) {
+            Constructor c = type.getConstructor(InputStream.class);
+            InputStream s = context.readStreamValue();
+            return s == null ? null : (V) c.newInstance(s);
+        } else if (canBeHandledAs(type, String .class)) {
             Constructor c = type.getConstructor(String.class);
             String s = context.readTextValue();
             return s == null ? null : (V) c.newInstance(s);
@@ -125,9 +136,15 @@ public class VariableManager {
     }
 
 
-    boolean canBeHandledAsString(Class cls) {
-        for (Constructor c : cls.getConstructors()) {
-            if (c.getParameterCount() == 1 && c.getParameterTypes()[0].isAssignableFrom(String.class)) {
+    /** Can the testCls be handled as type targetClass
+     *
+     * @param testCls
+     * @param targetCls
+     * @return
+     */
+    boolean canBeHandledAs(Class testCls, Class targetCls) {
+        for (Constructor c : testCls.getConstructors()) {
+            if (c.getParameterCount() == 1 && c.getParameterTypes()[0].isAssignableFrom(targetCls)) {
                 return true;
             }
         }
