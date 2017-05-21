@@ -130,6 +130,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         this(type, iter, new DatasetMetadata<T>(type));
     }
 
+    @Deprecated
     public Dataset(Class<T> type, Collection<T> items, DatasetMetadata<T> metadata) {
         this.type = type;
         this.list = new ArrayList<>();
@@ -137,22 +138,41 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         this.metadata = metadata;
     }
 
+    public Dataset(Collection<T> items, DatasetMetadata<T> metadata) {
+        this(metadata.getType(), items, metadata);
+    }
+
+    @Deprecated
     public Dataset(Class<T> type, Stream<T> objects, DatasetMetadata<T> metadata) {
         this.type = type;
         this.stream = objects;
         this.metadata = metadata;
     }
 
+    public Dataset(Stream<T> objects, DatasetMetadata<T> metadata) {
+        this(metadata.getType(), objects, metadata);
+    }
+
+    @Deprecated
     public Dataset(Class<T> type, Iterator<T> iter, DatasetMetadata<T> metadata) {
         this.type = type;
         this.iter = iter;
         this.metadata = metadata;
     }
 
+    public Dataset(Iterator<T> iter, DatasetMetadata<T> metadata) {
+        this(metadata.getType(), iter, metadata);
+    }
+
+    @Deprecated
     public Dataset(Class<T> type, URL url, DatasetMetadata<T> metadata) {
         this.type = type;
         this.url = url;
         this.metadata = metadata;
+    }
+
+    public Dataset(URL url, DatasetMetadata<T> metadata) {
+        this(metadata.getType(), url, metadata);
     }
 
     /**
@@ -163,6 +183,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
      * @param inputStream
      * @param metadata
      */
+    @Deprecated
     public Dataset(Class<T> type, InputStream inputStream, DatasetMetadata<T> metadata) {
         if (inputStream == null) {
             throw new NullPointerException("InputStream must not be null");
@@ -173,6 +194,10 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         this.type = type;
         this.inputStream = inputStream;
         this.metadata = metadata;
+    }
+
+    public Dataset(InputStream inputStream, DatasetMetadata<T> metadata) {
+        this(metadata.getType(), inputStream, metadata);
     }
 
     /** Items as InputStream using default metadata that just specifies the generic type

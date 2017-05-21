@@ -107,6 +107,8 @@ public class StandardServiceDescriptors {
                                 IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 2),
                                 IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 1)
                         },
+                        // TODO - find a way to dynamically determine the output type based on the first bound input
+                        // the consequence of no tdoing this is that themerger cell always reports its output as BasicObject
                         IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
                         new OptionDescriptor[]{
 
@@ -152,6 +154,25 @@ public class StandardServiceDescriptors {
                         },
                         null,
                         StepDefinitionConstants.DatasetEnricher.CLASSNAME
+                ),
+
+                new DefaultServiceDescriptor("core.dataset.uuidfilter.v1", "DatasetUUIDFilter", "Filter a dataset for a set of UUIDs",
+                        new String[]{"filter", "uuid", "dataset"},
+                        null, "icons/filter.png",
+                        ServiceConfig.Status.ACTIVE,
+                        new Date(),
+                        IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
+                        IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+                        new OptionDescriptor[]{
+
+                                new OptionDescriptor<>(new MultiLineTextTypeDescriptor(10, 60, CommonMimeTypes.MIME_TYPE_TEXT_PLAIN),
+                                        StepDefinitionConstants.DatasetUUIDFilter.OPTION_UUIDS,
+                                        "UUIDs", "List of UUIDs", OptionDescriptor.Mode.User)
+                                        .withMinMaxValues(1, 1)
+
+                        },
+                        null,
+                        StepDefinitionConstants.DatasetUUIDFilter.CLASSNAME
                 )
         }));
 

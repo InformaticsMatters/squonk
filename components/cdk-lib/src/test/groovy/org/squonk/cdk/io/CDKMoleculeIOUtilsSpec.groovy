@@ -3,6 +3,8 @@ package org.squonk.cdk.io
 import org.openscience.cdk.DefaultChemObjectBuilder
 import org.openscience.cdk.fingerprint.SignatureFingerprinter
 import org.openscience.cdk.signature.MoleculeSignature
+import org.openscience.cdk.smiles.SmiFlavor
+import org.openscience.cdk.smiles.SmilesGenerator
 import org.squonk.types.MoleculeObject
 import org.openscience.cdk.ChemFile
 import org.openscience.cdk.interfaces.IAtomContainer
@@ -220,6 +222,59 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         then:
         content.length() > 0
         content.split('<mr_id>').length == 37
+    }
+
+
+    void "write csv kinase"() {
+
+        //String file = '../../data/testfiles/dhfr_standardized.sdf.gz'
+        //GZIPInputStream gzip = new GZIPInputStream(new FileInputStream(file))
+        String file = '/home/timbo/Downloads/DatasetPotion1.sdf/'
+        def input = new FileInputStream(file)
+
+
+        when:
+        Iterable<IAtomContainer> mols = CDKMoleculeIOUtils.moleculeIterable(input)
+        Iterator iter = mols.iterator()
+
+        def propnames = [] as HashSet
+        while (iter.hasNext()) {
+            def mol = iter.next()
+            def props = mol.getProperties()
+            props.each { k,v ->
+                if (!propnames.contains(k) && !k.startsWith("cdk:")) {
+                    propnames.add(k)
+                }
+            }
+         }
+
+        iter = mols.iterator()
+        SmilesGenerator generator = new SmilesGenerator(SmiFlavor.Absolute);
+
+        print "smiles"
+        propnames.each { n ->
+            print "," + n
+        }
+        println ""
+        while (iter.hasNext()) {
+            def mol = iter.next()
+            String smi = generator.create(mol);
+            print smi
+
+            def props = mol.getProperties()
+            propnames.each { n ->
+                print "," + props[n]
+            }
+            println ""
+        }
+
+
+        then:
+        1 == 1
+
+        cleanup:
+        input?.close()
+
     }
 
 

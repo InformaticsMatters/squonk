@@ -116,6 +116,11 @@ public interface StepDefinitionConstants {
          String OPTION_SCRIPT = "script";
     }
 
+    interface DatasetUUIDFilter {
+        String CLASSNAME = "org.squonk.execution.steps.impl.DatasetUUIDFilterStep";
+        String OPTION_UUIDS = "uuids";
+    }
+
     interface UntrustedGroovyDatasetScript {
          String CLASSNAME = "org.squonk.execution.steps.impl.UntrustedGroovyDatasetScriptStep";
          String OPTION_SCRIPT = "script";
