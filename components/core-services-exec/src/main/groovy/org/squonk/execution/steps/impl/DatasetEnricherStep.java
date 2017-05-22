@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 /**
  * Step that enriches one dataset with data from another. Information form the second is merged into the first.
  * The data that is merged can be the core information (e.g. the source and format for a Dataset of MoleculeObjects)
- * of the values. The datasets do not need to be of the same type, but if they are different only the values can be
+ * or the values or both. The datasets do not need to be of the same type, but if they are different only the values can be
  * merged.
  *
  * The records can be matched based on a field name (the OPT_MERGE_FIELD option) or if not specified by the UUID.
@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  * The result is all the data in the first dataset "overlaid" with any data from matching records in the second.
  *
  * Two options control what is merged. OPT_MERGE_MAIN specifies to merge the main content (e.g. structure info for a
- * MolecuelObject), (if datasets are are different types as determined by {@link Dataset#getType()} then this option
+ * MoleculeObject), (if datasets are are different types as determined by {@link Dataset#getType()} then this option
  * is ignored) whilst OPT_MERGE_VALUES specified to merge the values. Both are boolean values and one or both must
  * be specified.
  *

@@ -269,10 +269,9 @@ services:
         - ./images/nginx/cert.key:/etc/nginx/cert.key:ro
         - ./images/nginx/index.html:/usr/share/nginx/html/index.html:ro
         - ./images/nginx/.well-known/:/usr/share/nginx/html/.well-known/:ro
-        depends_on:
-        - xwiki
-        - keycloak
-        - portal
+        - ./images/nginx/informaticsmatters.com.conf:/etc/nginx/conf.d/informaticsmatters.com.conf:ro
+        - ./images/nginx/sites/squonk.it/html/:/usr/share/nginx/html/squonk.it/html/:ro
+        - ./images/nginx/sites/informaticsmatters.com/html/:/usr/share/nginx/html/informaticsmatters.com/html/:ro
         networks:
         - squonk_front
 
