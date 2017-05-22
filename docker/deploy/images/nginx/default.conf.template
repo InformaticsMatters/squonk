@@ -19,10 +19,10 @@ server {
     client_max_body_size 100M;
 
     #charset koi8-r;
-    #access_log  /var/log/nginx/log/host.access.log  main;
+    access_log  /var/log/nginx/log/squonk.it.access.log;
 
     location / {
-        root   /usr/share/nginx/html;
+        root   /usr/share/nginx/html/squonk.it/html;
         index  index.html index.htm;
     }
 
@@ -37,30 +37,33 @@ server {
 
 
     location /xwiki/ {
-	    proxy_pass 		        http://xwiki:8080/xwiki/;
+	proxy_pass	        http://xwiki:8080/xwiki/;
         proxy_set_header        Host $host;
         proxy_set_header        X-Real-IP $remote_addr;
         proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header        X-Forwarded-Proto $scheme;
-	    proxy_redirect     	    off;
+	proxy_redirect		off;
+	proxy_connect_timeout   75s;
     }
 
     location /auth/ {
-	    proxy_pass 		        http://keycloak:8080/auth/;
+	proxy_pass	        http://keycloak:8080/auth/;
         proxy_set_header        Host $host;
         proxy_set_header        X-Real-IP $remote_addr;
         proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header        X-Forwarded-Proto $scheme;
-	    proxy_redirect     	    off;
+	proxy_redirect		off;
+	proxy_connect_timeout   75s;
     }
 
     location /portal/ {
-	    proxy_pass 		        http://portal:8080/portal/;
+	proxy_pass	        http://portal:8080/portal/;
         proxy_set_header        Host $host;
         proxy_set_header        X-Real-IP $remote_addr;
         proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header        X-Forwarded-Proto $scheme;
-	    proxy_redirect     	    off;
+	proxy_redirect		off;
+	proxy_connect_timeout   75s;
     }
 
 # expose these once they are secured
