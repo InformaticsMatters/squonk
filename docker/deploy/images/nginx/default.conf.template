@@ -19,7 +19,7 @@ server {
     client_max_body_size 100M;
 
     #charset koi8-r;
-    access_log  /var/log/nginx/log/squonk.it.access.log;
+    access_log  /var/log/nginx/squonk.it.access.log;
 
     location / {
         root   /usr/share/nginx/html/squonk.it/html;
