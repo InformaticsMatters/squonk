@@ -20,7 +20,7 @@ public class DatasetFieldTypeDescriptor extends SimpleTypeDescriptor<String> imp
             @JsonProperty("typeFilters") Class[] typeFilters
            ) {
         super(String.class);
-        this.inputName = inputName;
+        this.inputName = inputName == null ? "input" : inputName;
         this.typeFilters = typeFilters;
     }
 

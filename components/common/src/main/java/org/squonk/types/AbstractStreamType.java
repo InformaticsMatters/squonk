@@ -7,12 +7,12 @@ import java.io.InputStream;
  *
  * @author timbo
  */
-public abstract class AbstractFile {
+public abstract class AbstractStreamType {
 
     private final InputStream inputStream;
 
 
-    public AbstractFile(InputStream inputStream) {
+    public AbstractStreamType(InputStream inputStream) {
         this.inputStream = inputStream;
     }
 

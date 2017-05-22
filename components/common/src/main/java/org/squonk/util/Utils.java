@@ -25,13 +25,13 @@ public class Utils {
     /**
      * @param a
      * @param b
-     * @return true is a and b are both null or a.equals(b)
+     * @return true if a and b are both null or a.equals(b)
      */
     public static boolean safeEqualsIncludeNull(Object a, Object b) {
         if (a == null && b == null) {
             return true;
         }
-        return a.equals(b);
+        return a != null && a.equals(b);
     }
 
     public static String intArrayToString(int[] values, String separator) {

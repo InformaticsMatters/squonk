@@ -1,14 +1,13 @@
 package org.squonk.api;
 
-import org.squonk.types.DatasetHandler;
-import org.squonk.types.InputStreamHandler;
-import org.squonk.types.SDFileHandler;
-import org.squonk.types.StringHandler;
+import org.squonk.types.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * TODO -remove this class - its functions can be performed by TypeResolver
+ *
  * Created by timbo on 31/03/16.
  */
 public class VariableHandlerRegistry {
@@ -23,6 +22,7 @@ public class VariableHandlerRegistry {
         register(new InputStreamHandler());
         register(new StringHandler());
         register(new SDFileHandler());
+        register(new PDBFileHandler());
     }
 
     public void register(VariableHandler handler) {

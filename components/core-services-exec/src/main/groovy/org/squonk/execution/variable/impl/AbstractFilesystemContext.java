@@ -16,8 +16,11 @@ public abstract class AbstractFilesystemContext {
     }
 
     protected File generateFile(String key) {
-        return new File(dir, baseName + "." + key);
+        if (key == null) {
+            return new File(dir, baseName);
+        } else {
+            return new File(dir, baseName + "." + key);
+        }
     }
-
 
 }

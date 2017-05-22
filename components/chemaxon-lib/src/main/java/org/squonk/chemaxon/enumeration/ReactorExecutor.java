@@ -89,7 +89,14 @@ public class ReactorExecutor {
 
     public Stream<MoleculeObject> enumerateMoleculeObjects(Output output, int ignoreRules, Stream<MoleculeObject> reactants) throws ReactionException, IOException {
 
-        Stream<Molecule> mols = reactants.map((mo) -> MoleculeUtils.cloneMolecule(mo, true));
+        Stream<Molecule> mols = reactants.map((mo) -> {
+            try {
+                return MoleculeUtils.cloneMolecule(mo, true);
+            } catch (Exception ex) {
+                LOG.log(Level.WARNING, "Failed to clone molecule", ex);
+                return null;
+            }
+        }).filter((mo) -> mo != null );
         return enumerateMolecules( output, ignoreRules, mols);
     }
         /**  Enumerate a reaction using the specified reactants.

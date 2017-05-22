@@ -90,6 +90,12 @@ public interface StepDefinitionConstants {
         String OPTION_FILE_FORMAT = "fileFormat";
     }
 
+    interface PdbUpload {
+        String CLASSNAME = "org.squonk.execution.steps.impl.PdbReaderStep";
+        String OPTION_FILE_UPLOAD = "pdbUpload";
+        String VARIABLE_PDB = "pdb";
+    }
+
     interface ConvertBasicToMoleculeObject {
          String CLASSNAME = "org.squonk.execution.steps.impl.BasicObjectToMoleculeObjectStep";
         /** The name of the value in the BasicObject that contains the structure
