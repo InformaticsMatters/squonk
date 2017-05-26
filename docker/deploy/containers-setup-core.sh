@@ -13,11 +13,11 @@ base=$PWD
 echo "checking we have some content for the websites"
 if [ ! -d images/nginx/sites/informaticsmatters.com/html ]; then
 	echo "creating dummy content for informaticsmatters.com"
-	mkdir images/nginx/sites/informaticsmatters.com/html || exit 1
+	mkdir -p images/nginx/sites/informaticsmatters.com/html || exit 1
 fi
 if [ ! -d images/nginx/sites/squonk.it/html ]; then
 	echo "creating dummy content for squonk.it"
-	mkdir images/nginx/sites/squonk.it/html || exit 1
+	mkdir -p images/nginx/sites/squonk.it/html || exit 1
 	cp images/nginx/sites/index.html images/nginx/sites/squonk.it/html/ || exit 1
 fi
 
