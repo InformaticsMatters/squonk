@@ -1,9 +1,11 @@
 apply plugin: 'groovy'
 
 
-def RDBASE = System.getenv('RDBASE')
+String RDBASE = System.getenv('RDBASE')
+String RDKitJarFile = '/Code/JavaWrappers/gmwrapper/org.RDKit.jar'
+boolean RDKitJava = RDBASE && file(RDBASE + RDKitJarFile).exists()
 
-buildscript {
+        buildscript {
     repositories {
         jcenter()
     }
@@ -15,6 +17,8 @@ buildscript {
 
 apply plugin: 'org.unbroken-dome.test-sets'
 
+
+
 dependencies {
     
     compile project(':common')
@@ -22,9 +26,9 @@ dependencies {
 
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
 
-    if (RDBASE) {
+    if (RDKitJava) {
         //println "$RDBASE defined - using that location for RDKit"
-        compile files("$RDBASE/Code/JavaWrappers/gmwrapper/org.RDKit.jar")
+        compile files(RDBASE + RDKitJarFile)
     } else {
         //println "Using local org.RDKit.jar"
         compile files("../../lib/rdkit/org.RDKit.jar")
@@ -67,4 +71,4 @@ task execute(type:JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 }
 
-tasks.test.onlyIf { RDBASE != null }
+tasks.test.onlyIf { RDKitJava }
