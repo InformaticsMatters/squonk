@@ -183,14 +183,14 @@ class NotebookPostgresClient implements NotebookVariableClient {
      */
     @Override
     public List<NotebookEditableDTO> listEditables(Long notebookId, String username) {
-        log.fine("Listing editables for notebook $notebookId and user $username")
+        log.finer("Listing editables for notebook $notebookId and user $username")
         Sql db = createSql()
         try {
             List<NotebookEditableDTO> results = null
             db.withTransaction {
                 results = fetchNotebookEditablesByUsername(db, notebookId, username)
             }
-            log.info("Found ${results.size()} editables for notebook $notebookId")
+            log.fine("Found ${results.size()} editables for notebook $notebookId")
             return results
         } finally {
             db.close()
@@ -324,7 +324,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
             db.withTransaction {
                 results = fetchNotebookSavepoints(db, notebookId)
             }
-            log.info("Found ${results.size()} savepoints for notebook $notebookId")
+            log.fine("Found ${results.size()} savepoints for notebook $notebookId")
             return results
         } finally {
             db.close()
