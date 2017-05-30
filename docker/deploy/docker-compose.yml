@@ -180,6 +180,7 @@ services:
             SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
             SQUONK_DOCKER_SERVICES_DIR: "/var/local/squonk-docker-services"
             SQUONK_DEBUG_MODE:
+            SQUONK_SERVICE_DISCOVERY_INTERVAL:
         networks:
         - squonk_back
         healthcheck:

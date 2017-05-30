@@ -51,10 +51,12 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     protected int timerRepeats = 0;
 
     /**
-     * This allows the timer delay to be set, primarily to allow easy testing
+     * This allows the timer delay to be set, primarily to allow easy testing.
+     * Default is to reload every 15 mins. For testing when you want to push new service descriptors quickly set the
+     * SQUONK_SERVICE_DISCOVERY_INTERVAL environment variable to a shorter interval e.g. 60000 for every minute.
      */
-    protected int timerDelay = 15 * 60 * 1000;
-    //protected int timerDelay = 1 * 60 * 1000;
+    protected int defaultTimerDelay = 15 * 60 * 1000;
+    protected String timerDelay =  IOUtils.getConfiguration("SQUONK_SERVICE_DISCOVERY_INTERVAL", String.valueOf(defaultTimerDelay));
 
     private final Map<String, String> locations = new LinkedHashMap<>();
 
