@@ -98,9 +98,9 @@ public class CxnReactorStep extends AbstractStep {
         //results = new ByteArrayInputStream(data.getBytes());
         // end debug output
 
-        Dataset<MoleculeObject> output = new Dataset<>(MoleculeObject.class, results, new DatasetMetadata(MoleculeObject.class));
+        Dataset<MoleculeObject> output = new Dataset<>(results, new DatasetMetadata(MoleculeObject.class));
         createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, output.getMetadata().getSize());
+        statusMessage = generateStatusMessage(-1, output.getSize(), -1);
         LOG.info("Results: " + output.getMetadata());
 
     }

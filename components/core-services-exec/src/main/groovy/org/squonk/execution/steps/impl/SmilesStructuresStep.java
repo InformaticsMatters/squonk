@@ -61,11 +61,11 @@ public class SmilesStructuresStep extends AbstractStep {
         meta.setSize(mols.size());
 
 
-        Dataset<MoleculeObject> result = new Dataset<>(MoleculeObject.class, mols, meta);
+        Dataset<MoleculeObject> result = new Dataset<>(mols, meta);
 
         createMappedOutput("output", Dataset.class, result, varman);
 
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, result.getMetadata().getSize());
+        statusMessage = generateStatusMessage(-1, result.getSize(), -1);
         LOG.info("Results: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
     }
 

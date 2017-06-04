@@ -27,7 +27,7 @@ public class TrustedGroovyDatasetScriptStep extends AbstractStep {
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         statusMessage = MSG_PREPARING_INPUT;
         Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman, true);
-        LOG.info("Input Dataset: " + input);
+        //LOG.info("Input Dataset: " + input);
         String script = getOption(OPTION_SCRIPT, String.class);
         if (script == null) {
             throw new IllegalStateException("Script not defined. Should be present as option named " + OPTION_SCRIPT);
@@ -42,7 +42,7 @@ public class TrustedGroovyDatasetScriptStep extends AbstractStep {
         LOG.info("Script executed");
 
         createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+        statusMessage = generateStatusMessage(input.getSize(), results.getSize(), -1);
         LOG.info("Results: " + results.getMetadata());
     }
 }

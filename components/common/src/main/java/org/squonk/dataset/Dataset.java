@@ -225,6 +225,14 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         return type;
     }
 
+    /** Convenience method to get the size of the dataset. This value is held by the metadata.
+     *
+     * @return The size from the metadata, or -1 if no metadata.
+     */
+    public int getSize() {
+        return metadata == null ? -1 : metadata.getSize();
+    }
+
     /**
      * Get the underlying source type. Note that this can change. For instance
      * if the source is Stream and you ask for it as a List then, as the Stream

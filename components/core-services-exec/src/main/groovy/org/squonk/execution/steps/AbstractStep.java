@@ -16,10 +16,13 @@ import org.squonk.util.IOUtils;
 import org.squonk.util.Metrics;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -33,8 +36,9 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
 
     protected static final String MSG_PREPARING_INPUT = "Preparing input ...";
     protected static final String MSG_PREPARING_OUTPUT = "Writing output ...";
-    protected static final String MSG_RECORDS_PROCESSED = "%s records processed";
-    protected static final String MSG_RECORDS_PROCESSED_AND_OUTPUT = "%s records processed, %s results";
+    protected static final String MSG_PROCESSED = "%s processed";
+    protected static final String MSG_RESULTS = "%s results";
+    protected static final String MSG_ERRORS = "%s errors";
     protected static final String MSG_PROCESSING_COMPLETE = "Processing complete";
     protected static final String MSG_PREPARING_CONTAINER = "Preparing Docker container";
     protected static final String MSG_RUNNING_CONTAINER = "Running Docker container";
@@ -45,7 +49,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
     protected IODescriptor[] inputs;
     protected IODescriptor[] outputs;
     protected final Map<String, VariableKey> inputVariableMappings = new HashMap<>();
-    protected final Map<String, String> outputVariableMappings = new HashMap<>();;
+    protected final Map<String, String> outputVariableMappings = new HashMap<>();
     protected String statusMessage = null;
     protected ServiceDescriptor serviceDescriptor;
 
@@ -392,4 +396,30 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         return typeConverter.convertTo(to.getPrimaryType(), value);
     }
 
+
+    /** Generate a standard status message describing the outcome of execution
+     *
+     * @param total The total number processed. -1 means unknown
+     * @param results The number of results. -1 means unknown
+     * @param errors The number of errors. -1 means unknown
+     * @return
+     */
+    protected String generateStatusMessage(int total, int results, int errors) {
+        LOG.info(String.format("Generating status msg: %s %s %s", total, results, errors));
+        List<String> msgs = new ArrayList<>();
+        if (total >= 0) {
+            msgs.add(String.format(MSG_PROCESSED, total));
+        }
+        if (results >= 0) {
+            msgs.add(String.format(MSG_RESULTS, results));
+        }
+        if (errors > 0) {
+            msgs.add(String.format(MSG_ERRORS, errors));
+        }
+        if (msgs.isEmpty()) {
+            return MSG_PROCESSING_COMPLETE;
+        } else {
+            return msgs.stream().collect(Collectors.joining(", "));
+        }
+    }
 }

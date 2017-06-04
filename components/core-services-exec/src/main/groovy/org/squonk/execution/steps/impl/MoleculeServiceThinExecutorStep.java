@@ -100,7 +100,7 @@ public class MoleculeServiceThinExecutorStep extends AbstractStep {
         Dataset<MoleculeObject> resultDataset = thinWrapper.generateOutput(responseResults);
 
         createMappedOutput("output", Dataset.class, resultDataset, varman);
-        updateStatus(String.format(MSG_RECORDS_PROCESSED, resultDataset.getMetadata().getSize()));
+        statusMessage = generateStatusMessage(inputDataset.getSize(), resultDataset.getSize(), -1);
         LOG.info("Results: " + JsonHandler.getInstance().objectToJson(resultDataset.getMetadata()));
     }
 

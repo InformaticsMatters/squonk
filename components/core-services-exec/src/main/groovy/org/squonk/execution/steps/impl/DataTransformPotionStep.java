@@ -75,7 +75,7 @@ public class DataTransformPotionStep extends AbstractStep {
 
         createMappedOutput("output", Dataset.class, result, varman);
 
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, result.getMetadata().getSize());
+        statusMessage = generateStatusMessage(ds.getSize(), result.getSize(), -1);
         LOG.info("Results: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
     }
 

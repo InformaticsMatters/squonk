@@ -46,7 +46,7 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
         Dataset<MoleculeObject> results = client.fetchActivitiesForAssay(assayID, batchSize, prefix);
 
         createMappedOutput("output", Dataset.class, results, varman);
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+        statusMessage = generateStatusMessage(-1, results.getSize(), -1);
         LOG.info("Results: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
     }
 

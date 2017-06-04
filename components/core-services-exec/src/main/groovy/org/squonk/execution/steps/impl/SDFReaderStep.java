@@ -54,10 +54,10 @@ public class SDFReaderStep extends AbstractStep {
             LOG.fine("Created SDFReader");
             try (Stream<MoleculeObject> mols = reader.asStream()) {
                 DatasetMetadata meta = reader.getDatasetMetadata();
-                Dataset results = new Dataset(MoleculeObject.class, mols, meta);
+                Dataset results = new Dataset(mols, meta);
                 LOG.fine("Writing output");
                 createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
-                statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+                statusMessage = generateStatusMessage(-1, results.getSize(), -1);
                 LOG.fine("Writing dataset from SDF complete: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
             }
         }

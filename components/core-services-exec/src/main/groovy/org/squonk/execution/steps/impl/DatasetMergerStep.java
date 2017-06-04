@@ -54,12 +54,19 @@ public class DatasetMergerStep extends AbstractStep {
 
         Class type = null;
         int count = 0;
+        int totalRecordCount = 0;
         List<String> sources = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
             Dataset<? extends BasicObject> nextDataset = fetchMappedInput(VAR_INPUT_BASE + i, Dataset.class, varman);
 
             if (nextDataset != null) {
                 count++;
+                int size = nextDataset.getSize();
+                if (size < 0) {
+                    totalRecordCount = -1;
+                } else if (totalRecordCount >= 0) {
+                    totalRecordCount += size;
+                }
                 DatasetMetadata<? extends BasicObject> oldMeta = nextDataset.getMetadata();
                 Object source = oldMeta.getProperties().get(DatasetMetadata.PROP_SOURCE);
                 sources.add(source == null ? "undefined source" : source.toString());
@@ -111,9 +118,9 @@ public class DatasetMergerStep extends AbstractStep {
         + ". Sources were: " + sources.stream().collect(Collectors.joining(", ")));
 
         if (type != null) {
-            Dataset output = new Dataset(type, results.values(), meta);
+            Dataset output = new Dataset(results.values(), meta);
             createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
-            statusMessage = String.format(MSG_RECORDS_PROCESSED, output.getMetadata().getSize());
+            statusMessage = generateStatusMessage(totalRecordCount, output.getSize(), -1);
             LOG.info("Results: " + JsonHandler.getInstance().objectToJson(output.getMetadata()));
         } else {
             LOG.info("No data to merge");

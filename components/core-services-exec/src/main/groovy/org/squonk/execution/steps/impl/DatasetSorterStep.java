@@ -51,11 +51,11 @@ public class DatasetSorterStep extends AbstractStep {
                 .map((sd) -> sd.field + (sd.ascending ? " ASC" : " DESC"))
                 .collect(Collectors.joining(", ")));
 
-        Dataset result = new Dataset(ds.getType(), sorted, meta);
+        Dataset result = new Dataset(sorted, meta);
 
         createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, result, varman);
 
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, result.getMetadata().getSize());
+        statusMessage = generateStatusMessage(ds.getSize(), result.getSize(), -1);
         LOG.info("Results: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
     }
 

@@ -144,14 +144,7 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
             handleOutputs(camelContext, descriptor, varman, runner);
 
             generateMetrics(runner, "output_metrics.txt", duration);
-
-            if (numRecordsProcessed < 0 && numRecordsOutput < 0) {
-                statusMessage = MSG_PROCESSING_COMPLETE;
-            } else {
-                String s1 = numRecordsProcessed < 0 ? "?" : "" + numRecordsProcessed;
-                String s2 = numRecordsOutput < 0 ? "?" : "" + numRecordsOutput;
-                statusMessage = String.format(MSG_RECORDS_PROCESSED_AND_OUTPUT, s1, s2);
-            }
+            statusMessage = generateStatusMessage(numRecordsProcessed, numRecordsOutput, numErrors);
 
         } finally {
             // cleanup

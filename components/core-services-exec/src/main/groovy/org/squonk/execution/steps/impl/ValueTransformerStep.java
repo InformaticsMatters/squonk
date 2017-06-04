@@ -66,7 +66,7 @@ public class ValueTransformerStep extends AbstractStep {
             createVariable(outFldName, Dataset.class, result, varman);
         }
 
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, result.getMetadata().getSize());
+        statusMessage = generateStatusMessage(ds.getSize(), result.getSize(), -1);
         LOG.info("Results: " + result.getMetadata());
     }
 

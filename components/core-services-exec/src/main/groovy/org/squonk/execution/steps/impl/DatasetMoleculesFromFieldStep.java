@@ -68,7 +68,7 @@ public class DatasetMoleculesFromFieldStep extends AbstractStep {
         meta.appendDatasetHistory("Dataset created molecules from field " + fieldName + " of source dataset: " + origMeta.getProperty(DatasetMetadata.PROP_DESCRIPTION));
         meta.createField(FIELD_NAME_ORIGIN, this.getClass().getSimpleName() , "UUID of source molecule", UUID.class);
 
-        Dataset results = new Dataset(MoleculeObject.class, stream, meta);
+        Dataset results = new Dataset(stream, meta);
 
         statusMessage = "Writing results ...";
         String outFldName = mapOutputVariable("output");
@@ -76,8 +76,8 @@ public class DatasetMoleculesFromFieldStep extends AbstractStep {
             createVariable(outFldName, Dataset.class, results, varman);
         }
 
-        statusMessage = String.format(MSG_RECORDS_PROCESSED_AND_OUTPUT, origMeta.getSize(), results.getMetadata().getSize());
-        LOG.info("Results: " + ds.getMetadata());
+        statusMessage = generateStatusMessage(ds.getSize(), results.getSize(), -1);
+        LOG.info("Results: " + results.getMetadata());
     }
 
 }

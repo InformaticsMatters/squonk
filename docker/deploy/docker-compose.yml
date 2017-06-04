@@ -147,6 +147,8 @@ services:
         volumes:
         - ./images/chemservices/chemaxon_reaction_library.zip:/chemaxon_reaction_library.zip:ro
         - /cpsign_data # TODO make this persistent
+        #ports:
+        #- "8092:8080"
         networks:
         - squonk_back
         healthcheck:

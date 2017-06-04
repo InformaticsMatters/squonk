@@ -227,11 +227,8 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
 
     void "write csv kinase"() {
 
-        //String file = '../../data/testfiles/dhfr_standardized.sdf.gz'
-        //GZIPInputStream gzip = new GZIPInputStream(new FileInputStream(file))
-        String file = '/home/timbo/Downloads/DatasetPotion1.sdf/'
-        def input = new FileInputStream(file)
-
+        String file = '../../data/testfiles/dhfr_standardized.sdf.gz'
+        GZIPInputStream input = new GZIPInputStream(new FileInputStream(file))
 
         when:
         Iterable<IAtomContainer> mols = CDKMoleculeIOUtils.moleculeIterable(input)

@@ -66,11 +66,12 @@ public class SmilesDeduplicatorStep extends AbstractStep {
         
         String outFldName = mapOutputVariable(VAR_OUTPUT_DATASET);
         if (outFldName != null) {
-            createVariable(outFldName, Dataset.class, new MoleculeObjectDataset(results).getDataset(), varman);
+            Dataset<MoleculeObject> output = new MoleculeObjectDataset(results).getDataset();
+            createVariable(outFldName, Dataset.class, output, varman);
+            statusMessage = generateStatusMessage(ds.getSize(), output.getSize(), -1);
+            LOG.info("Results: " + output.getMetadata());
         }
 
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, ds.getMetadata().getSize());
-        LOG.info("Results: " + ds.getMetadata());
     }
 
     private List<String> readFieldList(String option) {

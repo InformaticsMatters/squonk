@@ -129,9 +129,9 @@ public class CSVReaderStep extends AbstractStep {
         try (InputStream is = fetchMappedInput(VAR_CSV_INPUT, InputStream.class, varman)) {
             CSVReader reader = createReader(IOUtils.getGunzippedInputStream(is), filename);
             Stream<BasicObject> mols = reader.asStream();
-            Dataset results = new Dataset(BasicObject.class, mols, reader.getDatasetMetadata());
+            Dataset results = new Dataset(mols, reader.getDatasetMetadata());
             createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
-            statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+            statusMessage = generateStatusMessage(-1, results.getSize(), -1);
             LOG.info("Results: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
         }
     }

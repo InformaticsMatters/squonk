@@ -54,14 +54,14 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStep {
         if (input == null) {
             throw new IllegalStateException("No input found");
         } else if (LOG.isLoggable(Level.FINE) && input.getMetadata() != null) {
-            LOG.fine("Input has " + input.getMetadata().getSize() + " items");
+            LOG.fine("Input has " + input.getSize() + " items");
         }
 
-        statusMessage = "Applying connversions ...";
+        statusMessage = "Applying conversions ...";
         Dataset<MoleculeObject> results = TypesUtils.convertBasicObjectDatasetToMoleculeObjectDataset(input, structureFieldName, structureFormat, preserveUuid);
 
         createMappedOutput("output", Dataset.class, results, varman);
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+        statusMessage = generateStatusMessage(input.getSize(), results.getSize(), -1);
         LOG.info("Results: " + results.getMetadata());
     }
 

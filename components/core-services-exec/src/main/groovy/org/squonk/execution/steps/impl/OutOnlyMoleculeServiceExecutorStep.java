@@ -93,7 +93,7 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractStep {
         }
 
         createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+        statusMessage = generateStatusMessage(-1, results.getSize(), -1);
     }
 
 }

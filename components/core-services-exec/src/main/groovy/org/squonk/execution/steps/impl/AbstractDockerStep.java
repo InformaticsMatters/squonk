@@ -25,6 +25,7 @@ public abstract class AbstractDockerStep extends AbstractStep {
     private static final Logger LOG = Logger.getLogger(AbstractDockerStep.class.getName());
     protected int numRecordsProcessed = -1;
     protected int numRecordsOutput = -1;
+    protected int numErrors = -1;
 
 
     protected DockerRunner createDockerRunner(String image, String hostWorkDir, String localWorkDir) throws IOException {
@@ -126,7 +127,7 @@ public abstract class AbstractDockerStep extends AbstractStep {
         }
 
         try (InputStream is = runner.readOutput("output.data.gz")) {
-            Dataset<? extends BasicObject> dataset = new Dataset(meta.getType(), IOUtils.getGunzippedInputStream(is), meta);
+            Dataset<? extends BasicObject> dataset = new Dataset(IOUtils.getGunzippedInputStream(is), meta);
             createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, dataset, varman);
             LOG.fine("Results: " + dataset.getMetadata());
             return dataset.getMetadata();
@@ -154,6 +155,10 @@ public abstract class AbstractDockerStep extends AbstractStep {
                         numRecordsProcessed = c;
                     } else  if ("__OutputCount__".equals(key)) {
                         numRecordsOutput = c;
+                    } else  if ("__ErrorCount__".equals(key)) {
+                        numErrors = c;
+                    } else  if (key.startsWith("__") && key.endsWith("__")) {
+                        LOG.warning("Unexpected magical key: " + key);
                     } else {
                         usageStats.put(key, c);
                     }

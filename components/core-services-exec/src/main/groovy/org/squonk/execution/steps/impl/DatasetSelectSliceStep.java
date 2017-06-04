@@ -38,6 +38,7 @@ public class DatasetSelectSliceStep extends AbstractStep {
         }
         LOG.fine("Input Dataset: " + ds);
 
+
         Integer skip = getOption(OPTION_SKIP, Integer.class);
         Integer count = getOption(OPTION_COUNT, Integer.class);
 
@@ -54,14 +55,14 @@ public class DatasetSelectSliceStep extends AbstractStep {
         DatasetMetadata meta = ds.getMetadata();
         meta.setSize(0); // will be recalculated
 
-        Dataset results = new Dataset(ds.getType(), stream, meta);
+        Dataset results = new Dataset(stream, meta);
         
         String outFldName = mapOutputVariable("output");
         if (outFldName != null) {
             createVariable(outFldName, Dataset.class, results, varman);
         }
 
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, ds.getMetadata().getSize());
+        statusMessage = generateStatusMessage(ds.getSize(), results.getSize(), -1);
         LOG.info("Results: " + ds.getMetadata());
     }
 

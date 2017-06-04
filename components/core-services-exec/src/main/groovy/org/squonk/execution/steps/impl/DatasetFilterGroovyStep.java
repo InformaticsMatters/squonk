@@ -40,10 +40,10 @@ public class DatasetFilterGroovyStep extends AbstractStep {
         Predicate predicate = cls.newInstance();
         statusMessage = "Filtering ...";
         Stream output = input.getStream().filter(predicate);
-        Dataset results = new Dataset(input.getType(), output, deriveOutputDatasetMetadata(input.getMetadata()));
+        Dataset results = new Dataset(output, deriveOutputDatasetMetadata(input.getMetadata()));
 
         createMappedOutput("output", Dataset.class, results, varman);
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+        statusMessage = generateStatusMessage(input.getSize(), results.getSize(), -1);
         LOG.info("Results: " + results.getMetadata());;
     }
 

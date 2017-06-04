@@ -83,10 +83,10 @@ public class MoleculeServiceToBasicObjectThinExecutorStep extends AbstractStep {
             metadata = JsonHandler.getInstance().objectFromJson(metadataJson, DatasetMetadata.class);
         }
 
-        Dataset<BasicObject> results = new Dataset<>(BasicObject.class, output, metadata);
+        Dataset<BasicObject> results = new Dataset<>(output, metadata);
 
         createMappedOutput("output", Dataset.class, results, varman);
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+        statusMessage = generateStatusMessage(dataset.getSize(), results.getSize(), -1);
         LOG.info("Results: " + results.getMetadata());
     }
 

@@ -40,7 +40,7 @@ public class DatasetUUIDFilterStep extends AbstractStep {
         Dataset<? extends BasicObject> results = new Dataset(output, deriveOutputDatasetMetadata(input.getMetadata()));
 
         createMappedOutput("output", Dataset.class, results, varman);
-        statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+        statusMessage = generateStatusMessage(input.getSize(), results.getSize(), -1);
         LOG.info("Results: " + results.getMetadata());;
     }
 

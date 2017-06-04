@@ -77,7 +77,7 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
             if (meta == null) {
                 statusMessage = MSG_PROCESSING_COMPLETE;
             } else {
-                statusMessage = String.format(MSG_RECORDS_PROCESSED, meta.getSize());
+                statusMessage = generateStatusMessage(inputMetadata.getSize(), meta.getSize(), -1);
             }
 
             generateMetrics(runner, "metrics.txt", duration);

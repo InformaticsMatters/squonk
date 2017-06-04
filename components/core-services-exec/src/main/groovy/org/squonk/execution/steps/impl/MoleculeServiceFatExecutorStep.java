@@ -64,7 +64,7 @@ public class MoleculeServiceFatExecutorStep extends AbstractStep {
             Dataset<MoleculeObject> results = JsonHandler.getInstance().unmarshalDataset(responseMetadata, IOUtils.getGunzippedInputStream(output));
             LOG.fine("Dataset created");
             createMappedOutput("output", Dataset.class, results, varman);
-            statusMessage = String.format(MSG_RECORDS_PROCESSED, results.getMetadata().getSize());
+            statusMessage = generateStatusMessage(dataset.getSize(), results.getSize(), -1);
             LOG.info("Results: " + results.getMetadata());
         }
      }

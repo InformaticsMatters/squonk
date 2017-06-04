@@ -58,8 +58,8 @@ public class DatasetServiceExecutorStep extends AbstractStep {
 //        output = new ByteArrayInputStream(data.getBytes());
 
         createMappedOutput(VAR_OUTPUT_DATASET, InputStream.class, output, varman);
-        int inputSize = (dataset.getMetadata() == null ? 0 : dataset.getMetadata().getSize());
-        statusMessage = (inputSize > 0 ? String.format(MSG_RECORDS_PROCESSED, inputSize) : MSG_PROCESSING_COMPLETE);
+
+        statusMessage = generateStatusMessage(dataset.getSize(), -1, -1);
     }
 
 }
