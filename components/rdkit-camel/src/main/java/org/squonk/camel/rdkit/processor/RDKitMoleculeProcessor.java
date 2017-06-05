@@ -1,10 +1,8 @@
 package org.squonk.camel.rdkit.processor;
 
-import org.RDKit.RDKFuncs;
 import org.RDKit.ROMol;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.squonk.camel.CamelCommonConstants;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
@@ -62,8 +60,11 @@ public class RDKitMoleculeProcessor implements Processor {
         if (original == null) {
             original = new DatasetMetadata(MoleculeObject.class);
         }
+        // For some reason this thows an exception. Seems to be a RDKit thing.
+        // java.lang.UnsatisfiedLinkError: org.RDKit.RDKFuncsJNI.rdkitVersion_get()Ljava/lang/String;
+        // So we hard code the version number instead. Remember to update it.
         //String source = "RDKit " + RDKFuncs.getRdkitVersion();
-        String source = "RDKit 2016.03.1";
+        String source = "RDKit 2017.03.1";
         for (EvaluatorDefinition eval : definitions) {
             original.createField(eval.propName, source, "Molecular property calculation: " + eval.function.toString(), eval.function.getType());
         }
