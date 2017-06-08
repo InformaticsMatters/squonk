@@ -9,6 +9,7 @@ import org.squonk.io.IODescriptor;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,15 +40,22 @@ public class TypeResolver implements MimeTypeResolver {
         registerMimeType(MIME_TYPE_DATASET_MOLECULE_JSON, Dataset.class, MoleculeObject.class);
         registerMimeType(MIME_TYPE_MDL_SDF, SDFile.class);
         registerMimeType(MIME_TYPE_PDB, PDBFile.class);
+        registerMimeType(MIME_TYPE_TRIPOS_MOL2, Mol2File.class);
         registerMimeType(MIME_TYPE_CPSIGN_TRAIN_RESULT, CPSignTrainResult.class);
+
         registerHttpHandler(Dataset.class, DatasetHandler.class);
         registerHttpHandler(SDFile.class, SDFileHandler.class);
         registerHttpHandler(PDBFile.class, PDBFileHandler.class);
+        registerHttpHandler(Mol2File.class, Mol2FileHandler.class);
         registerHttpHandler(CPSignTrainResult.class, CPSignTrainResultHandler.class);
+
         registerVariableHandler(Dataset.class, DatasetHandler.class);
+        registerVariableHandler(InputStream.class, InputStreamHandler.class);
+        registerVariableHandler(String.class, StringHandler.class);
         registerVariableHandler(CPSignTrainResult.class, CPSignTrainResultHandler.class);
         registerVariableHandler(SDFile.class, SDFileHandler.class);
         registerVariableHandler(PDBFile.class, PDBFileHandler.class);
+        registerVariableHandler(Mol2File.class, Mol2FileHandler.class);
     }
 
     public void registerMimeType(String mimeType, Class primaryType) {

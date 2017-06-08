@@ -4,6 +4,7 @@ import org.squonk.dataset.Dataset;
 import org.squonk.types.*;
 
 import static org.squonk.util.CommonMimeTypes.*;
+import static org.squonk.util.CommonMimeTypes.MIME_TYPE_TRIPOS_MOL2;
 
 /**
  * Created by timbo on 27/12/16.
@@ -41,6 +42,10 @@ public class IODescriptors {
 
     public static IODescriptor createMolfile(String name) {
         return new IODescriptor(name, MIME_TYPE_MDL_MOLFILE, MolFile.class);
+    }
+
+    public static IODescriptor createMol2(String name) {
+        return new IODescriptor(name, MIME_TYPE_TRIPOS_MOL2, Mol2File.class);
     }
 
     public static IODescriptor createPDB(String name) {

@@ -1,0 +1,78 @@
+package org.squonk.types;
+
+import org.squonk.api.HttpHandler;
+import org.squonk.api.VariableHandler;
+import org.squonk.http.RequestResponseExecutor;
+import org.squonk.util.IOUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+/** Generic handler for files that handle their data as an InputStream. Should cover files of any format.
+ * To use this class create a concrete subclass and just call the constructor.
+ *
+ * Created by timbo on 23/03/2016.
+ */
+abstract class FileHandler<T extends AbstractStreamType> implements HttpHandler<T>, VariableHandler<T> {
+
+    private final Class<T> type;
+    private final String extension;
+
+    FileHandler(Class<T> type, String extension) {
+        this.type = type;
+        this.extension = extension;
+    }
+
+    @Override
+    public Class<T> getType() {
+        return type;
+    }
+
+    @Override
+    public void prepareRequest(T file, RequestResponseExecutor executor, boolean gzip) throws IOException {
+        if (file != null) {
+            executor.prepareRequestBody(gzip ? IOUtils.getGzippedInputStream(file.getInputStream()) : file.getInputStream());
+        }
+    }
+
+    @Override
+    public void writeResponse(T file, RequestResponseExecutor executor, boolean gzip) throws IOException {
+        if (file == null) {
+            executor.setResponseBody(null);
+        } else {
+            executor.setResponseBody(gzip ? IOUtils.getGzippedInputStream(file.getInputStream()) : file.getInputStream());
+        }
+    }
+
+    @Override
+    public T readResponse(RequestResponseExecutor executor, boolean gunzip) throws IOException {
+        InputStream is = executor.getResponseBody();
+        if (is != null) {
+            return create(gunzip ? IOUtils.getGunzippedInputStream(is) : is);
+        }
+        return null;
+    }
+
+    @Override
+    public void writeVariable(T file, WriteContext context) throws Exception {;
+        context.writeSingleStreamValue(file.getInputStream(), extension);
+    }
+
+    @Override
+    public T readVariable(ReadContext context) throws Exception {
+        InputStream is = context.readSingleStreamValue(extension);
+        return create(is);
+    }
+
+    private T create(InputStream is) {
+        try {
+            Constructor c = type.getConstructor(InputStream.class);
+            return (T)c.newInstance(is);
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+           throw new RuntimeException(type.getName() + " is not a valid AbstractStreamType as it does not seem to have a constructor for an InputStream", e);
+        }
+
+    }
+}

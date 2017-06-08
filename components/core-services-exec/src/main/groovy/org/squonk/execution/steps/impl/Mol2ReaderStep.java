@@ -1,28 +1,22 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
-import org.squonk.dataset.Dataset;
-import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
-import org.squonk.types.MoleculeObject;
-import org.squonk.types.PDBFile;
-import org.squonk.util.IOUtils;
 
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.logging.Logger;
 
 /**
- * Reads a PDB format file.
+ * Reads a Tripos Mol2 format file.
  * The structure is passed as an {@link InputStream} (can be gzipped).
  *
  * @author timbo
  */
-public class PdbReaderStep extends AbstractStep {
+public class Mol2ReaderStep extends AbstractStep {
 
-    private static final Logger LOG = Logger.getLogger(PdbReaderStep.class.getName());
+    private static final Logger LOG = Logger.getLogger(Mol2ReaderStep.class.getName());
 
     /**
      * Expected variable name for the input
@@ -31,10 +25,10 @@ public class PdbReaderStep extends AbstractStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        LOG.info("execute PdbReaderStep");
+        LOG.info("execute Mol2ReaderStep");
         statusMessage = "Reading file";
         String filename = fetchMappedInput(VAR_FILE_INPUT, String.class, varman);
-        statusMessage = "Read PDB file " + filename;
+        statusMessage = "Read Mol2 file " + filename;
     }
 
 }

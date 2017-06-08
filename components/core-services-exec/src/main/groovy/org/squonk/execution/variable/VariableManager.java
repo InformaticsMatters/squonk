@@ -1,12 +1,12 @@
 package org.squonk.execution.variable;
 
 import org.squonk.api.VariableHandler;
-import org.squonk.api.VariableHandlerRegistry;
 import org.squonk.client.VariableClient;
 import org.squonk.execution.variable.impl.VariableReadContext;
 import org.squonk.execution.variable.impl.VariableWriteContext;
 import org.squonk.notebook.api.VariableKey;
 import org.squonk.types.AbstractStreamType;
+import org.squonk.types.TypeResolver;
 import org.squonk.util.IOUtils;
 
 import java.io.ByteArrayInputStream;
@@ -28,7 +28,7 @@ public class VariableManager {
 
     public static Logger LOG = Logger.getLogger(VariableManager.class.getName());
 
-    private static final VariableHandlerRegistry variableHandlerRegistry = VariableHandlerRegistry.INSTANCE;
+    private static final TypeResolver typeResolver = TypeResolver.getInstance();
     private final Map<String, byte[]> tmpValues = new ConcurrentHashMap<>();
 
     private final VariableClient client;
@@ -71,7 +71,7 @@ public class VariableManager {
      */
     public <V> void putValue(Class<V> type, V value, VariableHandler.WriteContext context) throws Exception {
 
-        VariableHandler<V> vh = variableHandlerRegistry.lookup(type);
+        VariableHandler<V> vh = typeResolver.createVariableHandler(type);
 
         if (vh != null) {
             LOG.info("Using write variable handler " + vh + " for type " + type.getName());
@@ -112,7 +112,7 @@ public class VariableManager {
      */
     public <V> V getValue(Class<V> type, VariableHandler.ReadContext context) throws Exception {
 
-        VariableHandler<V> vh = variableHandlerRegistry.lookup(type);
+        VariableHandler<V> vh = typeResolver.createVariableHandler(type);
         LOG.info("Using read variable handler " + vh + " for type " + type.getName());
 
         if (vh != null) {

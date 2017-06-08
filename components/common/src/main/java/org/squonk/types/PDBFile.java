@@ -17,10 +17,6 @@ public class PDBFile extends AbstractStreamType {
         super(input);
     }
 
-//    public PDBFile(String input) {
-//        super(new ByteArrayInputStream(input.getBytes()));
-//    }
-
     public String getMediaType() {
         return MEDIA_TYPE;
     }

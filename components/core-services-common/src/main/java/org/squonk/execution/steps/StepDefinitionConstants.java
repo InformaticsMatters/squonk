@@ -96,6 +96,12 @@ public interface StepDefinitionConstants {
         String VARIABLE_PDB = "pdb";
     }
 
+    interface Mol2Upload {
+        String CLASSNAME = "org.squonk.execution.steps.impl.Mol2ReaderStep";
+        String OPTION_FILE_UPLOAD = "mol2Upload";
+        String VARIABLE_MOL2 = "mol2";
+    }
+
     interface ConvertBasicToMoleculeObject {
          String CLASSNAME = "org.squonk.execution.steps.impl.BasicObjectToMoleculeObjectStep";
         /** The name of the value in the BasicObject that contains the structure

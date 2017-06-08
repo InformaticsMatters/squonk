@@ -5,7 +5,8 @@ import org.squonk.util.CommonMimeTypes;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-/** Wrapper around data from a molfile to allow strong typing and type conversion
+/** Wrapper around data from a MDL molfile to allow strong typing and type conversion
+ *  Not to be confused with Mol2File which is for Tripos Mol2 format.
  *
  * @author timbo
  */
