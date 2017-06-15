@@ -24,12 +24,12 @@ services:
     ################# Rabbit MQ container #############################################
     #
     # initialize:
-    # docker exec deploy_mq_1 bash init.sh
+    # docker exec deploy_rabbitmq_1 bash init.sh
     # admin console available on http://${PUBLIC_HOST}:15672/
     #
     rabbitmq:
         image: rabbitmq:3-management
-        restart: on-failure:10
+        restart: on-failure:5
         ports:
         - "15672:15672"
         volumes:
