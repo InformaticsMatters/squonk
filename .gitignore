@@ -2,9 +2,6 @@
 /*.iml
 /*.ipr
 /*.iws
-java/.idea/workspace.xml
-java/out
-java/*.log.*
 /lacfiledrop
 **/build
 **/.idea
@@ -19,14 +16,10 @@ java/*.log.*
 data/licenses
 data/testfiles/emols*
 data/testfiles/all-sdf.sdf.gz
-data/testfiles/chembl_21.sdf.gz
+data/testfiles/chembl_*.sdf.gz
 data/testfiles/docker-services/
 
 components/common/lib
-components/chemcentral/chemcentral.properties
-components/chemcentral/database.properties
-components/chemcentral/users.properties
-components/demo-services/logs
 components/loaders/files
 components/core-services-client/lib
 components/chem-services-root/src/main/html/licenses
@@ -58,4 +51,3 @@ docker/deploy/images/chemservices/*.zip
 
 docker/deploy/nginx
 
-components/cdi-services-cdk-basic

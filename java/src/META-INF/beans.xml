@@ -1,7 +1,0 @@
-<beans>
-    <alternatives>
-        <class>localservice.DevIDEAMySQLConfig</class>
-        <class>files.api.localservice.FilesIDEAMySQLConfig</class>
-        <class>files.api.localservice.FilesClientIDEAConfig</class>
-    </alternatives>
-</beans>
