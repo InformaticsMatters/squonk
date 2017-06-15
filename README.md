@@ -25,4 +25,4 @@ significantly over the coming months as we move to a Kubernetes/Opeshshift deplo
 
 Currently it is not expected that third party developers will find it easy to contribute to this codebase,
 but that will change. If you are interested in using or contributing contact 
-Tim Dudgeon<tdudgeon _at_ informaticsmatters _dot_ com>.
+Tim Dudgeon tdudgeon \_at\_ informaticsmatters \_dot\_ com.
