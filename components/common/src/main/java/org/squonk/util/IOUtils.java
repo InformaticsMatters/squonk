@@ -75,7 +75,7 @@ public class IOUtils {
 
             final ExecutorService executor = Executors.newSingleThreadExecutor();
             Callable c = (Callable) () -> {
-                byte[] bytes = new byte[100];
+                byte[] bytes = new byte[1000];
                 int len = 0;
                 while ((len = pb.read(bytes)) > 0) {
                     gzip.write(bytes, 0, len);

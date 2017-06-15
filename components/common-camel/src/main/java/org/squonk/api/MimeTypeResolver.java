@@ -49,6 +49,7 @@ public interface MimeTypeResolver extends CommonMimeTypes {
     }
 
     VariableHandler createVariableHandler(Class primaryType, Class secondaryType);
+
 }
 
 
