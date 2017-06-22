@@ -1,7 +1,7 @@
 .gitignore.swp
-/*.iml
-/*.ipr
-/*.iws
+**/*.iml
+**/*.ipr
+**/*.iws
 /lacfiledrop
 **/build
 **/.idea
@@ -31,7 +31,7 @@ docker/deploy/setenv.sh
 docker/deploy/images/yyy.json
 
 docker/deploy/images/squonk-realm.json
-docker/deploy/data
+docker/deploy/data/docker-services/pipelines
 
 docker/deploy/images/xwiki/hibernate.cfg.xml
 docker/deploy/images/xwiki/server.xml
