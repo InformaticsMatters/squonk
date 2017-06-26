@@ -23,7 +23,7 @@ import org.squonk.dataset.transform.AbstractTransform;
 import org.squonk.dataset.transform.Message;
 import org.squonk.dataset.transform.PotionParser;
 import org.squonk.dataset.transform.TransformDefinitions;
-import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.io.JsonHandler;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  *
  * @author timbo
  */
-public class DataTransformPotionStep extends AbstractStep {
+public class DataTransformPotionStep extends AbstractStandardStep {
 
     private static final Logger LOG = Logger.getLogger(DataTransformPotionStep.class.getName());
 

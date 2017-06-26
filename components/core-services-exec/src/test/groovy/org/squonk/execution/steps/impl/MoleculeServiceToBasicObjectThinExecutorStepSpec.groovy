@@ -88,8 +88,6 @@ class MoleculeServiceToBasicObjectThinExecutorStepSpec extends Specification {
 
         step.configure(producer, "job1",
                 null,
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 ["input": new VariableKey(producer, "input")],
                 [:],
                 sd)

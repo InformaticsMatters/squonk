@@ -34,8 +34,6 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class DockerServiceDescriptor extends DefaultServiceDescriptor {
 
-    private final IORoute[] inputRoutes;
-    private final IORoute[] outputRoutes;
 
     /**
      * The command to execute when running the container
@@ -70,9 +68,7 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
             @JsonProperty("imageName") String imageName,
             @JsonProperty("command") String command,
             @JsonProperty("volumes") Map<String, String> volumes) {
-        super(serviceConfig, thinDescriptors);
-        this.inputRoutes = inputRoutes;
-        this.outputRoutes = outputRoutes;
+        super(serviceConfig, thinDescriptors, inputRoutes, outputRoutes);
         this.imageName = imageName;
         this.command = command;
         this.volumes = volumes;
@@ -109,9 +105,9 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
             ServiceConfig.Status status,
             Date statusLastChecked,
             IODescriptor[] inputDescriptors,
-            IORoute[] inputRoutes, // docker specific
+            IORoute[] inputRoutes,
             IODescriptor[] outputDescriptors,
-            IORoute[] outputRoutes, // docker specific
+            IORoute[] outputRoutes,
             OptionDescriptor[] optionDescriptors,
             ThinDescriptor[] thinDescriptors,
             // these are specific to docker execution
@@ -121,20 +117,10 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
             Map<String, String> volumes) {
 
         super(id, name, description, tags, resourceUrl, icon, status, statusLastChecked, inputDescriptors, outputDescriptors, optionDescriptors,
-                thinDescriptors, executorClassName);
-        this.inputRoutes = inputRoutes;
-        this.outputRoutes = outputRoutes;
+                thinDescriptors, inputRoutes, outputRoutes, executorClassName);
         this.imageName = imageName;
         this.command = command;
         this.volumes = volumes;
-    }
-
-    public IORoute[] getInputRoutes() {
-        return inputRoutes;
-    }
-
-    public IORoute[] getOutputRoutes() {
-        return outputRoutes;
     }
 
     public String getImageName() {

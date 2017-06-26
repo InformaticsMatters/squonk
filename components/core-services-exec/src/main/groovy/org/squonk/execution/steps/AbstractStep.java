@@ -19,23 +19,23 @@ package org.squonk.execution.steps;
 import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.apache.camel.spi.TypeConverterRegistry;
-import org.squonk.core.HttpServiceDescriptor;
-import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
-import org.squonk.dataset.ThinDescriptor;
+import org.squonk.dataset.DatasetMetadata;
+import org.squonk.execution.docker.DockerRunner;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptor;
-import org.squonk.core.ServiceDescriptor;
 import org.squonk.notebook.api.VariableKey;
+import org.squonk.types.BasicObject;
 import org.squonk.types.TypeResolver;
+import org.squonk.types.io.JsonHandler;
+import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 import org.squonk.util.Metrics;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.InputStream;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -62,12 +62,11 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
     protected Long outputProducerId;
     protected String jobId;
     protected Map<String, Object> options;
-    protected IODescriptor[] inputs;
-    protected IODescriptor[] outputs;
+
     protected final Map<String, VariableKey> inputVariableMappings = new HashMap<>();
     protected final Map<String, String> outputVariableMappings = new HashMap<>();
     protected String statusMessage = null;
-    protected ServiceDescriptor serviceDescriptor;
+
 
     protected Map<String,Integer> usageStats = new HashMap<>();
 
@@ -75,10 +74,19 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         return usageStats;
     }
 
-
     @Override
     public Long getOutputProducerId() {
         return outputProducerId;
+    }
+
+    @Override
+    public Map<String, VariableKey> getInputVariableMappings() {
+        return inputVariableMappings;
+    }
+
+    @Override
+    public Map<String, String> getOutputVariableMappings() {
+        return outputVariableMappings;
     }
 
     public void updateStatus(String status)  {
@@ -130,25 +138,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         return b.toString();
     }
 
-    @Override
-    public void configure(
-            Long outputProducerId,
-            String jobId,
-            Map<String, Object> options,
-            IODescriptor[] inputs,
-            IODescriptor[] outputs,
-            Map<String, VariableKey> inputVariableMappings,
-            Map<String, String> outputVariableMappings,
-            ServiceDescriptor serviceDescriptor) {
-        this.outputProducerId = outputProducerId;
-        this.jobId = jobId;
-        this.options = options;
-        this.inputs = inputs;
-        this.outputs = outputs;
-        this.inputVariableMappings.putAll(inputVariableMappings);
-        this.outputVariableMappings.putAll(outputVariableMappings);
-        this.serviceDescriptor = serviceDescriptor;
-    }
+
 
     protected VariableKey mapInputVariable(String name) {
         VariableKey mapped = inputVariableMappings.get(name);
@@ -317,55 +307,6 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         }
     }
 
-    protected HttpServiceDescriptor getHttpServiceDescriptor() {
-        if (serviceDescriptor == null) {
-            throw new IllegalStateException("Service descriptor not found");
-        } else if (!(serviceDescriptor instanceof HttpServiceDescriptor)) {
-            throw new IllegalStateException("Invalid service descriptor. Expected HttpServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
-        }
-        return (HttpServiceDescriptor)serviceDescriptor;
-    }
-
-    protected String getHttpExecutionEndpoint() {
-        return getHttpServiceDescriptor().getExecutionEndpoint();
-    }
-
-    protected IODescriptor getSingleInputDescriptor() {
-        ServiceConfig serviceConfig = getHttpServiceDescriptor().getServiceConfig();
-        IODescriptor[] inputDescriptors = serviceConfig.getInputDescriptors();
-        IODescriptor inputDescriptor;
-        if (inputDescriptors != null && inputDescriptors.length == 1) {
-            inputDescriptor = inputDescriptors[0];
-        } else if (inputDescriptors == null || inputDescriptors.length == 0 ) {
-            throw new IllegalStateException("Expected one input IODescriptor. Found none");
-        } else {
-            throw new IllegalStateException("Expected one input IODescriptor. Found " + inputDescriptors.length);
-        }
-        return inputDescriptor;
-    }
-
-    protected ThinDescriptor getThinDescriptor(IODescriptor inputDescriptor) {
-        ThinDescriptor[] tds = getHttpServiceDescriptor().getThinDescriptors();
-        ServiceConfig serviceConfig = getHttpServiceDescriptor().getServiceConfig();
-        ThinDescriptor td;
-        if (tds == null || tds.length == 0) {
-            if (inputDescriptor.getPrimaryType() == Dataset.class) {
-                td = new ThinDescriptor(inputDescriptor.getName(), serviceConfig.getOutputDescriptors()[0].getName());
-            } else {
-                throw new IllegalStateException("Thin execution only suppported for Dataset. Found " + inputDescriptor.getPrimaryType().getName());
-            }
-        } else if (tds.length == 1) {
-            if (tds[0] == null) {
-                LOG.warning("ThinDescriptor array provided including a null element. This is bad practice and can lead to problems.");
-                td = new ThinDescriptor(inputDescriptor.getName(), serviceConfig.getOutputDescriptors()[0].getName());
-            } else {
-                td = tds[0];
-            }
-        } else {
-            throw new IllegalStateException("Expected single ThinDescriptor but found " + tds.length);
-        }
-        return td;
-    }
 
     /** Derrive a new IODescriptor of the specified media type using the specified IODescriptor as the base.
      * If the media types are identical the base is returned. If they are different then an IODescriptor corresponding to the
@@ -437,5 +378,150 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         } else {
             return msgs.stream().collect(Collectors.joining(", "));
         }
+    }
+
+    protected int numRecordsProcessed = -1;
+    protected int numRecordsOutput = -1;
+    protected int numErrors = -1;
+
+
+    protected DockerRunner createDockerRunner(String image, String hostWorkDir, String localWorkDir) throws IOException {
+        DockerRunner runner = new DockerRunner(image, hostWorkDir, localWorkDir);
+        runner.init();
+        LOG.info("Using host work dir of " + runner.getHostWorkDir().getPath());
+        LOG.info("Using local work dir of " + runner.getLocalWorkDir());
+        return runner;
+    }
+
+    protected DockerRunner createDockerRunner(String image, String localWorkDir) throws IOException {
+        return createDockerRunner(image, null, localWorkDir);
+    }
+
+    /** Fetch the input using the default name for the input variable
+     *
+     * @param varman
+     * @param runner
+     * @param mediaType
+     * @return
+     * @throws Exception
+     */
+    protected DatasetMetadata handleDockerInput(VariableManager varman, DockerRunner runner, String mediaType) throws Exception {
+        return handleDockerInput(varman, runner, mediaType, StepDefinitionConstants.VARIABLE_INPUT_DATASET);
+    }
+
+    /** Fetch the input in the case that the input has been renamed from the default name
+     *
+     * @param varman
+     * @param runner
+     * @param mediaType
+     * @param varName
+     * @return
+     * @throws Exception
+     */
+    protected DatasetMetadata handleDockerInput(VariableManager varman, DockerRunner runner, String mediaType, String varName) throws Exception {
+
+        if (mediaType == null) {
+            mediaType = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON;
+        }
+
+        switch (mediaType) {
+            case CommonMimeTypes.MIME_TYPE_DATASET_BASIC_JSON:
+            case CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON:
+                Dataset dataset = fetchMappedInput(varName, Dataset.class, varman, true);
+                writeAsDataset(dataset, runner);
+                return dataset.getMetadata();
+            case CommonMimeTypes.MIME_TYPE_MDL_SDF:
+                InputStream sdf = fetchMappedInput(varName, InputStream.class, varman, true);
+                writeAsSDF(sdf, runner);
+                return null; // TODO can we getServiceDescriptors the metadata somehow?
+            default:
+                throw new IllegalArgumentException("Unsupported media type: " + mediaType);
+        }
+    }
+
+    protected DatasetMetadata handleDockerOutput(DatasetMetadata inputMetadata, VariableManager varman, DockerRunner runner, String mediaType) throws Exception {
+
+        if (mediaType == null) {
+            mediaType = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON;
+        }
+
+        switch (mediaType) {
+            case CommonMimeTypes.MIME_TYPE_DATASET_BASIC_JSON:
+            case CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON:
+                return readAsDataset(inputMetadata, varman, runner);
+            case CommonMimeTypes.MIME_TYPE_MDL_SDF:
+                return readAsSDF(inputMetadata, varman, runner);
+            default:
+                throw new IllegalArgumentException("Unsupported media type: " + mediaType);
+        }
+    }
+
+    protected void writeAsDataset(Dataset input, DockerRunner runner) throws IOException {
+        LOG.info("Writing metadata input.meta");
+        runner.writeInput("input.meta", JsonHandler.getInstance().objectToJson(input.getMetadata()));
+        LOG.info("Writing data input.data.gz");
+        runner.writeInput("input.data.gz", input.getInputStream(true));
+    }
+
+    protected void writeAsSDF(InputStream sdf, DockerRunner runner) throws IOException {
+        LOG.fine("Writing SDF");
+        //runner.writeInput("input.sdf.gz", IOUtils.getGzippedInputStream(sdf));
+
+        String data = IOUtils.convertStreamToString(sdf);
+        //LOG.info("DATA: " + data);
+        LOG.info("Writing SDF input.sdf.gz");
+        runner.writeInput("input.sdf.gz", IOUtils.getGzippedInputStream(new ByteArrayInputStream(data.getBytes())));
+    }
+
+    protected DatasetMetadata readAsDataset(DatasetMetadata inputMetadata, VariableManager varman, DockerRunner runner) throws Exception {
+        DatasetMetadata meta;
+        try (InputStream is = runner.readOutput("output.meta")) {
+            if (is == null) {
+                meta = inputMetadata;
+            } else {
+                meta = JsonHandler.getInstance().objectFromJson(is, DatasetMetadata.class);
+            }
+        }
+
+        try (InputStream is = runner.readOutput("output.data.gz")) {
+            Dataset<? extends BasicObject> dataset = new Dataset(IOUtils.getGunzippedInputStream(is), meta);
+            createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, dataset, varman);
+            LOG.fine("Results: " + dataset.getMetadata());
+            return dataset.getMetadata();
+        }
+    }
+
+
+    protected DatasetMetadata readAsSDF(DatasetMetadata inputMetadata, VariableManager varman, DockerRunner runner) throws Exception {
+
+        try (InputStream is = runner.readOutput("output.sdf.gz")) {
+            createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, InputStream.class, is, varman);
+        }
+        // TODO can we getServiceDescriptors the metadata somehow?
+        return null;
+    }
+
+    protected void generateMetrics(DockerRunner runner, String filename, float executionTimeSeconds) throws IOException {
+        try (InputStream is = runner.readOutput(filename)) {
+            if (is != null) {
+                Properties props = new Properties();
+                props.load(is);
+                for (String key : props.stringPropertyNames()) {
+                    int c = new Integer(props.getProperty(key));
+                    if ("__InputCount__".equals(key)) {
+                        numRecordsProcessed = c;
+                    } else  if ("__OutputCount__".equals(key)) {
+                        numRecordsOutput = c;
+                    } else  if ("__ErrorCount__".equals(key)) {
+                        numErrors = c;
+                    } else  if (key.startsWith("__") && key.endsWith("__")) {
+                        LOG.warning("Unexpected magical key: " + key);
+                    } else {
+                        usageStats.put(key, c);
+                    }
+                }
+            }
+        }
+        generateExecutionTimeMetrics(executionTimeSeconds);
     }
 }

@@ -61,18 +61,18 @@ public class ThinDatasetDockerExecutorStep extends DefaultDockerExecutorStep {
     @Override
     protected void handleInputs(CamelContext camelContext, DockerServiceDescriptor serviceDescriptor, VariableManager varman, DockerRunner runner) throws Exception {
 
-        ServiceConfig serviceConfig = serviceDescriptor.getServiceConfig();
-        IODescriptor[] inputDescriptors = serviceConfig.getInputDescriptors();
+        IODescriptor[] inputDescriptors = serviceDescriptor.resolveInputIODescriptors();
+        IODescriptor[] outputDescriptors = serviceDescriptor.resolveOutputIODescriptors();
         if (inputDescriptors != null) {
             LOG.info("Handling " + inputDescriptors.length + " inputs");
             for (IODescriptor d : inputDescriptors) {
                 ThinDescriptor td = findThinDescriptorForInput(serviceDescriptor, d.getName());
                 if (td != null) {
                     thinDescriptors.put(d.getName(), td);
-                } else if (serviceConfig.getInputDescriptors().length == 1 && serviceConfig.getOutputDescriptors().length == 1) {
+                } else if (inputDescriptors.length == 1 && outputDescriptors.length == 1) {
                     LOG.info("Creating default ThinDescriptor");
                     // special case where there is 1 input and 1 output and no ThinDescriptor defined so we create one with default params
-                    thinDescriptors.put(d.getName(), new ThinDescriptor(d.getName(), serviceConfig.getOutputDescriptors()[0].getName()));
+                    thinDescriptors.put(d.getName(), new ThinDescriptor(d.getName(), outputDescriptors[0].getName()));
                 }
             }
         }
@@ -84,6 +84,7 @@ public class ThinDatasetDockerExecutorStep extends DefaultDockerExecutorStep {
     @SuppressWarnings("unchecked")
     protected <P,Q> void handleInput(CamelContext camelContext, DockerServiceDescriptor serviceDescriptor, VariableManager varman, DockerRunner runner, IODescriptor<P,Q> ioDescriptor) throws Exception {
 
+        LOG.info("Handling input for " + ioDescriptor);
         ThinDescriptor td = thinDescriptors.get(ioDescriptor.getName());
         if (ioDescriptor.getPrimaryType() == Dataset.class && td != null) {
             LOG.info("Thin execution: " + td.toString());
@@ -98,6 +99,7 @@ public class ThinDatasetDockerExecutorStep extends DefaultDockerExecutorStep {
             // process the input to make it thin
             Dataset thick = fetchMappedInput(ioDescriptor.getName(), Dataset.class, varman, true);
             Dataset thin = wrapper.prepareInput(thick);
+
             FilesystemWriteContext context = new FilesystemWriteContext(runner.getHostWorkDir(), ioDescriptor.getName());
             varman.putValue(Dataset.class, thin, context);
         } else {

@@ -18,8 +18,7 @@ package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
-import org.squonk.execution.steps.AbstractStep;
-import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.variable.VariableManager;
 
 import java.util.logging.Logger;
@@ -28,7 +27,7 @@ import java.util.logging.Logger;
  *
  * Created by timbo on 06/01/16.
  */
-public class NoopStep extends AbstractStep {
+public class NoopStep extends AbstractStandardStep {
 
     private static final Logger LOG = Logger.getLogger(NoopStep.class.getName());
 

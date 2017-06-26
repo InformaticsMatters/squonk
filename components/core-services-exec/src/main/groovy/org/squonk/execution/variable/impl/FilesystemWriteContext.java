@@ -49,9 +49,10 @@ public class FilesystemWriteContext extends AbstractFilesystemContext implements
     public void writeStreamValue(InputStream value, String key) throws Exception {
         LOG.info("Writing stream to file using key " + key);
         File f = generateFile(key);
+        LOG.info("File name: " + f.getName());
         boolean gzip = key != null && key.toLowerCase().endsWith(".gz");
-        try (OutputStream out = gzip ? new GZIPOutputStream( new FileOutputStream(f)): new FileOutputStream(f)) {
-            IOUtils.transfer(value, out, 4096);
+        try (OutputStream out = new FileOutputStream(f)) {
+            IOUtils.transfer(gzip ? IOUtils.getGzippedInputStream(value) : IOUtils.getGunzippedInputStream(value), out, 4096);
         }
     }
 

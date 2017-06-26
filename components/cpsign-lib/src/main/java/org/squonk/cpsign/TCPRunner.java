@@ -61,7 +61,7 @@ public class TCPRunner {
     public void intialise(){
         // Start with instantiating CPSignFactory with your license
         try {
-            factory = new CPSignFactory(new FileInputStream("/Users/timbo/dev/git/lac/data/licenses/cpsign0.3pro.license"));
+            factory = new CPSignFactory(new FileInputStream("../../data/licenses/cpsign0.3pro.license"));
         } catch (IllegalArgumentException | IOException e) {
             writeErrAndExit("Could not load the license or it was invalid");
         }
@@ -69,7 +69,7 @@ public class TCPRunner {
         // Init the files
 
         try {
-            chemFile = new File("/Users/timbo/dev/git/lac/data/testfiles/bursi_classification.sdf");
+            chemFile = new File("../../data/testfiles/bursi_classification.sdf");
             tempTCPData = File.createTempFile("bursiTCP", ".csr");
             tempSignatures = File.createTempFile("bursiTCP", ".signs");
         } catch(Exception ioe){

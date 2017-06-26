@@ -67,7 +67,7 @@ class MoleculeServiceFatExecutorStepDataSpec extends Specification {
 
 
         MoleculeServiceFatExecutorStep step = new MoleculeServiceFatExecutorStep()
-        step.configure(producer, "job1", null, inputs, outputs, inputMappings, outputMappings, sd)
+        step.configure(producer, "job1", null, inputMappings, outputMappings, sd)
         return step
     }
     

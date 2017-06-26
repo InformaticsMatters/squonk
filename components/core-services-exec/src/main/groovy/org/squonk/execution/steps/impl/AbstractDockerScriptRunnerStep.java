@@ -20,6 +20,7 @@ import org.apache.camel.CamelContext;
 import org.squonk.api.MimeTypeResolver;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.docker.DockerRunner;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.util.IOUtils;
@@ -30,7 +31,7 @@ import java.util.logging.Logger;
 /**
  * Created by timbo on 16/07/16.
  */
-public abstract class AbstractDockerScriptRunnerStep extends AbstractDockerStep {
+public abstract class AbstractDockerScriptRunnerStep extends AbstractStandardStep {
 
     private static final Logger LOG = Logger.getLogger(AbstractDockerScriptRunnerStep.class.getName());
 
@@ -50,7 +51,8 @@ public abstract class AbstractDockerScriptRunnerStep extends AbstractDockerStep 
 
             statusMessage = MSG_PREPARING_INPUT;
             // create input files
-            DatasetMetadata inputMetadata = handleInput(varman, runner, MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON);
+
+            DatasetMetadata inputMetadata = handleDockerInput(varman, runner, MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON);
 
             // run the command
             LOG.info("Executing ...");
@@ -69,7 +71,7 @@ public abstract class AbstractDockerScriptRunnerStep extends AbstractDockerStep 
             } else {
                 // handle the output
                 statusMessage = MSG_PREPARING_OUTPUT;
-                DatasetMetadata outputMetadata = handleOutput(inputMetadata, varman, runner, MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON);
+                DatasetMetadata outputMetadata = handleDockerOutput(inputMetadata, varman, runner, MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON);
                 statusMessage = generateStatusMessage(inputMetadata.getSize(), outputMetadata.getSize(), -1);
             }
 

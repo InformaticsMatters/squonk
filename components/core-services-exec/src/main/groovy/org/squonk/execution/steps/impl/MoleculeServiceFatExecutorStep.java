@@ -22,7 +22,7 @@ import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.AbstractServiceStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.io.JsonHandler;
@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class MoleculeServiceFatExecutorStep extends AbstractStep {
+public class MoleculeServiceFatExecutorStep extends AbstractServiceStep {
 
     private static final Logger LOG = Logger.getLogger(MoleculeServiceFatExecutorStep.class.getName());
 

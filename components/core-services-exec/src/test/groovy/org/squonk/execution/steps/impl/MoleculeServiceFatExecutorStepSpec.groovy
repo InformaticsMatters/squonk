@@ -57,8 +57,7 @@ class MoleculeServiceFatExecutorStepSpec extends Specification {
         
         MoleculeServiceFatExecutorStep step = new MoleculeServiceFatExecutorStep()
         step.configure(producer, "job1", null,
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], inputMappings, outputMappings, sd)
+                inputMappings, outputMappings, sd)
         
         
         when:

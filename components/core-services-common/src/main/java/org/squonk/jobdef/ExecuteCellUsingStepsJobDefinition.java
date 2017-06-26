@@ -49,6 +49,16 @@ public class ExecuteCellUsingStepsJobDefinition implements StepsCellExecutorJobD
         this.steps = steps;
     }
 
+    /** Constructor for a single step job. Typically the input and outputs are determined from the step so you would not
+     * normally need to use this constructor
+     *
+     * @param notebookId
+     * @param editableId
+     * @param cellId
+     * @param inputs
+     * @param outputs
+     * @param step
+     */
     public ExecuteCellUsingStepsJobDefinition(
             Long notebookId,
             Long editableId,
@@ -62,6 +72,36 @@ public class ExecuteCellUsingStepsJobDefinition implements StepsCellExecutorJobD
         this.inputs = inputs;
         this.outputs = outputs;
         this.steps = new StepDefinition[] { step };
+    }
+
+    /** Constructor that determins the job's input and outputs from the step
+     *
+     * @param notebookId
+     * @param editableId
+     * @param cellId
+     * @param step
+     */
+    public ExecuteCellUsingStepsJobDefinition(
+            Long notebookId,
+            Long editableId,
+            Long cellId,
+            StepDefinition step) {
+        this(notebookId, editableId, cellId, step.getInputs(), step.getOutputs(), new StepDefinition[] { step });
+    }
+
+    /** Constructor that determins the job's input from the first step and its outputs from the last step
+     *
+     * @param notebookId
+     * @param editableId
+     * @param cellId
+     * @param steps
+     */
+    public ExecuteCellUsingStepsJobDefinition(
+            Long notebookId,
+            Long editableId,
+            Long cellId,
+            StepDefinition[] steps) {
+        this(notebookId, editableId, cellId, steps[0].getInputs(), steps[steps.length - 1].getOutputs(), steps);
     }
 
     @Override

@@ -20,7 +20,7 @@ import org.squonk.types.MoleculeObject;
 import org.apache.camel.CamelContext;
 import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
-import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.io.JsonHandler;
@@ -36,7 +36,7 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class DatasetServiceExecutorStep extends AbstractStep {
+public class DatasetServiceExecutorStep extends AbstractStandardStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetServiceExecutorStep.class.getName());
 

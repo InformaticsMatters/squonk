@@ -17,7 +17,8 @@
 package org.squonk.core.client
 
 import org.squonk.execution.steps.StepDefinition
-import org.squonk.execution.steps.StepDefinitionConstants
+import static org.squonk.execution.steps.StepDefinitionConstants.*
+import org.squonk.execution.steps.impl.NoopStep
 import org.squonk.io.IODescriptor
 import org.squonk.io.IODescriptors
 import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition
@@ -25,6 +26,7 @@ import org.squonk.jobdef.JobStatus
 import org.squonk.jobdef.StepsCellExecutorJobDefinition
 import org.squonk.notebook.api.VariableKey
 import org.squonk.util.CommonMimeTypes
+
 import spock.lang.Stepwise
 
 import java.util.zip.GZIPInputStream
@@ -71,7 +73,7 @@ class ExecuteCellsAsJobsSpec extends ClientSpecBase {
 
     void "noop cell"() {
 
-        StepDefinition step = new StepDefinition("org.squonk.execution.steps.impl.NoopStep")
+        StepDefinition step = new StepDefinition(NoopStep.class.getName())
                 .withInputs(inputs)
                 .withOutputs(outputs)
                 .withInputVariableMapping("input", new VariableKey(cellId, "input"))
@@ -91,16 +93,16 @@ class ExecuteCellsAsJobsSpec extends ClientSpecBase {
 
     void "docker cell no conversion"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.DockerProcessDataset.CLASSNAME)
+        StepDefinition step = new StepDefinition(DockerProcessDataset.CLASSNAME)
                 .withInputs(inputs)
                 .withOutputs(outputs)
                 .withInputVariableMapping("input", new VariableKey(cellId, "input"))
                 .withOutputVariableMapping("output", "docker")
-                .withOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE, "busybox")
-                .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_INPUT, CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
-                .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_OUTPUT, CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
-                .withOption(StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_COMMAND,
-                    '''#!/bin/sh
+                .withOption(OPTION_DOCKER_IMAGE, "busybox")
+                .withOption(OPTION_MEDIA_TYPE_INPUT, CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
+                .withOption(OPTION_MEDIA_TYPE_OUTPUT, CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
+                .withOption(DockerProcessDataset.OPTION_DOCKER_COMMAND,
+                '''#!/bin/sh
 cp input.meta output.meta
 cp input.data.gz output.data.gz
 ''')
@@ -118,68 +120,37 @@ cp input.data.gz output.data.gz
         findResultSize(notebookId, editableId, cellId, "docker") == 36
     }
 
-//    void "docker cell simple rdkit"() {
-//
-//        StepDefinition step1 = new StepDefinition(StepDefinitionConstants.DatasetServiceExecutor.CLASSNAME)
-//                .withInputs(inputs)
-//                .withOutputs(outputs)
-//                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
-//                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "_docker_input")
-//                .withOption("header.Content-Encoding", "gzip")
-//                .withOption("header.Accept-Encoding", "gzip")
-//                .withOption("header.Content-Type", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
-//                .withOption("header.Accept", CommonMimeTypes.MIME_TYPE_MDL_SDF)
-//                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, "http://chemservices:8080/chem-services-cdk-basic/rest/v1/converters/convert_to_sdf")
-//
-//        StepDefinition step2 = new StepDefinition(StepDefinitionConstants.DockerProcessDataset.CLASSNAME)
-//                .withInputs(inputs)
-//                .withOutputs(outputs)
-//                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "_docker_input"))
-//                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "_docker_output")
-//                .withOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE, "informaticsmatters/rdkit")
-//                .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_INPUT, CommonMimeTypes.MIME_TYPE_MDL_SDF)
-//                .withOption(StepDefinitionConstants.OPTION_MEDIA_TYPE_OUTPUT, CommonMimeTypes.MIME_TYPE_MDL_SDF)
-//                .withOption(StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_COMMAND,
-//                '''#!/usr/bin/env python
-//
-//import gzip
-//from rdkit import Chem
-//
-//suppl = Chem.ForwardSDMolSupplier(gzip.open('input.sdf.gz'))
-//
-//outf=gzip.open('output.sdf.gz','w+')
-//w = Chem.SDWriter(outf)
-//
-//for mol in suppl:
-//    if mol is None: continue
-//    mol.SetIntProp("atom_count_rdkit", mol.GetNumAtoms())
-//    w.write(mol)
-//
-//w.close()
-//outf.close()
-//''')
-//
-//        StepDefinition step3 = new StepDefinition(StepDefinitionConstants.SdfUpload.CLASSNAME)
-//                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_FILE_INPUT, new VariableKey(cellId, "_docker_output"))
-//                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "rdkit");
-//
-//        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
-//        jobdef.configureCellAndSteps()
-//        jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, outputs, step1, step2, step3)
-//
-//        when:
-//        JobStatus status1 = jobClient.submit(jobdef, username, null)
-//        JobStatus status2 = waitForJob(status1.jobId)
-//
-//        then:
-//        status1.status == JobStatus.Status.RUNNING
-//        status2.status == JobStatus.Status.COMPLETED
-//        findResultSize(notebookId, editableId, cellId, "rdkit") == 36
-//    }
+    /** Step that specifies it reads/writes a SDFile, but the input/output of the job is a Dataset so conversion is needed.
+     * StepExecutor should handle the conversions
+     */
+    void "docker cell sdf conversion"() {
+
+        StepDefinition step = new StepDefinition(DockerProcessDataset.CLASSNAME)
+                .withInputs(inputs)
+                .withOutputs(outputs)
+                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
+                .withOutputVariableMapping("output", "docker")
+                .withOption(OPTION_DOCKER_IMAGE, "busybox")
+                .withOption(OPTION_MEDIA_TYPE_INPUT, CommonMimeTypes.MIME_TYPE_MDL_SDF)
+                .withOption(OPTION_MEDIA_TYPE_OUTPUT, CommonMimeTypes.MIME_TYPE_MDL_SDF)
+                .withOption(DockerProcessDataset.OPTION_DOCKER_COMMAND, '#!/bin/sh\ncp input.sdf.gz output.sdf.gz')
+
+        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
+        jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, outputs, step)
+
+        when:
+        JobStatus status1 = jobClient.submit(jobdef, username, null)
+        JobStatus status2 = waitForJob(status1.jobId)
+
+        then:
+        status1.status == JobStatus.Status.RUNNING
+        status2.status == JobStatus.Status.COMPLETED
+        findResultSize(notebookId, editableId, cellId, "docker") == 36
+    }
 
     void "cdk sdf convert cell"() {
 
-        StepDefinition step1 = new StepDefinition(StepDefinitionConstants.DatasetServiceExecutor.CLASSNAME)
+        StepDefinition step1 = new StepDefinition(DatasetServiceExecutor.CLASSNAME)
                 .withInputs(inputs)
                 .withOutputs(outputs)
                 .withInputVariableMapping("input", new VariableKey(cellId, "input"))
@@ -188,7 +159,7 @@ cp input.data.gz output.data.gz
                 .withOption("header.Accept-Encoding", "gzip")
                 .withOption("header.Content-Type", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
                 .withOption("header.Accept", CommonMimeTypes.MIME_TYPE_MDL_SDF)
-                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, "http://chemservices:8080/chem-services-cdk-basic/rest/v1/converters/dataset_to_sdf")
+                .withOption(OPTION_SERVICE_ENDPOINT, "http://chemservices:8080/chem-services-cdk-basic/rest/v1/converters/dataset_to_sdf")
 
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
@@ -247,16 +218,14 @@ cp input.data.gz output.data.gz
 //        findResultSize(notebookId, editableId, cellId, "docker") == 36
 //    }
 
-
-
     void "groovy in docker cell noop"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
+        StepDefinition step = new StepDefinition(UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputs(inputs)
                 .withOutputs(outputs)
                 .withInputVariableMapping("input", new VariableKey(cellId, "input"))
                 .withOutputVariableMapping("output", "groovy-noop")
-                .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
+                .withOption(UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 def file1 = new File('/source/input.meta')
 file1.renameTo '/source/output.meta'
@@ -269,7 +238,7 @@ file2.renameTo '/source/output.data.gz'
 
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)
-        JobStatus status2 = waitForJob(status1.jobId)
+        JobStatus status2 = waitForJob(status1.jobId, 120)
 
         then:
         status1.status == JobStatus.Status.RUNNING
@@ -279,12 +248,12 @@ file2.renameTo '/source/output.data.gz'
 
     void "groovy in docker cell using consumer"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
+        StepDefinition step = new StepDefinition(UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputs(inputs)
                 .withOutputs(outputs)
                 .withInputVariableMapping("input", new VariableKey(cellId, "input"))
                 .withOutputVariableMapping("output", "groovy-api-consumer")
-                .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
+                .withOption(UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
@@ -295,14 +264,13 @@ import java.util.function.Consumer
 processDataset('/source/input','/source/output') { MoleculeObject mo ->
     mo.putValue("hello", "world")
 } as Consumer
-
 ''')
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
         jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, outputs, step)
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)
-        JobStatus status2 = waitForJob(status1.jobId)
+        JobStatus status2 = waitForJob(status1.jobId, 120)
 
         then:
         status1.status == JobStatus.Status.RUNNING
@@ -312,12 +280,12 @@ processDataset('/source/input','/source/output') { MoleculeObject mo ->
 
     void "groovy in docker cell using function"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
+        StepDefinition step = new StepDefinition(UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputs(inputs)
                 .withOutputs(outputs)
                 .withInputVariableMapping("input", new VariableKey(cellId, "input"))
                 .withOutputVariableMapping("output", "groovy-api-function")
-                .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
+                .withOption(UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
@@ -338,7 +306,7 @@ processDatasetStream('/source/input','/source/output') { Stream<MoleculeObject> 
 
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)
-        JobStatus status2 = waitForJob(status1.jobId)
+        JobStatus status2 = waitForJob(status1.jobId, 120)
 
         then:
         status1.status == JobStatus.Status.RUNNING
@@ -348,12 +316,12 @@ processDatasetStream('/source/input','/source/output') { Stream<MoleculeObject> 
 
     void "groovy in docker cell using strong typing"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
+        StepDefinition step = new StepDefinition(UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputs(inputs)
                 .withOutputs(outputs)
                 .withInputVariableMapping("input", new VariableKey(cellId, "input"))
                 .withOutputVariableMapping("output", "groovy-api-strong")
-                .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
+                .withOption(UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
@@ -368,7 +336,6 @@ Stream<MoleculeObject> stream = dataset.stream.peek() { MoleculeObject mo ->
 }
 dataset.replaceStream(stream)
 writeDatasetToFiles(dataset, '/source/output', true)
-
 ''')
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
@@ -376,7 +343,7 @@ writeDatasetToFiles(dataset, '/source/output', true)
 
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)
-        JobStatus status2 = waitForJob(status1.jobId)
+        JobStatus status2 = waitForJob(status1.jobId, 120)
 
         then:
         status1.status == JobStatus.Status.RUNNING
@@ -387,12 +354,12 @@ writeDatasetToFiles(dataset, '/source/output', true)
 
     void "groovy in docker cell using weak typing"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME)
+        StepDefinition step = new StepDefinition(UntrustedGroovyDatasetScript.CLASSNAME)
                 .withInputs(inputs)
                 .withOutputs(outputs)
                 .withInputVariableMapping("input", new VariableKey(cellId, "input"))
                 .withOutputVariableMapping("output", "groovy-api-weak")
-                .withOption(StepDefinitionConstants.UntrustedGroovyDatasetScript.OPTION_SCRIPT,
+                .withOption(UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
@@ -404,7 +371,6 @@ def stream = dataset.stream.peek() { mo ->
 }
 dataset.replaceStream(stream)
 writeDatasetToFiles(dataset, '/source/output', true)
-
 ''')
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
@@ -412,7 +378,7 @@ writeDatasetToFiles(dataset, '/source/output', true)
 
         when:
         JobStatus status1 = jobClient.submit(jobdef, username, null)
-        JobStatus status2 = waitForJob(status1.jobId)
+        JobStatus status2 = waitForJob(status1.jobId, 120)
 
         then:
         status1.status == JobStatus.Status.RUNNING

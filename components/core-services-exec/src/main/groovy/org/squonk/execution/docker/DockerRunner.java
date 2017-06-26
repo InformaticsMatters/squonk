@@ -78,7 +78,7 @@ public class DockerRunner {
     private String containerId;
     /**
      * 0 = not started
-     * 1, running
+     * 1 = running
      * 2 = finished
      */
     private int isRunning = 0;
@@ -125,9 +125,11 @@ public class DockerRunner {
     }
 
     public void init() throws IOException {
-        if (!this.hostWorkDir.mkdir()) {
-            throw new IOException("Could not create work dir " + this.hostWorkDir.getPath());
+        if (!hostWorkDir.mkdir()) {
+            throw new IOException("Could not create work dir " + hostWorkDir.getPath());
         }
+        // set writable by any user - we don't know which user the container will run as
+        hostWorkDir.setWritable(true, false);
         Volume work = new Volume(localWorkDir);
         volumes.add(work);
         Bind b = new Bind(getHostWorkDir().getPath(), work, AccessMode.rw);
@@ -140,7 +142,9 @@ public class DockerRunner {
     }
 
     public long writeInput(String filename, InputStream content, boolean executable) throws IOException {
+
         File file = new File(getHostWorkDir(), filename);
+        LOG.info("Writing to file " + file.getPath());
         try {
             if (!file.exists()) {
                 if (!file.createNewFile()) {

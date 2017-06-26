@@ -118,6 +118,12 @@ public interface StepDefinitionConstants {
         String VARIABLE_MOL2 = "mol2";
     }
 
+    interface ZipFileUpload {
+        String CLASSNAME = "org.squonk.execution.steps.impl.ZipFileReaderStep";
+        String OPTION_FILE_UPLOAD = "zipUpload";
+        String VARIABLE_ZIP = "zip";
+    }
+
     interface ConvertBasicToMoleculeObject {
          String CLASSNAME = "org.squonk.execution.steps.impl.BasicObjectToMoleculeObjectStep";
         /** The name of the value in the BasicObject that contains the structure

@@ -20,14 +20,13 @@ package org.squonk.execution.steps.impl
 import org.squonk.execution.variable.VariableManager
 import org.squonk.io.IODescriptor
 import org.squonk.io.IODescriptors
-import org.squonk.io.IORoute
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
 /**
  * Created by timbo on 06/01/16.
  */
-class EchoStepSpec extends Specification {
+class EchoStringStepSpec extends Specification {
 
     void "simple test"() {
         String value = "hello"
@@ -38,7 +37,7 @@ class EchoStepSpec extends Specification {
                 String.class,
                 value)
 
-        EchoStep step = new EchoStep()
+        EchoStringStep step = new EchoStringStep()
         step.configure(producer, "job1",
                 [:],
                 [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],

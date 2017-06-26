@@ -20,19 +20,13 @@ import org.apache.camel.CamelContext;
 import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-
-import static org.squonk.execution.steps.StepDefinitionConstants.CxnReactor.*;
-
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
-import org.squonk.util.IOUtils;
 import org.squonk.util.StatsRecorder;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,10 +35,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import static org.squonk.execution.steps.StepDefinitionConstants.CxnReactor.*;
+
 /**
  * @author timbo
  */
-public class CxnReactorStep extends AbstractStep {
+public class CxnReactorStep extends AbstractStandardStep {
 
     private static final Logger LOG = Logger.getLogger(CxnReactorStep.class.getName());
 

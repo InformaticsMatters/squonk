@@ -68,6 +68,11 @@ public class IODescriptors {
         return new IODescriptor(name, MIME_TYPE_PDB, PDBFile.class);
     }
 
+    public static IODescriptor createZipFile(String name) {
+        return new IODescriptor(name, MIME_TYPE_ZIP_FILE, ZipFile.class);
+    }
+
+
     public static IODescriptor[] createMoleculeObjectArray(String name) {
         return new IODescriptor[] {createMoleculeObjectDataset(name)};
     }

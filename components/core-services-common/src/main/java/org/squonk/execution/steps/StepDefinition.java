@@ -78,6 +78,7 @@ public final class StepDefinition implements Serializable {
 
     public StepDefinition(String implementationClass) {
         this.implementationClass = implementationClass;
+        this.serviceId = null;
     }
 
     public StepDefinition(String implementationClass, String serviceId) {
@@ -85,14 +86,12 @@ public final class StepDefinition implements Serializable {
         this.serviceId = serviceId;
     }
 
-    public StepDefinition(
-            String implementationClass,
-            Map<String, Object> options,
-            ServiceDescriptor serviceDescriptor) {
+    public StepDefinition(String implementationClass, String serviceId, Map<String, Object> options) {
         this.implementationClass = implementationClass;
-        setOptions(options);
-        this.serviceDescriptor = serviceDescriptor;
-        this.serviceId = serviceDescriptor == null ? null : serviceDescriptor.getServiceConfig().getId();
+        this.serviceId = serviceId;
+        if (options != null && !options.isEmpty()) {
+            this.options.putAll(options);
+        }
     }
 
     public StepDefinition(
@@ -102,19 +101,24 @@ public final class StepDefinition implements Serializable {
             IODescriptor[] outputs,
             Map<String, VariableKey> inputVariableMappings,
             Map<String, String> outputVariableMappings) {
-        this(implementationClass, options, inputs, outputs, inputVariableMappings, outputVariableMappings, null);
+
+        this(implementationClass, null, options, inputs, outputs, inputVariableMappings, outputVariableMappings);
     }
 
-    public StepDefinition(String implementationClass, Map<String, Object> options, IODescriptor[] inputs, IODescriptor[] outputs, Map<String, VariableKey> inputVariableMappings, Map<String, String> outputVariableMappings, ServiceDescriptor serviceDescriptor) {
-        this(implementationClass, options, serviceDescriptor);
+    public StepDefinition(
+            String implementationClass,
+            String serviceId,
+            Map<String, Object> options,
+            IODescriptor[] inputs,
+            IODescriptor[] outputs,
+            Map<String, VariableKey> inputVariableMappings,
+            Map<String, String> outputVariableMappings) {
+
+        this(implementationClass, serviceId, options);
         this.inputs = inputs;
         this.outputs = outputs;
         setInputVariableMappings(inputVariableMappings);
         setOutputVariableMappings(outputVariableMappings);
-    }
-
-    public StepDefinition(String implementationClass, Map<String, Object> options, Map<IODescriptor, VariableKey> inputTypesAndMappings, Map<IODescriptor, String> outputTypesAndMappings) {
-        this(implementationClass, options, inputTypesAndMappings, outputTypesAndMappings, null);
     }
 
     /**
@@ -124,30 +128,62 @@ public final class StepDefinition implements Serializable {
      * @param options
      * @param inputTypesAndMappings
      * @param outputTypesAndMappings
-     * @param serviceDescriptor
      */
-    public StepDefinition(String implementationClass, Map<String, Object> options, Map<IODescriptor, VariableKey> inputTypesAndMappings, Map<IODescriptor, String> outputTypesAndMappings, ServiceDescriptor serviceDescriptor) {
-        this(implementationClass, options, serviceDescriptor);
+    public StepDefinition(
+            String implementationClass,
+            String serviceId,
+            Map<String, Object> options,
+            Map<IODescriptor, VariableKey> inputTypesAndMappings,
+            Map<IODescriptor, String> outputTypesAndMappings) {
+
+        this(implementationClass, serviceId, options);
         inputs = inputTypesAndMappings == null ? null : new IODescriptor[inputTypesAndMappings.size()];
         outputs = outputTypesAndMappings == null ? null : new IODescriptor[outputTypesAndMappings.size()];
         fillInputsOutputs(inputTypesAndMappings, inputs, inputVariableMappings);
         fillInputsOutputs(outputTypesAndMappings, outputs, outputVariableMappings);
     }
 
-    /** Convenience constructor allowing input mappings and output types to be specified easily (no name mappings)
+    /** Convenience constructor allowing input mappings and output types to be specified easily (no output name mappings)
      *
      * @param implementationClass
+     * @param serviceId
      * @param options
      * @param inputTypesAndMappings
      * @param outputs
-     * @param serviceDescriptor
      */
-    public StepDefinition(String implementationClass, Map<String, Object> options, Map<IODescriptor, VariableKey> inputTypesAndMappings, IODescriptor[] outputs, ServiceDescriptor serviceDescriptor) {
-        this(implementationClass, options, serviceDescriptor);
-        inputs = inputTypesAndMappings == null ? null : new IODescriptor[inputTypesAndMappings.size()];
+    public StepDefinition(
+            String implementationClass,
+            String serviceId,
+            Map<String, Object> options,
+            Map<IODescriptor, VariableKey> inputTypesAndMappings,
+            IODescriptor[] outputs) {
+
+        this(implementationClass, serviceId, options);
+        this.inputs = inputTypesAndMappings == null ? null : new IODescriptor[inputTypesAndMappings.size()];
         this.outputs = outputs;
         fillInputsOutputs(inputTypesAndMappings, inputs, inputVariableMappings);
     }
+
+    /** Convenience constructor useful for testing where a serviceDescriptor defines most of the details
+     *
+     * @param serviceDescriptor
+     * @param options
+     * @param inputTypesAndMappings
+     * @param outputs
+     */
+    public StepDefinition(
+            ServiceDescriptor serviceDescriptor,
+            Map<String, Object> options,
+            Map<IODescriptor, VariableKey> inputTypesAndMappings,
+            IODescriptor[] outputs) {
+
+        this(serviceDescriptor.getServiceConfig().getExecutorClassName(), serviceDescriptor.getId(), options);
+        this.serviceDescriptor = serviceDescriptor;
+        this.inputs = inputTypesAndMappings == null ? null : new IODescriptor[inputTypesAndMappings.size()];
+        this.outputs = outputs;
+        fillInputsOutputs(inputTypesAndMappings, inputs, inputVariableMappings);
+    }
+
 
     private void fillInputsOutputs(Map<IODescriptor, ? extends Object> typesAndMappings, IODescriptor[] types, Map map) {
         if (typesAndMappings != null) {

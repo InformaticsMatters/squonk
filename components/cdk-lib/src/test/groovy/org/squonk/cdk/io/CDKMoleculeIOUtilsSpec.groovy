@@ -18,6 +18,7 @@ package org.squonk.cdk.io
 
 import org.openscience.cdk.DefaultChemObjectBuilder
 import org.openscience.cdk.fingerprint.SignatureFingerprinter
+import org.openscience.cdk.interfaces.IChemObjectBuilder
 import org.openscience.cdk.signature.MoleculeSignature
 import org.openscience.cdk.smiles.SmiFlavor
 import org.openscience.cdk.smiles.SmilesGenerator
@@ -219,7 +220,7 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         when:
         CDKSDFile sdf = CDKMoleculeIOUtils.covertToSDFile(mols.stream(), true)
         String content = IOUtils.convertStreamToString(sdf.inputStream)
-        //println content
+        println content
 
         then:
         content.length() > 0
@@ -418,6 +419,25 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         then:
         sigs.size() == 756
     }
+
+//    void "title line"() {
+//
+//        IChemObjectBuilder bldr = SilentChemObjectBuilder.getInstance()
+//        SmilesParser parser = new SmilesParser(bldr)
+//        IAtomContainer mol1 = parser.parseSmiles("CCO")
+//        IAtomContainer mol2 = parser.parseSmiles("CCO ethanol")
+//
+//        when:
+//        SDFWriter sdf = new SDFWriter(System.out)
+//        sdf.write(mol1)
+//        sdf.write(mol2)
+//
+//        then:
+//        1 == 1
+//
+//        cleanup:
+//        sdf?.close()
+//    }
 
 }
 

@@ -21,6 +21,7 @@ import com.github.dockerjava.api.model.Volume;
 import org.apache.camel.CamelContext;
 import org.squonk.core.DockerServiceDescriptor;
 import org.squonk.execution.docker.DockerRunner;
+import org.squonk.execution.steps.AbstractServiceStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.util.GroovyUtils;
 import org.squonk.execution.variable.VariableManager;
@@ -37,7 +38,7 @@ import java.util.logging.Logger;
 /**
  * Created by timbo on 29/12/15.
  */
-public class DefaultDockerExecutorStep extends AbstractDockerStep {
+public class DefaultDockerExecutorStep extends AbstractServiceStep {
 
     private static final Logger LOG = Logger.getLogger(DefaultDockerExecutorStep.class.getName());
 
@@ -111,7 +112,7 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
         command = command.replaceAll("\\r\\n", "\n");
         LOG.info("Template: " + command);
         String expandedCommand = GroovyUtils.expandTemplate(command, args);
-        LOG.fine("Command: " + expandedCommand);
+        LOG.info("Command: " + expandedCommand);
         
         String localWorkDir = "/source";
 
@@ -172,7 +173,7 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
     }
 
     protected void handleInputs(CamelContext camelContext, DockerServiceDescriptor serviceDescriptor, VariableManager varman, DockerRunner runner) throws Exception {
-        IODescriptor[] inputDescriptors = serviceDescriptor.getServiceConfig().getInputDescriptors();
+        IODescriptor[] inputDescriptors = serviceDescriptor.resolveInputIODescriptors();
         if (inputDescriptors != null) {
             LOG.info("Handling " + inputDescriptors.length + " inputs");
             for (IODescriptor d : inputDescriptors) {
@@ -184,12 +185,15 @@ public class DefaultDockerExecutorStep extends AbstractDockerStep {
 
     protected <P,Q> void handleInput(CamelContext camelContext, DockerServiceDescriptor serviceDescriptor, VariableManager varman, DockerRunner runner, IODescriptor<P,Q> ioDescriptor) throws Exception {
         P value = fetchMappedInput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), varman, true);
+
+        // TODO - HANDLE CONVERSIONS
+
         FilesystemWriteContext writeContext = new FilesystemWriteContext(runner.getHostWorkDir(), ioDescriptor.getName());
         varman.putValue(ioDescriptor.getPrimaryType(), value, writeContext);
     }
 
     protected <P,Q> void handleOutputs(CamelContext camelContext, DockerServiceDescriptor serviceDescriptor, VariableManager varman, DockerRunner runner) throws Exception {
-        IODescriptor[] outputDescriptors = serviceDescriptor.getServiceConfig().getOutputDescriptors();
+        IODescriptor[] outputDescriptors = serviceDescriptor.resolveOutputIODescriptors();
         if (outputDescriptors != null) {
             LOG.info("Handling " + outputDescriptors.length + " outputs");
             for (IODescriptor d : outputDescriptors) {

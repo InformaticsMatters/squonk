@@ -17,7 +17,7 @@
 package org.squonk.execution.steps.impl;
 
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.BasicObject;
@@ -40,7 +40,7 @@ import org.squonk.types.io.JsonHandler;
  *
  * @author timbo
  */
-public class DatasetMergerStep extends AbstractStep {
+public class DatasetMergerStep extends AbstractStandardStep {
     
     private static final Logger LOG = Logger.getLogger(DatasetMergerStep.class.getName());
 

@@ -57,19 +57,17 @@ class DefaultDockerExecutorStepSpec extends Specification {
     }
 
     def createStep(args, cmd, inputRead, inputWrite, outputRead, outputWrite) {
-        DockerServiceDescriptor ded = new DockerServiceDescriptor("id.busybox", "name", "desc",  null, null, null, null, null,
-                [IODescriptors.createMoleculeObjectDataset(inputWrite)] as IODescriptor[], [IORoute.FILE] as IORoute[],
-                [IODescriptors.createMoleculeObjectDataset(outputRead)] as IODescriptor[], [IORoute.FILE] as IORoute[],
+        DockerServiceDescriptor dsd = new DockerServiceDescriptor("id.busybox", "name", "desc",  null, null, null, null, null,
+                [IODescriptors.createMoleculeObjectDataset(inputWrite)] as IODescriptor[], [new IORoute(IORoute.Route.FILE)] as IORoute[],
+                [IODescriptors.createMoleculeObjectDataset(outputRead)] as IODescriptor[], [new IORoute(IORoute.Route.FILE)] as IORoute[],
                 null, null, "executor", 'busybox', cmd, [:])
 
         DefaultDockerExecutorStep step = new DefaultDockerExecutorStep()
         step.configure(producer, "job1",
                 args,
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 [(inputWrite): new VariableKey(producer, inputRead)],
                 [(outputRead): outputWrite],
-                ded
+                dsd
         )
         return step
     }

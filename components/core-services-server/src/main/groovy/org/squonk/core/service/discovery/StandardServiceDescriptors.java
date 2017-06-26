@@ -51,9 +51,9 @@ public class StandardServiceDescriptors {
                         ServiceConfig.Status.ACTIVE,
                         new Date(),
                         IODescriptors.createMoleculeObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
-                        new IORoute[]{IORoute.FILE},
+                        new IORoute[]{new IORoute(IORoute.Route.FILE)},
                         IODescriptors.createMoleculeObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
-                        new IORoute[]{IORoute.FILE},
+                        new IORoute[]{new IORoute(IORoute.Route.FILE)},
                         new OptionDescriptor[]{
                                 new OptionDescriptor<>(String.class, StepDefinitionConstants.OPTION_DOCKER_IMAGE,
                                         "Docker image name", "The Docker image to use", OptionDescriptor.Mode.User)
@@ -91,7 +91,7 @@ public class StandardServiceDescriptors {
                                 new OptionDescriptor<>(Integer.class, StepDefinitionConstants.DatasetSelectSlice.OPTION_SKIP, "Number to skip", "The number of records to skip", OptionDescriptor.Mode.User),
                                 new OptionDescriptor<>(Integer.class, StepDefinitionConstants.DatasetSelectSlice.OPTION_COUNT, "Number to include", "The number of records to include after skipping", OptionDescriptor.Mode.User)
                         },
-                        null,
+                        null, null, null,
                         StepDefinitionConstants.DatasetSelectSlice.CLASSNAME
                 ),
 
@@ -106,7 +106,7 @@ public class StandardServiceDescriptors {
                                 new OptionDescriptor<>(Float.class, StepDefinitionConstants.DatasetSelectRandom.OPTION_RANDOM, "Random fraction (0-1)", "The fraction of records to randomly select (between 0 and 1, default 0.001)", OptionDescriptor.Mode.User),
                                 new OptionDescriptor<>(Integer.class, StepDefinitionConstants.DatasetSelectRandom.OPTION_COUNT, "Max records", "The max number of records to include, default 1000", OptionDescriptor.Mode.User)
                         },
-                        null,
+                        null, null, null,
                         StepDefinitionConstants.DatasetSelectRandom.CLASSNAME
                 ),
 
@@ -135,7 +135,7 @@ public class StandardServiceDescriptors {
                                         "When duplicate field name use the existing value rather than the new one", OptionDescriptor.Mode.User)
                                         .withDefaultValue(true)
                         },
-                        null,
+                        null, null, null,
                         StepDefinitionConstants.DatasetMerger.CLASSNAME
                 ),
 
@@ -168,7 +168,7 @@ public class StandardServiceDescriptors {
                                         .withMinMaxValues(1, 1)
 
                         },
-                        null,
+                        null, null, null,
                         StepDefinitionConstants.DatasetEnricher.CLASSNAME
                 ),
 
@@ -187,7 +187,7 @@ public class StandardServiceDescriptors {
                                         .withMinMaxValues(1, 1)
 
                         },
-                        null,
+                        null, null, null,
                         StepDefinitionConstants.DatasetUUIDFilter.CLASSNAME
                 )
         }));

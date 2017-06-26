@@ -17,29 +17,28 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
-
-import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.variable.VariableManager;
 
 import java.util.logging.Logger;
 
-/** Simple step used for testing that reads text input and writes it to output
+/** Simple step used for testing that reads and integer and input and writes its string value as the output
  *
  * Created by timbo on 06/01/16.
  */
-public class EchoStep extends AbstractStep {
+public class IntegerToStringStep extends AbstractStandardStep {
 
-    private static final Logger LOG = Logger.getLogger(EchoStep.class.getName());
+    private static final Logger LOG = Logger.getLogger(IntegerToStringStep.class.getName());
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        String input = fetchMappedInput("input", String.class, varman);
+        Integer input = fetchMappedInput("input", Integer.class, varman);
         if (input == null) {
             throw new IllegalStateException("Input variable not found");
         }
         LOG.info("Input: " + input);
 
-        createMappedOutput("output", String.class, input, varman);
+        createMappedOutput("output", String.class, input.toString(), varman);
         LOG.info("Wrote input as output");
     }
 }

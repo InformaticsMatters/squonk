@@ -33,7 +33,6 @@ public interface CommonMimeTypes {
     public static final String MIME_TYPE_DATASET_MOLECULE_JSON = "application/x-squonk-dataset-molecule+json";
     public static final String MIME_TYPE_BASIC_OBJECT_JSON = "application/x-squonk-basic-object+json";
     public static final String MIME_TYPE_MOLECULE_OBJECT_JSON = "application/x-squonk-molecule-object+json";
-    public static final String MIME_TYPE_FILE_SET = "application/x-squonk-file-set+json";
 
     public static final String MIME_TYPE_MDL_MOLFILE = "chemical/x-mdl-molfile";
     public static final String MIME_TYPE_MDL_SDF = "chemical/x-mdl-sdfile";
@@ -44,6 +43,7 @@ public interface CommonMimeTypes {
     public static final String MIME_TYPE_SVG = "image/svg+xml";
     public static final String MIME_TYPE_PNG = "image/png";
     public static final String MIME_TYPE_CPSIGN_TRAIN_RESULT = "application/x-squonk-cpsign-train+json";
+    public static final String MIME_TYPE_ZIP_FILE = "application/zip";
 
 
     public static final Map<String, String[]> EXTENSIONS = Collections.unmodifiableMap(new HashMap() {{
@@ -55,6 +55,7 @@ public interface CommonMimeTypes {
         put(MIME_TYPE_TRIPOS_MOL2, new String[] {"mol2"});
         put(MIME_TYPE_SVG, new String[] {"svg"});
         put(MIME_TYPE_PNG, new String[] {"png"});
+        put(MIME_TYPE_ZIP_FILE, new String[] {"zip"});
     }});
 
 }

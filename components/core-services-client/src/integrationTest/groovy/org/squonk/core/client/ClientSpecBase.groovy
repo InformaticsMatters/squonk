@@ -153,10 +153,10 @@ abstract class ClientSpecBase extends Specification {
         return notebookClient.readStreamValue(notebookId, editableId, cellId, varname)
     }
 
-    JobStatus waitForJob(def jobId) {
+    JobStatus waitForJob(def jobId, int numSecsToWait) {
         JobStatus status
-        for (int i = 0; i < 100; i++) {
-            sleep(500)
+        for (int i = 0; i < numSecsToWait; i++) {
+            sleep(1000)
             status = jobClient.get(jobId)
             if (status.status == JobStatus.Status.COMPLETED || status.status == JobStatus.Status.ERROR) {
                 //println "job completed"
@@ -165,6 +165,10 @@ abstract class ClientSpecBase extends Specification {
             //println "trying again ..."
         }
         return status
+    }
+
+    JobStatus waitForJob(def jobId) {
+        return waitForJob(jobId, 60)
     }
 
 

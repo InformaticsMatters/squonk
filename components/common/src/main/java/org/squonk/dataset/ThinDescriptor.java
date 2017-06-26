@@ -35,7 +35,7 @@ public class ThinDescriptor implements Serializable {
 
     /** The name of the output dataset.
      * If null then the output is not treated as thin and processed verbatum. This allows the input to be made thin but
-     * to provides unrelated data in the output.
+     * to provide unrelated data in the output.
      */
     private final String output;
 

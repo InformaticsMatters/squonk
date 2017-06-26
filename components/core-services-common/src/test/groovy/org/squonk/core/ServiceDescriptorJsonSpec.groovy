@@ -73,20 +73,24 @@ class ServiceDescriptorJsonSpec extends Specification {
         when:
 
         def descriptors = []
+        int errors = 0
         list.each { file ->
             println "Trying $file"
-            descriptors << JsonHandler.getInstance().objectFromJson(new FileInputStream(file), DockerServiceDescriptor.class)
+            try {
+                descriptors << JsonHandler.getInstance().objectFromJson(new FileInputStream(file), DockerServiceDescriptor.class)
+            } catch (IOException ex) {
+                errors++
+                println "Failed to read $file"
+            }
         }
+        println "Read ${descriptors.size()} docker descriptors"
 
 
         then:
         descriptors.size() > 0
-
-
+        errors == 0
 
     }
-
-
 
 }
 

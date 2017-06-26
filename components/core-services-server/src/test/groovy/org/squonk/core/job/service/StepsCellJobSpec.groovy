@@ -25,7 +25,7 @@ import org.squonk.client.JobStatusClient
 import org.squonk.core.service.job.MemoryJobStatusClient
 import org.squonk.core.service.job.StepsCellJob
 import org.squonk.execution.steps.StepDefinition
-import org.squonk.execution.steps.impl.EchoStep
+import org.squonk.execution.steps.impl.EchoStringStep
 import org.squonk.notebook.api.VariableKey
 import spock.lang.Shared
 import spock.lang.Specification
@@ -41,7 +41,8 @@ class StepsCellJobSpec extends Specification {
 
         Long producer = 1
         StepDefinition steps = new StepDefinition(
-                EchoStep.class.getName(),
+                EchoStringStep.class.getName(),
+                null,
                 [:],
                 [(new IODescriptor("input", "text/plain", String.class, null)):new VariableKey(producer, "input")],
                 [(new IODescriptor("output", "text/plain", String.class, null)):"output"])

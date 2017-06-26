@@ -65,7 +65,7 @@ public class HttpServiceDescriptor extends DefaultServiceDescriptor implements S
             @JsonProperty("serviceConfig") ServiceConfig serviceConfig,
             @JsonProperty("thinDescriptors") ThinDescriptor[] thinDescriptors,
             @JsonProperty("executionEndpoint") String executionEndpoint) {
-        super(serviceConfig, thinDescriptors);
+        super(serviceConfig, thinDescriptors, null, null);
         this.executionEndpoint = executionEndpoint;
     }
 
@@ -86,7 +86,9 @@ public class HttpServiceDescriptor extends DefaultServiceDescriptor implements S
             String executorClassName,
             String executionEndpoint) {
 
-        super(id, name, description, tags, resourceUrl, icon, status, statusLastChecked, inputDescriptors, outputDescriptors, optionDescriptors, thinDescriptors, executorClassName);
+        super(id, name, description, tags, resourceUrl, icon, status, statusLastChecked,
+                inputDescriptors, outputDescriptors, optionDescriptors,
+                thinDescriptors, null, null, executorClassName);
         this.executionEndpoint = executionEndpoint;
     }
 
@@ -105,7 +107,9 @@ public class HttpServiceDescriptor extends DefaultServiceDescriptor implements S
             String executorClassName,
             String executionEndpoint) {
 
-        super(id, name, description, tags, resourceUrl, icon, status, statusLastChecked, inputDescriptors, outputDescriptors, optionDescriptors, null, executorClassName);
+        super(id, name, description, tags, resourceUrl, icon, status, statusLastChecked,
+                inputDescriptors, outputDescriptors, optionDescriptors,
+                null, null,null, executorClassName);
         this.executionEndpoint = executionEndpoint;
     }
 

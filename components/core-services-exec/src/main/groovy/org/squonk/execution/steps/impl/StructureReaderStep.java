@@ -19,28 +19,24 @@ package org.squonk.execution.steps.impl;
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
-import org.squonk.reader.SDFReader;
 import org.squonk.types.MoleculeObject;
-import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 /**
- * Reads a structure and generates a {@link MoleculeObject} of the correspondign format.
+ * Reads a structure and generates a {@link MoleculeObject} of the corresponding format.
  * The structure is passed as an
  * {@link InputStream} (can be gzipped).
  *
  * @author timbo
  */
-public class StructureReaderStep extends AbstractStep {
+public class StructureReaderStep extends AbstractStandardStep {
 
     private static final Logger LOG = Logger.getLogger(StructureReaderStep.class.getName());
 

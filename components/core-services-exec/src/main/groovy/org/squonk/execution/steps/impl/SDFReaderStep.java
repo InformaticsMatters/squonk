@@ -17,7 +17,7 @@
 package org.squonk.execution.steps.impl;
 
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.MoleculeObject;
@@ -41,7 +41,7 @@ import org.apache.camel.CamelContext;
  *
  * @author timbo
  */
-public class SDFReaderStep extends AbstractStep {
+public class SDFReaderStep extends AbstractStandardStep {
 
     private static final Logger LOG = Logger.getLogger(SDFReaderStep.class.getName());
 

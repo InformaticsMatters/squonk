@@ -49,7 +49,7 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerScriptRunner
             statusMessage = "Error: Script to execute is not defined";
             throw new IllegalStateException("Script to execute is not defined. Should be present as option named " + OPTION_SCRIPT);
         }
-        LOG.fine("Docker image: " + image + ", Script: " + script);
+        LOG.info("Docker image: " + image + ", Script: " + script);
 
 
         String localWorkDir = "/source";

@@ -21,7 +21,7 @@ import groovy.lang.GroovyClassLoader;
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 
@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 /**
  * Created by timbo on 29/12/15.
  */
-public class DatasetFilterGroovyStep extends AbstractStep {
+public class DatasetFilterGroovyStep extends AbstractStandardStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetFilterGroovyStep.class.getName());
 

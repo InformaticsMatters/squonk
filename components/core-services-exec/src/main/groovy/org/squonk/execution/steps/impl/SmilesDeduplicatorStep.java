@@ -20,7 +20,7 @@ import org.squonk.types.MoleculeObject;
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.MoleculeObjectDataset;
-import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.util.MoleculeObjectUtils;
@@ -34,7 +34,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class SmilesDeduplicatorStep extends AbstractStep {
+public class SmilesDeduplicatorStep extends AbstractStandardStep {
 
     private static final Logger LOG = Logger.getLogger(SmilesDeduplicatorStep.class.getName());
 

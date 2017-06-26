@@ -19,16 +19,16 @@ package org.squonk.execution.steps.impl;
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.DatasetMetadata;;
 import org.squonk.execution.docker.DockerRunner;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 
-import java.io.File;
 import java.util.logging.Logger;
 
 /**
  * Created by timbo on 29/12/15.
  */
-public class DockerProcessDatasetStep extends AbstractDockerStep {
+public class DockerProcessDatasetStep extends AbstractStandardStep {
 
     private static final Logger LOG = Logger.getLogger(DockerProcessDatasetStep.class.getName());
 
@@ -64,7 +64,7 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
         try {
             // create input files
             statusMessage = MSG_PREPARING_INPUT;
-            DatasetMetadata inputMetadata = handleInput(varman, runner, inputMediaType);
+            DatasetMetadata inputMetadata = handleDockerInput(varman, runner, inputMediaType);
 
             LOG.info("Writing command file");
             // replace windows line end characters
@@ -89,7 +89,7 @@ public class DockerProcessDatasetStep extends AbstractDockerStep {
 
             // handle the output
             statusMessage = MSG_PREPARING_OUTPUT;
-            DatasetMetadata meta = handleOutput(inputMetadata, varman, runner, outputMediaType);
+            DatasetMetadata meta = handleDockerOutput(inputMetadata, varman, runner, outputMediaType);
             if (meta == null) {
                 statusMessage = MSG_PROCESSING_COMPLETE;
             } else {

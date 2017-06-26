@@ -87,9 +87,11 @@ class PostgresServiceDescriptorClient {
             String baseUrl = it.base_url
             String healthUrl = it.health_url
             Map<Long, ServiceDescriptor> map = sdsmap[setid]
-            List<ServiceDescriptor> sds = map.values().collect { it }
-            results << new ServiceDescriptorSet(baseUrl, healthUrl, sds)
-            log.info("Loaded ${sds.size()} service descriptors for $baseUrl")
+            if (map) {
+                List<ServiceDescriptor> sds = map.values().collect { it }
+                results << new ServiceDescriptorSet(baseUrl, healthUrl, sds)
+                log.info("Loaded ${sds.size()} service descriptors for $baseUrl")
+            }
         }
         return results
     }

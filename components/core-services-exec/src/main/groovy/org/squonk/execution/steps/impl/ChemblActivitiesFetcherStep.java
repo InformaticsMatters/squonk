@@ -16,7 +16,7 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.MoleculeObject;
@@ -32,7 +32,7 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class ChemblActivitiesFetcherStep extends AbstractStep {
+public class ChemblActivitiesFetcherStep extends AbstractStandardStep {
 
     private static final Logger LOG = Logger.getLogger(ChemblActivitiesFetcherStep.class.getName());
 

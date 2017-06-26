@@ -23,11 +23,14 @@ import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Logger;
 
 /**
  * Created by timbo on 23/03/2016.
  */
 public class SDFileHandler implements HttpHandler<SDFile>, VariableHandler<SDFile> {
+
+    private static final Logger LOG = Logger.getLogger(SDFileHandler.class.getName());
 
     @Override
     public Class<SDFile> getType() {
@@ -61,6 +64,7 @@ public class SDFileHandler implements HttpHandler<SDFile>, VariableHandler<SDFil
 
     @Override
     public void writeVariable(SDFile sdf, WriteContext context) throws Exception {
+        LOG.info("Writing as SDFile");
         //context.writeStreamValue(sdf.getInputStream());
         context.writeSingleStreamValue(sdf.getInputStream(), "sdf.gz");
     }

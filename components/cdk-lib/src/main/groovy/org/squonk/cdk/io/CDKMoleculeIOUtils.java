@@ -16,6 +16,7 @@
 
 package org.squonk.cdk.io;
 
+import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.ChemFile;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -89,6 +90,8 @@ public class CDKMoleculeIOUtils {
                 mol = readMolecule(mo.getSource(), mo.getFormat());
             }
             if (mol != null) {
+                mol.setProperty(CDKConstants.TITLE, mo.getUUID().toString());
+                //mol.setID(mo.getUUID().toString());
                 AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
                 if (store) {
                     mo.putRepresentation(IAtomContainer.class.getName(), mol);
@@ -222,7 +225,7 @@ public class CDKMoleculeIOUtils {
                                 }
                             }
                             // for some reason CDK adds this property with no value, so we remove it
-                            mol.removeProperty("cdk:Title");
+                            //mol.removeProperty("cdk:Title");
                             mol.removeProperty("cdk:Remark");
                             //LOG.info("WRITING MOL");
                             writer.write(mol);

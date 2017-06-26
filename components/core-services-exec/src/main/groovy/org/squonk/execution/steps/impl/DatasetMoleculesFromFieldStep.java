@@ -19,7 +19,7 @@ package org.squonk.execution.steps.impl;
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.BasicObject;
@@ -35,7 +35,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class DatasetMoleculesFromFieldStep extends AbstractStep {
+public class DatasetMoleculesFromFieldStep extends AbstractStandardStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetMoleculesFromFieldStep.class.getName());
 

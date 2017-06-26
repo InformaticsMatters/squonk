@@ -36,7 +36,8 @@ public interface Step {
     Long getOutputProducerId();
 
     /**
-     * Configure the execution details of the step.
+     * Configure the execution details of a step that uses a service for execution. The IODescriptors for input and output
+     * are determined from the ServiceDescriptor.
      *
      * @param producerId             The cell ID for the producer of output variables
      * @param jobId                  The job ID to associate the work with
@@ -47,7 +48,24 @@ public interface Step {
      *                               are the names needed by the implementation, values are the VariableKeys that
      *                               can be used to fetch the actual values from the variable manager.
      * @param outputVariableMappings The names for the output variables. The producer is determined by {@link #getOutputProducerId}
-     * @param serviceDescriptor   Descriptor of the executable service. Can be null if no service to execute
+     * @param serviceDescriptor      Descriptor of the executable service.
+     */
+    void configure(
+            Long producerId,
+            String jobId,
+            Map<String, Object> options,
+            Map<String, VariableKey> inputVariableMappings,
+            Map<String, String> outputVariableMappings,
+            ServiceDescriptor serviceDescriptor);
+
+    /** Configure where there is no external service to execute. The processing is internal to the step ad the input and
+     * output types are pre-defined.
+     *
+     * @param producerId
+     * @param jobId
+     * @param options
+     * @param inputVariableMappings
+     * @param outputVariableMappings
      */
     void configure(
             Long producerId,
@@ -56,27 +74,10 @@ public interface Step {
             IODescriptor[] inputs,
             IODescriptor[] outputs,
             Map<String, VariableKey> inputVariableMappings,
-            Map<String, String> outputVariableMappings,
-            ServiceDescriptor serviceDescriptor);
+            Map<String, String> outputVariableMappings);
 
-    /** Configure where there is no external service to execute
-     *
-     * @param producerId
-     * @param jobId
-     * @param options
-     * @param inputVariableMappings
-     * @param outputVariableMappings
-     */
-    default void configure(
-            Long producerId,
-            String jobId,
-            Map<String, Object> options,
-            IODescriptor[] inputs,
-            IODescriptor[] outputs,
-            Map<String, VariableKey> inputVariableMappings,
-            Map<String, String> outputVariableMappings) {
-        configure(producerId, jobId, options, inputs, outputs, inputVariableMappings, outputVariableMappings, null);
-    }
+    IODescriptor[] getInputs();
+    IODescriptor[] getOutputs();
 
     /**
      * Perform the processing. Each implementation will expect a defined set of
@@ -98,5 +99,9 @@ public interface Step {
     String getStatusMessage();
 
     Map<String, Integer> getUsageStats();
+
+    Map<String, VariableKey> getInputVariableMappings();
+
+    Map<String, String> getOutputVariableMappings();
 
 }

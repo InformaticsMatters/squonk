@@ -23,38 +23,45 @@ import spock.lang.Specification
 /**
  * Created by timbo on 15/06/17.
  */
-class FileSetHandlerSpec extends Specification {
+class ZipFileHandlerSpec extends Specification {
 
-    static def msg1 = "hello world!"
+    static String tmpdir = System.getProperty("java.io.tmpdir")
 
     void "test write variable"() {
 
-        def h = new FileSetHandler()
-        def fileset1 = new FileSet()
-        def file1 = fileset1.addFile("file1", "file1.txt", msg1.bytes)
+        def h = new ZipFileHandler()
+        def fis = new FileInputStream("../../data/testfiles/test.zip")
+        def zip1 = new ZipFile(fis)
         def ctx = new DummyContext()
 
         when:
-        h.writeVariable(fileset1, ctx)
-        def json = new String(ctx.bytes)
+        h.writeVariable(zip1, ctx)
 
         then:
-        JsonHandler.getInstance().objectFromJson(json, FileSet.class) != null
+        ctx.bytes.length > 0
+
+        cleanup:
+        fis?.close()
     }
 
     void "test read variable"() {
 
-        def h = new FileSetHandler()
-        def fileset1 = new FileSet()
-        fileset1.addFile("file1", "file1.txt", msg1.bytes)
-        def json = JsonHandler.instance.objectToBytes(fileset1)
-        def ctx = new DummyContext(bytes: json)
+        def h = new ZipFileHandler()
+        def f = new java.io.File("../../data/testfiles/test.zip")
+        def ctx = new DummyContext(bytes: f.bytes)
 
         when:
-        FileSet fileset2 = h.readVariable(ctx)
+        ZipFile zip1 = h.readVariable(ctx)
+        java.io.File zf = new java.io.File(tmpdir, "foo" + new Random().nextInt() + ".zip")
+        zf.bytes = zip1.inputStream.bytes
+        java.util.zip.ZipFile zip = new java.util.zip.ZipFile(zf)
 
         then:
-        fileset2 != null
+        zip1 != null
+        zip.size() == 2
+
+        cleanup:
+        zf?.delete()
     }
 
     class DummyContext implements VariableHandler.WriteContext, VariableHandler.ReadContext{

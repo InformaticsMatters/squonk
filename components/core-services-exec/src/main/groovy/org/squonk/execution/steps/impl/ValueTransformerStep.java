@@ -16,7 +16,7 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.camel.processor.ValueTransformerProcessor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
@@ -31,7 +31,7 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class ValueTransformerStep extends AbstractStep {
+public class ValueTransformerStep extends AbstractStandardStep {
 
     private static final Logger LOG = Logger.getLogger(ValueTransformerStep.class.getName());
 

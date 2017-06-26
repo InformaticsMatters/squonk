@@ -90,8 +90,6 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
 
         step.configure(producer, "job1",
                 null,
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 ["input": new VariableKey(producer, "input")],
                 [:],
                 sd
@@ -135,8 +133,6 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
         MoleculeServiceThinExecutorStep step1 = new MoleculeServiceThinExecutorStep()
         step1.configure(producer, "job1",
                 null,
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 ["input": new VariableKey(producer, "input")],
                 ["output": "_tmp1"],
                 sd1
@@ -150,8 +146,6 @@ class MoleculeServiceThinExecutorStepSpec extends Specification {
         MoleculeServiceThinExecutorStep step2 = new MoleculeServiceThinExecutorStep()
         step2.configure(producer, "job1",
                 null,
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 ["input": new VariableKey(producer, "_tmp1")],
                 ["output": "Output"],
                 sd2

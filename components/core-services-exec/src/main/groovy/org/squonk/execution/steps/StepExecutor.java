@@ -19,6 +19,7 @@ package org.squonk.execution.steps;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.execution.steps.impl.DefaultStepConverterStrategy;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptor;
 import org.squonk.jobdef.StepsCellExecutorJobDefinition;
@@ -43,6 +44,8 @@ public class StepExecutor {
     private final StepsCellExecutorJobDefinition jobdef;
     private final String jobId;
     private final String statsRoute;
+    protected List<Step> definedSteps;
+    protected List<Step> actualSteps;
     private volatile Step currentStep;
 
     public StepExecutor(Long producer, String jobid, StepsCellExecutorJobDefinition jobdef, VariableManager varman) {
@@ -55,64 +58,57 @@ public class StepExecutor {
         this.jobId = jobid;
         this.varman = varman;
         this.statsRoute = statsRoute;
+        LOG.info("Created StepExecutor for job " + jobId + " for cell " + producer + " handling "
+                + IOUtils.joinArray(jobdef.getInputs(), ",") + " -> " + IOUtils.joinArray(jobdef.getOutputs(), ","));
     }
 
-    public void execute(StepDefinition[] defs, CamelContext context) throws Exception {
-        Step[] steps = new Step[defs.length];
+    public void execute(CamelContext context) throws Exception {
+        execute(jobdef.getSteps(), context);
+    }
 
-        // TODO - handle conversions
-        for (int i = 0; i < defs.length; i++) {
-            StepDefinition def = defs[i];
-            Class cls = Class.forName(def.getImplementationClass());
-            Step step = (Step) cls.newInstance();
-//
-//            IODescriptor[] inputs;
-//            if (i == 0) {
-//                // first step so use the input of the job (the data to be processed)
-//                inputs = jobdef.getInputs();
-//            } else {
-//                // subsequent step so use the output of the previous step
-//                ServiceDescriptor sd = defs[i - 1].getServiceDescriptor();
-//                if (sd != null) {
-//                    inputs = sd.getServiceConfig().getOutputDescriptors();
-//                } else {
-//                    inputs = null;
-//                }
-//            }
-//            LOG.info("Step " + i + " inputs: " + IOUtils.joinArray(inputs, ","));
-//
-//            IODescriptor[] outputs;
-//            if (i == (defs.length - 1)) {
-//                // last step so we need to ask for the output type the job wants
-//                outputs = jobdef.getOutputs();
-//            } else {
-//                // an earlier step so we need the input of the next step
-//                ServiceDescriptor d = defs[i + 1].getServiceDescriptor();
-//                if (d != null) {
-//                    outputs = d.getServiceConfig().getOutputDescriptors();
-//                } else {
-//                    outputs = null;
-//                }
-//            }
-//            LOG.info("Step " + i + " outputs: " + IOUtils.joinArray(outputs, ","));
+    @Deprecated
+    public void execute(StepDefinition[] stepDefs, CamelContext context) throws Exception {
 
-            step.configure(producer, jobId, def.getOptions(), def.getInputs(), def.getOutputs(), def.getInputVariableMappings(), def.getOutputVariableMappings(), def.getServiceDescriptor());
-            steps[i] = step;
+
+        definedSteps = new ArrayList<>();
+        actualSteps = new ArrayList<>();
+
+        if (stepDefs == null || stepDefs.length == 0) {
+            throw new IllegalStateException("No step definitions present");
         }
-        execute(steps, context);
-    }
 
-//    private Step[] addConverterSteps(Step[] steps) {
-//        List<Step> result = new ArrayList<>();
-//        Step previous = null;
-//        for (Step current : steps) {
-//            if (previous != null) {
-//                if (previous instanceof TypedProcessor)
-//            }
-//            previous = current;
-//        }
-//        return steps;
-//    }
+        for (int i = 0; i < stepDefs.length; i++) {
+            StepDefinition stepDef = stepDefs[i];
+            Class cls = Class.forName(stepDef.getImplementationClass());
+            Step step = (Step) cls.newInstance();
+
+            ServiceDescriptor sd = stepDef.getServiceDescriptor();
+            if (sd != null) {
+                // we defer to the ServiceDescriptor for the IODescriptors
+                LOG.info("====== Configuring step with Input IODescriptors: " + IOUtils.joinArray(sd.resolveInputIODescriptors(),","));
+                LOG.info("====== Configuring step with Output IODescriptors: " + IOUtils.joinArray(sd.resolveOutputIODescriptors(),","));
+                step.configure(
+                        producer, jobId, stepDef.getOptions(),
+                        stepDef.getInputVariableMappings(), stepDef.getOutputVariableMappings(),
+                        sd);
+            } else {
+                // no ServiceDescriptor so we use what is defined by the step definition
+                IODescriptor[] inputDescriptors = stepDef.getInputs();
+                IODescriptor[] outputDescriptors = stepDef.getOutputs();
+                step.configure(
+                        producer, jobId, stepDef.getOptions(),
+                        inputDescriptors, outputDescriptors,
+                        stepDef.getInputVariableMappings(), stepDef.getOutputVariableMappings());
+            }
+
+            definedSteps.add(step);
+        }
+
+        StepConverterStrategy converterStrategy = new DefaultStepConverterStrategy(context);
+        actualSteps = converterStrategy.addConverterSteps(producer, jobId, jobdef.getInputs(), definedSteps, jobdef.getOutputs());
+
+        execute(actualSteps.toArray(new Step[actualSteps.size()]), context);
+    }
 
     public void execute(Step[] steps, CamelContext context) throws Exception {
 
@@ -121,7 +117,6 @@ public class StepExecutor {
             b.append(step.toString()).append("\n");
         }
         LOG.info(b.toString());
-
 
         List<Map<String, Integer>> statsList = new ArrayList<>();
         for (Step step : steps) {
@@ -148,5 +143,4 @@ public class StepExecutor {
         }
         return null;
     }
-
 }

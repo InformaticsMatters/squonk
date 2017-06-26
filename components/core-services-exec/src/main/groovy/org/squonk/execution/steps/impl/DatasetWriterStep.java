@@ -16,12 +16,11 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.squonk.execution.steps.AbstractStep;
+import org.apache.camel.CamelContext;
+import org.squonk.dataset.Dataset;
+import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
-import org.squonk.dataset.Dataset;
-import org.squonk.dataset.DatasetProvider;
-import org.apache.camel.CamelContext;
 
 /** Reads a dataset and writes it. The only real purpose of this is to take a temporary
  * dataset (PersistenceType.NONE) and make it persistent (PersistenceType.DATASET).
@@ -29,7 +28,7 @@ import org.apache.camel.CamelContext;
  *
  * @author timbo
  */
-public class DatasetWriterStep extends AbstractStep {
+public class DatasetWriterStep extends AbstractStandardStep {
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;

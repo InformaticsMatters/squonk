@@ -64,14 +64,14 @@ public class TypeResolver implements MimeTypeResolver {
         registerMimeType(MIME_TYPE_PDB, PDBFile.class);
         registerMimeType(MIME_TYPE_TRIPOS_MOL2, Mol2File.class);
         registerMimeType(MIME_TYPE_CPSIGN_TRAIN_RESULT, CPSignTrainResult.class);
-        registerMimeType(MIME_TYPE_FILE_SET, FileSet.class);
+        registerMimeType(MIME_TYPE_ZIP_FILE, ZipFile.class);
 
         registerHttpHandler(Dataset.class, DatasetHandler.class);
         registerHttpHandler(SDFile.class, SDFileHandler.class);
         registerHttpHandler(PDBFile.class, PDBFileHandler.class);
         registerHttpHandler(Mol2File.class, Mol2FileHandler.class);
         registerHttpHandler(CPSignTrainResult.class, CPSignTrainResultHandler.class);
-        registerHttpHandler(FileSet.class, FileSetHandler.class);
+        registerHttpHandler(ZipFile.class, ZipFileHandler.class);
 
         registerVariableHandler(Dataset.class, DatasetHandler.class);
         registerVariableHandler(InputStream.class, InputStreamHandler.class);
@@ -80,7 +80,7 @@ public class TypeResolver implements MimeTypeResolver {
         registerVariableHandler(SDFile.class, SDFileHandler.class);
         registerVariableHandler(PDBFile.class, PDBFileHandler.class);
         registerVariableHandler(Mol2File.class, Mol2FileHandler.class);
-        registerVariableHandler(FileSet.class, FileSetHandler.class);
+        registerVariableHandler(ZipFile.class, ZipFileHandler.class);
     }
 
     private void registerMimeType(String mimeType, Class primaryType) {
