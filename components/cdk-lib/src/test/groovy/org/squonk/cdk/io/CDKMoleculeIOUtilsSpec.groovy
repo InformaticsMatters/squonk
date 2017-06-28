@@ -420,24 +420,27 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         sigs.size() == 756
     }
 
-//    void "title line"() {
-//
-//        IChemObjectBuilder bldr = SilentChemObjectBuilder.getInstance()
-//        SmilesParser parser = new SmilesParser(bldr)
-//        IAtomContainer mol1 = parser.parseSmiles("CCO")
-//        IAtomContainer mol2 = parser.parseSmiles("CCO ethanol")
-//
-//        when:
-//        SDFWriter sdf = new SDFWriter(System.out)
-//        sdf.write(mol1)
-//        sdf.write(mol2)
-//
-//        then:
-//        1 == 1
-//
-//        cleanup:
-//        sdf?.close()
-//    }
+    /** Tests that CDK has not regressed wrt handling the title line
+     *
+     */
+    void "title line"() {
+
+        SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance())
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        SDFWriter sdf = new SDFWriter(out)
+        sdf.write(parser.parseSmiles(smiles))
+        sdf.close()
+        def txt = new String(out.toByteArray())
+
+        expect:
+        txt.contains("ethanol") == result
+        txt.contains("cdk:Title") == false
+
+        where:
+        smiles        | result
+        "CCO"         | false
+        "CCO ethanol" | true
+    }
 
 }
 
