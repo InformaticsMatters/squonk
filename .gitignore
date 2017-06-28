@@ -32,7 +32,7 @@ docker/deploy/images/yyy.json
 
 docker/deploy/images/squonk-realm.json
 docker/deploy/data/docker-services/pipelines
-
+docker/deploy/data/xwiki/
 docker/deploy/images/xwiki/hibernate.cfg.xml
 docker/deploy/images/xwiki/server.xml
 
