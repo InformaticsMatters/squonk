@@ -17,6 +17,7 @@
 package org.squonk.services.cell;
 
 import org.squonk.core.client.JobStatusRestClient;
+import org.squonk.execution.steps.Step;
 import org.squonk.jobdef.JobStatus;
 import org.squonk.jobdef.StepsCellExecutorJobDefinition;
 import org.apache.camel.CamelContext;
@@ -33,6 +34,7 @@ import org.squonk.util.StatsRecorder;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -149,8 +151,17 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
         // and execute
         try {
             LOG.info("Executing job " + jobid + " for user " + username);
-            executor.execute(steps, camelContext);
-            String statusMessage = executor.getCurrentStatus();
+            executor.execute(camelContext);
+            List<Step> definedSteps = executor.getDefinedSteps();
+            String statusMessage = null;
+            if (definedSteps != null && !definedSteps.isEmpty()) {
+                Step s = definedSteps.get(definedSteps.size() - 1);
+                if (s != null) {
+                    statusMessage = s.getStatusMessage();
+                }
+            } else {
+                statusMessage = executor.getCurrentStatus();
+            }
             LOG.info("Job " + jobid + " complete. Updating status");
             jobstatusClient.updateStatus(jobid, JobStatus.Status.COMPLETED, statusMessage);
             LOG.info("Status updated to COMPLETED");

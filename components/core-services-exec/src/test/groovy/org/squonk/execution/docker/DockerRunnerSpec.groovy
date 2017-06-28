@@ -37,10 +37,12 @@ import java.util.concurrent.TimeUnit
  */
 class DockerRunnerSpec extends Specification {
 
+    def hostBaseWorkDir = null
+
     void "clean workdir"() {
 
         setup:
-        DockerRunner runner = new DockerRunner("busybox", null, "/source")
+        DockerRunner runner = new DockerRunner("busybox", hostBaseWorkDir, "/source")
         runner.init()
 
         when:
@@ -53,7 +55,7 @@ class DockerRunnerSpec extends Specification {
     void "simple execute"() {
 
         setup:
-        DockerRunner runner = new DockerRunner("busybox", null, "/source")
+        DockerRunner runner = new DockerRunner("busybox", hostBaseWorkDir, "/source")
         runner.init()
 
         when:

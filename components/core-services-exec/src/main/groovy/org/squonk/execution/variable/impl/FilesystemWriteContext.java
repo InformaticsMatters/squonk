@@ -34,12 +34,13 @@ public class FilesystemWriteContext extends AbstractFilesystemContext implements
 
     public FilesystemWriteContext(File dir, String baseName) {
         super(dir, baseName);
+        LOG.fine("Dir: " + dir + " BaseName: " + baseName);
     }
 
     @Override
     public void writeTextValue(String value, String key) throws IOException {
-        LOG.info("Writing text to file using key " + key);
         File f = generateFile(key);
+        LOG.info("Writing text to file " + f.getPath());
         try (FileWriter out = new FileWriter(f)) {
             out.append(value);
         }
@@ -47,9 +48,8 @@ public class FilesystemWriteContext extends AbstractFilesystemContext implements
 
     @Override
     public void writeStreamValue(InputStream value, String key) throws Exception {
-        LOG.info("Writing stream to file using key " + key);
         File f = generateFile(key);
-        LOG.info("File name: " + f.getName());
+        LOG.info("Writing stream to file " + f.getPath());
         boolean gzip = key != null && key.toLowerCase().endsWith(".gz");
         try (OutputStream out = new FileOutputStream(f)) {
             IOUtils.transfer(gzip ? IOUtils.getGzippedInputStream(value) : IOUtils.getGunzippedInputStream(value), out, 4096);

@@ -33,6 +33,7 @@ import org.squonk.util.IOUtils;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.io.File;
 
 
 /**
@@ -185,10 +186,8 @@ public class DefaultDockerExecutorStep extends AbstractServiceStep {
 
     protected <P,Q> void handleInput(CamelContext camelContext, DockerServiceDescriptor serviceDescriptor, VariableManager varman, DockerRunner runner, IODescriptor<P,Q> ioDescriptor) throws Exception {
         P value = fetchMappedInput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), varman, true);
-
-        // TODO - HANDLE CONVERSIONS
-
-        FilesystemWriteContext writeContext = new FilesystemWriteContext(runner.getHostWorkDir(), ioDescriptor.getName());
+        File dir = runner.getHostWorkDir();
+        FilesystemWriteContext writeContext = new FilesystemWriteContext(dir, ioDescriptor.getName());
         varman.putValue(ioDescriptor.getPrimaryType(), value, writeContext);
     }
 

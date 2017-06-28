@@ -143,4 +143,12 @@ public class StepExecutor {
         }
         return null;
     }
+
+    public List<Step> getDefinedSteps() {
+        return definedSteps;
+    }
+
+    public List<Step> getActualSteps() {
+        return actualSteps;
+    }
 }
