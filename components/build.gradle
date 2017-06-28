@@ -1,4 +1,4 @@
-description = 'LAC tools for life sciences'
+description = 'Squonk tools for life sciences'
 
 apply plugin: 'com.bmuschko.docker-remote-api'
 
@@ -96,6 +96,8 @@ subprojects {
         }
     }
 }
+
+def hasChemAxonLicense = file('../data/licenses/license.cxl').exists()
 
 task wrapper(type: Wrapper) {
     gradleVersion = '3.2.1'
