@@ -90,9 +90,20 @@ chmod +x /usr/local/bin/docker-compose
 curl -L https://raw.githubusercontent.com/docker/compose/$(docker-compose version --short)/contrib/completion/bash/docker-compose > /etc/bash_completion.d/docker-compose
 
 
+TODO Items
+==========
+
+XWiki
+-----
+
+1. Provide mechanism for custom values for xwiki.authentication.validationKey adn xwiki.authentication.encryptionKey in xwiki.cfg.
+2. Examine other aspects of xwiki.cfg that might need attention.
+3. Upgrade XWIki to latest version. Particular attention to migrating existing content and keycloak security authentication. 
 
 
+Keycloak
+--------
 
-
+1. Provide mechanism for generating custom secrets and keys, and applying to xwiki and portal containers.
 
 

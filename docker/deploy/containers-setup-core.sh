@@ -25,14 +25,10 @@ echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 
 # substitute the realm json file need by keycloak
 sed "s/__public_host__/${PUBLIC_HOST}/g" images/squonk-realm.json.template > images/squonk-realm.json
-# set up the proxy details in the tomcat apps 
-sed "s/__public_host__/${PUBLIC_HOST}/g" images/xwiki/server.xml.template > images/xwiki/server.xml
-# setup xwiki connection to postgres
-sed "s/__postgres_xwiki_password__/${POSTGRES_XWIKI_PASS}/g" images/xwiki/hibernate.cfg.xml.template > images/xwiki/hibernate.cfg.xml
 # setup nginx
 sed "s/__public_host__/${PUBLIC_HOST}/g" images/nginx/default.conf.template > images/nginx/default.conf
 
-images="rabbitmq postgres keycloak xwiki"
+images="rabbitmq postgres keycloak"
 
 docker-compose stop && docker-compose rm -f $images && docker-compose build $images || exit 1
 

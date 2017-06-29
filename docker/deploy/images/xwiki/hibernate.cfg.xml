@@ -81,7 +81,7 @@
 
     <property name="connection.url">jdbc:postgresql://postgres:5432/xwiki</property>
     <property name="connection.username">xwiki</property>
-    <property name="connection.password">__postgres_xwiki_password__</property>
+    <property name="connection.password">${org.squonk.postgres.xwiki.password}</property>
 
     <property name="connection.driver_class">org.postgresql.Driver</property>
     <property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property>

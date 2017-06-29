@@ -97,6 +97,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             LOG.warning("Environment variable SQUONK_BASIC_CHEM_SERVICES_URL not defined. Basic Chem services will not be available");
         }
 
+        LOG.info("Docker services will be looked for in " + DOCKER_SERVICES_DIR);
     }
 
     public static final HttpServiceDescriptor[] TEST_SERVICE_DESCRIPTORS = new HttpServiceDescriptor[]{

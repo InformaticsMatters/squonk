@@ -13,10 +13,6 @@ RUN curl -L \
  'https://jdbc.postgresql.org/download/postgresql-9.4.1208.jar' \
  -o 'webapps/xwiki/WEB-INF/lib/postgresql-9.4.1208.jar'
 
-#RUN curl -L\
-# 'http://central.maven.org/maven2/org/hsqldb/hsqldb/2.3.3/hsqldb-2.3.3.jar' \
-# -o 'webapps/xwiki/WEB-INF/lib/hsqldb-2.3.3.jar'
-
 COPY xwiki/setenv.sh bin/
 COPY xwiki/catalina.policy.append catalina.policy.append
 
@@ -28,7 +24,7 @@ RUN cat catalina.policy.append >> conf/catalina.policy &&\
 COPY ./keycloak-jars-tomcat8/* /usr/local/tomcat/lib/
 # these two are provided by the Keycloak adapter in /usr/local/tomcat/lib
 #RUN rm /usr/local/tomcat/webapps/xwiki/WEB-INF/lib/bcpix-jdk15on-* /usr/local/tomcat/webapps/xwiki/WEB-INF/lib/bcprov-jdk15on-*
-COPY xwiki/keycloak.json /usr/local/tomcat/webapps/xwiki/WEB-INF/
+
 COPY xwiki/context.xml /usr/local/tomcat/webapps/xwiki/META-INF/
 COPY xwiki/web.xml /usr/local/tomcat/webapps/xwiki/WEB-INF/
 COPY xwiki/xwiki.cfg /usr/local/tomcat/webapps/xwiki/WEB-INF/

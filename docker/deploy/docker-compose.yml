@@ -242,17 +242,18 @@ services:
     ################# xwiki container ###################################################
     # available on http://${PUBLIC_HOST}/xwiki
     xwiki:
-        build: 
-            context: images/
-            dockerfile: Dockerfile-xwiki
+        image: squonk/xwiki
         restart: on-failure:10
         volumes:
         - ./data/xwiki:/var/local/xwiki
+        - ./images/xwiki/keycloak.json:/usr/local/tomcat/webapps/xwiki/WEB-INF/keycloak.json
         depends_on:
         - keycloak
         - postgres
         environment:
+        - PUBLIC_HOST
         - KEYCLOAK_SERVER_URL
+        - POSTGRES_XWIKI_PASS
         networks:
         - squonk_front
         - squonk_back
@@ -261,7 +262,7 @@ services:
     # create a SSL cert/key using:
     # openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/cert.key -out images/nginx/cert.crt
     nginx:
-        image: nginx
+        image: nginx:1.13
         restart: on-failure:10
         ports:
         - 80:80
