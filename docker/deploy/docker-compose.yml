@@ -102,13 +102,13 @@ services:
     ################# keycloak container ###############################################
     # available on http://${PUBLIC_HOST}/auth
     keycloak:
-        build: 
-            context: images/
-            dockerfile: Dockerfile-keycloak
+        image: jboss/keycloak-postgres:2.1.0.Final
         restart: on-failure:10
         depends_on:
             postgres:
                 condition: service_healthy
+        expose: 
+        - "8443"
         environment:
             POSTGRES_DATABASE: keycloak
             POSTGRES_USER: keycloak

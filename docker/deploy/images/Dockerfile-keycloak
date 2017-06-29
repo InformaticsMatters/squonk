@@ -1,6 +1,0 @@
-FROM jboss/keycloak-postgres:2.1.0.Final
-MAINTAINER Tim Dudgeon <tdudgeon@informaticsmatters.com>
-
-EXPOSE 8443
-
-

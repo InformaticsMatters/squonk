@@ -6,6 +6,7 @@ cd ../../components/
 ./gradlew clean
 
 cd $base
+./images-build-core.sh
 ./images-build-portal.sh
 ./images-build-services.sh
 

@@ -16,9 +16,17 @@ export POSTGRES_KEYCLOAK_PASS=$POSTGRES_PASSWORD
 export POSTGRES_SQUONK_PASS=squonk
 export POSTGRES_XWIKI_PASS=squonk
 
+# The interval (in ms) that Docker service descriptors are relaoded by the coreservices module
+# export SQUONK_SERVICE_DISCOVERY_INTERVAL=900000
+
+# The directory that Squonk uses for Docker service execution. Needs to be under /tmp/work
+export SQUONK_DOCKER_WORK_DIR=/tmp/work/squonk
+
+# Set to 2 to retain data in $SQUONK_DOCKER_WORK_DIR for debugging purposes
+# export SQUONK_DEBUG_MODE=0
+
 # generally no need to change these
 export PUBLIC_HOST_URL=https://${PUBLIC_HOST}
 export KEYCLOAK_SERVER_URL=${PUBLIC_HOST_URL}/auth
 export SQUONK_DOCKER_SERVICES_DIR=${PWD}/data/docker-services
 
-export SECRET_KEY=b8ff56a18ee8ce3500d59c083691499aba8f227dddff57c972e1f49a9eff396cc0c83bfa42a78c3cce9f379ef64e9d3c9957572d3af0fe1f432437ce3a1deb5c

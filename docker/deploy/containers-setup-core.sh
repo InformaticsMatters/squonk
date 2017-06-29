@@ -23,18 +23,14 @@ fi
 
 echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 
-# substitute the realm json file need by keycloak
-sed "s/__public_host__/${PUBLIC_HOST}/g" images/squonk-realm.json.template > images/squonk-realm.json
+
 # setup nginx
 sed "s/__public_host__/${PUBLIC_HOST}/g" images/nginx/default.conf.template > images/nginx/default.conf
 
-images="rabbitmq postgres keycloak"
-
-docker-compose stop && docker-compose rm -f $images && docker-compose build $images || exit 1
 
 
 echo "preparing postgres docker image ..."
-docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d postgres rabbitmq stage1 || exit 1
+docker-compose stop && docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d postgres rabbitmq stage1 || exit 1
 
 # now we can start keycloak (needs postgres to be setup before it starts)
 docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d keycloak stage2 || exit 1
@@ -48,14 +44,17 @@ docker-compose stop rabbitmq
 keycloak_url="http://${PRIVATE_HOST}:8080/auth"
 echo "keycloak_url: $keycloak_url"
 
-
 token=$(curl -s -k -X POST "${keycloak_url}/realms/master/protocol/openid-connect/token" -H "Content-Type: application/x-www-form-urlencoded"\
  -d "username=admin" -d "password=${KEYCLOAK_PASSWORD:-squonk}" -d "grant_type=password" -d "client_id=admin-cli" \
  | jq -r '.access_token') || exit 1
 echo "token: $token"
 
+# substitute the realm json file need by keycloak
+sed "s/__public_host__/${PUBLIC_HOST}/g" images/squonk-realm.json.template > images/squonk-realm.json
+# and now create that realm in keycloak 
 curl -s -k -X POST -T images/squonk-realm.json "${keycloak_url}/admin/realms" -H "Authorization: Bearer $token" -H "Content-Type: application/json"  || exit 1
 echo "squonk realm added to keycloak"
 
 docker-compose stop
 echo finished
+
