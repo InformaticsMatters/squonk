@@ -48,7 +48,7 @@ services:
         healthcheck:
             test: docker-healthcheck.sh
             interval: 10s
-            timeout: 4s
+            timeout: 2s
             retries: 5
 
     ################# PostgreSQL container ############################################
@@ -141,7 +141,8 @@ services:
         image: squonk/chem-services-basic
         restart: on-failure:10
         environment:
-            POSTGRES_SQUONK_PASS:
+            SQUONK_DB_USER:
+            SQUONK_DB_PASS:
             RABBITMQ_SQUONK_PASS:
         volumes:
         - ./images/chemservices/chemaxon_reaction_library.zip:/chemaxon_reaction_library.zip:ro
@@ -176,7 +177,8 @@ services:
                 condition: service_healthy
         environment:
             RABBITMQ_SQUONK_PASS:
-            POSTGRES_SQUONK_PASS:
+            SQUONK_DB_USER:
+            SQUONK_DB_PASS:
             SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
             SQUONK_DOCKER_SERVICES_DIR: "/var/local/squonk-docker-services"
             SQUONK_DEBUG_MODE:
@@ -235,5 +237,46 @@ services:
                 condition: service_started
             coreservices:
                 condition: service_healthy
+
+        
+    ################# xwiki container ###################################################
+    # available on http://${PUBLIC_HOST}/xwiki
+    xwiki:
+        image: squonk/xwiki
+        restart: on-failure:10
+        volumes:
+        - ./data/xwiki:/var/local/xwiki
+        - ./images/xwiki/keycloak.json:/usr/local/tomcat/webapps/xwiki/WEB-INF/keycloak.json
+        depends_on:
+        - keycloak
+        - postgres
+        environment:
+        - PUBLIC_HOST
+        - KEYCLOAK_SERVER_URL
+        - POSTGRES_XWIKI_PASS
+        networks:
+        - squonk_front
+        - squonk_back
+        
+    ################# nginx container ###################################################
+    # create a SSL cert/key using:
+    # openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/cert.key -out images/nginx/cert.crt
+    nginx:
+        image: nginx:1.13
+        restart: on-failure:10
+        ports:
+        - 80:80
+        - 443:443
+        volumes:
+        - ./images/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+        - ./images/nginx/cert.crt:/etc/nginx/cert.crt:ro
+        - ./images/nginx/cert.key:/etc/nginx/cert.key:ro
+        - ./images/nginx/index.html:/usr/share/nginx/html/index.html:ro
+        - ./images/nginx/.well-known/:/usr/share/nginx/html/.well-known/:ro
+        - ./images/nginx/informaticsmatters.com.conf:/etc/nginx/conf.d/informaticsmatters.com.conf:ro
+        - ./images/nginx/sites/squonk.it/html/:/usr/share/nginx/html/squonk.it/html/:ro
+        - ./images/nginx/sites/informaticsmatters.com/html/:/usr/share/nginx/html/informaticsmatters.com/html/:ro
+        networks:
+        - squonk_front
 
 

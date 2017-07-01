@@ -25,8 +25,7 @@ echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 
 
 # setup nginx
-sed "s/__public_host__/${PUBLIC_HOST}/g" images/nginx/default.conf.template > images/nginx/default.conf
-
+sed "s/__public_host__/${PUBLIC_HOST}/g" images/nginx/default.ssl.conf.template > images/nginx/default.ssl.conf
 
 
 echo "preparing postgres docker image ..."
