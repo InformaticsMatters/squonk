@@ -35,6 +35,7 @@ docker/deploy/data/docker-services/pipelines
 docker/deploy/data/xwiki/
 
 docker/deploy/images/portal/server.xml
+docker/deploy/images/portal/persistence.properties
 
 docker/deploy/images/nginx/certs
 docker/deploy/images/nginx/default.ssl.conf

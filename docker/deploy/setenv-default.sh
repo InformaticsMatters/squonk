@@ -7,16 +7,15 @@
 export PUBLIC_HOST=172.17.0.1
 export PRIVATE_HOST=172.17.0.1
 export RABBITMQ_ERLANG_COOKIE=topsecret
-export RABBITMQ_DEFAULT_PASS=squonk
-export RABBITMQ_SQUONK_PASS=squonk
+export RABBITMQ_DEFAULT_PASSWORD=squonk
+export RABBITMQ_SQUONK_PASSWORD=squonk
 export KEYCLOAK_PASSWORD=squonk
 export POSTGRES_PASSWORD=squonk
-# currently this pasword is shared between the postgres admin and the postgres keycloak users :-(
-export POSTGRES_KEYCLOAK_PASS=$POSTGRES_PASSWORD
-export POSTGRES_SQUONK_PASS=squonk
-export POSTGRES_XWIKI_PASS=squonk
+export POSTGRES_KEYCLOAK_PASSWORD=squonk
+export POSTGRES_SQUONK_PASSWORD=squonk
+export POSTGRES_XWIKI_PASSWORD=squonk
 
-# The interval (in ms) that Docker service descriptors are relaoded by the coreservices module
+# The interval (in ms) that Docker service descriptors are reloaded by the coreservices module
 # export SQUONK_SERVICE_DISCOVERY_INTERVAL=900000
 
 # The directory that Squonk uses for Docker service execution. Needs to be under /tmp/work

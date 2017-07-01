@@ -51,25 +51,25 @@ server {
 		try_files $uri $uri/ =404;
 	}
 
-        location /auth/ {
-                proxy_pass	        http://keycloak:8080/auth/;
-                proxy_set_header        Host $host;
-                proxy_set_header        X-Real-IP $remote_addr;
-                proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header        X-Forwarded-Proto $scheme;
-	        proxy_redirect		off;
-	        proxy_connect_timeout   75s;
-        }
+	location /auth/ {
+		proxy_pass				http://keycloak:8080/auth/;
+		proxy_set_header		Host $host;
+		proxy_set_header		X-Real-IP $remote_addr;
+		proxy_set_header		X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header		X-Forwarded-Proto $scheme;
+		proxy_redirect			off;
+		proxy_connect_timeout	75s;
+	}
 
-        location /portal/ {
-	    proxy_pass	            http://portal:8080/portal/;
-            proxy_set_header        Host $host;
-            proxy_set_header        X-Real-IP $remote_addr;
-            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header        X-Forwarded-Proto $scheme;
-	    proxy_redirect          off;
-	    proxy_connect_timeout   75s;
-        }   
+	location /portal/ {
+		proxy_pass				http://portal:8080/portal/;
+		proxy_set_header		Host $host;
+		proxy_set_header		X-Real-IP $remote_addr;
+		proxy_set_header		X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header		X-Forwarded-Proto $scheme;
+		proxy_redirect			off;
+		proxy_connect_timeout	75s;
+	}   
 
 }
 
