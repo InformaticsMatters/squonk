@@ -109,9 +109,6 @@ services:
                 condition: service_healthy
         expose: 
         - "8443"
-        ports:
-        - "8080:8080"
-        - "8443:8443"
         environment:
             POSTGRES_PASSWORD: $POSTGRES_KEYCLOAK_PASSWORD
             KEYCLOAK_USER:
@@ -238,22 +235,4 @@ services:
                 condition: service_started
             coreservices:
                 condition: service_healthy
-
-    ################# nginx ##########################################################
-    # Acts as reverse proxy
-    # create self-signed SSL cert/key using:
-    # openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/certs/squonk/privkey.pem -out images/nginx/certs/squonk/fullchain.pem
-    nginx:
-        image: nginx:1.13
-        restart: on-failure:10
-        ports:
-        - 80:80
-        - 443:443
-        volumes:
-        - ./images/nginx/default.ssl.conf:/etc/nginx/conf.d/default.conf:ro
-        - ./images/nginx/certs/:/etc/nginx/certs/:ro
-        - ./images/nginx/index.html:/usr/share/nginx/html/index.html:ro
-        - ./images/nginx/sites/squonk.it/html/:/usr/share/nginx/html/squonk.it/html/:ro
-        networks:
-        - squonk_front
 

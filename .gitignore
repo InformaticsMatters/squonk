@@ -39,6 +39,7 @@ docker/deploy/images/portal/persistence.properties
 
 docker/deploy/images/nginx/certs
 docker/deploy/images/nginx/default.ssl.conf
+docker/deploy/images/nginx/default.site.conf
 docker/deploy/images/nginx/sites/squonk.it/html
 docker/deploy/images/nginx/sites/informaticsmatters.com/html
 

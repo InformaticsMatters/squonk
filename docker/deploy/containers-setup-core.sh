@@ -26,6 +26,10 @@ echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 
 # setup nginx
 sed "s/__public_host__/${PUBLIC_HOST}/g" images/nginx/default.ssl.conf.template > images/nginx/default.ssl.conf
+sed "s/#XWIKI_PLACEHOLDER#/include snippets\/xwiki.conf;/g" images/nginx/default.ssl.conf > images/nginx/default.site.conf
+
+
+#XWIKI_PLACEHOLDER
 
 
 echo "preparing postgres docker image ..."

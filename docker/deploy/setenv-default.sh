@@ -39,6 +39,14 @@ export SQUONK_DOCKER_WORK_DIR=/tmp/work/squonk
 # Set to 2 to retain data in $SQUONK_DOCKER_WORK_DIR for debugging purposes
 # export SQUONK_DEBUG_MODE=0
 
+# EITHER set the docker environment to basic site 
+export COMPOSE_FILE=docker-compose.yml:docker-compose-basic.yml
+# OR set the docker environment to full site with squonk site + wiki 
+#export COMPOSE_FILE=docker-compose.yml:docker-compose-site.yml
+
+# alias docker-compose to dc
+alias dc=docker-compose 
+
 # generally no need to change these
 export PUBLIC_HOST_URL=https://${PUBLIC_HOST}
 export KEYCLOAK_SERVER_URL=${PUBLIC_HOST_URL}/auth
