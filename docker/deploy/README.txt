@@ -7,7 +7,7 @@
 A full Squonk deployment is created from a number of Docker images.
 All images can be used directly from DockerHub. Some are standard Docker provided images, others need to be built
 and pushed to the DockerHub squonk area.
-The deployment is manages through the docker-compose.yml file (this will migrate to a Kubernetes/OpenShift deployment). 
+The deployment is managed through the docker-compose.yml file (this will migrate to a Kubernetes/OpenShift deployment). 
 
 The following Docker containers form a Squonk runtime environment
 
@@ -66,6 +66,7 @@ Authentication/Authorization is provides by the keycloak container.
 Container name: xwiki
 Image source: squonk/xwiki
 The provides the Wiki that contains the user documentation.
+It is optional and most sites will probably not run this and point to the one on squonk.it for the documentation. 
 Authentication/Authorization is provides by the keycloak container.
 
 9. NGinx
@@ -97,72 +98,9 @@ open source (it will be integrated into the open source informaticsmatters/squon
 ====================================================================================
 ====================================================================================
 
-Your host machine must have Java, Ant, Docker and Docker-compose installed.
+A full guide for setting up on a Ubuntu host, including setting up TLS can be found [here](ubunutu-setup.md).
 
-
-1. Pull Docker images
----------------------
-
-This uses images from Docker Hub that has been done by someone using step 1, though the squonk ones can be built 
-locally using step 1 above or the images-build-all.sh script.
-To pull the necessary images do this:
-
-./pull-docker-images.sh
-
-Note: this is necessary as the Docker images used for runtime execution of services currently MUST already be 
-pulled from the Docker repository and available locally on the Docker host.
-
-2. Define environment variables
--------------------------------
-
-You need to define a number of environment variables that contain information needed by the containers (passwords etc.).
-The easiest way to to create a setenv.sh script from the setenv-default.sh template and to edit accordingly. If you do not
-edit these you will be left with the default passwords that eny can find by looking at these files. The setenv.sh file is
-excluded from version control so is only visible to you.
-You must at least edit the PUBLIC_HOST and PRIVATE_HOST variables.
- 
-cp setenv-default.sh  setenv.sh    # create the file that defines the environment variables
-# edit setenv.sh as needed changing passwords and docker gateway address
-source setenv.sh                   # to set the environment variables
-
-
-3. Setup containers
--------------------
-
-Now, for the first time you must setup the core (non Squonk) containers e.g. postgres, keycloak, rabbitmq, xwiki
-
-./containers-setup-core.sh         # one-off setup and configuration of the core containers that only needs doing once
-
-Now setup the squonk related containers:
-
-./containers-setup-app.sh
-
-
-4. Start the containers
------------------------
-   
-./containers-run.sh               
-
-Monitor the containers:
-
-docker-compose ps
-
-Sometimes the nginx container fails to start as it has to wait too long for other services. If this happens manually start it:
-
-docker-compose start nginx
-
-
-5. Miscellaneous stuff
-----------------------
-
-All volatile data is contained in the data directory. This might grow quite large.
-To backup a Squonk instance you should back up this whole /docker/deploy directory including the /docker/deploy/data directory
-
-
-Depending on the size for the chemistry databases the PostgreSQL memory may need to be adjusted.
-See data/pgdata/postgresql.conf
-edit shared_buffers property and restart the postgres container
-TODO - describe how to generate these chemistry databases.
+Your host machine must have Java, Ant, jq, Docker and Docker-compose installed.
 
 
 ====================================================================================
@@ -174,10 +112,17 @@ TODO - describe how to generate these chemistry databases.
 If you make changes to the Squonk or Portal code you need to update the deployment.
 Note: the Portal code is not yet public.
 
-./images-build-services
-./imges-build-portal
+./images-build-all.sh
 ./containers-setup-app.sh
 ./containers-run.sh
+
+Alternatively if you are pulling from pre-built docker images do something like this:
+
+```sh
+./pull-docker-images.sh
+/containers-setup-app.sh
+./containers-run.sh
+```
 
 
 
@@ -187,26 +132,18 @@ Note: the Portal code is not yet public.
 ====================================================================================
 ====================================================================================
 
-To export the real squonk realm from Keykloak:
+All volatile data is contained in the data directory. This might grow quite large.
+To backup a Squonk instance you should back up this whole /docker/deploy directory including the /docker/deploy/data directory
 
+
+Depending on the size for the chemistry databases the PostgreSQL memory may need to be adjusted.
+See data/pgdata/postgresql.conf
+edit shared_buffers property and restart the postgres container
+TODO - describe how to generate these chemistry databases.
+
+To export the real squonk realm from Keykloak:
 (Note: this probably will not work - TODO - fix this)
 docker run -it --link deploy_postgres_1:postgres -e POSTGRES_DATABASE=keycloak -e POSTGRES_USER=keycloak -e POSTGRES_PASSWORD=squonk --rm -v $PWD:/tmp/json jboss/keycloak-postgres:2.1.0.Final -b 0.0.0.0 -Dkeycloak.migration.action=export -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=/tmp/json/squonk.json -Dkeycloak.migration.realmName=squonk
-
-
-To build a new EC2 environment:
-Image: 
-ubuntu/images/hvm-ssd/ubuntu-wily-15.10-amd64-server-20160204 - ami-6610390c
-ubuntu/images/hvm-ssd/ubuntu-wily-15.10-amd64-server-20160405 - ami-8b9087e1
-
-Ubuntu 15.10 image
-Install openjdk-8-jdk ant jq
-Install docker-engine (https://docs.docker.com/compose/install/)
-Install docker compose (https://docs.docker.com/compose/install/)
-
-pull the squonk and portal repos
-build as above (remember to create/edit setenv.sh)
-
-
 
 
 ====================================================================================

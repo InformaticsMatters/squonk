@@ -7,12 +7,27 @@
 export PUBLIC_HOST=172.17.0.1
 export PRIVATE_HOST=172.17.0.1
 export RABBITMQ_ERLANG_COOKIE=topsecret
+
+# password for the admin user of rabbitmq
 export RABBITMQ_DEFAULT_PASSWORD=squonk
+
+# password for the squonk user of rabbitmq
 export RABBITMQ_SQUONK_PASSWORD=squonk
+
+# username and password for the admin user of keycloak
+export KEYCLOAK_USER=admin
 export KEYCLOAK_PASSWORD=squonk
+
+# password for the admin user of postgres
 export POSTGRES_PASSWORD=squonk
+
+# password for the keycloak user in postgres
 export POSTGRES_KEYCLOAK_PASSWORD=squonk
+
+# password for the squonk user in postgres
 export POSTGRES_SQUONK_PASSWORD=squonk
+
+# password for the xwik user in postgres
 export POSTGRES_XWIKI_PASSWORD=squonk
 
 # The interval (in ms) that Docker service descriptors are reloaded by the coreservices module

@@ -109,8 +109,13 @@ services:
                 condition: service_healthy
         expose: 
         - "8443"
+        ports:
+        - "8080:8080"
+        - "8443:8443"
         environment:
             POSTGRES_PASSWORD: $POSTGRES_KEYCLOAK_PASSWORD
+            KEYCLOAK_USER:
+            KEYCLOAK_PASSWORD: 
         volumes:
         - ./images/keycloak/standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml:ro
         networks:
@@ -236,6 +241,8 @@ services:
 
     ################# nginx ##########################################################
     # Acts as reverse proxy
+    # create self-signed SSL cert/key using:
+    # openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/certs/squonk/privkey.pem -out images/nginx/certs/squonk/fullchain.pem
     nginx:
         image: nginx:1.13
         restart: on-failure:10

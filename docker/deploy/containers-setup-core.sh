@@ -44,7 +44,7 @@ keycloak_url="http://${PRIVATE_HOST}:8080/auth"
 echo "keycloak_url: $keycloak_url"
 
 token=$(curl -s -k -X POST "${keycloak_url}/realms/master/protocol/openid-connect/token" -H "Content-Type: application/x-www-form-urlencoded"\
- -d "username=admin" -d "password=${KEYCLOAK_PASSWORD:-squonk}" -d "grant_type=password" -d "client_id=admin-cli" \
+ -d "username=${KEYCLOAK_USER:-admin}" -d "password=${KEYCLOAK_PASSWORD:-squonk}" -d "grant_type=password" -d "client_id=admin-cli" \
  | jq -r '.access_token') || exit 1
 echo "token: $token"
 
