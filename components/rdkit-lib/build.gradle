@@ -21,7 +21,7 @@ String RDBASE = System.getenv('RDBASE')
 String RDKitJarFile = '/Code/JavaWrappers/gmwrapper/org.RDKit.jar'
 boolean RDKitJava = RDBASE && file(RDBASE + RDKitJarFile).exists()
 
-        buildscript {
+buildscript {
     repositories {
         jcenter()
     }

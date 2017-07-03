@@ -1,18 +1,18 @@
-#
-# Copyright (c) 2017 Informatics Matters Ltd.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+/*
+* Copyright (c) 2017 Informatics Matters Ltd.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 import org.squonk.util.IOUtils
 
@@ -45,12 +45,13 @@ emolecules {
     version='Apr 2016'
     fields=['1':Integer.class, '2':Integer.class]
     reportingChunk=10000
-    loadOnly=100000
+    loadOnly=0
 }
 
 drugbank {
-    // download drugbank from http://www.drugbank.ca/downloads and put in:
-    path='loaders/files/drugbank'
+    // NOTE: DrugBank is no longer free to use. Look at the licensing before using it.
+    // download DrugBank from http://www.drugbank.ca/downloads and put in:
+    path='../../data/testfiles'
     file='all.sdf.gz'
 
     table='drugbank_nov_2015'
@@ -66,11 +67,11 @@ drugbank {
 chembl {
     // download ChEMBL from ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/ and put in:
     path='../../data/testfiles'
-    file='chembl_21.sdf.gz'
+    file='chembl_23.sdf.gz'
 
-    table='chembl_21'
-    name='ChEMBL21'
-    version='21'
+    table='chembl_23'
+    name='ChEMBL23'
+    version='23'
     estSize = 1000000
 
     fields=[chembl_id:String.class]
@@ -85,10 +86,10 @@ pdbligand {
 
     table='pdb_ligand'
     name='PDB Ligands'
-    version='Apr 2016'
+    version='Jul 2017'
     estSize = 1000000
 
     fields=[pdb_code:String.class, ligand_code:String.class]
     reportingChunk=10000
-    loadOnly=100000
+    loadOnly=0
 }

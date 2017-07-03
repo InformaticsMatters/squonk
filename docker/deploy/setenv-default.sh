@@ -44,6 +44,12 @@ export COMPOSE_FILE=docker-compose.yml:docker-compose-basic.yml
 # OR set the docker environment to full site with squonk site + wiki 
 #export COMPOSE_FILE=docker-compose.yml:docker-compose-site.yml
 
+# The searchable structure databases that have been loaded.
+# Must be colon separated table names without any spaces
+# e.g. 
+# export STRUCTURE_DATABASE_TABLES="emolecules_order_sc:emolecules_order_bb:chembl_23:pdb_ligand"
+export STRUCTURE_DATABASE_TABLES=""
+
 # alias docker-compose to dc
 alias dc=docker-compose 
 

@@ -56,7 +56,7 @@ class LoaderUtils {
   port: ${database.port}
   database: ${database.database}
   user: $user
-  password: $password
+  password: ******
 """
         PGSimpleDataSource ds = new PGSimpleDataSource()
         ds.serverName = database.server

@@ -99,16 +99,16 @@ class RDKitTableLoader {
         dropTable(schemaTableName)
 
         String sql1 = 'SELECT * INTO ' + schemaTableName +
-                ' FROM (SELECT id,mol_from_' + rdkTable.molSourceType.toString().toLowerCase() + '(structure::cstring) m  FROM ' +
+                ' FROM (SELECT id,' + String.format(rdkTable.molSourceType.molFunction, 'structure::cstring') + ' m FROM ' +
                 baseSchemaPlusTable() + ') tmp where m IS NOT NULL'
         String sql2 = 'ALTER TABLE ' + schemaTableName + ' ADD PRIMARY KEY (id)'
         String sql3 = 'ALTER TABLE ' + schemaTableName + ' ADD CONSTRAINT fk_' + tableName + '_id FOREIGN KEY (id) REFERENCES ' + baseSchemaPlusTable() + ' (id)'
         String sql4 = 'CREATE INDEX idx_' + tableName + '_m ON ' + schemaTableName + ' USING gist(m)'
 
-        log.info "SQL: $sql1"
-        log.info "SQL: $sql2"
-        log.info "SQL: $sql3"
-        log.info "SQL: $sql4"
+        log.info "SQL1: $sql1"
+        log.info "SQL2: $sql2"
+        log.info "SQL3: $sql3"
+        log.info "SQL4: $sql4"
         executeSql { db ->
             db.execute(sql1)
             db.execute(sql2)
