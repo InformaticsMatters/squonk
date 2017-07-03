@@ -55,7 +55,7 @@ It partly follows a description found [here](https://www.digitalocean.com/commun
 Generate certificate. If your not already registered with Let's Encrypt then do this and you need to answer various questions:
 
 ```sh
-certbot certonly --stanadlone -d squonk.informaticsmatters.com
+certbot certonly --standalone -d squonk.informaticsmatters.com
 ```
 
 If you are already registered you can avoid this using:
@@ -104,7 +104,7 @@ cd git
 git clone https://github.com/InformaticsMatters/squonk.git
 git clone https://github.com/InformaticsMatters/pipelines.git
 cd pipelines
-./copy-dirs.sh
+./copy.dirs.sh
 cd ..
 ```
 
@@ -117,6 +117,7 @@ cd squonk/docker/deploy
 ### Copy the keys
 
 ```sh
+mkdir -p images/nginx/certs/squonk
 cp /etc/ssl/certs/dhparam.pem images/nginx/certs/squonk/
 sudo cp /etc/letsencrypt/live/squonk.informaticsmatters.com/fullchain.pem images/nginx/certs/squonk/
 sudo cp /etc/letsencrypt/live/squonk.informaticsmatters.com/privkey.pem images/nginx/certs/squonk/
