@@ -17,13 +17,21 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
+import org.squonk.core.DefaultServiceDescriptor;
+import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.execution.steps.AbstractServiceStep;
 import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.IODescriptors;
+import org.squonk.options.MultiLineTextTypeDescriptor;
+import org.squonk.options.OptionDescriptor;
 import org.squonk.types.BasicObject;
+import org.squonk.util.CommonMimeTypes;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -33,11 +41,31 @@ import java.util.stream.Stream;
 /**
  * Created by timbo on 29/12/15.
  */
-public class DatasetUUIDFilterStep extends AbstractStandardStep {
+public class DatasetUUIDFilterStep extends AbstractServiceStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetUUIDFilterStep.class.getName());
 
     public static final String OPTION_UUIDS = StepDefinitionConstants.DatasetUUIDFilter.OPTION_UUIDS;
+
+
+    public static final DefaultServiceDescriptor SERVICE_DESCRIPTOR = new DefaultServiceDescriptor("core.dataset.uuidfilter.v1", "DatasetUUIDFilter", "Filter a dataset for a set of UUIDs",
+            new String[]{"filter", "uuid", "dataset"},
+            null, "icons/filter.png",
+            ServiceConfig.Status.ACTIVE,
+            new Date(),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+            new OptionDescriptor[]{
+
+                    new OptionDescriptor<>(new MultiLineTextTypeDescriptor(10, 60, CommonMimeTypes.MIME_TYPE_TEXT_PLAIN),
+                            StepDefinitionConstants.DatasetUUIDFilter.OPTION_UUIDS,
+                            "UUIDs", "List of UUIDs", OptionDescriptor.Mode.User)
+                            .withMinMaxValues(1, 1)
+
+            },
+            null, null, null,
+            DatasetUUIDFilterStep.class.getName()
+    );
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {

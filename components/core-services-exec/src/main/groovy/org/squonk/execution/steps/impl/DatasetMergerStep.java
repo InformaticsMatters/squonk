@@ -16,10 +16,16 @@
 
 package org.squonk.execution.steps.impl;
 
+import org.squonk.core.DefaultServiceDescriptor;
+import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStandardStep;
+import org.squonk.execution.steps.AbstractServiceStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.IODescriptor;
+import org.squonk.io.IODescriptors;
+import org.squonk.options.DatasetsFieldOptionDescriptor;
+import org.squonk.options.OptionDescriptor;
 import org.squonk.types.BasicObject;
 import org.squonk.dataset.Dataset;
 
@@ -28,21 +34,52 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.apache.camel.CamelContext;
 import org.squonk.types.io.JsonHandler;
 
-/**  Merges multiple datasets that must be of the same type. Designed for combining multiple datasets into a single
+/**
+ * Merges multiple datasets that must be of the same type. Designed for combining multiple datasets into a single
  * dataset. New records are appended to the resulting dataset. Existing records have their data merged. How it is merged
  * is specified by the options.
  * Up to 5 datasets can be merged (we hope to make this more flexible in future).
- *
+ * <p>
  * This step is somewhat similar to the {@link DatasetEnricherStep}
  *
  * @author timbo
  */
-public class DatasetMergerStep extends AbstractStandardStep {
-    
+public class DatasetMergerStep extends AbstractServiceStep {
+
     private static final Logger LOG = Logger.getLogger(DatasetMergerStep.class.getName());
+
+    public static final DefaultServiceDescriptor SERVICE_DESCRIPTOR = new DefaultServiceDescriptor("core.dataset.merger.v1", "DatasetMerger", "Merge datasets into one",
+            new String[]{"merge", "dataset"},
+            null, "icons/merge.png",
+            ServiceConfig.Status.ACTIVE,
+            new Date(),
+            new IODescriptor[]{
+                    // this is done backwards as JSPlumb displays the endpoints in reverse order.
+                    IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 5),
+                    IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 4),
+                    IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 3),
+                    IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 2),
+                    IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 1)
+            },
+            // TODO - find a way to dynamically determine the output type based on the first bound input
+            // the consequence of not doing this is that the merger cell always reports its output as BasicObject
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+            new OptionDescriptor[]{
+
+                    new DatasetsFieldOptionDescriptor(StepDefinitionConstants.DatasetMerger.OPTION_MERGE_FIELD_NAME,
+                            "Merge field name", "Name of value field which identifies equivalent entries"),
+
+                    new OptionDescriptor<>(Boolean.class, StepDefinitionConstants.DatasetMerger.OPTION_KEEP_FIRST, "When duplicate keep first",
+                            "When duplicate field name use the existing value rather than the new one", OptionDescriptor.Mode.User)
+                            .withDefaultValue(true)
+            },
+            null, null, null,
+            DatasetMergerStep.class.getName()
+    );
 
     public static final String OPTION_MERGE_FIELD_NAME = StepDefinitionConstants.DatasetMerger.OPTION_MERGE_FIELD_NAME;
     public static final String OPTION_KEEP_FIRST = StepDefinitionConstants.DatasetMerger.OPTION_KEEP_FIRST;
@@ -58,12 +95,14 @@ public class DatasetMergerStep extends AbstractStandardStep {
 
     private static final String SOURCE = "Squonk DatasetMergerStep";
 
+
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         String mergeField = getOption(OPTION_MERGE_FIELD_NAME, String.class);
         boolean keepFirst = getOption(OPTION_KEEP_FIRST, Boolean.class, true);
-        
+
         LOG.log(Level.INFO, "Merging using field {0}, keep first value={1}", new Object[]{mergeField, keepFirst});
+        statusMessage = "Merging using field " + mergeField;
 
         Map<Object, BasicObject> results = new LinkedHashMap<>();
         DatasetMetadata<? extends BasicObject> meta = null;
@@ -131,7 +170,7 @@ public class DatasetMergerStep extends AbstractStandardStep {
         }
 
         meta.getProperties().put(DatasetMetadata.PROP_DESCRIPTION, "Merged from " + count + " datasets using field " + mergeField
-        + ". Sources were: " + sources.stream().collect(Collectors.joining(", ")));
+                + ". Sources were: " + sources.stream().collect(Collectors.joining(", ")));
 
         if (type != null) {
             Dataset output = new Dataset(results.values(), meta);

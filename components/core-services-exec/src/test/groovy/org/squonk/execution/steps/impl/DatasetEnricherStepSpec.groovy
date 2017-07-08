@@ -94,12 +94,10 @@ class DatasetEnricherStepSpec extends Specification {
 
         DatasetEnricherStep step = new DatasetEnricherStep()
         step.configure(producer, "job1", [(DatasetEnricherStep.OPT_MAIN_FIELD): 'id', (DatasetEnricherStep.OPT_EXTRA_FIELD): 'id'],
-                [IODescriptors.createBasicObjectDataset(DatasetEnricherStep.VAR_INPUT),
-                 IODescriptors.createBasicObjectDataset(DatasetEnricherStep.VAR_NEW_DATA)] as IODescriptor[],
-                [IODescriptors.createBasicObjectDataset(DatasetEnricherStep.VAR_OUTPUT)] as IODescriptor[],
                 [(DatasetEnricherStep.VAR_INPUT)   : new VariableKey(producer, "input1"),
                  (DatasetEnricherStep.VAR_NEW_DATA): new VariableKey(producer, "input2")],
-                [:])
+                [:],
+                DatasetEnricherStep.SERVICE_DESCRIPTOR)
 
         when:
         step.execute(varman, context)
@@ -135,12 +133,10 @@ class DatasetEnricherStepSpec extends Specification {
 
         DatasetEnricherStep step = new DatasetEnricherStep()
         step.configure(producer, "job1", null,
-                [IODescriptors.createBasicObjectDataset(DatasetEnricherStep.VAR_INPUT),
-                 IODescriptors.createBasicObjectDataset(DatasetEnricherStep.VAR_NEW_DATA)] as IODescriptor[],
-                [IODescriptors.createBasicObjectDataset(DatasetEnricherStep.VAR_OUTPUT)] as IODescriptor[],
                 [(DatasetEnricherStep.VAR_INPUT)   : new VariableKey(producer, "input1"),
                  (DatasetEnricherStep.VAR_NEW_DATA): new VariableKey(producer, "input2")],
-                [:])
+                [:],
+                DatasetEnricherStep.SERVICE_DESCRIPTOR)
 
         when:
         step.execute(varman, context)
@@ -198,12 +194,10 @@ class DatasetEnricherStepSpec extends Specification {
 
         DatasetEnricherStep step = new DatasetEnricherStep()
         step.configure(producer, "job1", [(DatasetEnricherStep.OPT_MAIN_FIELD): 'id', (DatasetEnricherStep.OPT_EXTRA_FIELD): 'id', (DatasetEnricherStep.OPT_MERGE_MODE): "both"],
-                [IODescriptors.createMoleculeObjectDataset(DatasetEnricherStep.VAR_INPUT),
-                 IODescriptors.createMoleculeObjectDataset(DatasetEnricherStep.VAR_NEW_DATA)] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset(DatasetEnricherStep.VAR_OUTPUT)] as IODescriptor[],
                 [(DatasetEnricherStep.VAR_INPUT)   : new VariableKey(producer, "input1"),
                  (DatasetEnricherStep.VAR_NEW_DATA): new VariableKey(producer, "input2")],
-                [:])
+                [:],
+                DatasetEnricherStep.SERVICE_DESCRIPTOR)
 
         when:
         step.execute(varman, context)
@@ -239,12 +233,12 @@ class DatasetEnricherStepSpec extends Specification {
 
         DatasetEnricherStep step = new DatasetEnricherStep()
         step.configure(producer, "job1", [(DatasetEnricherStep.OPT_MERGE_MODE): "both"],
-                [IODescriptors.createMoleculeObjectDataset(DatasetEnricherStep.VAR_INPUT),
-                 IODescriptors.createMoleculeObjectDataset(DatasetEnricherStep.VAR_NEW_DATA)] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset(DatasetEnricherStep.VAR_OUTPUT)] as IODescriptor[],
                 [(DatasetEnricherStep.VAR_INPUT)   : new VariableKey(producer, "input1"),
                  (DatasetEnricherStep.VAR_NEW_DATA): new VariableKey(producer, "input2")],
-                [:])
+                [:],
+                DatasetEnricherStep.SERVICE_DESCRIPTOR
+        )
+
 
         when:
         step.execute(varman, context)
@@ -283,7 +277,5 @@ class DatasetEnricherStepSpec extends Specification {
 
 
     }
-
-
 
 }

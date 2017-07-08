@@ -87,7 +87,7 @@ M  END
 
     void "load emols"() {
 
-        String file = "../../data/testfiles/emols_order_all_100.smi.gz"
+        String file = "../../data/testfiles/emols_100.smi.gz"
         println "Loading $file into ${schema}.$baseTable"
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
         EMoleculesSmilesLoader loader = new EMoleculesSmilesLoader(table, config)

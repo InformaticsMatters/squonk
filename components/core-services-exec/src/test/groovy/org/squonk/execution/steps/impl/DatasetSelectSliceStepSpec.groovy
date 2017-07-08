@@ -57,10 +57,9 @@ class DatasetSelectSliceStepSpec extends Specification {
         DatasetSelectSliceStep step = new DatasetSelectSliceStep()
         step.configure(producer, "job1",
                 [(DatasetSelectSliceStep.OPTION_SKIP):skip, (DatasetSelectSliceStep.OPTION_COUNT):count],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 ["input":new VariableKey(producer, "input")],
-                [:])
+                [:],
+                DatasetSelectSliceStep.SERVICE_DESCRIPTOR)
         return step
     }
     
