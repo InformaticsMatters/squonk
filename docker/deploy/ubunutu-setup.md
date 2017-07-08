@@ -45,7 +45,7 @@ apt-get install -y certbot
 
 ### Setup the SSL certificates
 
-This is only necessary if you are runnign a public site. For testing you can use self-signed certificates 
+This is only necessary if you are running a public site. For testing you can use self-signed certificates 
 (see below for details).
 
 This approach uses certificates from Let's Encrypt wich are trusted by most browsers and are free.

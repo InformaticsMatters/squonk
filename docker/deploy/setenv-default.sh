@@ -1,11 +1,12 @@
-# The environment variable for PRIVATE_HOST will be the addres of the docker gateway, something like 172.17.0.1 or localhost
-# The environment variable for PUBLIC_HOST will be the public address, something like squonk.it or localhost
+# The environment variable for PRIVATE_HOST will be the address of the docker gateway, something like 172.17.0.1
+# The environment variable for PUBLIC_HOST will be the public address, something like squonk.it or the IP of the gateway
+# if you are running locally.
 # To find out what this is with docker do a:
-# docker network inspect bridge
+# docker network inspect deploy_squonk_front
 #
 
-export PUBLIC_HOST=172.17.0.1
-export PRIVATE_HOST=172.17.0.1
+export PUBLIC_HOST=172.20.0.1
+export PRIVATE_HOST=172.20.0.1
 export RABBITMQ_ERLANG_COOKIE=topsecret
 
 # password for the admin user of rabbitmq

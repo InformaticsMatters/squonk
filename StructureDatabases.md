@@ -48,6 +48,30 @@ Adjust the loader name accordingly. Options are:
 
 Note that loading large datasets like eMolecules screening compounds takes several days.
 
+Note that some loaders require RDKit and its Java bindings to be present. One way to do this is to do the
+loading from within the informaticsmatters/rdkit_java container. To do this (assumes the postgres container is 
+already running as described above):
+
+```sh
+cd $SQUONK_HOME # root of squonk git repo
+docker run -it --name rdkitloader --network deploy_squonk_back -v $PWD:/squonk -w /squonk informaticsmatters/rdkit_java:Release_2017_03_1 bash
+source docker/deploy/setenv.sh
+cd components/
+./gradlew --daemon -PmainClass=org.squonk.rdkit.db.loaders.PdbLigandSdfLoader rdkit-lib:execute
+```
+
+Note that this gives the container the name of rdkitloader so that it can be reused for efficiency.
+To reuse it do:
+
+```sh
+docker start -i rdkitloader
+```
+
+Loading these datasets can takes hours or days depending on their size. To prevent lost connections to the server terminating 
+the load you might want to look into doing the loading using a the 
+[linux screen facility](https://www.gnu.org/software/screen/manual/screen.html). 
+
+
 ### Configuring the search service
 
 The searchsearvice needs to know what database tables have been loaded.

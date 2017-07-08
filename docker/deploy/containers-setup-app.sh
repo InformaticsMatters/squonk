@@ -21,6 +21,7 @@ sed "s/__public_host__/${PUBLIC_HOST}/g" images/portal/server.xml.template > ima
 sed "s/__POSTGRES_SQUONK_PASSWORD__/${POSTGRES_SQUONK_PASSWORD}/g" images/portal/persistence.properties.template > images/portal/persistence.properties
 
 
+docker-compose rm -fv portal chemservices coreservices cellexecutor
 docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d --no-recreate postgres rabbitmq stage1 || exit 1
 
 

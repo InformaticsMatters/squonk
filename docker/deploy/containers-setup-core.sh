@@ -33,7 +33,9 @@ sed "s/#XWIKI_PLACEHOLDER#/include snippets\/xwiki.conf;/g" images/nginx/default
 
 
 echo "preparing postgres docker image ..."
-docker-compose stop && docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d postgres rabbitmq stage1 || exit 1
+docker-compose stop || exit 1
+docker-compose rm -fv postgres rabbitmq keycloak nginx || exit 1
+docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d postgres rabbitmq stage1 || exit 1
 
 # now we can start keycloak (needs postgres to be setup before it starts)
 docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d keycloak stage2 || exit 1
