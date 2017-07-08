@@ -55,10 +55,9 @@ class DatasetUUIDFilterStepSpec extends Specification {
         DatasetUUIDFilterStep step = new DatasetUUIDFilterStep()
         step.configure(producer, "job1",
                 [(DatasetUUIDFilterStep.OPTION_UUIDS): uuids],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
                 ["input": new VariableKey(producer, "input")],
-                [:]
+                [:],
+                DatasetUUIDFilterStep.SERVICE_DESCRIPTOR
         )
 
         when:

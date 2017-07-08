@@ -17,12 +17,18 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
+import org.squonk.core.DefaultServiceDescriptor;
+import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.execution.steps.AbstractServiceStep;
 import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.IODescriptors;
+import org.squonk.options.OptionDescriptor;
 
+import java.util.Date;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -30,12 +36,27 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class DatasetSelectSliceStep extends AbstractStandardStep {
+public class DatasetSelectSliceStep extends AbstractServiceStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetSelectSliceStep.class.getName());
 
     public static final String OPTION_SKIP = StepDefinitionConstants.DatasetSelectSlice.OPTION_SKIP;
     public static final String OPTION_COUNT = StepDefinitionConstants.DatasetSelectSlice.OPTION_COUNT;
+
+    public static DefaultServiceDescriptor SERVICE_DESCRIPTOR = new DefaultServiceDescriptor("core.dataset.filter.slice.v1", "Dataset slice selector", "Generate a defined slice of the dataset",
+            new String[]{"filter", "slice", "dataset"},
+            null, "icons/filter.png",
+            ServiceConfig.Status.ACTIVE,
+            new Date(),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+            new OptionDescriptor[]{
+                    new OptionDescriptor<>(Integer.class, StepDefinitionConstants.DatasetSelectSlice.OPTION_SKIP, "Number to skip", "The number of records to skip", OptionDescriptor.Mode.User),
+                    new OptionDescriptor<>(Integer.class, StepDefinitionConstants.DatasetSelectSlice.OPTION_COUNT, "Number to include", "The number of records to include after skipping", OptionDescriptor.Mode.User)
+            },
+            null, null, null,
+            DatasetSelectSliceStep.class.getName()
+    );
 
     /**
      * Create a slice of the dataset skipping a number of records specified by the skip option (or 0 if not specified)

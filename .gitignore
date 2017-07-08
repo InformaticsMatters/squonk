@@ -14,7 +14,7 @@
 **/*~
 
 data/licenses
-data/testfiles/emols*
+data/testfiles/emols_order*
 data/testfiles/all-sdf.sdf.gz
 data/testfiles/chembl_*.sdf.gz
 data/testfiles/docker-services/

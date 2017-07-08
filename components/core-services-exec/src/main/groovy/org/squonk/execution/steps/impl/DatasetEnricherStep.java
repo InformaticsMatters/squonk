@@ -17,11 +17,18 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
+import org.squonk.core.DefaultServiceDescriptor;
+import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.execution.steps.AbstractServiceStep;
 import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.IODescriptor;
+import org.squonk.io.IODescriptors;
+import org.squonk.options.DatasetFieldTypeDescriptor;
+import org.squonk.options.OptionDescriptor;
 import org.squonk.types.BasicObject;
 import org.squonk.types.io.JsonHandler;
 
@@ -55,7 +62,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class DatasetEnricherStep extends AbstractStandardStep {
+public class DatasetEnricherStep extends AbstractServiceStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetEnricherStep.class.getName());
 
@@ -72,6 +79,39 @@ public class DatasetEnricherStep extends AbstractStandardStep {
     private static final String SOURCE = "Squonk DatasetEnricherStep";
 
     private enum Mode {main, values, both};
+
+    public static final DefaultServiceDescriptor SERVICE_DESCRIPTOR = new DefaultServiceDescriptor("core.dataset.enricher.v1", "DatasetEnricher", "Enrich a dataset with content from another dataset",
+            new String[]{"enrich", "merge", "dataset"},
+            null, "icons/merge.png",
+            ServiceConfig.Status.ACTIVE,
+            new Date(),
+            new IODescriptor[]{
+                    IODescriptors.createBasicObjectDataset(StepDefinitionConstants.DatasetEnricher.VARIABLE_NEW_DATA),
+                    IODescriptors.createBasicObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET)
+            },
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+            new OptionDescriptor[]{
+
+                    new OptionDescriptor<>(new DatasetFieldTypeDescriptor(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new Class[]{String.class, Integer.class}),
+                            StepDefinitionConstants.DatasetEnricher.OPTION_MAIN_FIELD, "Input field name",
+                            "Name of field in input which identifies equivalent entries", OptionDescriptor.Mode.User)
+                            .withMinMaxValues(0, 1),
+
+                    new OptionDescriptor<>(new DatasetFieldTypeDescriptor(StepDefinitionConstants.DatasetEnricher.VARIABLE_NEW_DATA, new Class[]{String.class, Integer.class}),
+                            StepDefinitionConstants.DatasetEnricher.OPTION_EXTRA_FIELD, "NewData field name",
+                            "Name of field in newData which identifies equivalent entries", OptionDescriptor.Mode.User)
+                            .withMinMaxValues(0, 1),
+
+                    new OptionDescriptor<>(String.class, StepDefinitionConstants.DatasetEnricher.OPTION_MERGE_MODE, "Mode: main, values or both",
+                            "Merge the main content (e.g the structure for molecules), the values or both", OptionDescriptor.Mode.User)
+                            .withValues(new String[]{"main", "values", "both"})
+                            .withDefaultValue("both")
+                            .withMinMaxValues(1, 1)
+
+            },
+            null, null, null,
+            DatasetEnricherStep.class.getName()
+    );
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {

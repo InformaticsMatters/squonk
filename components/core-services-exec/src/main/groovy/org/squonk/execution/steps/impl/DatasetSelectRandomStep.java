@@ -17,12 +17,18 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
+import org.squonk.core.DefaultServiceDescriptor;
+import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.execution.steps.AbstractServiceStep;
 import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.IODescriptors;
+import org.squonk.options.OptionDescriptor;
 
+import java.util.Date;
 import java.util.Random;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -31,7 +37,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class DatasetSelectRandomStep extends AbstractStandardStep {
+public class DatasetSelectRandomStep extends AbstractServiceStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetSelectRandomStep.class.getName());
 
@@ -39,6 +45,22 @@ public class DatasetSelectRandomStep extends AbstractStandardStep {
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
     public static final String OPTION_RANDOM = StepDefinitionConstants.DatasetSelectRandom.OPTION_RANDOM;
     public static final String OPTION_COUNT = StepDefinitionConstants.DatasetSelectRandom.OPTION_COUNT;
+
+
+    public static final DefaultServiceDescriptor SERVICE_DESCRIPTOR = new DefaultServiceDescriptor("core.dataset.filter.random.v1", "Dataset random selector", "Generate a random slice of the dataset",
+            new String[]{"filter", "random", "dataset"},
+            null, "icons/filter.png",
+            ServiceConfig.Status.ACTIVE,
+            new Date(),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+            new OptionDescriptor[]{
+                    new OptionDescriptor<>(Float.class, StepDefinitionConstants.DatasetSelectRandom.OPTION_RANDOM, "Random fraction (0-1)", "The fraction of records to randomly select (between 0 and 1, default 0.001)", OptionDescriptor.Mode.User),
+                    new OptionDescriptor<>(Integer.class, StepDefinitionConstants.DatasetSelectRandom.OPTION_COUNT, "Max records", "The max number of records to include, default 1000", OptionDescriptor.Mode.User)
+            },
+            null, null, null,
+            DatasetSelectRandomStep.class.getName()
+    );
 
     /**
      * Create a random subset of the dataset up to a maximun (count option, default 1000) number of values selecting items from the start

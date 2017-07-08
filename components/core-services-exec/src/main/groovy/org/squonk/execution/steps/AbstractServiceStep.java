@@ -56,7 +56,8 @@ public abstract class AbstractServiceStep extends AbstractStep {
             IODescriptor[] outputs,
             Map<String, VariableKey> inputVariableMappings,
             Map<String, String> outputVariableMappings) {
-        throw new IllegalStateException(this.getClass().getCanonicalName() + " must provide ServiceDescriptor");
+
+        throw new IllegalStateException(this.getClass().getCanonicalName() + " must provide ServiceDescriptor if no default one is defined");
 
     }
 
