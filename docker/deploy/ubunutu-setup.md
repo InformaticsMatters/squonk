@@ -28,6 +28,13 @@ Now Install Docker Compose
 curl -L https://github.com/docker/compose/releases/download/1.14.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
 ```
 
+And command line completions
+
+```sh
+curl -L https://raw.githubusercontent.com/docker/docker-ce/master/components/cli/contrib/completion/bash/docker > /etc/bash_completion.d/docker
+curl -L https://raw.githubusercontent.com/docker/compose/master/contrib/completion/bash/docker-compose -o /etc/bash_completion.d/docker-compose
+```
+
 Check permissions on the docker-compose executable found in /usr/local/bin. If not set to be executable do this:
 
 ```sh
@@ -128,6 +135,7 @@ The browser will complain and you will need to accept you are using non-trusted 
 Do this using something like:
 
 ```sh
+mkdir -p images/nginx/certs/squonk
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/certs/squonk/privkey.pem -out images/nginx/certs/squonk/fullchain.pem
 ```
 You should also create the dhparam.pem file like this:

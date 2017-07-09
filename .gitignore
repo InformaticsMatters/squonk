@@ -29,6 +29,11 @@ docker/**/*.war
 docker/xwiki-site/yyy.json
 docker/docker-services
 docker/deploy/setenv.sh
+
+
+docker/deploy/images/nginx/cert.crt
+docker/deploy/images/nginx/cert.key
+
 docker/deploy/images/yyy.json
 
 docker/deploy/images/squonk-realm.json
