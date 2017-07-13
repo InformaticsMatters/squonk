@@ -19,4 +19,8 @@ services:
         - ./images/nginx/sites/squonk.it/html/:/usr/share/nginx/html/squonk.it/html/:ro
         networks:
         - squonk_front
+        depends_on:
+            keycloak:
+                condition: service_healthy
+
 

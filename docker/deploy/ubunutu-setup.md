@@ -144,6 +144,9 @@ You should also create the dhparam.pem file like this:
 openssl dhparam -out images/nginx/certs/squonk/dhparam.pem 2048
 ```
 
+### Copy license files
+
+Currently this involves ChemAxon and CPSign licenses. Copy them to data/licenses. 
 
 ### Configure and run
 

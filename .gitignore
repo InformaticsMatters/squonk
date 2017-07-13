@@ -38,6 +38,7 @@ docker/deploy/images/yyy.json
 
 docker/deploy/images/squonk-realm.json
 docker/deploy/data/docker-services/pipelines
+docker/deploy/data/docker-services/nextflow
 docker/deploy/data/xwiki/
 
 docker/deploy/images/portal/server.xml
