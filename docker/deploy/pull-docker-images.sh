@@ -12,7 +12,10 @@ docker pull informaticsmatters/rdkit_java:latest
 docker pull informaticsmatters/rdkit_java:Release_2017_03_1
 docker pull informaticsmatters/rdkit_java_tomcat:latest
 docker pull informaticsmatters/rdkit_java_tomcat:Release_2017_03_1
-docker pull informaticsmatters/rdock_nextflow
+docker pull informaticsmatters/rdkit_pipelines:latest
+docker pull informaticsmatters/rdkit_nextflow:latest
+docker pull informaticsmatters/rdock:latest
+docker pull informaticsmatters/rdock_nextflow:latest
 
 docker pull abradle/standardiser
 docker pull abradle/smog2016
