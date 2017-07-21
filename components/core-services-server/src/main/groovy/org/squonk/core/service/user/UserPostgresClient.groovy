@@ -45,10 +45,12 @@ public class UserPostgresClient implements UserClient {
     private void checkUserExists(String username) {
         Sql db = new Sql(dataSource.connection)
         try {
-            int count = db.firstRow("SELECT count(*) from users.users WHERE username = $username")[0]
-            if (count == 0) {
-                log.info("Adding user $username")
-                db.executeInsert("INSERT INTO users.users (username) VALUES ($username)")
+            db.withTransaction {
+                int count = db.firstRow("SELECT count(*) from users.users WHERE username = $username")[0]
+                if (count == 0) {
+                    log.info("Adding user $username")
+                    db.executeInsert("INSERT INTO users.users (username) VALUES ($username)")
+                }
             }
         } finally {
             db.close()
@@ -58,10 +60,13 @@ public class UserPostgresClient implements UserClient {
     private User fetchUser(String username) {
         Sql db = new Sql(dataSource.connection)
         try {
-            def data = db.firstRow("SELECT id, username from users.users WHERE username = $username AND active = 1")
-            if (data == null) {
-                throw new IllegalStateException("User does not exist or is inactived")
-            } 
+            def data = null
+            db.withTransaction {
+                data = db.firstRow("SELECT id, username from users.users WHERE username = $username AND active = 1")
+                if (data == null) {
+                    throw new IllegalStateException("User does not exist or is inactived")
+                }
+            }
             return new User(data.id, data.username)
         } finally {
             db.close()

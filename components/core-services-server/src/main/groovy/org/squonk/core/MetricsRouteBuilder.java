@@ -55,16 +55,7 @@ public class MetricsRouteBuilder extends RouteBuilder {
                 .log("consumed message ${body}")
                 .unmarshal().json(JsonLibrary.Jackson, ExecutionStats.class)
                 .log("TOKENS: ${body}")
-                .bean(client, "saveExecutionStats")
-//                .process((Exchange exch) -> {
-//                    ExecutionStats stats = exch.getIn().getBody(ExecutionStats.class);
-//                    if (stats != null) {
-//                        LOG.info(stats.toString());
-//                        // TODO - process the token usage e.g write to database
-//                        client.saveExecutionStats();
-//                    }
-//                })
-                 ;
+                .bean(client, "saveExecutionStats");
 
     }
 }
