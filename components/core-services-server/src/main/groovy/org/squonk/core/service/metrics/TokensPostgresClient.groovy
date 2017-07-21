@@ -100,13 +100,11 @@ class TokensPostgresClient {
         }
     }
 
-
-
     List<TokenUsageDTO> getUserTokenUsage(String username) {
         Sql db = createSql()
         try {
+            def results = []
             db.withTransaction {
-                def results = []
                 db.eachRow("""\
                         |SELECT u.username, m.job_uuid, m.key, m.units, m.tokens::real, m.created
                         |  FROM users.metrics_tokens_usage m
@@ -115,13 +113,12 @@ class TokensPostgresClient {
                         |  WHERE u.username=? ORDER BY m.id DESC""".stripMargin(), [username]) {
                     results << new TokenUsageDTO(it.username, it.job_uuid, it.key, it.units, it.tokens, it.created)
                 }
-                return results
             }
+            return results
         } finally {
             db.close()
         }
     }
-
 
     void saveExecutionStats(@Nonnull ExecutionStats stats) {
         String jobId = stats.jobId
