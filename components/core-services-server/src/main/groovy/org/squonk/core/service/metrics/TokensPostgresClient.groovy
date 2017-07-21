@@ -133,9 +133,8 @@ class TokensPostgresClient {
         Sql db = createSql()
         try {
             db.withTransaction {
-                stats.data.each { k, v ->
 
-                    db.withBatch(50, """\
+                db.withBatch(50, """\
                 |INSERT INTO users.metrics_tokens_usage (job_uuid, key, units, tokens, version, created)
                 |  SELECT :uuid, :key, :units, ss.tokens, ss.version, NOW() FROM (
                 |     SELECT c.version, (h.cost * :units) tokens FROM users.metrics_tokens_costs c
@@ -145,6 +144,7 @@ class TokensPostgresClient {
                 |     LIMIT 1
                 |   ) AS ss""".stripMargin()) { ps ->
 
+                    stats.data.each { k, v ->
                         ps.addBatch([uuid: jobId, key: k, units: v])
                     }
                 }
