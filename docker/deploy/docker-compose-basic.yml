@@ -22,5 +22,7 @@ services:
         depends_on:
             keycloak:
                 condition: service_healthy
+            portal:
+                condition: service_healthy
 
 

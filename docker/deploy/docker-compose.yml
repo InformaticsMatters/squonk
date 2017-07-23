@@ -231,6 +231,11 @@ services:
         networks:
         - squonk_front
         - squonk_back
+        healthcheck:
+            test: curl --fail http://localhost:8080/portal || exit 1
+            interval: 10s
+            timeout: 5s
+            retries: 5
         depends_on:
             postgres:
                 condition: service_started

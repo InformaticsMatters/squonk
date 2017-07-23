@@ -49,6 +49,9 @@ apt-get update
 apt-get install -y certbot
 ```
 
+Alternatively if there is no packaged version of cerbot for your system you can use certbot-auto.
+See [here](https://certbot.eff.org/all-instructions/#ubuntu-other-nginx) for more.
+
 
 ### Setup the SSL certificates
 
@@ -68,7 +71,7 @@ certbot certonly --standalone -d squonk.informaticsmatters.com
 If you are already registered you can avoid this using:
 
 ```ssh
-certbot certonly --stanadlone -n -m your@email.address --agree-tos -d squonk.informaticsmatters.com 
+certbot certonly --standalone -n -m your@email.address --agree-tos -d squonk.informaticsmatters.com 
 
 ```
 (replace squonk.informaticsmatters.com with your actual domain and your@email.address with the email you are registed as).
@@ -118,7 +121,8 @@ cd ..
 Now pull the docker images. This will take a few mins.
 ```sh
 cd squonk/docker/deploy
-./pull-docker-images.sh
+./images=pull-squonk.sh
+./images=pull-extra.sh
 ```
 
 ### Copy the keys
@@ -187,7 +191,7 @@ Log in as the admin user using the KEYCLOAK_USER username and KEYCLOAK_PASSWORD 
 
 ## Certificate renewal
 
-Let's Encrypt certificates only last for 90 days. if running a permananet server you should automate renewing them.
+Let's Encrypt certificates only last for 90 days. if running a permanent server you should automate renewing them.
 certbot runs as root so switch to root and create a shell script like this, adjusting the location of DEST_DIR and
 where the certificates are found as required:
 
