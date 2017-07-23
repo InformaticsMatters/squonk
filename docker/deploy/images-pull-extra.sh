@@ -2,7 +2,7 @@
 
 docker pull rabbitmq:3-management
 docker pull nginx:1.13
-docker pull tomcat:8-jre8
+docker pull tomcat:8.0-jre8
 docker pull tomcat:7-jre8
 docker pull jboss/keycloak-postgres:2.1.0.Final
 
