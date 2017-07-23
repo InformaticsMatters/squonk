@@ -28,18 +28,12 @@ components/security-keycloak/lib/
 docker/**/*.war
 docker/xwiki-site/yyy.json
 docker/docker-services
+
+docker/deploy/data
+
 docker/deploy/setenv.sh
-
-
-docker/deploy/images/nginx/cert.crt
-docker/deploy/images/nginx/cert.key
-
 docker/deploy/images/yyy.json
-
 docker/deploy/images/squonk-realm.json
-docker/deploy/data/docker-services/pipelines
-docker/deploy/data/docker-services/nextflow
-docker/deploy/data/xwiki/
 
 docker/deploy/images/portal/server.xml
 docker/deploy/images/portal/persistence.properties
@@ -54,6 +48,4 @@ docker/deploy/images/keycloak/keycloak.jks
 
 docker/deploy/images/chemservices/*.zip
 
-
-docker/deploy/nginx
 
