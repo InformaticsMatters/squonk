@@ -81,24 +81,27 @@ class Executor {
 
         Sql db = new Sql(select.query.config.connection)
         try {
-            // 1 execute the preExecuteStatements
-            select.preExecuteStatements.each {
-                println("SQL:" + it.command)
-                db.execute(it.command)
-            }
-            // 2 build the SQL
-            List bindVars = []
-            String sql = buildSql(bindVars)
-            // 3 execute and build results
             List<MoleculeObject> mols = []
-            String format = select.query.rdkTable.molSourceType == MolSourceType.MOL ? 'mol' : 'smiles'
-            println("SQL:" + sql)
-            long t0 = System.currentTimeMillis()
-            db.eachRow(sql, bindVars) {
-                mols << buildMoleculeObject(it.toRowResult(), format)
+            db.withTransaction {
+                // 1 execute the preExecuteStatements
+                select.preExecuteStatements.each {
+                    println("SQL:" + it.command)
+                    db.execute(it.command)
+                }
+                // 2 build the SQL
+                List bindVars = []
+                String sql = buildSql(bindVars)
+                // 3 execute and build results
+                String format = select.query.rdkTable.molSourceType == MolSourceType.MOL ? 'mol' : 'smiles'
+                println("SQL:" + sql)
+                long t0 = System.currentTimeMillis()
+                db.eachRow(sql, bindVars) {
+                    mols << buildMoleculeObject(it.toRowResult(), format)
+                }
+                //db.commit()
+                long t1 = System.currentTimeMillis()
+                println "Query and retrieval took ${t1 - t0}ms. ${mols.size()} results."
             }
-            long t1 = System.currentTimeMillis()
-            println "Query and retrieval took ${t1-t0}ms. ${mols.size()} results."
             return mols
         } finally {
             db.close()

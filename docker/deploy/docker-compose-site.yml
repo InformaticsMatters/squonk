@@ -1,0 +1,45 @@
+version: '2.1'
+        
+services:
+ 
+ 
+    ################# xwiki container ###################################################
+    # available on http://${PUBLIC_HOST}/xwiki
+    xwiki:
+        image: squonk/xwiki
+        restart: on-failure:10
+        volumes:
+        - ./data/xwiki:/var/local/xwiki
+        - ./images/xwiki/keycloak.json:/usr/local/tomcat/webapps/xwiki/WEB-INF/keycloak.json
+        depends_on:
+        - keycloak
+        - postgres
+        environment:
+        - PUBLIC_HOST
+        - KEYCLOAK_SERVER_URL
+        - POSTGRES_XWIKI_PASSWORD
+        networks:
+        - squonk_front
+        - squonk_back
+        
+    ################# nginx ##########################################################
+    # Acts as reverse proxy
+    # create self-signed SSL cert/key using:
+    # openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/certs/squonk/privkey.pem -out images/nginx/certs/squonk/fullchain.pem
+    nginx:
+        image: nginx:1.13
+        restart: on-failure:10
+        ports:
+        - 80:80
+        - 443:443
+        volumes:
+        - ./images/nginx/default.site.conf:/etc/nginx/conf.d/default.conf:ro
+        - ./images/nginx/certs/:/etc/nginx/certs/:ro
+        - ./images/nginx/xwiki.conf:/etc/nginx/snippets/xwiki.conf:ro
+        - ./images/nginx/sites/index.html:/usr/share/nginx/html/index.html:ro
+        - ./images/nginx/sites/squonk.it/html/:/usr/share/nginx/html/squonk.it/html/:ro
+        - ./images/nginx/informaticsmatters.com.conf:/etc/nginx/conf.d/informaticsmatters.com.conf:ro
+        - ./images/nginx/sites/informaticsmatters.com/html/:/usr/share/nginx/html/informaticsmatters.com/html/:ro
+        networks:
+        - squonk_front
+ 

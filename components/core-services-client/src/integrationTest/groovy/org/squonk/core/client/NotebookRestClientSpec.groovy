@@ -16,6 +16,7 @@
 
 package org.squonk.core.client
 
+import groovy.sql.Sql
 import org.squonk.notebook.api.NotebookCanvasDTO
 import org.squonk.notebook.api.NotebookDTO
 import org.squonk.notebook.api.NotebookEditableDTO

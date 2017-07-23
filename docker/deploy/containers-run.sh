@@ -6,4 +6,4 @@ if [ ! $PUBLIC_HOST ]; then
 fi
 
 docker-compose stop
-docker-compose up -d --no-recreate
+docker-compose up -d --no-recreate 

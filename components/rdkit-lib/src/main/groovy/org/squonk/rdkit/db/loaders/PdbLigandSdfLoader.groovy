@@ -28,9 +28,9 @@ import java.util.stream.Stream
 /**
  * Created by timbo on 16/12/2015.
  */
-class PdbLigandSDFLoader extends AbstractRDKitLoader {
+class PdbLigandSdfLoader extends AbstractRDKitLoader {
 
-    PdbLigandSDFLoader(RDKitTable table, IConfiguration config) {
+    PdbLigandSdfLoader(RDKitTable table, IConfiguration config) {
         super(table, config)
     }
 
@@ -53,7 +53,7 @@ class PdbLigandSDFLoader extends AbstractRDKitLoader {
 
         IConfiguration config = createConfiguration(props)
 
-        PdbLigandSDFLoader loader = new PdbLigandSDFLoader(table, config)
+        PdbLigandSdfLoader loader = new PdbLigandSdfLoader(table, config)
         loader.loadSDF(file, loadOnly, reportingChunk, propertyToTypeMappings, "ligand_code")
     }
 

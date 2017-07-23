@@ -18,14 +18,10 @@ echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 
 # set up the proxy details in the tomcat apps 
 sed "s/__public_host__/${PUBLIC_HOST}/g" images/portal/server.xml.template > images/portal/server.xml
-
-images="chemservices coreservices cellexecutor portal nginx"
-
-docker-compose stop $images
-docker-compose rm -f $images
-docker-compose build $images
+sed "s/__POSTGRES_SQUONK_PASSWORD__/${POSTGRES_SQUONK_PASSWORD}/g" images/portal/persistence.properties.template > images/portal/persistence.properties
 
 
+docker-compose rm -fv portal chemservices coreservices cellexecutor
 docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d --no-recreate postgres rabbitmq stage1 || exit 1
 
 

@@ -106,9 +106,9 @@ tomcat {
 }
 
 /** Build a Docker image
- * run the generated image with something like this:
+ * run the generated image from the docker/deploy directory with something like this:
  * 
- * docker run -d --name core-services -p 80:8080 --link <name_of_postgres_db_container>:db --link <name_of_rabbitmq_container>:rabbitmq
+ * docker-compose run coreservices
  */
 
 docker {

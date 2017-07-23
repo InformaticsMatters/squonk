@@ -21,24 +21,28 @@ data/testfiles/docker-services/
 
 components/common/lib
 components/loaders/files
+components/rdkit-lib/rdkit_loader.properties
 components/core-services-client/lib
 components/chem-services-root/src/main/html/licenses
 components/security-keycloak/lib/
 docker/**/*.war
 docker/xwiki-site/yyy.json
 docker/docker-services
+
+docker/deploy/data
+
 docker/deploy/setenv.sh
 docker/deploy/images/yyy.json
-
 docker/deploy/images/squonk-realm.json
-docker/deploy/data/docker-services/pipelines
-docker/deploy/data/xwiki/
 
 docker/deploy/images/portal/server.xml
+docker/deploy/images/portal/persistence.properties
 
-docker/deploy/images/nginx/cert.key
+docker/deploy/images/nginx/certs
 docker/deploy/images/nginx/cert.crt
-docker/deploy/images/nginx/default.conf
+docker/deploy/images/nginx/cert.key
+docker/deploy/images/nginx/default.ssl.conf
+docker/deploy/images/nginx/default.site.conf
 docker/deploy/images/nginx/sites/squonk.it/html
 docker/deploy/images/nginx/sites/informaticsmatters.com/html
 
@@ -46,6 +50,4 @@ docker/deploy/images/keycloak/keycloak.jks
 
 docker/deploy/images/chemservices/*.zip
 
-
-docker/deploy/nginx
 

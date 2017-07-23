@@ -66,7 +66,7 @@ public class ChemcentralSearcher {
 
     public ChemcentralSearcher(String statsRouteUri) {
         this.statsRouteUri = statsRouteUri;
-        String pw = IOUtils.getConfiguration("POSTGRES_SQUONK_PASS", "squonk");
+        String pw = IOUtils.getConfiguration("POSTGRES_SQUONK_PASSWORD", "squonk");
         this.chemchentralDataSource = SquonkServerConfig.createDataSource("postgres", new Integer(5432), "squonk", pw, "chemcentral");
     }
 

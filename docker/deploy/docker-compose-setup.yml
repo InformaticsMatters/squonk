@@ -21,7 +21,7 @@ services:
     chemservices:
         ports:
         - "8092:8080"
-        
+
     ################# stage2 container ############################################
     # waits till keycloak is healthy and then terminates
     # allows to ensure that this service is running

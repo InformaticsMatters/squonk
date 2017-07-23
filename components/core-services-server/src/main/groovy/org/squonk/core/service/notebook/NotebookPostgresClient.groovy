@@ -375,7 +375,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
      * {@inheritDoc}
      */
     @Override
-    public NotebookSavepointDTO setSavepointLabel(Long notebookId, Long savepointId, String label) {
+    NotebookSavepointDTO setSavepointLabel(Long notebookId, Long savepointId, String label) {
         log.fine("Setting label for $notebookId:$savepointId to $label")
         Sql db = createSql()
         try {
@@ -410,18 +410,18 @@ class NotebookPostgresClient implements NotebookVariableClient {
      * {@inheritDoc}
      */
     @Override
-    public String readTextValue(Long notebookId, Long sourceId, Long cellId, String variableName, String key) {
-        log.fine("Reading text variable $variableName:$key for $sourceId")
-        Sql db = createSql()
-        try {
-            String result = null
-            db.withTransaction {
-                result = doFetchVar(db, notebookId, sourceId, cellId, variableName, key, true)
-            }
-            return result
-        } finally {
-            db.close()
+    String readTextValue(Long notebookId, Long sourceId, Long cellId, String variableName, String key) {
+        String result = null
+        withTransaction { Sql db ->
+            result = readTextValue(db, notebookId, sourceId, cellId, variableName, key)
         }
+        return result
+    }
+
+    String readTextValue(Sql db, Long notebookId, Long sourceId, Long cellId, String variableName, String key) {
+        log.fine("Reading text variable $variableName:$key for $sourceId")
+        String result =  doFetchVar(db, notebookId, sourceId, cellId, variableName, key, true)
+        return result
     }
 
 //    /**
@@ -437,43 +437,42 @@ class NotebookPostgresClient implements NotebookVariableClient {
      * {@inheritDoc}
      */
     @Override
-    public void writeTextValue(Long notebookId, Long editableId, Long cellId, String variableName, String value, String key) {
+    void writeTextValue(Long notebookId, Long editableId, Long cellId, String variableName, String value, String key) {
+        withTransaction { Sql db ->
+            writeTextValue(db, notebookId, editableId, cellId, variableName, value, key)
+        }
+    }
+
+    void writeTextValue(Sql db, Long notebookId, Long editableId, Long cellId, String variableName, String value, String key) {
         // TODO - include the notebookId in the process to increase security
         log.fine("Writing text variable $variableName:$key for $editableId:$cellId")
-        Sql db = createSql()
-        try {
 
-            db.executeInsert("""\
+        db.executeInsert("""\
                 |INSERT INTO users.nb_variable AS t (source_id, cell_id, var_name, var_key, created, updated, val_text)
                 |  VALUES (:sourceId, :cellId, :variableName, :key, NOW(), NOW(), :value )
                 |  ON CONFLICT ON CONSTRAINT nbvar_uq DO UPDATE
                 |    SET val_text=EXCLUDED.val_text, updated=NOW()
                 |      WHERE t.source_id=EXCLUDED.source_id AND t.cell_id=EXCLUDED.cell_id AND t.var_name=EXCLUDED.var_name AND t.var_key=EXCLUDED.var_key""".stripMargin(),
-                    [sourceId: editableId, cellId: cellId, variableName: variableName, key: (key ?: DEFAULT_KEY), value: value])
-
-        } finally {
-            db.close()
-        }
+                [sourceId: editableId, cellId: cellId, variableName: variableName, key: (key ?: DEFAULT_KEY), value: value])
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public InputStream readStreamValue(Long notebookId, Long sourceId, Long cellId, String variableName, String key) {
-        log.fine("Reading stream variable $variableName:$key for $sourceId")
-        // not entirely clear why this works as the connection is closed immediately but the InputStream is still readable.
-        Sql db = createSql()
-        try {
-            InputStream result = null
-            db.withTransaction {
-                log.fine("Fetching InputStream for $sourceId, $variableName, $key")
-                result = doFetchVar(db, notebookId, sourceId, cellId, variableName, key, false)
-            }
-            return result
-        } finally {
-            db.close()
+    InputStream readStreamValue(Long notebookId, Long sourceId, Long cellId, String variableName, String key) {
+        InputStream result = null
+        withTransaction { Sql db ->
+            result = readStreamValue(db, notebookId, sourceId, cellId, variableName, key)
         }
+        return result
+    }
+
+
+    InputStream readStreamValue(Sql db, Long notebookId, Long sourceId, Long cellId, String variableName, String key) {
+        log.fine("Reading stream variable $variableName:$key for $sourceId")
+        InputStream result = doFetchVar(db, notebookId, sourceId, cellId, variableName, key, false)
+        return result
     }
 
 //    /**
@@ -489,10 +488,21 @@ class NotebookPostgresClient implements NotebookVariableClient {
      * {@inheritDoc}
      */
     @Override
-    public void writeStreamValue(Long notebookId, Long editableId, Long cellId, String variableName, InputStream value, String key) {
+    void writeStreamValue(Long notebookId, Long editableId, Long cellId, String variableName, InputStream value, String key) {
+        Sql db = createSql()
+        try {
+            db.withTransaction {
+                writeStreamValue(db, notebookId, editableId, cellId, variableName, value, key)
+            }
+        } finally {
+            db.close()
+        }
+    }
+
+    void writeStreamValue(Sql db, Long notebookId, Long editableId, Long cellId, String variableName, InputStream value, String key) {
         // TODO - include the notebookId in the process to increase security
         log.fine("Writing stream variable $variableName:$key for $editableId:$cellId")
-        Sql db = new Sql(dataSource.getConnection()) {
+        Sql db2 = new Sql(db) {
             protected void setParameters(List<Object> params, PreparedStatement ps) {
                 ps.setLong(1, params[0])
                 ps.setLong(2, params[1])
@@ -501,17 +511,21 @@ class NotebookPostgresClient implements NotebookVariableClient {
                 ps.setBinaryStream(5, params[4])
             }
         }
-        try {
-            db.executeInsert("""\
+
+        db2.executeInsert("""\
                 |INSERT INTO users.nb_variable AS t (source_id, cell_id, var_name, var_key, created, updated, val_blob)
                 |  VALUES (?, ?, ?, ?, NOW(), NOW(), ?)
                 |  ON CONFLICT ON CONSTRAINT nbvar_uq DO UPDATE
                 |    SET val_blob=EXCLUDED.val_blob, updated=NOW()
                 |      WHERE t.source_id=EXCLUDED.source_id AND t.cell_id=EXCLUDED.cell_id AND t.var_name=EXCLUDED.var_name AND t.var_key=EXCLUDED.var_key""".stripMargin(),
-                    [editableId, cellId, variableName, key ?: DEFAULT_KEY, value])
+                [editableId, cellId, variableName, key ?: DEFAULT_KEY, value])
 
-        } finally {
-            db.close()
+    }
+
+    void deleteVariable(Sql db, Long notebookId, Long editableId, Long cellId, String variableName) throws Exception {
+        db.withTransaction {
+            log.info("Deleting variable $editableId, $cellId, $variableName")
+            db.executeUpdate("DELETE FROM users.nb_variable WHERE source_id=$editableId AND cell_id=$cellId AND var_name=$variableName")
         }
     }
 
@@ -519,20 +533,34 @@ class NotebookPostgresClient implements NotebookVariableClient {
     void deleteVariable(Long notebookId, Long editableId, Long cellId, String variableName) throws Exception {
         Sql db = createSql()
         try {
-            InputStream result = null
             db.withTransaction {
-                log.info("Deleting variable $editableId, $cellId, $variableName")
-                db.executeUpdate("DELETE FROM users.nb_variable WHERE source_id=$editableId AND cell_id=$cellId AND var_name=$variableName")
+                deleteVariable(db, notebookId, editableId, cellId, variableName)
             }
         } finally {
             db.close()
         }
     }
-// ------------------- private implementation methods -----------------------
 
-    protected Sql createSql() {
+    Sql createSql() {
         new Sql(dataSource.getConnection())
     }
+
+    /** Executes the closure as a transaction and closes the connection that is used
+     *
+     * @param cl
+     */
+    void withTransaction(Closure cl) {
+        Sql db = createSql()
+        try {
+            db.withTransaction {
+                cl(db)
+            }
+        } finally {
+            db.close()
+        }
+    }
+
+// ------------------- private implementation methods -----------------------
 
     private Long findInsertedId(def keys) {
         if (keys != null && keys.size() == 1) {

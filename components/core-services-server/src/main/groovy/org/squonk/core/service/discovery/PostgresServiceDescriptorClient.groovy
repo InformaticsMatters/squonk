@@ -38,12 +38,12 @@ class PostgresServiceDescriptorClient {
     protected final Sql sql
     private JsonHandler jsonHandler = JsonHandler.getInstance()
 
-    public PostgresServiceDescriptorClient() {
+    PostgresServiceDescriptorClient() {
         this( SquonkServerConfig.getSquonkDataSource());
     }
 
 
-    public PostgresServiceDescriptorClient(DataSource dataSource ) {
+    PostgresServiceDescriptorClient(DataSource dataSource ) {
         this.dataSource = dataSource
         this.sql = new Sql(dataSource)
     }
@@ -57,9 +57,13 @@ class PostgresServiceDescriptorClient {
 
         def sdsetrows
         def sdrows
-        sql.withTransaction {
-            sdsetrows = sql.rows("SELECT * FROM users.service_descriptor_sets ORDER BY id")
-            sdrows = sql.rows("SELECT * FROM users.service_descriptors ORDER BY id")
+        try {
+            sql.withTransaction {
+                sdsetrows = sql.rows("SELECT * FROM users.service_descriptor_sets ORDER BY id")
+                sdrows = sql.rows("SELECT * FROM users.service_descriptors ORDER BY id")
+            }
+        } finally {
+            sql.close()
         }
         log.info "Found ${sdsetrows.size()} sets and ${sdrows.size()} service descriptors"
 
@@ -103,8 +107,12 @@ class PostgresServiceDescriptorClient {
      */
     List<HttpServiceDescriptor> fetch(String baseUrl) {
         Map<Long, HttpServiceDescriptor> sdsmap
-        sql.withTransaction {
-            sdsmap = doFetch(sql, baseUrl)
+        try {
+            sql.withTransaction {
+                sdsmap = doFetch(sql, baseUrl)
+            }
+        } finally {
+            sql.close()
         }
         List<HttpServiceDescriptor> results = sdsmap.values().collect { it }
         log.info("Loaded ${results.size()} service descriptors for $baseUrl")
@@ -157,7 +165,16 @@ class PostgresServiceDescriptorClient {
      * @return
      */
     int countServiceDescriptorSets() throws SQLException {
-        return sql.firstRow("SELECT COUNT(*) FROM users.service_descriptor_sets")[0]
+
+        try {
+            def result = null
+            sql.withTransaction {
+                result = sql.firstRow("SELECT COUNT(*) FROM users.service_descriptor_sets")[0]
+            }
+            return result
+        } finally {
+            sql.close()
+        }
     }
 
     /** Gets the total count of service descriptors (ignoring their status)
@@ -165,20 +182,36 @@ class PostgresServiceDescriptorClient {
      * @return
      */
     int countServiceDescriptors() throws SQLException {
-        return sql.firstRow("SELECT COUNT(*) FROM users.service_descriptors")[0]
+        try {
+            def result = null
+            sql.withTransaction {
+                result = sql.firstRow("SELECT COUNT(*) FROM users.service_descriptors")[0]
+            }
+            return result
+        } finally {
+            sql.close()
+        }
     }
 
     void update(List<ServiceDescriptorSet> sdsets) throws SQLException {
-        sql.withTransaction {
-            sdsets.each { sdset ->
-                doUpdateServiceDescriptorSet(sql, sdset)
+        try {
+            sql.withTransaction {
+                sdsets.each { sdset ->
+                    doUpdateServiceDescriptorSet(sql, sdset)
+                }
             }
+        } finally {
+            sql.close()
         }
     }
 
     void update(ServiceDescriptorSet sdset) throws SQLException {
-        sql.withTransaction {
-            doUpdateServiceDescriptorSet(sql, sdset)
+        try {
+            sql.withTransaction {
+                doUpdateServiceDescriptorSet(sql, sdset)
+            }
+        } finally {
+            sql.close()
         }
     }
 
@@ -230,6 +263,5 @@ class PostgresServiceDescriptorClient {
             throw ex
         }
     }
-
 
 }

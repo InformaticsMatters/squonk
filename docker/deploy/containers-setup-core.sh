@@ -25,12 +25,17 @@ echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 
 
 # setup nginx
-sed "s/__public_host__/${PUBLIC_HOST}/g" images/nginx/default.conf.template > images/nginx/default.conf
+sed "s/__public_host__/${PUBLIC_HOST}/g" images/nginx/default.ssl.conf.template > images/nginx/default.ssl.conf
+sed "s/#XWIKI_PLACEHOLDER#/include snippets\/xwiki.conf;/g" images/nginx/default.ssl.conf > images/nginx/default.site.conf
 
+
+#XWIKI_PLACEHOLDER
 
 
 echo "preparing postgres docker image ..."
-docker-compose stop && docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d postgres rabbitmq stage1 || exit 1
+docker-compose stop || exit 1
+docker-compose rm -fv postgres rabbitmq keycloak nginx || exit 1
+docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d postgres rabbitmq stage1 || exit 1
 
 # now we can start keycloak (needs postgres to be setup before it starts)
 docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d keycloak stage2 || exit 1
@@ -45,7 +50,7 @@ keycloak_url="http://${PRIVATE_HOST}:8080/auth"
 echo "keycloak_url: $keycloak_url"
 
 token=$(curl -s -k -X POST "${keycloak_url}/realms/master/protocol/openid-connect/token" -H "Content-Type: application/x-www-form-urlencoded"\
- -d "username=admin" -d "password=${KEYCLOAK_PASSWORD:-squonk}" -d "grant_type=password" -d "client_id=admin-cli" \
+ -d "username=${KEYCLOAK_USER:-admin}" -d "password=${KEYCLOAK_PASSWORD:-squonk}" -d "grant_type=password" -d "client_id=admin-cli" \
  | jq -r '.access_token') || exit 1
 echo "token: $token"
 

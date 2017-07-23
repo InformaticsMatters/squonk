@@ -16,16 +16,16 @@
 
 package org.squonk.rdkit.db.loaders
 
+import org.squonk.rdkit.db.impl.DrugbankTable
 import org.squonk.rdkit.db.RDKitTable
 import org.squonk.rdkit.db.dsl.IConfiguration
-import org.squonk.rdkit.db.impl.ChemblTable
 
 /**
  * Created by timbo on 16/12/2015.
  */
-class ChemblSDFLoader extends AbstractRDKitLoader {
+class DrugBankSdfLoader extends AbstractRDKitLoader {
 
-    ChemblSDFLoader(RDKitTable table, IConfiguration config) {
+    DrugBankSdfLoader(RDKitTable table, IConfiguration config) {
         super(table, config)
     }
 
@@ -35,21 +35,21 @@ class ChemblSDFLoader extends AbstractRDKitLoader {
         URL from = loadConfigFile()
         println "Loading from $from"
         ConfigObject props = LoaderUtils.createConfig(from)
-        String baseTable = props.chembl.table
+        String baseTable = props.drugbank.table
         String schema = props.database.schema
-        String file = props.chembl.path + '/' + props.chembl.file
-        int reportingChunk = props.chembl.reportingChunk
-        int loadOnly = props.chembl.loadOnly
-        Map<String, Class> propertyToTypeMappings = props.chembl.fields
+        String file = props.drugbank.path + '/' + props.drugbank.file
+        int reportingChunk = props.drugbank.reportingChunk
+        int loadOnly = props.drugbank.loadOnly
+        Map<String, Class> propertyToTypeMappings = props.drugbank.fields
 
         println "Loading $file into ${schema}.$baseTable"
 
-        ChemblTable table = new ChemblTable(schema, baseTable)
+        DrugbankTable table = new DrugbankTable(schema, baseTable)
 
         IConfiguration config = createConfiguration(props)
 
-        ChemblSDFLoader loader = new ChemblSDFLoader(table, config)
-        loader.loadSDF(file, loadOnly, reportingChunk, propertyToTypeMappings, null)
+        DrugBankSdfLoader loader = new DrugBankSdfLoader(table, config)
+        loader.loadSDF(file, loadOnly, reportingChunk, propertyToTypeMappings)
     }
 
 }

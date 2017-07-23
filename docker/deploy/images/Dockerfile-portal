@@ -1,4 +1,4 @@
-FROM tomcat:8-jre8
+FROM tomcat:8.0-jre8
 MAINTAINER Tim Dudgeon <tdudgeon@informaticsmatters.com>
 
 RUN echo JAVA_OPTS='"-Dcom.sun.jersey.server.impl.cdi.lookupExtensionInBeanManager=true -Dcom.squonk.keycloak.baseurl=$KEYCLOAK_SERVER_URL"' > /usr/local/tomcat/bin/setenv.sh
