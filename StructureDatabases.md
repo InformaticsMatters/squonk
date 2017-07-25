@@ -6,6 +6,7 @@ Currently there is support for
 * eMolecules (bulidng blocks and screening compounds)
 * ChEMBL (structures only)
 * DrugBank (this is not loaded by default for licensing reasons)
+* PDB ligands
 
 The code and configuration for the loaders is in the rdkit-lib module.
 At some stage it may be broken out into a separate module.

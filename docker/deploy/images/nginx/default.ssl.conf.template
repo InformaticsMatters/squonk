@@ -14,7 +14,7 @@ server {
 	
 	server_name __public_host__;
 
-	root /usr/share/nginx/html;
+	root /usr/share/nginx/html/squonk.it/html;
 
 	index index.html index.htm index.nginx-debian.html;
 
@@ -26,7 +26,7 @@ server {
 
 	ssl_certificate     /etc/nginx/certs/squonk/fullchain.pem;
 	ssl_certificate_key /etc/nginx/certs/squonk/privkey.pem;
-#	ssl_dhparam         /etc/nginx/certs/squonk/dhparam.pem;
+	ssl_dhparam         /etc/nginx/certs/squonk/dhparam.pem;
 
 	# from https://cipherli.st/
 	# and https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html
