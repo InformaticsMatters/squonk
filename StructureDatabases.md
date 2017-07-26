@@ -56,8 +56,10 @@ already running as described above):
 ```sh
 cd $SQUONK_HOME # root of squonk git repo
 docker run -it --name rdkitloader --network deploy_squonk_back -v $PWD:/squonk -w /squonk informaticsmatters/rdkit_java:Release_2017_03_1 bash
-source docker/deploy/setenv.sh
-cd components/
+# now you are in the container do this
+cd docker/deploy/
+source setenv.sh
+cd ../../components
 ./gradlew --daemon -PmainClass=org.squonk.rdkit.db.loaders.PdbLigandSdfLoader rdkit-lib:execute
 ```
 
