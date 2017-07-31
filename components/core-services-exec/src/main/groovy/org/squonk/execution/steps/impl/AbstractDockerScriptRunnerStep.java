@@ -26,6 +26,7 @@ import org.squonk.execution.variable.VariableManager;
 import org.squonk.util.IOUtils;
 
 import java.io.IOException;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
@@ -72,10 +73,9 @@ public abstract class AbstractDockerScriptRunnerStep extends AbstractStandardSte
                 // handle the output
                 statusMessage = MSG_PREPARING_OUTPUT;
                 DatasetMetadata outputMetadata = handleDockerOutput(inputMetadata, varman, runner, MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON);
-                statusMessage = generateStatusMessage(inputMetadata.getSize(), outputMetadata.getSize(), -1);
+                Properties props = runner.getFileAsProperties("metrics.txt");
+                generateMetricsAndStatus(props, duration,  inputMetadata.getSize(), outputMetadata.getSize(), -1);
             }
-
-            generateMetrics(runner, "metrics.txt", duration);
 
         } finally {
             // cleanup

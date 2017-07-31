@@ -23,6 +23,7 @@ import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 
+import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
@@ -90,13 +91,8 @@ public class DockerProcessDatasetStep extends AbstractStandardStep {
             // handle the output
             statusMessage = MSG_PREPARING_OUTPUT;
             DatasetMetadata meta = handleDockerOutput(inputMetadata, varman, runner, outputMediaType);
-            if (meta == null) {
-                statusMessage = MSG_PROCESSING_COMPLETE;
-            } else {
-                statusMessage = generateStatusMessage(inputMetadata.getSize(), meta.getSize(), -1);
-            }
-
-            generateMetrics(runner, "metrics.txt", duration);
+            Properties props = runner.getFileAsProperties("metrics.txt");
+            generateMetricsAndStatus(props, duration,  inputMetadata.getSize(), meta == null ? -1 : meta.getSize(), -1);
 
         } finally {
             // cleanup

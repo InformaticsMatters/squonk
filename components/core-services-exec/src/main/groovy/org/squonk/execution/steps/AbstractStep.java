@@ -41,7 +41,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author timbo
  */
 public abstract class AbstractStep implements Step, StatusUpdatable {
@@ -68,7 +67,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
     protected String statusMessage = null;
 
 
-    protected Map<String,Integer> usageStats = new HashMap<>();
+    protected Map<String, Integer> usageStats = new HashMap<>();
 
     public Map<String, Integer> getUsageStats() {
         return usageStats;
@@ -89,7 +88,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         return outputVariableMappings;
     }
 
-    public void updateStatus(String status)  {
+    public void updateStatus(String status) {
         statusMessage = status;
     }
 
@@ -105,7 +104,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
                 .append(" producerID:").append(outputProducerId)
                 .append(" inputs:[");
         int count = 0;
-        for (Map.Entry<String,VariableKey> e : inputVariableMappings.entrySet()) {
+        for (Map.Entry<String, VariableKey> e : inputVariableMappings.entrySet()) {
             if (count > 0) {
                 b.append(" ");
             }
@@ -114,7 +113,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         }
         b.append("] outputs:[");
         count = 0;
-        for (Map.Entry<String,String> e : outputVariableMappings.entrySet()) {
+        for (Map.Entry<String, String> e : outputVariableMappings.entrySet()) {
             if (count > 0) {
                 b.append(" ");
             }
@@ -137,7 +136,6 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         b.append("]");
         return b.toString();
     }
-
 
 
     protected VariableKey mapInputVariable(String name) {
@@ -163,7 +161,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
      * @param internalName
      * @param type
      * @param varman
-     * @param required Whether a value is required
+     * @param required     Whether a value is required
      * @return
      * @throws IOException
      * @throws IllegalStateException If required is true and no value is present
@@ -235,7 +233,8 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         return getOption(name, type, converter, null);
     }
 
-    /** Get the option value, performing a type conversion if needed
+    /**
+     * Get the option value, performing a type conversion if needed
      *
      * @param name
      * @param type
@@ -250,7 +249,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
             return defaultValue;
         } else {
             if (type.isAssignableFrom(val.getClass())) {
-                return (T)val;
+                return (T) val;
             } else {
                 LOG.info("Unexpected option type. Trying to convert from " + val.getClass().getName() + " to " + type.getName());
                 return converter.convertTo(type, val);
@@ -308,7 +307,8 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
     }
 
 
-    /** Derrive a new IODescriptor of the specified media type using the specified IODescriptor as the base.
+    /**
+     * Derrive a new IODescriptor of the specified media type using the specified IODescriptor as the base.
      * If the media types are identical the base is returned. If they are different then an IODescriptor corresponding to the
      * media type is created (if possible) with the same name as the base.
      *
@@ -331,7 +331,8 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
     }
 
 
-    /** Converts the input value of the type specified by the from IODescriptor to the format specified by the to IODescriptor.
+    /**
+     * Converts the input value of the type specified by the from IODescriptor to the format specified by the to IODescriptor.
      *
      * @param camelContext
      * @param from
@@ -354,11 +355,12 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
     }
 
 
-    /** Generate a standard status message describing the outcome of execution
+    /**
+     * Generate a standard status message describing the outcome of execution
      *
-     * @param total The total number processed. -1 means unknown
+     * @param total   The total number processed. -1 means unknown
      * @param results The number of results. -1 means unknown
-     * @param errors The number of errors. -1 means unknown
+     * @param errors  The number of errors. -1 means unknown
      * @return
      */
     protected String generateStatusMessage(int total, int results, int errors) {
@@ -397,7 +399,8 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         return createDockerRunner(image, null, localWorkDir);
     }
 
-    /** Fetch the input using the default name for the input variable
+    /**
+     * Fetch the input using the default name for the input variable
      *
      * @param varman
      * @param runner
@@ -409,7 +412,8 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         return handleDockerInput(varman, runner, mediaType, StepDefinitionConstants.VARIABLE_INPUT_DATASET);
     }
 
-    /** Fetch the input in the case that the input has been renamed from the default name
+    /**
+     * Fetch the input in the case that the input has been renamed from the default name
      *
      * @param varman
      * @param runner
@@ -497,31 +501,72 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         try (InputStream is = runner.readOutput("output.sdf.gz")) {
             createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, InputStream.class, is, varman);
         }
-        // TODO can we getServiceDescriptors the metadata somehow?
+        // TODO can we get the metadata somehow?
         return null;
     }
 
-    protected void generateMetrics(DockerRunner runner, String filename, float executionTimeSeconds) throws IOException {
-        try (InputStream is = runner.readOutput(filename)) {
-            if (is != null) {
-                Properties props = new Properties();
-                props.load(is);
-                for (String key : props.stringPropertyNames()) {
-                    int c = new Integer(props.getProperty(key));
-                    if ("__InputCount__".equals(key)) {
-                        numRecordsProcessed = c;
-                    } else  if ("__OutputCount__".equals(key)) {
-                        numRecordsOutput = c;
-                    } else  if ("__ErrorCount__".equals(key)) {
-                        numErrors = c;
-                    } else  if (key.startsWith("__") && key.endsWith("__")) {
-                        LOG.warning("Unexpected magical key: " + key);
-                    } else {
-                        usageStats.put(key, c);
-                    }
+    protected void generateMetricsAndStatus(
+            Properties props, float executionTimeSeconds,
+            int numRecordsProcessed, int numRecordsOutput, int numErrors) throws IOException {
+
+        statusMessage = generateMetrics(props, executionTimeSeconds);
+        if (statusMessage == null) {
+            generateStatusMessage(numRecordsProcessed, numRecordsOutput, numErrors);
+        }
+    }
+
+    /**
+     *
+     * @param props The Properties object from which to read the metrics keys and values
+     * @param executionTimeSeconds
+     * @return The custom status message, if one is specified using the key __StatusMessage__
+     */
+    protected String generateMetrics(Properties props, float executionTimeSeconds) {
+
+        if (props == null) {
+            return null;
+        }
+
+        String status = null;
+
+        for (String key : props.stringPropertyNames()) {
+
+            if ("__StatusMessage__".equals(key)) {
+                Object sm = props.get(key);
+                if (sm != null) {
+                    status = sm.toString();
+                }
+            } else if ("__InputCount__".equals(key)) {
+                numRecordsProcessed = tryGetAsInt(props, key);
+            } else if ("__OutputCount__".equals(key)) {
+                numRecordsOutput = tryGetAsInt(props, key);
+            } else if ("__ErrorCount__".equals(key)) {
+                numErrors = tryGetAsInt(props, key);
+            } else if (key.startsWith("__") && key.endsWith("__")) {
+                LOG.warning("Unexpected magical key: " + key);
+            } else {
+                int c = tryGetAsInt(props, key);
+                if (c >= 0) {
+                    usageStats.put(key, c);
                 }
             }
         }
+
         generateExecutionTimeMetrics(executionTimeSeconds);
+        return status;
+    }
+
+
+    private int tryGetAsInt(Properties props, String key) {
+        String val = props.getProperty(key);
+        if (val == null) {
+            return -1;
+        }
+        try {
+            return new Integer(val);
+        } catch (NumberFormatException nfe) {
+            LOG.warning("Failed to read value for " + key + " as integer: " + val);
+            return -1;
+        }
     }
 }

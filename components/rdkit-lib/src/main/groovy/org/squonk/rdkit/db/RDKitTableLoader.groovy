@@ -213,18 +213,19 @@ class RDKitTableLoader {
         String qmarks = rdkTable.columns[1..(rdkTable.columns.size() -1)].collect { '?' }.join(',')
         String sql = 'INSERT INTO ' + baseSchemaPlusTable() + ' (' + cols + ') VALUES (' + qmarks + ')'
         log.info "SQL: $sql"
-        mols.eachWithIndex { m, i ->
-            values.clear()
-            values << m.source
-            propertyToTypeMappings.each { String k, Class cls ->
-                values << convert(m.getValue(k), cls)
-            }
-
-            db.withBatch(batchSize, sql) { ps ->
+        db.withBatch(batchSize, sql) { ps ->
+            mols.eachWithIndex { m, i ->
+                values.clear()
+                values << m.source
+                propertyToTypeMappings.each { String k, Class cls ->
+                    values << convert(m.getValue(k), cls)
+                }
+                
                 ps.addBatch(values)
-            }
-            if (i % reportingSize == 0 && i > 0) {
-                log.info "  loaded $i records"
+
+                if (i % reportingSize == 0 && i > 0) {
+                    log.info "  loaded $i records"
+                }
             }
         }
 

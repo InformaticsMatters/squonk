@@ -32,6 +32,7 @@ import org.squonk.util.IOUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 import java.io.File;
 
@@ -161,8 +162,8 @@ public class DefaultDockerExecutorStep extends AbstractServiceStep {
             statusMessage = MSG_PREPARING_OUTPUT;
             handleOutputs(camelContext, descriptor, varman, runner);
 
-            generateMetrics(runner, "output_metrics.txt", duration);
-            statusMessage = generateStatusMessage(numRecordsProcessed, numRecordsOutput, numErrors);
+            Properties props = runner.getFileAsProperties("output_metrics.txt");
+            generateMetricsAndStatus(props, duration,  numRecordsProcessed, numRecordsOutput, numErrors);
 
         } finally {
             // cleanup

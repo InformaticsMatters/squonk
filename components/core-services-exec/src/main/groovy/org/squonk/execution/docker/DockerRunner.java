@@ -34,10 +34,7 @@ import org.squonk.util.IOUtils;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -300,6 +297,23 @@ public class DockerRunner {
 
     public String getLog() {
         return loggingCallback == null ? null : loggingCallback.toString();
+    }
+
+    /** Generate a Properties file object from this file name.
+     *
+     * @param filename
+     * @return
+     * @throws IOException
+     */
+    public Properties getFileAsProperties(String filename) throws IOException {
+        try (InputStream is = readOutput(filename)) {
+            if (is != null) {
+                Properties props = new Properties();
+                props.load(is);
+                return props;
+            }
+        }
+        return null;
     }
 
 
