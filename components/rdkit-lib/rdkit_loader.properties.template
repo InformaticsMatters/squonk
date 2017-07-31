@@ -80,8 +80,11 @@ chembl {
 }
 
 pdbligand {
-    // download http://ligand-expo.rcsb.org/ld-download.html and put in:
+    // find file to download from here http://ligand-expo.rcsb.org/ld-download.html and put in:
     path='../../data/testfiles'
+    // the file you want is in the "Chemical component coordinate data files" section and called all-sdf.sdf.gz
+    // fetch it with something like:
+    // wget http://ligand-expo.rcsb.org/dictionaries/all-sdf.sdf.gz
     file='all-sdf.sdf.gz'
 
     table='pdb_ligand'
