@@ -92,7 +92,7 @@ public class DockerProcessDatasetStep extends AbstractStandardStep {
             statusMessage = MSG_PREPARING_OUTPUT;
             DatasetMetadata meta = handleDockerOutput(inputMetadata, varman, runner, outputMediaType);
             Properties props = runner.getFileAsProperties("metrics.txt");
-            generateMetricsAndStatus(props, duration,  inputMetadata.getSize(), meta == null ? -1 : meta.getSize(), -1);
+            generateMetricsAndStatus(props, duration);
 
         } finally {
             // cleanup

@@ -74,7 +74,7 @@ public abstract class AbstractDockerScriptRunnerStep extends AbstractStandardSte
                 statusMessage = MSG_PREPARING_OUTPUT;
                 DatasetMetadata outputMetadata = handleDockerOutput(inputMetadata, varman, runner, MimeTypeResolver.MIME_TYPE_DATASET_MOLECULE_JSON);
                 Properties props = runner.getFileAsProperties("metrics.txt");
-                generateMetricsAndStatus(props, duration,  inputMetadata.getSize(), outputMetadata.getSize(), -1);
+                generateMetricsAndStatus(props, duration);
             }
 
         } finally {

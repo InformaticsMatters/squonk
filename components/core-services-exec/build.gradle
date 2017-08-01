@@ -44,6 +44,7 @@ dependencies {
 
     testCompile "org.apache.camel:camel-jetty:$camelVersion"
     testCompile project(':core-test')
+    testCompile "cglib:cglib-nodep:3.2.0"
 }
 
 /* Integration test setup is borrowed from here:

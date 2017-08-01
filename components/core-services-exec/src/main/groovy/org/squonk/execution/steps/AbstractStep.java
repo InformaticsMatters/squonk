@@ -69,6 +69,10 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
 
     protected Map<String, Integer> usageStats = new HashMap<>();
 
+    protected int numRecordsProcessed = -1;
+    protected int numRecordsOutput = -1;
+    protected int numErrors = -1;
+
     public Map<String, Integer> getUsageStats() {
         return usageStats;
     }
@@ -354,39 +358,6 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         return typeConverter.convertTo(to.getPrimaryType(), value);
     }
 
-
-    /**
-     * Generate a standard status message describing the outcome of execution
-     *
-     * @param total   The total number processed. -1 means unknown
-     * @param results The number of results. -1 means unknown
-     * @param errors  The number of errors. -1 means unknown
-     * @return
-     */
-    protected String generateStatusMessage(int total, int results, int errors) {
-        LOG.info(String.format("Generating status msg: %s %s %s", total, results, errors));
-        List<String> msgs = new ArrayList<>();
-        if (total >= 0) {
-            msgs.add(String.format(MSG_PROCESSED, total));
-        }
-        if (results >= 0) {
-            msgs.add(String.format(MSG_RESULTS, results));
-        }
-        if (errors > 0) {
-            msgs.add(String.format(MSG_ERRORS, errors));
-        }
-        if (msgs.isEmpty()) {
-            return MSG_PROCESSING_COMPLETE;
-        } else {
-            return msgs.stream().collect(Collectors.joining(", "));
-        }
-    }
-
-    protected int numRecordsProcessed = -1;
-    protected int numRecordsOutput = -1;
-    protected int numErrors = -1;
-
-
     protected DockerRunner createDockerRunner(String image, String hostWorkDir, String localWorkDir) throws IOException {
         DockerRunner runner = new DockerRunner(image, hostWorkDir, localWorkDir);
         runner.init();
@@ -505,17 +476,43 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         return null;
     }
 
-    protected void generateMetricsAndStatus(
-            Properties props, float executionTimeSeconds,
-            int numRecordsProcessed, int numRecordsOutput, int numErrors) throws IOException {
-
-        statusMessage = generateMetrics(props, executionTimeSeconds);
-        if (statusMessage == null) {
-            generateStatusMessage(numRecordsProcessed, numRecordsOutput, numErrors);
+    /**
+     * Generate a standard status message describing the outcome of execution
+     *
+     * @param total   The total number processed. -1 means unknown
+     * @param results The number of results. -1 means unknown
+     * @param errors  The number of errors. -1 means unknown
+     * @return
+     */
+    protected String generateStatusMessage(int total, int results, int errors) {
+        LOG.fine(String.format("Generating status msg: %s %s %s", total, results, errors));
+        List<String> msgs = new ArrayList<>();
+        if (total >= 0) {
+            msgs.add(String.format(MSG_PROCESSED, total));
+        }
+        if (results >= 0) {
+            msgs.add(String.format(MSG_RESULTS, results));
+        }
+        if (errors > 0) {
+            msgs.add(String.format(MSG_ERRORS, errors));
+        }
+        if (msgs.isEmpty()) {
+            return MSG_PROCESSING_COMPLETE;
+        } else {
+            return msgs.stream().collect(Collectors.joining(", "));
         }
     }
 
-    /**
+    protected void generateMetricsAndStatus(Properties props, float executionTimeSeconds) throws IOException {
+
+        statusMessage = generateMetrics(props, executionTimeSeconds);
+        if (statusMessage == null) {
+            statusMessage = generateStatusMessage(numRecordsProcessed, numRecordsOutput, numErrors);
+            LOG.fine("Using generic status message: " + statusMessage);
+        }
+    }
+
+        /**
      *
      * @param props The Properties object from which to read the metrics keys and values
      * @param executionTimeSeconds
@@ -524,6 +521,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
     protected String generateMetrics(Properties props, float executionTimeSeconds) {
 
         if (props == null) {
+            LOG.warning("Properties is null. Cannot generate metrics.");
             return null;
         }
 
@@ -532,9 +530,10 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         for (String key : props.stringPropertyNames()) {
 
             if ("__StatusMessage__".equals(key)) {
-                Object sm = props.get(key);
+                String sm = props.getProperty(key);
                 if (sm != null) {
-                    status = sm.toString();
+                    status = sm;
+                    LOG.fine("Custom status message: " + sm);
                 }
             } else if ("__InputCount__".equals(key)) {
                 numRecordsProcessed = tryGetAsInt(props, key);
