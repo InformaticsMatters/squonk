@@ -159,7 +159,7 @@ public class DefaultDockerExecutorStep extends AbstractServiceStep {
             handleOutputs(camelContext, descriptor, varman, runner);
 
             Properties props = runner.getFileAsProperties("output_metrics.txt");
-            generateMetricsAndStatus(props, duration,  numRecordsProcessed, numRecordsOutput, numErrors);
+            generateMetricsAndStatus(props, duration);
 
         } finally {
             // cleanup
