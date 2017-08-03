@@ -18,7 +18,7 @@ package org.squonk.execution.steps.impl;
 
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Volume;
-import org.squonk.execution.docker.DockerRunner;
+import org.squonk.execution.runners.DockerRunner;
 
 import java.io.IOException;
 import java.util.logging.Logger;

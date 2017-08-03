@@ -36,14 +36,14 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
 
 
     /**
-     * The command to execute when running the container
-     */
-    private final String command;
-
-    /**
      * The name of the docker image to use
      */
     private final String imageName;
+
+    /**The command to execute
+     *
+     */
+    private final String command;
 
     /**
      * Any volumes that need to be mounted in the container before execution. Examples would be volumes contained script files and license files.
@@ -116,8 +116,10 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
             String command,
             Map<String, String> volumes) {
 
-        super(id, name, description, tags, resourceUrl, icon, status, statusLastChecked, inputDescriptors, outputDescriptors, optionDescriptors,
-                thinDescriptors, inputRoutes, outputRoutes, executorClassName);
+        super(new ServiceConfig(id, name, description, tags, resourceUrl, icon,
+                        inputDescriptors, outputDescriptors, optionDescriptors, status, statusLastChecked, executorClassName),
+                thinDescriptors, inputRoutes, outputRoutes);
+
         this.imageName = imageName;
         this.command = command;
         this.volumes = volumes;

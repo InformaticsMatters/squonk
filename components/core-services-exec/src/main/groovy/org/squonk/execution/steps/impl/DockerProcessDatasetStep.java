@@ -18,7 +18,7 @@ package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.DatasetMetadata;;
-import org.squonk.execution.docker.DockerRunner;
+import org.squonk.execution.runners.DockerRunner;
 import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;

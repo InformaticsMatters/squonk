@@ -38,9 +38,10 @@ dependencies {
     compile project(':core-services-common')
     compile project(':core-services-client')
 
-    compile 'com.github.docker-java:docker-java:3.0.7'
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
     compile "org.postgresql:postgresql:$postgresDriverVersion"
+    compile 'com.github.docker-java:docker-java:3.0.7'
+    compile 'io.nextflow:nextflow:0.25.4'
 
     testCompile "org.apache.camel:camel-jetty:$camelVersion"
     testCompile project(':core-test')

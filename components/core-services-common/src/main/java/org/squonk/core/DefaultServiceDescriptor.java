@@ -38,7 +38,6 @@ public class DefaultServiceDescriptor implements ServiceDescriptor, Serializable
     final IORoute[] inputRoutes;
     final IORoute[] outputRoutes;
 
-
     public DefaultServiceDescriptor(
             @JsonProperty("serviceConfig") ServiceConfig serviceConfig,
             @JsonProperty("thinDescriptors") ThinDescriptor[] thinDescriptors,
@@ -49,7 +48,6 @@ public class DefaultServiceDescriptor implements ServiceDescriptor, Serializable
         this.outputRoutes = outputRoutes;
         this.thinDescriptors = thinDescriptors;
     }
-
 
     public DefaultServiceDescriptor(
             String id,

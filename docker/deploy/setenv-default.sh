@@ -34,10 +34,11 @@ export POSTGRES_XWIKI_PASSWORD=squonk
 # The interval (in ms) that Docker service descriptors are reloaded by the coreservices module
 # export SQUONK_SERVICE_DISCOVERY_INTERVAL=900000
 
-# The directory that Squonk uses for Docker service execution. Needs to be under /tmp/work
-export SQUONK_DOCKER_WORK_DIR=/tmp/work/squonk
+# The directory that Squonk uses for Docker and nextflow service execution. Needs to be under /tmp/work
+export SQUONK_DOCKER_WORK_DIR=/tmp/work/squonk/docker
+export SQUONK_NEXTFLOW_WORK_DIR=/tmp/work/squonk/nextflow
 
-# Set to 2 to retain data in $SQUONK_DOCKER_WORK_DIR for debugging purposes
+# Set to 2 to retain data in $SQUONK_DOCKER_WORK_DIR and SQUONK_NEXTFLOW_WORK_DIR for debugging purposes
 # export SQUONK_DEBUG_MODE=0
 
 # EITHER set the docker environment to basic site 

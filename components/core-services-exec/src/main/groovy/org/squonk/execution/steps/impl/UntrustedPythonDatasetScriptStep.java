@@ -16,8 +16,7 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.squonk.execution.docker.DockerRunner;
-import org.squonk.util.IOUtils;
+import org.squonk.execution.runners.DockerRunner;
 
 import java.io.IOException;
 import java.util.logging.Logger;

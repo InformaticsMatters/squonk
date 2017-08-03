@@ -19,21 +19,32 @@ package org.squonk.execution.steps.impl;
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Volume;
 import org.apache.camel.CamelContext;
+import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.DockerServiceDescriptor;
-import org.squonk.execution.docker.DockerRunner;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetUtils;
+import org.squonk.dataset.ThinDatasetWrapper;
+import org.squonk.dataset.ThinDescriptor;
+import org.squonk.execution.runners.AbstractRunner;
+import org.squonk.execution.runners.DockerRunner;
 import org.squonk.execution.steps.AbstractServiceStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.util.GroovyUtils;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.execution.variable.impl.FilesystemReadContext;
+import org.squonk.execution.variable.impl.FilesystemWriteContext;
+import org.squonk.io.IODescriptor;
 import org.squonk.util.IOUtils;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 
-/**
+/** Default executor step for Docker execution.
+ *
  * Created by timbo on 29/12/15.
  */
 public class DefaultDockerExecutorStep extends AbstractServiceStep {
@@ -97,20 +108,7 @@ public class DefaultDockerExecutorStep extends AbstractServiceStep {
         // command will be something like:
         // screen.py 'c1(c2c(oc1)ccc(c2)OCC(=O)O)C(=O)c1ccccc1' 0.3 --d morgan2
         // screen.py '${query}' ${threshold} --d ${descriptor}
-
-        Map<String, Object> args = new LinkedHashMap<>();
-        options.forEach((k, v) -> {
-            if (k.startsWith("arg.")) {
-                LOG.info("Found argument " + k + " = " + v);
-                args.put(k.substring(4), v);
-            }
-        });
-
-        // replace windows line end characters
-        command = command.replaceAll("\\r\\n", "\n");
-        LOG.info("Template: " + command);
-        String expandedCommand = GroovyUtils.expandTemplate(command, args);
-        LOG.info("Command: " + expandedCommand);
+        String expandedCommand = expandCommand(command, options);
         
         String localWorkDir = "/source";
 
@@ -169,6 +167,5 @@ public class DefaultDockerExecutorStep extends AbstractServiceStep {
             }
         }
     }
-
 
 }

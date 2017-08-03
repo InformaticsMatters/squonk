@@ -1,0 +1,53 @@
+{
+  "serviceConfig": {
+    "id": "test.nextflow.nextflow1",
+    "name": "TestNextflow1",
+    "description": "a description",
+    "tags": [ "tag1" ],
+    "resourceUrl": null,
+    "icon": "icons/clustering.png",
+    "inputDescriptors": [
+      {
+        "primaryType": "org.squonk.dataset.Dataset",
+        "secondaryType": "org.squonk.types.MoleculeObject",
+        "mediaType": "application/x-squonk-dataset-molecule+json",
+        "name": "input"
+      }
+    ],
+    "outputDescriptors": [
+      {
+        "primaryType": "org.squonk.dataset.Dataset",
+        "secondaryType": "org.squonk.types.MoleculeObject",
+        "mediaType": "application/x-squonk-dataset-molecule+json",
+        "name": "output"
+      }
+    ],
+    "optionDescriptors": [
+      {
+        "modes": [
+          "User"
+        ],
+        "@class": "org.squonk.options.OptionDescriptor",
+        "typeDescriptor": {
+          "type": "java.lang.Integer",
+          "@class": "org.squonk.options.SimpleTypeDescriptor"
+        },
+        "key": "arg.simple",
+        "label": "Simple",
+        "description": "Simple arg"
+      }
+    ],
+    "executorClassName": "org.squonk.execution.steps.impl.NextflowExecutorStep"
+  },
+  "inputRoutes": [
+    {
+      "route": "FILE"
+    }
+  ],
+  "outputRoutes": [
+    {
+      "route": "FILE"
+    }
+  ],
+  "nextflowFile": "a lot of text "
+}

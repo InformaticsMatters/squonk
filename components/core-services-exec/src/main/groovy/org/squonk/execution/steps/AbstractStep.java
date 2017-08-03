@@ -21,7 +21,7 @@ import org.apache.camel.TypeConverter;
 import org.apache.camel.spi.TypeConverterRegistry;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.docker.DockerRunner;
+import org.squonk.execution.runners.DockerRunner;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptor;
 import org.squonk.notebook.api.VariableKey;

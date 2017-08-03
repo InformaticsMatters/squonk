@@ -1,0 +1,42 @@
+---
+serviceConfig:
+  id: "test.nextflow.nextflow1"
+  name: "TestNextflow1"
+  description: "a description"
+  tags:
+  - "tag1"
+  resourceUrl: null
+  icon: "icons/clustering.png"
+  inputDescriptors:
+  - name: "input"
+    mediaType: "application/x-squonk-dataset-molecule+json"
+    primaryType: "org.squonk.dataset.Dataset"
+    secondaryType: "org.squonk.types.MoleculeObject"
+  outputDescriptors:
+  - name: "output"
+    mediaType: "application/x-squonk-dataset-molecule+json"
+    primaryType: "org.squonk.dataset.Dataset"
+    secondaryType: "org.squonk.types.MoleculeObject"
+  optionDescriptors:
+  - !<org.squonk.options.OptionDescriptor>
+    typeDescriptor: !<org.squonk.options.SimpleTypeDescriptor>
+      type: "java.lang.Integer"
+    key: "arg.simple"
+    label: "Simple"
+    description: "Simple arg"
+    visible: true
+    editable: true
+    modes:
+    - "User"
+  executorClassName: "org.squonk.execution.steps.impl.NextflowExecutorStep"
+inputRoutes:
+- route: "FILE"
+outputRoutes:
+- route: "FILE"
+nextflowFile: |
+  process sayHello {
+
+    """
+    printf 'Hello world! \n'
+    """
+  }

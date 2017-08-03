@@ -17,9 +17,11 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
+import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.DockerServiceDescriptor;
 import org.squonk.core.ServiceConfig;
-import org.squonk.execution.docker.DockerRunner;
+import org.squonk.execution.runners.AbstractRunner;
+import org.squonk.execution.runners.DockerRunner;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.execution.variable.impl.FilesystemReadContext;
@@ -85,7 +87,7 @@ public class GenericDatasetDockerExecutorStep extends DefaultDockerExecutorStep 
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <P, Q> void handleInput(CamelContext camelContext, DockerServiceDescriptor serviceDescriptor, VariableManager varman, DockerRunner runner, IODescriptor<P, Q> ioDescriptor) throws Exception {
+    protected <P, Q> void handleInput(CamelContext camelContext, DefaultServiceDescriptor serviceDescriptor, VariableManager varman, AbstractRunner runner, IODescriptor<P, Q> ioDescriptor) throws Exception {
 
         String inputType = (String) options.get(StepDefinitionConstants.OPTION_MEDIA_TYPE_INPUT);
         IODescriptor writeAs = generateIODescriptorForMediaType(inputType, ioDescriptor);
@@ -99,7 +101,7 @@ public class GenericDatasetDockerExecutorStep extends DefaultDockerExecutorStep 
 
     @Override
     @SuppressWarnings("unchecked")
-    protected <P, Q> void handleOutput(CamelContext camelContext, DockerServiceDescriptor serviceDescriptor, VariableManager varman, DockerRunner runner, IODescriptor<P, Q> ioDescriptor) throws Exception {
+    protected <P, Q> void handleOutput(CamelContext camelContext, DefaultServiceDescriptor serviceDescriptor, VariableManager varman, AbstractRunner runner, IODescriptor<P, Q> ioDescriptor) throws Exception {
 
         String outputType = (String) options.get(StepDefinitionConstants.OPTION_MEDIA_TYPE_OUTPUT);
         IODescriptor readAs = generateIODescriptorForMediaType(outputType, ioDescriptor);
