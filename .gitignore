@@ -24,6 +24,7 @@ components/loaders/files
 components/rdkit-lib/rdkit_loader.properties
 components/core-services-client/lib
 components/chem-services-root/src/main/html/licenses
+components/core-services-exec/.nextflow
 components/security-keycloak/lib/
 docker/**/*.war
 docker/xwiki-site/yyy.json
