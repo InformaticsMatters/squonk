@@ -50,7 +50,7 @@ public class AbstractHttpClient {
     private static final Logger LOG = Logger.getLogger(AbstractHttpClient.class.getName());
     protected transient final CloseableHttpClient httpclient;
     protected transient final PoolingHttpClientConnectionManager connectionManager;
-    protected boolean debugConnections = false;
+    protected int debugConnectionLevel = Integer.getInteger(IOUtils.getConfiguration("SQUONK_DEBUG_HTTP_CONNECTIONS", "0"));
 
     public AbstractHttpClient() {
 
@@ -61,9 +61,9 @@ public class AbstractHttpClient {
 
         connectionManager = new PoolingHttpClientConnectionManager();
         // Increase max total connection from the default of 20
-        //connectionManager.setMaxTotal(200);
+        connectionManager.setMaxTotal(100);
         // Increase default max connection per route from the default of 2
-        connectionManager.setDefaultMaxPerRoute(10);
+        connectionManager.setDefaultMaxPerRoute(25);
 
         httpclient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
@@ -71,7 +71,7 @@ public class AbstractHttpClient {
     }
 
     protected void debugConnections(String method, URI uri) {
-        if (debugConnections) {
+        if (debugConnectionLevel > 1) {
             StringBuilder b = new StringBuilder("============================== POOL STATS FOR ")
                     .append(method)
                     .append(" ")
@@ -83,7 +83,7 @@ public class AbstractHttpClient {
             }
             b.append("\n============================== POOL STATS END ================================\n");
             LOG.info(b.toString());
-        } else {
+        } else if (debugConnectionLevel == 1) {
             LOG.info(method + " ----------> " + uri.toString());
         }
     }
