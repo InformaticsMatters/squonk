@@ -50,7 +50,7 @@ public class AbstractHttpClient {
     private static final Logger LOG = Logger.getLogger(AbstractHttpClient.class.getName());
     protected transient final CloseableHttpClient httpclient;
     protected transient final PoolingHttpClientConnectionManager connectionManager;
-    protected int debugConnectionLevel = Integer.getInteger(IOUtils.getConfiguration("SQUONK_DEBUG_HTTP_CONNECTIONS", "0"));
+    protected int debugConnectionLevel = Integer.valueOf(IOUtils.getConfiguration("SQUONK_DEBUG_HTTP_CONNECTIONS", "0"));
 
     public AbstractHttpClient() {
 

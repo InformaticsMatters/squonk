@@ -50,7 +50,6 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
     public NotebookRestClient(String serverUrl) {
         this.baseUrl =  serverUrl + SquonkClientConfig.CORE_SERVICES_PATH + "/notebooks";
         LOG.info("NotebookRestClient is using base URL of " + baseUrl);
-        debugConnections = false;
     }
 
     public NotebookRestClient() {
