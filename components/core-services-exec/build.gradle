@@ -41,7 +41,9 @@ dependencies {
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
     compile "org.postgresql:postgresql:$postgresDriverVersion"
     compile 'com.github.docker-java:docker-java:3.0.7'
-    compile 'io.nextflow:nextflow:0.25.4'
+    compile('io.nextflow:nextflow:0.25.4') {
+        exclude group:'ch.qos.logback',module:'logback-classic'
+    }
 
     testCompile "org.apache.camel:camel-jetty:$camelVersion"
     testCompile project(':core-test')

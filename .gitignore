@@ -36,6 +36,8 @@ docker/deploy/setenv.sh
 docker/deploy/images/yyy.json
 docker/deploy/images/squonk-realm.json
 
+docker/deploy/images/cellexecutor/logging.properties
+
 docker/deploy/images/portal/server.xml
 docker/deploy/images/portal/persistence.properties
 

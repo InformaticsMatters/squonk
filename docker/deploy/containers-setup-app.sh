@@ -14,6 +14,11 @@ if [ ! -d /tmp/work ]; then
   mkdir /tmp/work
 fi
 
+if [ ! -f images/cellexecutor/logging.properties ]; then
+	echo "creating default logging config"
+	cp images/cellexecutor/logging.properties.default images/cellexecutor/logging.properties || exit 1
+fi
+
 echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 
 # set up the proxy details in the tomcat apps 

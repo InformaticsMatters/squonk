@@ -1,3 +1,4 @@
+#@IgnoreInspection BashAddShebang
 # The environment variable for PRIVATE_HOST will be the address of the docker gateway, something like 172.17.0.1
 # The environment variable for PUBLIC_HOST will be the public address, something like squonk.it or the IP of the gateway
 # if you are running locally.
@@ -40,10 +41,6 @@ export SQUONK_NEXTFLOW_WORK_DIR=/tmp/work/squonk/nextflow
 
 # Set to 2 to retain data in $SQUONK_DOCKER_WORK_DIR and SQUONK_NEXTFLOW_WORK_DIR for debugging purposes
 # export SQUONK_DEBUG_MODE=0
-
-# set to 1 for basic logging of connection URL, 2 for dumping of pool info
-SQUONK_DEBUG_HTTP_CONNECTIONS=0
-
 
 # EITHER set the docker environment to basic site 
 export COMPOSE_FILE=docker-compose.yml:docker-compose-basic.yml

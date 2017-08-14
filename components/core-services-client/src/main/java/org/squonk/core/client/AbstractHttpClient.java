@@ -27,7 +27,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
@@ -36,8 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,7 +47,6 @@ public class AbstractHttpClient {
     private static final Logger LOG = Logger.getLogger(AbstractHttpClient.class.getName());
     protected transient final CloseableHttpClient httpclient;
     protected transient final PoolingHttpClientConnectionManager connectionManager;
-    protected int debugConnectionLevel = Integer.valueOf(IOUtils.getConfiguration("SQUONK_DEBUG_HTTP_CONNECTIONS", "0"));
 
     public AbstractHttpClient() {
 
@@ -71,7 +67,7 @@ public class AbstractHttpClient {
     }
 
     protected void debugConnections(String method, URI uri) {
-        if (debugConnectionLevel > 1) {
+        if (LOG.isLoggable(Level.FINER)) {
             StringBuilder b = new StringBuilder("============================== POOL STATS FOR ")
                     .append(method)
                     .append(" ")
@@ -82,8 +78,8 @@ public class AbstractHttpClient {
                 b.append("\nRoute Stats: " + route + " " + connectionManager.getStats(route).toString());
             }
             b.append("\n============================== POOL STATS END ================================\n");
-            LOG.info(b.toString());
-        } else if (debugConnectionLevel == 1) {
+            LOG.fine(b.toString());
+        } else if (LOG.isLoggable(Level.FINE)) {
             LOG.info(method + " ----------> " + uri.toString());
         }
     }

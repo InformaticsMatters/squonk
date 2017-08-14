@@ -200,6 +200,7 @@ services:
         - /var/run/docker.sock:/var/run/docker.sock
         - /tmp/work:/tmp/work
         - /var/maven_repo
+        - ./images/cellexecutor/logging.properties:/logging.properties:ro
         #- ./data/docker-services:/var/local/squonk-docker-services
         environment:
             RABBITMQ_SQUONK_PASSWORD:
@@ -207,8 +208,8 @@ services:
             SQUONK_DOCKER_SERVICES_DIR:
             SQUONK_DOCKER_WORK_DIR:
             SQUONK_DEBUG_MODE:
-            SQUONK_DEBUG_HTTP_CONNECTIONS:
             registry.url: https://index.docker.io/v1/
+            JAVA_OPTS: '"-Djava.util.logging.config.file=/logging.properties"'
         networks:
         - squonk_back
             
@@ -229,7 +230,6 @@ services:
             KEYCLOAK_SERVER_URL:
             PUBLIC_HOST_URL:
             SERVICE_CALLBACK: http://localhost:8080/portal
-            SQUONK_DEBUG_HTTP_CONNECTIONS:
         networks:
         - squonk_front
         - squonk_back
