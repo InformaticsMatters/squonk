@@ -17,6 +17,17 @@ cd pipelines
 ./copy.dirs.sh
 ```
 
+Next you need to setup access to the ChemAxon Maven repository. 
+Create or edit the gradle.properties file in your $HOME/.gradle directory and add these 3 properties:
+```
+cxnMavenUser=YOUR_EMAIL
+cxnMavenPassword=YOUR_ACCESS_KEY
+cxnMavenRepositoryUrl=https://hub.chemaxon.com/artifactory/libs-release
+```
+Replace YOUR_EMAIL and YOUR_ACCESS_KEY with the appropriate values.
+Instructions for generating these can be found 
+[here](https://docs.chemaxon.com/display/docs/Public+Repository#PublicRepository-HowtoCongfigureYourProject)
+
 Now build squonk by moving into the squonk/components directory and use the 
 Gradle build file there. e.g.
 

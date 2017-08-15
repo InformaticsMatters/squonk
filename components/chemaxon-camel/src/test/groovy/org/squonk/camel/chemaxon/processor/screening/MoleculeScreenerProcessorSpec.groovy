@@ -41,20 +41,20 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
     //int resultCount = 4
     //String target = "CCN(C)C1=C(Br)C(=O)C2=C(C=CC=C2)C1=O"
     String target = 'OC1=CC(=CC=C1)C1=NC2=C(OC3=NC=CC=C23)C(=N1)N1CCOCC1'
-    int resultCount = 8
+    int resultCount = 4
     
     void "pharmacophore sequential streaming"() {
         setup:
         Dataset dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
         dataset.replaceStream(dataset.getStream().sequential())
-        def mol2 = new MoleculeObject(target)
         
         when:
         long t0 = System.currentTimeMillis()
         Stream results = template.requestBodyAndHeaders(
                 'direct:pharmacophore/streaming', dataset,
                 [(MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE+"_source"): target,
-                 (MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE+"_format"): "smiles"]).getStream()
+                 (MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE+"_format"): "smiles",
+                 (MoleculeScreenerProcessor.HEADER_THRESHOLD): 0.55f]).getStream()
         long count = results.count()
         long t1 = System.currentTimeMillis()
         
@@ -70,14 +70,14 @@ class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
         setup:
         Dataset dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
         dataset.replaceStream(dataset.getStream().parallel())
-        def mol2 = new MoleculeObject(target)
-        
+
         when:
         long t0 = System.currentTimeMillis()
         Stream results = template.requestBodyAndHeaders(
                 'direct:pharmacophore/streaming', dataset,
                 [(MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE+"_source"): target,
-                 (MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE+"_format"): "smiles"]).getStream()
+                 (MoleculeScreenerProcessor.HEADER_QUERY_MOLECULE+"_format"): "smiles",
+                 (MoleculeScreenerProcessor.HEADER_THRESHOLD): 0.55f]).getStream()
         long count = results.count()
         long t1 = System.currentTimeMillis()
         println "...done"
