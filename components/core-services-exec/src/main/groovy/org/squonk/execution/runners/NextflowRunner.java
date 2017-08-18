@@ -26,7 +26,7 @@ public class NextflowRunner extends AbstractRunner {
     }
 
     protected String getDefaultWorkDir() {
-        return IOUtils.getConfiguration("SQUONK_NEXTFLOW_WORK_DIR", "/tmp/work/squonk_test/nextflow");
+        return IOUtils.getConfiguration("SQUONK_NEXTFLOW_WORK_DIR", "/squonk/work/nextflow");
     }
 
     public int execute(List<String> args, Map<String,String> params) {

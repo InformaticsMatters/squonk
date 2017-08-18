@@ -87,7 +87,7 @@ services:
         - chemservices
         volumes:
         - /var/run/docker.sock:/var/run/docker.sock
-        - /tmp/work:/tmp/work
+        - /squonk/work:/squonk/work
         - /var/grape_repo
         environment:
             DOCKER_HOST: unix:///var/run/docker.sock

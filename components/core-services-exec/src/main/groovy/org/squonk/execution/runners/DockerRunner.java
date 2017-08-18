@@ -90,7 +90,7 @@ public class DockerRunner extends AbstractRunner {
     }
 
     protected String getDefaultWorkDir() {
-        return IOUtils.getConfiguration("SQUONK_DOCKER_WORK_DIR", "/tmp/work/squonk_test/docker");
+        return IOUtils.getConfiguration("SQUONK_DOCKER_WORK_DIR", "/squonk/work/docker");
     }
 
     protected DockerClient getDockerClient() {
