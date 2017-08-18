@@ -1,7 +1,7 @@
 ---
 serviceConfig:
-  id: "test.nextflow.nextflow2"
-  name: "TestNextflow2"
+  id: "test.nextflow.nextflow1"
+  name: "TestNextflow1"
   description: "a description"
   tags:
   - "tag1"
@@ -20,39 +20,25 @@ serviceConfig:
   optionDescriptors:
   - !<org.squonk.options.OptionDescriptor>
     typeDescriptor: !<org.squonk.options.SimpleTypeDescriptor>
-      type: "java.lang.String"
-    key: "arg.message"
-    label: "Simple message"
-    description: "Simple message"
-    defaultValue: "Hello World"
+      type: "java.lang.Integer"
+    key: "arg.simple"
+    label: "Simple"
+    description: "Simple arg"
     visible: true
     editable: true
     modes:
     - "User"
-  executorClassName: "org.squonk.execution.steps.impl.ThinDatasetNextflowExecutorStep"
+  executorClassName: "org.squonk.execution.steps.impl.NextflowExecutorStep"
 inputRoutes:
 - route: "FILE"
 outputRoutes:
 - route: "FILE"
+nextflowParams:
+  simple: "$simple"
 nextflowFile: |
-  params.message = 'Hello World'
-
-  process simpleCopy {
-
-    publishDir baseDir
-
-    input:
-    file input_data from file("$baseDir/input.data.gz")
-    file input_meta from file("$baseDir/input.metadata")
-
-    output:
-    file 'output.data.gz'
-    file 'output.metadata'
-    file 'message.txt'
+  process sayHello {
 
     """
-    echo $params.message >> message.txt
-    cp $input_data output.data.gz
-    cp $input_meta output.metadata
+    printf 'Hello world! \n'
     """
   }

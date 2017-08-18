@@ -21,9 +21,19 @@ package org.squonk.execution.util
  */
 class GroovyUtils {
 
-    static String expandTemplate(def text, def binding) {
+    static String expandTemplate(def text, def values) {
         def engine = new groovy.text.SimpleTemplateEngine()
-        def template = engine.createTemplate(text).make(binding)
+        def template = engine.createTemplate(text).make(values)
         return template.toString()
+    }
+
+    static Map<String,String> expandValues(Map<String,String> templates, Map<String,Object> values) {
+        def engine = new groovy.text.SimpleTemplateEngine()
+        Map<String,String> results = [:]
+        templates.forEach { k,v ->
+            String result = engine.createTemplate(v).make(values).toString()
+            results[k] = result
+        }
+        return results
     }
 }

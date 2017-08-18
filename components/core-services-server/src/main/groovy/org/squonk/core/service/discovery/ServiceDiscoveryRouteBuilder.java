@@ -16,23 +16,16 @@
 
 package org.squonk.core.service.discovery;
 
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.squonk.core.*;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
-import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 import org.squonk.util.ServiceConstants;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.FileSystems;
@@ -56,8 +49,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     private static Pattern EXECUTOR_PATTERN = Pattern.compile("/(\\w+)/(.*)");
     protected String DOCKER_SERVICES_DIR = IOUtils.getConfiguration("SQUONK_DOCKER_SERVICES_DIR", "../../data/testfiles/docker-services");
 
-    private final ObjectMapper jsonMapper = JsonHandler.getInstance().getObjectMapper();
-    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+
+
 
     /**
      * This allows the timer to be turned off or set to only run a certain
@@ -162,7 +155,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             int invalid = 0;
             try {
 
-                List<HttpServiceDescriptor> sds = loadHttpServiceDescriptors(u);
+                List<HttpServiceDescriptor> sds = ServiceDescriptorUtils.loadHttpServiceDescriptors(u);
                 checkHealth(u, p, sds, now);
 
                 set.setHealthUrl(p);
@@ -251,34 +244,17 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     private void readDockerServiceDescriptor(ServiceDescriptorRegistry reg, Path p, String base, Set<String> basePaths, Date now) {
         String url = "file://docker-services/" + base;
         LOG.finer("URL: " + url);
-        DockerServiceDescriptor sd = readServiceDescriptor(p, DockerServiceDescriptor.class);
+        DockerServiceDescriptor sd = ServiceDescriptorUtils.readServiceDescriptor(p, DockerServiceDescriptor.class);
         handleServiceDescriptor(sd, p, reg, basePaths, now, url);
     }
 
     private void readNextflowServiceDescriptor(ServiceDescriptorRegistry reg, Path p, String base, Set<String> basePaths, Date now) {
         String url = "file://nextflow-services/" + base;
         LOG.finer("URL: " + url);
-        NextflowServiceDescriptor sd = readServiceDescriptor(p, NextflowServiceDescriptor.class);
+        NextflowServiceDescriptor sd = ServiceDescriptorUtils.readServiceDescriptor(p, NextflowServiceDescriptor.class);
         handleServiceDescriptor(sd, p, reg, basePaths, now, url);
     }
 
-    private <T extends ServiceDescriptor> T readServiceDescriptor(Path p, Class<T> type) {
-        if (p.toString().toLowerCase().endsWith(".yml") || p.toString().toLowerCase().endsWith(".yaml")) {
-            try (InputStream is = new FileInputStream(p.toFile())) {
-                return yamlMapper.readValue(is, type);
-            } catch (IOException ex) {
-                LOG.log(Level.INFO, "Unable to read descriptor for " + p, ex);
-            }
-        } else if (p.toString().toLowerCase().endsWith(".json")) {
-            try (InputStream is = new FileInputStream(p.toFile())) {
-                return jsonMapper.readValue(is, type);
-            } catch (IOException ex) {
-                LOG.log(Level.INFO, "Unable to read descriptor for " + p, ex);
-            }
-        }
-        LOG.log(Level.INFO, "Unrecognised descriptor " + p);
-        return null;
-    }
 
     private void handleServiceDescriptor(ServiceDescriptor sd, Path p, ServiceDescriptorRegistry reg, Set<String> basePaths, Date now, String url) {
         if (sd != null) {
@@ -318,18 +294,6 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             sd.getServiceConfig().setStatus(status);
             sd.getServiceConfig().setStatusLastChecked(now);
         });
-    }
-
-    private List<HttpServiceDescriptor> loadHttpServiceDescriptors(String url) throws IOException {
-        ObjectReader reader = jsonMapper.readerFor(HttpServiceDescriptor.class);
-        MappingIterator<HttpServiceDescriptor> iter = reader.readValues(new URL(url));
-        List<HttpServiceDescriptor> list = new ArrayList<>();
-        while (iter.hasNext()) {
-            HttpServiceDescriptor sd = iter.next();
-            HttpServiceDescriptor absUrlSD = ServiceDescriptorUtils.makeAbsolute(url, sd);
-            list.add(absUrlSD);
-        }
-        return list;
     }
 
 }

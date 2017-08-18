@@ -33,10 +33,5 @@ inputRoutes:
 - route: "FILE"
 outputRoutes:
 - route: "FILE"
-nextflowFile: |
-  process sayHello {
-
-    """
-    printf 'Hello world! \n'
-    """
-  }
+nextflowParams:
+  simple: "$simple"

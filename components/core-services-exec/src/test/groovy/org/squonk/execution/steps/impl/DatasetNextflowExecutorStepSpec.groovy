@@ -1,9 +1,8 @@
 package org.squonk.execution.steps.impl
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.core.NextflowServiceDescriptor
+import org.squonk.core.ServiceDescriptorUtils
 import org.squonk.dataset.Dataset
 import org.squonk.execution.variable.VariableManager
 import org.squonk.notebook.api.VariableKey
@@ -28,8 +27,7 @@ class DatasetNextflowExecutorStepSpec extends Specification {
     }
 
     static NextflowServiceDescriptor createServiceDescriptor(String path) {
-        def mapper = new ObjectMapper(new YAMLFactory())
-        return mapper.readValue(new File(path), NextflowServiceDescriptor.class)
+        ServiceDescriptorUtils.readServiceDescriptor(path, NextflowServiceDescriptor.class)
     }
 
     static VariableManager createAndPrepareVariableManager() {
@@ -41,31 +39,29 @@ class DatasetNextflowExecutorStepSpec extends Specification {
         return varman
     }
 
-// currently fails if both tests are enabled. Some strange ThreadPool related error
+    void "thick execute"() {
 
-//    void "thick execute"() {
-//
-//        def nsd = createServiceDescriptor("src/test/groovy/org/squonk/execution/steps/impl/nextflow1.nsd.yml")
-//        println "Creating executor " + nsd.serviceConfig.executorClassName
-//        def step = Class.forName(nsd.serviceConfig.executorClassName).newInstance()
-//        def varman = createAndPrepareVariableManager()
-//
-//        step.configure(1, nsd.serviceConfig.id, ['arg.message':'WTF Venus'],
-//                ["input": new VariableKey(0, "output")],
-//                [:],
-//                nsd)
-//        def context = new DefaultCamelContext()
-//
-//        when:
-//        step.execute(varman, context)
-//        Dataset dataset = varman.getValue(new VariableKey(1, "output"), Dataset.class)
-//
-//        then:
-//        dataset != null
-//        dataset.generateMetadata()
-//        List results = dataset.getItems()
-//        results.size() == 4
-//    }
+        def nsd = createServiceDescriptor("src/test/groovy/org/squonk/execution/steps/impl/nextflow1.nsd.yml")
+        println "Creating executor " + nsd.serviceConfig.executorClassName
+        def step = Class.forName(nsd.serviceConfig.executorClassName).newInstance()
+        def varman = createAndPrepareVariableManager()
+
+        step.configure(1, nsd.serviceConfig.id, ['arg.message':'WTF Venus'],
+                ["input": new VariableKey(0, "output")],
+                [:],
+                nsd)
+        def context = new DefaultCamelContext()
+
+        when:
+        step.execute(varman, context)
+        Dataset dataset = varman.getValue(new VariableKey(1, "output"), Dataset.class)
+
+        then:
+        dataset != null
+        dataset.generateMetadata()
+        List results = dataset.getItems()
+        results.size() == 4
+    }
 
     void "thin execute"() {
 

@@ -39,7 +39,7 @@ nextflowFile: |
 
   process simpleCopy {
 
-    publishDir baseDir, mode: 'copy'
+    publishDir baseDir
 
     input:
     file input_data from file("$baseDir/input.data.gz")

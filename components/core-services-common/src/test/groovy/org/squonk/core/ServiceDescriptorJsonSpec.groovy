@@ -61,12 +61,12 @@ class ServiceDescriptorJsonSpec extends Specification {
         obj.executionEndpoint != null
     }
 
-    void "docker service descriptor"() {
+    void "validate pipelines docker service descriptors"() {
 
         def list = []
         def dir = new File("../../data/testfiles/docker-services/")
         dir.eachFileRecurse (FileType.FILES) { file ->
-            if (file.getName().endsWith(".dsd"))
+            if (file.getName().endsWith(".dsd.json"))
             list << file
         }
 
@@ -91,6 +91,5 @@ class ServiceDescriptorJsonSpec extends Specification {
         errors == 0
 
     }
-
 }
 

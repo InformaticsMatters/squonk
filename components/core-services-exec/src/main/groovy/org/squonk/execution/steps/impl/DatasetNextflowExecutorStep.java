@@ -4,6 +4,7 @@ import org.apache.camel.CamelContext;
 import org.squonk.core.NextflowServiceDescriptor;
 import org.squonk.execution.runners.NextflowRunner;
 import org.squonk.execution.steps.AbstractServiceStep;
+import org.squonk.execution.util.GroovyUtils;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.util.IOUtils;
 
@@ -45,32 +46,49 @@ public class DatasetNextflowExecutorStep extends AbstractServiceStep {
         NextflowRunner runner = new NextflowRunner();
         runner.init();
 
-        // generate the parameters. These are the equivalent of the -- commandline arguments that get passed to the nexflow
-        // processor as params e.g. --message 'Hello'. These need to be a Map of keys and values without the -- prefix
-        // e.g. for the previous case the key would be 'message' and the value would be 'Hello'
-        Map<String, String> params = new LinkedHashMap<>();
+        // generate the nextflow parameters fromt eh user specified options.
+        // These are the equivalent of the -- commandline arguments that get passed to the nexflow
+        // processor as params e.g. --message 'Hello' and are the params defined at the top of the nextflow file.
+        // These need to be a Map of keys and values without the -- prefix.
+        // First we need to extract the relevant options
+        Map<String, Object> paramOpts = new LinkedHashMap<>();
         options.forEach((k, v) -> {
             if (k.startsWith("arg.") && v != null) {
                 LOG.info("Found argument " + k + " = " + v);
-                params.put(k.substring(4), v.toString());
+                paramOpts.put(k.substring(4), v);
             }
         });
-
+        // now apply the templates that are defined in the NextflowServiceDescriptor.nextflowParams property
+        Map<String, String> params = null;
+        if (descriptor.getNextflowParams() != null && !descriptor.getNextflowParams().isEmpty()) {
+            params = GroovyUtils.expandValues(descriptor.getNextflowParams(), paramOpts);
+        } else {
+            params = Collections.emptyMap();
+        }
 
         List<String> args = new ArrayList<>();
         String nextflowFilePath = runner.getHostWorkDir().getPath() + "/nextflow.nf";
         args.add(nextflowFilePath);
 
-        LOG.info("Nextflow execution: " + nextflowFilePath +
+        LOG.info("Nextflow execution: " + nextflowFilePath + " " +
                 params.entrySet().stream().map((e) -> "--" + e.getKey() + " " + e.getValue()).collect(Collectors.joining(" ")));
         try {
             // create input files
             statusMessage = MSG_PREPARING_INPUT;
 
             // write the nextflow file that executes everything
-            LOG.info("Writing nextflow file");
+            LOG.info("Writing nextflow.nf");
             String nextflowFileContents = descriptor.getNextflowFile();
             runner.writeInput("nextflow.nf", nextflowFileContents, false);
+
+            // write the nextflow config file if one is defined
+            String nextflowConfigContents = descriptor.getNextflowConfig();
+            if (nextflowConfigContents != null && !nextflowConfigContents.isEmpty()) {
+                LOG.info("Writing nextflow.config as:\n" + nextflowConfigContents);
+                runner.writeInput("nextflow.config", nextflowConfigContents, false);
+            } else {
+                LOG.info("No nextflow.config");
+            }
 
             // write the input data
             handleInputs(camelContext, descriptor, varman, runner);

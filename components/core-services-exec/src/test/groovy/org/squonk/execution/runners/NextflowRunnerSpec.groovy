@@ -7,8 +7,6 @@ import spock.lang.Specification
  */
 class NextflowRunnerSpec extends Specification {
 
-
-
     void "clean workdir"() {
 
         setup:

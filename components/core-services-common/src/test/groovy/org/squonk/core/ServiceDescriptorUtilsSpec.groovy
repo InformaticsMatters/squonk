@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package org.squonk.core.service.discovery
+package org.squonk.core
 
-import org.squonk.core.HttpServiceDescriptor
+import groovy.io.FileType
 import org.squonk.io.IODescriptor
 import spock.lang.Specification
 
 import java.nio.file.FileSystems
 import java.nio.file.Files
-import java.nio.file.Path
 import java.util.stream.Stream
 
 /**
@@ -84,13 +83,75 @@ class ServiceDescriptorUtilsSpec extends Specification {
     void "walk tree"() {
         when:
         Stream paths = Files.walk(FileSystems.getDefault().getPath("../../data/testfiles/docker-services"))
-        long count = paths.peek() {
-            println it
-        }.count()
+        long count = paths.count()
 
         then:
         count > 0
 
     }
+
+    def "read json"() {
+
+        when:
+        def nsd = ServiceDescriptorUtils.readServiceDescriptor("src/test/groovy/org/squonk/core/nextflow1.nsd.json", NextflowServiceDescriptor.class)
+
+        then:
+        nsd != null
+    }
+
+    def "read yaml"() {
+
+        when:
+        def nsd = ServiceDescriptorUtils.readServiceDescriptor("src/test/groovy/org/squonk/core/nextflow1.nsd.yml", NextflowServiceDescriptor.class)
+
+        then:
+        nsd != null
+        nsd.nextflowFile.contains("printf 'Hello world! \\n'")
+        nsd.nextflowConfig == null
+    }
+
+    def "read yaml parts"() {
+
+        when:
+        def nsd = ServiceDescriptorUtils.readServiceDescriptor("src/test/groovy/org/squonk/core/nextflow2.nsd.yml", NextflowServiceDescriptor.class)
+
+        then:
+        nsd != null
+        nsd.nextflowFile == 'sample_nextflow_file'
+        nsd.nextflowConfig == '//sample_nextflow_config'
+    }
+
+    void "validate nextflow service descriptors"() {
+
+        def list = []
+        def dir = new File("../../data/testfiles/docker-services/")
+        dir.eachFileRecurse (FileType.FILES) { file ->
+            if (file.getName().endsWith(".nsd.yml"))
+                list << file
+        }
+
+        when:
+        def descriptors = []
+        int errors = 0
+        list.each { file ->
+            println "Trying $file"
+            try {
+                descriptors << ServiceDescriptorUtils.readServiceDescriptor(file, NextflowServiceDescriptor.class)
+            } catch (IOException ex) {
+                errors++
+                println "Failed to read $file"
+                ex.printStackTrace()
+            }
+        }
+        println "Read ${descriptors.size()} nextflow descriptors"
+        println "$errors errors"
+
+
+        then:
+        descriptors.size() > 0
+        errors == 0
+
+    }
+
 }
 
