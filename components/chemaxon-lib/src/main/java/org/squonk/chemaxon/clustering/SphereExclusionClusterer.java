@@ -256,7 +256,7 @@ public class SphereExclusionClusterer<T extends Descriptor> {
         return clone;
     }
 
-    MolInput<T> generateMolInput(MolInputBuilder inputBuilder) {
+    MolInput generateMolInput(MolInputBuilder inputBuilder) {
         return inputBuilder.build(descriptorGenerator, descriptorComparator);
     }
 

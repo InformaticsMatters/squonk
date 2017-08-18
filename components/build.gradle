@@ -55,17 +55,15 @@ allprojects {
 
     // In this section you declare where to find the dependencies of your project
     repositories {
-        // Use 'jcenter' for resolving your dependencies.
-        // You can declare any Maven/Ivy/file repository here.
+
         jcenter()
 
         maven {
+            url cxnMavenRepositoryUrl
             credentials {
-                // define username and password as environment variables 
-                username System.getenv('CHEMAXON_REPO_USERNAME') ?: 'tdudgeon'
-                password System.getenv('CHEMAXON_REPO_PASSWORD') ?: 'tdudgeon'
+                username = cxnMavenUser
+                password = cxnMavenPassword
             }
-            url "https://repository.chemaxon.com/artifactory/libs-release"
         }
 
         maven {
