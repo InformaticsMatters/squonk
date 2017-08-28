@@ -29,7 +29,7 @@ serviceConfig:
     editable: true
     modes:
     - "User"
-  executorClassName: "org.squonk.execution.steps.impl.ThinDatasetNextflowExecutorStep"
+  executorClassName: "org.squonk.execution.steps.impl.ThinDatasetNextflowInDockerExecutorStep"
 inputRoutes:
 - route: "FILE"
 outputRoutes:

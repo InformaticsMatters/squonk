@@ -21,7 +21,7 @@ public class NextflowServiceDescriptor extends DefaultServiceDescriptor {
 
     private String nextflowFile;
     private String nextflowConfig;
-    private Map<String,String> nextflowParams;
+    private String nextflowParams;
 
     /**
      *
@@ -37,7 +37,7 @@ public class NextflowServiceDescriptor extends DefaultServiceDescriptor {
             @JsonProperty("outputRoutes") IORoute[] outputRoutes,
             @JsonProperty("nextflowFile") String nextflowFile,
             @JsonProperty("nextflowConfig") String nextflowConfig,
-            @JsonProperty("nextflowParams") Map<String,String> nextflowParams) {
+            @JsonProperty("nextflowParams") String nextflowParams) {
         super(serviceConfig, thinDescriptors, inputRoutes, outputRoutes);
         this.nextflowFile = nextflowFile;
         this.nextflowConfig = nextflowConfig;
@@ -60,7 +60,7 @@ public class NextflowServiceDescriptor extends DefaultServiceDescriptor {
         this.nextflowConfig = nextflowConfig;
     }
 
-    public Map<String, String> getNextflowParams() {
+    public String getNextflowParams() {
         return nextflowParams;
     }
 }

@@ -33,5 +33,4 @@ inputRoutes:
 - route: "FILE"
 outputRoutes:
 - route: "FILE"
-nextflowParams:
-  simple: "$simple"
+nextflowParams: "--simple $simple"

@@ -65,4 +65,17 @@ class GroovyUtilsSpec extends Specification {
         r2 == "screen.py 'smiles' -t 0.7 -d morgan2"
 
     }
+
+    void "expand values"() {
+
+        def templates = [val1: '$val1', val2: '$val2']
+        def values = [val1: "aValue"]
+
+        when:
+        def results = GroovyUtils.expandValues(templates, values)
+
+        then:
+        results.val1 == "aValue"
+        results.val2 == null
+    }
 }

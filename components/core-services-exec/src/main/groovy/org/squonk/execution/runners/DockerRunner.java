@@ -89,6 +89,14 @@ public class DockerRunner extends AbstractRunner {
         this.localWorkDir = localWorkDir;
     }
 
+    public DockerRunner(String imageName) {
+
+        super(null);
+
+        this.imageName = imageName;
+        this.localWorkDir = getHostWorkDir().getPath();
+    }
+
     protected String getDefaultWorkDir() {
         return IOUtils.getConfiguration("SQUONK_DOCKER_WORK_DIR", "/squonk/work/docker");
     }
@@ -152,6 +160,13 @@ public class DockerRunner extends AbstractRunner {
         Bind b = new Bind(hostDir, volume, mode);
         binds.add(b);
         return b;
+    }
+
+    public void includeDockerSocket() {
+        String toMount = "/var/run/docker.sock";
+        Volume v = addVolume(toMount);
+        addBind(toMount, v, AccessMode.rw);
+        LOG.info("Volume " + toMount + " mounted as " + toMount);
     }
 
     /**

@@ -16,23 +16,29 @@
 
 package org.squonk.execution.util
 
+import groovy.text.SimpleTemplateEngine
+
 /**
  * Created by timbo on 04/12/16.
  */
 class GroovyUtils {
 
     static String expandTemplate(def text, def values) {
-        def engine = new groovy.text.SimpleTemplateEngine()
+        def engine = new SimpleTemplateEngine()
         def template = engine.createTemplate(text).make(values)
         return template.toString()
     }
 
     static Map<String,String> expandValues(Map<String,String> templates, Map<String,Object> values) {
-        def engine = new groovy.text.SimpleTemplateEngine()
+        def engine = new SimpleTemplateEngine()
         Map<String,String> results = [:]
         templates.forEach { k,v ->
-            String result = engine.createTemplate(v).make(values).toString()
-            results[k] = result
+            try {
+                String result = engine.createTemplate(v).make(values).toString()
+                results[k] = result
+            } catch (MissingPropertyException) {
+                // no value specified so this property will not be present
+            }
         }
         return results
     }
