@@ -18,6 +18,9 @@ cd pipelines
 ```
 
 Next you need to setup access to the ChemAxon Maven repository. 
+Instructions for this can be found [here](https://docs.chemaxon.com/display/docs/Public+Repository#PublicRepository-HowtoCongfigureYourProject),
+though they are slightly garbled.
+
 Create or edit the gradle.properties file in your $HOME/.gradle directory and add these 3 properties:
 ```
 cxnMavenUser=YOUR_EMAIL
