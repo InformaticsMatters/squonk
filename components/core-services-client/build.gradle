@@ -50,7 +50,7 @@ project.integrationTest {
 
 integrationTest {
     dependsOn rootProject.tasks.integrationTestEnvPrepare
-    //finalizedBy rootProject.tasks.integrationTestEnvShutdown
+    finalizedBy rootProject.tasks.integrationTestEnvShutdown
 }
 
 task copyDependencies(type: Sync) {
