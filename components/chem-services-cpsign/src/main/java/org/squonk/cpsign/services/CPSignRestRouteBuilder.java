@@ -93,7 +93,7 @@ public class CPSignRestRouteBuilder extends RouteBuilder {
                 new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input")},
                 new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output")},
                 options,
-                StepDefinitionConstants.DatasetServiceExecutor.CLASSNAME,
+                StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME,
                 endpoint
         );
     }
