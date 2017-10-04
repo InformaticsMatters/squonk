@@ -1,5 +1,7 @@
 #!/bin/sh
 
+docker pull informaticsmatters/groovy
+
 docker pull rabbitmq:3-management
 docker pull nginx:1.13
 docker pull tomcat:8.0-jre8

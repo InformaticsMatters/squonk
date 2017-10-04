@@ -87,7 +87,9 @@ abstract class FileHandler<T extends AbstractStreamType> implements HttpHandler<
             Constructor c = type.getConstructor(InputStream.class);
             return (T)c.newInstance(is);
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-           throw new RuntimeException(type.getName() + " is not a valid AbstractStreamType as it does not seem to have a constructor for an InputStream", e);
+            // close the InputStream otherwise it can result in connection leaks.
+            IOUtils.close(is);
+            throw new RuntimeException(type.getName() + " is not a valid AbstractStreamType as it does not seem to have a constructor for an InputStream", e);
         }
 
     }

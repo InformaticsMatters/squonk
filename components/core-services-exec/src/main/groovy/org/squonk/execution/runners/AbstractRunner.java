@@ -36,7 +36,7 @@ public abstract class AbstractRunner {
     protected int isRunning = 0;
 
     protected AbstractRunner(String hostBaseWorkDir) {
-        LOG.info("Using hostBaseWorkDir of " + hostBaseWorkDir);
+        LOG.info("Specified hostBaseWorkDir is " + hostBaseWorkDir);
         if (hostBaseWorkDir == null) {
             hostBaseWorkDir = getDefaultWorkDir();
         }

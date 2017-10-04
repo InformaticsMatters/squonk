@@ -161,7 +161,7 @@ public class DefaultDockerExecutorStep extends AbstractServiceStep {
 
         } finally {
             // cleanup
-            if (DEBUG_MODE < 2) {
+            if (runner != null && DEBUG_MODE < 2) {
                 runner.cleanup();
                 LOG.info("Results cleaned up");
             }

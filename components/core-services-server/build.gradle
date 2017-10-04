@@ -117,7 +117,7 @@ docker {
     certPath = null
 }
 
-task buildDockerFile(type: Dockerfile, dependsOn: war) {
+task buildDockerFile(type: Dockerfile) {
 
     destFile = project.file('build/Dockerfile')
     from "tomcat:7-jre8"
@@ -131,7 +131,10 @@ task buildDockerFile(type: Dockerfile, dependsOn: war) {
     exposePort(8080)
 }
 
-task builDockerImage(type: DockerBuildImage, dependsOn: buildDockerFile) {
+task buildDockerImage(type: DockerBuildImage) {
+
+    dependsOn = ['war', 'buildDockerFile']
+
     inputDir = buildDockerFile.destFile.parentFile
     tag = "squonk/" + contextName
 }
