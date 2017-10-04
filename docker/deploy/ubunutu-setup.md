@@ -121,8 +121,8 @@ cd ..
 Now pull the docker images. This will take a few mins.
 ```sh
 cd squonk/docker/deploy
-./images=pull-squonk.sh
-./images=pull-extra.sh
+./images-pull-squonk.sh
+./images-pull-extra.sh
 ```
 
 ### Copy the keys

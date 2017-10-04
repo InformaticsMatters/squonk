@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # sets up the containers ready for use.
 # once comple run them with run-containers.sh
