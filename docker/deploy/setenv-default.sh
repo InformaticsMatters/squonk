@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #@IgnoreInspection BashAddShebang
 # The environment variable for PRIVATE_HOST will be the address of the docker gateway, something like 172.17.0.1
 # The environment variable for PUBLIC_HOST will be the public address, something like squonk.it or the IP of the gateway
@@ -6,8 +8,8 @@
 # docker network inspect deploy_squonk_front
 #
 
-export PUBLIC_HOST=172.20.0.1
-export PRIVATE_HOST=172.20.0.1
+export PUBLIC_HOST=172.17.0.1
+export PRIVATE_HOST=172.17.0.1
 export RABBITMQ_ERLANG_COOKIE=topsecret
 
 # password for the admin user of rabbitmq

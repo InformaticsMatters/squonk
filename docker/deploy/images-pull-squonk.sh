@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 docker pull squonk/chem-services-basic
 docker pull squonk/core-services-server

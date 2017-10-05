@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 cd images
 docker build -t squonk/xwiki -f Dockerfile-xwiki .

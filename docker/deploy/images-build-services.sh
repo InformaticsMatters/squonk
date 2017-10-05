@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # builds the docker images that are based on our code.
 # To be safe run this every time, or just update the containers
