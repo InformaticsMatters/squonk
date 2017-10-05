@@ -229,6 +229,7 @@ services:
         - ./images/portal/web.xml:/usr/local/tomcat/webapps/portal/WEB-INF/web.xml:ro
         - ./images/portal/beans.xml:/usr/local/tomcat/webapps/portal/WEB-INF/beans.xml:ro
         - ./images/portal/persistence.properties:/usr/local/tomcat/webapps/portal/WEB-INF/persistence.properties:ro
+        - ./images/portal/logging.properties:/usr/local/tomcat/conf/logging.properties:ro
         environment:
             KEYCLOAK_SERVER_URL:
             PUBLIC_HOST_URL:

@@ -15,8 +15,13 @@ if [ ! -d /tmp/work ]; then
 fi
 
 if [ ! -f images/cellexecutor/logging.properties ]; then
-	echo "creating default logging config"
+	echo "creating default logging config for cellexecutor"
 	cp images/cellexecutor/logging.properties.default images/cellexecutor/logging.properties || exit 1
+fi
+
+if [ ! -f images/portal/logging.properties ]; then
+	echo "creating default logging config for portal"
+	cp images/portal/logging.properties.default images/portal/logging.properties || exit 1
 fi
 
 echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
