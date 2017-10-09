@@ -46,7 +46,7 @@ objects:
             httpGet:
               path: /chem-services-cdk-basic/rest/ping
               port: 8080
-            initialDelaySeconds: 15
+            initialDelaySeconds: 30
             timeoutSeconds: 1
             periodSeconds: 30
         restartPolicy: Always
