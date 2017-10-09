@@ -1,0 +1,148 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: service
+  annotations:
+    description: "Squonk Postgres"
+    tags: "squonkpostgres"
+labels:
+  app: squonk-postgres
+  template: service
+message: "Squonk Postgres has been deployed."
+
+objects:
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: ${APP_NAME}-claim-1
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: null
+    name: postgres-init-map
+  data:
+    init-postgres-db.sh: |
+      #!/bin/bash
+
+      PG_USER=${POSTGRES_USER:-postgres}
+      echo "Setting up db as user ${PG_USER}"
+
+      psql --username "$PG_USER" --command "CREATE USER keycloak WITH PASSWORD '${POSTGRES_KEYCLOAK_PASSWORD:-squonk}';"
+      echo "created keycloak user with password ${POSTGRES_KEYCLOAK_PASSWORD:-squonk}"
+      psql --username "$PG_USER" --command "CREATE USER xwiki WITH PASSWORD '${POSTGRES_XWIKI_PASSWORD:-squonk}';"
+      echo "created xwiki user with password ${POSTGRES_XWIKI_PASSWORD:-squonk}"
+      psql --username "$PG_USER" --command "CREATE USER squonk WITH PASSWORD '${POSTGRES_SQUONK_PASSWORD:-squonk}';"
+      echo "created squonk user with password ${POSTGRES_SQUONK_PASSWORD:-squonk}"
+
+      createdb --username "$PG_USER" -O $PG_USER squonk
+      createdb --username "$PG_USER" -O keycloak keycloak
+      createdb --username "$PG_USER" -O xwiki xwiki
+
+
+      psql --username "$PG_USER" --command "GRANT CONNECT ON DATABASE squonk TO squonk;"
+      psql --username "$PG_USER" -d squonk --command "CREATE SCHEMA users AUTHORIZATION ${PG_USER};"
+      psql --username "$PG_USER" -d squonk --command "GRANT USAGE ON SCHEMA users TO squonk;"
+      psql --username "$PG_USER" -d squonk --command "CREATE SCHEMA notebooks AUTHORIZATION squonk;"
+
+
+      # patch 1. Create chemcentral database
+      # docker exec -it -u postgres deploy_postgres_1 bash
+      createdb --username "$PG_USER" -O $PG_USER chemcentral
+      psql --username "$PG_USER" --command 'create extension rdkit' chemcentral
+      psql --username "$PG_USER" -d chemcentral --command "CREATE SCHEMA vendordbs AUTHORIZATION squonk;"
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: null
+    name: postgres-healthcheck-map
+  data:
+    docker-healthcheck.sh: "#!/bin/bash\nset -eo pipefail\n\nhost=\"$(hostname --ip-address
+      || echo '127.0.0.1')\"\nuser=\"${POSTGRES_USER:-postgres}\"\nexport PGPASSWORD=\"${POSTGRES_PASSWORD:-}\"\n\nargs=(\n\t#
+      force postgres to not use the local unix socket (test \"external\" connectibility)\n\t--host
+      \"$host\"\n\t--username \"$user\"\n\t--quiet --no-align --tuples-only\n)\n\nif
+      select=\"$(echo 'SELECT 1' | psql \"${args[@]}\")\" && [ \"$select\" = '1' ];
+      then\n\texit 0\nfi\n\nexit 1\n\n"
+
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    name: ${APP_NAME}
+  spec:
+    replicas: 1
+    selector:
+      name: ${APP_NAME}
+    template:
+      metadata:
+        labels:
+          name: ${APP_NAME}
+      spec:
+        containers:
+        - capabilities: {}
+          image: 'informaticsmatters/rdkit_cartridge:Release_2016_03_1'
+          name: ${APP_NAME}
+          ports:
+          - containerPort: 5432
+            protocol: TCP
+#          readinessProbe:
+#            exec:
+#              command:
+#              - /usr/config/healthcheck/docker-healthcheck.sh
+#            initialDelaySeconds: 45
+#            timeoutSeconds: 10
+          livenessProbe:
+            initialDelaySeconds: 30
+            tcpSocket:
+              port: 5432
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 250Mi
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: postgresql-data
+          - mountPath: /docker-entrypoint-initdb.d
+            name: init-config
+#          - mountPath: /usr/config/healthcheck
+#            name: healthcheck-config
+        restartPolicy: Always
+        volumes:
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: ${APP_NAME}-claim-1
+        - name: init-config
+          configMap:
+            name: postgres-init-map
+        - name: healthcheck-config
+          configMap:
+            name: postgres-healthcheck-map
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: ${APP_NAME}
+  spec:
+    ports:
+    - name: ${APP_NAME}
+      port: 5432
+      protocol: TCP
+      targetPort: 5432
+    selector:
+      name: ${APP_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+
+parameters:
+- description: Application name
+  name: APP_NAME
+  value: postgres-squonk
