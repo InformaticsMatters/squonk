@@ -3,7 +3,7 @@ version: '2.1'
 services:
 
     rabbitmq:
-        image: squonk/rabbitmq
+        image: rabbitmq:3-management
         ports:
         - "5672:5672"
         - "15672:15672"

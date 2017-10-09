@@ -79,7 +79,7 @@ public abstract class AbstractDockerScriptRunnerStep extends AbstractStandardSte
 
         } finally {
             // cleanup
-            if (runner != null) {
+            if (runner != null && DEBUG_MODE < 2) {
                 runner.cleanup();
                 LOG.info("Results cleaned up");
             }

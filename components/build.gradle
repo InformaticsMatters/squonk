@@ -102,48 +102,6 @@ task wrapper(type: Wrapper) {
     jarFile = 'wrapper/wrapper.jar'
 }
 
-/* to run the integration tests first cd into $LAC_HOME/docker and then execute:
-./build-external.sh
-./configure-external.sh
-*/
-
-task integrationTestEnvPrepare(type: Exec) {
-    dependsOn 'dockerFileChemServices', 'core-services-server:buildDockerFile', 'cell-executor:dockerBuildImage'
-
-    workingDir '../docker'
-    commandLine 'bash', 'int-test-env-prepare.sh'
-}
-
-task integrationTestEnvShutdown(type: Exec) {
-    workingDir '../docker'
-    commandLine 'bash', 'int-test-env-shutdown.sh'
-}
-
-task integrationTestEnvClean(type: Exec) {
-    commandLine 'bash', '../docker/int-test-env-clean.sh'
-}
-
-// tests integration test setup process without running any tests
-task integrationTestEnvDryRun {
-    dependsOn integrationTestEnvPrepare
-    finalizedBy integrationTestEnvShutdown
-}
-
-task integrationTestEnvDryRunNoShutdown {
-    dependsOn integrationTestEnvPrepare
-}
-
-
-task dbTestEnvPrepare(type: Exec) {
-    workingDir '../docker'
-    commandLine 'bash', 'db-test-env-prepare.sh'
-}
-
-task dbTestEnvShutdown(type: Exec) {
-    workingDir '../docker'
-    commandLine 'bash', 'db-test-env-shutdown.sh'
-}
-
 task createEbsBackendServicesRootZip(type: Zip) {
 
     copy {
@@ -255,9 +213,6 @@ task chemServicesWars(type: Copy) {
 
 task dockerFileChemServices(type: Dockerfile) {
 
-    dependsOn = [chemServicesWars]
-
-
     destFile = project.file('build/chem-services-basic/Dockerfile')
     // if changing the version you must also update the hardcoded version number in org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor
     from "informaticsmatters/rdkit_java_tomcat:Release_2017_03_1"
@@ -277,7 +232,67 @@ task dockerFileChemServices(type: Dockerfile) {
 }
 
 task dockerImageChemServices(type: DockerBuildImage) {
-    dependsOn dockerFileChemServices
+
+    dependsOn = [chemServicesWars, dockerFileChemServices]
+
     inputDir = dockerFileChemServices.destFile.parentFile
     tag = "squonk/chem-services-basic"
+}
+
+task dockerBuildImages() {
+
+    dependsOn = ['dockerImageChemServices', 'core-services-server:buildDockerImage', 'cell-executor:dockerBuildImage']
+}
+
+/*
+Running integration tests is complex and requires some setup before they can be run.
+Much of the material is in the /docker directory.
+
+Before running you must do these steps (some might be missing - please report)
+1. create a /var/maven_repo directory on your system. This is needed by the uploadArchives task
+2. create a /squonk/work directory
+3. execute the docker/deploy/images-pull-extra.sh script to pull the required Docker images
+
+Integration tests run against the production Docker images that need to be created prior to runnning
+the tests. To do this preparation run the  integrationTestInit task which builds the necessary images
+and does any other setup that is needed. If the running code (as opposed to the test code) changes this
+step needs to be repeated before running the tests.
+
+To run the integration tests run the integrationTest task.
+
+ */
+task integrationTestInit() {
+    dependsOn = [uploadArchives, dockerBuildImages]
+}
+
+task integrationTestEnvPrepare(type: Exec) {
+    //dependsOn 'dockerFileChemServices', 'core-services-server:buildDockerFile', 'cell-executor:dockerBuildImage'
+
+    workingDir '../docker'
+    commandLine 'bash', 'int-test-env-prepare.sh'
+}
+
+task integrationTestEnvShutdown(type: Exec) {
+    workingDir '../docker'
+    commandLine 'bash', 'int-test-env-shutdown.sh'
+}
+
+task integrationTestEnvClean(type: Exec) {
+    commandLine 'bash', '../docker/int-test-env-clean.sh'
+}
+
+// tests integration test setup process without running any tests
+task integrationTestEnvDryRun {
+    dependsOn integrationTestEnvPrepare
+    finalizedBy integrationTestEnvShutdown
+}
+
+task dbTestEnvPrepare(type: Exec) {
+    workingDir '../docker'
+    commandLine 'bash', 'db-test-env-prepare.sh'
+}
+
+task dbTestEnvShutdown(type: Exec) {
+    workingDir '../docker'
+    commandLine 'bash', 'db-test-env-shutdown.sh'
 }
