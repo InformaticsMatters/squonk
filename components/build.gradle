@@ -171,12 +171,13 @@ task chemServicesWars(type: Copy) {
             tasks.getByPath(':chem-services-rdkit-basic:war'),
             tasks.getByPath(':chem-services-rdkit-search:war'),
             tasks.getByPath(':chem-services-openchemlib-basic:war'),
-            tasks.getByPath(':chem-services-smartcyp:war'),
-            tasks.getByPath(':chem-services-cpsign:war')
+            tasks.getByPath(':chem-services-smartcyp:war')
+            //tasks.getByPath(':chem-services-cpsign:war')
     ]
 
     from "../data/licenses/license.cxl"
-    from "../data/licenses/cpsign0.3pro.license"
+    from "../docker/deploy/images/chemservices/chemaxon_reaction_library.zip"
+    //from "../data/licenses/cpsign0.3pro.license"
     from("chem-services-cdk-basic/build/libs") {
         include '*.war'
         rename '.*', 'chem-services-cdk-basic.war'
@@ -201,10 +202,10 @@ task chemServicesWars(type: Copy) {
         include '*.war'
         rename '.*', 'chem-services-smartcyp.war'
     }
-    from("chem-services-cpsign/build/libs") {
-        include '*.war'
-        rename '.*', 'chem-services-cpsign.war'
-    }
+//    from("chem-services-cpsign/build/libs") {
+//        include '*.war'
+//        rename '.*', 'chem-services-cpsign.war'
+//    }
     into 'build/chem-services-basic'
 
 }
@@ -222,11 +223,12 @@ task dockerFileChemServices(type: Dockerfile) {
 
     addFile('*.war', "/usr/local/tomcat/webapps/")
     addFile('license.cxl', 'license.cxl')
-    addFile('cpsign0.3pro.license', 'cpsign0.3pro.license')
+    addFile('chemaxon_reaction_library.zip', '/chemaxon_reaction_library.zip')
+    //addFile('cpsign0.3pro.license', 'cpsign0.3pro.license')
 
     environmentVariable("CHEMAXON_LICENSE_URL", "/usr/local/tomcat/license.cxl")
-    environmentVariable("CPSIGN_LICENSE_URL",   "/usr/local/tomcat/cpsign0.3pro.license")
-    environmentVariable("CPSIGN_MODEL_DIR",     "/cpsign_data")
+    //environmentVariable("CPSIGN_LICENSE_URL",   "/usr/local/tomcat/cpsign0.3pro.license")
+    //environmentVariable("CPSIGN_MODEL_DIR",     "/cpsign_data")
 
     exposePort(8080)
 }
