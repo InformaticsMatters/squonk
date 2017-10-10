@@ -15,23 +15,23 @@ objects:
 
 - apiVersion: v1
   kind: DeploymentConfig
-  kind: DeploymentConfig
   metadata:
-    name: ${APP_NAME}
+    name: chem-services-basic
     labels:
       app: ${APP_NAME}
   spec:
     replicas: 1
     selector:
-      name: ${APP_NAME}
+      name: chem-services-basic
     template:
       metadata:
+        name: chem-services-basic
         labels:  
           name: ${APP_NAME}
       spec:
         containers:
         - image: squonk/chem-services-basic
-          name: ${APP_NAME}
+          name: chem-services-basic
           env:
           - name: RABBITMQ_SQUONK_PASSWORD
             valueFrom:
@@ -66,7 +66,7 @@ objects:
 - apiVersion: v1
   kind: Service
   metadata:
-    name: ${APP_NAME}
+    name: chem-services-basic
     labels:
       app: ${APP_NAME}
   spec:
@@ -76,7 +76,7 @@ objects:
       protocol: TCP
       targetPort: 8080
     selector:
-      name: ${APP_NAME}
+      name: chem-services-basic
     sessionAffinity: None
     type: ClusterIP
 
