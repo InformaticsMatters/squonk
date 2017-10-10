@@ -50,7 +50,7 @@ objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: ${APP_NAME}
+    name: rabbitmq
     labels:
       app: ${APP_NAME}
   spec:
@@ -104,7 +104,7 @@ objects:
 - apiVersion: v1
   kind: Service
   metadata:
-    name: ${APP_NAME}
+    name: rabbitmq
     labels:
       app: ${APP_NAME}
   spec:
