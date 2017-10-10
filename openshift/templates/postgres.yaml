@@ -1,13 +1,15 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: service
+  name: squonk-postgres
   annotations:
-    description: "Squonk Postgres"
-    tags: "squonkpostgres"
+    description: "The pre-configures Squonk Postgres database"
+    tags: "squonk,postgres"
+    template.openshift.io/provider-display-name: "Informatics Matters"
+    template.openshift.io/support-url: "http://www.informaticsmatters.com"
 labels:
-  app: squonk-postgres
-  template: service
+  template: "squonk-postgres"
+
 message: "Squonk Postgres has been deployed."
 
 objects:
@@ -59,18 +61,20 @@ objects:
       psql --username "$PG_USER" --command 'create extension rdkit' chemcentral
       psql --username "$PG_USER" -d chemcentral --command "CREATE SCHEMA vendordbs AUTHORIZATION squonk;"
 
-- apiVersion: v1
-  kind: ConfigMap
-  metadata:
-    creationTimestamp: null
-    name: postgres-healthcheck-map
-  data:
-    docker-healthcheck.sh: "#!/bin/bash\nset -eo pipefail\n\nhost=\"$(hostname --ip-address
-      || echo '127.0.0.1')\"\nuser=\"${POSTGRES_USER:-postgres}\"\nexport PGPASSWORD=\"${POSTGRES_PASSWORD:-}\"\n\nargs=(\n\t#
-      force postgres to not use the local unix socket (test \"external\" connectibility)\n\t--host
-      \"$host\"\n\t--username \"$user\"\n\t--quiet --no-align --tuples-only\n)\n\nif
-      select=\"$(echo 'SELECT 1' | psql \"${args[@]}\")\" && [ \"$select\" = '1' ];
-      then\n\texit 0\nfi\n\nexit 1\n\n"
+# The healthchecks should really be baked into the container image.
+# Tried this but not happy.
+#- apiVersion: v1
+#  kind: ConfigMap
+#  metadata:
+#    creationTimestamp: null
+#    name: postgres-healthcheck-map
+#  data:
+#    docker-healthcheck.sh: "#!/bin/bash\nset -eo pipefail\n\nhost=\"$(hostname --ip-address
+#      || echo '127.0.0.1')\"\nuser=\"${POSTGRES_USER:-postgres}\"\nexport PGPASSWORD=\"${POSTGRES_PASSWORD:-}\"\n\nargs=(\n\t#
+#      force postgres to not use the local unix socket (test \"external\" connectibility)\n\t--host
+#      \"$host\"\n\t--username \"$user\"\n\t--quiet --no-align --tuples-only\n)\n\nif
+#      select=\"$(echo 'SELECT 1' | psql \"${args[@]}\")\" && [ \"$select\" = '1' ];
+#      then\n\texit 0\nfi\n\nexit 1\n\n"
 
 - apiVersion: v1
   kind: ReplicationController
@@ -86,8 +90,7 @@ objects:
           name: ${APP_NAME}
       spec:
         containers:
-        - capabilities: {}
-          image: 'informaticsmatters/rdkit_cartridge:Release_2016_03_1'
+        - image: "informaticsmatters/rdkit_cartridge:${RDKIT_TAG}"
           name: ${APP_NAME}
           ports:
           - containerPort: 5432
@@ -104,8 +107,15 @@ objects:
               port: 5432
             timeoutSeconds: 1
           resources:
+            qos:
+              cpu: ${{CPU_QOS}}
+              memory: ${{MEM_QOS}}
             limits:
-              memory: 250Mi
+              cpu: ${{CPU_LIMIT}}
+              memory: ${{MEM_LIMIT}}
+            requests:
+              cpu: ${{CPU_REQUEST}}
+              memory: ${{MEM_REQUEST}}
             privileged: false
           terminationMessagePath: /dev/termination-log
           volumeMounts:
@@ -123,9 +133,9 @@ objects:
         - name: init-config
           configMap:
             name: postgres-init-map
-        - name: healthcheck-config
-          configMap:
-            name: postgres-healthcheck-map
+#        - name: healthcheck-config
+#          configMap:
+#            name: postgres-healthcheck-map
 
 - apiVersion: v1
   kind: Service
@@ -143,6 +153,20 @@ objects:
     type: ClusterIP
 
 parameters:
-- description: Application name
-  name: APP_NAME
-  value: postgres-squonk
+
+- name: APP_NAME
+  description: The applictation name
+  value: "squonk-postgres"
+
+- name: RDKIT_TAG
+  description: The version tag for the RDKIT container version
+  value: "Release_2016_03_1"
+
+- name: CPU_REQUEST
+  value: 500m
+- name: CPU_LIMIT
+  value: 1000m
+- name: MEM_REQUEST
+  value: 500Mi
+- name: MEM_LIMIT
+  value: 1Gi
