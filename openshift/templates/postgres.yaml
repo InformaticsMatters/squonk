@@ -100,6 +100,27 @@ objects:
         containers:
         - image: "informaticsmatters/rdkit_cartridge:${RDKIT_TAG}"
           name: ${APP_NAME}
+          env:
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_USER
+          - name: POSTGRES_KEYCLOAK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_KEYCLOAK_PASSWORD
+          - name: POSTGRES_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_SQUONK_PASSWORD
+          - name: POSTGRES_XWIKI_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_XWIKI_PASSWORD
           ports:
           - containerPort: 5432
             protocol: TCP
@@ -126,11 +147,11 @@ objects:
             periodSeconds: 20
           resources:
             limits:
-              cpu: ${{CPU_LIMIT}}
-              memory: ${{MEM_LIMIT}}
+              cpu: ${CPU_LIMIT}
+              memory: ${MEM_LIMIT}
             requests:
-              cpu: ${{CPU_REQUEST}}
-              memory: ${{MEM_REQUEST}}
+              cpu: ${CPU_REQUEST}
+              memory: ${MEM_REQUEST}
             privileged: false
           terminationMessagePath: /dev/termination-log
           volumeMounts:

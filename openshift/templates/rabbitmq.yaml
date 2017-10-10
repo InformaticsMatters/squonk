@@ -72,6 +72,14 @@ objects:
           ports:
           - containerPort: 15672
             protocol: TCP
+          resources:
+            limits:
+              cpu: ${CPU_LIMIT}
+              memory: ${MEM_LIMIT}
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEM_REQUEST}
+            privileged: false
           volumeMounts:
           - name: squonk-rabbitmq-setup
             mountPath: /squonk-rabbitmq-setup
@@ -102,3 +110,12 @@ parameters:
 
 - name: APP_NAME
   value: "squonk-rabbitmq"
+
+- name: CPU_REQUEST
+  value: 500m
+- name: CPU_LIMIT
+  value: 1000m
+- name: MEM_REQUEST
+  value: 500Mi
+- name: MEM_LIMIT
+  value: 1Gi
