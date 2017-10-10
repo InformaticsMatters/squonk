@@ -63,18 +63,18 @@ objects:
 
 # The healthchecks should really be baked into the container image.
 # Tried this but not happy.
-#- apiVersion: v1
-#  kind: ConfigMap
-#  metadata:
-#    creationTimestamp: null
-#    name: postgres-healthcheck-map
-#  data:
-#    docker-healthcheck.sh: "#!/bin/bash\nset -eo pipefail\n\nhost=\"$(hostname --ip-address
-#      || echo '127.0.0.1')\"\nuser=\"${POSTGRES_USER:-postgres}\"\nexport PGPASSWORD=\"${POSTGRES_PASSWORD:-}\"\n\nargs=(\n\t#
-#      force postgres to not use the local unix socket (test \"external\" connectibility)\n\t--host
-#      \"$host\"\n\t--username \"$user\"\n\t--quiet --no-align --tuples-only\n)\n\nif
-#      select=\"$(echo 'SELECT 1' | psql \"${args[@]}\")\" && [ \"$select\" = '1' ];
-#      then\n\texit 0\nfi\n\nexit 1\n\n"
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: null
+    name: postgres-healthcheck-map
+  data:
+    docker-healthcheck.sh: "#!/bin/bash\nset -eo pipefail\n\nhost=\"$(hostname --ip-address
+      || echo '127.0.0.1')\"\nuser=\"${POSTGRES_USER:-postgres}\"\nexport PGPASSWORD=\"${POSTGRES_PASSWORD:-}\"\n\nargs=(\n\t#
+      force postgres to not use the local unix socket (test \"external\" connectibility)\n\t--host
+      \"$host\"\n\t--username \"$user\"\n\t--quiet --no-align --tuples-only\n)\n\nif
+      select=\"$(echo 'SELECT 1' | psql \"${args[@]}\")\" && [ \"$select\" = '1' ];
+      then\n\texit 0\nfi\n\nexit 1\n\n"
 
 - apiVersion: v1
   kind: ReplicationController
@@ -98,9 +98,9 @@ objects:
 #          readinessProbe:
 #            exec:
 #              command:
-#              - /usr/config/healthcheck/docker-healthcheck.sh
-#            initialDelaySeconds: 45
-#            timeoutSeconds: 10
+#              - /etc/config/docker-healthcheck.sh
+#            initialDelaySeconds: 15
+#            timeoutSeconds: 5
           livenessProbe:
             # This probe results in PG issuing 'incomplete startup packet'
             # messages to the log. They're the result of probe
@@ -128,8 +128,8 @@ objects:
             name: postgresql-data
           - mountPath: /docker-entrypoint-initdb.d
             name: init-config
-#          - mountPath: /usr/config/healthcheck
-#            name: healthcheck-config
+          - mountPath: /etc/config
+            name: healthcheck-config
         restartPolicy: Always
         volumes:
         - name: postgresql-data
@@ -138,9 +138,9 @@ objects:
         - name: init-config
           configMap:
             name: postgres-init-map
-#        - name: healthcheck-config
-#          configMap:
-#            name: postgres-healthcheck-map
+        - name: healthcheck-config
+          configMap:
+            name: postgres-healthcheck-map
 
 - apiVersion: v1
   kind: Service
