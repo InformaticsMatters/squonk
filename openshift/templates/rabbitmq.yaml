@@ -1,21 +1,25 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: service
+  name: squonk-rabbitmq
   annotations:
     description: "Squonk RabbitMQ"
     iconClass: "icon-tomcat"
-    tags: "rabbitmq"
+    tags: "squonk,rabbitmq"
 labels:
-  app: squonk-rabbitmq
+  template: squonk-rabbitmq
+
 message: "RabbitMQ has been deployed."  
 
 objects:
+
 - apiVersion: v1
   kind: ConfigMap
   metadata:
     name: squonk-rabbitmq-setup
-  data: 
+    labels:
+      app: ${APP_NAME}
+  data:
     rabbitmq-setup.sh: |-
       #!/bin/bash
       rabbitmqctl delete_user guest
@@ -34,7 +38,9 @@ objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: rabbitmq
+    name: ${APP_NAME}
+    labels:
+      app: ${APP_NAME}
   spec:
     replicas: 1  
     selector:    
@@ -78,7 +84,9 @@ objects:
 - apiVersion: v1
   kind: Service
   metadata:
-    name: rabbitmq
+    name: ${APP_NAME}
+    labels:
+      app: ${APP_NAME}
   spec:
     ports:
     - name: http
@@ -90,3 +98,7 @@ objects:
     sessionAffinity: None
     type: ClusterIP
 
+parameters:
+
+- name: APP_NAME
+  value: "squonk-rabbitmq"
