@@ -33,6 +33,11 @@ objects:
         - image: squonk/chem-services-basic
           name: ${APP_NAME}
           env:
+          - name: RABBITMQ_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: RABBITMQ_SQUONK_PASSWORD
           - name: POSTGRES_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
