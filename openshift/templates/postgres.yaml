@@ -83,7 +83,7 @@ objects:
       then\n\texit 0\nfi\n\nexit 1\n\n"
 
 - apiVersion: v1
-  kind: ReplicationController
+  kind: DeploymentConfig
   metadata:
     name: ${APP_NAME}
     labels:
