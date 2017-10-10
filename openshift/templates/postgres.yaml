@@ -3,11 +3,13 @@ kind: Template
 metadata:
   name: squonk-postgres
   annotations:
-    description: "The pre-configures Squonk Postgres database"
+    description: "This pre-configures Squonk Postgres database"
     tags: "squonk,postgres"
     template.openshift.io/provider-display-name: "Informatics Matters"
     template.openshift.io/support-url: "http://www.informaticsmatters.com"
 labels:
+  # Our policy is to match this with the APP_NAME
+  # Sadly we cannot use ${{APP_NAME}} here.
   template: "squonk-postgres"
 
 message: "Squonk Postgres has been deployed."
@@ -18,6 +20,8 @@ objects:
   kind: PersistentVolumeClaim
   metadata:
     name: ${APP_NAME}-claim-1
+    labels:
+      app: ${APP_NAME}
   spec:
     accessModes:
     - ReadWriteOnce
@@ -28,8 +32,9 @@ objects:
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    creationTimestamp: null
     name: postgres-init-map
+    labels:
+      app: ${APP_NAME}
   data:
     init-postgres-db.sh: |
       #!/bin/bash
@@ -66,8 +71,9 @@ objects:
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    creationTimestamp: null
     name: postgres-healthcheck-map
+    labels:
+      app: ${APP_NAME}
   data:
     docker-healthcheck.sh: "#!/bin/bash\nset -eo pipefail\n\nhost=\"$(hostname --ip-address
       || echo '127.0.0.1')\"\nuser=\"${POSTGRES_USER:-postgres}\"\nexport PGPASSWORD=\"${POSTGRES_PASSWORD:-}\"\n\nargs=(\n\t#
@@ -80,6 +86,8 @@ objects:
   kind: ReplicationController
   metadata:
     name: ${APP_NAME}
+    labels:
+      app: ${APP_NAME}
   spec:
     replicas: 1
     selector:
@@ -98,9 +106,10 @@ objects:
 #          readinessProbe:
 #            exec:
 #              command:
-#              - /etc/config/docker-healthcheck.sh
+#              - bash /etc/config/docker-healthcheck.sh
 #            initialDelaySeconds: 15
 #            timeoutSeconds: 5
+#            periodSeconds: 10
           livenessProbe:
             # This probe results in PG issuing 'incomplete startup packet'
             # messages to the log. They're the result of probe
@@ -143,6 +152,8 @@ objects:
   kind: Service
   metadata:
     name: ${APP_NAME}
+    labels:
+      app: ${APP_NAME}
   spec:
     ports:
     - name: ${APP_NAME}
@@ -157,7 +168,6 @@ objects:
 parameters:
 
 - name: APP_NAME
-  description: The applictation name
   value: "squonk-postgres"
 
 - name: RDKIT_TAG
