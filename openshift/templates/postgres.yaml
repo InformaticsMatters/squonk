@@ -102,10 +102,15 @@ objects:
 #            initialDelaySeconds: 45
 #            timeoutSeconds: 10
           livenessProbe:
-            initialDelaySeconds: 30
+            # This probe results in PG issuing 'incomplete startup packet'
+            # messages to the log. They're the result of probe
+            # making a TCP connection but sending no traffic.
+            initialDelaySeconds: 60
             tcpSocket:
               port: 5432
             timeoutSeconds: 1
+            # Default period is 10 seconds
+            periodSeconds: 20
           resources:
             qos:
               cpu: ${{CPU_QOS}}
