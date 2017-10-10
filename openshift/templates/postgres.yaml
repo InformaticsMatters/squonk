@@ -85,17 +85,17 @@ objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: ${APP_NAME}
+    name: postgres
     labels:
       app: ${APP_NAME}
   spec:
     replicas: 1
     selector:
-      name: ${APP_NAME}
+      name: postgres
     template:
       metadata:
         labels:
-          name: ${APP_NAME}
+          name: postgres
       spec:
         containers:
         - image: "informaticsmatters/rdkit_cartridge:${RDKIT_TAG}"
@@ -176,17 +176,17 @@ objects:
 - apiVersion: v1
   kind: Service
   metadata:
-    name: ${APP_NAME}
+    name: postgres
     labels:
       app: ${APP_NAME}
   spec:
     ports:
-    - name: ${APP_NAME}
+    - name: postgres
       port: 5432
       protocol: TCP
       targetPort: 5432
     selector:
-      name: ${APP_NAME}
+      name: postgres
     sessionAffinity: None
     type: ClusterIP
 
