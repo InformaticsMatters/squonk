@@ -103,6 +103,10 @@ objects:
           ports:
           - containerPort: 5432
             protocol: TCP
+          # The readinessProbe does not work.
+          # When you run this command from the terminal you
+          # get an exit code of 0 (success). Somethign to do with
+          # the shell-script privileges?
 #          readinessProbe:
 #            exec:
 #              command:
