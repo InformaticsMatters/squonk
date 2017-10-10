@@ -11,6 +11,18 @@ labels:
 
 message: "RabbitMQ has been deployed."  
 
+# Note (abc:10th Oct)
+# This service needs a 'poke' ATM.
+# Once started the 'only once' script
+# (/squonk-rabbitmq-setup/rabbitmq-setup.sh) needs to be run.
+#
+# From a terminal...
+#
+# cd /squonk-rabbitmq-setup
+# bash rabbitmq-setup.sh
+#
+# You can ignore the two errors about the unknonw guest and squonk users
+
 objects:
 
 - apiVersion: v1
