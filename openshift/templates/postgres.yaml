@@ -112,9 +112,6 @@ objects:
             # Default period is 10 seconds
             periodSeconds: 20
           resources:
-            qos:
-              cpu: ${{CPU_QOS}}
-              memory: ${{MEM_QOS}}
             limits:
               cpu: ${{CPU_LIMIT}}
               memory: ${{MEM_LIMIT}}
