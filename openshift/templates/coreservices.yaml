@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: coreservices
+  annotations:
+    description: "Squonk Core Services"
+    iconClass: "icon-tomcat"
+    tags: "squonk,coreservices"
+labels:
+  template: squonk-coreservices
+  app: squonk-coreservices
+
+message: "Squonk Core Services have been deployed."
+
+objects:
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: coreservices
+  spec:
+    replicas: 1  
+    selector:    
+      name: coreservices
+    template:    
+      metadata:
+        labels:  
+          name: coreservices
+      spec:
+        containers:
+        - image: squonk/core-services-server
+          name: coreservices
+          env:
+          - name: RABBITMQ_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: RABBITMQ_SQUONK_PASSWORD
+          - name: POSTGRES_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_SQUONK_PASSWORD
+          - name: SQUONK_BASIC_CHEM_SERVICES_URL
+            value: ${SQUONK_BASIC_CHEM_SERVICES_URL}
+          - name: SQUONK_DOCKER_SERVICES_DIR
+            value: ${SQUONK_DOCKER_SERVICES_DIR}
+          resources:
+            limits:
+              cpu: ${CPU_LIMIT}
+              memory: ${MEM_LIMIT}
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEM_REQUEST}
+            privileged: false
+          volumeMounts:
+          - mountPath: /var/local/squonk-docker-services
+            name: squonk-docker-services
+        volumes:
+        - name: squonk-docker-services
+          emptyDir: {}
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: coreservices
+  spec:
+    selector:
+      name: coreservices
+    ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    sessionAffinity: None
+    type: ClusterIP
+
+parameters:
+
+- name: SQUONK_BASIC_CHEM_SERVICES_URL
+  value: "http://chemservices:8080"
+- name: SQUONK_DOCKER_SERVICES_DIR
+  value: "/var/local/squonk-docker-services"
+
+- name: CPU_REQUEST
+  value: 500m
+- name: CPU_LIMIT
+  value: 1000m
+- name: MEM_REQUEST
+  value: 500Mi
+- name: MEM_LIMIT
+  value: 1Gi
