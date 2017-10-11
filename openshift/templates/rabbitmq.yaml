@@ -60,7 +60,7 @@ objects:
           name: rabbitmq
       spec:
         containers:
-        - image: rabbitmq:3-management
+        - image: rabbitmq:${RABBITMQ_TAG}
           name: rabbitmq
           env:
           - name: RABBITMQ_DEFAULT_USER
@@ -114,6 +114,10 @@ objects:
     type: ClusterIP
 
 parameters:
+
+- name: RABBITMQ_TAG
+  description: The version tag for the RabbitMQ container version
+  value: "3-management"
 
 - name: CPU_REQUEST
   value: 500m

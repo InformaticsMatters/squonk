@@ -8,8 +8,6 @@ metadata:
     template.openshift.io/provider-display-name: "Informatics Matters"
     template.openshift.io/support-url: "http://www.informaticsmatters.com"
 labels:
-  # Our policy is to match this with the APP_NAME
-  # Sadly we cannot use ${{APP_NAME}} here.
   template: "squonk-postgres"
 
 message: "Squonk Postgres has been deployed."
