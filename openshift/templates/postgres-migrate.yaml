@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: postgres-migrate
+  annotations:
+    description: "Squonk Postgres Database Migration"
+    tags: "squonk,postgres"
+labels:
+  template: squonk-postgres-migrate
+  app: squonk-postgres-migrate
+
+message: "Squonk Postgres Database has been migrated."
+
+objects:
+
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: postgres-migrate
+  spec:
+    replicas: 1
+    selector:
+      name: postgres-migrate
+    template:
+      metadata:
+        labels:
+          name: postgres-migrate
+      spec:
+        containers:
+        - image: squonk/flyway
+          name: postgres-migrate
+          env:
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_PASSWORD
+        restartPolicy: OnFailure
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: postgres-migrate
+  spec:
+    ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      name: postgres-migrate
+    sessionAffinity: None
+    type: ClusterIP
+
+parameters:
+
+- name: POSTGRESS
+  description: Chemical search tables
+  value: ""

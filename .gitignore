@@ -12,6 +12,7 @@
 **/private
 **/derby.log
 **/*~
+**/.DS_Store
 
 data/licenses
 data/testfiles/emols_order*
