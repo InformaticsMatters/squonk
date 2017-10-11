@@ -8,6 +8,7 @@ metadata:
     tags: "squonk,chemservices"
 labels:
   template: squonk-chemservices
+  app: squonk-chemservices
 
 message: "Chemservices has been deployed."
 
@@ -17,17 +18,14 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: chem-services-basic
-    labels:
-      app: ${APP_NAME}
   spec:
     replicas: 1
     selector:
       name: chem-services-basic
     template:
       metadata:
-        name: chem-services-basic
-        labels:  
-          name: ${APP_NAME}
+        labels:
+          name: chem-services-basic
       spec:
         containers:
         - image: squonk/chem-services-basic
@@ -67,8 +65,6 @@ objects:
   kind: Service
   metadata:
     name: chem-services-basic
-    labels:
-      app: ${APP_NAME}
   spec:
     ports:
     - name: http
@@ -82,18 +78,6 @@ objects:
 
 parameters:
 
-- name: APP_NAME
-  value: squonk-chemservices
-
 - name: STRUCTURE_DATABASE_TABLES
   description: Chemical search tables
   value: ""
-
-- name: CPU_REQUEST
-  value: 500m
-- name: CPU_LIMIT
-  value: 1000m
-- name: MEM_REQUEST
-  value: 500Mi
-- name: MEM_LIMIT
-  value: 1Gi
