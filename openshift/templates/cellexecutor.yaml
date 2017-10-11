@@ -1,0 +1,103 @@
+# IMPORTANT NOTE
+#
+# This template is a just a 'shell' at the moment.
+# It creates the cellexecutor service but the template
+# is incomplete as a number of mounts and comms issues
+# still need to be resolved. It is present here simply
+# to act as the starting point for the finished article.
+
+apiVersion: v1
+kind: Template
+metadata:
+  name: cellexecutor
+  annotations:
+    description: "Squonk Cell Executor"
+    iconClass: "icon-tomcat"
+    tags: "squonk,cellexecutor"
+labels:
+  template: squonk-cellexecutor
+  app: squonk-cellexecutor
+
+message: "Squonk Cell Executor has been deployed."
+
+objects:
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: cellexecutor
+  spec:
+    replicas: 1  
+    selector:    
+      name: cellexecutor
+    template:    
+      metadata:
+        labels:  
+          name: cellexecutor
+      spec:
+        containers:
+        - image: squonk/cellexecutor
+          name: cellexecutor
+          env:
+          - name: RABBITMQ_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: RABBITMQ_SQUONK_PASSWORD
+          - name: DOCKER_HOST
+            value: ${DOCKER_HOST}
+          - name: JAVA_OPTS
+            value: ${JAVA_OPTS}
+          resources:
+            limits:
+              cpu: ${CPU_LIMIT}
+              memory: ${MEM_LIMIT}
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEM_REQUEST}
+            privileged: false
+          volumeMounts:
+          - mountPath: /squonk/work
+            name: squonk-work
+        volumes:
+        - name: squonk-work
+          emptyDir: {}
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: cellexecutor
+  spec:
+    selector:
+      name: cellexecutor
+    ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    sessionAffinity: None
+    type: ClusterIP
+
+parameters:
+
+- name: DOCKER_HOST
+  value: "unix:///var/run/docker.sock"
+- name: DOCKER_REGISTRY_URL
+  value: "https://index.docker.io/v1/"
+
+- name: JAVA_OPTS
+  value: '"-Djava.util.logging.config.file=/logging.properties"'
+
+- name: SQUONK_BASIC_CHEM_SERVICES_URL
+  value: "http://chemservices:8080"
+- name: SQUONK_DOCKER_SERVICES_DIR
+  value: "/var/local/squonk-docker-services"
+
+- name: CPU_REQUEST
+  value: 500m
+- name: CPU_LIMIT
+  value: 1000m
+- name: MEM_REQUEST
+  value: 500Mi
+- name: MEM_LIMIT
+  value: 1Gi

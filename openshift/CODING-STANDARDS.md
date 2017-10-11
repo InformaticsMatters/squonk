@@ -11,29 +11,27 @@ Importantly, if in doubt, don't guess, ask.
 -   All templates must provide a `template` label.
 -   For Squonk-related templates the label should start `squonk-`.
     The postgres template would be called `squonk-postgres` for example.
--   All objects within the template must provide an `app` label
-    whose value is equal to the `APP_NAME` `property`.
+-   Additionally the Template should provide an `app` label in the same
+    fashion.
 
 In this way all objects belonging to a specific template can be
 deleted with the command:
 
-    $ oc delete all,cm,pvc --selector template=${APP_NAME}
+    $ oc delete all,cm,pvc --selector template=squonk-[service]
     
 And all instances of a particular processing of a template can be deleted
 with the command:
 
-    $ oc delete all,cm,pvc --selector app=${APP_NAME}
+    $ oc delete all,cm,pvc --selector app=squonk-[service]
     
 ## Properties
--   An `APP_NAME` property must be provided. The default value for
-    squonk-related templates will begin `squonk-` followed by the
-    type of application (i.e. `postgres`).
 -   Avoid adding a description for the obvious. `APP_NAME` is unlikely
-    to benefit further from a `desacription` like `The application name`.
+    to benefit further from a `description` like `The application name`.
     (DRY).
--   Unless there are very good reasons you should strive to add a set of
-    CPU and memory requests and limits that are used . Limits are more important than
-    requests as they provide a hard-limit that a _Pod_ cannot exceed.
+-   Unless there are very good reasons not to, you should strive to add a set
+    of reasonable CPU and memory requests and limits that are used.
+    Limits are more important than requests as they provide a _red line_
+    that a _Pod_ cannot exceed without being killed.
     
     - name: CPU_REQUEST
       value: 500m
@@ -43,7 +41,7 @@ with the command:
       value: 500Mi
     - name: MEM_LIMIT
       value: 1Gi
-       
+
 ## Tags
 -   Employ tags in the template to permit searching.
 -   Squonk-related templates should always contain a `squonk` tag,
