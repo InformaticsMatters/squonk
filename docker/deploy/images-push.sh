@@ -3,7 +3,7 @@
 base=$PWD
 
 cd ../../components/
-./gradlew clean
+./gradlew clean database:buildDockerImage
 
 cd $base
 ./images-build-core.sh
@@ -15,4 +15,5 @@ docker push squonk/chem-services-basic
 docker push squonk/core-services-server
 docker push squonk/cellexecutor
 docker push squonk/xwiki
+docker push squonk/flyway
 

@@ -73,6 +73,16 @@ services:
             interval: 10s
             timeout: 2s
             retries: 5
+            
+    flyway:
+        image: squonk/flyway
+        environment:
+            POSTGRES_PASSWORD:
+        networks:
+        - squonk_back
+        depends_on:
+            postgres:
+                condition: service_healthy
     
     ################# stage1 container ############################################
     # waits till postgres and rabbitmq are healthy and then terminates
