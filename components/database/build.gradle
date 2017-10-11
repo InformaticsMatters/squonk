@@ -18,7 +18,11 @@ description = 'Database creation'
 
 apply plugin: 'java'
 apply plugin: 'org.flywaydb.flyway'
+apply plugin: 'com.bmuschko.docker-remote-api'
+apply plugin: 'org.unbroken-dome.test-sets'
 
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 buildscript {
     repositories {
@@ -27,7 +31,7 @@ buildscript {
 
     dependencies {
         classpath "org.postgresql:postgresql:$postgresDriverVersion"
-        classpath 'org.flywaydb:flyway-gradle-plugin:3.2.1'
+        classpath "org.flywaydb:flyway-gradle-plugin:$flywayVersion"
     }
 }
 
@@ -41,4 +45,36 @@ flyway {
     println "Using DB URL of $url"
 }
 
+task buildDockerFile(type: Dockerfile) {
+
+    destFile = project.file('build/Dockerfile')
+    from "openjdk:8-jre"
+    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
+
+    runCommand("""wget -q https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${flywayVersion}/flyway-commandline-${flywayVersion}.zip &&\
+ unzip flyway-commandline-${flywayVersion}.zip &&\
+ rm flyway-commandline-${flywayVersion}.zip &&\
+ cd flyway-${flywayVersion}/drivers/ &&\
+ rm -f * &&\
+ wget -q https://repo1.maven.org/maven2/org/postgresql/postgresql/${postgresDriverVersion}/postgresql-${postgresDriverVersion}.jar &&\
+ rm ../conf/flyway.conf
+""")
+
+    workingDir("/flyway-${flywayVersion}")
+
+    addFile("src/main/upgrade-postgres.sh", "./")
+    addFile("src/main/flyway.conf", "conf/")
+    addFile("src/main/resources/db/migration/*.sql", "sql/")
+
+    entryPoint("sh", "upgrade-postgres.sh")
+}
+
+task buildDockerImage(type: DockerBuildImage) {
+
+    dependsOn = ['buildDockerFile']
+
+    inputDir = projectDir
+    dockerFile = buildDockerFile.destFile
+    tag = "squonk/flyway"
+}
 
