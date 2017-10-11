@@ -8,6 +8,7 @@ metadata:
     tags: "squonk,rabbitmq"
 labels:
   template: squonk-rabbitmq
+  app: squonk-rabbitmq
 
 message: "RabbitMQ has been deployed."  
 
@@ -29,8 +30,6 @@ objects:
   kind: ConfigMap
   metadata:
     name: squonk-rabbitmq-setup
-    labels:
-      app: ${APP_NAME}
   data:
     rabbitmq-setup.sh: |-
       #!/bin/bash
@@ -51,8 +50,6 @@ objects:
   kind: DeploymentConfig
   metadata:
     name: rabbitmq
-    labels:
-      app: ${APP_NAME}
   spec:
     replicas: 1  
     selector:    
@@ -105,8 +102,6 @@ objects:
   kind: Service
   metadata:
     name: rabbitmq
-    labels:
-      app: ${APP_NAME}
   spec:
     ports:
     - name: http
@@ -119,9 +114,6 @@ objects:
     type: ClusterIP
 
 parameters:
-
-- name: APP_NAME
-  value: "squonk-rabbitmq"
 
 - name: CPU_REQUEST
   value: 500m
