@@ -12,39 +12,74 @@ labels:
 
 message: "RabbitMQ has been deployed."  
 
-# Note (abc:10th Oct)
-# This service needs a 'poke' ATM.
-# Once started the 'only once' script
-# (/squonk-rabbitmq-setup/rabbitmq-setup.sh) needs to be run.
-#
-# From a terminal...
-#
-# cd /squonk-rabbitmq-setup
-# bash rabbitmq-setup.sh
-#
-# You can ignore the two errors about the unknonw guest and squonk users
-
 objects:
 
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    name: squonk-rabbitmq-setup
+    name: squonk-rabbitmq-config
   data:
-    rabbitmq-setup.sh: |-
-      #!/bin/bash
-      rabbitmqctl delete_user guest
-      rabbitmqctl delete_user squonk
-      rabbitmqctl add_vhost /squonk
-      echo "  created /squonk virtualhost"
-      rabbitmqctl add_user squonk ${RABBITMQ_SQUONK_PASSWORD:-squonk}
-      echo "  created squonk user with password ${RABBITMQ_SQUONK_PASSWORD:-squonk}"
-      rabbitmqctl change_password admin ${RABBITMQ_DEFAULT_PASSWORD:-squonk}
-      echo "  admin password set to ${RABBITMQ_DEFAULT_PASSWORD:-squonk}"
-      rabbitmqctl set_permissions -p /       admin  '.*' '.*' '.*'
-      rabbitmqctl set_permissions -p /squonk admin  '.*' '.*' '.*'
-      rabbitmqctl set_permissions -p /squonk squonk '.*' '.*' '.*'
-      echo "  rabbitmq setup complete"
+    rabbitmq.config: |
+      [
+        {rabbit, [
+          {loopback_users, []}
+        ]},
+        {rabbitmq_management, [
+          {load_definitions, "/etc/rabbitmq-squonk/definitions.json"}
+        ]}
+      ].
+    definitions.json: |
+      {
+        "rabbit_version": "3.6.12",
+        "users": [
+          {
+            "name": "squonk",
+            "password": "squonk",
+            "tags": ""
+          },
+          {
+            "name": "admin",
+            "password": "squonk",
+            "tags": ""
+          }
+        ],
+        "vhosts": [
+          {
+            "name": "\/"
+          },
+          {
+            "name": "\/squonk"
+          }
+        ],
+        "permissions": [
+          {
+            "user": "squonk",
+            "vhost": "\/squonk",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+          },
+          {
+            "user": "admin",
+            "vhost": "\/squonk",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+          },
+          {
+            "user": "admin",
+            "vhost": "\/",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+          }
+        ],
+        "parameters": [],
+        "policies": [],
+        "queues": [],
+        "exchanges": [],
+        "bindings": []
+      }
     
 - apiVersion: v1
   kind: DeploymentConfig
@@ -63,6 +98,8 @@ objects:
         - image: rabbitmq:${RABBITMQ_TAG}
           name: rabbitmq
           env:
+          - name: RABBITMQ_CONFIG_FILE
+            value: ${RABBITMQ_CONFIG_FILE}
           - name: RABBITMQ_DEFAULT_USER
             valueFrom:
               secretKeyRef:
@@ -97,12 +134,12 @@ objects:
               memory: ${MEM_REQUEST}
             privileged: false
           volumeMounts:
-          - name: squonk-rabbitmq-setup
-            mountPath: /squonk-rabbitmq-setup
+          - name: squonk-rabbitmq-config
+            mountPath: /etc/rabbitmq-squonk
         volumes:
-        - name: squonk-rabbitmq-setup
+        - name: squonk-rabbitmq-config
           configMap:
-            name: squonk-rabbitmq-setup
+            name: squonk-rabbitmq-config
         restartPolicy: Always
         
 - apiVersion: v1
@@ -127,8 +164,15 @@ objects:
 parameters:
 
 - name: RABBITMQ_TAG
-  description: The version tag for the RabbitMQ container version
-  value: "3-management"
+  value: "3.6.12-management"
+  description: The version tag for the RabbitMQ container
+
+- name: RABBITMQ_CONFIG_FILE
+  value: /etc/rabbitmq-squonk/rabbitmq
+  description: >
+    The path to the configuration file, without the .config extension.
+    We mount this directory in the container and add the
+    configuration files using our ConfigMap.
 
 - name: CPU_REQUEST
   value: 500m
