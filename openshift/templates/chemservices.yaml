@@ -1,46 +1,36 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: squonk-chemservices
+  name: service
   annotations:
     description: "Squonk Chemservices"
     iconClass: "icon-tomcat"
-    tags: "squonk,chemservices"
+    tags: "chemservices"
 labels:
-  template: squonk-chemservices
   app: squonk-chemservices
-
+  template: service
 message: "Chemservices has been deployed."
 
 objects:
-
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: chem-services-basic
+    name: ${APP_NAME}
   spec:
     replicas: 1
     selector:
-      name: chem-services-basic
+      name: ${APP_NAME}
     template:
       metadata:
         labels:
-          name: chem-services-basic
+          name: ${APP_NAME}
       spec:
         containers:
         - image: squonk/chem-services-basic
-          name: chem-services-basic
+          name: ${APP_NAME}
           env:
-          - name: RABBITMQ_SQUONK_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: squonk-secrets
-                key: RABBITMQ_SQUONK_PASSWORD
           - name: POSTGRES_SQUONK_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: squonk-secrets
-                key: POSTGRES_SQUONK_PASSWORD
+            value: ${POSTGRES_SQUONK_PASSWORD}
           - name: STRUCTURE_DATABASE_TABLES
             value: ${STRUCTURE_DATABASE_TABLES}
           ports:
@@ -60,11 +50,10 @@ objects:
             timeoutSeconds: 1
             periodSeconds: 30
         restartPolicy: Always
-
 - apiVersion: v1
   kind: Service
   metadata:
-    name: chem-services-basic
+    name: ${APP_NAME}
   spec:
     ports:
     - name: http
@@ -72,12 +61,16 @@ objects:
       protocol: TCP
       targetPort: 8080
     selector:
-      name: chem-services-basic
+      name: ${APP_NAME}
     sessionAffinity: None
     type: ClusterIP
-
 parameters:
-
-- name: STRUCTURE_DATABASE_TABLES
-  description: Chemical search tables
+- description: Application name
+  name: APP_NAME
+  value: chem-services-basic
+- description: Postgres password for RDKit chemical search services
+  name: POSTGRES_SQUONK_PASSWORD
+  value: squonk
+- description: Chemical search tables
+  name: STRUCTURE_DATABASE_TABLES
   value: ""
