@@ -9,9 +9,11 @@ metadata:
 labels:
   app: squonk-chemservices
   template: service
+
 message: "Chemservices has been deployed."
 
 objects:
+
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -30,7 +32,15 @@ objects:
           name: ${APP_NAME}
           env:
           - name: POSTGRES_SQUONK_PASSWORD
-            value: ${POSTGRES_SQUONK_PASSWORD}
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_SQUONK_PASSWORD
+          - name: RABBITMQ_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: RABBITMQ_SQUONK_PASSWORD
           - name: STRUCTURE_DATABASE_TABLES
             value: ${STRUCTURE_DATABASE_TABLES}
           ports:
@@ -50,6 +60,7 @@ objects:
             timeoutSeconds: 1
             periodSeconds: 30
         restartPolicy: Always
+
 - apiVersion: v1
   kind: Service
   metadata:
@@ -64,13 +75,12 @@ objects:
       name: ${APP_NAME}
     sessionAffinity: None
     type: ClusterIP
+
 parameters:
-- description: Application name
-  name: APP_NAME
+
+- name: APP_NAME
   value: chem-services-basic
-- description: Postgres password for RDKit chemical search services
-  name: POSTGRES_SQUONK_PASSWORD
-  value: squonk
-- description: Chemical search tables
-  name: STRUCTURE_DATABASE_TABLES
+
+- name: STRUCTURE_DATABASE_TABLES
+  description: Chemical search tables
   value: ""
