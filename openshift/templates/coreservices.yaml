@@ -45,6 +45,16 @@ objects:
             value: ${SQUONK_BASIC_CHEM_SERVICES_URL}
           - name: SQUONK_DOCKER_SERVICES_DIR
             value: ${SQUONK_DOCKER_SERVICES_DIR}
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /coreservices/rest/ping
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 30
           resources:
             limits:
               cpu: ${CPU_LIMIT}

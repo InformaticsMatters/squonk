@@ -1,35 +1,35 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: service
+  name: chem-services-basic
   annotations:
     description: "Squonk Chemservices"
     iconClass: "icon-tomcat"
-    tags: "chemservices"
+    tags: "squonk,chemservices"
 labels:
+  template: squonk-chemservices
   app: squonk-chemservices
-  template: service
 
-message: "Chemservices has been deployed."
+message: "Squonk Chem Services have been deployed."
 
 objects:
 
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: ${APP_NAME}
+    name: chem-services-basic
   spec:
     replicas: 1
     selector:
-      name: ${APP_NAME}
+      name: chem-services-basic
     template:
       metadata:
         labels:
-          name: ${APP_NAME}
+          name: chem-services-basic
       spec:
         containers:
         - image: squonk/chem-services-basic
-          name: ${APP_NAME}
+          name: chem-services-basic
           env:
           - name: POSTGRES_SQUONK_PASSWORD
             valueFrom:
@@ -64,7 +64,7 @@ objects:
 - apiVersion: v1
   kind: Service
   metadata:
-    name: ${APP_NAME}
+    name: chem-services-basic
   spec:
     ports:
     - name: http
@@ -72,14 +72,11 @@ objects:
       protocol: TCP
       targetPort: 8080
     selector:
-      name: ${APP_NAME}
+      name: chem-services-basic
     sessionAffinity: None
     type: ClusterIP
 
 parameters:
-
-- name: APP_NAME
-  value: chem-services-basic
 
 - name: STRUCTURE_DATABASE_TABLES
   description: Chemical search tables
