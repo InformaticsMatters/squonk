@@ -78,6 +78,11 @@ objects:
               secretKeyRef:
                 name: squonk-secrets
                 key: RABBITMQ_ERLANG_COOKIE
+          - name: RABBITMQ_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: RABBITMQ_SQUONK_PASSWORD
           ports:
           - containerPort: 15672
             protocol: TCP
