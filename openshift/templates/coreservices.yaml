@@ -47,7 +47,6 @@ objects:
             value: ${SQUONK_DOCKER_SERVICES_DIR}
           ports:
           - containerPort: 8080
-            protocol: TCP
           livenessProbe:
             httpGet:
               path: /coreservices/rest/ping
@@ -62,7 +61,6 @@ objects:
             requests:
               cpu: ${CPU_REQUEST}
               memory: ${MEM_REQUEST}
-            privileged: false
           volumeMounts:
           - mountPath: /var/local/squonk-docker-services
             name: squonk-docker-services
@@ -80,10 +78,7 @@ objects:
     ports:
     - name: http
       port: 8080
-      protocol: TCP
       targetPort: 8080
-    sessionAffinity: None
-    type: ClusterIP
 
 parameters:
 

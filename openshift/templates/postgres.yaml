@@ -114,7 +114,6 @@ objects:
                 key: POSTGRES_XWIKI_PASSWORD
           ports:
           - containerPort: 5432
-            protocol: TCP
           # The readinessProbe does not work.
           # When you run this command from the terminal you
           # get an exit code of 0 (success). Somethign to do with
@@ -143,7 +142,6 @@ objects:
             requests:
               cpu: ${CPU_REQUEST}
               memory: ${MEM_REQUEST}
-            privileged: false
           terminationMessagePath: /dev/termination-log
           volumeMounts:
           - mountPath: /var/lib/postgresql/data
@@ -152,7 +150,6 @@ objects:
             name: init-config
           - mountPath: /etc/config
             name: healthcheck-config
-        restartPolicy: Always
         volumes:
         - name: postgresql-data
           persistentVolumeClaim:
@@ -172,12 +169,9 @@ objects:
     ports:
     - name: postgres
       port: 5432
-      protocol: TCP
       targetPort: 5432
     selector:
       name: postgres
-    sessionAffinity: None
-    type: ClusterIP
 
 parameters:
 

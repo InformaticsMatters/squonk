@@ -45,7 +45,6 @@ objects:
             value: ${STRUCTURE_DATABASE_TABLES}
           ports:
           - containerPort: 8080
-            protocol: TCP
           readinessProbe:
             httpGet:
               path: /chem-services-cdk-basic/rest/ping
@@ -59,7 +58,13 @@ objects:
             initialDelaySeconds: 30
             timeoutSeconds: 1
             periodSeconds: 30
-        restartPolicy: Always
+          resources:
+            limits:
+              cpu: ${CPU_LIMIT}
+              memory: ${MEM_LIMIT}
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEM_REQUEST}
 
 - apiVersion: v1
   kind: Service
@@ -69,15 +74,21 @@ objects:
     ports:
     - name: http
       port: 8080
-      protocol: TCP
       targetPort: 8080
     selector:
       name: chem-services-basic
-    sessionAffinity: None
-    type: ClusterIP
 
 parameters:
 
 - name: STRUCTURE_DATABASE_TABLES
   description: Chemical search tables
   value: ""
+
+- name: CPU_REQUEST
+  value: 500m
+- name: CPU_LIMIT
+  value: 1000m
+- name: MEM_REQUEST
+  value: 500Mi
+- name: MEM_LIMIT
+  value: 1Gi

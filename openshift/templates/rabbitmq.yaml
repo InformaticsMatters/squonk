@@ -122,9 +122,7 @@ objects:
                 key: RABBITMQ_SQUONK_PASSWORD
           ports:
           - containerPort: 5672
-            protocol: TCP
           - containerPort: 15672
-            protocol: TCP
           resources:
             limits:
               cpu: ${CPU_LIMIT}
@@ -132,7 +130,6 @@ objects:
             requests:
               cpu: ${CPU_REQUEST}
               memory: ${MEM_REQUEST}
-            privileged: false
           volumeMounts:
           - name: squonk-rabbitmq-config
             mountPath: /etc/rabbitmq-squonk
@@ -140,8 +137,7 @@ objects:
         - name: squonk-rabbitmq-config
           configMap:
             name: squonk-rabbitmq-config
-        restartPolicy: Always
-        
+
 - apiVersion: v1
   kind: Service
   metadata:
@@ -150,16 +146,12 @@ objects:
     ports:
     - name: ampq
       port: 5672
-      protocol: TCP
       targetPort: 5672
     - name: http
       port: 15672
-      protocol: TCP
       targetPort: 15672
     selector:
       name: rabbitmq
-    sessionAffinity: None
-    type: ClusterIP
 
 parameters:
 

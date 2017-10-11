@@ -55,7 +55,6 @@ objects:
             requests:
               cpu: ${CPU_REQUEST}
               memory: ${MEM_REQUEST}
-            privileged: false
           volumeMounts:
           - mountPath: /squonk/work
             name: squonk-work
@@ -73,10 +72,7 @@ objects:
     ports:
     - name: http
       port: 8080
-      protocol: TCP
       targetPort: 8080
-    sessionAffinity: None
-    type: ClusterIP
 
 parameters:
 
