@@ -167,32 +167,6 @@ objects:
       psql --username "$PG_USER" -d chemcentral --command "CREATE SCHEMA vendordbs AUTHORIZATION squonk;"
 
 - apiVersion: v1
-  kind: ConfigMap
-  metadata:
-    name: postgres-healthcheck-map
-  data:
-    docker-healthcheck.sh: |
-      #!/bin/bash
-      set -eo pipefail
-
-      host="$(hostname --ip-address || echo '127.0.0.1')"
-      user="${POSTGRES_USER:-postgres}"
-      export PGPASSWORD="${POSTGRES_PASSWORD:-}"
-
-      args=(
-          # force postgres to not use the local unix socket (test "external" connectibility)
-          --host "$host"
-          --username "$user"
-          --quiet --no-align --tuples-only
-      )
-
-      if select="$(echo 'SELECT 1' | psql "${args[@]}")" && [ "$select" = '1' ]; then
-          exit 0
-      fi
-
-      exit 1
-
-- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: postgres
@@ -231,17 +205,12 @@ objects:
                 key: POSTGRES_XWIKI_PASSWORD
           ports:
           - containerPort: 5432
-          # The readinessProbe does not work.
-          # When you run this command from the terminal you
-          # get an exit code of 0 (success). Something to do with
-          # the shell-script privileges?
-#          readinessProbe:
-#            exec:
-#              command:
-#              - bash /etc/config/docker-healthcheck.sh
-#            initialDelaySeconds: 15
-#            timeoutSeconds: 5
-#            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command: ['sh', '-c',
+                'select=$(echo SELECT 1 | psql --host 127.0.0.1 --username postgres --quiet --no-align --tuples-only) && [ $select = 1 ]']
+            initialDelaySeconds: 15
+            timeoutSeconds: 5
           livenessProbe:
             # This probe results in PG issuing 'incomplete startup packet'
             # messages to the log. They're the result of probe
@@ -265,8 +234,6 @@ objects:
             name: postgresql-data
           - mountPath: /docker-entrypoint-initdb.d
             name: init-config
-          - mountPath: /etc/config
-            name: healthcheck-config
         volumes:
         - name: postgresql-data
           persistentVolumeClaim:
@@ -274,9 +241,6 @@ objects:
         - name: init-config
           configMap:
             name: postgres-init-map
-        - name: healthcheck-config
-          configMap:
-            name: postgres-healthcheck-map
 
 - apiVersion: v1
   kind: Service
@@ -311,9 +275,9 @@ objects:
         # [abc] Because the postgres readinessProbe is not working
         # I am forced to wait for the service and then add a few seconds.
         - image: busybox
-          name: init-postgres
+          name: wait-for-postgres-before-migration
           command: ['sh', '-c',
-            'until nslookup postgres; do sleep 4; done; sleep 20;']
+            'until nslookup postgres; do sleep 4; done; sleep 25']
         containers:
         - image: squonk/flyway
           name: postgres-migrate
@@ -411,7 +375,7 @@ objects:
       spec:
         initContainers:
         - image: busybox
-          name: init-postgres
+          name: wait-for-postgres-before-rabbitmq
           command: ['sh', '-c',
             'until nslookup postgres; do sleep 4; done; sleep 20;']
         containers:
