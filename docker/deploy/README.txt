@@ -47,7 +47,7 @@ Container name: coreservices
 Image source: squonk/coreservices
 This provides the middle tier Squonk services accessed by the Portal application.
 
-6. cellexecutor
+6. CellExecutor
 ---------------
 Container name: cellexecutor
 Image source: squonk/cellexecutor
@@ -102,6 +102,22 @@ A full guide for setting up on a Ubuntu host, including setting up TLS can be fo
 
 Your host machine must have Java, Ant, jq, Docker and Docker-compose installed.
 
+First define the environment. Create setenv.sh by copying setenv-default.sh and editing
+it as appropriate. This file defines the type of Squonk environment you want to deploy
+and passwords to use etc. There are 3 types of environment you can run:
+dev - for local testing and development. This uses basic authentication so does not inlcude Keycloak, XWiki and NGinx
+basic - for more representative setup that uses Keycloak and NGinx
+site - for the full Squonk site also including XWiki
+
+Then source that file:
+
+source setenv.sh
+
+Then build the images and fire them up:
+
+./images-build-all.sh
+./containers-setup-core.sh
+./containers-setup-app.sh
 
 ====================================================================================
 ====================================================================================
@@ -112,19 +128,18 @@ Your host machine must have Java, Ant, jq, Docker and Docker-compose installed.
 If you make changes to the Squonk or Portal code you need to update the deployment.
 Note: the Portal code is not yet public.
 
-./images-build-all.sh
+./images-build-services.sh
 ./containers-setup-app.sh
-./containers-run.sh
 
 Alternatively if you are pulling from pre-built docker images do something like this:
 
 ```sh
 ./pull-docker-images.sh
+/containers-setup-core.sh
 /containers-setup-app.sh
-./containers-run.sh
 ```
 
-
+Remember to have sourced the setenv.sh file first.
 
 ====================================================================================
 ====================================================================================

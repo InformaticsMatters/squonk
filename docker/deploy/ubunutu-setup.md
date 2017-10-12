@@ -234,6 +234,8 @@ $ cp setenv-default.sh setenv.sh
 Now edit `setenv.sh` to set passwords etc.
 You MUST set the value of PUBLIC_HOST to the external FQDN of your server
 (or the IP address of the docker bridge network if you are running locally).
+You need to define the type of environment you are wanting to deploy. The default is `dev` but for a
+public site your probably want to change this to `basic`. Soo the file for details.
 
 ```sh 
 $ source setenv.sh
@@ -245,10 +247,9 @@ $ source setenv.sh
 $ ./containers-setup-core.sh
 ```
 
-This will have started, configured and then stopped the following services
-(container images):
+This will have started and configured the following services (container images):
 
--   keycloak (jboss/keycloak-postgres)
+-   keycloak (jboss/keycloak-postgres) - only present if running in basic or site mode
 -   rabbitmq (rabbitmq)
 -   postgres (informaticsmatters/rdkit_cartridge)
 
@@ -256,29 +257,25 @@ This will have started, configured and then stopped the following services
 $ ./containers-setup-app.sh
 ```
 
-This will have started Postgress and Keycloak and configured the database
-but all container images will have been stopped.
-
-Finally, we are ready to run:
-
-```sh
-$ ./containers-run.sh
-```
+This will have started the Squonk containers and we are ready to run. Access Squonk from the 
+URL that is reported by the script.
 
 This should start the following services (containers). The xwiki
 is normally only used on the production site.
 
--   nginx (nginx)
+-   nginx (nginx) - not present in dev mode
 -   portal (squonk/portal)
 -   coreservices (squonk/coreservices)
 -   cellexecutor (squonk/cellexecutor)
 -   chemservices (squonk/chemservices)
--   keycloak (jboss/keycloak-postgres)
+-   keycloak (jboss/keycloak-postgres) - not present in dev mode
 -   rabbitmq (rabbitmq)
 -   postgres (informaticsmatters/rdkit_cartridge)
 
-Two busybox containers will have been stared and stopped (these provide
-synchronisation between the services).
+Two busybox containers will have been started and stopped (these provide
+synchronisation between the services). 
+One squonk/flyway container will have been started and stopped (this updates the Squonk database schema if 
+needed).
 
 >   Due to a glitch that is still to be resolved the nginx container takes
     some time to start. Monitor the status using `docker-compose ps`.

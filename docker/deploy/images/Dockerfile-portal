@@ -14,5 +14,8 @@ RUN unzip -d            /usr/local/tomcat/webapps/portal /usr/local/tomcat/webap
 RUN cd /usr/local/tomcat/webapps/portal/WEB-INF/lib && rm commons-codec-*.jar commons-logging-*.jar httpclient*.jar httpcore*.jar\
  keycloak*.jar jackson-annotations-*.jar jackson-core-*.jar jackson-databind-*.jar servlet-api-3.0.jar
 
+COPY portal/tomcat-users.xml /usr/local/tomcat/conf/
+COPY portal/web.xml portal/beans.xml portal/persistence.properties /usr/local/tomcat/webapps/portal/WEB-INF/
+
  
 EXPOSE 8080

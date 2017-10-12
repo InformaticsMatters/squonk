@@ -2,6 +2,7 @@ version: '2.1'
         
 services:
 
+
     ################# nginx ##########################################################
     # Acts as reverse proxy
     # create self-signed SSL cert/key using:
@@ -26,5 +27,4 @@ services:
                 condition: service_healthy
             portal:
                 condition: service_healthy
-
 

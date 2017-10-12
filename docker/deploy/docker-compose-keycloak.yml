@@ -1,0 +1,49 @@
+version: '2.1'
+
+services:
+
+   ################# keycloak container ###############################################
+    # available on http://${PUBLIC_HOST}/auth
+    keycloak:
+        image: jboss/keycloak-postgres:2.1.0.Final
+        restart: on-failure:10
+        depends_on:
+            postgres:
+                condition: service_healthy
+        expose:
+        - "8443"
+        environment:
+            POSTGRES_PASSWORD: $POSTGRES_KEYCLOAK_PASSWORD
+            KEYCLOAK_USER:
+            KEYCLOAK_PASSWORD:
+        volumes:
+        - ./images/keycloak/standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml:ro
+        networks:
+        - squonk_front
+        - squonk_back
+        healthcheck:
+            test: curl --fail http://localhost:8080/auth || exit 1
+            interval: 20s
+            timeout: 5s
+            retries: 5
+
+    ################# stage2 container ############################################
+    # waits till keycloak is healthy and then terminates
+    # allows to ensure that this service is running
+    #
+    stage2:
+        image: busybox
+        networks:
+         - squonk_back
+        depends_on:
+            keycloak:
+                condition: service_healthy
+
+    # inject the keycloak configuration files
+    portal:
+        volumes:
+        - ./images/portal/keycloak.json:/usr/local/tomcat/webapps/portal/WEB-INF/keycloak.json:ro
+        - ./images/portal/context.xml:/usr/local/tomcat/webapps/portal/META-INF/context.xml:ro
+        environment:
+           KEYCLOAK_SERVER_URL:
+           PUBLIC_HOST_URL:
