@@ -224,13 +224,13 @@ objects:
             timeoutSeconds: 1
             # Default period is 10 seconds
             periodSeconds: 20
-          resources:
-            limits:
-              cpu: ${POSTGRES_CPU_LIMIT}
-              memory: ${POSTGRES_MEM_LIMIT}
-            requests:
-              cpu: ${POSTGRES_CPU_REQUEST}
-              memory: ${POSTGRES_MEM_REQUEST}
+#          resources:
+#            limits:
+#              cpu: ${POSTGRES_CPU_LIMIT}
+#              memory: ${POSTGRES_MEM_LIMIT}
+#            requests:
+#              cpu: ${POSTGRES_CPU_REQUEST}
+#              memory: ${POSTGRES_MEM_REQUEST}
           terminationMessagePath: /dev/termination-log
           volumeMounts:
           - mountPath: /var/lib/postgresql/data
@@ -275,10 +275,10 @@ objects:
           name: postgres-migrate
       spec:
         initContainers:
-        - image: busybox
+        - image: yauritux/busybox-curl
           name: wait-for-postgres-before-migration
           command: ['sh', '-c',
-            'until nslookup postgres; do sleep 4; done; sleep 25']
+            'until (( curl http://postgres:5432/ --connect-timeout 5 2>&1 | grep 52 )); do sleep 2; done']
         containers:
         - image: squonk/flyway
           name: postgres-migrate
@@ -375,10 +375,10 @@ objects:
           name: rabbitmq
       spec:
         initContainers:
-        - image: busybox
+        - image: yauritux/busybox-curl
           name: wait-for-postgres-before-rabbitmq
           command: ['sh', '-c',
-            'until nslookup postgres; do sleep 4; done; sleep 25;']
+            'until (( curl http://postgres:5432/ --connect-timeout 5 2>&1 | grep 52 )); do sleep 2; done']
         containers:
         - image: rabbitmq:${RABBITMQ_IMAGE_TAG}
           name: rabbitmq
@@ -408,13 +408,13 @@ objects:
           ports:
           - containerPort: 5672
           - containerPort: 15672
-          resources:
-            limits:
-              cpu: ${RABBITMQ_CPU_LIMIT}
-              memory: ${RABBITMQ_MEM_LIMIT}
-            requests:
-              cpu: ${RABBITMQ_CPU_REQUEST}
-              memory: ${RABBITMQ_MEM_REQUEST}
+#          resources:
+#            limits:
+#              cpu: ${RABBITMQ_CPU_LIMIT}
+#              memory: ${RABBITMQ_MEM_LIMIT}
+#            requests:
+#              cpu: ${RABBITMQ_CPU_REQUEST}
+#              memory: ${RABBITMQ_MEM_REQUEST}
           volumeMounts:
           - name: squonk-rabbitmq-config
             mountPath: /etc/rabbitmq-squonk
