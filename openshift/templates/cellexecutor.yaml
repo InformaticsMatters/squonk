@@ -45,16 +45,16 @@ objects:
                 name: squonk-secrets
                 key: RABBITMQ_SQUONK_PASSWORD
           - name: DOCKER_HOST
-            value: ${DOCKER_HOST}
+            value: ${CELL_DOCKER_HOST}
           - name: JAVA_OPTS
-            value: ${JAVA_OPTS}
+            value: '"-Djava.util.logging.config.file=/logging.properties"'
           resources:
             limits:
-              cpu: ${CPU_LIMIT}
-              memory: ${MEM_LIMIT}
+              cpu: ${CELL_CPU_LIMIT}
+              memory: ${CELL_MEM_LIMIT}
             requests:
-              cpu: ${CPU_REQUEST}
-              memory: ${MEM_REQUEST}
+              cpu: ${CELL_CPU_REQUEST}
+              memory: ${CELL_MEM_REQUEST}
           volumeMounts:
           - mountPath: /squonk/work
             name: squonk-work
@@ -76,24 +76,14 @@ objects:
 
 parameters:
 
-- name: DOCKER_HOST
+- name: CELL_DOCKER_HOST
   value: "unix:///var/run/docker.sock"
-- name: DOCKER_REGISTRY_URL
-  value: "https://index.docker.io/v1/"
 
-- name: JAVA_OPTS
-  value: '"-Djava.util.logging.config.file=/logging.properties"'
-
-- name: SQUONK_BASIC_CHEM_SERVICES_URL
-  value: "http://chemservices:8080"
-- name: SQUONK_DOCKER_SERVICES_DIR
-  value: "/var/local/squonk-docker-services"
-
-- name: CPU_REQUEST
+- name: CELL_CPU_REQUEST
   value: 500m
-- name: CPU_LIMIT
+- name: CELL_CPU_LIMIT
   value: 1000m
-- name: MEM_REQUEST
+- name: CELL_MEM_REQUEST
   value: 500Mi
-- name: MEM_LIMIT
+- name: CELL_MEM_LIMIT
   value: 1Gi
