@@ -73,14 +73,12 @@ objects:
           name: chem-services-basic
       spec:
         initContainers:
-        # [abc] Because the postgres readinessProbe is not working
-        # I am forced to wait for the service and then add a few seconds.
-        - image: busybox
-          name: init-postgres
+        - image: yauritux/busybox-curl
+          name: wait-for-postgres-before-chem
           command: ['sh', '-c',
-            'until nslookup postgres; do sleep 4; done;']
-        - image: busybox
-          name: init-rabbitmq
+            'until (( curl http://postgres:5432/ --connect-timeout 5 2>&1 | grep 52 )); do sleep 2; done']
+        - image: yauritux/busybox-curl
+          name: wait-for-rabbitmq-before-chem
           command: ['sh', '-c',
             'until nslookup rabbitmq; do sleep 4; done;']
         containers:
@@ -184,13 +182,13 @@ objects:
             initialDelaySeconds: 30
             timeoutSeconds: 5
             periodSeconds: 30
-          resources:
-            limits:
-              cpu: ${CORE_CPU_LIMIT}
-              memory: ${CORE_MEM_LIMIT}
-            requests:
-              cpu: ${CORE_CPU_REQUEST}
-              memory: ${CORE_MEM_REQUEST}
+#          resources:
+#            limits:
+#              cpu: ${CORE_CPU_LIMIT}
+#              memory: ${CORE_MEM_LIMIT}
+#            requests:
+#              cpu: ${CORE_CPU_REQUEST}
+#              memory: ${CORE_MEM_REQUEST}
           volumeMounts:
           - mountPath: /var/local/squonk-docker-services
             name: squonk-docker-services
