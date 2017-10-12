@@ -1,4 +1,4 @@
-# You must set various environment variables before running anything. 
+# You must set various environment variables before running anything.
 # These variables define things like usernames and passwords that will be used and allows
 # these to be easily set for different environments.
 # The easiest way is to create a shell script containing the definitions and 'source' it.
@@ -14,10 +14,10 @@ networks:
     squonk_front:
         driver: bridge
     squonk_back:
-        driver: bridge  
+        driver: bridge
     squonk_isolated:
         driver: bridge
-        
+
 services:
 
 
@@ -37,7 +37,7 @@ services:
         - ../rabbitmq/init.sh:/usr/local/etc/init.sh:ro
         - ../rabbitmq/update-credentials.sh:/usr/local/etc/update-credentials.sh:ro
         - ../rabbitmq/clean.sh:/usr/local/etc/clean.sh:ro
-        environment: 
+        environment:
             RABBITMQ_ERLANG_COOKIE:
             RABBITMQ_DEFAULT_USER: admin
             RABBITMQ_DEFAULT_PASS: $RABBITMQ_DEFAULT_PASSWORD
@@ -73,7 +73,7 @@ services:
             interval: 10s
             timeout: 2s
             retries: 5
-            
+
     flyway:
         image: squonk/flyway
         environment:
@@ -83,12 +83,12 @@ services:
         depends_on:
             postgres:
                 condition: service_healthy
-    
+
     ################# stage1 container ############################################
     # waits till postgres and rabbitmq are healthy and then terminates
     # allows to ensure that both those services are running
     # Also connects to squonk_isolated network to ensure that that network is created
-    #       
+    #
     stage1:
         image: busybox
         networks:
@@ -99,40 +99,6 @@ services:
                 condition: service_healthy
             rabbitmq:
                 condition: service_healthy
-
-
-    ################# swagger container ###############################################
-    #swagger:
-    #    image: sjeandeaux/docker-swagger-ui
-    #    ports:
-    #        - "8888:8888"
-    #    environment: 
-    #        API_URL: http://${PUBLIC_HOST}:8091/coreservices/api-docs
-
-    ################# keycloak container ###############################################
-    # available on http://${PUBLIC_HOST}/auth
-    keycloak:
-        image: jboss/keycloak-postgres:2.1.0.Final
-        restart: on-failure:10
-        depends_on:
-            postgres:
-                condition: service_healthy
-        expose: 
-        - "8443"
-        environment:
-            POSTGRES_PASSWORD: $POSTGRES_KEYCLOAK_PASSWORD
-            KEYCLOAK_USER:
-            KEYCLOAK_PASSWORD: 
-        volumes:
-        - ./images/keycloak/standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml:ro
-        networks:
-        - squonk_front
-        - squonk_back
-        healthcheck:
-            test: curl --fail http://localhost:8080/auth || exit 1
-            interval: 20s
-            timeout: 5s
-            retries: 5   
 
     ################# chem services container #########################################
     # available on
@@ -160,14 +126,14 @@ services:
             test: curl --fail http://localhost:8080/chem-services-cdk-basic/rest/ping || exit 1
             interval: 20s
             timeout: 5s
-            retries: 10 
-        
+            retries: 10
+
     ################# core-services-server container ###################################
     # available on:
     # http://${PUBLIC_HOST}/coreservices/rest/ping
     # http://${PUBLIC_HOST}/coreservices/rest/v1/services
     # http://${PUBLIC_HOST}/coreservices/rest/v1/jobs
-    # 
+    #
     coreservices:
         image: squonk/core-services-server
         restart: on-failure:10
@@ -220,25 +186,17 @@ services:
             JAVA_OPTS: '"-Djava.util.logging.config.file=/logging.properties"'
         networks:
         - squonk_back
-            
+
     ################# portal ##########################################################
     # available on http://${PUBLIC_HOST}/portal
     portal:
         image: squonk/portal
         restart: on-failure:10
-        volumes:    
-        - ./images/portal/tomcat-users.xml:/usr/local/tomcat/conf/tomcat-users.xml:ro
-        - ./images/portal/server.xml:/usr/local/tomcat/conf/server.xml:ro
-        - ./images/portal/keycloak.json:/usr/local/tomcat/webapps/portal/WEB-INF/keycloak.json:ro
-        - ./images/portal/context.xml:/usr/local/tomcat/webapps/portal/META-INF/context.xml:ro
-        - ./images/portal/web.xml:/usr/local/tomcat/webapps/portal/WEB-INF/web.xml:ro
-        - ./images/portal/beans.xml:/usr/local/tomcat/webapps/portal/WEB-INF/beans.xml:ro
-        - ./images/portal/persistence.properties:/usr/local/tomcat/webapps/portal/WEB-INF/persistence.properties:ro
+        volumes:
         - ./images/portal/logging.properties:/usr/local/tomcat/conf/logging.properties:ro
         environment:
-            KEYCLOAK_SERVER_URL:
-            PUBLIC_HOST_URL:
             SERVICE_CALLBACK: http://localhost:8080/portal
+            POSTGRES_SQUONK_PASSWORD:
         networks:
         - squonk_front
         - squonk_back

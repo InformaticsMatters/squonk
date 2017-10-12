@@ -3,34 +3,7 @@ version: '2.1'
 services:
 
     keycloak:
-        environment:
-            KEYCLOAK_USER: admin
-            KEYCLOAK_PASSWORD:
         ports: 
         - "8080:8080"
         - "8443:8443"
-
-    postgres:
-        ports: 
-        - "5432:5432"
-
-    coreservices:
-        ports: 
-        - "8091:8080"
-
-    chemservices:
-        ports:
-        - "8092:8080"
-
-    ################# stage2 container ############################################
-    # waits till keycloak is healthy and then terminates
-    # allows to ensure that this service is running
-    #       
-    stage2:
-        image: busybox
-        networks:
-         - squonk_back
-        depends_on:
-            keycloak:
-                condition: service_healthy
 

@@ -1,0 +1,19 @@
+version: '2.1'
+
+services:
+
+    portal:
+        ports:
+        - 8080:8080
+
+    postgres:
+        ports:
+        - "5432:5432"
+
+    coreservices:
+        ports:
+        - "8091:8080"
+
+    chemservices:
+        ports:
+        - "8092:8080"

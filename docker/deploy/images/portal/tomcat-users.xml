@@ -1,4 +1,4 @@
 <tomcat-users>
-<user name="user1" password="user1" roles="user" />
-<user name="user2" password="user2" roles="user" />
+<user name="user1" password="user1" roles="standard-user" />
+<user name="user2" password="user2" roles="standard-user" />
 </tomcat-users>
