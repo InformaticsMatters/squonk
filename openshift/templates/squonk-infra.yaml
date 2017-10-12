@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: squonk-infrastructure
+  name: squonk-infra
   annotations:
-    description: Squonk Infrastructure Definition
+    description: Squonk Infrastructure Service Definition
     tags: squonk,infratsrtucture,postgres,rabbitmq
 labels:
-  template: squonk-infrastructure
-  app: squonk-infrastructure
+  template: squonk-infra
+  app: squonk-infra
 
 parameters:
 
@@ -61,7 +61,7 @@ parameters:
 - name: POSTGRES_CPU_REQUEST
   value: 100m
 - name: POSTGRES_CPU_LIMIT
-  value: 100m
+  value: 1000m
 - name: POSTGRES_MEM_REQUEST
   value: 100Mi
 - name: POSTGRES_MEM_LIMIT
@@ -85,7 +85,7 @@ parameters:
 - name: RABBITMQ_CPU_REQUEST
   value: 100m
 - name: RABBITMQ_CPU_LIMIT
-  value: 100m
+  value: 1000m
 - name: RABBITMQ_MEM_REQUEST
   value: 100Mi
 - name: RABBITMQ_MEM_LIMIT
@@ -409,8 +409,6 @@ objects:
         labels:
           name: rabbitmq
       spec:
-        # [abc] Because the postgres readinessProbe is not working
-        # I am forced to wait for the service and then add a few seconds.
         initContainers:
         - image: busybox
           name: init-postgres
