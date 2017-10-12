@@ -1,3 +1,6 @@
+# oc process -f squonk-infra.yaml | oc create -f -
+# oc delete all,cm,pvc,secrets --selector template=squonk-infra
+
 apiVersion: v1
 kind: Template
 metadata:

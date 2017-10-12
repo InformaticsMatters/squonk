@@ -1,3 +1,6 @@
+# oc process -f squonk-app.yaml | oc create -f -
+# oc delete all,cm,pvc,secrets --selector template=squonk-app
+
 apiVersion: v1
 kind: Template
 metadata:
