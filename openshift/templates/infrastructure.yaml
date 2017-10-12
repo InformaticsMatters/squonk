@@ -1,0 +1,476 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: squonk-infrastructure
+  annotations:
+    description: Squonk Infrastructure Definition
+    tags: squonk,infratsrtucture,postgres,rabbitmq
+labels:
+  template: squonk-infrastructure
+  app: squonk-infrastructure
+
+parameters:
+
+# Common (not specific to any infrastructure service)
+
+# Nothing
+
+# --------
+# Keycloak
+# --------
+
+- name: KEYCLOAK_USER
+  value: admin
+- name: KEYCLOAK_PASSWORD
+  value: squonk
+
+# --------
+# RabbitMQ
+# --------
+
+- name: RABBITMQ_DEFAULT_USER
+  value: admin
+- name: RABBITMQ_DEFAULT_PASS
+  value: squonk
+- name: RABBITMQ_ERLANG_COOKIE
+  description: RabbitMQ Erlang cookie
+  from: '[a-zA-Z0-9]{12}'
+  generate: expression
+- name: RABBITMQ_SQUONK_PASSWORD
+  value: squonk
+
+# --------
+# Postgres
+# --------
+
+- name: POSTGRES_IMAGE_TAG
+  description: The version tag for the RDKIT container version
+  value: Release_2016_03_1
+
+- name: POSTGRES_KEYCLOAK_PASSWORD
+  value: squonk
+- name: POSTGRES_SQUONK_PASSWORD
+  value: squonk
+- name: POSTGRES_PASSWORD
+  value: postgres
+- name: POSTGRES_USER
+  value: postgres
+- name: POSTGRES_XWIKI_PASSWORD
+  value: squonk
+
+- name: POSTGRES_CPU_REQUEST
+  value: 100m
+- name: POSTGRES_CPU_LIMIT
+  value: 100m
+- name: POSTGRES_MEM_REQUEST
+  value: 100Mi
+- name: POSTGRES_MEM_LIMIT
+  value: 500Mi
+
+# --------
+# RabbitMQ
+# --------
+
+- name: RABBITMQ_IMAGE_TAG
+  value: 3.6.12-management
+  description: The version tag for the RabbitMQ container
+
+- name: RABBITMQ_CONFIG_FILE
+  value: /etc/rabbitmq-squonk/rabbitmq
+  description: >
+    The path to the configuration file, without the .config extension.
+    We mount this directory in the container and add the
+    configuration files using our ConfigMap.
+
+- name: RABBITMQ_CPU_REQUEST
+  value: 100m
+- name: RABBITMQ_CPU_LIMIT
+  value: 100m
+- name: RABBITMQ_MEM_REQUEST
+  value: 100Mi
+- name: RABBITMQ_MEM_LIMIT
+  value: 500Mi
+
+objects:
+
+# -----------------------------------------------------------------------------
+# Secrets
+# -----------------------------------------------------------------------------
+
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: squonk-secrets
+  stringData:
+    KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
+    KEYCLOAK_USER: ${KEYCLOAK_USER}
+
+    POSTGRES_KEYCLOAK_PASSWORD: ${POSTGRES_KEYCLOAK_PASSWORD}
+    POSTGRES_SQUONK_PASSWORD: ${POSTGRES_SQUONK_PASSWORD}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    POSTGRES_USER: ${POSTGRES_USER}
+    POSTGRES_XWIKI_PASSWORD: ${POSTGRES_XWIKI_PASSWORD}
+
+    RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+    RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE}
+    RABBITMQ_SQUONK_PASSWORD: ${RABBITMQ_SQUONK_PASSWORD}
+
+# -----------------------------------------------------------------------------
+# Postgres Service
+# -----------------------------------------------------------------------------
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: postgres-claim-1
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: postgres-init-map
+  data:
+    init-postgres-db.sh: |
+      #!/bin/bash
+
+      PG_USER=${POSTGRES_USER:-postgres}
+      echo "Setting up db as user ${PG_USER}"
+
+      psql --username "$PG_USER" --command "CREATE USER keycloak WITH PASSWORD '${POSTGRES_KEYCLOAK_PASSWORD:-squonk}';"
+      echo "created keycloak user with password ${POSTGRES_KEYCLOAK_PASSWORD:-squonk}"
+      psql --username "$PG_USER" --command "CREATE USER xwiki WITH PASSWORD '${POSTGRES_XWIKI_PASSWORD:-squonk}';"
+      echo "created xwiki user with password ${POSTGRES_XWIKI_PASSWORD:-squonk}"
+      psql --username "$PG_USER" --command "CREATE USER squonk WITH PASSWORD '${POSTGRES_SQUONK_PASSWORD:-squonk}';"
+      echo "created squonk user with password ${POSTGRES_SQUONK_PASSWORD:-squonk}"
+
+      createdb --username "$PG_USER" -O $PG_USER squonk
+      createdb --username "$PG_USER" -O keycloak keycloak
+      createdb --username "$PG_USER" -O xwiki xwiki
+
+
+      psql --username "$PG_USER" --command "GRANT CONNECT ON DATABASE squonk TO squonk;"
+      psql --username "$PG_USER" -d squonk --command "CREATE SCHEMA users AUTHORIZATION ${PG_USER};"
+      psql --username "$PG_USER" -d squonk --command "GRANT USAGE ON SCHEMA users TO squonk;"
+      psql --username "$PG_USER" -d squonk --command "CREATE SCHEMA notebooks AUTHORIZATION squonk;"
+
+
+      # patch 1. Create chemcentral database
+      # docker exec -it -u postgres deploy_postgres_1 bash
+      createdb --username "$PG_USER" -O $PG_USER chemcentral
+      psql --username "$PG_USER" --command 'create extension rdkit' chemcentral
+      psql --username "$PG_USER" -d chemcentral --command "CREATE SCHEMA vendordbs AUTHORIZATION squonk;"
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: postgres-healthcheck-map
+  data:
+    docker-healthcheck.sh: |
+      #!/bin/bash
+      set -eo pipefail
+
+      host="$(hostname --ip-address || echo '127.0.0.1')"
+      user="${POSTGRES_USER:-postgres}"
+      export PGPASSWORD="${POSTGRES_PASSWORD:-}"
+
+      args=(
+          # force postgres to not use the local unix socket (test "external" connectibility)
+          --host "$host"
+          --username "$user"
+          --quiet --no-align --tuples-only
+      )
+
+      if select="$(echo 'SELECT 1' | psql "${args[@]}")" && [ "$select" = '1' ]; then
+          exit 0
+      fi
+
+      exit 1
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: postgres
+  spec:
+    replicas: 1
+    selector:
+      name: postgres
+    template:
+      metadata:
+        labels:
+          name: postgres
+      spec:
+        containers:
+        - image: informaticsmatters/rdkit_cartridge:${POSTGRES_IMAGE_TAG}
+          name: postgres
+          env:
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_USER
+          - name: POSTGRES_KEYCLOAK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_KEYCLOAK_PASSWORD
+          - name: POSTGRES_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_SQUONK_PASSWORD
+          - name: POSTGRES_XWIKI_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_XWIKI_PASSWORD
+          ports:
+          - containerPort: 5432
+          # The readinessProbe does not work.
+          # When you run this command from the terminal you
+          # get an exit code of 0 (success). Something to do with
+          # the shell-script privileges?
+#          readinessProbe:
+#            exec:
+#              command:
+#              - bash /etc/config/docker-healthcheck.sh
+#            initialDelaySeconds: 15
+#            timeoutSeconds: 5
+#            periodSeconds: 10
+          livenessProbe:
+            # This probe results in PG issuing 'incomplete startup packet'
+            # messages to the log. They're the result of probe
+            # making a TCP connection but sending no traffic.
+            initialDelaySeconds: 60
+            tcpSocket:
+              port: 5432
+            timeoutSeconds: 1
+            # Default period is 10 seconds
+            periodSeconds: 20
+          resources:
+            limits:
+              cpu: ${POSTGRES_CPU_LIMIT}
+              memory: ${POSTGRES_MEM_LIMIT}
+            requests:
+              cpu: ${POSTGRES_CPU_REQUEST}
+              memory: ${POSTGRES_MEM_REQUEST}
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: postgresql-data
+          - mountPath: /docker-entrypoint-initdb.d
+            name: init-config
+          - mountPath: /etc/config
+            name: healthcheck-config
+        volumes:
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: postgres-claim-1
+        - name: init-config
+          configMap:
+            name: postgres-init-map
+        - name: healthcheck-config
+          configMap:
+            name: postgres-healthcheck-map
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: postgres
+  spec:
+    ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+    selector:
+      name: postgres
+
+# -----------------------------------------------------------------------------
+# Postgres Migration (Job)
+# -----------------------------------------------------------------------------
+
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: postgres-migrate
+  spec:
+    replicas: 1
+    selector:
+      name: postgres-migrate
+    template:
+      metadata:
+        labels:
+          name: postgres-migrate
+      spec:
+        initContainers:
+        # [abc] Because the postgres readinessProbe is not working
+        # I am forced to wait for the service and then add a few seconds.
+        - image: busybox
+          name: init-postgres
+          command: ['sh', '-c',
+            'until nslookup postgres; do sleep 4; done; sleep 20;']
+        containers:
+        - image: squonk/flyway
+          name: postgres-migrate
+          env:
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_PASSWORD
+        restartPolicy: OnFailure
+
+# -----------------------------------------------------------------------------
+# RabbitMQ Service
+# -----------------------------------------------------------------------------
+
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: squonk-rabbitmq-config
+  data:
+    rabbitmq.config: |
+      [
+        {rabbit, [
+          {loopback_users, []}
+        ]},
+        {rabbitmq_management, [
+          {load_definitions, "/etc/rabbitmq-squonk/definitions.json"}
+        ]}
+      ].
+    definitions.json: |
+      {
+        "rabbit_version": "3.6.12",
+        "users": [
+          {
+            "name": "squonk",
+            "password": "squonk",
+            "tags": ""
+          },
+          {
+            "name": "admin",
+            "password": "squonk",
+            "tags": ""
+          }
+        ],
+        "vhosts": [
+          {
+            "name": "\/"
+          },
+          {
+            "name": "\/squonk"
+          }
+        ],
+        "permissions": [
+          {
+            "user": "squonk",
+            "vhost": "\/squonk",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+          },
+          {
+            "user": "admin",
+            "vhost": "\/squonk",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+          },
+          {
+            "user": "admin",
+            "vhost": "\/",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+          }
+        ],
+        "parameters": [],
+        "policies": [],
+        "queues": [],
+        "exchanges": [],
+        "bindings": []
+      }
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: rabbitmq
+  spec:
+    replicas: 1
+    selector:
+      name: rabbitmq
+    template:
+      metadata:
+        labels:
+          name: rabbitmq
+      spec:
+        # [abc] Because the postgres readinessProbe is not working
+        # I am forced to wait for the service and then add a few seconds.
+        initContainers:
+        - image: busybox
+          name: init-postgres
+          command: ['sh', '-c',
+            'until nslookup postgres; do sleep 4; done; sleep 20;']
+        containers:
+        - image: rabbitmq:${RABBITMQ_IMAGE_TAG}
+          name: rabbitmq
+          env:
+          - name: RABBITMQ_CONFIG_FILE
+            value: ${RABBITMQ_CONFIG_FILE}
+          - name: RABBITMQ_DEFAULT_USER
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: RABBITMQ_DEFAULT_USER
+          - name: RABBITMQ_DEFAULT_PASS
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: RABBITMQ_DEFAULT_PASS
+          - name: RABBITMQ_ERLANG_COOKIE
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: RABBITMQ_ERLANG_COOKIE
+          - name: RABBITMQ_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: RABBITMQ_SQUONK_PASSWORD
+          ports:
+          - containerPort: 5672
+          - containerPort: 15672
+          resources:
+            limits:
+              cpu: ${RABBITMQ_CPU_LIMIT}
+              memory: ${RABBITMQ_MEM_LIMIT}
+            requests:
+              cpu: ${RABBITMQ_CPU_REQUEST}
+              memory: ${RABBITMQ_MEM_REQUEST}
+          volumeMounts:
+          - name: squonk-rabbitmq-config
+            mountPath: /etc/rabbitmq-squonk
+        volumes:
+        - name: squonk-rabbitmq-config
+          configMap:
+            name: squonk-rabbitmq-config
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: rabbitmq
+  spec:
+    ports:
+    - name: ampq
+      port: 5672
+      targetPort: 5672
+    - name: http
+      port: 15672
+      targetPort: 15672
+    selector:
+      name: rabbitmq
