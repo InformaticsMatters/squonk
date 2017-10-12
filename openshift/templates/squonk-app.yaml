@@ -1,0 +1,208 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: squonk
+  annotations:
+    description: Squonk Application Service Definition
+    tags: squonk,core,cellexecutor,chemservices,coreservices
+labels:
+  template: squonk-app
+  app: squonk-app
+
+parameters:
+
+# Common (not specific to any infrastructure service)
+
+# Nothing
+
+# ------------
+# ChemServices
+# ------------
+
+- name: CHEM_STRUCTURE_DATABASE_TABLES
+  description: Chemical search tables
+  value: ""
+
+- name: CHEM_CPU_REQUEST
+  value: 100m
+- name: CHEM_CPU_LIMIT
+  value: 1000m
+- name: CHEM_MEM_REQUEST
+  value: 500Mi
+- name: CHEM_MEM_LIMIT
+  value: 1Gi
+
+# ------------
+# CoreServices
+# ------------
+
+- name: CORE_SQUONK_BASIC_CHEM_SERVICES_URL
+  value: "http://chemservices:8080"
+- name: CORE_SQUONK_DOCKER_SERVICES_DIR
+  value: "/var/local/squonk-docker-services"
+
+- name: CORE_CPU_REQUEST
+  value: 100m
+- name: CORE_CPU_LIMIT
+  value: 1000m
+- name: CORE_MEM_REQUEST
+  value: 500Mi
+- name: CORE_MEM_LIMIT
+  value: 500Mi
+
+objects:
+
+# -----------------------------------------------------------------------------
+# ChemServices
+# -----------------------------------------------------------------------------
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: chem-services-basic
+  spec:
+    replicas: 1
+    selector:
+      name: chem-services-basic
+    template:
+      metadata:
+        labels:
+          name: chem-services-basic
+      spec:
+        initContainers:
+        # [abc] Because the postgres readinessProbe is not working
+        # I am forced to wait for the service and then add a few seconds.
+        - image: busybox
+          name: init-postgres
+          command: ['sh', '-c',
+            'until nslookup postgres; do sleep 4; done;']
+        - image: busybox
+          name: init-rabbitmq
+          command: ['sh', '-c',
+            'until nslookup rabbitmq; do sleep 4; done;']
+        containers:
+        - image: squonk/chem-services-basic
+          name: chem-services-basic
+          env:
+          - name: POSTGRES_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_SQUONK_PASSWORD
+          - name: RABBITMQ_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: RABBITMQ_SQUONK_PASSWORD
+          - name: STRUCTURE_DATABASE_TABLES
+            value: ${CHEM_STRUCTURE_DATABASE_TABLES}
+          ports:
+          - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /chem-services-cdk-basic/rest/ping
+              port: 8080
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 20
+          livenessProbe:
+            httpGet:
+              path: /chem-services-cdk-basic/rest/ping
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 1
+            periodSeconds: 30
+#          resources:
+#            limits:
+#              cpu: ${CHEM_CPU_LIMIT}
+#              memory: ${CHEM_MEM_LIMIT}
+#            requests:
+#              cpu: ${CHEM_CPU_REQUEST}
+#              memory: ${CHEM_MEM_REQUEST}
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: chem-services-basic
+  spec:
+    ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    selector:
+      name: chem-services-basic
+
+# -----------------------------------------------------------------------------
+# CoreServices
+# -----------------------------------------------------------------------------
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: coreservices
+  spec:
+    replicas: 1
+    selector:
+      name: coreservices
+    template:
+      metadata:
+        labels:
+          name: coreservices
+      spec:
+        initContainers:
+        - image: busybox
+          name: init-postgres
+          command: ['sh', '-c',
+            'until nslookup chem-services-basic; do sleep 4; done;']
+        containers:
+        - image: squonk/core-services-server
+          name: coreservices
+          env:
+          - name: RABBITMQ_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: RABBITMQ_SQUONK_PASSWORD
+          - name: POSTGRES_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_SQUONK_PASSWORD
+          - name: SQUONK_BASIC_CHEM_SERVICES_URL
+            value: ${CORE_SQUONK_BASIC_CHEM_SERVICES_URL}
+          - name: SQUONK_DOCKER_SERVICES_DIR
+            value: ${CORE_SQUONK_DOCKER_SERVICES_DIR}
+          ports:
+          - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /coreservices/rest/ping
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 30
+          resources:
+            limits:
+              cpu: ${CORE_CPU_LIMIT}
+              memory: ${CORE_MEM_LIMIT}
+            requests:
+              cpu: ${CORE_CPU_REQUEST}
+              memory: ${CORE_MEM_REQUEST}
+          volumeMounts:
+          - mountPath: /var/local/squonk-docker-services
+            name: squonk-docker-services
+        volumes:
+        - name: squonk-docker-services
+          emptyDir: {}
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: coreservices
+  spec:
+    selector:
+      name: coreservices
+    ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

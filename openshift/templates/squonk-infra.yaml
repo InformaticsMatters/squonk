@@ -272,8 +272,6 @@ objects:
           name: postgres-migrate
       spec:
         initContainers:
-        # [abc] Because the postgres readinessProbe is not working
-        # I am forced to wait for the service and then add a few seconds.
         - image: busybox
           name: wait-for-postgres-before-migration
           command: ['sh', '-c',
@@ -377,7 +375,7 @@ objects:
         - image: busybox
           name: wait-for-postgres-before-rabbitmq
           command: ['sh', '-c',
-            'until nslookup postgres; do sleep 4; done; sleep 20;']
+            'until nslookup postgres; do sleep 4; done; sleep 25;']
         containers:
         - image: rabbitmq:${RABBITMQ_IMAGE_TAG}
           name: rabbitmq
