@@ -73,6 +73,39 @@ parameters:
 objects:
 
 # -----------------------------------------------------------------------------
+# Postgres Migration (Job)
+# -----------------------------------------------------------------------------
+
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: postgres-migrate
+  spec:
+    replicas: 1
+    selector:
+      name: postgres-migrate
+    template:
+      metadata:
+        labels:
+          name: postgres-migrate
+      spec:
+        initContainers:
+        - image: yauritux/busybox-curl
+          name: wait-for-postgres-before-migration
+          command: ['sh', '-c',
+            'until (( curl http://postgres:5432/ --connect-timeout 5 2>&1 | grep 52 )); do sleep 2; done']
+        containers:
+        - image: squonk/flyway
+          name: postgres-migrate
+          env:
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: POSTGRES_PASSWORD
+        restartPolicy: OnFailure
+
+# -----------------------------------------------------------------------------
 # ChemServices
 # -----------------------------------------------------------------------------
 
@@ -141,7 +174,7 @@ objects:
 - apiVersion: v1
   kind: Service
   metadata:
-    name: chem-services-basic
+    name: chemservices
   spec:
     ports:
     - name: http
@@ -168,10 +201,14 @@ objects:
           name: coreservices
       spec:
         initContainers:
-        - image: busybox
-          name: init-postgres
+        - image: yauritux/busybox-curl
+          name: wait-for-chem-before-core
           command: ['sh', '-c',
-            'until nslookup chem-services-basic; do sleep 4; done;']
+            'until (( curl http://chemservices:8080/rest/ping --connect-timeout 5 )); do sleep 2; done']
+        - image: yauritux/busybox-curl
+          name: wait-for-cell-before-core
+          command: ['sh', '-c',
+            'until nslookup cellexecutor; do sleep 4; done;']
         containers:
         - image: squonk/core-services-server
           name: coreservices
@@ -250,11 +287,6 @@ objects:
         labels:
           name: cellexecutor
       spec:
-        initContainers:
-        - image: busybox
-          name: init-coreservcies
-          command: ['sh', '-c',
-            'until nslookup coreservices; do sleep 4; done;']
         containers:
         - image: squonk/cellexecutor
           name: cellexecutor

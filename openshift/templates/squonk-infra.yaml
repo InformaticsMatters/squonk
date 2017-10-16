@@ -21,47 +21,12 @@ parameters:
 # Nothing
 
 # --------
-# Keycloak
-# --------
-
-- name: KEYCLOAK_USER
-  value: admin
-- name: KEYCLOAK_PASSWORD
-  value: squonk
-
-# --------
-# RabbitMQ
-# --------
-
-- name: RABBITMQ_DEFAULT_USER
-  value: admin
-- name: RABBITMQ_DEFAULT_PASS
-  value: squonk
-- name: RABBITMQ_ERLANG_COOKIE
-  description: RabbitMQ Erlang cookie
-  from: '[a-zA-Z0-9]{12}'
-  generate: expression
-- name: RABBITMQ_SQUONK_PASSWORD
-  value: squonk
-
-# --------
 # Postgres
 # --------
 
 - name: POSTGRES_IMAGE_TAG
   description: The version tag for the RDKIT container version
   value: Release_2016_03_1
-
-- name: POSTGRES_KEYCLOAK_PASSWORD
-  value: squonk
-- name: POSTGRES_SQUONK_PASSWORD
-  value: squonk
-- name: POSTGRES_PASSWORD
-  value: postgres
-- name: POSTGRES_USER
-  value: postgres
-- name: POSTGRES_XWIKI_PASSWORD
-  value: squonk
 
 - name: POSTGRES_CPU_REQUEST
   value: 100m
@@ -97,29 +62,6 @@ parameters:
   value: 500Mi
 
 objects:
-
-# -----------------------------------------------------------------------------
-# Secrets
-# -----------------------------------------------------------------------------
-
-- apiVersion: v1
-  kind: Secret
-  metadata:
-    name: squonk-secrets
-  stringData:
-    KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
-    KEYCLOAK_USER: ${KEYCLOAK_USER}
-
-    POSTGRES_KEYCLOAK_PASSWORD: ${POSTGRES_KEYCLOAK_PASSWORD}
-    POSTGRES_SQUONK_PASSWORD: ${POSTGRES_SQUONK_PASSWORD}
-    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    POSTGRES_USER: ${POSTGRES_USER}
-    POSTGRES_XWIKI_PASSWORD: ${POSTGRES_XWIKI_PASSWORD}
-
-    RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-    RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
-    RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE}
-    RABBITMQ_SQUONK_PASSWORD: ${RABBITMQ_SQUONK_PASSWORD}
 
 # -----------------------------------------------------------------------------
 # Postgres Service
@@ -258,39 +200,6 @@ objects:
       targetPort: 5432
     selector:
       name: postgres
-
-# -----------------------------------------------------------------------------
-# Postgres Migration (Job)
-# -----------------------------------------------------------------------------
-
-- apiVersion: batch/v1
-  kind: Job
-  metadata:
-    name: postgres-migrate
-  spec:
-    replicas: 1
-    selector:
-      name: postgres-migrate
-    template:
-      metadata:
-        labels:
-          name: postgres-migrate
-      spec:
-        initContainers:
-        - image: yauritux/busybox-curl
-          name: wait-for-postgres-before-migration
-          command: ['sh', '-c',
-            'until (( curl http://postgres:5432/ --connect-timeout 5 2>&1 | grep 52 )); do sleep 2; done']
-        containers:
-        - image: squonk/flyway
-          name: postgres-migrate
-          env:
-          - name: POSTGRES_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: squonk-secrets
-                key: POSTGRES_PASSWORD
-        restartPolicy: OnFailure
 
 # -----------------------------------------------------------------------------
 # RabbitMQ Service
