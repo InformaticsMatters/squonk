@@ -250,7 +250,8 @@ Much of the material is in the /docker directory.
 
 Before running you must do these steps (some might be missing - please report)
 1. create a /var/maven_repo directory on your system. This is needed by the uploadArchives task
-2. create a /squonk/work directory
+2. create a /squonk/work directory (and make sure that is accessible to Docker e.g. on Docker for
+Mac you need to add this to the 'File Sharing' options).
 3. execute the docker/deploy/images-pull-extra.sh script to pull the required Docker images
 
 Integration tests run against the production Docker images that need to be created prior to running
