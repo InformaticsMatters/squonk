@@ -1,3 +1,5 @@
+# (oc adm policy add-scc-to-group anyuid system:authenticated)
+#
 # oc process -f squonk-infra.yaml | oc create -f -
 # oc delete all,cm,pvc,secrets --selector template=squonk-infra
 

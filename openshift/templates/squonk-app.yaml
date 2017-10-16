@@ -53,6 +53,23 @@ parameters:
 - name: CORE_MEM_LIMIT
   value: 500Mi
 
+# ------------
+# ChemExecutor
+# ------------
+
+- name: CELL_DOCKER_HOST
+  value: "unix:///var/run/docker.sock"
+
+- name: CELL_CPU_REQUEST
+  value: 100m
+- name: CELL_CPU_LIMIT
+  value: 1000m
+- name: CELL_MEM_REQUEST
+  value: 500Mi
+- name: CELL_MEM_LIMIT
+  value: 500Mi
+
+
 objects:
 
 # -----------------------------------------------------------------------------
@@ -203,6 +220,75 @@ objects:
   spec:
     selector:
       name: coreservices
+    ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+
+# -----------------------------------------------------------------------------
+# CellExecutor
+# -----------------------------------------------------------------------------
+
+# IMPORTANT NOTE
+#
+# This template is a just a 'shell' at the moment.
+# It creates the cellexecutor service but the template
+# is incomplete as a number of mounts and comms issues
+# still need to be resolved. It is present here simply
+# to act as the starting point for the finished article.
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: cellexecutor
+  spec:
+    replicas: 1
+    selector:
+      name: cellexecutor
+    template:
+      metadata:
+        labels:
+          name: cellexecutor
+      spec:
+        initContainers:
+        - image: busybox
+          name: init-coreservcies
+          command: ['sh', '-c',
+            'until nslookup coreservices; do sleep 4; done;']
+        containers:
+        - image: squonk/cellexecutor
+          name: cellexecutor
+          env:
+          - name: RABBITMQ_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-secrets
+                key: RABBITMQ_SQUONK_PASSWORD
+          - name: DOCKER_HOST
+            value: ${CELL_DOCKER_HOST}
+          - name: JAVA_OPTS
+            value: '"-Djava.util.logging.config.file=/logging.properties"'
+#          resources:
+#            limits:
+#              cpu: ${CELL_CPU_LIMIT}
+#              memory: ${CELL_MEM_LIMIT}
+#            requests:
+#              cpu: ${CELL_CPU_REQUEST}
+#              memory: ${CELL_MEM_REQUEST}
+          volumeMounts:
+          - mountPath: /squonk/work
+            name: squonk-work
+        volumes:
+        - name: squonk-work
+          emptyDir: {}
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: cellexecutor
+  spec:
+    selector:
+      name: cellexecutor
     ports:
     - name: http
       port: 8080
