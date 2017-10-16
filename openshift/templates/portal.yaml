@@ -46,18 +46,18 @@ objects:
                 key: POSTGRES_SQUONK_PASSWORD
           - name: SERVICE_CALLBACK
             value: ${PORTAL_SERVICE_CALLBACK}
-          readinessProbe:
-            httpGet:
-              path: /portal
-              port: 8080
-            initialDelaySeconds: 30
-            timeoutSeconds: 5
-          livenessProbe:
-            httpGet:
-              path: /portal
-              port: 8080
-            initialDelaySeconds: 30
-            timeoutSeconds: 5
+#          readinessProbe:
+#            httpGet:
+#              path: /portal
+#              port: 8080
+#            initialDelaySeconds: 30
+#            timeoutSeconds: 5
+#          livenessProbe:
+#            httpGet:
+#              path: /portal
+#              port: 8080
+#            initialDelaySeconds: 30
+#            timeoutSeconds: 5
 #          resources:
 #            limits:
 #              cpu: ${PORTAL_CPU_LIMIT}
