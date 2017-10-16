@@ -3,15 +3,14 @@
 ## Deployment
 The deployment consists of a number of templates and stages:
 
--   secrets
+-   squonk-secrets
 -   squonk-infra
 -   squonk-app
--   portal
 
 ### Secrets
 Secrets need to be deployed before any other object.
 
-    $ oc process -f secrets.yaml | oc create -f -
+    $ oc process -f squonk-secrets.yaml | oc create -f -
     
 ### Infrastructure
 This is responsible for the operating infrastructure, which
@@ -32,15 +31,6 @@ Then, deploy using:
 Deploy using:
 
     $ oc process -f squonk-app.yaml | oc create -f -
-
-### Portal
->   The Portal should be dependent on core services so, in theory,
-    there's no need to wait for the Application before you deploy these
-    services.
-
-Deploy using:
-
-    $ oc process -f portal.yaml | oc create -f -
 
 ## TODOs
 
