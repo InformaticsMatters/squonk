@@ -253,7 +253,7 @@ Before running you must do these steps (some might be missing - please report)
 2. create a /squonk/work directory
 3. execute the docker/deploy/images-pull-extra.sh script to pull the required Docker images
 
-Integration tests run against the production Docker images that need to be created prior to runnning
+Integration tests run against the production Docker images that need to be created prior to running
 the tests. To do this preparation run the  integrationTestInit task which builds the necessary images
 and does any other setup that is needed. If the running code (as opposed to the test code) changes this
 step needs to be repeated before running the tests.
