@@ -28,3 +28,4 @@ include 'core-services-common', 'core-services-exec', 'core-services-server', 'c
 include 'chem-services-chemaxon-basic', 'chem-services-cdk-basic', 'chem-services-rdkit-basic', 'chem-services-rdkit-search', 'chem-services-openchemlib-basic'
 include 'chem-services-smartcyp', 'chem-services-cpsign'
 include 'cell-executor'
+include 'computational-notebook'

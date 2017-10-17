@@ -27,7 +27,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.bmuschko:gradle-tomcat-plugin:2.2.2'
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.3'
         classpath 'com.bmuschko:gradle-docker-plugin:3.0.12' // needs gradle >= 2.5
 
         classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.2.0'
@@ -98,7 +98,7 @@ subprojects {
 def hasChemAxonLicense = file('../data/licenses/license.cxl').exists()
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.2.1'
+    gradleVersion = '4.2.1'
     jarFile = 'wrapper/wrapper.jar'
 }
 
