@@ -245,7 +245,12 @@ task dockerImageChemServices(type: DockerBuildImage) {
 
 task dockerBuildImages() {
 
-    dependsOn = ['dockerImageChemServices', 'core-services-server:buildDockerImage', 'cell-executor:dockerBuildImage']
+    dependsOn = [
+        'dockerImageChemServices',
+        'core-services-server:buildDockerImage',
+        'cell-executor:dockerBuildImage',
+        'database:buildDockerImage'
+    ]
 }
 
 /*
