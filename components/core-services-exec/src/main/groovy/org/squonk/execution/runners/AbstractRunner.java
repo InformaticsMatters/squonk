@@ -28,12 +28,17 @@ public abstract class AbstractRunner {
 
     protected final File hostWorkDir;
 
+    static final int RUNNER_NOT_STARTED = 0;
+    static final int RUNNER_RUNNNG = 1;      // execute() has been invoked
+    static final int RUNNER_FINISHED = 2;    // execute() complete with/without error
+    static final int RUNNER_STOPPING = 3;    // stop() has been invoked
+    static final int RUNNER_STOPPED = 4;     // stop() has completed
+
     /**
-     * 0 = not started
-     * 1 = running
-     * 2 = finished
+     * Runner state.
+     * See RUNNER_* constants for expected values.
      */
-    protected int isRunning = 0;
+    protected int isRunning = RUNNER_NOT_STARTED;
 
     protected AbstractRunner(String hostBaseWorkDir) {
         LOG.info("Specified hostBaseWorkDir is " + hostBaseWorkDir);
