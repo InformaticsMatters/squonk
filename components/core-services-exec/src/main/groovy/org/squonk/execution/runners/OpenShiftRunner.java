@@ -20,10 +20,10 @@ import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
-import org.squonk.util.IOUtils;
-
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
+import org.squonk.util.IOUtils;
+
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,24 +37,8 @@ import java.util.logging.Logger;
  */
 public class OpenShiftRunner extends AbstractRunner {
 
-    // Errors returned by `execute()` that are not the result of
-    // a container execution error. These might clash with container exit
-    // codes so numbers chosen to minimise (?) this.
-    private static final int EXECUTE_ERROR_NOT_INITIALISED = -999;
-    private static final int EXECUTE_ERROR_ALREADY_EXECUTED = -998;
-    private static final int EXECUTE_ERROR_LAUNCH_ERROR = -997;
-    private static final int EXECUTE_ERROR_SUB_PATH_ERORR = -996;
-
     // TODO isRunning really an Enum?
-    // TODO execute() return an Enum or structure/error object?
-    // TODO Is my 'initCalled' really another isRunning state? i.e. INITIALISED? /YEP/
-
     // TODO Still need to get container logs on failure
-
-    // TODO General thread-safety issues here without atomic/sync approach
-    // TODO Policy on Thread safety good practice declarations? Introduce @NotThreadSafe annotations? (net.jcip.annotations)
-    // TODO Policy on asserts (i.e. checking validity of method arguments)
-    // TODO Consider the benefits of slf4j (logging)
 
     private static final Logger LOG = Logger.getLogger(OpenShiftRunner.class.getName());
 
@@ -91,7 +75,6 @@ public class OpenShiftRunner extends AbstractRunner {
     private String jobName;
     private String imageName;
 
-    private boolean initCalled;
     private boolean isExecuting;
     private boolean stopRequested;
 
@@ -155,13 +138,13 @@ public class OpenShiftRunner extends AbstractRunner {
 
                 // StartTime has not been set
                 // (Job must still be loading)
-                LOG.log(Level.INFO,jobName + " is starting...", jobName);
+                LOG.info(jobName + " is starting...");
 
             } else if (jobStatus.getCompletionTime() == null) {
 
                 // CompletionTime has not been set
                 // (Job must still be running)
-                LOG.log(Level.INFO,jobName + " is running...", jobName);
+                LOG.info(jobName + " is running...");
                 jobStarted = true;
 
             } else {
@@ -174,7 +157,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 // which occur when we delete the Job.
                 if (!jobComplete) {
                     success = jobStatus.getSucceeded() > 0;
-                    LOG.log(Level.INFO,jobName + " has stopped. Success=" + success);
+                    LOG.info(jobName + " has stopped. Success=" + success);
                     jobComplete = true;
                 }
 
@@ -211,10 +194,9 @@ public class OpenShiftRunner extends AbstractRunner {
 
         super(hostBaseWorkDir);
 
-        LOG.log(Level.FINE,
-                "imageName='" + imageName + "'" +
-                " hostBaseWorkDir='" + hostBaseWorkDir + "'" +
-                " localWorkDir=" + localWorkDir);
+        LOG.info("imageName='" + imageName + "'" +
+                 " hostBaseWorkDir='" + hostBaseWorkDir + "'" +
+                 " localWorkDir=" + localWorkDir);
 
         this.imageName = imageName;
         this.localWorkDir = localWorkDir;
@@ -245,7 +227,7 @@ public class OpenShiftRunner extends AbstractRunner {
         // Form the string that will be used to name all our OS objects...
         // TODO is subPath suitable or do we append our own unique value?
         jobName = String.format("%s-%s", OS_OBJ_BASE_NAME, subPath);
-        LOG.log(Level.INFO, "jobName='" + jobName + "'");
+        LOG.info("jobName='" + jobName + "'");
 
     }
 
@@ -260,7 +242,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         super(null);
 
-        LOG.log(Level.FINE,"imageName='" + imageName +"'");
+        LOG.fine("imageName='" + imageName +"'");
 
         this.imageName = imageName;
         this.localWorkDir = getHostWorkDir().getPath();
@@ -276,22 +258,22 @@ public class OpenShiftRunner extends AbstractRunner {
      * <p/>
      * The method should not be called more than once.
      */
-    public void init() {
+    public synchronized void init() {
 
-        LOG.log(Level.FINE,"Initialising...");
+        LOG.fine("Initialising...");
 
-        // Avoid re-initialising
-        if (initCalled) {
-            LOG.log(Level.WARNING, "Call to init() when initialised");
+        // Only permitted on initial (created) state
+        if (isRunning != RUNNER_CREATED) {
+            LOG.warning("Call to init() when initialised");
         }
 
         // For now, there's nothing really to initialise.
         // The method is here to comply with protocol.
         // The execute() method creates and prepares the dependent objects.
 
-        LOG.log(Level.FINE,"Initialised.");
+        LOG.fine("Initialised.");
 
-        initCalled = true;
+        isRunning = RUNNER_INITIALISED;
 
     }
 
@@ -305,26 +287,23 @@ public class OpenShiftRunner extends AbstractRunner {
      *
      * @param cmd The command sequence to run in the container
      * @return Execution status (non-zero on error)
+     *
+     * @throws IllegalStateException if the method is called incorrectly
+     *         or if there are problems instantiating the Job.
      */
-    public int execute(String... cmd) {
+    public synchronized int execute(String... cmd)
+            throws IllegalStateException {
 
-        // Initialised?
-        if (!initCalled) {
-            LOG.log(Level.SEVERE, "execute() before init()");
-            return EXECUTE_ERROR_NOT_INITIALISED;
-        }
-        // ...and not called (i.e. isRunning must be NOT_STARTED)
-        if (isRunning != RUNNER_NOT_STARTED) {
-            LOG.log(Level.SEVERE, "execute() with bad isRunning state (" + isRunning + ")");
-            return EXECUTE_ERROR_ALREADY_EXECUTED;
+        // Must be coming from the initialised state.
+        if (isRunning != RUNNER_INITIALISED) {
+            throw new IllegalStateException("execute() with bad isRunning state (" + isRunning + ")");
         }
         // Sub-path properly formed?
         if (subPath == null || subPath.length() == 0) {
-            LOG.log(Level.SEVERE, "execute() with missing subPath");
-            return EXECUTE_ERROR_SUB_PATH_ERORR;
+            throw new IllegalStateException("execute() with missing subPath");
         }
 
-        LOG.log(Level.FINE,"Executing...");
+        LOG.fine("Executing...");
 
         isRunning = RUNNER_RUNNNG;
         isExecuting = true;
@@ -386,11 +365,11 @@ public class OpenShiftRunner extends AbstractRunner {
             client.extensions().jobs().create(job);
         } catch (KubernetesClientException ex) {
 
-            // Nothing to do other than log, cleanup and leave...
-            LOG.log(Level.INFO,"Exception creating Job", ex);
+            // Nothing to do other than log, cleanup and re-throw...
+            LOG.severe("KubernetesClientException creating the Job: " + ex.getMessage());
             cleanUp();
 
-            return EXECUTE_ERROR_LAUNCH_ERROR;
+            throw new IllegalStateException("Exception creating Job", ex);
 
         }
 
@@ -424,7 +403,7 @@ public class OpenShiftRunner extends AbstractRunner {
             LOG.log(Level.INFO, "Job exitStatus=" + jobWatcher.success());
         }
 
-        // TODO CONATINER EXIT STATUS AND LOG!
+        // TODO CONTAINER EXIT STATUS AND LOG!
 
         // Always clean up.
         // This cancels the JobWatcher.
@@ -432,7 +411,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // ---
 
-        LOG.log(Level.FINE,"Executed.");
+        LOG.fine("Executed.");
 
         // Adjust the 'isRunning' state if we terminated witout being stopped.
         // If we're stopped the 'stop()' method is responsible for the
@@ -468,7 +447,7 @@ public class OpenShiftRunner extends AbstractRunner {
      * The container exit code it not of interest.
      */
     @Override
-    public void stop() {
+    public synchronized void stop() {
 
         // The only sensible running state is RUNNING.
         // Any other state can be ignored.
@@ -478,7 +457,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         isRunning = RUNNER_STOPPING;
 
-        LOG.log(Level.FINE,"Stopping...");
+        LOG.fine("Stopping...");
 
         // Setting 'stopRequested' should cause the 'execute()'
         // method  to complete. We wait here until it does.
@@ -494,7 +473,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         }
 
-        LOG.log(Level.FINE,"Stopped.");
+        LOG.fine("Stopped.");
 
         isRunning = RUNNER_STOPPED;
 
@@ -507,37 +486,37 @@ public class OpenShiftRunner extends AbstractRunner {
      */
     private void cleanUp() {
 
-        LOG.log(Level.FINE,"Cleaning up...");
+        LOG.fine("Cleaning up...");
 
         if (client == null || jobName == null) {
             // Probably nothing to clean up...
             return;
         }
 
-        LOG.log(Level.FINE,"...Job");
+        LOG.fine("...Job");
         client.extensions().jobs()
                 .withName(jobName)
                 .delete();
-        LOG.log(Level.FINE,"...Pod");
+        LOG.fine("...Pod");
         client.pods().
                 withName(jobName)
                 .delete();
 
         if (watchObject != null) {
-            LOG.log(Level.FINE, "...Watcher");
+            LOG.fine("...Watcher");
             watchObject.close();
         }
 
-        LOG.log(Level.FINE,"Cleaned.");
+        LOG.fine("Cleaned.");
 
     }
 
     static {
 
         // Create the OpenShift client...
-        LOG.log(Level.FINE,"Creating DefaultOpenShiftClient...");
+        LOG.fine("Creating DefaultOpenShiftClient...");
         client = new DefaultOpenShiftClient();
-        LOG.log(Level.FINE,"Created.");
+        LOG.fine("Created.");
 
         // Get the PVC name of the data mount...
         OS_DATA_VOLUME_PVC_NAME = IOUtils

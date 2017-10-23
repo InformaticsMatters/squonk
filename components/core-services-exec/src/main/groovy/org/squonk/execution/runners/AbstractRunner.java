@@ -1,13 +1,8 @@
 package org.squonk.execution.runners;
 
-import org.squonk.execution.util.GroovyUtils;
-import org.squonk.util.IOUtils;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -28,17 +23,18 @@ public abstract class AbstractRunner {
 
     protected final File hostWorkDir;
 
-    static final int RUNNER_NOT_STARTED = 0;
+    static final int RUNNER_CREATED = 0;     // Created, init() to be called
     static final int RUNNER_RUNNNG = 1;      // execute() has been invoked
     static final int RUNNER_FINISHED = 2;    // execute() complete with/without error
     static final int RUNNER_STOPPING = 3;    // stop() has been invoked
     static final int RUNNER_STOPPED = 4;     // stop() has completed
+    static final int RUNNER_INITIALISED = 5; // init() has been called
 
     /**
      * Runner state.
      * See RUNNER_* constants for expected values.
      */
-    protected int isRunning = RUNNER_NOT_STARTED;
+    protected int isRunning = RUNNER_CREATED;
 
     protected AbstractRunner(String hostBaseWorkDir) {
         LOG.info("Specified hostBaseWorkDir is " + hostBaseWorkDir);
