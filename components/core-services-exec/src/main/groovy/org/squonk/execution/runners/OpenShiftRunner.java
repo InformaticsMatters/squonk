@@ -32,6 +32,10 @@ import java.util.logging.Logger;
  * An OpenShift-based Docker image executor that expects inputs and outputs.
  * The runner relies on the presence of a Persistent Volume Claim (PVC) that
  * has been successfully bound.
+ * <p/>
+ * In order to run this within an OpoenShift cluster you will need:
+ * - A project (named "squonk")
+ * - A suitable service account with admin privileges (named "squonk")
  *
  * @author Alan Christie
  */
@@ -45,12 +49,20 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String WORK_DIR_ENV_NAME = "SQUONK_DOCKER_WORK_DIR";
     private static final String WORK_DIR_DEFAULT = "/squonk/work/docker";
 
+    private static final String PROJECT_ENV_NAME = "SQUONK_PROJECT_NAME";
+    private static final String PROJECT_DEFAULT = "squonk";
+
+    private static final String SA_ENV_NAME = "SQUONK_SERVICE_ACCOUNT";
+    private static final String SA_DEFAULT = "squonk";
+
     private static final String PVC_NAME_ENV_NAME = "SQUONK_WORK_DIR_PVC_NAME";
     private static final String PVC_NAME_DEFAULT = "squonk-runner-pvc";
 
     private static final String OBJ_BASE_NAME_ENV_NAME = "SQUONK_RUNNER_OBJ_BASE_NAME";
     private static final String OBJ_BASE_NAME_DEFAULT = "squonk-runner-job";
 
+    private static final String OS_SA;
+    private static final String OS_PROJECT;
     private static final String OS_OBJ_BASE_NAME;
     private static final String OS_DATA_VOLUME_PVC_NAME;
     private static final String OS_IMAGE_PULL_POLICY = "IfNotPresent";
@@ -77,6 +89,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
     private boolean isExecuting;
     private boolean stopRequested;
+    private boolean jobCreated;
 
     /**
      * The JobWatcher receives events form the launched Job
@@ -340,11 +353,13 @@ public class OpenShiftRunner extends AbstractRunner {
         Job job = new JobBuilder()
                 .withNewMetadata()
                 .withName(jobName)
+                .withNamespace(OS_PROJECT)
                 .endMetadata()
                 .withNewSpec()
                 .withNewTemplate()
                 .withNewSpec()
                 .withContainers(jobContainer)
+                .withServiceAccount(OS_SA)
                 .withRestartPolicy(OS_JOB_RESTART_POLICY)
                 .withVolumes(volume)
                 .endSpec()
@@ -372,6 +387,9 @@ public class OpenShiftRunner extends AbstractRunner {
             throw new IllegalStateException("Exception creating Job", ex);
 
         }
+        // We should have a Job.
+        // Setting this flag allows cleanUp() to clean it up.
+        jobCreated = true;
 
         // Wait...
 
@@ -493,15 +511,24 @@ public class OpenShiftRunner extends AbstractRunner {
             return;
         }
 
-        LOG.fine("...Job");
-        client.extensions().jobs()
-                .withName(jobName)
-                .delete();
-        LOG.fine("...Pod");
-        client.pods().
-                withName(jobName)
-                .delete();
+        // The Job may have failed to get created.
+        // Clean it up if we think it was created.
+        if (jobCreated) {
+            LOG.fine("...Job");
+            client.extensions().jobs()
+                    .inNamespace(OS_PROJECT)
+                    .withName(jobName)
+                    .cascading(true)
+                    .withGracePeriod(0)
+                    .delete();
+            LOG.fine("...Pod");
+            client.pods()
+                    .inNamespace(OS_PROJECT)
+                    .withLabel("job-name", jobName)
+                    .delete();
+        }
 
+        // There's always a JobWatcher
         if (watchObject != null) {
             LOG.fine("...Watcher");
             watchObject.close();
@@ -517,6 +544,14 @@ public class OpenShiftRunner extends AbstractRunner {
         LOG.fine("Creating DefaultOpenShiftClient...");
         client = new DefaultOpenShiftClient();
         LOG.fine("Created.");
+
+        // Get the preferred service account...
+        OS_SA = IOUtils
+                .getConfiguration(SA_ENV_NAME, SA_DEFAULT);
+
+        // Get the preferred project name...
+        OS_PROJECT = IOUtils
+                .getConfiguration(PROJECT_ENV_NAME, PROJECT_DEFAULT);
 
         // Get the PVC name of the data mount...
         OS_DATA_VOLUME_PVC_NAME = IOUtils
