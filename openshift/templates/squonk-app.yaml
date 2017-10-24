@@ -366,8 +366,8 @@ objects:
                 key: RABBITMQ_SQUONK_PASSWORD
           - name: DOCKER_HOST
             value: ${CELL_DOCKER_HOST}
-          - name: JAVA_OPTS
-            value: '"-Djava.util.logging.config.file=/logging.properties"'
+#          - name: JAVA_OPTS
+#            value: '"-Djava.util.logging.config.file=/logging.properties"'
 #          resources:
 #            limits:
 #              cpu: ${CELL_CPU_LIMIT}
