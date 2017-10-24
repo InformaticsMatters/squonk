@@ -22,6 +22,8 @@ parameters:
 # Portal
 # ------
 
+- name: PORTAL_IMAGE_TAG
+  value: "latest"
 - name: PORTAL_SERVICE_CALLBACK
   value: "http://localhost:8080/portal"
 
@@ -38,6 +40,8 @@ parameters:
 # ChemServices
 # ------------
 
+- name: CHEM_IMAGE_TAG
+  value: "latest"
 - name: CHEM_STRUCTURE_DATABASE_TABLES
   description: Chemical search tables
   value: ""
@@ -55,6 +59,8 @@ parameters:
 # CoreServices
 # ------------
 
+- name: CORE_IMAGE_TAG
+  value: "latest"
 - name: CORE_SQUONK_BASIC_CHEM_SERVICES_URL
   value: "http://chemservices:8080"
 - name: CORE_SQUONK_DOCKER_SERVICES_DIR
@@ -70,9 +76,11 @@ parameters:
   value: 500Mi
 
 # ------------
-# ChemExecutor
+# CellExecutor
 # ------------
 
+- name: CELL_IMAGE_TAG
+  value: "latest"
 - name: CELL_DOCKER_HOST
   value: "unix:///var/run/docker.sock"
 
@@ -148,7 +156,7 @@ objects:
           command: ['sh', '-c',
             'until nslookup rabbitmq; do sleep 4; done;']
         containers:
-        - image: squonk/chem-services-basic
+        - image: squonk/chem-services-basic:${CHEM_IMAGE_TAG}
           name: chem-services-basic
           env:
           - name: POSTGRES_SQUONK_PASSWORD
@@ -204,6 +212,17 @@ objects:
 # -----------------------------------------------------------------------------
 
 - apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: core-service-descriptors
+  spec:
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: 1Gi
+
+- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: coreservices
@@ -226,7 +245,7 @@ objects:
           command: ['sh', '-c',
             'until nslookup cellexecutor; do sleep 4; done;']
         containers:
-        - image: squonk/core-services-server
+        - image: squonk/core-services-server:${CORE_IMAGE_TAG}
           name: coreservices
           env:
           - name: RABBITMQ_SQUONK_PASSWORD
@@ -260,11 +279,12 @@ objects:
 #              cpu: ${CORE_CPU_REQUEST}
 #              memory: ${CORE_MEM_REQUEST}
           volumeMounts:
-          - mountPath: /var/local/squonk-docker-services
+          - mountPath: ${CORE_SQUONK_DOCKER_SERVICES_DIR}
             name: squonk-docker-services
         volumes:
         - name: squonk-docker-services
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: core-service-descriptors
 
 - apiVersion: v1
   kind: Service
@@ -277,6 +297,38 @@ objects:
     - name: http
       port: 8080
       targetPort: 8080
+
+# -----------------------------------------------------------------------------
+# Squonk Docker-Services Loader
+# -----------------------------------------------------------------------------
+
+# This 'Job' populates the Core's Service Descriptor directory PVC
+# with the current set of service descriptors.
+
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: service-descriptor-loader
+  spec:
+    replicas: 1
+    selector:
+      name: service-descriptor-loader
+    template:
+      metadata:
+        labels:
+          name: service-descriptor-loader
+      spec:
+        containers:
+        - image: squonk/pipelines-servicedescriptor-loader:latest
+          name: service-descriptor-loader
+          volumeMounts:
+          - mountPath: /sd-dst
+            name: loader-volume
+        volumes:
+        - name: loader-volume
+          persistentVolumeClaim:
+            claimName: core-service-descriptors
+        restartPolicy: Never
 
 # -----------------------------------------------------------------------------
 # CellExecutor
@@ -304,7 +356,7 @@ objects:
           name: cellexecutor
       spec:
         containers:
-        - image: squonk/cellexecutor
+        - image: squonk/cellexecutor:${CELL_IMAGE_TAG}
           name: cellexecutor
           env:
           - name: RABBITMQ_SQUONK_PASSWORD
@@ -365,7 +417,7 @@ objects:
           command: ['sh', '-c',
             'until (( curl http://coreservices:8080/rest/ping --connect-timeout 5 )); do sleep 2; done']
         containers:
-        - image: squonk/portal
+        - image: squonk/portal:${PORTAL_IMAGE_TAG}
           name: portal
           env:
           - name: POSTGRES_SQUONK_PASSWORD
