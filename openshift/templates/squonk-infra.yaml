@@ -3,8 +3,8 @@
 # oc process -f squonk-infra.yaml | oc create -f -
 # oc delete all,cm,pvc,secrets --selector template=squonk-infra
 
-apiVersion: v1
 kind: Template
+apiVersion: v1
 metadata:
   name: squonk-infra
   annotations:
@@ -67,8 +67,8 @@ objects:
 # Postgres Service
 # -----------------------------------------------------------------------------
 
-- apiVersion: v1
-  kind: PersistentVolumeClaim
+- kind: PersistentVolumeClaim
+  apiVersion: v1
   metadata:
     name: postgres-claim-1
   spec:
@@ -78,8 +78,8 @@ objects:
       requests:
         storage: 1Gi
 
-- apiVersion: v1
-  kind: ConfigMap
+- kind: ConfigMap
+  apiVersion: v1
   metadata:
     name: postgres-init-map
   data:
@@ -113,8 +113,8 @@ objects:
       psql --username "$PG_USER" --command 'create extension rdkit' chemcentral
       psql --username "$PG_USER" -d chemcentral --command "CREATE SCHEMA vendordbs AUTHORIZATION squonk;"
 
-- apiVersion: v1
-  kind: DeploymentConfig
+- kind: DeploymentConfig
+  apiVersion: v1
   metadata:
     name: postgres
   spec:
@@ -189,8 +189,8 @@ objects:
           configMap:
             name: postgres-init-map
 
-- apiVersion: v1
-  kind: Service
+- kind: Service
+  apiVersion: v1
   metadata:
     name: postgres
   spec:
@@ -205,8 +205,8 @@ objects:
 # RabbitMQ Service
 # -----------------------------------------------------------------------------
 
-- apiVersion: v1
-  kind: ConfigMap
+- kind: ConfigMap
+  apiVersion: v1
   metadata:
     name: squonk-rabbitmq-config
   data:
@@ -272,8 +272,8 @@ objects:
         "bindings": []
       }
 
-- apiVersion: v1
-  kind: DeploymentConfig
+- kind: DeploymentConfig
+  apiVersion: v1
   metadata:
     name: rabbitmq
   spec:
@@ -334,8 +334,8 @@ objects:
           configMap:
             name: squonk-rabbitmq-config
 
-- apiVersion: v1
-  kind: Service
+- kind: Service
+  apiVersion: v1
   metadata:
     name: rabbitmq
   spec:

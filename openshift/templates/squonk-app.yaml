@@ -1,8 +1,8 @@
 # oc process -f squonk-app.yaml | oc create -f -
 # oc delete all,cm,pvc,routes,secrets --selector template=squonk-app
 
-apiVersion: v1
 kind: Template
+apiVersion: v1
 metadata:
   name: squonk
   annotations:
@@ -100,8 +100,8 @@ objects:
 # Postgres Migration (Job)
 # -----------------------------------------------------------------------------
 
-- apiVersion: batch/v1
-  kind: Job
+- kind: Job
+  apiVersion: batch/v1
   metadata:
     name: postgres-migrate
   spec:
@@ -133,8 +133,8 @@ objects:
 # ChemServices
 # -----------------------------------------------------------------------------
 
-- apiVersion: v1
-  kind: DeploymentConfig
+- kind: DeploymentConfig
+  apiVersion: v1
   metadata:
     name: chem-services-basic
   spec:
@@ -195,8 +195,8 @@ objects:
 #              cpu: ${CHEM_CPU_REQUEST}
 #              memory: ${CHEM_MEM_REQUEST}
 
-- apiVersion: v1
-  kind: Service
+- kind: Service
+  apiVersion: v1
   metadata:
     name: chemservices
   spec:
@@ -211,8 +211,8 @@ objects:
 # CoreServices
 # -----------------------------------------------------------------------------
 
-- apiVersion: v1
-  kind: PersistentVolumeClaim
+- kind: PersistentVolumeClaim
+  apiVersion: v1
   metadata:
     name: core-service-descriptors
   spec:
@@ -222,8 +222,8 @@ objects:
       requests:
         storage: 1Gi
 
-- apiVersion: v1
-  kind: DeploymentConfig
+- kind: DeploymentConfig
+  apiVersion: v1
   metadata:
     name: coreservices
   spec:
@@ -286,8 +286,8 @@ objects:
           persistentVolumeClaim:
             claimName: core-service-descriptors
 
-- apiVersion: v1
-  kind: Service
+- kind: Service
+  apiVersion: v1
   metadata:
     name: coreservices
   spec:
@@ -305,8 +305,8 @@ objects:
 # This 'Job' populates the Core's Service Descriptor directory PVC
 # with the current set of service descriptors.
 
-- apiVersion: batch/v1
-  kind: Job
+- kind: Job
+  apiVersion: batch/v1
   metadata:
     name: service-descriptor-loader
   spec:
@@ -342,8 +342,8 @@ objects:
 # still need to be resolved. It is present here simply
 # to act as the starting point for the finished article.
 
-- apiVersion: v1
-  kind: DeploymentConfig
+- kind: DeploymentConfig
+  apiVersion: v1
   metadata:
     name: cellexecutor
   spec:
@@ -382,8 +382,8 @@ objects:
         - name: squonk-work
           emptyDir: {}
 
-- apiVersion: v1
-  kind: Service
+- kind: Service
+  apiVersion: v1
   metadata:
     name: cellexecutor
   spec:
@@ -398,8 +398,8 @@ objects:
 # Portal
 # -----------------------------------------------------------------------------
 
-- apiVersion: v1
-  kind: DeploymentConfig
+- kind: DeploymentConfig
+  apiVersion: v1
   metadata:
     name: portal
   spec:
@@ -447,8 +447,8 @@ objects:
 #              cpu: ${PORTAL_CPU_REQUEST}
 #              memory: ${PORTAL_MEM_REQUEST}
 
-- apiVersion: v1
-  kind: Service
+- kind: Service
+  apiVersion: v1
   metadata:
     name: portal
   spec:
@@ -459,8 +459,8 @@ objects:
       port: 8080
       targetPort: 8080
 
-- apiVersion: v1
-  kind: Route
+- kind: Route
+  apiVersion: v1
   metadata:
     name: portal
   spec:
