@@ -385,6 +385,8 @@ objects:
                 key: RABBITMQ_SQUONK_PASSWORD
           - name: CONTAINER_RUNNER_TYPE
             value: ${CELL_CONTAINER_RUNNER_TYPE}
+          - name: SQUONK_DOCKER_WORK_DIR
+            value: ${CELL_SQUONK_CONTAINER_WORK_DIR}
 #          - name: DOCKER_HOST
 #            value: ${CELL_DOCKER_HOST}
 #          - name: JAVA_OPTS

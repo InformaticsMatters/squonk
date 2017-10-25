@@ -75,7 +75,7 @@ public class OpenShiftRunner extends AbstractRunner {
     // from an external repository. We need to do this
     // because I'm not sure, at the moment how to detect pull errors
     // from within OpenShift - so this is 'belt-and-braces' protection.
-    private static final long JOB_START_GRACE_PERIOD_M = 5;
+    private static final long JOB_START_GRACE_PERIOD_M = 15;
 
     // Time between checks on the 'job watcher' completion state.
     private static final long WATCHER_POLL_PERIOD_MILLIS = 1000;
@@ -147,21 +147,29 @@ public class OpenShiftRunner extends AbstractRunner {
         @Override
         public void eventReceived(Action action, Job resource) {
 
-            LOG.log(Level.FINE, resource.toString());
+            LOG.fine(resource.toString());
 
             JobStatus jobStatus = resource.getStatus();
             if (jobStatus.getStartTime() == null) {
 
                 // StartTime has not been set
-                // (Job must still be loading)
+                // (Job must still be loading).
                 LOG.info(jobName + " is starting...");
 
             } else if (jobStatus.getCompletionTime() == null) {
 
                 // CompletionTime has not been set
                 // (Job must still be running)
-                LOG.info(jobName + " is running...");
-                jobStarted = true;
+
+                // If we've already seen this state then we can
+                // assume the Job's restarted for some reason.
+                if (jobStarted) {
+                    LOG.severe(jobName + " has restarted. Considering it as a failure.");
+                    jobComplete = true;
+                } else {
+                    LOG.info(jobName + " is running...");
+                    jobStarted = true;
+                }
 
             } else {
 
@@ -186,7 +194,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
             if (cause != null) {
                 cause.printStackTrace();
-                LOG.log(Level.SEVERE, cause.getMessage(), cause);
+                LOG.severe(cause.getMessage());
             }
             jobComplete = true;
 
@@ -216,6 +224,12 @@ public class OpenShiftRunner extends AbstractRunner {
 
         this.imageName = imageName;
         this.localWorkDir = localWorkDir;
+
+        // Append 'latest' if tag's not specified.
+        if (!imageName.contains(":")) {
+            LOG.warning("Image has no tag. Adding ':latest'");
+            this.imageName += ":latest";
+        }
 
         // The host base directory's leaf directory
         // will be used as a 'sub-path' for mounting the Job.
@@ -383,7 +397,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withNewTemplate()
                 .withNewSpec()
                 .withContainers(jobContainer)
-                .withServiceAccount(OS_SA)
+//                .withServiceAccount(OS_SA)
                 .withRestartPolicy(OS_JOB_RESTART_POLICY)
                 .withVolumes(volume)
                 .endSpec()
@@ -438,15 +452,21 @@ public class OpenShiftRunner extends AbstractRunner {
                 long now = System.currentTimeMillis();
                 long elapsedMins = (now - jobStartTimeMillis) / 60000;
                 if (elapsedMins >= JOB_START_GRACE_PERIOD_M) {
-                    LOG.log(Level.WARNING, "Job failed to start. Leaving.");
+                    LOG.warning("Job failed to start. Leaving.");
                     jobStartFailure = true;
                 }
             }
 
         }
         if (!jobStartFailure && !stopRequested) {
-            LOG.log(Level.INFO, "Job exitStatus=" + jobWatcher.success());
+            LOG.info("Job exitStatus=" + jobWatcher.success());
+            if (!jobWatcher.success()) {
+                // Force a container failure
+                containerExitStatus = -1;
+            }
         }
+
+        LOG.fine("Execute complete.");
 
         // TODO CONTAINER EXIT STATUS AND LOG!
 
@@ -455,8 +475,6 @@ public class OpenShiftRunner extends AbstractRunner {
         cleanUp();
 
         // ---
-
-        LOG.fine("Executed.");
 
         // Adjust the 'isRunning' state if we terminated witout being stopped.
         // If we're stopped the 'stop()' method is responsible for the
