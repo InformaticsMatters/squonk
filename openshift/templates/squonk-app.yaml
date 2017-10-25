@@ -1,3 +1,5 @@
+# oc adm policy add-cluster-role-to-user cluster-admin -z default
+#
 # oc process -f squonk-app.yaml | oc create -f -
 # oc delete all,cm,pvc,routes,secrets --selector template=squonk-app
 
@@ -23,7 +25,7 @@ parameters:
 # ------
 
 - name: PORTAL_IMAGE_TAG
-  value: "latest"
+  value: latest
 - name: PORTAL_SERVICE_CALLBACK
   value: "http://localhost:8080/portal"
 
@@ -41,7 +43,7 @@ parameters:
 # ------------
 
 - name: CHEM_IMAGE_TAG
-  value: "latest"
+  value: latest
 - name: CHEM_STRUCTURE_DATABASE_TABLES
   description: Chemical search tables
   value: ""
@@ -60,11 +62,13 @@ parameters:
 # ------------
 
 - name: CORE_IMAGE_TAG
-  value: "latest"
+  value: latest
 - name: CORE_SQUONK_BASIC_CHEM_SERVICES_URL
   value: "http://chemservices:8080"
 - name: CORE_SQUONK_DOCKER_SERVICES_DIR
   value: "/var/local/squonk-docker-services"
+- name: CORE_SD_PVC_SIZE
+  value: 1Gi
 
 - name: CORE_CPU_REQUEST
   value: 100m
@@ -80,9 +84,13 @@ parameters:
 # ------------
 
 - name: CELL_IMAGE_TAG
-  value: "latest"
-- name: CELL_DOCKER_HOST
-  value: "unix:///var/run/docker.sock"
+  value: openshift
+- name: CELL_CONTAINER_RUNNER_TYPE
+  value: openshift
+- name: CELL_SQUONK_CONTAINER_WORK_DIR
+  value: "/squonk/work/docker"
+- name: CELL_WORK_PVC_SIZE
+  value: 20Gi
 
 - name: CELL_CPU_REQUEST
   value: 100m
@@ -214,13 +222,13 @@ objects:
 - kind: PersistentVolumeClaim
   apiVersion: v1
   metadata:
-    name: core-service-descriptors
+    name: core-service-descriptors-pvc
   spec:
     accessModes:
     - ReadWriteMany
     resources:
       requests:
-        storage: 1Gi
+        storage: ${CORE_SD_PVC_SIZE}
 
 - kind: DeploymentConfig
   apiVersion: v1
@@ -284,7 +292,7 @@ objects:
         volumes:
         - name: squonk-docker-services
           persistentVolumeClaim:
-            claimName: core-service-descriptors
+            claimName: core-service-descriptors-pvc
 
 - kind: Service
   apiVersion: v1
@@ -327,7 +335,7 @@ objects:
         volumes:
         - name: loader-volume
           persistentVolumeClaim:
-            claimName: core-service-descriptors
+            claimName: core-service-descriptors-pvc
         restartPolicy: Never
 
 # -----------------------------------------------------------------------------
@@ -341,6 +349,17 @@ objects:
 # is incomplete as a number of mounts and comms issues
 # still need to be resolved. It is present here simply
 # to act as the starting point for the finished article.
+
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    name: squonk-work-dir-pvc
+  spec:
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: ${CELL_WORK_PVC_SIZE}
 
 - kind: DeploymentConfig
   apiVersion: v1
@@ -364,8 +383,10 @@ objects:
               secretKeyRef:
                 name: squonk-secrets
                 key: RABBITMQ_SQUONK_PASSWORD
-          - name: DOCKER_HOST
-            value: ${CELL_DOCKER_HOST}
+          - name: CONTAINER_RUNNER_TYPE
+            value: ${CELL_CONTAINER_RUNNER_TYPE}
+#          - name: DOCKER_HOST
+#            value: ${CELL_DOCKER_HOST}
 #          - name: JAVA_OPTS
 #            value: '"-Djava.util.logging.config.file=/logging.properties"'
 #          resources:
@@ -376,11 +397,12 @@ objects:
 #              cpu: ${CELL_CPU_REQUEST}
 #              memory: ${CELL_MEM_REQUEST}
           volumeMounts:
-          - mountPath: /squonk/work
-            name: squonk-work
+          - mountPath: ${CELL_SQUONK_CONTAINER_WORK_DIR}
+            name: squonk-work-dir
         volumes:
-        - name: squonk-work
-          emptyDir: {}
+        - name: squonk-work-dir
+          persistentVolumeClaim:
+            claimName: squonk-work-dir-pvc
 
 - kind: Service
   apiVersion: v1
