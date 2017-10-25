@@ -33,6 +33,8 @@ public interface ContainerRunner {
 
     File getHostWorkDir();
 
+    String getLocalWorkDir();
+
     long writeInput(String fileName, String content, boolean executable)
             throws IOException;
 
@@ -47,15 +49,26 @@ public interface ContainerRunner {
 
     /**
      * Execute a command in the container. This method can only be called once
-     * for each containerRunner instance.
+     * for each containerRunner instance. Prior to calling this method
+     * users must have called the object's init() method.
      * <p/>
      * The method runs to completion, returning the container execution
      * state (exit code).
      *
      * @param cmd The command
      * @return Container execution result. Non-zero on failure.
+     *
+     * @see #init()
      */
     int execute(String... cmd);
+
+    /**
+     * A pre-execute initialisation stage. Runners must expect this call prior
+     * to execute(). Here they can do any pre-execution actions that are
+     * required.
+     */
+    void init()
+        throws IOException;
 
     /**
      * Returns the container's log content.

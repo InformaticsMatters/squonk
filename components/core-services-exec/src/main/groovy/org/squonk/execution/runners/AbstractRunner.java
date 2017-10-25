@@ -56,6 +56,7 @@ public abstract class AbstractRunner implements ContainerRunner {
     }
 
     public void init() throws IOException {
+        LOG.info("init() - " + hostWorkDir.getPath());
         if (!hostWorkDir.mkdir()) {
             throw new IOException("Could not create work dir " + hostWorkDir.getPath());
         }

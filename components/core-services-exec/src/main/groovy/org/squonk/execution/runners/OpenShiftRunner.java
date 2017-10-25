@@ -26,7 +26,7 @@ import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 import org.squonk.util.IOUtils;
 
-
+import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,7 +58,7 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String SA_DEFAULT = "squonk";
 
     private static final String PVC_NAME_ENV_NAME = "SQUONK_WORK_DIR_PVC_NAME";
-    private static final String PVC_NAME_DEFAULT = "squonk-runner-pvc";
+    private static final String PVC_NAME_DEFAULT = "squonk-work-dir-pvc";
 
     private static final String OBJ_BASE_NAME_ENV_NAME = "SQUONK_RUNNER_OBJ_BASE_NAME";
     private static final String OBJ_BASE_NAME_DEFAULT = "squonk-runner-job";
@@ -83,6 +83,7 @@ public class OpenShiftRunner extends AbstractRunner {
     private static OpenShiftClient client;
     private static Watch watchObject;
 
+    private final String hostBaseWorkDir;
     private final String localWorkDir;
     private String subPath;
 
@@ -211,13 +212,27 @@ public class OpenShiftRunner extends AbstractRunner {
 
         LOG.info("imageName='" + imageName + "'" +
                  " hostBaseWorkDir='" + hostBaseWorkDir + "'" +
-                 " localWorkDir=" + localWorkDir);
+                 " localWorkDir='" + localWorkDir + "'");
 
         this.imageName = imageName;
         this.localWorkDir = localWorkDir;
 
         // The host base directory's leaf directory
         // will be used as a 'sub-path' for mounting the Job.
+
+        if (hostBaseWorkDir == null) {
+            LOG.warning("Null hostBaseWorkDir, using getHostWorkDir() path...");
+            hostBaseWorkDir = getHostWorkDir().getPath();
+        }
+        this.hostBaseWorkDir = hostBaseWorkDir;
+
+        if (hostBaseWorkDir == null) {
+            LOG.severe("Null hostBaseWorkDir");
+            return;
+        } else if (localWorkDir == null) {
+            LOG.severe("Null localWorkDir");
+            return;
+        }
 
         // TODO Is BaseWorkDir and subPath going to work.
         //      Document with concrete example...
@@ -226,18 +241,22 @@ public class OpenShiftRunner extends AbstractRunner {
         // We expect to be given '/parent/child' so we expect to find
         // more than one '/' and we want the parent and child.
         // The child becomes the sub-path.
+        LOG.info("hostBaseWorkDir='" + hostBaseWorkDir + "'");
         int lastSlash = hostBaseWorkDir.lastIndexOf("/");
         if (lastSlash < 1) {
             // We expect this to be greater and 0!
             // Leaving now will cause us to fail our execution-time tests.
+            LOG.severe("Could not find a subPath");
             return;
         }
         subPath = hostBaseWorkDir.substring(lastSlash + 1);
         if (subPath.length() == 0) {
             // We expect a sub-path.
             // Leaving now will cause us to fail our execution-time tests.
+            LOG.severe("No subPath");
             return;
         }
+        LOG.info("subPath='" + subPath + "'");
 
         // Form the string that will be used to name all our OS objects...
         // TODO is subPath suitable or do we append our own unique value?
@@ -261,6 +280,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         this.imageName = imageName;
         this.localWorkDir = getHostWorkDir().getPath();
+        this.hostBaseWorkDir = null;
 
         // TODO Not sure how to handle sub-path here!
 
@@ -273,9 +293,11 @@ public class OpenShiftRunner extends AbstractRunner {
      * <p/>
      * The method should not be called more than once.
      */
-    public synchronized void init() {
+    public synchronized void init() throws IOException {
 
-        LOG.fine("Initialising...");
+        super.init();
+
+        LOG.info("Initialising... " + hostBaseWorkDir);
 
         // Only permitted on initial (created) state
         if (isRunning != RUNNER_CREATED) {
@@ -286,7 +308,7 @@ public class OpenShiftRunner extends AbstractRunner {
         // The method is here to comply with protocol.
         // The execute() method creates and prepares the dependent objects.
 
-        LOG.fine("Initialised.");
+        LOG.info("Initialised.");
 
         isRunning = RUNNER_INITIALISED;
 
@@ -378,6 +400,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // Launch...
 
+        LOG.info("Creating OpenShift Job...");
         try {
             client.extensions().jobs().create(job);
         } catch (KubernetesClientException ex) {
@@ -390,11 +413,13 @@ public class OpenShiftRunner extends AbstractRunner {
 
         }
         // We should have a Job.
+        LOG.info("Created.");
         // Setting this flag allows cleanUp() to clean it up.
         jobCreated = true;
 
         // Wait...
 
+        LOG.info("Waiting for Job completion...");
         long jobStartTimeMillis = System.currentTimeMillis();
         boolean jobStartFailure = false;
         while (!jobStartFailure
@@ -515,6 +540,15 @@ public class OpenShiftRunner extends AbstractRunner {
     }
 
     /**
+     * Returns the local working directory.
+     *
+     * @return Path to the local working directory.
+     */
+    public String getLocalWorkDir() {
+        return localWorkDir;
+    }
+
+    /**
      * Cleans up the runner. This method must be called when a runner
      * execution completes, with or without error. It is responsible for
      * removing OpenShift objects and stopping the JobWatcher.
@@ -558,25 +592,29 @@ public class OpenShiftRunner extends AbstractRunner {
     static {
 
         // Create the OpenShift client...
-        LOG.fine("Creating DefaultOpenShiftClient...");
+        LOG.info("Creating DefaultOpenShiftClient...");
         client = new DefaultOpenShiftClient();
-        LOG.fine("Created.");
+        LOG.info("Created.");
 
         // Get the preferred service account...
         OS_SA = IOUtils
                 .getConfiguration(SA_ENV_NAME, SA_DEFAULT);
+        LOG.info("OS_SA='" + OS_SA + "'");
 
         // Get the preferred project name...
         OS_PROJECT = IOUtils
                 .getConfiguration(PROJECT_ENV_NAME, PROJECT_DEFAULT);
+        LOG.info("OS_PROJECT='" + OS_PROJECT + "'");
 
         // Get the PVC name of the data mount...
         OS_DATA_VOLUME_PVC_NAME = IOUtils
                 .getConfiguration(PVC_NAME_ENV_NAME, PVC_NAME_DEFAULT);
+        LOG.info("OS_DATA_VOLUME_PVC_NAME='" + OS_DATA_VOLUME_PVC_NAME + "'");
 
         // And the base-name for all Jobs we create...
         OS_OBJ_BASE_NAME = IOUtils
                 .getConfiguration(OBJ_BASE_NAME_ENV_NAME, OBJ_BASE_NAME_DEFAULT);
+        LOG.info("OS_OBJ_BASE_NAME='" + OS_OBJ_BASE_NAME + "'");
 
     }
 

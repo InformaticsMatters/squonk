@@ -23,6 +23,7 @@ import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.runners.ContainerRunner;
 import org.squonk.execution.runners.DockerRunner;
+import org.squonk.execution.runners.OpenShiftRunner;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptor;
 import org.squonk.notebook.api.VariableKey;
@@ -58,6 +59,9 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
     protected static final String MSG_PROCESSING_COMPLETE = "Processing complete";
     protected static final String MSG_PREPARING_CONTAINER = "Preparing Docker container";
     protected static final String MSG_RUNNING_CONTAINER = "Running Docker container";
+
+    protected static final String CONTAINER_RUNNER_TYPE;
+    private static final String CONTAINER_RUNNER_TYPE_ENV = "CONTAINER_RUNNER_TYPE";
 
     protected Long outputProducerId;
     protected String jobId;
@@ -360,11 +364,31 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
     }
 
     protected ContainerRunner createContainerRunner(String image, String hostWorkDir, String localWorkDir) throws IOException {
-        DockerRunner runner = new DockerRunner(image, hostWorkDir, localWorkDir);
+
+        // The CONTAINER_RUNNER_TYPE (environment variable) defines what
+        // type of ContainerRunner we produce...
+
+        ContainerRunner runner = null;
+        if (CONTAINER_RUNNER_TYPE.equals("docker")) {
+
+            LOG.info("Creating DockerRunner instance...");
+            runner = new DockerRunner(image, hostWorkDir, localWorkDir);
+
+        } else if (CONTAINER_RUNNER_TYPE.equals("openshift")) {
+
+            LOG.info("Creating OpenShiftRunner instance...");
+            runner = new OpenShiftRunner(image, hostWorkDir, localWorkDir);
+
+        } else {
+            throw new IOException("Unsupported ContainerRunner type: '" + CONTAINER_RUNNER_TYPE + "'");
+        }
+
+        LOG.info("Initialising...");
         runner.init();
         LOG.info("Using host work dir of " + runner.getHostWorkDir().getPath());
         LOG.info("Using local work dir of " + runner.getLocalWorkDir());
         return runner;
+
     }
 
     protected ContainerRunner createContainerRunner(String image, String localWorkDir) throws IOException {
@@ -569,4 +593,16 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
             return -1;
         }
     }
+
+    static {
+
+        // Get the configured container runner type (lower-case)
+        // This is typically 'docker' or 'openshift'
+        CONTAINER_RUNNER_TYPE = IOUtils
+                .getConfiguration("CONTAINER_RUNNER_TYPE",
+                                  "openshift").toLowerCase();
+        LOG.info("CONTAINER_RUNNER_TYPE='" + CONTAINER_RUNNER_TYPE + "'");
+
+    }
+
 }

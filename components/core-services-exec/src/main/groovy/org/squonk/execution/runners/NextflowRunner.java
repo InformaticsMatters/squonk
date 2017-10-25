@@ -51,6 +51,12 @@ public class NextflowRunner extends AbstractRunner {
         throw new UnsupportedOperationException("NextflowRunner does not support addBind");
     }
 
+    @Override
+    public String getLocalWorkDir() {
+        throw new UnsupportedOperationException("NextflowRunner does not support getLocalWorkDir");
+    }
+
+
     public int execute(List<String> args, Map<String,String> params) {
 
         // create runner and launcher
