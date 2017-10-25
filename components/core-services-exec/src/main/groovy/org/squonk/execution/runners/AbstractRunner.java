@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  *
  * Created by timbo on 01/08/17.
  */
-public abstract class AbstractRunner {
+public abstract class AbstractRunner implements ContainerRunner {
 
     private static final Logger LOG = Logger.getLogger(AbstractRunner.class.getName());
 

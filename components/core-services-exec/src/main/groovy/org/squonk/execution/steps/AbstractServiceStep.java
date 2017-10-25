@@ -17,7 +17,6 @@
 package org.squonk.execution.steps;
 
 import org.apache.camel.CamelContext;
-
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.core.ServiceConfig;
@@ -26,7 +25,7 @@ import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetUtils;
 import org.squonk.dataset.ThinDatasetWrapper;
 import org.squonk.dataset.ThinDescriptor;
-import org.squonk.execution.runners.AbstractRunner;
+import org.squonk.execution.runners.ContainerRunner;
 import org.squonk.execution.util.GroovyUtils;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.execution.variable.impl.FilesystemReadContext;
@@ -162,7 +161,7 @@ public abstract class AbstractServiceStep extends AbstractStep {
             CamelContext camelContext,
             DefaultServiceDescriptor serviceDescriptor,
             VariableManager varman,
-            AbstractRunner runner) throws Exception {
+            ContainerRunner runner) throws Exception {
         doHandleInputs(camelContext, serviceDescriptor, varman, runner);
     }
 
@@ -170,7 +169,7 @@ public abstract class AbstractServiceStep extends AbstractStep {
             CamelContext camelContext,
             DefaultServiceDescriptor serviceDescriptor,
             VariableManager varman,
-            AbstractRunner runner) throws Exception {
+            ContainerRunner runner) throws Exception {
         IODescriptor[] inputDescriptors = serviceDescriptor.resolveInputIODescriptors();
         if (inputDescriptors != null) {
             LOG.info("Handling " + inputDescriptors.length + " inputs");
@@ -185,7 +184,7 @@ public abstract class AbstractServiceStep extends AbstractStep {
             CamelContext camelContext,
             DefaultServiceDescriptor serviceDescriptor,
             VariableManager varman,
-            AbstractRunner runner,
+            ContainerRunner runner,
             IODescriptor<P,Q> ioDescriptor) throws Exception {
         doHandleInput(camelContext, serviceDescriptor, varman, runner, ioDescriptor);
     }
@@ -194,7 +193,7 @@ public abstract class AbstractServiceStep extends AbstractStep {
             CamelContext camelContext,
             DefaultServiceDescriptor serviceDescriptor,
             VariableManager varman,
-            AbstractRunner runner,
+            ContainerRunner runner,
             IODescriptor<P,Q> ioDescriptor) throws Exception {
         P value = fetchMappedInput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), varman, true);
         File dir = runner.getHostWorkDir();
@@ -202,7 +201,7 @@ public abstract class AbstractServiceStep extends AbstractStep {
         varman.putValue(ioDescriptor.getPrimaryType(), value, writeContext);
     }
 
-    protected <P,Q> void handleOutputs(CamelContext camelContext, DefaultServiceDescriptor serviceDescriptor, VariableManager varman, AbstractRunner runner) throws Exception {
+    protected <P,Q> void handleOutputs(CamelContext camelContext, DefaultServiceDescriptor serviceDescriptor, VariableManager varman, ContainerRunner runner) throws Exception {
         doHandleOutputs(camelContext, serviceDescriptor, varman, runner);
     }
 
@@ -210,7 +209,7 @@ public abstract class AbstractServiceStep extends AbstractStep {
             CamelContext camelContext,
             DefaultServiceDescriptor serviceDescriptor,
             VariableManager varman,
-            AbstractRunner runner) throws Exception {
+            ContainerRunner runner) throws Exception {
 
         IODescriptor[] outputDescriptors = serviceDescriptor.resolveOutputIODescriptors();
         if (outputDescriptors != null) {
@@ -225,7 +224,7 @@ public abstract class AbstractServiceStep extends AbstractStep {
             CamelContext camelContext,
             DefaultServiceDescriptor serviceDescriptor,
             VariableManager varman,
-            AbstractRunner runner,
+            ContainerRunner runner,
             IODescriptor<P,Q> ioDescriptor) throws Exception {
         doHandleOutput(camelContext, serviceDescriptor, varman, runner, ioDescriptor);
     }
@@ -233,7 +232,7 @@ public abstract class AbstractServiceStep extends AbstractStep {
             CamelContext camelContext,
             DefaultServiceDescriptor serviceDescriptor,
             VariableManager varman,
-            AbstractRunner runner,
+            ContainerRunner runner,
             IODescriptor<P,Q> ioDescriptor) throws Exception {
 
         FilesystemReadContext readContext = new FilesystemReadContext(runner.getHostWorkDir(), ioDescriptor.getName());
@@ -267,7 +266,11 @@ public abstract class AbstractServiceStep extends AbstractStep {
     }
 
 
-    protected void handleThinInputs(CamelContext camelContext, DefaultServiceDescriptor serviceDescriptor, VariableManager varman, AbstractRunner runner) throws Exception {
+    protected void handleThinInputs(
+            CamelContext camelContext,
+            DefaultServiceDescriptor serviceDescriptor,
+            VariableManager varman,
+            ContainerRunner runner) throws Exception {
 
         IODescriptor[] inputDescriptors = serviceDescriptor.resolveInputIODescriptors();
         IODescriptor[] outputDescriptors = serviceDescriptor.resolveOutputIODescriptors();
@@ -289,7 +292,12 @@ public abstract class AbstractServiceStep extends AbstractStep {
     }
 
     @SuppressWarnings("unchecked")
-    protected <P,Q> void handleThinInput(CamelContext camelContext, DefaultServiceDescriptor serviceDescriptor, VariableManager varman, AbstractRunner runner, IODescriptor<P,Q> ioDescriptor) throws Exception {
+    protected <P,Q> void handleThinInput(
+            CamelContext camelContext,
+            DefaultServiceDescriptor serviceDescriptor,
+            VariableManager varman,
+            ContainerRunner runner,
+            IODescriptor<P,Q> ioDescriptor) throws Exception {
 
         LOG.info("Handling input for " + ioDescriptor);
         ThinDescriptor td = thinDescriptors.get(ioDescriptor.getName());
@@ -331,7 +339,7 @@ public abstract class AbstractServiceStep extends AbstractStep {
             CamelContext camelContext,
             DefaultServiceDescriptor serviceDescriptor,
             VariableManager varman,
-            AbstractRunner runner,
+            ContainerRunner runner,
             IODescriptor<P,Q> ioDescriptor) throws Exception {
 
         ThinDatasetWrapper wrapper = wrappers.get(ioDescriptor.getName());

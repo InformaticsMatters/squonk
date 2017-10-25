@@ -16,6 +16,8 @@
 
 package org.squonk.execution.runners;
 
+import com.github.dockerjava.api.model.AccessMode;
+import com.github.dockerjava.api.model.Bind;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
@@ -444,6 +446,21 @@ public class OpenShiftRunner extends AbstractRunner {
 
         return containerExitStatus;
 
+    }
+
+    @Override
+    public String getLog() {
+        return "";
+    }
+
+    @Override
+    public com.github.dockerjava.api.model.Volume addVolume(String mountAs) {
+        throw new UnsupportedOperationException("OpenShiftRunner does not support Volumes");
+    }
+
+    @Override
+    public Bind addBind(String hostDir, com.github.dockerjava.api.model.Volume volume, AccessMode mode) {
+        throw new UnsupportedOperationException("OpenShiftRunner does not support Bind");
     }
 
     /**

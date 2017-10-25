@@ -21,6 +21,7 @@ import org.apache.camel.TypeConverter;
 import org.apache.camel.spi.TypeConverterRegistry;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.execution.runners.ContainerRunner;
 import org.squonk.execution.runners.DockerRunner;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptor;
@@ -358,7 +359,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         return typeConverter.convertTo(to.getPrimaryType(), value);
     }
 
-    protected DockerRunner createDockerRunner(String image, String hostWorkDir, String localWorkDir) throws IOException {
+    protected ContainerRunner createContainerRunner(String image, String hostWorkDir, String localWorkDir) throws IOException {
         DockerRunner runner = new DockerRunner(image, hostWorkDir, localWorkDir);
         runner.init();
         LOG.info("Using host work dir of " + runner.getHostWorkDir().getPath());
@@ -366,8 +367,8 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         return runner;
     }
 
-    protected DockerRunner createDockerRunner(String image, String localWorkDir) throws IOException {
-        return createDockerRunner(image, null, localWorkDir);
+    protected ContainerRunner createContainerRunner(String image, String localWorkDir) throws IOException {
+        return createContainerRunner(image, null, localWorkDir);
     }
 
     /**
@@ -379,7 +380,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
      * @return
      * @throws Exception
      */
-    protected DatasetMetadata handleDockerInput(VariableManager varman, DockerRunner runner, String mediaType) throws Exception {
+    protected DatasetMetadata handleDockerInput(VariableManager varman, ContainerRunner runner, String mediaType) throws Exception {
         return handleDockerInput(varman, runner, mediaType, StepDefinitionConstants.VARIABLE_INPUT_DATASET);
     }
 
@@ -393,7 +394,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
      * @return
      * @throws Exception
      */
-    protected DatasetMetadata handleDockerInput(VariableManager varman, DockerRunner runner, String mediaType, String varName) throws Exception {
+    protected DatasetMetadata handleDockerInput(VariableManager varman, ContainerRunner runner, String mediaType, String varName) throws Exception {
 
         if (mediaType == null) {
             mediaType = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON;
@@ -414,7 +415,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         }
     }
 
-    protected DatasetMetadata handleDockerOutput(DatasetMetadata inputMetadata, VariableManager varman, DockerRunner runner, String mediaType) throws Exception {
+    protected DatasetMetadata handleDockerOutput(DatasetMetadata inputMetadata, VariableManager varman, ContainerRunner runner, String mediaType) throws Exception {
 
         if (mediaType == null) {
             mediaType = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON;
@@ -431,14 +432,14 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         }
     }
 
-    protected void writeAsDataset(Dataset input, DockerRunner runner) throws IOException {
+    protected void writeAsDataset(Dataset input, ContainerRunner runner) throws IOException {
         LOG.info("Writing metadata input.meta");
         runner.writeInput("input.meta", JsonHandler.getInstance().objectToJson(input.getMetadata()));
         LOG.info("Writing data input.data.gz");
         runner.writeInput("input.data.gz", input.getInputStream(true));
     }
 
-    protected void writeAsSDF(InputStream sdf, DockerRunner runner) throws IOException {
+    protected void writeAsSDF(InputStream sdf, ContainerRunner runner) throws IOException {
         LOG.fine("Writing SDF");
         //runner.writeInput("input.sdf.gz", IOUtils.getGzippedInputStream(sdf));
 
@@ -448,7 +449,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         runner.writeInput("input.sdf.gz", IOUtils.getGzippedInputStream(new ByteArrayInputStream(data.getBytes())));
     }
 
-    protected DatasetMetadata readAsDataset(DatasetMetadata inputMetadata, VariableManager varman, DockerRunner runner) throws Exception {
+    protected DatasetMetadata readAsDataset(DatasetMetadata inputMetadata, VariableManager varman, ContainerRunner runner) throws Exception {
         DatasetMetadata meta;
         try (InputStream is = runner.readOutput("output.meta")) {
             if (is == null) {
@@ -467,7 +468,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
     }
 
 
-    protected DatasetMetadata readAsSDF(DatasetMetadata inputMetadata, VariableManager varman, DockerRunner runner) throws Exception {
+    protected DatasetMetadata readAsSDF(DatasetMetadata inputMetadata, VariableManager varman, ContainerRunner runner) throws Exception {
 
         try (InputStream is = runner.readOutput("output.sdf.gz")) {
             createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, InputStream.class, is, varman);

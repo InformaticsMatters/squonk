@@ -49,7 +49,7 @@ public class UntrustedPythonDatasetScriptStep extends AbstractDockerScriptRunner
         LOG.fine("Docker image: " + image + ", Script: " + script);
 
         String localWorkDir = "/source";
-        DockerRunner runner = createDockerRunner(image, localWorkDir)
+        DockerRunner runner = ((DockerRunner)createContainerRunner(image, localWorkDir))
                 .withNetwork(ISOLATED_NETWORK_NAME);
 
         LOG.info("Writing script file");

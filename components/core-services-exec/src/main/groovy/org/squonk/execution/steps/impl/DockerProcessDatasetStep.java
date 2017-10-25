@@ -17,14 +17,16 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
-import org.squonk.dataset.DatasetMetadata;;
-import org.squonk.execution.runners.DockerRunner;
+import org.squonk.dataset.DatasetMetadata;
+import org.squonk.execution.runners.ContainerRunner;
 import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 
 import java.util.Properties;
 import java.util.logging.Logger;
+
+;
 
 /**
  * Created by timbo on 29/12/15.
@@ -60,7 +62,7 @@ public class DockerProcessDatasetStep extends AbstractStandardStep {
 
         String localWorkDir = "/source";
 
-        DockerRunner runner = createDockerRunner(image, localWorkDir);
+        ContainerRunner runner = createContainerRunner(image, localWorkDir);
         LOG.info("Docker image: " + image + ", hostWorkDir: " + runner.getHostWorkDir() + ", script: " + command);
         try {
             // create input files
