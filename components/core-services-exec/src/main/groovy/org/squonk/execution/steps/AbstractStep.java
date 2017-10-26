@@ -61,7 +61,7 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
     protected static final String MSG_RUNNING_CONTAINER = "Running Docker container";
 
     protected static final String CONTAINER_RUNNER_TYPE;
-    private static final String CONTAINER_RUNNER_TYPE_ENV = "CONTAINER_RUNNER_TYPE";
+    private static final String CONTAINER_RUNNER_TYPE_ENV = "SQUONK_CONTAINER_RUNNER_TYPE";
 
     protected Long outputProducerId;
     protected String jobId;
@@ -599,9 +599,9 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         // Get the configured container runner type (lower-case)
         // This is typically 'docker' or 'openshift'
         CONTAINER_RUNNER_TYPE = IOUtils
-                .getConfiguration("CONTAINER_RUNNER_TYPE",
+                .getConfiguration(CONTAINER_RUNNER_TYPE_ENV,
                                   "openshift").toLowerCase();
-        LOG.info("CONTAINER_RUNNER_TYPE='" + CONTAINER_RUNNER_TYPE + "'");
+        LOG.info(CONTAINER_RUNNER_TYPE_ENV + "='" + CONTAINER_RUNNER_TYPE + "'");
 
     }
 

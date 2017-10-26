@@ -26,8 +26,7 @@ import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 import org.squonk.util.IOUtils;
 
-import java.io.*;
-import java.util.logging.Level;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -226,7 +225,7 @@ public class OpenShiftRunner extends AbstractRunner {
         this.localWorkDir = localWorkDir;
 
         // Append 'latest' if tag's not specified.
-        if (!imageName.contains(":")) {
+        if (!this.imageName.contains(":")) {
             LOG.warning("Image has no tag. Adding ':latest'");
             this.imageName += ":latest";
         }
@@ -354,7 +353,7 @@ public class OpenShiftRunner extends AbstractRunner {
             throw new IllegalStateException("execute() with missing subPath");
         }
 
-        LOG.fine("Executing...");
+        LOG.info("Executing... '" + jobName + "'");
 
         isRunning = RUNNER_RUNNNG;
         isExecuting = true;
@@ -384,6 +383,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withName(jobName)
                 .withImage(imageName)
                 .withCommand(cmd)
+                .withWorkingDir(localWorkDir)
                 .withImagePullPolicy(OS_IMAGE_PULL_POLICY)
                 .withVolumeMounts(volumeMount).build();
 
@@ -466,7 +466,7 @@ public class OpenShiftRunner extends AbstractRunner {
             }
         }
 
-        LOG.fine("Execute complete.");
+        LOG.info("Execute complete.");
 
         // TODO CONTAINER EXIT STATUS AND LOG!
 

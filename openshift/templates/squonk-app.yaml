@@ -383,7 +383,7 @@ objects:
               secretKeyRef:
                 name: squonk-secrets
                 key: RABBITMQ_SQUONK_PASSWORD
-          - name: CONTAINER_RUNNER_TYPE
+          - name: SQUONK_CONTAINER_RUNNER_TYPE
             value: ${CELL_CONTAINER_RUNNER_TYPE}
           - name: SQUONK_DOCKER_WORK_DIR
             value: ${CELL_SQUONK_CONTAINER_WORK_DIR}

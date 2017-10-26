@@ -67,6 +67,9 @@ export POSTGRES_XWIKI_PASSWORD=squonk
 # Set to 2 to retain data in $SQUONK_DOCKER_WORK_DIR and SQUONK_NEXTFLOW_WORK_DIR for debugging purposes
 #export SQUONK_DEBUG_MODE=0
 
+# The ContainerRunner Type (i.e. 'docker' or 'openshift')
+export SQUONK_CONTAINER_RUNNER_TYPE=docker
+
 # The searchable structure databases that have been loaded.
 # Must be colon separated table names without any spaces e.g.
 # export STRUCTURE_DATABASE_TABLES="emolecules_order_sc:emolecules_order_bb:chembl_23:pdb_ligand"
