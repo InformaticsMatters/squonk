@@ -63,6 +63,7 @@ testSets {
 integrationTest.mustRunAfter test
 
 tasks.withType(Test) {
+    environment "SQUONK_CONTAINER_RUNNER_TYPE", "Docker"
     reports.html.destination = file("${reporting.baseDir}/${name}")
 }
 
