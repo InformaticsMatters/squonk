@@ -84,7 +84,7 @@ parameters:
 # ------------
 
 - name: CELL_IMAGE_TAG
-  value: openshift
+  value: latest
 - name: CELL_CONTAINER_RUNNER_TYPE
   value: openshift
 - name: CELL_SQUONK_CONTAINER_WORK_DIR
