@@ -21,6 +21,8 @@ import org.squonk.client.VariableClient;
 import org.squonk.util.IOUtils;
 
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -28,6 +30,7 @@ import java.util.zip.GZIPInputStream;
  */
 public class FilesystemReadContext extends AbstractFilesystemContext implements VariableHandler.ReadContext {
 
+    private static final Logger LOG = Logger.getLogger(FilesystemReadContext.class.getName());
 
     public FilesystemReadContext(File dir, String baseName) {
         super(dir, baseName);
@@ -53,9 +56,9 @@ public class FilesystemReadContext extends AbstractFilesystemContext implements 
     }
 
     @Override
-    public InputStream readStreamValue(String key) throws Exception {
+    public InputStream readStreamValue(String key, boolean gzip) throws Exception {
         File f = generateFile(key);
-        boolean gzip = key.toLowerCase().endsWith(".gz");
+        LOG.log(Level.INFO, "Reading stream value. key: {0} gzip: {1}", new Object[] {key, gzip});
         if (f.exists()) {
             return gzip ? new GZIPInputStream(new FileInputStream(f)) : new FileInputStream(f);
         } else {
@@ -63,8 +66,4 @@ public class FilesystemReadContext extends AbstractFilesystemContext implements 
         }
     }
 
-    @Override
-    public InputStream readSingleStreamValue(String key) throws Exception {
-        return readStreamValue(key);
-    }
 }

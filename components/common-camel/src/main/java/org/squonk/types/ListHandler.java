@@ -75,12 +75,12 @@ public class ListHandler<T> implements HttpHandler<List>, VariableHandler<List>,
     @Override
     public void writeVariable(List list, WriteContext context) throws Exception {
         InputStream is = write(list);
-        context.writeStreamValue(is);
+        context.writeStreamValue(is, shouldGzip(null));
     }
 
     @Override
     public List readVariable(ReadContext context) throws Exception {
-        InputStream is =  context.readStreamValue();
+        InputStream is =  context.readStreamValue(shouldGzip(null));
         return read(is);
     }
 

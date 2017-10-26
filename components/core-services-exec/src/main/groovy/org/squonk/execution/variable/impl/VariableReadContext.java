@@ -18,16 +18,18 @@ package org.squonk.execution.variable.impl;
 
 import org.squonk.api.VariableHandler;
 import org.squonk.client.VariableClient;
-import org.squonk.core.client.NotebookRestClient;
 import org.squonk.util.IOUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by timbo on 13/03/16.
  */
 public class VariableReadContext implements VariableHandler.ReadContext{
+
+    private static final Logger LOG = Logger.getLogger(VariableReadContext.class.getName());
 
     private final VariableClient client;
     private final Long notebookId;
@@ -50,17 +52,15 @@ public class VariableReadContext implements VariableHandler.ReadContext{
 
     @Override
     public String readSingleTextValue(String key) throws Exception {
-        return readTextValue(null);
+        return readTextValue(key);
     }
 
     @Override
-    public InputStream readStreamValue(String key) throws Exception {
+    public InputStream readStreamValue(String key, boolean gzip) throws Exception {
+        LOG.log(Level.INFO, "Reading stream value. variable: {0} key: {1} gzip: {2}",
+                new Object[] {variableName, key, gzip});
         InputStream is = client.readStreamValue(notebookId, sourceId, cellId, variableName, key);
-        return (is == null ? null : IOUtils.getGunzippedInputStream(is));
+        return (is == null ? null : gzip ? IOUtils.getGunzippedInputStream(is) : is);
     }
 
-    @Override
-    public InputStream readSingleStreamValue(String key) throws Exception {
-        return readStreamValue(null);
-    }
 }

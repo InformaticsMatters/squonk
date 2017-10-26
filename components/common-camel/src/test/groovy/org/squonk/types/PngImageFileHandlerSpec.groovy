@@ -69,7 +69,7 @@ class PngImageFileHandlerSpec extends Specification {
         }
 
         @Override
-        void writeStreamValue(InputStream value, String key) throws Exception {
+        void writeStreamValue(InputStream value, String key, boolean gzip) throws Exception {
             this.bytes = value.bytes
             this.key = key
         }
@@ -85,7 +85,7 @@ class PngImageFileHandlerSpec extends Specification {
         }
 
         @Override
-        InputStream readStreamValue(String key) throws Exception {
+        InputStream readStreamValue(String key, boolean gzip) throws Exception {
             return new ByteArrayInputStream(bytes)
         }
     }

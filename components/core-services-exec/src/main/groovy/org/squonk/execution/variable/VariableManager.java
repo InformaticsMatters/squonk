@@ -31,6 +31,7 @@ import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Manager for variables that uses the VariableClient to persist values, and also allows temporary storage of variables.
@@ -96,7 +97,7 @@ public class VariableManager {
 
             if (value instanceof AbstractStreamType) {
                 LOG.info("No variable handler for type " + type.getName() + ". Handling as stream");
-                context.writeStreamValue(((AbstractStreamType)value).getInputStream());
+                context.writeStreamValue(((AbstractStreamType)value).getInputStream(), true);
             } else {
                 LOG.info("No variable handler for type " + type.getName() + ". Handling as text");
                 context.writeTextValue(value.toString());
@@ -137,7 +138,7 @@ public class VariableManager {
 
         } else if (canBeHandledAs(type, InputStream .class)) {
             Constructor c = type.getConstructor(InputStream.class);
-            InputStream s = context.readStreamValue();
+            InputStream s = context.readStreamValue(true);
             return s == null ? null : (V) c.newInstance(s);
         } else if (canBeHandledAs(type, String .class)) {
             Constructor c = type.getConstructor(String.class);
@@ -211,11 +212,18 @@ public class VariableManager {
         }
 
         @Override
-        public InputStream readStreamValue(String key) throws Exception {
+        public InputStream readStreamValue(String key, boolean gzip) throws Exception {
             String storeKey = generateStreamKey(key);
             LOG.fine("Reading tmp value " + storeKey);
             byte[] bytes = tmpValues.get(storeKey);
-            return bytes == null ? null : new ByteArrayInputStream(bytes);
+            if (bytes == null) {
+                return null;
+            }
+            if (gzip) {
+                return new GZIPInputStream(new ByteArrayInputStream(bytes));
+            } else {
+                return new ByteArrayInputStream(bytes);
+            }
         }
 
         @Override
@@ -230,13 +238,13 @@ public class VariableManager {
         }
 
         @Override
-        public void writeStreamValue(InputStream value, String key) throws Exception {
+        public void writeStreamValue(InputStream value, String key, boolean gzip) throws Exception {
             String storeKey = generateStreamKey(key);
             LOG.fine("Writing tmp value " + storeKey);
             if (value == null) {
                 tmpValues.remove(storeKey);
             } else {
-                tmpValues.put(storeKey, IOUtils.convertStreamToBytes(value));
+                tmpValues.put(storeKey, IOUtils.convertStreamToBytes(gzip ? IOUtils.getGzippedInputStream(value) : value));
             }
         }
 

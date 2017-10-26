@@ -64,12 +64,12 @@ public class CPSignTrainResultHandler implements HttpHandler<CPSignTrainResult>,
     @Override
     public void writeVariable(CPSignTrainResult result, WriteContext context) throws Exception {
         InputStream is = convertToJsonInputStream(result);
-        context.writeStreamValue(is);
+        context.writeStreamValue(is, shouldGzip(null));
     }
 
     @Override
     public CPSignTrainResult readVariable(ReadContext context) throws Exception {
-        return convertFromJsonInputStream(context.readStreamValue(), false);
+        return convertFromJsonInputStream(context.readStreamValue(shouldGzip(null)), false);
     }
 
     private InputStream convertToJsonInputStream(CPSignTrainResult result) throws JsonProcessingException {

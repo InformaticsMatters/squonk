@@ -25,4 +25,8 @@ public class PngImageFileHandler extends FileHandler<PngImageFile> {
         super(PngImageFile.class, "png");
     }
 
+    public boolean isDefaultGzip() {
+        return false;
+    }
+
 }

@@ -54,7 +54,7 @@ public class GenericModelHandler<T> implements VariableHandler<GenericModel>, Ge
             for (String name : value.getStreamNames()) {
                 InputStream is = value.getStream(name);
                 if (is != null) {
-                    context.writeStreamValue(is);
+                    context.writeStreamValue(is, shouldGzip(name));
                 }
             }
             // now write the text variable
@@ -76,7 +76,7 @@ public class GenericModelHandler<T> implements VariableHandler<GenericModel>, Ge
         String json = context.readTextValue();
         GenericModel<T> model = JsonHandler.getInstance().objectFromJson(json, GenericModel.class);
         for (String name : model.getStreamNames()) {
-            InputStream is = context.readStreamValue(name);
+            InputStream is = context.readStreamValue(name, shouldGzip(name));
             model.setStream(name, is);
         }
         return model;

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Logger;
 
 /** Generic handler for files that handle their data as an InputStream. Should cover files of any format.
  * To use this class create a concrete subclass and just call the constructor.
@@ -32,6 +33,8 @@ import java.lang.reflect.InvocationTargetException;
  * Created by timbo on 23/03/2016.
  */
 abstract class FileHandler<T extends AbstractStreamType> implements HttpHandler<T>, VariableHandler<T> {
+
+    private static final Logger LOG = Logger.getLogger(FileHandler.class.getName());
 
     private final Class<T> type;
     private final String extension;
@@ -72,13 +75,17 @@ abstract class FileHandler<T extends AbstractStreamType> implements HttpHandler<
     }
 
     @Override
-    public void writeVariable(T file, WriteContext context) throws Exception {;
-        context.writeSingleStreamValue(file.getInputStream(), extension);
+    public void writeVariable(T file, WriteContext context) throws Exception {
+        boolean gzip = shouldGzip(extension);
+        LOG.info("Writing variable: gzip? " + gzip);
+        context.writeSingleStreamValue(file.getInputStream(), extension, gzip);
     }
 
     @Override
     public T readVariable(ReadContext context) throws Exception {
-        InputStream is = context.readSingleStreamValue(extension);
+        boolean gzip = shouldGzip(extension);
+        LOG.info("Reading variable: gzip? " + gzip);
+        InputStream is = context.readSingleStreamValue(extension, gzip);
         return create(is);
     }
 

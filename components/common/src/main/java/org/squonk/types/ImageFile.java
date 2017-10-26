@@ -16,6 +16,9 @@
 
 package org.squonk.types;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.InputStream;
 
 /** Wrapper around an image file
@@ -33,6 +36,17 @@ public class ImageFile extends AbstractStreamType {
 
     public String getMediaType() {
         return mediaType;
+    }
+
+    /** Generate and return a BufferedImage corresponding to this ImageFile.
+     * NOTE: this consumes the InputStream so that it cannot be read again.
+     * If you need access to this you can use one of the IOUtils.write() methods.
+     *
+     * @return
+     * @throws IOException
+     */
+    public BufferedImage getBufferedImage() throws IOException {
+        return ImageIO.read(getInputStream());
     }
     
 }

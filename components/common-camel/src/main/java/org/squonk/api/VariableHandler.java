@@ -32,9 +32,8 @@ import java.io.InputStream;
  *
  * Created by timbo on 13/03/16.
  */
-public interface VariableHandler<T> {
+public interface VariableHandler<T> extends Handler<T> {
 
-    Class<T> getType();
 
     /** Write the variable using the Notebook/Variable API
      *
@@ -58,11 +57,19 @@ public interface VariableHandler<T> {
      */
     interface ReadContext {
         String readTextValue(String key) throws Exception;
-        InputStream readStreamValue(String key) throws Exception;
-        default String readTextValue() throws Exception { return readTextValue((String)null);}
+//        default InputStream readStreamValue(String key) throws Exception {
+//            return readStreamValue(key, key == null || key.toLowerCase().endsWith(".gz"));
+//        }
+        InputStream readStreamValue(String key, boolean gzip) throws Exception;
+        default String readTextValue() throws Exception { return readTextValue(null);}
         default String readSingleTextValue(String key) throws Exception {return readTextValue(key);}
-        default InputStream readStreamValue() throws Exception { return readStreamValue((String)null);}
-        default InputStream readSingleStreamValue(String key) throws Exception { return readStreamValue(key);}
+        default InputStream readStreamValue(boolean gzip) throws Exception { return readStreamValue(null, gzip);}
+//        default InputStream readSingleStreamValue(String key) throws Exception {
+//            return readStreamValue(key);
+//        }
+        default InputStream readSingleStreamValue(String key, boolean gzip) throws Exception {
+            return readStreamValue(key, gzip);
+        }
     }
 
     /** Context that allows a value to be written.
@@ -70,11 +77,19 @@ public interface VariableHandler<T> {
      */
     interface WriteContext {
         void writeTextValue(String value, String key) throws Exception;
-        void writeStreamValue(InputStream value, String key) throws Exception;
+//        default void writeStreamValue(InputStream value, String key) throws Exception {
+//            writeStreamValue(value, key, key == null || key.toLowerCase().endsWith(".gz"));
+//        }
+        void writeStreamValue(InputStream value, String key, boolean gzip) throws Exception;
         default void writeTextValue(String value) throws Exception { writeTextValue(value, null);}
         default void writeSingleTextValue(String value, String key) throws Exception { writeTextValue(value, key);}
-        default void writeStreamValue(InputStream value) throws Exception { writeStreamValue(value, null);}
-        default void writeSingleStreamValue(InputStream value, String key) throws Exception { writeStreamValue(value, key);}
+        default void writeStreamValue(InputStream value, boolean gzip) throws Exception { writeStreamValue(value, null, gzip);}
+//        default void writeSingleStreamValue(InputStream value, String key, boolean gzip) throws Exception {
+//            writeStreamValue(value, key, gzip);
+//        }
+        default void writeSingleStreamValue(InputStream value, String key, boolean gzip) throws Exception {
+            writeStreamValue(value, key, gzip);
+        }
         void deleteVariable() throws Exception;
     }
 }

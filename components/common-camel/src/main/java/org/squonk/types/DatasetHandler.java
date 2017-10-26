@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 public class DatasetHandler<T extends BasicObject> implements VariableHandler<Dataset>, HttpHandler<Dataset>, GenericHandler<Dataset,T> {
 
     private static final Logger LOG = Logger.getLogger(DatasetHandler.class.getName());
+    private static final String KEY = "data.gz";
     private Class<T> genericType;
 
     /** Default constructor.
@@ -108,7 +109,7 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
              s = generator.getAsStream();
              data = generator.marshalData(s, false);
              is = data.getInputStream();
-            context.writeSingleStreamValue(is, "data.gz");
+            context.writeSingleStreamValue(is, KEY, shouldGzip(KEY));
             try {
                 data.getFuture().get();
             } catch (ExecutionException ex) { // reading Stream failed?
@@ -133,10 +134,14 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
 
     @Override
     public Dataset<T> readVariable(ReadContext context) throws Exception {
-        Dataset<T> result = create(
-                context.readSingleTextValue("metadata"),
-                context.readSingleStreamValue("data.gz")
-        );
+
+        LOG.info("Reading metadata");
+        String metadata = context.readSingleTextValue("metadata");
+        LOG.info("Reading data for key " + KEY + " gzip? " + shouldGzip(KEY));
+        InputStream is = context.readSingleStreamValue(KEY, shouldGzip(KEY));
+
+        Dataset<T> result = create(metadata, is);
+        LOG.info("Dataset created");
 //        LOG.info("Read dataset:");
 //        result.getItems().forEach((o) -> {
 //            LOG.info("Item: " + o);

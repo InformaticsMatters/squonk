@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 public class SDFileHandler implements HttpHandler<SDFile>, VariableHandler<SDFile> {
 
     private static final Logger LOG = Logger.getLogger(SDFileHandler.class.getName());
+    private static final String KEY = "sdf.gz";
 
     @Override
     public Class<SDFile> getType() {
@@ -66,13 +67,13 @@ public class SDFileHandler implements HttpHandler<SDFile>, VariableHandler<SDFil
     public void writeVariable(SDFile sdf, WriteContext context) throws Exception {
         LOG.info("Writing as SDFile");
         //context.writeStreamValue(sdf.getInputStream());
-        context.writeSingleStreamValue(sdf.getInputStream(), "sdf.gz");
+        context.writeSingleStreamValue(sdf.getInputStream(), KEY, true);
     }
 
     @Override
     public SDFile readVariable(ReadContext context) throws Exception {
         //InputStream is = context.readStreamValue();
-        InputStream is = context.readSingleStreamValue("sdf.gz");
+        InputStream is = context.readSingleStreamValue(KEY, true);
         return new SDFile(is);
     }
 }

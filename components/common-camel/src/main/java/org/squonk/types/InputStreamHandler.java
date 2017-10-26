@@ -61,11 +61,11 @@ public class InputStreamHandler implements HttpHandler<InputStream>, VariableHan
 
     @Override
     public void writeVariable(InputStream value, WriteContext context) throws Exception {
-        context.writeStreamValue(value);
+        context.writeStreamValue(value, shouldGzip(null));
     }
 
     @Override
     public InputStream readVariable(ReadContext context) throws Exception {
-        return context.readStreamValue();
+        return context.readStreamValue(shouldGzip(null));
     }
 }

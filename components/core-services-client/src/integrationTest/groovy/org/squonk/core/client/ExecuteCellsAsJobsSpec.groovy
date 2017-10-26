@@ -144,33 +144,33 @@ cp input.data.gz output.data.gz
         findResultSize(notebookId, editableId, cellId, "docker") == 36
     }
 
-    /** Step that specifies it reads/writes a SDFile, but the input/output of the job is a Dataset so conversion is needed.
-     * StepExecutor should handle the conversions
-     */
-    void "docker cell sdf conversion"() {
-
-        StepDefinition step = new StepDefinition(DockerProcessDataset.CLASSNAME)
-                .withInputs(inputs)
-                .withOutputs(outputs)
-                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
-                .withOutputVariableMapping("output", "docker")
-                .withOption(OPTION_DOCKER_IMAGE, "busybox")
-                .withOption(OPTION_MEDIA_TYPE_INPUT, CommonMimeTypes.MIME_TYPE_MDL_SDF)
-                .withOption(OPTION_MEDIA_TYPE_OUTPUT, CommonMimeTypes.MIME_TYPE_MDL_SDF)
-                .withOption(DockerProcessDataset.OPTION_DOCKER_COMMAND, '#!/bin/sh\ncp input.sdf.gz output.sdf.gz')
-
-        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
-        jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, outputs, step)
-
-        when:
-        JobStatus status1 = jobClient.submit(jobdef, username, null)
-        JobStatus status2 = waitForJob(status1.jobId)
-
-        then:
-        status1.status == JobStatus.Status.RUNNING
-        status2.status == JobStatus.Status.COMPLETED
-        findResultSize(notebookId, editableId, cellId, "docker") == 36
-    }
+//    /** Step that specifies it reads/writes a SDFile, but the input/output of the job is a Dataset so conversion is needed.
+//     * StepExecutor should handle the conversions
+//     */
+//    void "docker cell sdf conversion"() {
+//
+//        StepDefinition step = new StepDefinition(DockerProcessDataset.CLASSNAME)
+//                .withInputs(inputs)
+//                .withOutputs(outputs)
+//                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
+//                .withOutputVariableMapping("output", "docker")
+//                .withOption(OPTION_DOCKER_IMAGE, "busybox")
+//                .withOption(OPTION_MEDIA_TYPE_INPUT, CommonMimeTypes.MIME_TYPE_MDL_SDF)
+//                .withOption(OPTION_MEDIA_TYPE_OUTPUT, CommonMimeTypes.MIME_TYPE_MDL_SDF)
+//                .withOption(DockerProcessDataset.OPTION_DOCKER_COMMAND, '#!/bin/sh\ncp input.sdf.gz output.sdf.gz')
+//
+//        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
+//        jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, outputs, step)
+//
+//        when:
+//        JobStatus status1 = jobClient.submit(jobdef, username, null)
+//        JobStatus status2 = waitForJob(status1.jobId)
+//
+//        then:
+//        status1.status == JobStatus.Status.RUNNING
+//        status2.status == JobStatus.Status.COMPLETED
+//        findResultSize(notebookId, editableId, cellId, "docker") == 36
+//    }
 
     void "cdk sdf convert cell"() {
 
