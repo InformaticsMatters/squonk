@@ -47,14 +47,15 @@ class CamelRequestResponseExecutorSpec extends Specification {
                         .setBody(constant("hello world"))
 
                 from("jetty:http://localhost:8889/echo")
-                    .process() { Exchange exch ->
-                        InputStream is = exch.getIn().getBody(InputStream.class)
-                        String s = IOUtils.convertStreamToString(is)
-                        exch.getOut().setBody(s)
+                        .process() { Exchange exch ->
+                    InputStream is = exch.getIn().getBody(InputStream.class)
+                    byte[] b = IOUtils.convertStreamToBytes(is)
+                    boolean compressed = b[0] == (byte) 0x1f && b[1] == (byte) 0x8b
+                    exch.getOut().setHeader("compressed", String.valueOf(compressed))
+                    exch.getOut().setBody(b)
                 }
             }
         })
-
 
         context.start()
     }
@@ -65,15 +66,17 @@ class CamelRequestResponseExecutorSpec extends Specification {
 
     void "simple get"() {
 
-        CamelRequestResponseExecutor hc = new CamelRequestResponseExecutor(context, "jetty:http://localhost:8889/sayhello")
+        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, "jetty:http://localhost:8889/sayhello")
         StringHandler sh = new StringHandler()
 
         when:
-        sh.prepareRequest(null, hc, false)
-        hc.execute()
+        sh.prepareRequest(null, exec, false, false)
+
+        exec.execute()
+        def s = sh.readResponse(exec, false)
 
         then:
-        sh.readResponse(hc, false) == "hello world"
+        s == "hello world"
     }
 
     void "basic objects post"() {
@@ -91,12 +94,85 @@ class CamelRequestResponseExecutorSpec extends Specification {
                 new DatasetMetadata(BasicObject.class, [name: String.class], 3))
 
         when:
-        dh.prepareRequest(ds, exec, false)
+        dh.prepareRequest(ds, exec, false, false)
         exec.execute()
         Dataset output = dh.readResponse(exec, false)
 
+        then:
+        exec.getResponseHeader("compressed") == "false"
+        output.items.size() == 3
+    }
+
+    void "basic objects post gzip request"() {
+
+        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, "jetty:http://localhost:8889/echo")
+        exec.prepareRequestHeader(Exchange.HTTP_METHOD, "POST")
+        DatasetHandler dh = new DatasetHandler(BasicObject.class)
+
+        def input = [
+                new BasicObject([name: 'venus']),
+                new BasicObject([name: 'mercury']),
+                new BasicObject([name: 'earth']),
+        ]
+        Dataset ds = new Dataset(BasicObject.class, input,
+                new DatasetMetadata(BasicObject.class, [name: String.class], 3))
+
+        when:
+        dh.prepareRequest(ds, exec, true, false)
+        exec.execute()
+        Dataset output = dh.readResponse(exec, false)
 
         then:
+        // by setting the header the data will be automatically decompressed
+        exec.getResponseHeader("compressed") == "false"
+        output.items.size() == 3
+    }
+
+    void "basic objects post gzip response"() {
+
+        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, "jetty:http://localhost:8889/echo")
+        exec.prepareRequestHeader(Exchange.HTTP_METHOD, "POST")
+        DatasetHandler dh = new DatasetHandler(BasicObject.class)
+
+        def input = [
+                new BasicObject([name: 'venus']),
+                new BasicObject([name: 'mercury']),
+                new BasicObject([name: 'earth']),
+        ]
+        Dataset ds = new Dataset(BasicObject.class, input,
+                new DatasetMetadata(BasicObject.class, [name: String.class], 3))
+
+        when:
+        dh.prepareRequest(ds, exec, false, true)
+        exec.execute()
+        Dataset output = dh.readResponse(exec, true)
+
+        then:
+        exec.getResponseHeader("compressed") == "false"
+        output.items.size() == 3
+    }
+
+    void "basic objects post gzip request response"() {
+
+        CamelRequestResponseExecutor exec = new CamelRequestResponseExecutor(context, "jetty:http://localhost:8889/echo")
+        exec.prepareRequestHeader(Exchange.HTTP_METHOD, "POST")
+        DatasetHandler dh = new DatasetHandler(BasicObject.class)
+
+        def input = [
+                new BasicObject([name: 'venus']),
+                new BasicObject([name: 'mercury']),
+                new BasicObject([name: 'earth']),
+        ]
+        Dataset ds = new Dataset(BasicObject.class, input,
+                new DatasetMetadata(BasicObject.class, [name: String.class], 3))
+
+        when:
+        dh.prepareRequest(ds, exec, true, true)
+        exec.execute()
+        Dataset output = dh.readResponse(exec, true)
+
+        then:
+        exec.getResponseHeader("compressed") == "false"
         output.items.size() == 3
     }
 
@@ -116,7 +192,7 @@ class CamelRequestResponseExecutorSpec extends Specification {
                 new DatasetMetadata(BasicObject.class, [name: String.class], 3))
 
         when:
-        dh.prepareRequest(ds, exec, false)
+        dh.prepareRequest(ds, exec, false, false)
         exec.execute()
         String output = sh.readResponse(exec, false)
 
@@ -134,7 +210,7 @@ class CamelRequestResponseExecutorSpec extends Specification {
         def input = '[{"uuid":"f91972fd-7087-4437-abfb-c2c2eb5eb89f","values":{"name":"venus"}},{"uuid":"af245c3f-b87c-4c64-b0af-0df99fe86427","values":{"name":"mercury"}},{"uuid":"bd755fef-b4ae-44e5-b224-ceb39be66708","values":{"name":"earth"}}]'
 
         when:
-        sh.prepareRequest(input, exec, false)
+        sh.prepareRequest(input, exec, false, false)
         exec.execute()
         Dataset output = dh.readResponse(exec, false)
 

@@ -28,6 +28,7 @@ import org.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -37,6 +38,7 @@ import java.util.List;
 public class ListHandler<T> implements HttpHandler<List>, VariableHandler<List>, GenericHandler<List,T> {
 
     protected Class<T> genericType;
+    private String mediaType;
 
     @Override
     public Class<List> getType() {
@@ -49,11 +51,13 @@ public class ListHandler<T> implements HttpHandler<List>, VariableHandler<List>,
     }
 
     @Override
-    public void prepareRequest(List list, RequestResponseExecutor executor, boolean gzip) throws IOException {
-        if (list != null) {
-            InputStream is = write(list);
-            executor.prepareRequestBody(gzip ? IOUtils.getGzippedInputStream(is) : is);
+    public void prepareRequest(List list, RequestResponseExecutor executor, boolean gzipRequest, boolean gzipResponse) throws IOException {
+        handleGzipHeaders(executor, gzipRequest, gzipResponse);
+        if (list == null) {
+            list = Collections.emptyList();
         }
+        InputStream is = write(list);
+        executor.prepareRequestBody(gzipRequest ? IOUtils.getGzippedInputStream(is) : is);
     }
 
     @Override
@@ -75,18 +79,19 @@ public class ListHandler<T> implements HttpHandler<List>, VariableHandler<List>,
     @Override
     public void writeVariable(List list, WriteContext context) throws Exception {
         InputStream is = write(list);
-        context.writeStreamValue(is, shouldGzip(null));
+        context.writeStreamValue(is, mediaType, "list", null, true);
     }
 
     @Override
     public List readVariable(ReadContext context) throws Exception {
-        InputStream is =  context.readStreamValue(shouldGzip(null));
+        InputStream is =  context.readStreamValue(mediaType, "list", null);
         return read(is);
     }
 
     @Override
     public void setGenericType(Class genericType) {
-           this.genericType = genericType;
+        this.genericType = genericType;
+        this.mediaType = TypeResolver.getInstance().resolveMediaType(List.class, genericType);
     }
 
     @Override

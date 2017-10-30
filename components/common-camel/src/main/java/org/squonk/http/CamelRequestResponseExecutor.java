@@ -22,11 +22,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Created by timbo on 23/03/2016.
  */
 public class CamelRequestResponseExecutor<S,T> implements RequestResponseExecutor {
+
+    private static final Logger LOG = Logger.getLogger(CamelRequestResponseExecutor.class.getName());
 
     private final CamelContext context;
     private final String route;
@@ -58,7 +61,7 @@ public class CamelRequestResponseExecutor<S,T> implements RequestResponseExecuto
     @Override
     public void setResponseHeader(String name, String value) {
         if (exchange == null) {
-            throw new IllegalStateException("Exchange must exist before results can be obtained");
+            throw new IllegalStateException("Exchange must exist before headers can be managed");
         }
         getMessage().setHeader(name, value);
     }
@@ -66,13 +69,15 @@ public class CamelRequestResponseExecutor<S,T> implements RequestResponseExecuto
     @Override
     public void setResponseBody(InputStream is) {
         if (exchange == null) {
-            throw new IllegalStateException("Exchange must exist before results can be obtained");
+            throw new IllegalStateException("Exchange must exist before results can be set");
         }
         getMessage().setBody(is);
     }
 
     @Override
     public void execute() throws IOException {
+
+        //LOG.fine("Executing. Headers: " + headers.entrySet().stream().map(e -> e.getKey() + " " + e.getValue()).collect(Collectors.joining(", ")));
 
         ProducerTemplate pt = context.createProducerTemplate();
         exchange = pt.request(route, new Processor() {

@@ -19,6 +19,7 @@ package org.squonk.types;
 import org.squonk.api.HttpHandler;
 import org.squonk.api.VariableHandler;
 import org.squonk.http.RequestResponseExecutor;
+import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ import java.util.logging.Logger;
 public class SDFileHandler implements HttpHandler<SDFile>, VariableHandler<SDFile> {
 
     private static final Logger LOG = Logger.getLogger(SDFileHandler.class.getName());
-    private static final String KEY = "sdf.gz";
+    private static final String EXT = "sdf";
 
     @Override
     public Class<SDFile> getType() {
@@ -39,18 +40,24 @@ public class SDFileHandler implements HttpHandler<SDFile>, VariableHandler<SDFil
     }
 
     @Override
-    public void prepareRequest(SDFile sdf, RequestResponseExecutor executor, boolean gzip) throws IOException {
-        if (sdf != null) {
-            executor.prepareRequestBody(gzip ? IOUtils.getGzippedInputStream(sdf.getInputStream()) : sdf.getInputStream());
+    public void prepareRequest(SDFile sdf, RequestResponseExecutor executor, boolean gzipRequest, boolean gzipResponse) throws IOException {
+        if (sdf == null) {
+            throw new NullPointerException("SDF cannot be null");
         }
+        handleGzipHeaders(executor, gzipRequest, gzipResponse);
+        executor.prepareRequestBody(gzipRequest ? IOUtils.getGzippedInputStream(sdf.getInputStream()) : sdf.getInputStream());
     }
 
     @Override
     public void writeResponse(SDFile sdf, RequestResponseExecutor executor, boolean gzip) throws IOException {
+        LOG.fine("Writing SDF response. Gzip? " + gzip);
         if (sdf == null) {
             executor.setResponseBody(null);
         } else {
             executor.setResponseBody(gzip ? IOUtils.getGzippedInputStream(sdf.getInputStream()) : sdf.getInputStream());
+            if (gzip) {
+                executor.setResponseHeader("Content-Encoding", "gzip");
+            }
         }
     }
 
@@ -65,15 +72,15 @@ public class SDFileHandler implements HttpHandler<SDFile>, VariableHandler<SDFil
 
     @Override
     public void writeVariable(SDFile sdf, WriteContext context) throws Exception {
-        LOG.info("Writing as SDFile");
+        LOG.fine("Writing as SDFile");
         //context.writeStreamValue(sdf.getInputStream());
-        context.writeSingleStreamValue(sdf.getInputStream(), KEY, true);
+        context.writeStreamValue(sdf.getInputStream(), CommonMimeTypes.MIME_TYPE_MDL_SDF, EXT,null, true);
     }
 
     @Override
     public SDFile readVariable(ReadContext context) throws Exception {
         //InputStream is = context.readStreamValue();
-        InputStream is = context.readSingleStreamValue(KEY, true);
+        InputStream is = context.readStreamValue(CommonMimeTypes.MIME_TYPE_MDL_SDF, EXT);
         return new SDFile(is);
     }
 }

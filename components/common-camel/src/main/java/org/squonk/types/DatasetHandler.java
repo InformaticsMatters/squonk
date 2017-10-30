@@ -24,6 +24,7 @@ import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.http.RequestResponseExecutor;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 import org.squonk.util.ServiceConstants;
 
@@ -40,7 +41,6 @@ import java.util.stream.Stream;
 public class DatasetHandler<T extends BasicObject> implements VariableHandler<Dataset>, HttpHandler<Dataset>, GenericHandler<Dataset,T> {
 
     private static final Logger LOG = Logger.getLogger(DatasetHandler.class.getName());
-    private static final String KEY = "data.gz";
     private Class<T> genericType;
 
     /** Default constructor.
@@ -65,13 +65,16 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
 
 
     @Override
-    public void prepareRequest(Dataset dataset, RequestResponseExecutor executor, boolean gzip) throws IOException {
+    public void prepareRequest(Dataset dataset, RequestResponseExecutor executor, boolean gzipRequest, boolean gzipResponse) throws IOException {
         DatasetMetadata md = dataset.getMetadata();
         if (md != null) {
             String json = JsonHandler.getInstance().objectToJson(md);
+            LOG.finer("Request metadata JSON: " + json);
             executor.prepareRequestHeader(ServiceConstants.HEADER_METADATA, json); // TODO - move this constant to this class
         }
-        executor.prepareRequestBody(dataset.getInputStream(gzip));
+        handleGzipHeaders(executor, gzipRequest, gzipResponse);
+        InputStream is = dataset.getInputStream(gzipRequest);
+        executor.prepareRequestBody(is);
     }
 
     @Override
@@ -95,21 +98,30 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
             } else {
                 LOG.warning("No metadata present");
             }
-            executor.setResponseBody(dataset.getInputStream(gzip));
+            if (gzip) {
+                executor.setResponseHeader("Content-Encoding", "gzip");
+            }
+            // setting the header handles the compression
+            executor.setResponseBody(dataset.getInputStream(false));
         }
+    }
+
+    private String resolveMediaType(Class secondaryType) {
+        return TypeResolver.getInstance().resolveMediaType(Dataset.class, secondaryType);
     }
 
     @Override
     public void writeVariable(Dataset dataset, WriteContext context) throws Exception {
+        String mediaType = resolveMediaType(dataset.getType());
         Dataset.DatasetMetadataGenerator generator = dataset.createDatasetMetadataGenerator();
         Stream s = null;
         InputStream is = null;
         JsonHandler.MarshalData data = null;
         try {
-             s = generator.getAsStream();
-             data = generator.marshalData(s, false);
-             is = data.getInputStream();
-            context.writeSingleStreamValue(is, KEY, shouldGzip(KEY));
+            s = generator.getAsStream();
+            data = generator.marshalData(s, false);
+            is = data.getInputStream();
+            context.writeStreamValue(is, mediaType, Dataset.DATASET_FILE_EXT,null, true);
             try {
                 data.getFuture().get();
             } catch (ExecutionException ex) { // reading Stream failed?
@@ -129,35 +141,35 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
 
         DatasetMetadata md = generator.getDatasetMetadata();
         String json = JsonHandler.getInstance().objectToJson(md);
-        context.writeSingleTextValue(json, "metadata");
+        context.writeTextValue(json, CommonMimeTypes.MIME_TYPE_DATASET_METADATA, Dataset.METADATA_FILE_EXT);
     }
 
     @Override
     public Dataset<T> readVariable(ReadContext context) throws Exception {
 
-        LOG.info("Reading metadata");
-        String metadata = context.readSingleTextValue("metadata");
-        LOG.info("Reading data for key " + KEY + " gzip? " + shouldGzip(KEY));
-        InputStream is = context.readSingleStreamValue(KEY, shouldGzip(KEY));
-
-        Dataset<T> result = create(metadata, is);
-        LOG.info("Dataset created");
-//        LOG.info("Read dataset:");
-//        result.getItems().forEach((o) -> {
-//            LOG.info("Item: " + o);
-//        });
+        String json = context.readTextValue(CommonMimeTypes.MIME_TYPE_DATASET_METADATA, Dataset.METADATA_FILE_EXT);
+        DatasetMetadata<T> meta = createMetadata(json);
+        String mediaType = resolveMediaType(meta.getType());
+        InputStream data = context.readStreamValue(mediaType, Dataset.DATASET_FILE_EXT);
+        Dataset<T> result = new Dataset<>(data, meta);
         return result;
     }
 
-    protected Dataset<T> create(String meta, InputStream data) throws IOException {
+    private DatasetMetadata createMetadata(String json) throws IOException {
         DatasetMetadata<T> metadata = null;
-        if (meta != null) {
+        if (json != null) {
             //LOG.info("Metadata: " + meta);
-            metadata = JsonHandler.getInstance().objectFromJson(meta, DatasetMetadata.class);
+            metadata = JsonHandler.getInstance().objectFromJson(json, DatasetMetadata.class);
         }
         if (metadata == null) {
+            LOG.warning("No metadata present, using basic default");
             metadata = new DatasetMetadata<>(genericType);
         }
+        return metadata;
+    }
+
+    protected Dataset<T> create(String meta, InputStream data) throws IOException {
+        DatasetMetadata<T> metadata = createMetadata(meta);
         return new Dataset<>(data, metadata);
     }
 

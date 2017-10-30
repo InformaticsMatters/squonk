@@ -21,6 +21,7 @@ import org.squonk.api.HttpHandler;
 import org.squonk.api.VariableHandler;
 import org.squonk.http.RequestResponseExecutor;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 
 import java.io.ByteArrayInputStream;
@@ -39,11 +40,13 @@ public class CPSignTrainResultHandler implements HttpHandler<CPSignTrainResult>,
     }
 
     @Override
-    public void prepareRequest(CPSignTrainResult result, RequestResponseExecutor executor, boolean gzip) throws IOException {
-        if (result != null) {
-            InputStream is = convertToJsonInputStream(result);
-            executor.prepareRequestBody(gzip ? IOUtils.getGzippedInputStream(is) : is);
+    public void prepareRequest(CPSignTrainResult result, RequestResponseExecutor executor, boolean gzipRequest, boolean gzipResponse) throws IOException {
+        if (result == null) {
+            throw new NullPointerException("CPSignTrainResult cannot be null");
         }
+        handleGzipHeaders(executor, gzipRequest, gzipResponse);
+        InputStream is = convertToJsonInputStream(result);
+        executor.prepareRequestBody(gzipRequest ? IOUtils.getGzippedInputStream(is) : is);
     }
 
     @Override
@@ -64,17 +67,18 @@ public class CPSignTrainResultHandler implements HttpHandler<CPSignTrainResult>,
     @Override
     public void writeVariable(CPSignTrainResult result, WriteContext context) throws Exception {
         InputStream is = convertToJsonInputStream(result);
-        context.writeStreamValue(is, shouldGzip(null));
+        context.writeStreamValue(is, CommonMimeTypes.MIME_TYPE_CPSIGN_TRAIN_RESULT, "cpsign", null, false);
     }
 
     @Override
     public CPSignTrainResult readVariable(ReadContext context) throws Exception {
-        return convertFromJsonInputStream(context.readStreamValue(shouldGzip(null)), false);
+        return convertFromJsonInputStream(
+                context.readStreamValue(CommonMimeTypes.MIME_TYPE_CPSIGN_TRAIN_RESULT, "cpsign", null),
+                false);
     }
 
     private InputStream convertToJsonInputStream(CPSignTrainResult result) throws JsonProcessingException {
         byte[] json = JsonHandler.getInstance().objectToBytes(result);
-        System.out.println("CPSignTrainResult: " + new String(json));
         return new ByteArrayInputStream(json);
     }
 

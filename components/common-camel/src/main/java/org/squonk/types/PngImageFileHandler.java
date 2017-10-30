@@ -16,17 +16,15 @@
 
 package org.squonk.types;
 
+import org.squonk.util.CommonMimeTypes;
+
 /**
  * Created by timbo on 23/03/2016.
  */
 public class PngImageFileHandler extends FileHandler<PngImageFile> {
 
     public PngImageFileHandler() {
-        super(PngImageFile.class, "png");
-    }
-
-    public boolean isDefaultGzip() {
-        return false;
+        super(PngImageFile.class, CommonMimeTypes.MIME_TYPE_PNG, "png", false);
     }
 
 }

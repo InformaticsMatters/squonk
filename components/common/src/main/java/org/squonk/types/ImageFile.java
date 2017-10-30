@@ -46,7 +46,7 @@ public class ImageFile extends AbstractStreamType {
      * @throws IOException
      */
     public BufferedImage getBufferedImage() throws IOException {
-        return ImageIO.read(getInputStream());
+        return ImageIO.read(getGunzipedInputStream());
     }
     
 }

@@ -71,12 +71,12 @@ class ZipFileHandlerSpec extends Specification {
 
 
         @Override
-        void writeTextValue(String value, String key) throws Exception {
+        void writeTextValue(String value, String mediaType, String extension, String key) throws Exception {
 
         }
 
         @Override
-        void writeStreamValue(InputStream value, String key, boolean gzip) throws Exception {
+        void writeStreamValue(InputStream value, String mediaType, String extension, String key, boolean gzip) throws Exception {
             this.bytes = value.bytes
             this.key = key
         }
@@ -87,12 +87,12 @@ class ZipFileHandlerSpec extends Specification {
         }
 
         @Override
-        String readTextValue(String key) throws Exception {
+        String readTextValue(String mediaType, String extension, String key) throws Exception {
             return null
         }
 
         @Override
-        InputStream readStreamValue(String key, boolean gzip) throws Exception {
+        InputStream readStreamValue(String mediaType, String extension, String key) throws Exception {
             return new ByteArrayInputStream(bytes)
         }
     }

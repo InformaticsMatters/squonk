@@ -16,13 +16,15 @@
 
 package org.squonk.types;
 
+import org.squonk.util.CommonMimeTypes;
+
 /**
  * Created by timbo on 23/03/2016.
  */
 public class PDBFileHandler extends FileHandler<PDBFile> {
 
     public PDBFileHandler() {
-        super(PDBFile.class, "pdb.gz");
+        super(PDBFile.class, CommonMimeTypes.MIME_TYPE_PDB,"pdb", true);
     }
 
 }

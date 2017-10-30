@@ -48,21 +48,13 @@ public class VariableWriteContext implements VariableHandler.WriteContext {
     }
 
     @Override
-    public void writeTextValue(String value, String key) throws Exception {
+    public void writeTextValue(String value, String mediaType, String extension, String key) throws Exception {
         client.writeTextValue(notebookId, editableId, cellId, variableName, value, key);
     }
 
     @Override
-    public void writeSingleTextValue(String value, String key) throws Exception {
-        writeTextValue(value, null);
-    }
-
-    @Override
-    public void writeStreamValue(InputStream value, String key, boolean gzip) throws Exception {
-        LOG.log(Level.INFO, "Writing stream value. variable: {0} key: {1} gzip: {2}",
-                new Object[] {variableName, key, gzip});
-        client.writeStreamValue(notebookId, editableId, cellId, variableName,
-                gzip ? IOUtils.getGzippedInputStream(value) : value, key);
+    public void writeStreamValue(InputStream value, String mediaType, String extension, String key, boolean gzip) throws Exception {
+        client.writeStreamValue(notebookId, editableId, cellId, variableName, gzip ? IOUtils.getGzippedInputStream(value) : value, key);
     }
 
     @Override

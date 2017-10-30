@@ -19,6 +19,7 @@ package org.squonk.types;
 import org.squonk.api.HttpHandler;
 import org.squonk.api.VariableHandler;
 import org.squonk.http.RequestResponseExecutor;
+import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 
 import java.io.ByteArrayInputStream;
@@ -34,13 +35,17 @@ public class StringHandler implements HttpHandler<String>, VariableHandler<Strin
     public Class<String> getType() {
         return String.class;
     }
+    private static final String EXT = "txt";
 
     @Override
-    public void prepareRequest(String s, RequestResponseExecutor executor, boolean gzip) throws IOException {
-        if (s != null) {
-            InputStream is = new ByteArrayInputStream(s.getBytes());
-            executor.prepareRequestBody(gzip ? IOUtils.getGzippedInputStream(is) : is);
+    public void prepareRequest(String s, RequestResponseExecutor executor, boolean gzipRequest, boolean gzipResponse) throws IOException {
+
+        handleGzipHeaders(executor, gzipRequest, gzipResponse);
+        if (s == null) {
+            s = "";
         }
+        InputStream is = new ByteArrayInputStream(s.getBytes());
+        executor.prepareRequestBody(gzipRequest ? IOUtils.getGzippedInputStream(is) : is);
     }
 
     @Override
@@ -64,11 +69,11 @@ public class StringHandler implements HttpHandler<String>, VariableHandler<Strin
 
     @Override
     public void writeVariable(String value, WriteContext context) throws Exception {
-        context.writeTextValue(value);
+        context.writeTextValue(value, CommonMimeTypes.MIME_TYPE_TEXT_PLAIN, EXT);
     }
 
     @Override
     public String readVariable(ReadContext context) throws Exception {
-        return context.readTextValue();
+        return context.readTextValue(CommonMimeTypes.MIME_TYPE_TEXT_PLAIN, EXT);
     }
 }

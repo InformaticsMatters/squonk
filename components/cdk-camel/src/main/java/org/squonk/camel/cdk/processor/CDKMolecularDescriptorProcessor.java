@@ -16,17 +16,15 @@
 
 package org.squonk.camel.cdk.processor;
 
-import org.openscience.cdk.CDK;
-import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.squonk.camel.CamelCommonConstants;
+import org.openscience.cdk.CDK;
 import org.squonk.cdk.molecule.DescriptorCalculator;
 import org.squonk.cdk.molecule.MolecularDescriptors;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
-import org.squonk.util.ExecutionStats;
+import org.squonk.types.MoleculeObject;
 import org.squonk.util.StatsRecorder;
 
 import java.util.ArrayList;
@@ -75,8 +73,10 @@ public class CDKMolecularDescriptorProcessor implements Processor {
         Stream<MoleculeObject> mols = dataset.getStream();
         List<DescriptorCalculator> calculators = getCalculators(exch);
         for (DescriptorCalculator calculator : calculators) {
+            LOG.fine("CDK calculating " + calculator);
             mols = calculateMultiple(mols, calculator);
         }
+        LOG.fine("CDK calcuations complete");
         StatsRecorder recorder = exch.getIn().getHeader(StatsRecorder.HEADER_STATS_RECORDER, StatsRecorder.class);
         if (recorder != null) {
             mols = mols.onClose(() -> {

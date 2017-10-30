@@ -16,13 +16,15 @@
 
 package org.squonk.types;
 
+import org.squonk.util.CommonMimeTypes;
+
 /**
  * Created by timbo on 23/03/2016.
  */
 public class ZipFileHandler extends FileHandler<ZipFile> {
 
     public ZipFileHandler() {
-        super(ZipFile.class, "zip");
+        super(ZipFile.class, CommonMimeTypes.MIME_TYPE_ZIP_FILE, "zip", false);
     }
 
 }

@@ -37,11 +37,15 @@ abstract class FileHandler<T extends AbstractStreamType> implements HttpHandler<
     private static final Logger LOG = Logger.getLogger(FileHandler.class.getName());
 
     private final Class<T> type;
+    private final String mediaType;
     private final String extension;
+    private final boolean defaultGzip;
 
-    FileHandler(Class<T> type, String extension) {
+    FileHandler(Class<T> type, String mediaType, String extension, boolean defaultGzip) {
         this.type = type;
+        this.mediaType = mediaType;
         this.extension = extension;
+        this.defaultGzip = defaultGzip;
     }
 
     @Override
@@ -49,11 +53,17 @@ abstract class FileHandler<T extends AbstractStreamType> implements HttpHandler<
         return type;
     }
 
+    public boolean isDefaultGzip() {
+        return defaultGzip;
+    }
+
     @Override
-    public void prepareRequest(T file, RequestResponseExecutor executor, boolean gzip) throws IOException {
-        if (file != null) {
-            executor.prepareRequestBody(gzip ? IOUtils.getGzippedInputStream(file.getInputStream()) : file.getInputStream());
+    public void prepareRequest(T file, RequestResponseExecutor executor, boolean gzipRequest, boolean gzipResponse) throws IOException {
+        if (file == null) {
+            throw new NullPointerException("File object cannot be null");
         }
+        handleGzipHeaders(executor, gzipRequest, gzipResponse);
+        executor.prepareRequestBody(gzipRequest ? IOUtils.getGzippedInputStream(file.getInputStream()) : file.getInputStream());
     }
 
     @Override
@@ -76,16 +86,12 @@ abstract class FileHandler<T extends AbstractStreamType> implements HttpHandler<
 
     @Override
     public void writeVariable(T file, WriteContext context) throws Exception {
-        boolean gzip = shouldGzip(extension);
-        LOG.info("Writing variable: gzip? " + gzip);
-        context.writeSingleStreamValue(file.getInputStream(), extension, gzip);
+        context.writeStreamValue(file.getInputStream(), mediaType, extension, null, isDefaultGzip());
     }
 
     @Override
     public T readVariable(ReadContext context) throws Exception {
-        boolean gzip = shouldGzip(extension);
-        LOG.info("Reading variable: gzip? " + gzip);
-        InputStream is = context.readSingleStreamValue(extension, gzip);
+        InputStream is = context.readStreamValue(mediaType, extension, null);
         return create(is);
     }
 

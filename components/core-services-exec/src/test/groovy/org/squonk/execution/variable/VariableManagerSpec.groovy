@@ -89,7 +89,7 @@ class VariableManagerSpec extends Specification {
         then:
         result != null
         def c
-        (c = result.inputStream.text) == pdbcontent
+        (c = result.gunzipedInputStream.text) == pdbcontent
         println c
     }
 

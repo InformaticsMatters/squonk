@@ -18,17 +18,13 @@ package org.squonk.types;
 
 import org.squonk.util.CommonMimeTypes;
 
-import java.io.InputStream;
-
-/** Wrapper around an PNG format image file
- *
- * @author timbo
+/**
+ * Created by timbo on 23/03/2016.
  */
-public class PngImageFile extends ImageFile {
+public class MolFileHandler extends FileHandler<MolFile> {
 
-
-    public PngImageFile(InputStream input) {
-        super(input, CommonMimeTypes.MIME_TYPE_PNG);
+    public MolFileHandler() {
+        super(MolFile.class, CommonMimeTypes.MIME_TYPE_MDL_MOLFILE, "mol", false);
     }
 
 }

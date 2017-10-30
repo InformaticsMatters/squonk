@@ -145,9 +145,6 @@ public abstract class AbstractMoleculeObjectHttpProcessor implements Processor {
     protected void writeOutput(Exchange exch, Object output, RequestInfo requestInfo,  HttpHandler acceptHandler, CamelRequestResponseExecutor executor) throws IOException {
         Message msg = exch.getOut(); // get the out message. it now exists and result will be written to it.
         msg.setHeader("Content-Type", requestInfo.getAcceptType());
-        if (requestInfo.isGzipAccept()) {
-            msg.setHeader("Content-Encoding", "gzip");
-        }
-        acceptHandler.writeResponse(output, executor, false); // setting the Content-Encoding header handles compression
+        acceptHandler.writeResponse(output, executor, requestInfo.isGzipAccept()); // setting the Content-Encoding header handles compression
     }
 }
