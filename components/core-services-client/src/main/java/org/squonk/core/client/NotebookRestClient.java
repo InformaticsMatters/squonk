@@ -134,7 +134,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         LOG.fine("Adding notebook to layer: POST " + path);
         assert notebookId != null;
         assert layer != null;
-        LOG.info("Adding notebook " + notebookId + " to layer " + layer);
+        LOG.fine("Adding notebook " + notebookId + " to layer " + layer);
         URIBuilder b = new URIBuilder().setPath(path);
         try (InputStream is = executePostAsInputStream(b, null)) {
             return JsonHandler.getInstance().objectFromJson(is, NotebookDTO.class);
@@ -147,7 +147,6 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         LOG.fine("Removing notebook: DELETE " + path);
         assert notebookId != null;
         assert layer != null;
-        LOG.info("Removing notebook " + notebookId + " from layer " + layer);
         URIBuilder b = new URIBuilder().setPath(path);
         try (InputStream is = executeDeleteAsInputStream(b)) {
             return JsonHandler.getInstance().objectFromJson(is, NotebookDTO.class);
@@ -279,7 +278,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
     @Override
     public String readTextValue(Long notebookId, Long sourceId, Long cellId, String variableName, String key) throws IOException {
         String path = buildVariableUrl(notebookId, sourceId, cellId, variableName, key, VarType.t);
-        LOG.info("Reading text value: GET " + path);
+        LOG.fine("Reading text value: GET " + path);
         assert sourceId != null;
         assert variableName != null;
         URIBuilder b = createURIBuilder(path);
@@ -313,7 +312,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
     @Override
     public InputStream readStreamValue(Long notebookId, Long sourceId, Long cellId, String variableName, String key) throws IOException {
         String path = buildVariableUrl(notebookId, sourceId, cellId, variableName, key, VarType.s);
-        LOG.info("Reading stream value: GET " + path);
+        LOG.fine("Reading stream value: GET " + path);
         assert sourceId != null;
         assert variableName != null;
         URIBuilder b = createURIBuilder(path);
@@ -345,7 +344,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
     @Override
     public void writeTextValue(Long notebookId, Long editableId, Long cellId, String variableName, String value, String key) throws IOException {
         String path = buildVariableUrl(notebookId, editableId, cellId, variableName, key, VarType.t);
-        LOG.info("Writing text value: POST " + path);
+        LOG.fine("Writing text value: POST " + path);
         assert editableId != null;
         assert cellId != null;
         assert variableName != null;
@@ -356,7 +355,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
     @Override
     public void writeStreamValue(Long notebookId, Long editableId, Long cellId, String variableName, InputStream value, String key) throws IOException {
         String path = buildVariableUrl(notebookId, editableId, cellId, variableName, key, VarType.s);
-        LOG.info("Writing stream value: POST " + path);
+        LOG.fine("Writing stream value: POST " + path);
         assert value != null;
         assert editableId != null;
         assert cellId != null;
@@ -364,7 +363,7 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
         try {
             URIBuilder b = createURIBuilder(path);
             executePost(b, new InputStreamEntity(value));
-            LOG.info("Writing stream value completed");
+            LOG.finer("Writing stream value completed");
         } finally {
             value.close();
         }
@@ -373,10 +372,10 @@ public class NotebookRestClient extends AbstractHttpClient implements Serializab
     @Override
     public void deleteVariable(Long notebookId, Long editableId, Long cellId, String variableName) throws IOException {
         String path =  baseUrl + "/" + notebookId + "/v/" + editableId + "/" + cellId + "/" + variableName;
-        LOG.info("Deleting variable: DELETE " + path);
+        LOG.fine("Deleting variable: DELETE " + path);
         URIBuilder b = new URIBuilder().setPath(path);
         executeDelete(b);
-        LOG.info("deleteVariable completed");
+        LOG.finer("deleteVariable completed");
     }
 
 
