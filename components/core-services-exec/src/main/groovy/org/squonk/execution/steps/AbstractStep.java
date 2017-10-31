@@ -372,12 +372,12 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         if (CONTAINER_RUNNER_TYPE.equals("docker")) {
 
             LOG.info("Creating DockerRunner instance...");
-            runner = new DockerRunner(image, hostWorkDir, localWorkDir);
+            runner = new DockerRunner(image, hostWorkDir, localWorkDir, jobId);
 
         } else if (CONTAINER_RUNNER_TYPE.equals("openshift")) {
 
             LOG.info("Creating OpenShiftRunner instance...");
-            runner = new OpenShiftRunner(image, hostWorkDir, localWorkDir);
+            runner = new OpenShiftRunner(image, hostWorkDir, localWorkDir, jobId);
 
         } else {
             throw new IOException("Unsupported ContainerRunner type: '" + CONTAINER_RUNNER_TYPE + "'");

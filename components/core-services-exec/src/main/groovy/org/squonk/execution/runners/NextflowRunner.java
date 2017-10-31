@@ -20,11 +20,11 @@ public class NextflowRunner extends AbstractRunner {
 
 
     public NextflowRunner() {
-        this(null);
+        this(null, null);
     }
 
-    public NextflowRunner(String hostBaseWorkDir) {
-        super(hostBaseWorkDir);
+    public NextflowRunner(String hostBaseWorkDir, String jobId) {
+        super(hostBaseWorkDir, jobId);
     }
 
     protected String getDefaultWorkDir() {

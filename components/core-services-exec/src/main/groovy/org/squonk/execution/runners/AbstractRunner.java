@@ -36,7 +36,7 @@ public abstract class AbstractRunner implements ContainerRunner {
      */
     protected int isRunning = RUNNER_CREATED;
 
-    protected AbstractRunner(String hostBaseWorkDir) {
+    protected AbstractRunner(String hostBaseWorkDir, String jobId) {
         LOG.info("Specified hostBaseWorkDir is " + hostBaseWorkDir);
         if (hostBaseWorkDir == null) {
             hostBaseWorkDir = getDefaultWorkDir();
@@ -51,8 +51,15 @@ public abstract class AbstractRunner implements ContainerRunner {
             }
         }
 
-        this.hostWorkDir = new File(hostBaseWorkDir + "/" + UUID.randomUUID().toString());
+        // Protect against a missing JobId (we'll assign our own).
+        // Also protects old behaviour where jobId was auto-assigned.
+        if (jobId == null) {
+            jobId = UUID.randomUUID().toString();
+            LOG.warning("Missing jobId. Using new UUID '" + jobId + "'");
+        }
+        this.hostWorkDir = new File(hostBaseWorkDir + "/" + jobId);
         LOG.info("Host Work dir is " + hostWorkDir.getPath());
+
     }
 
     public void init() throws IOException {

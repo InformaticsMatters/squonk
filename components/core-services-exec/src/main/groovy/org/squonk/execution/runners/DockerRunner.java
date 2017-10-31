@@ -81,17 +81,17 @@ public class DockerRunner extends AbstractRunner {
      * @param hostBaseWorkDir The directory on the host that will be used to create a work dir. Must exist or be creatable and be writeable.
      * @param localWorkDir    The name under which the host work dir will be mounted in the new container
      */
-    public DockerRunner(String imageName, String hostBaseWorkDir, String localWorkDir) {
+    public DockerRunner(String imageName, String hostBaseWorkDir, String localWorkDir, String jobId) {
 
-        super(hostBaseWorkDir);
+        super(hostBaseWorkDir, jobId);
 
         this.imageName = imageName;
         this.localWorkDir = localWorkDir;
     }
 
-    public DockerRunner(String imageName) {
+    public DockerRunner(String imageName, String jobId) {
 
-        super(null);
+        super(null, jobId);
 
         this.imageName = imageName;
         this.localWorkDir = getHostWorkDir().getPath();

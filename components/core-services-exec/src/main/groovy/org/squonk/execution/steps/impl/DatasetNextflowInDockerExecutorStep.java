@@ -56,7 +56,7 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractServiceStep {
         String fullCommand = "nextflow run nextflow.nf " + expandedCommand + " -with-docker debian";
 
         String image = "informaticsmatters/nextflow";
-        DockerRunner runner = new DockerRunner(image);
+        DockerRunner runner = new DockerRunner(image, jobId);
         runner.init();
         LOG.info("Docker image: " + image + ", hostWorkDir: " + runner.getHostWorkDir() + ", command: " + fullCommand);
 

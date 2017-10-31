@@ -39,7 +39,7 @@ class DockerRunnerSpec extends Specification {
     void "clean workdir"() {
 
         setup:
-        DockerRunner runner = new DockerRunner("busybox", hostBaseWorkDir, "/source")
+        DockerRunner runner = new DockerRunner("busybox", hostBaseWorkDir, "/source", "123")
         runner.init()
 
         when:
@@ -52,7 +52,7 @@ class DockerRunnerSpec extends Specification {
     void "simple execute"() {
 
         setup:
-        DockerRunner runner = new DockerRunner("busybox", hostBaseWorkDir, "/source")
+        DockerRunner runner = new DockerRunner("busybox", hostBaseWorkDir, "/source", "123")
         runner.init()
 
         when:

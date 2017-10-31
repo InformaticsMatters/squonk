@@ -22,11 +22,13 @@ import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.dsl.LogWatch;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 import org.squonk.util.IOUtils;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.logging.Logger;
 
 /**
@@ -50,7 +52,9 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String WORK_DIR_ENV_NAME = "SQUONK_DOCKER_WORK_DIR";
     private static final String WORK_DIR_DEFAULT = "/squonk/work/docker";
 
-    private static final String PROJECT_ENV_NAME = "SQUONK_PROJECT_NAME";
+    // SQUONK_CELL_JOB_PROJECT_NAME defines the name of the
+    // project/namespace that the generated Jobs are created in.
+    private static final String PROJECT_ENV_NAME = "SQUONK_CELL_JOB_PROJECT_NAME";
     private static final String PROJECT_DEFAULT = "squonk";
 
     private static final String SA_ENV_NAME = "SQUONK_SERVICE_ACCOUNT";
@@ -81,6 +85,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
     private static OpenShiftClient client;
     private static Watch watchObject;
+    private static LogWatch logObject;
 
     private final String hostBaseWorkDir;
     private final String localWorkDir;
@@ -201,6 +206,33 @@ public class OpenShiftRunner extends AbstractRunner {
 
     }
 
+    static class LogStream extends OutputStream {
+
+        private void capture(byte[] b, int off, int len) {
+
+            LOG.info("JOB-LOG '" + new String(b, off, len) + "'");
+
+        }
+
+        @Override
+        public void write(int b) {
+            LOG.warning("JOB-LOG [Got call to write(int)]");
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) {
+            LOG.info("JOB-LOG [Got call to write(b,o,l)]");
+            capture(b, off, len);
+        }
+
+        @Override
+        public void write(byte[] b) {
+            LOG.info("JOB-LOG [Got call to write(b)]");
+            capture(b, 0, b.length);
+        }
+
+    }
+
     /**
      * Creates an OpenShift runner instance. Normally followed by a call to
      * init() and then execute().
@@ -212,14 +244,19 @@ public class OpenShiftRunner extends AbstractRunner {
      *                        `/squonk/work/docker/[uuid]`.
      * @param localWorkDir    The name under which the host work dir will be
      *                        mounted in the new container. Typically `/work`.
+     * @param jobId The unique (uuid) assigned to the Job.
+     *              This wil be used to create a sub-directory in
+     *              hostBaseWorkDir into which the input data is copied
+     *              prior to running the Job.
      */
-    public OpenShiftRunner(String imageName, String hostBaseWorkDir, String localWorkDir) {
+    public OpenShiftRunner(String imageName, String hostBaseWorkDir, String localWorkDir, String jobId) {
 
-        super(hostBaseWorkDir);
+        super(hostBaseWorkDir, jobId);
 
         LOG.info("imageName='" + imageName + "'" +
                  " hostBaseWorkDir='" + hostBaseWorkDir + "'" +
-                 " localWorkDir='" + localWorkDir + "'");
+                 " localWorkDir='" + localWorkDir + "'" +
+                 " jobId='" + jobId + "'");
 
         this.imageName = imageName;
         this.localWorkDir = localWorkDir;
@@ -247,8 +284,11 @@ public class OpenShiftRunner extends AbstractRunner {
             return;
         }
 
-        // TODO Is BaseWorkDir and subPath going to work.
-        //      Document with concrete example...
+        // The host working directory is typically something like
+        // '/squonk/work/docker/41b47633-a2e6-49ab-b32c-9ab19caf4d4c'
+        // where the final directory is an automatically assigned UUID.
+        // We use the final diretcory as the sub-path, which is where
+        // the Job we launch will be mounted.
 
         // Break up the path to get a sub-directory.
         // We expect to be given '/parent/child' so we expect to find
@@ -275,27 +315,6 @@ public class OpenShiftRunner extends AbstractRunner {
         // TODO is subPath suitable or do we append our own unique value?
         jobName = String.format("%s-%s", OS_OBJ_BASE_NAME, subPath);
         LOG.info("jobName='" + jobName + "'");
-
-    }
-
-    /**
-     * Alternative constructor, creates an OpenShift runner instance.
-     * The directory mounted in the container is based on the default working
-     * directory.
-     *
-     * @param imageName The Docker image to run.
-     */
-    public OpenShiftRunner(String imageName) {
-
-        super(null);
-
-        LOG.fine("imageName='" + imageName +"'");
-
-        this.imageName = imageName;
-        this.localWorkDir = getHostWorkDir().getPath();
-        this.hostBaseWorkDir = null;
-
-        // TODO Not sure how to handle sub-path here!
 
     }
 
@@ -403,6 +422,19 @@ public class OpenShiftRunner extends AbstractRunner {
                 .endSpec()
                 .endTemplate()
                 .endSpec().build();
+
+
+//        client.builds().inNamespace(OS_PROJECT).withName(jobName).watchLog(System.out);
+        // Add a log-watcher for the pod we'll create.
+//        LogStream ls = new LogStream();
+        logObject = client.pods()
+                .inNamespace(OS_PROJECT)
+                .withName(jobName)
+                .tailingLines(10)
+                .watchLog(System.out);
+
+//        client.pods()
+//                .inNamespace(OS_PROJECT).withLabel("x", "y").
 
         // Create a Job 'watcher'
         // to monitor the Job execution progress...
@@ -580,6 +612,17 @@ public class OpenShiftRunner extends AbstractRunner {
             return;
         }
 
+//        client.ex
+//        PodList pl = client.pods()
+//                .inNamespace(OS_PROJECT)
+//                .withLabel("job-name", jobName).list();
+//        Pod pod = pl.getItems().get(0);
+
+//
+//        PodStatus ps = pods.get(0).getStatus();
+//        List<ContainerStatus> csList = ps.getContainerStatuses();
+//        ContainerState cs = csList.get(0).getState();
+
         // The Job may have failed to get created.
         // Clean it up if we think it was created.
         if (jobCreated) {
@@ -597,10 +640,14 @@ public class OpenShiftRunner extends AbstractRunner {
                     .delete();
         }
 
-        // There's always a JobWatcher
+        // There's should always a JobWatcher and LogWatcher
         if (watchObject != null) {
-            LOG.fine("...Watcher");
+            LOG.fine("...JobWatcher");
             watchObject.close();
+        }
+        if (logObject != null) {
+            LOG.fine("...LogWatcher");
+            logObject.close();
         }
 
         LOG.fine("Cleaned.");
