@@ -15,24 +15,6 @@ export PRIVATE_HOST=172.20.0.1
 # site - for the full Squonk site including XWiki
 export DEPLOYMENT_MODE=dev
 
-if [ $DEPLOYMENT_MODE == 'basic' ]; then
-    export COMPOSE_FILE=docker-compose.yml:docker-compose-keycloak.yml:docker-compose-basic.yml
-    export SQUONK_URL="http://$PUBLIC_HOST"
-    export KEYCLOAK_SERVER_URL=${PUBLIC_HOST_URL}/auth
-elif [ $DEPLOYMENT_MODE == 'site' ]; then
-    export COMPOSE_FILE=docker-compose.yml:docker-compose-keycloak.yml:docker-compose-site.yml
-    export SQUONK_URL="http://$PUBLIC_HOST"
-    export KEYCLOAK_SERVER_URL=${PUBLIC_HOST_URL}/auth
-elif [ $DEPLOYMENT_MODE == 'dev' ]; then
-    export COMPOSE_FILE=docker-compose.yml:docker-compose-dev.yml:docker-compose-setup.yml
-    export SQUONK_URL="http://localhost:8080/portal"
-    unset KEYCLOAK_SERVER_URL
-else
-    echo "ERROR: Must define DEPLOYMENT_MODE to be one of basic, site or dev"
-    return
-fi
-
-
 export RABBITMQ_ERLANG_COOKIE=topsecret
 
 # password for the admin user of rabbitmq
@@ -79,6 +61,24 @@ alias dc=docker-compose
 export PUBLIC_HOST_URL=https://${PUBLIC_HOST}
 export SQUONK_DOCKER_SERVICES_DIR=${PWD}/data/docker-services
 
+if [ $DEPLOYMENT_MODE == 'basic' ]; then
+    export COMPOSE_FILE=docker-compose.yml:docker-compose-keycloak.yml:docker-compose-basic.yml
+    export SQUONK_URL="http://$PUBLIC_HOST"
+    export KEYCLOAK_SERVER_URL=${PUBLIC_HOST_URL}/auth
+elif [ $DEPLOYMENT_MODE == 'site' ]; then
+    export COMPOSE_FILE=docker-compose.yml:docker-compose-keycloak.yml:docker-compose-site.yml
+    export SQUONK_URL="http://$PUBLIC_HOST"
+    export KEYCLOAK_SERVER_URL=${PUBLIC_HOST_URL}/auth
+elif [ $DEPLOYMENT_MODE == 'dev' ]; then
+    export COMPOSE_FILE=docker-compose.yml:docker-compose-dev.yml:docker-compose-setup.yml
+    export SQUONK_URL="http://localhost:8080/portal"
+    unset KEYCLOAK_SERVER_URL
+else
+    echo "ERROR: Must define DEPLOYMENT_MODE to be one of basic, site or dev"
+    return
+fi
+
 echo "DEPLOYMENT_MODE is $DEPLOYMENT_MODE"
 echo "PUBLIC_HOST is $PUBLIC_HOST"
 echo "PRIVATE_HOST is $PRIVATE_HOST"
+
