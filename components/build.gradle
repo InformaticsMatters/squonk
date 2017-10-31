@@ -56,7 +56,8 @@ allprojects {
     project.ext.set('postgresDriverVersion', '9.4-1201-jdbc41')
     project.ext.set('flywayVersion', '3.2.1')
 
-    // Define the tag label for docker images
+    // Define the tag label for docker images.
+    // It's the Git branch name or 'latest' if building from 'master'
     def dockerImageTag = grgit.branch.getCurrent().name
     if (dockerImageTag == 'master') {
         dockerImageTag = 'latest'
@@ -248,7 +249,7 @@ task dockerImageChemServices(type: DockerBuildImage) {
     dependsOn = [chemServicesWars, dockerFileChemServices]
 
     inputDir = dockerFileChemServices.destFile.parentFile
-    tag = "squonk/chem-services-basic"
+    tag = "squonk/chem-services-basic:${dockerImageTag}"
 }
 
 task dockerBuildImages() {

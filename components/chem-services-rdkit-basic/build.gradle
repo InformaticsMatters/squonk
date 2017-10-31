@@ -89,7 +89,7 @@ task buildDockerFile(type: Dockerfile, dependsOn: war) {
 
 task buildDockerImage(type: DockerBuildImage, dependsOn: buildDockerFile) {
     inputDir = buildDockerFile.destFile.parentFile
-    tag = "squonk/${contextName}"
+    tag = "squonk/${contextName}:${dockerImageTag}"
 }
 
 tasks.test.onlyIf { RDBASE != null }
