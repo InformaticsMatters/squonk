@@ -109,6 +109,8 @@ parameters:
   value: "/squonk/work/docker"
 - name: CELL_WORK_PVC_SIZE
   value: 20Gi
+- name: CELL_JOB_PROJECT_NAME
+  value: squonk
 
 - name: CELL_CPU_REQUEST
   value: 100m
@@ -414,8 +416,8 @@ objects:
             value: ${CELL_CONTAINER_RUNNER_TYPE}
           - name: SQUONK_DOCKER_WORK_DIR
             value: ${CELL_SQUONK_CONTAINER_WORK_DIR}
-#          - name: DOCKER_HOST
-#            value: ${CELL_DOCKER_HOST}
+          - name: SQUONK_CELL_JOB_PROJECT_NAME
+            value: ${CELL_JOB_PROJECT_NAME}
 #          - name: JAVA_OPTS
 #            value: '"-Djava.util.logging.config.file=/logging.properties"'
 #          resources:
