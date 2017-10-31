@@ -21,6 +21,20 @@ parameters:
 # Nothing
 
 # ------
+# Flyway (DB Migration)
+# ------
+
+- name: FLYWAY_IMAGE_TAG
+  value: latest
+
+# ---------
+# SD Loader (Service Descriptor Loader)
+# ---------
+
+- name: SD_LOADER_IMAGE_TAG
+  value: latest
+
+# ------
 # Portal
 # ------
 
@@ -127,7 +141,7 @@ objects:
           command: ['sh', '-c',
             'until (( curl http://postgres:5432/ --connect-timeout 5 2>&1 | grep 52 )); do sleep 2; done']
         containers:
-        - image: squonk/flyway
+        - image: squonk/flyway:${FLYWAY_IMAGE_TAG}
           name: postgres-migrate
           env:
           - name: POSTGRES_PASSWORD
@@ -327,7 +341,7 @@ objects:
           name: service-descriptor-loader
       spec:
         containers:
-        - image: squonk/pipelines-servicedescriptor-loader:latest
+        - image: squonk/pipelines-servicedescriptor-loader:${SD_LOADER_IMAGE_TAG}
           name: service-descriptor-loader
           volumeMounts:
           - mountPath: /sd-dst
