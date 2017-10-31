@@ -16,9 +16,13 @@ labels:
 
 parameters:
 
-# Common (not specific to any infrastructure service)
+# -------------
+# Configuration
+# -------------
+# Common (not specific to any service)
 
-# Nothing
+- name: APP_NAMESPACE
+  value: squonk
 
 # ------
 # Flyway (DB Migration)
@@ -126,6 +130,7 @@ objects:
   apiVersion: batch/v1
   metadata:
     name: postgres-migrate
+    namespace: ${APP_NAMESPACE}
   spec:
     replicas: 1
     selector:
@@ -159,6 +164,7 @@ objects:
   apiVersion: v1
   metadata:
     name: chem-services-basic
+    namespace: ${APP_NAMESPACE}
   spec:
     replicas: 1
     selector:
@@ -221,6 +227,7 @@ objects:
   apiVersion: v1
   metadata:
     name: chemservices
+    namespace: ${APP_NAMESPACE}
   spec:
     ports:
     - name: http
@@ -237,6 +244,7 @@ objects:
   apiVersion: v1
   metadata:
     name: core-service-descriptors-pvc
+    namespace: ${APP_NAMESPACE}
   spec:
     accessModes:
     - ReadWriteMany
@@ -248,6 +256,7 @@ objects:
   apiVersion: v1
   metadata:
     name: coreservices
+    namespace: ${APP_NAMESPACE}
   spec:
     replicas: 1
     selector:
@@ -312,6 +321,7 @@ objects:
   apiVersion: v1
   metadata:
     name: coreservices
+    namespace: ${APP_NAMESPACE}
   spec:
     selector:
       name: coreservices
@@ -331,6 +341,7 @@ objects:
   apiVersion: batch/v1
   metadata:
     name: service-descriptor-loader
+    namespace: ${APP_NAMESPACE}
   spec:
     replicas: 1
     selector:
@@ -368,6 +379,7 @@ objects:
   apiVersion: v1
   metadata:
     name: squonk-work-dir-pvc
+    namespace: ${APP_NAMESPACE}
   spec:
     accessModes:
     - ReadWriteMany
@@ -379,6 +391,7 @@ objects:
   apiVersion: v1
   metadata:
     name: cellexecutor
+    namespace: ${APP_NAMESPACE}
   spec:
     replicas: 1
     selector:
@@ -424,6 +437,7 @@ objects:
   apiVersion: v1
   metadata:
     name: cellexecutor
+    namespace: ${APP_NAMESPACE}
   spec:
     selector:
       name: cellexecutor
@@ -440,6 +454,7 @@ objects:
   apiVersion: v1
   metadata:
     name: portal
+    namespace: ${APP_NAMESPACE}
   spec:
     replicas: 1
     selector:
@@ -489,6 +504,7 @@ objects:
   apiVersion: v1
   metadata:
     name: portal
+    namespace: ${APP_NAMESPACE}
   spec:
     selector:
       name: portal
@@ -501,6 +517,7 @@ objects:
   apiVersion: v1
   metadata:
     name: portal
+    namespace: ${APP_NAMESPACE}
   spec:
     path: /portal
     to:

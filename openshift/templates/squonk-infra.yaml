@@ -16,9 +16,13 @@ labels:
 
 parameters:
 
+# -------------
+# Configuration
+# -------------
 # Common (not specific to any infrastructure service)
 
-# Nothing
+- name: INFRA_NAMESPACE
+  value: squonk
 
 # --------
 # Postgres
@@ -71,6 +75,7 @@ objects:
   apiVersion: v1
   metadata:
     name: postgres-claim-1
+    namespace: ${INFRA_NAMESPACE}
   spec:
     accessModes:
     - ReadWriteOnce
@@ -82,6 +87,7 @@ objects:
   apiVersion: v1
   metadata:
     name: postgres-init-map
+    namespace: ${INFRA_NAMESPACE}
   data:
     init-postgres-db.sh: |
       #!/bin/bash
@@ -117,6 +123,7 @@ objects:
   apiVersion: v1
   metadata:
     name: postgres
+    namespace: ${INFRA_NAMESPACE}
   spec:
     replicas: 1
     selector:
@@ -193,6 +200,7 @@ objects:
   apiVersion: v1
   metadata:
     name: postgres
+    namespace: ${INFRA_NAMESPACE}
   spec:
     ports:
     - name: postgres
@@ -209,6 +217,7 @@ objects:
   apiVersion: v1
   metadata:
     name: squonk-rabbitmq-config
+    namespace: ${INFRA_NAMESPACE}
   data:
     rabbitmq.config: |
       [
@@ -276,6 +285,7 @@ objects:
   apiVersion: v1
   metadata:
     name: rabbitmq
+    namespace: ${INFRA_NAMESPACE}
   spec:
     replicas: 1
     selector:
@@ -338,6 +348,7 @@ objects:
   apiVersion: v1
   metadata:
     name: rabbitmq
+    namespace: ${INFRA_NAMESPACE}
   spec:
     ports:
     - name: ampq
