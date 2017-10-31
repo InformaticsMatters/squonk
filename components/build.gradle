@@ -31,6 +31,7 @@ buildscript {
         classpath 'com.bmuschko:gradle-docker-plugin:3.0.12' // needs gradle >= 2.5
 
         classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.2.0'
+        classpath 'org.ajoberstar:gradle-git:1.7.2'
     }
 }
 
@@ -40,6 +41,7 @@ allprojects {
 
     apply plugin: 'groovy' // Apply the groovy plugin (also adds support for Java)
     apply plugin: 'maven'  // Maven repo stuff
+    apply plugin: 'org.ajoberstar.grgit' // Git repo tools (grgit.branch.getCurrent())
 
     sourceCompatibility = 1.8
     version = '0.2-SNAPSHOT'
@@ -53,6 +55,13 @@ allprojects {
     project.ext.set('weldVersion', '2.3.2.Final')
     project.ext.set('postgresDriverVersion', '9.4-1201-jdbc41')
     project.ext.set('flywayVersion', '3.2.1')
+
+    // Define the tag label for docker images
+    def dockerImageTag = grgit.branch.getCurrent().name
+    if (dockerImageTag == 'master') {
+        dockerImageTag = 'latest'
+    }
+    project.ext.set('dockerImageTag', dockerImageTag)
 
     // In this section you declare where to find the dependencies of your project
     repositories {
@@ -81,6 +90,7 @@ allprojects {
         testCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
         testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
     }
+
 }
 
 // all subprojects are assumed to have artifacts to send to maven repo
@@ -210,8 +220,6 @@ task chemServicesWars(type: Copy) {
     into 'build/chem-services-basic'
 
 }
-
-
 
 task dockerFileChemServices(type: Dockerfile) {
 
