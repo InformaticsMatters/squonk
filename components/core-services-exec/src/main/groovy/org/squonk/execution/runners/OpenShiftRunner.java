@@ -29,6 +29,7 @@ import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -71,14 +72,14 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String OS_OBJ_BASE_NAME;
     private static final String OS_DATA_VOLUME_PVC_NAME;
     private static final String OS_IMAGE_PULL_POLICY = "IfNotPresent";
-    private static final String OS_JOB_RESTART_POLICY = "Never";
+    private static final String OS_POD_RESTART_POLICY = "Never";
 
     // The OpenShift Job is given a period of time to start.
     // This time accommodates a reasonable time to pull the image
     // from an external repository. We need to do this
     // because I'm not sure, at the moment how to detect pull errors
     // from within OpenShift - so this is 'belt-and-braces' protection.
-    private static final long JOB_START_GRACE_PERIOD_M = 15;
+    private static final long POD_START_GRACE_PERIOD_M = 15;
 
     // Time between checks on the 'job watcher' completion state.
     private static final long WATCHER_POLL_PERIOD_MILLIS = 1000;
@@ -91,105 +92,119 @@ public class OpenShiftRunner extends AbstractRunner {
     private final String localWorkDir;
     private String subPath;
 
-    private String jobName;
+    private String podName;
     private String imageName;
 
     private boolean isExecuting;
     private boolean stopRequested;
-    private boolean jobCreated;
+    private boolean podCreated;
 
     /**
-     * The JobWatcher receives events form the launched Job
-     * and is responsible for determining when the executed Job has
+     * The PodWatcher receives events form the launched Pod
+     * and is responsible for determining when the executed Pod has
      * run to completion.
      */
-    static class JobWatcher implements Watcher<Job> {
+    static class PodWatcher implements Watcher<Pod> {
 
-        private String jobName;
-        private boolean jobStarted;     // True when the Job has started
-        private boolean jobComplete;    // True when the Job has stopped
-        private boolean success;        // True if the Job stopped without error
+        private String podName;
+
+        // We maintain a number of phases throughout the Pod's lifetime:
+        // - "Waiting" (Initial state)
+        // - "Starting"
+        // - "Complete" (Stopped, waiting for the exit code event)
+        // - "Finished" (where the exit code is available)
+        private String podPhase = "Waiting";
+        // The exit code of the Pod's container
+        // Assigned when the container has terminated.
+        private int containerExitCode = 1;
 
         /**
          * Basic constructor.
          *
-         * @param jobName The symbolic name assigned to the job.
+         * @param podName The symbolic name assigned to the pod.
          */
-        JobWatcher(String jobName) {
-            this.jobName = jobName;
+        PodWatcher(String podName) {
+            this.podName = podName;
         }
 
         /**
-         * Returns true when the watched Job has run to completion
+         * Returns true when the watched Pod has run to completion
          * (with or without an error).
          *
          * @return True on completion.
          */
-        boolean jobComplete() {
-            return jobComplete;
+        boolean podFinished() {
+            return podPhase.equals("Finished");
         }
 
         /**
-         * Returns true when the watched Job has run to completion
+         * Returns true when the watched Pod has run to completion
          * (with or without an error).
          *
          * @return True on completion.
          */
-        boolean jobStarted() {
-            return jobStarted;
+        boolean podStarted() {
+            return !podPhase.equals("Waiting");
         }
 
         /**
-         * Returns true if the Job ended successfully.
+         * Returns the Pod Exit code.
          *
          * @return True on completion.
          */
-        boolean success() {
-            return success;
+        int exitCode() {
+            return containerExitCode;
         }
 
         @Override
-        public void eventReceived(Action action, Job resource) {
+        public void eventReceived(Action action, Pod resource) {
 
-            LOG.fine(resource.toString());
+            PodStatus podStatus = resource.getStatus();
+//            LOG.info(podStatus.toString());
 
-            JobStatus jobStatus = resource.getStatus();
-            if (jobStatus.getStartTime() == null) {
-
-                // StartTime has not been set
-                // (Job must still be loading).
-                LOG.info(jobName + " is starting...");
-
-            } else if (jobStatus.getCompletionTime() == null) {
-
-                // CompletionTime has not been set
-                // (Job must still be running)
-
-                // If we've already seen this state then we can
-                // assume the Job's restarted for some reason.
-                if (jobStarted) {
-                    LOG.severe(jobName + " has restarted. Considering it as a failure.");
-                    jobComplete = true;
-                } else {
-                    LOG.info(jobName + " is running...");
-                    jobStarted = true;
+            // PodConditions...
+            // Significant conditions are:
+            //   PodCompleted
+            List<PodCondition> podConditions = podStatus.getConditions();
+            if (podConditions != null) {
+                for (PodCondition podCondition : podConditions) {
+                    String conditionReason = podCondition.getReason();
+                    if (conditionReason != null) {
+                        if (conditionReason.equals("PodCompleted")) {
+                            podPhase = "Complete";
+                        }
+                    }
                 }
-
-            } else {
-
-                // TODO Can we get the exit code of the Job?
-
-                // StartTime and CompletionTime are set.
-                // The job must be complete.
-                // Ignore subsequent stops,
-                // which occur when we delete the Job.
-                if (!jobComplete) {
-                    success = jobStatus.getSucceeded() > 0;
-                    LOG.info(jobName + " has stopped. Success=" + success);
-                    jobComplete = true;
-                }
-
             }
+            // Waiting for
+            if (podPhase == "Complete") {
+                // We're waiting for a ContainerStateTerminated record.
+                // That will contain start/finish times and an exit code.
+                List<ContainerStatus> containerStatuses = podStatus.getContainerStatuses();
+                if (containerStatuses != null) {
+                    for (ContainerStatus containerStatus : containerStatuses) {
+                        // Is there a 'waiting' record?
+                        ContainerStateWaiting csWaiting = containerStatus.getState().getWaiting();
+                        if (csWaiting != null && csWaiting.getReason().equals("ContainerCreating")) {
+                            podPhase = "Starting";
+                        }
+                        // Do we have a terminated record?
+                        ContainerStateTerminated csTerm = containerStatus.getState().getTerminated();
+                        if (csTerm != null) {
+                            Time startTime = csTerm.getStartedAt();
+                            Time finishTime = csTerm.getFinishedAt();
+                            containerExitCode = csTerm.getExitCode();
+                            LOG.info("podName=" + podName +
+                                     " Terminated (" + startTime.getTime() + " - " + finishTime.getTime() + ")");
+                            LOG.info("podName=" + podName +
+                                     " containerExitCode=" + containerExitCode);
+                            podPhase = "Finished";
+                        }
+                    }
+                }
+            }
+
+            LOG.info("podName=" + podName + " podPhase=" + podPhase);
 
         }
 
@@ -200,7 +215,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 cause.printStackTrace();
                 LOG.severe(cause.getMessage());
             }
-            jobComplete = true;
+            podPhase = "Finished";
 
         }
 
@@ -244,10 +259,10 @@ public class OpenShiftRunner extends AbstractRunner {
      *                        `/squonk/work/docker/[uuid]`.
      * @param localWorkDir    The name under which the host work dir will be
      *                        mounted in the new container. Typically `/work`.
-     * @param jobId The unique (uuid) assigned to the Job.
+     * @param jobId The unique (uuid) assigned to the Cell job.
      *              This wil be used to create a sub-directory in
      *              hostBaseWorkDir into which the input data is copied
-     *              prior to running the Job.
+     *              prior to running the job in a Pod.
      */
     public OpenShiftRunner(String imageName, String hostBaseWorkDir, String localWorkDir, String jobId) {
 
@@ -268,7 +283,7 @@ public class OpenShiftRunner extends AbstractRunner {
         }
 
         // The host base directory's leaf directory
-        // will be used as a 'sub-path' for mounting the Job.
+        // will be used as a 'sub-path' for mounting into the Pod.
 
         if (hostBaseWorkDir == null) {
             LOG.warning("Null hostBaseWorkDir, using getHostWorkDir() path...");
@@ -288,7 +303,7 @@ public class OpenShiftRunner extends AbstractRunner {
         // '/squonk/work/docker/41b47633-a2e6-49ab-b32c-9ab19caf4d4c'
         // where the final directory is an automatically assigned UUID.
         // We use the final diretcory as the sub-path, which is where
-        // the Job we launch will be mounted.
+        // the Pod we launch will be mounted.
 
         // Break up the path to get a sub-directory.
         // We expect to be given '/parent/child' so we expect to find
@@ -312,9 +327,8 @@ public class OpenShiftRunner extends AbstractRunner {
         LOG.info("subPath='" + subPath + "'");
 
         // Form the string that will be used to name all our OS objects...
-        // TODO is subPath suitable or do we append our own unique value?
-        jobName = String.format("%s-%s", OS_OBJ_BASE_NAME, subPath);
-        LOG.info("jobName='" + jobName + "'");
+        podName = String.format("%s-%s", OS_OBJ_BASE_NAME, subPath);
+        LOG.info("podName='" + podName + "'");
 
     }
 
@@ -329,18 +343,18 @@ public class OpenShiftRunner extends AbstractRunner {
 
         super.init();
 
-        LOG.info("Initialising... " + hostBaseWorkDir);
+        LOG.info(podName + " (Initialising hostBaseWorkDir=" + hostBaseWorkDir + ")");
 
         // Only permitted on initial (created) state
         if (isRunning != RUNNER_CREATED) {
-            LOG.warning("Call to init() when initialised");
+            LOG.warning(podName + " Call to init() when initialised");
         }
 
         // For now, there's nothing really to initialise.
         // The method is here to comply with protocol.
         // The execute() method creates and prepares the dependent objects.
 
-        LOG.info("Initialised.");
+        LOG.info(podName + " (Initialised)");
 
         isRunning = RUNNER_INITIALISED;
 
@@ -348,7 +362,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
     /**
      * Executes the container image and blocks until the container
-     * (an OpenShift 'Job') has completed. This method must only be called
+     * (an OpenShift 'Pod') has completed. This method must only be called
      * once, subsequent calls are ignored.
      * <p/>
      * The runner instance must have been initialised before calling
@@ -358,29 +372,31 @@ public class OpenShiftRunner extends AbstractRunner {
      * @return Execution status (non-zero on error)
      *
      * @throws IllegalStateException if the method is called incorrectly
-     *         or if there are problems instantiating the Job.
+     *         or if there are problems instantiating the Pod.
      */
     public synchronized int execute(String... cmd)
             throws IllegalStateException {
 
         // Must be coming from the initialised state.
         if (isRunning != RUNNER_INITIALISED) {
-            throw new IllegalStateException("execute() with bad isRunning state (" + isRunning + ")");
+            throw new IllegalStateException(podName +
+                    " execute() with bad isRunning state (" + isRunning + ")");
         }
         // Sub-path properly formed?
         if (subPath == null || subPath.length() == 0) {
-            throw new IllegalStateException("execute() with missing subPath");
+            throw new IllegalStateException(podName +
+                    " execute() with missing subPath");
         }
 
-        LOG.info("Executing... '" + jobName + "'");
+        LOG.info(podName + " (Preparing to execute)");
 
         isRunning = RUNNER_RUNNNG;
         isExecuting = true;
-        int containerExitStatus = 0;
+        int containerExitCode = 0;
 
         // ---
 
-        // Create the objects required to start the job...
+        // Create the objects required to start the Pod...
 
         // Volume
         PersistentVolumeClaimVolumeSource pvcSrc =
@@ -388,88 +404,84 @@ public class OpenShiftRunner extends AbstractRunner {
                         .withClaimName(OS_DATA_VOLUME_PVC_NAME)
                         .withReadOnly(false).build();
         Volume volume = new VolumeBuilder()
-                .withName(jobName)
+                .withName(podName)
                 .withPersistentVolumeClaim(pvcSrc).build();
 
         // Volume Mount
         VolumeMount volumeMount = new VolumeMountBuilder()
                 .withMountPath(localWorkDir)
-                .withName(jobName)
+                .withName(podName)
                 .withSubPath(subPath).build();
 
-        // Container (that will run in the Job)
-        Container jobContainer = new ContainerBuilder()
-                .withName(jobName)
+        // Container (that will run in the Pod)
+        Container podContainer = new ContainerBuilder()
+                .withName(podName)
                 .withImage(imageName)
                 .withCommand(cmd)
                 .withWorkingDir(localWorkDir)
                 .withImagePullPolicy(OS_IMAGE_PULL_POLICY)
                 .withVolumeMounts(volumeMount).build();
 
-        // The Job, which runs the container image...
-        Job job = new JobBuilder()
+        // The Pod, which runs the container image...
+        Pod pod = new PodBuilder()
                 .withNewMetadata()
-                .withName(jobName)
+                .withName(podName)
                 .withNamespace(OS_PROJECT)
                 .endMetadata()
                 .withNewSpec()
-                .withNewTemplate()
-                .withNewSpec()
-                .withContainers(jobContainer)
+                .withContainers(podContainer)
 //                .withServiceAccount(OS_SA)
-                .withRestartPolicy(OS_JOB_RESTART_POLICY)
+                .withRestartPolicy(OS_POD_RESTART_POLICY)
                 .withVolumes(volume)
-                .endSpec()
-                .endTemplate()
                 .endSpec().build();
 
 
-//        client.builds().inNamespace(OS_PROJECT).withName(jobName).watchLog(System.out);
-        // Add a log-watcher for the pod we'll create.
-//        LogStream ls = new LogStream();
+        // Add a log-watcher to receive log-lines (stdout)
+        // from the pod we'll create.
+
+        LOG.info(podName + " (Creating LogStream)");
+        LogStream ls = new LogStream();
         logObject = client.pods()
-                .inNamespace(OS_PROJECT)
-                .withName(jobName)
+                .withName(podName)
                 .tailingLines(10)
-                .watchLog(System.out);
+                .watchLog(ls);
 
-//        client.pods()
-//                .inNamespace(OS_PROJECT).withLabel("x", "y").
+        // Create a Pod 'watcher'
+        // to monitor the Pod execution progress...
 
-        // Create a Job 'watcher'
-        // to monitor the Job execution progress...
-
-        JobWatcher jobWatcher = new JobWatcher(jobName);
-        watchObject = client.extensions().jobs()
-                .withName(jobName)
-                .watch(jobWatcher);
+        LOG.info(podName + " (Creating PodWatcher)");
+        PodWatcher podWatcher = new PodWatcher(podName);
+        watchObject = client.pods()
+                .withName(podName)
+                .watch(podWatcher);
 
         // Launch...
 
-        LOG.info("Creating OpenShift Job...");
+        LOG.info(podName + " (Creating Pod)");
         try {
-            client.extensions().jobs().create(job);
+            client.pods().create(pod);
         } catch (KubernetesClientException ex) {
 
             // Nothing to do other than log, cleanup and re-throw...
-            LOG.severe("KubernetesClientException creating the Job: " + ex.getMessage());
+            LOG.severe("KubernetesClientException creating " + podName +
+                       " : " + ex.getMessage());
             cleanUp();
 
-            throw new IllegalStateException("Exception creating Job", ex);
+            throw new IllegalStateException("Exception creating " + podName, ex);
 
         }
-        // We should have a Job.
-        LOG.info("Created.");
+        // We should have a Pod.
+        LOG.info(podName + " (Created)");
         // Setting this flag allows cleanUp() to clean it up.
-        jobCreated = true;
+        podCreated = true;
 
         // Wait...
 
-        LOG.info("Waiting for Job completion...");
-        long jobStartTimeMillis = System.currentTimeMillis();
-        boolean jobStartFailure = false;
-        while (!jobStartFailure
-               && !jobWatcher.jobComplete()
+        LOG.info(podName + " (Waiting for Pod completion)");
+        long podStartTimeMillis = System.currentTimeMillis();
+        boolean podStartFailure = false;
+        while (!podStartFailure
+               && !podWatcher.podFinished()
                && !stopRequested) {
 
             // Pause...
@@ -479,31 +491,28 @@ public class OpenShiftRunner extends AbstractRunner {
                 e.printStackTrace();
             }
 
-            if (!jobWatcher.jobStarted()) {
-                // Have we waited too long for the Job to start?
+            if (!podWatcher.podStarted()) {
+                // Have we waited too long for the Pod to start?
                 long now = System.currentTimeMillis();
-                long elapsedMins = (now - jobStartTimeMillis) / 60000;
-                if (elapsedMins >= JOB_START_GRACE_PERIOD_M) {
-                    LOG.warning("Job failed to start. Leaving.");
-                    jobStartFailure = true;
+                long elapsedMins = (now - podStartTimeMillis) / 60000;
+                if (elapsedMins >= POD_START_GRACE_PERIOD_M) {
+                    LOG.warning(podName + " failed to start. Leaving.");
+                    podStartFailure = true;
                 }
             }
 
         }
-        if (!jobStartFailure && !stopRequested) {
-            LOG.info("Job exitStatus=" + jobWatcher.success());
-            if (!jobWatcher.success()) {
-                // Force a container failure
-                containerExitStatus = -1;
-            }
+        if (!podStartFailure && !stopRequested) {
+            containerExitCode = podWatcher.exitCode();
+            LOG.info(podName + " containerExitCode=" + containerExitCode);
         }
 
-        LOG.info("Execute complete.");
+        LOG.info(podName + " (Execute complete)");
 
         // TODO CONTAINER EXIT STATUS AND LOG!
 
         // Always clean up.
-        // This cancels the JobWatcher.
+        // This cancels the PodWatcher.
         cleanUp();
 
         // ---
@@ -519,7 +528,7 @@ public class OpenShiftRunner extends AbstractRunner {
         // The 'stop()' method (if used) will be waiting for this.
         isExecuting = false;
 
-        return containerExitStatus;
+        return containerExitCode;
 
     }
 
@@ -567,7 +576,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         isRunning = RUNNER_STOPPING;
 
-        LOG.fine("Stopping...");
+        LOG.fine(podName + " (Stopping)");
 
         // Setting 'stopRequested' should cause the 'execute()'
         // method  to complete. We wait here until it does.
@@ -583,7 +592,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         }
 
-        LOG.fine("Stopped.");
+        LOG.fine(podName + " (Stopped)");
 
         isRunning = RUNNER_STOPPED;
 
@@ -605,52 +614,32 @@ public class OpenShiftRunner extends AbstractRunner {
      */
     private void cleanUp() {
 
-        LOG.fine("Cleaning up...");
+        LOG.fine(podName + " (Cleaning up)");
 
-        if (client == null || jobName == null) {
+        if (client == null || podName == null) {
             // Probably nothing to clean up...
             return;
         }
 
-//        client.ex
-//        PodList pl = client.pods()
-//                .inNamespace(OS_PROJECT)
-//                .withLabel("job-name", jobName).list();
-//        Pod pod = pl.getItems().get(0);
-
-//
-//        PodStatus ps = pods.get(0).getStatus();
-//        List<ContainerStatus> csList = ps.getContainerStatuses();
-//        ContainerState cs = csList.get(0).getState();
-
         // The Job may have failed to get created.
         // Clean it up if we think it was created.
-        if (jobCreated) {
-            LOG.fine("...Job");
-            client.extensions().jobs()
-                    .inNamespace(OS_PROJECT)
-                    .withName(jobName)
-                    .cascading(true)
-                    .withGracePeriod(0)
-                    .delete();
-            LOG.fine("...Pod");
+        if (podCreated) {
+            LOG.fine(podName + " (...Pod)");
             client.pods()
                     .inNamespace(OS_PROJECT)
-                    .withLabel("job-name", jobName)
+                    .withName(podName)
                     .delete();
         }
 
-        // There's should always a JobWatcher and LogWatcher
+        // There's should always a PodWatcher and LogWatcher
         if (watchObject != null) {
-            LOG.fine("...JobWatcher");
             watchObject.close();
         }
         if (logObject != null) {
-            LOG.fine("...LogWatcher");
             logObject.close();
         }
 
-        LOG.fine("Cleaned.");
+        LOG.fine(podName + " (Cleaned)");
 
     }
 
@@ -676,7 +665,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 .getConfiguration(PVC_NAME_ENV_NAME, PVC_NAME_DEFAULT);
         LOG.info("OS_DATA_VOLUME_PVC_NAME='" + OS_DATA_VOLUME_PVC_NAME + "'");
 
-        // And the base-name for all Jobs we create...
+        // And the base-name for all Pods we create...
         OS_OBJ_BASE_NAME = IOUtils
                 .getConfiguration(OBJ_BASE_NAME_ENV_NAME, OBJ_BASE_NAME_DEFAULT);
         LOG.info("OS_OBJ_BASE_NAME='" + OS_OBJ_BASE_NAME + "'");
