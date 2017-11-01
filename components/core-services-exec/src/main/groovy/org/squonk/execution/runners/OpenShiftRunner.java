@@ -64,8 +64,8 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String PVC_NAME_ENV_NAME = "SQUONK_WORK_DIR_PVC_NAME";
     private static final String PVC_NAME_DEFAULT = "squonk-work-dir-pvc";
 
-    private static final String OBJ_BASE_NAME_ENV_NAME = "SQUONK_RUNNER_OBJ_BASE_NAME";
-    private static final String OBJ_BASE_NAME_DEFAULT = "squonk-runner-job";
+    private static final String OBJ_BASE_NAME_ENV_NAME = "SQUONK_POD_BASE_NAME";
+    private static final String OBJ_BASE_NAME_DEFAULT = "squonk-cell-pod";
 
     private static final String OS_SA;
     private static final String OS_PROJECT;
@@ -213,7 +213,8 @@ public class OpenShiftRunner extends AbstractRunner {
 
             if (cause != null) {
                 cause.printStackTrace();
-                LOG.severe(cause.getMessage());
+                LOG.severe("podName=" + podName +
+                           " cause.message=" + cause.getMessage());
             }
             podPhase = "Finished";
 
@@ -436,16 +437,6 @@ public class OpenShiftRunner extends AbstractRunner {
                 .endSpec().build();
 
 
-        // Add a log-watcher to receive log-lines (stdout)
-        // from the pod we'll create.
-
-        LOG.info(podName + " (Creating LogStream)");
-        LogStream ls = new LogStream();
-        logObject = client.pods()
-                .withName(podName)
-                .tailingLines(10)
-                .watchLog(ls);
-
         // Create a Pod 'watcher'
         // to monitor the Pod execution progress...
 
@@ -474,6 +465,19 @@ public class OpenShiftRunner extends AbstractRunner {
         LOG.info(podName + " (Created)");
         // Setting this flag allows cleanUp() to clean it up.
         podCreated = true;
+
+        // Add a log-watcher to receive log-lines (stdout)
+        // from the pod we'll create.
+
+        // Log Watcher doesn't seem to result in anything...
+        // even if created before or after the Pod.
+        // Clealry work needed here.
+//        LOG.info(podName + " (Creating LogStream)");
+//        LogStream ls = new LogStream();
+//        logObject = client.pods()
+//                .withName(podName)
+//                .tailingLines(10)
+//                .watchLog(System.out);
 
         // Wait...
 

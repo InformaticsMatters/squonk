@@ -107,6 +107,8 @@ parameters:
   value: openshift
 - name: CELL_SQUONK_CONTAINER_WORK_DIR
   value: "/squonk/work/docker"
+- name: CELL_SQUONK_POD_BASE_NAME
+  value: "squonk-cell-pod"
 - name: CELL_WORK_PVC_SIZE
   value: 20Gi
 - name: CELL_JOB_PROJECT_NAME
@@ -418,6 +420,8 @@ objects:
             value: ${CELL_SQUONK_CONTAINER_WORK_DIR}
           - name: SQUONK_CELL_JOB_PROJECT_NAME
             value: ${CELL_JOB_PROJECT_NAME}
+          - name: SQUONK_POD_BASE_NAME
+            value: ${CELL_SQUONK_POD_BASE_NAME}
 #          - name: JAVA_OPTS
 #            value: '"-Djava.util.logging.config.file=/logging.properties"'
 #          resources:
