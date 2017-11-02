@@ -160,7 +160,10 @@ String getDockerHost() {
     if (d == null) {
         h = 'unix:///var/run/docker.sock'
     } else {
-        if (d.endsWith('2375')) {
+        if (d.startsWith('tcp:')) {
+            // Minishift
+            h = d
+        } else if (d.endsWith('2375')) {
             h = 'http' + d.substring(3)
         } else {
             // assume 2376 and https
