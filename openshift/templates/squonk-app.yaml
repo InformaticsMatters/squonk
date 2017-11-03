@@ -266,10 +266,6 @@ objects:
           name: wait-for-chem-before-core
           command: ['sh', '-c',
             'until (( curl http://chemservices:8080/rest/ping --connect-timeout 5 )); do sleep 2; done']
-        - image: yauritux/busybox-curl
-          name: wait-for-cell-before-core
-          command: ['sh', '-c',
-            'until nslookup cellexecutor; do sleep 4; done;']
         containers:
         - image: squonk/core-services-server:${CORE_IMAGE_TAG}
           name: coreservices
