@@ -267,7 +267,7 @@ objects:
           command: ['sh', '-c',
             'until (( curl http://chemservices:8080/rest/ping --connect-timeout 5 )); do sleep 2; done']
         containers:
-        - image: squonk/core-services-server:${CORE_IMAGE_TAG}
+        - image: squonk/coreservices:${CORE_IMAGE_TAG}
           name: coreservices
           env:
           - name: RABBITMQ_SQUONK_PASSWORD
