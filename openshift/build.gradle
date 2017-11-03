@@ -41,7 +41,7 @@ def minishiftIsRunning = {
             'minishift status'
         standardOutput = ms_out
     }
-    return ms_out.toString().trim().endsWith('Running')
+    return ms_out.toString().trim().contains('Running')
 
 }
 
