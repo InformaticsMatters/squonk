@@ -167,29 +167,20 @@ objects:
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
-    name: chem-services-basic
+    name: chemservices-basic
     namespace: ${APP_NAMESPACE}
   spec:
     replicas: 1
     selector:
-      name: chem-services-basic
+      name: chemservices-basic
     template:
       metadata:
         labels:
-          name: chem-services-basic
+          name: chemservices-basic
       spec:
-        initContainers:
-        - image: yauritux/busybox-curl
-          name: wait-for-postgres-before-chem
-          command: ['sh', '-c',
-            'until (( curl http://postgres:5432/ --connect-timeout 5 2>&1 | grep 52 )); do sleep 2; done']
-        - image: yauritux/busybox-curl
-          name: wait-for-rabbitmq-before-chem
-          command: ['sh', '-c',
-            'until nslookup rabbitmq; do sleep 4; done;']
         containers:
-        - image: squonk/chem-services-basic:${CHEM_IMAGE_TAG}
-          name: chem-services-basic
+        - image: squonk/chemservices-basic:${CHEM_IMAGE_TAG}
+          name: chemservices-basic
           env:
           - name: POSTGRES_SQUONK_PASSWORD
             valueFrom:
@@ -238,7 +229,7 @@ objects:
       port: 8080
       targetPort: 8080
     selector:
-      name: chem-services-basic
+      name: chemservices-basic
 
 # -----------------------------------------------------------------------------
 # CoreServices
@@ -472,7 +463,7 @@ objects:
       spec:
         initContainers:
         - image: yauritux/busybox-curl
-          name: wait-for-chem-before-core
+          name: wait-for-chem-before-portal
           command: ['sh', '-c',
             'until (( curl http://coreservices:8080/rest/ping --connect-timeout 5 )); do sleep 2; done']
         containers:

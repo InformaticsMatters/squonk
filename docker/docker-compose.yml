@@ -59,7 +59,7 @@ services:
 
     # coreserives sometimes fails to start because chemservices is too slow to start. If this happens increase the number of retries in the healthcheck
     chemservices:
-        image: squonk/chem-services-basic
+        image: squonk/chemservices-basic
         ports:
         - "8092:8080"
         volumes:

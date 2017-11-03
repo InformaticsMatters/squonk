@@ -114,7 +114,7 @@ services:
     # curl -X POST -T mols.json "http://${PUBLIC_HOST}:8092/chem-services-cdk-basic/rest/v1/calculators/logp"
     #
     chemservices:
-        image: squonk/chem-services-basic
+        image: squonk/chemservices-basic
         restart: on-failure:10
         environment:
             POSTGRES_SQUONK_PASSWORD:

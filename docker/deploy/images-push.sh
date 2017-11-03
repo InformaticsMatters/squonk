@@ -11,7 +11,7 @@ cd $base
 ./images-build-services.sh
 
 docker push squonk/portal
-docker push squonk/chem-services-basic
+docker push squonk/chemservices-basic
 docker push squonk/core-services-server
 docker push squonk/cellexecutor
 docker push squonk/xwiki

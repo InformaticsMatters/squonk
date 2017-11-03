@@ -335,7 +335,7 @@ task processAppTemplate(type: Exec) {
             while (!podIsRunning('portal') ||
                    !podIsRunning('cellexecutor') ||
                    !podIsRunning('coreservices') ||
-                   !podIsRunning('chem-services-basic')) {
+                   !podIsRunning('chemservices-basic')) {
                 sleep(pause_time)
             }
             logger.lifecycle 'Loaded Application.'

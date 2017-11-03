@@ -177,6 +177,17 @@ docker {
     println "Using docker host of $dockerHost"
     url = dockerHost
     certPath = null
+// ABC - Build in Minishift shell investigation
+//    if (System.env.DOCKER_HOST) {
+//        url = "$System.env.DOCKER_HOST"
+//        url = "$System.env.DOCKER_HOST".replace("tcp", "https")
+//        if (System.env.DOCKER_CERT_PATH) {
+//            certPath = new File(System.env.DOCKER_CERT_PATH)
+//        }
+//    } else {
+//        url = 'unix:///var/run/docker.sock'
+//    }
+
 }
 
 task chemServicesWars(type: Copy) {
@@ -221,13 +232,13 @@ task chemServicesWars(type: Copy) {
 //        include '*.war'
 //        rename '.*', 'chem-services-cpsign.war'
 //    }
-    into 'build/chem-services-basic'
+    into 'build/chemservices-basic'
 
 }
 
 task dockerFileChemServices(type: Dockerfile) {
 
-    destFile = project.file('build/chem-services-basic/Dockerfile')
+    destFile = project.file('build/chemservices-basic/Dockerfile')
     // if changing the version you must also update the hardcoded version number in org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor
     //from "informaticsmatters/rdkit_java_tomcat:Release_2017_03_03"
     from "informaticsmatters/rdkit_java_tomcat:latest"
@@ -249,10 +260,12 @@ task dockerFileChemServices(type: Dockerfile) {
 
 task dockerImageChemServices(type: DockerBuildImage) {
 
+    description 'Builds the ChemServices Docker Image'
+
     dependsOn = [chemServicesWars, dockerFileChemServices]
 
     inputDir = dockerFileChemServices.destFile.parentFile
-    tag = "squonk/chem-services-basic:${dockerImageTag}"
+    tag = "squonk/chemservices-basic:${dockerImageTag}"
 }
 
 task dockerBuildImages() {

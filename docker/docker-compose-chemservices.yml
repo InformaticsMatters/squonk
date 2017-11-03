@@ -3,7 +3,7 @@ version: '2.1'
 services:
 
     chemservices:
-        build: ../components/build/chem-services-basic
+        build: ../components/build/chemservices-basic
         ports:
         - "8092:8080"
         volumes:

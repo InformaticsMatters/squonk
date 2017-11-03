@@ -295,11 +295,6 @@ objects:
         labels:
           name: rabbitmq
       spec:
-        initContainers:
-        - image: yauritux/busybox-curl
-          name: wait-for-postgres-before-rabbitmq
-          command: ['sh', '-c',
-            'until (( curl http://postgres:5432/ --connect-timeout 5 2>&1 | grep 52 )); do sleep 2; done']
         containers:
         - image: rabbitmq:${RABBITMQ_IMAGE_TAG}
           name: rabbitmq
