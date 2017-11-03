@@ -6,6 +6,11 @@
 // - startMinishift
 // - deleteMinishift
 //
+// To build and use the docker registry that's part of the Minishift
+// installation the user is expected to have run the following...
+//
+// $ eval $(minishift docker-env)
+//
 // Alan Christie
 // November 2017
 
@@ -27,8 +32,8 @@ ext {
 }
 
 // Returns True if a local Minishift instance appears to be running.
-// This relies on what `minishift status` issues to <stdout>
-def minishiftIsRunning = { ->
+// This relies on what `minishift status` issues to <stdout>.
+def minishiftIsRunning = {
 
     def ms_out = new ByteArrayOutputStream()
     exec {
@@ -36,12 +41,12 @@ def minishiftIsRunning = { ->
             'minishift status'
         standardOutput = ms_out
     }
-    return ms_out.toString().trim().startsWith('Minishift:  Running')
+    return ms_out.toString().trim().endsWith('Running')
 
 }
 
 // Returns True if the named Pod appears to be running.
-// This relies on what `oc get po` issues to <stdout>
+// This relies on what `oc get po` issues to <stdout>.
 def podIsRunning = { String pod_name ->
 
     def oc_out = new ByteArrayOutputStream()
@@ -49,9 +54,10 @@ def podIsRunning = { String pod_name ->
         commandLine 'bash', '-c',
             "oc get po -l name=$pod_name"
         standardOutput = oc_out
+        errorOutput = standardOutput
     }
-    // We simply look for ' 1/1 '...
-    def pod_matcher = (oc_out.toString() =~ /\s1\/1\s/)
+    // We simply look for a pod count that's not ' 0/N '...
+    def pod_matcher = (oc_out.toString() =~ /\s[1..9]\d*\/\d+\s/)
     return pod_matcher.size() > 0
 
 }
@@ -70,7 +76,7 @@ task minishiftStart(type: Exec) {
         " --disk-size $minishift_disk_size" +
         " --vm-driver $minishift_vm_driver"
 
-    // Keep output, we might need it later...
+    // Keep output, we'll use it later if the task fails...
     standardOutput = new ByteArrayOutputStream()
     errorOutput = standardOutput
     ignoreExitValue = true
@@ -95,7 +101,7 @@ task minishiftDelete(type: Exec) {
     commandLine 'bash', '-c',
         'minishift delete --force'
 
-    // Keep output, we might need it later...
+    // Keep output, we'll use it later if the task fails...
     standardOutput = new ByteArrayOutputStream()
     errorOutput = standardOutput
     ignoreExitValue = true
@@ -209,6 +215,7 @@ task openShiftDeleteMyProject(type: Exec) {
     // Soak-up any output...
     standardOutput = new ByteArrayOutputStream()
     errorOutput = standardOutput
+    ignoreExitValue = true
 
 }
 
@@ -225,7 +232,7 @@ task processSecretsTemplate(type: Exec) {
     commandLine 'bash', '-c',
         'oc process -f squonk-secrets.yaml | oc create -f -'
 
-    // Keep output, we might need it later...
+    // Keep output, we'll use it later if the task fails...
     standardOutput = new ByteArrayOutputStream()
     errorOutput = standardOutput
     ignoreExitValue = true
@@ -264,7 +271,7 @@ task processInfraTemplate(type: Exec) {
     commandLine 'bash', '-c',
         'oc process -f squonk-infra.yaml | oc create -f -'
 
-    // Keep output, we might need it later...
+    // Keep output, we'll use it later if the task fails...
     standardOutput = new ByteArrayOutputStream()
     errorOutput = standardOutput
     ignoreExitValue = true
@@ -310,7 +317,7 @@ task processAppTemplate(type: Exec) {
     commandLine 'bash', '-c',
         'oc process -f squonk-app.yaml | oc create -f -'
 
-    // Keep output, we might need it later...
+    // Keep output, we'll use it later if the task fails...
     standardOutput = new ByteArrayOutputStream()
     errorOutput = standardOutput
     ignoreExitValue = true
