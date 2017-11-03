@@ -114,7 +114,7 @@ tomcat {
 docker {
     println "Using docker host of $dockerHost"
     url = dockerHost
-    certPath = null
+    certPath = dockerCertPath
 }
 
 task buildDockerFile(type: Dockerfile) {
@@ -132,6 +132,8 @@ task buildDockerFile(type: Dockerfile) {
 }
 
 task buildDockerImage(type: DockerBuildImage) {
+
+    description = "Build the coreservices docker image"
 
     dependsOn = ['war', 'buildDockerFile']
 

@@ -8,7 +8,7 @@ base=$PWD
 
 cd ../../components
 
-./gradlew --daemon common:assemble common:publish dockerBuildImages
+./gradlew --daemon common:assemble common:publish buildDockerImages
 
 cd $base
 

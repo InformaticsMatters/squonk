@@ -70,7 +70,7 @@ testClasses.doLast {
 
 docker {
     url = dockerHost
-    certPath = null
+    certPath = dockerCertPath
 
     javaApplication {
         // this base image is found here https://hub.docker.com/r/informaticsmatters/openjdk_docker/

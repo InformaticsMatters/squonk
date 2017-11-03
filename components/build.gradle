@@ -1,7 +1,3 @@
-description = 'Squonk tools for life sciences'
-
-apply plugin: 'com.bmuschko.docker-remote-api'
-
 /*
  * Copyright (c) 2017 Informatics Matters Ltd.
  *
@@ -17,6 +13,10 @@ apply plugin: 'com.bmuschko.docker-remote-api'
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+description = 'Squonk tools for life sciences'
+
+apply plugin: 'com.bmuschko.docker-remote-api'
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
@@ -152,42 +152,35 @@ task createEbsBackendServicesZip(type: Zip) {
 }
 
 project.ext.set('dockerHost', getDockerHost())
+project.ext.set('dockerCertPath', System.env.DOCKER_CERT_PATH ? file(System.env.DOCKER_CERT_PATH): null)
+
 
 String getDockerHost() {
 
-    String d = System.getenv('DOCKER_HOST');
-    String h = null;
-    if (d == null) {
-        h = 'unix:///var/run/docker.sock'
-    } else {
-        if (d.startsWith('tcp:')) {
-            // Minishift
-            h = d
-        } else if (d.endsWith('2375')) {
-            h = 'http' + d.substring(3)
-        } else {
-            // assume 2376 and https
-            h = 'https' + d.substring(3)
-        }
-    }
+//    String d = System.getenv('DOCKER_HOST');
+//    String h = null;
+//    if (d == null) {
+//        h = 'unix:///var/run/docker.sock'
+//    } else {
+//        if (d.startsWith('tcp:')) {
+//            // Minishift
+//            h = d
+//        } else if (d.endsWith('2375')) {
+//            h = 'http' + d.substring(3)
+//        } else {
+//            // assume 2376 and https
+//            h = 'https' + d.substring(3)
+//        }
+//    }
+
+    String h = System.getenv('DOCKER_HOST') ?: 'unix:///var/run/docker.sock'
+    println "Using docker host of $h"
     return h
 }
 
 docker {
-    println "Using docker host of $dockerHost"
     url = dockerHost
-    certPath = null
-// ABC - Build in Minishift shell investigation
-//    if (System.env.DOCKER_HOST) {
-//        url = "$System.env.DOCKER_HOST"
-//        url = "$System.env.DOCKER_HOST".replace("tcp", "https")
-//        if (System.env.DOCKER_CERT_PATH) {
-//            certPath = new File(System.env.DOCKER_CERT_PATH)
-//        }
-//    } else {
-//        url = 'unix:///var/run/docker.sock'
-//    }
-
+    certPath = dockerCertPath
 }
 
 task chemServicesWars(type: Copy) {
@@ -236,8 +229,9 @@ task chemServicesWars(type: Copy) {
 
 }
 
-task dockerFileChemServices(type: Dockerfile) {
+task buildChemServicesDockerfile(type: Dockerfile) {
 
+    description = 'build the Dockerfile for the chemservices image'
     destFile = project.file('build/chemservices-basic/Dockerfile')
     // if changing the version you must also update the hardcoded version number in org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor
     //from "informaticsmatters/rdkit_java_tomcat:Release_2017_03_03"
@@ -258,19 +252,21 @@ task dockerFileChemServices(type: Dockerfile) {
     exposePort(8080)
 }
 
-task dockerImageChemServices(type: DockerBuildImage) {
+task buildChemServicesDockerImage(type: DockerBuildImage) {
 
-    description 'Builds the ChemServices Docker Image'
+    description = 'Builds the ChemServices Docker Image'
 
-    dependsOn = [chemServicesWars, dockerFileChemServices]
+    dependsOn = [chemServicesWars, buildChemServicesDockerfile]
 
-    inputDir = dockerFileChemServices.destFile.parentFile
+    inputDir = buildChemServicesDockerfile.destFile.parentFile
     tag = "squonk/chemservices-basic:${dockerImageTag}"
 }
 
-task dockerBuildImages() {
+task buildDockerImages() {
 
-    dependsOn = ['dockerImageChemServices', 'core-services-server:buildDockerImage', 'cell-executor:dockerBuildImage']
+    description = 'Builds the chemservices coreservices and cellexecutor Docker images'
+
+    dependsOn = ['buildChemServicesDockerImage', 'core-services-server:buildDockerImage', 'cell-executor:dockerBuildImage']
 }
 
 /*
@@ -292,7 +288,7 @@ To run the integration tests run the integrationTest task.
 
  */
 task integrationTestInit() {
-    dependsOn = [uploadArchives, dockerBuildImages]
+    dependsOn = [uploadArchives, buildDockerImages]
 }
 
 task integrationTestEnvPrepare(type: Exec) {
