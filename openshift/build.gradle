@@ -5,7 +5,7 @@
 //
 // -    configureOpenShift
 //
-// To load and then delete the entire application.
+// Then, to load and then delete the entire application.
 // These tasks run to completion....
 //
 // -    processAll
@@ -21,7 +21,7 @@
 //       setup the system variables to enable the use of the docker registry
 //       that's part of the Minishift. So, you are expected to have run...
 //
-//       $ minishift start               - plus define CPU, Memory & disk-space
+//       $ minishift start               - plus define cpus, memory & disk-size
 //       $ eval $(minishift docker-env)
 //
 // Alan Christie
@@ -95,6 +95,13 @@ task openShiftLoginDeveloper(type: Exec) {
 
     description 'Login as the OpenShift developer'
 
+    doFirst {
+        if (!minishiftIsRunning()) {
+            throw new GradleException("Oops - minishift does not appear to be running!")
+        }
+        logger.lifecycle 'Logging in as developer...'
+    }
+
     commandLine 'bash', '-c',
         'oc login -u developer'
 
@@ -111,6 +118,13 @@ task openShiftLoginDeveloper(type: Exec) {
 task openShiftLoginSystemAdmin(type: Exec) {
 
     description 'Login as the OpenShift developer'
+
+    doFirst {
+        if (!minishiftIsRunning()) {
+            throw new GradleException("Oops - minishift does not appear to be running!")
+        }
+        logger.lifecycle 'Logging in as system:admin...'
+    }
 
     commandLine 'bash', '-c',
         'oc login -u system:admin'
@@ -171,27 +185,39 @@ task openShiftCreateSquonkProject(type: Exec) {
 
     description 'Creates the Squonk OpenShift project'
 
+    doFirst {
+        if (!minishiftIsRunning()) {
+            throw new GradleException("Oops - minishift does not appear to be running!")
+        }
+        logger.lifecycle 'Creating Squonk project...'
+    }
+
     commandLine 'bash', '-c',
         "oc new-project $open_shift_project" +
         " --display-name $open_shift_project_display_name"
 
-    // Soak-up any output...
-    standardOutput = new ByteArrayOutputStream()
-    errorOutput = standardOutput
-
-}
-
-task openShiftDeleteMyProject(type: Exec) {
-
-    description 'Deletes the built-in MyProject project'
-
-    commandLine 'bash', '-c',
-        'oc delete project myproject --force'
-
-    // Soak-up any output...
+    // Keep output, we'll use it later if the task fails...
     standardOutput = new ByteArrayOutputStream()
     errorOutput = standardOutput
     ignoreExitValue = true
+
+    doLast {
+
+        // Did something go wrong?
+        if (execResult.exitValue != 0) {
+            // It might have failed because the project already exist
+            def output = standardOutput.toString()
+            def matcher = (output =~ /already exists/)
+            if (matcher.size() == 0) {
+                logger.lifecycle output
+                throw new GradleException("Creation failed; see output above")
+            }
+            logger.lifecycle 'Squonk project already exists.'
+        } else {
+            logger.lifecycle 'Created Squonk project.'
+        }
+
+    }
 
 }
 
@@ -295,7 +321,7 @@ task processApp(type: Exec) {
 
     dependsOn processSecrets
     dependsOn processInfra
-    tasks.findByName('processInfra').mustRunAfter processSecrets
+    processInfra.mustRunAfter processSecrets
 
     doFirst {
         if (!minishiftIsRunning()) {
@@ -440,8 +466,8 @@ task processAll {
     dependsOn processSecrets
     dependsOn processInfra
     dependsOn processApp
-    tasks.findByName('processInfra').mustRunAfter processSecrets
-    tasks.findByName('processApp').mustRunAfter processSecrets
+    processInfra.mustRunAfter processSecrets
+    processApp.mustRunAfter processSecrets
 
 }
 
@@ -465,16 +491,13 @@ task configureOpenShift {
 
     description 'Configures a running OpenShift instance'
 
-    doLast {
-
-        // Basically do all the fiddly stuff you need to do
-        // before you can load any of the application templates.
-        openShiftAddSccToGroup.execute()
-        openShiftAddClusterRoleToUser.execute()
-        openShiftLoginDeveloper.execute()
-        openShiftDeleteMyProject.execute()
-        openShiftCreateSquonkProject.execute()
-    }
+    dependsOn openShiftAddSccToGroup
+    dependsOn openShiftAddClusterRoleToUser
+    dependsOn openShiftLoginDeveloper
+    dependsOn openShiftCreateSquonkProject
+    openShiftLoginDeveloper.mustRunAfter openShiftAddSccToGroup
+    openShiftLoginDeveloper.mustRunAfter openShiftAddClusterRoleToUser
+    openShiftCreateSquonkProject.mustRunAfter openShiftLoginDeveloper
 
 }
 
