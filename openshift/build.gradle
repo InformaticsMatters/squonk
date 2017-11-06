@@ -1,15 +1,33 @@
 // Minishift Gradle Control Tasks
 //
-// Tasks to starts, configure and delete a Minishift instance.
+// Tasks to exercise a local Minishift instance.
 // Main tasks are:
 //
-// - startMinishift
-// - deleteMinishift
+// -    configureOpenShift
 //
-// To build and use the docker registry that's part of the Minishift
-// installation the user is expected to have run the following...
+// To load and then delete the entire application.
+// These tasks run to completion....
 //
-// $ eval $(minishift docker-env)
+// -    processAll
+// -    deleteAll
+//
+// Or, you can control individual sections fo the application with:
+//
+// -    processApp
+// -    deleteApp
+//
+// Or run each template separately...
+//
+// -    processSecretsTemplate
+// -    processInfraTemplate
+// -    processAppTemplate
+//
+// Note: The user is expected to have started a minishift instance and
+//       setup the system variables to enable the use of the docker registry
+//       that's part of the Minishift. So, you are expected to have run...
+//
+//       $ minishift start               - plus define CPU, Memory & disk-space
+//       $ eval $(minishift docker-env)
 //
 // Alan Christie
 // November 2017
@@ -38,10 +56,26 @@ def minishiftIsRunning = {
     def ms_out = new ByteArrayOutputStream()
     exec {
         commandLine 'bash', '-c',
-            'minishift status'
+                'minishift status'
         standardOutput = ms_out
     }
-    return ms_out.toString().trim().contains('Running')
+    return ms_out.toString().contains('Running')
+
+}
+
+// Returns True if a local Minishift environment appears to be set.
+// This relies on whether the environment variable DOCKER_HOST
+// is set.
+def envIsSet = {
+
+    def result = exec {
+        commandLine 'bash', '-c', 'env | grep DOCKER_HOST'
+        // Soak-up any output...
+        standardOutput = new ByteArrayOutputStream()
+        errorOutput = standardOutput
+        ignoreExitValue = true
+    }
+    return result.getExitValue() == 0
 
 }
 
@@ -59,59 +93,6 @@ def podIsRunning = { String pod_name ->
     // We simply look for a pod count that's not ' 0/N '...
     def pod_matcher = (oc_out.toString() =~ /\s[1..9]\d*\/\d+\s/)
     return pod_matcher.size() > 0
-
-}
-
-// Starts a Minishift instance
-// by invoking `minishift start` using the `minishift` variables
-// defined in the `ext` block above.
-task minishiftStart(type: Exec) {
-
-    description 'Starts a local Minishift instance'
-
-    commandLine 'bash', '-c',
-        "minishift start" +
-        " --cpus $minishift_cpus" +
-        " --memory $minishift_memory" +
-        " --disk-size $minishift_disk_size" +
-        " --vm-driver $minishift_vm_driver"
-
-    // Keep output, we'll use it later if the task fails...
-    standardOutput = new ByteArrayOutputStream()
-    errorOutput = standardOutput
-    ignoreExitValue = true
-
-    doLast {
-        if (execResult.exitValue != 0) {
-            logger.lifecycle standardOutput.toString()
-            throw new GradleException("Minishift start failed; see output above")
-        }
-        def addr_matcher = (standardOutput.toString() =~ /console at:\s+(http\S+)/)
-        minishift_url = addr_matcher[0][1]
-    }
-
-}
-
-// Deletes a Minithsift instance.
-// It does this by invoking `minishift delete --force`.
-task minishiftDelete(type: Exec) {
-
-    description 'Deletes a local Minishift instance'
-
-    commandLine 'bash', '-c',
-        'minishift delete --force'
-
-    // Keep output, we'll use it later if the task fails...
-    standardOutput = new ByteArrayOutputStream()
-    errorOutput = standardOutput
-    ignoreExitValue = true
-
-    doLast {
-        if (execResult.exitValue != 0) {
-            logger.lifecycle standardOutput.toString()
-            throw new GradleException("Minishift delete failed; see output above")
-        }
-    }
 
 }
 
@@ -220,12 +201,12 @@ task openShiftDeleteMyProject(type: Exec) {
 }
 
 // Process and loads the Squonk `secrets`.
-task processSecretsTemplate(type: Exec) {
+task processSecrets(type: Exec) {
 
     description 'Loads the Squonk secrets template'
 
     doFirst {
-        logger.lifecycle 'Loading infrastructure...'
+        logger.lifecycle 'Loading secrets...'
     }
 
     workingDir template_path
@@ -257,9 +238,87 @@ task processSecretsTemplate(type: Exec) {
 
 }
 
+// Deletes the Squonk `secrets`.
+task deleteSecrets(type: Exec) {
+
+    description 'Deletes the Squonk secrets'
+
+    doFirst {
+        logger.lifecycle 'Deleteing Squonk Sectets...'
+    }
+
+    workingDir template_path
+    commandLine 'bash', '-c',
+            'oc delete secrets --selector template=squonk-secrets'
+
+    // Keep output, we'll use it later if the task fails...
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = standardOutput
+    ignoreExitValue = true
+
+    doLast {
+
+        logger.lifecycle 'Deleted Squonk Secrets.'
+
+    }
+
+}
+
+// Deletes the Squonk `app`.
+task deleteInfra(type: Exec) {
+
+    description 'Deletes the Squonk Infrastructure'
+
+    doFirst {
+        logger.lifecycle 'Deleteing Squonk Infrastructure...'
+    }
+
+    workingDir template_path
+    commandLine 'bash', '-c',
+            'oc delete all,cm,pvc,secrets --selector template=squonk-infra'
+
+    // Keep output, we'll use it later if the task fails...
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = standardOutput
+    ignoreExitValue = true
+
+    doLast {
+
+        logger.lifecycle 'Deleted Squonk Infrastructure.'
+
+    }
+
+}
+
+// Deletes the Squonk `app`.
+task deleteApp(type: Exec) {
+
+    description 'Deletes the Squonk secrets'
+
+    doFirst {
+        logger.lifecycle 'Deleteing Squonk App...'
+    }
+
+    workingDir template_path
+    commandLine 'bash', '-c',
+            'oc delete all,cm,pvc,routes,secrets --selector template=squonk-app'
+
+    // Keep output, we'll use it later if the task fails...
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = standardOutput
+    ignoreExitValue = true
+
+    doLast {
+
+        logger.lifecycle 'Deleted Squonk App.'
+
+    }
+
+}
+
 // Process and loads the Squonk `infra` Pods, Services, etc.,
 // Waiting until each Pod claims to be running.
-task processInfraTemplate(type: Exec) {
+task processInfra(type: Exec) {
 
     description 'Loads the Squonk infrastructure template'
 
@@ -305,7 +364,7 @@ task processInfraTemplate(type: Exec) {
 
 // Process and loads the Squonk `app` Pods, Services, etc.,
 // Waiting until each Pod claims to be running.
-task processAppTemplate(type: Exec) {
+task processApp(type: Exec) {
 
     description 'Loads the Squonk application template'
 
@@ -355,14 +414,28 @@ task processAppTemplate(type: Exec) {
 // Processes the suite of known templates, waiting for the
 // successful start-up of each Pod.
 // Templates consists of `secrets`, `infra` and `app`.
-task processTemplates {
+task processAll {
 
     description 'Processes the Squonk templates creating their Pods'
 
     doLast {
-        processSecretsTemplate.execute()
-        processInfraTemplate.execute()
-        processAppTemplate.execute()
+        processSecrets.execute()
+        processInfra.execute()
+        processApp.execute()
+    }
+
+}
+
+// Deletes everything created by the suite of known templates.
+// Templates consists of `secrets`, `infra` and `app`.
+task deleteAll {
+
+    description 'Deletes Squonk'
+
+    doLast {
+        deleteApp.execute()
+        deleteInfra.execute()
+        deleteSecrets.execute()
     }
 
 }
@@ -388,10 +461,79 @@ task configureOpenShift {
 
 }
 
+// The following tasks (to the end fo the file) are experimental and involve
+// the automatic start-up of a local minishift environment. They are known to
+// work (at the time of writing) but until we have a strategy for utilising
+// the system environment variables that are set by `minishift docker-env`
+// we cannot build from within a minishift environment started by gradle
+// (because gradle nor its tasks can set system environment vraibles).
+// Calling `eval $(minishift docker-env)` in a task does not appear to work as
+// expected - i.e. the variables are not available to other tasks.
+//
+// One thought is to invoke `minishift docker-env` and capture the created
+// environment variables into Gradle variables that can then be used in
+// `environment` settings for the dependent tasks.
+//
+// ABC (6 Nov 2017)
+
+// Starts a Minishift instance
+// by invoking `minishift start` using the `minishift` variables
+// defined in the `ext` block above.
+task start(type: Exec) {
+
+    description 'Starts a local Minishift instance'
+
+    commandLine 'bash', '-c',
+            "minishift start" +
+                    " --cpus $minishift_cpus" +
+                    " --memory $minishift_memory" +
+                    " --disk-size $minishift_disk_size" +
+                    " --vm-driver $minishift_vm_driver"
+
+    // Keep output, we'll use it later if the task fails...
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = standardOutput
+    ignoreExitValue = true
+
+    doLast {
+        if (execResult.exitValue != 0) {
+            logger.lifecycle standardOutput.toString()
+            throw new GradleException("Minishift start failed; see output above")
+        }
+        def addr_matcher = (standardOutput.toString() =~ /console at:\s+(http\S+)/)
+        minishift_url = addr_matcher[0][1]
+    }
+
+}
+
+// Deletes a Minithsift instance.
+// It does this by invoking `minishift delete --force`.
+task delete(type: Exec) {
+
+    description 'Deletes a local Minishift instance'
+
+    commandLine 'bash', '-c',
+            'minishift delete --force'
+
+    // Keep output, we'll use it later if the task fails...
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = standardOutput
+    ignoreExitValue = true
+
+    doLast {
+        if (execResult.exitValue != 0) {
+            logger.lifecycle standardOutput.toString()
+            throw new GradleException("Minishift delete failed; see output above")
+        }
+    }
+
+}
+
 // Starts, configures and installs the initial set of Pods
-// into a new Minishift instance. If Minishift appears to be running
-// this task does nothing.
-task startMinishift {
+// into a new Minishift instance. Depending on your internet connection speeds
+// this can be a time-consuming task (maybe up to 14/15 minutes).
+// If Minishift appears to be running this task does nothing.
+task minishiftStart {
 
     description 'Starts and configures Minishift (if one does not already exist)'
 
@@ -426,7 +568,7 @@ task startMinishift {
 
 // Deletes a Minithsift instance if one exists.
 // It does this by invoking `minishift delete --force`.
-task deleteMinishift {
+task minishiftDelete {
 
     description 'Tries to delete the Minishift instance (if it exists)'
 
