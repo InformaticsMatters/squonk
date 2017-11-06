@@ -17,6 +17,12 @@
 // -    processApp
 // -    deleteApp
 //
+// You can deploy (re-deploy) the OpenShift images with the tasks:
+//
+// -    deployCellExecutor
+// -    deployChemServices
+// -    deployCoreServices
+//
 // Note: The user is expected to have started a minishift instance and
 //       setup the system variables to enable the use of the docker registry
 //       that's part of the Minishift. So, you are expected to have run...
@@ -38,9 +44,15 @@ ext {
     open_shift_project = 'squonk'
     open_shift_project_display_name = 'Squonk'
 
+    // Relative path to our OpenShift templates.
     template_path = 'templates'
 
-    pause_time = 2000
+    // Pause period between command execution status checks
+    pause_time = 1000
+
+    // A variable defining a deployment name
+    // used in the `deploy' task.
+    deployment_name = null
 
 }
 
@@ -85,9 +97,11 @@ def podIsRunning = { String pod_name ->
         standardOutput = oc_out
         errorOutput = standardOutput
     }
-    // We simply look for a pod count that's not ' 0/N '...
-    def pod_matcher = (oc_out.toString() =~ /\s[1..9]\d*\/\d+\s/)
-    return pod_matcher.size() > 0
+
+    // We simply make sure there's only one example of ' N/N '
+    // and it's not ' 0/N '...
+    def pod_matcher = (oc_out.toString() =~ /(?m)\s(\d+)\/\d+\s/)
+    return pod_matcher.count == 1 && pod_matcher[0][1] != "0"
 
 }
 
@@ -391,9 +405,7 @@ task deleteSecrets(type: Exec) {
     ignoreExitValue = true
 
     doLast {
-
         logger.lifecycle 'Deleted Squonk Secrets.'
-
     }
 
 }
@@ -420,9 +432,7 @@ task deleteInfra(type: Exec) {
     ignoreExitValue = true
 
     doLast {
-
         logger.lifecycle 'Deleted Squonk Infrastructure.'
-
     }
 
 }
@@ -449,9 +459,85 @@ task deleteApp(type: Exec) {
     ignoreExitValue = true
 
     doLast {
-
         logger.lifecycle 'Deleted Squonk App.'
+    }
 
+}
+
+// Deploys (redeploys) an OpenShift service, waiting for completion.
+// the service/image name needs to be put into the 'deployment_name' ext variable.
+// See 'deployCellExecutor'
+task deploy(type: Exec) {
+
+    description '(Re)Deploys a Deployment Config named in the deployment_name variable'
+
+    doFirst {
+        if (!minishiftIsRunning()) {
+            throw new GradleException("Oops - minishift does not appear to be running!")
+        }
+        logger.lifecycle "Deploying ${deployment_name}..."
+
+        workingDir template_path
+        commandLine 'bash', '-c',
+                "oc deploy ${deployment_name} --latest"
+
+    }
+
+    // Keep output, we'll use it later if the task fails...
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = standardOutput
+    ignoreExitValue = true
+
+    doLast {
+        // Did something go wrong?
+        if (execResult.exitValue != 0) {
+            throw new GradleException("Load failed; see output above")
+        } else {
+            // Looks like we deployed successfully.
+            // Wait for the Pod bounce...
+            logger.lifecycle 'Waiting for the re-deployment...'
+            while (podIsRunning(deployment_name)) {
+                sleep(pause_time)
+            }
+            while (!podIsRunning(deployment_name)) {
+                sleep(pause_time)
+            }
+        }
+
+        logger.lifecycle "Deployed ${deployment_name}."
+    }
+
+}
+
+task deployCellExecutor {
+
+    description 'Invokes the deploy task for "cellexecutor"'
+
+    doFirst {
+        deployment_name = 'cellexecutor'
+        deploy.execute()
+    }
+
+}
+
+task deployChemServices {
+
+    description 'Invokes the deploy task for "chemservices-basic"'
+
+    doFirst {
+        deployment_name = 'chemservices-basic'
+        deploy.execute()
+    }
+
+}
+
+task deployCoreServices {
+
+    description 'Invokes the deploy task for "coreservices"'
+
+    doFirst {
+        deployment_name = 'coreservices'
+        deploy.execute()
     }
 
 }
