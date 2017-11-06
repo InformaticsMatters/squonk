@@ -131,7 +131,7 @@ task openShiftLoginDeveloper(type: Exec) {
 
 task openShiftLoginSystemAdmin(type: Exec) {
 
-    description 'Login as the OpenShift developer'
+    description 'Login as the OpenShift system:admin'
 
     doFirst {
         if (!minishiftIsRunning()) {
@@ -413,7 +413,7 @@ task deleteSecrets(type: Exec) {
 // Deletes the Squonk `app`.
 task deleteInfra(type: Exec) {
 
-    description 'Deletes the Squonk Infrastructure'
+    description 'Deletes the Squonk Infrastructure (postgres, rabbitmq)'
 
     doFirst {
         if (!minishiftIsRunning()) {
@@ -440,7 +440,7 @@ task deleteInfra(type: Exec) {
 // Deletes the Squonk `app`.
 task deleteApp(type: Exec) {
 
-    description 'Deletes the Squonk secrets'
+    description 'Deletes the Squonk application components (cell, core, chem, portal)'
 
     doFirst {
         if (!minishiftIsRunning()) {
@@ -547,7 +547,7 @@ task deployCoreServices {
 // Templates consists of `secrets`, `infra` and `app`.
 task processAll {
 
-    description 'Processes the Squonk templates creating their Pods'
+    description 'Processes the Squonk templates (secrets, infra and app) creating their Pods'
 
     dependsOn processSecrets
     dependsOn processInfra
@@ -561,7 +561,7 @@ task processAll {
 // Templates consists of `secrets`, `infra` and `app`.
 task deleteAll {
 
-    description 'Deletes Squonk'
+    description 'Deletes Squonk (app, infra and secrets)'
 
     dependsOn deleteSecrets
     dependsOn deleteInfra
