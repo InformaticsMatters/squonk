@@ -605,7 +605,7 @@ task configureOpenShift {
 // Starts a Minishift instance
 // by invoking `minishift start` using the `minishift` variables
 // defined in the `ext` block above.
-task start(type: Exec) {
+task miniStart(type: Exec) {
 
     description 'Starts a local Minishift instance'
 
@@ -632,9 +632,9 @@ task start(type: Exec) {
 
 }
 
-// Deletes a Minithsift instance.
+// Removes (deletes) a Minithsift instance.
 // It does this by invoking `minishift delete --force`.
-task delete(type: Exec) {
+task miniDelete(type: Exec) {
 
     description 'Deletes a local Minishift instance'
 
@@ -668,7 +668,7 @@ task minishiftStart {
         // Starts a Minishift instance (if not already running).
         // If started,  Minishift URL is reported to the command-line.
         logger.lifecycle 'Starting Minishift...'
-        minishiftStart.execute()
+        miniStart.execute()
         logger.lifecycle 'Minishift started.'
         logger.quiet 'Minishift started on ' + minishift_url
 
@@ -681,7 +681,7 @@ task minishiftStart {
         // Processes the known Squonk templates,
         // waiting until completion.
         logger.lifecycle 'Processing templates...'
-        processTemplates.execute()
+        processAll.execute()
         logger.lifecycle 'Processed.'
 
     }
@@ -701,7 +701,7 @@ task minishiftDelete {
     doLast {
 
         logger.lifecycle 'Stopping Minishift...'
-        minishiftDelete.execute()
+        miniDelete.execute()
         logger.lifecycle 'Minishift stopped.'
 
     }
