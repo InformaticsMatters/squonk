@@ -11,16 +11,11 @@
 // -    processAll
 // -    deleteAll
 //
-// Or, you can control individual sections fo the application with:
+// Or, you can control individual sections of the application with
+// the sub-tasks. The app is handled by the following for example...
 //
 // -    processApp
 // -    deleteApp
-//
-// Or run each template separately...
-//
-// -    processSecretsTemplate
-// -    processInfraTemplate
-// -    processAppTemplate
 //
 // Note: The user is expected to have started a minishift instance and
 //       setup the system variables to enable the use of the docker registry
@@ -206,7 +201,7 @@ task processSecrets(type: Exec) {
     description 'Loads the Squonk secrets template'
 
     doFirst {
-        if (!minishiftIsRunning) {
+        if (!minishiftIsRunning()) {
             throw new GradleException("Oops - minishift does not appear to be running!")
         }
         logger.lifecycle 'Loading secrets...'
@@ -250,7 +245,7 @@ task processInfra(type: Exec) {
     dependsOn processSecrets
 
     doFirst {
-        if (!minishiftIsRunning) {
+        if (!minishiftIsRunning()) {
             throw new GradleException("Oops - minishift does not appear to be running!")
         }
         logger.lifecycle 'Loading infrastructure...'
@@ -303,7 +298,7 @@ task processApp(type: Exec) {
     tasks.findByName('processInfra').mustRunAfter processSecrets
 
     doFirst {
-        if (!minishiftIsRunning) {
+        if (!minishiftIsRunning()) {
             throw new GradleException("Oops - minishift does not appear to be running!")
         }
         logger.lifecycle 'Loading application...'
@@ -354,7 +349,7 @@ task deleteSecrets(type: Exec) {
     description 'Deletes the Squonk secrets'
 
     doFirst {
-        if (!minishiftIsRunning) {
+        if (!minishiftIsRunning()) {
             throw new GradleException("Oops - minishift does not appear to be running!")
         }
         logger.lifecycle 'Deleteing Squonk Sectets...'
@@ -383,7 +378,7 @@ task deleteInfra(type: Exec) {
     description 'Deletes the Squonk Infrastructure'
 
     doFirst {
-        if (!minishiftIsRunning) {
+        if (!minishiftIsRunning()) {
             throw new GradleException("Oops - minishift does not appear to be running!")
         }
         logger.lifecycle 'Deleteing Squonk Infrastructure...'
@@ -412,7 +407,7 @@ task deleteApp(type: Exec) {
     description 'Deletes the Squonk secrets'
 
     doFirst {
-        if (!minishiftIsRunning) {
+        if (!minishiftIsRunning()) {
             throw new GradleException("Oops - minishift does not appear to be running!")
         }
         logger.lifecycle 'Deleteing Squonk App...'
