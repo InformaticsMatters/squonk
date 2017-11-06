@@ -107,6 +107,7 @@ def podIsRunning = { String pod_name ->
 
 task openShiftLoginDeveloper(type: Exec) {
 
+    group 'OpenShift'
     description 'Login as the OpenShift developer'
 
     doFirst {
@@ -131,6 +132,7 @@ task openShiftLoginDeveloper(type: Exec) {
 
 task openShiftLoginSystemAdmin(type: Exec) {
 
+    group 'OpenShift'
     description 'Login as the OpenShift system:admin'
 
     doFirst {
@@ -155,6 +157,7 @@ task openShiftLoginSystemAdmin(type: Exec) {
 
 task openShiftAddClusterRoleToUser(type: Exec) {
 
+    group 'OpenShift'
     description 'Sets cluster admin for default service account'
 
     doFirst {
@@ -176,6 +179,7 @@ task openShiftAddClusterRoleToUser(type: Exec) {
 
 task openShiftAddSccToGroup(type: Exec) {
 
+    group 'OpenShift'
     description 'Sets cluster admin for default service account'
 
     doFirst {
@@ -197,6 +201,7 @@ task openShiftAddSccToGroup(type: Exec) {
 
 task openShiftCreateSquonkProject(type: Exec) {
 
+    group 'OpenShift'
     description 'Creates the Squonk OpenShift project'
 
     doFirst {
@@ -238,6 +243,7 @@ task openShiftCreateSquonkProject(type: Exec) {
 // Process and loads the Squonk `secrets`.
 task processSecrets(type: Exec) {
 
+    group 'OpenShift'
     description 'Loads the Squonk secrets template'
 
     doFirst {
@@ -280,6 +286,7 @@ task processSecrets(type: Exec) {
 // Waiting until each Pod claims to be running.
 task processInfra(type: Exec) {
 
+    group 'OpenShift'
     description 'Loads the Squonk infrastructure template'
 
     dependsOn processSecrets
@@ -331,6 +338,7 @@ task processInfra(type: Exec) {
 // Waiting until each Pod claims to be running.
 task processApp(type: Exec) {
 
+    group 'OpenShift'
     description 'Loads the Squonk application template'
 
     dependsOn processSecrets
@@ -386,6 +394,7 @@ task processApp(type: Exec) {
 // Deletes the Squonk `secrets`.
 task deleteSecrets(type: Exec) {
 
+    group 'OpenShift'
     description 'Deletes the Squonk secrets'
 
     doFirst {
@@ -413,6 +422,7 @@ task deleteSecrets(type: Exec) {
 // Deletes the Squonk `app`.
 task deleteInfra(type: Exec) {
 
+    group 'OpenShift'
     description 'Deletes the Squonk Infrastructure (postgres, rabbitmq)'
 
     doFirst {
@@ -440,6 +450,7 @@ task deleteInfra(type: Exec) {
 // Deletes the Squonk `app`.
 task deleteApp(type: Exec) {
 
+    group 'OpenShift'
     description 'Deletes the Squonk application components (cell, core, chem, portal)'
 
     doFirst {
@@ -469,6 +480,7 @@ task deleteApp(type: Exec) {
 // See 'deployCellExecutor'
 task deploy(type: Exec) {
 
+    group 'OpenShift'
     description '(Re)Deploys a Deployment Config named in the deployment_name variable'
 
     doFirst {
@@ -511,6 +523,7 @@ task deploy(type: Exec) {
 
 task deployCellExecutor {
 
+    group 'OpenShift'
     description 'Invokes the deploy task for "cellexecutor"'
 
     doFirst {
@@ -522,6 +535,7 @@ task deployCellExecutor {
 
 task deployChemServices {
 
+    group 'OpenShift'
     description 'Invokes the deploy task for "chemservices-basic"'
 
     doFirst {
@@ -533,6 +547,7 @@ task deployChemServices {
 
 task deployCoreServices {
 
+    group 'OpenShift'
     description 'Invokes the deploy task for "coreservices"'
 
     doFirst {
@@ -547,6 +562,7 @@ task deployCoreServices {
 // Templates consists of `secrets`, `infra` and `app`.
 task processAll {
 
+    group 'OpenShift'
     description 'Processes the Squonk templates (secrets, infra and app) creating their Pods'
 
     dependsOn processSecrets
@@ -561,6 +577,7 @@ task processAll {
 // Templates consists of `secrets`, `infra` and `app`.
 task deleteAll {
 
+    group 'OpenShift'
     description 'Deletes Squonk (app, infra and secrets)'
 
     dependsOn deleteSecrets
@@ -575,6 +592,7 @@ task deleteAll {
 // Squonk project.
 task configureOpenShift {
 
+    group 'OpenShift'
     description 'Configures a running OpenShift instance'
 
     dependsOn openShiftAddSccToGroup
@@ -607,6 +625,7 @@ task configureOpenShift {
 // defined in the `ext` block above.
 task miniStart(type: Exec) {
 
+    group 'OpenShift'
     description 'Starts a local Minishift instance'
 
     commandLine 'bash', '-c',
@@ -636,6 +655,7 @@ task miniStart(type: Exec) {
 // It does this by invoking `minishift delete --force`.
 task miniDelete(type: Exec) {
 
+    group 'OpenShift'
     description 'Deletes a local Minishift instance'
 
     commandLine 'bash', '-c',
@@ -661,6 +681,7 @@ task miniDelete(type: Exec) {
 // If Minishift appears to be running this task does nothing.
 task minishiftStart {
 
+    group 'OpenShift'
     description 'Starts and configures Minishift (if one does not already exist)'
 
     doLast {
@@ -696,6 +717,7 @@ task minishiftStart {
 // It does this by invoking `minishift delete --force`.
 task minishiftDelete {
 
+    group 'OpenShift'
     description 'Tries to delete the Minishift instance (if it exists)'
 
     doLast {
