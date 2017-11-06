@@ -206,6 +206,9 @@ task processSecrets(type: Exec) {
     description 'Loads the Squonk secrets template'
 
     doFirst {
+        if (!minishiftIsRunning) {
+            throw new GradleException("Oops - minishift does not appear to be running!")
+        }
         logger.lifecycle 'Loading secrets...'
     }
 
@@ -238,91 +241,18 @@ task processSecrets(type: Exec) {
 
 }
 
-// Deletes the Squonk `secrets`.
-task deleteSecrets(type: Exec) {
-
-    description 'Deletes the Squonk secrets'
-
-    doFirst {
-        logger.lifecycle 'Deleteing Squonk Sectets...'
-    }
-
-    workingDir template_path
-    commandLine 'bash', '-c',
-            'oc delete secrets --selector template=squonk-secrets'
-
-    // Keep output, we'll use it later if the task fails...
-    standardOutput = new ByteArrayOutputStream()
-    errorOutput = standardOutput
-    ignoreExitValue = true
-
-    doLast {
-
-        logger.lifecycle 'Deleted Squonk Secrets.'
-
-    }
-
-}
-
-// Deletes the Squonk `app`.
-task deleteInfra(type: Exec) {
-
-    description 'Deletes the Squonk Infrastructure'
-
-    doFirst {
-        logger.lifecycle 'Deleteing Squonk Infrastructure...'
-    }
-
-    workingDir template_path
-    commandLine 'bash', '-c',
-            'oc delete all,cm,pvc,secrets --selector template=squonk-infra'
-
-    // Keep output, we'll use it later if the task fails...
-    standardOutput = new ByteArrayOutputStream()
-    errorOutput = standardOutput
-    ignoreExitValue = true
-
-    doLast {
-
-        logger.lifecycle 'Deleted Squonk Infrastructure.'
-
-    }
-
-}
-
-// Deletes the Squonk `app`.
-task deleteApp(type: Exec) {
-
-    description 'Deletes the Squonk secrets'
-
-    doFirst {
-        logger.lifecycle 'Deleteing Squonk App...'
-    }
-
-    workingDir template_path
-    commandLine 'bash', '-c',
-            'oc delete all,cm,pvc,routes,secrets --selector template=squonk-app'
-
-    // Keep output, we'll use it later if the task fails...
-    standardOutput = new ByteArrayOutputStream()
-    errorOutput = standardOutput
-    ignoreExitValue = true
-
-    doLast {
-
-        logger.lifecycle 'Deleted Squonk App.'
-
-    }
-
-}
-
 // Process and loads the Squonk `infra` Pods, Services, etc.,
 // Waiting until each Pod claims to be running.
 task processInfra(type: Exec) {
 
     description 'Loads the Squonk infrastructure template'
 
+    dependsOn processSecrets
+
     doFirst {
+        if (!minishiftIsRunning) {
+            throw new GradleException("Oops - minishift does not appear to be running!")
+        }
         logger.lifecycle 'Loading infrastructure...'
     }
 
@@ -368,7 +298,14 @@ task processApp(type: Exec) {
 
     description 'Loads the Squonk application template'
 
+    dependsOn processSecrets
+    dependsOn processInfra
+    tasks.findByName('processInfra').mustRunAfter processSecrets
+
     doFirst {
+        if (!minishiftIsRunning) {
+            throw new GradleException("Oops - minishift does not appear to be running!")
+        }
         logger.lifecycle 'Loading application...'
     }
 
@@ -411,6 +348,93 @@ task processApp(type: Exec) {
 
 }
 
+// Deletes the Squonk `secrets`.
+task deleteSecrets(type: Exec) {
+
+    description 'Deletes the Squonk secrets'
+
+    doFirst {
+        if (!minishiftIsRunning) {
+            throw new GradleException("Oops - minishift does not appear to be running!")
+        }
+        logger.lifecycle 'Deleteing Squonk Sectets...'
+    }
+
+    workingDir template_path
+    commandLine 'bash', '-c',
+            'oc delete secrets --selector template=squonk-secrets'
+
+    // Keep output, we'll use it later if the task fails...
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = standardOutput
+    ignoreExitValue = true
+
+    doLast {
+
+        logger.lifecycle 'Deleted Squonk Secrets.'
+
+    }
+
+}
+
+// Deletes the Squonk `app`.
+task deleteInfra(type: Exec) {
+
+    description 'Deletes the Squonk Infrastructure'
+
+    doFirst {
+        if (!minishiftIsRunning) {
+            throw new GradleException("Oops - minishift does not appear to be running!")
+        }
+        logger.lifecycle 'Deleteing Squonk Infrastructure...'
+    }
+
+    workingDir template_path
+    commandLine 'bash', '-c',
+            'oc delete all,cm,pvc,secrets --selector template=squonk-infra'
+
+    // Keep output, we'll use it later if the task fails...
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = standardOutput
+    ignoreExitValue = true
+
+    doLast {
+
+        logger.lifecycle 'Deleted Squonk Infrastructure.'
+
+    }
+
+}
+
+// Deletes the Squonk `app`.
+task deleteApp(type: Exec) {
+
+    description 'Deletes the Squonk secrets'
+
+    doFirst {
+        if (!minishiftIsRunning) {
+            throw new GradleException("Oops - minishift does not appear to be running!")
+        }
+        logger.lifecycle 'Deleteing Squonk App...'
+    }
+
+    workingDir template_path
+    commandLine 'bash', '-c',
+            'oc delete all,cm,pvc,routes,secrets --selector template=squonk-app'
+
+    // Keep output, we'll use it later if the task fails...
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = standardOutput
+    ignoreExitValue = true
+
+    doLast {
+
+        logger.lifecycle 'Deleted Squonk App.'
+
+    }
+
+}
+
 // Processes the suite of known templates, waiting for the
 // successful start-up of each Pod.
 // Templates consists of `secrets`, `infra` and `app`.
@@ -418,11 +442,11 @@ task processAll {
 
     description 'Processes the Squonk templates creating their Pods'
 
-    doLast {
-        processSecrets.execute()
-        processInfra.execute()
-        processApp.execute()
-    }
+    dependsOn processSecrets
+    dependsOn processInfra
+    dependsOn processApp
+    tasks.findByName('processInfra').mustRunAfter processSecrets
+    tasks.findByName('processApp').mustRunAfter processSecrets
 
 }
 
@@ -432,11 +456,9 @@ task deleteAll {
 
     description 'Deletes Squonk'
 
-    doLast {
-        deleteApp.execute()
-        deleteInfra.execute()
-        deleteSecrets.execute()
-    }
+    dependsOn deleteSecrets
+    dependsOn deleteInfra
+    dependsOn deleteApp
 
 }
 
