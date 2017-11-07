@@ -172,11 +172,19 @@ abstract class ClientSpecBase extends Specification {
         // If there's a sensible response for a coreservices route
         // then we'll use it...
         def proc = 'oc get routes/coreservices'.execute()
-        proc.waitForOrKill(2000)
-        String output = proc.text
-        def matcher = (output =~ /(?m)^coreservices\s+(\S+)/)
-        if (matcher.count == 1) {
-            return 'http://' + matcher[0][1]
+        def got_oc = true
+        String output
+        try {
+            proc.waitForOrKill(3000)
+            output = proc.text
+        } catch (IOException) {
+            got_oc = false
+        }
+        if (got_oc) {
+            def matcher = (output =~ /(?m)^coreservices\s+(\S+)/)
+            if (matcher.count == 1) {
+                return 'http://' + matcher[0][1]
+            }
         }
         // Unable to get anything sensible from OpenShift console response,
         // revert to the original built-in default...

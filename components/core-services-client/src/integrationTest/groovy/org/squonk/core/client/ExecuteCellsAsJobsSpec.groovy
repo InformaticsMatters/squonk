@@ -18,8 +18,6 @@ package org.squonk.core.client
 
 import org.squonk.execution.steps.StepDefinition
 import org.squonk.execution.steps.impl.DatasetSelectSliceStep
-
-import static org.squonk.execution.steps.StepDefinitionConstants.*
 import org.squonk.execution.steps.impl.NoopStep
 import org.squonk.io.IODescriptor
 import org.squonk.io.IODescriptors
@@ -28,10 +26,30 @@ import org.squonk.jobdef.JobStatus
 import org.squonk.jobdef.StepsCellExecutorJobDefinition
 import org.squonk.notebook.api.VariableKey
 import org.squonk.util.CommonMimeTypes
-
+import spock.lang.IgnoreIf
 import spock.lang.Stepwise
 
 import java.util.zip.GZIPInputStream
+
+import static org.squonk.execution.steps.StepDefinitionConstants.*
+
+public class MiniShift {
+
+    public static final boolean RUNNING = running();
+
+    static boolean running() {
+        def proc = 'minishift status'.execute()
+        try {
+            proc.waitForOrKill(2000)
+            def matcher = (proc.text =~ /(?m)Running/)
+            return matcher.count > 0
+        } catch (IOException) {
+            // Don't care
+        }
+        return false;
+    }
+
+}
 
 /**
  * Created by timbo on 01/06/16.
@@ -205,6 +223,7 @@ cp input.data.gz output.data.gz
 
     }
 
+    @IgnoreIf({ MiniShift.RUNNING })
     void "groovy in docker cell noop"() {
 
         StepDefinition step = new StepDefinition(UntrustedGroovyDatasetScript.CLASSNAME)
@@ -233,6 +252,7 @@ file2.renameTo '/source/output.data.gz'
         findResultSize(notebookId, editableId, cellId, "groovy-noop") == 36
     }
 
+    @IgnoreIf({ MiniShift.RUNNING })
     void "groovy in docker cell using consumer"() {
 
         StepDefinition step = new StepDefinition(UntrustedGroovyDatasetScript.CLASSNAME)
@@ -265,6 +285,7 @@ processDataset('/source/input','/source/output') { MoleculeObject mo ->
         findResultSize(notebookId, editableId, cellId, "groovy-api-consumer") == 36
     }
 
+    @IgnoreIf({ MiniShift.RUNNING })
     void "groovy in docker cell using function"() {
 
         StepDefinition step = new StepDefinition(UntrustedGroovyDatasetScript.CLASSNAME)
@@ -301,6 +322,7 @@ processDatasetStream('/source/input','/source/output') { Stream<MoleculeObject> 
         findResultSize(notebookId, editableId, cellId, "groovy-api-function") == 36
     }
 
+    @IgnoreIf({ MiniShift.RUNNING })
     void "groovy in docker cell using strong typing"() {
 
         StepDefinition step = new StepDefinition(UntrustedGroovyDatasetScript.CLASSNAME)
@@ -339,6 +361,7 @@ writeDatasetToFiles(dataset, '/source/output', true)
     }
 
 
+    @IgnoreIf({ MiniShift.RUNNING })
     void "groovy in docker cell using weak typing"() {
 
         StepDefinition step = new StepDefinition(UntrustedGroovyDatasetScript.CLASSNAME)
