@@ -334,6 +334,48 @@ task processInfra(type: Exec) {
 
 }
 
+// Process and loads the Squonk `dev-routes` template.
+task processDevRoutes(type: Exec) {
+
+    group 'OpenShift'
+    description 'Loads the Squonk developer-routes template'
+
+    doFirst {
+        if (!minishiftIsRunning()) {
+            throw new GradleException("Oops - minishift does not appear to be running!")
+        }
+        logger.lifecycle 'Loading dev-routes...'
+    }
+
+    workingDir template_path
+    commandLine 'bash', '-c',
+            'oc process -f squonk-dev-routes.yaml | oc create -f -'
+
+    // Keep output, we'll use it later if the task fails...
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = standardOutput
+    ignoreExitValue = true
+
+    doLast {
+
+        // Did something go wrong?
+        if (execResult.exitValue != 0) {
+            // It might have failed because the services already exist
+            def output = standardOutput.toString()
+            def matcher = (output =~ /already exists/)
+            if (matcher.size() == 0) {
+                logger.lifecycle output
+                throw new GradleException("Load failed; see output above")
+            }
+            logger.lifecycle 'Routes already loaded.'
+        } else {
+            logger.lifecycle 'Loaded Routes.'
+        }
+
+    }
+
+}
+
 // Process and loads the Squonk `app` Pods, Services, etc.,
 // Waiting until each Pod claims to be running.
 task processApp(type: Exec) {
@@ -343,6 +385,7 @@ task processApp(type: Exec) {
 
     dependsOn processSecrets
     dependsOn processInfra
+    dependsOn processDevRoutes
     processInfra.mustRunAfter processSecrets
 
     doFirst {
@@ -447,11 +490,41 @@ task deleteInfra(type: Exec) {
 
 }
 
+// Deletes the Squonk App's `developer routes`.
+task deleteDevRoutes(type: Exec) {
+
+    group 'OpenShift'
+    description 'Deletes the Squonk developer routes'
+
+    doFirst {
+        if (!minishiftIsRunning()) {
+            throw new GradleException("Oops - minishift does not appear to be running!")
+        }
+        logger.lifecycle 'Deleteing Developer Routes...'
+    }
+
+    workingDir template_path
+    commandLine 'bash', '-c',
+            'oc delete routes --selector template=squonk-dev-routes'
+
+    // Keep output, we'll use it later if the task fails...
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = standardOutput
+    ignoreExitValue = true
+
+    doLast {
+        logger.lifecycle 'Deleted Developer Routes.'
+    }
+
+}
+
 // Deletes the Squonk `app`.
 task deleteApp(type: Exec) {
 
     group 'OpenShift'
     description 'Deletes the Squonk application components (cell, core, chem, portal)'
+
+    dependsOn deleteDevRoutes
 
     doFirst {
         if (!minishiftIsRunning()) {

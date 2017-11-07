@@ -1,0 +1,41 @@
+# oc process -f squonk-dev-routes.yaml | oc create -f -
+# oc delete routes --selector template=squonk-dev-routes
+
+kind: Template
+apiVersion: v1
+metadata:
+  name: squonk
+  annotations:
+    description: Squonk Application Developer Route Definitions
+    tags: squonk
+labels:
+  template: squonk-dev-routes
+  app: squonk-dev-routes
+
+parameters:
+
+# -------------
+# Configuration
+# -------------
+# Common (not specific to any service)
+
+- name: APP_NAMESPACE
+  value: squonk
+
+objects:
+
+# -----------------------------------------------------------------------------
+# Developer Routes
+# -----------------------------------------------------------------------------
+
+- kind: Route
+  apiVersion: v1
+  metadata:
+    name: coreservices
+    namespace: ${APP_NAMESPACE}
+  spec:
+    path: /
+    to:
+      kind: Service
+      name: coreservices
+

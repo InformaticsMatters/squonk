@@ -485,8 +485,8 @@ public class OpenShiftRunner extends AbstractRunner {
         // from the pod we'll create.
 
         // Log Watcher doesn't seem to result in anything...
-        // even if created before or after the Pod.
-        // Clealry work needed here.
+        // regardless of whether created before or after the Pod.
+        // Clearly work needed here.
 //        LOG.info(podName + " (Creating LogStream)");
 //        LogStream ls = new LogStream();
 //        logObject = client.pods()
