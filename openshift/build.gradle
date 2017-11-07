@@ -487,6 +487,9 @@ task deploy(type: Exec) {
         if (!minishiftIsRunning()) {
             throw new GradleException("Oops - minishift does not appear to be running!")
         }
+        if (!podIsRunning(deployment_name)) {
+            throw new GradleException("Cannot deploy unless the Pod is already running!")
+        }
         logger.lifecycle "Deploying ${deployment_name}..."
 
         workingDir template_path
@@ -507,7 +510,7 @@ task deploy(type: Exec) {
         } else {
             // Looks like we deployed successfully.
             // Wait for the Pod bounce...
-            logger.lifecycle 'Waiting for the re-deployment...'
+            logger.lifecycle 'Waiting for the deployment...'
             while (podIsRunning(deployment_name)) {
                 sleep(pause_time)
             }
