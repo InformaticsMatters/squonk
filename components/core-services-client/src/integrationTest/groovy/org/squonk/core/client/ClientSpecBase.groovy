@@ -31,12 +31,7 @@ import org.squonk.util.IOUtils
 import spock.lang.Shared
 import spock.lang.Specification
 
-import java.util.concurrent.Callable
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
-
+import java.util.concurrent.*
 /**
  * Created by timbo on 09/01/17.
  */
@@ -48,7 +43,7 @@ abstract class ClientSpecBase extends Specification {
     //static String coreservicesHost = System.getenv("CORESERVICES_HOST")
     //static String coreservicesPort = System.getenv("CORESERVICES_TCP_8080")
 
-    static String coreservicesServer = "http://" + IOUtils.getDockerGateway() + ":8091"
+    static String coreservicesServer = getCoreServicesUrl()
 
     @Shared
     NotebookEditableDTO editable
@@ -171,5 +166,22 @@ abstract class ClientSpecBase extends Specification {
         return waitForJob(jobId, 60)
     }
 
+    static String getCoreServicesUrl() {
+
+        // First, try to use the OpenShift (minishift) console.
+        // If there's a sensible response for a coreservices route
+        // then we'll use it...
+        def proc = 'oc get routes/coreservices'.execute()
+        proc.waitForOrKill(2000)
+        String output = proc.text
+        def matcher = (output =~ /(?m)^coreservices\s+(\S+)/)
+        if (matcher.count == 1) {
+            return 'http://' + matcher[0][1]
+        }
+        // Unable to get anything sensible from OpenShift console response,
+        // revert to the original built-in default...
+        return 'http://' + IOUtils.getDockerGateway() + ':8091'
+
+    }
 
 }

@@ -3,11 +3,6 @@
 // Tasks to exercise a local Minishift instance.
 // Main tasks are:
 //
-// -    configureOpenShift
-//
-// Then, to load and then delete the entire application.
-// These tasks run to completion....
-//
 // -    processAll
 // -    deleteAll
 //
@@ -240,11 +235,32 @@ task openShiftCreateSquonkProject(type: Exec) {
 
 }
 
+// Called after a Minishift instance has started
+// and configures it. This consists of things like
+// setting Pod and SA permissions and creating the
+// Squonk project.
+task configureOpenShift {
+
+    group 'OpenShift'
+    description 'Configures a running OpenShift instance'
+
+    dependsOn openShiftAddSccToGroup
+    dependsOn openShiftAddClusterRoleToUser
+    dependsOn openShiftLoginDeveloper
+    dependsOn openShiftCreateSquonkProject
+    openShiftLoginDeveloper.mustRunAfter openShiftAddSccToGroup
+    openShiftLoginDeveloper.mustRunAfter openShiftAddClusterRoleToUser
+    openShiftCreateSquonkProject.mustRunAfter openShiftLoginDeveloper
+
+}
+
 // Process and loads the Squonk `secrets`.
 task processSecrets(type: Exec) {
 
     group 'OpenShift'
     description 'Loads the Squonk secrets template'
+
+    dependsOn configureOpenShift
 
     doFirst {
         if (!minishiftIsRunning()) {
@@ -659,25 +675,6 @@ task deleteAll {
     dependsOn deleteSecrets
     dependsOn deleteInfra
     dependsOn deleteApp
-
-}
-
-// Called after a Minishift instance has started
-// and configures it. This consists of things like
-// setting Pod and SA permissions and creating the
-// Squonk project.
-task configureOpenShift {
-
-    group 'OpenShift'
-    description 'Configures a running OpenShift instance'
-
-    dependsOn openShiftAddSccToGroup
-    dependsOn openShiftAddClusterRoleToUser
-    dependsOn openShiftLoginDeveloper
-    dependsOn openShiftCreateSquonkProject
-    openShiftLoginDeveloper.mustRunAfter openShiftAddSccToGroup
-    openShiftLoginDeveloper.mustRunAfter openShiftAddClusterRoleToUser
-    openShiftCreateSquonkProject.mustRunAfter openShiftLoginDeveloper
 
 }
 
