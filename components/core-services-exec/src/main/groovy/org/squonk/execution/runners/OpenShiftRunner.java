@@ -261,7 +261,7 @@ public class OpenShiftRunner extends AbstractRunner {
      * @param localWorkDir    The name under which the host work dir will be
      *                        mounted in the new container. Typically `/work`.
      * @param jobId The unique (uuid) assigned to the Cell job.
-     *              This wil be used to create a sub-directory in
+     *              This will be used to create a sub-directory in
      *              hostBaseWorkDir into which the input data is copied
      *              prior to running the job in a Pod.
      */
@@ -380,11 +380,13 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // Must be coming from the initialised state.
         if (isRunning != RUNNER_INITIALISED) {
+            // No cleanup here
             throw new IllegalStateException(podName +
                     " execute() with bad isRunning state (" + isRunning + ")");
         }
         // Sub-path properly formed?
         if (subPath == null || subPath.length() == 0) {
+            cleanup();
             throw new IllegalStateException(podName +
                     " execute() with missing subPath");
         }
@@ -442,9 +444,21 @@ public class OpenShiftRunner extends AbstractRunner {
 
         LOG.info(podName + " (Creating PodWatcher)");
         PodWatcher podWatcher = new PodWatcher(podName);
-        watchObject = client.pods()
-                .withName(podName)
-                .watch(podWatcher);
+        try {
+            watchObject = client.pods()
+                    .withName(podName)
+                    .watch(podWatcher);
+        } catch (KubernetesClientException ex) {
+
+            // Nothing to do other than log, cleanup and re-throw...
+            LOG.severe("KubernetesClientException creating PodWatcher : " +
+                       ex.getMessage());
+            cleanup();
+            isRunning = RUNNER_FINISHED;
+
+            throw new IllegalStateException("Exception creating PodWatcher", ex);
+
+        }
 
         // Launch...
 
@@ -456,7 +470,8 @@ public class OpenShiftRunner extends AbstractRunner {
             // Nothing to do other than log, cleanup and re-throw...
             LOG.severe("KubernetesClientException creating " + podName +
                        " : " + ex.getMessage());
-            cleanUp();
+            cleanup();
+            isRunning = RUNNER_FINISHED;
 
             throw new IllegalStateException("Exception creating " + podName, ex);
 
@@ -517,7 +532,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // Always clean up.
         // This cancels the PodWatcher.
-        cleanUp();
+        cleanup();
 
         // ---
 
@@ -616,17 +631,13 @@ public class OpenShiftRunner extends AbstractRunner {
      * execution completes, with or without error. It is responsible for
      * removing OpenShift objects and stopping the JobWatcher.
      */
-    private void cleanUp() {
+    public void cleanup() {
 
         LOG.fine(podName + " (Cleaning up)");
 
-        if (client == null || podName == null) {
-            // Probably nothing to clean up...
-            return;
-        }
+        // Clean up stuff that looks like it needs cleaning up...
 
         // The Job may have failed to get created.
-        // Clean it up if we think it was created.
         if (podCreated) {
             LOG.fine(podName + " (...Pod)");
             client.pods()
@@ -635,13 +646,16 @@ public class OpenShiftRunner extends AbstractRunner {
                     .delete();
         }
 
-        // There's should always a PodWatcher and LogWatcher
+        // There may not be a PodWatcher or LogWatcher
         if (watchObject != null) {
             watchObject.close();
         }
         if (logObject != null) {
             logObject.close();
         }
+
+        super.cleanup();
+        deleteRecursive(hostWorkDir);
 
         LOG.fine(podName + " (Cleaned)");
 
