@@ -17,7 +17,6 @@
 package org.squonk.execution.runners
 
 import spock.lang.Specification
-
 /**
  * OpenShiftRunner unit tests.
  *
@@ -86,41 +85,6 @@ class OpenShiftRunnerSpec extends Specification {
 
         cleanup:
         runner.cleanup();
-
-    }
-
-    void "simple execute outside openshift"() {
-
-        setup:
-        ContainerRunner runner = new OpenShiftRunner("busybox", hostBaseWorkDir, "/source", "123")
-        runner.init()
-
-        when:
-        boolean minishift = minishiftIsRunning()
-
-        then: 'Minishift must not be running for this test'
-        !minishift
-
-        when:
-        runner.execute("/bin/sh", "/source/run.sh")
-
-        then:
-        IllegalStateException e = thrown()
-        e.message.startsWith("Exception creating ")
-        runner.currentStatus == AbstractRunner.RUNNER_FINISHED
-        !runner.getHostWorkDir().exists()
-
-        cleanup:
-        runner.cleanup();
-
-    }
-
-    boolean minishiftIsRunning() {
-
-        def proc = 'minishift status'.execute()
-        proc.waitForOrKill(1000)
-        def matcher = (proc.text =~ /(?m)Running/)
-        return matcher.count > 0
 
     }
 
