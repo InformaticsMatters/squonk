@@ -102,7 +102,6 @@ class OpenShiftRunnerSpec extends Specification {
         !minishift
 
         when:
-        runner.writeInput("run.sh", "touch /source/IWasHere\n")
         runner.execute("/bin/sh", "/source/run.sh")
 
         then:
@@ -119,7 +118,7 @@ class OpenShiftRunnerSpec extends Specification {
     boolean minishiftIsRunning() {
 
         def proc = 'minishift status'.execute()
-        proc.waitForOrKill(500)
+        proc.waitForOrKill(1000)
         def matcher = (proc.text =~ /(?m)Running/)
         return matcher.count > 0
 
