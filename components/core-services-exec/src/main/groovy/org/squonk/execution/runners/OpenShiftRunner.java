@@ -191,11 +191,11 @@ public class OpenShiftRunner extends AbstractRunner {
                         // Do we have a terminated record?
                         ContainerStateTerminated csTerm = containerStatus.getState().getTerminated();
                         if (csTerm != null) {
-                            Time startTime = csTerm.getStartedAt();
-                            Time finishTime = csTerm.getFinishedAt();
+                            String startTimeStr = csTerm.getStartedAt();
+                            String finishTimeStr = csTerm.getFinishedAt();
                             containerExitCode = csTerm.getExitCode();
                             LOG.info("podName=" + podName +
-                                     " Terminated (" + startTime.getTime() + " - " + finishTime.getTime() + ")");
+                                     " Terminated (" + startTimeStr + " - " + finishTimeStr + ")");
                             LOG.info("podName=" + podName +
                                      " containerExitCode=" + containerExitCode);
                             podPhase = "Finished";
@@ -380,13 +380,11 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // Must be coming from the initialised state.
         if (isRunning != RUNNER_INITIALISED) {
-            // No cleanup here
             throw new IllegalStateException(podName +
                     " execute() with bad isRunning state (" + isRunning + ")");
         }
         // Sub-path properly formed?
         if (subPath == null || subPath.length() == 0) {
-            cleanup();
             throw new IllegalStateException(podName +
                     " execute() with missing subPath");
         }
@@ -487,12 +485,12 @@ public class OpenShiftRunner extends AbstractRunner {
         // Log Watcher doesn't seem to result in anything...
         // regardless of whether created before or after the Pod.
         // Clearly work needed here.
-//        LOG.info(podName + " (Creating LogStream)");
+        LOG.info(podName + " (Creating LogStream)");
 //        LogStream ls = new LogStream();
-//        logObject = client.pods()
-//                .withName(podName)
-//                .tailingLines(10)
-//                .watchLog(System.out);
+        logObject = client.pods()
+                .withName(podName)
+                .tailingLines(10)
+                .watchLog(System.out);
 
         // Wait...
 
@@ -528,11 +526,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         LOG.info(podName + " (Execute complete)");
 
-        // TODO CONTAINER EXIT STATUS AND LOG!
-
-        // Always clean up.
-        // This cancels the PodWatcher.
-        cleanup();
+        // TODO CONTAINER LOG!
 
         // ---
 

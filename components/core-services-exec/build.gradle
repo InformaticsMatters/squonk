@@ -24,7 +24,6 @@ apply plugin: 'org.unbroken-dome.test-sets'
 buildscript {
     repositories {
         jcenter()
-        mavenCentral()
     }
 
     dependencies {
@@ -42,7 +41,7 @@ dependencies {
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"
     compile "org.postgresql:postgresql:$postgresDriverVersion"
     compile 'com.github.docker-java:docker-java:3.0.7'
-    compile 'io.fabric8:openshift-client:3.0.0'
+    compile 'io.fabric8:openshift-client:3.0.3'
     compile('io.nextflow:nextflow:0.25.4') {
         exclude group:'ch.qos.logback',module:'logback-classic'
     }
