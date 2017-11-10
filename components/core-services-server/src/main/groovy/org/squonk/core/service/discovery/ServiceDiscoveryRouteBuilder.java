@@ -147,7 +147,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 
     protected void updateHttpServices(ServiceDescriptorRegistry reg) {
         locations.forEach((u, p) -> {
-            LOG.fine("Fetching service descriptors for " + u);
+            LOG.info("Fetching HTTP services for " + u);
             // fetch it so that it exists
             ServiceDescriptorSet set = reg.fetchServiceDescriptorSet(u);
             Date now = new Date();
@@ -188,7 +188,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     protected void updateDockerAndNextflowServices(ServiceDescriptorRegistry reg) throws IOException {
 
         Path root = FileSystems.getDefault().getPath(DOCKER_SERVICES_DIR);
-        LOG.fine("Looking for service descriptors in " + root);
+        LOG.info("Looking for Docker service descriptors in " + root);
         Set<String> basePaths = new LinkedHashSet<>();
         Date now = new Date();
 
@@ -237,7 +237,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                 }
             }
             reg.updateServiceDescriptorSet(set);
-            LOG.info("Updated services for " + base + ". " + valid + " valid and " + invalid + " invalid services defined");
+            LOG.info("Updated Docker services for " + base + ". " + valid + " valid and " + invalid + " invalid services defined");
         }
     }
 

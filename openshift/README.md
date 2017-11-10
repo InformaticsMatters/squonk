@@ -7,6 +7,28 @@ The deployment consists of a number of templates and stages:
 -   squonk-infra
 -   squonk-app
 
+## Initialize project
+
+Logged in as a cluster admin (e.g. system:admin) Do these:
+ 
+    $ oc new-project squonk
+    $ oc adm policy add-role-to-user edit developer
+    $ oc adm policy add-scc-to-group anyuid system:authenticated
+    $ oc adm policy add-cluster-role-to-user cluster-admin -z default
+    
+The fist creates the squonk project.
+The second gives our developer user access to the squonk project 
+The third allows containers to be run as any user, not an OpenShift assigned user id.
+The fourth adds cluster admin role to the service account.
+We hope to reduce the need for the elevated privs used is the third and fourth commands.
+
+If running on an environment where persistent volumes need to be manually provisioned then setup waht is 
+needed (e.g. NFS exports) and then execute the appropriate squonk-pv-*.yaml template for your system. e.g.
+
+    $ oc process -f squonk-pv-nfs.yaml | oc create -f -
+
+Once done log in as a normal user e.g. developer.
+
 ### Secrets
 Secrets need to be deployed before any other object.
 
@@ -14,10 +36,7 @@ Secrets need to be deployed before any other object.
     
 ### Infrastructure
 This is responsible for the operating infrastructure, which
-consists of `postgres` and `rabbitmq`. Before you start, as a system user
-run the following command, to allow container to specify to run as tomcat user:
-    
-    $ oc adm policy add-scc-to-group anyuid system:authenticated
+consists of `postgres` and `rabbitmq`.
 
 Then, deploy using:
 

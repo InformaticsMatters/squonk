@@ -235,18 +235,18 @@ objects:
 # CoreServices
 # -----------------------------------------------------------------------------
 
-- kind: PersistentVolumeClaim
-  apiVersion: v1
-  metadata:
-    name: squonk-service-descriptors
-    namespace: ${APP_NAMESPACE}
-  spec:
-    volumeName: squonk-service-descriptors
-    accessModes:
-    - ReadWriteMany
-    resources:
-      requests:
-        storage: ${CORE_SD_PVC_SIZE}
+#- kind: PersistentVolumeClaim
+#  apiVersion: v1
+#  metadata:
+#    name: squonk-service-descriptors
+#    namespace: ${APP_NAMESPACE}
+#  spec:
+#    #volumeName: squonk-service-descriptors
+#    accessModes:
+#    - ReadWriteMany
+#    resources:
+#      requests:
+#        storage: ${CORE_SD_PVC_SIZE}
 
 - kind: DeploymentConfig
   apiVersion: v1
@@ -367,18 +367,18 @@ objects:
 # still need to be resolved. It is present here simply
 # to act as the starting point for the finished article.
 
-- kind: PersistentVolumeClaim
-  apiVersion: v1
-  metadata:
-    name: squonk-work-dir
-    namespace: ${APP_NAMESPACE}
-  spec:
-    volumeName: squonk-work-dir
-    accessModes:
-    - ReadWriteMany
-    resources:
-      requests:
-        storage: ${CELL_WORK_PVC_SIZE}
+#- kind: PersistentVolumeClaim
+#  apiVersion: v1
+#  metadata:
+#    name: squonk-work-dir
+#    namespace: ${APP_NAMESPACE}
+#  spec:
+#    #volumeName: squonk-work-dir
+#    accessModes:
+#    - ReadWriteMany
+#    resources:
+#      requests:
+#        storage: ${CELL_WORK_PVC_SIZE}
 
 - kind: DeploymentConfig
   apiVersion: v1
