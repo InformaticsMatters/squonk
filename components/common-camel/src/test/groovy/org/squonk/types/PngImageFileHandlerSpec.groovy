@@ -17,25 +17,24 @@
 package org.squonk.types
 
 import org.squonk.api.VariableHandler
-import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
 
 /**
  * Created by timbo on 15/06/17.
  */
-class ZipFileHandlerSpec extends Specification {
+class PngImageFileHandlerSpec extends Specification {
 
     static String tmpdir = System.getProperty("java.io.tmpdir")
 
     void "test write variable"() {
 
-        def h = new ZipFileHandler()
-        def fis = new FileInputStream("../../data/testfiles/test.zip")
-        def zip1 = new ZipFile(fis)
+        def h = new PngImageFileHandler()
+        def fis = new FileInputStream("../../data/testfiles/image.png")
+        def png1 = new PngImageFile(fis)
         def ctx = new DummyContext()
 
         when:
-        h.writeVariable(zip1, ctx)
+        h.writeVariable(png1, ctx)
 
         then:
         ctx.bytes.length > 0
@@ -46,22 +45,16 @@ class ZipFileHandlerSpec extends Specification {
 
     void "test read variable"() {
 
-        def h = new ZipFileHandler()
-        def f = new java.io.File("../../data/testfiles/test.zip")
+        def h = new PngImageFileHandler()
+        def f = new java.io.File("../../data/testfiles/image.png")
         def ctx = new DummyContext(bytes: f.bytes)
 
         when:
-        ZipFile zip1 = h.readVariable(ctx)
-        java.io.File zf = new java.io.File(tmpdir, "foo" + new Random().nextInt() + ".zip")
-        zf.bytes = zip1.inputStream.bytes
-        java.util.zip.ZipFile zip = new java.util.zip.ZipFile(zf)
+        PngImageFile png1 = h.readVariable(ctx)
 
         then:
-        zip1 != null
-        zip.size() == 2
-
-        cleanup:
-        zf?.delete()
+        png1 != null
+        png1.inputStream.bytes.length == 37607
     }
 
     class DummyContext implements VariableHandler.WriteContext, VariableHandler.ReadContext{

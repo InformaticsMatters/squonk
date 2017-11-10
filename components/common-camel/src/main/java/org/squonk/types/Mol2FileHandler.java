@@ -16,13 +16,15 @@
 
 package org.squonk.types;
 
+import org.squonk.util.CommonMimeTypes;
+
 /**
  * Created by timbo on 23/03/2016.
  */
-public class Mol2FileHandler extends FileHandler<Mol2File>{
+public class Mol2FileHandler extends FileHandler<Mol2File> {
 
     public Mol2FileHandler() {
-        super(Mol2File.class, "mol2.gz");
+        super(Mol2File.class, CommonMimeTypes.MIME_TYPE_TRIPOS_MOL2, "mol2", true);
     }
 
 }

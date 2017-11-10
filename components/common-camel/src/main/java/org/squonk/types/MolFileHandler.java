@@ -21,10 +21,10 @@ import org.squonk.util.CommonMimeTypes;
 /**
  * Created by timbo on 23/03/2016.
  */
-public class ZipFileHandler extends FileHandler<ZipFile> {
+public class MolFileHandler extends FileHandler<MolFile> {
 
-    public ZipFileHandler() {
-        super(ZipFile.class, CommonMimeTypes.MIME_TYPE_ZIP_FILE, "zip", false);
+    public MolFileHandler() {
+        super(MolFile.class, CommonMimeTypes.MIME_TYPE_MDL_MOLFILE, "mol", false);
     }
 
 }

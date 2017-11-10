@@ -21,10 +21,10 @@ import org.squonk.util.CommonMimeTypes;
 /**
  * Created by timbo on 23/03/2016.
  */
-public class ZipFileHandler extends FileHandler<ZipFile> {
+public class PngImageFileHandler extends FileHandler<PngImageFile> {
 
-    public ZipFileHandler() {
-        super(ZipFile.class, CommonMimeTypes.MIME_TYPE_ZIP_FILE, "zip", false);
+    public PngImageFileHandler() {
+        super(PngImageFile.class, CommonMimeTypes.MIME_TYPE_PNG, "png", false);
     }
 
 }

@@ -20,7 +20,6 @@ import groovy.sql.Sql
 import groovy.util.logging.Log
 import org.squonk.client.NotebookVariableClient
 import org.squonk.config.SquonkServerConfig
-import org.squonk.core.util.Utils
 import org.squonk.notebook.api.NotebookCanvasDTO
 import org.squonk.notebook.api.NotebookDTO
 import org.squonk.notebook.api.NotebookEditableDTO
@@ -489,6 +488,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
      */
     @Override
     void writeStreamValue(Long notebookId, Long editableId, Long cellId, String variableName, InputStream value, String key) {
+
         Sql db = createSql()
         try {
             db.withTransaction {

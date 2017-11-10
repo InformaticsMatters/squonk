@@ -18,13 +18,17 @@ package org.squonk.types;
 
 import org.squonk.util.CommonMimeTypes;
 
-/**
- * Created by timbo on 23/03/2016.
- */
-public class ZipFileHandler extends FileHandler<ZipFile> {
+import java.io.InputStream;
 
-    public ZipFileHandler() {
-        super(ZipFile.class, CommonMimeTypes.MIME_TYPE_ZIP_FILE, "zip", false);
+/** Wrapper around an PNG format image file
+ *
+ * @author timbo
+ */
+public class PngImageFile extends ImageFile {
+
+
+    public PngImageFile(InputStream input) {
+        super(input, CommonMimeTypes.MIME_TYPE_PNG);
     }
 
 }

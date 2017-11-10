@@ -4,11 +4,6 @@ set -e
 
 base=$PWD
 
-#if [ ! -d /tmp/squonk/inttest/docker ]; then
-#  mkdir -p /tmp/squonk/inttest/docker
-#fi
-
-
 cd ..
 rm -rf docker/docker-services
 cp -r data/testfiles/docker-services docker/

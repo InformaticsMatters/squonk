@@ -167,7 +167,7 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
             LOG.info("Status updated to COMPLETED");
         } catch (Exception e) {
             LOG.log(Level.WARNING, "Failed to execute job" + jobid, e);
-                jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Failed to execute job. " + e.getMessage());
+            jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Failed to execute job. " + e.getMessage());
         }
     }
 

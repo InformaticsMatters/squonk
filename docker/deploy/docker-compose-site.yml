@@ -15,9 +15,9 @@ services:
         - keycloak
         - postgres
         environment:
-        - PUBLIC_HOST
-        - KEYCLOAK_SERVER_URL
-        - POSTGRES_XWIKI_PASSWORD
+            PUBLIC_HOST:
+            KEYCLOAK_SERVER_URL:
+            POSTGRES_XWIKI_PASSWORD:
         networks:
         - squonk_front
         - squonk_back

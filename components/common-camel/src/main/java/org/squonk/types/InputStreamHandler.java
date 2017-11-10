@@ -29,13 +29,34 @@ import java.io.InputStream;
  */
 public class InputStreamHandler implements HttpHandler<InputStream>, VariableHandler<InputStream> {
 
+    private final String mediaType;
+    private final String extension;
+    private final String key;
+    private final boolean gzip;
+
+
+    public InputStreamHandler() {
+        mediaType = null;
+        extension = null;
+        key = null;
+        gzip = true;
+    }
+
+    public InputStreamHandler(String mediaType, String extension, String key, boolean gzip) {
+        this.mediaType = mediaType;
+        this.extension = extension;
+        this.key = key;
+        this.gzip = gzip;
+    }
+
     @Override
     public Class<InputStream> getType() {
         return InputStream.class;
     }
 
     @Override
-    public void prepareRequest(InputStream is, RequestResponseExecutor executor, boolean gzip) throws IOException {
+    public void prepareRequest(InputStream is, RequestResponseExecutor executor, boolean gzipRequest, boolean gzipResponse) throws IOException {
+        handleGzipHeaders(executor, gzipRequest, gzipResponse);
         if (is != null) {
             executor.prepareRequestBody(gzip ? IOUtils.getGzippedInputStream(is) : is);
         }
@@ -61,11 +82,11 @@ public class InputStreamHandler implements HttpHandler<InputStream>, VariableHan
 
     @Override
     public void writeVariable(InputStream value, WriteContext context) throws Exception {
-        context.writeStreamValue(value);
+        context.writeStreamValue(value, mediaType, extension, key, gzip);
     }
 
     @Override
     public InputStream readVariable(ReadContext context) throws Exception {
-        return context.readStreamValue();
+        return context.readStreamValue(mediaType, extension, key);
     }
 }

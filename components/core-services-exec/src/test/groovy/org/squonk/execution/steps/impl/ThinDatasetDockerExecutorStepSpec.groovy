@@ -154,7 +154,7 @@ class ThinDatasetDockerExecutorStepSpec extends Specification {
 
         then:
         sdf != null
-        sdf.inputStream.text.contains('$$$$')
+        sdf.gunzipedInputStream.text.contains('$$$$')
 
     }
 

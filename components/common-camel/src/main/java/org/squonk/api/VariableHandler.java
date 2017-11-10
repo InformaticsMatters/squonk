@@ -32,9 +32,8 @@ import java.io.InputStream;
  *
  * Created by timbo on 13/03/16.
  */
-public interface VariableHandler<T> {
+public interface VariableHandler<T> extends Handler<T> {
 
-    Class<T> getType();
 
     /** Write the variable using the Notebook/Variable API
      *
@@ -57,24 +56,29 @@ public interface VariableHandler<T> {
      *
      */
     interface ReadContext {
-        String readTextValue(String key) throws Exception;
-        InputStream readStreamValue(String key) throws Exception;
-        default String readTextValue() throws Exception { return readTextValue((String)null);}
-        default String readSingleTextValue(String key) throws Exception {return readTextValue(key);}
-        default InputStream readStreamValue() throws Exception { return readStreamValue((String)null);}
-        default InputStream readSingleStreamValue(String key) throws Exception { return readStreamValue(key);}
+
+        String readTextValue(String mediaType, String extension, String key) throws Exception;
+
+        default String readTextValue(String mediaType, String extension) throws Exception {
+            return readTextValue(mediaType, extension, null);
+        }
+
+        InputStream readStreamValue(String mediaType, String extension, String key) throws Exception;
+
+        default InputStream readStreamValue(String mediaType, String extension) throws Exception {
+            return readStreamValue(mediaType, extension, null);
+        }
     }
 
     /** Context that allows a value to be written.
      *
      */
     interface WriteContext {
-        void writeTextValue(String value, String key) throws Exception;
-        void writeStreamValue(InputStream value, String key) throws Exception;
-        default void writeTextValue(String value) throws Exception { writeTextValue(value, null);}
-        default void writeSingleTextValue(String value, String key) throws Exception { writeTextValue(value, key);}
-        default void writeStreamValue(InputStream value) throws Exception { writeStreamValue(value, null);}
-        default void writeSingleStreamValue(InputStream value, String key) throws Exception { writeStreamValue(value, key);}
+        void writeTextValue(String value, String mediaType, String extension, String key) throws Exception;
+        void writeStreamValue(InputStream value, String mediaType, String extension, String key, boolean gzip) throws Exception;
+        default void writeTextValue(String value, String mediaType, String extension) throws Exception {
+            writeTextValue(value, mediaType, extension, null);
+        }
         void deleteVariable() throws Exception;
     }
 }

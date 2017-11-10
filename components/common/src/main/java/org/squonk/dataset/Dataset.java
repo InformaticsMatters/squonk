@@ -103,6 +103,9 @@ import java.util.stream.StreamSupport;
  */
 public class Dataset<T extends BasicObject> implements DatasetProvider, StreamProvider<T> {
 
+    public static final String DATASET_FILE_EXT = "data";
+    public static final String METADATA_FILE_EXT = "metadata";
+
     private static final Logger LOG = Logger.getLogger(Dataset.class.getName());
     private static final String MSG_ALREADY_CONSUMED = "Input not defined or already consumed";
 
@@ -417,7 +420,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
             if (gzip) {
                 return IOUtils.getGzippedInputStream(url.openStream());
             } else {
-                return url.openStream();
+                return IOUtils.getGunzippedInputStream(url.openStream());
             }
         } else if (inputStream != null) {
             InputStream is = inputStream;
@@ -425,7 +428,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
             if (gzip) {
                 return IOUtils.getGzippedInputStream(is);
             } else {
-                return is;
+                return IOUtils.getGunzippedInputStream(is);
             }
         } else {
             JsonHandler.MarshalData data = JsonHandler.getInstance().marshalData(getStream(), gzip);

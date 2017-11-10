@@ -23,11 +23,15 @@ import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by timbo on 13/03/16.
  */
 public class VariableWriteContext implements VariableHandler.WriteContext {
+
+    private static final Logger LOG = Logger.getLogger(VariableWriteContext.class.getName());
 
     private final VariableClient client;
     private final Long notebookId;
@@ -44,23 +48,13 @@ public class VariableWriteContext implements VariableHandler.WriteContext {
     }
 
     @Override
-    public void writeTextValue(String value, String key) throws Exception {
+    public void writeTextValue(String value, String mediaType, String extension, String key) throws Exception {
         client.writeTextValue(notebookId, editableId, cellId, variableName, value, key);
     }
 
     @Override
-    public void writeSingleTextValue(String value, String key) throws Exception {
-        writeTextValue(value, null);
-    }
-
-    @Override
-    public void writeStreamValue(InputStream value, String key) throws Exception {
-        client.writeStreamValue(notebookId, editableId, cellId, variableName, IOUtils.getGzippedInputStream(value), key);
-    }
-
-    @Override
-    public void writeSingleStreamValue(InputStream value, String key) throws Exception {
-        writeStreamValue(value, null);
+    public void writeStreamValue(InputStream value, String mediaType, String extension, String key, boolean gzip) throws Exception {
+        client.writeStreamValue(notebookId, editableId, cellId, variableName, gzip ? IOUtils.getGzippedInputStream(value) : value, key);
     }
 
     @Override

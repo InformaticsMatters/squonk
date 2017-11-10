@@ -121,6 +121,38 @@ class ServiceDescriptorUtilsSpec extends Specification {
         nsd.nextflowConfig == '//sample_nextflow_config'
     }
 
+    void "validate docker service descriptors"() {
+
+        def list = []
+        def dir = new File("../../data/testfiles/docker-services/")
+        dir.eachFileRecurse (FileType.FILES) { file ->
+            if (file.getName().endsWith(".dsd.json"))
+                list << file
+        }
+
+        when:
+        def descriptors = []
+        int errors = 0
+        list.each { file ->
+            println "Trying $file"
+            try {
+                descriptors << ServiceDescriptorUtils.readServiceDescriptor(file, DockerServiceDescriptor.class)
+            } catch (IOException ex) {
+                errors++
+                println "Failed to read $file"
+                ex.printStackTrace()
+            }
+        }
+        println "Read ${descriptors.size()} docker descriptors"
+        println "$errors errors"
+
+
+        then:
+        descriptors.size() > 0
+        errors == 0
+
+    }
+
     void "validate nextflow service descriptors"() {
 
         def list = []

@@ -234,8 +234,7 @@ task buildChemServicesDockerfile(type: Dockerfile) {
     description = 'build the Dockerfile for the chemservices image'
     destFile = project.file('build/chemservices-basic/Dockerfile')
     // if changing the version you must also update the hardcoded version number in org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor
-    //from "informaticsmatters/rdkit_java_tomcat:Release_2017_03_03"
-    from "informaticsmatters/rdkit_java_tomcat:latest"
+    from "informaticsmatters/rdkit_java_tomcat:Release_2017_03_1"
     maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
 
     runCommand("rm -rf /usr/local/tomcat/webapps/*")
@@ -264,9 +263,14 @@ task buildChemServicesDockerImage(type: DockerBuildImage) {
 
 task buildDockerImages() {
 
-    description = 'Builds the chemservices coreservices and cellexecutor Docker images'
+    description = 'Builds the chemservices coreservices, cellexecutor and flyway Docker images'
 
-    dependsOn = ['buildChemServicesDockerImage', 'core-services-server:buildDockerImage', 'cell-executor:dockerBuildImage']
+    dependsOn = [
+        buildChemServicesDockerImage,
+        'core-services-server:buildDockerImage',
+        'cell-executor:dockerBuildImage',
+        'database:buildDockerImage'
+    ]
 }
 
 /*
@@ -295,7 +299,7 @@ task integrationTestEnvPrepare(type: Exec) {
     //dependsOn 'dockerFileChemServices', 'core-services-server:buildDockerFile', 'cell-executor:dockerBuildImage'
 
     workingDir '../docker'
-    commandLine 'bash', 'int-test-env-prepare.sh'
+    commandLine 'bash', 'int-test-env-prepare.sh', dockerImageTag
 }
 
 task integrationTestEnvShutdown(type: Exec) {

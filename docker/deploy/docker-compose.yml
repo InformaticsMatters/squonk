@@ -135,7 +135,7 @@ services:
     # http://${PUBLIC_HOST}/coreservices/rest/v1/jobs
     #
     coreservices:
-        image: squonk/core-services-server
+        image: squonk/coreservices
         restart: on-failure:10
         volumes:
         - ./data/docker-services:/var/local/squonk-docker-services

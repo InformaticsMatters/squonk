@@ -62,7 +62,7 @@ public abstract class AbstractMoleculeObjectRouteHttpProcessor extends AbstractM
             DatasetMetadata newMeta = new DatasetMetadata(MoleculeObject.class, Collections.emptyMap(),
                     oldMeta == null ? 0 : oldMeta.getSize(),
                     oldMeta == null ? Collections.emptyMap() : oldMeta.getProperties());
-            return new MoleculeObjectDataset(new Dataset<>(MoleculeObject.class, mols, newMeta));
+            return new MoleculeObjectDataset(new Dataset<>(mols, newMeta));
         } else {
             return mods;
         }

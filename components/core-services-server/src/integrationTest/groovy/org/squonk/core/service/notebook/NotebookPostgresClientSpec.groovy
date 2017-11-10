@@ -467,6 +467,26 @@ class NotebookPostgresClientSpec extends Specification {
         db.close()
     }
 
+    void "png save and fetch"() {
+
+        byte[] png1 = new File("../../data/testfiles/image.png").bytes
+
+        when:
+        List<NotebookEditableDTO> eds = client.listEditables(notebooks[0].id, username)
+        int beforeCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
+        client.writeStreamValue(eds[0].notebookId, eds[0].id, 1, 'png1', new ByteArrayInputStream(png1), null)
+        int afterCount = client.createSql().firstRow("SELECT count(*) FROM users.nb_variable")[0]
+
+        InputStream var1 = client.readStreamValue(eds[0].notebookId, eds[0].id, 1, 'png1', null)
+        byte[] png2 = var1.bytes
+
+        then:
+        (afterCount - beforeCount) == 1
+        png1.length == png2.length
+        png1[0] != (byte) 0x1f && png1[1] != (byte) 0x8b // these are the first 2 bytes of a gzipped stream
+        png2[0] != (byte) 0x1f && png2[1] != (byte) 0x8b
+    }
+
     private void dumpNotebookDetails(Long nbid) {
         Sql db = client.createSql()
         db.eachRow("SELECT id, parent_id, type, nb_definition FROM users.nb_version WHERE notebook_id=$nbid") {

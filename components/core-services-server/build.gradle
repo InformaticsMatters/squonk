@@ -117,7 +117,7 @@ docker {
     certPath = dockerCertPath
 }
 
-task buildDockerFile(type: Dockerfile) {
+task buildDockerfile(type: Dockerfile) {
 
     destFile = project.file('build/Dockerfile')
     from "tomcat:7-jre8"
@@ -135,8 +135,8 @@ task buildDockerImage(type: DockerBuildImage) {
 
     description = "Build the coreservices docker image"
 
-    dependsOn = ['war', 'buildDockerFile']
+    dependsOn = [war, buildDockerfile]
 
-    inputDir = buildDockerFile.destFile.parentFile
+    inputDir = buildDockerfile.destFile.parentFile
     tag = "squonk/${contextName}:${dockerImageTag}"
 }

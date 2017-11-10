@@ -25,9 +25,9 @@ import java.io.InputStream;
  */
 public interface VariableClient {
 
-    static final String DEFAULT_KEY = "default";
+    String DEFAULT_KEY = "default";
 
-    public enum VarType { t, s }
+    enum VarType { t, s }
 
     /**
      *

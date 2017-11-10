@@ -106,7 +106,7 @@ public class AbstractHttpClient {
                 addHeaders(httpDelete, headers);
             }
             try (CloseableHttpResponse response = httpclient.execute(httpDelete)) {
-                LOG.finer(response.getStatusLine().toString());
+                LOG.fine(response.getStatusLine().toString());
                 checkResponse(response);
             }
         } catch (URISyntaxException e) {
@@ -123,7 +123,7 @@ public class AbstractHttpClient {
                 addHeaders(httpDelete, headers);
             }
             CloseableHttpResponse response = httpclient.execute(httpDelete);
-            LOG.finer(response.getStatusLine().toString());
+            LOG.fine(response.getStatusLine().toString());
             checkResponse(response);
             HttpEntity entity = response.getEntity();
             return entity.getContent();
@@ -142,7 +142,7 @@ public class AbstractHttpClient {
                 addHeaders(httpGet, headers);
             }
             try (CloseableHttpResponse response = httpclient.execute(httpGet)) {
-                LOG.finer(response.getStatusLine().toString());
+                LOG.fine(response.getStatusLine().toString());
                 checkResponse(response);
                 HttpEntity entity = response.getEntity();
                 return EntityUtils.toString(entity);
@@ -163,13 +163,12 @@ public class AbstractHttpClient {
         try {
             URI uri = b.build();
             debugConnections("GET", uri);
-            ;
             HttpGet httpGet = new HttpGet(uri);
             if (headers != null && headers.length > 0) {
                 addHeaders(httpGet, headers);
             }
             CloseableHttpResponse response = httpclient.execute(httpGet);
-            LOG.finer(response.getStatusLine().toString());
+            LOG.fine("Response: " + response.getStatusLine().toString());
             checkResponse(response);
             HttpEntity entity = response.getEntity();
             return entity.getContent();
@@ -193,7 +192,7 @@ public class AbstractHttpClient {
     protected InputStream executePostAsInputStream(URIBuilder b, AbstractHttpEntity body, NameValuePair[] requestHeaders, Map<String,String> responseHeaders) throws IOException {
 
         CloseableHttpResponse response = doPost(b, body, requestHeaders);
-        LOG.finer(response.getStatusLine().toString());
+        LOG.fine(response.getStatusLine().toString());
         checkResponse(response);
         if (responseHeaders != null) {
             Header[] headers = response.getAllHeaders();
@@ -214,7 +213,7 @@ public class AbstractHttpClient {
 
     protected InputStream executePutAsInputStream(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
         CloseableHttpResponse response = doPut(b, body, headers);
-        LOG.finer(response.getStatusLine().toString());
+        LOG.fine(response.getStatusLine().toString());
         checkResponse(response);
         HttpEntity entity = response.getEntity();
         InputStream is = entity.getContent();
@@ -231,7 +230,7 @@ public class AbstractHttpClient {
 
     protected void executePost(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
         try (CloseableHttpResponse response = doPost(b, body, headers)) {
-            LOG.finer(response.getStatusLine().toString());
+            LOG.fine(response.getStatusLine().toString());
             checkResponse(response);
         }
     }
@@ -301,12 +300,9 @@ public class AbstractHttpClient {
         }
     }
 
-//    protected boolean responseOK(HttpResponse response) {
-//        return response.getStatusLine().getStatusCode() >=200 && response.getStatusLine().getStatusCode() < 300;
-//    }
-
     /**
-     * Throws IOException if response is not in the 200 range, providing whatever information is available as the exception message.
+     * Throws IOException if response is not in the 200 range, providing whatever information is available as the
+     * exception message.
      * Override this if you need different behaviour.
      *
      * @param response
@@ -321,7 +317,7 @@ public class AbstractHttpClient {
             if (is != null) {
                 err = EntityUtils.toString(entity);
             }
-            LOG.log(Level.WARNING, "Request failed: {0}", err);
+            LOG.log(Level.WARNING, "Request failed: {0}", response.getStatusLine().toString());
             throw new IOException("Request failed: " + (err == null ? response.getStatusLine().toString() : err));
         }
     }

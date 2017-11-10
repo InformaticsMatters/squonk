@@ -112,9 +112,12 @@ public class StepExecutor {
 
     public void execute(Step[] steps, CamelContext context) throws Exception {
 
-        StringBuilder b = new StringBuilder("Executing steps:\n");
+        StringBuilder b = new StringBuilder("Executing " + steps.length + " steps:\n");
+        int i = 1;
         for (Step step : steps) {
+            b.append("Step ").append(i).append(": ");
             b.append(step.toString()).append("\n");
+            i++;
         }
         LOG.info(b.toString());
 

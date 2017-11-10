@@ -187,7 +187,7 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
         if (responseMeta == null) {
             responseMeta = new DatasetMetadata<>(MoleculeObject.class);
         }
-        Dataset<MoleculeObject> responseDataset = new Dataset<>(MoleculeObject.class, output, responseMeta);
+        Dataset<MoleculeObject> responseDataset = new Dataset<>(output, responseMeta);
         Dataset<MoleculeObject> result = thinWrapper.generateOutput(responseDataset);
         return result;
     }
@@ -195,6 +195,7 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
     protected InputStream doDatasetConvert(Dataset<MoleculeObject> mols, String toFormat, boolean gzip) throws IOException {
 
         if ("sdf".equals(toFormat)) {
+            LOG.fine("Conversion to " + toFormat + ". Gzip? " + gzip);
             URIBuilder b = createURIBuilder(getDatasetConvertBase() + "/dataset_to_sdf");
 
 
@@ -206,7 +207,7 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
             };
 
             InputStream is = executePostAsInputStream(b, new InputStreamEntity(mols.getInputStream(true)), headers);
-            return is;
+            return gzip ? is : IOUtils.getGunzippedInputStream(is);
 
         }
         throw new IllegalArgumentException("Format " + toFormat + " not supported");

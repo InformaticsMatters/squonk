@@ -31,6 +31,7 @@ import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Manager for variables that uses the VariableClient to persist values, and also allows temporary storage of variables.
@@ -90,16 +91,16 @@ public class VariableManager {
         VariableHandler<V> vh = typeResolver.createVariableHandler(type);
 
         if (vh != null) {
-            LOG.info("Using write variable handler " + vh + " for type " + type.getName());
+            LOG.fine("Using write variable handler " + vh + " for type " + type.getName());
             vh.writeVariable(value, context);
         } else {
-
+            String mediaType = TypeResolver.getInstance().resolveMediaType(type, null);
             if (value instanceof AbstractStreamType) {
                 LOG.info("No variable handler for type " + type.getName() + ". Handling as stream");
-                context.writeStreamValue(((AbstractStreamType)value).getInputStream());
+                context.writeStreamValue(((AbstractStreamType)value).getInputStream(), mediaType, null, null, true);
             } else {
                 LOG.info("No variable handler for type " + type.getName() + ". Handling as text");
-                context.writeTextValue(value.toString());
+                context.writeTextValue(value.toString(), mediaType, null);
             }
         }
     }
@@ -135,14 +136,17 @@ public class VariableManager {
             V result = (V) vh.readVariable(context);
             return result;
 
-        } else if (canBeHandledAs(type, InputStream .class)) {
-            Constructor c = type.getConstructor(InputStream.class);
-            InputStream s = context.readStreamValue();
-            return s == null ? null : (V) c.newInstance(s);
-        } else if (canBeHandledAs(type, String .class)) {
-            Constructor c = type.getConstructor(String.class);
-            String s = context.readTextValue();
-            return s == null ? null : (V) c.newInstance(s);
+        } else {
+            String mediaType = TypeResolver.getInstance().resolveMediaType(type, null);
+            if (canBeHandledAs(type, InputStream .class)) {
+                Constructor c = type.getConstructor(InputStream.class);
+                InputStream s = context.readStreamValue(mediaType, null);
+                return s == null ? null : (V) c.newInstance(s);
+            } else if (canBeHandledAs(type, String .class)) {
+                Constructor c = type.getConstructor(String.class);
+                String s = context.readTextValue(mediaType, null);
+                return s == null ? null : (V) c.newInstance(s);
+            }
         }
         throw new IllegalArgumentException("Don't know how to handle value of type " + type.getName());
     }
@@ -203,7 +207,7 @@ public class VariableManager {
         }
 
         @Override
-        public String readTextValue(String key) throws Exception {
+        public String readTextValue(String mediaType, String extension, String key) throws Exception {
             String storeKey = generateTextKey(key);
             LOG.fine("Reading tmp value " + storeKey);
             byte[] bytes = tmpValues.get(storeKey);
@@ -211,15 +215,20 @@ public class VariableManager {
         }
 
         @Override
-        public InputStream readStreamValue(String key) throws Exception {
+        public InputStream readStreamValue(String mediaType, String extension, String key) throws Exception {
             String storeKey = generateStreamKey(key);
             LOG.fine("Reading tmp value " + storeKey);
             byte[] bytes = tmpValues.get(storeKey);
-            return bytes == null ? null : new ByteArrayInputStream(bytes);
+            if (bytes == null) {
+                return null;
+            }
+
+            return new ByteArrayInputStream(bytes);
+
         }
 
         @Override
-        public void writeTextValue(String value, String key) throws Exception {
+        public void writeTextValue(String value, String mediaType, String extension, String key) throws Exception {
             String storeKey = generateTextKey(key);
             LOG.fine("Writing tmp value " + storeKey);
             if (value == null) {
@@ -230,13 +239,13 @@ public class VariableManager {
         }
 
         @Override
-        public void writeStreamValue(InputStream value, String key) throws Exception {
+        public void writeStreamValue(InputStream value, String mediaType, String extension, String key, boolean gzip) throws Exception {
             String storeKey = generateStreamKey(key);
             LOG.fine("Writing tmp value " + storeKey);
             if (value == null) {
                 tmpValues.remove(storeKey);
             } else {
-                tmpValues.put(storeKey, IOUtils.convertStreamToBytes(value));
+                tmpValues.put(storeKey, IOUtils.convertStreamToBytes(gzip ? IOUtils.getGzippedInputStream(value) : value));
             }
         }
 

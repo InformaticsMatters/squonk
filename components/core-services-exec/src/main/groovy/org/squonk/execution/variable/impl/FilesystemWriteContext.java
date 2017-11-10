@@ -21,8 +21,8 @@ import org.squonk.api.VariableHandler;
 import org.squonk.util.IOUtils;
 
 import java.io.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * Created by timbo on 13/03/16.
@@ -38,19 +38,18 @@ public class FilesystemWriteContext extends AbstractFilesystemContext implements
     }
 
     @Override
-    public void writeTextValue(String value, String key) throws IOException {
-        File f = generateFile(key);
-        LOG.info("Writing text to file " + f.getPath());
+    public void writeTextValue(String value, String mediaType, String extension, String key) throws IOException {
+        File f = generateFile(extension, false);
+        LOG.fine("Writing text to file " + f.getPath());
         try (FileWriter out = new FileWriter(f)) {
             out.append(value);
         }
     }
 
     @Override
-    public void writeStreamValue(InputStream value, String key) throws Exception {
-        File f = generateFile(key);
-        LOG.info("Writing stream to file " + f.getPath());
-        boolean gzip = key != null && key.toLowerCase().endsWith(".gz");
+    public void writeStreamValue(InputStream value, String mediaType, String extension, String key, boolean gzip) throws Exception {
+        File f = generateFile(extension, gzip);
+        LOG.log(Level.FINE, "Writing stream value. file: {0} gzip: {1}", new Object[] {f.getPath(), gzip});
         try (OutputStream out = new FileOutputStream(f)) {
             IOUtils.transfer(gzip ? IOUtils.getGzippedInputStream(value) : IOUtils.getGunzippedInputStream(value), out, 4096);
         }

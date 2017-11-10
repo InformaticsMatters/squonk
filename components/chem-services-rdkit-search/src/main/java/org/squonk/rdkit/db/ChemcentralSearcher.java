@@ -17,10 +17,10 @@
 package org.squonk.rdkit.db;
 
 import org.squonk.config.SquonkServerConfig;
+import org.squonk.http.RequestInfo;
 import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
-import org.postgresql.ds.PGPoolingDataSource;
 import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.MoleculeObjectDataset;
@@ -31,11 +31,9 @@ import org.squonk.rdkit.db.dsl.Select;
 import org.squonk.rdkit.db.dsl.WhereClause;
 import org.squonk.types.DatasetHandler;
 import org.squonk.types.io.JsonHandler;
-import org.squonk.util.ExecutionStats;
-import org.squonk.util.IOUtils;
-import org.squonk.util.Metrics;
+import org.squonk.util.*;
+
 import static org.squonk.util.Metrics.*;
-import org.squonk.util.StatsRecorder;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -72,6 +70,12 @@ public class ChemcentralSearcher {
 
     public void executeSearch(Exchange exch) throws IOException {
 
+        // get all the info about the requested input and output
+        RequestInfo requestInfo = RequestInfo.build(
+                new String[] {CommonMimeTypes.MIME_TYPE_MDL_MOLFILE},
+                new String[] {CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON},
+                exch);
+
         String table = exch.getIn().getHeader("table", String.class);
         String mode = exch.getIn().getHeader("mode", String.class);
         Integer limit = exch.getIn().getHeader("limit", Integer.class);
@@ -105,6 +109,11 @@ public class ChemcentralSearcher {
             throw new IllegalArgumentException("Unknown table: " + table);
         }
         List<MoleculeObject> mols = executeSearch(searcher, rdkitTable, table, query, molType, mode, limit, chiral, fp, metric, threshold);
+
+        if (requestInfo.isGzipAccept()) {
+            exch.getOut().setHeader("Content-Encoding", "gzip");
+        }
+        // setting the gzip header handles the compression
         InputStream json = JsonHandler.getInstance().marshalStreamToJsonArray(mols.stream(), false);
         exch.getOut().setBody(json);
 
@@ -127,6 +136,11 @@ public class ChemcentralSearcher {
 
 
     public void executeMultiSearch(Exchange exch) throws IOException {
+
+        RequestInfo requestInfo = RequestInfo.build(
+                new String[] {CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON},
+                new String[] {CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON},
+                exch);
 
         DatasetHandler dh = new DatasetHandler(MoleculeObject.class);
         CamelRequestResponseExecutor executor = new CamelRequestResponseExecutor(exch);

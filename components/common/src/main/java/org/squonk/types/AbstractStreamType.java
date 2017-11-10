@@ -16,7 +16,12 @@
 
 package org.squonk.types;
 
+import org.squonk.util.IOUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
 
 /** Wrapper around data from a file to allow strong typing and type conversion
  *
@@ -25,15 +30,75 @@ import java.io.InputStream;
  */
 public abstract class AbstractStreamType {
 
-    private final InputStream inputStream;
+    private InputStream inputStream;
 
 
     public AbstractStreamType(InputStream inputStream) {
         this.inputStream = inputStream;
     }
 
+    /** Get the data as it was generated, which might or might not be gzipped
+     *
+     * @return
+     */
     public InputStream getInputStream() {
         return inputStream;
+    }
+
+    /** Get the Gzipped compressed data for this object.
+     *
+     * @return
+     * @throws IOException
+     */
+    public InputStream getGzippedInputStream() throws IOException {
+        if (inputStream == null) {
+            return null;
+        }
+        return inputStream == null ? null : IOUtils.getGzippedInputStream(inputStream);
+    }
+
+    /** Get the data in uncompressed format
+     *
+     * @return
+     * @throws IOException
+     */
+    public InputStream getGunzipedInputStream() throws IOException {
+        if (inputStream == null) {
+            return null;
+        }
+        if (inputStream instanceof GZIPInputStream) {
+            return inputStream;
+        } else {
+            return inputStream == null ? null : IOUtils.getGunzippedInputStream(inputStream);
+        }
+    }
+
+    /** Get the bytes of the uncompressed data.
+     *
+     *
+     * @return
+     * @throws IOException
+     */
+    public byte[] getBytes() throws IOException {
+        if (inputStream == null) {
+            return null;
+        }
+        byte[] bytes = IOUtils.convertStreamToBytes(getGunzipedInputStream());
+        return bytes;
+    }
+
+    /** Replace the source InputStream with a ByteArrayInputStream for the bytes so that the data can be read repeatedly.
+     * WARNING if the data is very large this will result in OutOfMemory errors so only call this method if you are sure
+     * that the data is modest in size.
+     *
+     * @throws IOException
+     */
+    public void materialize() throws IOException {
+        if (inputStream == null || inputStream instanceof ByteArrayInputStream) {
+            return;
+        }
+        byte[] bytes = IOUtils.convertStreamToBytes(inputStream);
+        inputStream = new ByteArrayInputStream(bytes);
     }
 
 }

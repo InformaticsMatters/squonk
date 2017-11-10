@@ -31,7 +31,7 @@ import org.squonk.notebook.api.VariableKey;
 public interface Step {
 
     /**
-     * @return the name of the producer for the output variables
+     * @return the name of the producer (cell) for the output variables
      */
     Long getOutputProducerId();
 

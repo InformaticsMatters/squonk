@@ -45,6 +45,12 @@ public class IOUtils {
      * @throws IOException
      */
     public static InputStream getGunzippedInputStream(InputStream is) throws IOException {
+
+        if (is instanceof GZIPInputStream) {
+            // already wrapped with gunzip
+            return is;
+        }
+
         PushbackInputStream pb = new PushbackInputStream(is, 2);
         byte[] signature = new byte[2];
         pb.read(signature); //read the signature
@@ -293,7 +299,7 @@ public class IOUtils {
             }
         }
         String h = (result == null ? "localhost" : result);
-        LOG.info("Docker Gateway: " + h);
+        LOG.fine("Docker Gateway: " + h);
         return h;
     }
 

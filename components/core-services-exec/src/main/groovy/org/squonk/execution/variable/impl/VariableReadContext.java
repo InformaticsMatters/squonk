@@ -18,10 +18,7 @@ package org.squonk.execution.variable.impl;
 
 import org.squonk.api.VariableHandler;
 import org.squonk.client.VariableClient;
-import org.squonk.core.client.NotebookRestClient;
-import org.squonk.util.IOUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -44,23 +41,14 @@ public class VariableReadContext implements VariableHandler.ReadContext{
     }
 
     @Override
-    public String readTextValue(String key) throws Exception {
+    public String readTextValue(String mediaType, String extension, String key) throws Exception {
         return client.readTextValue(notebookId, sourceId, cellId, variableName, key);
     }
 
     @Override
-    public String readSingleTextValue(String key) throws Exception {
-        return readTextValue(null);
-    }
-
-    @Override
-    public InputStream readStreamValue(String key) throws Exception {
+    public InputStream readStreamValue(String mediaType, String extension, String key) throws Exception {
         InputStream is = client.readStreamValue(notebookId, sourceId, cellId, variableName, key);
-        return (is == null ? null : IOUtils.getGunzippedInputStream(is));
+        return is;
     }
 
-    @Override
-    public InputStream readSingleStreamValue(String key) throws Exception {
-        return readStreamValue(null);
-    }
 }
