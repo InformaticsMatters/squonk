@@ -34,6 +34,11 @@ public class SquonkServerConfig {
 
     private static DataSource squonkDataSource;
 
+
+    public SquonkServerConfig() {
+        LOG.info("Using PostgreSQL at " + SQUONK_DB_SERVER);
+    }
+
     public static DataSource getSquonkDataSource() {
         if (squonkDataSource == null) {
             String s = SQUONK_DB_SERVER;

@@ -29,7 +29,7 @@ parameters:
 # ------
 
 - name: FLYWAY_IMAGE_TAG
-  value: latest
+  value: openshift
 
 # ---------
 # SD Loader (Service Descriptor Loader)
@@ -123,6 +123,12 @@ parameters:
 - name: CELL_MEM_LIMIT
   value: 500Mi
 
+# ------------
+# PostgreSQL
+# ------------
+
+- name: POSTGRES_HOSTNAME
+  value: postgres
 
 objects:
 
@@ -153,6 +159,8 @@ objects:
         - image: squonk/flyway:${FLYWAY_IMAGE_TAG}
           name: postgres-migrate
           env:
+          - name: POSTGRES_HOSTNAME
+            value: ${POSTGRES_HOSTNAME}
           - name: POSTGRES_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -182,6 +190,8 @@ objects:
         - image: squonk/chemservices-basic:${CHEM_IMAGE_TAG}
           name: chemservices-basic
           env:
+          - name: POSTGRES_HOSTNAME
+            value: ${POSTGRES_HOSTNAME}
           - name: POSTGRES_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -275,6 +285,8 @@ objects:
               secretKeyRef:
                 name: squonk-secrets
                 key: RABBITMQ_SQUONK_PASSWORD
+          - name: POSTGRES_HOSTNAME
+            value: ${POSTGRES_HOSTNAME}
           - name: POSTGRES_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -466,6 +478,8 @@ objects:
         - image: squonk/portal:${PORTAL_IMAGE_TAG}
           name: portal
           env:
+          - name: POSTGRES_HOSTNAME
+            value: ${POSTGRES_HOSTNAME}
           - name: POSTGRES_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
