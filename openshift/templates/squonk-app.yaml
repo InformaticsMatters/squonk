@@ -150,11 +150,6 @@ objects:
         labels:
           name: postgres-migrate
       spec:
-        initContainers:
-        - image: yauritux/busybox-curl
-          name: wait-for-postgres-before-migration
-          command: ['sh', '-c',
-            'until (( curl http://postgres:5432/ --connect-timeout 5 2>&1 | grep 52 )); do sleep 2; done']
         containers:
         - image: squonk/flyway:${FLYWAY_IMAGE_TAG}
           name: postgres-migrate
@@ -164,8 +159,8 @@ objects:
           - name: POSTGRES_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: squonk-secrets
-                key: POSTGRES_PASSWORD
+                name: squonk-database-credentials
+                key: user-password
         restartPolicy: OnFailure
 
 # -----------------------------------------------------------------------------
@@ -195,8 +190,8 @@ objects:
           - name: POSTGRES_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: squonk-secrets
-                key: POSTGRES_SQUONK_PASSWORD
+                name: squonk-database-credentials
+                key: user-password
           - name: RABBITMQ_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -290,8 +285,8 @@ objects:
           - name: POSTGRES_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: squonk-secrets
-                key: POSTGRES_SQUONK_PASSWORD
+                name: squonk-database-credentials
+                key: user-password
           - name: SQUONK_BASIC_CHEM_SERVICES_URL
             value: ${CORE_SQUONK_BASIC_CHEM_SERVICES_URL}
           - name: SQUONK_DOCKER_SERVICES_DIR
@@ -483,8 +478,8 @@ objects:
           - name: POSTGRES_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: squonk-secrets
-                key: POSTGRES_SQUONK_PASSWORD
+                name: squonk-database-credentials
+                key: user-password
           - name: SERVICE_CALLBACK
             value: ${PORTAL_SERVICE_CALLBACK}
 #          readinessProbe:

@@ -24,10 +24,7 @@ parameters:
 - displayName: Postgres Admin user
   description: Postgres Admin user
   name: POSTGRESQL_ADMIN_USER
-
-- displayName: Postgres Admin password
-  description: Postgres Admin password
-  name: POSTGRESQL_ADMIN_PASSWORD
+  value: postgres
 
 objects:
 
@@ -58,10 +55,10 @@ objects:
       echo "Created database"
 
       psql --command "GRANT CONNECT ON DATABASE squonk to squonk"
-      psql -d squonk --command "DROP SCHEMA public CASCADE"
       psql -d squonk --command "CREATE SCHEMA users AUTHORIZATION squonk"
       psql -d squonk --command "GRANT USAGE ON SCHEMA users TO squonk"
-
+      psql -d squonk --command "CREATE SCHEMA notebooks AUTHORIZATION squonk"
+      psql -d squonk --command "GRANT USAGE ON SCHEMA notebooks TO squonk"
       
       echo "Setup complete"
 
@@ -84,7 +81,10 @@ objects:
           - name: POSTGRESQL_ADMIN_USER
             value: ${POSTGRESQL_ADMIN_USER}
           - name: POSTGRESQL_ADMIN_PASSWORD
-            value: ${POSTGRESQL_ADMIN_PASSWORD}
+            valueFrom:
+              secretKeyRef:
+                name: postgresql
+                key: database-admin-password
           - name: SQUONK_USER_PASSWORD
             value: ${SQUONK_USER_PASSWORD}
           - name: POSTGRESQL_HOST

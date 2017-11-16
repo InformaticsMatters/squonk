@@ -29,7 +29,27 @@ needed (e.g. NFS exports) and then execute the appropriate squonk-pv-*.yaml temp
 
 Once done log in as a normal user e.g. developer.
 
+### Create database
+
+The database and users have to be created. This might be in a pre-existing database that is in a different
+project (e.g openrisknet-infra or squonk-infra). To create this database we use the squonk-db-init.yaml 
+template which creates the database, schema, users and permissions that are needed by Squonk. The template
+also creates a secret in the squonk project that contains the details that Squonk needs to connect to the
+database.
+
+Run this template in the project that contains the PostgreSQL database as a user who has the necessary
+privileges for that project and to write secrets into the squonk project (e.g. admin).
+ 
+    $ oc process -f squonk-db-init.yaml | oc create -f -
+    
+If squonk is not running in the `squonk` project then specify the `-p SQUONK_NAMESPACE=xxxxx` parameter
+to specify the project.
+
+To check that this has worked look at the logs of the `squonk-database-creator-????` pod in the project from
+ which this was run, and check that there is a secret named `squonk-database-credentials` in the squonk project.
+
 ### Secrets
+
 Secrets need to be deployed before any other object.
 
     $ oc process -f squonk-secrets.yaml | oc create -f -
