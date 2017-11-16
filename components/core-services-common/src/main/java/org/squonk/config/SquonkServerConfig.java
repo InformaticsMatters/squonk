@@ -30,7 +30,7 @@ public class SquonkServerConfig {
 
     private static final Logger LOG = Logger.getLogger(SquonkServerConfig.class.getName());
 
-    public static final String SQUONK_DB_SERVER = "postgres";
+    public static final String SQUONK_DB_SERVER = IOUtils.getConfiguration("POSTGRES_HOSTNAME", "postgres");
 
     private static DataSource squonkDataSource;
 
