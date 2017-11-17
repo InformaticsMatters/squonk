@@ -38,12 +38,15 @@ also creates a secret in the squonk project that contains the details that Squon
 database.
 
 Run this template in the project that contains the PostgreSQL database as a user who has the necessary
-privileges for that project and to write secrets into the squonk project (e.g. admin).
+privileges for that project and to write secrets into the squonk project (e.g. admin). 
+Switch to the project:
+
+    $ oc project openrisknet-infra
  
-    $ oc process -f squonk-db-init.yaml | oc create -f -
+    $ oc process -f squonk-db-init.yaml -p DATABASE_HOST=postgresql.openrisknet-infra.svc | oc create -f -
     
-If squonk is not running in the `squonk` project then specify the `-p SQUONK_NAMESPACE=xxxxx` parameter
-to specify the project.
+Adjust the value of DATABASE_HOST accordingly. If squonk is not running in the `squonk` project then specify the 
+`-p SQUONK_NAMESPACE=xxxxx` parameter to specify the project.
 
 To check that this has worked look at the logs of the `squonk-database-creator-????` pod in the project from
  which this was run, and check that there is a secret named `squonk-database-credentials` in the squonk project.
@@ -51,6 +54,11 @@ To check that this has worked look at the logs of the `squonk-database-creator-?
 ### Secrets
 
 Secrets need to be deployed before any other object.
+Switch back to the squonk project
+
+    $ oc project squonk
+    
+Deploy the secrets
 
     $ oc process -f squonk-secrets.yaml | oc create -f -
     

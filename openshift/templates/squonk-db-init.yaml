@@ -96,7 +96,7 @@ objects:
           - name: SQUONK_USER_PASSWORD
             value: ${SQUONK_USER_PASSWORD}
           - name: POSTGRESQL_HOST
-            value: postgresql.openrisknet-infra.svc
+            value: ${DATABASE_HOST}
           image: centos/postgresql-95-centos7
           command:
           - /bin/bash
