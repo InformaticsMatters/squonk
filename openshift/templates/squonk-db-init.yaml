@@ -1,4 +1,6 @@
----
+# oc process -f squonk-db-init.yaml | oc create -f -
+# oc delete all,secrets --selector template=db-prepare
+
 kind: Template
 apiVersion: v1
 metadata:
@@ -21,6 +23,11 @@ parameters:
   name: SQUONK_NAMESPACE
   value: squonk
 
+- displayName: Database host
+  description: Database host
+  name: DATABASE_HOST
+  value: postgresql.openrisknet-infra.svc
+
 - displayName: Postgres Admin user
   description: Postgres Admin user
   name: POSTGRESQL_ADMIN_USER
@@ -35,6 +42,7 @@ objects:
     namespace: ${SQUONK_NAMESPACE}
   stringData:
     user-password: ${SQUONK_USER_PASSWORD}
+    host: ${DATABASE_HOST}
 
 - kind: ConfigMap
   apiVersion: v1

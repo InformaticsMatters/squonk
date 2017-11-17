@@ -123,13 +123,6 @@ parameters:
 - name: CELL_MEM_LIMIT
   value: 500Mi
 
-# ------------
-# PostgreSQL
-# ------------
-
-- name: POSTGRES_HOSTNAME
-  value: postgres
-
 objects:
 
 # -----------------------------------------------------------------------------
@@ -155,7 +148,10 @@ objects:
           name: postgres-migrate
           env:
           - name: POSTGRES_HOSTNAME
-            value: ${POSTGRES_HOSTNAME}
+            valueFrom:
+              secretKeyRef:
+                name: squonk-database-credentials
+                key: host
           - name: POSTGRES_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -186,7 +182,10 @@ objects:
           name: chemservices-basic
           env:
           - name: POSTGRES_HOSTNAME
-            value: ${POSTGRES_HOSTNAME}
+            valueFrom:
+              secretKeyRef:
+                name: squonk-database-credentials
+                key: host
           - name: POSTGRES_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -281,7 +280,10 @@ objects:
                 name: squonk-secrets
                 key: RABBITMQ_SQUONK_PASSWORD
           - name: POSTGRES_HOSTNAME
-            value: ${POSTGRES_HOSTNAME}
+            valueFrom:
+              secretKeyRef:
+                name: squonk-database-credentials
+                key: host
           - name: POSTGRES_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -474,7 +476,10 @@ objects:
           name: portal
           env:
           - name: POSTGRES_HOSTNAME
-            value: ${POSTGRES_HOSTNAME}
+            valueFrom:
+              secretKeyRef:
+                name: squonk-database-credentials
+                key: host
           - name: POSTGRES_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
