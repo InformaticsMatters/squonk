@@ -13,8 +13,8 @@ pipeline {
                     }
 
                     dir('components') {
-                        sh "echo User=${cxnMavenUser%:*}"
-                        sh "./gradlew -PcxnMavenUser=${cxnMavenUser%:*} -PcxnMavenPassword=${cxnMavenUser#*:} build"
+                        sh "echo Credentials= ${CXN_MAVEN_REPO_USERNAME} ${CXN_MAVEN_REPO_PASSWORD}"
+                        sh "./gradlew -PcxnMavenUser=${CXN_MAVEN_REPO_USERNAME} -PcxnMavenPassword=${CXN_MAVEN_REPO_PASSWORD} build"
                     }
                 }
             }
