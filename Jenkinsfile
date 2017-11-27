@@ -13,7 +13,7 @@ pipeline {
                     }
 
                     dir('components') {
-                        sh "./gradlew -PcxnMavenUser=${CXN_MAVEN_REPO_USERNAME} -PcxnMavenPassword=${CXN_MAVEN_REPO_PASSWORD} assemble"
+                        sh "./gradlew -PcxnMavenUser=${CXN_MAVEN_REPO_USERNAME} -PcxnMavenPassword=${CXN_MAVEN_REPO_PASSWORD} --stacktrace assemble"
                     }
                 }
             }
