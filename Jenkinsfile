@@ -11,9 +11,12 @@ pipeline {
                     openshift.withCluster() {
                         echo "Hello from the project running Jenkins: ${openshift.project()}"
                     }
+                    USERNAME=${cxnMavenUser%:*}
+                    PASSWORD=${cxnMavenUser#*:}
+
                     dir('components') {
-                        sh "ls -l"
-                        sh "./gradlew build"
+                        sh "echo $USERANME "
+                        sh "./gradlew -PcxnMavenUser=$USERNAME -PcxnMavenPassword=$PASSWORD build"
                     }
                 }
             }
