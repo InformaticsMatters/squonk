@@ -11,6 +11,7 @@ The deployment consists of a number of templates and stages:
 
 Logged in as a cluster admin (e.g. system:admin) Do these:
  
+    $ oc new-project openrisknet-infra
     $ oc new-project squonk
     $ oc adm policy add-role-to-user edit developer
     $ oc adm policy add-scc-to-group anyuid system:authenticated
@@ -42,7 +43,6 @@ privileges for that project and to write secrets into the squonk project (e.g. a
 Switch to the project:
 
     $ oc project openrisknet-infra
- 
     $ oc process -f squonk-db-init.yaml -p DATABASE_HOST=postgresql.openrisknet-infra.svc | oc create -f -
     
 Adjust the value of DATABASE_HOST accordingly. If squonk is not running in the `squonk` project then specify the 
