@@ -5,16 +5,16 @@ pipeline {
         label 'gradle'
     }
 
-    openshift.withCluster() {
+    stages {
+        stage('Build App') {
+            steps {
 
-        stages {
-            stage('Build App') {
-                steps {
-                    echo "Hello from the project running Jenkins: ${openshift.project()}"
-                    dir ('components') {
-                        script {
-                            sh "gradlew build"
-                        }
+                script {
+                    openshift.withCluster() {
+                        echo "Hello from the project running Jenkins: ${openshift.project()}"
+                    }
+                    dir('components') {
+                        sh "gradlew build"
                     }
                 }
             }
