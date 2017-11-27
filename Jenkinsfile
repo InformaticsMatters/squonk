@@ -12,7 +12,8 @@ pipeline {
                         echo "Hello from the project running Jenkins: ${openshift.project()}"
                     }
                     dir('components') {
-                        sh "gradlew build"
+                        sh "ls -l"
+                        sh "./gradlew build"
                     }
                 }
             }
