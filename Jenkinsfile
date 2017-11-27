@@ -1,9 +1,7 @@
 // this is just for testing
 
 pipeline {
-    agent {
-        label 'gradle'
-    }
+    agent any
 
     stages {
         stage('Build App') {
