@@ -1,4 +1,22 @@
 <tomcat-users>
 <user name="user1" password="user1" roles="standard-user" />
 <user name="user2" password="user2" roles="standard-user" />
+<user name="user3" password="user3" roles="standard-user" />
+<user name="user4" password="user4" roles="standard-user" />
+<user name="user5" password="user5" roles="standard-user" />
+<user name="user6" password="user6" roles="standard-user" />
+<user name="user7" password="user7" roles="standard-user" />
+<user name="user8" password="user8" roles="standard-user" />
+<user name="user9" password="user9" roles="standard-user" />
+<user name="user10" password="user10" roles="standard-user" />
+<user name="user11" password="user11" roles="standard-user" />
+<user name="user12" password="user12" roles="standard-user" />
+<user name="user13" password="user13" roles="standard-user" />
+<user name="user14" password="user14" roles="standard-user" />
+<user name="user15" password="user15" roles="standard-user" />
+<user name="user16" password="user16" roles="standard-user" />
+<user name="user17" password="user17" roles="standard-user" />
+<user name="user18" password="user18" roles="standard-user" />
+<user name="user19" password="user19" roles="standard-user" />
+<user name="user20" password="user20" roles="standard-user" />
 </tomcat-users>
