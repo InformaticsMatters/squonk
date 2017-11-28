@@ -8,7 +8,6 @@ oc login $OC_MASTER_URL -u $OC_ADMIN > /dev/null
 oc project -q $OC_PROJECT
 
 oc adm policy add-role-to-user edit $OC_USER
-oc adm policy add-scc-to-user anyuid system:serviceaccount:${OC_PROJECT}:deployer
 oc adm policy add-scc-to-user anyuid system:serviceaccount:${OC_PROJECT}:default
 
 oc login $OC_MASTER_URL -u $OC_USER > /dev/null

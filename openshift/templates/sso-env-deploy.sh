@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 
 set -e
@@ -13,3 +13,6 @@ set +e
 # create service account and define permissions
 oc create serviceaccount sso-service-account
 oc policy add-role-to-user view system:serviceaccount:${OC_INFRA_PROJECT}:sso-service-account
+
+
+echo "Service account and permissions created. Now you can run './sso-secrets-deploy.sh'"

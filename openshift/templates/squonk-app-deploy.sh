@@ -12,4 +12,4 @@ oc process -f squonk-app-keycloak.yaml \
   -p APP_NAMESPACE=$OC_PROJECT\
   | oc create -f -
 
-echo "Squonk deployed. Access it at http://${OC_SQUONK_HOST}/portal"
+echo "Squonk deployment is underway. Once complete it can be accessed at http://${OC_SQUONK_HOST}/portal"

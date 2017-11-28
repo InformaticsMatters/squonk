@@ -10,7 +10,6 @@ oc project -q $OC_PROJECT
 set +e
 
 oc adm policy remove-role-from-user edit $OC_USER
-oc adm policy remove-scc-from-user anyuid system:serviceaccount:${OC_PROJECT}:deployer
 oc adm policy remove-scc-from-user anyuid system:serviceaccount:${OC_PROJECT}:default
 
 oc delete all,cm,pvc,secrets --selector template=squonk-infra
