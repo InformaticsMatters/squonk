@@ -1,5 +1,10 @@
 # oc process -f squonk-db-init.yaml | oc create -f -
 # oc delete all,secrets --selector template=db-prepare
+#
+# To manually remove the Squonk database artifacts from Postgres open a terminal to the
+# postgresql pod, run the psql command and execute these commands:
+# drop database squonk;
+# drop role squonk;
 
 kind: Template
 apiVersion: v1
@@ -26,7 +31,7 @@ parameters:
 - displayName: Database host
   description: Database host
   name: DATABASE_HOST
-  value: postgresql.openrisknet-infra.svc
+  required: true
 
 - displayName: Postgres Admin user
   description: Postgres Admin user

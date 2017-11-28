@@ -1,0 +1,59 @@
+kind: Template
+apiVersion: v1
+metadata:
+  name: sso-secrets
+  annotations:
+    description: SSO Secrets Definition
+    tags: squonk,secrets,sso
+labels:
+  template: sso-secrets
+  app: sso-secrets
+
+parameters:
+
+# -------------
+# Configuration
+# -------------
+
+- name: SECRETS_NAMESPACE
+  value: squonk
+
+- name: KEYCLOAK_SERVER_URL
+  description: URL of the Keycloak SSO server
+  value: https://sso.squonk.it/auth
+- name: KEYCLOAK_REALM
+  description: Name of the Keycloak realm to authenticate against
+  value: squonk
+- name: SQUONK_APP
+  description: prefix for hostname opf Squonk app
+  value: squonk-notebook
+- name: KEYCLOAK_SECRET
+  description: Value of the Keycloak secret
+  required: true
+
+
+objects:
+
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: sso-config
+  data:
+    keycloak.url: ${KEYCLOAK_SERVER_URL}
+    context.xml: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <Context>
+          <Valve className="org.keycloak.adapters.tomcat.KeycloakAuthenticatorValve"/>
+      </Context>
+    keycloak.json: |
+      {
+        "realm": "${KEYCLOAK_REALM}",
+        "auth-server-url": "${KEYCLOAK_SERVER_URL}",
+        "ssl-required": "external",
+        "disable-trust-manager": true,
+        "resource": "${SQUONK_APP}",
+        "credentials": {
+          "secret": "${KEYCLOAK_SECRET}"
+        },
+        "use-resource-role-mappings": false
+      }

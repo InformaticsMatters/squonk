@@ -46,9 +46,8 @@ parameters:
   value: latest
 - name: PORTAL_SERVICE_CALLBACK
   value: "http://localhost:8080/portal"
-- name: KEYCLOAK_SERVER_URL
-  description: URL of the Keycloak SSO server
-  value: https://sso.dev.openrisknet.org/auth
+- name: SQUONK_HOST
+  required: true
 
 - name: PORTAL_CPU_REQUEST
   value: 500m
@@ -455,30 +454,6 @@ objects:
 # Portal
 # -----------------------------------------------------------------------------
 
-- kind: ConfigMap
-  apiVersion: v1
-  metadata:
-    name: portal-config
-  data:
-    context.xml: |
-      <?xml version="1.0" encoding="UTF-8"?>
-      <Context>
-          <Valve className="org.keycloak.adapters.tomcat.KeycloakAuthenticatorValve"/>
-      </Context>
-    keycloak.json: |
-      {
-        "realm": "squonk",
-        "realm-public-key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjSZraYYf/0NBuEr8HlbLfoJxerquD0l1Q3ZZP3CiLAU4+qYfR4bph2LsWbxXpWCIaKfLn2bPAy942l6AI3ZOw2dCUBobT1TpPAr7rVYciM9IGsTAyOgac5FYBW7JE4+A4BYJcZCtARRn4BsZ+dZYXQGnEtvCY0LfBIs1BrJqF2oY38xxfytYHP3ZvV1+ngf1mQ/R5XzrXknJGkIB0ZkwmyyCmfn9L96ntO4RXGJrAsx1vybpuCuz5yzuTANbuF2gfQGFEYrshFS7oW6JtNNsUyhwcs7JaCXdKVjpFOcdWgLskc3FajKVKfpekidr0QE16lHUfn9NCVyKAFwEo1fBSwIDAQAB",
-        "auth-server-url": "${com.squonk.keycloak.baseurl}",
-        "ssl-required": "external",
-        "disable-trust-manager": true,
-        "resource": "portal",
-        "credentials": {
-          "secret": "434ecd6b-586d-4db8-a3fa-83bfeb16bf44"
-        },
-        "use-resource-role-mappings": false
-      }
-
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
@@ -514,15 +489,19 @@ objects:
                 key: user-password
           - name: SERVICE_CALLBACK
             value: ${PORTAL_SERVICE_CALLBACK}
+          # TODO - remove this env. It's not used andy more. Kept for historical reasons.
           - name: KEYCLOAK_SERVER_URL
-            value: ${KEYCLOAK_SERVER_URL}
+            valueFrom:
+              configMapKeyRef:
+                name: sso-config
+                key: keycloak.url
           volumeMounts:
             - mountPath: /usr/local/tomcat/webapps/portal/META-INF/context.xml
-              name: portal-config
+              name: sso-config
               subPath: context.xml
               readOnly: true
             - mountPath: /usr/local/tomcat/webapps/portal/WEB-INF/keycloak.json
-              name: portal-config
+              name: sso-config
               subPath: keycloak.json
               readOnly: true
 #          readinessProbe:
@@ -545,9 +524,9 @@ objects:
 #              cpu: ${PORTAL_CPU_REQUEST}
 #              memory: ${PORTAL_MEM_REQUEST}
         volumes:
-          - name: portal-config
+          - name: sso-config
             configMap:
-              name: portal-config
+              name: sso-config
 
 - kind: Service
   apiVersion: v1
@@ -567,8 +546,14 @@ objects:
   metadata:
     name: portal
     namespace: ${APP_NAMESPACE}
+    annotations:
+      kubernetes.io/tls-acme: 'true'
   spec:
+    host: ${SQUONK_HOST}
     path: /portal
     to:
       kind: Service
       name: portal
+    tls:
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect

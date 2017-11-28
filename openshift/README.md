@@ -16,7 +16,7 @@ Logged in as a cluster admin (e.g. system:admin) Do these:
     $ oc adm policy add-scc-to-group anyuid system:authenticated
     $ oc adm policy add-cluster-role-to-user cluster-admin -z default
     
-The fist creates the squonk project.
+The first creates the squonk project.
 The second gives our developer user access to the squonk project 
 The third allows containers to be run as any user, not an OpenShift assigned user id.
 The fourth adds cluster admin role to the service account.
@@ -43,9 +43,12 @@ Switch to the project:
 
     $ oc project openrisknet-infra
  
-    $ oc process -f squonk-db-init.yaml -p DATABASE_HOST=postgresql.openrisknet-infra.svc | oc create -f -
+    $ oc process -f squonk-db-init.yaml | oc create -f -
     
-Adjust the value of DATABASE_HOST accordingly. If squonk is not running in the `squonk` project then specify the 
+If the database service is not named postgresql.openrisknet-infra.svc then pecify the value of the 
+DATABASE_HOST parameter using `-p DATABASE_HOST=postgres-service.postgres-project.svc`.
+
+If squonk is not running in the `squonk` project then specify the 
 `-p SQUONK_NAMESPACE=xxxxx` parameter to specify the project.
 
 To check that this has worked look at the logs of the `squonk-database-creator-????` pod in the project from

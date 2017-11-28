@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+
+set -e pipefail
+
+oc login $OC_MASTER_URL -u $OC_ADMIN > /dev/null
+oc project -q $OC_INFRA_PROJECT
+
+#./validate.sh
+
+oc process -f sso-template.yaml\
+ -p SSO_REALM=${KEYCLOAK_REALM}\
+ -p HTTPS_PASSWORD=${OC_CERTS_PASSWORD}\
+ -p JGROUPS_ENCRYPT_PASSWORD=${OC_CERTS_PASSWORD}\
+ -p SSO_TRUSTSTORE=truststore.jks\
+ -p SSO_TRUSTSTORE_PASSWORD=${OC_CERTS_PASSWORD}\
+ -p HOSTNAME_HTTPS=sso.${OC_ROUTES_BASENAME}\
+ | oc create -f -
