@@ -9,6 +9,7 @@ oc project -q $OC_PROJECT
 
 oc adm policy add-role-to-user edit $OC_USER
 oc adm policy add-scc-to-user anyuid system:serviceaccount:${OC_PROJECT}:default
+oc adm policy add-cluster-role-to-user cluster-admin -z default
 
 oc login $OC_MASTER_URL -u $OC_USER > /dev/null
 
@@ -21,8 +22,5 @@ oc process -f squonk-sso-config.yaml\
  -p SECRETS_NAMESPACE=$OC_PROJECT\
  | oc create -f -
 
-oc process -f squonk-infra-openshift.yaml -p INFRA_NAMESPACE=$OC_PROJECT | oc create -f -
-
 echo "You may need to setup persistent volumes before you can deploy"
 echo "Infrastructure ready. You can now deploy the Squonk applications using './squonk-app-deploy.sh'"
-

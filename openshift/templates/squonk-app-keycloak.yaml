@@ -193,11 +193,16 @@ objects:
               secretKeyRef:
                 name: squonk-database-credentials
                 key: user-password
+          - name: RABBITMQ_HOSTNAME
+            valueFrom:
+              secretKeyRef:
+                name: squonk-rabbitmq-credentials
+                key: host
           - name: RABBITMQ_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: squonk-secrets
-                key: RABBITMQ_SQUONK_PASSWORD
+                name: squonk-rabbitmq-credentials
+                key: pass
           - name: STRUCTURE_DATABASE_TABLES
             value: ${CHEM_STRUCTURE_DATABASE_TABLES}
           ports:
@@ -276,11 +281,16 @@ objects:
         - image: squonk/coreservices:${CORE_IMAGE_TAG}
           name: coreservices
           env:
+          - name: RABBITMQ_HOSTNAME
+            valueFrom:
+              secretKeyRef:
+                name: squonk-rabbitmq-credentials
+                key: host
           - name: RABBITMQ_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: squonk-secrets
-                key: RABBITMQ_SQUONK_PASSWORD
+                name: squonk-rabbitmq-credentials
+                key: pass
           - name: POSTGRES_HOSTNAME
             valueFrom:
               secretKeyRef:
@@ -407,11 +417,16 @@ objects:
         - image: squonk/cellexecutor:${CELL_IMAGE_TAG}
           name: cellexecutor
           env:
+          - name: RABBITMQ_HOSTNAME
+            valueFrom:
+              secretKeyRef:
+                name: squonk-rabbitmq-credentials
+                key: host
           - name: RABBITMQ_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: squonk-secrets
-                key: RABBITMQ_SQUONK_PASSWORD
+                name: squonk-rabbitmq-credentials
+                key: pass
           - name: SQUONK_CONTAINER_RUNNER_TYPE
             value: ${CELL_CONTAINER_RUNNER_TYPE}
           - name: SQUONK_DOCKER_WORK_DIR
