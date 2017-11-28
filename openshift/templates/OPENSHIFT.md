@@ -51,6 +51,7 @@ Specify the appropriate URL as the Root URL, it'll be something like
 - check the Redirect URL, Admin URL and Web Origins.
 - add http variants for Redirect URL and Web Origins
 - make a note of the client secret (credentials tab)
+  (this will become the value of the `KEYCLOAK_SECRET`in your `setenv.sh`)
 - create a `standard-user` role and add this to the set of default roles
 - create user(s), specify passwords (Credentials tab)
   and confirm they get the `standard-user` role 
