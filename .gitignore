@@ -27,6 +27,7 @@ components/core-services-client/lib
 components/chem-services-root/src/main/html/licenses
 components/core-services-exec/.nextflow
 components/security-keycloak/lib/
+components/**/out/
 docker/**/*.war
 docker/xwiki-site/yyy.json
 docker/docker-services
