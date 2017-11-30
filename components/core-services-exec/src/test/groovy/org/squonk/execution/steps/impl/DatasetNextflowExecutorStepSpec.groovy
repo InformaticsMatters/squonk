@@ -45,8 +45,8 @@ class DatasetNextflowExecutorStepSpec extends Specification {
         println "Creating executor " + nsd.serviceConfig.executorClassName
         def step = Class.forName(nsd.serviceConfig.executorClassName).newInstance()
         def varman = createAndPrepareVariableManager()
-
-        step.configure(1, nsd.serviceConfig.id, ['arg.message':'WTF Venus'],
+        def jobId = UUID.randomUUID().toString()
+        step.configure(1, jobId, ['arg.message':'WTF Venus'],
                 ["input": new VariableKey(0, "output")],
                 [:],
                 nsd)
@@ -69,8 +69,8 @@ class DatasetNextflowExecutorStepSpec extends Specification {
         println "Creating executor " + nsd.serviceConfig.executorClassName
         def step = Class.forName(nsd.serviceConfig.executorClassName).newInstance()
         def varman = createAndPrepareVariableManager()
-
-        step.configure(1, nsd.serviceConfig.id, ['arg.message':'WTF Venus'],
+        def jobId = UUID.randomUUID().toString()
+        step.configure(1, jobId, ['arg.message':'WTF Venus'],
                 ["input": new VariableKey(0, "output")],
                 [:],
                 nsd)
