@@ -20,14 +20,13 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.model.AccessMode;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Frame;
-import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.api.command.PullImageCmd;
+import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
+import com.github.dockerjava.core.command.PullImageResultCallback;
 import com.github.dockerjava.core.command.WaitContainerResultCallback;
 import org.squonk.util.IOUtils;
 
@@ -35,6 +34,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,7 +73,6 @@ public class DockerRunner extends AbstractRunner {
     private DockerClientConfig config;
     private DockerClient dockerClient;
     private String containerId;
-
 
 
     /**
@@ -118,7 +117,7 @@ public class DockerRunner extends AbstractRunner {
         super.init();
         Volume work = new Volume(localWorkDir);
         volumes.add(work);
-        Bind b = new Bind(getHostWorkDir().getPath(), work, AccessMode.rw);
+        Bind b = new Bind(getHostWorkDir().getPath(), work, AccessMode.rw, SELContext.single);
         binds.add(b);
 
         // properties read from environment variables
@@ -156,10 +155,13 @@ public class DockerRunner extends AbstractRunner {
         return v;
     }
 
-    public Bind addBind(String hostDir, Volume volume, AccessMode mode) {
-        Bind b = new Bind(hostDir, volume, mode);
+    public Bind addBind(String hostDir, Volume volume, AccessMode mode, SELContext selContext) {
+        Bind b = new Bind(hostDir, volume, mode, selContext);
         binds.add(b);
         return b;
+    }
+    public Bind addBind(String hostDir, Volume volume, AccessMode mode) {
+        return addBind(hostDir, volume, mode, SELContext.none);
     }
 
     public void includeDockerSocket() {
@@ -183,6 +185,25 @@ public class DockerRunner extends AbstractRunner {
         }
         isRunning = 1;
 
+        // pull the image if it's not present
+        List<Image> dockerSearch = dockerClient.listImagesCmd().withImageNameFilter(imageName).exec();
+        LOG.info("Search returned" + dockerSearch.toString());
+        if (dockerSearch.size() == 0) {
+            LOG.info("Need to pull image " + imageName);
+            String[] imagePlusTag = splitImageAndTag(imageName);
+            PullImageResultCallback callback = new PullImageResultCallback();
+            try {
+                dockerClient.pullImageCmd(imagePlusTag[0])
+                        .withTag(imagePlusTag[1])
+                        .exec(callback)
+                        .awaitCompletion(120, TimeUnit.SECONDS);
+                LOG.info("Image " + imageName + " pulled");
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Pulling image interrupted", e);
+            }
+        }
+
+        // create and execute the container
         CreateContainerCmd createContainerCmd = dockerClient.createContainerCmd(imageName)
                 .withVolumes(volumes.toArray(new Volume[volumes.size()]))
                 .withBinds(binds.toArray(new Bind[binds.size()]))
@@ -236,6 +257,19 @@ public class DockerRunner extends AbstractRunner {
 
     public String getLog() {
         return loggingCallback == null ? null : loggingCallback.toString();
+    }
+
+    private String[] splitImageAndTag(String imagePlusTag) {
+        int pos = imagePlusTag.lastIndexOf(":");
+        if (pos == -1) {
+            LOG.finer("Image has no tag");
+            return new String[]{imagePlusTag, "latest"};
+        } else {
+            String image = imagePlusTag.substring(0, pos);
+            String tag = imagePlusTag.substring(pos + 1);
+            LOG.finer("Image: " + image + ", Tag: " + tag);
+            return new String[]{image, tag};
+        }
     }
 
 
