@@ -77,6 +77,6 @@ docker {
         // it will need rebuilding for new versions of docker and jdk
         baseImage = 'informaticsmatters/openjdk_docker'
         maintainer = 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
-        tag = 'squonk/cellexecutor'
+        tag = 'squonk/cellexecutor:latest'
     }
 }

@@ -59,7 +59,7 @@ services:
 
     # coreserives sometimes fails to start because chemservices is too slow to start. If this happens increase the number of retries in the healthcheck
     chemservices:
-        image: squonk/chem-services-basic
+        image: squonk/chemservices-basic:latest
         ports:
         - "8092:8080"
         volumes:
@@ -73,7 +73,7 @@ services:
             retries: 10
 
     coreservices:
-        image: squonk/coreservices
+        image: squonk/coreservices:latest
         ports:
         - 8091:8080
         volumes:
@@ -97,7 +97,7 @@ services:
             retries: 3
 
     cellexecutor:
-        image: squonk/cellexecutor
+        image: squonk/cellexecutor:latest
         depends_on:
         - coreservices
         - rabbitmq

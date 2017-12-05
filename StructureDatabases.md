@@ -1,6 +1,6 @@
 # Database loaders
 
-Squonk has a chemical database powered by the RDkit cartridge.
+Squonk has a chemical database powered by the RDKit cartridge.
 To use this you need to load datasets into database.
 Currently there is support for
 * eMolecules (bulidng blocks and screening compounds)
@@ -17,7 +17,7 @@ At some stage it may be broken out into a separate module.
 
 Loading requires the postgres database to be running and port 5432 to be exposed.
 Normally this port is not exposed.
-Move into the docker/deply dir and start the postgres database
+Move into the docker/deploy dir and start the postgres database
 
 ```sh
 docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d postgres
@@ -26,7 +26,7 @@ docker-compose -f docker-compose.yml -f docker-compose-setup.yml up -d postgres
 ### Configuring loaders
 
 The configuration is contained in a file named components/rdkit-lib/rdkit_loader.properties
-You can create this by copying components/rdkit-lib/rdkit_loader.properties.template and editting accordingly.
+You can create this by copying components/rdkit-lib/rdkit_loader.properties.template and editing accordingly.
 Download the necessary datafiles and place in data/testFiles as described in the configuration file.
 
 The eMolecules loader has one section tha handles both the building blocks and the screening compounds datasets.
@@ -80,7 +80,7 @@ the load you might want to look into doing the loading using a the
 The searchsearvice needs to know what database tables have been loaded.
 This is currently done using the STRUCTURE_DATABASE_TABLES environment variable
 that needs to be passes to the chemservices container. To do this set this variable
-in your docker/deply/setenv.sh file. The value must be a colon separated list of tabe names
+in your docker/deploy/setenv.sh file. The value must be a colon separated list of table names
 with no spaces or other characters allowed. For instance:
 
 ```

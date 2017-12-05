@@ -4,10 +4,10 @@ base=$PWD
 
 ./images-build-all.sh
 
-docker push squonk/portal
-docker push squonk/chem-services-basic
-docker push squonk/coreserver
-docker push squonk/cellexecutor
-docker push squonk/xwiki
-docker push squonk/flyway
+docker push squonk/portal:latest
+docker push squonk/chemservices-basic:latest
+docker push squonk/coreserver:latest
+docker push squonk/cellexecutor:latest
+docker push squonk/xwiki:latest
+docker push squonk/flyway:latest
 

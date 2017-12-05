@@ -75,7 +75,7 @@ services:
             retries: 5
 
     flyway:
-        image: squonk/flyway
+        image: squonk/flyway:latest
         environment:
             POSTGRES_PASSWORD:
         networks:
@@ -114,7 +114,7 @@ services:
     # curl -X POST -T mols.json "http://${PUBLIC_HOST}:8092/chem-services-cdk-basic/rest/v1/calculators/logp"
     #
     chemservices:
-        image: squonk/chem-services-basic
+        image: squonk/chemservices-basic:latest
         restart: on-failure:10
         environment:
             POSTGRES_SQUONK_PASSWORD:
@@ -135,7 +135,7 @@ services:
     # http://${PUBLIC_HOST}/coreservices/rest/v1/jobs
     #
     coreservices:
-        image: squonk/coreservices
+        image: squonk/coreservices:latest
         restart: on-failure:10
         volumes:
         - ./data/docker-services:/var/local/squonk-docker-services
@@ -166,7 +166,7 @@ services:
     # or point to other directories under /squonk/ using the SQUONK_DOCKER_WORK_DIR and/or
     # SQUONK_NEXTFLOW_WORK_DIR environment variables.
     cellexecutor:
-        image: squonk/cellexecutor
+        image: squonk/cellexecutor:latest
         restart: on-failure:10
         depends_on:
         - rabbitmq
@@ -190,7 +190,7 @@ services:
     ################# portal ##########################################################
     # available on http://${PUBLIC_HOST}/portal
     portal:
-        image: squonk/portal
+        image: squonk/portal:latest
         restart: on-failure:10
         volumes:
         - ./images/portal/logging.properties:/usr/local/tomcat/conf/logging.properties:ro

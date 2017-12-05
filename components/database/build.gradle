@@ -75,6 +75,6 @@ task buildDockerImage(type: DockerBuildImage) {
 
     inputDir = projectDir
     dockerFile = buildDockerFile.destFile
-    tag = "squonk/flyway"
+    tag = "squonk/flyway:latest"
 }
 

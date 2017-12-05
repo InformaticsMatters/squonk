@@ -239,7 +239,7 @@ task dockerImageChemServices(type: DockerBuildImage) {
     dependsOn = [chemServicesWars, dockerFileChemServices]
 
     inputDir = dockerFileChemServices.destFile.parentFile
-    tag = "squonk/chem-services-basic"
+    tag = "squonk/chemservices-basic:latest"
 }
 
 task dockerBuildImages() {

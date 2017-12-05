@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker pull squonk/chem-services-basic
-docker pull squonk/core-services-server
-docker pull squonk/cellexecutor
-docker pull squonk/portal
+docker pull squonk/chemservices-basic:latest
+docker pull squonk/core-services-server:latest
+docker pull squonk/cellexecutor:latest
+docker pull squonk/portal:latest
