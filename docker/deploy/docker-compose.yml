@@ -65,6 +65,8 @@ services:
             POSTGRES_KEYCLOAK_PASSWORD:
             POSTGRES_XWIKI_PASSWORD:
             POSTGRES_SQUONK_PASSWORD:
+        ports:
+        - "5432:5432"
         networks:
         - squonk_back
         # healthcheck borrowed from here: https://github.com/docker-library/healthcheck/tree/master/postgres
