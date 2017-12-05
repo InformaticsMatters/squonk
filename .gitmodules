@@ -1,3 +1,4 @@
 [submodule "pipelines"]
 	path = pipelines
 	url = https://github.com/InformaticsMatters/pipelines
+	branch = openshift
