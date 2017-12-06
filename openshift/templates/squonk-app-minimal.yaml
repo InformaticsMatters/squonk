@@ -1,6 +1,8 @@
+# THIS FILE WAS USED FOR A MINIMAL SQUONK SETUP WITHOUT KEYCLOAK
+#
 # oc adm policy add-cluster-role-to-user cluster-admin -z default
 #
-# oc process -f squonk-app.yaml | oc create -f -
+# oc process -f squonk-app-minimal.yaml | oc create -f -
 # oc delete all,cm,pvc,routes,secrets --selector template=squonk-app
 
 kind: Template

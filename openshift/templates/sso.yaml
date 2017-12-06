@@ -189,8 +189,9 @@ parameters:
 - displayName: SSO Service Password
   description: The password for the SSO service user.
   name: SSO_SERVICE_PASSWORD
-  value: ''
-  required: false
+  from: "[a-zA-Z0-9]{8}"
+  generate: expression
+  required: true
 - displayName: SSO Trust Store
   description: The name of the truststore file within the secret (e.g. truststore.jks)
   name: SSO_TRUSTSTORE

@@ -1,6 +1,6 @@
 # oc adm policy add-cluster-role-to-user cluster-admin -z default
 #
-# oc process -f squonk-app.yaml | oc create -f -
+# oc process -f squonk-app-keycloak.yaml | oc create -f -
 # oc delete all,cm,pvc,routes,secrets --selector template=squonk-app
 
 kind: Template
@@ -504,19 +504,13 @@ objects:
                 key: user-password
           - name: SERVICE_CALLBACK
             value: ${PORTAL_SERVICE_CALLBACK}
-          # TODO - remove this env. It's not used andy more. Kept for historical reasons.
-          - name: KEYCLOAK_SERVER_URL
-            valueFrom:
-              configMapKeyRef:
-                name: sso-config
-                key: keycloak.url
           volumeMounts:
             - mountPath: /usr/local/tomcat/webapps/portal/META-INF/context.xml
-              name: sso-config
+              name: squonk-sso-config
               subPath: context.xml
               readOnly: true
             - mountPath: /usr/local/tomcat/webapps/portal/WEB-INF/keycloak.json
-              name: sso-config
+              name: squonk-sso-config
               subPath: keycloak.json
               readOnly: true
 #          readinessProbe:
@@ -539,9 +533,10 @@ objects:
 #              cpu: ${PORTAL_CPU_REQUEST}
 #              memory: ${PORTAL_MEM_REQUEST}
         volumes:
-          - name: sso-config
+          - name: squonk-sso-config
             configMap:
-              name: sso-config
+              name: squonk-sso-config
+
 
 - kind: Service
   apiVersion: v1
