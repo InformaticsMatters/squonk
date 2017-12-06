@@ -2,7 +2,7 @@
 
 set -e pipefail
 
-./validate.sh
+../validate.sh
 
 oc login $OC_MASTER_URL -u $OC_USER > /dev/null
 oc project -q $OC_PROJECT
