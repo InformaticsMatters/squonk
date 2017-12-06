@@ -48,7 +48,6 @@ pipeline {
             }
             
             steps {
-                git branch: 'openshift', url: 'https://github.com/InformaticsMatters/squonk'
                 dir('components') {
                     sh './gradlew assemble --no-daemon'
                 }
@@ -78,7 +77,6 @@ pipeline {
             }
 
             steps {
-                git branch: 'openshift', url: 'https://github.com/InformaticsMatters/squonk'
                 sh 'git submodule update --init'
                 dir('pipelines') {
                     sh 'git checkout openshift'
@@ -110,6 +108,11 @@ pipeline {
         // --------------------------------------------------------------------
         stage ('Build (Docker)') {
 
+            // Only run these steps on the master branch
+            when {
+                branch 'master'
+            }
+
             // Here we build the docker images.
             // Again, the standard agents provided by OpenShift are not
             // enough, we need an agaent that's capable of building
@@ -119,7 +122,6 @@ pipeline {
             }
 
             steps {
-                git branch: 'openshift', url: 'https://github.com/InformaticsMatters/squonk'
                 sh 'git submodule update --init'
                 dir('pipelines') {
                     sh 'git checkout openshift'
@@ -149,8 +151,8 @@ pipeline {
     post {
         failure {
             mail to: 'achristie@informaticsmatters.com',
-            subject: 'Failed Pipeline',
-            body: 'Something is wrong'
+            subject: "Failed Pipeline",
+            body: "Something is wrong with ${env.BUILD_URL}"
         }
     }
     
