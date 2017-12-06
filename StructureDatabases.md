@@ -88,3 +88,37 @@ export STRUCTURE_DATABASE_TABLES=emolecules_order_sc:emolecules_order_bb:chembl_
 ```
 
 
+## SQL
+
+The SQL used to create the indexes looks like this (for chembl_23):
+
+```
+DROP TABLE IF EXISTS vendordbs.chembl_23_molfps;
+SELECT * INTO vendordbs.chembl_23_molfps FROM (SELECT id,mol_from_ctab(structure::cstring) m FROM vendordbs.chembl_23) tmp where m IS NOT NULL;
+ALTER TABLE vendordbs.chembl_23_molfps ADD PRIMARY KEY (id);
+ALTER TABLE vendordbs.chembl_23_molfps ADD CONSTRAINT fk_chembl_23_molfps_id FOREIGN KEY (id) REFERENCES vendordbs.chembl_23 (id);
+CREATE INDEX idx_chembl_23_molfps_m ON vendordbs.chembl_23_molfps USING gist(m);
+ALTER TABLE vendordbs.chembl_23_molfps DROP COLUMN IF EXISTS rdk CASCADE;
+ALTER TABLE vendordbs.chembl_23_molfps ADD COLUMN rdk bfp;
+UPDATE vendordbs.chembl_23_molfps SET rdk = rdkit_fp(m);
+CREATE INDEX idx_chembl_23_molfps_rdk ON vendordbs.chembl_23_molfps USING gist(rdk);
+ALTER TABLE vendordbs.chembl_23_molfps DROP COLUMN IF EXISTS mfp2 CASCADE;
+ALTER TABLE vendordbs.chembl_23_molfps ADD COLUMN mfp2 bfp;
+UPDATE vendordbs.chembl_23_molfps SET mfp2 = morganbv_fp(m,2);
+CREATE INDEX idx_chembl_23_molfps_mfp2 ON vendordbs.chembl_23_molfps USING gist(mfp2);
+ALTER TABLE vendordbs.chembl_23_molfps DROP COLUMN IF EXISTS ffp2 CASCADE;
+ALTER TABLE vendordbs.chembl_23_molfps ADD COLUMN ffp2 bfp;
+UPDATE vendordbs.chembl_23_molfps SET ffp2 = featmorganbv_fp(m,2);
+CREATE INDEX idx_chembl_23_molfps_ffp2 ON vendordbs.chembl_23_molfps USING gist(ffp2);
+```
+
+To test substructure search:
+```
+select count(*) from vendordbs.chembl_23_molfps WHERE m@>'c1cccc2c1CNCCN2';
+```
+
+To test similarity search:
+```
+select count(*) from vendordbs.chembl_23_molfps WHERE mfp2%morganbv_fp('CN1CCc2cccc3c2[C@H]1Cc1ccc(CO)c(O)c1-3');
+```
+
