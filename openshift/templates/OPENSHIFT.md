@@ -6,7 +6,12 @@ the `setenv.sh` file.
 By convention we refer to the project containing the infrastructure components (PostgreSQL, RabbitMQ, Keycloak) as the 
 `squonk-infra` project but this can be set using the $OC_INFRA_PROJECT environment variable.
 By convention we refer to the project containing the application components (portal, cellexectuor, coreservices, chemseervices-basic ...)
- as the `squonk` project but this can be set using the $OC_PROJECT environment variable.
+as the `squonk` project but this can be set using the $OC_PROJECT environment variable.
+ 
+The process is broken into two key parts:
+1. Deploy the infrastructure needed by Squonk. This includes PostgreSQL, Keycloak and RabbitMQ. This might already be deployed, 
+for instance, if runnning in an OpenRiskNet environment. Files for doing this are in the squonk-infra directory.
+2. Deploy the Squonk application components. Files for doing this are in the squonk-app directory.
 
 Before you run this you must create admin ($OC_ADMIN_USER) and squonk ($OC_USER) accounts
 and give the admin user cluster-admin role (as system:admin):
@@ -18,6 +23,10 @@ You must also deploy the xpaas image streams to your OpenShift environment:
 1. Now we are ready to start deploying.
 1.1 Create/edit setenv.sh
 1.2 `source setenv.sh`
+
+## Squonk Infrastructure
+
+Move into the squonk-infra directory
 
 2. Create the certificates used by Keycloak.
 The certs and keystores are protected by a single password that is spacified as the $OC_CERTS_PASSWORD variable.
@@ -42,7 +51,16 @@ You may need to run this to fix a bug that prevents Keycloak from starting:
 `oc volume dc/sso --add --claim-size 512M \
     --mount-path /opt/eap/standalone/configuration/standalone_xml_history \
     --name standalone-xml-history`
+    
+Once running you will need to add roles and user to the Keycloak realm.
+For instance:
+1. Create the `standard-user` role
+1. Add `standard-user`to the default roles
+1. Create sample users e.g. `user1` and assign passwords.
 
+## Squonk Application
+
+Move into the squonk-app directory
 
 3. Deploy Squonk to the `squonk` project:
 3.1. First configure the infrastructure: `./squonk-infra-deploy.sh`

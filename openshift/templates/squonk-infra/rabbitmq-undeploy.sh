@@ -2,7 +2,7 @@
 
 set -e
 
-./validate.sh
+../validate.sh
 
 oc login $OC_MASTER_URL -u $OC_ADMIN > /dev/null
 oc project -q $OC_INFRA_PROJECT

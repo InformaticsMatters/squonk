@@ -3,7 +3,7 @@
 
 set -e pipefail
 
-./validate.sh
+../validate.sh
 
 
 
