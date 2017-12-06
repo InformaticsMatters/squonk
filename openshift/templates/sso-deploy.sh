@@ -9,7 +9,7 @@ oc login $OC_MASTER_URL -u $OC_ADMIN > /dev/null
 oc project -q $OC_INFRA_PROJECT
 
 
-oc process -f sso-template.yaml\
+oc process -f sso.yaml\
  -p SSO_REALM=${KEYCLOAK_REALM}\
  -p HTTPS_PASSWORD=${OC_CERTS_PASSWORD}\
  -p JGROUPS_ENCRYPT_PASSWORD=${OC_CERTS_PASSWORD}\

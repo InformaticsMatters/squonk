@@ -4,6 +4,9 @@
 export OC_MASTER_HOSTNAME=example.org
 export KEYCLOAK_SECRET=secret-from-squonk-client-in-realm
 
+# You probably should change these:
+export OC_CERTS_PASSWORD=changeme
+
 # You might want to adjust these...
 export OC_DEPLOYMENT=squonk
 export OC_ADMIN=admin
@@ -16,7 +19,7 @@ export OC_INFRA_PROJECT=squonk-infra
 export OC_PROJECT=squonk
 export OC_SQUONK_APP=squonk-notebook
 export OC_SQUONK_HOST=${OC_SQUONK_APP}.${OC_ROUTES_BASENAME}
-export OC_CERTS_PASSWORD=changeme
+
 
 echo "OC_PROJECT set to $OC_PROJECT"
 echo "OC_INFRA_PROJECT set to $OC_INFRA_PROJECT"
