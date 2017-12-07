@@ -41,7 +41,7 @@ pipeline {
         // --------------------------------------------------------------------
         // Compilation and analysis stages
         // --------------------------------------------------------------------
-        stage ('Compile') {
+        stage('Compile') {
             parallel {
 
                 // Compile (Assemble) the code
@@ -86,7 +86,7 @@ pipeline {
         // --------------------------------------------------------------------
         // Test
         // --------------------------------------------------------------------
-        stage ('Test') {
+        stage('Test') {
 
             // The testing stage.
             // Here we require the services of Docker for some tests
@@ -111,7 +111,7 @@ pipeline {
 
             parrallel {
 
-                stage ('Unit Test') {
+                stage('Unit Test') {
 
                     steps {
                         sh 'git submodule update --init'
@@ -137,9 +137,10 @@ pipeline {
                             }
                         }
                     }
+
                 }
 
-                stage ('Code Coverage') {
+                stage('Code Coverage') {
 
                     steps {
                         sh 'git submodule update --init'
@@ -165,6 +166,7 @@ pipeline {
                             }
                         }
                     }
+
                 }
 
             }
