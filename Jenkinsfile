@@ -87,27 +87,26 @@ pipeline {
         // Test (Unit)
         // --------------------------------------------------------------------
         stage ('Test') {
-
-            // The unit-test stage.
-            // Here we require the services of Docker for some tests
-            // so the built-in `maven` agent is not enough.
-            // For now we defer to AWS until we have a Docker build
-            // solution from within OpenShift.
-            agent {
-                label 'aws-im-m3large'
-            }
-
-            environment {
-                CPSIGN_MODEL_DIR = "${env.WORKSPACE}/tmp/cpsign"
-                CPSIGN_LICENSE_URL = "${env.WORKSPACE}/data/licenses/cpsign0.3pro.license"
-                SQUONK_DOCKER_WORK_DIR = "${env.WORKSPACE}/tmp"
-                SQUONK_NEXTFLOW_WORK_DIR = "${env.WORKSPACE}/tmp"
-            }
-
             parallel {
 
-                // Standard unit tests
+                // Unit test the code
                 stage('Unit Test') {
+
+                    // The unit-test stage.
+                    // Here we require the services of Docker for some tests
+                    // so the built-in `maven` agent is not enough.
+                    // For now we defer to AWS until we have a Docker build
+                    // solution from within OpenShift.
+                    agent {
+                        label 'aws-im-m3large'
+                    }
+
+                    environment {
+                        CPSIGN_MODEL_DIR = "${env.WORKSPACE}/tmp/cpsign"
+                        CPSIGN_LICENSE_URL = "${env.WORKSPACE}/data/licenses/cpsign0.3pro.license"
+                        SQUONK_DOCKER_WORK_DIR = "${env.WORKSPACE}/tmp"
+                        SQUONK_NEXTFLOW_WORK_DIR = "${env.WORKSPACE}/tmp"
+                    }
 
                     steps {
                         sh 'git submodule update --init'
@@ -136,8 +135,24 @@ pipeline {
 
                 }
 
-                // Code coverage analysis
+                // Unit test the code
                 stage('Code Coverage') {
+
+                    // The unit-test stage.
+                    // Here we require the services of Docker for some tests
+                    // so the built-in `maven` agent is not enough.
+                    // For now we defer to AWS until we have a Docker build
+                    // solution from within OpenShift.
+                    agent {
+                        label 'aws-im-m3large'
+                    }
+
+                    environment {
+                        CPSIGN_MODEL_DIR = "${env.WORKSPACE}/tmp/cpsign"
+                        CPSIGN_LICENSE_URL = "${env.WORKSPACE}/data/licenses/cpsign0.3pro.license"
+                        SQUONK_DOCKER_WORK_DIR = "${env.WORKSPACE}/tmp"
+                        SQUONK_NEXTFLOW_WORK_DIR = "${env.WORKSPACE}/tmp"
+                    }
 
                     steps {
                         sh 'git submodule update --init'
