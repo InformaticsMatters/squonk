@@ -43,6 +43,7 @@ allprojects {
     apply plugin: 'maven'  // Maven repo stuff
     apply plugin: 'org.ajoberstar.grgit' // Git repo tools (grgit.branch.getCurrent())
     apply plugin: 'findbugs' // Java static analyser
+    apply plugin: 'jacoco' // Code coverage
 
     sourceCompatibility = 1.8
     version = '0.2-SNAPSHOT'
@@ -99,6 +100,21 @@ allprojects {
         ignoreFailures = true
         reportLevel = 'high'
         effort = 'max'
+    }
+    tasks.withType(FindBugs) {
+        reports {
+            html.enabled true
+        }
+    }
+
+    // Configure JaCoCo (code coverage)
+    jacocoTestReport {
+        group = "Reporting"
+        reports {
+            xml.enabled true
+            csv.enabled false
+            html.destination "${buildDir}/reports/coverage"
+        }
     }
 
 }
