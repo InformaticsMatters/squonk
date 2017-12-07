@@ -102,6 +102,7 @@ allprojects {
         effort = 'max'
     }
     tasks.withType(FindBugs) {
+        task -> enabled = gradle.startParameter.taskNames.contains(task.name)
         reports {
             xml.enabled false
             html.enabled true
