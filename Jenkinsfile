@@ -41,7 +41,7 @@ pipeline {
         // --------------------------------------------------------------------
         // Compilation and analysis stages
         // --------------------------------------------------------------------
-        stage('Compile') {
+        stage ('Compilation') {
             parallel {
 
                 // Compile (Assemble) the code
@@ -84,22 +84,22 @@ pipeline {
         }
 
         // --------------------------------------------------------------------
-        // Test
+        // Test (Unit)
         // --------------------------------------------------------------------
-        stage('Test') {
+        stage ('Test (Unit)') {
 
-            // The testing stage.
+            // Only run these steps on the openshift branch.
+            when {
+                branch 'openshift'
+            }
+
+            // The unit-test stage.
             // Here we require the services of Docker for some tests
             // so the built-in `maven` agent is not enough.
             // For now we defer to AWS until we have a Docker build
             // solution from within OpenShift.
             agent {
                 label 'aws-im-m3large'
-            }
-
-            // Only run these steps on the openshift branch.
-            when {
-                branch '*/openshift'
             }
 
             environment {
@@ -109,67 +109,31 @@ pipeline {
                 SQUONK_NEXTFLOW_WORK_DIR = "${env.WORKSPACE}/tmp"
             }
 
-            parrallel {
-
-                stage('Unit Test') {
-
-                    steps {
-                        sh 'git submodule update --init'
-                        dir('pipelines') {
-                            sh 'git checkout openshift'
-                            sh './copy.dirs.sh'
-                        }
-                        dir('components') {
-                            withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
-                                             file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
-                                             file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
-                                sh 'chmod u+w $CP_FILE'
-                                sh 'chmod u+w $CX_FILE'
-                                sh 'chmod u+w $CX_LIB'
-                                sh 'mkdir -p ../data/licenses'
-                                sh 'mkdir -p ../tmp/cpsign'
-                                sh 'mkdir -p ~/.chemaxon'
-                                sh 'mv -n $CP_FILE ../data/licenses'
-                                sh 'cp -n $CX_FILE ~/.chemaxon'
-                                sh 'mv -n $CX_FILE ../data/licenses'
-                                sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
-                                sh './gradlew build --no-daemon'
-                            }
-                        }
-                    }
-
+            steps {
+                sh 'git submodule update --init'
+                dir('pipelines') {
+                    sh 'git checkout openshift'
+                    sh './copy.dirs.sh'
                 }
-
-                stage('Code Coverage') {
-
-                    steps {
-                        sh 'git submodule update --init'
-                        dir('pipelines') {
-                            sh 'git checkout openshift'
-                            sh './copy.dirs.sh'
-                        }
-                        dir('components') {
-                            withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
-                                             file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
-                                             file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
-                                sh 'chmod u+w $CP_FILE'
-                                sh 'chmod u+w $CX_FILE'
-                                sh 'chmod u+w $CX_LIB'
-                                sh 'mkdir -p ../data/licenses'
-                                sh 'mkdir -p ../tmp/cpsign'
-                                sh 'mkdir -p ~/.chemaxon'
-                                sh 'mv -n $CP_FILE ../data/licenses'
-                                sh 'cp -n $CX_FILE ~/.chemaxon'
-                                sh 'mv -n $CX_FILE ../data/licenses'
-                                sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
-                                sh './gradlew test jacocoTestReport --no-daemon'
-                            }
-                        }
+                dir('components') {
+                    withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
+                                     file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
+                                     file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
+                        sh 'chmod u+w $CP_FILE'
+                        sh 'chmod u+w $CX_FILE'
+                        sh 'chmod u+w $CX_LIB'
+                        sh 'mkdir -p ../data/licenses'
+                        sh 'mkdir -p ../tmp/cpsign'
+                        sh 'mkdir -p ~/.chemaxon'
+                        sh 'mv -n $CP_FILE ../data/licenses'
+                        sh 'cp -n $CX_FILE ~/.chemaxon'
+                        sh 'mv -n $CX_FILE ../data/licenses'
+                        sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
+                        sh './gradlew build --no-daemon'
                     }
-
                 }
-
             }
+
         }
 
         // --------------------------------------------------------------------
@@ -179,7 +143,7 @@ pipeline {
 
             // Only run these steps on the openshift branch.
             when {
-                branch '*/openshift'
+                branch 'openshift'
             }
 
             // Here we build the docker images.
