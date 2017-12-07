@@ -26,9 +26,12 @@ You must also deploy the xpaas image streams to your OpenShift environment:
 oc create -f https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v3.6/xpaas-streams/jboss-image-streams.json -n openshift
 ```
 
-1. Now we are ready to start deploying.
-1.1 Create/edit setenv.sh
-1.2 `source setenv.sh`
+Now we are ready to start deploying.
+
+Create/edit setenv.sh:
+```
+source setenv.sh
+```
 
 ## Squonk Infrastructure
 
@@ -37,7 +40,8 @@ Move into the squonk-infra directory
 Create the certificates used by Keycloak.
 The certs and keystores are protected by a single password that is spacified as the $OC_CERTS_PASSWORD variable.
 
-```./certs-create.sh
+```
+./certs-create.sh
 ```
 
 Create projects as the $OC_ADMIN_USER user:
@@ -60,16 +64,20 @@ minishift ssh -- sudo chmod 777 /mnt/sda1/var/lib/minishift/openshift.local.pv/p
 (lookup the appropriate PV to fix)
 
 You may need to run this to fix a bug that prevents Keycloak from starting:
-```oc volume dc/sso --add --claim-size 512M \
+```
+oc volume dc/sso --add --claim-size 512M \
     --mount-path /opt/eap/standalone/configuration/standalone_xml_history \
     --name standalone-xml-history
 ```
     
 Once running you will need to add roles and user to the Keycloak realm.
 For instance:
-1. Create the `standard-user` role
-1. Add `standard-user`to the default roles
-1. Create sample users e.g. `user1` and assign passwords.
+
+Create the `standard-user` role
+
+Add `standard-user`to the default roles
+
+Create sample users e.g. `user1` and assign passwords.
 
 ## Squonk Application
 
