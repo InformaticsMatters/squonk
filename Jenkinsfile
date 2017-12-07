@@ -17,10 +17,13 @@
 //
 // You will also need an AWS EC2 slave configured using the following label.
 // The server should be running an AMI that is using Linux (probably ubuntu)
-// that also has Java, Docker and Docker-Compose installed.
+// that also has Java, Docker and Docker-Compose installed (the one I built
+// with Packer is ami-353eb05a).
+//
 // You are unlikely to be able to get away with anything less than an
-// `m2.medium` instance type.
-//      - aws-im
+// `m3.large` for the testing stage instance type.
+//      - aws-im-t2large
+//      - aws-im-m3large
 
 pipeline {
 
@@ -66,7 +69,7 @@ pipeline {
             // For now we defer to AWS until we have a Docker build
             // solution from within OpenShift.
             agent {
-                label 'aws-im'
+                label 'aws-im-m3large'
             }
 
             environment {
@@ -108,9 +111,9 @@ pipeline {
         // --------------------------------------------------------------------
         stage ('Build (Docker)') {
 
-            // Only run these steps on the master branch
+            // Only run these steps on the openshift branch.
             when {
-                branch 'master'
+                branch 'openshift'
             }
 
             // Here we build the docker images.
@@ -118,7 +121,7 @@ pipeline {
             // enough, we need an agaent that's capable of building
             // Docker images.
             agent {
-                label 'aws-im'
+                label 'aws-im-t2large'
             }
 
             steps {
