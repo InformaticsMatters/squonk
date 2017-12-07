@@ -42,6 +42,7 @@ allprojects {
     apply plugin: 'groovy' // Apply the groovy plugin (also adds support for Java)
     apply plugin: 'maven'  // Maven repo stuff
     apply plugin: 'org.ajoberstar.grgit' // Git repo tools (grgit.branch.getCurrent())
+    apply plugin: 'findbugs' // Java static analyser
 
     sourceCompatibility = 1.8
     version = '0.2-SNAPSHOT'
@@ -90,6 +91,14 @@ allprojects {
         // Spock for unit testing
         testCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
         testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+    }
+
+    // Configure FindBugs (static code analysis)
+    findbugs {
+        reportsDir = file("$project.buildDir/findbugsReports")
+        ignoreFailures = true
+        reportLevel = 'high'
+        effort = 'max'
     }
 
 }

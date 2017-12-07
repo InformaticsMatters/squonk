@@ -39,23 +39,48 @@ pipeline {
     stages {
 
         // --------------------------------------------------------------------
-        // Assemble
+        // Compilation and analysis stages
         // --------------------------------------------------------------------
-        stage('Assemble') {
+        stage ('Compilation') {
+            parallel {
 
-            // The assemble step is designed for jobs that execute rapidly.
-            // This is not about testing or Docker,
-            // This step is just about making sure the code compiles.
-            agent {
-                label 'maven'
-            }
-            
-            steps {
-                dir('components') {
-                    sh './gradlew assemble --no-daemon'
+                // Compile (Assemble) the code
+                stage('Assemble') {
+
+                    // The assemble step is designed for jobs that execute rapidly.
+                    // This is not about testing or Docker,
+                    // This step is just about making sure the code compiles.
+                    agent {
+                        label 'maven'
+                    }
+
+                    steps {
+                        dir('components') {
+                            sh './gradlew assemble --no-daemon'
+                        }
+                    }
+
                 }
-            }
 
+                // Static analysis (FindBugs)
+                stage('Static Analyis') {
+
+                    // The assemble step is designed for jobs that execute rapidly.
+                    // This is not about testing or Docker,
+                    // This step is just about making sure the code compiles.
+                    agent {
+                        label 'maven'
+                    }
+
+                    steps {
+                        dir('components') {
+                            sh './gradlew findbugsMain --no-daemon'
+                        }
+                    }
+
+                }
+
+            }
         }
         
         // --------------------------------------------------------------------
