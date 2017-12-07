@@ -63,6 +63,11 @@ pipeline {
         // --------------------------------------------------------------------
         stage ('Test (Unit)') {
 
+            // Only run these steps on the openshift branch.
+            when {
+                branch 'openshift'
+            }
+
             // The unit-test stage.
             // Here we require the services of Docker for some tests
             // so the built-in `maven` agent is not enough.
