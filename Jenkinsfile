@@ -189,11 +189,6 @@ pipeline {
         // --------------------------------------------------------------------
         stage ('Build (Docker)') {
 
-            // Only run these steps on the openshift branch.
-            when {
-                branch 'openshift'
-            }
-
             // Here we build the docker images.
             // Again, the standard agents provided by OpenShift are not
             // enough, we need an agaent that's capable of building
