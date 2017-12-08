@@ -45,6 +45,12 @@ flyway {
     println "Using DB URL of $url"
 }
 
+docker {
+    //println "Using docker host of $dockerHost"
+    url = dockerHost
+    certPath = dockerCertPath
+}
+
 task buildDockerFile(type: Dockerfile) {
 
     destFile = project.file('build/Dockerfile')

@@ -64,8 +64,11 @@ public class ChemcentralSearcher {
 
     public ChemcentralSearcher(String statsRouteUri) {
         this.statsRouteUri = statsRouteUri;
-        String pw = IOUtils.getConfiguration("POSTGRES_SQUONK_PASSWORD", "squonk");
-        this.chemchentralDataSource = SquonkServerConfig.createDataSource("postgres", new Integer(5432), "squonk", pw, "chemcentral");
+        String host = IOUtils.getConfiguration("POSTGRES_HOSTNAME", "postgresql-rdkit-cartridge");
+        String user = IOUtils.getConfiguration("POSTGRES_CHEMCENTRAL_USER", "chemcentral");
+        String pw = IOUtils.getConfiguration("POSTGRES_CHEMCENTRAL_PASSWORD", "chemcentral");
+        LOG.info("Connecting to postgres at " + host + " as user " + user);
+        this.chemchentralDataSource = SquonkServerConfig.createDataSource(host, new Integer(5432), user, pw, "chemcentral");
     }
 
     public void executeSearch(Exchange exch) throws IOException {
