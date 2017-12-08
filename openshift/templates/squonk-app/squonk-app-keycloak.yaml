@@ -315,7 +315,7 @@ objects:
         volumes:
         - name: squonk-docker-services
           persistentVolumeClaim:
-            claimName: core-service-descriptors-pvc
+            claimName: squonk-service-descriptors-pvc
 
 - kind: Service
   apiVersion: v1
@@ -360,7 +360,7 @@ objects:
         volumes:
         - name: loader-volume
           persistentVolumeClaim:
-            claimName: core-service-descriptors-pvc
+            claimName: squonk-service-descriptors-pvc
         restartPolicy: Never
 
 # -----------------------------------------------------------------------------

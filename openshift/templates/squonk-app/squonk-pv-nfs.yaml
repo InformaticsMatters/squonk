@@ -45,7 +45,7 @@ objects:
 - kind: PersistentVolume
   apiVersion: v1
   metadata:
-    name: core-service-descriptors
+    name: squonk-service-descriptors
   spec:
     capacity:
       storage: ${CORE_SD_PVC_SIZE}
@@ -54,9 +54,9 @@ objects:
     persistentVolumeReclaimPolicy: Recycle
     nfs:
       server: ${NFS_SERVER}
-      path: ${NFS_PATH}/core-service-descriptors
+      path: ${NFS_PATH}/squonk-service-descriptors
     claimRef:
-      name: core-service-descriptors-pvc
+      name: squonk-service-descriptors-pvc
       namespace: ${APP_NAMESPACE}
 
 - kind: PersistentVolumeClaim
@@ -75,10 +75,10 @@ objects:
 - kind: PersistentVolumeClaim
   apiVersion: v1
   metadata:
-    name: core-service-descriptors-pvc
+    name: squonk-service-descriptors-pvc
     namespace: ${APP_NAMESPACE}
   spec:
-    volumeName: core-service-descriptors
+    volumeName: squonk-service-descriptors
     accessModes:
     - ReadWriteMany
     resources:

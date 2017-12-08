@@ -20,7 +20,7 @@ objects:
 - kind: PersistentVolumeClaim
   apiVersion: v1
   metadata:
-    name: core-service-descriptors-pvc
+    name: squonk-service-descriptors-pvc
     namespace: ${APP_NAMESPACE}
   spec:
     accessModes:
