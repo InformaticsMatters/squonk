@@ -78,7 +78,7 @@ objects:
     name: core-service-descriptors-pvc
     namespace: ${APP_NAMESPACE}
   spec:
-    volumeName: squonk-service-descriptors
+    volumeName: core-service-descriptors
     accessModes:
     - ReadWriteMany
     resources:
