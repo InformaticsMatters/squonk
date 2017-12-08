@@ -2,7 +2,6 @@
 
 # You must define these...
 export OC_MASTER_HOSTNAME=example.org
-export KEYCLOAK_SECRET=secret-from-squonk-client-in-realm
 
 # You probably should change these:
 export OC_CERTS_PASSWORD=changeme
@@ -30,5 +29,4 @@ echo "OC_USER set to $OC_USER"
 echo "OC_SQUONK_HOST set to $OC_SQUONK_HOST"
 echo "KEYCLOAK_SERVER_URL set to $KEYCLOAK_SERVER_URL"
 echo "KEYCLOAK_REALM set to $KEYCLOAK_REALM"
-echo "KEYCLOAK_SECRET set to $KEYCLOAK_SECRET"
 

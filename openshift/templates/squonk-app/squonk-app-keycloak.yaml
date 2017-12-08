@@ -246,18 +246,6 @@ objects:
 # CoreServices
 # -----------------------------------------------------------------------------
 
-- kind: PersistentVolumeClaim
-  apiVersion: v1
-  metadata:
-    name: core-service-descriptors-pvc
-    namespace: ${APP_NAMESPACE}
-  spec:
-    accessModes:
-    - ReadWriteMany
-    resources:
-      requests:
-        storage: ${CORE_SD_PVC_SIZE}
-
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
@@ -378,26 +366,6 @@ objects:
 # -----------------------------------------------------------------------------
 # CellExecutor
 # -----------------------------------------------------------------------------
-
-# IMPORTANT NOTE
-#
-# This template is a just a 'shell' at the moment.
-# It creates the cellexecutor service but the template
-# is incomplete as a number of mounts and comms issues
-# still need to be resolved. It is present here simply
-# to act as the starting point for the finished article.
-
-- kind: PersistentVolumeClaim
-  apiVersion: v1
-  metadata:
-    name: squonk-work-dir-pvc
-    namespace: ${APP_NAMESPACE}
-  spec:
-    accessModes:
-    - ReadWriteMany
-    resources:
-      requests:
-        storage: ${CELL_WORK_PVC_SIZE}
 
 - kind: DeploymentConfig
   apiVersion: v1

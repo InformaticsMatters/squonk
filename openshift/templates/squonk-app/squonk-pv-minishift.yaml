@@ -1,0 +1,42 @@
+kind: Template
+apiVersion: v1
+metadata:
+  name: squonk-pv-minishift
+  annotations:
+    description: Squonk Persistent Volumes using Minishift
+    tags: squonk,pv
+labels:
+  template: squonk-pv-minishift
+  app: squonk-app
+
+parameters:
+
+- name: APP_NAMESPACE
+  value: squonk
+
+
+objects:
+
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    name: core-service-descriptors-pvc
+    namespace: ${APP_NAMESPACE}
+  spec:
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: 100Mi
+
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    name: squonk-work-dir-pvc
+    namespace: ${APP_NAMESPACE}
+  spec:
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: 1000Mi

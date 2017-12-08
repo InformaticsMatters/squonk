@@ -1,0 +1,86 @@
+kind: Template
+apiVersion: v1
+metadata:
+  name: squonk-persistence-nfs
+  annotations:
+    description: Squonk Persistent Volumes using NFS
+    tags: squonk,pv
+labels:
+  template: squonk-pv-nfs
+  app: squonk-app
+
+parameters:
+
+- name: NFS_SERVER
+  value: infra-1
+- name: NFS_PATH
+  value: /exports
+- name: APP_NAMESPACE
+  value: squonk
+- name: CORE_SD_PVC_SIZE
+  value: 100Mi
+- name: CELL_WORK_PVC_SIZE
+  value: 20Gi
+
+
+objects:
+
+- kind: PersistentVolume
+  apiVersion: v1
+  metadata:
+    name: squonk-work-dir
+  spec:
+    capacity:
+      storage: ${CELL_WORK_PVC_SIZE}
+    accessModes:
+    - ReadWriteMany
+    persistentVolumeReclaimPolicy: Recycle
+    nfs:
+      server: ${NFS_SERVER}
+      path: ${NFS_PATH}/squonk-work-dir
+    claimRef:
+      name: squonk-work-dir-pvc
+      namespace: ${APP_NAMESPACE}
+
+- kind: PersistentVolume
+  apiVersion: v1
+  metadata:
+    name: core-service-descriptors
+  spec:
+    capacity:
+      storage: ${CORE_SD_PVC_SIZE}
+    accessModes:
+    - ReadWriteMany
+    persistentVolumeReclaimPolicy: Recycle
+    nfs:
+      server: ${NFS_SERVER}
+      path: ${NFS_PATH}/core-service-descriptors
+    claimRef:
+      name: core-service-descriptors-pvc
+      namespace: ${APP_NAMESPACE}
+
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    name: squonk-work-dir-pvc
+    namespace: ${APP_NAMESPACE}
+  spec:
+    volumeName: squonk-work-dir
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: ${CELL_WORK_PVC_SIZE}
+
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    name: core-service-descriptors-pvc
+    namespace: ${APP_NAMESPACE}
+  spec:
+    volumeName: squonk-service-descriptors
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: ${CORE_SD_PVC_SIZE}
