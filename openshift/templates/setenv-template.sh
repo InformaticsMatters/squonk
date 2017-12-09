@@ -10,10 +10,12 @@ export OC_MASTER_URL=https://${OC_MASTER_HOSTNAME}:8443
 export OC_ROUTES_BASENAME=${OC_MASTER_HOSTNAME}.nip.io
 export KEYCLOAK_SERVER_URL=https://sso.${OC_ROUTES_BASENAME}/auth
 export KEYCLOAK_REALM=squonk
+export KEYCLOAK_LOGOUT_REDIRECT_TO=http://home.${OC_ROUTES_BASENAME}/
 export OC_INFRA_PROJECT=squonk-infra
 export OC_PROJECT=squonk
 export OC_SQUONK_APP=squonk-notebook
 export OC_SQUONK_HOST=${OC_SQUONK_APP}.${OC_ROUTES_BASENAME}
+
 
 
 echo "OC_PROJECT set to $OC_PROJECT"
