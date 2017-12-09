@@ -102,7 +102,7 @@ objects:
       CLIENT_CONFIG="{\"clientId\":\"$CLIENT_ID\",
         \"name\":\"$CLIENT_NAME\",
         \"description\":\"$CLIENT_DESC\",
-        \"redirectUris\":["\"$CLIENT_HTTPS/portal/*\",\"$CLIENT_HTTP/portal/*\",\"${LOGOUT_REDIRECT_TO}\""],
+        \"redirectUris\":["\"$CLIENT_HTTPS/portal/*\",\"$CLIENT_HTTP/portal/*\",\"${LOGOUT_REDIRECT_TO}/*\""],
         \"protocol\":\"openid-connect\",
         \"baseUrl\":\"$CLIENT_HTTPS\",
         \"rootUrl\":\"\",
