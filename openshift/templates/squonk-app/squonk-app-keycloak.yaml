@@ -43,7 +43,7 @@ parameters:
 # ------
 
 - name: PORTAL_IMAGE_TAG
-  value: latest
+  value: openshift
 - name: PORTAL_SERVICE_CALLBACK
   value: "http://localhost:8080/portal"
 - name: SQUONK_HOST
@@ -473,13 +473,8 @@ objects:
           - name: SERVICE_CALLBACK
             value: ${PORTAL_SERVICE_CALLBACK}
           volumeMounts:
-            - mountPath: /usr/local/tomcat/webapps/portal/META-INF/context.xml
+            - mountPath: /tomcat-goodies
               name: squonk-sso-config
-              subPath: context.xml
-              readOnly: true
-            - mountPath: /usr/local/tomcat/webapps/portal/WEB-INF/keycloak.json
-              name: squonk-sso-config
-              subPath: keycloak.json
               readOnly: true
 #          readinessProbe:
 #            httpGet:

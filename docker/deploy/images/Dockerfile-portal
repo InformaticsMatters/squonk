@@ -1,5 +1,5 @@
 FROM tomcat:8.0-jre8
-MAINTAINER Tim Dudgeon <tdudgeon@informaticsmatters.com>
+LABEL maintainer="Tim Dudgeon <tdudgeon@informaticsmatters.com>"
 
 RUN echo JAVA_OPTS='"-Dcom.sun.jersey.server.impl.cdi.lookupExtensionInBeanManager=true -Dcom.squonk.keycloak.baseurl=$KEYCLOAK_SERVER_URL"' > /usr/local/tomcat/bin/setenv.sh
 RUN rm -rf              /usr/local/tomcat/webapps/*
@@ -17,5 +17,13 @@ RUN cd /usr/local/tomcat/webapps/portal/WEB-INF/lib && rm commons-codec-*.jar co
 COPY portal/tomcat-users.xml /usr/local/tomcat/conf/
 COPY portal/web.xml portal/beans.xml portal/persistence.properties /usr/local/tomcat/webapps/portal/WEB-INF/
 
- 
-EXPOSE 8080
+# The following lines are a hack to work around a issue with mounting a ConfigMap with a speecified subPath.
+# Create default content for the keycloak.json and context.xml files
+RUN mkdir /tomcat-goodies && touch /tomcat-goodies/keycloak.json
+COPY portal/context-empty.xml /tomcat-goodies/context.xml
+# Copy the alterantive run command to the image
+COPY portal/run.sh /usr/local/tomcat/bin/run-portal.sh
+
+# Override the default run command with one that copies the files from /tomcat-goodies to their necessary locations
+# and then execs the 'catalina.sh run' command
+CMD ["run-portal.sh"]

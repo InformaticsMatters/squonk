@@ -35,7 +35,7 @@ source setenv.sh
 
 ## Squonk Infrastructure
 
-Move into the squonk-infra directory
+Move into the `squonk-infra` directory.
 
 Create the certificates used by Keycloak.
 The certs and keystores are protected by a single password that is spacified as the $OC_CERTS_PASSWORD variable.
@@ -81,7 +81,7 @@ Create sample users e.g. `user1` and assign passwords.
 
 ## Squonk Application
 
-Move into the squonk-app directory and deploy Squonk to the `squonk` project:
+Move into the `squonk-app` directory and deploy Squonk to the `squonk` project:
 
 ### Persistent volumes
 
