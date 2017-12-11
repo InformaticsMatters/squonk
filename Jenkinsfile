@@ -226,7 +226,7 @@ pipeline {
 
     post {
         failure {
-            mail to: 'achristie@informaticsmatters.com',
+            mail to: 'achristie@informaticsmatters.com tdudgeon@informaticsmatters.com',
             subject: "Failed Pipeline",
             body: "Something is wrong with ${env.BUILD_URL}"
         }
