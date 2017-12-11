@@ -1,8 +1,5 @@
 // The Squonk/OepnShift CI/CD Jenkins Pipeline.
 //
-//         THIS IS A WORK-IN-PROGRESS
-//       AND SHOULD BE CONSIDERED 'ALPHA'
-//
 // We expext a Jenkins server that supports pipelines
 // running inside an OpenShift environment with
 // a built-in server knwon bny the label `maven`.
