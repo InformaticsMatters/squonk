@@ -35,7 +35,7 @@ source setenv.sh
 
 ## Squonk Infrastructure
 
-Move into the squonk-infra directory
+Move into the `squonk-infra` directory.
 
 Create the certificates used by Keycloak.
 The certs and keystores are protected by a single password that is spacified as the $OC_CERTS_PASSWORD variable.
@@ -81,11 +81,25 @@ Create sample users e.g. `user1` and assign passwords.
 
 ## Squonk Application
 
-Move into the squonk-app directory
+Move into the `squonk-app` directory and deploy Squonk to the `squonk` project:
 
-Deploy Squonk to the `squonk` project:
+### Persistent volumes
 
-First configure the infrastructure: 
+First specify the how the persistent volumes are to be provided.
+
+On Minshift:
+```
+oc process -f squonk-pv-minishift.yaml | oc create -f -
+```
+
+On OpenShift using NFS first create NFS mounts named `squonk-work-dir` and `core-service-descriptors` and then define the
+PVs and PVCs:
+```
+oc process -f squonk-pv-nfs.yaml | oc create -f -
+```
+ 
+
+Next configure the infrastructure: 
 ```
 ./squonk-infra-deploy.sh
 ```

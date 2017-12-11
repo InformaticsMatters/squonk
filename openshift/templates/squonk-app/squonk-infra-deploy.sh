@@ -23,7 +23,10 @@ oc process\
   | oc create -f -
 
 echo "Preparing Keycloak"
-oc process -f squonk-infra-keycloak-init.yaml -p KEYCLOAK_REALM=$KEYCLOAK_REALM -p ROUTES_BASE_HOSTNAME=$OC_ROUTES_BASENAME \
+oc process -f squonk-infra-keycloak-init.yaml \
+  -p KEYCLOAK_REALM=$KEYCLOAK_REALM\
+  -p ROUTES_BASE_HOSTNAME=$OC_ROUTES_BASENAME \
+  -p LOGOUT_REDIRECT_TO=$KEYCLOAK_LOGOUT_REDIRECT_TO\
   | oc create -f -
 
 oc project -q $OC_PROJECT

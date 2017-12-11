@@ -56,6 +56,10 @@ parameters:
   name: KEYCLOAK_REALM
   value: squonk
 
+- displayName: Redirect URL after logout
+  name: LOGOUT_REDIRECT_TO
+  required: true
+
 
 objects:
 
@@ -98,7 +102,7 @@ objects:
       CLIENT_CONFIG="{\"clientId\":\"$CLIENT_ID\",
         \"name\":\"$CLIENT_NAME\",
         \"description\":\"$CLIENT_DESC\",
-        \"redirectUris\":["\"$CLIENT_HTTPS/portal/*\",\"$CLIENT_HTTP/portal/*\""],
+        \"redirectUris\":["\"$CLIENT_HTTPS/portal/*\",\"$CLIENT_HTTP/portal/*\",\"${LOGOUT_REDIRECT_TO}/*\""],
         \"protocol\":\"openid-connect\",
         \"baseUrl\":\"$CLIENT_HTTPS\",
         \"rootUrl\":\"\",
