@@ -50,8 +50,8 @@ pipeline {
 
             steps {
 
-                sh 'export DOCKER_HOST=tcp://${KUBERNETES_SERVICE_HOST}:2375'
-                sh 'echo ${DOCKER_HOST}'
+                sh 'export ORG_GRADLE_PROJECT_DOCKER_HOST=tcp://${KUBERNETES_SERVICE_HOST}:2375'
+                sh 'echo ${ORG_GRADLE_PROJECT_DOCKER_HOST}'
 
                 sh 'git submodule update --init'
                 dir('pipelines') {
