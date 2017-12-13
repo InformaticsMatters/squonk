@@ -64,6 +64,13 @@ public abstract class AbstractRunner implements ContainerRunner {
 
     public void init() throws IOException {
         LOG.info("init() - " + hostWorkDir.getPath());
+        // The working directory cannot exist.
+        // if it does this may indicate the clean-up process failed for
+        // an earlier run.
+        if (hostWorkDir.exists()) {
+            throw new IOException("Work dir exists" +
+                    " (" + hostWorkDir.getPath() + "). Clean-up problem?");
+        }
         if (!hostWorkDir.mkdir()) {
             throw new IOException("Could not create work dir " + hostWorkDir.getPath());
         }
