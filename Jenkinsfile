@@ -77,11 +77,13 @@ pipeline {
             }
 
             steps {
-                sh 'git submodule update --init'
+                // Prepare the sub-projects
+                sh 'git submodule update --recursive --remote --init'
+                // Move pipleines project data to Squonk...
                 dir('pipelines') {
-                    sh 'git checkout openshift'
                     sh './copy.dirs.sh'
                 }
+                // Squonk...
                 dir('components') {
                     withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
                                      file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
@@ -118,11 +120,13 @@ pipeline {
             }
 
             steps {
-                sh 'git submodule update --init'
+                // Prepare the sub-projects
+                sh 'git submodule update --recursive --remote --init'
+                // Move pipleines project data to Squonk...
                 dir('pipelines') {
-                    sh 'git checkout openshift'
                     sh './copy.dirs.sh'
                 }
+                // Squonk...
                 dir('components') {
                     withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
                                      file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
