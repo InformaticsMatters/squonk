@@ -68,7 +68,7 @@ pipeline {
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
 
                         sh 'export DOCKER_HOST=tcp://${KUBERNETES_SERVICE_HOST}:2375'
-                        sh 'echo ${DOCKER_HOST}
+                        sh 'echo ${DOCKER_HOST}'
 
                         sh './gradlew buildDockerImages -x test --no-daemon'
 
