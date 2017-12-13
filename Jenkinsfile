@@ -36,152 +36,6 @@ pipeline {
     stages {
 
         // --------------------------------------------------------------------
-        // Compilation and analysis stages
-        // --------------------------------------------------------------------
-        stage ('Compilation') {
-            parallel {
-
-                // Compile (Assemble) the code
-                stage('Assemble') {
-
-                    // The assemble step is designed for jobs that execute rapidly.
-                    // This is not about testing or Docker,
-                    // This step is just about making sure the code compiles.
-                    agent {
-                        label 'maven'
-                    }
-
-                    steps {
-                        dir('components') {
-                            sh './gradlew assemble --no-daemon'
-                        }
-                    }
-
-                }
-
-                // Static analysis (FindBugs)
-                stage('Static Analyis') {
-
-                    // The assemble step is designed for jobs that execute rapidly.
-                    // This is not about testing or Docker,
-                    // This step is just about making sure the code compiles.
-                    agent {
-                        label 'maven'
-                    }
-
-                    steps {
-                        dir('components') {
-                            sh './gradlew findbugsMain --no-daemon'
-                        }
-                    }
-
-                }
-
-            }
-        }
-
-        // --------------------------------------------------------------------
-        // Test (Unit)
-        // --------------------------------------------------------------------
-        stage ('Test') {
-            parallel {
-
-                // Unit test the code
-                stage('Unit Test') {
-
-                    // The unit-test stage.
-                    // Here we require the services of Docker for some tests
-                    // so the built-in `maven` agent is not enough.
-                    // For now we defer to AWS until we have a Docker build
-                    // solution from within OpenShift.
-                    agent {
-                        label 'docker-slave'
-                    }
-
-                    environment {
-                        CPSIGN_MODEL_DIR = "${env.WORKSPACE}/tmp/cpsign"
-                        CPSIGN_LICENSE_URL = "${env.WORKSPACE}/data/licenses/cpsign0.3pro.license"
-                        SQUONK_DOCKER_WORK_DIR = "${env.WORKSPACE}/tmp"
-                        SQUONK_NEXTFLOW_WORK_DIR = "${env.WORKSPACE}/tmp"
-                    }
-
-                    steps {
-                        sh 'git submodule update --init'
-                        dir('pipelines') {
-                            sh 'git checkout openshift'
-                            sh './copy.dirs.sh'
-                        }
-                        dir('components') {
-                            withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
-                                             file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
-                                             file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
-                                sh 'chmod u+w $CP_FILE'
-                                sh 'chmod u+w $CX_FILE'
-                                sh 'chmod u+w $CX_LIB'
-                                sh 'mkdir -p ../data/licenses'
-                                sh 'mkdir -p ../tmp/cpsign'
-                                sh 'mkdir -p ~/.chemaxon'
-                                sh 'mv -n $CP_FILE ../data/licenses'
-                                sh 'cp -n $CX_FILE ~/.chemaxon'
-                                sh 'mv -n $CX_FILE ../data/licenses'
-                                sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
-                                sh './gradlew build --no-daemon'
-                            }
-                        }
-                    }
-
-                }
-
-                // Unit test the code
-                stage('Code Coverage') {
-
-                    // The unit-test stage.
-                    // Here we require the services of Docker for some tests
-                    // so the built-in `maven` agent is not enough.
-                    // For now we defer to AWS until we have a Docker build
-                    // solution from within OpenShift.
-                    agent {
-                        label 'docker-slave'
-                    }
-
-                    environment {
-                        CPSIGN_MODEL_DIR = "${env.WORKSPACE}/tmp/cpsign"
-                        CPSIGN_LICENSE_URL = "${env.WORKSPACE}/data/licenses/cpsign0.3pro.license"
-                        SQUONK_DOCKER_WORK_DIR = "${env.WORKSPACE}/tmp"
-                        SQUONK_NEXTFLOW_WORK_DIR = "${env.WORKSPACE}/tmp"
-                    }
-
-                    steps {
-                        sh 'git submodule update --init'
-                        dir('pipelines') {
-                            sh 'git checkout openshift'
-                            sh './copy.dirs.sh'
-                        }
-                        dir('components') {
-                            withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
-                                             file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
-                                             file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
-                                sh 'chmod u+w $CP_FILE'
-                                sh 'chmod u+w $CX_FILE'
-                                sh 'chmod u+w $CX_LIB'
-                                sh 'mkdir -p ../data/licenses'
-                                sh 'mkdir -p ../tmp/cpsign'
-                                sh 'mkdir -p ~/.chemaxon'
-                                sh 'mv -n $CP_FILE ../data/licenses'
-                                sh 'cp -n $CX_FILE ~/.chemaxon'
-                                sh 'mv -n $CX_FILE ../data/licenses'
-                                sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
-                                sh './gradlew test jacocoTestReport --no-daemon'
-                            }
-                        }
-                    }
-
-                }
-
-            }
-        }
-
-        // --------------------------------------------------------------------
         // Build (Docker)
         // --------------------------------------------------------------------
         stage ('Build (Docker)') {
@@ -212,9 +66,14 @@ pipeline {
                         sh 'mv -n $CP_FILE ../data/licenses'
                         sh 'mv -n $CX_FILE ../data/licenses'
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
+
+                        sh 'export DOCKER_HOST=tcp://${KUBERNETES_SERVICE_HOST}:2375'
+                        sh 'echo ${DOCKER_HOST}
+
                         sh './gradlew buildDockerImages -x test --no-daemon'
+
                     }
-                }   
+                }
             }
 
         }
