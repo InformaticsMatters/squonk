@@ -1,8 +1,14 @@
-// The Squonk/OepnShift CI/CD Jenkins Pipeline.
+#!groovy​
+
+// Part of the Squonk/OepnShift CI/CD Jenkins Pipeline.
 //
-// We expext a Jenkins server that supports pipelines
-// running inside an OpenShift environment with
-// a built-in server knwon bny the label `maven`.
+// This is the primary CI/CD pipeline, which provides basic assembly,
+// unit testing and Docker image construction. Other pipelines may offer
+// static analysis and code coverage for example.
+//
+// We expext to utilise a Jenkins server that supports pipelines
+// running inside an OpenShift environment with a built-in server known
+// by the label `maven`.
 //
 // In order to use this pipeline you will need
 // to have setup corresponding secrets using the following IDs and (types):
@@ -11,23 +17,13 @@
 //      - cpSignLicense (file)
 //      - chemAxonLicense (file)
 //      - chemAxonReactionLibrary (file)
-//
-// You will also need an AWS EC2 slave configured using the following label.
-// The server should be running an AMI that is using Linux (probably ubuntu)
-// that also has Java, Docker and Docker-Compose installed (the one I built
-// with Packer is ami-353eb05a).
-//
-// You are unlikely to be able to get away with anything less than an
-// `m3.large` for the testing stage instance type.
-//      - aws-im-t2large
-//      - aws-im-m3large
 
 pipeline {
 
-    // As we need different flavours of agent,
+    // As we may need different flavours of agent,
     // the agent definition is deferred to each stage.
     agent none
-    
+
     environment {
         ORG_GRADLE_PROJECT_cxnMavenUser = credentials('cxnMavenUser')
         ORG_GRADLE_PROJECT_cxnMavenPassword = credentials('cxnMavenPassword')
@@ -36,8 +32,81 @@ pipeline {
     stages {
 
         // --------------------------------------------------------------------
+        // Compilation stages
+        // --------------------------------------------------------------------
+
+        // Compile (Assemble) the code
+        stage('Assemble') {
+
+            // The assemble step is designed for jobs that execute rapidly.
+            // This is not about testing or Docker,
+            // This step is just about making sure the code compiles.
+            agent {
+                label 'maven'
+            }
+
+            steps {
+                dir('components') {
+                    sh './gradlew assemble --no-daemon'
+                }
+            }
+
+        }
+
+        // --------------------------------------------------------------------
+        // Test (Unit)
+        // --------------------------------------------------------------------
+
+        // Unit test the code
+        stage('Unit Test') {
+
+            // The unit-test stage.
+            // Here we require the services of Docker for some tests
+            // so the built-in `maven` agent is not enough.
+            // For now we defer to AWS until we have a Docker build
+            // solution from within OpenShift.
+            agent {
+                label 'docker-slave'
+            }
+
+            environment {
+                CPSIGN_MODEL_DIR = "${env.WORKSPACE}/tmp/cpsign"
+                CPSIGN_LICENSE_URL = "${env.WORKSPACE}/data/licenses/cpsign0.3pro.license"
+                SQUONK_DOCKER_WORK_DIR = "${env.WORKSPACE}/tmp"
+                SQUONK_NEXTFLOW_WORK_DIR = "${env.WORKSPACE}/tmp"
+            }
+
+            steps {
+                sh 'git submodule update --init'
+                dir('pipelines') {
+                    sh 'git checkout openshift'
+                    sh './copy.dirs.sh'
+                }
+                dir('components') {
+                    withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
+                                     file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
+                                     file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
+                        sh 'chmod u+w $CP_FILE'
+                        sh 'chmod u+w $CX_FILE'
+                        sh 'chmod u+w $CX_LIB'
+                        sh 'mkdir -p ../data/licenses'
+                        sh 'mkdir -p ../tmp/cpsign'
+                        sh 'mkdir -p ~/.chemaxon'
+                        sh 'mv -n $CP_FILE ../data/licenses'
+                        sh 'cp -n $CX_FILE ~/.chemaxon'
+                        sh 'mv -n $CX_FILE ../data/licenses'
+                        sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
+                        sh './gradlew build --no-daemon'
+                    }
+                }
+            }
+
+        }
+
+        // --------------------------------------------------------------------
         // Build (Docker)
         // --------------------------------------------------------------------
+
         stage ('Build (Docker)') {
 
             // Here we build the docker images.
@@ -49,7 +118,6 @@ pipeline {
             }
 
             steps {
-
                 sh 'git submodule update --init'
                 dir('pipelines') {
                     sh 'git checkout openshift'
@@ -59,10 +127,6 @@ pipeline {
                     withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
                                      file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
                                      file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
-
-                        sh 'export DOCKER_HOST=tcp://${KUBERNETES_SERVICE_HOST}:2375'
-                        sh 'echo ${DOCKER_HOST}'
-
                         sh 'chmod u+w $CP_FILE'
                         sh 'chmod u+w $CX_FILE'
                         sh 'chmod u+w $CX_LIB'
@@ -71,24 +135,20 @@ pipeline {
                         sh 'mv -n $CP_FILE ../data/licenses'
                         sh 'mv -n $CX_FILE ../data/licenses'
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
-
-                        sh 'echo ${DOCKER_HOST}'
-
-                        sh './gradlew buildDockerImages -x test'
-
+                        sh './gradlew buildDockerImages -x test --no-daemon'
                     }
                 }
-
             }
 
         }
 
     }
 
+    // End-of-pipeline post-processing actions...
     post {
         failure {
             mail to: 'achristie@informaticsmatters.com tdudgeon@informaticsmatters.com',
-            subject: "Failed Pipeline",
+            subject: "Failed Core Pipeline",
             body: "Something is wrong with ${env.BUILD_URL}"
         }
     }
