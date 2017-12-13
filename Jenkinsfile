@@ -50,9 +50,6 @@ pipeline {
 
             steps {
 
-                sh 'export DOCKER_HOST=tcp://${KUBERNETES_SERVICE_HOST}:2375'
-                sh 'echo ${DOCKER_HOST}'
-
                 sh 'git submodule update --init'
                 dir('pipelines') {
                     sh 'git checkout openshift'
@@ -62,6 +59,10 @@ pipeline {
                     withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
                                      file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
                                      file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
+
+                        sh 'export DOCKER_HOST=tcp://${KUBERNETES_SERVICE_HOST}:2375'
+                        sh 'echo ${DOCKER_HOST}'
+
                         sh 'chmod u+w $CP_FILE'
                         sh 'chmod u+w $CX_FILE'
                         sh 'chmod u+w $CX_LIB'
@@ -70,7 +71,9 @@ pipeline {
                         sh 'mv -n $CP_FILE ../data/licenses'
                         sh 'mv -n $CX_FILE ../data/licenses'
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
+
                         sh 'echo ${DOCKER_HOST}'
+
                         sh './gradlew buildDockerImages -x test'
 
                     }
