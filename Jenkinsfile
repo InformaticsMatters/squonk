@@ -50,8 +50,8 @@ pipeline {
 
             steps {
 
-                sh 'export ORG_GRADLE_PROJECT_DOCKER_HOST=tcp://${KUBERNETES_SERVICE_HOST}:2375'
-                sh 'echo ${ORG_GRADLE_PROJECT_DOCKER_HOST}'
+                sh 'export DOCKER_HOST=tcp://${KUBERNETES_SERVICE_HOST}:2375'
+                sh 'echo ${DOCKER_HOST}'
 
                 sh 'git submodule update --init'
                 dir('pipelines') {
@@ -70,7 +70,8 @@ pipeline {
                         sh 'mv -n $CP_FILE ../data/licenses'
                         sh 'mv -n $CX_FILE ../data/licenses'
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
-                        sh './gradlew buildDockerImages -x test --no-daemon'
+                        sh 'echo ${DOCKER_HOST}'
+                        sh './gradlew buildDockerImages -x test'
 
                     }
                 }
