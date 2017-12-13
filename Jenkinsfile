@@ -95,7 +95,7 @@ pipeline {
                     // For now we defer to AWS until we have a Docker build
                     // solution from within OpenShift.
                     agent {
-                        label 'aws-im-m3large'
+                        label 'docker-slave'
                     }
 
                     environment {
@@ -141,7 +141,7 @@ pipeline {
                     // For now we defer to AWS until we have a Docker build
                     // solution from within OpenShift.
                     agent {
-                        label 'aws-im-m3large'
+                        label 'docker-slave'
                     }
 
                     environment {
@@ -191,7 +191,7 @@ pipeline {
             // enough, we need an agaent that's capable of building
             // Docker images.
             agent {
-                label 'aws-im-t2large'
+                label 'docker-slave'
             }
 
             steps {
