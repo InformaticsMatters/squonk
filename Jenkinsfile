@@ -111,6 +111,12 @@ pipeline {
 
         stage ('Build (Docker)') {
 
+            // --- Hack ---
+            // Do not run this stage ATM -
+            // we cannot do Docker stuff yet!
+            currentBuild.result = 'SUCCESS'
+            return
+
             // Here we build the docker images.
             // Again, the standard agents provided by OpenShift are not
             // enough, we need an agaent that's capable of building
