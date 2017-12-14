@@ -111,11 +111,9 @@ pipeline {
 
         stage ('Build (Docker)') {
 
-            // --- Hack ---
-            // Do not run this stage ATM -
-            // we cannot do Docker stuff yet!
-            currentBuild.result = 'SUCCESS'
-            return
+            when {
+              environment name: 'BUILD_DOCKER', value: 'y'
+            }
 
             // Here we build the docker images.
             // Again, the standard agents provided by OpenShift are not
