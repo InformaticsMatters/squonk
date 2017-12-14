@@ -85,6 +85,7 @@ pipeline {
                             withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
                                              file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
                                              file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
+
                                 sh 'chmod u+w $CP_FILE'
                                 sh 'chmod u+w $CX_FILE'
                                 sh 'chmod u+w $CX_LIB'
@@ -95,7 +96,13 @@ pipeline {
                                 sh 'cp -n $CX_FILE ~/.chemaxon'
                                 sh 'mv -n $CX_FILE ../data/licenses'
                                 sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
+
+                                // Run tests using code-coverage
                                 sh './gradlew test jacocoTestReport --no-daemon'
+
+                                // Analyse and present the results...
+                                jacoco sourcePattern: '**/src/main/groovy'
+
                             }
                         }
                     }
