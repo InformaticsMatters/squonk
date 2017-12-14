@@ -40,7 +40,15 @@ pipeline {
 
                     steps {
                         dir('components') {
+
+                            // Run FindBugs on the code...
                             sh './gradlew findbugsMain --no-daemon'
+
+                            // Analyse and present the results...
+                            findbugs canComputeNew: false,
+                                isRankActivated: true,
+                                pattern: '**/findbugsReports/main.xml'
+
                         }
                     }
 
