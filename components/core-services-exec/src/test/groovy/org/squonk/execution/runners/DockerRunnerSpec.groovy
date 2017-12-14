@@ -37,6 +37,7 @@ class DockerRunnerSpec extends Specification {
 
     def hostBaseWorkDir = null
 
+    @Ignore
     void "clean workdir"() {
 
         setup:
