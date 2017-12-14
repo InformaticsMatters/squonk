@@ -7,6 +7,7 @@ import org.squonk.dataset.Dataset
 import org.squonk.execution.variable.VariableManager
 import org.squonk.notebook.api.VariableKey
 import org.squonk.types.MoleculeObject
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
@@ -39,6 +40,7 @@ class DatasetNextflowExecutorStepSpec extends Specification {
         return varman
     }
 
+    @Ignore
     void "thick execute"() {
 
         def nsd = createServiceDescriptor("src/test/groovy/org/squonk/execution/steps/impl/nextflow1.nsd.yml")
@@ -63,6 +65,7 @@ class DatasetNextflowExecutorStepSpec extends Specification {
         results.size() == 4
     }
 
+    @Ignore
     void "thin execute"() {
 
         def nsd = createServiceDescriptor("src/test/groovy/org/squonk/execution/steps/impl/nextflow2.nsd.yml")

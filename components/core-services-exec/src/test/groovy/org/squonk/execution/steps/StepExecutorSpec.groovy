@@ -33,6 +33,7 @@ import org.squonk.io.IORoute
 import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition
 import org.squonk.notebook.api.VariableKey
 import org.squonk.types.SDFile
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.util.zip.GZIPInputStream
@@ -205,6 +206,7 @@ class StepExecutorSpec extends Specification {
         context?.shutdown()
     }
 
+    @Ignore
     void "dataset read/write no convert step"() {
 
         Dataset dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
@@ -259,6 +261,7 @@ class StepExecutorSpec extends Specification {
     }
 
 
+    @Ignore
     void "dataset read/write step with convert to/from sdf"() {
 
         Dataset dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)

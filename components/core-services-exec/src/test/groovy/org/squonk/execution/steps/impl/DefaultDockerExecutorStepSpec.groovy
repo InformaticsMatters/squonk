@@ -25,6 +25,7 @@ import org.squonk.io.IODescriptors
 import org.squonk.io.IORoute
 import org.squonk.notebook.api.VariableKey
 import org.squonk.types.MoleculeObject
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
@@ -73,6 +74,7 @@ class DefaultDockerExecutorStepSpec extends Specification {
     }
 
 
+    @Ignore
     void "simple execute using json"() {
 
         DefaultCamelContext context = new DefaultCamelContext()
