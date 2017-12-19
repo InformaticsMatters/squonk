@@ -138,7 +138,6 @@ def hasChemAxonLicense = file('../data/licenses/license.cxl').exists()
 
 task wrapper(type: Wrapper) {
     gradleVersion = '3.2.1'
-    jarFile = 'wrapper/wrapper.jar'
 }
 
 project.ext.set('dockerHost', getDockerHost())
