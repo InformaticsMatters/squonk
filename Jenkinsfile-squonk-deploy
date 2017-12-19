@@ -1,0 +1,157 @@
+#!groovy
+
+// Part of the Squonk/OpenShift CI/CD Jenkins Pipeline.
+//
+// This file is used to partly deploy the Squonk application.
+// It relies on the defintion of a cluster and the provision
+// of admin and developer credentials.
+//
+// It follows the steps described in openshift/templates/READEME.md.
+
+pipeline {
+
+    agent any
+
+    // ------------------------------------------------------------------------
+    // Environment - ideally this would be parameterised?
+    // ------------------------------------------------------------------------
+    // At the moment this is hard-coded for a particular/typical minishift.
+    environment {
+        CLUSTER = 'squonk-dev'
+        OC_USER = 'developer'
+        OC_PROJECT = 'squonk'
+        OC_PROJECT_DISPLAY_NAME = 'Squonk Notebook'
+        OC_PROJECT_DESCRIPTION = 'The Squonk Computational Notebook'
+        OC_INFRA_PROJECT = 'squonk-infra'
+        OC_ROUTES_BASENAME = '192.168.99.100.nip.io'
+        OC_SQUONK_HOST = 'squonk-notebook.192.168.99.100.nip.io'
+        KEYCLOAK_REALM = 'squonk'
+        KEYCLOAK_LOGOUT_REDIRECT_TO = 'http://home.192.168.99.100.nip.io'
+    }
+
+    stages {
+
+        // --------------------------------------------------------------------
+        // PVs and PCV generation
+        // --------------------------------------------------------------------
+        stage('Create PVCs') {
+            when {
+                expression {
+                    openshift.withCluster("${CLUSTER}") {
+                        openshift.withProject("${OC_PROJECT}") {
+                            return !openshift.selector('pvc', 'squonk-service-descriptors-pvc').exists()
+                        }
+                    }
+                }
+            }
+            steps {
+                echo "The project PV/PVCs do not exist. Creating them..."
+                git branch: 'openshift', url: 'https://github.com/InformaticsMatters/squonk'
+                dir('openshift/templates/squonk-app') {
+                    script {
+                        openshift.withCluster("${CLUSTER}") {
+                            openshift.withProject("${OC_PROJECT}") {
+                                def pvcs = openshift.process('--filename=squonk-pv-minishift.yaml')
+                                openshift.create(pvcs)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // --------------------------------------------------------------------
+        // Squonk Infrastructure
+        // --------------------------------------------------------------------
+        stage('Squonk Infrastructure') {
+            when {
+                expression {
+                    openshift.withCluster("${CLUSTER}") {
+                        openshift.withProject("${OC_PROJECT}") {
+                            return !openshift.selector('secrets', 'squonk-database-credentials').exists()
+                        }
+                    }
+                }
+            }
+            steps {
+                echo "The project Infrastructure does not exist. Creating it..."
+                git branch: 'openshift', url: 'https://github.com/InformaticsMatters/squonk'
+                dir('openshift/templates/squonk-app') {
+                    script {
+                        openshift.withCluster("${CLUSTER}") {
+                            openshift.withProject("${OC_INFRA_PROJECT}") {
+                                def dbObjs = openshift.process('--filename=squonk-infra-db-init.yaml',
+                                                               '-p', "SQUONK_NAMESPACE=${OC_PROJECT}",
+                                                               '-p', "DATABASE_HOST=postgresql.${OC_INFRA_PROJECT}.svc")
+                                for (obj in dbObjs) {
+                                    if (obj.metadata.namespace == "${OC_PROJECT}") {
+                                        openshift.create(obj, "--namespace=${OC_PROJECT}")
+                                    } else {
+                                        openshift.create(obj)
+                                    }
+                                }
+                                def rabObjs = openshift.process('--filename=squonk-infra-rabbitmq-init.yaml',
+                                                                '-p', "SQUONK_NAMESPACE=${OC_PROJECT}",
+                                                                '-p', "RABBITMQ_HOST=rabbitmq.${OC_INFRA_PROJECT}.svc")
+                                for (obj in rabObjs) {
+                                    if (obj.metadata.namespace == "${OC_PROJECT}") {
+                                        openshift.create(obj, "--namespace=${OC_PROJECT}")
+                                    } else {
+                                        openshift.create(obj)
+                                    }
+                                }
+                                def keyObjs = openshift.process('--filename=squonk-infra-keycloak-init.yaml',
+                                                                '-p', "KEYCLOAK_REALM=${KEYCLOAK_REALM}",
+                                                                '-p', "ROUTES_BASE_HOSTNAME=${OC_ROUTES_BASENAME}",
+                                                                '-p', "LOGOUT_REDIRECT_TO=${KEYCLOAK_LOGOUT_REDIRECT_TO}")
+                                for (obj in keyObjs) {
+                                    if (obj.metadata.namespace == "${OC_PROJECT}") {
+                                        openshift.create(obj, "--namespace=${OC_PROJECT}")
+                                    } else {
+                                        openshift.create(obj)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // --------------------------------------------------------------------
+        // Squonk
+        // --------------------------------------------------------------------
+        stage('Squonk') {
+            when {
+                expression {
+                    openshift.withCluster("${CLUSTER}") {
+                        openshift.withProject("${OC_PROJECT}") {
+                            return !openshift.selector('dc', 'portal').exists()
+                        }
+                    }
+                }
+            }
+            steps {
+                echo "Squonk does not exist. Creating it..."
+                git branch: 'openshift', url: 'https://github.com/InformaticsMatters/squonk'
+                dir('openshift/templates/squonk-app') {
+                    script {
+                        openshift.withCluster("${CLUSTER}") {
+                            openshift.withProject("${OC_PROJECT}") {
+                                openshift.doAs('developer') {
+                                    def sqObjs = openshift.process('--filename=squonk-app-keycloak.yaml',
+                                                                   '-p', "SQUONK_HOST=${OC_SQUONK_HOST}",
+                                                                   '-p', "APP_NAMESPACE=${OC_PROJECT}",
+                                                                   '-p', "LOGOUT_REDIRECT_TO=${KEYCLOAK_LOGOUT_REDIRECT_TO}")
+                                    openshift.create(sqObjs)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+}
