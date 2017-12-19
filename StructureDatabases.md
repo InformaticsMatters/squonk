@@ -30,7 +30,11 @@ docker-compose up -d
 Loaders are run using the squonk/chemcentral-loader:openshift docker image.
 Each loader is pre-configured with sensible defaults, but you can override these using environment variables:
 
-CHEMCENTRAL_HOST - the hostname where postgres is running
+CHEMCENTRAL_HOST - the hostname where postgres is running (default: localhost)
+CHEMCENTRAL_PORT - the port where postgres is running (default: 5432)
+CHEMCENTRAL_DATABASE - the name of the database (default: chemcentral)
+CHEMCENTRAL_USER - the database username (default: chemcentral)
+CHEMCENTRAL_PASSWORD  - the password for the database user (default: chemcentral)
 SCHEMA_NAME - the postgres scheam to use (default: vendordbs)
 TABLE_NAME - the name of the main database table (default value for each loader e.g. the Chemspace loader uses a table name of chemspace)
 LOADER_FILE - the file name containing the data to load (default value for each loader e.g. the Chemspace loader uses a default of /rdkit/chemspace.sdf.gz)
