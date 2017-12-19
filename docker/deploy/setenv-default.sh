@@ -70,7 +70,7 @@ elif [ $DEPLOYMENT_MODE == 'site' ]; then
     export SQUONK_URL="http://$PUBLIC_HOST"
     export KEYCLOAK_SERVER_URL=${PUBLIC_HOST_URL}/auth
 elif [ $DEPLOYMENT_MODE == 'dev' ]; then
-    export COMPOSE_FILE=docker-compose.yml:docker-compose-dev.yml:docker-compose-setup.yml
+    export COMPOSE_FILE=docker-compose.yml:docker-compose-dev.yml
     export SQUONK_URL="http://localhost:8080/portal"
     unset KEYCLOAK_SERVER_URL
 else

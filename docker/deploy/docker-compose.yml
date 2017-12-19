@@ -33,10 +33,10 @@ services:
         ports:
         - "15672:15672"
         volumes:
-        - ./images/rabbitmq/docker-healthcheck.sh:/usr/local/bin/docker-healthcheck.sh
-        - ../rabbitmq/init.sh:/usr/local/etc/init.sh:ro
-        - ../rabbitmq/update-credentials.sh:/usr/local/etc/update-credentials.sh:ro
-        - ../rabbitmq/clean.sh:/usr/local/etc/clean.sh:ro
+        - ./images/rabbitmq/docker-healthcheck.sh:/usr/local/bin/docker-healthcheck.sh:ro,Z
+        - ../rabbitmq/init.sh:/usr/local/etc/init.sh:ro,Z
+        - ../rabbitmq/update-credentials.sh:/usr/local/etc/update-credentials.sh:ro,Z
+        - ../rabbitmq/clean.sh:/usr/local/etc/clean.sh:ro,Z
         environment:
             RABBITMQ_ERLANG_COOKIE:
             RABBITMQ_DEFAULT_USER: admin
@@ -55,11 +55,11 @@ services:
     # based on PostgreSQL 9.5 with RDKit cartridge support
     #
     postgres:
-        image: informaticsmatters/rdkit_cartridge:Release_2016_03_1
+        image: informaticsmatters/rdkit_cartridge:Release_2017_09_2
         volumes:
-        - ./images/postgres/init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro
-        - ./images/postgres/docker-healthcheck.sh:/usr/local/bin/docker-healthcheck.sh
-        - ./data/pgdata:/var/lib/postgresql/data
+        - ./images/postgres/init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro,Z
+        - ./images/postgres/docker-healthcheck.sh:/usr/local/bin/docker-healthcheck.sh:ro,Z
+        - ./data/pgdata:/var/lib/postgresql/data:Z
         environment:
             POSTGRES_PASSWORD:
             POSTGRES_KEYCLOAK_PASSWORD:
@@ -140,7 +140,7 @@ services:
         image: squonk/coreservices:latest
         restart: on-failure:10
         volumes:
-        - ./data/docker-services:/var/local/squonk-docker-services
+        - ./data/docker-services:/var/local/squonk-docker-services:Z
         depends_on:
             postgres:
                 condition: service_healthy
@@ -174,9 +174,9 @@ services:
         - rabbitmq
         volumes:
         - /var/run/docker.sock:/var/run/docker.sock
-        - /squonk/work:/squonk/work
-        - /var/maven_repo
-        - ./images/cellexecutor/logging.properties:/logging.properties:ro
+        - /squonk/work:/squonk/work:Z
+        - /var/maven_repo:/var/maven_repo:ro,Z
+        - ./images/cellexecutor/logging.properties:/logging.properties:ro,Z
         environment:
             RABBITMQ_SQUONK_PASSWORD:
             DOCKER_HOST: unix:///var/run/docker.sock
@@ -195,7 +195,7 @@ services:
         image: squonk/portal:latest
         restart: on-failure:10
         volumes:
-        - ./images/portal/logging.properties:/usr/local/tomcat/conf/logging.properties:ro
+        - ./images/portal/logging.properties:/usr/local/tomcat/conf/logging.properties:ro,Z
         environment:
             SERVICE_CALLBACK: http://localhost:8080/portal
             POSTGRES_SQUONK_PASSWORD:
