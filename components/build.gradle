@@ -225,11 +225,12 @@ task buildDockerImages() {
     description = 'Builds the chemcentral-search, chemservices coreservices, cellexecutor and flyway Docker images'
 
     dependsOn = [
-            buildChemServicesDockerImage,
-            'chem-services-rdkit-search:buildDockerImage',
-            'core-services-server:buildDockerImage',
-            'cell-executor:dockerBuildImage',
-            'database:buildDockerImage'
+            buildChemServicesDockerImage,                  // chemservices-basic image
+            'chem-services-rdkit-search:buildDockerImage', // chemcentral postgres image
+            'rdkit-databases:dockerBuildImage',            // database loader for chemcentral
+            'core-services-server:buildDockerImage',       // coreservices image
+            'cell-executor:dockerBuildImage',              // cellexecutor image
+            'database:buildDockerImage'                    // flyway database migrator
     ]
 }
 

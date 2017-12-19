@@ -16,13 +16,12 @@
 
 package org.squonk.rdkit.db;
 
-import org.squonk.rdkit.db.impl.PdbLigandTable;
+import org.squonk.rdkit.db.tables.*;
 import org.squonk.types.MoleculeObject;
 import org.squonk.rdkit.db.dsl.DataSourceConfiguration;
 import org.squonk.rdkit.db.dsl.Select;
 import org.squonk.rdkit.db.dsl.SqlQuery;
-import org.squonk.rdkit.db.impl.ChemblTable;
-import org.squonk.rdkit.db.impl.EMoleculesTable;
+
 import org.squonk.util.IOUtils;
 
 import javax.sql.DataSource;
@@ -43,14 +42,18 @@ public class RDKitTables {
         String[] dbsString = IOUtils.getConfiguration("STRUCTURE_DATABASE_TABLES", "").split(":");
 
         // This is ugly and needs improving, but it handles the current dbs that we have
-        // Rather that use an environment variable we probably need to inject a configuration file
+        // Rather than use an environment variable we probably need to inject a configuration file
         for (String db: dbsString) {
-            if (db.startsWith("emolecules_")) {
-                rdkitTables.put(db, new EMoleculesTable(SCHEMA, db, MolSourceType.SMILES));
+            if (db.startsWith("emolecules_order_bb")) {
+                rdkitTables.put(db, new EMoleculesBBTable(SCHEMA, db, MolSourceType.SMILES));
+            } else if (db.startsWith("emolecules_order_sc")) {
+                rdkitTables.put(db, new EMoleculesSCTable(SCHEMA, db, MolSourceType.SMILES));
             } else if (db.startsWith("chembl_")) {
                 rdkitTables.put(db, new ChemblTable(SCHEMA, db));
             } else if (db.equals("pdb_ligand")) {
                 rdkitTables.put(db, new PdbLigandTable(SCHEMA, db));
+            } else if (db.startsWith("chemspace")) {
+                rdkitTables.put(db, new ChemspaceTable(SCHEMA, db));
             }
         }
 

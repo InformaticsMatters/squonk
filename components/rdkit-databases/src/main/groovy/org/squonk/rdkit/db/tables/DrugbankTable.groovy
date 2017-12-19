@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.squonk.rdkit.db.impl
+package org.squonk.rdkit.db.tables
 
 import org.squonk.rdkit.db.FingerprintType
 import org.squonk.rdkit.db.MolSourceType
@@ -23,14 +23,18 @@ import org.squonk.rdkit.db.RDKitTable
 /**
  * Created by timbo on 16/12/2015.
  */
-class EMoleculesTable extends RDKitTable {
+class DrugbankTable extends RDKitTable {
 
-    EMoleculesTable(String schema, String baseTableName, MolSourceType molSourceType) {
-        super(schema, baseTableName, molSourceType, [
+    DrugbankTable(String schema, String baseTableName) {
+        super(schema, baseTableName, MolSourceType.MOL, [
                 FingerprintType.RDKIT,
                 FingerprintType.MORGAN_CONNECTIVITY_2,
                 FingerprintType.MORGAN_FEATURE_2])
-        addColumn("version_id", "INTEGER", "INTEGER NOT NULL")
-        addColumn("parent_id", "INTEGER", "INTEGER NOT NULL")
+        addColumn("drugbank_id", "CHAR", "CHAR(7)")
+        addColumn("drug_groups", "TEXT", "TEXT")
+        addColumn("generic_name", "TEXT", "TEXT")
+        addColumn("brands", "TEXT", "TEXT")
+        addColumn("products", "TEXT", "TEXT")
     }
+
 }

@@ -22,8 +22,8 @@ import org.squonk.rdkit.db.FingerprintType
 import org.squonk.rdkit.db.Metric
 import org.squonk.rdkit.db.MolSourceType
 import org.squonk.rdkit.db.RDKitTable
-import org.squonk.rdkit.db.impl.EMoleculesTable
-import org.squonk.rdkit.db.loaders.EMoleculesSmilesLoader
+import org.squonk.rdkit.db.impl.ExampleTable
+import org.squonk.rdkit.db.loaders.ExampleSmilesLoader
 import org.squonk.util.IOUtils
 import spock.lang.Shared
 import spock.lang.Specification
@@ -37,7 +37,7 @@ class SqlQueryDbSpec extends Specification {
 
     static String baseTable = "emols_test"
     static String schema = "vendordbs"
-    static RDKitTable table = new EMoleculesTable(schema, baseTable, MolSourceType.SMILES)
+    static RDKitTable table = new ExampleTable(schema, baseTable, MolSourceType.SMILES)
     static RDKitTable alias = table.alias("rdk")
     static String qSmiles = 'OC1CC2(C(C1CC2=O)(C)C)C'
     static String qSmarts = '[#6]C1([#6])[#6]-2-[#6]-[#6](=O)C1([#6])[#6]-[#6]-2-[#8]'
@@ -80,21 +80,18 @@ M  END
         dataSource.serverName = IOUtils.getConfiguration('PRIVATE_HOST', 'localhost')
         dataSource.portNumber = 5432
         dataSource.databaseName = 'chemcentral'
-        dataSource.user = 'squonk'
-        dataSource.password = 'squonk'
+        dataSource.user = 'chemcentral'
+        dataSource.password = 'chemcentral'
     }
-
 
     void "load emols"() {
 
-        String file = "../../data/testfiles/emols_100.smi.gz"
-        println "Loading $file into ${schema}.$baseTable"
         IConfiguration config = new DataSourceConfiguration(dataSource, [:])
-        EMoleculesSmilesLoader loader = new EMoleculesSmilesLoader(table, config)
+        ExampleSmilesLoader loader = new ExampleSmilesLoader(config)
         Sql db = new Sql(dataSource)
 
         when:
-        loader.loadSmiles(file, 0, 10, ['1':Integer.class, '2':Integer.class])
+        loader.load()
         int rows = db.firstRow("select count(*) from " + schema + "." + baseTable)[0]
         println "$rows loaded"
 
@@ -102,7 +99,7 @@ M  END
         rows == 100
 
         cleanup:
-        db.close()
+        db?.close()
     }
 
     void "query with limit"() {

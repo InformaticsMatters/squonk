@@ -28,6 +28,7 @@ components/common-camel/out
 components/common-utils/out
 components/database/out
 components/loaders/files
+components/rdkit-databases/out
 components/rdkit-lib/rdkit_loader.properties
 components/rdkit-lib/out/**/*.class
 components/rdkit-camel/out/**/*.class

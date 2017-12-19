@@ -14,24 +14,30 @@
  * limitations under the License.
  */
 
-package org.squonk.rdkit.db.impl
+package org.squonk.rdkit.db.tables
 
 import org.squonk.rdkit.db.FingerprintType
 import org.squonk.rdkit.db.MolSourceType
 import org.squonk.rdkit.db.RDKitTable
+import org.squonk.util.IOUtils
 
 /**
  * Created by timbo on 16/12/2015.
  */
-class ChemblTable extends RDKitTable {
+class EMoleculesBBTable extends RDKitTable {
 
-    ChemblTable(String schema, String baseTableName) {
-        super(schema, baseTableName, MolSourceType.MOL, [
+    EMoleculesBBTable(String schema, String baseTableName, MolSourceType molSourceType) {
+        super(schema, baseTableName, molSourceType, [
                 FingerprintType.RDKIT,
                 FingerprintType.MORGAN_CONNECTIVITY_2,
                 FingerprintType.MORGAN_FEATURE_2])
-        addColumn("chembl_id", "VARCHAR", "VARCHAR(20)")
-
+        addColumn("version_id", "INTEGER", "INTEGER NOT NULL")
+        addColumn("parent_id", "INTEGER", "INTEGER NOT NULL")
     }
 
+    EMoleculesBBTable() {
+        this(IOUtils.getConfiguration("SCHEMA_NAME", "vendordbs"),
+                IOUtils.getConfiguration("TABLE_NAME", "emolecules_order_bb"),
+                MolSourceType.SMILES)
+    }
 }

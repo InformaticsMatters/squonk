@@ -1,0 +1,74 @@
+/*
+ * Copyright (c) 2017 Informatics Matters Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply plugin: 'groovy'
+apply plugin: 'application'
+apply plugin: 'com.bmuschko.docker-java-application'
+
+mainClassName = "org.squonk.rdkit.db.loaders.Main"
+
+String RDBASE = System.getenv('RDBASE')
+String RDKitJarFile = '/Code/JavaWrappers/gmwrapper/org.RDKit.jar'
+boolean RDKitJava = RDBASE && file(RDBASE + RDKitJarFile).exists()
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+}
+
+dependencies {
+    
+    compile project(':common')
+    compile project(':common-utils')
+    compile project(':rdkit-lib')
+
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+
+    if (RDKitJava) {
+        //println "$RDBASE defined - using that location for RDKit"
+        compile files(RDBASE + RDKitJarFile)
+    } else {
+        //println "Using local org.RDKit.jar"
+        compile files("../../lib/rdkit/org.RDKit.jar")
+    }
+
+    compile "org.postgresql:postgresql:$postgresDriverVersion"
+
+    testCompile project(':core-test')
+}
+
+// run the loaders with something like this:
+// ./gradlew --daemon -PmainClass=org.org.db.loaders.EMoleculesSmilesLoader rdkit-lib:execute
+task execute(type:JavaExec) {
+    if (project.hasProperty('mainClass')) {
+        main = mainClass
+    }
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+tasks.test.onlyIf { RDKitJava }
+
+docker {
+    url = dockerHost
+    certPath = dockerCertPath
+
+    javaApplication {
+        baseImage = 'informaticsmatters/rdkit_java:Release_2017_03_1'
+        maintainer = 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
+        tag = "squonk/chemcentral-loader:${dockerImageTag}"
+    }
+}

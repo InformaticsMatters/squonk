@@ -16,40 +16,41 @@
 
 package org.squonk.rdkit.db.loaders
 
+import groovy.util.logging.Log
 import org.squonk.rdkit.db.RDKitTable
 import org.squonk.rdkit.db.dsl.IConfiguration
-import org.squonk.rdkit.db.impl.ChemblTable
+import org.squonk.rdkit.db.tables.ChemblTable
+import org.squonk.util.IOUtils
 
-/**
+/** Loader for ChEMBL structures.
+ * Download the SDF from ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/
+ *
+ *
  * Created by timbo on 16/12/2015.
  */
+@Log
 class ChemblSdfLoader extends AbstractRDKitLoader {
+
+    static final String DEFAULT_TABLE_NAME = "chembl.sdf.gz";
 
     ChemblSdfLoader(RDKitTable table, IConfiguration config) {
         super(table, config)
     }
 
-
-    static void main(String[] args) {
-
-        URL from = loadConfigFile()
-        println "Loading from $from"
-        ConfigObject props = LoaderUtils.createConfig(from)
-        String baseTable = props.chembl.table
-        String schema = props.database.schema
-        String file = props.chembl.path + '/' + props.chembl.file
-        int reportingChunk = props.chembl.reportingChunk
-        int loadOnly = props.chembl.loadOnly
-        Map<String, Class> propertyToTypeMappings = props.chembl.fields
-
-        println "Loading $file into ${schema}.$baseTable"
-
-        ChemblTable table = new ChemblTable(schema, baseTable)
-
-        IConfiguration config = createConfiguration(props)
-
-        ChemblSdfLoader loader = new ChemblSdfLoader(table, config)
-        loader.loadSDF(file, loadOnly, reportingChunk, propertyToTypeMappings, null)
+    ChemblSdfLoader() {
+        super(new ChemblTable())
     }
+
+    @Override
+    void load() {
+        String filename = IOUtils.getConfiguration("LOADER_FILE", DEFAULT_TABLE_NAME)
+        int limit = new Integer(IOUtils.getConfiguration("LIMIT", "0"))
+        int reportingChunk = new Integer(IOUtils.getConfiguration("REPORTING_CHUNK", "10000"))
+        def propertyToTypeMappings = [chembl_id: String.class]
+        log.info("Using ChemblSdfLoader to load $filename")
+        loadSDF(filename, limit, reportingChunk, propertyToTypeMappings, null)
+        log.info("Loading finished")
+    }
+
 
 }

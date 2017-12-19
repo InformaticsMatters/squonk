@@ -16,45 +16,47 @@
 
 package org.squonk.rdkit.db.loaders
 
-import org.squonk.types.MoleculeObject
+import groovy.util.logging.Log
 import org.RDKit.ROMol
 import org.squonk.rdkit.db.RDKitTable
 import org.squonk.rdkit.db.dsl.IConfiguration
-import org.squonk.rdkit.db.impl.PdbLigandTable
+import org.squonk.rdkit.db.tables.PdbLigandTable
 import org.squonk.rdkit.mol.MolReader
+import org.squonk.types.MoleculeObject
+import org.squonk.util.IOUtils
 
 import java.util.stream.Stream
 
-/**
+/** Loader for PDB ligand structures.
+ * Find file to download from here http://ligand-expo.rcsb.org/ld-download.html and put in:
+ * the file you want is in the "Chemical component coordinate data files" section and called all-sdf.sdf.gz
+ * fetch it with something like:
+ * wget http://ligand-expo.rcsb.org/dictionaries/all-sdf.sdf.gz
+ *
  * Created by timbo on 16/12/2015.
  */
+@Log
 class PdbLigandSdfLoader extends AbstractRDKitLoader {
+
+    static final String DEFAULT_TABLE_NAME = "all-sdf.smi.gz";
 
     PdbLigandSdfLoader(RDKitTable table, IConfiguration config) {
         super(table, config)
     }
 
+    PdbLigandSdfLoader() {
+        super(new PdbLigandTable())
+    }
 
-    static void main(String[] args) {
-
-        URL from = loadConfigFile()
-        println "Loading from $from"
-        ConfigObject props = LoaderUtils.createConfig(from)
-        String baseTable = props.pdbligand.table
-        String schema = props.database.schema
-        String file = props.pdbligand.path + '/' + props.pdbligand.file
-        int reportingChunk = props.pdbligand.reportingChunk
-        int loadOnly = props.pdbligand.loadOnly
-        Map<String, Class> propertyToTypeMappings = props.pdbligand.fields
-
-        println "Loading $file into ${schema}.$baseTable"
-
-        PdbLigandTable table = new PdbLigandTable(schema, baseTable)
-
-        IConfiguration config = createConfiguration(props)
-
-        PdbLigandSdfLoader loader = new PdbLigandSdfLoader(table, config)
-        loader.loadSDF(file, loadOnly, reportingChunk, propertyToTypeMappings, "ligand_code")
+    @Override
+    void load() {
+        String filename = IOUtils.getConfiguration("LOADER_FILE", DEFAULT_TABLE_NAME)
+        int limit = new Integer(IOUtils.getConfiguration("LIMIT", "0"))
+        int reportingChunk = new Integer(IOUtils.getConfiguration("REPORTING_CHUNK", "10000"))
+        def propertyToTypeMappings = [pdb_code:String.class, ligand_code:String.class]
+        log.info("Using PdbLigandSdfLoader to load $filename")
+        loadSDF(filename, limit, reportingChunk, propertyToTypeMappings, "ligand_code")
+        log.info("Loading finished")
     }
 
     protected Stream<MoleculeObject> prepareStream(Stream<MoleculeObject> stream) {
@@ -67,7 +69,7 @@ class PdbLigandSdfLoader extends AbstractRDKitLoader {
                 }
                 return heavyAtomCount > 5
             } catch (Throwable e) {
-                println "failed to parse molecule " + mo.getValue("ligand_code")
+                log.info("failed to parse molecule " + mo.getValue("ligand_code"))
                 return false
             }
         }.peek() { mo ->

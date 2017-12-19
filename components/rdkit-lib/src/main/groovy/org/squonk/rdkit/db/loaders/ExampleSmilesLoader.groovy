@@ -16,20 +16,47 @@
 
 package org.squonk.rdkit.db.loaders
 
-import org.squonk.rdkit.db.impl.EMoleculesTable
 import org.squonk.rdkit.db.MolSourceType
 import org.squonk.rdkit.db.RDKitTable
 import org.squonk.rdkit.db.dsl.IConfiguration
+import org.squonk.rdkit.db.impl.ExampleTable
+import org.squonk.util.IOUtils
 
-/**
+/** Example smiles loader that is used for testing.
+ * This is modelled on the eMolecules tables and data.
+ *
  * Created by timbo on 16/12/2015.
  */
-class EMoleculesSmilesLoader extends AbstractRDKitLoader {
+class ExampleSmilesLoader extends AbstractRDKitLoader {
 
-    EMoleculesSmilesLoader(RDKitTable table, IConfiguration config) {
+    ExampleSmilesLoader(RDKitTable table, IConfiguration config) {
         super(table, config)
     }
 
+    ExampleSmilesLoader(IConfiguration config) {
+        this(new ExampleTable(
+                IOUtils.getConfiguration("SCHEMA_NAME", "vendordbs"),
+                IOUtils.getConfiguration("TABLE_NAME", "emols_test"),
+                MolSourceType.SMILES), config
+        )
+    }
+
+    ExampleSmilesLoader() {
+        super(new ExampleTable(
+                IOUtils.getConfiguration("SCHEMA_NAME", "vendordbs"),
+                IOUtils.getConfiguration("TABLE_NAME", "emols_test"),
+                MolSourceType.SMILES)
+        )
+    }
+
+    @Override
+    void load() {
+        String filename = IOUtils.getConfiguration("LOADER_FILE", "../../data/testfiles/emols_100.smi.gz")
+        int limit = new Integer(IOUtils.getConfiguration("LIMIT", "0"))
+        int reportingChunk = new Integer(IOUtils.getConfiguration("REPORTING_CHUNK", "10"))
+        def propertyToTypeMappings = ['1': Integer.class, '2': Integer.class]
+        loadSmiles(filename, limit, reportingChunk, propertyToTypeMappings)
+    }
 
     static void main(String[] args) {
 
@@ -45,11 +72,11 @@ class EMoleculesSmilesLoader extends AbstractRDKitLoader {
 
         println "Loading $file into ${schema}.$baseTable"
 
-        EMoleculesTable table = new EMoleculesTable(schema, baseTable, MolSourceType.SMILES)
+        ExampleTable table = new ExampleTable(schema, baseTable, MolSourceType.SMILES)
 
         IConfiguration config = createConfiguration(props)
 
-        EMoleculesSmilesLoader loader = new EMoleculesSmilesLoader(table, config)
+        ExampleSmilesLoader loader = new ExampleSmilesLoader(table, config)
         loader.loadSmiles(file, loadOnly, reportingChunk, propertyToTypeMappings)
     }
 

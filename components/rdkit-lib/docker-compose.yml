@@ -1,0 +1,13 @@
+version: '2.1'
+
+services:
+
+    chemcentral:
+        image: informaticsmatters/rdkit_cartridge:Release_2017_09_1
+        volumes:
+        - ./init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro,Z
+        environment:
+            POSTGRES_PASSWORD: postgres
+        ports:
+        - 5432:5432
+

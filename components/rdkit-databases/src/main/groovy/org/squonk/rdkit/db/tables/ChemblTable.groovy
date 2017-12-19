@@ -14,27 +14,30 @@
  * limitations under the License.
  */
 
-package org.squonk.rdkit.db.impl
+package org.squonk.rdkit.db.tables
 
 import org.squonk.rdkit.db.FingerprintType
 import org.squonk.rdkit.db.MolSourceType
 import org.squonk.rdkit.db.RDKitTable
+import org.squonk.util.IOUtils
 
 /**
  * Created by timbo on 16/12/2015.
  */
-class DrugbankTable extends RDKitTable {
+class ChemblTable extends RDKitTable {
 
-    DrugbankTable(String schema, String baseTableName) {
+    ChemblTable(String schema, String baseTableName) {
         super(schema, baseTableName, MolSourceType.MOL, [
                 FingerprintType.RDKIT,
                 FingerprintType.MORGAN_CONNECTIVITY_2,
                 FingerprintType.MORGAN_FEATURE_2])
-        addColumn("drugbank_id", "CHAR", "CHAR(7)")
-        addColumn("drug_groups", "TEXT", "TEXT")
-        addColumn("generic_name", "TEXT", "TEXT")
-        addColumn("brands", "TEXT", "TEXT")
-        addColumn("products", "TEXT", "TEXT")
+        addColumn("chembl_id", "VARCHAR", "VARCHAR(20)")
+
+    }
+
+    ChemblTable() {
+        this(IOUtils.getConfiguration("SCHEMA_NAME", "vendordbs"),
+                IOUtils.getConfiguration("TABLE_NAME",  "chembl"))
     }
 
 }

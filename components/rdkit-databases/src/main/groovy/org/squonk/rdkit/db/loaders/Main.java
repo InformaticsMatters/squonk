@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 
-package org.squonk.rdkit.db.impl
+package org.squonk.rdkit.db.loaders;
 
-import org.squonk.rdkit.db.FingerprintType
-import org.squonk.rdkit.db.MolSourceType
-import org.squonk.rdkit.db.RDKitTable
-
-/**
- * Created by timbo on 16/12/2015.
+/** Main entrypoint for database loading. Pass in one argument that is the class name of the loader to use.
+ *
  */
-class PdbLigandTable extends RDKitTable {
+public class Main {
 
-    PdbLigandTable(String schema, String baseTableName) {
-        super(schema, baseTableName, MolSourceType.MOL, [
-                FingerprintType.RDKIT,
-                FingerprintType.MORGAN_CONNECTIVITY_2,
-                FingerprintType.MORGAN_FEATURE_2])
-        addColumn("pdb_code", "CHAR", "CHAR(4)")
-        addColumn("ligand_code", "TEXT", "TEXT")
-
+    public static void main(String[] args) throws Exception {
+        if (args.length == 0) {
+            System.out.println("Usage: Main <loader to use>");
+        } else {
+            System.out.println("Loading using " + args[0]);
+            Class cls = Class.forName(args[0]);
+            AbstractRDKitLoader loader = (AbstractRDKitLoader)cls.newInstance();
+            loader.load();
+        }
     }
-
 }
