@@ -18,25 +18,11 @@ labels:
 
 parameters:
 
-# -------------
-# Configuration
-# -------------
-# Common (not specific to any infrastructure service)
-
 - name: SQUONK_NAMESPACE
   value: squonk
 
-# --------
-# RabbitMQ
-# --------
-# I'd like to use a secret/variable defined in `rabbitmq.yaml`.
-# But I cannot.
 - name: RABBITMQ_HOST
   value: rabbitmq.openrisknet-infra.svc
-
-# ------
-# Squonk
-# ------
 
 - name: SQUONK_USER
   value: squonk
@@ -73,9 +59,9 @@ objects:
     name: squonk-rabbitmq-config
   data:
     configure.sh: |
-      curl -i -u guest:guest -H "content-type:application/json" -XPUT http://rabbitmq:15672/api/vhosts/$SQUONK_VHOST
-      curl -i -u guest:guest -H "content-type:application/json" -XPUT -d'{"password":"'"$SQUONK_PASS"'","tags":"administrator"}' http://rabbitmq:15672/api/users/$SQUONK_USER
-      curl -i -u guest:guest -H "content-type:application/json" -XPUT -d'{"configure":".*","write":".*","read":".*"}' http://rabbitmq:15672/api/permissions/$SQUONK_VHOST/$SQUONK_USER
+      curl -i -u guest:guest -H "content-type:application/json" -XPUT http://$RABBITMQ_HOST:15672/api/vhosts/$SQUONK_VHOST
+      curl -i -u guest:guest -H "content-type:application/json" -XPUT -d'{"password":"'"$SQUONK_PASS"'","tags":"administrator"}' http://$RABBITMQ_HOST:15672/api/users/$SQUONK_USER
+      curl -i -u guest:guest -H "content-type:application/json" -XPUT -d'{"configure":".*","write":".*","read":".*"}' http://$RABBITMQ_HOST:15672/api/permissions/$SQUONK_VHOST/$SQUONK_USER
 
 - kind: Job
   apiVersion: batch/v1
@@ -100,6 +86,8 @@ objects:
             value: ${SQUONK_PASS}
           - name: SQUONK_VHOST
             value: ${SQUONK_VHOST}
+          - name: RABBITMQ_HOST
+            value: ${RABBITMQ_HOST}
           command:
           - /bin/sh
           - /create-squonk/configure.sh
