@@ -20,8 +20,6 @@ pipeline {
         CLUSTER = 'squonk-dev'
         OC_USER = 'developer'
         OC_PROJECT = 'squonk'
-        OC_PROJECT_DISPLAY_NAME = 'Squonk Notebook'
-        OC_PROJECT_DESCRIPTION = 'The Squonk Computational Notebook'
         OC_INFRA_PROJECT = 'squonk-infra'
         OC_ROUTES_BASENAME = '192.168.99.100.nip.io'
         OC_SQUONK_HOST = 'squonk-notebook.192.168.99.100.nip.io'
