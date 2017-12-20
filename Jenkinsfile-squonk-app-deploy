@@ -44,7 +44,6 @@ pipeline {
             }
             steps {
                 echo "The project PV/PVCs do not exist. Creating them..."
-                git branch: 'openshift', url: 'https://github.com/InformaticsMatters/squonk'
                 dir('openshift/templates/squonk-app') {
                     script {
                         openshift.withCluster("${CLUSTER}") {
@@ -73,7 +72,6 @@ pipeline {
             }
             steps {
                 echo "The project Infrastructure does not exist. Creating it..."
-                git branch: 'openshift', url: 'https://github.com/InformaticsMatters/squonk'
                 dir('openshift/templates/squonk-app') {
                     script {
                         openshift.withCluster("${CLUSTER}") {
@@ -131,7 +129,6 @@ pipeline {
             }
             steps {
                 echo "Squonk does not exist. Creating it..."
-                git branch: 'openshift', url: 'https://github.com/InformaticsMatters/squonk'
                 dir('openshift/templates/squonk-app') {
                     script {
                         openshift.withCluster("${CLUSTER}") {
