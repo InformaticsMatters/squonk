@@ -21,10 +21,10 @@ pipeline {
         OC_USER = 'developer'
         OC_PROJECT = 'squonk'
         OC_INFRA_PROJECT = 'squonk-infra'
-        OC_ROUTES_BASENAME = '192.168.99.100.nip.io'
-        OC_SQUONK_HOST = 'squonk-notebook.192.168.99.100.nip.io'
+        OC_ROUTES_BASENAME = "${SQUONK_HOSTNAME}.nip.io"
+        OC_SQUONK_HOST = "squonk-notebook.${SQUONK_HOSTNAME}.nip.io"
         KEYCLOAK_REALM = 'squonk'
-        KEYCLOAK_LOGOUT_REDIRECT_TO = 'http://home.192.168.99.100.nip.io'
+        KEYCLOAK_LOGOUT_REDIRECT_TO = "http://home.${SQUONK_HOSTNAME}.nip.io"
     }
 
     stages {
