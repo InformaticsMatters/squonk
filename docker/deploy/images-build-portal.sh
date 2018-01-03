@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e 
+
 base=$PWD
 echo base = $HOME
 

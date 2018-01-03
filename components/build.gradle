@@ -48,7 +48,7 @@ allprojects {
     // look at the jackson2-version property here (with correct tag) to get the right Jackson version
     // https://github.com/apache/camel/blob/master/parent/pom.xml
     project.ext.set('jacksonVersion', '2.8.4')
-    project.ext.set('cdkVersion', '2.0')
+    project.ext.set('cdkVersion', '2.1.1')
     project.ext.set('groovyVersion', '2.4.4')
     project.ext.set('weldVersion', '2.3.2.Final')
     project.ext.set('postgresDriverVersion', '9.4-1201-jdbc41')
@@ -66,6 +66,11 @@ allprojects {
                 password = cxnMavenPassword
             }
         }
+
+        // temporarily needed for CDK 2.1
+        //maven {
+        //    url "https://oss.sonatype.org/content/repositories/snapshots"
+        //}
 
         maven {
             url "https://nexus.ideaconsult.net/content/repositories/thirdparty"
@@ -216,19 +221,14 @@ task dockerFileChemServices(type: Dockerfile) {
 
     destFile = project.file('build/chem-services-basic/Dockerfile')
     // if changing the version you must also update the hardcoded version number in org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor
-    from "informaticsmatters/rdkit_java_tomcat:Release_2017_03_1"
+    from "informaticsmatters/rdkit-tomcat-debian:Release_2017_09_2"
     maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
-
-    runCommand("rm -rf /usr/local/tomcat/webapps/*")
 
     addFile('*.war', "/usr/local/tomcat/webapps/")
     addFile('license.cxl', 'license.cxl')
     addFile('chemaxon_reaction_library.zip', '/chemaxon_reaction_library.zip')
-    //addFile('cpsign0.3pro.license', 'cpsign0.3pro.license')
 
     environmentVariable("CHEMAXON_LICENSE_URL", "/usr/local/tomcat/license.cxl")
-    //environmentVariable("CPSIGN_LICENSE_URL",   "/usr/local/tomcat/cpsign0.3pro.license")
-    //environmentVariable("CPSIGN_MODEL_DIR",     "/cpsign_data")
 
     exposePort(8080)
 }

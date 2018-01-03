@@ -106,6 +106,8 @@ services:
         - /var/run/docker.sock:/var/run/docker.sock
         - /squonk/work:/squonk/work
         - /var/maven_repo
+        security_opt:
+        - label:disable # disable SELinux so that we can access docker.sock
         environment:
             DOCKER_HOST: unix:///var/run/docker.sock
             SQUONK_DOCKER_WORK_DIR: /squonk/work/docker

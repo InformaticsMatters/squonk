@@ -1,14 +1,22 @@
-FROM tomcat:8.0-jre8
-MAINTAINER Tim Dudgeon <tdudgeon@informaticsmatters.com>
+FROM informaticsmatters/tomcat:8.0-jre8
+LABEL maintainer="Tim Dudgeon<tdudgeon@informaticsmatters.com>"
 
-RUN echo JAVA_OPTS='"-Dcom.sun.jersey.server.impl.cdi.lookupExtensionInBeanManager=true -Dcom.squonk.keycloak.baseurl=$KEYCLOAK_SERVER_URL"' > /usr/local/tomcat/bin/setenv.sh
-RUN rm -rf              /usr/local/tomcat/webapps/*
+USER root
+
+RUN apt-get update -y &&\
+ apt-get upgrade -y &&\
+ apt-get install -y --no-install-recommends unzip &&\
+ apt-get clean
 
 # copy the keycloak jars to the tomcat lib folder
 COPY keycloak-jars-tomcat8/* /usr/local/tomcat/lib/
 
-ADD portal/*.war        /usr/local/tomcat/webapps/
-RUN unzip -d            /usr/local/tomcat/webapps/portal /usr/local/tomcat/webapps/ROOT.war && rm -f /usr/local/tomcat/webapps/ROOT.war
+ADD portal/*.war /usr/local/tomcat/webapps/
+
+RUN unzip -q -d /usr/local/tomcat/webapps/portal /usr/local/tomcat/webapps/ROOT.war &&\
+ rm -f /usr/local/tomcat/webapps/ROOT.war &&\
+ echo JAVA_OPTS='"-Dcom.sun.jersey.server.impl.cdi.lookupExtensionInBeanManager=true -Dcom.squonk.keycloak.baseurl=$KEYCLOAK_SERVER_URL"' > /usr/local/tomcat/bin/setenv.sh &&\
+ chown -R 501:0 /usr/local/tomcat/webapps/portal /usr/local/tomcat/bin/setenv.sh
 
 # remove unused or conflicting jars
 RUN cd /usr/local/tomcat/webapps/portal/WEB-INF/lib && rm commons-codec-*.jar commons-logging-*.jar httpclient*.jar httpcore*.jar\
@@ -17,5 +25,4 @@ RUN cd /usr/local/tomcat/webapps/portal/WEB-INF/lib && rm commons-codec-*.jar co
 COPY portal/tomcat-users.xml /usr/local/tomcat/conf/
 COPY portal/web.xml portal/beans.xml portal/persistence.properties /usr/local/tomcat/webapps/portal/WEB-INF/
 
- 
-EXPOSE 8080
+USER 501

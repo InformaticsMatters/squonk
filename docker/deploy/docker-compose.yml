@@ -177,6 +177,8 @@ services:
         - /squonk/work:/squonk/work:Z
         - /var/maven_repo:/var/maven_repo:ro,Z
         - ./images/cellexecutor/logging.properties:/logging.properties:ro,Z
+        security_opt:
+        - label:disable # disable SELinux so that we can access docker.sock
         environment:
             RABBITMQ_SQUONK_PASSWORD:
             DOCKER_HOST: unix:///var/run/docker.sock

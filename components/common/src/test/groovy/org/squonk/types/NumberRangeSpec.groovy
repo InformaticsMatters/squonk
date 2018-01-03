@@ -40,6 +40,20 @@ class NumberRangeSpec extends Specification {
         r2.maxValue == 10
     }
 
+    void "integer undefined to/from json"() {
+
+        def r1 = new NumberRange.Integer()
+
+        when:
+        def json = mapper.writeValueAsString(r1)
+        def r2 = mapper.readValue(json, NumberRange.class)
+
+        then:
+        r2 != null
+        r2.minValue == null
+        r2.maxValue == null
+    }
+
     void "float to/from json"() {
 
         def r1 = new NumberRange.Float(1.1f, 10.1f)
