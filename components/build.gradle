@@ -182,7 +182,7 @@ task chemServicesWars(type: Copy) {
 
     from "../data/licenses/license.cxl"
     from "../docker/deploy/images/chemservices/chemaxon_reaction_library.zip"
-    //from "../data/licenses/cpsign0.3pro.license"
+    //from "../data/licenses/cpsign.license"
     from("chem-services-cdk-basic/build/libs") {
         include '*.war'
         rename '.*', 'chem-services-cdk-basic.war'

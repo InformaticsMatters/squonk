@@ -61,7 +61,7 @@ public class TCPRunner {
     public void intialise(){
         // Start with instantiating CPSignFactory with your license
         try {
-            factory = new CPSignFactory(new FileInputStream("../../data/licenses/cpsign0.3pro.license"));
+            factory = new CPSignFactory(new FileInputStream("../../data/licenses/cpsign.license"));
         } catch (IllegalArgumentException | IOException e) {
             writeErrAndExit("Could not load the license or it was invalid");
         }
