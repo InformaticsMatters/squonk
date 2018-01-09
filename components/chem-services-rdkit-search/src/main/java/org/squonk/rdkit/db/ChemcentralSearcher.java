@@ -227,7 +227,7 @@ public class ChemcentralSearcher {
 
         Select select = searcher.createSelectAll(rdkitTable.getName())
                 .setChiral((chiral == null || "sim".equals(mode)) ? false : chiral)
-                .limit(limit == null ? 1000 : Math.min(1000, limit)).select();
+                .limit(limit == null ? 100 : Math.min(10000, limit)).select();
 
         WhereClause where = select.where();
         switch (mode) {
