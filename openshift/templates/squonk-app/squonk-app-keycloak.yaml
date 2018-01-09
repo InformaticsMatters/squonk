@@ -117,6 +117,8 @@ parameters:
   value: 20Gi
 - name: CELL_JOB_PROJECT_NAME
   value: squonk
+- name: CELL_JOB_LOG_HISTORY
+  valuie: 100
 
 - name: CELL_CPU_REQUEST
   value: 100m
@@ -405,6 +407,8 @@ objects:
             value: ${CELL_JOB_PROJECT_NAME}
           - name: SQUONK_POD_BASE_NAME
             value: ${CELL_SQUONK_POD_BASE_NAME}
+          - name: SQUONK_POD_LOG_HISTORY
+            value: ${CELL_JOB_LOG_HISTORY}
 #          - name: JAVA_OPTS
 #            value: '"-Djava.util.logging.config.file=/logging.properties"'
 #          resources:

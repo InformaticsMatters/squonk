@@ -18,6 +18,7 @@ package org.squonk.execution.runners;
 
 import com.github.dockerjava.api.model.AccessMode;
 import com.github.dockerjava.api.model.Bind;
+import com.google.common.collect.EvictingQueue;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
@@ -30,6 +31,7 @@ import org.squonk.util.IOUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Queue;
 import java.util.logging.Logger;
 
 /**
@@ -61,6 +63,9 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String SA_ENV_NAME = "SQUONK_SERVICE_ACCOUNT";
     private static final String SA_DEFAULT = "squonk";
 
+    private static final String LOG_HISTORY_ENV_NAME = "SQUONK_POD_LOG_HISTORY";
+    private static final String LOG_HISTORY_DEFAULT = "0";
+
     private static final String PVC_NAME_ENV_NAME = "SQUONK_WORK_DIR_PVC_NAME";
     private static final String PVC_NAME_DEFAULT = "squonk-work-dir-pvc";
 
@@ -73,6 +78,8 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String OS_DATA_VOLUME_PVC_NAME;
     private static final String OS_IMAGE_PULL_POLICY = "IfNotPresent";
     private static final String OS_POD_RESTART_POLICY = "Never";
+
+    public static final int LOG_HISTORY;
 
     // The OpenShift Job is given a period of time to start.
     // This time accommodates a reasonable time to pull the image
@@ -246,9 +253,15 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // To accumulated the captured Pod's output...
         private StringBuilder stringBuilder = new StringBuilder();
+        private Queue<String> logQueue = EvictingQueue.create(LOG_HISTORY);
 
         private void capture(byte[] b, int off, int len) {
-            stringBuilder.append(new String(b, off, len));
+            String logLine = new String(b, off, len);
+            if (LOG_HISTORY == 0) {
+                stringBuilder.append(logLine);
+            } else {
+                logQueue.add(logLine);
+            }
         }
 
         @Override
@@ -271,6 +284,13 @@ public class OpenShiftRunner extends AbstractRunner {
         // Returns the accumulated Pod output
         // (may be an empty string)
         public String getCollectedOutput() {
+            // If we were using a queue to limit the number
+            // of log lines - iterate through it into our StringBuilder.
+            // If we wern't using the logQueue then the StrignBuilder
+            // will already contain our log lines...
+            for (String line : logQueue) {
+                stringBuilder.append(line);
+            }
             return stringBuilder.toString();
         }
 
@@ -697,6 +717,18 @@ public class OpenShiftRunner extends AbstractRunner {
         OS_OBJ_BASE_NAME = IOUtils
                 .getConfiguration(OBJ_BASE_NAME_ENV_NAME, OBJ_BASE_NAME_DEFAULT);
         LOG.info("OS_OBJ_BASE_NAME='" + OS_OBJ_BASE_NAME + "'");
+
+        // Get the configured log cpacity
+        // (maximum number of lines collected from a Pod).
+        // Zero, the default (or -ve values) are interpreted as 'keep all log lines'.
+        String logCapacity = IOUtils
+                .getConfiguration(LOG_HISTORY_ENV_NAME, LOG_HISTORY_DEFAULT);
+        int logHistoryInt = Integer.parseInt(logCapacity);
+        if (logHistoryInt < 0) {
+            logHistoryInt = 0;
+        }
+        LOG_HISTORY = logHistoryInt;
+        LOG.info("LOG_HISTORY=" + LOG_HISTORY);
 
     }
 
