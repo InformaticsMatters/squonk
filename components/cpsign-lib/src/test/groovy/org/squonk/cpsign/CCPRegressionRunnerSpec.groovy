@@ -19,6 +19,7 @@ package org.squonk.cpsign
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
 import org.squonk.types.CPSignTrainResult
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -42,6 +43,7 @@ class CCPRegressionRunnerSpec extends Specification {
 
     static int cvFolds = 3
 
+    @Ignore
     void "train"() {
 
         Dataset dataset = Molecules.datasetFromSDF("../../data/testfiles/glucocorticoid.sdf.gz")
@@ -67,6 +69,7 @@ class CCPRegressionRunnerSpec extends Specification {
 
     }
 
+    @Ignore
     void predict() {
         Dataset dataset = Molecules.datasetFromSDF("../../data/testfiles/glucocorticoid.sdf.gz")
         CCPRegressionRunner runner = new CCPRegressionRunner(CPSignConfig.license, CPSignConfig.workDir)

@@ -24,6 +24,7 @@ import org.squonk.types.CPSignTrainResult
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
 import org.squonk.types.MoleculeObject
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -44,6 +45,7 @@ class CPSignPredictRouteBuilderSpec extends Specification {
         context?.stop()
     }
 
+    @Ignore
     void "train ccp classification"() {
 
         List items = Molecules.nci100Molecules()
@@ -70,6 +72,7 @@ class CPSignPredictRouteBuilderSpec extends Specification {
         results.path != null
     }
 
+    @Ignore
     void "train ccp regression"() {
 
         List items = Molecules.nci100Molecules()
