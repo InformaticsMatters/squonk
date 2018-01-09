@@ -86,7 +86,8 @@ public class OpenShiftRunner extends AbstractRunner {
 
     private static OpenShiftClient client;
     private static Watch watchObject;
-    private static LogWatch logObject;
+    private static LogWatch logWatch;
+    private static LogStream logStream;
 
     private final String hostBaseWorkDir;
     private final String localWorkDir;
@@ -178,6 +179,20 @@ public class OpenShiftRunner extends AbstractRunner {
             }
             // Waiting for
             if (podPhase == "Complete") {
+
+                // If we don't have a LogSTream object (used to capture the
+                // launched pod's output) then create one now. With the current
+                // Kubernetes library we must wait until now (when we know the
+                // Pod's running) otherwise we won't be given any.
+                if (logWatch == null) {
+                    LOG.info(podName + " (Creating LogStream)");
+                    logStream = new LogStream();
+                    logWatch = client.pods()
+                            .inNamespace(OS_PROJECT)
+                            .withName(podName)
+                            .watchLog(logStream);
+                }
+
                 // We're waiting for a ContainerStateTerminated record.
                 // That will contain start/finish times and an exit code.
                 List<ContainerStatus> containerStatuses = podStatus.getContainerStatuses();
@@ -222,29 +237,41 @@ public class OpenShiftRunner extends AbstractRunner {
 
     }
 
+    /**
+     * The LogStream is used to collect the stdout form the launhced Pod.
+     * It is created from within the PodWatcher when we're confident the
+     * Pod's running.
+     */
     static class LogStream extends OutputStream {
 
+        // To accumulated the captured Pod's output...
+        private StringBuilder stringBuilder = new StringBuilder();
+
         private void capture(byte[] b, int off, int len) {
-
-            LOG.info("JOB-LOG '" + new String(b, off, len) + "'");
-
+            stringBuilder.append(new String(b, off, len));
         }
 
         @Override
         public void write(int b) {
+            // Not really interested.
+            // Nothing useful comes through here.
             LOG.warning("JOB-LOG [Got call to write(int)]");
         }
 
         @Override
         public void write(byte[] b, int off, int len) {
-            LOG.info("JOB-LOG [Got call to write(b,o,l)]");
             capture(b, off, len);
         }
 
         @Override
         public void write(byte[] b) {
-            LOG.info("JOB-LOG [Got call to write(b)]");
             capture(b, 0, b.length);
+        }
+
+        // Returns the accumulated Pod output
+        // (may be an empty string)
+        public String getCollectedOutput() {
+            return stringBuilder.toString();
         }
 
     }
@@ -479,19 +506,6 @@ public class OpenShiftRunner extends AbstractRunner {
         // Setting this flag allows cleanUp() to clean it up.
         podCreated = true;
 
-        // Add a log-watcher to receive log-lines (stdout)
-        // from the pod we'll create.
-
-        // Log Watcher doesn't seem to result in anything...
-        // regardless of whether created before or after the Pod.
-        // Clearly work needed here.
-        LOG.info(podName + " (Creating LogStream)");
-//        LogStream ls = new LogStream();
-        logObject = client.pods()
-                .withName(podName)
-                .tailingLines(10)
-                .watchLog(System.out);
-
         // Wait...
 
         LOG.info(podName + " (Waiting for Pod completion)");
@@ -526,8 +540,6 @@ public class OpenShiftRunner extends AbstractRunner {
 
         LOG.info(podName + " (Execute complete)");
 
-        // TODO CONTAINER LOG!
-
         // ---
 
         // Adjust the 'isRunning' state if we terminated witout being stopped.
@@ -547,7 +559,10 @@ public class OpenShiftRunner extends AbstractRunner {
 
     @Override
     public String getLog() {
-        return "";
+        if (logStream == null) {
+            return "";
+        }
+        return logStream.getCollectedOutput();
     }
 
     @Override
@@ -568,9 +583,7 @@ public class OpenShiftRunner extends AbstractRunner {
      */
     @Override
     protected String getDefaultWorkDir() {
-
         return IOUtils.getConfiguration(WORK_DIR_ENV_NAME, WORK_DIR_DEFAULT);
-
     }
 
     /**
@@ -640,12 +653,15 @@ public class OpenShiftRunner extends AbstractRunner {
                     .delete();
         }
 
-        // There may not be a PodWatcher or LogWatcher
+        // There may not be a PodWatcher, LogWatcher and LogStream
         if (watchObject != null) {
             watchObject.close();
         }
-        if (logObject != null) {
-            logObject.close();
+        if (logWatch != null) {
+            logWatch.close();
+        }
+        if (logStream != null) {
+            logStream = null;
         }
 
         super.cleanup();

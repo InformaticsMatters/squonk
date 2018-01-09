@@ -73,4 +73,4 @@ docker/deploy/images/keycloak/keycloak.jks
 
 docker/deploy/images/chemservices/*.zip
 
-
+**/doxygen-output/
