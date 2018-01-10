@@ -55,7 +55,7 @@ is specified as the `$OC_CERTS_PASSWORD` variable.
 ./certs-create.sh
 ```
 
-Create projects as the `$OC_ADMIN_USER` user:
+Create projects as the `$OC_ADMIN` user:
 ```
 oc new-project $OC_INFRA_PROJECT
 oc new-project $OC_PROJECT
