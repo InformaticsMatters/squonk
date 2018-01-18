@@ -121,7 +121,12 @@ services:
         environment:
             POSTGRES_SQUONK_PASSWORD:
             RABBITMQ_SQUONK_PASSWORD:
-            STRUCTURE_DATABASE_TABLES:
+            CHEMCENTRAL_DATABASE_TABLES:
+            CHEMCENTRAL_HOST:
+            CHEMCENTRAL_PORT:
+            CHEMCENTRAL_DB:
+            CHEMCENTRAL_USER:
+            CHEMCENTRAL_PASSWORD:
         networks:
         - squonk_back
         healthcheck:

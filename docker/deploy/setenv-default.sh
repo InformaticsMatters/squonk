@@ -51,8 +51,8 @@ export POSTGRES_XWIKI_PASSWORD=squonk
 
 # The searchable structure databases that have been loaded.
 # Must be colon separated table names without any spaces e.g.
-# export STRUCTURE_DATABASE_TABLES="emolecules_order_sc:emolecules_order_bb:chembl_23:pdb_ligand"
-export STRUCTURE_DATABASE_TABLES="chembl_latest:chembl_23"
+# export CHEMCENTRAL_DATABASE_TABLES="emolecules_order_sc:emolecules_order_bb:chembl_23:pdb_ligand"
+export CHEMCENTRAL_DATABASE_TABLES="chembl_latest:chembl_23"
 
 # alias docker-compose to dc
 alias dc=docker-compose

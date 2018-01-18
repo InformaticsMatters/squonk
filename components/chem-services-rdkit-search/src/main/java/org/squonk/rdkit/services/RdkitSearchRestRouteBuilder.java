@@ -51,7 +51,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
 
     private static final String ROUTE_STATS = "seda:post_stats";
 
-    private static String[] STRUCTURE_DATABASE_TABLES = IOUtils.getConfiguration("STRUCTURE_DATABASE_TABLES", "").split(":");
+    private static String[] CHEMCENTRAL_DATABASE_TABLES = IOUtils.getConfiguration("CHEMCENTRAL_DATABASE_TABLES", "").split(":");
 
     protected static final HttpServiceDescriptor[] SEARCH_SERVICE_DESCRIPTOR = new HttpServiceDescriptor[]{
 
@@ -69,7 +69,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     "body", "Query Structure", "Structure to use as the query as mol, smarts or smiles", Mode.User)
                                     .withMinMaxValues(1, 1),
                             new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search", Mode.User)
-                                    .withValues(STRUCTURE_DATABASE_TABLES)
+                                    .withValues(CHEMCENTRAL_DATABASE_TABLES)
                                     .withMinMaxValues(1, 1),
                             new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity", Mode.User)
                                     .withValues(new String[]{"exact", "sss"})
@@ -96,7 +96,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     "body", "Query Structure", "Structure to use as the query as smiles or smarts", Mode.User)
                                     .withMinMaxValues(1, 1),
                             new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search", Mode.User)
-                                    .withValues(STRUCTURE_DATABASE_TABLES)
+                                    .withValues(CHEMCENTRAL_DATABASE_TABLES)
                                     .withMinMaxValues(1, 1),
                             new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity)", Mode.User)
                                     .withDefaultValue("sim")
@@ -134,7 +134,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     IODescriptors.createMoleculeObjectDataset("output"),
                     new OptionDescriptor[]{
                             new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search", Mode.User)
-                                    .withValues(STRUCTURE_DATABASE_TABLES)
+                                    .withValues(CHEMCENTRAL_DATABASE_TABLES)
                                     .withMinMaxValues(1, 1),
                             new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)", Mode.User)
                                     .withDefaultValue(0.7f)

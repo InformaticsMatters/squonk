@@ -43,7 +43,7 @@ public class RDKitTables {
     public RDKitTables(DataSource dataSource) {
         dbConfig = new DataSourceConfiguration(dataSource, Collections.emptyMap());
 
-        String[] dbsString = IOUtils.getConfiguration("STRUCTURE_DATABASE_TABLES", "").split(":");
+        String[] dbsString = IOUtils.getConfiguration("CHEMCENTRAL_DATABASE_TABLES", "").split(":");
 
         // This is ugly and needs improving, but it handles the current dbs that we have
         // Rather that use an environment variable we probably need to inject a configuration file

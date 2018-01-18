@@ -78,13 +78,13 @@ the load you might want to look into doing the loading using a the
 ### Configuring the search service
 
 The searchsearvice needs to know what database tables have been loaded.
-This is currently done using the STRUCTURE_DATABASE_TABLES environment variable
+This is currently done using the CHEMCENTRAL_DATABASE_TABLES environment variable
 that needs to be passes to the chemservices container. To do this set this variable
 in your docker/deploy/setenv.sh file. The value must be a colon separated list of table names
 with no spaces or other characters allowed. For instance:
 
 ```
-export STRUCTURE_DATABASE_TABLES=emolecules_order_sc:emolecules_order_bb:chembl_23:pdb_ligand
+export CHEMCENTRAL_DATABASE_TABLES=emolecules_order_sc:emolecules_order_bb:chembl_23:pdb_ligand
 ```
 
 
