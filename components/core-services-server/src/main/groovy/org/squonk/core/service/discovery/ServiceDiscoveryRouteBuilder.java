@@ -218,10 +218,10 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         });
 
         // finally do the updates which persists the changes
-        int valid = 0;
-        int invalid = 0;
         for (String base : basePaths) {
             LOG.fine("Updating services for " + base);
+            int valid = 0;
+            int invalid = 0;
             ServiceDescriptorSet set = reg.fetchServiceDescriptorSet(base);
             // if any services were not updated then they must have been removed so we inactive them.
             // we don't delete them otherwise old notebooks will blow up. We just don't allow them to be executed again.
