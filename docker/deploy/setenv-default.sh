@@ -54,6 +54,13 @@ export POSTGRES_XWIKI_PASSWORD=squonk
 # export CHEMCENTRAL_DATABASE_TABLES="emolecules_order_sc:emolecules_order_bb:chembl_23:pdb_ligand"
 export CHEMCENTRAL_DATABASE_TABLES="chembl_latest:chembl_23"
 
+#export CHEMCENTRAL_HOST=postgres
+#export CHEMCENTRAL_PORT=5432
+#export CHEMCENTRAL_DB=chemcentral
+#export CHEMCENTRAL_USER=chemcentral
+#export CHEMCENTRAL_PASSWORD=chemcentral
+
+
 # alias docker-compose to dc
 alias dc=docker-compose
 
