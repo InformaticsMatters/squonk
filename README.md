@@ -43,7 +43,8 @@ For some of the tests and some of the RDKit services you will need RDKit with Ja
 See [here](http://rdkit.org/docs/Install.html#building-from-source) for how to do this.
 If you don't have this then make sure the RDBASE environment variable is not set.
 
-For the ChemAxon services and tests you will need a ChemAxon license file.
+For the ChemAxon services and tests you will need a ChemAxon license file named license.cxl.
+Place this in your $HOME/.chemaxon directory AND in the docker/deploy/images/chemservices dir in the squonk distro.
 
 If for these reasons you find some of the tests failing try using:
 
