@@ -14,7 +14,7 @@
 **/*~
 **/.DS_Store
 
-data/licenses
+data/licenses/*
 data/testfiles/emols_order*
 data/testfiles/all-sdf.sdf.gz
 data/testfiles/chembl_*.sdf.gz
@@ -37,6 +37,8 @@ docker/deploy/data
 docker/deploy/setenv.sh
 docker/deploy/images/yyy.json
 docker/deploy/images/squonk-realm.json
+
+docker/deploy/images/chemservices/license.cxl
 
 docker/deploy/images/cellexecutor/logging.properties
 

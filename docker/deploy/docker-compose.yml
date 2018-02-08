@@ -118,7 +118,10 @@ services:
     chemservices:
         image: squonk/chemservices-basic:latest
         restart: on-failure:10
+        volumes:
+        - ./images/chemservices/license.cxl:/usr/local/tomcat/license.cxl:ro,z
         environment:
+            CHEMAXON_LICENSE_URL: /usr/local/tomcat/license.cxl
             POSTGRES_SQUONK_PASSWORD:
             RABBITMQ_SQUONK_PASSWORD:
             CHEMCENTRAL_DATABASE_TABLES:

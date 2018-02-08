@@ -101,47 +101,8 @@ subprojects {
     }
 }
 
-def hasChemAxonLicense = file('../data/licenses/license.cxl').exists()
-
 task wrapper(type: Wrapper) {
     gradleVersion = '3.2.1'
-}
-
-task createEbsBackendServicesRootZip(type: Zip) {
-
-    copy {
-        from '../data/licenses/license.cxl'
-        into 'chem-services-root/src/main/html/licenses'
-    }
-
-    archiveName = 'ROOT.war'
-    destinationDir = file('build/ebs/')
-    from 'chem-services-root/src/main/html'
-}
-
-task createEbsBackendServicesZip(type: Zip) {
-
-    dependsOn = [
-            createEbsBackendServicesRootZip,
-            'chem-services-cdk-basic:war',
-            'chem-services-chemaxon-basic:war',
-            'chem-services-rdkit-basic:war',
-            'chem-services-openchemlib-basic:war'
-    ]
-    archiveName = 'ebs.zip'
-    destinationDir = file('build/ebs/')
-    from files(
-            'chem-services-cdk-basic/build/libs/chem-services-cdk-basic-' + version + '.war',
-            'chem-services-chemaxon-basic/build/libs/chem-services-chemaxon-basic-' + version + '.war',
-            'chem-services-rdkit-basic/build/libs/chem-services-rdkit-basic-' + version + '.war',
-            'chem-services-openchemlib-basic/build/libs/chem-services-openchemlib-basic-' + version + '.war',
-            'build/ebs/ROOT.war',
-
-    )
-    rename { String fileName ->
-        fileName.replace('-' + version, '')
-    }
-
 }
 
 project.ext.set('dockerHost', getDockerHost())
@@ -177,12 +138,9 @@ task chemServicesWars(type: Copy) {
             tasks.getByPath(':chem-services-rdkit-search:war'),
             tasks.getByPath(':chem-services-openchemlib-basic:war'),
             tasks.getByPath(':chem-services-smartcyp:war')
-            //tasks.getByPath(':chem-services-cpsign:war')
     ]
 
-    from "../data/licenses/license.cxl"
     from "../docker/deploy/images/chemservices/chemaxon_reaction_library.zip"
-    //from "../data/licenses/cpsign.license"
     from("chem-services-cdk-basic/build/libs") {
         include '*.war'
         rename '.*', 'chem-services-cdk-basic.war'
@@ -207,14 +165,9 @@ task chemServicesWars(type: Copy) {
         include '*.war'
         rename '.*', 'chem-services-smartcyp.war'
     }
-//    from("chem-services-cpsign/build/libs") {
-//        include '*.war'
-//        rename '.*', 'chem-services-cpsign.war'
-//    }
     into 'build/chem-services-basic'
 
 }
-
 
 
 task dockerFileChemServices(type: Dockerfile) {
@@ -225,10 +178,7 @@ task dockerFileChemServices(type: Dockerfile) {
     maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
 
     addFile('*.war', "/usr/local/tomcat/webapps/")
-    addFile('license.cxl', 'license.cxl')
     addFile('chemaxon_reaction_library.zip', '/chemaxon_reaction_library.zip')
-
-    environmentVariable("CHEMAXON_LICENSE_URL", "/usr/local/tomcat/license.cxl")
 
     exposePort(8080)
 }
