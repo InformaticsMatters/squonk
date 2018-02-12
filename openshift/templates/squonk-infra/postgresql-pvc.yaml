@@ -1,0 +1,46 @@
+---
+
+# The PostgreSQL PVC.
+#
+# oc process -f postgresql-pvc.yaml | oc create -f -
+# oc delete pvc --selector template=postgresql-pvc
+
+kind: Template
+apiVersion: v1
+metadata:
+  name: postgresql-pvc
+  annotations:
+    description: The Postgres Persistent Volume Claim
+    tags: postgresql,pvc
+labels:
+  template: postgresql-pvc
+  app: postgresql
+
+parameters:
+
+- displayName: Database Volume Capacity
+  description: Size of persistent storage for database volume.
+  name: VOLUME_CAPACITY
+  value: 50Gi
+  required: true
+
+- name: DATABASE_SERVICE_NAME
+  displayName: Database Service Name
+  description: The name of the OpenShift Service exposed for the database.
+  value: postgresql
+  required: true
+
+objects:
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: "${DATABASE_SERVICE_NAME}-claim"
+    labels:
+      application: postgresql
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: "${VOLUME_CAPACITY}"

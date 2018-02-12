@@ -125,11 +125,6 @@ parameters:
   description: Database Admin username
   name: DB_ADMIN_USERNAME
   value: postgres
-- displayName: Database Volume Capacity
-  description: Size of persistent storage for database volume.
-  name: VOLUME_CAPACITY
-  value: 50Gi
-  required: true
 - displayName: JGroups Secret Name
   description: The name of the secret containing the keystore file
   name: JGROUPS_ENCRYPT_SECRET
@@ -530,17 +525,3 @@ objects:
         - name: "${DATABASE_SERVICE_NAME}-pvol"
           persistentVolumeClaim:
             claimName: "${DATABASE_SERVICE_NAME}-claim"
-
-- apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: "${DATABASE_SERVICE_NAME}-claim"
-    labels:
-      application: "${APPLICATION_NAME}"
-  spec:
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: "${VOLUME_CAPACITY}"
-
