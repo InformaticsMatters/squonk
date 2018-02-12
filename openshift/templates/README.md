@@ -47,6 +47,16 @@ source setenv.sh
 
 Move into the `squonk-infra` directory.
 
+### Persistent volumes
+Assuming you have NFS volumes for `pv-0001` and `pv-rabbitmq` you then
+need to create the required PVs:
+
+```
+oc create -f rabbitmq-pv-nfs.yaml
+oc create -f postgresql-pv-nfs.yaml
+```
+
+### Infrastructure
 Create the certificates used by Keycloak.
 The certs and keystores are protected by a single password that
 is specified as the `$OC_CERTS_PASSWORD` variable.
@@ -81,6 +91,14 @@ oc volume dc/sso --add --claim-size 512M \
     --mount-path /opt/eap/standalone/configuration/standalone_xml_history \
     --name standalone-xml-history
 ```
+
+>   Addendum (12/Feb/2018). If this creates a PVC (we discovered it did in
+    February 2018 on the OpenRiskNet cluster) you will need to
+    remove the `--claim-size` declaration:
+
+    oc volume dc/sso --add \
+        --mount-path /opt/eap/standalone/configuration/standalone_xml_history \
+        --name standalone-xml-history
     
 Once running you will need to add roles and user to the Keycloak realm.
 For instance:
@@ -107,6 +125,7 @@ and `core-service-descriptors` and then define the PVs and PVCs:
 oc process -f squonk-pv-nfs.yaml | oc create -f -
 ```
 
+You will 
 ### Infrastructure
 Next configure the infrastructure. This process runs in both the infrastructure
 and Squonk projects.
