@@ -10,6 +10,9 @@ oc project -q $OC_INFRA_PROJECT
 
 set +e
 
+# Claim RabbitMQ PV
+oc process -f rabbitmq-pvc.yaml | oc create -f -
+
 # Deploy core RabbitMQ service
 oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT\
   -p RABBITMQ_HOST=rabbitmq.${OC_INFRA_PROJECT}.svc\

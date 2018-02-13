@@ -1,3 +1,9 @@
+---
+
+# The PostgreSQL PV.
+#
+# oc create -f postgresql-pv-nfs.yaml
+
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -7,7 +13,10 @@ spec:
     storage: 50Gi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Recycle
+  persistentVolumeReclaimPolicy: Retain
   nfs:
     server: infra-1
     path: /exports/pv-0001
+  claimRef:
+    name: postgresql-claim
+    namespace: openrisknet-infra

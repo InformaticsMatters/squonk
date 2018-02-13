@@ -1,0 +1,22 @@
+---
+
+# The RabbitMQ PV.
+#
+# oc create -f rabbitmq-pv-nfs.yaml
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-rabbitmq
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    server: infra-1
+    path: /exports/pv-rabbitmq
+  claimRef:
+    name: rabbitmq-claim
+    namespace: openrisknet-infra

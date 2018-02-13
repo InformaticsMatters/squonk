@@ -1,0 +1,37 @@
+---
+
+# The RabbitMQ PVC.
+#
+# oc process -f rabbitmq-pvc.yaml | oc create -f -
+# oc delete pvc --selector template=rabbitmq-pvc
+
+kind: Template
+apiVersion: v1
+metadata:
+  name: rabbitmq-pvc
+  annotations:
+    description: The RabbitMQ Persistent Volume Claim
+    tags: rabbitmq,pvc
+labels:
+  template: rabbitmq-pvc
+  app: rabbitmq
+
+parameters:
+
+- name: VOLUME_CAPACITY
+  value: 1Gi
+
+objects:
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: rabbitmq-claim
+    labels:
+      application: rabbitmq
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${VOLUME_CAPACITY}
