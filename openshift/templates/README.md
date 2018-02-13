@@ -87,19 +87,11 @@ minishift ssh -- sudo chmod 777 /mnt/sda1/var/lib/minishift/openshift.local.pv/p
 
 You may need to run this to fix a bug that prevents Keycloak from starting:
 ```
-oc volume dc/sso --add --claim-size 512M \
+oc volume dc/sso --add \
     --mount-path /opt/eap/standalone/configuration/standalone_xml_history \
     --name standalone-xml-history
 ```
 
->   Addendum (12/Feb/2018). If this creates a PVC (we discovered it did in
-    February 2018 on the OpenRiskNet cluster) you will need to
-    remove the `--claim-size` declaration:
-
-    oc volume dc/sso --add \
-        --mount-path /opt/eap/standalone/configuration/standalone_xml_history \
-        --name standalone-xml-history
-    
 Once running you will need to add roles and user to the Keycloak realm.
 For instance:
 
