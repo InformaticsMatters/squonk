@@ -43,18 +43,52 @@ something like `192.168.99.100`. Once done, _source_ the file...
 source setenv.sh
 ```
 
-## Squonk Infrastructure
+## Test logins
+Ensure that you have `$OC_ADMIN` and `$OC_USER` by testing a login of each.
+
+>   This force entering the password, which won't be required again in your
+    session therefore avoiding the need for oc passwords later in the process.
+
+```
+oc login -u $OC_ADMIN
+oc login -u $OC_USER
+```
+
+## Persistent Volumes
+Create projects as the `$OC_ADMIN` user:
+```
+oc new-project $OC_INFRA_PROJECT
+oc new-project $OC_PROJECT
+```
+
+### Squonk Infrastructure PVs
+Assuming you have NFS volumes for `pv-postgresal` and `pv-rabbitmq` you then
+need to create the required PVs.
 
 Move into the `squonk-infra` directory.
 
-### Persistent volumes
-Assuming you have NFS volumes for `pv-0001` and `pv-rabbitmq` you then
-need to create the required PVs:
+```
+oc process -f infra-pv-nfs.yaml | oc create -f -
+```
 
+### Squonk Application PVs
+First specify the how the persistent volumes are to be provided.
+
+Move into the `squonk-app` directory.
+
+On Minshift:
 ```
-oc create -f rabbitmq-pv-nfs.yaml
-oc create -f postgresql-pv-nfs.yaml
+oc process -f squonk-pv-minishift.yaml | oc create -f -
 ```
+
+On OpenShift using NFS first create NFS mounts named `squonk-work-dir`
+and `core-service-descriptors` and then define the PVs and PVCs:
+```
+oc process -f squonk-pv-nfs.yaml | oc create -f -
+```
+
+## Deployment
+With volumes created you can start deploying the components.
 
 ### Infrastructure
 Create the certificates used by Keycloak.
@@ -63,12 +97,6 @@ is specified as the `$OC_CERTS_PASSWORD` variable.
 
 ```
 ./certs-create.sh
-```
-
-Create projects as the `$OC_ADMIN` user:
-```
-oc new-project $OC_INFRA_PROJECT
-oc new-project $OC_PROJECT
 ```
 
 Deploy PostgreSQL, Keycloak and RabbitMQ to the `squonk-infra` project:
@@ -92,32 +120,9 @@ oc volume dc/sso --add \
     --name standalone-xml-history
 ```
 
-Once running you will need to add roles and user to the Keycloak realm.
-For instance:
-
--   Create the `standard-user` role
--   Add `standard-user`to the default roles
--   Create sample users e.g. `user1` and assign passwords.
-
 ## Squonk Application
-
 Move into the `squonk-app` directory to deploy Squonk to the `squonk` project.
 
-### Persistent volumes
-First specify the how the persistent volumes are to be provided.
-
-On Minshift:
-```
-oc process -f squonk-pv-minishift.yaml | oc create -f -
-```
-
-On OpenShift using NFS first create NFS mounts named `squonk-work-dir`
-and `core-service-descriptors` and then define the PVs and PVCs:
-```
-oc process -f squonk-pv-nfs.yaml | oc create -f -
-```
-
-You will 
 ### Infrastructure
 Next configure the infrastructure. This process runs in both the infrastructure
 and Squonk projects.
@@ -138,6 +143,13 @@ For Keycloak it creates the client application in the realm as the
 to Keycloak. A ConfigMap named `squonk-sso-config` is created in the `squonk`
 project containing the `keycloak.json` and `context.xml` files that will be
 needed to connect the Squonk notebook (portal application) to Keyclaok for SSO.
+
+Once running you will need to add roles and user to the Keycloak realm.
+For instance:
+
+-   Create the `standard-user` role
+-   Add `standard-user`to the default roles
+-   Create sample users e.g. `user1` and assign passwords.
 
 ### Squonk Application
 Then deploy the Squonk application:

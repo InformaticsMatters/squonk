@@ -1,0 +1,68 @@
+---
+
+# The Infrastructure PVs.
+#
+# oc process -f infra-pv-nfs.yaml | oc create -f -
+# oc delete pv --selector template=infra-pv-nfs
+
+kind: Template
+apiVersion: v1
+metadata:
+  name: infra-persistence-nfs
+  annotations:
+    description: Squonk Infgrastructure Persistent Volumes using NFS
+    tags: squonk,infra,pv
+labels:
+  template: infra-pv-nfs
+  app: squonk-infra
+
+parameters:
+
+- name: APP_NAMESPACE
+  value: openrisknet-infra
+
+- name: NFS_SERVER
+  value: infra-1
+- name: NFS_PATH
+  value: /exports
+
+- name: RABBITMQ_VOLUME_SIZE
+  value: 1Gi
+- name: POSTGRESQL_VOLUME_SIZE
+  value: 50Gi
+
+objects:
+
+- kind: PersistentVolume
+  apiVersion: v1
+  metadata:
+    name: pv-rabbitmq
+  spec:
+    capacity:
+      storage: ${RABBITMQ_VOLUME_SIZE}
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    nfs:
+      server: ${NFS_SERVER}
+      path: ${NFS_PATH}/pv-rabbitmq
+    claimRef:
+      name: rabbitmq-claim
+      namespace: ${APP_NAMESPACE}
+
+- kind: PersistentVolume
+  apiVersion: v1
+  metadata:
+    name: pv-postgresql
+  spec:
+    capacity:
+      storage: ${POSTGRESQL_VOLUME_SIZE}
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    nfs:
+      server: ${NFS_SERVER}
+      path: ${NFS_PATH}/pv-postgresql
+    claimRef:
+      name: postgresql-claim
+      namespace: ${APP_NAMESPACE}

@@ -1,3 +1,10 @@
+---
+
+# The Squonk PVs.
+#
+# oc process -f squonk-pv-nfs.yaml | oc create -f -
+# oc delete pv --selector template=squonk-pv-nfs
+
 kind: Template
 apiVersion: v1
 metadata:
