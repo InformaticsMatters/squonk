@@ -38,7 +38,7 @@ services:
         - ./images/nginx/xwiki.conf:/etc/nginx/snippets/xwiki.conf:ro
         - ./images/nginx/sites/squonk.it/html/:/usr/share/nginx/html/squonk.it/html/:ro
         - ./images/nginx/informaticsmatters.com.conf:/etc/nginx/conf.d/informaticsmatters.com.conf:ro
-        - ./images/nginx/sites/informaticsmatters.com/html/:/usr/share/nginx/html/informaticsmatters.com/html/:ro
+        - ./images/nginx/sites/informaticsmatters.com/jekyll/website/_site/:/usr/share/nginx/html/www.informaticsmatters.com/html/:ro
         networks:
         - squonk_front
  
