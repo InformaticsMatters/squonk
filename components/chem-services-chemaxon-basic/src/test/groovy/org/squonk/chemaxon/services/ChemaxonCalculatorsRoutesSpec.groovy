@@ -43,13 +43,26 @@ class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
 
     def 'logp multiple MoleculeObject as stream'() {
 
-        
         when:
         def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, new MoleculeObjectDataset(mols))
 
         then:
         results instanceof MoleculeObjectDataset
         results.stream.count() == 3
+    }
+
+    def 'logs multiple MoleculeObject as stream'() {
+
+        when:
+        def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGS, new MoleculeObjectDataset(mols))
+        def list = results.items
+
+        then:
+        results instanceof MoleculeObjectDataset
+        list.size() == 3
+        list.each {
+            assert it.values['AqSol_CXN_7.4'] != null
+        }
     }
 
     def 'logp file as stream'() {
