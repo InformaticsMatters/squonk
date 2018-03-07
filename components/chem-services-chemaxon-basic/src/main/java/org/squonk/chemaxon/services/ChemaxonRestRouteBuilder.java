@@ -30,7 +30,6 @@ import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.dataset.ThinDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.MoleculeTypeDescriptor;
@@ -91,7 +90,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Verify+structure+%28CXN%29",
                     "verify",
-                    new OptionDescriptor[] {OptionDescriptor.FILTER_MODE},
+                    new OptionDescriptor[] {OptionDescriptor.FILTER_MODE_PASS},
                     ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "chemaxon.calculators.logp",
@@ -208,7 +207,28 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/REOS+filter+%28CXN%29",
                     "reosFilter",
                     createReosFilterOptionDescriptors(),
-                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR)//,
+                    ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
+            createServiceDescriptor(
+                    "chemaxon.calculators.cnsMpo",
+                    "CNS MPO (CXN)",
+                    "CNS MPO score using ChemAxon calculators",
+                    new String[]{"cns", "mpo", "hbond", "donors", "pka", "logp", "logd", "tpsa", "molecularweight", "molecularproperties", "chemaxon"},
+                    "icons/filter_molecules.png",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/CNS+MPO+%28CXN%29",
+                    "cnsMpo",
+                    createMpoOptionDescriptors(),
+                    null),
+            createServiceDescriptor(
+                    "chemaxon.calculators.kidsMpo",
+                    "KiDS MPO (CXN)",
+                    "KiDS MPO score using ChemAxon calculators",
+                    new String[]{"kids", "mpo", "hbond", "donors", "tpsa", "rotatablebonds", "atomcount", "ringcount", "molecularproperties", "chemaxon"},
+                    "icons/filter_molecules.png",
+                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/KiDS+MPO+%28CXN%29",
+                    "kidsMpo",
+                    createMpoOptionDescriptors(),
+                    null)
+
 //                createServiceDescriptor(
 //                        "chemaxon.calculators.chemterms",
 //                        "CXN Chemical Terms",
@@ -251,7 +271,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createLipinskiOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(OptionDescriptor.FILTER_MODE_PASS);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(1)
                 .withMinMaxValues(1,1));
@@ -271,7 +291,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createDrugLikeFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(OptionDescriptor.FILTER_MODE_PASS);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1,1));
@@ -295,7 +315,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createGhoseFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(OptionDescriptor.FILTER_MODE_PASS);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1,1));
@@ -315,7 +335,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createVeberFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(OptionDescriptor.FILTER_MODE_PASS);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1,1));
@@ -333,7 +353,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createRuleOfThreeOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(OptionDescriptor.FILTER_MODE_PASS);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1,1));
@@ -355,7 +375,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createReosFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(OptionDescriptor.FILTER_MODE_PASS);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1,1));
@@ -374,6 +394,17 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 "Rot bond count", "Rotatable bond count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(0, 8)));
         list.add(new OptionDescriptor<>(NumberRange.Integer.class, "query." + ChemTermsEvaluator.HEAVY_ATOM_COUNT,
                 "Heavy atom count", "Heavy atom count", Mode.User).withMinMaxValues(0,1).withDefaultValue(new NumberRange.Integer(15, 50)));
+
+        return list.toArray(new OptionDescriptor[0]);
+    }
+
+
+    static private OptionDescriptor[] createMpoOptionDescriptors() {
+        List<OptionDescriptor> list = new ArrayList<>();
+
+        list.add(OptionDescriptor.FILTER_MODE_ALL);
+        list.add(new OptionDescriptor<>(NumberRange.Float.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Filter range",
+                "Range of MPO scores to accept", Mode.User));
 
         return list.toArray(new OptionDescriptor[0]);
     }
@@ -536,6 +567,16 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 .post("reosFilter").description("Apply a REOS filter to the supplied MoleculeObjects")
                 .route()
                 .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_REOS, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("cnsMpo").description("Generate the CNS MPO score for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_CNS_MPO, resolver, ROUTE_STATS))
+                .endRest()
+                //
+                .post("kidsMpo").description("Generate the KiDS MPO score for the supplied MoleculeObjects")
+                .route()
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_KIDS_MPO, resolver, ROUTE_STATS))
                 .endRest()
                 //
                 .post("chemTerms").description("Calculate a chemical terms expression for the supplied MoleculeObjects")

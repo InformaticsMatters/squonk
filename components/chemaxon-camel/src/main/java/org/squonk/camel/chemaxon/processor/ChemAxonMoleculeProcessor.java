@@ -403,6 +403,18 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         return this;
     }
 
+    /**
+     *
+     * @param expression The expression for the atomCount(XXX) function e.g. "6" to count the carbon atoms.
+     * @param propertyName The name for the generated property.
+     * @return
+     * @throws ParseException
+     */
+    public ChemAxonMoleculeProcessor atomCount(String expression, String propertyName) throws ParseException {
+        evaluators.add(new ChemTermsEvaluator(propertyName, "atomCount('" + expression + "')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ATOM_COUNT)));
+        return this;
+    }
+
     public ChemAxonMoleculeProcessor heavyAtomCount() throws ParseException {
         evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.HEAVY_ATOM_COUNT, "atomCount() - atomCount('1')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ATOM_COUNT)));
         return this;
@@ -420,6 +432,11 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
 
     public ChemAxonMoleculeProcessor ringCount() throws ParseException {
         evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.RING_COUNT, "ringCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_RING_COUNT)));
+        return this;
+    }
+
+    public ChemAxonMoleculeProcessor aromaticRingCount() throws ParseException {
+        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.AROMATIC_RING_COUNT, "aromaticRingCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_RING_COUNT)));
         return this;
     }
 
@@ -452,4 +469,5 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.BPKA, "basicpKa('1')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_PKA)));
         return this;
     }
+
 }

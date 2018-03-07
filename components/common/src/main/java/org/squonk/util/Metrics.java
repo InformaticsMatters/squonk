@@ -47,6 +47,7 @@ public interface Metrics {
     String METRICS_PSA = "PSA";
     String METRICS_CHARGE = "Charge";
     String METRICS_PKA = "pKa";
+    String METRICS_MPO = "MPO";
     String METRICS_RXN_ENUM = "ReactionEnumeration";
     String METRICS_SMARTCyp = "SMARTCyp";
 

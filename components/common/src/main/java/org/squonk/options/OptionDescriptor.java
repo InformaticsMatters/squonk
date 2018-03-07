@@ -50,11 +50,18 @@ import static org.squonk.util.CommonConstants.*;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class OptionDescriptor<T> implements Serializable {
 
-    public static OptionDescriptor FILTER_MODE = new OptionDescriptor<>(String.class,
+    public static OptionDescriptor FILTER_MODE_PASS = new OptionDescriptor<>(String.class,
             "query." + OPTION_FILTER_MODE, "Filter mode", "How to filter results", Mode.User)
             .withValues(new String[]{VALUE_INCLUDE_PASS, VALUE_INCLUDE_FAIL, VALUE_INCLUDE_ALL})
             .withDefaultValue(VALUE_INCLUDE_PASS)
             .withMinMaxValues(1, 1);
+
+    public static OptionDescriptor FILTER_MODE_ALL = new OptionDescriptor<>(String.class,
+            "query." + OPTION_FILTER_MODE, "Filter mode", "How to filter results", Mode.User)
+            .withValues(new String[]{VALUE_INCLUDE_PASS, VALUE_INCLUDE_FAIL, VALUE_INCLUDE_ALL})
+            .withDefaultValue(VALUE_INCLUDE_ALL)
+            .withMinMaxValues(1, 1);
+
 
     public enum Mode {
         User, Advanced, Input, Output, Ignore
