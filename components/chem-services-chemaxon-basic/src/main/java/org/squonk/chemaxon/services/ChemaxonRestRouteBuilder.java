@@ -16,6 +16,12 @@
 
 package org.squonk.chemaxon.services;
 
+import chemaxon.jep.ChemJEP;
+import chemaxon.jep.Evaluator;
+import chemaxon.jep.context.MolContext;
+import chemaxon.nfunk.jep.ParseException;
+import chemaxon.struc.Molecule;
+import com.chemaxon.version.VersionInfo;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
@@ -27,9 +33,13 @@ import org.squonk.camel.processor.DatasetToJsonProcessor;
 import org.squonk.camel.processor.JsonToDatasetProcessor;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
+import org.squonk.chemaxon.molecule.MoleculeUtils;
 import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.dataset.DatasetMetadata;
+import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.dataset.ThinDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.http.RequestInfo;
 import org.squonk.io.IODescriptors;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.MoleculeTypeDescriptor;
@@ -40,8 +50,10 @@ import org.squonk.types.NumberRange;
 import org.squonk.types.TypeResolver;
 import org.squonk.util.CommonConstants;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_NAME;
@@ -521,7 +533,27 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 //
                 .post("logs").description("Calculate the solubility (LogS) at specified pH for the supplied MoleculeObjects")
                 .route()
-                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGS, resolver, ROUTE_STATS))
+                // The logS predictor does not run correctly. This workaround is in place until it is resolved.
+                // See the docs for the hackedLogSRoute() method for more details
+                //.process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGS, resolver, ROUTE_STATS))
+                .process(new MoleculeObjectRouteHttpProcessor(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGS, resolver, ROUTE_STATS) {
+                    protected Object processDataset(
+                            Exchange exch,
+                            MoleculeObjectDataset dataset,
+                            RequestInfo requestInfo) throws IOException {
+
+                        Float pH = exch.getIn().getHeader("pH", Float.class);
+                        MoleculeObjectDataset results = null;
+                        try {
+                            results = hackedLogSRoute(dataset, pH);
+                        } catch (Exception e) {
+                            throw new IOException("Failed to execute LogS", e);
+                        }
+
+                        Object converted = generateOutput(exch, results, requestInfo);
+                        return converted;
+                    }
+                })
                 .endRest()
                 //
                 .post("apka").description("Calculate the most acidic pKa value for the supplied MoleculeObjects")
@@ -624,6 +656,58 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 .process(new ReactorProcessor("/chemaxon_reaction_library.zip", ROUTE_STATS))
                 .process(new DatasetToJsonProcessor(MoleculeObject.class))
                 .endRest();
+
+    }
+
+    /** This is a temp workaround for an issue with the LogS predictor that seems to happen when running the Evaluator in
+     * a Java stream.
+     * See https://github.com/InformaticsMatters/squonk/issues/13
+     *
+     * @param dataset
+     * @param pH
+     * @return
+     * @throws Exception
+     */
+    private MoleculeObjectDataset hackedLogSRoute(MoleculeObjectDataset dataset, Float pH) throws IOException, ParseException {
+        String propName = ChemTermsEvaluator.LOGS + "_" + pH;
+        String ctExpr = "logS('" + pH + "')";
+        final Evaluator evaluator = new Evaluator();
+        final ChemJEP jep = evaluator.compile(ctExpr, MolContext.class);
+
+        DatasetMetadata<MoleculeObject> meta = dataset.getDataset().getMetadata();
+
+        // generate the logS
+//        AtomicInteger count = new AtomicInteger(0);
+//        Stream<MoleculeObject> stream = dataset.getStream().peek((mo) -> {
+//            Molecule mol = MoleculeUtils.fetchMolecule(mo, false);
+//            MolContext ctx = new MolContext(mol);
+//            try {
+//                //Double result = jep.evaluate_double(ctx);
+//                Double result = dummyCalcLogS();
+//                mo.putValue(propName, result.floatValue());
+//            } catch (ParseException e) {
+//                e.printStackTrace();
+//            }
+//            count.incrementAndGet();
+//        });
+
+        List<MoleculeObject> list = dataset.getItems();
+        MolContext ctx = new MolContext();
+        for (MoleculeObject mo : list) {
+            Molecule mol = MoleculeUtils.fetchMolecule(mo, false);
+            ctx.setMolecule(mol);
+            try {
+                Double result = jep.evaluate_double(ctx);
+                mo.putValue(propName, result.floatValue());
+            } catch (ParseException e) {
+                LOG.log(Level.WARNING, "Failed to evaluate chem terms expression. Property will be missing.", e);
+            }
+        }
+        String source = "JChem " + VersionInfo.getVersion();
+        String desc = "Chemical Terms expression: " + ctExpr;
+        meta.createField(propName, source, desc, Float.class);
+
+        return new MoleculeObjectDataset(list, meta);
 
     }
 
