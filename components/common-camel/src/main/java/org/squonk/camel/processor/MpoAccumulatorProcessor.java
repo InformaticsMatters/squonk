@@ -104,10 +104,8 @@ public class MpoAccumulatorProcessor implements Processor {
     @Override
     public void process(Exchange exch) throws Exception {
 
-        exch.getIn().getHeaders().forEach((k, v) -> LOG.info("Header " + k + " -> " + v));
-
-        LOG.info("Processing " + functions.size() + " MPO functions. AllowNullValues=" + allowNullValues);
-
+        LOG.info("Processing " + functions.size() + " MPO functions. AllowNullValues=" + allowNullValues +
+                ", type=" + accumulatedPropertyType.getName() + ", accumulatorStrategy=" + accumulatorStrategy);
 
         Dataset<MoleculeObject> ds = exch.getIn().getBody(Dataset.class);
 
@@ -120,23 +118,16 @@ public class MpoAccumulatorProcessor implements Processor {
 
         // apply filter if necessary
         if (filterModeProperty != null && filterRangeProperty != null) {
-            String filterMode = exch.getIn().getHeader(filterModeProperty, String.class);
-            String filterRange = exch.getIn().getHeader(filterRangeProperty, String.class);
+            final String filterMode = exch.getIn().getHeader(filterModeProperty, String.class);
+            final String filterRange = exch.getIn().getHeader(filterRangeProperty, String.class);
             if (filterMode != null && !CommonConstants.VALUE_INCLUDE_ALL.equals(filterMode)) {
-                Double minScore = null;
-                Double maxScore = null;
-
                 if (filterMode != null && filterRange != null) {
                     NumberRange.Double range = new NumberRange.Double(filterRange);
-                    minScore = range.getMinValue() == null ? null : range.getMinValue().doubleValue();
-                    maxScore = range.getMaxValue() == null ? null : range.getMaxValue().doubleValue();
-
+                    final Double minScore = range.getMinValue() == null ? null : range.getMinValue().doubleValue();
+                    final Double maxScore = range.getMaxValue() == null ? null : range.getMaxValue().doubleValue();
                     LOG.info("Filter: " + filterMode + " [" + minScore + " - " + maxScore + "]");
                     if (minScore != null || maxScore != null) {
-                        final String fm = filterMode;
-                        final Double miv = minScore;
-                        final Double mav = maxScore;
-                        stream = stream.filter((MoleculeObject mo) -> filter(mo, fm, miv, mav));
+                        stream = stream.filter((MoleculeObject mo) -> filter(mo, filterMode, minScore, maxScore));
                     }
                 }
             }
