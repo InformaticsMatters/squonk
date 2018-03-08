@@ -157,7 +157,17 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
     private static final Logger LOG = Logger.getLogger(ChemAxonMoleculeProcessor.class.getName());
     public static final String PROP_EVALUATORS_DEFINTION = "ChemTermsProcessor_EvaluatorsDefintion";
 
+    private boolean sequential = false;
+
     private final List<MoleculeEvaluator> evaluators = new ArrayList<>();
+
+    public boolean isSequential() {
+        return sequential;
+    }
+
+    public void makeSequential() {
+        this.sequential = true;
+    }
 
     /**
      * Add a new calculation using a chemical terms expression. If no terms are
@@ -189,6 +199,8 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         return this;
     }
 
+
+
     /**
      * Add a transform definition which replaces the input molecule with one
      * generated from it using the specified chemical terms expression. The
@@ -218,6 +230,12 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
             throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
         }
         Stream<MoleculeObject> mols = dataset.getStream();
+        if (sequential) {
+            mols.sequential();
+        } else {
+            mols.parallel();
+        }
+
         Map<String,Integer> stats = new HashMap<>();
         for (MoleculeEvaluator eval : evals) {
             mols = calculateMultiple(mols, eval, stats);
@@ -385,6 +403,9 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         String propName = ChemTermsEvaluator.LOGS + "_" + pHString;
         String ctExpr = "logS('" + pHString + "')";
         evaluators.add(new ChemTermsEvaluator(propName, ctExpr, Metrics.generate(PROVIDER_CHEMAXON, METRICS_LOGS)));
+        // The logS predictor does not run correctly. This workaround of avoiding multi-threading in place until it is resolved.
+        // See https://github.com/InformaticsMatters/squonk/issues/13
+        this.makeSequential();
         return this;
     }
 
