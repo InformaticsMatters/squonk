@@ -674,7 +674,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
         final Evaluator evaluator = new Evaluator();
         final ChemJEP jep = evaluator.compile(ctExpr, MolContext.class);
 
-        DatasetMetadata<MoleculeObject> meta = dataset.getDataset().getMetadata();
+        DatasetMetadata<MoleculeObject> meta = dataset.getMetadata();
 
         // generate the logS
 //        AtomicInteger count = new AtomicInteger(0);
