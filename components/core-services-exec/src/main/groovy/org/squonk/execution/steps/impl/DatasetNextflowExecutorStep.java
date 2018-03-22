@@ -2,15 +2,11 @@ package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
 import org.squonk.core.NextflowServiceDescriptor;
-import org.squonk.execution.runners.NextflowRunner;
 import org.squonk.execution.steps.AbstractServiceStep;
-import org.squonk.execution.util.GroovyUtils;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.util.IOUtils;
 
-import java.util.*;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /** Step that executes a <a href="http://nextflow.io">Nextflow</a> workflow.
  * IMPORTANT: this is currently disabled as the sucurity implications need more assessment.

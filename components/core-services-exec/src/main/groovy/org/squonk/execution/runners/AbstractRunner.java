@@ -1,13 +1,8 @@
 package org.squonk.execution.runners;
 
-import org.squonk.execution.util.GroovyUtils;
-import org.squonk.util.IOUtils;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.logging.Logger;
