@@ -1,4 +1,4 @@
-#@IgnoreInspection BashAddShebang
+#!/bin/bash
 
 
 export OC_MASTER_HOSTNAME=example.org
@@ -15,6 +15,9 @@ export OC_INFRA_PROJECT=squonk-infra
 export OC_PROJECT=squonk
 export OC_SQUONK_APP=squonk-notebook
 export OC_SQUONK_HOST=${OC_SQUONK_APP}.${OC_ROUTES_BASENAME}
+export OC_DOMAIN_NAME=novalocal
+export OC_NFS_SERVER=xchem-infra.$OC_DOMAIN_NAME
+export OC_OPENSHIFT_VERSION=3.7
 
 
 
@@ -25,6 +28,8 @@ echo "OC_ROUTES_BASENAME set to $OC_ROUTES_BASENAME"
 echo "OC_ADMIN set to $OC_ADMIN"
 echo "OC_USER set to $OC_USER"
 echo "OC_SQUONK_HOST set to $OC_SQUONK_HOST"
+echo "OC_NFS_SERVER set to $OC_NFS_SERVER"
 echo "KEYCLOAK_SERVER_URL set to $KEYCLOAK_SERVER_URL"
 echo "KEYCLOAK_REALM set to $KEYCLOAK_REALM"
+echo "Using OpenShift version $OC_OPENSHIFT_VERSION"
 

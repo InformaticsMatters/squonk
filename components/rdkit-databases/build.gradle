@@ -19,6 +19,7 @@ apply plugin: 'application'
 apply plugin: 'com.bmuschko.docker-java-application'
 
 mainClassName = "org.squonk.rdkit.db.loaders.Main"
+//applicationDefaultJvmArgs = ["-Xmx256m"]
 
 String RDBASE = System.getenv('RDBASE')
 String RDKitJarFile = '/Code/JavaWrappers/gmwrapper/org.RDKit.jar'

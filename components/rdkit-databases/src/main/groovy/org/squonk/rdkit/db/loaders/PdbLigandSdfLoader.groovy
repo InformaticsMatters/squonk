@@ -38,7 +38,7 @@ import java.util.stream.Stream
 @Log
 class PdbLigandSdfLoader extends AbstractRDKitLoader {
 
-    static final String DEFAULT_TABLE_NAME = "all-sdf.smi.gz";
+    static final String DEFAULT_TABLE_NAME = "all-sdf.sdf.gz";
 
     PdbLigandSdfLoader(RDKitTable table, IConfiguration config) {
         super(table, config)

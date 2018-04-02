@@ -3,31 +3,31 @@
 # The Infrastructure PVs.
 #
 # oc process -f infra-pv-nfs.yaml | oc create -f -
-# oc delete pv --selector template=infra-pv-nfs
+# oc delete pv,pvc --selector template=infra-pv-nfs -n $OC_INFRA_PROJECT
 
 kind: Template
 apiVersion: v1
 metadata:
   name: infra-persistence-nfs
   annotations:
-    description: Squonk Infgrastructure Persistent Volumes using NFS
+    description: Squonk Infrastructure Persistent Volumes using NFS
     tags: squonk,infra,pv
 labels:
   template: infra-pv-nfs
-  app: squonk-infra
 
 parameters:
 
-- name: APP_NAMESPACE
+- name: INFRA_NAMESPACE
   value: openrisknet-infra
 
 - name: NFS_SERVER
-  value: infra-1
+
 - name: NFS_PATH
   value: /exports
 
 - name: RABBITMQ_VOLUME_SIZE
   value: 1Gi
+
 - name: POSTGRESQL_VOLUME_SIZE
   value: 50Gi
 
@@ -37,6 +37,8 @@ objects:
   apiVersion: v1
   metadata:
     name: pv-rabbitmq
+    labels:
+      application: rabbitmq
   spec:
     capacity:
       storage: ${RABBITMQ_VOLUME_SIZE}
@@ -48,12 +50,14 @@ objects:
       path: ${NFS_PATH}/pv-rabbitmq
     claimRef:
       name: rabbitmq-claim
-      namespace: ${APP_NAMESPACE}
+      namespace: ${INFRA_NAMESPACE}
 
 - kind: PersistentVolume
   apiVersion: v1
   metadata:
     name: pv-postgresql
+    labels:
+      application: postgresql
   spec:
     capacity:
       storage: ${POSTGRESQL_VOLUME_SIZE}
@@ -65,4 +69,34 @@ objects:
       path: ${NFS_PATH}/pv-postgresql
     claimRef:
       name: postgresql-claim
-      namespace: ${APP_NAMESPACE}
+      namespace: ${INFRA_NAMESPACE}
+
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    name: rabbitmq-claim
+    labels:
+      application: rabbitmq
+  spec:
+    volumeName: pv-rabbitmq
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${RABBITMQ_VOLUME_SIZE}
+
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: postgresql-claim
+    labels:
+      application: postgresql
+  spec:
+    volumeName: pv-postgresql
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: "${POSTGRESQL_VOLUME_SIZE}"
+
+

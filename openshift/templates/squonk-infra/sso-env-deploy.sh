@@ -22,3 +22,4 @@ oc secret new sso-ssl-secret certs/sso-https.jks certs/truststore.jks
 oc secrets link sso-service-account sso-jgroup-secret sso-ssl-secret
 
 echo "Keycloak secrets deployed. Now you can run './sso-deploy.sh'"
+

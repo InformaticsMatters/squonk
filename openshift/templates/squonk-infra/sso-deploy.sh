@@ -8,7 +8,6 @@ set -e pipefail
 oc login $OC_MASTER_URL -u $OC_ADMIN > /dev/null
 oc project -q $OC_INFRA_PROJECT
 
-oc process -f postgresql-pvc.yaml | oc create -f -
 
 oc process -f sso.yaml\
  -p SSO_REALM=${KEYCLOAK_REALM}\
@@ -20,3 +19,4 @@ oc process -f sso.yaml\
  | oc create -f -
 
 echo "PostgreSQL and Keycloak deployed"
+
