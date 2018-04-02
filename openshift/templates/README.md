@@ -110,7 +110,7 @@ Minishift comes with 100 PVs ready to use so you only need to create the PVCs:
 oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -f infra-pvc-minishift.yaml | oc create -f -
 ```
 
-After completing you shoudl see something like this:
+After completing you should see something like this:
 
 ```
 $ oc get pvc
@@ -144,10 +144,32 @@ pvc/postgresql-claim   Bound     pv-postgresql   50Gi       RWO           standa
 pvc/rabbitmq-claim     Bound     pv-rabbitmq     1Gi        RWO           standard       2h
 ```
 
->   Note: if reusing the postgres PV/PVC you will need to delete the contents of the volume (the
-    `/exports/pv-postgresql` directory) or you may get permissions problems when postgres initialises.
+>   Note: if re-using these PVs/PVCs you will need to delete the contents of the volume (the
+    `/exports/pv-postgresql` and `/exports/pv-rabbitmq` directories) or you may get permissions
+    problems when postgres and rabbitmq initialise.
 
 Now we are ready to start deploying the infrastructure.
+
+#### If using dynamic provisioning with OpenShift:
+
+Dymanic provisioning allows to only specfy the PVS and OpensShift will satisfy the request dynamically
+using whatever dynamic provision is configured. You can use the StorageClass property to define
+what type of storage you need.
+
+This is tested with Cinder volumes on OpenStack but other mechanisms should also work.
+Dynamic provisioning msut be set up on OpenShift before you start.
+
+Create the PVCs (with OpenShit creating the PVs for you) using:
+
+```
+oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -p STORAGE_CLASS=standard -f infra-pvc-dynamic.yaml | oc create -f -
+```
+
+>   Note: use whatever value you need for the STORAGE_CLASS property.
+
+>   Note: if re-using the postgres PV/PVC you will need to delete the contents of the volume (the
+    `/exports/pv-postgresql` directory) or you may get permissions problems when postgres initialises.
+
 
 ### Deploy PostgreSQL, RabbitMQ and SSO
 
@@ -207,6 +229,11 @@ for `/exports/squonk-work-dir` and `/exports/squonk-service-descriptors` and the
 oc process -p APP_NAMESPACE=$OC_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -f squonk-pvc-nfs.yaml | oc create -f -
 
 ```
+
+#### If using dynamic provisioning with OpenShift:
+
+This is not tested yet as the volumes need to be ReadWriteMany which is only supported by certain
+types of storage. For now yu should stick with NFS.
 
 ### Configure Infrastructure
 
