@@ -2,8 +2,8 @@
 
 # The Squonk PVs.
 #
-# oc process -f squonk-pv-nfs.yaml | oc create -f -
-# oc delete pv --selector template=squonk-pv-nfs
+# oc process -f squonk-pvc-nfs.yaml | oc create -f -
+# oc delete pv --selector template=squonk-pvc-nfs
 
 kind: Template
 apiVersion: v1
@@ -11,9 +11,9 @@ metadata:
   name: squonk-persistence-nfs
   annotations:
     description: Squonk Persistent Volumes using NFS
-    tags: squonk,pv
+    tags: squonk,pvc
 labels:
-  template: squonk-pv-nfs
+  template: squonk-pvc-nfs
   app: squonk-app
 
 parameters:
@@ -91,3 +91,4 @@ objects:
     resources:
       requests:
         storage: ${CORE_SD_PVC_SIZE}
+

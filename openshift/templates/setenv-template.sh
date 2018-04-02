@@ -1,13 +1,15 @@
 #!/bin/bash
 
-
+# for openshift the public hostname master
+# for minishift the IP address of the minishift VM. eg. `minishift ip`  
 export OC_MASTER_HOSTNAME=example.org
 export OC_CERTS_PASSWORD=changeme
 export OC_DEPLOYMENT=squonk
 export OC_ADMIN=admin
 export OC_USER=developer
 export OC_MASTER_URL=https://${OC_MASTER_HOSTNAME}:8443
-export OC_ROUTES_BASENAME=${OC_MASTER_HOSTNAME}.nip.io
+# for openshift change this to the hostname of the infra node hosting the router
+export OC_ROUTES_BASENAME=${OC_MASTER_HOSTNAME}
 export KEYCLOAK_SERVER_URL=https://sso.${OC_ROUTES_BASENAME}/auth
 export KEYCLOAK_REALM=squonk
 export KEYCLOAK_LOGOUT_REDIRECT_TO=http://home.${OC_ROUTES_BASENAME}/

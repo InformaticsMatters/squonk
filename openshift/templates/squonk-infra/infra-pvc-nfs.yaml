@@ -1,19 +1,19 @@
 ---
 
-# The Infrastructure PVs.
+# The Infrastructure Persistant storage.
 #
-# oc process -f infra-pv-nfs.yaml | oc create -f -
-# oc delete pv,pvc --selector template=infra-pv-nfs -n $OC_INFRA_PROJECT
+# oc process -f infra-pvc-nfs.yaml | oc create -n $OC_INFRA_PROJECT -f -
+# oc delete pv,pvc --selector template=infra-pvc-nfs -n $OC_INFRA_PROJECT
 
 kind: Template
 apiVersion: v1
 metadata:
   name: infra-persistence-nfs
   annotations:
-    description: Squonk Infrastructure Persistent Volumes using NFS
-    tags: squonk,infra,pv
+    description: Squonk Infrastructure Persistence using NFS
+    tags: squonk,infra,pv,pvc
 labels:
-  template: infra-pv-nfs
+  template: infra-pvc-nfs
 
 parameters:
 
@@ -75,6 +75,7 @@ objects:
   apiVersion: v1
   metadata:
     name: rabbitmq-claim
+    namespace: ${INFRA_NAMESPACE}
     labels:
       application: rabbitmq
   spec:
@@ -89,6 +90,7 @@ objects:
   kind: PersistentVolumeClaim
   metadata:
     name: postgresql-claim
+    namespace: ${INFRA_NAMESPACE}
     labels:
       application: postgresql
   spec:

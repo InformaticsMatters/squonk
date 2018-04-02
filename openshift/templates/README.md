@@ -70,18 +70,6 @@ oc create -f https://raw.githubusercontent.com/openshift/openshift-ansible/maste
 
 This only needs to be done once.
 
-### Create Certificates
-
-Create the certificates and keystores used by Keycloak.
-The certs and keystores are protected by a single password that
-is specified as the `$OC_CERTS_PASSWORD` variable.
-
-```
-./certs-create.sh
-```
-
-This only needs to be done once.
-
 ### Create Projects
 
 Create projects as the `$OC_ADMIN_USER` user:
@@ -90,7 +78,23 @@ oc new-project $OC_PROJECT --display-name='Squonk Applications'
 oc new-project $OC_INFRA_PROJECT --display-name='Application Infrastructure'
 ```
 
-If you delete the projects you will also need to manually delete the PVs that are created in the next step.
+>   If you delete the projects you will also need to manually delete the PVs that 
+    are created in the next step.
+
+
+### Create Certificates
+
+Create the certificates and keystores used by Keycloak.
+The certs and keystores are protected by a single password that
+is specified as the `$OC_CERTS_PASSWORD` variable.
+
+Move into the `squonk-infra` directory and execute:
+
+```
+./certs-create.sh
+```
+
+This only needs to be done once.
 
 ## Create Infrastructure
 
@@ -100,7 +104,20 @@ Create the PVs required by Postgres and RabbitMQ.
 
 #### If using Minishift:
 
-TODO
+Minishift comes with 100 PVs ready to use so you only need to create the PVCs:
+
+```
+oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -f infra-pvc-minishift.yaml | oc create -f -
+```
+
+After completing you shoudl see something like this:
+
+```
+$ oc get pvc
+NAME               STATUS    VOLUME    CAPACITY   ACCESSMODES   STORAGECLASS   AGE
+postgresql-claim   Bound     pv0015    100Gi      RWO,ROX,RWX                  11s
+rabbitmq-claim     Bound     pv0002    100Gi      RWO,ROX,RWX                  11s
+```
 
 #### If using NFS with OpenShift: 
 
@@ -108,7 +125,7 @@ First create NFS exports on the node that is acting as the NFS server (probably 
 for `/exports/pv-postgresql` and `/exports/pv-rabbitmq` and then define the PVs and PVCs:
 
 ```
-oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -f infra-pv-nfs.yaml | oc create -n $OC_INFRA_PROJECT -f -
+oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -f infra-pvc-nfs.yaml | oc create -f -
 ```
 
 This creates PVs for the NFS mounts and binds the PVCs that RabbitMQ and PostgreSQL need. This is 'permanant' coupling
@@ -127,8 +144,8 @@ pvc/postgresql-claim   Bound     pv-postgresql   50Gi       RWO           standa
 pvc/rabbitmq-claim     Bound     pv-rabbitmq     1Gi        RWO           standard       2h
 ```
 
-> Note: if reusing the postgres PV/PVC you will need to delete the contents of the volume (the 
-  `/exports/pv-postgresql` directory) or you may get permissions problems when postgres initialises.
+>   Note: if reusing the postgres PV/PVC you will need to delete the contents of the volume (the
+    `/exports/pv-postgresql` directory) or you may get permissions problems when postgres initialises.
 
 Now we are ready to start deploying the infrastructure.
 
@@ -150,17 +167,23 @@ minishift ssh -- sudo chmod 777 /mnt/sda1/var/lib/minishift/openshift.local.pv/p
 ```
 (lookup the appropriate PV to fix)
 
-You may need to run this to fix a bug that prevents Keycloak from starting:
-```
-oc volume dc/sso --add \
-    --mount-path /opt/eap/standalone/configuration/standalone_xml_history \
-    --name standalone-xml-history
-```
+>   NOTE: With Minishift you may stumble on the defect
+    `redhat-sso-7/sso70-openshift image fails to start`
+    (https://bugzilla.redhat.com/show_bug.cgi?id=1408453) which manifests
+    itself with a _Could not rename /opt/eap/standalone/configuration/standalone_xml_history/current_
+    exception and the Pod failing to start. As the `admin` user in the
+    `openrisknet-infra` project you should be able to work-aropund the problem
+    with the following command:
+     
+     oc volume dc/sso --add --claim-size 512M --mount-path /opt/eap/standalone/configuration/standalone_xml_history --name standalone-xml-history 
 
-Check that the insrastructure components are all running (e.g. use the web console).
+Check that the infrastructure components are all running (e.g. use the web console).
 It may take several minutes for everything to start.
 
 Now we can deploy Squonk.
+
+
+
 
 ## Squonk Application
 
@@ -172,7 +195,7 @@ First specify the how the persistent volumes are to be provided.
 
 #### If using Minshift:
 ```
-oc process -f squonk-pv-minishift.yaml | oc create -f -
+oc process -p APP_NAMESPACE=$OC_PROJECT -f squonk-pvc-minishift.yaml | oc create -f -
 ```
 
 #### If using NFS with OpenShift
@@ -181,7 +204,7 @@ First create NFS exports on the node that is acting as the NFS server (probably 
 for `/exports/squonk-work-dir` and `/exports/squonk-service-descriptors` and then define the PVs and PVCs:
 
 ```
-oc process -p APP_NAMESPACE=$OC_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -f squonk-pv-nfs.yaml | oc create -f -
+oc process -p APP_NAMESPACE=$OC_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -f squonk-pvc-nfs.yaml | oc create -f -
 
 ```
 
