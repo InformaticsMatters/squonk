@@ -256,8 +256,8 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                         .molWeight()
                         .tpsa()
                         .donorCount()
-                        .apKa()
-                )
+                        .bpKa()
+                )   
                 .process(new MpoAccumulatorProcessor(
                         "CNS_MPO_CXN",
                         "CNS MPO score using ChemAxon calculators",
@@ -274,7 +274,7 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                                 MpoFunctions.createHump1Function(0d, 1d, 0d, 20d, 40d, 90d, 120d))
                         .addHumpFunction(ChemTermsEvaluator.HBOND_DONOR_COUNT,
                                 MpoFunctions.createRampFunction(1d, 0d, 0.5d, 3.5d))
-                        .addHumpFunction(ChemTermsEvaluator.APKA,
+                        .addHumpFunction(ChemTermsEvaluator.BPKA,
                                 MpoFunctions.createRampFunction(1d, 0d, 8d, 10d))
                 )
                 .log("CHEMAXON_CNS_MPO finished");
