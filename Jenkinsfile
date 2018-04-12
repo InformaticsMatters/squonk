@@ -120,7 +120,7 @@ pipeline {
             // enough, we need an agaent that's capable of building
             // Docker images.
             agent {
-                label 'docker-slave'
+                label 'buildah-slave'
             }
 
             steps {
