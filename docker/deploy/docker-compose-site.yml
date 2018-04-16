@@ -33,6 +33,7 @@ services:
         - 80:80
         - 443:443
         volumes:
+        - ./images/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
         - ./images/nginx/default.site.conf:/etc/nginx/conf.d/default.conf:ro
         - ./images/nginx/certs/:/etc/nginx/certs/:ro
         - ./images/nginx/xwiki.conf:/etc/nginx/snippets/xwiki.conf:ro
