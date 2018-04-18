@@ -17,15 +17,10 @@
 description = 'Basic services based on Actelion OpenChemLib'
 
 apply plugin: 'war'
-apply plugin: 'org.akhikhl.gretty'
 
 buildscript {
     repositories {
         jcenter()
-    }
-
-    dependencies {
-        classpath 'org.akhikhl.gretty:gretty:+'
     }
 }
 
@@ -50,7 +45,3 @@ dependencies {
 
 }
 
-gretty {
-    // supported values: 'jetty7', 'jetty8', 'jetty9', 'tomcat7', 'tomcat8'
-    servletContainer = 'tomcat7'
-}

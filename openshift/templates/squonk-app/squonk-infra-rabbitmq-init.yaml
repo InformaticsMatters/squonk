@@ -1,0 +1,97 @@
+# (oc adm policy add-scc-to-group anyuid system:authenticated)
+#
+# From within the OpenRiskNet-Infra project/namespace...
+#
+# oc process -f squonk-rabbitmq.yaml | oc create -f -
+# oc delete all,cm,pvc,secrets --selector template=squonk-rabbitmq
+
+kind: Template
+apiVersion: v1
+metadata:
+  name: squonk-rabbitmq
+  annotations:
+    description: Squonk RabbitMQ Definition
+    tags: squonk,infratsrtucture,rabbitmq
+labels:
+  template: squonk-rabbitmq
+  app: squonk-rabbitmq
+
+parameters:
+
+- name: SQUONK_NAMESPACE
+  value: squonk
+
+- name: RABBITMQ_HOST
+  value: rabbitmq.openrisknet-infra.svc
+
+- name: SQUONK_USER
+  value: squonk
+
+- name: SQUONK_PASS
+  from: "[a-zA-Z0-9]{10}"
+  generate: expression
+  required: true
+
+- name: SQUONK_VHOST
+  value: "%2Fsquonk"
+  description: >
+    The RabbitMQ Virtual Host, with a leading '/'
+
+objects:
+
+# -----------------------------------------------------------------------------
+# RabbitMQ Service
+# -----------------------------------------------------------------------------
+
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    name: squonk-rabbitmq-credentials
+    namespace: ${SQUONK_NAMESPACE}
+  stringData:
+    host: ${RABBITMQ_HOST}
+    user: ${SQUONK_USER}
+    pass: ${SQUONK_PASS}
+
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: squonk-rabbitmq-config
+  data:
+    configure.sh: |
+      curl -i -u guest:guest -H "content-type:application/json" -XPUT http://$RABBITMQ_HOST:15672/api/vhosts/$SQUONK_VHOST
+      curl -i -u guest:guest -H "content-type:application/json" -XPUT -d'{"password":"'"$SQUONK_PASS"'","tags":"administrator"}' http://$RABBITMQ_HOST:15672/api/users/$SQUONK_USER
+      curl -i -u guest:guest -H "content-type:application/json" -XPUT -d'{"configure":".*","write":".*","read":".*"}' http://$RABBITMQ_HOST:15672/api/permissions/$SQUONK_VHOST/$SQUONK_USER
+
+- kind: Job
+  apiVersion: batch/v1
+  metadata:
+    name: squonk-rabbitmq-creator
+  spec:
+    template:
+      metadata:
+        name: squonk-rabbitmq-creator
+      spec:
+        volumes:
+        - name: squonk-rabbitmq-config
+          configMap:
+            name: squonk-rabbitmq-config
+        containers:
+        - image: yauritux/busybox-curl
+          name: squonk-rabbitmq-creator
+          env:
+          - name: SQUONK_USER
+            value: ${SQUONK_USER}
+          - name: SQUONK_PASS
+            value: ${SQUONK_PASS}
+          - name: SQUONK_VHOST
+            value: ${SQUONK_VHOST}
+          - name: RABBITMQ_HOST
+            value: ${RABBITMQ_HOST}
+          command:
+          - /bin/sh
+          - /create-squonk/configure.sh
+          volumeMounts:
+          - mountPath: /create-squonk
+            name: squonk-rabbitmq-config
+        restartPolicy: Never

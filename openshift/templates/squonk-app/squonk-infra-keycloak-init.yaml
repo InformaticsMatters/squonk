@@ -1,0 +1,186 @@
+# oc process -f squonk-keycloak-init.yaml | oc create -f -
+# Most likely you will need to specicify these parameters:
+# -p KEYCLOAK_REALM=realmname
+# -p ROUTES_BASE_HOSTNAME=hostname
+#
+# To clean up:
+# oc delete secret/squonk-keycloak-config -n squonk
+# oc delete job/squonk-client-creator cm/squonk-client-creator
+#
+
+kind: Template
+apiVersion: v1
+metadata:
+  name: keycloak-client-create
+labels:
+  template: keycloak-client-create
+message: 'Squonk client created in Keycloak'
+
+parameters:
+
+- displayName: Squonk client secret
+  name: SQUONK_CLIENT_SECRET
+  from: "[a-zA-Z0-9]{32}"
+  generate: expression
+  required: true
+
+- displayName: Squonk namespace (Project)
+  name: SQUONK_NAMESPACE
+  value: squonk
+
+- displayName: Client ID
+  name: CLIENT_ID
+  value: squonk-notebook
+
+- displayName: Client Name
+  name: CLIENT_NAME
+  value: Squonk Computational Notebook
+
+- displayName: Client Description
+  name: CLIENT_DESC
+  value: Squonk Computational Notebook
+
+- displayName: Base hostname for routes
+  name: ROUTES_BASE_HOSTNAME
+  value: dev.openrisknet.org
+
+- displayName: Prefix for squonk hostname
+  name: ROUTE_PREFIX_SQUONK
+  value: squonk-notebook
+
+- displayName: Prefix for SSO hostname
+  name: ROUTE_PREFIX_SSO
+  value: sso
+
+- displayName: Keycloak Realm
+  name: KEYCLOAK_REALM
+  value: squonk
+
+- displayName: Redirect URL after logout
+  name: LOGOUT_REDIRECT_TO
+  required: true
+
+
+objects:
+
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: squonk-sso-config
+    namespace: ${SQUONK_NAMESPACE}
+  data:
+    keycloak.json: |
+      {
+        "realm": "${KEYCLOAK_REALM}",
+        "auth-server-url": "https://${ROUTE_PREFIX_SSO}.${ROUTES_BASE_HOSTNAME}/auth",
+        "ssl-required": "external",
+        "disable-trust-manager": true,
+        "resource": "${CLIENT_ID}",
+        "use-resource-role-mappings": false,
+        "credentials": { "secret": "${SQUONK_CLIENT_SECRET}" }
+      }
+    context.xml: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <Context>
+        <Valve className="org.keycloak.adapters.tomcat.KeycloakAuthenticatorValve"/>
+      </Context>
+
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: squonk-client-creator
+  data:
+    create-squonk-client.sh: |
+      #!/bin/bash
+
+      set -e
+
+      KEYCLOAK_URL="https://$ROUTE_PREFIX_SSO.$ROUTES_BASE_HOSTNAME/auth"
+      CLIENT_HTTP="http://$ROUTE_PREFIX_SQUONK.$ROUTES_BASE_HOSTNAME"
+      CLIENT_HTTPS="https://$ROUTE_PREFIX_SQUONK.$ROUTES_BASE_HOSTNAME"
+      DATA="username=${KEYCLOAK_USER}&password=${KEYCLOAK_PASSWORD}&grant_type=password&client_id=admin-cli"
+      CLIENT_CONFIG="{\"clientId\":\"$CLIENT_ID\",
+        \"name\":\"$CLIENT_NAME\",
+        \"description\":\"$CLIENT_DESC\",
+        \"redirectUris\":["\"$CLIENT_HTTPS/portal/*\",\"$CLIENT_HTTP/portal/*\",\"${LOGOUT_REDIRECT_TO}/*\""],
+        \"protocol\":\"openid-connect\",
+        \"baseUrl\":\"$CLIENT_HTTPS\",
+        \"rootUrl\":\"\",
+        \"publicClient\":\"false\",
+        \"secret\":\"$SQUONK_CLIENT_SECRET\",
+        \"adminUrl\":\"$CLIENT_HTTPS\"
+      }"
+
+      echo "Keycloak is at $KEYCLOAK_URL"
+      echo "SSO user is $KEYCLOAK_USER"
+      echo "Secret is $SQUONK_CLIENT_SECRET"
+      echo "Data: $DATA"
+      echo "$CLIENT_CONFIG"
+
+      TOKEN=$(curl -ks --data "$DATA" "$KEYCLOAK_URL/realms/$KEYCLOAK_REALM/protocol/openid-connect/token" |\
+        grep -Po '(?<="access_token":")[^"]*')
+      echo "Token: $TOKEN"
+
+      RESULT=$(curl -ks -X POST \
+        -d "$CLIENT_CONFIG" \
+        -H "Content-Type: application/json" \
+        -H "Authorization: bearer $TOKEN" \
+        "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM/clients")
+
+      if [ -n "$RESULT" ]; then
+          echo "ERROR: Unable to register client $CLIENT_ID in realm $KEYCLOAK_REALM: $RESULT"
+          exit 1
+      else
+          echo "Registered client $CLIENT_ID in realm $KEYCLOAK_REALM"
+      fi
+
+- kind: Job
+  apiVersion: batch/v1
+  metadata:
+    name: squonk-client-creator
+  spec:
+    template:
+      metadata:
+        name: squonk-client-creator
+      spec:
+        volumes:
+        - name: squonk-client-creator
+          configMap:
+            name: squonk-client-creator
+        containers:
+        - name: squonk-client-creator
+          env:
+          - name: KEYCLOAK_REALM
+            value: ${KEYCLOAK_REALM}
+          - name: CLIENT_ID
+            value: ${CLIENT_ID}
+          - name: CLIENT_NAME
+            value: ${CLIENT_NAME}
+          - name: CLIENT_DESC
+            value: ${CLIENT_DESC}
+          - name: SQUONK_CLIENT_SECRET
+            value: ${SQUONK_CLIENT_SECRET}
+          - name: ROUTES_BASE_HOSTNAME
+            value: ${ROUTES_BASE_HOSTNAME}
+          - name: ROUTE_PREFIX_SQUONK
+            value: ${ROUTE_PREFIX_SQUONK}
+          - name: ROUTE_PREFIX_SSO
+            value: ${ROUTE_PREFIX_SSO}
+          - name: KEYCLOAK_USER
+            valueFrom:
+              secretKeyRef:
+                name: sso
+                key: sso-service-user
+          - name: KEYCLOAK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: sso
+                key: sso-service-password
+          image: centos:7
+          command:
+          - /bin/bash
+          - /squonk-client-creator/create-squonk-client.sh
+          volumeMounts:
+          - mountPath: /squonk-client-creator
+            name: squonk-client-creator
+        restartPolicy: Never

@@ -15,9 +15,14 @@
  */
 
 description = 'RDKit database search'
+def contextName = 'chemcentral-search'
 
 apply plugin: 'war'
 apply plugin: 'com.bmuschko.tomcat'
+apply plugin: 'com.bmuschko.docker-remote-api'
+
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 
 dependencies {
@@ -26,6 +31,7 @@ dependencies {
     compile project(':core-services-common')
 
     compile project(':rdkit-lib')
+    compile project(':rdkit-databases')
 
     compile "org.jboss.weld.servlet:weld-servlet-core:$weldVersion"
     
@@ -48,4 +54,34 @@ dependencies {
 
 tomcat {
     enableSSL = false
+}
+
+docker {
+    url = dockerHost
+    certPath = dockerCertPath
+}
+
+task buildDockerfile(type: Dockerfile) {
+
+    destFile = project.file('build/Dockerfile')
+    from "informaticsmatters/rdkit_java_tomcat:Release_2017_03_1"
+    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
+
+    runCommand("rm -rf /usr/local/tomcat/webapps/*")
+    runCommand("rm -rf /usr/local/tomcat/webapps/*")
+
+    def warFile = tasks.war.outputs.files.singleFile
+    addFile('libs/' + warFile.name, "/usr/local/tomcat/webapps/${contextName}.war")
+
+    exposePort(8080)
+}
+
+task buildDockerImage(type: DockerBuildImage) {
+
+    description = "Build the chemservices rdkit search docker image"
+
+    dependsOn = [war, buildDockerfile]
+
+    inputDir = buildDockerfile.destFile.parentFile
+    tag = "squonk/${contextName}:${dockerImageTag}"
 }

@@ -28,6 +28,7 @@ import org.squonk.types.MoleculeObject
 import org.squonk.types.SDFile
 import org.squonk.types.ZipFile
 import org.squonk.util.IOUtils
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.util.zip.GZIPInputStream
@@ -84,7 +85,7 @@ class ThinDatasetDockerExecutorStepSpec extends Specification {
         return step
     }
 
-
+    @Ignore
     void "simple execute using dataset"() {
 
         DefaultCamelContext context = new DefaultCamelContext()
@@ -110,6 +111,7 @@ class ThinDatasetDockerExecutorStepSpec extends Specification {
         results.size() == 4
     }
 
+    @Ignore
     void "simple execute using zip"() {
 
         DefaultCamelContext context = new DefaultCamelContext()
@@ -134,6 +136,7 @@ class ThinDatasetDockerExecutorStepSpec extends Specification {
 
     }
 
+    @Ignore
     void "execute as sdf"() {
 
         DefaultCamelContext context = new DefaultCamelContext()

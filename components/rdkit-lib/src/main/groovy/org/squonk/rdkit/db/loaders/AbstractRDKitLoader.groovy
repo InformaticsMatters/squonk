@@ -16,6 +16,7 @@
 
 package org.squonk.rdkit.db.loaders
 
+import org.postgresql.ds.PGSimpleDataSource
 import org.squonk.types.MoleculeObject
 import org.squonk.rdkit.db.RDKitTable
 import org.squonk.rdkit.db.RDKitTableLoader
@@ -31,14 +32,27 @@ import java.util.stream.Stream
 /**
  * Created by timbo on 16/12/2015.
  */
-class AbstractRDKitLoader {
+abstract class AbstractRDKitLoader {
 
-    protected final RDKitTable table
-    protected IConfiguration config
+    final RDKitTable table
+    IConfiguration config
 
     AbstractRDKitLoader(RDKitTable table, IConfiguration config) {
         this.table = table
         this.config = config
+    }
+
+    AbstractRDKitLoader(RDKitTable table) {
+        this.table = table
+
+        PGSimpleDataSource dataSource = new PGSimpleDataSource()
+        dataSource.serverName = IOUtils.getConfiguration('CHEMCENTRAL_HOST', 'localhost')
+        dataSource.portNumber = new Integer(IOUtils.getConfiguration('CHEMCENTRAL_PORT', '5432'))
+        dataSource.databaseName = IOUtils.getConfiguration('CHEMCENTRAL_DATABASE', 'chemcentral')
+        dataSource.user = IOUtils.getConfiguration('CHEMCENTRAL_USER', 'chemcentral')
+        dataSource.password = IOUtils.getConfiguration('CHEMCENTRAL_PASSWORD', 'chemcentral')
+
+        this.config = new DataSourceConfiguration(dataSource, [:])
     }
 
 
@@ -63,6 +77,9 @@ class AbstractRDKitLoader {
     protected Stream<MoleculeObject> prepareStream(Stream<MoleculeObject> stream) {
         return stream
     }
+
+    public abstract void load();
+
 
     protected void loadSDF(String file, int limit, int reportingChunk, Map<String, Class> propertyToTypeMappings, String nameFieldName) {
         SqlQuery q = new SqlQuery(table, config)

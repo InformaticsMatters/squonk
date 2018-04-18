@@ -413,7 +413,7 @@ task processApp(type: Exec) {
 
     workingDir template_path
     commandLine 'bash', '-c',
-        'oc process -f squonk-app.yaml | oc create -f -'
+        'oc process -f squonk-app-minimal.yaml | oc create -f -'
 
     // Keep output, we'll use it later if the task fails...
     standardOutput = new ByteArrayOutputStream()

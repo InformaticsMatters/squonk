@@ -27,6 +27,7 @@ import org.squonk.notebook.api.VariableKey
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
 import org.squonk.util.CommonMimeTypes
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
@@ -69,7 +70,7 @@ class DockerProcessDatasetStepSpec extends Specification {
         return step
     }
 
-
+    @Ignore
     void "simple execute json"() {
 
         DefaultCamelContext context = new DefaultCamelContext()

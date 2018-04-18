@@ -112,7 +112,7 @@ tomcat {
  */
 
 docker {
-    println "Using docker host of $dockerHost"
+    //println "Using docker host of $dockerHost"
     url = dockerHost
     certPath = dockerCertPath
 }

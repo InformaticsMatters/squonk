@@ -18,7 +18,7 @@ Depending on your privileges you may need to sudo some comamnds.
 # apt-get install -y docker-ce
 ```
 
-The above `search` avoid the following error:
+The `apt-cache search` command avoids the following error:
 
     # apt-get install -y docker-ce
     Reading package lists... Done
@@ -83,7 +83,9 @@ If you are already registered you can avoid this using:
 # certbot certonly --standalone -n -m your@email.address --agree-tos -d squonk.informaticsmatters.com 
 
 ```
-(replace squonk.informaticsmatters.com with your actual domain and your@email.address with the email you are registed as).
+(replace squonk.informaticsmatters.com with your actual domain
+and your@email.address with the email you are registered as).
+
 The certs will be in /etc/letsencrypt/live/<domain name>
 
 Generate Strong Diffie-Hellman Group:
@@ -199,13 +201,14 @@ $ openssl dhparam -out images/nginx/certs/squonk/dhparam.pem 2048
 
 ### Copy license files
 
-Currently this involves ChemAxon and CPSign licenses. Copy them to data/licenses. 
+Currently this involves ChemAxon and CPSign licenses.
+(a directory you'll need to create `mkdir -p data/licenses`) 
 
--   `license.cxl` is the ChemAxon licence file
--   ``
+-   `license.cxl` (into the directory `~/.chemaxon`)
+-   `cpsign0.3pro.license` (into the directory `data/licences`)
 
 ### Setup gradle properties
-Before starting you need to provide details of the ChemAxon maven rpository.
+Before starting you need to provide details of the ChemAxon maven repository.
 This goes into Squonk's `~/.gradle/gradle.properties` file and consists of
 (`cnx-stuff.txt`):
 
@@ -235,7 +238,7 @@ Now edit `setenv.sh` to set passwords etc.
 You MUST set the value of PUBLIC_HOST to the external FQDN of your server
 (or the IP address of the docker bridge network if you are running locally).
 You need to define the type of environment you are wanting to deploy. The default is `dev` but for a
-public site your probably want to change this to `basic`. Soo the file for details.
+public site your probably want to change this to `basic`. See the file for details.
 
 ```sh 
 $ source setenv.sh

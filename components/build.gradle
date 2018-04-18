@@ -42,6 +42,8 @@ allprojects {
     apply plugin: 'groovy' // Apply the groovy plugin (also adds support for Java)
     apply plugin: 'maven'  // Maven repo stuff
     apply plugin: 'org.ajoberstar.grgit' // Git repo tools (grgit.branch.getCurrent())
+    apply plugin: 'findbugs' // Java static analyser
+    apply plugin: 'jacoco' // Code coverage
 
     sourceCompatibility = 1.8
     version = '0.2-SNAPSHOT'
@@ -92,6 +94,31 @@ allprojects {
         testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
     }
 
+    // Configure FindBugs (static code analysis)
+    findbugs {
+        reportsDir = file("$project.buildDir/findbugsReports")
+        ignoreFailures = true
+        reportLevel = 'high'
+        effort = 'max'
+    }
+    tasks.withType(FindBugs) {
+        task -> enabled = gradle.startParameter.taskNames.contains(task.name)
+        reports {
+            xml.enabled true
+            html.enabled false
+        }
+    }
+
+    // Configure JaCoCo (code coverage)
+    jacocoTestReport {
+        group = "Reporting"
+        reports {
+            xml.enabled true
+            csv.enabled false
+            html.destination "${buildDir}/reports/coverage"
+        }
+    }
+
 }
 
 // all subprojects are assumed to have artifacts to send to maven repo
@@ -111,74 +138,19 @@ def hasChemAxonLicense = file('../data/licenses/license.cxl').exists()
 
 task wrapper(type: Wrapper) {
     gradleVersion = '3.2.1'
-    jarFile = 'wrapper/wrapper.jar'
-}
-
-task createEbsBackendServicesRootZip(type: Zip) {
-
-    copy {
-        from '../data/licenses/license.cxl'
-        into 'chem-services-root/src/main/html/licenses'
-    }
-
-    archiveName = 'ROOT.war'
-    destinationDir = file('build/ebs/')
-    from 'chem-services-root/src/main/html'
-}
-
-task createEbsBackendServicesZip(type: Zip) {
-
-    dependsOn = [
-            createEbsBackendServicesRootZip,
-            'chem-services-cdk-basic:war',
-            'chem-services-chemaxon-basic:war',
-            'chem-services-rdkit-basic:war',
-            'chem-services-openchemlib-basic:war'
-    ]
-    archiveName = 'ebs.zip'
-    destinationDir = file('build/ebs/')
-    from files(
-            'chem-services-cdk-basic/build/libs/chem-services-cdk-basic-' + version + '.war',
-            'chem-services-chemaxon-basic/build/libs/chem-services-chemaxon-basic-' + version + '.war',
-            'chem-services-rdkit-basic/build/libs/chem-services-rdkit-basic-' + version + '.war',
-            'chem-services-openchemlib-basic/build/libs/chem-services-openchemlib-basic-' + version + '.war',
-            'build/ebs/ROOT.war',
-
-    )
-    rename { String fileName ->
-        fileName.replace('-' + version, '')
-    }
-
 }
 
 project.ext.set('dockerHost', getDockerHost())
-project.ext.set('dockerCertPath', System.env.DOCKER_CERT_PATH ? file(System.env.DOCKER_CERT_PATH): null)
+project.ext.set('dockerCertPath', System.env.DOCKER_CERT_PATH ? file(System.env.DOCKER_CERT_PATH) : null)
 
 
 String getDockerHost() {
-
-//    String d = System.getenv('DOCKER_HOST');
-//    String h = null;
-//    if (d == null) {
-//        h = 'unix:///var/run/docker.sock'
-//    } else {
-//        if (d.startsWith('tcp:')) {
-//            // Minishift
-//            h = d
-//        } else if (d.endsWith('2375')) {
-//            h = 'http' + d.substring(3)
-//        } else {
-//            // assume 2376 and https
-//            h = 'https' + d.substring(3)
-//        }
-//    }
-
     String h = System.getenv('DOCKER_HOST') ?: 'unix:///var/run/docker.sock'
-    println "Using docker host of $h"
     return h
 }
 
 docker {
+    println "Using docker host of $dockerHost"
     url = dockerHost
     certPath = dockerCertPath
 }
@@ -188,15 +160,12 @@ task chemServicesWars(type: Copy) {
             tasks.getByPath(':chem-services-cdk-basic:war'),
             tasks.getByPath(':chem-services-chemaxon-basic:war'),
             tasks.getByPath(':chem-services-rdkit-basic:war'),
-            tasks.getByPath(':chem-services-rdkit-search:war'),
             tasks.getByPath(':chem-services-openchemlib-basic:war'),
             tasks.getByPath(':chem-services-smartcyp:war')
-            //tasks.getByPath(':chem-services-cpsign:war')
     ]
 
     from "../data/licenses/license.cxl"
     from "../docker/deploy/images/chemservices/chemaxon_reaction_library.zip"
-    //from "../data/licenses/cpsign0.3pro.license"
     from("chem-services-cdk-basic/build/libs") {
         include '*.war'
         rename '.*', 'chem-services-cdk-basic.war'
@@ -209,10 +178,6 @@ task chemServicesWars(type: Copy) {
         include '*.war'
         rename '.*', 'chem-services-rdkit-basic.war'
     }
-    from("chem-services-rdkit-search/build/libs") {
-        include '*.war'
-        rename '.*', 'chem-services-rdkit-search.war'
-    }
     from("chem-services-openchemlib-basic/build/libs") {
         include '*.war'
         rename '.*', 'chem-services-openchemlib-basic.war'
@@ -221,10 +186,6 @@ task chemServicesWars(type: Copy) {
         include '*.war'
         rename '.*', 'chem-services-smartcyp.war'
     }
-//    from("chem-services-cpsign/build/libs") {
-//        include '*.war'
-//        rename '.*', 'chem-services-cpsign.war'
-//    }
     into 'build/chemservices-basic'
 
 }
@@ -242,11 +203,8 @@ task buildChemServicesDockerfile(type: Dockerfile) {
     addFile('*.war', "/usr/local/tomcat/webapps/")
     addFile('license.cxl', 'license.cxl')
     addFile('chemaxon_reaction_library.zip', '/chemaxon_reaction_library.zip')
-    //addFile('cpsign0.3pro.license', 'cpsign0.3pro.license')
 
     environmentVariable("CHEMAXON_LICENSE_URL", "/usr/local/tomcat/license.cxl")
-    //environmentVariable("CPSIGN_LICENSE_URL",   "/usr/local/tomcat/cpsign0.3pro.license")
-    //environmentVariable("CPSIGN_MODEL_DIR",     "/cpsign_data")
 
     exposePort(8080)
 }
@@ -263,13 +221,15 @@ task buildChemServicesDockerImage(type: DockerBuildImage) {
 
 task buildDockerImages() {
 
-    description = 'Builds the chemservices coreservices, cellexecutor and flyway Docker images'
+    description = 'Builds the chemcentral-search, chemservices coreservices, cellexecutor and flyway Docker images'
 
     dependsOn = [
-        buildChemServicesDockerImage,
-        'core-services-server:buildDockerImage',
-        'cell-executor:dockerBuildImage',
-        'database:buildDockerImage'
+            buildChemServicesDockerImage,                  // chemservices-basic image
+            'chem-services-rdkit-search:buildDockerImage', // chemcentral postgres image
+            'rdkit-databases:dockerBuildImage',            // database loader for chemcentral
+            'core-services-server:buildDockerImage',       // coreservices image
+            'cell-executor:dockerBuildImage',              // cellexecutor image
+            'database:buildDockerImage'                    // flyway database migrator
     ]
 }
 
