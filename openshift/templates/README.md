@@ -56,8 +56,8 @@ Ensure that you have `$OC_ADMIN` and `$OC_USER` by testing a login of each.
     session therefore avoiding the need for oc passwords later in the process.
 
 ```
-oc login -u $OC_ADMIN
 oc login -u $OC_USER
+oc login -u $OC_ADMIN
 ```
 
 ### Create Keycloak image streams
@@ -159,7 +159,7 @@ what type of storage you need.
 This is tested with Cinder volumes on OpenStack but other mechanisms should also work.
 Dynamic provisioning msut be set up on OpenShift before you start.
 
-Create the PVCs (with OpenShit creating the PVs for you) using:
+Create the PVCs (with OpenShift creating the PVs for you) using:
 
 ```
 oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -p STORAGE_CLASS=standard -f infra-pvc-dynamic.yaml | oc create -f -
@@ -279,5 +279,27 @@ Now deploy the Squonk application:
 This deploys the Squonk application components (cellexecutor, coreservices, chemservices-basic,
 portal and related images).
 
-Following this the Computational Notebook should be running.
+Following this the Computational Notebook should be running (may take a few minutes).
+
+## Post Install Operations
+
+### TLS certificates for Squonk portal app
+
+The portal application is by default setup not to use trusted TLS certificates. 
+We use [Let's Encrypt](https://letsencrypt.org/) for our certicates and use 
+[OpenShift ACME](https://github.com/tnozicka/openshift-acme)
+for automatic certificate generation and renewal, but this is turned off by default to avoid 
+exhausting the certificate generation request quota that Let's Encrypt imposes.
+To switch this on edit the Route definition for the portal app and change the 
+`kubernetes.io/tls-acme` annotation's value to `'true'`. This will result in the certificate
+being generated and the route re-deployed to use this.
+
+You need to have OpenShift ACME deployed to your cluster for this. See 
+[here](https://github.com/OpenRiskNet/home/tree/master/openshift/deployments/acme-controller)
+for details.
+
+### Add users to the Keycloak realm
+
+Use whatever mechanism you choose to define your Squonk users in the Keycloak realm.
+
 
