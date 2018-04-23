@@ -66,7 +66,7 @@ pipeline {
             // For now we defer to AWS until we have a Docker build
             // solution from within OpenShift.
             agent {
-                label 'docker-slave'
+                label 'buildah-slave'
             }
 
             environment {
@@ -79,10 +79,6 @@ pipeline {
             steps {
                 // Prepare the sub-projects
                 sh 'git submodule update --recursive --remote --init'
-                // Move pipleines project data to Squonk...
-                dir('pipelines') {
-                    sh './copy.dirs.sh'
-                }
                 // Squonk...
                 dir('components') {
                     withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
@@ -120,16 +116,12 @@ pipeline {
             // enough, we need an agaent that's capable of building
             // Docker images.
             agent {
-                label 'docker-slave'
+                label 'buildah-slave'
             }
 
             steps {
                 // Prepare the sub-projects
                 sh 'git submodule update --recursive --remote --init'
-                // Move pipleines project data to Squonk...
-                dir('pipelines') {
-                    sh './copy.dirs.sh'
-                }
                 // Squonk...
                 dir('components') {
                     withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
@@ -143,7 +135,7 @@ pipeline {
                         sh 'mv -n $CP_FILE ../data/licenses'
                         sh 'mv -n $CX_FILE ../data/licenses'
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
-                        sh './gradlew buildDockerImages -x test --no-daemon'
+                        // sh './gradlew buildDockerImages -x test --no-daemon'
                     }
                 }
             }

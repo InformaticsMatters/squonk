@@ -73,4 +73,6 @@ docker/deploy/images/keycloak/keycloak.jks
 
 docker/deploy/images/chemservices/*.zip
 
+openshift/templates/certs
+
 **/doxygen-output/
