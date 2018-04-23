@@ -157,7 +157,8 @@ what type of storage you need.
 This is tested with Cinder volumes on OpenStack but other mechanisms should also work.
 Dynamic provisioning msut be set up on OpenShift before you start.
 
-Create the PVCs (with OpenShift creating the PVs for you) using:
+Create the PVCs (with OpenShift creating the PVs for you) using (adjust the STORAGE_CLASS parameter to match
+the required OpenShift StorageClass):
 
 ```
 oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -p STORAGE_CLASS=standard -f infra-pvc-dynamic.yaml | oc create -f -
