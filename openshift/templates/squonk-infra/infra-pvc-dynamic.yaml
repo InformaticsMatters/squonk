@@ -5,7 +5,7 @@
 # the storage class.
 #
 # oc process -f infra-pvc-dynamic.yaml | oc create -n $OC_INFRA_PROJECT -f -
-# oc delete pv,pvc --selector template=infra-pvc-dynamic -n $OC_INFRA_PROJECT
+# oc delete pvc --selector template=infra-pvc-dynamic -n $OC_INFRA_PROJECT
 
 kind: Template
 apiVersion: v1

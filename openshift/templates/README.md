@@ -148,8 +148,6 @@ pvc/rabbitmq-claim     Bound     pv-rabbitmq     1Gi        RWO           standa
     `/exports/pv-postgresql` and `/exports/pv-rabbitmq` directories) or you may get permissions
     problems when postgres and rabbitmq initialise.
 
-Now we are ready to start deploying the infrastructure.
-
 #### If using dynamic provisioning with OpenShift:
 
 Dymanic provisioning allows to only specfy the PVS and OpensShift will satisfy the request dynamically
@@ -172,6 +170,8 @@ oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -p STORAGE_CLASS=standard -f inf
 
 
 ### Deploy PostgreSQL, RabbitMQ and SSO
+
+Now we are ready to start deploying the infrastructure.
 
 Deploy PostgreSQL, RabbitMQ and Keycloak to the infrastructure project:
 

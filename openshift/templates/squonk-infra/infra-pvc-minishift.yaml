@@ -9,7 +9,7 @@
 kind: Template
 apiVersion: v1
 metadata:
-  name: infra-persistence-nfs
+  name: infra-persistence-minishift
   annotations:
     description: Squonk Infrastructure Persistent Volume Claims for Minishift
     tags: squonk,infra,pvc
