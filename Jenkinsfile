@@ -149,11 +149,12 @@ pipeline {
 
                         // Coreservices
                         sh './gradlew -b core-services-server/build.gradle buildDockerFile'
-                        sh "buildah bud -f core-services-server/build/Dockerfile -t ${env.CORE_IMAGE} core-services-server/build"
+                        sh "buildah bud -f Dockerfile -t ${env.CORE_IMAGE} core-services-server/build"
 
                         // Chemservices
-                        sh './gradlew buildChemServicesDockerfile'
-                        sh "buildah bud -f build/chemservices-basic/Dockerfile -t ${env.CHEM_IMAGE} build/chemservices-basic"
+//                        sh './gradlew buildChemServicesDockerfile'
+//                        sh "buildah bud -f Dockerfile -t ${env.CHEM_IMAGE} build/chemservices-basic"
+
                     }
 
                 }
