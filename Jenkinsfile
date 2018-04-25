@@ -94,7 +94,7 @@ pipeline {
                         sh 'cp -n $CX_FILE ~/.chemaxon'
                         sh 'mv -n $CX_FILE ../data/licenses'
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
-                        sh './gradlew build --no-daemon'
+                        sh './gradlew build --no-daemon -x test'
                     }
                 }
             }
@@ -122,6 +122,8 @@ pipeline {
                 NAMESPACE = 'squonk-cicd'
 
                 CHEM_IMAGE = "${NAMESPACE}/chemservices-basic:latest"
+                CORE_IMAGE = "${NAMESPACE}/coreservices:latest"
+                CELL_IMAGE = "${NAMESPACE}/cellexecutor:latest"
 
             }
 
@@ -130,7 +132,6 @@ pipeline {
                 // Prepare the sub-projects
                 sh 'git submodule update --recursive --remote --init'
 
-                // Squonk...
                 dir('components') {
                     withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
                                      file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
@@ -141,12 +142,17 @@ pipeline {
                         sh 'mkdir -p ../data/licenses'
                         sh 'mkdir -p ~/.chemaxon'
                         sh 'mv -n $CP_FILE ../data/licenses'
+                        sh 'cp -n $CX_FILE ~/.chemaxon'
                         sh 'mv -n $CX_FILE ../data/licenses'
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
 
                         // Chemservices
                         sh './gradlew buildChemServicesDockerfile'
                         sh "buildah bud -f build/chemservices-basic/Dockerfile -t ${env.CHEM_IMAGE} ."
+
+                        // Coreservices
+                        sh './gradlew -b core-services-server/build.gradle buildDockerFile
+                        sh "buildah bud -f core-services-server/build/Dockerfile -t ${env.CORE_IMAGE} ."
 
                     }
                 }
