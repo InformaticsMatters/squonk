@@ -147,15 +147,15 @@ pipeline {
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
                         sh './gradlew build --no-daemon -x test'
 
-                        // Chemservices
-                        sh './gradlew buildChemServicesDockerfile'
-                        sh "buildah bud -f build/chemservices-basic/Dockerfile -t ${env.CHEM_IMAGE} ."
-
                         // Coreservices
                         sh './gradlew -b core-services-server/build.gradle buildDockerFile'
-                        sh "buildah bud -f core-services-server/build/Dockerfile -t ${env.CORE_IMAGE} ."
+                        sh "buildah bud -f core-services-server/build/Dockerfile -t ${env.CORE_IMAGE} core-services-server/build"
 
+                        // Chemservices
+                        sh './gradlew buildChemServicesDockerfile'
+                        sh "buildah bud -f build/chemservices-basic/Dockerfile -t ${env.CHEM_IMAGE} build/chemservices-basic"
                     }
+
                 }
 
             }
