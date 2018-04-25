@@ -151,7 +151,7 @@ pipeline {
                         sh "buildah bud -f build/chemservices-basic/Dockerfile -t ${env.CHEM_IMAGE} ."
 
                         // Coreservices
-                        sh './gradlew -b core-services-server/build.gradle buildDockerFile
+                        sh './gradlew -b core-services-server/build.gradle buildDockerFile'
                         sh "buildah bud -f core-services-server/build/Dockerfile -t ${env.CORE_IMAGE} ."
 
                     }
