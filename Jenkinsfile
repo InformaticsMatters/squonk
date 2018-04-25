@@ -94,7 +94,7 @@ pipeline {
                         sh 'cp -n $CX_FILE ~/.chemaxon'
                         sh 'mv -n $CX_FILE ../data/licenses'
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
-                        sh './gradlew build --no-daemon -x test'
+                        sh './gradlew build --no-daemon'
                     }
                 }
             }
@@ -145,6 +145,7 @@ pipeline {
                         sh 'cp -n $CX_FILE ~/.chemaxon'
                         sh 'mv -n $CX_FILE ../data/licenses'
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
+                        sh './gradlew build --no-daemon -x test'
 
                         // Chemservices
                         sh './gradlew buildChemServicesDockerfile'
