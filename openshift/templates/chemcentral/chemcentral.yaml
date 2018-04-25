@@ -21,7 +21,7 @@ parameters:
   value: Release_2017_09_1
 
 - name: POSTGRES_SERVICE
-  displayName: Database admin username
+  displayName: PostgreSQL RDKit cartridge service name
   value: postgresql-rdkit-cartridge
 
 - name: POSTGRES_ADMIN_USER
@@ -88,12 +88,21 @@ objects:
 
       echo "Setting up db as user ${PGUSER}"
 
+      echo "Creating chemcentral user"
       psql --command "CREATE USER chemcentral WITH PASSWORD '${POSTGRES_CHEMCENTRAL_PASSWORD:-chemcentral}';"
-      echo "created chemcentral user with password ${POSTGRES_CHEMCENTRAL_PASSWORD:-chemcentral}"
+      echo "Chemcentral user created with password ${POSTGRES_CHEMCENTRAL_PASSWORD:-chemcentral}"
 
+      echo "Creating chemcentral database"
       createdb -O chemcentral chemcentral
+      echo "Chemcentral database created"
+
+      echo "Deploying RDKit cartridge to chemcentral"
       psql --command 'create extension rdkit' chemcentral
+      echo "RDKit cartridge deployed to chemcentral"
+
+      echo "Creating vendordbs schema in chemcentral"
       psql -d chemcentral --command "CREATE SCHEMA vendordbs AUTHORIZATION chemcentral;"
+      echo "vendordbs schema created"
 
 - kind: DeploymentConfig
   apiVersion: v1
@@ -111,6 +120,8 @@ objects:
         containers:
         - image: informaticsmatters/rdkit_cartridge:${POSTGRES_IMAGE_TAG}
           name: ${POSTGRES_SERVICE}
+          securityContext:
+            runAsUser: 999
           env:
           - name: POSTGRES_USER
             value: postgres
@@ -145,14 +156,14 @@ objects:
 #              memory: ${POSTGRES_MEM_REQUEST}
           terminationMessagePath: /dev/termination-log
           volumeMounts:
-#          - mountPath: /var/lib/postgresql/data
-#            name: postgresql-data
+          - mountPath: /var/lib/postgresql/data
+            name: postgresql-data
           - mountPath: /docker-entrypoint-initdb.d
             name: init-config
         volumes:
-#        - name: postgresql-data
-#          persistentVolumeClaim:
-#            claimName: postgres-claim-1
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: chemcentral-postgresql-claim
         - name: init-config
           configMap:
             name: chemcentral-init-map
