@@ -102,14 +102,10 @@ pipeline {
         }
 
         // --------------------------------------------------------------------
-        // Build (Docker)
+        // Build Images
         // --------------------------------------------------------------------
 
-        stage ('Build (Docker)') {
-
-            when {
-              environment name: 'BUILD_DOCKER', value: 'y'
-            }
+        stage ('Build Images') {
 
             // Here we build the docker images.
             // Again, the standard agents provided by OpenShift are not
@@ -119,9 +115,21 @@ pipeline {
                 label 'buildah-slave'
             }
 
+            environment {
+
+                USER = 'jenkins'
+                REGISTRY = 'docker-registry.default:5000'
+                NAMESPACE = 'squonk-cicd'
+
+                CHEM_IMAGE = "${NAMESPACE}/chemservices-basic:latest"
+
+            }
+
             steps {
+
                 // Prepare the sub-projects
                 sh 'git submodule update --recursive --remote --init'
+
                 // Squonk...
                 dir('components') {
                     withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
@@ -135,9 +143,14 @@ pipeline {
                         sh 'mv -n $CP_FILE ../data/licenses'
                         sh 'mv -n $CX_FILE ../data/licenses'
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
-                        // sh './gradlew buildDockerImages -x test --no-daemon'
+
+                        // Chemservices
+                        sh './gradlew buildChemServicesDockerfile'
+                        sh "buildah bud -f build/chemservices-basic/Dockerfile -t ${env.CHEM_IMAGE} ."
+
                     }
                 }
+
             }
 
         }
