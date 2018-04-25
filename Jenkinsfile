@@ -155,6 +155,15 @@ pipeline {
 //                        sh './gradlew buildChemServicesDockerfile'
 //                        sh "buildah bud -t ${env.CHEM_IMAGE} build/chemservices-basic"
 
+                        // Push...
+                        // With user login token
+                        script {
+                            TOKEN = sh(script: 'oc whoami -t', returnStdout: true).trim()
+                        }
+                        sh "podman login --tls-verify=false --username ${env.USER} --password ${TOKEN} ${env.REGISTRY}"
+                        sh "buildah push --format=v2s2 --tls-verify=false ${env.CORE_IMAGE} docker://${env.REGISTRY}/${env.CORE_IMAGE}"
+                        sh "podman logout ${env.REGISTRY}"
+
                     }
 
                 }
