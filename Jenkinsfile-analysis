@@ -63,7 +63,7 @@ pipeline {
                     // For now we defer to AWS until we have a Docker build
                     // solution from within OpenShift.
                     agent {
-                        label 'docker-slave'
+                        label 'maven'
                     }
 
                     environment {
