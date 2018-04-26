@@ -148,14 +148,17 @@ pipeline {
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
                         sh './gradlew build --no-daemon -x test'
 
-                        // Coreservices
+                        // CoreServices
                         sh './gradlew -b core-services-server/build.gradle buildDockerFile'
                         sh "buildah bud -t ${env.CORE_IMAGE} core-services-server/build"
 
-                        // Chemservices
+                        // ChemServices
                         sh './gradlew chemServicesWars'
                         sh './gradlew buildChemServicesDockerfile'
                         sh "buildah bud -t ${env.CHEM_IMAGE} build/chemservices-basic"
+
+                        // CellExecutor
+                        sh "buildah bud -f Dockerfile_buildah -t ${env.CELL_IMAGE} cell-executor"
 
                         // Push...
                         // With user login token
@@ -165,6 +168,7 @@ pipeline {
                         sh "podman login --tls-verify=false --username ${env.USER} --password ${TOKEN} ${env.REGISTRY}"
                         sh "buildah push --format=v2s2 --tls-verify=false ${env.CORE_IMAGE} docker://${env.REGISTRY}/${env.CORE_IMAGE}"
                         sh "buildah push --format=v2s2 --tls-verify=false ${env.CHEM_IMAGE} docker://${env.REGISTRY}/${env.CHEM_IMAGE}"
+                        sh "buildah push --format=v2s2 --tls-verify=false ${env.CELL_IMAGE} docker://${env.REGISTRY}/${env.CELL_IMAGE}"
                         sh "podman logout ${env.REGISTRY}"
 
                     }
