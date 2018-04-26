@@ -136,6 +136,7 @@ pipeline {
                     withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
                                      file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
                                      file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
+
                         sh 'chmod u+w $CP_FILE'
                         sh 'chmod u+w $CX_FILE'
                         sh 'chmod u+w $CX_LIB'
@@ -152,8 +153,9 @@ pipeline {
                         sh "buildah bud -t ${env.CORE_IMAGE} core-services-server/build"
 
                         // Chemservices
-//                        sh './gradlew buildChemServicesDockerfile'
-//                        sh "buildah bud -t ${env.CHEM_IMAGE} build/chemservices-basic"
+                        sh './gradlew chemServicesWars'
+                        sh './gradlew buildChemServicesDockerfile'
+                        sh "buildah bud -t ${env.CHEM_IMAGE} build/chemservices-basic"
 
                         // Push...
                         // With user login token
@@ -162,6 +164,7 @@ pipeline {
                         }
                         sh "podman login --tls-verify=false --username ${env.USER} --password ${TOKEN} ${env.REGISTRY}"
                         sh "buildah push --format=v2s2 --tls-verify=false ${env.CORE_IMAGE} docker://${env.REGISTRY}/${env.CORE_IMAGE}"
+                        sh "buildah push --format=v2s2 --tls-verify=false ${env.CHEM_IMAGE} docker://${env.REGISTRY}/${env.CHEM_IMAGE}"
                         sh "podman logout ${env.REGISTRY}"
 
                     }
