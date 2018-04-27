@@ -63,7 +63,7 @@ pipeline {
                     // For now we defer to AWS until we have a Docker build
                     // solution from within OpenShift.
                     agent {
-                        label 'docker-slave'
+                        label 'maven'
                     }
 
                     environment {
@@ -74,12 +74,6 @@ pipeline {
                     }
 
                     steps {
-                        // Prepare the sub-projects
-                        sh 'git submodule update --recursive --remote --init'
-                        // Move pipleines project data to Squonk...
-                        dir('pipelines') {
-                            sh './copy.dirs.sh'
-                        }
                         // Squonk...
                         dir('components') {
                             withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
