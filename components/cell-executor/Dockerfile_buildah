@@ -1,0 +1,13 @@
+# This is a copy of the automatically built Dockerfile, which is written to
+# build/docker/Dockerfile by the './gradlew cell-executor:dockerBuildImage' task.
+# It is here to simplify building the container image using `buildah'
+# using a suitably equipped Jenkins OpenShift agent.
+#
+# Alan Christie
+# April 2018
+
+FROM informaticsmatters/openjdk_docker
+MAINTAINER Tim Dudgeon <tdudgeon@informaticsmatters.com>
+ADD build/distributions/cell-executor-0.2-SNAPSHOT.tar /
+ENTRYPOINT ["/cell-executor-0.2-SNAPSHOT/bin/cell-executor"]
+EXPOSE 8080

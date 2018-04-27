@@ -96,7 +96,7 @@ objects:
           - name: POSTGRESQL_ADMIN_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: postgresql
+                name: postgresql-secrets
                 key: database-admin-password
           - name: SQUONK_USER_PASSWORD
             value: ${SQUONK_USER_PASSWORD}

@@ -58,58 +58,54 @@ pipeline {
         // --------------------------------------------------------------------
 
         // Unit test the code
-        stage('Unit Test') {
-
-            // The unit-test stage.
-            // Here we require the services of Docker for some tests
-            // so the built-in `maven` agent is not enough.
-            // For now we defer to AWS until we have a Docker build
-            // solution from within OpenShift.
-            agent {
-                label 'buildah-slave'
-            }
-
-            environment {
-                CPSIGN_MODEL_DIR = "${env.WORKSPACE}/tmp/cpsign"
-                CPSIGN_LICENSE_URL = "${env.WORKSPACE}/data/licenses/cpsign0.3pro.license"
-                SQUONK_DOCKER_WORK_DIR = "${env.WORKSPACE}/tmp"
-                SQUONK_NEXTFLOW_WORK_DIR = "${env.WORKSPACE}/tmp"
-            }
-
-            steps {
-                // Prepare the sub-projects
-                sh 'git submodule update --recursive --remote --init'
-                // Squonk...
-                dir('components') {
-                    withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
-                                     file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
-                                     file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
-                        sh 'chmod u+w $CP_FILE'
-                        sh 'chmod u+w $CX_FILE'
-                        sh 'chmod u+w $CX_LIB'
-                        sh 'mkdir -p ../data/licenses'
-                        sh 'mkdir -p ../tmp/cpsign'
-                        sh 'mkdir -p ~/.chemaxon'
-                        sh 'mv -n $CP_FILE ../data/licenses'
-                        sh 'cp -n $CX_FILE ~/.chemaxon'
-                        sh 'mv -n $CX_FILE ../data/licenses'
-                        sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
-                        sh './gradlew build --no-daemon'
-                    }
-                }
-            }
-
-        }
+//        stage('Unit Test') {
+//
+//            // The unit-test stage.
+//            // Here we require the services of Docker for some tests
+//            // so the built-in `maven` agent is not enough.
+//            // For now we defer to AWS until we have a Docker build
+//            // solution from within OpenShift.
+//            agent {
+//                label 'buildah-slave'
+//            }
+//
+//            environment {
+//                CPSIGN_MODEL_DIR = "${env.WORKSPACE}/tmp/cpsign"
+//                CPSIGN_LICENSE_URL = "${env.WORKSPACE}/data/licenses/cpsign0.3pro.license"
+//                SQUONK_DOCKER_WORK_DIR = "${env.WORKSPACE}/tmp"
+//                SQUONK_NEXTFLOW_WORK_DIR = "${env.WORKSPACE}/tmp"
+//            }
+//
+//            steps {
+//                // Prepare the sub-projects
+//                sh 'git submodule update --recursive --remote --init'
+//                // Squonk...
+//                dir('components') {
+//                    withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
+//                                     file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
+//                                     file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
+//                        sh 'chmod u+w $CP_FILE'
+//                        sh 'chmod u+w $CX_FILE'
+//                        sh 'chmod u+w $CX_LIB'
+//                        sh 'mkdir -p ../data/licenses'
+//                        sh 'mkdir -p ../tmp/cpsign'
+//                        sh 'mkdir -p ~/.chemaxon'
+//                        sh 'mv -n $CP_FILE ../data/licenses'
+//                        sh 'cp -n $CX_FILE ~/.chemaxon'
+//                        sh 'mv -n $CX_FILE ../data/licenses'
+//                        sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
+//                        sh './gradlew build --no-daemon'
+//                    }
+//                }
+//            }
+//
+//        }
 
         // --------------------------------------------------------------------
-        // Build (Docker)
+        // Build Images
         // --------------------------------------------------------------------
 
-        stage ('Build (Docker)') {
-
-            when {
-              environment name: 'BUILD_DOCKER', value: 'y'
-            }
+        stage ('Build Images') {
 
             // Here we build the docker images.
             // Again, the standard agents provided by OpenShift are not
@@ -119,25 +115,66 @@ pipeline {
                 label 'buildah-slave'
             }
 
+            environment {
+
+                USER = 'jenkins'
+                REGISTRY = 'docker-registry.default:5000'
+                NAMESPACE = 'squonk-cicd'
+
+                CHEM_IMAGE = "${NAMESPACE}/chemservices-basic:latest"
+                CORE_IMAGE = "${NAMESPACE}/coreservices:latest"
+                CELL_IMAGE = "${NAMESPACE}/cellexecutor:latest"
+
+            }
+
             steps {
+
                 // Prepare the sub-projects
                 sh 'git submodule update --recursive --remote --init'
-                // Squonk...
+
                 dir('components') {
                     withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
                                      file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
                                      file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
+
                         sh 'chmod u+w $CP_FILE'
                         sh 'chmod u+w $CX_FILE'
                         sh 'chmod u+w $CX_LIB'
                         sh 'mkdir -p ../data/licenses'
                         sh 'mkdir -p ~/.chemaxon'
                         sh 'mv -n $CP_FILE ../data/licenses'
+                        sh 'cp -n $CX_FILE ~/.chemaxon'
                         sh 'mv -n $CX_FILE ../data/licenses'
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
-                        // sh './gradlew buildDockerImages -x test --no-daemon'
+                        sh './gradlew build --no-daemon -x test'
+
+                        // CoreServices
+                        sh './gradlew -b core-services-server/build.gradle buildDockerFile'
+                        sh "buildah bud --format docker -t ${env.CORE_IMAGE} core-services-server/build"
+
+                        // ChemServices
+                        sh './gradlew chemServicesWars'
+                        sh './gradlew buildChemServicesDockerfile'
+                        sh "buildah bud --format docker -t ${env.CHEM_IMAGE} build/chemservices-basic"
+
+                        // CellExecutor
+                        sh "buildah bud --format docker -f Dockerfile_buildah -t ${env.CELL_IMAGE} cell-executor"
+
+                        // Push...
+                        // With user login token
+                        script {
+                            TOKEN = sh(script: 'oc whoami -t', returnStdout: true).trim()
+                        }
+                        sh "podman login --tls-verify=false --username ${env.USER} --password ${TOKEN} ${env.REGISTRY}"
+                        sh "buildah push --tls-verify=false ${env.CORE_IMAGE} docker://${env.REGISTRY}/${env.CORE_IMAGE}"
+                        sh "buildah push --tls-verify=false ${env.CHEM_IMAGE} docker://${env.REGISTRY}/${env.CHEM_IMAGE}"
+                        sh "buildah push --tls-verify=false ${env.CELL_IMAGE} docker://${env.REGISTRY}/${env.CELL_IMAGE}"
+                        sh "podman logout ${env.REGISTRY}"
+
                     }
+
                 }
+
             }
 
         }

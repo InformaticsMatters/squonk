@@ -169,12 +169,12 @@ objects:
           - name: KEYCLOAK_USER
             valueFrom:
               secretKeyRef:
-                name: sso
+                name: keycloak-secrets
                 key: sso-service-user
           - name: KEYCLOAK_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: sso
+                name: keycloak-secrets
                 key: sso-service-password
           image: centos:7
           command:
