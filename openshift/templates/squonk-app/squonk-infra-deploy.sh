@@ -11,7 +11,7 @@ oc project -q $OC_INFRA_PROJECT
 echo "Preparing PostgreSQL"
 oc process\
   -p SQUONK_NAMESPACE=$OC_PROJECT\
-  -p DATABASE_HOST=postgresql.${OC_INFRA_PROJECT}.svc\
+  -p DATABASE_HOST=db-postgresql.${OC_INFRA_PROJECT}.svc\
   -f squonk-infra-db-init.yaml\
   | oc create -f -
 
@@ -38,5 +38,5 @@ oc adm policy add-cluster-role-to-user cluster-admin -z default
 
 
 echo "You may need to setup persistent volumes before you can deploy"
-echo "Keycloak client creation completed. Check the output by running 'oc logs job/squonk-client-creator -n $OC_INFRA_PROJECT'"
+echo "Keycloak client creation initiated. Check the output by running 'oc logs job/squonk-client-creator -n $OC_INFRA_PROJECT'"
 echo "Infrastructure ready. You can now deploy the Squonk applications using './squonk-app-keycloak-deploy.sh'"

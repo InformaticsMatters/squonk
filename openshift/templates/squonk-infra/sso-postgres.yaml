@@ -176,6 +176,7 @@ objects:
     labels:
       application: "${APPLICATION_NAME}"
   stringData:
+    database-service: db-postgresql
     database-user: "${DB_USERNAME}"
     database-password: "${DB_PASSWORD}"
     database-admin-user: "${DB_ADMIN_USERNAME}"
