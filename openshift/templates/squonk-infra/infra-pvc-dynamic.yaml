@@ -19,9 +19,6 @@ labels:
 
 parameters:
 
-- name: INFRA_NAMESPACE
-  value: openrisknet-infra
-
 - name: STORAGE_CLASS
   value: standard
 
@@ -37,7 +34,6 @@ objects:
   apiVersion: v1
   metadata:
     name: rabbitmq-claim
-    namespace: ${INFRA_NAMESPACE}
     labels:
       application: rabbitmq
   spec:
@@ -52,7 +48,6 @@ objects:
   kind: PersistentVolumeClaim
   metadata:
     name: postgresql-claim
-    namespace: ${INFRA_NAMESPACE}
     labels:
       application: postgresql
   spec:
