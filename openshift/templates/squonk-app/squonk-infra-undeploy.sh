@@ -16,13 +16,13 @@ oc adm policy remove-scc-from-user anyuid system:serviceaccount:${OC_PROJECT}:de
 oc project -q $OC_INFRA_PROJECT
 
 echo "Cleaning up PostgreSQL"
-pod=$(oc get pod -o name -l deploymentConfig=postgresql)
+pod=$(oc get pod -o name -l deploymentConfig=$OC_POSTGRESQL_SERVICE)
 echo "Postgresql pod: $pod"
 if [ $pod ]; then
   oc rsh $pod /bin/bash -c "psql --command 'drop database squonk;'"
   oc rsh $pod /bin/bash -c "psql --command 'drop role squonk;'"
 else
-  echo "Postgres pod not found"
+  echo "Postgres pod not found - can't clean up database"
 fi
 oc delete job/squonk-database-creator
 oc delete cm/squonk-database-creator

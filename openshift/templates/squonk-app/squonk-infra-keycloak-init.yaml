@@ -183,4 +183,4 @@ objects:
           volumeMounts:
           - mountPath: /squonk-client-creator
             name: squonk-client-creator
-        restartPolicy: Never
+        restartPolicy: OnFailure
