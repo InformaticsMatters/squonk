@@ -56,16 +56,20 @@ Ensure that you have `$OC_ADMIN` and `$OC_USER` by testing a login of each.
     session therefore avoiding the need for oc passwords later in the process.
 
 ```
-oc login -u $OC_USER
 oc login -u $OC_ADMIN
+oc login -u $OC_USER
 ```
 
 ### Create Keycloak image streams
 
+The keycloak deployment is based on that found in the 
+[jboss-openshift](https://github.com/jboss-openshift/application-templates/tree/master/sso)
+application templates.
+
 As that `admin` user you must deploy the xpaas image streams to your OpenShift environment:
 
 ```
-oc create -f https://raw.githubusercontent.com/openshift/openshift-ansible/master/roles/openshift_examples/files/examples/v$OC_OPENSHIFT_VERSION/xpaas-streams/jboss-image-streams.json -n openshift
+oc create -f https://raw.githubusercontent.com/jboss-openshift/application-templates/master/sso/sso72-image-stream.json -n openshift
 ```
 
 This only needs to be done once.
@@ -78,7 +82,7 @@ oc new-project $OC_PROJECT --display-name='Squonk Applications'
 oc new-project $OC_INFRA_PROJECT --display-name='Application Infrastructure'
 ```
 
->   If you delete the projects you will also need to manually delete the PVs that 
+>   If you delete the projects you may also need to manually delete the PVs that 
     are created in the next step.
 
 
@@ -148,6 +152,8 @@ pvc/rabbitmq-claim     Bound     pv-rabbitmq     1Gi        RWO           standa
     `/exports/pv-postgresql` and `/exports/pv-rabbitmq` directories) or you may get permissions
     problems when postgres and rabbitmq initialise.
 
+Now we are ready to start deploying the infrastructure.
+
 #### If using dynamic provisioning with OpenShift:
 
 Dymanic provisioning allows to only specfy the PVS and OpensShift will satisfy the request dynamically
@@ -157,13 +163,13 @@ what type of storage you need.
 This is tested with Cinder volumes on OpenStack but other mechanisms should also work.
 Dynamic provisioning msut be set up on OpenShift before you start.
 
-Create the PVCs (with OpenShift creating the PVs for you) using:
+From the infra project create the PVCs (with OpenShift creating the PVs for you) using:
 
 ```
-oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -p STORAGE_CLASS=standard -f infra-pvc-dynamic.yaml | oc create -f -
+oc process -p STORAGE_CLASS=standard -p POSTGRESQL_VOLUME_SIZE=125Gi -f infra-pvc-dynamic.yaml | oc create -f -
 ```
 
->   Note: use whatever value you need for the STORAGE_CLASS property.
+>   Note: use whatever value you need for the STORAGE_CLASS and POSTGRESQL_VOLUME_SIZE properties.
 
 >   Note: if re-using the postgres PV/PVC you will need to delete the contents of the volume (the
     `/exports/pv-postgresql` directory) or you may get permissions problems when postgres initialises.
@@ -171,17 +177,14 @@ oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -p STORAGE_CLASS=standard -f inf
 
 ### Deploy PostgreSQL, RabbitMQ and SSO
 
-Now we are ready to start deploying the infrastructure.
-
 Deploy PostgreSQL, RabbitMQ and Keycloak to the infrastructure project:
 
 ```
-./sso-env-deploy.sh
-./sso-deploy.sh
+./sso-postgres-deploy.sh
 ./rabbitmq-deploy.sh
 ```
 
-To get postgres running in some environments you might need to
+To get postgres running in Minishift you might need to
 set permissions on the PV that is used. e.g.
 
 ```
@@ -204,6 +207,11 @@ It may take several minutes for everything to start.
 
 Now we can deploy Squonk.
 
+### Undeploy
+
+Run the `sso-postgres-undeploy.sh` and `rabbitmq-undeploy.sh` scripts to undeploy these applications.
+Note that the PVCs are NOT deleted by these scripts to avoid accidental loss of data.
+Delete thesee manually if needed.
 
 
 
@@ -232,8 +240,14 @@ oc process -p APP_NAMESPACE=$OC_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -f squonk-p
 
 #### If using dynamic provisioning with OpenShift:
 
-This is not tested yet as the volumes need to be ReadWriteMany which is only supported by certain
-types of storage. For now yu should stick with NFS.
+This requires a dynamic provisioner that support ReadWriteMany storage type e.g. GlusterFS. 
+The STORAGE_CLASS parameter let's you specify a storage class if `glusterfs-storage` is not suitable.
+If a suitable storage class is not avaiable then use NFS.
+
+```
+oc process -f squonk-pvc-dynamic.yaml | oc create -f -
+
+```
 
 ### Configure Infrastructure
 
@@ -244,7 +258,7 @@ This process runs in both the `infrastructure` and `squonk` projects.
 ./squonk-infra-deploy.sh
 ```
 
-This configures the Squonk application in the `squonk` project to use 
+This configures the Squonk application in the `squonk` project to use
 PostgreSQL, RabbitMQ and Keycloak from the `infrastructure` project.
 
 For PostgreSQL it creates the `squonk` database and user and sets permissions.
@@ -279,27 +293,5 @@ Now deploy the Squonk application:
 This deploys the Squonk application components (cellexecutor, coreservices, chemservices-basic,
 portal and related images).
 
-Following this the Computational Notebook should be running (may take a few minutes).
-
-## Post Install Operations
-
-### TLS certificates for Squonk portal app
-
-The portal application is by default setup not to use trusted TLS certificates. 
-We use [Let's Encrypt](https://letsencrypt.org/) for our certicates and use 
-[OpenShift ACME](https://github.com/tnozicka/openshift-acme)
-for automatic certificate generation and renewal, but this is turned off by default to avoid 
-exhausting the certificate generation request quota that Let's Encrypt imposes.
-To switch this on edit the Route definition for the portal app and change the 
-`kubernetes.io/tls-acme` annotation's value to `'true'`. This will result in the certificate
-being generated and the route re-deployed to use this.
-
-You need to have OpenShift ACME deployed to your cluster for this. See 
-[here](https://github.com/OpenRiskNet/home/tree/master/openshift/deployments/acme-controller)
-for details.
-
-### Add users to the Keycloak realm
-
-Use whatever mechanism you choose to define your Squonk users in the Keycloak realm.
-
+Following this the Computational Notebook should be running.
 
