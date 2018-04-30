@@ -22,11 +22,13 @@ import org.squonk.io.IODescriptor
 import org.squonk.io.IODescriptors
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
+import spock.lang.Ignore
 
 /**
  *
  * @author timbo
  */
+@Ignore
 class ServiceDescriptorJsonSpec extends Specification {
 
 

@@ -109,4 +109,4 @@ objects:
           volumeMounts:
           - mountPath: /create-db
             name: squonk-database-creator
-        restartPolicy: Never
+        restartPolicy: OnFailure

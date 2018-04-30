@@ -11,7 +11,7 @@ oc project -q $OC_INFRA_PROJECT
 echo "Preparing PostgreSQL"
 oc process\
   -p SQUONK_NAMESPACE=$OC_PROJECT\
-  -p DATABASE_HOST=db-postgresql.${OC_INFRA_PROJECT}.svc\
+  -p DATABASE_HOST=${OC_POSTGRESQL_SERVICE}.${OC_INFRA_PROJECT}.svc\
   -f squonk-infra-db-init.yaml\
   | oc create -f -
 
