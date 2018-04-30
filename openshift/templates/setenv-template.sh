@@ -14,6 +14,7 @@ export KEYCLOAK_SERVER_URL=https://sso.${OC_ROUTES_BASENAME}/auth
 export KEYCLOAK_REALM=squonk
 export KEYCLOAK_LOGOUT_REDIRECT_TO=http://home.${OC_ROUTES_BASENAME}/
 export OC_INFRA_PROJECT=squonk-infra
+export OC_POSTGRESQL_SERVICE=db-postgresql
 export OC_PROJECT=squonk
 export OC_SQUONK_APP=squonk-notebook
 export OC_SQUONK_HOST=${OC_SQUONK_APP}.${OC_ROUTES_BASENAME}

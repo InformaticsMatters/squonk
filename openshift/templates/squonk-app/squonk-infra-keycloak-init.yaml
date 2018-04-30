@@ -169,12 +169,12 @@ objects:
           - name: KEYCLOAK_USER
             valueFrom:
               secretKeyRef:
-                name: sso
+                name: keycloak-secrets
                 key: sso-service-user
           - name: KEYCLOAK_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: sso
+                name: keycloak-secrets
                 key: sso-service-password
           image: centos:7
           command:
@@ -183,4 +183,4 @@ objects:
           volumeMounts:
           - mountPath: /squonk-client-creator
             name: squonk-client-creator
-        restartPolicy: Never
+        restartPolicy: OnFailure
