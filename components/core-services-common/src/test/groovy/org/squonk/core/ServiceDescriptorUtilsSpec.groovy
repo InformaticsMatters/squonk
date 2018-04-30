@@ -19,6 +19,7 @@ package org.squonk.core
 import groovy.io.FileType
 import org.squonk.io.IODescriptor
 import spock.lang.Specification
+import spock.lang.Ignore
 
 import java.nio.file.FileSystems
 import java.nio.file.Files
@@ -78,8 +79,8 @@ class ServiceDescriptorUtilsSpec extends Specification {
     private HttpServiceDescriptor createServiceDescriptor(String endpoint) {
         return new HttpServiceDescriptor("id", "name", "desc", null, null, "icon.png", new IODescriptor[0], new IODescriptor[0], null, null, endpoint)
     }
-
-
+    
+    @Ignore
     void "walk tree"() {
         when:
         Stream paths = Files.walk(FileSystems.getDefault().getPath("../../data/testfiles/docker-services"))
@@ -121,6 +122,7 @@ class ServiceDescriptorUtilsSpec extends Specification {
         nsd.nextflowConfig == '//sample_nextflow_config'
     }
 
+    @Ignore
     void "validate docker service descriptors"() {
 
         def list = []
@@ -153,6 +155,7 @@ class ServiceDescriptorUtilsSpec extends Specification {
 
     }
 
+    @Ignore
     void "validate nextflow service descriptors"() {
 
         def list = []

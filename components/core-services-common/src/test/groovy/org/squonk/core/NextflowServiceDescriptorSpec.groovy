@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import groovy.io.FileType
 import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
+import spock.lang.Ignore
 
 /**
  * Created by timbo on 02/08/17.
@@ -35,6 +36,7 @@ class NextflowServiceDescriptorSpec extends Specification {
 
     }
 
+    @Ignore
     void "validate nextflow service descriptors"() {
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
