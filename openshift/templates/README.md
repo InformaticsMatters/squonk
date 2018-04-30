@@ -28,8 +28,7 @@ Before doing this you need to do some basic setup, so let's get started.
 ### Configure the Installation
 
 Before you start you must have or create the `admin` (`$OC_ADMIN_USER`)
-and the `squonk` (`$OC_USER`) accounts and give the admin user cluster-admin role.
-
+and the `squonk` (`$OC_USER`) accounts and grant the `admin` user `cluster-admin` role.
 As the `system:admin` user when on the master node:
 
 ```
@@ -85,20 +84,6 @@ oc new-project $OC_INFRA_PROJECT --display-name='Application Infrastructure'
 >   If you delete the projects you may also need to manually delete the PVs that 
     are created in the next step.
 
-
-### Create Certificates
-
-Create the certificates and keystores used by Keycloak.
-The certs and keystores are protected by a single password that
-is specified as the `$OC_CERTS_PASSWORD` variable.
-
-Move into the `squonk-infra` directory and execute:
-
-```
-./certs-create.sh
-```
-
-This only needs to be done once.
 
 ## Create Infrastructure
 
@@ -214,6 +199,31 @@ Note that the PVCs are NOT deleted by these scripts to avoid accidental loss of 
 Delete thesee manually if needed.
 
 
+### Post Install Operations
+
+#### Keycloak Users
+
+Once running you will need to add roles and user to the Keycloak realm to allow you to test the Squonk notebook
+application.
+
+For instance:
+
+-   Create the `standard-user` role
+-   Add `standard-user`to the default roles
+-   Create sample users e.g. `user1` and assign passwords.
+
+#### Keycloak TLS certificate
+
+Once you are happy with the deployment switch it over to use trusted TLS certificates provided through Let's Encrypt.
+Edit the YAML definition for the SSO Route and change the annotation that activate the ACME controller by changing the 
+`kubernetes.io/tls-acme` annotation to true like this:
+
+```
+metadata:
+  annotations:
+    kubernetes.io/tls-acme: 'true'
+```
+
 
 ## Squonk Application
 
@@ -273,14 +283,7 @@ to Keycloak. A ConfigMap named `squonk-sso-config` is created in the `squonk`
 project containing the `keycloak.json` and `context.xml` files that will be
 needed to connect the Squonk notebook (portal application) to Keycloak for SSO.
 
-Once running you will need to add roles and user to the Keycloak realm to allow you to test the Squonk notebook
-application.
-
-For instance:
-
--   Create the `standard-user` role
--   Add `standard-user`to the default roles
--   Create sample users e.g. `user1` and assign passwords.
+Make sure you have created the `standard-user` role and the reuqired users in Keycloak (see above).
 
 ### Squonk Application
 

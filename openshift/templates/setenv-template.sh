@@ -3,7 +3,6 @@
 # for openshift the public hostname master
 # for minishift the IP address of the minishift VM. eg. `minishift ip`  
 export OC_MASTER_HOSTNAME=example.org
-export OC_CERTS_PASSWORD=changeme
 export OC_DEPLOYMENT=squonk
 export OC_ADMIN=admin
 export OC_USER=developer
@@ -18,8 +17,7 @@ export OC_PROJECT=squonk
 export OC_SQUONK_APP=squonk-notebook
 export OC_SQUONK_HOST=${OC_SQUONK_APP}.${OC_ROUTES_BASENAME}
 export OC_DOMAIN_NAME=novalocal
-export OC_NFS_SERVER=xchem-infra.$OC_DOMAIN_NAME
-export OC_OPENSHIFT_VERSION=3.7
+export OC_NFS_SERVER=squonk-infra.$OC_DOMAIN_NAME
 
 
 
@@ -33,5 +31,4 @@ echo "OC_SQUONK_HOST set to $OC_SQUONK_HOST"
 echo "OC_NFS_SERVER set to $OC_NFS_SERVER"
 echo "KEYCLOAK_SERVER_URL set to $KEYCLOAK_SERVER_URL"
 echo "KEYCLOAK_REALM set to $KEYCLOAK_REALM"
-echo "Using OpenShift version $OC_OPENSHIFT_VERSION"
 
