@@ -58,7 +58,7 @@ pipeline {
         // --------------------------------------------------------------------
 
         // Unit test the code
-        stage('Unit Test') {
+        stage('Coverage Test') {
 
             // The unit-test stage.
             // Here we require the services of Docker for some tests
