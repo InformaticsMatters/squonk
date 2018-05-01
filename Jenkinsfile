@@ -77,13 +77,11 @@ pipeline {
             }
 
             steps {
-                // Prepare the sub-projects
-                sh 'git submodule update --recursive --remote --init'
-                // Squonk...
                 dir('components') {
                     withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
                                      file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
                                      file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
+
                         sh 'chmod u+w $CP_FILE'
                         sh 'chmod u+w $CX_FILE'
                         sh 'chmod u+w $CX_LIB'
@@ -94,7 +92,9 @@ pipeline {
                         sh 'cp -n $CX_FILE ~/.chemaxon'
                         sh 'mv -n $CX_FILE ../data/licenses'
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
+
                         sh './gradlew build --no-daemon'
+
                     }
                 }
             }
@@ -128,10 +128,6 @@ pipeline {
             }
 
             steps {
-
-                // Prepare the sub-projects
-                sh 'git submodule update --recursive --remote --init'
-
                 dir('components') {
                     withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
                                      file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
@@ -174,7 +170,6 @@ pipeline {
                     }
 
                 }
-
             }
 
         }
@@ -229,7 +224,6 @@ pipeline {
             }
 
             steps {
-                // Squonk...
                 dir('components') {
                     withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
                                      file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
