@@ -93,9 +93,9 @@ pipeline {
                         sh 'mv -n $CX_FILE ../data/licenses'
                         sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
 
-                        sh `env`
-                        sh `ls -a ~/.chemaxon`
-                        sh `cat ~/.chemaxon/license.cxl`
+                        sh 'env'
+                        sh 'ls -a ~/.chemaxon'
+                        sh 'cat ~/.chemaxon/license.cxl'
 
                         // Run tests using code-coverage
                         //sh './gradlew build --no-daemon'
