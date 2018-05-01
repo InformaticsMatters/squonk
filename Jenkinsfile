@@ -102,7 +102,7 @@ pipeline {
                         sh './gradlew test jacocoTestReport --no-daemon'
 
                         // Analyse and present the results...
-                        jacoco sourcePattern: '**/src/main/groovy'
+                        //jacoco sourcePattern: '**/src/main/groovy'
 
                     }
                 }
