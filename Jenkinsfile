@@ -42,7 +42,7 @@ pipeline {
             // This is not about testing or Docker,
             // This step is just about making sure the code compiles.
             agent {
-                label 'buildah-slave'
+                label 'maven'
             }
 
             steps {
@@ -66,7 +66,7 @@ pipeline {
             // For now we defer to AWS until we have a Docker build
             // solution from within OpenShift.
             agent {
-                label 'buildah-slave'
+                label 'maven'
             }
 
             environment {
@@ -99,10 +99,10 @@ pipeline {
 
                         // Run tests using code-coverage
                         //sh './gradlew build --no-daemon'
-//                        sh './gradlew test jacocoTestReport --no-daemon'
+                        sh './gradlew test jacocoTestReport --no-daemon'
 
                         // Analyse and present the results...
-//                        jacoco sourcePattern: '**/src/main/groovy'
+                        jacoco sourcePattern: '**/src/main/groovy'
 
                     }
                 }
@@ -194,7 +194,7 @@ pipeline {
             // This is not about testing or Docker,
             // This step is just about making sure the code compiles.
             agent {
-                label 'buildah-slave'
+                label 'maven'
             }
 
             steps {
