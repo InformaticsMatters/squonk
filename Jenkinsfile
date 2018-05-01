@@ -102,7 +102,7 @@ pipeline {
                         sh './gradlew test jacocoTestReport --no-daemon'
 
                         // Analyse and present the results...
-                        //jacoco sourcePattern: '**/src/main/groovy'
+                        jacoco sourcePattern: '**/src/main/groovy'
 
                     }
                 }
@@ -171,9 +171,9 @@ pipeline {
                             TOKEN = sh(script: 'oc whoami -t', returnStdout: true).trim()
                         }
                         sh "podman login --tls-verify=false --username ${env.USER} --password ${TOKEN} ${env.REGISTRY}"
-                        sh "buildah push --tls-verify=false ${env.CORE_IMAGE} docker://${env.REGISTRY}/${env.CORE_IMAGE}"
-                        sh "buildah push --tls-verify=false ${env.CHEM_IMAGE} docker://${env.REGISTRY}/${env.CHEM_IMAGE}"
-                        sh "buildah push --tls-verify=false ${env.CELL_IMAGE} docker://${env.REGISTRY}/${env.CELL_IMAGE}"
+//                        sh "buildah push --tls-verify=false ${env.CORE_IMAGE} docker://${env.REGISTRY}/${env.CORE_IMAGE}"
+//                        sh "buildah push --tls-verify=false ${env.CHEM_IMAGE} docker://${env.REGISTRY}/${env.CHEM_IMAGE}"
+//                        sh "buildah push --tls-verify=false ${env.CELL_IMAGE} docker://${env.REGISTRY}/${env.CELL_IMAGE}"
                         sh "podman logout ${env.REGISTRY}"
 
                     }
