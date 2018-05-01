@@ -99,10 +99,10 @@ pipeline {
 
                         // Run tests using code-coverage
                         //sh './gradlew build --no-daemon'
-                        sh './gradlew test jacocoTestReport --no-daemon'
+//                        sh './gradlew test jacocoTestReport --no-daemon'
 
                         // Analyse and present the results...
-                        jacoco sourcePattern: '**/src/main/groovy'
+//                        jacoco sourcePattern: '**/src/main/groovy'
 
                     }
                 }
