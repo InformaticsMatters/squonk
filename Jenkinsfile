@@ -62,7 +62,7 @@ pipeline {
 
             parallel {
 
-                stage('Unit Test) {
+                stage('Unit Test') {
 
                     agent {
                         label 'maven'
