@@ -54,58 +54,83 @@ pipeline {
         }
 
         // --------------------------------------------------------------------
-        // Test (Unit)
+        // Testing
         // --------------------------------------------------------------------
 
         // Unit test the code
-        stage('Coverage Test') {
+        stage('Test') {
 
-            // The unit-test stage.
-            // Here we require the services of Docker for some tests
-            // so the built-in `maven` agent is not enough.
-            // For now we defer to AWS until we have a Docker build
-            // solution from within OpenShift.
-            agent {
-                label 'maven'
-            }
+            parallel {
 
-            environment {
-                CPSIGN_MODEL_DIR = "${env.WORKSPACE}/tmp/cpsign"
-                CPSIGN_LICENSE_URL = "${env.WORKSPACE}/data/licenses/cpsign0.3pro.license"
-                SQUONK_DOCKER_WORK_DIR = "${env.WORKSPACE}/tmp"
-                SQUONK_NEXTFLOW_WORK_DIR = "${env.WORKSPACE}/tmp"
-            }
+                stage('Unit Test) {
 
-            steps {
-                dir('components') {
-                    withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
-                                     file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
-                                     file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
-
-                        sh 'chmod u+w $CP_FILE'
-                        sh 'chmod u+w $CX_FILE'
-                        sh 'chmod u+w $CX_LIB'
-                        sh 'mkdir -p ../data/licenses'
-                        sh 'mkdir -p ../tmp/cpsign'
-                        sh 'mkdir -p ~/.chemaxon'
-                        sh 'mv -n $CP_FILE ../data/licenses'
-                        sh 'cp -n $CX_FILE ~/.chemaxon'
-                        sh 'mv -n $CX_FILE ../data/licenses'
-                        sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
-
-                        sh 'env'
-                        sh 'ls -a ~/.chemaxon'
-                        sh 'cat ~/.chemaxon/license.cxl'
-
-                        // Run tests using code-coverage
-                        //sh './gradlew build --no-daemon'
-                        sh './gradlew test jacocoTestReport --no-daemon'
-
-                        // Analyse and present the results...
-                        jacoco sourcePattern: '**/src/main/groovy'
-
+                    agent {
+                        label 'maven'
                     }
+
+                    environment {
+                        CPSIGN_MODEL_DIR = "${env.WORKSPACE}/tmp/cpsign"
+                        CPSIGN_LICENSE_URL = "${env.WORKSPACE}/data/licenses/cpsign0.3pro.license"
+                        SQUONK_DOCKER_WORK_DIR = "${env.WORKSPACE}/tmp"
+                        SQUONK_NEXTFLOW_WORK_DIR = "${env.WORKSPACE}/tmp"
+                    }
+
+                    steps {
+                        dir('components') {
+                            withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
+                                             file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
+                                             file(credentialsId: 'chemAxonReactionLibrary', variable: 'CX_LIB')]) {
+
+                                sh 'chmod u+w $CP_FILE'
+                                sh 'chmod u+w $CX_FILE'
+                                sh 'chmod u+w $CX_LIB'
+                                sh 'mkdir -p ../data/licenses'
+                                sh 'mkdir -p ../tmp/cpsign'
+                                sh 'mkdir -p ~/.chemaxon'
+                                sh 'mv -n $CP_FILE ../data/licenses'
+                                sh 'cp -n $CX_FILE ~/.chemaxon'
+                                sh 'mv -n $CX_FILE ../data/licenses'
+                                sh 'mv -n $CX_LIB ../docker/deploy/images/chemservices'
+
+                                sh 'env'
+                                sh 'ls -a ~/.chemaxon'
+                                sh 'cat ~/.chemaxon/license.cxl'
+
+                                // Run tests using code-coverage
+                                //sh './gradlew build --no-daemon'
+                                sh './gradlew test jacocoTestReport --no-daemon'
+
+                                // Analyse and present the results...
+                                jacoco sourcePattern: '**/src/main/groovy'
+
+                            }
+                        }
+                    }
+
                 }
+
+                stage('FindBugs') {
+
+                    agent {
+                        label 'maven'
+                    }
+
+                    steps {
+                        dir('components') {
+
+                            // Run FindBugs on the code...
+                            sh './gradlew findbugsMain --no-daemon'
+
+                            // Analyse and present the results...
+                            findbugs canComputeNew: false,
+                                isRankActivated: true,
+                                pattern: '**/findbugsReports/main.xml'
+
+                        }
+                    }
+
+                }
+
             }
 
         }
@@ -137,6 +162,7 @@ pipeline {
             }
 
             steps {
+
                 dir('components') {
                     withCredentials([file(credentialsId: 'cpSignLicense', variable: 'CP_FILE'),
                                      file(credentialsId: 'chemAxonLicense', variable: 'CX_FILE'),
@@ -177,38 +203,8 @@ pipeline {
                         sh "podman logout ${env.REGISTRY}"
 
                     }
-
                 }
-            }
 
-        }
-
-        // --------------------------------------------------------------------
-        // Post-deploy analysis stages
-        // --------------------------------------------------------------------
-
-        // Static analysis (FindBugs)
-        stage('FindBugs') {
-
-            // The assemble step is designed for jobs that execute rapidly.
-            // This is not about testing or Docker,
-            // This step is just about making sure the code compiles.
-            agent {
-                label 'maven'
-            }
-
-            steps {
-                dir('components') {
-
-                    // Run FindBugs on the code...
-                    sh './gradlew findbugsMain --no-daemon'
-
-                    // Analyse and present the results...
-                    findbugs canComputeNew: false,
-                        isRankActivated: true,
-                        pattern: '**/findbugsReports/main.xml'
-
-                }
             }
 
         }
