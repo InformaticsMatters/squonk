@@ -53,7 +53,7 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractServiceStep {
         } else {
             expandedCommand = "";
         }
-        String fullCommand = "nextflow run nextflow.nf " + expandedCommand + " -with-docker debian";
+        String fullCommand = "nextflow run nextflow.nf " + expandedCommand + " -with-docker";
 
         String image = "informaticsmatters/nextflow";
         DockerRunner runner = new DockerRunner(image);

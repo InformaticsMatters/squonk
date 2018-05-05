@@ -16,6 +16,10 @@
 
 package org.squonk.dataset;
 
+import org.squonk.types.io.JsonHandler;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -82,5 +86,17 @@ public class DatasetUtils {
                 isFiltering == null ? false: isFiltering, // null means false - the service does not filter
                 isPreserve == null ? true : isPreserve,   // null means true - the service does not modify the core details and might return BasicObjects
                 td.getFieldDescriptors(), options);
+    }
+
+    /** Helper method to create a dataset from its JSON and metadata
+     *
+     * @param data InputStream with the JSON with the data
+     * @param metadata InputStream with the JSON with the metadata
+     * @return
+     * @throws IOException
+     */
+    public static Dataset createDataset(InputStream data, InputStream metadata) throws IOException {
+        DatasetMetadata meta = JsonHandler.getInstance().objectFromJson(metadata, DatasetMetadata.class);
+        return new Dataset(data, meta);
     }
 }
