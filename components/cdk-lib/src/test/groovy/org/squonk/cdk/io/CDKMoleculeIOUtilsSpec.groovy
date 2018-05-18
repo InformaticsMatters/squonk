@@ -18,10 +18,11 @@ package org.squonk.cdk.io
 
 import org.openscience.cdk.DefaultChemObjectBuilder
 import org.openscience.cdk.fingerprint.SignatureFingerprinter
-import org.openscience.cdk.interfaces.IChemObjectBuilder
 import org.openscience.cdk.signature.MoleculeSignature
 import org.openscience.cdk.smiles.SmiFlavor
 import org.openscience.cdk.smiles.SmilesGenerator
+import org.squonk.dataset.Dataset
+import org.squonk.dataset.DatasetUtils
 import org.squonk.types.MoleculeObject
 import org.openscience.cdk.ChemFile
 import org.openscience.cdk.interfaces.IAtomContainer
@@ -35,6 +36,7 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator
 import org.squonk.data.Molecules
 import org.squonk.types.CDKSDFile
+import org.squonk.types.SDFile
 import org.squonk.util.IOUtils
 
 import java.util.zip.GZIPInputStream
@@ -440,6 +442,51 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         smiles        | result
         "CCO"         | false
         "CCO ethanol" | true
+    }
+
+    /** this runs OK
+     *
+     */
+    void "S group SDF export bug OK"() {
+
+        when:
+        Dataset dataset = DatasetUtils.createDataset(
+                new FileInputStream('../../data/testfiles/Building_blocks_GBP.data.gz'),
+                new FileInputStream('../../data/testfiles/Building_blocks_GBP.metadata'))
+
+        SDFWriter writer = new SDFWriter(System.out)
+        int size = 0
+        List items = dataset.getItems()
+        println "${items.size()} items"
+        for (MoleculeObject mo : items) {
+            print '.'
+            MDLV2000Reader v2000Parser = new MDLV2000Reader(new ByteArrayInputStream(mo.source.bytes));
+            IAtomContainer mol = v2000Parser.read(new AtomContainer());
+            writer.write(mol)
+            size++
+        }
+        writer.close()
+
+        then:
+        size == 7003
+    }
+
+    /** this one throws the exception
+     *
+     */
+    void "S group SDF export bug FAIL"() {
+
+        when:
+        Dataset dataset = DatasetUtils.createDataset(
+                new FileInputStream('../../data/testfiles/Building_blocks_GBP.data.gz'),
+                new FileInputStream('../../data/testfiles/Building_blocks_GBP.metadata'))
+
+        SDFile sdf = CDKMoleculeIOUtils.covertToSDFile(dataset.stream, true)
+        byte[] b = sdf.getBytes()
+        String content = new String(b)
+
+        then:
+        content.length() > 1000
     }
 
 }

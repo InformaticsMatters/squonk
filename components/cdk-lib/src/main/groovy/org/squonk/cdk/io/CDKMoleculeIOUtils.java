@@ -215,6 +215,10 @@ public class CDKMoleculeIOUtils {
             public void run() {
                 try (SDFWriter writer = new SDFWriter(out)) {
                     mols.forEachOrdered((mo) -> {
+
+                        // THIS IS FOR DEBUG ONLY - REMOVE WHEN COMPLETE
+                        System.out.println(mo.getSource());
+
                         try {
                             IAtomContainer mol = fetchMolecule(mo, false);
                             for (Map.Entry<String, Object> e : mo.getValues().entrySet()) {
@@ -253,6 +257,7 @@ public class CDKMoleculeIOUtils {
         if (toFormat != null) {
             throw new IllegalArgumentException("toFormat must be specified");
         }
+        LOG.info("Converting to " + toFormat);
         Stream<MoleculeObject> results = null;
         if (toFormat.equals("smiles")) {
             final SmilesGenerator generator = new SmilesGenerator(SmiFlavor.Absolute);
