@@ -157,7 +157,17 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
     private static final Logger LOG = Logger.getLogger(ChemAxonMoleculeProcessor.class.getName());
     public static final String PROP_EVALUATORS_DEFINTION = "ChemTermsProcessor_EvaluatorsDefintion";
 
+    private boolean sequential = false;
+
     private final List<MoleculeEvaluator> evaluators = new ArrayList<>();
+
+    public boolean isSequential() {
+        return sequential;
+    }
+
+    public void makeSequential() {
+        this.sequential = true;
+    }
 
     /**
      * Add a new calculation using a chemical terms expression. If no terms are
@@ -189,6 +199,8 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         return this;
     }
 
+
+
     /**
      * Add a transform definition which replaces the input molecule with one
      * generated from it using the specified chemical terms expression. The
@@ -218,6 +230,12 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
             throw new IllegalStateException("Input must be a Dataset of MoleculeObjects");
         }
         Stream<MoleculeObject> mols = dataset.getStream();
+        if (sequential) {
+            mols.sequential();
+        } else {
+            mols.parallel();
+        }
+
         Map<String,Integer> stats = new HashMap<>();
         for (MoleculeEvaluator eval : evals) {
             mols = calculateMultiple(mols, eval, stats);
@@ -385,6 +403,9 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         String propName = ChemTermsEvaluator.LOGS + "_" + pHString;
         String ctExpr = "logS('" + pHString + "')";
         evaluators.add(new ChemTermsEvaluator(propName, ctExpr, Metrics.generate(PROVIDER_CHEMAXON, METRICS_LOGS)));
+        // The logS predictor does not run correctly. This workaround of avoiding multi-threading in place until it is resolved.
+        // See https://github.com/InformaticsMatters/squonk/issues/13
+        this.makeSequential();
         return this;
     }
 
@@ -400,6 +421,18 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
 
     public ChemAxonMoleculeProcessor atomCount() throws ParseException {
         evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.ATOM_COUNT, "atomCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ATOM_COUNT)));
+        return this;
+    }
+
+    /**
+     *
+     * @param expression The expression for the atomCount(XXX) function e.g. "6" to count the carbon atoms.
+     * @param propertyName The name for the generated property.
+     * @return
+     * @throws ParseException
+     */
+    public ChemAxonMoleculeProcessor atomCount(String expression, String propertyName) throws ParseException {
+        evaluators.add(new ChemTermsEvaluator(propertyName, "atomCount('" + expression + "')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_ATOM_COUNT)));
         return this;
     }
 
@@ -420,6 +453,11 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
 
     public ChemAxonMoleculeProcessor ringCount() throws ParseException {
         evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.RING_COUNT, "ringCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_RING_COUNT)));
+        return this;
+    }
+
+    public ChemAxonMoleculeProcessor aromaticRingCount() throws ParseException {
+        evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.AROMATIC_RING_COUNT, "aromaticRingCount()", Metrics.generate(PROVIDER_CHEMAXON, METRICS_RING_COUNT)));
         return this;
     }
 
@@ -452,4 +490,5 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         evaluators.add(new ChemTermsEvaluator(ChemTermsEvaluator.BPKA, "basicpKa('1')", Metrics.generate(PROVIDER_CHEMAXON, METRICS_PKA)));
         return this;
     }
+
 }

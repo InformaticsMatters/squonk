@@ -250,6 +250,10 @@ public abstract class AbstractServiceStep extends AbstractStep {
      */
     protected String expandCommand(String cmdTemplate, Map<String,Object> options) {
         Map<String, Object> args = new LinkedHashMap<>();
+        // Inject magical variables that are used to define locations of inputs and outputs.
+        // For execution these are set to the empty string.
+        args.put("PIN", "");
+        args.put("POUT", "");
         options.forEach((k, v) -> {
             if (k.startsWith("arg.")) {
                 LOG.info("Found argument " + k + " = " + v);

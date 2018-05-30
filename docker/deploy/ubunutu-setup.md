@@ -201,11 +201,9 @@ $ openssl dhparam -out images/nginx/certs/squonk/dhparam.pem 2048
 
 ### Copy license files
 
-Currently this involves ChemAxon and CPSign licenses.
-(a directory you'll need to create `mkdir -p data/licenses`) 
+Currently this involves ChemAxon license. Copy this to docker/deploy/images/chemservices. 
 
--   `license.cxl` (into the directory `~/.chemaxon`)
--   `cpsign0.3pro.license` (into the directory `data/licences`)
+-   `license.cxl` is the ChemAxon license file
 
 ### Setup gradle properties
 Before starting you need to provide details of the ChemAxon maven repository.

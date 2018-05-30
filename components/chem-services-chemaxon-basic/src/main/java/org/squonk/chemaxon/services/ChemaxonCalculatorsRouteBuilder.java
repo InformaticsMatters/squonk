@@ -24,10 +24,10 @@ import org.squonk.camel.chemaxon.processor.ChemAxonMoleculeProcessor;
 import org.apache.camel.builder.RouteBuilder;
 import org.squonk.camel.chemaxon.processor.ChemAxonVerifyStructureProcessor;
 import org.squonk.camel.processor.PropertyFilterProcessor;
+import org.squonk.camel.processor.MpoAccumulatorProcessor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
-import org.squonk.util.Metrics;
-
-import static org.squonk.util.Metrics.*;
+import org.squonk.util.CommonConstants;
+import org.squonk.util.MpoFunctions;
 
 /**
  * These are routes that provide basic property calculation services. The input to the route is a
@@ -56,6 +56,8 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
     public static final String CHEMAXON_AROMATIZE = "direct:aromatize";
     public static final String CHEMAXON_RULE_OF_THREE = "direct:rule_of_3_filter";
     public static final String CHEMAXON_REOS = "direct:reos_filter";
+    public static final String CHEMAXON_CNS_MPO = "direct:cns_mpo_score";
+    public static final String CHEMAXON_KIDS_MPO = "direct:kids_mpo_score";
 
 
     @Override
@@ -80,7 +82,7 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
         from(CHEMAXON_LOGD)
                 .log("CHEMAXON_LOGD starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process((Exchange exch) ->  {
+                .process((Exchange exch) -> {
                     Float pH = exch.getIn().getHeader("pH", Float.class);
                     Processor p = new ChemAxonMoleculeProcessor().logD(pH);
                     p.process(exch);
@@ -91,7 +93,7 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
         from(CHEMAXON_LOGS)
                 .log("CHEMAXON_LOGS starting")
                 .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process((Exchange exch) ->  {
+                .process((Exchange exch) -> {
                     Float pH = exch.getIn().getHeader("pH", Float.class);
                     String result = exch.getIn().getHeader("result", String.class);
                     Processor p = new ChemAxonMoleculeProcessor().logS(pH, result);
@@ -244,6 +246,71 @@ public class ChemaxonCalculatorsRouteBuilder extends RouteBuilder {
                         .filterInteger(ChemTermsEvaluator.HEAVY_ATOM_COUNT)
                 )
                 .log("CHEMAXON_REOS finished");
+
+        from(CHEMAXON_CNS_MPO)
+                .log("CHEMAXON_CNS_MPO starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new ChemAxonMoleculeProcessor()
+                        .logP()
+                        .logD(7.4f)
+                        .molWeight()
+                        .tpsa()
+                        .donorCount()
+                        .bpKa()
+                )   
+                .process(new MpoAccumulatorProcessor(
+                        "CNS_MPO_CXN",
+                        "CNS MPO score using ChemAxon calculators",
+                        Float.class,
+                        CommonConstants.OPTION_FILTER_MODE,
+                        CommonConstants.OPTION_FILTER_THRESHOLD)
+                        .addHumpFunction(ChemTermsEvaluator.LOGP,
+                                MpoFunctions.createRampFunction(1d, 0d, 3d, 5d))
+                        .addHumpFunction(ChemTermsEvaluator.LOGD + "_7.4",
+                                MpoFunctions.createRampFunction(1d, 0d, 2d, 4d))
+                        .addHumpFunction(ChemTermsEvaluator.MOLECULAR_WEIGHT,
+                                MpoFunctions.createRampFunction(1d, 0d, 360d, 500d))
+                        .addHumpFunction(ChemTermsEvaluator.TPSA,
+                                MpoFunctions.createHump1Function(0d, 1d, 0d, 20d, 40d, 90d, 120d))
+                        .addHumpFunction(ChemTermsEvaluator.HBOND_DONOR_COUNT,
+                                MpoFunctions.createRampFunction(1d, 0d, 0.5d, 3.5d))
+                        .addHumpFunction(ChemTermsEvaluator.BPKA,
+                                MpoFunctions.createRampFunction(1d, 0d, 8d, 10d))
+                )
+                .log("CHEMAXON_CNS_MPO finished");
+
+
+        from(CHEMAXON_KIDS_MPO)
+                .log("CHEMAXON_KIDS_MPO starting")
+                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                .process(new ChemAxonMoleculeProcessor()
+                        .tpsa()
+                        .rotatableBondCount()
+                        .atomCount("7", "AtomCount_N_CXN")
+                        .atomCount("8", "AtomCount_O_CXN")
+                        .donorCount()
+                        .aromaticRingCount()
+                )
+                .process(new MpoAccumulatorProcessor(
+                        "KiDS_MPO_CXN",
+                        "KiDS MPO score using ChemAxon calculators",
+                        Float.class,
+                        CommonConstants.OPTION_FILTER_MODE,
+                        CommonConstants.OPTION_FILTER_THRESHOLD)
+                        .addHumpFunction(ChemTermsEvaluator.TPSA,
+                                MpoFunctions.createHump1Function(0d, 1d, 0d, 64.63d, 75.85d, 92.40d, 138.3d))
+                        .addHumpFunction(ChemTermsEvaluator.ROTATABLE_BOND_COUNT,
+                                MpoFunctions.createHump1Function(0.2d, 1d, 0d, 1d, 2d, 3d, 5d))
+                        .addHumpFunction("AtomCount_N_CXN",
+                                MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d, 2d, 4d, 5d, 6d, 8d, 9d))
+                        .addHumpFunction("AtomCount_O_CXN",
+                                MpoFunctions.createHump1Function(0.2d, 1d, 0d, 0d, 1d, 1d, 3d))
+                        .addHumpFunction(ChemTermsEvaluator.HBOND_DONOR_COUNT,
+                                MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d,0d, 2d, 3d, 4d, 6d, 7d))
+                        .addHumpFunction(ChemTermsEvaluator.AROMATIC_RING_COUNT,
+                                MpoFunctions.createHump2Function(0d, 1d, 0.2d, 0d,1d, 3d, 3d, 4d, 4d, 5d))
+                )
+                .log("CHEMAXON_KIDS_MPO finished");
 
 
         // Dynamic route that requires the chem terms configuration to be set using the

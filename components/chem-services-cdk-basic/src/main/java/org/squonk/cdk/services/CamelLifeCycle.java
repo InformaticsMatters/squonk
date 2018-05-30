@@ -16,6 +16,7 @@
 
 package org.squonk.cdk.services;
 
+import org.openscience.cdk.CDK;
 import org.squonk.camel.CamelCommonConstants;
 import java.util.logging.Logger;
 import org.apache.camel.builder.ThreadPoolProfileBuilder;
@@ -56,6 +57,7 @@ public class CamelLifeCycle implements CamelContextLifecycle<SimpleRegistry> {
     public void beforeAddRoutes(ServletCamelContext scc, SimpleRegistry r) throws Exception {
         LOG.fine("CamelLifeCycle.beforeAddRoutes()");
         LOG.fine("Creating custom thread pool profile named " + CamelCommonConstants.CUSTOM_THREAD_POOL_NAME);
+        LOG.info("Using CDK version " + CDK.getVersion());
         ThreadPoolProfile profile = new ThreadPoolProfileBuilder(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME).poolSize(4).maxPoolSize(50).build();
         scc.getExecutorServiceManager().registerThreadPoolProfile(profile);
     }

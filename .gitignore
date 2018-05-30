@@ -14,7 +14,7 @@
 **/*~
 **/.DS_Store
 
-data/licenses
+data/licenses/*
 data/testfiles/emols_order*
 data/testfiles/all-sdf.sdf.gz
 data/testfiles/chembl_*.sdf.gz
@@ -48,17 +48,20 @@ components/security-keycloak/out
 docker/**/*.war
 docker/xwiki-site/yyy.json
 docker/docker-services
+docker/resources
 
-docker/deploy/data
+docker/deploy/data/pgdata
+docker/deploy/data/docker-services/*
 
 docker/deploy/setenv.sh
 docker/deploy/images/yyy.json
 docker/deploy/images/squonk-realm.json
 
+docker/deploy/images/chemservices/license.cxl
+
 docker/deploy/images/cellexecutor/logging.properties
 
 docker/deploy/images/portal/server.xml
-docker/deploy/images/portal/persistence.properties
 docker/deploy/images/portal/logging.properties
 
 docker/deploy/images/nginx/certs
@@ -66,8 +69,8 @@ docker/deploy/images/nginx/cert.crt
 docker/deploy/images/nginx/cert.key
 docker/deploy/images/nginx/default.ssl.conf
 docker/deploy/images/nginx/default.site.conf
-docker/deploy/images/nginx/sites/squonk.it/html
-docker/deploy/images/nginx/sites/informaticsmatters.com/html
+docker/deploy/images/nginx/sites/squonk.it/*
+docker/deploy/images/nginx/sites/informaticsmatters.com/*
 
 docker/deploy/images/keycloak/keycloak.jks
 

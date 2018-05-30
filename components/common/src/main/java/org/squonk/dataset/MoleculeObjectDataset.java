@@ -62,7 +62,7 @@ public class MoleculeObjectDataset implements DatasetProvider, StreamProvider {
     }
 
     @Override
-    public DatasetMetadata getMetadata() throws Exception {
+    public DatasetMetadata getMetadata() {
         return mods.getMetadata();
     }
 

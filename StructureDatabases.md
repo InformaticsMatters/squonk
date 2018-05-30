@@ -1,6 +1,6 @@
 # Database loaders
 
-Squonk has a chemical database powered by the RDkit cartridge.
+Squonk has a chemical database powered by the RDKit cartridge.
 To use this you need to load datasets into database.
 Currently there is support for
 * eMolecules (bulidng blocks and screening compounds)
@@ -9,7 +9,8 @@ Currently there is support for
 * PDB ligands
 * Chemspace
 
-The code for the loaders is in the rdkit-databases module.
+The code and configuration for the loaders is in the rdkit-lib module.
+At some stage it may be broken out into a separate module.
 
 ## Loading data
 
@@ -41,6 +42,8 @@ Each loader is pre-configured with sensible defaults, but you can override these
 * LIMIT - the number of records to load (default value is 0 which meeans load all records)
 * REPORTING_CHUNK - the frequency to report loading (default apporpopriate to the typical size of the dataset)
 
+For testing set the loadOnly property to restrict the number of structures to load. Reset this to zero to load the 
+entire dataset.
 
 ### Running a loader
 
@@ -80,13 +83,47 @@ To prevent lost connections to the server terminating the load you might want to
 ### Configuring the search service
 
 The searchsearvice needs to know what database tables have been loaded.
-This is currently done using the STRUCTURE_DATABASE_TABLES environment variable
+This is currently done using the CHEMCENTRAL_DATABASE_TABLES environment variable
 that needs to be passes to the chemservices container. To do this set this variable
-in your docker/deply/setenv.sh file. The value must be a colon separated list of table names
+in your docker/deploy/setenv.sh file. The value must be a colon separated list of tabe names
 with no spaces or other characters allowed. For instance:
 
 ```
-export STRUCTURE_DATABASE_TABLES=emolecules_order_sc:emolecules_order_bb:chembl_23:pdb_ligand
+export CHEMCENTRAL_DATABASE_TABLES=emolecules_order_sc:emolecules_order_bb:chembl_23:pdb_ligand
 ```
 
+
+## SQL
+
+The SQL used to create the indexes looks like this (for chembl_23):
+
+```
+DROP TABLE IF EXISTS vendordbs.chembl_23_molfps;
+SELECT * INTO vendordbs.chembl_23_molfps FROM (SELECT id,mol_from_ctab(structure::cstring) m FROM vendordbs.chembl_23) tmp where m IS NOT NULL;
+ALTER TABLE vendordbs.chembl_23_molfps ADD PRIMARY KEY (id);
+ALTER TABLE vendordbs.chembl_23_molfps ADD CONSTRAINT fk_chembl_23_molfps_id FOREIGN KEY (id) REFERENCES vendordbs.chembl_23 (id);
+CREATE INDEX idx_chembl_23_molfps_m ON vendordbs.chembl_23_molfps USING gist(m);
+ALTER TABLE vendordbs.chembl_23_molfps DROP COLUMN IF EXISTS rdk CASCADE;
+ALTER TABLE vendordbs.chembl_23_molfps ADD COLUMN rdk bfp;
+UPDATE vendordbs.chembl_23_molfps SET rdk = rdkit_fp(m);
+CREATE INDEX idx_chembl_23_molfps_rdk ON vendordbs.chembl_23_molfps USING gist(rdk);
+ALTER TABLE vendordbs.chembl_23_molfps DROP COLUMN IF EXISTS mfp2 CASCADE;
+ALTER TABLE vendordbs.chembl_23_molfps ADD COLUMN mfp2 bfp;
+UPDATE vendordbs.chembl_23_molfps SET mfp2 = morganbv_fp(m,2);
+CREATE INDEX idx_chembl_23_molfps_mfp2 ON vendordbs.chembl_23_molfps USING gist(mfp2);
+ALTER TABLE vendordbs.chembl_23_molfps DROP COLUMN IF EXISTS ffp2 CASCADE;
+ALTER TABLE vendordbs.chembl_23_molfps ADD COLUMN ffp2 bfp;
+UPDATE vendordbs.chembl_23_molfps SET ffp2 = featmorganbv_fp(m,2);
+CREATE INDEX idx_chembl_23_molfps_ffp2 ON vendordbs.chembl_23_molfps USING gist(ffp2);
+```
+
+To test substructure search:
+```
+select count(*) from vendordbs.chembl_23_molfps WHERE m@>'c1cccc2c1CNCCN2';
+```
+
+To test similarity search:
+```
+select count(*) from vendordbs.chembl_23_molfps WHERE mfp2%morganbv_fp('CN1CCc2cccc3c2[C@H]1Cc1ccc(CO)c(O)c1-3');
+```
 

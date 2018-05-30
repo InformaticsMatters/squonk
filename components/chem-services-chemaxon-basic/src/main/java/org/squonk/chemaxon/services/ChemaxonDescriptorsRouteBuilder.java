@@ -16,6 +16,7 @@
 
 package org.squonk.chemaxon.services;
 
+import chemaxon.license.LicenseException;
 import com.chemaxon.descriptors.fingerprints.ecfp.EcfpGenerator;
 import com.chemaxon.descriptors.fingerprints.ecfp.EcfpParameters;
 import com.chemaxon.descriptors.fingerprints.pf2d.PfGenerator;
@@ -27,12 +28,16 @@ import org.squonk.camel.chemaxon.processor.screening.MoleculeScreenerProcessor;
 import org.squonk.chemaxon.screening.MoleculeScreener;
 import org.apache.camel.builder.RouteBuilder;
 
+import java.util.logging.Logger;
+
 /**
  * Routes that perform screening and clustering using molecular descriptors
  *
  * @author timbo
  */
 public class ChemaxonDescriptorsRouteBuilder extends RouteBuilder {
+
+    private static final Logger LOG = Logger.getLogger(ChemaxonDescriptorsRouteBuilder.class.getName());
 
     public static final String CHEMAXON_SCREENING_ECFP4 = "direct:screening/ecfp4";
     public static final String CHEMAXON_SCREENING_PHARMACOPHORE = "direct:screening/pharmacophore";
@@ -42,35 +47,47 @@ public class ChemaxonDescriptorsRouteBuilder extends RouteBuilder {
     public void configure() throws Exception {
 
         // virtual screening using ECFP similarity
-        EcfpParameters ecfpParams = EcfpParameters.createNewBuilder().build();
-        EcfpGenerator ecfpGenerator = ecfpParams.getDescriptorGenerator();
-        MoleculeScreener ecfpScreener = new MoleculeScreener(ecfpGenerator, ecfpGenerator.getDefaultComparator());
+        try {
+            EcfpParameters ecfpParams = EcfpParameters.createNewBuilder().build();
+            EcfpGenerator ecfpGenerator = ecfpParams.getDescriptorGenerator();
+            MoleculeScreener ecfpScreener = new MoleculeScreener(ecfpGenerator, ecfpGenerator.getDefaultComparator());
 
-        from(CHEMAXON_SCREENING_ECFP4)
-                .log("CHEMAXON_SCREENING_ECFP starting")
-                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new MoleculeScreenerProcessor(ecfpScreener))
-                .log("CHEMAXON_SCREENING_ECFP finished");
+            from(CHEMAXON_SCREENING_ECFP4)
+                    .log("CHEMAXON_SCREENING_ECFP starting")
+                    .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                    .process(new MoleculeScreenerProcessor(ecfpScreener))
+                    .log("CHEMAXON_SCREENING_ECFP finished");
+        } catch (LicenseException le) {
+            LOG.warning("Could not create route " + CHEMAXON_SCREENING_ECFP4 + " as licenses not present");
+        }
 
         // virtual screening using pharmacophore similarity
-        PfParameters pfParams = PfParameters.createNewBuilder().build();
-        PfGenerator pfGenerator = pfParams.getDescriptorGenerator();
-        MoleculeScreener pfScreener = new MoleculeScreener(pfGenerator, pfGenerator.getDefaultComparator());
+        try {
+            PfParameters pfParams = PfParameters.createNewBuilder().build();
+            PfGenerator pfGenerator = pfParams.getDescriptorGenerator();
+            MoleculeScreener pfScreener = new MoleculeScreener(pfGenerator, pfGenerator.getDefaultComparator());
 
-        from(CHEMAXON_SCREENING_PHARMACOPHORE)
-                .log("CHEMAXON_SCREENING_PHARMACOPHORE starting")
-                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new MoleculeScreenerProcessor(pfScreener))
-                .log("CHEMAXON_SCREENING_PHARMACOPHORE finished");
+            from(CHEMAXON_SCREENING_PHARMACOPHORE)
+                    .log("CHEMAXON_SCREENING_PHARMACOPHORE starting")
+                    .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                    .process(new MoleculeScreenerProcessor(pfScreener))
+                    .log("CHEMAXON_SCREENING_PHARMACOPHORE finished");
+        } catch (LicenseException le) {
+            LOG.warning("Could not create route " + CHEMAXON_SCREENING_PHARMACOPHORE + " as licenses not present");
+        }
 
         // clustering using sphere exclusion clustering and ECPF4 descriptors
-        EcfpGenerator gen = new EcfpParameters().getDescriptorGenerator(); // default ECFP
+        try {
+            EcfpGenerator gen = new EcfpParameters().getDescriptorGenerator(); // default ECFP
 
-        from(CHEMAXON_CLUSTERING_SPHEREX_ECFP4)
-                .log("CHEMAXON_CLUSTERING_SPHEREX_ECFP4 starting")
-                .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
-                .process(new SphereExclusionClusteringProcessor(
-                                gen, gen.getBinaryMetricsComparator(BinaryMetrics.BINARY_TANIMOTO)))
-                .log("CHEMAXON_CLUSTERING_SPHEREX_ECFP4 finished");
+            from(CHEMAXON_CLUSTERING_SPHEREX_ECFP4)
+                    .log("CHEMAXON_CLUSTERING_SPHEREX_ECFP4 starting")
+                    .threads().executorServiceRef(CamelCommonConstants.CUSTOM_THREAD_POOL_NAME)
+                    .process(new SphereExclusionClusteringProcessor(
+                            gen, gen.getBinaryMetricsComparator(BinaryMetrics.BINARY_TANIMOTO)))
+                    .log("CHEMAXON_CLUSTERING_SPHEREX_ECFP4 finished");
+        } catch (LicenseException le) {
+            LOG.warning("Could not create route " + CHEMAXON_CLUSTERING_SPHEREX_ECFP4 + " as licenses not present");
+        }
     }
 }

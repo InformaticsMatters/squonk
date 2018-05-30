@@ -24,7 +24,6 @@ import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.dataset.ThinDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.OptionDescriptor;
@@ -66,7 +65,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                     "icons/properties_add.png",
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Verify+structure+%28RDKit%29",
                     "verify",
-                    new OptionDescriptor[]{OptionDescriptor.FILTER_MODE},
+                    new OptionDescriptor[]{OptionDescriptor.FILTER_MODE_PASS},
                     ThinDescriptor.DEFAULT_FILTERING_THIN_DESCRIPTOR),
             createServiceDescriptor(
                     "rdkit.calculators.logp",
@@ -209,7 +208,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createLipinskiOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(OptionDescriptor.FILTER_MODE_PASS);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(1)
                 .withMinMaxValues(1, 1));
@@ -229,7 +228,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createRuleOfThreeOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(OptionDescriptor.FILTER_MODE_PASS);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1, 1));
@@ -251,7 +250,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createGhoseFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(OptionDescriptor.FILTER_MODE_PASS);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1, 1));
@@ -272,7 +271,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createReosOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(OptionDescriptor.FILTER_MODE_PASS);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1, 1));
@@ -298,7 +297,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     static private OptionDescriptor[] createVeberFilterOptionDescriptors() {
         List<OptionDescriptor> list = new ArrayList<>();
 
-        list.add(OptionDescriptor.FILTER_MODE);
+        list.add(OptionDescriptor.FILTER_MODE_PASS);
         list.add(new OptionDescriptor<>(Integer.class, "query." + CommonConstants.OPTION_FILTER_THRESHOLD, "Number of violations", "Number of violations to accept", Mode.User)
                 .withDefaultValue(0)
                 .withMinMaxValues(1, 1));

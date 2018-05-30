@@ -52,7 +52,7 @@ allprojects {
     // look at the jackson2-version property here (with correct tag) to get the right Jackson version
     // https://github.com/apache/camel/blob/master/parent/pom.xml
     project.ext.set('jacksonVersion', '2.8.4')
-    project.ext.set('cdkVersion', '2.0')
+    project.ext.set('cdkVersion', '2.1.1')
     project.ext.set('groovyVersion', '2.4.4')
     project.ext.set('weldVersion', '2.3.2.Final')
     project.ext.set('postgresDriverVersion', '9.4-1201-jdbc41')
@@ -61,7 +61,7 @@ allprojects {
     // Define the tag label for docker images.
     // It's the Git branch name or 'latest' if building from 'master'
     def dockerImageTag = grgit.branch.getCurrent().name
-    if (dockerImageTag == 'master') {
+    if (dockerImageTag == 'master' || dockerImageTag == 'openshift-merge') {
         dockerImageTag = 'latest'
     }
     project.ext.set('dockerImageTag', dockerImageTag)
@@ -134,8 +134,6 @@ subprojects {
     }
 }
 
-def hasChemAxonLicense = file('../data/licenses/license.cxl').exists()
-
 task wrapper(type: Wrapper) {
     gradleVersion = '3.2.1'
 }
@@ -160,11 +158,11 @@ task chemServicesWars(type: Copy) {
             tasks.getByPath(':chem-services-cdk-basic:war'),
             tasks.getByPath(':chem-services-chemaxon-basic:war'),
             tasks.getByPath(':chem-services-rdkit-basic:war'),
+            tasks.getByPath(':chem-services-rdkit-search:war'),
             tasks.getByPath(':chem-services-openchemlib-basic:war'),
             tasks.getByPath(':chem-services-smartcyp:war')
     ]
 
-    from "../data/licenses/license.cxl"
     from "../docker/deploy/images/chemservices/chemaxon_reaction_library.zip"
     from("chem-services-cdk-basic/build/libs") {
         include '*.war'
@@ -186,50 +184,40 @@ task chemServicesWars(type: Copy) {
         include '*.war'
         rename '.*', 'chem-services-smartcyp.war'
     }
-    into 'build/chemservices-basic'
+    into 'build/chem-services-basic'
 
 }
 
-task buildChemServicesDockerfile(type: Dockerfile) {
+task dockerFileChemServices(type: Dockerfile) {
 
-    description = 'build the Dockerfile for the chemservices image'
-    destFile = project.file('build/chemservices-basic/Dockerfile')
+    destFile = project.file('build/chem-services-basic/Dockerfile')
     // if changing the version you must also update the hardcoded version number in org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor
-    from "informaticsmatters/rdkit_java_tomcat:Release_2017_03_1"
+    from "informaticsmatters/rdkit-tomcat-debian:Release_2017_09_2"
     maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
 
-    runCommand("rm -rf /usr/local/tomcat/webapps/*")
-
     addFile('*.war', "/usr/local/tomcat/webapps/")
-    addFile('license.cxl', 'license.cxl')
     addFile('chemaxon_reaction_library.zip', '/chemaxon_reaction_library.zip')
-
-    environmentVariable("CHEMAXON_LICENSE_URL", "/usr/local/tomcat/license.cxl")
 
     exposePort(8080)
 }
 
-task buildChemServicesDockerImage(type: DockerBuildImage) {
+task dockerImageChemServices(type: DockerBuildImage) {
 
     description = 'Builds the ChemServices Docker Image'
 
-    dependsOn = [chemServicesWars, buildChemServicesDockerfile]
+    dependsOn = [chemServicesWars, dockerFileChemServices]
 
-    inputDir = buildChemServicesDockerfile.destFile.parentFile
+    inputDir = dockerFileChemServices.destFile.parentFile
     tag = "squonk/chemservices-basic:${dockerImageTag}"
 }
 
-task buildDockerImages() {
-
-    description = 'Builds the chemcentral-search, chemservices coreservices, cellexecutor and flyway Docker images'
+task dockerBuildImages() {
 
     dependsOn = [
-            buildChemServicesDockerImage,                  // chemservices-basic image
-            'chem-services-rdkit-search:buildDockerImage', // chemcentral postgres image
-            'rdkit-databases:dockerBuildImage',            // database loader for chemcentral
-            'core-services-server:buildDockerImage',       // coreservices image
-            'cell-executor:dockerBuildImage',              // cellexecutor image
-            'database:buildDockerImage'                    // flyway database migrator
+        'dockerImageChemServices',
+        'core-services-server:buildDockerImage',
+        'cell-executor:dockerBuildImage',
+        'database:buildDockerImage'
     ]
 }
 
@@ -252,7 +240,7 @@ To run the integration tests run the integrationTest task.
 
  */
 task integrationTestInit() {
-    dependsOn = [uploadArchives, buildDockerImages]
+    dependsOn = [uploadArchives, dockerBuildImages]
 }
 
 task integrationTestEnvPrepare(type: Exec) {

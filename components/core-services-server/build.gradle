@@ -112,7 +112,7 @@ tomcat {
  */
 
 docker {
-    //println "Using docker host of $dockerHost"
+    println "Using docker host of $dockerHost"
     url = dockerHost
     certPath = dockerCertPath
 }
@@ -120,7 +120,7 @@ docker {
 task buildDockerfile(type: Dockerfile) {
 
     destFile = project.file('build/Dockerfile')
-    from "tomcat:7-jre8"
+    from "informaticsmatters/tomcat:8.0-jre8"
     maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
 
     runCommand("rm -rf /usr/local/tomcat/webapps/*")
@@ -135,7 +135,7 @@ task buildDockerImage(type: DockerBuildImage) {
 
     description = "Build the coreservices docker image"
 
-    dependsOn = [war, buildDockerfile]
+    dependsOn = ['war', 'buildDockerfile']
 
     inputDir = buildDockerfile.destFile.parentFile
     tag = "squonk/${contextName}:${dockerImageTag}"

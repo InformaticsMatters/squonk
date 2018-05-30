@@ -198,7 +198,7 @@ objects:
               secretKeyRef:
                 name: squonk-secrets
                 key: RABBITMQ_SQUONK_PASSWORD
-          - name: STRUCTURE_DATABASE_TABLES
+          - name: CHEMCENTRAL_DATABASE_TABLES
             value: ${CHEM_STRUCTURE_DATABASE_TABLES}
           ports:
           - containerPort: 8080

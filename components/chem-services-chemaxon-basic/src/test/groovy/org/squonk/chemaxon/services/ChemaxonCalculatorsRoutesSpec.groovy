@@ -18,6 +18,7 @@ package org.squonk.chemaxon.services
 
 import chemaxon.struc.MolBond
 import chemaxon.struc.Molecule
+import org.squonk.dataset.Dataset
 import org.squonk.types.MoleculeObject
 import org.apache.camel.CamelContext
 import org.apache.camel.builder.RouteBuilder
@@ -43,13 +44,26 @@ class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
 
     def 'logp multiple MoleculeObject as stream'() {
 
-        
         when:
         def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGP, new MoleculeObjectDataset(mols))
 
         then:
         results instanceof MoleculeObjectDataset
         results.stream.count() == 3
+    }
+
+    def 'logs multiple MoleculeObject as stream'() {
+
+        when:
+        def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_LOGS, new MoleculeObjectDataset(mols))
+        def list = results.items
+
+        then:
+        results instanceof MoleculeObjectDataset
+        list.size() == 3
+        list.each {
+            assert it.values['AqSol_CXN_7.4'] != null
+        }
     }
 
     def 'logp file as stream'() {
@@ -61,6 +75,22 @@ class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
         then:
         results instanceof MoleculeObjectDataset
         results.stream.count() == 100
+    }
+
+    def 'cns mpo as stream'() {
+
+        when:
+        def results = template.requestBody(ChemaxonCalculatorsRouteBuilder.CHEMAXON_CNS_MPO, Molecules.nci100Dataset())
+        def list = results.items
+
+        then:
+        results instanceof MoleculeObjectDataset
+
+        list.size() == 100
+        list.each {
+            assert it.values['LogP_CXN'] != null
+            assert it.values['LogD_CXN_7.4'] != null
+        }
     }
     
     def 'filter as stream'() {

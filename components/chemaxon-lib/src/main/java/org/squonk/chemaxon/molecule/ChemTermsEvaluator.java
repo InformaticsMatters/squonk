@@ -51,6 +51,7 @@ public class ChemTermsEvaluator implements MoleculeEvaluator {
     public static final String HEAVY_ATOM_COUNT = "HeavyAtomCount_CXN";
     public static final String BOND_COUNT = "BondCount_CXN";
     public static final String RING_COUNT = "Ring_CXN";
+    public static final String AROMATIC_RING_COUNT = "AromRingCount_CXN";
     public static final String HBOND_ACCEPTOR_COUNT = "HBA_CXN";
     public static final String HBOND_DONOR_COUNT = "HBD_CXN";
     public static final String MOLECULAR_WEIGHT = "MolWeight_CXN";

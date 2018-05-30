@@ -64,11 +64,14 @@ public class ChemcentralSearcher {
 
     public ChemcentralSearcher(String statsRouteUri) {
         this.statsRouteUri = statsRouteUri;
-        String host = IOUtils.getConfiguration("POSTGRES_HOSTNAME", "postgresql-rdkit-cartridge");
-        String user = IOUtils.getConfiguration("POSTGRES_CHEMCENTRAL_USER", "chemcentral");
-        String pw = IOUtils.getConfiguration("POSTGRES_CHEMCENTRAL_PASSWORD", "chemcentral");
-        LOG.info("Connecting to postgres at " + host + " as user " + user);
-        this.chemchentralDataSource = SquonkServerConfig.createDataSource(host, new Integer(5432), user, pw, "chemcentral");
+        String host = IOUtils.getConfiguration("CHEMCENTRAL_HOST", "postgres");
+        String port = IOUtils.getConfiguration("CHEMCENTRAL_PORT", "5432");
+        String database = IOUtils.getConfiguration("CHEMCENTRAL_DB", "chemcentral");
+        String username = IOUtils.getConfiguration("CHEMCENTRAL_USER", "chemcentral");
+        String pw = IOUtils.getConfiguration("CHEMCENTRAL_PASSWORD", "chemcentral");
+        LOG.info("Connecting to postgres at " + host + " as user " + username);
+
+        this.chemchentralDataSource = SquonkServerConfig.createDataSource(host, new Integer(port), username, pw, database);
     }
 
     public void executeSearch(Exchange exch) throws IOException {
@@ -227,7 +230,7 @@ public class ChemcentralSearcher {
 
         Select select = searcher.createSelectAll(rdkitTable.getName())
                 .setChiral((chiral == null || "sim".equals(mode)) ? false : chiral)
-                .limit(limit == null ? 100 : Math.min(10000, limit)).select();
+                .limit(limit == null ? 1000 : Math.min(1000, limit)).select();
 
         WhereClause where = select.where();
         switch (mode) {

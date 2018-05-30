@@ -16,13 +16,18 @@ if [ ! -d /tmp/work ]; then
   mkdir /tmp/work
 fi
 
+if [ ! -f images/chemservices/license.cxl ]; then
+	echo "Creating default ChemAxon license file"
+	cp images/chemservices/license-empty.cxl images/chemservices/license.cxl
+fi
+
 if [ ! -f images/cellexecutor/logging.properties ]; then
-	echo "creating default logging config for cellexecutor"
+	echo "Creating default logging config for cellexecutor"
 	cp images/cellexecutor/logging.properties.default images/cellexecutor/logging.properties
 fi
 
 if [ ! -f images/portal/logging.properties ]; then
-	echo "creating default logging config for portal"
+	echo "Creating default logging config for portal"
 	cp images/portal/logging.properties.default images/portal/logging.properties
 fi
 

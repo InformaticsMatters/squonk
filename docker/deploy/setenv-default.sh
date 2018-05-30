@@ -54,8 +54,15 @@ export SQUONK_CONTAINER_RUNNER_TYPE=docker
 
 # The searchable structure databases that have been loaded.
 # Must be colon separated table names without any spaces e.g.
-# export STRUCTURE_DATABASE_TABLES="emolecules_order_sc:emolecules_order_bb:chembl_23:pdb_ligand"
-export STRUCTURE_DATABASE_TABLES="chembl_latest:chembl_23"
+# export CHEMCENTRAL_DATABASE_TABLES="emolecules_order_sc:emolecules_order_bb:chembl_23:pdb_ligand"
+export CHEMCENTRAL_DATABASE_TABLES="chembl_latest:chembl_23"
+
+#export CHEMCENTRAL_HOST=postgres
+#export CHEMCENTRAL_PORT=5432
+#export CHEMCENTRAL_DB=chemcentral
+#export CHEMCENTRAL_USER=chemcentral
+#export CHEMCENTRAL_PASSWORD=chemcentral
+
 
 # alias docker-compose to dc
 alias dc=docker-compose
@@ -73,7 +80,7 @@ elif [ $DEPLOYMENT_MODE == 'site' ]; then
     export SQUONK_URL="http://$PUBLIC_HOST"
     export KEYCLOAK_SERVER_URL=${PUBLIC_HOST_URL}/auth
 elif [ $DEPLOYMENT_MODE == 'dev' ]; then
-    export COMPOSE_FILE=docker-compose.yml:docker-compose-dev.yml:docker-compose-setup.yml
+    export COMPOSE_FILE=docker-compose.yml:docker-compose-dev.yml
     export SQUONK_URL="http://localhost:8080/portal"
     unset KEYCLOAK_SERVER_URL
 else

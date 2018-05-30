@@ -34,11 +34,15 @@ inputRoutes:
 - route: "FILE"
 outputRoutes:
 - route: "FILE"
+nextflowConfig: |
+  process.container = 'debian'
+  docker.mountFlags = 'z'
 nextflowFile: |
   params.message = 'Hello World'
 
   process simpleCopy {
 
+    container 'debian'
     publishDir baseDir
 
     input:

@@ -48,7 +48,35 @@ class ChemTermsEvaluatorSpec extends Specification {
         then:
         mol0.getPropertyObject('atom_count') == 5
         mol1.getPropertyObject('atom_count') == 8
-        
+    }
+
+    def 'ChemTerms solubility'() {
+
+        /* this test is because a strange error was seen for solubility
+
+        chemservices_1  | 24-Feb-2018 09:55:22.768 WARNING [ForkJoinPool.commonPool-worker-0] org.squonk.chemaxon.molecule.ChemTermsEvaluator.evaluateMoleculeImpl Failed to evaluate chem terms expression. Property will be missing.
+        chemservices_1  |  chemaxon.nfunk.jep.ParseException: Error while evaluating expression:
+        chemservices_1  | logS('7.4')
+        chemservices_1  |     Implementation for CalculatorValenceChecker is not found.
+        chemservices_1  | 	at chemaxon.nfunk.jep.JEP.getValueAsObject(JEP.java:538)
+        chemservices_1  | 	at chemaxon.jep.ChemJEP.evaluate(ChemJEP.java:152)
+        chemservices_1  | 	at org.squonk.chemaxon.molecule.ChemTermsEvaluator.evaluateMoleculeImpl(ChemTermsEvaluator.java:205)
+*/
+
+        given:
+        def evaluator = new ChemTermsEvaluator('logs', "logs('7.4')", "")
+
+
+        when:
+        def mol0 = MolImporter.importMol('C1C=CC=CC1')
+        def mol1 = MolImporter.importMol('CC1C=CC=CC1')
+
+        evaluator.processMolecule(mol0, stats)
+        evaluator.processMolecule(mol1, stats)
+
+        then:
+        mol0.getPropertyObject('logs') != null
+        mol1.getPropertyObject('logs') != null
     }
     
     def 'ChemTerms filter for Molecule'() {
