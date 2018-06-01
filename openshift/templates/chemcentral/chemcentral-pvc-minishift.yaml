@@ -18,9 +18,6 @@ labels:
 
 parameters:
 
-- name: NAMESPACE
-  value: chemcentral
-
 - name: POSTGRESQL_VOLUME_SIZE
   value: 50Gi
 
@@ -30,7 +27,6 @@ objects:
   kind: PersistentVolumeClaim
   metadata:
     name: chemcentral-postgresql-claim
-    namespace: ${NAMESPACE}
     labels:
       application: chemcentral
   spec:

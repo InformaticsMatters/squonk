@@ -1,0 +1,100 @@
+kind: Template
+apiVersion: v1
+metadata:
+  name: chemcentral-loader
+  annotations:
+    description: Chemcentral database loader
+    tags: squonk,chemcentral,loader
+labels:
+  template: loader
+  app: chemcentral
+
+parameters:
+
+- name: DB_NAMESPACE
+  description: Namespace for the chemcentral database
+  value: squonk-infra
+
+- name: APP_NAMESPACE
+  description: Namespace for the chemcentral search service
+  value: squonk
+
+- name: IMAGE_TAG
+  description: Tag name for the squonk/chemcentral-loader image
+  value: openshift
+
+- name: SCHEMA_NAME
+  description: Name of the database schema
+  value: vendordbs
+
+- name: LOADER_CLASS
+  description: Classname of the loader to use
+  required: true
+
+- name: LOADER_FILE
+  description: The data file to load
+  required: true
+
+- name: TABLE_NAME
+  description: Name of the database table
+
+- name: LIMIT
+  description: How many records to load
+  value: "0"
+
+- name: REPORTING_CHUNK
+  description: How often to report progress
+
+objects:
+
+- kind: Job
+  apiVersion: batch/v1
+  metadata:
+    name: chemcentral-loader
+    namespace: ${APP_NAMESPACE}
+  spec:
+    template:
+      metadata:
+        name: chemcentral-loader
+        namespace: ${APP_NAMESPACE}
+      spec:
+        volumes:
+        - name: data-dir
+          persistentVolumeClaim:
+            claimName: chemcentral-data-loader-pvc
+        containers:
+        - image: squonk/chemcentral-loader:openshift
+          name: chemcentral-loader
+          env:
+          - name: CHEMCENTRAL_HOST
+            value: db-chemcentral.${DB_NAMESPACE}.svc
+          - name: CHEMCENTRAL_USER
+            valueFrom:
+              secretKeyRef:
+                name: chemcentral-database-credentials
+                key: database-user
+          - name: CHEMCENTRAL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: chemcentral-database-credentials
+                key: database-password
+          - name: CHEMCENTRAL_PORT
+            value: "5432"
+          - name: CHEMCENTRAL_DATABASE
+            value: chemcentral
+          - name: SCHEMA_NAME
+            value: vendordbs
+          - name: TABLE_NAME
+            value: ${TABLE_NAME}
+          - name: LOADER_FILE
+            value: /data/${LOADER_FILE}
+          - name: LIMIT
+            value: ${LIMIT}
+          - name: REPORTING_CHUNK
+            value: ${REPORTING_CHUNK}
+          args:
+          - ${LOADER_CLASS}
+          volumeMounts:
+          - mountPath: /data
+            name: data-dir
+        restartPolicy: Never

@@ -36,7 +36,7 @@ Each loader is pre-configured with sensible defaults, but you can override these
 * CHEMCENTRAL_DATABASE - the name of the database (default: chemcentral)
 * CHEMCENTRAL_USER - the database username (default: chemcentral)
 * CHEMCENTRAL_PASSWORD  - the password for the database user (default: chemcentral)
-* SCHEMA_NAME - the postgres scheam to use (default: vendordbs)
+* SCHEMA_NAME - the postgres schema to use (default: vendordbs)
 * TABLE_NAME - the name of the main database table (default value for each loader e.g. the Chemspace loader uses a table name of chemspace)
 * LOADER_FILE - the file name containing the data to load (default value for each loader e.g. the Chemspace loader uses a default of /rdkit/chemspace.sdf.gz)
 * LIMIT - the number of records to load (default value is 0 which meeans load all records)
@@ -62,6 +62,9 @@ Adjust the value of the CHEMCENTRAL_HOST variable to where postgres is running (
 Adjust the volume mount that specifies the file to load. In this example we mount it to the default name expected by the loader.
 If using a different name also specify the LOADER_FILE environment variable to point to the absolute file name that is mounted.
 
+The final parameter is the classname of the loader to use. This is passed as an argument to the container's entrypoint which
+will be something like this `/rdkit-databases-0.2-SNAPSHOT/bin/rdkit-databases`. 
+
 Remove the definition of the LIMIT environment variable to load the entire dataset. 
 
 Adjust the loader name (the last argument) accordingly. Options are:
@@ -70,9 +73,9 @@ Adjust the loader name (the last argument) accordingly. Options are:
 * org.squonk.rdkit.db.loaders.DrugBankSdfLoader - for DrugBank (http://www.drugbank.ca/downloads NOTE: DrugBank is no longer free to use. Look at the licensing before using it. It is not loaded into the public Squonk site)
 * org.squonk.rdkit.db.loaders.ChemblSdfLoader - For ChEMBL (ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/)
 * org.squonk.rdkit.db.loaders.PdbLigandSdfLoader - for ligands from PDB (http://ligand-expo.rcsb.org/ld-download.html. The file you want is in the "Chemical component coordinate data files" section and called all-sdf.sdf.gz. Fetch it with something like: 'wget http://ligand-expo.rcsb.org/dictionaries/all-sdf.sdf.gz')
-* org.squonk.rdkit.db.loaders.ChemspaceSdfLoader - Chemspace (Obtains this file directly from the ChemSpace people) 
+* org.squonk.rdkit.db.loaders.ChemspaceSdfLoader - Chemspace (Obtain this file directly from the ChemSpace people)
 
-Source code for these loaders can be found [here](https://github.com/InformaticsMatters/squonk/tree/openshift/components/rdkit-databaess/src/main/groovy/org/squonk/rdkit/db/loaders).
+Source code for these loaders can be found [here](https://github.com/InformaticsMatters/squonk/tree/openshift/components/rdkit-databases/src/main/groovy/org/squonk/rdkit/db/loaders).
 Currently these are on the openshift branch only, but eventually this will be merged to master.
 
 Note that loading large datasets like eMolecules screening compounds takes several days.

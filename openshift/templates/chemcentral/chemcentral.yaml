@@ -16,13 +16,21 @@ labels:
 
 parameters:
 
+- name: DB_NAMESPACE
+  description: Namespace for the chemcentral database
+  value: squonk-infra
+
+- name: APP_NAMESPACE
+  description: Namespace for the chemcentral search service
+  value: squonk
+
 - name: POSTGRES_IMAGE_TAG
   description: The version tag for the RDKIT container version
-  value: Release_2017_09_1
+  value: Release_2017_09_2
 
 - name: POSTGRES_SERVICE
   displayName: PostgreSQL RDKit cartridge service name
-  value: postgresql-rdkit-cartridge
+  value: db-chemcentral
 
 - name: POSTGRES_ADMIN_USER
   displayName: Database admin username
@@ -50,23 +58,35 @@ parameters:
   value: 500Mi
 
 - name: SEARCH_IMAGE_TAG
-  value: openshift
+  value: latest
 
-- name: SEARCH_STRUCTURE_DATABASE_TABLES
+- name: CHEMCENTRAL_DATABASE_TABLES
   description: Chemical search tables
   value: ""
 
 
 objects:
 
+# secret in the infra namespace with the postgres admin credentials
 - kind: Secret
   apiVersion: v1
   metadata:
     name: chemcentral-database-credentials
+    namespace: ${DB_NAMESPACE}
   stringData:
-    database-name: chemcentral
+    host: ${POSTGRES_SERVICE}.${DB_NAMESPACE}.svc
     database-admin-user: postgres
     database-admin-password: "${POSTGRES_ADMIN_PASSWORD}"
+
+# secret in the squonk namespace with the chemcentral user credentials
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    name: chemcentral-database-credentials
+    namespace: ${APP_NAMESPACE}
+  stringData:
+    host: ${POSTGRES_SERVICE}.${DB_NAMESPACE}.svc
+    database-name: chemcentral
     database-user: chemcentral
     database-password: "${POSTGRES_CHEMCENTRAL_PASSWORD}"
 
@@ -74,11 +94,11 @@ objects:
 # Postgres Service
 # -----------------------------------------------------------------------------
 
-
 - kind: ConfigMap
   apiVersion: v1
   metadata:
     name: chemcentral-init-map
+    namespace: ${DB_NAMESPACE}
   data:
     init-postgres-db.sh: |
       #!/bin/bash
@@ -108,6 +128,7 @@ objects:
   apiVersion: v1
   metadata:
     name: ${POSTGRES_SERVICE}
+    namespace: ${DB_NAMESPACE}
   spec:
     replicas: 1
     selector:
@@ -117,11 +138,10 @@ objects:
         labels:
           name: ${POSTGRES_SERVICE}
       spec:
+        serviceAccountName: chemcentral-postgres
         containers:
         - image: informaticsmatters/rdkit_cartridge:${POSTGRES_IMAGE_TAG}
           name: ${POSTGRES_SERVICE}
-          securityContext:
-            runAsUser: 999
           env:
           - name: POSTGRES_USER
             value: postgres
@@ -172,6 +192,7 @@ objects:
   apiVersion: v1
   metadata:
     name: ${POSTGRES_SERVICE}
+    namespace: ${DB_NAMESPACE}
   spec:
     ports:
     - name: ${POSTGRES_SERVICE}
@@ -188,6 +209,7 @@ objects:
   apiVersion: v1
   metadata:
     name: chemcentral-search
+    namespace: ${APP_NAMESPACE}
   spec:
     replicas: 1
     selector:
@@ -201,30 +223,35 @@ objects:
         - image: squonk/chemcentral-search:${SEARCH_IMAGE_TAG}
           name: chemcentral-search
           env:
-          - name: POSTGRES_HOSTNAME
-            value: ${POSTGRES_SERVICE}
-          - name: POSTGRES_CHEMCENTRAL_USER
+          - name: CHEMCENTRAL_HOST
+            valueFrom:
+              secretKeyRef:
+                name: chemcentral-database-credentials
+                key: host
+          - name: CHEMCENTRAL_USER
             valueFrom:
               secretKeyRef:
                 name: chemcentral-database-credentials
                 key: database-user
-          - name: POSTGRES_CHEMCENTRAL_PASSWORD
+          - name: CHEMCENTRAL_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: chemcentral-database-credentials
                 key: database-password
+          - name: CHEMCENTRAL_DATABASE_TABLES
+            value: ${CHEMCENTRAL_DATABASE_TABLES}
           - name: RABBITMQ_HOSTNAME
             valueFrom:
               secretKeyRef:
                 name: squonk-rabbitmq-credentials
                 key: host
+                optional: true
           - name: RABBITMQ_SQUONK_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: squonk-rabbitmq-credentials
                 key: pass
-          - name: STRUCTURE_DATABASE_TABLES
-            value: ${SEARCH_STRUCTURE_DATABASE_TABLES}
+                optional: true
           ports:
           - containerPort: 8080
           readinessProbe:
@@ -246,6 +273,7 @@ objects:
   apiVersion: v1
   metadata:
     name: chemcentral-search
+    namespace: ${APP_NAMESPACE}
   spec:
     ports:
     - name: http

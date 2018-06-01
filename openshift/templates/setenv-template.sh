@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # for openshift the public hostname master
-# for minishift the IP address of the minishift VM. eg. `minishift ip`  
+# for minishift the IP address of the minishift VM. e.g. `minishift ip`  with .nip.io appended.
+# e.g. 192.168.42.78.nip.io
 export OC_MASTER_HOSTNAME=example.org
 export OC_DEPLOYMENT=squonk
 export OC_ADMIN=admin

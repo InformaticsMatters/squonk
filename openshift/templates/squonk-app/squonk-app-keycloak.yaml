@@ -29,7 +29,7 @@ parameters:
 # ------
 
 - name: FLYWAY_IMAGE_TAG
-  value: openshift
+  value: latest
 
 # ---------
 # SD Loader (Service Descriptor Loader)
@@ -43,7 +43,7 @@ parameters:
 # ------
 
 - name: PORTAL_IMAGE_TAG
-  value: openshift
+  value: latest
 - name: PORTAL_SERVICE_CALLBACK
   value: "http://localhost:8080/portal"
 - name: SQUONK_HOST
@@ -65,7 +65,7 @@ parameters:
 # ------------
 
 - name: CHEM_IMAGE_TAG
-  value: openshift
+  value: latest
 - name: CHEM_STRUCTURE_DATABASE_TABLES
   description: Chemical search tables
   value: ""
@@ -84,7 +84,7 @@ parameters:
 # ------------
 
 - name: CORE_IMAGE_TAG
-  value: openshift
+  value: latest
 - name: CORE_SQUONK_BASIC_CHEM_SERVICES_URL
   value: "http://chemservices:8080"
 - name: CORE_SQUONK_DOCKER_SERVICES_DIR
@@ -106,7 +106,7 @@ parameters:
 # ------------
 
 - name: CELL_IMAGE_TAG
-  value: openshift
+  value: latest
 - name: CELL_CONTAINER_RUNNER_TYPE
   value: openshift
 - name: CELL_SQUONK_CONTAINER_WORK_DIR
@@ -529,7 +529,7 @@ objects:
     namespace: ${APP_NAMESPACE}
     annotations:
       # Note: Set to false to avoid exhausting certificate generation request quota.
-      # Change this to true when you are ready for secure the route with TLS.
+      # Change this to true if/when you are ready for secure the route with trusted certificates.
       kubernetes.io/tls-acme: 'false'
   spec:
     host: ${SQUONK_HOST}

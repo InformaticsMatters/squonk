@@ -1,18 +1,33 @@
-# Deploying Central
+# Deploying ChemCentral
 
 This is work in progress.
 
 ## Setup
 
-Login as a standard user e.g. `developer`
+We assume the following setup:
 
-Create the project.
+1. An infrastructure project (e.g. `squonk-infra`) where the database will be deployed
+1. An application project (`squonk`) where the search service will be deployed
+1. These have already been created by deploying the main Squonk application
 
+
+## Service account
+
+In the `squonk-infra` project as an admin user e.g. `system:admin`:
+
+Create the `chemcentral-postgres` service account:
 ```
-oc new-project chemcentral
+oc create sa chemcentral-postgres
+```
+
+Adding anyuid role to that service account:
+```
+oc adm policy add-scc-to-user anyuid -z chemcentral-postgres
 ```
 
 ## Persistent volumes
+
+Login as a standard user e.g. `developer`.
 
 ### If using Minishift
 
@@ -20,3 +35,96 @@ oc new-project chemcentral
 oc process -f chemcentral-pvc-minishift.yaml | oc create -f -
 ```
 
+You now need to fix the permissions on the PV directory like this:
+```
+minishift ssh -- sudo chmod 777 /mnt/sda1/var/lib/minishift/openshift.local.pv/pv0091
+```
+Adjust the directory name according to what the PVC has grabbed.
+
+
+### If using dynamic provisioning
+
+```
+oc process -f chemcentral-pvc-dynamic.yaml -p STORAGE_CLASS=standard -p POSTGRESQL_VOLUME_SIZE=50Gi | oc create -f -
+```
+
+Adjust the parameters as needed and look in the `chemcentral-pvc-dynamic.yaml` for additional parameters that
+can be specified.
+
+## Deploy
+
+Deploy the chemcentral PostgreSQL database with the RDKit cartridge and the chemcentral search deployments.
+
+```
+./deploy.sh
+```
+
+## Loading data
+
+General information about the Dockerised process for loading data into the ChemCentral database is [here](../../../StructureDatabases.md).
+
+To run this in an openshift environment you must do this:
+
+### Create a PVC for the files to load.
+
+On Minishift
+
+```
+oc process -f chemcentral-pvc-minishift.yaml | oc create -f -
+```
+
+### Provide the datafile
+
+Copy the datafile to be loaded to the PV that is used by that PVC.
+
+On Minishift do something like this:
+
+```
+$ minishift ssh
+# sudo -i
+# cd /mnt/sda1/var/lib/minishift/openshift.local.pv/pv0005
+# wget http://downloads.emolecules.com/orderbb/2018-05-01/version.smi.gz
+```
+
+Make sure the file is world readable.
+
+### Run the loader
+
+```
+oc process -f loader.yaml -p LOADER_CLASS=org.squonk.rdkit.db.loaders.EMoleculesBBSmilesLoader -p LOADER_FILE=version.smi.gz | oc create -f -
+```
+
+### Update the search tables
+
+Edit configuration of the `chemcentral-search` Deployment Config and update the value of the `CHEMCENTRAL_DATABASE_TABLES`
+environment variable. This is a comma separated list of the names of the primary database table.
+After editing the pod will be redeployed.
+
+## Test it works
+
+To test substructure search from the database:
+
+```
+$ oc rsh db-chemcentral-1-kftmw
+# psql -U chemcentral -d chemcentral
+psql (9.5.10)
+Type "help" for help.
+
+chemcentral=> select count(*) from vendordbs.emolecules_order_bb_molfps WHERE m@>'c1cccc2c1CNCCN2';
+ count 
+-------
+    10
+(1 row)
+
+chemcentral=> \q
+# exit
+$
+```
+
+### Clean up
+
+To remove the job to allow for another run:
+
+```
+oc delete job/chemcentral-loader
+```

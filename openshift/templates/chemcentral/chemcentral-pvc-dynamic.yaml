@@ -19,9 +19,6 @@ labels:
 
 parameters:
 
-- name: NAMESPACE
-  value: chemcentral
-
 - name: STORAGE_CLASS
   value: standard
 
@@ -34,7 +31,6 @@ objects:
   kind: PersistentVolumeClaim
   metadata:
     name: chemcentral-postgresql-claim
-    namespace: ${NAMESPACE}
     labels:
       application: chemcentral
   spec:

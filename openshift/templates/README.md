@@ -55,8 +55,8 @@ Ensure that you have `$OC_ADMIN` and `$OC_USER` by testing a login of each.
     session therefore avoiding the need for oc passwords later in the process.
 
 ```
-oc login -u $OC_ADMIN
 oc login -u $OC_USER
+oc login -u $OC_ADMIN
 ```
 
 ### Create Keycloak image streams
@@ -78,7 +78,7 @@ This only needs to be done once.
 Create projects as the `$OC_ADMIN_USER` user:
 ```
 oc new-project $OC_PROJECT --display-name='Squonk Applications'
-oc new-project $OC_INFRA_PROJECT --display-name='Application Infrastructure'
+oc new-project $OC_INFRA_PROJECT --display-name='Squonk Infrastructure'
 ```
 
 >   If you delete the projects you may also need to manually delete the PVs that 
@@ -86,6 +86,8 @@ oc new-project $OC_INFRA_PROJECT --display-name='Application Infrastructure'
 
 
 ## Create Infrastructure
+
+Move into the `squonk-infra` directory.
 
 ### Infrastructure PVs and PVCs
 
@@ -108,6 +110,15 @@ postgresql-claim   Bound     pv0015    100Gi      RWO,ROX,RWX                  1
 rabbitmq-claim     Bound     pv0002    100Gi      RWO,ROX,RWX                  11s
 ```
 
+To get postgres running in Minishift you may need to
+set permissions on the PV that is used. e.g.
+
+```
+minishift ssh -- sudo chmod 777 /mnt/sda1/var/lib/minishift/openshift.local.pv/pv0015
+```
+(lookup the appropriate PV to fix)
+
+
 #### If using NFS with OpenShift: 
 
 First create NFS exports on the node that is acting as the NFS server (probably the infrastructure node) 
@@ -117,7 +128,7 @@ for `/exports/pv-postgresql` and `/exports/pv-rabbitmq` and then define the PVs 
 oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -f infra-pvc-nfs.yaml | oc create -f -
 ```
 
-This creates PVs for the NFS mounts and binds the PVCs that RabbitMQ and PostgreSQL need. This is 'permanant' coupling
+This creates PVs for the NFS mounts and binds the PVCs that RabbitMQ and PostgreSQL need. This is 'permanent' coupling
 of the PVC to the PV so that this (and any data in the NFS mounts) can be retained between deployments.
 
 Following this you should see something like this (irrelevant entries are excluded):
@@ -146,7 +157,7 @@ using whatever dynamic provision is configured. You can use the StorageClass pro
 what type of storage you need.
 
 This is tested with Cinder volumes on OpenStack but other mechanisms should also work.
-Dynamic provisioning msut be set up on OpenShift before you start.
+Dynamic provisioning must be set up on OpenShift before you start.
 
 From the infra project create the PVCs (with OpenShift creating the PVs for you) using:
 
@@ -168,14 +179,6 @@ Deploy PostgreSQL, RabbitMQ and Keycloak to the infrastructure project:
 ./sso-postgres-deploy.sh
 ./rabbitmq-deploy.sh
 ```
-
-To get postgres running in Minishift you might need to
-set permissions on the PV that is used. e.g.
-
-```
-minishift ssh -- sudo chmod 777 /mnt/sda1/var/lib/minishift/openshift.local.pv/pv0091
-```
-(lookup the appropriate PV to fix)
 
 >   NOTE: With Minishift you may stumble on the defect
     `redhat-sso-7/sso70-openshift image fails to start`
@@ -282,6 +285,13 @@ For Keycloak it creates the client application in the realm as the
 to Keycloak. A ConfigMap named `squonk-sso-config` is created in the `squonk`
 project containing the `keycloak.json` and `context.xml` files that will be
 needed to connect the Squonk notebook (portal application) to Keycloak for SSO.
+
+To confirm that the keycloak initialisation has completed run this:
+```
+oc logs job/squonk-client-creator -n squonk-infra
+```
+The output should end with `Registered client squonk-notebook in realm squonk`
+
 
 Make sure you have created the `standard-user` role and the reuqired users in Keycloak (see above).
 
