@@ -293,7 +293,7 @@ oc logs job/squonk-client-creator -n squonk-infra
 The output should end with `Registered client squonk-notebook in realm squonk`
 
 
-Make sure you have created the `standard-user` role and the reuqired users in Keycloak (see above).
+Make sure you have created the `standard-user` role and the required users in Keycloak (see above).
 
 ### Squonk Application
 
@@ -307,4 +307,9 @@ This deploys the Squonk application components (cellexecutor, coreservices, chem
 portal and related images).
 
 Following this the Computational Notebook should be running.
+
+### Chemcentral
+
+Once Squonk is deployed you can deploy the chemcentral chemical search application.
+This is described [here](../chemcentral/README.md).
 

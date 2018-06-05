@@ -38,8 +38,8 @@ class ChemspaceTable extends RDKitTable {
     }
 
     ChemspaceTable() {
-        this(IOUtils.getConfiguration("SCHEMA_NAME", "vendordbs"),
-                IOUtils.getConfiguration("TABLE_NAME",  "chemspace"))
+        this(IOUtils.getConfiguration("CHEMCENTRAL_SCHEMA", "vendordbs"),
+                IOUtils.getConfiguration("CHEMCENTRAL_TABLE",  "chemspace"))
     }
 
 }

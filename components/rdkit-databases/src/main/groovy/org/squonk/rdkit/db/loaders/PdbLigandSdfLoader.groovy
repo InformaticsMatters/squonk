@@ -18,8 +18,8 @@ package org.squonk.rdkit.db.loaders
 
 import groovy.util.logging.Log
 import org.RDKit.ROMol
+import org.squonk.rdkit.db.ChemcentralConfig
 import org.squonk.rdkit.db.RDKitTable
-import org.squonk.rdkit.db.dsl.IConfiguration
 import org.squonk.rdkit.db.tables.PdbLigandTable
 import org.squonk.rdkit.mol.MolReader
 import org.squonk.types.MoleculeObject
@@ -40,7 +40,7 @@ class PdbLigandSdfLoader extends AbstractRDKitLoader {
 
     static final String DEFAULT_TABLE_NAME = "all-sdf.sdf.gz";
 
-    PdbLigandSdfLoader(RDKitTable table, IConfiguration config) {
+    PdbLigandSdfLoader(RDKitTable table, ChemcentralConfig config) {
         super(table, config)
     }
 
@@ -50,9 +50,9 @@ class PdbLigandSdfLoader extends AbstractRDKitLoader {
 
     @Override
     void load() {
-        String filename = IOUtils.getConfiguration("LOADER_FILE", DEFAULT_TABLE_NAME)
-        int limit = new Integer(IOUtils.getConfiguration("LIMIT", "0"))
-        int reportingChunk = new Integer(IOUtils.getConfiguration("REPORTING_CHUNK", "10000"))
+        String filename = IOUtils.getConfiguration("CHEMCENTRAL_LOADER_FILE", DEFAULT_TABLE_NAME)
+        int limit = new Integer(IOUtils.getConfiguration("CHEMCENTRAL_LIMIT", "0"))
+        int reportingChunk = new Integer(IOUtils.getConfiguration("CHEMCENTRAL_REPORTING_CHUNK", "10000"))
         def propertyToTypeMappings = [pdb_code:String.class, ligand_code:String.class]
         log.info("Using PdbLigandSdfLoader to load $filename")
         loadSDF(filename, limit, reportingChunk, propertyToTypeMappings, "ligand_code")

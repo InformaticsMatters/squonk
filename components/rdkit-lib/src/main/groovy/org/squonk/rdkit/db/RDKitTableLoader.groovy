@@ -19,7 +19,7 @@ package org.squonk.rdkit.db
 import org.squonk.types.MoleculeObject
 import groovy.sql.Sql
 import groovy.util.logging.Log
-import org.squonk.rdkit.db.dsl.IConfiguration
+import org.squonk.util.IOUtils
 
 import java.lang.reflect.Constructor
 import java.sql.SQLException
@@ -36,9 +36,9 @@ class RDKitTableLoader {
     int batchSize = 100
     int reportingSize = 10000
     private final RDKitTable rdkTable
-    private final IConfiguration config
+    private final ChemcentralConfig config
 
-    RDKitTableLoader(RDKitTable rdkTable, IConfiguration config) {
+    RDKitTableLoader(RDKitTable rdkTable, ChemcentralConfig config) {
         this.rdkTable = rdkTable
         this.config = config
     }
@@ -204,6 +204,25 @@ class RDKitTableLoader {
             db.execute(sql)
         } finally {
             db.close()
+        }
+    }
+
+    void putTableInfo() {
+        log.info("Putting table info for $rdkTable.schema.$rdkTable.baseName -> ${rdkTable.class.name}")
+        config.putRDKitTable(rdkTable.getSchema(), rdkTable.getBaseName(), rdkTable.class)
+    }
+
+    void removeTableInfo() {
+        log.info("Removing table info for $rdkTable.schema.$rdkTable.baseName")
+        config.removeRDKitTable(rdkTable.getSchema(), rdkTable.getBaseName())
+    }
+
+    void aliasTableInfo() {
+        String alias = IOUtils.getConfiguration("CHEMCENTRAL_ALIAS", null)
+        if (alias) {
+            log.info("Putting alias for $rdkTable.schema.$alias -> ${rdkTable.class.name}")
+            config.removeRDKitTable(rdkTable.getSchema(), alias)
+            config.putRDKitTable(rdkTable.getSchema(), alias, rdkTable.class)
         }
     }
 

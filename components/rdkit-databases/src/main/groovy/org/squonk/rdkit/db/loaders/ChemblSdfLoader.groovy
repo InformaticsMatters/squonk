@@ -17,8 +17,8 @@
 package org.squonk.rdkit.db.loaders
 
 import groovy.util.logging.Log
+import org.squonk.rdkit.db.ChemcentralConfig
 import org.squonk.rdkit.db.RDKitTable
-import org.squonk.rdkit.db.dsl.IConfiguration
 import org.squonk.rdkit.db.tables.ChemblTable
 import org.squonk.util.IOUtils
 
@@ -33,7 +33,7 @@ class ChemblSdfLoader extends AbstractRDKitLoader {
 
     static final String DEFAULT_TABLE_NAME = "chembl.sdf.gz";
 
-    ChemblSdfLoader(RDKitTable table, IConfiguration config) {
+    ChemblSdfLoader(RDKitTable table, ChemcentralConfig config) {
         super(table, config)
     }
 
@@ -43,9 +43,9 @@ class ChemblSdfLoader extends AbstractRDKitLoader {
 
     @Override
     void load() {
-        String filename = IOUtils.getConfiguration("LOADER_FILE", DEFAULT_TABLE_NAME)
-        int limit = new Integer(IOUtils.getConfiguration("LIMIT", "0"))
-        int reportingChunk = new Integer(IOUtils.getConfiguration("REPORTING_CHUNK", "10000"))
+        String filename = IOUtils.getConfiguration("CHEMCENTRAL_LOADER_FILE", DEFAULT_TABLE_NAME)
+        int limit = new Integer(IOUtils.getConfiguration("CHEMCENTRAL_LIMIT", "0"))
+        int reportingChunk = new Integer(IOUtils.getConfiguration("CHEMCENTRAL_REPORTING_CHUNK", "10000"))
         def propertyToTypeMappings = [chembl_id: String.class]
         log.info("Using ChemblSdfLoader to load $filename")
         loadSDF(filename, limit, reportingChunk, propertyToTypeMappings, null)

@@ -50,8 +50,6 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     protected String DOCKER_SERVICES_DIR = IOUtils.getConfiguration("SQUONK_DOCKER_SERVICES_DIR", "../../data/testfiles/docker-services");
 
 
-
-
     /**
      * This allows the timer to be turned off or set to only run a certain
      * number of times, primarily to allow easy testing
@@ -70,24 +68,21 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 
     public ServiceDiscoveryRouteBuilder() {
 
-        String basicChemServicesUrl = IOUtils.getConfiguration("SQUONK_BASIC_CHEM_SERVICES_URL", null);
+        String basicChemServicesUrl = "http://chemservices:8080";
 
-        if (basicChemServicesUrl != null) {
-            LOG.info("Enabling basic chem services from " + basicChemServicesUrl);
+        LOG.info("Enabling basic chem services from " + basicChemServicesUrl);
+        locations.put(basicChemServicesUrl + "/chem-services-cdk-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-cdk-basic/rest/ping");
+        locations.put(basicChemServicesUrl + "/chem-services-cdk-basic/rest/v1/converters", basicChemServicesUrl + "/chem-services-cdk-basic/rest/ping");
+        locations.put(basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/ping");
+        locations.put(basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/v1/descriptors", basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/ping");
+        locations.put(basicChemServicesUrl + "/chem-services-rdkit-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-rdkit-basic/rest/ping");
+        locations.put(basicChemServicesUrl + "/chem-services-openchemlib-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-openchemlib-basic/rest/ping");
+        locations.put(basicChemServicesUrl + "/chem-services-smartcyp/rest/v1", basicChemServicesUrl + "/chem-services-smartcyp/rest/ping");
+        //locations.put(basicChemServicesUrl + "/chem-services-cpsign/rest/v1", basicChemServicesUrl + "/chem-services-cpsign/rest/ping");
 
-            locations.put(basicChemServicesUrl + "/chem-services-cdk-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-cdk-basic/rest/ping");
-            locations.put(basicChemServicesUrl + "/chem-services-cdk-basic/rest/v1/converters", basicChemServicesUrl + "/chem-services-cdk-basic/rest/ping");
-            locations.put(basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/ping");
-            locations.put(basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/v1/descriptors", basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/ping");
-            locations.put(basicChemServicesUrl + "/chem-services-rdkit-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-rdkit-basic/rest/ping");
-            locations.put(basicChemServicesUrl + "/chem-services-rdkit-search/rest/v1/db", basicChemServicesUrl + "/chem-services-rdkit-search/rest/ping");
-            locations.put(basicChemServicesUrl + "/chem-services-openchemlib-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-openchemlib-basic/rest/ping");
-            locations.put(basicChemServicesUrl + "/chem-services-smartcyp/rest/v1", basicChemServicesUrl + "/chem-services-smartcyp/rest/ping");
-            //locations.put(basicChemServicesUrl + "/chem-services-cpsign/rest/v1", basicChemServicesUrl + "/chem-services-cpsign/rest/ping");
-
-        } else {
-            LOG.warning("Environment variable SQUONK_BASIC_CHEM_SERVICES_URL not defined. Basic Chem services will not be available");
-        }
+        String chemcentralUrl = "http://chemcentral-search:8080/chemcentral-search";
+        LOG.info("Enabling basic chemcentral search from " + chemcentralUrl);
+        locations.put(chemcentralUrl + "/rest/v1/db", chemcentralUrl + "/rest/ping");
 
         LOG.info("Services will be looked for in " + DOCKER_SERVICES_DIR);
     }

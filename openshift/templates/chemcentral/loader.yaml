@@ -21,7 +21,7 @@ parameters:
 
 - name: IMAGE_TAG
   description: Tag name for the squonk/chemcentral-loader image
-  value: openshift
+  value: openshift-merge
 
 - name: SCHEMA_NAME
   description: Name of the database schema
@@ -63,7 +63,7 @@ objects:
           persistentVolumeClaim:
             claimName: chemcentral-data-loader-pvc
         containers:
-        - image: squonk/chemcentral-loader:openshift
+        - image: squonk/chemcentral-loader:${IMAGE_TAG}
           name: chemcentral-loader
           env:
           - name: CHEMCENTRAL_HOST
@@ -82,15 +82,15 @@ objects:
             value: "5432"
           - name: CHEMCENTRAL_DATABASE
             value: chemcentral
-          - name: SCHEMA_NAME
+          - name: CHEMCENTRAL_SCHEMA
             value: vendordbs
-          - name: TABLE_NAME
+          - name: CHEMCENTRAL_TABLE
             value: ${TABLE_NAME}
-          - name: LOADER_FILE
+          - name: CHEMCENTRAL_LOADER_FILE
             value: /data/${LOADER_FILE}
-          - name: LIMIT
+          - name: CHEMCENTRAL_LIMIT
             value: ${LIMIT}
-          - name: REPORTING_CHUNK
+          - name: CHEMCENTRAL_REPORTING_CHUNK
             value: ${REPORTING_CHUNK}
           args:
           - ${LOADER_CLASS}

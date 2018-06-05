@@ -16,6 +16,7 @@
 
 package org.squonk.rdkit.db.dsl;
 
+import org.squonk.rdkit.db.ChemcentralConfig;
 import org.squonk.rdkit.db.FingerprintType;
 import org.squonk.rdkit.db.RDKitTable;
 import org.squonk.rdkit.db.RDKitTableLoader;
@@ -28,10 +29,10 @@ import java.util.*;
 public class SqlQuery {
 
     protected RDKitTable rdkTable;
-    protected IConfiguration config;
+    protected ChemcentralConfig config;
 
 
-    public SqlQuery(RDKitTable rdkTable, IConfiguration config) {
+    public SqlQuery(RDKitTable rdkTable, ChemcentralConfig config) {
         this.rdkTable = rdkTable;
         this.config = config;
     }
@@ -60,7 +61,7 @@ public class SqlQuery {
         return new RDKitTableLoader(rdkTable, config);
     }
 
-    public void setConfiguration(IConfiguration config) {
+    public void setConfiguration(ChemcentralConfig config) {
         this.config = config;
     }
 

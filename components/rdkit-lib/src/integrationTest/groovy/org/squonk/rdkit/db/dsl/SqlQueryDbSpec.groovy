@@ -18,6 +18,7 @@ package org.squonk.rdkit.db.dsl
 
 import groovy.sql.Sql
 import org.postgresql.ds.PGSimpleDataSource
+import org.squonk.rdkit.db.ChemcentralConfig
 import org.squonk.rdkit.db.FingerprintType
 import org.squonk.rdkit.db.Metric
 import org.squonk.rdkit.db.MolSourceType
@@ -86,7 +87,7 @@ M  END
 
     void "load emols"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         ExampleSmilesLoader loader = new ExampleSmilesLoader(config)
         Sql db = new Sql(dataSource)
 
@@ -104,7 +105,7 @@ M  END
 
     void "query with limit"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(table, config)
 
         def q = query.select()
@@ -123,7 +124,7 @@ M  END
 
     void "query with limit using alias"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(alias, config)
 
         def q = query.select()
@@ -142,7 +143,7 @@ M  END
 
     void "query with limit with projections"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(table, config)
 
         def q = query.select(table.columns[1], table.columns[2]) // 1 is structure, 2 is version_id
@@ -161,7 +162,7 @@ M  END
 
     void "exact with 1 structure part smiles"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(table, config)
         def q = query.select()
                 .where().exactStructureQuery(qSmiles, MolSourceType.SMILES).whereClause.select
@@ -178,7 +179,7 @@ M  END
 
     void "exact with 1 structure part mol"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(table, config)
         def q = query.select()
                 .where().exactStructureQuery(qMol, MolSourceType.MOL).whereClause.select
@@ -195,7 +196,7 @@ M  END
 
     void "exact with 1 structure part using alias"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(alias, config)
         def q = query.select()
                 .where().exactStructureQuery(qSmiles, MolSourceType.SMILES).whereClause.select
@@ -212,7 +213,7 @@ M  END
 
     void "exact with 1 structure part with projections using alias"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(alias, config)
         def q = query.select(alias.columns[1], alias.columns[2]) // 1 is structure, 2 is version_id
                 .where().exactStructureQuery(qSmiles, MolSourceType.SMILES).whereClause.select
@@ -229,7 +230,7 @@ M  END
 
     void "sss with 1 structure part smiles"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(table, config)
         def q = query.select()
                 .where().substructureQuery(qSmiles, MolSourceType.SMILES).whereClause.select
@@ -246,7 +247,7 @@ M  END
 
     void "sss with 1 structure part smarts"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(table, config)
         def q = query.select()
                 .where().substructureQuery(qSmarts, MolSourceType.SMARTS).whereClause.select
@@ -263,7 +264,7 @@ M  END
 
     void "sss with 1 structure part mol"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(table, config)
         def q = query.select()
                 .where().substructureQuery(qMol, MolSourceType.MOL).whereClause.select
@@ -280,7 +281,7 @@ M  END
 
     void "similarity with 1 part smiles"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(table, config)
         def q = query.select()
                 .where().similarityStructureQuery(qSmiles, MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
@@ -299,7 +300,7 @@ M  END
 
     void "similarity with 1 part mol"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(table, config)
         def q = query.select()
                 .where().similarityStructureQuery(qMol, MolSourceType.MOL, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
@@ -318,7 +319,7 @@ M  END
 
     void "similarity with 1 part with projections"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(table, config)
         def q = query.select(table.columns[1], table.columns[2]) // 1 is structure, 2 is version_id
                 .where().similarityStructureQuery(qSmiles, MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
@@ -337,7 +338,7 @@ M  END
 
     void "similarity with 1 part using alias"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(alias, config)
         def q = query.select()
                 .where().similarityStructureQuery(qSmiles, MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
@@ -356,7 +357,7 @@ M  END
 
     void "similarity with 1 part with projections using alias"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(alias, config)
         def q = query.select(alias.columns[1], alias.columns[2]) // 1 is structure, 2 is version_id
                 .where().similarityStructureQuery(qSmiles, MolSourceType.SMILES, FingerprintType.MORGAN_CONNECTIVITY_2, Metric.DICE, "similarity")
@@ -375,7 +376,7 @@ M  END
 
     void "similarity with 1 part with threshold"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(table, config)
         def q = query.select()
                 .setSimilarityThreshold(0.7, Metric.DICE)
@@ -395,7 +396,7 @@ M  END
 
     void "similarity with 1 part with threshold using alias"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(alias, config)
         def q = query.select()
                 .setSimilarityThreshold(0.7, Metric.DICE)
@@ -415,7 +416,7 @@ M  END
 
     void "query with 1 equals part"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(table, config)
         def q = query.select()
                 .where().equals(table.columns[0], 5).whereClause.select
@@ -432,7 +433,7 @@ M  END
 
     void "query with 1 equals part using alias"() {
 
-        IConfiguration config = new DataSourceConfiguration(dataSource, [:])
+        ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         def query = new SqlQuery(alias, config)
         def q = query.select()
                 .where().equals(alias.columns[0], 5).whereClause.select

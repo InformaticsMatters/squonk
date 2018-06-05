@@ -16,7 +16,6 @@ services:
             chemservices:
                 condition: service_healthy
         environment:
-            SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
             SQUONK_DOCKER_SERVICES_DIR: "/var/local/squonk-docker-services"
         healthcheck:
             test: curl --fail http://localhost:8080/coreservices/rest/ping || exit 1

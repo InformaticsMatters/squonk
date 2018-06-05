@@ -24,10 +24,10 @@ import org.squonk.util.IOUtils
 /**
  * Created by timbo on 16/12/2015.
  */
-class EMoleculesSCTable extends RDKitTable {
+class EMoleculesSCSmilesTable extends RDKitTable {
 
-    EMoleculesSCTable(String schema, String baseTableName, MolSourceType molSourceType) {
-        super(schema, baseTableName, molSourceType, [
+    EMoleculesSCSmilesTable(String schema, String baseTableName) {
+        super(schema, baseTableName, MolSourceType.SMILES, [
                 FingerprintType.RDKIT,
                 FingerprintType.MORGAN_CONNECTIVITY_2,
                 FingerprintType.MORGAN_FEATURE_2])
@@ -35,9 +35,8 @@ class EMoleculesSCTable extends RDKitTable {
         addColumn("parent_id", "INTEGER", "INTEGER NOT NULL")
     }
 
-    EMoleculesSCTable() {
-        this(IOUtils.getConfiguration("SCHEMA_NAME", "vendordbs"),
-                IOUtils.getConfiguration("TABLE_NAME", "emolecules_order_sc"),
-                MolSourceType.SMILES)
+    EMoleculesSCSmilesTable() {
+        this(IOUtils.getConfiguration("CHEMCENTRAL_SCHEMA", "vendordbs"),
+                IOUtils.getConfiguration("CHEMCENTRAL_TABLE", "emolecules_order_sc"))
     }
 }

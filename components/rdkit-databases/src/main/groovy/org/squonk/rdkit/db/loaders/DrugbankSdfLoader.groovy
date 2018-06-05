@@ -17,8 +17,8 @@
 package org.squonk.rdkit.db.loaders
 
 import groovy.util.logging.Log
+import org.squonk.rdkit.db.ChemcentralConfig
 import org.squonk.rdkit.db.RDKitTable
-import org.squonk.rdkit.db.dsl.IConfiguration
 import org.squonk.rdkit.db.tables.DrugbankTable
 import org.squonk.util.IOUtils
 
@@ -30,7 +30,7 @@ class DrugbankSdfLoader extends AbstractRDKitLoader {
 
     static final String DEFAULT_TABLE_NAME = "drugbank.sdf.gz";
 
-    DrugbankSdfLoader(RDKitTable table, IConfiguration config) {
+    DrugbankSdfLoader(RDKitTable table, ChemcentralConfig config) {
         super(table, config)
     }
 
@@ -40,9 +40,9 @@ class DrugbankSdfLoader extends AbstractRDKitLoader {
 
     @Override
     void load() {
-        String filename = IOUtils.getConfiguration("LOADER_FILE", DEFAULT_TABLE_NAME)
-        int limit = new Integer(IOUtils.getConfiguration("LIMIT", "0"))
-        int reportingChunk = new Integer(IOUtils.getConfiguration("REPORTING_CHUNK", "10000"))
+        String filename = IOUtils.getConfiguration("CHEMCENTRAL_LOADER_FILE", DEFAULT_TABLE_NAME)
+        int limit = new Integer(IOUtils.getConfiguration("CHEMCENTRAL_LIMIT", "0"))
+        int reportingChunk = new Integer(IOUtils.getConfiguration("CHEMCENTRAL_REPORTING_CHUNK", "10000"))
         def propertyToTypeMappings = [DRUGBANK_ID:String.class, DRUG_GROUPS:String.class, GENERIC_NAME:String.class, BRANDS:String.class, PRODUCTS:String.class]
         log.info("Using DrugbankSdfLoader to load $filename")
         loadSDF(filename, limit, reportingChunk, propertyToTypeMappings, null)

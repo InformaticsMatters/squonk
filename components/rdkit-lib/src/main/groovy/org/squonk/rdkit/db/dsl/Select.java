@@ -16,6 +16,7 @@
 
 package org.squonk.rdkit.db.dsl;
 
+import org.squonk.rdkit.db.ChemcentralConfig;
 import org.squonk.types.MoleculeObject;
 import org.squonk.rdkit.db.Metric;
 
@@ -58,7 +59,7 @@ public class Select {
         projections.addAll(projection);
     }
 
-    public void setconfiguration(IConfiguration configuration) {
+    public void setconfiguration(ChemcentralConfig configuration) {
         query.setConfiguration(configuration);
     }
 

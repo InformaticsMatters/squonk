@@ -72,6 +72,22 @@ services:
             timeout: 5s
             retries: 10
 
+    chemcentral:
+            image: squonk/chemcentral-search:latest
+            ports:
+            - "8093:8080"
+            networks:
+            - squonk_back
+            environment:
+              CHEMCENTRAL_HOST: postgres
+              CHEMCENTRAL_USER: squonk
+              CHEMCENTRAL_PASSWORD: squonk
+            healthcheck:
+                test: curl --fail http://localhost:8080/chemcentral-search/rest/ping || exit 1
+                interval: 10s
+                timeout: 5s
+                retries: 10
+
     coreservices:
         image: squonk/coreservices:latest
         ports:
@@ -86,7 +102,6 @@ services:
             chemservices:
                 condition: service_healthy
         environment:
-            SQUONK_BASIC_CHEM_SERVICES_URL: "http://chemservices:8080" # internal port
             SQUONK_DOCKER_SERVICES_DIR: "/var/local/squonk-docker-services"
         networks:
         - squonk_back

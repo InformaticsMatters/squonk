@@ -39,8 +39,8 @@ class PdbLigandTable extends RDKitTable {
 
 
     PdbLigandTable() {
-        this(IOUtils.getConfiguration("SCHEMA_NAME", "vendordbs"),
-                IOUtils.getConfiguration("TABLE_NAME", "pdbligand"))
+        this(IOUtils.getConfiguration("CHEMCENTRAL_SCHEMA", "vendordbs"),
+                IOUtils.getConfiguration("CHEMCENTRAL_TABLE", "pdbligand"))
     }
 
 }

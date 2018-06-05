@@ -64,10 +64,9 @@ docker {
 task buildDockerfile(type: Dockerfile) {
 
     destFile = project.file('build/Dockerfile')
-    from "informaticsmatters/rdkit_java_tomcat:Release_2017_03_1"
+    from "informaticsmatters/rdkit-tomcat-debian:Release_2018_03_01"
     maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
 
-    runCommand("rm -rf /usr/local/tomcat/webapps/*")
     runCommand("rm -rf /usr/local/tomcat/webapps/*")
 
     def warFile = tasks.war.outputs.files.singleFile

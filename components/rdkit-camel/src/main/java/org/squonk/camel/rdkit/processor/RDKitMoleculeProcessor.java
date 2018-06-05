@@ -80,7 +80,7 @@ public class RDKitMoleculeProcessor implements Processor {
         // java.lang.UnsatisfiedLinkError: org.RDKit.RDKFuncsJNI.rdkitVersion_get()Ljava/lang/String;
         // So we hard code the version number instead. Remember to update it.
         //String source = "RDKit " + RDKFuncs.getRdkitVersion();
-        String source = "RDKit 2017.09.2";
+        String source = "RDKit 2018.03.1";
         for (EvaluatorDefinition eval : definitions) {
             original.createField(eval.propName, source, "Molecular property calculation: " + eval.function.toString(), eval.function.getType());
         }

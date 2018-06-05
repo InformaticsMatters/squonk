@@ -17,9 +17,9 @@
 package org.squonk.rdkit.db.loaders
 
 import groovy.util.logging.Log
+import org.squonk.rdkit.db.ChemcentralConfig
 import org.squonk.rdkit.db.RDKitTable
-import org.squonk.rdkit.db.dsl.IConfiguration
-import org.squonk.rdkit.db.tables.EMoleculesSCTable
+import org.squonk.rdkit.db.tables.EMoleculesSCSmilesTable
 import org.squonk.util.IOUtils
 
 /** Loader for eMolecules screening compounds dataset.
@@ -31,19 +31,19 @@ class EMoleculesSCSmilesLoader extends AbstractRDKitLoader {
 
     static final String DEFAULT_TABLE_NAME = "version.smi.gz";
 
-    EMoleculesSCSmilesLoader(RDKitTable table, IConfiguration config) {
+    EMoleculesSCSmilesLoader(RDKitTable table, ChemcentralConfig config) {
         super(table, config)
     }
 
     EMoleculesSCSmilesLoader() {
-        super(new EMoleculesSCTable())
+        super(new EMoleculesSCSmilesTable())
     }
 
     @Override
     void load() {
-        String filename = IOUtils.getConfiguration("LOADER_FILE", DEFAULT_TABLE_NAME)
-        int limit = new Integer(IOUtils.getConfiguration("LIMIT", "0"))
-        int reportingChunk = new Integer(IOUtils.getConfiguration("REPORTING_CHUNK", "10000"))
+        String filename = IOUtils.getConfiguration("CHEMCENTRAL_LOADER_FILE", DEFAULT_TABLE_NAME)
+        int limit = new Integer(IOUtils.getConfiguration("CHEMCENTRAL_LIMIT", "0"))
+        int reportingChunk = new Integer(IOUtils.getConfiguration("CHEMCENTRAL_REPORTING_CHUNK", "10000"))
         def propertyToTypeMappings = ['1':Integer.class, '2':Integer.class]
         log.info("Using EMoleculesSCSmilesLoader to load $filename")
         loadSmiles(filename, limit, reportingChunk, propertyToTypeMappings)

@@ -16,17 +16,14 @@
 
 package org.squonk.rdkit.db.loaders
 
-import org.postgresql.ds.PGSimpleDataSource
-import org.squonk.types.MoleculeObject
+import org.squonk.rdkit.db.ChemcentralConfig
 import org.squonk.rdkit.db.RDKitTable
 import org.squonk.rdkit.db.RDKitTableLoader
-import org.squonk.rdkit.db.dsl.DataSourceConfiguration
-import org.squonk.rdkit.db.dsl.IConfiguration
 import org.squonk.rdkit.db.dsl.SqlQuery
 import org.squonk.reader.SDFReader
+import org.squonk.types.MoleculeObject
 import org.squonk.util.IOUtils
 
-import javax.sql.DataSource
 import java.util.stream.Stream
 
 /**
@@ -35,50 +32,24 @@ import java.util.stream.Stream
 abstract class AbstractRDKitLoader {
 
     final RDKitTable table
-    IConfiguration config
+    final ChemcentralConfig config
 
-    AbstractRDKitLoader(RDKitTable table, IConfiguration config) {
+
+    AbstractRDKitLoader(RDKitTable table, ChemcentralConfig config) {
         this.table = table
         this.config = config
     }
 
     AbstractRDKitLoader(RDKitTable table) {
         this.table = table
-
-        PGSimpleDataSource dataSource = new PGSimpleDataSource()
-        dataSource.serverName = IOUtils.getConfiguration('CHEMCENTRAL_HOST', 'localhost')
-        dataSource.portNumber = new Integer(IOUtils.getConfiguration('CHEMCENTRAL_PORT', '5432'))
-        dataSource.databaseName = IOUtils.getConfiguration('CHEMCENTRAL_DATABASE', 'chemcentral')
-        dataSource.user = IOUtils.getConfiguration('CHEMCENTRAL_USER', 'chemcentral')
-        dataSource.password = IOUtils.getConfiguration('CHEMCENTRAL_PASSWORD', 'chemcentral')
-
-        this.config = new DataSourceConfiguration(dataSource, [:])
-    }
-
-
-    static IConfiguration createConfiguration(ConfigObject props) {
-        DataSource dataSource = LoaderUtils.createDataSource(props.database, props.database.username, props.database.password)
-        return new DataSourceConfiguration(dataSource, [:])
-    }
-
-    static protected URL loadConfigFile() {
-
-        File f = new File('rdkit-loaders/rdkit_loader.properties')
-        if (!f.exists()) {
-            f = new File('rdkit_loader.properties')
-        }
-        if (!f.exists()) {
-            throw new FileNotFoundException("Can't find config file rdkit_loader.properties")
-        }
-
-        return f.toURI().toURL()
+        this.config = new ChemcentralConfig()
     }
 
     protected Stream<MoleculeObject> prepareStream(Stream<MoleculeObject> stream) {
         return stream
     }
 
-    public abstract void load();
+    abstract void load()
 
 
     protected void loadSDF(String file, int limit, int reportingChunk, Map<String, Class> propertyToTypeMappings, String nameFieldName) {
@@ -149,13 +120,17 @@ abstract class AbstractRDKitLoader {
     protected void doLoad(RDKitTableLoader worker, Stream<MoleculeObject> mols, Map<String, Class> propertyToTypeMappings) {
 
         worker.dropAllItems()
+        worker.removeTableInfo()
         worker.createTables()
         worker.loadData(mols, propertyToTypeMappings)
         worker.createMoleculesAndIndex()
         worker.addFpColumns()
+        worker.putTableInfo()
+        worker.aliasTableInfo()
 
         worker.getRowCount()
 
         //worker.dropAllItems()
     }
+
 }

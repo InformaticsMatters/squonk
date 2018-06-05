@@ -52,16 +52,12 @@ export POSTGRES_XWIKI_PASSWORD=squonk
 # The ContainerRunner Type (i.e. 'docker' or 'openshift')
 export SQUONK_CONTAINER_RUNNER_TYPE=docker
 
-# The searchable structure databases that have been loaded.
-# Must be colon separated table names without any spaces e.g.
-# export CHEMCENTRAL_DATABASE_TABLES="emolecules_order_sc:emolecules_order_bb:chembl_23:pdb_ligand"
-export CHEMCENTRAL_DATABASE_TABLES="chembl_latest:chembl_23"
-
-#export CHEMCENTRAL_HOST=postgres
+# Chemcentral search
+export CHEMCENTRAL_HOST=postgres
 #export CHEMCENTRAL_PORT=5432
 #export CHEMCENTRAL_DB=chemcentral
-#export CHEMCENTRAL_USER=chemcentral
-#export CHEMCENTRAL_PASSWORD=chemcentral
+export CHEMCENTRAL_USER=squonk
+export CHEMCENTRAL_PASSWORD=$POSTGRES_SQUONK_PASSWORD
 
 
 # alias docker-compose to dc

@@ -16,33 +16,37 @@
 
 package org.squonk.rdkit.db;
 
-import org.squonk.config.SquonkServerConfig;
-import org.squonk.http.RequestInfo;
-import org.squonk.types.MoleculeObject;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.http.CamelRequestResponseExecutor;
+import org.squonk.http.RequestInfo;
 import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.types.Structure;
 import org.squonk.rdkit.db.dsl.Select;
 import org.squonk.rdkit.db.dsl.WhereClause;
 import org.squonk.types.DatasetHandler;
+import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
-import org.squonk.util.*;
+import org.squonk.util.CommonMimeTypes;
+import org.squonk.util.ExecutionStats;
+import org.squonk.util.Metrics;
+import org.squonk.util.StatsRecorder;
 
-import static org.squonk.util.Metrics.*;
-
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+
+import static org.squonk.util.Metrics.*;
 
 /**
  * Created by timbo on 24/04/16.
@@ -55,23 +59,10 @@ public class ChemcentralSearcher {
     private static final String CODE_SSS = Metrics.generate(PROVIDER_RDKIT, METRICS_STRUCTURE_SEARCH_SSS);
     private static final String CODE_EXACT = Metrics.generate(PROVIDER_RDKIT, METRICS_STRUCTURE_SEARCH_EXACT);
 
-    private final DataSource chemchentralDataSource;
-    private final String statsRouteUri;
+    private final ChemcentralConfig configuration;
 
-    public ChemcentralSearcher() {
-        this(null);
-    }
-
-    public ChemcentralSearcher(String statsRouteUri) {
-        this.statsRouteUri = statsRouteUri;
-        String host = IOUtils.getConfiguration("CHEMCENTRAL_HOST", "postgres");
-        String port = IOUtils.getConfiguration("CHEMCENTRAL_PORT", "5432");
-        String database = IOUtils.getConfiguration("CHEMCENTRAL_DB", "chemcentral");
-        String username = IOUtils.getConfiguration("CHEMCENTRAL_USER", "chemcentral");
-        String pw = IOUtils.getConfiguration("CHEMCENTRAL_PASSWORD", "chemcentral");
-        LOG.info("Connecting to postgres at " + host + " as user " + username);
-
-        this.chemchentralDataSource = SquonkServerConfig.createDataSource(host, new Integer(port), username, pw, database);
+    public ChemcentralSearcher(ChemcentralConfig configuration) {
+        this.configuration = configuration;
     }
 
     public void executeSearch(Exchange exch) throws IOException {
@@ -109,7 +100,7 @@ public class ChemcentralSearcher {
             throw new IllegalArgumentException("Must provide query structure either as body or as header or query param named 'structure'");
         }
 
-        RDKitTables searcher = new RDKitTables(chemchentralDataSource);
+        RDKitTables searcher = new RDKitTables(configuration);
         RDKitTable rdkitTable = searcher.getTable(table);
         if (rdkitTable == null) {
             throw new IllegalArgumentException("Unknown table: " + table);
@@ -143,11 +134,6 @@ public class ChemcentralSearcher {
 
     public void executeMultiSearch(Exchange exch) throws IOException {
 
-        RequestInfo requestInfo = RequestInfo.build(
-                new String[] {CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON},
-                new String[] {CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON},
-                exch);
-
         DatasetHandler dh = new DatasetHandler(MoleculeObject.class);
         CamelRequestResponseExecutor executor = new CamelRequestResponseExecutor(exch);
         Dataset<MoleculeObject> dataset = dh.readResponse(executor, true);
@@ -164,7 +150,7 @@ public class ChemcentralSearcher {
 
         LOG.info("MultiSearch: table=" + table);
 
-        RDKitTables searcher = new RDKitTables(chemchentralDataSource);
+        RDKitTables searcher = new RDKitTables(configuration);
         RDKitTable rdkitTable = searcher.getTable(table);
         if (rdkitTable == null) {
             throw new IllegalArgumentException("Unknown table: " + table);
@@ -206,13 +192,13 @@ public class ChemcentralSearcher {
     private void sendStats(Exchange exch, String key, int count, String table) {
 
         String jobId = exch.getIn().getHeader(StatsRecorder.HEADER_SQUONK_JOB_ID, String.class);
-        if (statsRouteUri != null) {
+        if (configuration.getStatsRoute() != null) {
             if (jobId == null) {
                 LOG.info("No job ID defined - can't post usage stats");
                 return;
             }
             ProducerTemplate pt = exch.getContext().createProducerTemplate();
-            pt.setDefaultEndpointUri(statsRouteUri);
+            pt.setDefaultEndpointUri(configuration.getStatsRoute());
             Map<String,Integer> stats = new HashMap<>();
             stats.put(key, count);
             stats.put(PROVIDER_DATA_TABLE + "." + table, count);

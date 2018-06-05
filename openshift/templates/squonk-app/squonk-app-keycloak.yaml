@@ -29,7 +29,7 @@ parameters:
 # ------
 
 - name: FLYWAY_IMAGE_TAG
-  value: latest
+  value: openshift-merge
 
 # ---------
 # SD Loader (Service Descriptor Loader)
@@ -65,10 +65,7 @@ parameters:
 # ------------
 
 - name: CHEM_IMAGE_TAG
-  value: latest
-- name: CHEM_STRUCTURE_DATABASE_TABLES
-  description: Chemical search tables
-  value: ""
+  value: openshift-merge
 
 - name: CHEM_CPU_REQUEST
   value: 100m
@@ -84,7 +81,7 @@ parameters:
 # ------------
 
 - name: CORE_IMAGE_TAG
-  value: latest
+  value: openshift-merge
 - name: CORE_SQUONK_BASIC_CHEM_SERVICES_URL
   value: "http://chemservices:8080"
 - name: CORE_SQUONK_DOCKER_SERVICES_DIR
@@ -106,7 +103,7 @@ parameters:
 # ------------
 
 - name: CELL_IMAGE_TAG
-  value: latest
+  value: openshift-merge
 - name: CELL_CONTAINER_RUNNER_TYPE
   value: openshift
 - name: CELL_SQUONK_CONTAINER_WORK_DIR
@@ -207,8 +204,6 @@ objects:
               secretKeyRef:
                 name: squonk-rabbitmq-credentials
                 key: pass
-          - name: STRUCTURE_DATABASE_TABLES
-            value: ${CHEM_STRUCTURE_DATABASE_TABLES}
           ports:
           - containerPort: 8080
           readinessProbe:

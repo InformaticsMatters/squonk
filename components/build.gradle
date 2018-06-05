@@ -61,7 +61,7 @@ allprojects {
     // Define the tag label for docker images.
     // It's the Git branch name or 'latest' if building from 'master'
     def dockerImageTag = grgit.branch.getCurrent().name
-    if (dockerImageTag == 'master' || dockerImageTag == 'openshift-merge') {
+    if (dockerImageTag == 'master') {
         dockerImageTag = 'latest'
     }
     project.ext.set('dockerImageTag', dockerImageTag)
@@ -176,6 +176,10 @@ task chemServicesWars(type: Copy) {
         include '*.war'
         rename '.*', 'chem-services-rdkit-basic.war'
     }
+    from("chem-services-rdkit-search/build/libs") {
+        include '*.war'
+        rename '.*', 'chem-services-rdkit-search.war'
+    }
     from("chem-services-openchemlib-basic/build/libs") {
         include '*.war'
         rename '.*', 'chem-services-openchemlib-basic.war'
@@ -185,14 +189,13 @@ task chemServicesWars(type: Copy) {
         rename '.*', 'chem-services-smartcyp.war'
     }
     into 'build/chem-services-basic'
-
 }
 
 task dockerFileChemServices(type: Dockerfile) {
 
     destFile = project.file('build/chem-services-basic/Dockerfile')
     // if changing the version you must also update the hardcoded version number in org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor
-    from "informaticsmatters/rdkit-tomcat-debian:Release_2017_09_2"
+    from "informaticsmatters/rdkit-tomcat-debian:Release_2018_03_01"
     maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
 
     addFile('*.war', "/usr/local/tomcat/webapps/")
@@ -211,13 +214,16 @@ task dockerImageChemServices(type: DockerBuildImage) {
     tag = "squonk/chemservices-basic:${dockerImageTag}"
 }
 
+
 task dockerBuildImages() {
 
     dependsOn = [
-        'dockerImageChemServices',
-        'core-services-server:buildDockerImage',
-        'cell-executor:dockerBuildImage',
-        'database:buildDockerImage'
+        'dockerImageChemServices',                     // squonk/chemservices-basic
+        'chem-services-rdkit-search:buildDockerImage', // squonk/chemcentral-search
+        'core-services-server:buildDockerImage',       // squonk/coreservices
+        'cell-executor:dockerBuildImage',              // squonk/cellexecutor
+        'rdkit-databases:dockerBuildImage',            // squonk/chemcentral-loader
+        'database:buildDockerImage'                    // squonk/flyway
     ]
 }
 

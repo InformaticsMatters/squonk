@@ -16,18 +16,12 @@
 
 package org.squonk.rdkit.db;
 
-import org.squonk.rdkit.db.impl.ChemspaceTable;
-import org.squonk.rdkit.db.impl.PdbLigandTable;
-import org.squonk.types.MoleculeObject;
-import org.squonk.rdkit.db.dsl.DataSourceConfiguration;
 import org.squonk.rdkit.db.dsl.Select;
 import org.squonk.rdkit.db.dsl.SqlQuery;
-import org.squonk.rdkit.db.impl.ChemblTable;
-import org.squonk.rdkit.db.impl.EMoleculesTable;
-import org.squonk.util.IOUtils;
+import org.squonk.types.MoleculeObject;
 
-import javax.sql.DataSource;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -36,52 +30,27 @@ import java.util.logging.Logger;
 public class RDKitTables {
 
     private static final Logger LOG = Logger.getLogger(RDKitTables.class.getName());
-    private static final String SCHEMA = "vendordbs";
-    private DataSourceConfiguration dbConfig;
-    private Map<String, RDKitTable> rdkitTables = new LinkedHashMap<>();
+    private final ChemcentralConfig config;
 
-    public RDKitTables(DataSource dataSource) {
-        dbConfig = new DataSourceConfiguration(dataSource, Collections.emptyMap());
-
-        String[] dbsString = IOUtils.getConfiguration("CHEMCENTRAL_DATABASE_TABLES", "").split(":");
-
-        // This is ugly and needs improving, but it handles the current dbs that we have
-        // Rather than use an environment variable we probably need to inject a configuration file
-        for (String db: dbsString) {
-            if (db.startsWith("emolecules_")) {
-                rdkitTables.put(db, new EMoleculesTable(SCHEMA, db, MolSourceType.SMILES));
-                LOG.info("Added EMoleculesTable named " + db);
-            } else if (db.startsWith("chembl")) {
-                rdkitTables.put(db, new ChemblTable(SCHEMA, db));
-                LOG.info("Added ChemblTable named " + db);
-            } else if (db.startsWith("pdb_ligand")) {
-                rdkitTables.put(db, new PdbLigandTable(SCHEMA, db));
-                LOG.info("Added PdbLigandTable named " + db);
-            } else if (db.startsWith("chemspace")) {
-                rdkitTables.put(db, new ChemspaceTable(SCHEMA, db));
-                LOG.info("Added ChemspaceTable named " + db);
-            } else {
-                LOG.warning("Unrecognised type of table: " + db);
-            }
-        }
-
+    public RDKitTables(ChemcentralConfig config) {
+        this.config = config;
     }
 
     public Collection<String> getTableNames() {
-        return rdkitTables.keySet();
+        return config.getRDKitTables().keySet();
     }
 
     public RDKitTable getTable(String name) {
-        return rdkitTables.get(name);
+        return config.getRDKitTable(name);
     }
 
     public Select createSelectAll(String name) {
-        RDKitTable table = rdkitTables.get(name).alias("rdk");
+        RDKitTable table = getTable(name).alias("rdk");
         return new SqlQuery(table).select();
     }
 
     public List<MoleculeObject> executeSelect(Select select) {
-        select.setconfiguration(dbConfig);
+        select.setconfiguration(config);
         return select.getExecutor().execute();
     }
 }

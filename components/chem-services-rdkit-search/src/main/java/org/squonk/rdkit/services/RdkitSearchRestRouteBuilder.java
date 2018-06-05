@@ -32,7 +32,7 @@ import org.squonk.options.MoleculeTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.options.OptionDescriptor.Mode;
 import org.squonk.rdkit.db.ChemcentralSearcher;
-import org.squonk.util.IOUtils;
+import org.squonk.rdkit.db.ChemcentralConfig;
 
 import java.util.logging.Logger;
 
@@ -51,9 +51,11 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
 
     private static final String ROUTE_STATS = "seda:post_stats";
 
-    private static String[] CHEMCENTRAL_DATABASE_TABLES = IOUtils.getConfiguration("CHEMCENTRAL_DATABASE_TABLES", "").split(":");
+    private ChemcentralConfig config = new ChemcentralConfig(ROUTE_STATS);
+    private ChemcentralSearcher searcher = new ChemcentralSearcher(config);
+    private String[] shortTableNames = config.getShortTableNames();
 
-    protected static final HttpServiceDescriptor[] SEARCH_SERVICE_DESCRIPTOR = new HttpServiceDescriptor[]{
+    protected final HttpServiceDescriptor[] SEARCH_SERVICE_DESCRIPTOR = new HttpServiceDescriptor[]{
 
             new HttpServiceDescriptor(
                     "rdkit.chemcentral.search.structure",
@@ -69,7 +71,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     "body", "Query Structure", "Structure to use as the query as mol, smarts or smiles", Mode.User)
                                     .withMinMaxValues(1, 1),
                             new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search", Mode.User)
-                                    .withValues(CHEMCENTRAL_DATABASE_TABLES)
+                                    .withValues(shortTableNames)
                                     .withMinMaxValues(1, 1),
                             new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity", Mode.User)
                                     .withValues(new String[]{"exact", "sss"})
@@ -96,7 +98,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     "body", "Query Structure", "Structure to use as the query as smiles or smarts", Mode.User)
                                     .withMinMaxValues(1, 1),
                             new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search", Mode.User)
-                                    .withValues(CHEMCENTRAL_DATABASE_TABLES)
+                                    .withValues(shortTableNames)
                                     .withMinMaxValues(1, 1),
                             new OptionDescriptor<>(String.class, "query.mode", "Search mode", "Type of structure to run (exact, substructure, similarity)", Mode.User)
                                     .withDefaultValue("sim")
@@ -134,7 +136,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     IODescriptors.createMoleculeObjectDataset("output"),
                     new OptionDescriptor[]{
                             new OptionDescriptor<>(String.class, "query.table", "Table to search", "Structure table to search", Mode.User)
-                                    .withValues(CHEMCENTRAL_DATABASE_TABLES)
+                                    .withValues(shortTableNames)
                                     .withMinMaxValues(1, 1),
                             new OptionDescriptor<>(Float.class, "query.threshold", "Similarity Cuttoff", "Similarity score cuttoff between 0 and 1 (1 means identical)", Mode.User)
                                     .withDefaultValue(0.7f)
@@ -156,9 +158,6 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     "multisearch"
             )
     };
-
-
-    ChemcentralSearcher searcher = new ChemcentralSearcher(ROUTE_STATS);
 
     @Override
     public void configure() throws Exception {

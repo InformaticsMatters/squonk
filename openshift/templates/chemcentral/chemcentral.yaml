@@ -58,12 +58,7 @@ parameters:
   value: 500Mi
 
 - name: SEARCH_IMAGE_TAG
-  value: latest
-
-- name: CHEMCENTRAL_DATABASE_TABLES
-  description: Chemical search tables
-  value: ""
-
+  value: openshift-merge
 
 objects:
 
@@ -238,8 +233,6 @@ objects:
               secretKeyRef:
                 name: chemcentral-database-credentials
                 key: database-password
-          - name: CHEMCENTRAL_DATABASE_TABLES
-            value: ${CHEMCENTRAL_DATABASE_TABLES}
           - name: RABBITMQ_HOSTNAME
             valueFrom:
               secretKeyRef:
@@ -258,14 +251,14 @@ objects:
             httpGet:
               path: /chemcentral-search/rest/ping
               port: 8080
-            initialDelaySeconds: 60
+            initialDelaySeconds: 30
             timeoutSeconds: 1
             periodSeconds: 20
           livenessProbe:
             httpGet:
               path: /chemcentral-search/rest/ping
               port: 8080
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             timeoutSeconds: 1
             periodSeconds: 30
 

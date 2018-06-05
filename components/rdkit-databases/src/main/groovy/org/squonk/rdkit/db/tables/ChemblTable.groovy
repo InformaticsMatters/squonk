@@ -36,8 +36,8 @@ class ChemblTable extends RDKitTable {
     }
 
     ChemblTable() {
-        this(IOUtils.getConfiguration("SCHEMA_NAME", "vendordbs"),
-                IOUtils.getConfiguration("TABLE_NAME",  "chembl"))
+        this(IOUtils.getConfiguration("CHEMCENTRAL_SCHEMA", "vendordbs"),
+                IOUtils.getConfiguration("CHEMCENTRAL_TABLE",  "chembl"))
     }
 
 }

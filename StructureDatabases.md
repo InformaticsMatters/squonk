@@ -36,11 +36,12 @@ Each loader is pre-configured with sensible defaults, but you can override these
 * CHEMCENTRAL_DATABASE - the name of the database (default: chemcentral)
 * CHEMCENTRAL_USER - the database username (default: chemcentral)
 * CHEMCENTRAL_PASSWORD  - the password for the database user (default: chemcentral)
-* SCHEMA_NAME - the postgres schema to use (default: vendordbs)
-* TABLE_NAME - the name of the main database table (default value for each loader e.g. the Chemspace loader uses a table name of chemspace)
-* LOADER_FILE - the file name containing the data to load (default value for each loader e.g. the Chemspace loader uses a default of /rdkit/chemspace.sdf.gz)
-* LIMIT - the number of records to load (default value is 0 which meeans load all records)
-* REPORTING_CHUNK - the frequency to report loading (default apporpopriate to the typical size of the dataset)
+* CHEMCENTRAL_SCHEMA - the postgres schema to use (default: vendordbs)
+* CHEMCENTRAL_TABLE - the name of the main database table (default value for each loader e.g. the Chemspace loader uses a table name of chemspace)
+* CHEMCENTRAL_LOADER_FILE - the file name containing the data to load (default value for each loader e.g. the Chemspace loader uses a default of /rdkit/chemspace.sdf.gz)
+* CHEMCENTRAL_LIMIT - the number of records to load (default value is 0 which means load all records)
+* CHEMCENTRAL_REPORTING_CHUNK - the frequency to report loading (default apprpopriate to the typical size of the dataset)
+* CHEMCENTRAL_ALIAS - an optional alias for the table so that it can be accessed using a symbolic name e.g. chembl_latest
 
 For testing set the loadOnly property to restrict the number of structures to load. Reset this to zero to load the 
 entire dataset.
@@ -52,7 +53,7 @@ Run the loader with a command like this:
 ```
 docker run -it --rm -v $HOME/data/structures/chemspace/201711_Chemspace_representative_catalogue_3_54M_sdf.sdf.gz:/rdkit/chemspace.sdf.gz:ro,Z \
   -e CHEMCENTRAL_HOST=172.17.0.1 \
-  -e LIMIT=20000 \
+  -e CHEMCENTRAL_LIMIT=20000 \
   squonk/chemcentral-loader:openshift \
   org.squonk.rdkit.db.loaders.ChemspaceSdfLoader
 ```
@@ -60,12 +61,12 @@ docker run -it --rm -v $HOME/data/structures/chemspace/201711_Chemspace_represen
 Adjust the value of the CHEMCENTRAL_HOST variable to where postgres is running (possibly the Docker gateway address).
 
 Adjust the volume mount that specifies the file to load. In this example we mount it to the default name expected by the loader.
-If using a different name also specify the LOADER_FILE environment variable to point to the absolute file name that is mounted.
+If using a different name also specify the CHEMCENTRAL_LOADER_FILE environment variable to point to the absolute file name that is mounted.
 
 The final parameter is the classname of the loader to use. This is passed as an argument to the container's entrypoint which
 will be something like this `/rdkit-databases-0.2-SNAPSHOT/bin/rdkit-databases`. 
 
-Remove the definition of the LIMIT environment variable to load the entire dataset. 
+Remove the definition of the CHEMCENTRAL_LIMIT environment variable to load the entire dataset. 
 
 Adjust the loader name (the last argument) accordingly. Options are:
 * org.squonk.rdkit.db.loaders.EMoleculesBBSmilesLoader - for eMolecules building blocks (http://emolecules.com/info/plus/download-database)
@@ -83,17 +84,11 @@ To prevent lost connections to the server terminating the load you might want to
 [linux screen facility](https://www.gnu.org/software/screen/manual/screen.html). 
 
 
-### Configuring the search service
+### Updating the search service
 
-The searchsearvice needs to know what database tables have been loaded.
-This is currently done using the CHEMCENTRAL_DATABASE_TABLES environment variable
-that needs to be passes to the chemservices container. To do this set this variable
-in your docker/deploy/setenv.sh file. The value must be a colon separated list of tabe names
-with no spaces or other characters allowed. For instance:
-
-```
-export CHEMCENTRAL_DATABASE_TABLES=emolecules_order_sc:emolecules_order_bb:chembl_23:pdb_ligand
-```
+The search service, coreservices and the Squonk portal application read the definition of which tables ahve been loaded 
+when they start and will not get updated if additional tables are loaded. To pick up updated information there services 
+must be restarted. We hope to avoid the need for this in the future.
 
 
 ## SQL
