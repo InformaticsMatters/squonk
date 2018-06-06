@@ -35,7 +35,7 @@ public class ServiceDescriptorSet implements Serializable {
     private final String baseUrl;
     private String healthUrl;
 
-    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+    @JsonIgnore
     private final Map<String,ServiceDescriptor> serviceDescriptorsMap = new LinkedHashMap<>();
 
     public ServiceDescriptorSet(
@@ -73,6 +73,7 @@ public class ServiceDescriptorSet implements Serializable {
         this.healthUrl = healthUrl;
     }
 
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
     public List<ServiceDescriptor> getServiceDescriptors() {
         List<ServiceDescriptor> list = new ArrayList<>();
         list.addAll(serviceDescriptorsMap.values());

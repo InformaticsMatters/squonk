@@ -29,7 +29,7 @@ services:
     #
     rabbitmq:
         image: rabbitmq:3-management
-        restart: on-failure:5
+        restart: on-failure
         ports:
         - "15672:15672"
         volumes:
@@ -77,7 +77,7 @@ services:
             retries: 5
 
     flyway:
-        image: squonk/flyway:latest
+        image: squonk/flyway:openshift-merge
         environment:
             POSTGRES_PASSWORD:
         networks:
@@ -104,20 +104,17 @@ services:
 
     ################# chem services container #########################################
     # available on
-    # http://${PUBLIC_HOST}/chem-services-rdkit-basic/rest/v1/calculators
-    # http://${PUBLIC_HOST}/chem-services-cdk-basic/rest/v1/calculators
-    # http://${PUBLIC_HOST}/chem-services-chemaxon-basic/rest/v1/calculators
-    # http://${PUBLIC_HOST}/chem-services-chemaxon-basic/rest/v1/descriptors
-    # http://${PUBLIC_HOST}/chem-services-rdkit-search/rest/v1/db
-    # http://${PUBLIC_HOST}/chem-services-rdkit-search/rest/v1/db/search?table=emolecules_order_bb&limit=5&mode=sss&q=%5B%236%5D-1-%5B%236%5D-%5B%237%5D-%5B%236%5D-%5B%236%5D-%5B%237%5D-1
-    # http://${PUBLIC_HOST}/chem-services-rdkit-search/rest/v1/db/search?table=emolecules_order_bb&limit=5&mode=sim&q=CN1C%3DNC2%3DC1C(%3DO)N(C)C(%3DO)N2C"
+    # http://${PUBLIC_HOST}:8092/chem-services-rdkit-basic/rest/v1/calculators
+    # http://${PUBLIC_HOST}:8092/chem-services-cdk-basic/rest/v1/calculators
+    # http://${PUBLIC_HOST}:8092/chem-services-chemaxon-basic/rest/v1/calculators
+    # http://${PUBLIC_HOST}:8092/chem-services-chemaxon-basic/rest/v1/descriptors
     #
     # Test using something like this:
     # curl -X POST -T mols.json "http://${PUBLIC_HOST}:8092/chem-services-cdk-basic/rest/v1/calculators/logp"
     #
     chemservices:
-        image: squonk/chemservices-basic:latest
-        restart: on-failure:10
+        image: squonk/chemservices-basic:openshift-merge
+        restart: on-failure
         volumes:
         - ./images/chemservices/license.cxl:/usr/local/tomcat/license.cxl:ro,z
         environment:
@@ -131,8 +128,14 @@ services:
             timeout: 5s
             retries: 10
 
+   ################# chemchentral-search container #########################################
+    # available on
+    # http://${PUBLIC_HOST}:8093/chemcentral-search/rest/v1/db
+    # http://${PUBLIC_HOST}:8093/chemcentral-search/rest/v1/db/search?table=emolecules_order_bb&limit=5&mode=sss&q=%5B%236%5D-1-%5B%236%5D-%5B%237%5D-%5B%236%5D-%5B%236%5D-%5B%237%5D-1
+    # http://${PUBLIC_HOST}:8093/chemcentral-search/rest/v1/db/search?table=emolecules_order_bb&limit=5&mode=sim&q=CN1C%3DNC2%3DC1C(%3DO)N(C)C(%3DO)N2C"
+    #
     chemcentral-search:
-        image: squonk/chemcentral-search:latest
+        image: squonk/chemcentral-search:openshift-merge
         ports:
         - "8093:8080"
         networks:
@@ -147,6 +150,8 @@ services:
         depends_on:
             postgres:
                 condition: service_healthy
+            coreservices:
+                condition: service_healthy
         healthcheck:
             test: curl --fail http://localhost:8080/chemcentral-search/rest/ping || exit 1
             interval: 10s
@@ -160,8 +165,8 @@ services:
     # http://${PUBLIC_HOST}/coreservices/rest/v1/jobs
     #
     coreservices:
-        image: squonk/coreservices:latest
-        restart: on-failure:10
+        image: squonk/coreservices:openshift-merge
+        restart: on-failure
         volumes:
         - ./data/docker-services:/var/local/squonk-docker-services:Z
         depends_on:
@@ -171,8 +176,8 @@ services:
                 condition: service_started
             chemservices:
                 condition: service_healthy
-            chemcentral:
-                condition: service_healthy
+            #chemcentral-search:
+            #    condition: service_healthy
         environment:
             RABBITMQ_SQUONK_PASSWORD:
             POSTGRES_SQUONK_PASSWORD:
@@ -192,8 +197,8 @@ services:
     # or point to other directories under /squonk/ using the SQUONK_DOCKER_WORK_DIR and/or
     # SQUONK_NEXTFLOW_WORK_DIR environment variables.
     cellexecutor:
-        image: squonk/cellexecutor:latest
-        restart: on-failure:10
+        image: squonk/cellexecutor:openshift-merge
+        restart: on-failure
         depends_on:
         - rabbitmq
         volumes:
@@ -220,7 +225,7 @@ services:
     # available on http://${PUBLIC_HOST}/portal
     portal:
         image: squonk/portal:latest
-        restart: on-failure:10
+        restart: on-failure
         volumes:
         - ./images/portal/logging.properties:/usr/local/tomcat/conf/logging.properties:ro,Z
         environment:

@@ -16,9 +16,10 @@
 
 package org.squonk.core.camel;
 
-import org.apache.camel.CamelContext;
+import org.apache.camel.*;
 import org.apache.camel.builder.ThreadPoolProfileBuilder;
 import org.apache.camel.impl.SimpleRegistry;
+import org.apache.camel.spi.Synchronization;
 import org.apache.camel.spi.ThreadPoolProfile;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.config.SquonkServerConfig;
@@ -31,6 +32,11 @@ import org.squonk.core.service.discovery.ServiceDescriptorRegistry;
 import org.squonk.util.ServiceConstants;
 
 import javax.sql.DataSource;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.concurrent.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -61,7 +67,15 @@ public class CamelLifeCycle {
 
     public void afterStart(CamelContext context, SimpleRegistry r) throws Exception {
         LOG.fine("afterStart()");
-        // noop
+
+        LOG.info("Trying Java resolver");
+        try {
+            InetAddress address = InetAddress.getByName("chemservices");
+            LOG.info("Addr: " + address.getHostAddress());
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void beforeStop(CamelContext context, SimpleRegistry r) throws Exception {

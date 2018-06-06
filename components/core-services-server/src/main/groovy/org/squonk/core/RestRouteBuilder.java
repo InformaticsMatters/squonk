@@ -148,7 +148,14 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .bindingMode(RestBindingMode.json)
                 .outType(HttpServiceDescriptor.class)
                 .produces(APPLICATION_JSON)
-                .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST);
+                .route()
+                .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST)
+                .endRest()
+                .post().description("Put service definitions for available services")
+                .produces(TEXT_PLAIN)
+                .route()
+                .to(ServiceDiscoveryRouteBuilder.ROUTE_POST)
+                .endRest();
 
 
         rest("/v1/jobs").description("Job submission and status services")

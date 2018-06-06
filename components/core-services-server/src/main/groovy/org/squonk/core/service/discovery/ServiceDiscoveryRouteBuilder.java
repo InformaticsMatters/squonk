@@ -22,6 +22,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.squonk.core.*;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
+import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 import org.squonk.util.ServiceConstants;
 
@@ -46,6 +47,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     private static final Logger LOG = Logger.getLogger(ServiceDiscoveryRouteBuilder.class.getName());
 
     public static final String ROUTE_REQUEST = "direct:request";
+    public static final String ROUTE_POST = "direct:post";
     private static Pattern EXECUTOR_PATTERN = Pattern.compile("/(\\w+)/(.*)");
     protected String DOCKER_SERVICES_DIR = IOUtils.getConfiguration("SQUONK_DOCKER_SERVICES_DIR", "../../data/testfiles/docker-services");
 
@@ -80,9 +82,9 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         locations.put(basicChemServicesUrl + "/chem-services-smartcyp/rest/v1", basicChemServicesUrl + "/chem-services-smartcyp/rest/ping");
         //locations.put(basicChemServicesUrl + "/chem-services-cpsign/rest/v1", basicChemServicesUrl + "/chem-services-cpsign/rest/ping");
 
-        String chemcentralUrl = "http://chemcentral-search:8080/chemcentral-search";
-        LOG.info("Enabling basic chemcentral search from " + chemcentralUrl);
-        locations.put(chemcentralUrl + "/rest/v1/db", chemcentralUrl + "/rest/ping");
+        //String chemcentralUrl = "http://chemcentral-search:8080/chemcentral-search";
+        //LOG.info("Enabling basic chemcentral search from " + chemcentralUrl);
+        //locations.put(chemcentralUrl + "/rest/v1/db", chemcentralUrl + "/rest/ping");
 
         LOG.info("Services will be looked for in " + DOCKER_SERVICES_DIR);
     }
@@ -115,28 +117,54 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                     exch.getIn().setBody(list);
                 });
 
-        // This updates the currently available services on a scheduled basis
-        from("timer:discover?period=" + timerDelay + "&repeatCount=" + timerRepeats)
-                .log("UPDATE_SERVICES")
-                .process(exch -> {
+        from(ROUTE_POST)
+                .log("ROUTE_POST")
+                .process((Exchange exch) -> {
                     ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
-                    reg.init(); // this ensures the previous descriptors are loaded from the DB before we update anything
-                    // update the docker services
-                    LOG.fine("Updating docker services");
-                    try {
-                        updateDockerAndNextflowServices(reg);
-                    } catch (Exception ex) {
-                        LOG.log(Level.WARNING, "Failed to update Docker services", ex);
+                    String json = exch.getIn().getBody(String.class);
+                    //LOG.info("JSON: " + json);
+                    ServiceDescriptorSet sdset = JsonHandler.getInstance().objectFromJson(json, ServiceDescriptorSet.class);
+                    String baseUrl = sdset.getBaseUrl();
+                    LOG.info("Received " + sdset.getServiceDescriptors().size() + " service descriptors from " + baseUrl);
+                    List<ServiceDescriptor> expandedSds = new ArrayList<>();
+                    for (ServiceDescriptor sd: sdset.getServiceDescriptors()) {
+                        if (sd instanceof HttpServiceDescriptor) {
+                            HttpServiceDescriptor hsd = (HttpServiceDescriptor)sd;
+                            LOG.fine("Expanding endpoint " + hsd.getExecutionEndpoint() + " for " + hsd.getId());
+                            HttpServiceDescriptor absUrlSD = ServiceDescriptorUtils.makeAbsolute(baseUrl, hsd);
+                            expandedSds.add(absUrlSD);
+                        } else {
+                            expandedSds.add(sd);
+                        }
                     }
-                    // update the http services
-                    LOG.fine("Updating http services for " + locations.size() + " locations");
-                    try {
-                        updateHttpServices(reg);
-                    } catch (Exception ex) {
-                        LOG.log(Level.WARNING, "Failed to update HTTP services", ex);
-                    }
-                    LOG.fine("Updating services complete: " + reg.fetchServiceDescriptorSets().size());
+
+                    LOG.info("Updating registry with " + expandedSds.size() + " service descriptors from " + sdset.getBaseUrl());
+                    reg.updateServiceDescriptorSet(new ServiceDescriptorSet(baseUrl, sdset.getHealthUrl(), expandedSds));
+                    exch.getOut().setBody("Loaded " + expandedSds.size() + " service descriptors from " + sdset.getBaseUrl());
                 });
+
+        // This updates the currently available services on a scheduled basis
+//        from("timer:discover?period=" + timerDelay + "&repeatCount=" + timerRepeats)
+//                .log("UPDATE_SERVICES")
+//                .process(exch -> {
+//                    ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
+//                    reg.init(); // this ensures the previous descriptors are loaded from the DB before we update anything
+//                    // update the docker services
+//                    LOG.fine("Updating docker services");
+//                    try {
+//                        updateDockerAndNextflowServices(reg);
+//                    } catch (Exception ex) {
+//                        LOG.log(Level.WARNING, "Failed to update Docker services", ex);
+//                    }
+//                    // update the http services
+//                    LOG.fine("Updating http services for " + locations.size() + " locations");
+//                    try {
+//                        updateHttpServices(reg);
+//                    } catch (Exception ex) {
+//                        LOG.log(Level.WARNING, "Failed to update HTTP services", ex);
+//                    }
+//                    LOG.fine("Updating services complete: " + reg.fetchServiceDescriptorSets().size());
+//                });
 
     }
 

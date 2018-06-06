@@ -17,12 +17,17 @@
 package org.squonk.rdkit.services;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.cdi.ContextName;
+import org.apache.camel.management.event.CamelContextStartedEvent;
+import org.apache.camel.management.event.RouteStartedEvent;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
+import org.apache.http.impl.conn.SystemDefaultDnsResolver;
 import org.squonk.api.MimeTypeResolver;
 import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.core.ServiceDescriptorSet;
 import org.squonk.dataset.ThinDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.io.IODescriptor;
@@ -33,7 +38,15 @@ import org.squonk.options.OptionDescriptor;
 import org.squonk.options.OptionDescriptor.Mode;
 import org.squonk.rdkit.db.ChemcentralSearcher;
 import org.squonk.rdkit.db.ChemcentralConfig;
+import org.squonk.types.io.JsonHandler;
+import org.squonk.util.CommonMimeTypes;
 
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Default;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_NAME;
@@ -42,7 +55,6 @@ import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHA
 /**
  * @author timbo
  */
-@ContextName("rdkitsearch")
 public class RdkitSearchRestRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(RdkitSearchRestRouteBuilder.class.getName());
@@ -55,7 +67,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
     private ChemcentralSearcher searcher = new ChemcentralSearcher(config);
     private String[] shortTableNames = config.getShortTableNames();
 
-    protected final HttpServiceDescriptor[] SEARCH_SERVICE_DESCRIPTOR = new HttpServiceDescriptor[]{
+    protected final HttpServiceDescriptor[] SEARCH_SERVICE_DESCRIPTORS = new HttpServiceDescriptor[]{
 
             new HttpServiceDescriptor(
                     "rdkit.chemcentral.search.structure",
@@ -159,10 +171,25 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
             )
     };
 
+    protected ServiceDescriptorSet sdset = new ServiceDescriptorSet(
+            "http://chemcentral-search:8080/chemcentral-search/rest/v1/db",
+            "http://chemcentral-search:8080/chemcentral-search/rest/ping",
+            Arrays.asList(SEARCH_SERVICE_DESCRIPTORS));
+
     @Override
     public void configure() throws Exception {
 
         restConfiguration().component("servlet").host("0.0.0.0");
+
+        from("direct:post-service-descriptors")
+                .log("Posting service descriptors")
+                .process((Exchange exch) -> {
+                    String json = JsonHandler.getInstance().objectToJson(sdset);
+                    //LOG.info("JSON: " + json);
+                    exch.getOut().setBody(json);
+                    exch.getOut().setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_JSON);
+                })
+                .to("http4:coreservices:8080/coreservices/rest/v1/services");
 
         // send usage metrics to the message queue
         from(ROUTE_STATS)
@@ -180,12 +207,12 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
 
         rest("/v1/db").description("ChemCentral search using RDKit")
                 // service descriptor
-                .get().description("ServiceDescriptors for ChemAxon calculators")
+                .get().description("ServiceDescriptors for Chemcentral search")
                 .bindingMode(RestBindingMode.json)
                 .produces("application/json")
                 .route()
                 .process((Exchange exch) -> {
-                    exch.getIn().setBody(SEARCH_SERVICE_DESCRIPTOR);
+                    exch.getIn().setBody(SEARCH_SERVICE_DESCRIPTORS);
                 })
                 .endRest()
                 .get("search")
@@ -214,6 +241,19 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     searcher.executeMultiSearch(exch);
                 })
                 .endRest();
+    }
+
+    void onContextStarted(@Observes @Default CamelContextStartedEvent event) {
+        LOG.fine("Context started");
+
+        LOG.info("Posting service descriptors");
+        try {
+            ProducerTemplate pt = event.getContext().createProducerTemplate();
+            String result = pt.requestBody("direct:post-service-descriptors", "", String.class);
+            LOG.info("Response was: " + result);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Failed to post service descriptors", e);
+        }
     }
 
 }

@@ -20,7 +20,7 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
     
-    <display-name>RDkit Search Services</display-name>
+    <display-name>Chemcentral Search Services</display-name>
 
     <listener>
         <listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>

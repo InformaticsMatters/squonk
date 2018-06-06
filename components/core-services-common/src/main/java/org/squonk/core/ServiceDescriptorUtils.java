@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.CommonMimeTypes;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -42,7 +43,8 @@ public class ServiceDescriptorUtils {
 
     private static final Logger LOG = Logger.getLogger(ServiceDescriptorUtils.class.getName());
 
-    private static final ObjectMapper jsonMapper = JsonHandler.getInstance().getObjectMapper();
+    private static final JsonHandler jsonHandler = JsonHandler.getInstance();
+    private static final ObjectMapper jsonMapper = jsonHandler.getObjectMapper();
     private static final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
 
     protected static String makeAbsoluteUrl(String baseUrl, HttpServiceDescriptor httpHttpServiceDescriptor) {

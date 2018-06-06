@@ -29,6 +29,7 @@ public interface CommonMimeTypes {
 
     public static final String MIME_TYPE_TEXT_PLAIN = "text/plain";
     public static final String MIME_TYPE_TEXT_CSV = "text/csv";
+    public static final String MIME_TYPE_JSON = "application/json";
     public static final String MIME_TYPE_DATASET_METADATA = "application/x-squonk-dataset-metadata+json";
     public static final String MIME_TYPE_DATASET_BASIC_JSON = "application/x-squonk-dataset-basic+json";
     public static final String MIME_TYPE_DATASET_MOLECULE_JSON = "application/x-squonk-dataset-molecule+json";
