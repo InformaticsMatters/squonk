@@ -17,10 +17,13 @@
 package org.squonk.openchemlib.services;
 
 import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.core.ServiceDescriptorSet;
 import org.squonk.dataset.ThinDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.io.IODescriptors;
 import org.squonk.options.OptionDescriptor;
+
+import java.util.Arrays;
 
 /**
  * Created by timbo on 14/11/16.
@@ -64,6 +67,11 @@ public class OpenChemLibBasicServices {
             SERVICE_DESCRIPTOR_LOGS,
             SERVICE_DESCRIPTOR_PSA
     };
+
+    static final ServiceDescriptorSet SD_SET = new ServiceDescriptorSet(
+            " http://chemservices:8080/chem-services-openchemlib-basic/rest/v1/calculators",
+            " http://chemservices:8080/chem-services-openchemlib-basic/rest/ping",
+            Arrays.asList(ALL));
 
     private static HttpServiceDescriptor createServiceDescriptor(
             String id, String name, String description, String[] tags,

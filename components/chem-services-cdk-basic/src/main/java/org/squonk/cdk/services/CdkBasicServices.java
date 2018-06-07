@@ -16,11 +16,14 @@
 
 package org.squonk.cdk.services;
 
+import org.squonk.core.ServiceDescriptorSet;
 import org.squonk.dataset.ThinDescriptor;
 import org.squonk.io.IODescriptors;
 import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.options.OptionDescriptor;
+
+import java.util.Arrays;
 
 /**
  * Created by timbo on 14/11/16.
@@ -62,6 +65,12 @@ public class CdkBasicServices {
             SERVICE_DESCRIPTOR_HBA_HBD,
             SERVICE_DESCRIPTOR_WIENER_NUMBERS
     };
+
+    public static ServiceDescriptorSet SD_SET = new ServiceDescriptorSet(
+            "http://chemservices:8080/chem-services-cdk-basic/rest/v1/calculators",
+            "http://chemservices:8080/chem-services-cdk-basic/rest/ping",
+            Arrays.asList(ALL));
+
 
 
     private static HttpServiceDescriptor createServiceDescriptor(

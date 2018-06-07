@@ -17,11 +17,14 @@
 package org.squonk.smartcyp.services;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.management.event.CamelContextStartedEvent;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.core.ServiceDescriptorSet;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
@@ -29,10 +32,16 @@ import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.smartcyp.SMARTCypRunner;
 import org.squonk.types.TypeResolver;
+import org.squonk.types.io.JsonHandler;
+import org.squonk.util.CommonMimeTypes;
 
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,8 +65,8 @@ public class SMARTCypRestRouteBuilder extends RouteBuilder {
     private TypeResolver resolver;
 
     private static final String ROUTE_SMARTCYP = "smartcyp";
-
     private static final String ROUTE_STATS = "seda:post_stats";
+    private static final String ROUTE_POST_SDS = "direct:post-service-descriptors";
 
 
     protected static final HttpServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
@@ -68,6 +77,11 @@ public class SMARTCypRestRouteBuilder extends RouteBuilder {
                     "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/SMARTCyp",
                     "icons/properties_add.png", ROUTE_SMARTCYP, createSMARTCypOptionDescriptors())
     };
+
+    protected ServiceDescriptorSet sdset = new ServiceDescriptorSet(
+            "http://chemcentral-search:8080/chemcentral-search/rest/v1/db",
+            "http://chemcentral-search:8080/chemcentral-search/rest/ping",
+            Arrays.asList(CALCULATORS_SERVICE_DESCRIPTOR));
 
 
     private static HttpServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String resourceUrl, String icon, String endpoint, OptionDescriptor[] options) {
@@ -124,6 +138,16 @@ public class SMARTCypRestRouteBuilder extends RouteBuilder {
                 .apiProperty("api.title", "SMARTCyp services").apiProperty("api.version", "1.0")
                 .apiProperty("cors", "true");
 
+        from(ROUTE_POST_SDS)
+                .log(ROUTE_POST_SDS)
+                .process((Exchange exch) -> {
+                    String json = JsonHandler.getInstance().objectToJson(sdset);
+                    exch.getOut().setBody(json);
+                    exch.getOut().setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_JSON);
+                })
+                .to("http4:coreservices:8080/coreservices/rest/v1/services");
+
+
         // send usage metrics to the message queue
         from(ROUTE_STATS)
                 .marshal().json(JsonLibrary.Jackson)
@@ -166,6 +190,19 @@ public class SMARTCypRestRouteBuilder extends RouteBuilder {
 
     String join(String... args) {
         return Stream.of(args).collect(Collectors.joining(","));
+    }
+
+    void onContextStarted(@Observes @Default CamelContextStartedEvent event) {
+        LOG.fine("Context started");
+
+        LOG.info("Posting service descriptors");
+        try {
+            ProducerTemplate pt = event.getContext().createProducerTemplate();
+            String result = pt.requestBody(ROUTE_POST_SDS, "", String.class);
+            LOG.info("Response was: " + result);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Failed to post service descriptors", e);
+        }
     }
 
 }

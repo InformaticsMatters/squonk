@@ -17,14 +17,21 @@
 package org.squonk.openchemlib.services;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.management.event.CamelContextStartedEvent;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.types.TypeResolver;
+import org.squonk.types.io.JsonHandler;
+import org.squonk.util.CommonMimeTypes;
 
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,6 +55,7 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
     private TypeResolver resolver;
 
     private static final String ROUTE_STATS = "seda:post_stats";
+    private static final String ROUTE_POST_SDS = "direct:post-service-descriptors";
 
     @Override
     public void configure() throws Exception {
@@ -56,6 +64,15 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                 .apiContextPath("/api-doc")
                 .apiProperty("api.title", "OpenChemLib Basic services").apiProperty("api.version", "1.0")
                 .apiProperty("cors", "true");
+
+        from(ROUTE_POST_SDS)
+                .log(ROUTE_POST_SDS)
+                .process((Exchange exch) -> {
+                    String json = JsonHandler.getInstance().objectToJson(OpenChemLibBasicServices.SD_SET);
+                    exch.getOut().setBody(json);
+                    exch.getOut().setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_JSON);
+                })
+                .to("http4:coreservices:8080/coreservices/rest/v1/services");
 
         // send usage metrics to the message queue
         from(ROUTE_STATS)
@@ -123,6 +140,19 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
 
     String join(String... args) {
         return Stream.of(args).collect(Collectors.joining(","));
+    }
+
+    void onContextStarted(@Observes @Default CamelContextStartedEvent event) {
+        LOG.fine("Context started");
+
+        LOG.info("Posting service descriptors");
+        try {
+            ProducerTemplate pt = event.getContext().createProducerTemplate();
+            String result = pt.requestBody(ROUTE_POST_SDS, "", String.class);
+            LOG.info("Response was: " + result);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Failed to post service descriptors", e);
+        }
     }
 
 }

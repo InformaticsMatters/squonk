@@ -25,6 +25,7 @@ import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.types.CDKSDFile;
 import org.squonk.types.TypeResolver;
+import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
 
 import java.util.logging.Logger;
@@ -44,6 +45,8 @@ public class CdkRestRouteBuilder extends RouteBuilder {
     private static final TypeResolver resolver = new TypeResolver();
 
     private static final String ROUTE_STATS = "seda:post_stats";
+    public static final String ROUTE_POST_CALCULATORS_SDS = "direct:post-calculators-service-descriptors";
+    public static final String ROUTE_POST_CONVERTORS_SDS = "direct:post-convertors-service-descriptors";
 
     private final String mqueueUrl = new MessageQueueCredentials().generateUrl(MQUEUE_JOB_METRICS_EXCHANGE_NAME, MQUEUE_JOB_METRICS_EXCHANGE_PARAMS) +
             "&routingKey=tokens.cdk";
@@ -60,6 +63,25 @@ public class CdkRestRouteBuilder extends RouteBuilder {
         from(ROUTE_STATS)
                 .marshal().json(JsonLibrary.Jackson)
                 .to(mqueueUrl);
+
+        from(ROUTE_POST_CALCULATORS_SDS)
+                .log(ROUTE_POST_CALCULATORS_SDS)
+                .process((Exchange exch) -> {
+                    String json = JsonHandler.getInstance().objectToJson(CdkBasicServices.SD_SET);
+                    exch.getOut().setBody(json);
+                    exch.getOut().setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_JSON);
+                })
+                .to("http4:coreservices:8080/coreservices/rest/v1/services");
+
+        from(ROUTE_POST_CONVERTORS_SDS)
+                .log(ROUTE_POST_CONVERTORS_SDS)
+                .process((Exchange exch) -> {
+                    String json = JsonHandler.getInstance().objectToJson(CdkConverterServices.SD_SET);
+                    exch.getOut().setBody(json);
+                    exch.getOut().setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_JSON);
+                })
+                .to("http4:coreservices:8080/coreservices/rest/v1/services");
+
 
         //These are the REST endpoints - exposed as public web services
         //

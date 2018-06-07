@@ -22,6 +22,7 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.core.ServiceDescriptorSet;
 import org.squonk.dataset.ThinDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.io.IODescriptors;
@@ -31,9 +32,12 @@ import org.squonk.options.OptionDescriptor.Mode;
 import org.squonk.rdkit.io.RDKitMoleculeIOUtils.FragmentMode;
 import org.squonk.types.NumberRange;
 import org.squonk.types.TypeResolver;
+import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonConstants;
+import org.squonk.util.CommonMimeTypes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -49,13 +53,14 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
     private static final Logger LOG = Logger.getLogger(RdkitBasicRestRouteBuilder.class.getName());
 
     private static final String ROUTE_STATS = "seda:post_stats";
+    public static final String ROUTE_POST_SDS = "direct:post-service-descriptors";
 
     private static final TypeResolver resolver = new TypeResolver();
 
     private final String mqueueUrl = new MessageQueueCredentials().generateUrl(MQUEUE_JOB_METRICS_EXCHANGE_NAME, MQUEUE_JOB_METRICS_EXCHANGE_PARAMS) +
             "&routingKey=tokens.rdkit";
 
-    protected static final HttpServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTOR
+    protected static final HttpServiceDescriptor[] CALCULATORS_SERVICE_DESCRIPTORS
             = new HttpServiceDescriptor[]{
             createServiceDescriptor(
                     "rdkit.calculators.verify",
@@ -343,6 +348,11 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
         );
     }
 
+    protected ServiceDescriptorSet sdset = new ServiceDescriptorSet(
+            "http://chemservices:8080/chem-services-rdkit-basic/rest/v1/calculators",
+            "http://chemservices:8080/chem-services-rdkit-basic/rest/ping",
+            Arrays.asList(CALCULATORS_SERVICE_DESCRIPTORS));
+
     @Override
     public void configure() throws Exception {
 
@@ -352,6 +362,15 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
         from(ROUTE_STATS)
                 .marshal().json(JsonLibrary.Jackson)
                 .to(mqueueUrl);
+
+        from(ROUTE_POST_SDS)
+                .log(ROUTE_POST_SDS)
+                .process((Exchange exch) -> {
+                    String json = JsonHandler.getInstance().objectToJson(sdset);
+                    exch.getOut().setBody(json);
+                    exch.getOut().setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_JSON);
+                })
+                .to("http4:coreservices:8080/coreservices/rest/v1/services");
 
         /* These are the REST endpoints - exposed as public web services 
          */
@@ -373,7 +392,7 @@ public class RdkitBasicRestRouteBuilder extends RouteBuilder {
                 .produces("application/json")
                 .route()
                 .process((Exchange exch) -> {
-                    exch.getIn().setBody(CALCULATORS_SERVICE_DESCRIPTOR);
+                    exch.getIn().setBody(CALCULATORS_SERVICE_DESCRIPTORS);
                 })
                 .endRest()
                 //

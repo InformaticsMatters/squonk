@@ -23,8 +23,7 @@ import org.squonk.rdkit.db.FingerprintType
 import org.squonk.rdkit.db.Metric
 import org.squonk.rdkit.db.MolSourceType
 import org.squonk.rdkit.db.RDKitTable
-import org.squonk.rdkit.db.impl.ExampleTable
-import org.squonk.rdkit.db.loaders.ExampleSmilesLoader
+import org.squonk.rdkit.db.loaders.AbstractRDKitLoader
 import org.squonk.util.IOUtils
 import spock.lang.Shared
 import spock.lang.Specification
@@ -38,7 +37,7 @@ class SqlQueryDbSpec extends Specification {
 
     static String baseTable = "emols_test"
     static String schema = "vendordbs"
-    static RDKitTable table = new ExampleTable(schema, baseTable, MolSourceType.SMILES)
+    static RDKitTable table = new EMoleculesTable(schema, baseTable)
     static RDKitTable alias = table.alias("rdk")
     static String qSmiles = 'OC1CC2(C(C1CC2=O)(C)C)C'
     static String qSmarts = '[#6]C1([#6])[#6]-2-[#6]-[#6](=O)C1([#6])[#6]-[#6]-2-[#8]'
@@ -88,7 +87,14 @@ M  END
     void "load emols"() {
 
         ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
-        ExampleSmilesLoader loader = new ExampleSmilesLoader(config)
+        String filename = "../../data/testfiles/emols_100.smi.gz"
+        AbstractRDKitLoader loader = new AbstractRDKitLoader(table) {
+
+            @Override
+            void load() {
+                loadSmiles(filename, 100, 10, ['1':Integer.class, '2':Integer.class])
+            }
+        }
         Sql db = new Sql(dataSource)
 
         when:
@@ -446,6 +452,19 @@ M  END
         mols[0].values["id"] != null
         mols[0].values["version_id"] != null
         mols[0].source != null
+    }
+
+
+    static class EMoleculesTable extends RDKitTable {
+
+        EMoleculesTable(String schema, String baseTableName) {
+            super(schema, baseTableName, MolSourceType.SMILES, [
+                    FingerprintType.RDKIT,
+                    FingerprintType.MORGAN_CONNECTIVITY_2,
+                    FingerprintType.MORGAN_FEATURE_2])
+            addColumn("version_id", "INTEGER", "INTEGER NOT NULL")
+            addColumn("parent_id", "INTEGER", "INTEGER NOT NULL")
+        }
     }
 
 }

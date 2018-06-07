@@ -18,10 +18,13 @@ package org.squonk.cdk.services;
 
 import org.squonk.camel.cdk.processor.CDKDatasetConvertProcessor;
 import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.core.ServiceDescriptorSet;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
 import org.squonk.options.OptionDescriptor;
+
+import java.util.Arrays;
 
 /**
  * Created by timbo on 14/11/16.
@@ -52,6 +55,11 @@ public class CdkConverterServices {
     static final HttpServiceDescriptor[] ALL = new HttpServiceDescriptor[]{
             SERVICE_DESCRIPTOR_CONVERT_TO_SDF, SERVICE_DESCRIPTOR_CONVERT_DATASET
     };
+
+    public static ServiceDescriptorSet SD_SET = new ServiceDescriptorSet(
+            "http://chemservices:8080/chem-services-cdk-basic/rest/v1/converters",
+            "http://chemservices:8080/chem-services-cdk-basic/rest/ping",
+            Arrays.asList(ALL));
 
 
     private static HttpServiceDescriptor createServiceDescriptor(String id, String name, String description, String[] tags, String resourceUrl, String icon, String endpoint, OptionDescriptor[] options) {

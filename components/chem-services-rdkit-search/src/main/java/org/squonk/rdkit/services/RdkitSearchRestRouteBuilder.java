@@ -62,6 +62,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
             "&routingKey=tokens.rdkit";
 
     private static final String ROUTE_STATS = "seda:post_stats";
+    private static final String ROUTE_POST_SDS = "direct:post-service-descriptors";
 
     private ChemcentralConfig config = new ChemcentralConfig(ROUTE_STATS);
     private ChemcentralSearcher searcher = new ChemcentralSearcher(config);
@@ -181,11 +182,10 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
 
         restConfiguration().component("servlet").host("0.0.0.0");
 
-        from("direct:post-service-descriptors")
-                .log("Posting service descriptors")
+        from(ROUTE_POST_SDS)
+                .log(ROUTE_POST_SDS)
                 .process((Exchange exch) -> {
                     String json = JsonHandler.getInstance().objectToJson(sdset);
-                    //LOG.info("JSON: " + json);
                     exch.getOut().setBody(json);
                     exch.getOut().setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_JSON);
                 })
@@ -249,7 +249,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
         LOG.info("Posting service descriptors");
         try {
             ProducerTemplate pt = event.getContext().createProducerTemplate();
-            String result = pt.requestBody("direct:post-service-descriptors", "", String.class);
+            String result = pt.requestBody(ROUTE_POST_SDS, "", String.class);
             LOG.info("Response was: " + result);
         } catch (Exception e) {
             LOG.log(Level.WARNING, "Failed to post service descriptors", e);

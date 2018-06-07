@@ -122,6 +122,9 @@ services:
             RABBITMQ_SQUONK_PASSWORD:
         networks:
         - squonk_back
+        depends_on:
+            coreservices:
+                condition: service_healthy
         healthcheck:
             test: curl --fail http://localhost:8080/chem-services-cdk-basic/rest/ping || exit 1
             interval: 20s
@@ -174,8 +177,8 @@ services:
                 condition: service_healthy
             rabbitmq:
                 condition: service_started
-            chemservices:
-                condition: service_healthy
+            #chemservices:
+            #    condition: service_healthy
             #chemcentral-search:
             #    condition: service_healthy
         environment:

@@ -79,14 +79,25 @@ public class ServiceDescriptorRegistry {
     }
 
     public List<ServiceDescriptorSet> fetchServiceDescriptorSets() {
-        List<ServiceDescriptorSet> list = serviceDescriptorSets.values().stream().collect(Collectors.toList());
+        List<ServiceDescriptorSet> list = fetchExternalServiceDescriptorSets();
         list.add(BUILT_IN_SERVICES);
         return list;
     }
 
+    public List<ServiceDescriptorSet> fetchExternalServiceDescriptorSets() {
+        List<ServiceDescriptorSet> list = serviceDescriptorSets.values().stream().collect(Collectors.toList());
+        return list;
+    }
+
+
     public List<ServiceDescriptor> fetchServiceDescriptors() {
-        List<ServiceDescriptor> list = serviceDescriptors.values().stream().collect(Collectors.toList());
+        List<ServiceDescriptor> list = fetchExternalServiceDescriptors();
         list.addAll(BUILT_IN_SERVICES.getServiceDescriptors());
+        return list;
+    }
+
+    public List<ServiceDescriptor> fetchExternalServiceDescriptors() {
+        List<ServiceDescriptor> list = serviceDescriptors.values().stream().collect(Collectors.toList());
         return list;
     }
 
@@ -106,13 +117,13 @@ public class ServiceDescriptorRegistry {
     /**
      * Fetch the ServiceDescriptorSet associated with this url, creating it if it doesn't already exist.
      * You can make changes to this set, but to make sure the changes are persisted you must call the
+     * @{link updateServiceDescriptorSet} method.
      *
      * @param baseUrl
      * @return
-     * @{link updateServiceDescriptorSet} method.
      */
     public ServiceDescriptorSet fetchServiceDescriptorSet(String baseUrl) {
-        if (baseUrl == null) {
+        if (StandardServiceDescriptors.URL.equals(baseUrl)) {
             return BUILT_IN_SERVICES;
         }
         synchronized (writeLock) {

@@ -35,6 +35,7 @@ public class ServiceDescriptorSet implements Serializable {
     private final String baseUrl;
     private String healthUrl;
 
+
     @JsonIgnore
     private final Map<String,ServiceDescriptor> serviceDescriptorsMap = new LinkedHashMap<>();
 

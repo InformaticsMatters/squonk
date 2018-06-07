@@ -163,16 +163,27 @@ public class ServiceDescriptorUtils {
         }
     }
 
-    public static List<HttpServiceDescriptor> loadHttpServiceDescriptors(String url) throws IOException {
-        ObjectReader reader = jsonMapper.readerFor(HttpServiceDescriptor.class);
-        MappingIterator<HttpServiceDescriptor> iter = reader.readValues(new URL(url));
-        List<HttpServiceDescriptor> list = new ArrayList<>();
-        while (iter.hasNext()) {
-            HttpServiceDescriptor sd = iter.next();
-            HttpServiceDescriptor absUrlSD = ServiceDescriptorUtils.makeAbsolute(url, sd);
-            list.add(absUrlSD);
+    /** Processes services descriptors that are sent to us for including in the registry.
+     * This method expands the execution endpoint of HttpServiceDescriptor so that they are a absolute URL based on
+     * the ServiceDescriptorSet's baseUrl property.
+     * The result is that the ServiceDescriptors in the input ServiceDescriptorSet are updated.
+     *
+     * @param sdset The ServiceDescriptorSet to process
+     */
+    public static void processServiceDescriptorRequest(ServiceDescriptorSet sdset) {
+
+        String baseUrl = sdset.getBaseUrl();
+        LOG.info("Received " + sdset.getServiceDescriptors().size() + " service descriptors from " + sdset.getBaseUrl());
+        List<ServiceDescriptor> expandedSds = new ArrayList<>();
+        for (ServiceDescriptor sd : sdset.getServiceDescriptors()) {
+            if (sd instanceof HttpServiceDescriptor) {
+                HttpServiceDescriptor hsd = (HttpServiceDescriptor) sd;
+                LOG.fine("Expanding endpoint " + hsd.getExecutionEndpoint() + " for " + hsd.getId());
+                HttpServiceDescriptor absUrlSD = ServiceDescriptorUtils.makeAbsolute(baseUrl, hsd);
+                expandedSds.add(absUrlSD);
+            }
         }
-        return list;
+        sdset.updateServiceDescriptors(expandedSds);
     }
 
 }

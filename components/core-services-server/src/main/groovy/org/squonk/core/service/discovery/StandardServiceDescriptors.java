@@ -30,12 +30,13 @@ import java.util.Arrays;
 public class StandardServiceDescriptors {
 
 
-    private ServiceDescriptorSet services = new ServiceDescriptorSet(null, null, null);
+    public static final String URL = "squonk://standard";
+    private final ServiceDescriptorSet services;
 
 
     StandardServiceDescriptors() {
 
-        services = new ServiceDescriptorSet(null, null, Arrays.asList(new ServiceDescriptor[]{
+        services = new ServiceDescriptorSet(URL, null, Arrays.asList(new ServiceDescriptor[]{
 
                 // this one allows to execute arbitary script in the specified docker container
                 GenericDatasetDockerExecutorStep.SERVICE_DESCRIPTOR,

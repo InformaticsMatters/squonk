@@ -39,7 +39,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-/**
+/** Services related to handling ServiceDescriptors.
+ * Allows new services to be registered and for the registered services to be queried e.g. by the portal application.
+ *
  * @author timbo
  */
 public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
@@ -60,32 +62,17 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 
     /**
      * This allows the timer delay to be set, primarily to allow easy testing.
-     * Default is to reload every 15 mins. For testing when you want to push new service descriptors quickly set the
-     * SQUONK_SERVICE_DISCOVERY_INTERVAL environment variable to a shorter interval e.g. 60000 for every minute.
+     * Default is to reload every 15 mins after an initial 2 min delay. For testing when you want to push new service
+     * descriptors quickly set the SQUONK_SERVICE_DISCOVERY_INTERVAL environment variable to a shorter interval
+     * e.g. 60000 for every minute.
      */
-    protected int defaultTimerDelay = 15 * 60 * 1000;
-    protected String timerDelay = IOUtils.getConfiguration("SQUONK_SERVICE_DISCOVERY_INTERVAL", String.valueOf(defaultTimerDelay));
+    protected int defaultTimerInteval = 15 * 60 * 1000;
+    protected String timerInterval = IOUtils.getConfiguration("SQUONK_SERVICE_DISCOVERY_INTERVAL", String.valueOf(defaultTimerInteval));
+    protected int timerDelay = 2 * 60 * 1000;
 
     private final Map<String, String> locations = new LinkedHashMap<>();
 
     public ServiceDiscoveryRouteBuilder() {
-
-        String basicChemServicesUrl = "http://chemservices:8080";
-
-        LOG.info("Enabling basic chem services from " + basicChemServicesUrl);
-        locations.put(basicChemServicesUrl + "/chem-services-cdk-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-cdk-basic/rest/ping");
-        locations.put(basicChemServicesUrl + "/chem-services-cdk-basic/rest/v1/converters", basicChemServicesUrl + "/chem-services-cdk-basic/rest/ping");
-        locations.put(basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/ping");
-        locations.put(basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/v1/descriptors", basicChemServicesUrl + "/chem-services-chemaxon-basic/rest/ping");
-        locations.put(basicChemServicesUrl + "/chem-services-rdkit-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-rdkit-basic/rest/ping");
-        locations.put(basicChemServicesUrl + "/chem-services-openchemlib-basic/rest/v1/calculators", basicChemServicesUrl + "/chem-services-openchemlib-basic/rest/ping");
-        locations.put(basicChemServicesUrl + "/chem-services-smartcyp/rest/v1", basicChemServicesUrl + "/chem-services-smartcyp/rest/ping");
-        //locations.put(basicChemServicesUrl + "/chem-services-cpsign/rest/v1", basicChemServicesUrl + "/chem-services-cpsign/rest/ping");
-
-        //String chemcentralUrl = "http://chemcentral-search:8080/chemcentral-search";
-        //LOG.info("Enabling basic chemcentral search from " + chemcentralUrl);
-        //locations.put(chemcentralUrl + "/rest/v1/db", chemcentralUrl + "/rest/ping");
-
         LOG.info("Services will be looked for in " + DOCKER_SERVICES_DIR);
     }
 
@@ -120,91 +107,65 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         from(ROUTE_POST)
                 .log("ROUTE_POST")
                 .process((Exchange exch) -> {
-                    ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
                     String json = exch.getIn().getBody(String.class);
                     //LOG.info("JSON: " + json);
                     ServiceDescriptorSet sdset = JsonHandler.getInstance().objectFromJson(json, ServiceDescriptorSet.class);
-                    String baseUrl = sdset.getBaseUrl();
-                    LOG.info("Received " + sdset.getServiceDescriptors().size() + " service descriptors from " + baseUrl);
-                    List<ServiceDescriptor> expandedSds = new ArrayList<>();
-                    for (ServiceDescriptor sd: sdset.getServiceDescriptors()) {
-                        if (sd instanceof HttpServiceDescriptor) {
-                            HttpServiceDescriptor hsd = (HttpServiceDescriptor)sd;
-                            LOG.fine("Expanding endpoint " + hsd.getExecutionEndpoint() + " for " + hsd.getId());
-                            HttpServiceDescriptor absUrlSD = ServiceDescriptorUtils.makeAbsolute(baseUrl, hsd);
-                            expandedSds.add(absUrlSD);
-                        } else {
-                            expandedSds.add(sd);
-                        }
-                    }
-
-                    LOG.info("Updating registry with " + expandedSds.size() + " service descriptors from " + sdset.getBaseUrl());
-                    reg.updateServiceDescriptorSet(new ServiceDescriptorSet(baseUrl, sdset.getHealthUrl(), expandedSds));
-                    exch.getOut().setBody("Loaded " + expandedSds.size() + " service descriptors from " + sdset.getBaseUrl());
+                    ServiceDescriptorUtils.processServiceDescriptorRequest(sdset);
+                    ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
+                    reg.init(); // this ensures the descriptors are loaded from the DB before we update anything
+                    reg.updateServiceDescriptorSet(sdset);
+                    // set a message as the response
+                    exch.getOut().setBody("Loaded " + sdset.getServiceDescriptors().size() + " service descriptors from " + sdset.getBaseUrl());
                 });
 
         // This updates the currently available services on a scheduled basis
-//        from("timer:discover?period=" + timerDelay + "&repeatCount=" + timerRepeats)
-//                .log("UPDATE_SERVICES")
-//                .process(exch -> {
-//                    ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
-//                    reg.init(); // this ensures the previous descriptors are loaded from the DB before we update anything
-//                    // update the docker services
-//                    LOG.fine("Updating docker services");
-//                    try {
-//                        updateDockerAndNextflowServices(reg);
-//                    } catch (Exception ex) {
-//                        LOG.log(Level.WARNING, "Failed to update Docker services", ex);
-//                    }
-//                    // update the http services
-//                    LOG.fine("Updating http services for " + locations.size() + " locations");
-//                    try {
-//                        updateHttpServices(reg);
-//                    } catch (Exception ex) {
-//                        LOG.log(Level.WARNING, "Failed to update HTTP services", ex);
-//                    }
-//                    LOG.fine("Updating services complete: " + reg.fetchServiceDescriptorSets().size());
-//                });
+        from("timer:discover?period=" + timerInterval + "&repeatCount=" + timerRepeats + "&delay=" + timerDelay)
+                .log("UPDATE_SERVICES")
+                .process(exch -> {
+                    ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
+                    reg.init(); // this ensures the previous descriptors are loaded from the DB before we update anything
+                    // update the docker services
+                    LOG.fine("Updating docker services");
+                    try {
+                        updateDockerAndNextflowServices(reg);
+                    } catch (Exception ex) {
+                        LOG.log(Level.WARNING, "Failed to update Docker services", ex);
+                    }
+                    // check the health of the http services
+                    LOG.fine("Checking status of services for " + locations.size() + " locations");
+                    try {
+                        performHealthCheck(reg);
+                    } catch (Exception ex) {
+                        LOG.log(Level.WARNING, "Failed to update HTTP services", ex);
+                    }
+                    LOG.fine("Updating services complete: " + reg.fetchServiceDescriptorSets().size());
+                });
 
     }
 
-    protected void updateHttpServices(ServiceDescriptorRegistry reg) {
-        locations.forEach((u, p) -> {
-            LOG.info("Fetching HTTP services for " + u);
-            // fetch it so that it exists
-            ServiceDescriptorSet set = reg.fetchServiceDescriptorSet(u);
+    protected void performHealthCheck(ServiceDescriptorRegistry reg) {
+        reg.fetchExternalServiceDescriptorSets().forEach((sds) -> {
+            LOG.info("Checking status of services for " + sds.getBaseUrl());
             Date now = new Date();
             int valid = 0;
             int invalid = 0;
-            try {
 
-                List<HttpServiceDescriptor> sds = ServiceDescriptorUtils.loadHttpServiceDescriptors(u);
-                checkHealth(u, p, sds, now);
+            checkHealth(sds, now);
 
-                set.setHealthUrl(p);
-                set.updateServiceDescriptors(sds);
-                for (ServiceDescriptor sd : set.getServiceDescriptors()) {
-                    if (!sds.contains(sd)) {
-                        sd.getServiceConfig().setStatus(ServiceConfig.Status.INACTIVE);
-                        sd.getServiceConfig().setStatusLastChecked(now);
-                        invalid++;
-                    } else {
+            for (ServiceDescriptor sd : sds.getServiceDescriptors()) {
+                switch (sd.getServiceConfig().getStatus()) {
+                    case ACTIVE:
                         valid++;
-                    }
+                        break;
+                    case INACTIVE:
+                        invalid++;
+                        break;
                 }
-            } catch (Exception ex) {
-                // failed so set status to inactive
-                LOG.log(Level.WARNING, "Failed to update service descriptors for " + u, ex);
-                set.getServiceDescriptors().forEach(sd -> {
-                    sd.getServiceConfig().setStatus(ServiceConfig.Status.INACTIVE);
-                    sd.getServiceConfig().setStatusLastChecked(now);
-                });
-                invalid = set.getServiceDescriptors().size();
             }
-            // this saves the changes to the DB
-            reg.updateServiceDescriptorSet(set);
-            LOG.info("Updated HTTP services for " + u + ". " + valid + " valid and " + invalid + " invalid services defined");
 
+            // this saves the changes to the DB
+            reg.updateServiceDescriptorSet(sds);
+            LOG.info("Updated HTTP services for " + sds.getBaseUrl() + ". " + valid + " valid and " + invalid + " invalid services defined");
         });
     }
 
@@ -296,23 +257,28 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         return context.getRegistry().lookupByNameAndType(ServiceConstants.KEY_SERVICE_REGISTRY, ServiceDescriptorRegistry.class);
     }
 
-    private void checkHealth(String baseUrl, String healthUrl, List<HttpServiceDescriptor> serviceDescriptors, Date now) {
+    private void checkHealth(ServiceDescriptorSet sds, Date now) {
 
-        String urlStr = healthUrl == null ? baseUrl : healthUrl;
+        String healthUrl = sds.getHealthUrl();
+        if (healthUrl == null) {
+            return;
+        }
         boolean b = true;
         try {
-            URL url = new URL(urlStr);
+            URL url = new URL(healthUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.connect();
             int code = connection.getResponseCode();
             b = code == 200;
         } catch (Exception ex) {
-            LOG.log(Level.INFO, "Health check failed for " + urlStr, ex);
+            LOG.log(Level.INFO, "Health check failed for " + healthUrl, ex);
         }
 
         ServiceConfig.Status status = (b ? ServiceConfig.Status.ACTIVE : ServiceConfig.Status.INACTIVE);
-        LOG.fine("Setting status of " + serviceDescriptors.size() + " service descriptors from " + baseUrl + " with health URL of " + healthUrl + " to " + status);
+        List<ServiceDescriptor> serviceDescriptors = sds.getServiceDescriptors();
+        LOG.fine("Setting status of " + serviceDescriptors.size() + " service descriptors from " + sds.getBaseUrl() +
+                " with health URL of " + healthUrl + " to " + status);
         serviceDescriptors.forEach(sd -> {
             sd.getServiceConfig().setStatus(status);
             sd.getServiceConfig().setStatusLastChecked(now);

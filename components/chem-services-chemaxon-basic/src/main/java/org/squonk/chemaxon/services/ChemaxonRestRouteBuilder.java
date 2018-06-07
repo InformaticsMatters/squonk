@@ -35,6 +35,7 @@ import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 import org.squonk.chemaxon.molecule.MoleculeUtils;
 import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.core.ServiceDescriptorSet;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.dataset.ThinDescriptor;
@@ -48,10 +49,13 @@ import org.squonk.options.OptionDescriptor.Mode;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.NumberRange;
 import org.squonk.types.TypeResolver;
+import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonConstants;
+import org.squonk.util.CommonMimeTypes;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,6 +71,8 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     private static final Logger LOG = Logger.getLogger(ChemaxonRestRouteBuilder.class.getName());
 
     private static final String ROUTE_STATS = "seda:post_stats";
+    public static final String ROUTE_POST_CALCULATORS_SDS = "direct:post-calculators-service-descriptors";
+    public static final String ROUTE_POST_DESCRIPTORS_SDS = "direct:post-descriptors-service-descriptors";
 
     private static final String HEADER = "header.";
     private static final String KEY_SIM_CUTTOFF = HEADER + MoleculeScreenerProcessor.HEADER_THRESHOLD;
@@ -483,6 +489,16 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
         );
     }
 
+    private ServiceDescriptorSet calculatorsSdset = new ServiceDescriptorSet(
+            "http://chemservices:8080/chem-services-chemaxon-basic/rest/v1/calculators",
+            "http://chemservices:8080/chem-services-chemaxon-basic/rest/ping",
+            Arrays.asList(SERVICE_DESCRIPTOR_CALCULATORS));
+
+    private ServiceDescriptorSet descriptorsSdset = new ServiceDescriptorSet(
+            "http://chemservices:8080/chem-services-chemaxon-basic/rest/v1/descriptors",
+            "http://chemservices:8080/chem-services-chemaxon-basic/rest/ping",
+            Arrays.asList(SERVICE_DESCRIPTOR_CALCULATORS));
+
     @Override
     public void configure() throws Exception {
 
@@ -492,6 +508,24 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
         from(ROUTE_STATS)
                 .marshal().json(JsonLibrary.Jackson)
                 .to(mqueueUrl);
+
+        from(ROUTE_POST_CALCULATORS_SDS)
+                .log(ROUTE_POST_CALCULATORS_SDS)
+                .process((Exchange exch) -> {
+                    String json = JsonHandler.getInstance().objectToJson(calculatorsSdset);
+                    exch.getOut().setBody(json);
+                    exch.getOut().setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_JSON);
+                })
+                .to("http4:coreservices:8080/coreservices/rest/v1/services");
+
+        from(ROUTE_POST_DESCRIPTORS_SDS)
+                .log(ROUTE_POST_DESCRIPTORS_SDS)
+                .process((Exchange exch) -> {
+                    String json = JsonHandler.getInstance().objectToJson(descriptorsSdset);
+                    exch.getOut().setBody(json);
+                    exch.getOut().setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_JSON);
+                })
+                .to("http4:coreservices:8080/coreservices/rest/v1/services");
 
         /* These are the REST endpoints - exposed as public web services 
          */

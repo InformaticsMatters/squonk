@@ -16,8 +16,11 @@
 
 package org.squonk.cdk.services;
 
+import org.apache.camel.ProducerTemplate;
 import org.openscience.cdk.CDK;
 import org.squonk.camel.CamelCommonConstants;
+
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.camel.builder.ThreadPoolProfileBuilder;
 import org.apache.camel.component.servletlistener.CamelContextLifecycle;
@@ -41,6 +44,24 @@ public class CamelLifeCycle implements CamelContextLifecycle<SimpleRegistry> {
     @Override
     public void afterStart(ServletCamelContext scc, SimpleRegistry r) throws Exception {
         LOG.fine("CamelLifeCycle.afterStart()");
+
+        LOG.info("Posting calculators service descriptors");
+        try {
+            ProducerTemplate pt = scc.createProducerTemplate();
+            String result = pt.requestBody(CdkRestRouteBuilder.ROUTE_POST_CALCULATORS_SDS, "", String.class);
+            LOG.info("Response was: " + result);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Failed to post service descriptors", e);
+        }
+
+        LOG.info("Posting convertors service descriptors");
+        try {
+            ProducerTemplate pt = scc.createProducerTemplate();
+            String result = pt.requestBody(CdkRestRouteBuilder.ROUTE_POST_CONVERTORS_SDS, "", String.class);
+            LOG.info("Response was: " + result);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Failed to post service descriptors", e);
+        }
     }
 
     @Override

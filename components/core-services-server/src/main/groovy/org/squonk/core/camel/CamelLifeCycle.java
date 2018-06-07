@@ -67,15 +67,6 @@ public class CamelLifeCycle {
 
     public void afterStart(CamelContext context, SimpleRegistry r) throws Exception {
         LOG.fine("afterStart()");
-
-        LOG.info("Trying Java resolver");
-        try {
-            InetAddress address = InetAddress.getByName("chemservices");
-            LOG.info("Addr: " + address.getHostAddress());
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-
     }
 
     public void beforeStop(CamelContext context, SimpleRegistry r) throws Exception {
@@ -85,7 +76,6 @@ public class CamelLifeCycle {
 
     public void afterStop(CamelContext context, SimpleRegistry r) throws Exception {
         LOG.fine("afterStop()");
-
     }
 
     public void beforeAddRoutes(CamelContext context, SimpleRegistry r) throws Exception {
