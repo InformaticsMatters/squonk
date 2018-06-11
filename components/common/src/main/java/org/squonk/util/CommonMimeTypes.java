@@ -27,28 +27,41 @@ public interface CommonMimeTypes {
 
     // For chemical mime types look here https://www.ch.ic.ac.uk/chemime/
 
-    public static final String MIME_TYPE_TEXT_PLAIN = "text/plain";
-    public static final String MIME_TYPE_TEXT_CSV = "text/csv";
-    public static final String MIME_TYPE_JSON = "application/json";
-    public static final String MIME_TYPE_DATASET_METADATA = "application/x-squonk-dataset-metadata+json";
-    public static final String MIME_TYPE_DATASET_BASIC_JSON = "application/x-squonk-dataset-basic+json";
-    public static final String MIME_TYPE_DATASET_MOLECULE_JSON = "application/x-squonk-dataset-molecule+json";
-    public static final String MIME_TYPE_BASIC_OBJECT_JSON = "application/x-squonk-basic-object+json";
-    public static final String MIME_TYPE_MOLECULE_OBJECT_JSON = "application/x-squonk-molecule-object+json";
+    String MIME_TYPE_TEXT_PLAIN = "text/plain";
+    String MIME_TYPE_TEXT_CSV = "text/csv";
+    String MIME_TYPE_JSON = "application/json";
+    String MIME_TYPE_MULTIPART_MIXED = "multipart/mixed";
+    String MIME_TYPE_DATASET_METADATA = "application/x-squonk-dataset-metadata+json";
+    String MIME_TYPE_DATASET_BASIC_JSON = "application/x-squonk-dataset-basic+json";
+    String MIME_TYPE_DATASET_MOLECULE_JSON = "application/x-squonk-dataset-molecule+json";
+    String MIME_TYPE_BASIC_OBJECT_JSON = "application/x-squonk-basic-object+json";
+    String MIME_TYPE_MOLECULE_OBJECT_JSON = "application/x-squonk-molecule-object+json";
 
-    public static final String MIME_TYPE_MDL_MOLFILE = "chemical/x-mdl-molfile";
-    public static final String MIME_TYPE_MDL_SDF = "chemical/x-mdl-sdfile";
-    public static final String MIME_TYPE_DAYLIGHT_SMILES = "chemical/x-daylight-smiles";
-    public static final String MIME_TYPE_DAYLIGHT_SMARTS = "chemical/x-daylight-smarts"; // this is not a generally recognised mime type
-    public static final String MIME_TYPE_TRIPOS_MOL2 = "chemical/x-mol2";
-    public static final String MIME_TYPE_PDB = "chemical/x-pdb";
-    public static final String MIME_TYPE_SVG = "image/svg+xml";
-    public static final String MIME_TYPE_PNG = "image/png";
-    public static final String MIME_TYPE_CPSIGN_TRAIN_RESULT = "application/x-squonk-cpsign-train+json";
-    public static final String MIME_TYPE_ZIP_FILE = "application/zip";
+    // when using thes make sure you add +json or +yaml to the end
+    String SERVICE_DESCRIPTOR_BASE = "application/x-squonk-service-descriptor-";
+    String MIME_TYPE_SERVICE_DESCRIPTOR_DOCKER = SERVICE_DESCRIPTOR_BASE + "docker";
+    String MIME_TYPE_SERVICE_DESCRIPTOR_DOCKER_JSON = MIME_TYPE_SERVICE_DESCRIPTOR_DOCKER + "+json";
+    String MIME_TYPE_SERVICE_DESCRIPTOR_DOCKER_YAML = MIME_TYPE_SERVICE_DESCRIPTOR_DOCKER + "+yaml";
+    String MIME_TYPE_SERVICE_DESCRIPTOR_NEXTFLOW = SERVICE_DESCRIPTOR_BASE + "nextflow";
+    String MIME_TYPE_SERVICE_DESCRIPTOR_NEXTFLOW_JSON = MIME_TYPE_SERVICE_DESCRIPTOR_NEXTFLOW + "+json";
+    String MIME_TYPE_SERVICE_DESCRIPTOR_NEXTFLOW_YAML = MIME_TYPE_SERVICE_DESCRIPTOR_NEXTFLOW + "+yaml";
+    String MIME_TYPE_SERVICE_DESCRIPTOR_SET = SERVICE_DESCRIPTOR_BASE + "set";
+    String MIME_TYPE_SERVICE_DESCRIPTOR_SET_JSON = SERVICE_DESCRIPTOR_BASE + "+json";
+    String MIME_TYPE_SERVICE_DESCRIPTOR_SET_YAML = SERVICE_DESCRIPTOR_BASE + "+yaml";
+
+    String MIME_TYPE_MDL_MOLFILE = "chemical/x-mdl-molfile";
+    String MIME_TYPE_MDL_SDF = "chemical/x-mdl-sdfile";
+    String MIME_TYPE_DAYLIGHT_SMILES = "chemical/x-daylight-smiles";
+    String MIME_TYPE_DAYLIGHT_SMARTS = "chemical/x-daylight-smarts"; // this is not a generally recognised mime type
+    String MIME_TYPE_TRIPOS_MOL2 = "chemical/x-mol2";
+    String MIME_TYPE_PDB = "chemical/x-pdb";
+    String MIME_TYPE_SVG = "image/svg+xml";
+    String MIME_TYPE_PNG = "image/png";
+    String MIME_TYPE_CPSIGN_TRAIN_RESULT = "application/x-squonk-cpsign-train+json";
+    String MIME_TYPE_ZIP_FILE = "application/zip";
 
 
-    public static final Map<String, String[]> EXTENSIONS = Collections.unmodifiableMap(new HashMap() {{
+    Map<String, String[]> EXTENSIONS = Collections.unmodifiableMap(new HashMap() {{
         put(MIME_TYPE_TEXT_PLAIN, new String[] {"txt"});
         put(MIME_TYPE_DAYLIGHT_SMILES, new String[] {"smiles", "smi"});
         put(MIME_TYPE_PDB, new String[] {"pdb"});

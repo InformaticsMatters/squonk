@@ -70,7 +70,7 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                 .process((Exchange exch) -> {
                     String json = JsonHandler.getInstance().objectToJson(OpenChemLibBasicServices.SD_SET);
                     exch.getOut().setBody(json);
-                    exch.getOut().setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_JSON);
+                    exch.getOut().setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_SERVICE_DESCRIPTOR_SET + "+json");
                 })
                 .to("http4:coreservices:8080/coreservices/rest/v1/services");
 

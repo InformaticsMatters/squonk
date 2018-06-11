@@ -39,7 +39,7 @@ import org.squonk.notebook.api.NotebookDTO;
 import org.squonk.notebook.api.NotebookEditableDTO;
 import org.squonk.notebook.api.NotebookSavepointDTO;
 import org.squonk.types.io.JsonHandler;
-import org.squonk.util.IOUtils;
+import org.squonk.util.CommonMimeTypes;
 
 import java.io.InputStream;
 import java.util.List;
@@ -51,7 +51,90 @@ import static org.squonk.client.VariableClient.VarType;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_USERS_EXCHANGE_NAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_USERS_EXCHANGE_PARAMS;
 
-/**
+/** REST services for coreservices.
+ *
+ * The base URL is typically http://coreservices:8080/coreservices/rest but could be different if non-standard settings
+ * are used.
+ *
+ * The following endpoints are defined (relative to that base path):
+ *
+ * GET /ping
+ * A simple health check URL. Returns the string 'OK'
+ *
+ * POST /echo
+ * Simple services that returns the POSTed content as the response. Useful for testing.
+ *
+ * GET /v1/services
+ * Get a list of all the @{link ServiceDescriptor}s that have been registered
+ *
+ * POST /v1/services
+ * Post a new ServiceDescriptor or update an existing one. The Content-Type header MUST be specified and can have one of
+ * these values:
+ * <ul>
+ * <li>application/x-squonk-service-descriptor-set+{json|yaml}: The content is expected to be a @{link ServiceDescriptorSet}
+ * serialised as json or yaml</li>
+ * <li>application/x-squonk-service-descriptor-docker+{json|yaml}: The content is expected to be a single
+ * @{link DockerServiceDescriptor} serialised as json or yaml and a header named Base-URL that defines the base
+ * URL of the ServiceDescriptorSet that the service descriptor belongs to MUST be present</li>
+ * <li>application/x-squonk-service-descriptor-nextflow+{json|yaml}: The content is expected to be a single
+ *  @{link NextflowServiceDescriptor} serialised as json or yaml and a header named Base-URL that defines the base
+ *  URL of the ServiceDescriptorSet that the service descriptor belongs to MUST be present</li>
+ * </ul>
+ *
+ * GET /v1/jobs
+ * Get the status of all jobs
+ *
+ * POST /v1/jobs
+ * Create a new job
+ *
+ * GET /v1/jobs/{id}
+ * Get the status of a particular job
+ *
+ * POST /v1/jobs/{id}
+ * Update the status of a particular job
+ *
+ * GET /v1/notebooks
+ * Get the notebooks for the current user
+ *
+ * POST /v1/notebooks
+ * Create a new notebook
+ *
+ * DELETE /v1/notebooks/{notebookid}
+ * Delete a notebook
+ *
+ * PUT /v1/notebooks/{notebookid}
+ * Update the name and description of a notebook
+ *
+ * GET /v1/notebooks/{notebookid}/e
+ * Get the NotebookEditables for a particular notebook
+ *
+ * GET /v1/notebooks/{notebookid}/s
+ * Get the savepoints for a particular notebook
+ *
+ * POST /v1/notebooks/{notebookid}/e
+ * Create a new editable for a notebook
+ *
+ * PUT /v1/notebooks/{notebookid}/e/{editableid}
+ * Update an editable for a noebook
+ *
+ * POST /v1/notebooks/{notebookid}/s
+ * Create a new savepoint for a notebook
+ *
+ * PUT /v1/notebooks/{notebookid}/s/{savepointid}/description
+ * Update the description of a savepoint
+ *
+ * GET /v1/notebooks/{notebookid}/v/{sourceid}/{cellid}/{varname}/{type}/{key}
+ * Read a variable value using either its label or its editable/savepoint id
+ *
+ * POST /v1/notebooks/{notebookid}/v/{editableid}/{cellid}/{varname}/{type}/{key}
+ * Write a variable value
+ *
+ * DELETE /v1/notebooks/{notebookid}/v/{editableid}/{cellid}/{varname}
+ * Delete a variable
+ *
+ * GET /v1/users/SquonkUsername
+ * Get the User object for a user
+ *
  * @author timbo
  */
 public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
@@ -124,7 +207,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     }
                 });
 
-        /* These are the REST endpoints - exposed as public web services 
+        /* These are the REST endpoints - exposed as public web services
          */
         rest("/ping")
                 .get().description("Simple ping service to check things are running")
@@ -151,10 +234,28 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .route()
                 .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST)
                 .endRest()
-                .post().description("Put service definitions for available services")
+                .post().description("Post ServiceDescriptors for a set of available services")
                 .produces(TEXT_PLAIN)
                 .route()
-                .to(ServiceDiscoveryRouteBuilder.ROUTE_POST)
+                .choice()
+                // multipart/mixed - a single SD that comes in parts and needs assembling
+                // Header "Base-URL" that defines the URL of the ServiceDescriptorSet must be present
+                .when(header(Exchange.CONTENT_TYPE).startsWith(CommonMimeTypes.MIME_TYPE_MULTIPART_MIXED))
+                .log("Dispatching multipart")
+                .unmarshal().mimeMultipart()
+                .to(ServiceDiscoveryRouteBuilder.ROUTE_POST_SD_SINGLE)
+                // A ServiceDescriptorSet: application/x-squonk-service-descriptor-set+json/yaml
+                .when(header(Exchange.CONTENT_TYPE).startsWith(CommonMimeTypes.MIME_TYPE_SERVICE_DESCRIPTOR_SET))
+                .log("Dispatching ServiceDescriptorSet")
+                .to(ServiceDiscoveryRouteBuilder.ROUTE_POST_SD_SET)
+                // Probably something like application/x-squonk-service-descriptor-docker+json
+                // A single complete SD where the header "Base-URL" must be present
+                .when(header(Exchange.CONTENT_TYPE).startsWith(CommonMimeTypes.SERVICE_DESCRIPTOR_BASE))
+                .log("Dispatching single ServiceDescriptor")
+                .to(ServiceDiscoveryRouteBuilder.ROUTE_POST_SD_SINGLE)
+                .otherwise()
+                .transform().simple("Unsupported Content-Type: ${header['Content-Type']}")
+                .endChoice()
                 .endRest();
 
 
@@ -641,7 +742,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
         rest("/v1/users").description("User management services")
                 //
                 // GET statuses
-                .get("/{" + HEADER_SQUONK_USERNAME + "}").description("Get the User object for this username (spceified as the query parameter named " + HEADER_SQUONK_USERNAME)
+                .get("/{" + HEADER_SQUONK_USERNAME + "}").description("Get the User object for this username (specified as the query parameter named " + HEADER_SQUONK_USERNAME)
                 .bindingMode(RestBindingMode.json)
                 .produces(APPLICATION_JSON)
                 .produces(APPLICATION_JSON)

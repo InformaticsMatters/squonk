@@ -18,14 +18,17 @@ package org.squonk.core.service.discovery;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.camel.builder.RouteBuilder;
 import org.squonk.core.*;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 import org.squonk.util.ServiceConstants;
 
+import javax.activation.DataHandler;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -39,8 +42,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-/** Services related to handling ServiceDescriptors.
+/**
+ * Services related to handling ServiceDescriptors.
  * Allows new services to be registered and for the registered services to be queried e.g. by the portal application.
+ *
  *
  * @author timbo
  */
@@ -49,7 +54,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     private static final Logger LOG = Logger.getLogger(ServiceDiscoveryRouteBuilder.class.getName());
 
     public static final String ROUTE_REQUEST = "direct:request";
-    public static final String ROUTE_POST = "direct:post";
+    public static final String ROUTE_POST_SD_SET = "direct:post-service-descriptor-set";
+    public static final String ROUTE_POST_SD_SINGLE = "direct:post-service-descriptor-single";
     private static Pattern EXECUTOR_PATTERN = Pattern.compile("/(\\w+)/(.*)");
     protected String DOCKER_SERVICES_DIR = IOUtils.getConfiguration("SQUONK_DOCKER_SERVICES_DIR", "../../data/testfiles/docker-services");
 
@@ -104,12 +110,27 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                     exch.getIn().setBody(list);
                 });
 
-        from(ROUTE_POST)
-                .log("ROUTE_POST")
+        /** Handles the posting of a ServiceDescriptorSet in JSON format.
+         * The execution endpoint of the contained ServiceDescriptors will be expanded using the baseUrl property of the
+         * ServiceDescriptorSet if it does not already start with 'http'.
+         *
+         */
+        from(ROUTE_POST_SD_SET)
+                .log("ROUTE_POST_SD_SET")
                 .process((Exchange exch) -> {
-                    String json = exch.getIn().getBody(String.class);
-                    //LOG.info("JSON: " + json);
-                    ServiceDescriptorSet sdset = JsonHandler.getInstance().objectFromJson(json, ServiceDescriptorSet.class);
+                    String contentType = exch.getIn().getHeader(Exchange.CONTENT_TYPE, String.class);
+                    String content = exch.getIn().getBody(String.class);
+                    ServiceDescriptorSet sdset;
+                    if (CommonMimeTypes.MIME_TYPE_SERVICE_DESCRIPTOR_SET_JSON.equals(contentType)) {
+                        sdset = ServiceDescriptorUtils.readJson(content, ServiceDescriptorSet.class);
+                    } else if (CommonMimeTypes.MIME_TYPE_SERVICE_DESCRIPTOR_SET_YAML.equals(contentType)) {
+                        sdset = ServiceDescriptorUtils.readYaml(content, ServiceDescriptorSet.class);
+                    } else {
+                        throw new IllegalStateException("Unsupported Content-Type. Received " + contentType +
+                                " but expected " + CommonMimeTypes.MIME_TYPE_SERVICE_DESCRIPTOR_SET_JSON + " or " +
+                                CommonMimeTypes.MIME_TYPE_SERVICE_DESCRIPTOR_SET_YAML
+                        );
+                    }
                     ServiceDescriptorUtils.processServiceDescriptorRequest(sdset);
                     ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
                     reg.init(); // this ensures the descriptors are loaded from the DB before we update anything
@@ -118,20 +139,48 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                     exch.getOut().setBody("Loaded " + sdset.getServiceDescriptors().size() + " service descriptors from " + sdset.getBaseUrl());
                 });
 
-        // This updates the currently available services on a scheduled basis
+        /** Handles POSTing of a ServiceDescriptor such as a @{link NextFlowServiceDescriptor} or
+         * @{link DockerServiceDescriptor} that can be composed from multiple parts that need to be combined to generate
+         * the final ServiceDescriptor
+         *
+         */
+        from(ROUTE_POST_SD_SINGLE)
+                .log("ROUTE_POST_SD_SINGLE")
+                .process((Exchange exch) -> {
+                    String baseUrl = exch.getIn().getHeader("Base-URL", String.class);
+                    if (baseUrl == null) {
+                        throw new RuntimeException("Failed to read Base-URL header");
+                    }
+                    LOG.info("BaseUrl is " + baseUrl);
+
+                    ServiceDescriptor sd = readMultipartServiceDescriptor(exch.getIn());
+                    if (sd == null) {
+                        throw new RuntimeException("Failed to read service descriptor");
+                    }
+
+                    ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
+                    reg.init(); // this ensures the descriptors are loaded from the DB before we update anything
+
+                    // this updates or creates the ServiceDescriptorSet
+                    LOG.info("Updating ServiceDescriptor " + sd.getId() + " for " + baseUrl);
+                    ServiceDescriptorSet sds = reg.updateServiceDescriptor(baseUrl, sd);
+                    // and now persist the update
+                    reg.updateServiceDescriptorSet(sds);
+                    LOG.info("Set " + baseUrl + " is now of size " + reg.fetchServiceDescriptorSet(baseUrl).getServiceDescriptors().size());
+
+
+                })
+                .transform(constant("OK\n"));
+
+
+        // This checks the currently available services on a scheduled basis
         from("timer:discover?period=" + timerInterval + "&repeatCount=" + timerRepeats + "&delay=" + timerDelay)
                 .log("UPDATE_SERVICES")
                 .process(exch -> {
                     ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
                     reg.init(); // this ensures the previous descriptors are loaded from the DB before we update anything
-                    // update the docker services
-                    LOG.fine("Updating docker services");
-                    try {
-                        updateDockerAndNextflowServices(reg);
-                    } catch (Exception ex) {
-                        LOG.log(Level.WARNING, "Failed to update Docker services", ex);
-                    }
-                    // check the health of the http services
+
+                    // check the health of the services with health checks
                     LOG.fine("Checking status of services for " + locations.size() + " locations");
                     try {
                         performHealthCheck(reg);
@@ -140,117 +189,33 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                     }
                     LOG.fine("Updating services complete: " + reg.fetchServiceDescriptorSets().size());
                 });
-
     }
 
     protected void performHealthCheck(ServiceDescriptorRegistry reg) {
         reg.fetchExternalServiceDescriptorSets().forEach((sds) -> {
             LOG.info("Checking status of services for " + sds.getBaseUrl());
             Date now = new Date();
-            int valid = 0;
-            int invalid = 0;
+            int active = 0;
+            int inactive = 0;
+            int unknown = 0;
 
             checkHealth(sds, now);
 
             for (ServiceDescriptor sd : sds.getServiceDescriptors()) {
-                switch (sd.getServiceConfig().getStatus()) {
-                    case ACTIVE:
-                        valid++;
-                        break;
-                    case INACTIVE:
-                        invalid++;
-                        break;
+                ServiceConfig.Status status = sd.getServiceConfig().getStatus();
+                if (status == null || status.equals(ServiceConfig.Status.UNKNOWN)) {
+                    unknown++;
+                } else if (status == ServiceConfig.Status.ACTIVE) {
+                    active++;
+                } else if (status == ServiceConfig.Status.INACTIVE) {
+                    inactive++;
                 }
             }
-
             // this saves the changes to the DB
             reg.updateServiceDescriptorSet(sds);
-            LOG.info("Updated HTTP services for " + sds.getBaseUrl() + ". " + valid + " valid and " + invalid + " invalid services defined");
+            LOG.info("Updated services for " + sds.getBaseUrl() + ". " + active + " active, " +
+                    inactive + " inactive and " + unknown + " unknown services defined");
         });
-    }
-
-    protected void updateDockerAndNextflowServices(ServiceDescriptorRegistry reg) throws IOException {
-
-        Path root = FileSystems.getDefault().getPath(DOCKER_SERVICES_DIR);
-        LOG.info("Looking for Docker service descriptors in " + root);
-        Set<String> basePaths = new LinkedHashSet<>();
-        Date now = new Date();
-
-        // Docker and Nextflow service descriptors in JSON or YAML format
-        Files.walk(root).forEach(p -> {
-            String path = p.toString();
-            String path_lc = path.toLowerCase();
-            if (path_lc.endsWith(".json") || path_lc.endsWith(".yml") || path_lc.endsWith(".yaml")) {
-                LOG.finer("Processing " + path);
-                String relativePath = path.substring(root.toString().length());
-                LOG.finer("Relative Path " + relativePath);
-
-                Matcher m = EXECUTOR_PATTERN.matcher(relativePath);
-                if (m.matches()) {
-                    String base = m.group(1);
-                    if (path_lc.endsWith(".dsd.json") || path_lc.endsWith(".dsd.yml") || path_lc.endsWith(".dsd.yaml")) {
-                        readDockerServiceDescriptor(reg, p, base, basePaths, now);
-                    } else if (path_lc.endsWith(".nsd.json") || path_lc.endsWith(".nsd.yml") || path_lc.endsWith(".nsd.yaml")) {
-                        readNextflowServiceDescriptor(reg, p, base, basePaths, now);
-                    } else {
-                        LOG.info("Unrecognised file: " + path);
-                    }
-                } else {
-                    LOG.info("Unable to parse " + relativePath);
-                }
-            }
-        });
-
-        // finally do the updates which persists the changes
-        for (String base : basePaths) {
-            LOG.fine("Updating services for " + base);
-            int valid = 0;
-            int invalid = 0;
-            ServiceDescriptorSet set = reg.fetchServiceDescriptorSet(base);
-            // if any services were not updated then they must have been removed so we inactive them.
-            // we don't delete them otherwise old notebooks will blow up. We just don't allow them to be executed again.
-            for (ServiceDescriptor sd : set.getServiceDescriptors()) {
-                Date old = sd.getServiceConfig().getStatusLastChecked();
-                if (old == null || !now.equals(old)) {
-                    LOG.info("Inactivating service " + sd.getId() + " as no longer present");
-                    sd.getServiceConfig().setStatus(ServiceConfig.Status.INACTIVE);
-                    sd.getServiceConfig().setStatusLastChecked(now);
-                    invalid++;
-                } else {
-                    valid++;
-                }
-            }
-            reg.updateServiceDescriptorSet(set);
-            LOG.info("Updated Docker services for " + base + ". " + valid + " valid and " + invalid + " invalid services defined");
-        }
-    }
-
-    private void readDockerServiceDescriptor(ServiceDescriptorRegistry reg, Path p, String base, Set<String> basePaths, Date now) {
-        String url = "file://docker-services/" + base;
-        LOG.finer("URL: " + url);
-        DockerServiceDescriptor sd = ServiceDescriptorUtils.readServiceDescriptor(p, DockerServiceDescriptor.class);
-        handleServiceDescriptor(sd, p, reg, basePaths, now, url);
-    }
-
-    private void readNextflowServiceDescriptor(ServiceDescriptorRegistry reg, Path p, String base, Set<String> basePaths, Date now) {
-        String url = "file://nextflow-services/" + base;
-        LOG.finer("URL: " + url);
-        NextflowServiceDescriptor sd = ServiceDescriptorUtils.readServiceDescriptor(p, NextflowServiceDescriptor.class);
-        handleServiceDescriptor(sd, p, reg, basePaths, now, url);
-    }
-
-
-    private void handleServiceDescriptor(ServiceDescriptor sd, Path p, ServiceDescriptorRegistry reg, Set<String> basePaths, Date now, String url) {
-        if (sd != null) {
-            ServiceDescriptorSet set = reg.fetchServiceDescriptorSet(url);
-            sd.getServiceConfig().setStatus(ServiceConfig.Status.ACTIVE);
-            sd.getServiceConfig().setStatusLastChecked(now);
-            set.updateServiceDescriptor(sd);
-            if (!basePaths.contains(url)) {
-                basePaths.add(url);
-            }
-            LOG.fine("Discovered Nextflow executor descriptor " + sd.getId() + " from file " + p);
-        }
     }
 
     private ServiceDescriptorRegistry fetchDescriptorRegistry(CamelContext context) {
@@ -283,6 +248,62 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
             sd.getServiceConfig().setStatus(status);
             sd.getServiceConfig().setStatusLastChecked(now);
         });
+    }
+
+    private ServiceDescriptor readMultipartServiceDescriptor(Message message) throws IOException {
+        String contentType = message.getHeader(Exchange.CONTENT_TYPE, String.class);
+        LOG.info(String.format("Body Content-Type: %s", contentType));
+
+        String body = message.getBody(String.class);
+        //LOG.info("BODY:\n" + body);
+        if (body == null || body.isEmpty()) {
+            throw new IllegalStateException("No service descriptor posted");
+        }
+
+
+        // the first attachment is the second form field etc.
+        if (contentType.toLowerCase().startsWith(CommonMimeTypes.MIME_TYPE_SERVICE_DESCRIPTOR_NEXTFLOW + "+")) {
+            LOG.info("Looks like a Nextflow service descriptor");
+            NextflowServiceDescriptor nsd;
+            if (contentType.equals(CommonMimeTypes.MIME_TYPE_SERVICE_DESCRIPTOR_NEXTFLOW_JSON)) {
+                nsd = ServiceDescriptorUtils.readJson(body, NextflowServiceDescriptor.class);
+            } else if (contentType.equals(CommonMimeTypes.MIME_TYPE_SERVICE_DESCRIPTOR_NEXTFLOW_YAML)) {
+                nsd = ServiceDescriptorUtils.readYaml(body, NextflowServiceDescriptor.class);
+            } else {
+                throw new IllegalStateException("Content-Type " + contentType + " not supported for service descriptors");
+            }
+            for (Map.Entry<String, DataHandler> e : message.getAttachments().entrySet()) {
+                LOG.info("Reading attachment " + e.getKey());
+                if ("nextflow.nf".equalsIgnoreCase(e.getKey())) {
+                    String nextflowFile = IOUtils.convertStreamToString(e.getValue().getInputStream());
+                    if (nextflowFile == null || nextflowFile.isEmpty()) {
+                        throw new IllegalStateException("Nextflow file field specified but no content found");
+                    }
+                    nsd.setNextflowFile(nextflowFile);
+                } else if ("nextflow.config".equalsIgnoreCase(e.getKey())) {
+                    String nextflowConfig = IOUtils.convertStreamToString(e.getValue().getInputStream());
+                    if (nextflowConfig == null || nextflowConfig.isEmpty()) {
+                        throw new IllegalStateException("Nextflow config field specified but no content found");
+                    }
+                    nsd.setNextflowConfig(nextflowConfig);
+                }
+            }
+            return nsd;
+        } else if (contentType.toLowerCase().startsWith(CommonMimeTypes.MIME_TYPE_SERVICE_DESCRIPTOR_DOCKER + "+")) {
+            LOG.info("Looks like a Docker service descriptor");
+            DockerServiceDescriptor dsd;
+            if (contentType.equals(CommonMimeTypes.MIME_TYPE_SERVICE_DESCRIPTOR_DOCKER_JSON)) {
+                dsd = ServiceDescriptorUtils.readJson(body, DockerServiceDescriptor.class);
+            } else if (contentType.equals(CommonMimeTypes.MIME_TYPE_SERVICE_DESCRIPTOR_DOCKER_YAML)) {
+                dsd = ServiceDescriptorUtils.readYaml(body, DockerServiceDescriptor.class);
+            } else {
+                throw new IllegalStateException("Content-Type " + contentType + " not supported for service descriptors");
+            }
+            return dsd;
+        } else {
+            LOG.warning("Unsupported service descriptor type: " + contentType);
+        }
+        return null;
     }
 
 }

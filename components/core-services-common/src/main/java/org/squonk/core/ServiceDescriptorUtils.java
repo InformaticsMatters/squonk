@@ -110,13 +110,13 @@ public class ServiceDescriptorUtils {
         T sd = null;
         if (p.toString().toLowerCase().endsWith(".yml") || p.toString().toLowerCase().endsWith(".yaml")) {
             try (InputStream is = new FileInputStream(p.toFile())) {
-                sd = yamlMapper.readValue(is, type);
+                sd = readYaml(is, type);
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "Unable to read descriptor for " + p, ex);
             }
         } else if (p.toString().toLowerCase().endsWith(".json")) {
             try (InputStream is = new FileInputStream(p.toFile())) {
-                sd = jsonMapper.readValue(is, type);
+                sd = readJson(is, type);
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "Unable to read descriptor for " + p, ex);
             }
@@ -133,6 +133,22 @@ public class ServiceDescriptorUtils {
             }
         }
         return sd;
+    }
+
+    public static <T> T readYaml(InputStream yaml, Class<T> cls) throws IOException {
+        return yamlMapper.readValue(yaml, cls);
+    }
+
+    public static <T> T readYaml(String yaml, Class<T> cls) throws IOException {
+        return yamlMapper.readValue(yaml, cls);
+    }
+
+    public static <T> T readJson(InputStream json, Class<T> cls) throws IOException {
+        return jsonMapper.readValue(json, cls);
+    }
+
+    public static <T> T readJson(String json, Class<T> cls) throws IOException {
+        return jsonMapper.readValue(json, cls);
     }
 
     private static void completeNextflowServiceDescriptor(

@@ -143,7 +143,7 @@ public class ServiceDescriptorRegistry {
      */
     public void updateServiceDescriptorSet(ServiceDescriptorSet set) {
         LOG.fine("Updating service descriptors for " + set.getBaseUrl());
-        if (set.getBaseUrl() == null) {
+        if (set.getBaseUrl() == null || StandardServiceDescriptors.URL.equals(set.getBaseUrl())) {
             return;
         }
         synchronized (writeLock) {
@@ -159,6 +159,21 @@ public class ServiceDescriptorRegistry {
         }
     }
 
+    /** Updates the set specified by the setBaseUrl property, but does not save the changes to the database.
+     * To persist the changes you must call the @{link updateServiceDescriptorSet} method
+     *
+     * @param setBaseUrl
+     * @param sd
+     * @return The updated (or newly created) ServiceDescriptorSet
+     */
+    public ServiceDescriptorSet updateServiceDescriptor(String setBaseUrl, ServiceDescriptor sd) {
+        if (setBaseUrl == null || StandardServiceDescriptors.URL.equals(setBaseUrl)) {
+            return null;
+        }
+        ServiceDescriptorSet set = fetchServiceDescriptorSet(setBaseUrl);
+        set.updateServiceDescriptor(sd);
+        return set;
+    }
 
     /**
      * Persist this set to the database

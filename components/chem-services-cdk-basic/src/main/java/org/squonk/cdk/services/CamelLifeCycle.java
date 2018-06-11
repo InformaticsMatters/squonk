@@ -16,6 +16,7 @@
 
 package org.squonk.cdk.services;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.openscience.cdk.CDK;
 import org.squonk.camel.CamelCommonConstants;
@@ -27,6 +28,7 @@ import org.apache.camel.component.servletlistener.CamelContextLifecycle;
 import org.apache.camel.component.servletlistener.ServletCamelContext;
 import org.apache.camel.impl.SimpleRegistry;
 import org.apache.camel.spi.ThreadPoolProfile;
+import org.squonk.util.CommonMimeTypes;
 
 /**
  *
