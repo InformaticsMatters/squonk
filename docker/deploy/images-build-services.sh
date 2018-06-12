@@ -4,6 +4,8 @@
 # To be safe run this every time, or just update the containers
 # that you know need updating
 
+set -e
+
 base=$PWD
 
 cd ../../components
