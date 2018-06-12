@@ -81,12 +81,12 @@ Currently these are on the openshift branch only, but eventually this will be me
 
 Note that loading large datasets like eMolecules screening compounds takes several days.
 To prevent lost connections to the server terminating the load you might want to look into doing the loading using a the 
-[linux screen facility](https://www.gnu.org/software/screen/manual/screen.html). 
+[linux screen facility](https://www.gnu.org/software/screen/manual/screen.html).
 
 
 ### Updating the search service
 
-The search service, coreservices and the Squonk portal application read the definition of which tables ahve been loaded 
+The search service, coreservices and the Squonk portal application read the definition of which tables have been loaded 
 when they start and will not get updated if additional tables are loaded. To pick up updated information there services 
 must be restarted. We hope to avoid the need for this in the future.
 
