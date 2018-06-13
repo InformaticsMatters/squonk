@@ -28,7 +28,7 @@ import org.squonk.types.io.JsonHandler
 import javax.sql.DataSource
 import java.sql.Array
 import java.sql.SQLException
-import java.sql.Timestamp;
+import java.sql.Timestamp
 
 
 /**
@@ -101,7 +101,7 @@ public class PostgresJobStatusClient implements JobStatusClient {
 
     @Override
     public JobStatus get(String id) {
-        log.info("getting JobStatus for job $id");
+        log.fine("Getting JobStatus for job $id")
         JobStatus result = null
         try {
             db.withTransaction {
