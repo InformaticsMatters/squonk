@@ -49,23 +49,6 @@ objects:
       name: squonk-work-dir-pvc
       namespace: ${APP_NAMESPACE}
 
-- kind: PersistentVolume
-  apiVersion: v1
-  metadata:
-    name: squonk-service-descriptors
-  spec:
-    capacity:
-      storage: ${CORE_SD_PVC_SIZE}
-    accessModes:
-    - ReadWriteMany
-    persistentVolumeReclaimPolicy: Recycle
-    nfs:
-      server: ${NFS_SERVER}
-      path: ${NFS_PATH}/squonk-service-descriptors
-    claimRef:
-      name: squonk-service-descriptors-pvc
-      namespace: ${APP_NAMESPACE}
-
 - kind: PersistentVolumeClaim
   apiVersion: v1
   metadata:
@@ -78,17 +61,3 @@ objects:
     resources:
       requests:
         storage: ${CELL_WORK_PVC_SIZE}
-
-- kind: PersistentVolumeClaim
-  apiVersion: v1
-  metadata:
-    name: squonk-service-descriptors-pvc
-    namespace: ${APP_NAMESPACE}
-  spec:
-    volumeName: squonk-service-descriptors
-    accessModes:
-    - ReadWriteMany
-    resources:
-      requests:
-        storage: ${CORE_SD_PVC_SIZE}
-

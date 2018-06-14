@@ -14,20 +14,7 @@ parameters:
 - name: APP_NAMESPACE
   value: squonk
 
-
 objects:
-
-- kind: PersistentVolumeClaim
-  apiVersion: v1
-  metadata:
-    name: squonk-service-descriptors-pvc
-    namespace: ${APP_NAMESPACE}
-  spec:
-    accessModes:
-    - ReadWriteMany
-    resources:
-      requests:
-        storage: 100Mi
 
 - kind: PersistentVolumeClaim
   apiVersion: v1

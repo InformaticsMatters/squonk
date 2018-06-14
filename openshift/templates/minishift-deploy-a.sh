@@ -47,3 +47,4 @@ do
     sleep 8
     READY_PODS=$(oc get po --no-headers | grep -v "deploy" | grep "1/1" | wc -l | tr -s ' ' | cut -f 2 -d ' ')
 done
+echo "Ready"

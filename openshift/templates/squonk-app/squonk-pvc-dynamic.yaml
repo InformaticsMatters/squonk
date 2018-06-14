@@ -42,16 +42,3 @@ objects:
       requests:
         storage: ${CELL_WORK_PVC_SIZE}
     storageClassName: ${STORAGE_CLASS}
-
-- kind: PersistentVolumeClaim
-  apiVersion: v1
-  metadata:
-    name: squonk-service-descriptors-pvc
-    namespace: ${APP_NAMESPACE}
-  spec:
-    accessModes:
-    - ReadWriteMany
-    resources:
-      requests:
-        storage: ${CORE_SD_PVC_SIZE}
-    storageClassName: ${STORAGE_CLASS}

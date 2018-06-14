@@ -32,18 +32,18 @@ parameters:
   value: openshift-merge
 
 # ---------
-# SD Loader (Service Descriptor Loader)
+# SD Poster (Service Descriptor Poster)
 # ---------
 
-- name: SD_LOADER_IMAGE_TAG
-  value: latest
+- name: SD_POSTER_IMAGE_TAG
+  value: openshift-merge
 
 # ------
 # Portal
 # ------
 
 - name: PORTAL_IMAGE_TAG
-  value: latest
+  value: openshift-merge
 - name: PORTAL_SERVICE_CALLBACK
   value: "http://localhost:8080/portal"
 - name: SQUONK_HOST
@@ -163,6 +163,82 @@ objects:
         restartPolicy: OnFailure
 
 # -----------------------------------------------------------------------------
+# CoreServices
+# -----------------------------------------------------------------------------
+
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    name: coreservices
+    namespace: ${APP_NAMESPACE}
+  spec:
+    replicas: 1
+    selector:
+      name: coreservices
+    template:
+      metadata:
+        labels:
+          name: coreservices
+      spec:
+        containers:
+        - image: squonk/coreservices:${CORE_IMAGE_TAG}
+          name: coreservices
+          env:
+          - name: RABBITMQ_HOSTNAME
+            valueFrom:
+              secretKeyRef:
+                name: squonk-rabbitmq-credentials
+                key: host
+          - name: RABBITMQ_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-rabbitmq-credentials
+                key: pass
+          - name: POSTGRES_HOSTNAME
+            valueFrom:
+              secretKeyRef:
+                name: squonk-database-credentials
+                key: host
+          - name: POSTGRES_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-database-credentials
+                key: user-password
+          - name: SQUONK_BASIC_CHEM_SERVICES_URL
+            value: ${CORE_SQUONK_BASIC_CHEM_SERVICES_URL}
+          - name: SQUONK_DOCKER_SERVICES_DIR
+            value: ${CORE_SQUONK_DOCKER_SERVICES_DIR}
+          ports:
+          - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /coreservices/rest/ping
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 30
+#          resources:
+#            limits:
+#              cpu: ${CORE_CPU_LIMIT}
+#              memory: ${CORE_MEM_LIMIT}
+#            requests:
+#              cpu: ${CORE_CPU_REQUEST}
+#              memory: ${CORE_MEM_REQUEST}
+
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: coreservices
+    namespace: ${APP_NAMESPACE}
+  spec:
+    selector:
+      name: coreservices
+    ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+
+# -----------------------------------------------------------------------------
 # ChemServices
 # -----------------------------------------------------------------------------
 
@@ -180,6 +256,11 @@ objects:
         labels:
           name: chemservices-basic
       spec:
+        initContainers:
+        - image: yauritux/busybox-curl
+          name: wait-for-core-before-chem
+          command: ['sh', '-c',
+            'until (( curl http://coreservices:8080/rest/ping --connect-timeout 5 )); do sleep 2; done']
         containers:
         - image: squonk/chemservices-basic:${CHEM_IMAGE_TAG}
           name: chemservices-basic
@@ -242,124 +323,33 @@ objects:
       name: chemservices-basic
 
 # -----------------------------------------------------------------------------
-# CoreServices
+# Squonk Docker-Services Poster
 # -----------------------------------------------------------------------------
 
-- kind: DeploymentConfig
-  apiVersion: v1
-  metadata:
-    name: coreservices
-    namespace: ${APP_NAMESPACE}
-  spec:
-    replicas: 1
-    selector:
-      name: coreservices
-    template:
-      metadata:
-        labels:
-          name: coreservices
-      spec:
-        initContainers:
-        - image: yauritux/busybox-curl
-          name: wait-for-chem-before-core
-          command: ['sh', '-c',
-            'until (( curl http://chemservices:8080/rest/ping --connect-timeout 5 )); do sleep 2; done']
-        containers:
-        - image: squonk/coreservices:${CORE_IMAGE_TAG}
-          name: coreservices
-          env:
-          - name: RABBITMQ_HOSTNAME
-            valueFrom:
-              secretKeyRef:
-                name: squonk-rabbitmq-credentials
-                key: host
-          - name: RABBITMQ_SQUONK_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: squonk-rabbitmq-credentials
-                key: pass
-          - name: POSTGRES_HOSTNAME
-            valueFrom:
-              secretKeyRef:
-                name: squonk-database-credentials
-                key: host
-          - name: POSTGRES_SQUONK_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: squonk-database-credentials
-                key: user-password
-          - name: SQUONK_BASIC_CHEM_SERVICES_URL
-            value: ${CORE_SQUONK_BASIC_CHEM_SERVICES_URL}
-          - name: SQUONK_DOCKER_SERVICES_DIR
-            value: ${CORE_SQUONK_DOCKER_SERVICES_DIR}
-          ports:
-          - containerPort: 8080
-          livenessProbe:
-            httpGet:
-              path: /coreservices/rest/ping
-              port: 8080
-            initialDelaySeconds: 30
-            timeoutSeconds: 5
-            periodSeconds: 30
-#          resources:
-#            limits:
-#              cpu: ${CORE_CPU_LIMIT}
-#              memory: ${CORE_MEM_LIMIT}
-#            requests:
-#              cpu: ${CORE_CPU_REQUEST}
-#              memory: ${CORE_MEM_REQUEST}
-          volumeMounts:
-          - mountPath: ${CORE_SQUONK_DOCKER_SERVICES_DIR}
-            name: squonk-docker-services
-        volumes:
-        - name: squonk-docker-services
-          persistentVolumeClaim:
-            claimName: squonk-service-descriptors-pvc
-
-- kind: Service
-  apiVersion: v1
-  metadata:
-    name: coreservices
-    namespace: ${APP_NAMESPACE}
-  spec:
-    selector:
-      name: coreservices
-    ports:
-    - name: http
-      port: 8080
-      targetPort: 8080
-
-# -----------------------------------------------------------------------------
-# Squonk Docker-Services Loader
-# -----------------------------------------------------------------------------
-
-# This 'Job' populates the Core's Service Descriptor directory PVC
-# with the current set of service descriptors.
+# This 'Job' populates the Core's Service Descriptor set via a POST.
 
 - kind: Job
   apiVersion: batch/v1
   metadata:
-    name: service-descriptor-loader
+    name: pipelines-sd-poster
     namespace: ${APP_NAMESPACE}
   spec:
     replicas: 1
     selector:
-      name: service-descriptor-loader
+      name: pipelines-sd-poster
     template:
       metadata:
         labels:
-          name: service-descriptor-loader
+          name: pipelines-sd-poster
       spec:
+        initContainers:
+        - image: yauritux/busybox-curl
+          name: wait-for-core-before-pipelines-post
+          command: ['sh', '-c',
+            'until (( curl http://coreservices:8080/rest/ping --connect-timeout 5 )); do sleep 2; done']
         containers:
-        - image: squonk/pipelines-servicedescriptor-loader:${SD_LOADER_IMAGE_TAG}
-          name: service-descriptor-loader
-          volumeMounts:
-          - mountPath: /sd-dst
-            name: loader-volume
-        volumes:
-        - name: loader-volume
-          persistentVolumeClaim:
-            claimName: squonk-service-descriptors-pvc
+        - image: squonk/pipelines-sdposter:${SD_POSTER_IMAGE_TAG}
+          name: pipelines-sd-poster
         restartPolicy: Never
 
 # -----------------------------------------------------------------------------
@@ -454,7 +444,7 @@ objects:
       spec:
         initContainers:
         - image: yauritux/busybox-curl
-          name: wait-for-chem-before-portal
+          name: wait-for-core-before-portal
           command: ['sh', '-c',
             'until (( curl http://coreservices:8080/rest/ping --connect-timeout 5 )); do sleep 2; done']
         containers:
