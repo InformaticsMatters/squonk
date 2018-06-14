@@ -50,7 +50,9 @@ source setenv.sh
 >   If you're running in minishift and starting from a clean system there are
     scripts to simplify the process. With a suitable minishift running and a
     set of environment variables set you can run `minishift-deploy-a.sh` to
-    deploy the first phase, up to and including the SSO infrastructure.
+    deploy the first phase, up to and including the SSO infrastructure. And
+    then, after you've made changes to the SSO service
+    run `minishift-deploy-b.sh` to install the main application components.
 
 ### Test logins
 
