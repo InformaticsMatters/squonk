@@ -55,8 +55,8 @@ Ensure that you have `$OC_ADMIN` and `$OC_USER` by testing a login of each.
     session therefore avoiding the need for oc passwords later in the process.
 
 ```
-oc login -u $OC_USER
-oc login -u $OC_ADMIN
+oc login $OC_MASTER_URL -u $OC_USER
+oc login $OC_MASTER_URL -u $OC_ADMIN
 ```
 
 ### Create Keycloak image streams
@@ -114,10 +114,9 @@ To get postgres running in Minishift you may need to
 set permissions on the PV that is used. e.g.
 
 ```
-minishift ssh -- sudo chmod 777 /mnt/sda1/var/lib/minishift/openshift.local.pv/pv0015
+PG_PVC=$(oc get pvc/postgresql-claim --no-headers | tr -s ' ' | cut -f 3 -d ' ')
+minishift ssh -- sudo chmod 777 /mnt/sda1/var/lib/minishift/openshift.local.pv/${PG_PVC}
 ```
-(lookup the appropriate PV to fix)
-
 
 #### If using NFS with OpenShift: 
 
@@ -193,6 +192,18 @@ Deploy PostgreSQL, RabbitMQ and Keycloak to the infrastructure project:
 Check that the infrastructure components are all running (e.g. use the web console).
 It may take several minutes for everything to start.
 
+There are 3 Pods that we need to wait for. If it's of any use the following
+will block until the required pod count is 3:  
+
+```
+PODS=$(oc get po --no-headers | grep -v "deploy" | grep "1/1" | wc -l | tr -s ' ' | cut -f 2 -d ' ')
+until [ $PODS -eq 3 ]
+do
+    PODS=$(oc get po --no-headers | grep -v "deploy" | grep "1/1" | wc -l | tr -s ' ' | cut -f 2 -d ' ')
+    sleep 2
+done
+```
+
 Now we can deploy Squonk.
 
 ### Undeploy
@@ -206,14 +217,19 @@ Delete thesee manually if needed.
 
 #### Keycloak Users
 
-Once running you will need to add roles and user to the Keycloak realm to allow you to test the Squonk notebook
-application.
+Once running you will need to add roles and user to the Keycloak realm
+to allow you to test the Squonk notebook application.
+
+>   The keycloak admin login credentials are stored as
+    `keycloak-secrets` secrets in the Squonk Infrastructure project.
 
 For instance:
 
--   Create the `standard-user` role
--   Add `standard-user`to the default roles
--   Create sample users e.g. `user1` and assign passwords.
+-   In `Configure -> Roles` of the `Squonk` _realm_, create a `standard-user`
+    role and then add it to the list of _Default Roles_
+-   In `Manage -> Users` create sample users e.g. `user1` and assign a
+    password in the `Credentials` tab and make sure the password is _not_
+    `Temporary`.
 
 #### Keycloak TLS certificate
 

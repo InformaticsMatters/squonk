@@ -1,14 +1,20 @@
 #!/bin/bash
 
-# for openshift the public hostname master
-# for minishift the IP address of the minishift VM. e.g. `minishift ip`  with .nip.io appended.
+# For an openshift deployment the OC_MASTER_HOSTNAME must be a public domain
+# that will resolve to the master. For minishift this will be the
+# IP address of the minishift VM. e.g. `minishift ip`  with `.nip.io` appended.
 # e.g. 192.168.42.78.nip.io
 export OC_MASTER_HOSTNAME=example.org
+# The OC_MASTER_URL is used to login to the cluster.
+# For an openshift deployment the OC_MASTER_URL must be a public URL
+# that will resolve to the master. For minishift this should be blank.
+export OC_MASTER_URL=https://example.org:8443
+
 export OC_DEPLOYMENT=squonk
 export OC_ADMIN=admin
 export OC_USER=developer
-export OC_MASTER_URL=https://${OC_MASTER_HOSTNAME}:8443
-# for openshift change this to the hostname of the infra node hosting the router
+
+# For openshift change this to the hostname of the infra node hosting the router
 export OC_ROUTES_BASENAME=${OC_MASTER_HOSTNAME}
 export KEYCLOAK_SERVER_URL=https://sso.${OC_ROUTES_BASENAME}/auth
 export KEYCLOAK_REALM=squonk
@@ -21,16 +27,14 @@ export OC_SQUONK_HOST=${OC_SQUONK_APP}.${OC_ROUTES_BASENAME}
 export OC_DOMAIN_NAME=novalocal
 export OC_NFS_SERVER=squonk-infra.$OC_DOMAIN_NAME
 
-
-
-echo "OC_PROJECT set to $OC_PROJECT"
-echo "OC_INFRA_PROJECT set to $OC_INFRA_PROJECT"
-echo "OC_MASTER_HOSTNAME set to $OC_MASTER_HOSTNAME"
-echo "OC_ROUTES_BASENAME set to $OC_ROUTES_BASENAME"
-echo "OC_ADMIN set to $OC_ADMIN"
-echo "OC_USER set to $OC_USER"
-echo "OC_SQUONK_HOST set to $OC_SQUONK_HOST"
-echo "OC_NFS_SERVER set to $OC_NFS_SERVER"
-echo "KEYCLOAK_SERVER_URL set to $KEYCLOAK_SERVER_URL"
-echo "KEYCLOAK_REALM set to $KEYCLOAK_REALM"
-
+echo "OC_PROJECT set to '$OC_PROJECT'"
+echo "OC_INFRA_PROJECT set to '$OC_INFRA_PROJECT'"
+echo "OC_MASTER_HOSTNAME set to '$OC_MASTER_HOSTNAME'"
+echo "OC_ROUTES_BASENAME set to '$OC_ROUTES_BASENAME'"
+echo "OC_MASTER_URL set to '$OC_MASTER_URL'"
+echo "OC_ADMIN set to '$OC_ADMIN'"
+echo "OC_USER set to '$OC_USER'"
+echo "OC_SQUONK_HOST set to '$OC_SQUONK_HOST'"
+echo "OC_NFS_SERVER set to '$OC_NFS_SERVER'"
+echo "KEYCLOAK_SERVER_URL set to '$KEYCLOAK_SERVER_URL'"
+echo "KEYCLOAK_REALM set to '$KEYCLOAK_REALM'"
