@@ -53,6 +53,8 @@ source setenv.sh
     deploy the first phase, up to and including the SSO infrastructure. And
     then, after you've made changes to the SSO service
     run `minishift-deploy-b.sh` to install the main application components.
+    Finally, the supplemental applications (like the ChemCentral database) can
+    be loaded using the third deployment helper (`minishift-deploy-c.sh`).
 
 ### Test logins
 

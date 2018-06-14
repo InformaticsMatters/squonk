@@ -16,9 +16,9 @@ eval $(minishift oc-env)
 
 cd squonk-app
 oc process -p APP_NAMESPACE=$OC_PROJECT -f squonk-pvc-minishift.yaml | oc create -f -
-
 ./squonk-infra-deploy.sh
 ./squonk-app-keycloak-deploy.sh
+cd ..
 
 # Wait for key pod deployments...
 # i.e. wait until the following completes...
