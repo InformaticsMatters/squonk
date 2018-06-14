@@ -17,10 +17,10 @@
 package org.squonk.security;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /** Basic UserDetailsManager that uses the servlet API to provide minimal information about the user.
  * Authentication by the container is required.
@@ -29,20 +29,44 @@ import java.util.Map;
  */
 public class DefaultUserDetailsManager implements UserDetailsManager {
 
+    private static Logger LOG = Logger.getLogger(DefaultUserDetailsManager.class.getName());
 
     /** Get info about the user from the request using HttpServletRequest.getUserPrincipal().getName() as the username.
      * Other information is faked as the Servlet API does not provide anything beyond the Principal.
-     * However, HttpServletRequest.isUserInRole(String role) should still work correctly.
+     * However, HttpServletRequest.isUserInRole(String role) should still work correctly and all users should be in the
+     * 'standard-user' role.
      *
      * @param request
      * @return
      */
     @Override
     public UserDetails getAuthenticatedUser(HttpServletRequest request) {
+        UserDetails userDetails = (UserDetails) request.getAttribute(UserDetails.class.getName());
+        if (userDetails != null) {
+            return userDetails;
+        } else {
+            userDetails = buildUserDetails(request);
+            if (userDetails != null) {
+                request.setAttribute(UserDetails.class.getName(), userDetails);
+            }
+            return userDetails;
+        }
+    }
+
+    protected UserDetails buildUserDetails(HttpServletRequest request) {
         Principal p = request.getUserPrincipal();
         if (p != null) {
             String username = p.getName();
-            return new UserDetails(UserDetails.AUTHENTICATOR_SERVLET, username, username + "@nowhere.com", username, username);
+            UserDetails ud =  new UserDetails(
+                    UserDetails.AUTHENTICATOR_SERVLET,
+                    username,
+                    username + "@nowhere.com",
+                    username,
+                    username,
+                    Collections.singleton("standard-user")
+            );
+            LOG.info("Created UserDetails from Servlet Principal: " + ud.toString());
+            return ud;
         }
         return null;
     }
@@ -51,5 +75,7 @@ public class DefaultUserDetailsManager implements UserDetailsManager {
     public Map<String,String> getSecurityHeaders(HttpServletRequest request) {
         return Collections.emptyMap();
     }
+
+
 
 }

@@ -16,12 +16,15 @@
 
 package org.squonk.security.impl;
 
+import org.keycloak.representations.AccessToken;
 import org.squonk.security.DefaultUserDetailsManager;
 import org.squonk.security.UserDetails;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.common.util.KeycloakUriBuilder;
@@ -36,22 +39,50 @@ public class KeycloakUserDetailsManager extends DefaultUserDetailsManager {
     private static final Logger LOG = Logger.getLogger(KeycloakUserDetailsManager.class.getName());
 
     @Override
-    public UserDetails getAuthenticatedUser(HttpServletRequest request) {
+    protected UserDetails buildUserDetails(HttpServletRequest request) {
+
         KeycloakSecurityContext session = (KeycloakSecurityContext) request.getAttribute(KeycloakSecurityContext.class.getName());
+
         if (session != null) {
-            IDToken token = session.getIdToken();
-            if (token != null) {
-                UserDetails ud = new UserDetails(UserDetails.AUTHENTICATOR_KEYCLOAK, token.getPreferredUsername(), token.getEmail(), token.getGivenName(), token.getFamilyName());
-                LOG.fine("Found authenticated user from Keycloak token: " + ud.toString());
+            AccessToken accessToken = session.getToken();
+            IDToken idToken = session.getIdToken();
+
+            String username;
+            if (idToken == null) {
+                username = "unknown";
+            } else {
+                username = idToken.getPreferredUsername();
+            }
+
+            Set<String> roles;
+            if (accessToken == null) {
+                roles = Collections.emptySet();
+            } else {
+                roles = session.getToken().getRealmAccess().getRoles();
+                LOG.info("User " + username +
+                        " is in these roles: " +
+                        roles.stream().collect(Collectors.joining(",")));
+            }
+
+            if (idToken != null) {
+                UserDetails ud = new UserDetails(
+                        UserDetails.AUTHENTICATOR_KEYCLOAK,
+                        idToken.getPreferredUsername(),
+                        idToken.getEmail(),
+                        idToken.getGivenName(),
+                        idToken.getFamilyName(),
+                        roles);
+                LOG.info("Created UserDetails from Keycloak token: " + ud.toString());
                 return ud;
             }
         }
-        return super.getAuthenticatedUser(request);
+        return super.buildUserDetails(request);
     }
 
     @Override
     public URI getLogoutUrl(HttpServletRequest request, String redirectTo) {
         KeycloakSecurityContext session = (KeycloakSecurityContext) request.getAttribute(KeycloakSecurityContext.class.getName());
+
         if (session != null) {
             IDToken token = session.getIdToken();
             if (token != null) {
