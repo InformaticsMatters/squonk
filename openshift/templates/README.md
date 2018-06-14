@@ -47,6 +47,11 @@ Once done, _source_ the file...
 source setenv.sh
 ```
 
+>   If you're running in minishift and starting from a clean system there are
+    scripts to simplify the process. With a suitable minishift running and a
+    set of environment variables set you can run `minishift-deploy-a.sh` to
+    deploy the first phase, up to and including the SSO infrastructure.
+
 ### Test logins
 
 Ensure that you have `$OC_ADMIN` and `$OC_USER` by testing a login of each.
