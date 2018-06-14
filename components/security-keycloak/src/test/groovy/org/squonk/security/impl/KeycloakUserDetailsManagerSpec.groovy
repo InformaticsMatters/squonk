@@ -17,6 +17,7 @@
 package org.squonk.security.impl
 
 import org.keycloak.KeycloakSecurityContext
+import org.keycloak.representations.AccessToken
 import org.keycloak.representations.IDToken
 import org.squonk.security.UserDetails
 import spock.lang.Specification
@@ -32,19 +33,19 @@ class KeycloakUserDetailsManagerSpec extends Specification {
     void "keycloak token"() {
 
         setup:
-        IDToken token = Mock()
-        token.getPreferredUsername() >> 'squonk'
-        token.getEmail() >> 'squonk@somewhere.com'
-        token.getGivenName() >> 'the'
-        token.getFamilyName() >> 'squonk'
-        token.getIssuer() >> 'https://keycloak/auth/realms/squonk'
+        IDToken idToken = Mock()
+        idToken.getPreferredUsername() >> 'squonk'
+        idToken.getEmail() >> 'squonk@somewhere.com'
+        idToken.getGivenName() >> 'the'
+        idToken.getFamilyName() >> 'squonk'
+        idToken.getIssuer() >> 'https://keycloak/auth/realms/squonk'
 
         KeycloakSecurityContext context = Mock()
-        context.getIdToken() >> token
+        context.getIdToken() >> idToken
         context.getRealm() >> 'squonk'
 
         HttpServletRequest request = Mock()
-        request.getAttribute(_) >> context
+        request.getAttribute(KeycloakSecurityContext.class.getName()) >> context
 
 
         when:

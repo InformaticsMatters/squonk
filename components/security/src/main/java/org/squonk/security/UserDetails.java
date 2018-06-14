@@ -17,6 +17,7 @@
 package org.squonk.security;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /** Represents details of a user
  * Additional properties might be added later
@@ -33,14 +34,16 @@ public class UserDetails implements Serializable {
     private final String email;
     private final String firstName;
     private final String lastName;
+    private final Set<String> roles;
 
     
-    public UserDetails(String authenticator, String userid, String email, String firstName, String lastName) {
+    public UserDetails(String authenticator, String userid, String email, String firstName, String lastName, Set<String> roles) {
         this.authenticator = authenticator;
         this.userid = userid;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.roles = roles;
     }
 
     public String getAuthenticator() {
@@ -65,6 +68,10 @@ public class UserDetails implements Serializable {
 
     public String getLastName() {
         return lastName;
+    }
+
+    public Set<String> getRoles() {
+        return roles;
     }
 
     /** Get the name to display for the user, determined as best we can based on what is present as firstName, lastName and userid
