@@ -47,15 +47,6 @@ Once done, _source_ the file...
 source setenv.sh
 ```
 
->   If you're running in minishift and starting from a clean system there are
-    scripts to simplify the process. With a suitable minishift running and a
-    set of environment variables set you can run `minishift-deploy-a.sh` to
-    deploy the first phase, up to and including the SSO infrastructure. And
-    then, after you've made changes to the SSO service
-    run `minishift-deploy-b.sh` to install the main application components.
-    Finally, the supplemental applications (like the ChemCentral database) can
-    be loaded using the third deployment helper (`minishift-deploy-c.sh`).
-
 ### Test logins
 
 Ensure that you have `$OC_ADMIN` and `$OC_USER` by testing a login of each.
@@ -67,6 +58,15 @@ Ensure that you have `$OC_ADMIN` and `$OC_USER` by testing a login of each.
 oc login $OC_MASTER_URL -u $OC_USER
 oc login $OC_MASTER_URL -u $OC_ADMIN
 ```
+
+>   If you're running in minishift and starting from a clean system there are
+    scripts to simplify the following process. With a suitable minishift
+    running and a set of environment variables set you can run
+    `./minishift-deploy-a.sh` to deploy the first phase, up to and including
+    the SSO infrastructure. Then, after you've made changes to the SSO service,
+    run `./minishift-deploy-b.sh` to install the main application components.
+    Finally, the supplemental applications (like the ChemCentral database) can
+    be loaded using the third deployment helper (`./minishift-deploy-c.sh`).
 
 ### Create Keycloak image streams
 

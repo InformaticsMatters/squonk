@@ -27,8 +27,8 @@ TARGET_PODS=4
 READY_PODS=$(oc get po --no-headers | grep -v "deploy" | grep -v "poster" | grep -v "migrate" | grep "1/1" | wc -l | tr -s ' ' | cut -f 2 -d ' ')
 until [ $READY_PODS -eq $TARGET_PODS ]
 do
-    echo "Waiting for $TARGET_PODS ready pods ($READY_PODS are ready)..."
-    sleep 8
+    echo "Waiting for $TARGET_PODS pods ($READY_PODS ready)..."
+    sleep 10
     READY_PODS=$(oc get po --no-headers | grep -v "deploy" | grep -v "poster" | grep -v "migrate" | grep "1/1" | wc -l | tr -s ' ' | cut -f 2 -d ' ')
 done
 echo "Ready"

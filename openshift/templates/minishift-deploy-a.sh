@@ -30,8 +30,10 @@ oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -f squonk-infra/infra-pvc-minish
 PG_PVC=$(oc get pvc/postgresql-claim --no-headers | tr -s ' ' | cut -f 3 -d ' ')
 minishift ssh -- sudo chmod 777 /mnt/sda1/var/lib/minishift/openshift.local.pv/${PG_PVC}
 
+cd squonk-infra
 ./sso-postgres-deploy.sh
 ./rabbitmq-deploy.sh
+cd ..
 
 oc login -u system:admin
 oc volume dc/sso --add --claim-size 512M --mount-path /opt/eap/standalone/configuration/standalone_xml_history --name standalone-xml-history
@@ -43,8 +45,8 @@ TARGET_PODS=3
 READY_PODS=$(oc get po --no-headers | grep -v "deploy" | grep "1/1" | wc -l | tr -s ' ' | cut -f 2 -d ' ')
 until [ $READY_PODS -eq $TARGET_PODS ]
 do
-    echo "Waiting for $TARGET_PODS ready pods ($READY_PODS are ready)..."
-    sleep 8
+    echo "Waiting for $TARGET_PODS pods ($READY_PODS ready)..."
+    sleep 10
     READY_PODS=$(oc get po --no-headers | grep -v "deploy" | grep "1/1" | wc -l | tr -s ' ' | cut -f 2 -d ' ')
 done
 echo "Ready"
