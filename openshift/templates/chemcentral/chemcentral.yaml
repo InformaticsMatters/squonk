@@ -58,7 +58,7 @@ parameters:
   value: 500Mi
 
 - name: SEARCH_IMAGE_TAG
-  value: openshift-merge
+  value: latest
 
 objects:
 

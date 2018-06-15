@@ -29,14 +29,14 @@ parameters:
 # ------
 
 - name: FLYWAY_IMAGE_TAG
-  value: openshift-merge
+  value: latest
 
 # ---------
 # SD Poster (Service Descriptor Poster)
 # ---------
 
 - name: SD_POSTER_IMAGE_TAG
-  value: openshift-merge
+  value: latest
 
 # ------
 # Portal
@@ -65,7 +65,7 @@ parameters:
 # ------------
 
 - name: CHEM_IMAGE_TAG
-  value: openshift-merge
+  value: latest
 
 - name: CHEM_CPU_REQUEST
   value: 100m
@@ -81,7 +81,7 @@ parameters:
 # ------------
 
 - name: CORE_IMAGE_TAG
-  value: openshift-merge
+  value: latest
 - name: CORE_SQUONK_BASIC_CHEM_SERVICES_URL
   value: "http://chemservices:8080"
 - name: CORE_SQUONK_DOCKER_SERVICES_DIR
@@ -103,7 +103,7 @@ parameters:
 # ------------
 
 - name: CELL_IMAGE_TAG
-  value: openshift-merge
+  value: latest
 - name: CELL_CONTAINER_RUNNER_TYPE
   value: openshift
 - name: CELL_SQUONK_CONTAINER_WORK_DIR

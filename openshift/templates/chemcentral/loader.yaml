@@ -21,7 +21,7 @@ parameters:
 
 - name: IMAGE_TAG
   description: Tag name for the squonk/chemcentral-loader image
-  value: openshift-merge
+  value: latest
 
 - name: SCHEMA_NAME
   description: Name of the database schema
