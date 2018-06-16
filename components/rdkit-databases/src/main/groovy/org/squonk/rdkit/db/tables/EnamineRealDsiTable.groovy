@@ -31,7 +31,7 @@ class EnamineRealDsiTable extends RDKitTable {
                 FingerprintType.RDKIT,
                 FingerprintType.MORGAN_CONNECTIVITY_2,
                 FingerprintType.MORGAN_FEATURE_2])
-        addColumn("idnumber", "CHAR", "CHAR(11) NOT NULL")
+        addColumn("idnumber", "VARCHAR", "VARCHAR(20) NOT NULL")
     }
 
     EnamineRealDsiTable() {
