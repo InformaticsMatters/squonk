@@ -141,6 +141,41 @@ task wrapper(type: Wrapper) {
 project.ext.set('dockerHost', getDockerHost())
 project.ext.set('dockerCertPath', System.env.DOCKER_CERT_PATH ? file(System.env.DOCKER_CERT_PATH) : null)
 
+task installChemaxonLicense(type: Copy) {
+    from "$System.env.HOME/.squonk/license.cxl"
+    into "../data/licenses"
+}
+
+task installChemaxonLicenseToHome(type: Copy) {
+    from "$System.env.HOME/.squonk/license.cxl"
+    into "$System.env.HOME/.chemaxon"
+}
+
+task installChemaxonLibrary(type: Copy) {
+    from "$System.env.HOME/.squonk/chemaxon_reaction_library.zip"
+    into '../docker/deploy/images/chemservices'
+}
+
+task installCpSignLicense(type: Copy) {
+    from "$System.env.HOME/.squonk/cpsign0.3pro.license"
+    into '../data/licenses'
+}
+
+task installLicenses {
+
+    description = "Copies various license files into place"
+    // Here the license file origin is expected to be the user's $HOME/.squonk directory.
+    // The task simply invokes a number of individual copy tasks to move the
+    // files into their expected location within the project.
+
+    dependsOn = [
+        'installChemaxonLicense',
+        'installChemaxonLicenseToHome',
+        'installChemaxonLibrary',
+        'installCpSignLicense'
+    ]
+
+}
 
 String getDockerHost() {
     String h = System.getenv('DOCKER_HOST') ?: 'unix:///var/run/docker.sock'

@@ -609,7 +609,7 @@ public class OpenShiftRunner extends AbstractRunner {
     /**
      * Called to prematurely stop the execution of the running container.
      * This method blocks until the container image has terminated.
-     * The container exit code it not of interest.
+     * The container exit code is not of interest here.
      */
     @Override
     public synchronized void stop() {
