@@ -323,36 +323,6 @@ objects:
       name: chemservices-basic
 
 # -----------------------------------------------------------------------------
-# Squonk Docker-Services Poster
-# -----------------------------------------------------------------------------
-
-# This 'Job' populates the Core's Service Descriptor set via a POST.
-
-- kind: Job
-  apiVersion: batch/v1
-  metadata:
-    name: pipelines-sd-poster
-    namespace: ${APP_NAMESPACE}
-  spec:
-    replicas: 1
-    selector:
-      name: pipelines-sd-poster
-    template:
-      metadata:
-        labels:
-          name: pipelines-sd-poster
-      spec:
-        initContainers:
-        - image: yauritux/busybox-curl
-          name: wait-for-core-before-pipelines-post
-          command: ['sh', '-c',
-            'until (( curl http://coreservices:8080/rest/ping --connect-timeout 5 )); do sleep 2; done']
-        containers:
-        - image: squonk/rdkit-pipelines-sdposter:${SD_POSTER_IMAGE_TAG}
-          name: pipelines-sd-poster
-        restartPolicy: Never
-
-# -----------------------------------------------------------------------------
 # CellExecutor
 # -----------------------------------------------------------------------------
 
