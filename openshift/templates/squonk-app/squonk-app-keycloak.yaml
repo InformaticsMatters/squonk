@@ -348,7 +348,7 @@ objects:
           command: ['sh', '-c',
             'until (( curl http://coreservices:8080/rest/ping --connect-timeout 5 )); do sleep 2; done']
         containers:
-        - image: squonk/pipelines-sdposter:${SD_POSTER_IMAGE_TAG}
+        - image: squonk/rdkit-pipelines-sdposter:${SD_POSTER_IMAGE_TAG}
           name: pipelines-sd-poster
         restartPolicy: Never
 

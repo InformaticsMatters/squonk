@@ -47,6 +47,13 @@ Once done, _source_ the file...
 source setenv.sh
 ```
 
+>   If you're running in minishift and starting from a clean system there's a
+    script to simplify the full deployment process. With a suitable minishift
+    running and a set of environment variables set you can run
+    `./minishift-deploy.sh` to deploy the entire application. Once done
+    you can then login to the SSO instance and create your Squonk users
+    and then use the Portal.
+
 ### Test logins
 
 Ensure that you have `$OC_ADMIN` and `$OC_USER` by testing a login of each.
@@ -58,13 +65,6 @@ Ensure that you have `$OC_ADMIN` and `$OC_USER` by testing a login of each.
 oc login $OC_MASTER_URL -u $OC_USER
 oc login $OC_MASTER_URL -u $OC_ADMIN
 ```
-
->   If you're running in minishift and starting from a clean system there's a
-    script to simplify the full deployment process. With a suitable minishift
-    running and a set of environment variables set you can run
-    `./minishift-deploy.sh` to deploy the entire suite of images. Once done
-    you can then login to the SSO instance and create your Squonk users
-    and then use the Portal.
 
 ### Create Keycloak image streams
 
