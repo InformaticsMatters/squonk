@@ -14,6 +14,8 @@
 **/*~
 **/.DS_Store
 
+openshift/jenkins/setenv.sh
+
 data/licenses/*
 data/testfiles/emols_order*
 data/testfiles/all-sdf.sdf.gz
