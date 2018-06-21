@@ -11,10 +11,6 @@ labels:
 
 parameters:
 
-- name: DB_NAMESPACE
-  description: Namespace for the chemcentral database
-  value: squonk-infra
-
 - name: APP_NAMESPACE
   description: Namespace for the chemcentral search service
   value: squonk
@@ -67,7 +63,10 @@ objects:
           name: chemcentral-loader
           env:
           - name: CHEMCENTRAL_HOST
-            value: db-chemcentral.${DB_NAMESPACE}.svc
+            valueFrom:
+              secretKeyRef:
+                name: chemcentral-database-credentials
+                key: host
           - name: CHEMCENTRAL_USER
             valueFrom:
               secretKeyRef:

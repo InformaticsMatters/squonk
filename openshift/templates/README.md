@@ -266,8 +266,8 @@ oc process -p APP_NAMESPACE=$OC_PROJECT -f squonk-pvc-minishift.yaml | oc create
 
 #### If using NFS with OpenShift
 
-First create NFS exports on the node that is acting as the NFS server (probably the infrastructure node)
-for `/exports/squonk-work-dir` and `/exports/squonk-service-descriptors` and then define the PVs and PVCs:
+First create NFS export on the node that is acting as the NFS server (probably the infrastructure node)
+for `/exports/squonk-work-dir` and then define the PVs and PVCs:
 
 ```
 oc process -p APP_NAMESPACE=$OC_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -f squonk-pvc-nfs.yaml | oc create -f -
@@ -311,7 +311,7 @@ needed to connect the Squonk notebook (portal application) to Keycloak for SSO.
 
 To confirm that the keycloak initialisation has completed run this:
 ```
-oc logs job/squonk-client-creator -n squonk-infra
+oc logs job/squonk-client-creator -n $OC_INFRA_PROJECT
 ```
 The output should end with `Registered client squonk-notebook in realm squonk`
 
@@ -334,5 +334,5 @@ Following this the Computational Notebook should be running.
 ### Chemcentral
 
 Once Squonk is deployed you can deploy the chemcentral chemical search application.
-This is described [here](../chemcentral/README.md).
+This is described [here](chemcentral/README.md).
 
