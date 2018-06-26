@@ -51,10 +51,10 @@ entire dataset.
 Run the loader with a command like this:
 
 ```
-docker run -it --rm -v $HOME/data/structures/chemspace/201711_Chemspace_representative_catalogue_3_54M_sdf.sdf.gz:/rdkit/chemspace.sdf.gz:ro,Z \
-  -e CHEMCENTRAL_HOST=172.17.0.1 \
-  -e CHEMCENTRAL_LIMIT=20000 \
-  squonk/chemcentral-loader:openshift \
+docker run -it --rm -v $HOME/data/structures/chemspace/201711_Chemspace_representative_catalogue_3_54M_sdf.sdf.gz:/rdkit/chemspace.sdf.gz:ro,Z\
+  -e CHEMCENTRAL_HOST=172.17.0.1\
+  -e CHEMCENTRAL_LIMIT=20000\
+  squonk/chemcentral-loader:latest\
   org.squonk.rdkit.db.loaders.ChemspaceSdfLoader
 ```
 

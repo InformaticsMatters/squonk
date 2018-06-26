@@ -226,6 +226,23 @@ class RDKitTableLoader {
         }
     }
 
+    /** Run the ANALYZE command to make sure the table statistics are correct
+     *
+     */
+    void analyze() {
+
+        log.info("Building statistics for " + baseSchemaPlusTable())
+        Sql db = getSql()
+        try {
+            String sql1 = 'ANALYZE ' + baseSchemaPlusTable()
+            db.execute(sql1)
+            String sql2 = 'ANALYZE ' + molfpsSchemaPlusTable()
+            db.execute(sql2)
+        } finally {
+            db.close()
+        }
+    }
+
     private void executeBatch(Sql db, Stream<MoleculeObject> mols, Map<String, Class> propertyToTypeMappings) {
         List values = []
         String cols = rdkTable.columns[1..(rdkTable.columns.size() -1)].collect { it.name }.join(',')

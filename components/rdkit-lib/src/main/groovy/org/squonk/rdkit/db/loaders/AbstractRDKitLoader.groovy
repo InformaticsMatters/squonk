@@ -129,6 +129,7 @@ abstract class AbstractRDKitLoader {
         worker.aliasTableInfo()
 
         worker.getRowCount()
+        worker.analyze()
 
         //worker.dropAllItems()
     }
