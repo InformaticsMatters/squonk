@@ -168,7 +168,8 @@ public class OpenShiftRunner extends AbstractRunner {
         public void eventReceived(Action action, Pod resource) {
 
             PodStatus podStatus = resource.getStatus();
-            LOG.info("podStatus=" + podStatus.toString());
+            // For debug (it's a large object)...
+//            LOG.info("podStatus=" + podStatus.toString());
 
             // Check each PodCondition and its ContainerStatus array...
             // Significant information is:
