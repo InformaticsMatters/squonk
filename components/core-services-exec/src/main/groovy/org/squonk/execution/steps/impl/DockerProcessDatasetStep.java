@@ -63,6 +63,7 @@ public class DockerProcessDatasetStep extends AbstractStandardStep {
         String localWorkDir = "/source";
 
         ContainerRunner runner = createContainerRunner(image, localWorkDir);
+        runner.init();
         LOG.info("Docker image: " + image + ", hostWorkDir: " + runner.getHostWorkDir() + ", script: " + command);
         try {
             // create input files

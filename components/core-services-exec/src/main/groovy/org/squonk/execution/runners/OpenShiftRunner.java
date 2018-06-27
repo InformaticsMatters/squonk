@@ -245,7 +245,7 @@ public class OpenShiftRunner extends AbstractRunner {
     }
 
     /**
-     * The LogStream is used to collect the stdout form the launhced Pod.
+     * The LogStream is used to collect the stdout from the launhced Pod.
      * It is created from within the PodWatcher when we're confident the
      * Pod's running.
      */
@@ -377,6 +377,40 @@ public class OpenShiftRunner extends AbstractRunner {
         // Form the string that will be used to name all our OS objects...
         podName = String.format("%s-%s", OS_OBJ_BASE_NAME, subPath);
         LOG.info("podName='" + podName + "'");
+
+    }
+
+    /**
+     * Given an existing configuration string this method adds material
+     * to allow a Nextflow container to run properly in our OpenShift
+     * environment. This mainly consists of exposing the name of the
+     * shared data volume claim, a suitable mount path and the sub-path
+     * we're using.
+     *
+     * @param originalConfig The original configuration string.
+     *                       If this is null, null is returned.
+     * @return originalConfig with further config appended.
+     */
+    public String addExtraNextflowConfig(String originalConfig) {
+
+        if (originalConfig == null) {
+            return null;
+        }
+
+        // Add all the stuff Nextflow needs from our OpenShift world...
+        // The following requires Nextflow 0.31.0 or later.
+        String additionalConfig = String.format(
+                "process.executor = 'k8s'\n" +
+                "k8s {\n" +
+                "  storageClaimName = '%s'\n" +
+                "  storageMountPath = '/source'\n" +
+                "  storageSubPath = '%s'\n" +
+                "}\n",
+                OS_DATA_VOLUME_PVC_NAME,
+                jobId,
+                jobId);
+
+        return originalConfig + "\n" + additionalConfig;
 
     }
 

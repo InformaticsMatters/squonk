@@ -126,6 +126,14 @@ public class DockerRunner extends AbstractRunner {
         dockerClient = DockerClientBuilder.getInstance(config).build();
     }
 
+    @Override
+    public String addExtraNextflowConfig(String originalConfig) {
+
+        // We have nothign to add.
+        // Just return the original string.
+        return originalConfig;
+
+    }
 
     public String getLocalWorkDir() {
         return localWorkDir;

@@ -48,6 +48,23 @@ public interface ContainerRunner {
             throws IOException;
 
     /**
+     * Given a configuration String this method returns that string plus any
+     * extra configuration required by a Nextflow process.
+     * <p/>
+     * If the runner has extra configuration items required for Nexdtfloe
+     * (typically something like the PVC mount name) then this material is
+     * appended to the supplied string and returned.
+     * <p/>
+     * The string mignt not be modified.
+     *
+     * @param originalConfig The original Nextflow configuration.
+     * @return The originalConfig with extra Nextflow configuration appended.
+     *         The string may be returned unmodified. If the originalConfig
+     *         string is null, null is returned.
+     */
+    String addExtraNextflowConfig(String originalConfig);
+
+    /**
      * Execute a command in the container. This method can only be called once
      * for each containerRunner instance. Prior to calling this method
      * users must have called the object's init() method.

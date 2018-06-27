@@ -319,7 +319,9 @@ public abstract class AbstractServiceStep extends AbstractStep {
             Dataset thick = fetchMappedInput(ioDescriptor.getName(), Dataset.class, varman, true);
             Dataset thin = wrapper.prepareInput(thick);
 
-            FilesystemWriteContext context = new FilesystemWriteContext(runner.getHostWorkDir(), ioDescriptor.getName());
+            File hostWorkDir = runner.getHostWorkDir();
+            LOG.info("Handling thin input for " + ioDescriptor.getName() + " in " + hostWorkDir.toString());
+            FilesystemWriteContext context = new FilesystemWriteContext(hostWorkDir, ioDescriptor.getName());
             varman.putValue(Dataset.class, thin, context);
         } else {
             doHandleInput(camelContext, serviceDescriptor, varman, runner, ioDescriptor);
@@ -348,8 +350,9 @@ public abstract class AbstractServiceStep extends AbstractStep {
 
         ThinDatasetWrapper wrapper = wrappers.get(ioDescriptor.getName());
         if (ioDescriptor.getPrimaryType() == Dataset.class && wrapper != null) {
-            LOG.info("Handling thin output for " + ioDescriptor.getName());
-            FilesystemReadContext context = new FilesystemReadContext(runner.getHostWorkDir(), ioDescriptor.getName());
+            File hostWorkDir = runner.getHostWorkDir();
+            LOG.info("Handling thin output for " + ioDescriptor.getName() + " in " + hostWorkDir.toString());
+            FilesystemReadContext context = new FilesystemReadContext(hostWorkDir, ioDescriptor.getName());
             Dataset thin = varman.getValue(Dataset.class, context);
             Dataset thick = wrapper.generateOutput(thin);
             createMappedOutput(ioDescriptor.getName(), Dataset.class, thick, varman);

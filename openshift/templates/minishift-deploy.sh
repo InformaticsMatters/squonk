@@ -20,6 +20,8 @@ eval $(minishift oc-env)
 # The pause between checks during the periods when this script
 # waits for Pods to start.
 PAUSE_S=30
+# Time to wait for 'poster' pods (jobs) to complete...
+POSTER_PAUSE_S=5
 
 # The first stage of deployment
 # #############################
@@ -101,7 +103,7 @@ echo "Squonk is READY"
 cd chemcentral
 
 oc login -u $OC_ADMIN -p admin
-oc project $OC_INFRA_PROJECT
+oc project $OC_INFRA_PROJECT > /dev/null
 oc create sa chemcentral-postgres
 oc adm policy add-scc-to-user anyuid -z chemcentral-postgres
 oc process -f chemcentral-pvc-minishift.yaml | oc create -n $OC_INFRA_PROJECT -f -
@@ -114,7 +116,7 @@ cd ..
 
 echo "Waiting for ChemCentral (infrastructure)..."
 sleep $PAUSE_S
-oc project $OC_INFRA_PROJECT
+oc project $OC_INFRA_PROJECT > /dev/null
 TARGET_PODS=4
 READY_PODS=$(oc get po --no-headers | grep -v deploy | grep 1/1 | wc -l | tr -s ' ' | cut -f 2 -d ' ')
 until [ $READY_PODS -eq $TARGET_PODS ]
@@ -126,7 +128,7 @@ done
 echo "ChemCentral is READY (infrastructure)"
 
 echo "Waiting for ChemCentral (squonk)..."
-oc project $OC_PROJECT
+oc project $OC_PROJECT > /dev/null
 TARGET_PODS=5
 READY_PODS=$(oc get po --no-headers | grep -v deploy | grep 1/1 | wc -l | tr -s ' ' | cut -f 2 -d ' ')
 until [ $READY_PODS -eq $TARGET_PODS ]
@@ -159,13 +161,14 @@ cd $SQUONK_PIPELINES_PATH
 cd $HERE
 
 echo "Waiting for Pipelines to complete..."
-oc project $OC_PROJECT
+oc project $OC_PROJECT > /dev/null
+sleep $POSTER_PAUSE_S
 TARGET_PODS=1
 READY_PODS=$(oc get po --no-headers | grep pipelines-sd-poster | grep Completed | wc -l | tr -s ' ' | cut -f 2 -d ' ')
 until [ $READY_PODS -eq $TARGET_PODS ]
 do
     echo "Waiting for $TARGET_PODS pods ($READY_PODS complete)..."
-    sleep $PAUSE_S
+    sleep $POSTER_PAUSE_S
     READY_PODS=$(oc get po --no-headers | grep pipelines-sd-poster | grep Completed | wc -l | tr -s ' ' | cut -f 2 -d ' ')
 done
 echo "Pipelines is COMPLETE"

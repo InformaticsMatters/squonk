@@ -56,6 +56,14 @@ public class NextflowRunner extends AbstractRunner {
         throw new UnsupportedOperationException("NextflowRunner does not support getLocalWorkDir");
     }
 
+    @Override
+    public String addExtraNextflowConfig(String originalConfig) {
+
+        // We have nothign to add.
+        // Just return the original string.
+        return originalConfig;
+
+    }
 
     public int execute(List<String> args, Map<String,String> params) {
 

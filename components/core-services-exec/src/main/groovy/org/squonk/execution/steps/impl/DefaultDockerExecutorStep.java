@@ -101,6 +101,7 @@ public class DefaultDockerExecutorStep extends AbstractServiceStep {
         String localWorkDir = "/source";
 
         ContainerRunner runner = createContainerRunner(image, localWorkDir);
+        runner.init();
         LOG.info("Docker image: " + image + ", hostWorkDir: " + runner.getHostWorkDir() + ", command: " + expandedCommand);
         try {
             // create input files

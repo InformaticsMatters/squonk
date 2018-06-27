@@ -22,6 +22,7 @@ public abstract class AbstractRunner implements ContainerRunner {
     private static final Logger LOG = Logger.getLogger(AbstractRunner.class.getName());
 
     protected final File hostWorkDir;
+    protected final String jobId;
 
     static final int RUNNER_CREATED = 0;     // Created, init() to be called
     static final int RUNNER_RUNNNG = 1;      // execute() has been invoked
@@ -36,7 +37,7 @@ public abstract class AbstractRunner implements ContainerRunner {
      */
     protected int isRunning = RUNNER_CREATED;
 
-    protected AbstractRunner(String hostBaseWorkDir, String jobId) {
+    protected AbstractRunner(String hostBaseWorkDir, String givenJobId) {
         LOG.info("Specified hostBaseWorkDir is " + hostBaseWorkDir);
         if (hostBaseWorkDir == null) {
             hostBaseWorkDir = getDefaultWorkDir();
@@ -53,11 +54,12 @@ public abstract class AbstractRunner implements ContainerRunner {
 
         // Protect against a missing JobId (we'll assign our own).
         // Also protects old behaviour where jobId was auto-assigned.
-        if (jobId == null) {
-            jobId = UUID.randomUUID().toString();
-            LOG.warning("Missing jobId. Using new UUID '" + jobId + "'");
+        if (givenJobId == null) {
+            givenJobId = UUID.randomUUID().toString();
+            LOG.warning("Missing givenJobId. Using new UUID '" + givenJobId + "'");
         }
-        this.hostWorkDir = new File(hostBaseWorkDir + "/" + jobId);
+        this.jobId = givenJobId;
+        this.hostWorkDir = new File(hostBaseWorkDir + "/" + this.jobId);
         LOG.info("Host Work dir is " + hostWorkDir.getPath());
 
     }
@@ -66,10 +68,11 @@ public abstract class AbstractRunner implements ContainerRunner {
         LOG.info("init() - " + hostWorkDir.getPath());
         // The working directory cannot exist.
         // if it does this may indicate the clean-up process failed for
-        // an earlier run.
+        // an earlier run or init()'s been called twice..
         if (hostWorkDir.exists()) {
             throw new IOException("Work dir exists" +
-                    " (" + hostWorkDir.getPath() + "). Clean-up problem?");
+                    " (" + hostWorkDir.getPath() + ")." +
+                    " Clean-up problem or double-init()?");
         }
         if (!hostWorkDir.mkdir()) {
             throw new IOException("Could not create work dir " + hostWorkDir.getPath());

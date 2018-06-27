@@ -383,10 +383,6 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
             throw new IOException("Unsupported ContainerRunner type: '" + CONTAINER_RUNNER_TYPE + "'");
         }
 
-        LOG.info("Initialising...");
-        runner.init();
-        LOG.info("Using host work dir of " + runner.getHostWorkDir().getPath());
-        LOG.info("Using local work dir of " + runner.getLocalWorkDir());
         return runner;
 
     }

@@ -2,6 +2,7 @@ package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
 import org.squonk.core.NextflowServiceDescriptor;
+import org.squonk.execution.runners.ContainerRunner;
 import org.squonk.execution.runners.DockerRunner;
 import org.squonk.execution.steps.AbstractServiceStep;
 import org.squonk.execution.variable.VariableManager;
@@ -53,10 +54,11 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractServiceStep {
         } else {
             expandedCommand = "";
         }
-        String fullCommand = "nextflow run nextflow.nf " + expandedCommand + " -with-docker";
+        String fullCommand = "nextflow run nextflow.nf " + expandedCommand;
 
         String image = "informaticsmatters/nextflow";
-        DockerRunner runner = new DockerRunner(image, jobId);
+        String localWorkDir = "/source";
+        ContainerRunner runner = createContainerRunner(image, localWorkDir);
         runner.init();
         LOG.info("Docker image: " + image + ", hostWorkDir: " + runner.getHostWorkDir() + ", command: " + fullCommand);
 
@@ -76,13 +78,21 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractServiceStep {
             // write the nextflow config file if one is defined
             String nextflowConfigContents = descriptor.getNextflowConfig();
             if (nextflowConfigContents != null && !nextflowConfigContents.isEmpty()) {
+                // An opportunity for the runner to provide extra configuration.
+                // There may be nothing to add but the returned string
+                // will be valid.
+                nextflowConfigContents = runner.addExtraNextflowConfig(nextflowConfigContents);
                 LOG.info("Writing nextflow.config as:\n" + nextflowConfigContents);
                 runner.writeInput("nextflow.config", nextflowConfigContents, false);
             } else {
                 LOG.info("No nextflow.config");
             }
 
-            runner.includeDockerSocket();
+            // The runner's either a plain Docker runner
+            // or it's an OpenShift runner.
+            if (runner instanceof DockerRunner){
+                ((DockerRunner)runner).includeDockerSocket();
+            }
 
             // write the input data
             handleInputs(camelContext, descriptor, varman, runner);
