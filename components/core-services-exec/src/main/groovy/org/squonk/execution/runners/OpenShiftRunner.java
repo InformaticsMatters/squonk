@@ -168,18 +168,44 @@ public class OpenShiftRunner extends AbstractRunner {
         public void eventReceived(Action action, Pod resource) {
 
             PodStatus podStatus = resource.getStatus();
-//            LOG.info(podStatus.toString());
+            LOG.info("podStatus=" + podStatus.toString());
 
-            // PodConditions...
-            // Significant conditions are:
-            //   PodCompleted
+            // Check each PodCondition and its ContainerStatus array...
+            // Significant information is:
+            //   PodCondition.reason is PodCompleted (That's good)
+            // Or
+            //   Any ContainerStatus.state
+            //      where the state is terminated
+            //      when we'll find an exitCode and reason
             List<PodCondition> podConditions = podStatus.getConditions();
             if (podConditions != null) {
                 for (PodCondition podCondition : podConditions) {
                     String conditionReason = podCondition.getReason();
                     if (conditionReason != null) {
+                        LOG.info("conditionReason=" + conditionReason);
                         if (conditionReason.equals("PodCompleted")) {
                             podPhase = "Complete";
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!podPhase.equals("Complete")) {
+                List<ContainerStatus> containerStatuses = podStatus.getContainerStatuses();
+                if (containerStatuses != null) {
+                    for (ContainerStatus containerStatus : containerStatuses) {
+                        ContainerState cs = containerStatus.getState();
+                        if (cs != null) {
+                            ContainerStateTerminated csTerm = cs.getTerminated();
+                            if (csTerm != null) {
+                                // The Pod's terminated (unexpectedly?)
+                                // We'll handle the exit code in the next block.
+                                LOG.info("Pod has Terminated" +
+                                        " (exitCode=" + csTerm.getExitCode() +
+                                        " reason='" + csTerm.getReason() + "')");
+                                podPhase = "Complete";
+                                break;
+                            }
                         }
                     }
                 }
@@ -187,7 +213,7 @@ public class OpenShiftRunner extends AbstractRunner {
             // Waiting for
             if (podPhase == "Complete") {
 
-                // If we don't have a LogSTream object (used to capture the
+                // If we don't have a LogStream object (used to capture the
                 // launched pod's output) then create one now. With the current
                 // Kubernetes library we must wait until now (when we know the
                 // Pod's running) otherwise we won't be given any.
