@@ -129,6 +129,10 @@ objects:
     replicas: 1
     selector:
       name: rabbitmq
+    strategy:
+      type: Recreate
+      recreateParams:
+        timeoutSeconds: 100
     template:
       metadata:
         labels:
