@@ -240,35 +240,6 @@ public abstract class AbstractServiceStep extends AbstractStep {
         createMappedOutput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), value, varman);
     }
 
-    /** Take the command template and substitute it with the user specified options.
-     * The options are those that begin with 'arg.'
-     * The template is a Groovy GString.
-     *
-     * @param cmdTemplate
-     * @param options
-     * @return
-     */
-    protected String expandCommand(String cmdTemplate, Map<String,Object> options) {
-        Map<String, Object> args = new LinkedHashMap<>();
-        // Inject magical variables that are used to define locations of inputs and outputs.
-        // For execution these are set to the empty string.
-        args.put("PIN", "");
-        args.put("POUT", "");
-        options.forEach((k, v) -> {
-            if (k.startsWith("arg.")) {
-                LOG.info("Found argument " + k + " = " + v);
-                args.put(k.substring(4), v);
-            }
-        });
-
-        // replace windows line end characters
-        String command = cmdTemplate.replaceAll("\\r\\n", "\n");
-        LOG.info("Template: " + command);
-        String expandedCommand = GroovyUtils.expandTemplate(command, args);
-        LOG.info("Command: " + expandedCommand);
-        return expandedCommand;
-    }
-
 
     protected void handleThinInputs(
             CamelContext camelContext,

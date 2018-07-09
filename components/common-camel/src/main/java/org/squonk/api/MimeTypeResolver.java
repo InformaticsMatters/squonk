@@ -30,25 +30,25 @@ public interface MimeTypeResolver extends CommonMimeTypes {
 
     IODescriptor createIODescriptor(String name, String mediaType);
 
-    default HttpHandler createHttpHandler(String mimeType) {
+    default <T> HttpHandler<T> createHttpHandler(String mimeType) {
         return createHttpHandler(resolvePrimaryType(mimeType), resolveGenericType(mimeType));
     }
 
-    default HttpHandler createHttpHandler(Class primaryType) {
+    default <T> HttpHandler createHttpHandler(Class<T> primaryType) {
         return createHttpHandler(primaryType, null);
     }
 
-    HttpHandler createHttpHandler(Class primaryType, Class genericType);
+    <T> HttpHandler createHttpHandler(Class<T> primaryType, Class genericType);
 
     default VariableHandler createVariableHandler(String mimeType) {
         return createVariableHandler(resolvePrimaryType(mimeType), resolveGenericType(mimeType));
     }
 
-    default VariableHandler createVariableHandler(Class primaryType) {
+    default <T> VariableHandler createVariableHandler(Class<T> primaryType) {
         return createVariableHandler(primaryType, null);
     }
 
-    VariableHandler createVariableHandler(Class primaryType, Class secondaryType);
+    <T> VariableHandler createVariableHandler(Class<T> primaryType, Class secondaryType);
 
 }
 

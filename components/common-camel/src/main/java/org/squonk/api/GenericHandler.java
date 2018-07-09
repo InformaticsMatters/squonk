@@ -21,11 +21,8 @@ import org.apache.camel.spi.TypeConverterRegistry;
 /**
  * Created by timbo on 23/03/2016.
  */
-public interface GenericHandler<P,G> {
+public interface GenericHandler<P> {
 
-    void setGenericType(Class<G> genericType);
-
-    Class<G> getGenericType();
 
      default boolean canConvertGeneric(Class<? extends Object> otherGenericType, TypeConverterRegistry registry) {
          return false;

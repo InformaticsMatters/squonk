@@ -32,25 +32,19 @@ import java.util.logging.Logger;
  *
  * Created by timbo on 23/03/2016.
  */
-abstract class FileHandler<T extends AbstractStreamType> implements HttpHandler<T>, VariableHandler<T> {
+abstract class FileHandler<T extends AbstractStreamType> extends DefaultHandler<T> {
 
     private static final Logger LOG = Logger.getLogger(FileHandler.class.getName());
 
-    private final Class<T> type;
     private final String mediaType;
     private final String extension;
     private final boolean defaultGzip;
 
     FileHandler(Class<T> type, String mediaType, String extension, boolean defaultGzip) {
-        this.type = type;
+        super(type);
         this.mediaType = mediaType;
         this.extension = extension;
         this.defaultGzip = defaultGzip;
-    }
-
-    @Override
-    public Class<T> getType() {
-        return type;
     }
 
     public boolean isDefaultGzip() {
@@ -79,7 +73,11 @@ abstract class FileHandler<T extends AbstractStreamType> implements HttpHandler<
     public T readResponse(RequestResponseExecutor executor, boolean gunzip) throws IOException {
         InputStream is = executor.getResponseBody();
         if (is != null) {
-            return create(gunzip ? IOUtils.getGunzippedInputStream(is) : is);
+            try {
+                return create(gunzip ? IOUtils.getGunzippedInputStream(is) : IOUtils.getGzippedInputStream(is));
+            } catch (Exception e) {
+                throw new IOException("Failed to create instance of " + getType().getName(), e);
+            }
         }
         return null;
     }
@@ -93,17 +91,5 @@ abstract class FileHandler<T extends AbstractStreamType> implements HttpHandler<
     public T readVariable(ReadContext context) throws Exception {
         InputStream is = context.readStreamValue(mediaType, extension, null);
         return create(is);
-    }
-
-    private T create(InputStream is) {
-        try {
-            Constructor c = type.getConstructor(InputStream.class);
-            return (T)c.newInstance(is);
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            // close the InputStream otherwise it can result in connection leaks.
-            IOUtils.close(is);
-            throw new RuntimeException(type.getName() + " is not a valid AbstractStreamType as it does not seem to have a constructor for an InputStream", e);
-        }
-
     }
 }

@@ -19,6 +19,7 @@ package org.squonk.types;
 import org.squonk.api.HttpHandler;
 import org.squonk.api.VariableHandler;
 import org.squonk.http.RequestResponseExecutor;
+import org.squonk.io.IODescriptor;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 
@@ -29,14 +30,14 @@ import java.util.logging.Logger;
 /**
  * Created by timbo on 23/03/2016.
  */
-public class SDFileHandler implements HttpHandler<SDFile>, VariableHandler<SDFile> {
+public class SDFileHandler extends DefaultHandler<SDFile> {
 
     private static final Logger LOG = Logger.getLogger(SDFileHandler.class.getName());
     private static final String EXT = "sdf";
 
-    @Override
-    public Class<SDFile> getType() {
-        return SDFile.class;
+
+    public SDFileHandler() {
+        super(SDFile.class);
     }
 
     @Override
@@ -83,4 +84,5 @@ public class SDFileHandler implements HttpHandler<SDFile>, VariableHandler<SDFil
         InputStream is = context.readStreamValue(CommonMimeTypes.MIME_TYPE_MDL_SDF, EXT);
         return new SDFile(is);
     }
+
 }

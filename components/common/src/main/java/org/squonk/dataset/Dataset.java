@@ -17,10 +17,12 @@
 package org.squonk.dataset;
 
 import org.squonk.types.BasicObject;
+import org.squonk.types.StreamType;
 import org.squonk.util.StreamProvider;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -101,7 +103,7 @@ import java.util.stream.StreamSupport;
  * @author Tim Dudgeon &lt;tdudgeon@informaticsmatters.com&gt;
  * @param <T>
  */
-public class Dataset<T extends BasicObject> implements DatasetProvider, StreamProvider<T> {
+public class Dataset<T extends BasicObject> implements DatasetProvider, StreamProvider<T>, StreamType {
 
     public static final String DATASET_FILE_EXT = "data";
     public static final String METADATA_FILE_EXT = "metadata";
@@ -224,6 +226,16 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
      */
     public Dataset(Class<T> type, InputStream inputStream) {
         this(type, inputStream, new DatasetMetadata(type));
+    }
+
+    /** Constructor that uses an InputStream for both the data and the metadata
+     *
+     * @param data
+     * @param metadata
+     * @throws IOException
+     */
+    public Dataset(InputStream data, InputStream metadata) throws IOException {
+        this(data, JsonHandler.getInstance().objectFromJson(metadata, DatasetMetadata.class));
     }
 
     @Override
@@ -525,6 +537,17 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
      */
     public DatasetMetadataGenerator<T> createDatasetMetadataGenerator(Stream<T> source) {
         return new DatasetMetadataGenerator<>(source);
+    }
+
+    @Override
+    public InputStream[] getInputStreams() throws IOException {
+        InputStream meta = new ByteArrayInputStream(JsonHandler.getInstance().objectToBytes(getMetadata()));
+        return new InputStream[] {getInputStream(true), meta};
+    }
+
+    @Override
+    public String[] getStreamNames() {
+        return new String[] {DATASET_FILE_EXT, METADATA_FILE_EXT};
     }
 
     public class DatasetMetadataGenerator<T extends BasicObject> {

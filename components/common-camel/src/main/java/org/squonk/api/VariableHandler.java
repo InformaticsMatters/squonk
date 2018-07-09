@@ -16,8 +16,14 @@
 
 package org.squonk.api;
 
+import org.squonk.io.IODescriptor;
+import org.squonk.util.Utils;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 /** Interfaces for a class that wants to define how it will be persisted using the Notebook/Variable API.
  * To conform the class must:
@@ -50,6 +56,29 @@ public interface VariableHandler<T> extends Handler<T> {
      * @throws IOException
      */
     T readVariable(ReadContext context) throws Exception;
+
+    /** Create the variable handled by this handler
+     *
+     * @param input An InputStream from which the value must be composed
+     * @return The assembled value
+     */
+    T create(InputStream input) throws Exception;
+
+
+    /** Create an instance from one or more InputStreams. The inputs are passed in as a Map with the key identifying the
+     * type of input. Where there is only a single input the name is ignored and the
+     * {@link #create(InputStream)} method is called with that one input.
+     * Where there are multiple inputs the {@link #createMultiple(Map<String,InputStream>)} method is
+     * called that MUST be overrided by any subclass wanting to handle multiple inputs. The overriding method should use
+     * the names that are present as the keys to the Map to distinguish the different inputs.
+     *
+     * @param inputs multiple InputStreams where the key is a name that identifies the type of input
+     * @return
+     * @throws Exception
+     */
+    T create(Map<String,InputStream> inputs) throws Exception;
+
+    T createMultiple(Map<String,InputStream> inputs) throws Exception;
 
 
     /** Context that allows a value to be read.

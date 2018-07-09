@@ -29,13 +29,17 @@ import java.io.InputStream;
 /**
  * Created by timbo on 23/03/2016.
  */
-public class StringHandler implements HttpHandler<String>, VariableHandler<String> {
+public class StringHandler extends DefaultHandler<String> {
 
     @Override
     public Class<String> getType() {
         return String.class;
     }
     private static final String EXT = "txt";
+
+    public StringHandler() {
+        super(String.class);
+    }
 
     @Override
     public void prepareRequest(String s, RequestResponseExecutor executor, boolean gzipRequest, boolean gzipResponse) throws IOException {

@@ -28,21 +28,46 @@ import java.util.zip.GZIPInputStream;
  *
  * @author timbo
  */
-public abstract class AbstractStreamType {
+public abstract class AbstractStreamType implements StreamType {
 
-    private InputStream inputStream;
+    private final InputStream[] inputStreams;
+    private final String[] names;
 
 
     public AbstractStreamType(InputStream inputStream) {
-        this.inputStream = inputStream;
+        this.inputStreams = new InputStream[] {inputStream};
+        this.names = new String[] {"data"};
     }
 
-    /** Get the data as it was generated, which might or might not be gzipped
+    public AbstractStreamType(InputStream[] inputStreams, String[] names) {
+        this.inputStreams = inputStreams;
+        this.names = names;
+    }
+
+    /** Get all the data as it was generated, which might or might not be gzipped.
+     *
+     * @return
+     */
+    public InputStream[] getInputStreams() {
+        return inputStreams;
+    }
+
+    public String[] getStreamNames() {
+        return names;
+    }
+
+
+    /** Get the data as it was generated, which might or might not be gzipped.
+     * This assumes the type has only a single stream which may not be the case for some types.
      *
      * @return
      */
     public InputStream getInputStream() {
-        return inputStream;
+        if (inputStreams != null && inputStreams.length > 0) {
+            return inputStreams[0];
+        } else {
+            return null;
+        }
     }
 
     /** Get the Gzipped compressed data for this object.
@@ -51,10 +76,11 @@ public abstract class AbstractStreamType {
      * @throws IOException
      */
     public InputStream getGzippedInputStream() throws IOException {
-        if (inputStream == null) {
+        if (inputStreams == null) {
             return null;
         }
-        return inputStream == null ? null : IOUtils.getGzippedInputStream(inputStream);
+        InputStream is = getInputStream();
+        return is == null ? null : IOUtils.getGzippedInputStream(is);
     }
 
     /** Get the data in uncompressed format
@@ -63,14 +89,10 @@ public abstract class AbstractStreamType {
      * @throws IOException
      */
     public InputStream getGunzipedInputStream() throws IOException {
-        if (inputStream == null) {
+        if (inputStreams == null) {
             return null;
         }
-        if (inputStream instanceof GZIPInputStream) {
-            return inputStream;
-        } else {
-            return inputStream == null ? null : IOUtils.getGunzippedInputStream(inputStream);
-        }
+        return IOUtils.getGunzippedInputStream(getInputStream());
     }
 
     /** Get the bytes of the uncompressed data.
@@ -80,10 +102,14 @@ public abstract class AbstractStreamType {
      * @throws IOException
      */
     public byte[] getBytes() throws IOException {
-        if (inputStream == null) {
+        if (inputStreams == null) {
             return null;
         }
-        byte[] bytes = IOUtils.convertStreamToBytes(getGunzipedInputStream());
+        InputStream is = getGunzipedInputStream();
+        if (is == null) {
+            return null;
+        }
+        byte[] bytes = IOUtils.convertStreamToBytes(is);
         return bytes;
     }
 
@@ -94,11 +120,27 @@ public abstract class AbstractStreamType {
      * @throws IOException
      */
     public void materialize() throws IOException {
-        if (inputStream == null || inputStream instanceof ByteArrayInputStream) {
+        if (inputStreams == null) {
             return;
         }
-        byte[] bytes = IOUtils.convertStreamToBytes(inputStream);
-        inputStream = new ByteArrayInputStream(bytes);
+        synchronized (inputStreams) {
+            InputStream[] results = new InputStream[inputStreams.length];
+            for (int i = 0; i < inputStreams.length; i++) {
+                InputStream is = inputStreams[i];
+                if (is == null) {
+                    results[i] = null;
+                } else if (is instanceof ByteArrayInputStream) {
+                    results[i] = is;
+                } else {
+                    byte[] bytes = IOUtils.convertStreamToBytes(is);
+                    results[i] = new ByteArrayInputStream(bytes);
+                }
+            }
+            for (int i = 0; i < inputStreams.length; i++) {
+                inputStreams[i] = results[i];
+            }
+        }
+
     }
 
 }

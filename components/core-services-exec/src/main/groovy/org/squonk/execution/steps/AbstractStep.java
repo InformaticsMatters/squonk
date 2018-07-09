@@ -21,9 +21,8 @@ import org.apache.camel.TypeConverter;
 import org.apache.camel.spi.TypeConverterRegistry;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.execution.ExecutableService;
 import org.squonk.execution.runners.ContainerRunner;
-import org.squonk.execution.runners.DockerRunner;
-import org.squonk.execution.runners.OpenShiftRunner;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptor;
 import org.squonk.notebook.api.VariableKey;
@@ -40,47 +39,20 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * @author timbo
  */
-public abstract class AbstractStep implements Step, StatusUpdatable {
+public abstract class AbstractStep extends ExecutableService implements Step, StatusUpdatable {
 
     private static final Logger LOG = Logger.getLogger(AbstractStep.class.getName());
 
-    protected Integer DEBUG_MODE = new Integer(IOUtils.getConfiguration("SQUONK_DEBUG_MODE", "0"));
-
-    protected static final String MSG_PREPARING_INPUT = "Preparing input ...";
-    protected static final String MSG_PREPARING_OUTPUT = "Writing output ...";
-    protected static final String MSG_PROCESSED = "%s processed";
-    protected static final String MSG_RESULTS = "%s results";
-    protected static final String MSG_ERRORS = "%s errors";
-    protected static final String MSG_PROCESSING_COMPLETE = "Processing complete";
-    protected static final String MSG_PREPARING_CONTAINER = "Preparing Docker container";
-    protected static final String MSG_RUNNING_CONTAINER = "Running Docker container";
-
-    protected static final String CONTAINER_RUNNER_TYPE;
-    private static final String CONTAINER_RUNNER_TYPE_ENV = "SQUONK_CONTAINER_RUNNER_TYPE";
 
     protected Long outputProducerId;
-    protected String jobId;
-    protected Map<String, Object> options;
 
     protected final Map<String, VariableKey> inputVariableMappings = new HashMap<>();
     protected final Map<String, String> outputVariableMappings = new HashMap<>();
-    protected String statusMessage = null;
 
-
-    protected Map<String, Integer> usageStats = new HashMap<>();
-
-    protected int numRecordsProcessed = -1;
-    protected int numRecordsOutput = -1;
-    protected int numErrors = -1;
-
-    public Map<String, Integer> getUsageStats() {
-        return usageStats;
-    }
 
     @Override
     public Long getOutputProducerId() {
@@ -218,55 +190,6 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         return value;
     }
 
-    protected Object getOption(String name) {
-        return (options == null ? null : options.get(name));
-    }
-
-    protected <T> T getOption(String name, Class<T> type) {
-        if (options != null) {
-            return (T) options.get(name);
-        }
-        return null;
-    }
-
-    protected <T> T getOption(String name, Class<T> type, T defaultValue) {
-        T val = getOption(name, type);
-        if (val == null) {
-            return defaultValue;
-        } else {
-            return val;
-        }
-    }
-
-    protected <T> T getOption(String name, Class<T> type, TypeConverter converter) {
-        return getOption(name, type, converter, null);
-    }
-
-    /**
-     * Get the option value, performing a type conversion if needed
-     *
-     * @param name
-     * @param type
-     * @param converter
-     * @param defaultValue
-     * @param <T>
-     * @return
-     */
-    protected <T> T getOption(String name, Class<T> type, TypeConverter converter, T defaultValue) {
-        Object val = getOption(name);
-        if (val == null) {
-            return defaultValue;
-        } else {
-            if (type.isAssignableFrom(val.getClass())) {
-                return (T) val;
-            } else {
-                LOG.info("Unexpected option type. Trying to convert from " + val.getClass().getName() + " to " + type.getName());
-                return converter.convertTo(type, val);
-            }
-        }
-    }
-
-
     //
 
     /**
@@ -363,33 +286,6 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         return typeConverter.convertTo(to.getPrimaryType(), value);
     }
 
-    protected ContainerRunner createContainerRunner(String image, String hostWorkDir, String localWorkDir) throws IOException {
-
-        // The CONTAINER_RUNNER_TYPE (environment variable) defines what
-        // type of ContainerRunner we produce...
-
-        ContainerRunner runner = null;
-        if (CONTAINER_RUNNER_TYPE.equals("docker")) {
-
-            LOG.info("Creating DockerRunner instance...");
-            runner = new DockerRunner(image, hostWorkDir, localWorkDir, jobId);
-
-        } else if (CONTAINER_RUNNER_TYPE.equals("openshift")) {
-
-            LOG.info("Creating OpenShiftRunner instance...");
-            runner = new OpenShiftRunner(image, hostWorkDir, localWorkDir, jobId);
-
-        } else {
-            throw new IOException("Unsupported ContainerRunner type: '" + CONTAINER_RUNNER_TYPE + "'");
-        }
-
-        return runner;
-
-    }
-
-    protected ContainerRunner createContainerRunner(String image, String localWorkDir) throws IOException {
-        return createContainerRunner(image, null, localWorkDir);
-    }
 
     /**
      * Fetch the input using the default name for the input variable
@@ -495,110 +391,6 @@ public abstract class AbstractStep implements Step, StatusUpdatable {
         }
         // TODO can we get the metadata somehow?
         return null;
-    }
-
-    /**
-     * Generate a standard status message describing the outcome of execution
-     *
-     * @param total   The total number processed. -1 means unknown
-     * @param results The number of results. -1 means unknown
-     * @param errors  The number of errors. -1 means unknown
-     * @return
-     */
-    protected String generateStatusMessage(int total, int results, int errors) {
-        LOG.fine(String.format("Generating status msg: %s %s %s", total, results, errors));
-        List<String> msgs = new ArrayList<>();
-        if (total >= 0) {
-            msgs.add(String.format(MSG_PROCESSED, total));
-        }
-        if (results >= 0) {
-            msgs.add(String.format(MSG_RESULTS, results));
-        }
-        if (errors > 0) {
-            msgs.add(String.format(MSG_ERRORS, errors));
-        }
-        if (msgs.isEmpty()) {
-            return MSG_PROCESSING_COMPLETE;
-        } else {
-            return msgs.stream().collect(Collectors.joining(", "));
-        }
-    }
-
-    protected void generateMetricsAndStatus(Properties props, float executionTimeSeconds) throws IOException {
-
-        statusMessage = generateMetrics(props, executionTimeSeconds);
-        if (statusMessage == null) {
-            statusMessage = generateStatusMessage(numRecordsProcessed, numRecordsOutput, numErrors);
-            LOG.fine("Using generic status message: " + statusMessage);
-        }
-    }
-
-        /**
-     *
-     * @param props The Properties object from which to read the metrics keys and values
-     * @param executionTimeSeconds
-     * @return The custom status message, if one is specified using the key __StatusMessage__
-     */
-    protected String generateMetrics(Properties props, float executionTimeSeconds) {
-
-        if (props == null) {
-            LOG.warning("Properties is null. Cannot generate metrics.");
-            return null;
-        }
-
-        String status = null;
-
-        for (String key : props.stringPropertyNames()) {
-
-            if ("__StatusMessage__".equals(key)) {
-                String sm = props.getProperty(key);
-                if (sm != null) {
-                    status = sm;
-                    LOG.fine("Custom status message: " + sm);
-                }
-            } else if ("__InputCount__".equals(key)) {
-                numRecordsProcessed = tryGetAsInt(props, key);
-            } else if ("__OutputCount__".equals(key)) {
-                numRecordsOutput = tryGetAsInt(props, key);
-            } else if ("__ErrorCount__".equals(key)) {
-                numErrors = tryGetAsInt(props, key);
-            } else if (key.startsWith("__") && key.endsWith("__")) {
-                LOG.warning("Unexpected magical key: " + key);
-            } else {
-                int c = tryGetAsInt(props, key);
-                if (c >= 0) {
-                    usageStats.put(key, c);
-                }
-            }
-        }
-
-        generateExecutionTimeMetrics(executionTimeSeconds);
-        return status;
-    }
-
-
-    private int tryGetAsInt(Properties props, String key) {
-        String val = props.getProperty(key);
-        if (val == null) {
-            return -1;
-        }
-        try {
-            return new Integer(val);
-        } catch (NumberFormatException nfe) {
-            LOG.warning("Failed to read value for " + key + " as integer: " + val);
-            return -1;
-        }
-    }
-
-    static {
-
-        // Get the configured container runner type (lower-case)
-        // This is typically 'docker' or 'openshift'
-        CONTAINER_RUNNER_TYPE = IOUtils
-                .getConfiguration(CONTAINER_RUNNER_TYPE_ENV,
-                                  "openshift").toLowerCase();
-        LOG.info(CONTAINER_RUNNER_TYPE_ENV + "='" + CONTAINER_RUNNER_TYPE + "'");
-
     }
 
 }

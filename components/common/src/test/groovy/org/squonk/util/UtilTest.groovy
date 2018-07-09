@@ -25,7 +25,6 @@ class UtilTest extends Specification  {
 
     void "safeEqualsIncludeNull"() {
 
-
         expect:
         Utils.safeEqualsIncludeNull(a, b) == result
 
@@ -36,6 +35,19 @@ class UtilTest extends Specification  {
         '0'  | null | false
         null | '1'  | false
         null | null | true
+
+    }
+
+    static InputStream bais = new ByteArrayInputStream('hello'.bytes)
+
+    void "instantiate"() {
+
+        expect:
+        Utils.instantiate(type, [argType] as Class[], [value] as Object[]) != null
+
+        where:
+        type | argType | value
+        InputStreamReader.class | InputStream.class | bais
 
     }
 }

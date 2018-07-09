@@ -32,7 +32,11 @@ import java.util.zip.GZIPInputStream;
 /**
  * Created by timbo on 23/03/2016.
  */
-public class CPSignTrainResultHandler implements HttpHandler<CPSignTrainResult>, VariableHandler<CPSignTrainResult> {
+public class CPSignTrainResultHandler extends DefaultHandler<CPSignTrainResult> {
+
+    public CPSignTrainResultHandler() {
+        super(CPSignTrainResult.class);
+    }
 
     @Override
     public Class<CPSignTrainResult> getType() {

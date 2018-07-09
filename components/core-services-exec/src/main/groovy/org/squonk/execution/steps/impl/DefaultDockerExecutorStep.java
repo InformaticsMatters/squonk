@@ -39,9 +39,6 @@ public class DefaultDockerExecutorStep extends AbstractServiceStep {
 
     private static final Logger LOG = Logger.getLogger(DefaultDockerExecutorStep.class.getName());
 
-    private static final String OPTION_DOCKER_COMMAND = StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_COMMAND;
-    protected String DOCKER_SERVICES_DIR = IOUtils.getConfiguration("SQUONK_DOCKER_SERVICES_DIR", "../../data/testfiles/docker-services");
-
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 

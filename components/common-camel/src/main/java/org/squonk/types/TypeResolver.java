@@ -22,10 +22,13 @@ import org.squonk.api.MimeTypeResolver;
 import org.squonk.api.VariableHandler;
 import org.squonk.dataset.Dataset;
 import org.squonk.io.IODescriptor;
+import org.squonk.util.Utils;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -136,44 +139,45 @@ public class TypeResolver implements MimeTypeResolver {
     }
 
     @Override
-    public HttpHandler createHttpHandler(String mimeType) {
-        Class p = resolvePrimaryType(mimeType);
+    public <T> HttpHandler<T> createHttpHandler(String mimeType) {
+        Class<T> p = resolvePrimaryType(mimeType);
         Class g = resolveGenericType(mimeType);
         return createHttpHandler(p, g);
     }
 
     @Override
-    public HttpHandler createHttpHandler(Class primaryType, Class genericType) {
+    public <T> HttpHandler<T> createHttpHandler(Class<T> primaryType, Class genericType) {
 
         Class type = httpHandlers.get(primaryType);
         if (type == null) {
             return null;
         }
         try {
-            HttpHandler h = (HttpHandler)type.newInstance();
-            if (h instanceof GenericHandler) {
-                ((GenericHandler)h).setGenericType(genericType);
+            if (genericType == null) {
+                return (HttpHandler)type.newInstance();
+            } else {
+                return (HttpHandler<T>)Utils.instantiate(type, new Class[] {Class.class}, new Class[] {genericType});
             }
-            return h;
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException("Unable to create HTTP handler from class " + type.getName());
         }
     }
 
-    public VariableHandler createVariableHandler(Class primaryType, Class genericType) {
+    public <T> VariableHandler<T> createVariableHandler(Class<T> primaryType, Class genericType) {
 
-        Class type = variableHandlers.get(primaryType);
+        Class<T> type = variableHandlers.get(primaryType);
         if (type == null) {
             return null;
         }
         try {
-            VariableHandler h = (VariableHandler)type.newInstance();
-            if (h instanceof GenericHandler) {
-                ((GenericHandler)h).setGenericType(genericType);
+            if (genericType == null) {
+                return  (VariableHandler<T>) type.newInstance();
+            } else {
+                return (VariableHandler<T>)Utils.instantiate(type, new Class[] {Class.class}, new Class[] {genericType});
             }
-            return h;
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException("Unable to create variable handler from class " + type.getName());
+
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException("Unable to create variable handler from class " + type.getName() + " and generic type " + genericType);
         }
     }
 

@@ -125,6 +125,24 @@ public class DockerServiceDescriptor extends DefaultServiceDescriptor {
         this.volumes = volumes;
     }
 
+
+    /** Used for testing only
+     *
+     * @param id
+     * @param name
+     * @param inputDescriptors
+     * @param outputDescriptors
+     */
+    public DockerServiceDescriptor(
+            String id,
+            String name,
+            IODescriptor[] inputDescriptors,
+            IODescriptor[] outputDescriptors
+            ) {
+        this(id, name, null, null, null, null, null, null, inputDescriptors, null, outputDescriptors, null, null, null, null, null, null, null);
+    }
+
+
     public String getImageName() {
         return imageName;
     }

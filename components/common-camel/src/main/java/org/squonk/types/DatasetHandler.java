@@ -30,6 +30,7 @@ import org.squonk.util.ServiceConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,31 +39,18 @@ import java.util.stream.Stream;
 /**
  * Created by timbo on 21/03/2016.
  */
-public class DatasetHandler<T extends BasicObject> implements VariableHandler<Dataset>, HttpHandler<Dataset>, GenericHandler<Dataset,T> {
+public class DatasetHandler<T extends BasicObject> extends DefaultHandler<Dataset> {
 
     private static final Logger LOG = Logger.getLogger(DatasetHandler.class.getName());
-    private Class<T> genericType;
 
-    /** Default constructor.
-     * If using this constructor the generic type MUST be set using the {@link #setGenericType(Class)} method
-     *
-     */
-    public DatasetHandler() { }
+
+    public DatasetHandler() {
+        super(Dataset.class, null);
+    }
 
     public DatasetHandler(Class<T> genericType) {
-        this.genericType = genericType;
+        super(Dataset.class, genericType);
     }
-
-    @Override
-    public Class<Dataset> getType() {
-        return Dataset.class;
-    }
-
-    @Override
-    public Class<T> getGenericType() {
-        return genericType;
-    }
-
 
     @Override
     public void prepareRequest(Dataset dataset, RequestResponseExecutor executor, boolean gzipRequest, boolean gzipResponse) throws IOException {
@@ -163,7 +151,7 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
         }
         if (metadata == null) {
             LOG.warning("No metadata present, using basic default");
-            metadata = new DatasetMetadata<>(genericType);
+            metadata = new DatasetMetadata<>(getGenericType());
         }
         return metadata;
     }
@@ -174,7 +162,22 @@ public class DatasetHandler<T extends BasicObject> implements VariableHandler<Da
     }
 
     @Override
-    public void setGenericType(Class<T> genericType) {
-        this.genericType = genericType;
+    public Dataset<T> create(InputStream data) throws Exception {
+        return new Dataset(getGenericType(), data);
+    }
+
+    @Override
+    public Dataset<T> createMultiple(Map<String,InputStream> inputs) throws Exception {
+
+        InputStream data = inputs.get(Dataset.DATASET_FILE_EXT);
+        InputStream meta = inputs.get(Dataset.METADATA_FILE_EXT);
+        if (data == null) {
+            throw new IllegalStateException("InputStream for data not present");
+        }
+        if (meta == null) {
+            return new Dataset<T>(getGenericType(), data);
+        } else {
+            return new Dataset<T>(data, meta);
+        }
     }
 }

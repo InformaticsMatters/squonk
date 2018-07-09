@@ -46,6 +46,10 @@ public class IOUtils {
      */
     public static InputStream getGunzippedInputStream(InputStream is) throws IOException {
 
+        if (is == null) {
+            return null;
+        }
+
         if (is instanceof GZIPInputStream) {
             // already wrapped with gunzip
             return is;

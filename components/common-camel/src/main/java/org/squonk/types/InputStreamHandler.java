@@ -27,7 +27,7 @@ import java.io.InputStream;
 /**
  * Created by timbo on 23/03/2016.
  */
-public class InputStreamHandler implements HttpHandler<InputStream>, VariableHandler<InputStream> {
+public class InputStreamHandler extends DefaultHandler<InputStream> {
 
     private final String mediaType;
     private final String extension;
@@ -36,13 +36,11 @@ public class InputStreamHandler implements HttpHandler<InputStream>, VariableHan
 
 
     public InputStreamHandler() {
-        mediaType = null;
-        extension = null;
-        key = null;
-        gzip = true;
+        this(null, null, null, true);
     }
 
     public InputStreamHandler(String mediaType, String extension, String key, boolean gzip) {
+        super(InputStream.class);
         this.mediaType = mediaType;
         this.extension = extension;
         this.key = key;

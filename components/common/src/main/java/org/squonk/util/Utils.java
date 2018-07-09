@@ -16,6 +16,9 @@
 
 package org.squonk.util;
 
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -114,5 +117,27 @@ public class Utils {
         }
     }
 
+    /** Instantiate an instance of a class by using a constructor for the specified types.
+     * If no such constructor is defined null is returned. If the constructor exists but instantiation of it fails then
+     * the exception associated with the failure is thrown
+     *
+     * @param type The class to instantiate
+     * @param constructorArgs The constructor arguments to look for (in order). Values must not be null.
+     * @param <T>
+     * @return
+     * @throws IllegalAccessException
+     * @throws InvocationTargetException
+     * @throws InstantiationException
+     */
+    public static <T> T instantiate(Class<T> type, Class[] constructorTypes, Object[] constructorArgs)
+            throws IllegalAccessException, InvocationTargetException, InstantiationException {
+        Constructor<T> constructor;
+        try {
+            constructor = type.getConstructor(constructorTypes);
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+        return constructor.newInstance(constructorArgs);
+    }
 
 }

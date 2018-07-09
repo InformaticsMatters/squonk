@@ -36,8 +36,8 @@ class AbstractStepSpec extends Specification {
         step.generateMetricsAndStatus(props, 123.4)
 
         then:
-        step.numRecordsProcessed == 10
-        step.numRecordsOutput == 11
+        step.numProcessed == 10
+        step.numResults == 11
         step.numErrors == 12
         step.statusMessage == '10 processed, 11 results, 12 errors'
 
@@ -58,8 +58,8 @@ class AbstractStepSpec extends Specification {
         step.generateMetricsAndStatus(props, 123.4)
 
         then:
-        step.numRecordsProcessed == 10
-        step.numRecordsOutput == 11
+        step.numProcessed == 10
+        step.numResults == 11
         step.numErrors == 12
         step.statusMessage == 'CustomMessage'
 

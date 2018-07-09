@@ -33,7 +33,7 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
 
     public enum Status {
 
-        PENDING(false), SUBMITTING(false), RUNNING(false), RESULTS_READY(false), COMPLETED(true), ERROR(true), CANCELLED(true);
+        PENDING(false), SUBMITTING(false), RUNNING(false), RESULTS_READY(true), COMPLETED(true), ERROR(true), CANCELLED(true);
 
         private boolean finished;
 
@@ -57,7 +57,10 @@ public class JobStatus<T extends JobDefinition> implements Serializable {
     private final List<String> events = new ArrayList<>();
 
     public static <T extends JobDefinition> JobStatus<T> create(T jobDef, String username, Date started, Integer totalCount) {
-        String jobId = UUID.randomUUID().toString();
+        return create(UUID.randomUUID().toString(), jobDef, username, started, totalCount);
+    }
+
+    public static <T extends JobDefinition> JobStatus<T> create(String jobId, T jobDef, String username, Date started, Integer totalCount) {
         return new JobStatus(jobId, username, Status.PENDING, totalCount == null ? 0 : totalCount, 0, 0, started, null, jobDef, null);
     }
 

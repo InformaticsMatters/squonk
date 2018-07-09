@@ -35,20 +35,15 @@ import java.util.List;
 /**
  * Created by timbo on 23/03/2016.
  */
-public class ListHandler<T> implements HttpHandler<List>, VariableHandler<List>, GenericHandler<List,T> {
+public class ListHandler<T> extends DefaultHandler<List> implements GenericHandler<List> {
 
-    protected Class<T> genericType;
     private String mediaType;
 
-    @Override
-    public Class<List> getType() {
-        return List.class;
+    public ListHandler(Class<T> genericType) {
+        super(List.class, genericType);
+        this.mediaType = TypeResolver.getInstance().resolveMediaType(List.class, genericType);
     }
 
-    @Override
-    public Class<T> getGenericType() {
-        return genericType;
-    }
 
     @Override
     public void prepareRequest(List list, RequestResponseExecutor executor, boolean gzipRequest, boolean gzipResponse) throws IOException {
@@ -88,15 +83,10 @@ public class ListHandler<T> implements HttpHandler<List>, VariableHandler<List>,
         return read(is);
     }
 
-    @Override
-    public void setGenericType(Class genericType) {
-        this.genericType = genericType;
-        this.mediaType = TypeResolver.getInstance().resolveMediaType(List.class, genericType);
-    }
 
     @Override
     public boolean canConvertGeneric(Class otherGenericType, TypeConverterRegistry registry) {
-        if (genericType == null || otherGenericType == null) {
+        if (getGenericType() == null || otherGenericType == null) {
             return false;
         }
         return registry.lookup(genericType, otherGenericType) != null;
