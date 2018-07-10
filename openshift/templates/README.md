@@ -336,3 +336,11 @@ Following this the Computational Notebook should be running.
 Once Squonk is deployed you can deploy the chemcentral chemical search application.
 This is described [here](chemcentral/README.md).
 
+## Problems
+
+Since this was written problems deploying relating to permssions on the PVs have been encountered. Neither the postgresql nor the rabbitmq containers are able to start as the permissions on the file system are wrong. It is not currently clear what has changed since these instructions were written, and this needs to be investigated. Workarounds are described here.
+
+To fix the problem with rabbitmq find the rabbitmq pod which is failing to deploy and do a `oc debug <pod-name>`. You will need to scale the failed pod to zero or cancel the deployment so that the volume can be mounted into the debug pod. The pod runs as root so permissions can be changed using `chmod rabbitmq.rabbitmq /volume/mnesia`. Then exit the debug pod and redeploy.
+
+Fixing postgresql is slightly more complex as the container runs as the postgres user which does not have permissions to change the ownership of the required directory as it is owned by root. Create a debug pod for postgresq as for rabbitmq. Identify the node the pod is running on and SSH to it. Then do a docker exec into the container usiing `sudo docker exec -it -u 0:0 <container-name> bash` and then execute `chown postgres.root /var/lib/pgsql/data`. Exit the container and the debug pod and redeploy.
+
