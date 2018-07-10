@@ -237,6 +237,18 @@ For instance:
 -   In `Manage -> Users` create sample users e.g. `user1` and assign a
     password in the `Credentials` tab and make sure the password is _not_
     `Temporary`.
+    
+### Identity providers
+
+To allow end users to login using LinkedIn as an identity provider add LinkedIn as an identity provider for the realm.
+You need to create a LinkedIn OAuth app from here: https://www.linkedin.com/developer/apps
+
+To allow end users to login using GitHub as an identity provider add GitHub as an identity provider for the realm.
+You need to create a GitHub OAuth app from here: https://github.com/settings/developers
+
+### Email settings
+
+Go to the email tab of the Keycloak realm and enter the details of your SMTP server.
 
 #### Keycloak TLS certificate
 
