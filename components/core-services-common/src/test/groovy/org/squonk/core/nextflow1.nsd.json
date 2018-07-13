@@ -1,4 +1,4 @@
-{
+{ "@class":"org.squonk.core.NextflowServiceDescriptor",
   "serviceConfig": {
     "id": "test.nextflow.nextflow1",
     "name": "TestNextflow1",

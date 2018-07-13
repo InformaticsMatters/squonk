@@ -23,6 +23,7 @@ import org.squonk.jobdef.JobStatus.Status;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -62,7 +63,7 @@ public class JobManager implements ExecutorCallback {
     public JobStatus executeAsync(
             ServiceDescriptor serviceDescriptor,
             Map<String, Object> options,
-            Map<String, Object> inputs,
+            Map<String, InputStream> inputs,
             String username) throws Exception {
 
         return execute(serviceDescriptor, options, inputs, username, true);
@@ -82,7 +83,7 @@ public class JobManager implements ExecutorCallback {
     public JobStatus executeSync(
             ServiceDescriptor serviceDescriptor,
             Map<String, Object> options,
-            Map<String, Object> inputs,
+            Map<String, InputStream> inputs,
             String username) throws Exception {
 
         return execute(serviceDescriptor, options, inputs, username, false);
@@ -92,7 +93,7 @@ public class JobManager implements ExecutorCallback {
     private JobStatus execute(
             ServiceDescriptor serviceDescriptor,
             Map<String, Object> options,
-            Map<String, Object> inputs,
+            Map<String, InputStream> inputs,
             String username,
             boolean async) throws Exception {
 
@@ -103,8 +104,8 @@ public class JobManager implements ExecutorCallback {
         executionData.jobStatus = JobStatus.create(executor.getJobId(), jobDefinition, username, new Date(), 0);
         executionDataMap.put(executor.getJobId(), executionData);
 
-        for (Map.Entry<String, Object> e : inputs.entrySet()) {
-            executor.addData(e.getKey(), e.getValue());
+        for (Map.Entry<String, InputStream> e : inputs.entrySet()) {
+            executor.addDataAsInputStream(e.getKey(), e.getValue());
         }
 
         if (async) {
@@ -145,7 +146,7 @@ public class JobManager implements ExecutorCallback {
      */
     public Map<String,Object> getJobResults(String jobId) {
         ExternalExecutor executor = findExecutor(jobId);
-        return executor == null ? null : executor.getResults();
+        return executor == null ? null : executor.getResultsAsObjects();
     }
 
     /** Must be called after the results have been fetched so that any execution artifacts (containers etc.) and data

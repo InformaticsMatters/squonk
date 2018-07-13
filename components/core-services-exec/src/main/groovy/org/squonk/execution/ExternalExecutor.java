@@ -75,7 +75,7 @@ public class ExternalExecutor extends ExecutableService {
      * @param name
      * @param data
      */
-    protected void addData(String name, InputStream data) {
+    public void addDataAsInputStream(String name, InputStream data) {
         this.data.put(name, data);
     }
 
@@ -85,7 +85,7 @@ public class ExternalExecutor extends ExecutableService {
      * @param name  Must match the name of an IODescriptor for an input
      * @param value The value to add, probably an instance of @{link StreamType}. e.g. DataSet or SDFile
      */
-    public void addData(String name, Object value) throws IOException {
+    public void addDataAsObject(String name, Object value) throws IOException {
         if (name == null) {
             throw new NullPointerException("Name cannot be null");
         }
@@ -99,12 +99,12 @@ public class ExternalExecutor extends ExecutableService {
             String[] names = streamType.getStreamNames();
             if (names.length == 1) {
                 // single output - we can just use the name from the IOD
-                addData(name, outputs[0]);
+                addDataAsObject(name, outputs[0]);
             } else {
                 // multiple outputs - we need to append the name to the one from the IOD
                 for (int i = 0; i < names.length; i++) {
                     if (outputs[i] != null) {
-                        addData(name + "_" + names[i], outputs[i]);
+                        addDataAsInputStream(name + "_" + names[i], outputs[i]);
                     }
                 }
             }
@@ -115,7 +115,8 @@ public class ExternalExecutor extends ExecutableService {
         }
     }
 
-    /** Fetch the results. This should only be called when the status has changed to @{link JobStatus.Status.RESULTS_READY}.
+    /**
+     * Fetch the results. This should only be called when the status has changed to @{link JobStatus.Status.RESULTS_READY}.
      * The results are a keyed by the name of the result, with the name being significant when there are multiple results.
      * The result value will be one of the supported data types such as DataSet for SDFile, and in most cases will be an
      * implementation of @{link org.squonk.types.StreamType} or in other cases something that can be reconstructed from
@@ -123,11 +124,59 @@ public class ExternalExecutor extends ExecutableService {
      *
      * @return
      */
-    public Map<String, Object> getResults() {
+    public Map<String, Object> getResultsAsObjects() {
         if (Status.RESULTS_READY != status) {
             throw new IllegalStateException("Results not available");
         }
         return results;
+    }
+
+    /**
+     * Fetch results as InputStreams ready to transfer.
+     * For each output there will be one or more InputStreams.
+     * Where there is a single InputStreams (e.g. with SDFile)
+     * the key in the map will be the name of the output (e.g. "output").
+     * Where there are multiple InputStreams (e.g. with Dataset)
+     * the keys in the map will be the name of the output appended with the type of output
+     * (e.g. "output_data" and "output_metadata").
+     *
+     * @return
+     * @throws IOException
+     */
+    public Map<String, InputStream> getResultsAsInputStreams() throws IOException {
+        Map<String, Object> objects = getResultsAsObjects();
+        return convertObjectToInputStreams(objects);
+    }
+
+    private static Map<String, InputStream> convertObjectToInputStreams(Map<String, Object> objects) throws IOException {
+        Map<String, InputStream> inputs = new HashMap<>();
+        for (Map.Entry<String, Object> e : objects.entrySet()) {
+            String name = e.getKey();
+            Object value = e.getValue();
+            if (value != null) {
+                if (value instanceof StreamType) {
+                    StreamType streamType = (StreamType) value;
+                    InputStream[] outputs = streamType.getGzippedInputStreams();
+                    String[] names = streamType.getStreamNames();
+                    if (names.length == 1) {
+                        // single output - we can just use the result name
+                        inputs.put(name, outputs[0]);
+                    } else {
+                        // multiple output - we need to append the name to the result name
+                        for (int i = 0; i < names.length; i++) {
+                            if (outputs[i] != null) {
+                                inputs.put(name + "_" + names[i], outputs[i]);
+                            }
+                        }
+                    }
+                } else {
+                    // hope this never happens, but would at least handle simple types
+                    String txt = value.toString();
+                    inputs.put(name, new ByteArrayInputStream(txt.getBytes()));
+                }
+            }
+        }
+        return inputs;
     }
 
     public Map<String, Integer> getUsageStats() {
@@ -292,28 +341,6 @@ public class ExternalExecutor extends ExecutableService {
         VariableHandler.ReadContext readContext = new FilesystemReadContext(dir, iod.getName());
         P value = vh.readVariable(readContext);
         results.put(iod.getName(), value);
-//        if (value != null) {
-//            if (value instanceof StreamType) {
-//                StreamType streamType = (StreamType) value;
-//                InputStream[] outputs = streamType.getGzippedInputStreams();
-//                String[] names = streamType.getStreamNames();
-//                if (names.length == 1) {
-//                    // single output - we can just use the name from the IOD
-//                    results.put(iod.getName(), outputs[0]);
-//                } else {
-//                    // multiple output - we need to append the name to the one from the IOD
-//                    for (int i = 0; i < names.length; i++) {
-//                        if (outputs[i] != null) {
-//                            results.put(iod.getName() + "_" + names[i], outputs[i]);
-//                        }
-//                    }
-//                }
-//            } else {
-//                // hope this never happens, but would at least handle simple types
-//                String txt = value.toString();
-//                results.put(iod.getName(), new ByteArrayInputStream(txt.getBytes()));
-//            }
-//        }
     }
 
     protected void handleInputs(

@@ -86,8 +86,8 @@ public class ServiceDescriptorUtils {
 
     }
 
-    public static <T extends ServiceDescriptor> T readServiceDescriptor(String p, Class<T> type) {
-        return readServiceDescriptor(new java.io.File(p), type);
+    public static <T extends ServiceDescriptor> T readServiceDescriptor(String path, Class<T> type) {
+        return readServiceDescriptor(new java.io.File(path), type);
     }
 
     public static <T extends ServiceDescriptor> T readServiceDescriptor(java.io.File f, Class<T> type) {
@@ -133,6 +133,36 @@ public class ServiceDescriptorUtils {
             }
         }
         return sd;
+    }
+
+    /** Create the service descriptor from the provided content. The type of service descriptor is determined
+     * from the provided mediaType.
+     *
+     * @param data
+     * @param mediaType
+     * @return
+     */
+    public static ServiceDescriptor buildServiceDescriptor(String data, String mediaType) throws IOException {
+        LOG.info(String.format("mediaType: %s", mediaType));
+
+        if (data == null || data.isEmpty()) {
+            throw new IOException("No service descriptor content");
+        }
+
+        if (mediaType == null) {
+            throw new IOException("Mime type for service descriptor not defined");
+        } else {
+            if (!mediaType.toLowerCase().startsWith(CommonMimeTypes.SERVICE_DESCRIPTOR_BASE)) {
+                throw new IOException("Unexpected mime type for service descriptor: " + mediaType);
+            }
+            if (mediaType.toLowerCase().endsWith("+json")) {
+                return readJson(data, ServiceDescriptor.class);
+            } else if (mediaType.toLowerCase().endsWith("+yaml")) {
+                return ServiceDescriptorUtils.readYaml(data, ServiceDescriptor.class);
+            } else {
+                throw new IOException("Unexpected mime type for service descriptor: " + mediaType);
+            }
+        }
     }
 
     public static <T> T readYaml(InputStream yaml, Class<T> cls) throws IOException {

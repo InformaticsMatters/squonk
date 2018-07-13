@@ -56,7 +56,7 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractServiceStep {
         }
         String fullCommand = "nextflow run nextflow.nf " + expandedCommand;
 
-        String image = "informaticsmatters/nextflow";
+        String image = "informaticsmatters/nextflow-docker:0.30.2";
         String localWorkDir = "/source";
         ContainerRunner runner = createContainerRunner(image, localWorkDir);
         runner.init();

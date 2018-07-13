@@ -2,7 +2,6 @@ package org.squonk.execution
 
 import org.squonk.core.DockerServiceDescriptor
 import org.squonk.dataset.Dataset
-import org.squonk.execution.ExternalExecutor
 import org.squonk.execution.runners.DockerRunner
 import org.squonk.io.IODescriptor
 import org.squonk.jobdef.ExternalJobDefinition
@@ -28,7 +27,7 @@ class ExternalExecutorSpec extends Specification {
 
         when:
         ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)
-        exec.addData("input", new ByteArrayInputStream("Hello World!".bytes))
+        exec.addDataAsInputStream("input", new ByteArrayInputStream("Hello World!".bytes))
         exec.handleInputs(sd, runner)
 
         then:
@@ -53,8 +52,8 @@ class ExternalExecutorSpec extends Specification {
 
         when:
         ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)
-        exec.addData("input1", new ByteArrayInputStream("Hello World!".bytes))
-        exec.addData("input2", new ByteArrayInputStream("Goodbye World!".bytes))
+        exec.addDataAsInputStream("input1", new ByteArrayInputStream("Hello World!".bytes))
+        exec.addDataAsInputStream("input2", new ByteArrayInputStream("Goodbye World!".bytes))
         exec.handleInputs(sd, runner)
 
         then:
@@ -79,9 +78,9 @@ class ExternalExecutorSpec extends Specification {
 
         when:
         ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)
-        exec.addData("dataset_metadata", new FileInputStream("../../data/testfiles/Kinase_inhibs.metadata"))
-        exec.addData("dataset_data", new FileInputStream("../../data/testfiles/Kinase_inhibs.json.gz"))
-        exec.addData("sdfile", new ByteArrayInputStream("Goodbye World!".bytes))
+        exec.addDataAsInputStream("dataset_metadata", new FileInputStream("../../data/testfiles/Kinase_inhibs.metadata"))
+        exec.addDataAsInputStream("dataset_data", new FileInputStream("../../data/testfiles/Kinase_inhibs.json.gz"))
+        exec.addDataAsInputStream("sdfile", new ByteArrayInputStream("Goodbye World!".bytes))
         exec.handleInputs(sd, runner)
 
         then:
@@ -109,7 +108,7 @@ class ExternalExecutorSpec extends Specification {
         ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)
         exec.handleOutputs(sd, runner)
         exec.status = JobStatus.Status.RESULTS_READY
-        def results = exec.getResults()
+        def results = exec.getResultsAsObjects()
 
         then:
         results.size() == 1
@@ -140,7 +139,7 @@ class ExternalExecutorSpec extends Specification {
         ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)
         exec.handleOutputs(sd, runner)
         exec.status = JobStatus.Status.RESULTS_READY
-        def results = exec.getResults()
+        def results = exec.getResultsAsObjects()
 
         then:
         results.size() == 1

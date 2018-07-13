@@ -28,13 +28,11 @@ import spock.lang.Ignore
  *
  * @author timbo
  */
-@Ignore
 class ServiceDescriptorJsonSpec extends Specification {
 
 
     void "ServiceDescriptor json"() {
         setup:
-        println "ServiceDescriptor json()"
         ObjectMapper mapper = new ObjectMapper()
         def descriptor = new HttpServiceDescriptor(
                 "cdk/logp",
@@ -53,7 +51,7 @@ class ServiceDescriptorJsonSpec extends Specification {
         when:
         def json = mapper.writeValueAsString(descriptor)
         println json
-        def obj = mapper.readValue(json, HttpServiceDescriptor.class)
+        def obj = mapper.readValue(json, ServiceDescriptor.class)
 
         then:
         json != null
@@ -63,6 +61,7 @@ class ServiceDescriptorJsonSpec extends Specification {
         obj.executionEndpoint != null
     }
 
+    @Ignore
     void "validate pipelines docker service descriptors"() {
 
         def list = []
