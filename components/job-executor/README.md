@@ -19,3 +19,4 @@ The following need attention:
 1. Only plain Docker services (those defined with a DockerServiceDescriptor) are supported.
 Other types will soon be added.
 1. Support for accessing 'thin' services needs to be added.
+1. Handle type conversions - accept a SDFile and send it to a service that handles Dataset 

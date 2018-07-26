@@ -27,10 +27,13 @@ import org.squonk.io.SquonkDataSource;
 import org.squonk.jobdef.JobStatus;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
+import org.squonk.util.IOUtils;
 
 import javax.activation.DataHandler;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +48,13 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(JobExecutorRouteBuilder.class.getName());
     private static final String ROUTE_STATS = "seda:post_stats";
+
+    /**
+     * Set this environment variable to 'true' to allow testing without authentication, in which
+     * case the user 'nobody' is assumed.
+     */
+    protected static boolean ALLOW_UNAUTHENTICATED_USER = Boolean.valueOf(
+            IOUtils.getConfiguration("SQUONK_JOBEXECUTOR_ALLOW_UNAUTHENTICATED", "false"));
 
     @Inject
     private JobManager jobManager;
@@ -138,33 +148,34 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
     }
 
     private void handleJobsList(Exchange exch) {
+        Message message = exch.getIn();
         try {
-            Message message = exch.getIn();
             String username = fetchUsername(message);
             List<JobStatus> jobStatuses = jobManager.getJobs(username);
             InputStream json = JsonHandler.getInstance().marshalStreamToJsonArray(jobStatuses.stream(), false);
             exch.getIn().setBody(json);
-        } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Failed to list jobs", e);
-            exch.getIn().setBody("{ \"error\": \"Failed to list jobs: " + e.getLocalizedMessage() + "\"}");
-            exch.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 500);
+        } catch (AuthenticationException e) {
+            handle401Error(message);
+        }  catch (Exception e) {
+            handle500Error(message, "Failed to list jobs", e);
         }
     }
 
     private void handleJobStatus(Exchange exch) {
+        Message message = exch.getIn();
         try {
             JobStatus jobStatus = doHandleJobStatus(exch.getIn());
             if (jobStatus == null) {
-                exch.getIn().setBody("{ \"error\": \"Job not found\"}");
-                exch.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
+                message.setBody("{ \"error\": \"Job not found\"}");
+                message.setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
             } else {
                 String json = JsonHandler.getInstance().objectToJson(jobStatus);
-                exch.getIn().setBody(json);
+                message.setBody(json);
             }
+        } catch (AuthenticationException e) {
+            handle401Error(message);
         } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Failed to fetch job", e);
-            exch.getIn().setBody("{ \"error\": \"Failed to fetch job: " + e.getLocalizedMessage() + "\"}");
-            exch.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 500);
+            handle500Error(message, "Failed to fetch job", e);
         }
     }
 
@@ -179,15 +190,16 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
     private void handleJobSubmit(Exchange exch) {
         LOG.info("Submitting job");
+        Message message = exch.getIn();
         try {
             JobStatus jobStatus = doHandleJobSubmit(exch.getIn());
             LOG.info("Job " + jobStatus.getJobId() + " had been submitted");
             String json = JsonHandler.getInstance().objectToJson(jobStatus);
-            exch.getIn().setBody(json);
+            message.setBody(json);
+        } catch (AuthenticationException e) {
+            handle401Error(message);
         } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Failed to submit job", e);
-            exch.getIn().setBody("{ \"error\": \"Job failed to submit: " + e.getLocalizedMessage() + "\"}");
-            exch.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 500);
+            handle500Error(message, "Failed to submit job", e);
         }
     }
 
@@ -211,21 +223,20 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
     private void handleJobResults(Exchange exch) {
         Message message = exch.getIn();
-        String id = message.getHeader("id", String.class);
-        String username = fetchUsername(message);
-        LOG.info("Handing data request for job " + id);
-        JobStatus jobStatus = jobManager.getJobStatus(username, id);
-        if (jobStatus == null) {
-            message.setBody("{ \"error\": \"Job not found\"}");
-            message.setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
-            return;
-        }
-        if (jobStatus.getStatus() != JobStatus.Status.RESULTS_READY) {
-            message.setBody("{ \"error\": \"Job not finished\"}");
-            message.setHeader(Exchange.HTTP_RESPONSE_CODE, 500);
-            return;
-        }
         try {
+            String id = message.getHeader("id", String.class);
+            String username = fetchUsername(message);
+            LOG.info("Handing data request for job " + id);
+            JobStatus jobStatus = jobManager.getJobStatus(username, id);
+            if (jobStatus == null) {
+                message.setBody("{ \"error\": \"Job not found\"}");
+                message.setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
+                return;
+            }
+            if (jobStatus.getStatus() != JobStatus.Status.RESULTS_READY) {
+                handle500Error(message, "Job not finished", null);
+                return;
+            }
             String json = JsonHandler.getInstance().objectToJson(jobStatus);
             message.setBody(json);
             message.setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_TEXT_PLAIN);
@@ -235,25 +246,26 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 LOG.info("Adding attachment " + dataSource.getName() + " of type " + dataSource.getContentType());
                 message.addAttachment(dataSource.getName(), new DataHandler(dataSource));
             }
+        } catch (AuthenticationException e) {
+            handle401Error(message);
         } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Failed to fetch data", e);
-            exch.getIn().setBody("{ \"error\": \"Failed to fetch data: " + e.getLocalizedMessage() + "\"}");
-            exch.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 500);
+            handle500Error(message, "Failed to fetch data", e);
         }
     }
 
     private void handleJobCleanup(Exchange exch) {
         Message message = exch.getIn();
-        String id = message.getHeader("id", String.class);
-        String username = fetchUsername(message);
-        LOG.info("Handing data request for job " + id);
-        JobStatus jobStatus = jobManager.getJobStatus(username, id);
-        if (jobStatus == null) {
-            message.setBody("{ \"error\": \"Job not found\"}");
-            message.setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
-            return;
-        }
         try {
+            String id = message.getHeader("id", String.class);
+            String username = fetchUsername(message);
+            LOG.info("Handing data request for job " + id);
+            JobStatus jobStatus = jobManager.getJobStatus(username, id);
+            if (jobStatus == null) {
+                message.setBody("{ \"error\": \"Job not found\"}");
+                message.setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
+                return;
+            }
+
             jobStatus = jobManager.cleanupJob(username, id);
             LOG.info("Job " + id + " has been removed");
             if (jobStatus != null) {
@@ -264,45 +276,91 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 exch.getIn().setBody("{ \"warning\": \"Could not determined JobStatus after cleanup. Cleanup may not be complete.\"}");
                 exch.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 500);
             }
+
+        } catch (AuthenticationException e) {
+            handle401Error(message);
         } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Failed to cleanup job", e);
-            exch.getIn().setBody("{ \"error\": \"Failed to cleanup: " + e.getLocalizedMessage() + "\"}");
-            exch.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 500);
+            handle500Error(message, "Failed to cleanup job", e);
         }
     }
 
     private void handleJobCancel(Exchange exch) {
         Message message = exch.getIn();
-        String id = message.getHeader("id", String.class);
-        String username = fetchUsername(message);
-        LOG.info("Handing data request for job " + id);
-        JobStatus jobStatus = jobManager.getJobStatus(username, id);
-        if (jobStatus == null) {
-            message.setBody("{ \"error\": \"Job not found\"}");
-            message.setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
-            return;
-        }
         try {
+            String id = message.getHeader("id", String.class);
+            String username = fetchUsername(message);
+            LOG.info("Handing data request for job " + id);
+            JobStatus jobStatus = jobManager.getJobStatus(username, id);
+            if (jobStatus == null) {
+                handle404Error(message, "Job not found");
+                return;
+            }
             jobStatus = jobManager.cancelJob(username, id);
             LOG.info("Job " + id + " has been removed");
             if (jobStatus != null) {
                 String json = JsonHandler.getInstance().objectToJson(jobStatus);
-                exch.getIn().setBody(json);
+                message.setBody(json);
             } else {
                 LOG.log(Level.SEVERE, "No job status returned after cancel");
-                exch.getIn().setBody("{ \"warning\": \"Could not determined JobStatus after cancel. Cleanup may not be complete.\"}");
-                exch.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 500);
+                message.setBody("{ \"warning\": \"Could not determined JobStatus after cancel. Cleanup may not be complete.\"}");
+                message.setHeader(Exchange.HTTP_RESPONSE_CODE, 500);
             }
+        } catch (AuthenticationException e) {
+            handle401Error(message);
         } catch (Exception e) {
-            LOG.log(Level.SEVERE, "Failed to cancel job", e);
-            exch.getIn().setBody("{ \"error\": \"Failed to cancel job: " + e.getLocalizedMessage() + "\"}");
-            exch.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 500);
+            handle500Error(message, "Failed to cancel job", e);
         }
 
     }
 
-    private String fetchUsername(Message message) {
-        return message.getHeader("SquonkUsername", String.class);
+    private String fetchUsername(Message message) throws AuthenticationException {
+        String user = null;
+        HttpServletRequest request = message.getBody(HttpServletRequest.class);
+        if (request != null) {
+            Principal p = request.getUserPrincipal();
+            if (p != null) {
+                user = p.getName();
+            }
+        }
+        if (user == null) {
+            if (ALLOW_UNAUTHENTICATED_USER) {
+                user = "nobody";
+            } else {
+                throw new AuthenticationException();
+            }
+        }
+        LOG.info("User: " + user);
+        return user;
+    }
+
+    private void handle404Error(Message message, String warning) {
+        LOG.severe("Not Found: " + warning);
+        message.setBody("{ \"error\": \"" + warning + "\"}");
+        message.setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
+    }
+
+    private void handle401Error(Message message) {
+        LOG.severe("Unauthorised");
+        message.setBody("{ \"error\": \"Unauthorised\"}");
+        message.setHeader(Exchange.HTTP_RESPONSE_CODE, 401);
+    }
+
+    private void handle500Error(Message message, String warning, Exception e) {
+        if (e == null) {
+            LOG.severe(warning);
+            message.setBody("{ \"error\": \"" + warning + "\"}");
+        } else {
+            LOG.log(Level.SEVERE, warning, e);
+            message.setBody("{ \"error\": \"" + warning + ": " + e.getLocalizedMessage() + "\"}");
+        }
+        message.setHeader(Exchange.HTTP_RESPONSE_CODE, 500);
+    }
+
+    class AuthenticationException extends Exception {
+
+        AuthenticationException() {
+            super("Authentication required");
+        }
     }
 
 }

@@ -13,7 +13,7 @@ import spock.lang.Specification
 
 class JobManagerSpec extends Specification {
 
-    static String USER = 'squonkuser'
+    static String USER = 'nobody'
 
     private DockerServiceDescriptor createSdfServiceDescriptor() {
         // create the service descriptor

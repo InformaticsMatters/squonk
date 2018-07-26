@@ -5,7 +5,7 @@ curl -X POST \
   -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf.gz;type=chemical/x-mdl-sdfile;filename=input"\
   -H "Content-Type: multipart/mixed"\
   -H "SquonkUsername: user1"\
-  http://localhost:8080/job-executor/rest/v1/jobs
+  http://localhost:8888/job-executor/rest/v1/jobs
 
 
 curl -X POST \
@@ -14,7 +14,7 @@ curl -X POST \
   -F "input_metadata=@../../../../data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
   -H "Content-Type: multipart/mixed"\
   -H "SquonkUsername: user1"\
-  http://localhost:8080/job-executor/rest/v1/jobs
+  http://localhost:8888/job-executor/rest/v1/jobs
 
 
-curl -H "SquonkUsername: user1" http://localhost:8080/job-executor/rest/v1/jobs
+curl -H "SquonkUsername: user1" http://localhost:8888/job-executor/rest/v1/jobs

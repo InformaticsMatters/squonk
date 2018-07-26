@@ -62,6 +62,7 @@ dependencies {
 
 tomcat {
     enableSSL = false
+    httpPort = 8888
 }
 
 docker {
