@@ -71,7 +71,7 @@ public class DatasetUUIDFilterStep extends AbstractServiceStep {
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
         statusMessage = MSG_PREPARING_INPUT;
-        Dataset<? extends BasicObject> input = fetchMappedInput("input", Dataset.class, varman, true);
+        Dataset<? extends BasicObject> input = fetchMappedInput("input", Dataset.class, null, varman, true);
         String uuidsOpt = getOption(OPTION_UUIDS, String.class);
         if (uuidsOpt == null) {
             throw new IllegalStateException("UUIDs not defined. Should be present as option named " + OPTION_UUIDS);

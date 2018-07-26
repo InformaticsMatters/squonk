@@ -19,15 +19,18 @@ package org.squonk.execution.steps.impl;
 import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.SquonkDataSource;
 import org.squonk.types.BasicObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.reader.CSVReader;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+
 import org.apache.camel.CamelContext;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.QuoteMode;
@@ -37,11 +40,11 @@ import org.apache.commons.csv.QuoteMode;
  * {@link Dataset} of {@link BasicObject}s.
  * <p>
  * The SDFile is passed as an {@link java.io.InputStream} (can be gzipped). By
- default the input is expected in the variable named by the VAR_CSV_INPUT
- constant, though that name can be mapped to a different name. The resulting
- Dataset is contained in the variable named by the VAR_DATASET_OUTPUT
- constant, or a variable mapped to that name.
- <p>
+ * default the input is expected in the variable named by the VAR_CSV_INPUT
+ * constant, though that name can be mapped to a different name. The resulting
+ * Dataset is contained in the variable named by the VAR_DATASET_OUTPUT
+ * constant, or a variable mapped to that name.
+ * <p>
  * The parsing is implemented using the Apache Common CSV 1.1 library. Options
  * here correspond for options available from that library (the CSVFormat class
  * in particular). See <a href="http://camel.apache.org/csv.html">here</a> for
@@ -49,7 +52,6 @@ import org.apache.commons.csv.QuoteMode;
  * <p>
  * The {@link CSVReader} class acts as a bridge between this
  * class and the Apache Commons CSV library.
- *
  *
  * @author timbo
  */
@@ -61,7 +63,6 @@ public class CSVReaderStep extends AbstractStandardStep {
      * The type of CSV format. One of the CSVFormat constants found here:
      * http://commons.apache.org/proper/commons-csv/archives/1.1/apidocs/index.html
      * If not present then CSVFormat.DEFAULT is used.
-     *
      */
     public static final String OPTION_FORMAT_TYPE = StepDefinitionConstants.CsvUpload.OPTION_CSV_FORMAT_TYPE;
 
@@ -141,18 +142,18 @@ public class CSVReaderStep extends AbstractStandardStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         statusMessage = "Reading file ...";
-        String filename = fetchMappedInput(VAR_CSV_INPUT, String.class, varman);
-        try (InputStream is = fetchMappedInput(VAR_CSV_INPUT, InputStream.class, varman)) {
-            CSVReader reader = createReader(IOUtils.getGunzippedInputStream(is), filename);
-            Stream<BasicObject> mols = reader.asStream();
-            Dataset results = new Dataset(mols, reader.getDatasetMetadata());
-            createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
-            statusMessage = generateStatusMessage(-1, results.getSize(), -1);
-            LOG.info("Results: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
-        }
+        SquonkDataSource dataSource = fetchMappedInput(VAR_CSV_INPUT, SquonkDataSource.class, varman);
+        dataSource.setGzipContent(false);
+        CSVReader reader = createReader(dataSource);
+        Stream<BasicObject> mols = reader.asStream();
+        Dataset results = new Dataset(mols, reader.getDatasetMetadata());
+        createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
+        statusMessage = generateStatusMessage(-1, results.getSize(), -1);
+        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
+
     }
 
-    private CSVReader createReader(InputStream input, String filename) throws IOException {
+    private CSVReader createReader(SquonkDataSource dataSource) throws IOException {
 
         String csvFormatOption = getOption(OPTION_FORMAT_TYPE, String.class);
         LOG.fine("CSVFormat string = " + csvFormatOption);
@@ -235,7 +236,7 @@ public class CSVReaderStep extends AbstractStandardStep {
         }
         LOG.info("CSV: " + csv);
 
-        return new CSVReader(input, csv, csvFormatOption, filename);
+        return new CSVReader(dataSource, csv, csvFormatOption);
     }
 
 }

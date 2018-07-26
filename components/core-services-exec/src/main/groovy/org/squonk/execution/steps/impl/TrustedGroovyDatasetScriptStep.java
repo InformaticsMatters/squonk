@@ -42,7 +42,7 @@ public class TrustedGroovyDatasetScriptStep extends AbstractStandardStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         statusMessage = MSG_PREPARING_INPUT;
-        Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman, true);
+        Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, null, varman, true);
         //LOG.info("Input Dataset: " + input);
         String script = getOption(OPTION_SCRIPT, String.class);
         if (script == null) {

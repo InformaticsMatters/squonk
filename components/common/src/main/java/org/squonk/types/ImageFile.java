@@ -16,10 +16,11 @@
 
 package org.squonk.types;
 
+import org.squonk.io.SquonkDataSource;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStream;
 
 /** Wrapper around an image file
  *
@@ -27,16 +28,11 @@ import java.io.InputStream;
  */
 public class ImageFile extends AbstractStreamType {
 
-    private final String mediaType;
 
-    public ImageFile(InputStream input, String mediaType) {
-        super(input);
-        this.mediaType = mediaType;
+    public ImageFile(SquonkDataSource input, String mediaType) {
+        super(input, mediaType);
     }
 
-    public String getMediaType() {
-        return mediaType;
-    }
 
     /** Generate and return a BufferedImage corresponding to this ImageFile.
      * NOTE: this consumes the InputStream so that it cannot be read again.

@@ -16,9 +16,8 @@
 
 package org.squonk.types;
 
-import org.squonk.api.HttpHandler;
-import org.squonk.api.VariableHandler;
 import org.squonk.http.RequestResponseExecutor;
+import org.squonk.io.SquonkDataSource;
 import org.squonk.util.IOUtils;
 
 import java.io.IOException;
@@ -85,6 +84,12 @@ public class InputStreamHandler extends DefaultHandler<InputStream> {
 
     @Override
     public InputStream readVariable(ReadContext context) throws Exception {
-        return context.readStreamValue(mediaType, extension, key);
+        SquonkDataSource ds = context.readStreamValue(mediaType, extension, key);
+        if (ds == null) {
+            return null;
+        } else {
+            return ds.getInputStream();
+        }
     }
+
 }

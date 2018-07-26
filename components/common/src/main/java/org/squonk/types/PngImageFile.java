@@ -16,9 +16,8 @@
 
 package org.squonk.types;
 
+import org.squonk.io.SquonkDataSource;
 import org.squonk.util.CommonMimeTypes;
-
-import java.io.InputStream;
 
 /** Wrapper around an PNG format image file
  *
@@ -27,7 +26,7 @@ import java.io.InputStream;
 public class PngImageFile extends ImageFile {
 
 
-    public PngImageFile(InputStream input) {
+    public PngImageFile(SquonkDataSource input) {
         super(input, CommonMimeTypes.MIME_TYPE_PNG);
     }
 

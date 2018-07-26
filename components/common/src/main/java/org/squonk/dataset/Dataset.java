@@ -16,13 +16,18 @@
 
 package org.squonk.dataset;
 
+import org.squonk.io.*;
 import org.squonk.types.BasicObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.types.StreamType;
+import org.squonk.types.TypeDescriptor;
+import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.StreamProvider;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -42,7 +47,7 @@ import java.util.stream.StreamSupport;
  * associated metadata. This is designed to handle very large datasets by
  * allowing streaming of data. The use of this class is quite complex. Make sure
  * you read the JavaDocs thoroughly.
- *
+ * <p>
  * <h3>Content definition</h3>
  * <p>
  * The objects can be defined as one of
@@ -65,7 +70,7 @@ import java.util.stream.StreamSupport;
  * repeatedly. HOWEVER do this with care, as if the dataset is large you may
  * exhaust memory. Usually it is better to stream the data using a Stream or
  * Iterator as long as you only need to read once.
- *
+ * <p>
  * <h3>Metadata</h3>
  * The key function of the metadata is to describe what type of object is
  * present in the underlying InputStream/Interator/Stream/List (must be
@@ -74,7 +79,7 @@ import java.util.stream.StreamSupport;
  * core information can be extracted from the underlying objects but when the
  * source is InputStream or URL the Metadata is mandatory so that the JSON can
  * be deserialized.
- *
+ * <p>
  * <h3>Serialization/deserialization to JSON</h3>
  * As the underlying contents are potentially very large we rely on streaming
  * the contents to/from JSON. This means that the contents are stored separate
@@ -99,9 +104,8 @@ import java.util.stream.StreamSupport;
  * custom types here you are responsible for ensuring that Jackson can handle
  * this.
  *
- *
- * @author Tim Dudgeon &lt;tdudgeon@informaticsmatters.com&gt;
  * @param <T>
+ * @author Tim Dudgeon &lt;tdudgeon@informaticsmatters.com&gt;
  */
 public class Dataset<T extends BasicObject> implements DatasetProvider, StreamProvider<T>, StreamType {
 
@@ -114,8 +118,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     protected List<T> list;
     protected Stream<T> stream;
     protected Iterator<T> iter;
-    protected InputStream inputStream;
-    protected URL url;
+    protected SquonkDataSource dataSource;
     private DatasetMetadata metadata;
     private final Class<T> type;
 
@@ -188,7 +191,12 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     @Deprecated
     public Dataset(Class<T> type, URL url, DatasetMetadata<T> metadata) {
         this.type = type;
-        this.url = url;
+        this.dataSource = new UrlDataSource(
+                DATASET_FILE_EXT,
+                resolveContentMimeType(metadata.getType()),
+                url,
+                null
+        );
         this.metadata = metadata;
     }
 
@@ -213,7 +221,11 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
             throw new NullPointerException("Metadata must not be null when creating Dataset from InputStream");
         }
         this.type = type;
-        this.inputStream = inputStream;
+        this.dataSource = new InputStreamDataSource(
+                DATASET_FILE_EXT,
+                resolveContentMimeType(metadata.getType()),
+                inputStream,
+                null);
         this.metadata = metadata;
     }
 
@@ -221,14 +233,51 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         this(metadata.getType(), inputStream, metadata);
     }
 
-    /** Items as InputStream using default metadata that just specifies the generic type
-    *
+    /**
+     * Items as InputStream using default metadata that just specifies the generic type
      */
     public Dataset(Class<T> type, InputStream inputStream) {
         this(type, inputStream, new DatasetMetadata(type));
     }
 
-    /** Constructor that uses an InputStream for both the data and the metadata
+    /** Create from a file that can be repeatedly read.
+     * Use this in preference to using an InputStream
+     *
+     * @param file
+     * @param metadata
+     */
+    public Dataset(File file, DatasetMetadata<T> metadata) {
+        this.type = metadata.getType();
+        this.dataSource = new FileDataSource(
+                DATASET_FILE_EXT,
+                resolveContentMimeType(metadata.getType()),
+                file,
+                file.getName().toLowerCase().endsWith(".gz"));
+    }
+
+    public Dataset(SquonkDataSource dataSource, DatasetMetadata<T> metadata) {
+        this.type = metadata.getType();
+        this.dataSource = dataSource;
+        this.metadata = metadata;
+        dataSource.setName("data");
+    }
+
+    public Dataset(Class<T> type, SquonkDataSource dataSource) {
+        this.type = type;
+        this.dataSource = dataSource;
+        this.metadata = new DatasetMetadata(type);
+    }
+
+    public static String resolveDatasetMimeType(Class type) {
+        return TypeDescriptor.resolveMediaType(Dataset.class, type);
+    }
+
+    public static String resolveContentMimeType(Class type) {
+        return TypeDescriptor.resolveMediaType(type);
+    }
+
+    /**
+     * Constructor that uses an InputStream for both the data and the metadata
      *
      * @param data
      * @param metadata
@@ -256,10 +305,12 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         return type;
     }
 
-    /** Convenience method to get the size of the dataset. This value is held by the metadata.
+    /**
+     * Convenience method to get the size of the dataset. This value is held by the metadata.
      *
      * @return The size from the metadata, or -1 if no metadata.
      */
+
     public int getSize() {
         return metadata == null ? -1 : metadata.getSize();
     }
@@ -273,16 +324,14 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
      * @return
      */
     public Class getSourceType() {
-        if (url != null) {
-            return url.getClass();
-        } else if (list != null) {
+        if (list != null) {
             return list.getClass();
         } else if (stream != null) {
             return stream.getClass();
         } else if (iter != null) {
             return iter.getClass();
-        } else if (inputStream != null) {
-            return inputStream.getClass();
+        } else if (dataSource != null) {
+            return dataSource.getClass();
         } else {
             return null;
         }
@@ -304,7 +353,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
                     List<T> l = st.collect(Collectors.toList());
                     stream = null;
                     iter = null;
-                    inputStream = null;
+                    dataSource = null;
                     list = l;
                 }
             }
@@ -335,7 +384,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         synchronized (lock) {
             this.stream = stream;
             this.list = null;
-            this.inputStream = null;
+            this.dataSource = null;
             this.iter = null;
         }
     }
@@ -343,9 +392,6 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     Stream<T> doGetAsStream() throws IOException {
         if (list != null) {
             return list.stream();
-        } else if (url != null) {
-            Stream<T> st = createStreamFromUrl();
-            return st;
         } else if (stream != null) {
             Stream<T> s = stream;
             stream = null;
@@ -355,9 +401,10 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
             Stream<T> s = StreamSupport.stream(split, true);
             iter = null;
             return s;
-        } else if (inputStream != null) {
-            Stream<T> st = createStreamFromInputStream();
-            inputStream = null;
+        } else if (dataSource != null) {
+            Stream<T> st = createStreamFromDataSource();
+            // TODO - only remove the datasource if it can't be read repeatedly
+            dataSource = null;
             return st;
         } else {
             throw new IllegalStateException(MSG_ALREADY_CONSUMED);
@@ -381,9 +428,6 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     Iterator<T> doGetAsIterator() throws IOException {
         if (list != null) {
             return list.iterator();
-        } else if (url != null) {
-            Stream<T> st = createStreamFromUrl();
-            return st.iterator();
         } else if (stream != null) {
             Stream<T> s = stream;
             stream = null;
@@ -392,23 +436,19 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
             Iterator<T> i = iter;
             iter = null;
             return i;
-        } else if (inputStream != null) {
-            Stream<T> st = createStreamFromInputStream();
-            inputStream = null;
+        } else if (dataSource != null) {
+            Stream<T> st = createStreamFromDataSource();
+            // TODO - only remove the datasource if it can't be read repeatedly
+            dataSource = null;
             return st.iterator();
         } else {
             throw new IllegalStateException(MSG_ALREADY_CONSUMED);
         }
     }
 
-    private Stream<T> createStreamFromInputStream() throws IOException {
-        InputStream gunzipped = IOUtils.getGunzippedInputStream(inputStream);
+    private Stream<T> createStreamFromDataSource() throws IOException {
+        InputStream gunzipped = IOUtils.getGunzippedInputStream(dataSource.getInputStream());
         return JsonHandler.getInstance().streamFromJson(gunzipped, metadata.getType(), metadata.getValueClassMappings(), true);
-    }
-
-    private Stream<T> createStreamFromUrl() throws IOException {
-        InputStream is = url.openStream();
-        return JsonHandler.getInstance().streamFromJson(IOUtils.getGunzippedInputStream(is), metadata.getType(), metadata.getValueClassMappings(), true);
     }
 
     /**
@@ -428,15 +468,10 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     }
 
     InputStream doGetAsInputStream(boolean gzip) throws IOException {
-        if (url != null) {
-            if (gzip) {
-                return IOUtils.getGzippedInputStream(url.openStream());
-            } else {
-                return IOUtils.getGunzippedInputStream(url.openStream());
-            }
-        } else if (inputStream != null) {
-            InputStream is = inputStream;
-            inputStream = null;
+        if (dataSource != null) {
+            InputStream is = dataSource.getInputStream();
+            // TODO - only remove the datasource if it can't be read repeatedly
+            dataSource = null;
             if (gzip) {
                 return IOUtils.getGzippedInputStream(is);
             } else {
@@ -460,7 +495,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
      */
     public List<T> convertToList(Stream<T> stream) {
         List<T> l = stream.collect(Collectors.toList());
-        this.inputStream = null;
+        this.dataSource = null;
         this.iter = null;
         this.stream = null;
         this.list = l;
@@ -494,22 +529,23 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         generator.getDatasetMetadata();
     }
 
-   /**
-    * Create a DatasetMetadataGenerator using the built in Stream. Use this if you don't
-    * need to perform any additional operations on the stream.
-    * @return
-    * @throws IOException 
-    */   
+    /**
+     * Create a DatasetMetadataGenerator using the built in Stream. Use this if you don't
+     * need to perform any additional operations on the stream.
+     *
+     * @return
+     * @throws IOException
+     */
     public DatasetMetadataGenerator<T> createDatasetMetadataGenerator() throws IOException {
         return new DatasetMetadataGenerator<>(getStream());
     }
 
     /**
-     * Create a DatasetMetadataGenerator using the provided Stream (see notes above) 
+     * Create a DatasetMetadataGenerator using the provided Stream (see notes above)
      * and add functions to the Stream to
      * generate the metadata as the stream is consumed. Once Stream.close() is
      * called the metadata will be updated to reflect the contents, but this is done
-     * is a different thread so you need to wait for it to complete. 
+     * is a different thread so you need to wait for it to complete.
      * <br>
      * For example:
      * <br>
@@ -519,19 +555,18 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
      * // add operations to the stream if required. these happen prior to metadata generation
      * DatasetMetadataGenerator generator = ds.createDatasetMetadataGenerator(stream);
      * try (Stream s = generator.getAsStream())) {
-     *     // add operations to the stream if required. these happen after to metadata generation
-     *     long size = s.count(); // must perform a terminal operation on the stream
+     * // add operations to the stream if required. these happen after to metadata generation
+     * long size = s.count(); // must perform a terminal operation on the stream
      * }
      * DatasetMetadata meta = generator.getDatasetMetadata(); // this can be blocking
      * assert meta != null; // you now have metadata
      * </code>
-     *
+     * <p>
      * NOTE: the call to {@link DatasetMetadataGenerator#getDatasetMetadata} blocks
      * until he metadata is generated, and this only happens once the Stream is closed.
      * So unless you close the stream it will block forever. Remember to close the stream!
      * Also remember to perform a terminal operation on the stream.
-     * 
-     * 
+     *
      * @param source
      * @return
      */
@@ -542,12 +577,53 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     @Override
     public InputStream[] getInputStreams() throws IOException {
         InputStream meta = new ByteArrayInputStream(JsonHandler.getInstance().objectToBytes(getMetadata()));
-        return new InputStream[] {getInputStream(true), meta};
+        return new InputStream[]{getInputStream(true), meta};
+    }
+
+    @Override
+    public SquonkDataSource[] getDataSources() throws IOException {
+        String json = JsonHandler.getInstance().objectToJson(getMetadata());
+        //InputStream metaInput = new ByteArrayInputStream(JsonHandler.getInstance().objectToBytes(getMetadata()));
+        SquonkDataSource meta = new StringDataSource(METADATA_FILE_EXT, CommonMimeTypes.MIME_TYPE_DATASET_METADATA, json, false);
+        SquonkDataSource data = getAsDataSource(true);
+        data.setName(DATASET_FILE_EXT);
+        return new SquonkDataSource[]{data, meta};
+    }
+
+    /** Get the DataSource for the data of this Dataset
+     *
+      * @return
+     */
+    public SquonkDataSource getAsDataSource(boolean gzip) throws IOException {
+        if (dataSource != null) {
+            return dataSource;
+        } else {
+            JsonHandler.MarshalData data = JsonHandler.getInstance().marshalData(getStream(), gzip);
+            InputStream is = data.getInputStream();
+            SquonkDataSource ds = new InputStreamDataSource(DATASET_FILE_EXT, CommonMimeTypes.MIME_TYPE_MOLECULE_OBJECT_JSON, is, null);
+            ds.setGzipContent(gzip);
+            return ds;
+        }
     }
 
     @Override
     public String[] getStreamNames() {
-        return new String[] {DATASET_FILE_EXT, METADATA_FILE_EXT};
+        return new String[]{DATASET_FILE_EXT, METADATA_FILE_EXT};
+    }
+
+    @Override
+    public String getMediaType() {
+        return resolveDatasetMimeType(type);
+    }
+
+    @Override
+    public String[] getStreamMediaTypes() {
+        if (type == MoleculeObject.class) {
+            return new String[]{CommonMimeTypes.MIME_TYPE_MOLECULE_OBJECT_JSON, CommonMimeTypes.MIME_TYPE_DATASET_METADATA};
+        } else if (type == BasicObject.class) {
+            return new String[]{CommonMimeTypes.MIME_TYPE_BASIC_OBJECT_JSON, CommonMimeTypes.MIME_TYPE_DATASET_METADATA};
+        }
+        throw new IllegalStateException("Unexpected dataset type: " + type.getName());
     }
 
     public class DatasetMetadataGenerator<T extends BasicObject> {
@@ -563,7 +639,8 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
          * Get the DatasetMetadata, blocking until it is generated. Make sure you perform
          * a terminal operation on the stream AND close it otherwise the metadata will
          * never be generated.
-         * @return 
+         *
+         * @return
          */
         public DatasetMetadata<T> getDatasetMetadata() {
             try {
@@ -575,7 +652,8 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
 
         /**
          * Get the Stream with the metadata generating operations appended.
-         * @return 
+         *
+         * @return
          */
         public Stream<T> getAsStream() {
             return source;
@@ -585,6 +663,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
          * Get an InputStream of a JSON array of the objects in the Stream. Once
          * the InputStream is fully consumed you must close the Stream to generate
          * the metadata.
+         *
          * @param s
          * @param gzip
          * @return A holder class for the InputStream and the Future that allows Exceptions to be handled

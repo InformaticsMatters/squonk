@@ -1,5 +1,6 @@
 package org.squonk.types;
 
+import org.squonk.io.SquonkDataSource;
 import org.squonk.util.IOUtils;
 
 import java.io.IOException;
@@ -13,7 +14,14 @@ public interface StreamType {
      */
     InputStream[] getInputStreams() throws IOException;
 
+    SquonkDataSource[] getDataSources() throws IOException;
+
     String[] getStreamNames();
+
+    String getMediaType();
+
+    String[] getStreamMediaTypes();
+
 
     /** Get the Gzipped compressed data items for this object.
      *

@@ -60,9 +60,7 @@ public class DockerProcessDatasetStep extends AbstractStandardStep {
             throw new IllegalStateException("Command to run is not defined. Should be present as option named " + OPTION_DOCKER_COMMAND);
         }
 
-        String localWorkDir = "/source";
-
-        ContainerRunner runner = createContainerRunner(image, localWorkDir);
+        ContainerRunner runner = createContainerRunner(image);
         runner.init();
         LOG.info("Docker image: " + image + ", hostWorkDir: " + runner.getHostWorkDir() + ", script: " + command);
         try {
@@ -79,7 +77,7 @@ public class DockerProcessDatasetStep extends AbstractStandardStep {
             statusMessage = MSG_RUNNING_CONTAINER;
             LOG.info("Executing ...");
             long t0 = System.currentTimeMillis();
-            int status = runner.execute(localWorkDir + "/execute");
+            int status = runner.execute(runner.getLocalWorkDir() + "/execute");
             long t1 = System.currentTimeMillis();
             float duration = (t1 - t0) / 1000.0f;
             LOG.info(String.format("Executed in %s seconds with return status of %s", duration, status));

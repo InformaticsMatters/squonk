@@ -16,16 +16,14 @@
 
 package org.squonk.types;
 
-import org.squonk.api.GenericHandler;
-import org.squonk.api.HttpHandler;
-import org.squonk.api.VariableHandler;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.http.RequestResponseExecutor;
+import org.squonk.io.InputStreamDataSource;
+import org.squonk.io.SquonkDataSource;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
-import org.squonk.util.IOUtils;
 import org.squonk.util.ServiceConstants;
 
 import java.io.IOException;
@@ -45,7 +43,7 @@ public class DatasetHandler<T extends BasicObject> extends DefaultHandler<Datase
 
 
     public DatasetHandler() {
-        super(Dataset.class, null);
+        super(Dataset.class);
     }
 
     public DatasetHandler(Class<T> genericType) {
@@ -69,7 +67,13 @@ public class DatasetHandler<T extends BasicObject> extends DefaultHandler<Datase
     public Dataset<T> readResponse(RequestResponseExecutor executor, boolean gunzip) throws IOException {
         String json = executor.getResponseHeader(CamelCommonConstants.HEADER_METADATA);
         InputStream is = executor.getResponseBody();
-        return create(json, gunzip ? IOUtils.getGunzippedInputStream(is) : is);
+        if (is == null) {
+            return null;
+        }
+        String mediaType = TypeDescriptor.resolveMediaType(Dataset.class, genericType);
+        SquonkDataSource ds = new InputStreamDataSource(Dataset.DATASET_FILE_EXT, mediaType, is, null);
+        ds.setGzipContent(!gunzip);
+        return create(json, ds);
     }
 
     @Override
@@ -94,13 +98,17 @@ public class DatasetHandler<T extends BasicObject> extends DefaultHandler<Datase
         }
     }
 
-    private String resolveMediaType(Class secondaryType) {
+    private String resolveDatasetMediaType(Class secondaryType) {
         return TypeResolver.getInstance().resolveMediaType(Dataset.class, secondaryType);
+    }
+
+    private String resolveContentMediaType(Class secondaryType) {
+        return TypeResolver.getInstance().resolveMediaType(secondaryType, null);
     }
 
     @Override
     public void writeVariable(Dataset dataset, WriteContext context) throws Exception {
-        String mediaType = resolveMediaType(dataset.getType());
+        String mediaType = resolveContentMediaType(dataset.getType());
         Dataset.DatasetMetadataGenerator generator = dataset.createDatasetMetadataGenerator();
         Stream s = null;
         InputStream is = null;
@@ -137,8 +145,8 @@ public class DatasetHandler<T extends BasicObject> extends DefaultHandler<Datase
 
         String json = context.readTextValue(CommonMimeTypes.MIME_TYPE_DATASET_METADATA, Dataset.METADATA_FILE_EXT);
         DatasetMetadata<T> meta = createMetadata(json);
-        String mediaType = resolveMediaType(meta.getType());
-        InputStream data = context.readStreamValue(mediaType, Dataset.DATASET_FILE_EXT);
+        String mediaType = resolveContentMediaType(meta.getType());
+        SquonkDataSource data = context.readStreamValue(mediaType, Dataset.DATASET_FILE_EXT);
         Dataset<T> result = new Dataset<>(data, meta);
         return result;
     }
@@ -156,28 +164,31 @@ public class DatasetHandler<T extends BasicObject> extends DefaultHandler<Datase
         return metadata;
     }
 
-    protected Dataset<T> create(String meta, InputStream data) throws IOException {
+    protected Dataset<T> create(String meta, SquonkDataSource data) throws IOException {
         DatasetMetadata<T> metadata = createMetadata(meta);
         return new Dataset<>(data, metadata);
     }
 
     @Override
-    public Dataset<T> create(InputStream data) throws Exception {
+    public Dataset<T> create(SquonkDataSource data) throws Exception {
         return new Dataset(getGenericType(), data);
     }
 
     @Override
-    public Dataset<T> createMultiple(Map<String,InputStream> inputs) throws Exception {
+    public Dataset<T> createMultiple(Map<String,SquonkDataSource> inputs) throws Exception {
 
-        InputStream data = inputs.get(Dataset.DATASET_FILE_EXT);
-        InputStream meta = inputs.get(Dataset.METADATA_FILE_EXT);
+        SquonkDataSource data = inputs.get(Dataset.DATASET_FILE_EXT);
+        data.setGzipContent(true);
+        SquonkDataSource meta = inputs.get(Dataset.METADATA_FILE_EXT);
+        meta.setGzipContent(false);
         if (data == null) {
             throw new IllegalStateException("InputStream for data not present");
         }
         if (meta == null) {
             return new Dataset<T>(getGenericType(), data);
         } else {
-            return new Dataset<T>(data, meta);
+            DatasetMetadata<T> datasetMetadata = JsonHandler.getInstance().objectFromJson(meta.getInputStream(), DatasetMetadata.class);
+            return new Dataset<T>(data, datasetMetadata);
         }
     }
 }

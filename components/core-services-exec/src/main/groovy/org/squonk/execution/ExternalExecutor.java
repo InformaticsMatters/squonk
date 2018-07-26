@@ -25,6 +25,9 @@ import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.impl.FilesystemReadContext;
 import org.squonk.execution.variable.impl.FilesystemWriteContext;
 import org.squonk.io.IODescriptor;
+import org.squonk.io.InputStreamDataSource;
+import org.squonk.io.SquonkDataSource;
+import org.squonk.io.StringDataSource;
 import org.squonk.jobdef.ExternalJobDefinition;
 import org.squonk.jobdef.JobStatus;
 import org.squonk.jobdef.JobStatus.Status;
@@ -32,25 +35,32 @@ import org.squonk.types.StreamType;
 import org.squonk.types.TypeResolver;
 import org.squonk.util.IOUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.io.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/** Manages the execution of jobs. Each execution should have its own instance of this class.
+ * The procedure is as follows:
+ * <ol>
+ *     <li>Create an instance of this class, including passing in an instance to received callback calls.</li>
+ *     <li>Set the input(s) using one of the addDataAs*() methods.</li>
+ *     <li>Use the execute() method to start the job. This returns a JobStatus with the job's ID.</li>
+ *     <li>Use the callback instance to be notified of status changes.</li>
+ *     <li>When the status changes to {@link org.squonk.jobdef.JobStatus.Status#RESULTS_READY} you can fetch the results
+ *     using one of the getResultsAs*() methods.</li>
+ *     <li>One you have the results call the {@link #cleanup} method.</li>
+ * </ol>
+ *
+ */
 public class ExternalExecutor extends ExecutableService {
 
-    private final Logger LOG = Logger.getLogger(ExternalExecutor.class.getName());
+    private static final Logger LOG = Logger.getLogger(ExternalExecutor.class.getName());
     private static final TypeResolver typeResolver = TypeResolver.getInstance();
 
     private final ExternalJobDefinition jobDefinition;
     private final ExecutorCallback callback;
-    private final LinkedHashMap<String, InputStream> data = new LinkedHashMap<>();
+    private final LinkedHashMap<String, SquonkDataSource> data = new LinkedHashMap<>();
     private final Map<String, Object> results = new LinkedHashMap<>();
 
     private ContainerRunner runner;
@@ -68,15 +78,28 @@ public class ExternalExecutor extends ExecutableService {
 
     /**
      * Add the data to be executed. The name property must match the name in the IODescriptor for an input (in the case
-     * of a value being comprised of a single InputStream, or must start with the name from the IODescriptor followed by
+     * of a value being comprised of a single input, or must start with the name from the IODescriptor followed by
      * and underscore followed by the identifier for the sub type in the case of datasets being comprised of multiple
-     * InputStreams.
+     * inputs.
      *
-     * @param name
-     * @param data
+     * @param name Must match the name of an IODescriptor for an input
+     * @param data The data to add
      */
-    public void addDataAsInputStream(String name, InputStream data) {
+    public void addDataAsDataSource(String name, SquonkDataSource data) {
+        LOG.fine("Adding input to executor: " + name);
         this.data.put(name, data);
+    }
+
+    /**
+     *
+     * @param name Must match the name of an IODescriptor for an input
+     * @param mediaType The content type of the input
+     * @param data An Input Stream to the data
+     * @param gzipped Whether the data is gzipped
+     */
+    public void addDataAsInputStream(String name, String mediaType, InputStream data, Boolean gzipped) {
+        LOG.fine("Adding input to executor: " + name);
+        this.data.put(name, new InputStreamDataSource(name, mediaType, data, gzipped));
     }
 
     /**
@@ -95,23 +118,23 @@ public class ExternalExecutor extends ExecutableService {
         }
         if (value instanceof StreamType) {
             StreamType streamType = (StreamType) value;
-            InputStream[] outputs = streamType.getInputStreams();
-            String[] names = streamType.getStreamNames();
-            if (names.length == 1) {
+            SquonkDataSource[] outputs = streamType.getDataSources();
+            if (outputs.length == 1) {
                 // single output - we can just use the name from the IOD
-                addDataAsObject(name, outputs[0]);
+                addDataAsDataSource(name, outputs[0]);
             } else {
                 // multiple outputs - we need to append the name to the one from the IOD
-                for (int i = 0; i < names.length; i++) {
+                for (int i = 0; i < outputs.length; i++) {
                     if (outputs[i] != null) {
-                        addDataAsInputStream(name + "_" + names[i], outputs[i]);
+                        addDataAsDataSource(name + "_" + outputs[i].getName(), outputs[i]);
                     }
                 }
             }
         } else {
             // hope this never happens, but would at least handle simple types
             String txt = value.toString();
-            data.put(name, new ByteArrayInputStream(txt.getBytes()));
+            SquonkDataSource ds = new StringDataSource(name, "text/plain", txt, false);
+            data.put(name, ds);
         }
     }
 
@@ -144,35 +167,57 @@ public class ExternalExecutor extends ExecutableService {
      * @throws IOException
      */
     public Map<String, InputStream> getResultsAsInputStreams() throws IOException {
-        Map<String, Object> objects = getResultsAsObjects();
-        return convertObjectToInputStreams(objects);
+        List<SquonkDataSource> dataSources = getResultsAsDataSources();
+        Map<String, InputStream> results = new HashMap<>();
+        for (SquonkDataSource dataSource: dataSources) {
+            results.put(dataSource.getName(), dataSource.getInputStream());
+        }
+        return results;
     }
 
-    private static Map<String, InputStream> convertObjectToInputStreams(Map<String, Object> objects) throws IOException {
-        Map<String, InputStream> inputs = new HashMap<>();
+    /**
+     * Fetch results as SquonkDataSource ready to transfer.
+     * For each output there will be one or more SquonkDataSource.
+     * Where there is a single SquonkDataSource (e.g. with SDFile)
+     * the name of the SquonkDataSource will be the name of the output (e.g. "output").
+     * Where there are multiple SquonkDataSource (e.g. with Dataset)
+     * the name will be the name of the output appended with the type of output
+     * (e.g. "output_data" and "output_metadata").
+     *
+     * @return
+     * @throws IOException
+     */
+    public List<SquonkDataSource> getResultsAsDataSources() throws IOException {
+        Map<String, Object> objects = getResultsAsObjects();
+        return convertObjectToDataHandlers(objects);
+    }
+
+    private static List<SquonkDataSource> convertObjectToDataHandlers(Map<String, Object> objects) throws IOException {
+        List<SquonkDataSource> inputs = new ArrayList<>();
         for (Map.Entry<String, Object> e : objects.entrySet()) {
             String name = e.getKey();
             Object value = e.getValue();
+            LOG.fine("Found value " + value + " for variable " + name);
             if (value != null) {
                 if (value instanceof StreamType) {
                     StreamType streamType = (StreamType) value;
-                    InputStream[] outputs = streamType.getGzippedInputStreams();
-                    String[] names = streamType.getStreamNames();
-                    if (names.length == 1) {
-                        // single output - we can just use the result name
-                        inputs.put(name, outputs[0]);
+                    SquonkDataSource[] dataSources = streamType.getDataSources();
+                    if (dataSources.length == 1) {
+                        // single datasource - can just uses the output name
+                        inputs.add(dataSources[0]);
                     } else {
-                        // multiple output - we need to append the name to the result name
-                        for (int i = 0; i < names.length; i++) {
-                            if (outputs[i] != null) {
-                                inputs.put(name + "_" + names[i], outputs[i]);
-                            }
+                        for (SquonkDataSource ds : dataSources) {
+                            LOG.fine("Adding DataHandler for " + ds.getName());
+                            String dsName = ds.getName();
+                            ds.setName(name + "_" + dsName);
+                            inputs.add(ds);
                         }
                     }
                 } else {
                     // hope this never happens, but would at least handle simple types
                     String txt = value.toString();
-                    inputs.put(name, new ByteArrayInputStream(txt.getBytes()));
+                    SquonkDataSource ds = new StringDataSource(name, "text/plain", txt, false);
+                    inputs.add(ds);
                 }
             }
         }
@@ -193,6 +238,10 @@ public class ExternalExecutor extends ExecutableService {
         return null;
     }
 
+    /** Execute the job.
+     * Use the Callback instance to track the execution of the job.
+     *
+     */
     public void execute() {
 
         ServiceDescriptor serviceDescriptor = getServiceDescriptor();
@@ -260,9 +309,7 @@ public class ExternalExecutor extends ExecutableService {
         // screen.py '${query}' ${threshold} --d ${descriptor}
         String expandedCommand = expandCommand(command, options);
 
-        String localWorkDir = "/source";
-
-        runner = createContainerRunner(image, localWorkDir);
+        runner = createContainerRunner(image);
         runner.init();
         LOG.info("Docker image: " + image + ", hostWorkDir: " + runner.getHostWorkDir() + ", command: " + expandedCommand);
 
@@ -281,7 +328,7 @@ public class ExternalExecutor extends ExecutableService {
         LOG.info("Executing ...");
         updateStatus(Status.RUNNING);
         long t0 = System.currentTimeMillis();
-        int status = runner.execute(localWorkDir + "/execute");
+        int status = runner.execute(runner.getLocalWorkDir() + "/execute");
         long t1 = System.currentTimeMillis();
         float duration = (t1 - t0) / 1000.0f;
         LOG.info(String.format("Executed in %s seconds with return status of %s", duration, status));
@@ -303,13 +350,22 @@ public class ExternalExecutor extends ExecutableService {
         updateStatus(Status.RESULTS_READY);
     }
 
-    public void terminate() throws Exception {
+    /** Cancel the job if it is running.
+     * Cancelling also cleans up the job.
+     *
+     * @throws Exception
+     */
+    public void cancel() throws Exception {
 
         // TODO - implement terminating the runner
 
+        // should cleanup really be done or left to a separate call?
         cleanup();
     }
 
+    /** Cleanup the job removing any resources that it created (files, containers etc.)
+     *
+     */
     public void cleanup() {
         if (runner != null && DEBUG_MODE < 2) {
             runner.cleanup();
@@ -323,7 +379,7 @@ public class ExternalExecutor extends ExecutableService {
 
         IODescriptor[] outputDescriptors = serviceDescriptor.resolveOutputIODescriptors();
         if (outputDescriptors != null) {
-            LOG.info("Handling " + outputDescriptors.length + " inputs");
+            LOG.info("Handling " + outputDescriptors.length + " outputs");
 
             for (IODescriptor iod : outputDescriptors) {
                 LOG.info("Writing output for " + iod.getName() + " " + iod.getMediaType());
@@ -352,14 +408,15 @@ public class ExternalExecutor extends ExecutableService {
             LOG.info("Handling " + inputDescriptors.length + " inputs");
             for (IODescriptor iod : inputDescriptors) {
                 LOG.info("Writing input for " + iod.getName() + " " + iod.getMediaType());
-                Map<String, InputStream> inputs = new HashMap<>();
-                data.forEach((name, is) -> {
+                Map<String, SquonkDataSource> inputs = new HashMap<>();
+                data.forEach((name, dataSource) -> {
                     if (name.equalsIgnoreCase(iod.getName())) {
-                        inputs.put(name, is);
+                        inputs.put(name, dataSource);
                     } else if (name.toLowerCase().startsWith(iod.getName().toLowerCase() + "_")) {
                         String part = name.substring(iod.getName().length() + 1);
-                        inputs.put(part, is);
-
+                        inputs.put(part, dataSource);
+                    } else {
+                        LOG.warning("Unexpected input: " + name);
                     }
                 });
                 doHandleInput(inputs, runner, iod);
@@ -368,7 +425,7 @@ public class ExternalExecutor extends ExecutableService {
     }
 
     protected <P, Q> void doHandleInput(
-            Map<String, InputStream> inputs,
+            Map<String, SquonkDataSource> inputs,
             ContainerRunner runner,
             IODescriptor<P, Q> iod) throws Exception {
 
@@ -382,4 +439,5 @@ public class ExternalExecutor extends ExecutableService {
         FilesystemWriteContext writeContext = new FilesystemWriteContext(dir, iod.getName());
         vh.writeVariable(value, writeContext);
     }
+
 }

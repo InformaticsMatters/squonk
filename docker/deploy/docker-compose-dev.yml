@@ -17,3 +17,11 @@ services:
     chemservices:
         ports:
         - "8092:8080"
+
+    chemcentral-search:
+        ports:
+        - "8093:8080"
+
+    jobexecutor:
+        ports:
+        - "8094:8080"

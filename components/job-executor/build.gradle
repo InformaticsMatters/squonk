@@ -49,6 +49,7 @@ dependencies {
 
     providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 
+    // currently doesn't run with tomcat8 - need to work out why.
     //def tomcatVersion = '8.0.53'
     def tomcatVersion = '7.0.59'
 
@@ -85,5 +86,5 @@ task buildDockerImage(type: DockerBuildImage) {
     dependsOn = [war, buildDockerfile]
 
     inputDir = buildDockerfile.destFile.parentFile
-    tag = "squonk/job-executor:${dockerImageTag}"
+    tag = "squonk/jobexecutor:${dockerImageTag}"
 }

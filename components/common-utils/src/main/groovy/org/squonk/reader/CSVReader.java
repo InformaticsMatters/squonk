@@ -17,6 +17,7 @@
 package org.squonk.reader;
 
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.io.SquonkDataSource;
 import org.squonk.types.BasicObject;
 import org.squonk.util.IOUtils;
 import java.io.*;
@@ -68,6 +69,11 @@ public class CSVReader implements Iterator<BasicObject>, AutoCloseable {
         meta.getProperties().put(DatasetMetadata.PROP_SOURCE, source);
         meta.getProperties().put(DatasetMetadata.PROP_DESCRIPTION, "Read from " + source + " of type " + type);
     }
+
+    public CSVReader(SquonkDataSource dataSource, CSVFormat csvFormat, String type) throws IOException {
+        this(dataSource.getInputStream(), csvFormat, type, dataSource.getName());
+    }
+
 
     public DatasetMetadata getDatasetMetadata() {
         return meta;

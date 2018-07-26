@@ -22,7 +22,10 @@ import org.squonk.execution.variable.VariableManager
 import org.squonk.io.IODescriptor
 import org.squonk.io.IODescriptors
 import org.squonk.io.IORoute
+import org.squonk.io.InputStreamDataSource
+import org.squonk.io.SquonkDataSource
 import org.squonk.notebook.api.VariableKey
+import org.squonk.util.CommonMimeTypes
 import spock.lang.Specification
 
 /**
@@ -48,17 +51,14 @@ field1\tfield2\tfield3
     void "simple csv reader with header"() {
         //println "simple csv reader with header"
         InputStream is = new ByteArrayInputStream(CSV1.bytes)
-        VariableManager varman = new VariableManager(null, 1, 1);
+        VariableManager varman = new VariableManager(null, 1, 1)
+        String myFileName = "myfile.csv"
+        SquonkDataSource dataSource = new InputStreamDataSource(myFileName, CommonMimeTypes.MIME_TYPE_TEXT_CSV, is, false)
 
         varman.putValue(
-                new VariableKey(producer, "input"),
-                InputStream.class,
-                is)
-        varman.putValue(
-                new VariableKey(producer, "input"),
-                String.class,
-                "some filename")
-
+                new VariableKey(producer, myFileName),
+                SquonkDataSource.class,
+                dataSource)
 
         CSVReaderStep step = new CSVReaderStep()
         step.configure(producer, "job1", [
@@ -66,8 +66,8 @@ field1\tfield2\tfield3
                 (CSVReaderStep.OPTION_USE_HEADER_FOR_FIELD_NAMES): true,
                 (CSVReaderStep.OPTION_SKIP_HEADER_LINE)          : true
         ],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], [(CSVReaderStep.VAR_CSV_INPUT): new VariableKey(producer, "input")], [:]
+                [IODescriptors.createCSV(myFileName)] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], [(CSVReaderStep.VAR_CSV_INPUT): new VariableKey(producer, myFileName)], [:]
         )
 
         when:
@@ -79,26 +79,29 @@ field1\tfield2\tfield3
         def items = dataset.items
         items.size() == 3
         items[0].values.size() == 3
-        dataset.metadata.getProperties()['source'].contains("some filename")
+        dataset.metadata.getProperties()['source'].contains(myFileName)
     }
 
     void "simple tab reader without header"() {
         //println "simple tab reader without header"
         InputStream is = new ByteArrayInputStream(TAB1.bytes)
         VariableManager varman = new VariableManager(null, 1, 1);
+        String myFileName = "myfile.tab"
+        SquonkDataSource dataSource = new InputStreamDataSource(myFileName, CommonMimeTypes.MIME_TYPE_TEXT_CSV, is, false)
+
         varman.putValue(
-                new VariableKey(producer, "input"),
-                InputStream.class,
-                is)
+                new VariableKey(producer, myFileName),
+                SquonkDataSource.class,
+                dataSource)
 
 
         CSVReaderStep step = new CSVReaderStep()
 
         step.configure(producer, "job1",
                 [(CSVReaderStep.OPTION_FORMAT_TYPE): 'TDF'],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset(myFileName)] as IODescriptor[],
                 [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                [(CSVReaderStep.VAR_CSV_INPUT): new VariableKey(producer, "input")],
+                [(CSVReaderStep.VAR_CSV_INPUT): new VariableKey(producer, myFileName)],
                 [:])
 
         when:

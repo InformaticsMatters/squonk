@@ -48,6 +48,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         varman.putValue(
                 new VariableKey(producer, "input"),
                 Dataset.class,
+                BasicObject.class,
                 ds)
 
         BasicObjectToMoleculeObjectStep step = new BasicObjectToMoleculeObjectStep()
@@ -81,6 +82,7 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         varman.putValue(
                 new VariableKey(producer, "input"),
                 Dataset.class,
+                BasicObject.class,
                 ds)
 
         BasicObjectToMoleculeObjectStep step = new BasicObjectToMoleculeObjectStep()

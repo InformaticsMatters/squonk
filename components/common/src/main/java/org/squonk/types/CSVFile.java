@@ -16,9 +16,8 @@
 
 package org.squonk.types;
 
+import org.squonk.io.SquonkDataSource;
 import org.squonk.util.CommonMimeTypes;
-
-import java.io.InputStream;
 
 /** Wrapper around data from an SD file to allow strong typing and type conversion
  *
@@ -28,12 +27,8 @@ public class CSVFile extends AbstractStreamType {
 
     private static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_TEXT_CSV;
 
-    public CSVFile(InputStream input) {
-        super(input);
-    }
-
-    public String getMediaType() {
-        return MEDIA_TYPE;
+    public CSVFile(SquonkDataSource input) {
+        super(input, MEDIA_TYPE);
     }
     
 }

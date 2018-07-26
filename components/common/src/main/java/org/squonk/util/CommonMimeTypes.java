@@ -16,6 +16,8 @@
 
 package org.squonk.util;
 
+import org.squonk.types.TypeDescriptor;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +39,7 @@ public interface CommonMimeTypes {
     String MIME_TYPE_BASIC_OBJECT_JSON = "application/x-squonk-basic-object+json";
     String MIME_TYPE_MOLECULE_OBJECT_JSON = "application/x-squonk-molecule-object+json";
 
-    // when using thes make sure you add +json or +yaml to the end
+    // when using these make sure you add +json or +yaml to the end
     String SERVICE_DESCRIPTOR_BASE = "application/x-squonk-service-descriptor";
     String MIME_TYPE_SERVICE_DESCRIPTOR_JSON = SERVICE_DESCRIPTOR_BASE + "+json";
     String MIME_TYPE_SERVICE_DESCRIPTOR_YAML = SERVICE_DESCRIPTOR_BASE + "+yaml";

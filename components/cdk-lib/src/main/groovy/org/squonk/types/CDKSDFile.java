@@ -16,6 +16,9 @@
 
 package org.squonk.types;
 
+import org.squonk.io.SquonkDataSource;
+
+import java.io.File;
 import java.io.InputStream;
 
 /**
@@ -24,6 +27,18 @@ import java.io.InputStream;
 public class CDKSDFile extends SDFile {
 
     public CDKSDFile(InputStream inputStream) {
-        super(inputStream);
+        super(inputStream, null);
+    }
+
+    public CDKSDFile(InputStream input, Boolean gzipped) {
+        super(input, gzipped);
+    }
+
+    public CDKSDFile(File file, Boolean gzipped) {
+        super(file, gzipped);
+    }
+
+    public CDKSDFile(SquonkDataSource dataSource) {
+        super(dataSource);
     }
 }

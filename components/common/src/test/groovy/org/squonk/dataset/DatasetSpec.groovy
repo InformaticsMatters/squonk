@@ -65,7 +65,7 @@ class DatasetSpec extends Specification {
         //println ds.items
         // getting the items will have consumed the stream and it be set to null
         ds.@stream == null
-        ds.@inputStream == null
+        ds.@dataSource == null
     }
     
     void "json to iterator"() {

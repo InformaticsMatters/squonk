@@ -195,7 +195,7 @@ public abstract class AbstractServiceStep extends AbstractStep {
             VariableManager varman,
             ContainerRunner runner,
             IODescriptor<P,Q> ioDescriptor) throws Exception {
-        P value = fetchMappedInput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), varman, true);
+        P value = fetchMappedInput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), ioDescriptor.getSecondaryType(), varman, true);
         File dir = runner.getHostWorkDir();
         FilesystemWriteContext writeContext = new FilesystemWriteContext(dir, ioDescriptor.getName());
         varman.putValue(ioDescriptor.getPrimaryType(), value, writeContext);
@@ -236,7 +236,7 @@ public abstract class AbstractServiceStep extends AbstractStep {
             IODescriptor<P,Q> ioDescriptor) throws Exception {
 
         FilesystemReadContext readContext = new FilesystemReadContext(runner.getHostWorkDir(), ioDescriptor.getName());
-        P value = varman.getValue(ioDescriptor.getPrimaryType(), readContext);
+        P value = varman.getValue(ioDescriptor.getPrimaryType(), ioDescriptor.getSecondaryType(), readContext);
         createMappedOutput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), value, varman);
     }
 
@@ -287,7 +287,7 @@ public abstract class AbstractServiceStep extends AbstractStep {
             }
 
             // process the input to make it thin
-            Dataset thick = fetchMappedInput(ioDescriptor.getName(), Dataset.class, varman, true);
+            Dataset thick = fetchMappedInput(ioDescriptor.getName(), Dataset.class, ioDescriptor.getSecondaryType(), varman, true);
             Dataset thin = wrapper.prepareInput(thick);
 
             File hostWorkDir = runner.getHostWorkDir();
@@ -324,7 +324,8 @@ public abstract class AbstractServiceStep extends AbstractStep {
             File hostWorkDir = runner.getHostWorkDir();
             LOG.info("Handling thin output for " + ioDescriptor.getName() + " in " + hostWorkDir.toString());
             FilesystemReadContext context = new FilesystemReadContext(hostWorkDir, ioDescriptor.getName());
-            Dataset thin = varman.getValue(Dataset.class, context);
+            // TODO - determine the secondary type
+            Dataset thin = varman.getValue(Dataset.class, null, context);
             Dataset thick = wrapper.generateOutput(thin);
             createMappedOutput(ioDescriptor.getName(), Dataset.class, thick, varman);
         } else {

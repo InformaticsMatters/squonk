@@ -20,6 +20,9 @@ import java.util.logging.Logger;
 public class DatasetNextflowInDockerExecutorStep extends AbstractServiceStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetNextflowInDockerExecutorStep.class.getName());
+    private static final String NEXTFLOW_IMAGE = IOUtils.getConfiguration("SQUONK_NEXTFLOW_IMAGE", "informaticsmatters/nextflow-docker:0.30.2");
+    private static final String NEXTFLOW_OPTIONS = IOUtils.getConfiguration("SQUONK_NEXTFLOW_OPTIONS", "-with-docker -with-trace");
+
     protected static final String MSG_RUNNING_NEXTFLOW = "Running Nextflow";
 
 
@@ -54,13 +57,10 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractServiceStep {
         } else {
             expandedCommand = "";
         }
-        String fullCommand = "nextflow run nextflow.nf " + expandedCommand;
-
-        String image = "informaticsmatters/nextflow-docker:0.30.2";
-        String localWorkDir = "/source";
-        ContainerRunner runner = createContainerRunner(image, localWorkDir);
+        String fullCommand = "nextflow run nextflow.nf " + NEXTFLOW_OPTIONS + " " + expandedCommand;
+        ContainerRunner runner = createContainerRunner(NEXTFLOW_IMAGE);
         runner.init();
-        LOG.info("Docker image: " + image + ", hostWorkDir: " + runner.getHostWorkDir() + ", command: " + fullCommand);
+        LOG.info("Docker Nextflow executor image: " + NEXTFLOW_IMAGE + ", hostWorkDir: " + runner.getHostWorkDir() + ", command: " + fullCommand);
 
         try {
             // create input files

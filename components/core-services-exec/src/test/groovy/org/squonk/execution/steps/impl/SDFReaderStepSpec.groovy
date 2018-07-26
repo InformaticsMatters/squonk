@@ -21,7 +21,10 @@ import org.squonk.dataset.Dataset
 import org.squonk.execution.variable.VariableManager
 import org.squonk.io.IODescriptor
 import org.squonk.io.IODescriptors
+import org.squonk.io.InputStreamDataSource
+import org.squonk.io.SquonkDataSource
 import org.squonk.notebook.api.VariableKey
+import org.squonk.util.CommonMimeTypes
 import spock.lang.Specification
 
 /**
@@ -29,27 +32,25 @@ import spock.lang.Specification
  * @author timbo
  */
 class SDFReaderStepSpec extends Specification {
-    
+
     void "test read sdf"() {
         VariableManager varman = new VariableManager(null, 1, 1);
         SDFReaderStep step = new SDFReaderStep()
+        String myFileName = "myfile.sdf.gz"
         FileInputStream is = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
-        //FileInputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
+        SquonkDataSource dataSource = new InputStreamDataSource(myFileName, CommonMimeTypes.MIME_TYPE_MDL_SDF, is, true)
         Long producer = 1
         step.configure(producer, "job1", [:],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createSDF(myFileName)] as IODescriptor[],
                 [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                [(SDFReaderStep.VAR_SDF_INPUT): new VariableKey(producer, "input")],
+                [(SDFReaderStep.VAR_SDF_INPUT): new VariableKey(producer, myFileName)],
                 [:]
         )
         varman.putValue(
-            new VariableKey(producer,"input"),
-            InputStream.class,
-            is)
-        varman.putValue(new VariableKey(producer,"input"),
-                String.class,
-                "some filename")
-        
+                new VariableKey(producer, myFileName),
+                SquonkDataSource.class,
+                dataSource)
+
         when:
         step.execute(varman, null)
         Dataset ds = varman.getValue(new VariableKey(producer, SDFReaderStep.VAR_DATASET_OUTPUT), Dataset.class)
@@ -57,19 +58,13 @@ class SDFReaderStepSpec extends Specification {
         then:
         ds != null
         ds.items.size() == 36
-        ds.metadata.getProperties()['source'].contains("some filename")
-
-
-        //InputStream json = JsonHandler.getInstance().marshalStreamToJsonArray(ds.getStream(), false)
-        //println json.text
-        //File f = new File("/tmp/dhfr.json")
-        //f << json.text
+        ds.metadata.getProperties()['source'].contains(myFileName)
 
         cleanup:
         is.close()
-        
+
     }
-    
-	
+
+
 }
 

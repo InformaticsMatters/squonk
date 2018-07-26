@@ -16,10 +16,8 @@
 
 package org.squonk.types;
 
-import org.squonk.api.HttpHandler;
-import org.squonk.api.VariableHandler;
 import org.squonk.http.RequestResponseExecutor;
-import org.squonk.io.IODescriptor;
+import org.squonk.io.SquonkDataSource;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 
@@ -66,7 +64,7 @@ public class SDFileHandler extends DefaultHandler<SDFile> {
     public SDFile readResponse(RequestResponseExecutor executor, boolean gunzip) throws IOException {
         InputStream is = executor.getResponseBody();
         if (is != null) {
-            return new SDFile(gunzip ? IOUtils.getGunzippedInputStream(is) : is);
+            return new SDFile(gunzip ? IOUtils.getGunzippedInputStream(is) : is, !gunzip);
         }
         return null;
     }
@@ -80,9 +78,8 @@ public class SDFileHandler extends DefaultHandler<SDFile> {
 
     @Override
     public SDFile readVariable(ReadContext context) throws Exception {
-        //InputStream is = context.readStreamValue();
-        InputStream is = context.readStreamValue(CommonMimeTypes.MIME_TYPE_MDL_SDF, EXT);
-        return new SDFile(is);
+        SquonkDataSource ds = context.readStreamValue(CommonMimeTypes.MIME_TYPE_MDL_SDF, EXT);
+        return new SDFile(ds);
     }
 
 }

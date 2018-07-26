@@ -12,7 +12,7 @@ class AbstractStreamTypeSpec extends Specification {
 
         when:
         def bais = new ByteArrayInputStream(hello.getBytes())
-        def simple = new SimpleAbstractStreamType(bais)
+        def simple = new SimpleAbstractStreamType(bais, 'text/plain', false)
 
         then:
         simple.getInputStreams().length == 1
@@ -28,7 +28,13 @@ class AbstractStreamTypeSpec extends Specification {
         when:
         def bais0 = new ByteArrayInputStream(hello.getBytes())
         def bais1 = new ByteArrayInputStream(goodbye.getBytes())
-        def simple = new SimpleAbstractStreamType([bais0, bais1] as InputStream[], ['hello', goodbye] as String[])
+        def simple = new SimpleAbstractStreamType(
+                [bais0, bais1] as InputStream[],
+                'text/plain',
+                ['hello', goodbye] as String[],
+                ['text/plain', 'text/plain']  as String[],
+                [false, false] as Boolean[]
+        )
 
         then:
         simple.getInputStreams().length == 2
@@ -51,12 +57,13 @@ class AbstractStreamTypeSpec extends Specification {
 
     class SimpleAbstractStreamType extends AbstractStreamType {
 
-        SimpleAbstractStreamType(input) {
-            super(input)
+        SimpleAbstractStreamType(input, type, gzipped) {
+            super(input, type, gzipped)
         }
 
-        SimpleAbstractStreamType(inputs, names) {
-            super(inputs, names)
+        SimpleAbstractStreamType(inputs, type, names, types, gzippeds) {
+            super(inputs, type, names, types, gzippeds)
         }
+
     }
 }

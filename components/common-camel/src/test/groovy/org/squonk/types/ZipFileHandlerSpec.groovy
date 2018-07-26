@@ -17,7 +17,9 @@
 package org.squonk.types
 
 import org.squonk.api.VariableHandler
-import org.squonk.types.io.JsonHandler
+import org.squonk.io.FileDataSource
+import org.squonk.io.InputStreamDataSource
+import org.squonk.io.SquonkDataSource
 import spock.lang.Specification
 
 /**
@@ -30,8 +32,8 @@ class ZipFileHandlerSpec extends Specification {
     void "test write variable"() {
 
         def h = new ZipFileHandler()
-        def fis = new FileInputStream("../../data/testfiles/test.zip")
-        def zip1 = new ZipFile(fis)
+        def data =  new FileDataSource(null, null, new File("../../data/testfiles/test.zip"), false)
+        def zip1 = new ZipFile(data)
         def ctx = new DummyContext()
 
         when:
@@ -39,9 +41,6 @@ class ZipFileHandlerSpec extends Specification {
 
         then:
         ctx.bytes.length > 0
-
-        cleanup:
-        fis?.close()
     }
 
     void "test read variable"() {
@@ -92,8 +91,9 @@ class ZipFileHandlerSpec extends Specification {
         }
 
         @Override
-        InputStream readStreamValue(String mediaType, String extension, String key) throws Exception {
-            return new ByteArrayInputStream(bytes)
+        SquonkDataSource readStreamValue(String mediaType, String extension, String key) throws Exception {
+            def is = new ByteArrayInputStream(bytes)
+            return new InputStreamDataSource(null, mediaType, is, false)
         }
     }
 }

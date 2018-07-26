@@ -233,10 +233,10 @@ cp input.data.gz output.data.gz
                 .withOutputVariableMapping("output", "groovy-noop")
                 .withOption(UntrustedGroovyDatasetScript.OPTION_SCRIPT,
                 '''
-def file1 = new File('/source/input.meta')
-file1.renameTo '/source/output.meta'
-def file2 = new File('/source/input.data.gz')
-file2.renameTo '/source/output.data.gz'
+def file1 = new File('input.meta')
+file1.renameTo 'output.meta'
+def file2 = new File('input.data.gz')
+file2.renameTo 'output.data.gz'
 ''')
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
@@ -268,7 +268,7 @@ import org.squonk.types.MoleculeObject
 import static org.squonk.util.MoleculeObjectUtils.*
 import java.util.function.Consumer
 
-processDataset('/source/input','/source/output') { MoleculeObject mo ->
+processDataset('input','output') { MoleculeObject mo ->
     mo.putValue("hello", "world")
 } as Consumer
 ''')

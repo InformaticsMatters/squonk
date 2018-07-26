@@ -61,7 +61,7 @@ allprojects {
     // Define the tag label for docker images.
     // It's the Git branch name or 'latest' if building from 'master'
     def dockerImageTag = grgit.branch.getCurrent().name
-    if (dockerImageTag == 'master') {
+    if (dockerImageTag == 'master' || dockerImageTag == 'external_exec') {
         dockerImageTag = 'latest'
     }
     project.ext.set('dockerImageTag', dockerImageTag)
@@ -257,6 +257,7 @@ task dockerBuildImages() {
         'chem-services-rdkit-search:buildDockerImage', // squonk/chemcentral-search
         'core-services-server:buildDockerImage',       // squonk/coreservices
         'cell-executor:dockerBuildImage',              // squonk/cellexecutor
+        'job-executor:buildDockerImage',               // squonk/jobexecutor
         'rdkit-databases:dockerBuildImage',            // squonk/chemcentral-loader
         'database:buildDockerImage'                    // squonk/flyway
     ]

@@ -166,8 +166,11 @@ public class ExecutableService {
         return expandedCommand;
     }
 
-    protected ContainerRunner createContainerRunner(String image, String hostWorkDir, String localWorkDir, String jobId) throws IOException {
+    protected ContainerRunner createContainerRunner(String image) throws IOException {
+        return createContainerRunner(image, null);
+    }
 
+    protected ContainerRunner createContainerRunner(String image, String workdir) throws IOException {
         // The CONTAINER_RUNNER_TYPE (environment variable) defines what
         // type of ContainerRunner we produce...
 
@@ -175,23 +178,18 @@ public class ExecutableService {
         if (CONTAINER_RUNNER_TYPE.equals("docker")) {
 
             LOG.info("Creating DockerRunner instance...");
-            runner = new DockerRunner(image, hostWorkDir, localWorkDir, jobId);
+            runner = new DockerRunner(image, workdir, jobId);
 
         } else if (CONTAINER_RUNNER_TYPE.equals("openshift")) {
 
             LOG.info("Creating OpenShiftRunner instance...");
-            runner = new OpenShiftRunner(image, hostWorkDir, localWorkDir, jobId);
+            runner = new OpenShiftRunner(image, workdir, workdir, jobId);
 
         } else {
             throw new IOException("Unsupported ContainerRunner type: '" + CONTAINER_RUNNER_TYPE + "'");
         }
 
         return runner;
-
-    }
-
-    protected ContainerRunner createContainerRunner(String image, String localWorkDir) throws IOException {
-        return createContainerRunner(image, null, localWorkDir, jobId);
     }
 
     /**

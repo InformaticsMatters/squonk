@@ -16,12 +16,15 @@
 
 package org.squonk.types;
 
+import org.squonk.io.SquonkDataSource;
+import org.squonk.io.FileDataSource;
+import org.squonk.io.InputStreamDataSource;
 import org.squonk.util.IOUtils;
 
-import java.io.ByteArrayInputStream;
+import javax.activation.DataSource;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.zip.GZIPInputStream;
 
 /** Wrapper around data from a file to allow strong typing and type conversion
  *
@@ -30,29 +33,88 @@ import java.util.zip.GZIPInputStream;
  */
 public abstract class AbstractStreamType implements StreamType {
 
-    private final InputStream[] inputStreams;
-    private final String[] names;
+    private final SquonkDataSource[] dataSources;
+    private final String mediaType;
 
-
-    public AbstractStreamType(InputStream inputStream) {
-        this.inputStreams = new InputStream[] {inputStream};
-        this.names = new String[] {"data"};
+    public AbstractStreamType(InputStream inputStream, String mediaType, Boolean gzipped) {
+        this.dataSources = new SquonkDataSource[] {new InputStreamDataSource("data", mediaType, inputStream, gzipped)};
+        this.mediaType = mediaType;
     }
 
-    public AbstractStreamType(InputStream[] inputStreams, String[] names) {
-        this.inputStreams = inputStreams;
-        this.names = names;
+    public AbstractStreamType(File file, String mediaType, Boolean gzipped) {
+        this.dataSources = new SquonkDataSource[] {new FileDataSource("data", mediaType, file, gzipped)};
+        this.mediaType = mediaType;
+    }
+
+    public AbstractStreamType(InputStream[] inputStreams, String mediaType, String[] names, String[] streamMediaTypes, Boolean[] gzipped) {
+        assert inputStreams.length == names.length;
+        assert inputStreams.length == streamMediaTypes.length;
+        assert inputStreams.length == gzipped.length;
+        this.mediaType = mediaType;
+        dataSources = new SquonkDataSource[inputStreams.length];
+        for (int i=0; i<inputStreams.length; i++) {
+            dataSources[i] = new InputStreamDataSource(names[i], streamMediaTypes[i], inputStreams[i], gzipped[i]);
+        }
+    }
+
+    public AbstractStreamType(File[] files, String mediaType, String[] names, String[] streamMediaTypes, Boolean[] gzipped) {
+        assert files.length == names.length;
+        assert files.length == streamMediaTypes.length;
+        this.mediaType = mediaType;
+        dataSources = new SquonkDataSource[files.length];
+        for (int i=0; i<dataSources.length; i++) {
+            dataSources[i] = new FileDataSource(names[i], streamMediaTypes[i], files[i], gzipped[i]);
+        }
+    }
+
+    public AbstractStreamType(SquonkDataSource dataSource, String mediaType) {
+        this.dataSources = new SquonkDataSource[] {dataSource};
+        this.mediaType = mediaType;
+    }
+
+    public AbstractStreamType(SquonkDataSource[] dataSources, String mediaType) {
+        this.dataSources = dataSources;
+        this.mediaType = mediaType;
+    }
+
+    @Override
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    @Override
+    public String[] getStreamMediaTypes() {
+        String[] types =  new String[dataSources.length];
+        for (int i=0; i<types.length; i++) {
+            types[i] = dataSources[i].getContentType();
+        }
+        return types;
     }
 
     /** Get all the data as it was generated, which might or might not be gzipped.
      *
      * @return
      */
-    public InputStream[] getInputStreams() {
+    @Override
+    public InputStream[] getInputStreams() throws IOException {
+        InputStream[] inputStreams = new InputStream[dataSources.length];
+        for (int i=0; i<inputStreams.length; i++) {
+            inputStreams[i] = dataSources[i].getInputStream();
+        }
         return inputStreams;
     }
 
+    @Override
+    public SquonkDataSource[] getDataSources() throws IOException {
+        return dataSources;
+    }
+
+    @Override
     public String[] getStreamNames() {
+        String[] names = new String[dataSources.length];
+        for (int i=0; i<names.length; i++) {
+            names[i] = dataSources[i].getName();
+        }
         return names;
     }
 
@@ -62,9 +124,9 @@ public abstract class AbstractStreamType implements StreamType {
      *
      * @return
      */
-    public InputStream getInputStream() {
-        if (inputStreams != null && inputStreams.length > 0) {
-            return inputStreams[0];
+    public InputStream getInputStream() throws IOException {
+        if (dataSources != null && dataSources.length > 0) {
+            return getInputStreams()[0];
         } else {
             return null;
         }
@@ -76,7 +138,7 @@ public abstract class AbstractStreamType implements StreamType {
      * @throws IOException
      */
     public InputStream getGzippedInputStream() throws IOException {
-        if (inputStreams == null) {
+        if (dataSources == null) {
             return null;
         }
         InputStream is = getInputStream();
@@ -89,7 +151,7 @@ public abstract class AbstractStreamType implements StreamType {
      * @throws IOException
      */
     public InputStream getGunzipedInputStream() throws IOException {
-        if (inputStreams == null) {
+        if (dataSources == null) {
             return null;
         }
         return IOUtils.getGunzippedInputStream(getInputStream());
@@ -102,7 +164,7 @@ public abstract class AbstractStreamType implements StreamType {
      * @throws IOException
      */
     public byte[] getBytes() throws IOException {
-        if (inputStreams == null) {
+        if (dataSources == null) {
             return null;
         }
         InputStream is = getGunzipedInputStream();
@@ -120,27 +182,14 @@ public abstract class AbstractStreamType implements StreamType {
      * @throws IOException
      */
     public void materialize() throws IOException {
-        if (inputStreams == null) {
+        if (dataSources == null) {
             return;
         }
-        synchronized (inputStreams) {
-            InputStream[] results = new InputStream[inputStreams.length];
-            for (int i = 0; i < inputStreams.length; i++) {
-                InputStream is = inputStreams[i];
-                if (is == null) {
-                    results[i] = null;
-                } else if (is instanceof ByteArrayInputStream) {
-                    results[i] = is;
-                } else {
-                    byte[] bytes = IOUtils.convertStreamToBytes(is);
-                    results[i] = new ByteArrayInputStream(bytes);
-                }
-            }
-            for (int i = 0; i < inputStreams.length; i++) {
-                inputStreams[i] = results[i];
+        synchronized (dataSources) {
+            for (SquonkDataSource ds: dataSources) {
+                ds.materialize();
             }
         }
-
     }
 
 }

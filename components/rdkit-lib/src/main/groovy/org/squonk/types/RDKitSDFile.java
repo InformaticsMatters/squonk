@@ -16,6 +16,9 @@
 
 package org.squonk.types;
 
+import org.squonk.io.SquonkDataSource;
+
+import java.io.File;
 import java.io.InputStream;
 
 /**
@@ -24,6 +27,18 @@ import java.io.InputStream;
 public class RDKitSDFile extends SDFile {
 
     public RDKitSDFile(InputStream inputStream) {
-        super(inputStream);
+        super(inputStream, null);
+    }
+
+    public RDKitSDFile(InputStream input, Boolean gzipped) {
+        super(input, gzipped);
+    }
+
+    public RDKitSDFile(File file, Boolean gzipped) {
+        super(file, gzipped);
+    }
+
+    public RDKitSDFile(SquonkDataSource dataSource) {
+        super(dataSource);
     }
 }

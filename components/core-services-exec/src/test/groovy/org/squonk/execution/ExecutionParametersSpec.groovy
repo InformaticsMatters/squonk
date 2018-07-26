@@ -35,4 +35,31 @@ class ExecutionParametersSpec extends Specification {
         options2['float_option'] == 123.456f
     }
 
+    void "from json"() {
+
+        def json = '''{
+  "serviceDescriptor":{
+    "@class":"org.squonk.core.DockerServiceDescriptor",
+    "serviceConfig":{
+      "id":"id",
+      "name":"name",
+      "inputDescriptors":[{"name":"input","mediaType":"chemical/x-mdl-sdfile","primaryType":"org.squonk.types.SDFile"}],
+      "outputDescriptors":[{"name":"output","mediaType":"chemical/x-mdl-sdfile","primaryType":"org.squonk.types.SDFile"}]
+    }
+  },
+  "options":{
+    "string_option":"string value",
+    "int_option":999,
+    "float_option":["java.lang.Float",123.456]
+  }
+}'''
+
+        when:
+        def ep = JsonHandler.getInstance().objectFromJson(json, ExecutionParameters.class)
+
+        then:
+        ep != null
+
+    }
+
 }

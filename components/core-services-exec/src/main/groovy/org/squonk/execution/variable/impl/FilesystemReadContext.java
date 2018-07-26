@@ -17,6 +17,8 @@
 package org.squonk.execution.variable.impl;
 
 import org.squonk.api.VariableHandler;
+import org.squonk.io.FileDataSource;
+import org.squonk.io.SquonkDataSource;
 
 import java.io.*;
 import java.util.logging.Logger;
@@ -26,6 +28,7 @@ import java.util.logging.Logger;
  */
 public class FilesystemReadContext extends AbstractFilesystemContext implements VariableHandler.ReadContext {
 
+    private static final Logger LOG = Logger.getLogger(FilesystemReadContext.class.getName());
 
     public FilesystemReadContext(File dir, String baseName) {
         super(dir, baseName);
@@ -45,15 +48,15 @@ public class FilesystemReadContext extends AbstractFilesystemContext implements 
         }
     }
 
-
     @Override
-    public InputStream readStreamValue(String mediaType, String extension, String key) throws Exception {
+    public SquonkDataSource readStreamValue(String mediaType, String extension, String key) throws Exception {
         File f = findFile(extension);
         if (f != null) {
-            return new FileInputStream(f);
+            LOG.warning("Reading file " + f.getName());
+            boolean gzipped = f.getName().toLowerCase().endsWith(".gz");
+            return new FileDataSource(f.getName(), mediaType, f, gzipped);
         } else {
             return null;
         }
     }
-
 }

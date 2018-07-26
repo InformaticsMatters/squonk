@@ -35,13 +35,11 @@ import java.util.concurrent.TimeUnit
  */
 class DockerRunnerSpec extends Specification {
 
-    def hostBaseWorkDir = null
 
-    @Ignore
     void "clean workdir"() {
 
         setup:
-        DockerRunner runner = new DockerRunner("busybox", hostBaseWorkDir, "/source", "123")
+        DockerRunner runner = new DockerRunner("busybox", "123")
         runner.init()
 
         when:
@@ -51,16 +49,15 @@ class DockerRunnerSpec extends Specification {
         !runner.getHostWorkDir().exists()
     }
 
-    @Ignore
     void "simple execute"() {
 
         setup:
-        DockerRunner runner = new DockerRunner("busybox", hostBaseWorkDir, "/source", "123")
+        DockerRunner runner = new DockerRunner("busybox", "123")
         runner.init()
 
         when:
-        runner.writeInput("run.sh", "touch /source/IWasHere\n")
-        runner.execute("/bin/sh", "/source/run.sh")
+        runner.writeInput("run.sh", "touch IWasHere\n")
+        runner.execute("/bin/sh", "run.sh")
 
         then:
         new File(runner.getHostWorkDir(), 'IWasHere').exists()

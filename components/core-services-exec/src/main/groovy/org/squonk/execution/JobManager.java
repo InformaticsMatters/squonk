@@ -17,16 +17,19 @@ package org.squonk.execution;
 
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.client.JobStatusRestClient;
+import org.squonk.io.InputStreamDataSource;
+import org.squonk.io.SquonkDataSource;
 import org.squonk.jobdef.ExternalJobDefinition;
 import org.squonk.jobdef.JobStatus;
 import org.squonk.jobdef.JobStatus.Status;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.io.OutputStream;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,8 +49,24 @@ public class JobManager implements ExecutorCallback {
     @Inject
     protected JobStatusRestClient jobstatusClient;
 
+    protected boolean sendStatus = false;
+
 
     private final Map<String, ExecutionData> executionDataMap = new LinkedHashMap<>();
+
+    /** Lookup the ExecutionData instance for the job with this ID and check that it belongs to the username
+     *
+     * @param username
+     * @param jobId
+     * @return The ExecutionData if it exists and is owned by the usr, or if not then null
+     */
+    private ExecutionData findMyExecutionData(String username, String jobId) {
+        ExecutionData executionData = executionDataMap.get(jobId);
+        if (executionData == null) {
+            return null;
+        }
+        return verifyUserOwnsJob(username, executionData.jobStatus) ? executionData : null;
+    }
 
     /** Submit a new job. The call will return immediately with the JobStatus from which you can obtain the job's ID.
      * YOu then use that ID to check the status, and when the status changes to @{link JobStatus.Status.RESULTS_READY}
@@ -61,12 +80,12 @@ public class JobManager implements ExecutorCallback {
      * @throws Exception
      */
     public JobStatus executeAsync(
+            String username,
             ServiceDescriptor serviceDescriptor,
             Map<String, Object> options,
-            Map<String, InputStream> inputs,
-            String username) throws Exception {
+            Map<String, InputStream> inputs) throws Exception {
 
-        return execute(serviceDescriptor, options, inputs, username, true);
+        return execute(username, serviceDescriptor, options, inputs, true);
     }
 
 
@@ -81,20 +100,21 @@ public class JobManager implements ExecutorCallback {
      * @throws Exception
      */
     public JobStatus executeSync(
+            String username,
             ServiceDescriptor serviceDescriptor,
             Map<String, Object> options,
-            Map<String, InputStream> inputs,
-            String username) throws Exception {
+            Map<String, InputStream> inputs
+            ) throws Exception {
 
-        return execute(serviceDescriptor, options, inputs, username, false);
+        return execute(username, serviceDescriptor, options, inputs, false);
     }
 
 
     private JobStatus execute(
+            String username,
             ServiceDescriptor serviceDescriptor,
             Map<String, Object> options,
             Map<String, InputStream> inputs,
-            String username,
             boolean async) throws Exception {
 
         ExternalJobDefinition jobDefinition = new ExternalJobDefinition(serviceDescriptor, options);
@@ -105,7 +125,8 @@ public class JobManager implements ExecutorCallback {
         executionDataMap.put(executor.getJobId(), executionData);
 
         for (Map.Entry<String, InputStream> e : inputs.entrySet()) {
-            executor.addDataAsInputStream(e.getKey(), e.getValue());
+            SquonkDataSource ds = new InputStreamDataSource(e.getKey(), null, e.getValue(), null);
+            executor.addDataAsDataSource(e.getKey(), ds);
         }
 
         if (async) {
@@ -128,25 +149,66 @@ public class JobManager implements ExecutorCallback {
         return jobStatus;
     }
 
+    /** Get all the current jobs for the specified user.
+     * This does not include jobs that have been cleaned up and removed.
+     *
+     * @param username
+     * @return
+     */
+    public List<JobStatus> getJobs(String username) {
+        if (username == null || username.isEmpty()) {
+            LOG.warning("Username must be specified");
+            return Collections.emptyList();
+        }
+        List<JobStatus> jobs = new ArrayList<>();
+        executionDataMap.entrySet().forEach((e) -> {
+            JobStatus jobStatus = e.getValue().jobStatus;
+            if (username.equalsIgnoreCase(jobStatus.getUsername())) {
+                jobs.add(jobStatus);
+            }
+        });
+        LOG.fine("Found " + jobs.size() + " jobs");
+        return jobs;
+    }
+
     /** Get the current execution status of a job you submitted.
      *
      * @param jobId
      * @return
      */
-    public JobStatus getJobStatus(String jobId) {
-        ExecutionData executionData = executionDataMap.get(jobId);
-        return executionData == null ? null : executionData.jobStatus;
+    public JobStatus getJobStatus(String username, String jobId) {
+        ExecutionData executionData = findMyExecutionData(username, jobId);
+        if (executionData == null) {
+            return null;
+        }
+        return executionData.jobStatus;
     }
 
+
+
+
     /** Get the results for a job. Only call this once the status is @{link JobStatus.Status.RESULTS_READY}.
-     * Once you safely have the results make sure you call {@link #cleanupJob(String)}
+     * Once you safely have the results make sure you call {@link #cleanupJob(String, String)}
      *
      * @param jobId
      * @return
      */
-    public Map<String,Object> getJobResults(String jobId) {
-        ExternalExecutor executor = findExecutor(jobId);
-        return executor == null ? null : executor.getResultsAsObjects();
+    public Map<String,Object> getJobResultsAsObjects(String username, String jobId) throws IOException {
+        ExecutionData executionData = findMyExecutionData(username, jobId);
+        if (executionData != null) {
+            return executionData.executor.getResultsAsObjects();
+        } else {
+            return null;
+        }
+    }
+
+    public List<SquonkDataSource> getJobResultsAsDataSources(String username, String jobId) throws IOException {
+        ExecutionData executionData = findMyExecutionData(username, jobId);
+        if (executionData != null) {
+            return executionData.executor.getResultsAsDataSources();
+        } else {
+            return null;
+        }
     }
 
     /** Must be called after the results have been fetched so that any execution artifacts (containers etc.) and data
@@ -154,13 +216,18 @@ public class JobManager implements ExecutorCallback {
      *
      * @param jobId
      */
-    public void cleanupJob(String jobId) {
-        ExternalExecutor executor = findExecutor(jobId);
+    public JobStatus cleanupJob(String username, String jobId) {
+        ExecutionData executionData = findMyExecutionData(username, jobId);
+        if (executionData == null) {
+            return null;
+        }
+        JobStatus jobStatus = null;
+        ExternalExecutor executor = executionData.executor;
         if (executor != null) {
-            executor.cleanup();
             try {
+                executor.cleanup();
                 // set the persisted status to complete
-                updateStatus(jobId, JobStatus.Status.COMPLETED);
+                jobStatus = updateStatus(jobId, JobStatus.Status.COMPLETED);
             } catch (IOException e) {
                 LOG.log(Level.SEVERE, "Failed to update JobStatus", e);
                 // should we retry later?
@@ -169,6 +236,30 @@ public class JobManager implements ExecutorCallback {
                 executionDataMap.remove(jobId);
             }
         }
+        return jobStatus;
+    }
+
+    public JobStatus cancelJob(String username, String jobId) {
+        ExecutionData executionData = findMyExecutionData(username, jobId);
+        if (executionData == null) {
+            return null;
+        }
+        ExternalExecutor executor = executionData.executor;
+        JobStatus jobStatus = null;
+        if (executor != null) {
+            try {
+                executor.cancel();
+                // set the persisted status to cancelled
+                jobStatus = updateStatus(jobId, Status.CANCELLED);
+            } catch (Exception e) {
+                LOG.log(Level.SEVERE, "Failed to update JobStatus", e);
+                // should we retry later?
+            } finally {
+                // job cancelled and state persisted so we can remove it
+                executionDataMap.remove(jobId);
+            }
+        }
+        return jobStatus;
     }
 
     /** Expected to be called by a daemon process that cleans up jobs that a client seems to have forgotten about.
@@ -206,9 +297,9 @@ public class JobManager implements ExecutorCallback {
             } else if (now - jobStatus.getStarted().getTime() > timeSinceStarted) {
                 // job has been running for too long so we kill it
 
-                // try to terminate the execution
+                // try to cancel the execution
                 try {
-                    executor.terminate();
+                    executor.cancel();
                 } catch (Exception e) {
                     LOG.log(Level.SEVERE, "Failed to terminate job " + jobStatus.getJobId());
                 }
@@ -227,25 +318,20 @@ public class JobManager implements ExecutorCallback {
         }
     }
 
-    private ExternalExecutor findExecutor(String jobId) {
-        ExecutionData executionData = executionDataMap.get(jobId);
-        if (executionData == null) {
-            LOG.warning("Job ID " + jobId + " not found. Either it is incorrect or has completed");
-            return null;
-        }
-        ExternalExecutor executor = executionData.executor;
-        if (executor == null) {
-            throw new IllegalStateException("No executor. This is most unexpected");
-        }
-        return executor;
-    }
-
-    private JobStatus updateStatus(String jobId, Status status)
-            throws IOException {
+    private JobStatus updateStatus(String jobId, Status status) throws IOException {
         return updateStatus(jobId, status, null, null, null);
-
     }
 
+    /** Receive status updates through the callback interface
+     *
+     * @param jobId The ID of the job to update
+     * @param status The current status
+     * @param event A message that describes the event that caused the update.
+     * @param processedCount The number of records processed so far.
+     * @param errorCount The number or errors encountered so far.
+     * @return
+     * @throws IOException
+     */
     @Override
     public JobStatus updateStatus(String jobId, Status status, String event, Integer processedCount, Integer errorCount)
             throws IOException {
@@ -255,7 +341,7 @@ public class JobManager implements ExecutorCallback {
             return null;
         }
         JobStatus jobStatus = null;
-        if (jobstatusClient != null) {
+        if (sendStatus && jobstatusClient != null) {
             switch (status) {
                 case ERROR:
                     executionData.executor.cleanup();
@@ -275,12 +361,16 @@ public class JobManager implements ExecutorCallback {
             }
             // no jobstatusClient to persist the status - probably in testing
             jobStatus = executionData.jobStatus.withStatus(status, processedCount, errorCount, event);
-
+            LOG.info("Not sending status. Status is " + jobStatus);
         }
         if (jobStatus != null) {
             executionData.jobStatus = jobStatus;
         }
         return jobStatus;
+    }
+
+    private boolean verifyUserOwnsJob(String username, JobStatus jobStatus) {
+        return username.equalsIgnoreCase(jobStatus.getUsername());
     }
 
     class ExecutionData {

@@ -103,7 +103,7 @@ public class ConverterStep<P, Q, R, S> extends AbstractStandardStep {
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         statusMessage = "Fetching input";
         IODescriptor<P,Q> from = getInputs()[0];
-        P input = fetchMappedInput("input", from.getPrimaryType(), varman, true);
+        P input = fetchMappedInput("input", from.getPrimaryType(), from.getSecondaryType(), varman, true);
         if (input == null) {
             throw new IllegalStateException("Input variable not found");
         }

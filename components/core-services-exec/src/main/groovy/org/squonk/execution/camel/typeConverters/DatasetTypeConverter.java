@@ -45,7 +45,7 @@ public class DatasetTypeConverter {
     @Converter
     public static SDFile convertMoleculeObjectDatasetToSDFile(MoleculeObjectDataset dataset, Exchange exchange) throws IOException {
         InputStream is = StructureIOClient.CDK.datasetExportToSdf(dataset.getDataset(), false);
-        SDFile sdf = new SDFile(is);
+        SDFile sdf = new SDFile(is, false);
         return sdf;
     }
 }

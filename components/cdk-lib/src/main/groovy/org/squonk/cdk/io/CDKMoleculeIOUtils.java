@@ -246,7 +246,7 @@ public class CDKMoleculeIOUtils {
         };
         t.start();
 
-        return new CDKSDFile(in);
+        return new CDKSDFile(in, false);
     }
 
     public static Stream<MoleculeObject> convertMoleculeObjects(Stream<MoleculeObject> input, String toFormat) throws CDKException {

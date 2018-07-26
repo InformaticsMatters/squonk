@@ -27,6 +27,7 @@ import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptor;
 import org.squonk.notebook.api.VariableKey;
 import org.squonk.types.BasicObject;
+import org.squonk.types.MoleculeObject;
 import org.squonk.types.TypeResolver;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
@@ -129,8 +130,12 @@ public abstract class AbstractStep extends ExecutableService implements Step, St
         return (mapped == null) ? name : mapped;
     }
 
+    protected <T> T fetchMappedInput(String internalName, Class<T> primaryType, Class secondaryType, VariableManager varman) throws Exception {
+        return fetchMappedInput(internalName, primaryType, secondaryType, varman, false);
+    }
+
     protected <T> T fetchMappedInput(String internalName, Class<T> type, VariableManager varman) throws Exception {
-        return fetchMappedInput(internalName, type, varman, false);
+        return fetchMappedInput(internalName, type, null, varman);
     }
 
 
@@ -140,14 +145,15 @@ public abstract class AbstractStep extends ExecutableService implements Step, St
      *
      * @param <T>
      * @param internalName
-     * @param type
+     * @param primaryType
+     * @param secondaryType
      * @param varman
      * @param required     Whether a value is required
      * @return
      * @throws IOException
      * @throws IllegalStateException If required is true and no value is present
      */
-    protected <T> T fetchMappedInput(String internalName, Class<T> type, VariableManager varman, boolean required) throws Exception {
+    protected <T> T fetchMappedInput(String internalName, Class<T> primaryType, Class secondaryType, VariableManager varman, boolean required) throws Exception {
         VariableKey mappedVar = mapInputVariable(internalName);
         LOG.info("VariableKey mapped to " + internalName + " is " + mappedVar);
         if (mappedVar == null) {
@@ -157,7 +163,7 @@ public abstract class AbstractStep extends ExecutableService implements Step, St
                 return null;
             }
         }
-        T input = fetchInput(mappedVar, type, varman);
+        T input = fetchInput(mappedVar, primaryType, secondaryType, varman);
         if (input == null && required) {
             throw new IllegalStateException(buildVariableNotFoundMessage(internalName));
         }
@@ -179,14 +185,15 @@ public abstract class AbstractStep extends ExecutableService implements Step, St
      *
      * @param <T>
      * @param var
-     * @param type
+     * @param primaryType
+     * @param secondaryType
      * @param varman
      * @return
      * @throws IOException
      */
-    protected <T> T fetchInput(VariableKey var, Class<T> type, VariableManager varman) throws Exception {
+    protected <T> T fetchInput(VariableKey var, Class<T> primaryType, Class secondaryType, VariableManager varman) throws Exception {
         //System.out.println("Getting value for variable " + externalName);
-        T value = (T) varman.getValue(var, type);
+        T value = (T) varman.getValue(var, primaryType, secondaryType);
         return value;
     }
 
@@ -318,12 +325,15 @@ public abstract class AbstractStep extends ExecutableService implements Step, St
 
         switch (mediaType) {
             case CommonMimeTypes.MIME_TYPE_DATASET_BASIC_JSON:
+                Dataset basicDataset = fetchMappedInput(varName, Dataset.class, BasicObject.class, varman, true);
+                writeAsDataset(basicDataset, runner);
+                return basicDataset.getMetadata();
             case CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON:
-                Dataset dataset = fetchMappedInput(varName, Dataset.class, varman, true);
-                writeAsDataset(dataset, runner);
-                return dataset.getMetadata();
+                Dataset molDataset = fetchMappedInput(varName, Dataset.class, MoleculeObject.class, varman, true);
+                writeAsDataset(molDataset, runner);
+                return molDataset.getMetadata();
             case CommonMimeTypes.MIME_TYPE_MDL_SDF:
-                InputStream sdf = fetchMappedInput(varName, InputStream.class, varman, true);
+                InputStream sdf = fetchMappedInput(varName, InputStream.class, null, varman, true);
                 writeAsSDF(sdf, runner);
                 return null; // TODO can we getServiceDescriptors the metadata somehow?
             default:

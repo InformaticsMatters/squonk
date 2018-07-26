@@ -18,8 +18,7 @@ package org.squonk.execution.variable
 
 import org.squonk.dataset.Dataset
 import org.squonk.execution.variable.impl.FilesystemWriteContext
-import org.squonk.io.IODescriptor
-import org.squonk.io.IODescriptors
+import org.squonk.io.StringDataSource
 import org.squonk.notebook.api.VariableKey
 import org.squonk.types.BasicObject
 import org.squonk.types.PDBFile
@@ -78,7 +77,7 @@ class VariableManagerSpec extends Specification {
     void "read pdb"() {
         VariableManager varman = new VariableManager(null, 1, 1);
         String pdbcontent = "I'm a pdb file"
-        PDBFile value = new PDBFile(new ByteArrayInputStream(pdbcontent.getBytes()))
+        PDBFile value = new PDBFile(new StringDataSource(null, null, pdbcontent, false))
         VariableKey var = new VariableKey(99, "protein")
         varman.putValue(var, PDBFile, value)
         println varman.tmpVariableInfo
@@ -97,8 +96,8 @@ class VariableManagerSpec extends Specification {
 
         File dir = new File(System.getProperty("java.io.tmpdir"))
         VariableManager varman = new VariableManager(null, 1, 1);
-        String content = "I'm a pdb file"
-        PDBFile value = new PDBFile(new ByteArrayInputStream(content.getBytes()))
+        String pdbcontent = "I'm a pdb file"
+        PDBFile value = new PDBFile(new StringDataSource(null, null, pdbcontent, false))
         File expectedFile = new File(dir, "protein.pdb.gz")
 
         when:
@@ -108,7 +107,7 @@ class VariableManagerSpec extends Specification {
         then:
         dir != null
         expectedFile.exists()
-        new GZIPInputStream(new FileInputStream(expectedFile)).text == content
+        new GZIPInputStream(new FileInputStream(expectedFile)).text == pdbcontent
 
         cleanup:
         expectedFile.delete()

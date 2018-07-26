@@ -3,7 +3,9 @@ package org.squonk.execution
 import org.squonk.core.DockerServiceDescriptor
 import org.squonk.dataset.Dataset
 import org.squonk.execution.runners.DockerRunner
+import org.squonk.io.FileDataSource
 import org.squonk.io.IODescriptor
+import org.squonk.io.StringDataSource
 import org.squonk.jobdef.ExternalJobDefinition
 import org.squonk.jobdef.JobStatus
 import org.squonk.types.BasicObject
@@ -23,11 +25,11 @@ class ExternalExecutorSpec extends Specification {
         dir.createDirIfNotExists()
         def inputiods = [new IODescriptor("input", CommonMimeTypes.MIME_TYPE_MDL_SDF, SDFile.class)] as IODescriptor[]
         DockerServiceDescriptor sd = new DockerServiceDescriptor(uuid, "name", inputiods, null)
-        DockerRunner runner = new DockerRunner("busybox", "/tmp", "/tmp",uuid)
+        DockerRunner runner = new DockerRunner("busybox", "/tmp",uuid)
 
         when:
         ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)
-        exec.addDataAsInputStream("input", new ByteArrayInputStream("Hello World!".bytes))
+        exec.addDataAsInputStream("input", "text/plain", new ByteArrayInputStream("Hello World!".bytes), false)
         exec.handleInputs(sd, runner)
 
         then:
@@ -48,12 +50,12 @@ class ExternalExecutorSpec extends Specification {
                 new IODescriptor("input2", CommonMimeTypes.MIME_TYPE_MDL_SDF, SDFile.class)
         ] as IODescriptor[]
         DockerServiceDescriptor sd = new DockerServiceDescriptor(uuid, "name", inputiods, null)
-        DockerRunner runner = new DockerRunner("busybox", "/tmp", "/tmp",uuid)
+        DockerRunner runner = new DockerRunner("busybox", "/tmp", uuid)
 
         when:
         ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)
-        exec.addDataAsInputStream("input1", new ByteArrayInputStream("Hello World!".bytes))
-        exec.addDataAsInputStream("input2", new ByteArrayInputStream("Goodbye World!".bytes))
+        exec.addDataAsInputStream("input1", "text/plain", new ByteArrayInputStream("Hello World!".bytes), false)
+        exec.addDataAsInputStream("input2", "text/plain", new ByteArrayInputStream("Goodbye World!".bytes), false)
         exec.handleInputs(sd, runner)
 
         then:
@@ -74,13 +76,13 @@ class ExternalExecutorSpec extends Specification {
                 new IODescriptor("sdfile", CommonMimeTypes.MIME_TYPE_MDL_SDF, SDFile.class)
         ] as IODescriptor[]
         DockerServiceDescriptor sd = new DockerServiceDescriptor(uuid, "name", inputiods, null)
-        DockerRunner runner = new DockerRunner("busybox", "/tmp", "/tmp",uuid)
+        DockerRunner runner = new DockerRunner("busybox", "/tmp", uuid)
 
         when:
         ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)
-        exec.addDataAsInputStream("dataset_metadata", new FileInputStream("../../data/testfiles/Kinase_inhibs.metadata"))
-        exec.addDataAsInputStream("dataset_data", new FileInputStream("../../data/testfiles/Kinase_inhibs.json.gz"))
-        exec.addDataAsInputStream("sdfile", new ByteArrayInputStream("Goodbye World!".bytes))
+        exec.addDataAsInputStream("dataset_metadata", null, new FileInputStream("../../data/testfiles/Kinase_inhibs.metadata"), false)
+        exec.addDataAsInputStream("dataset_data", null, new FileInputStream("../../data/testfiles/Kinase_inhibs.json.gz"), true)
+        exec.addDataAsInputStream("sdfile", null, new ByteArrayInputStream("Goodbye World!".bytes), false)
         exec.handleInputs(sd, runner)
 
         then:
@@ -102,7 +104,7 @@ class ExternalExecutorSpec extends Specification {
         Files.copy(source.toPath(), dest.toPath())
         def outputiods = [new IODescriptor("output", CommonMimeTypes.MIME_TYPE_MDL_SDF, SDFile.class)] as IODescriptor[]
         DockerServiceDescriptor sd = new DockerServiceDescriptor(uuid, "name", null, outputiods)
-        DockerRunner runner = new DockerRunner("busybox", "/tmp", "/tmp", uuid)
+        DockerRunner runner = new DockerRunner("busybox", "/tmp", uuid)
 
         when:
         ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)
@@ -133,7 +135,7 @@ class ExternalExecutorSpec extends Specification {
 
         def outputiods = [new IODescriptor("output", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON, Dataset.class, MoleculeObject.class)] as IODescriptor[]
         DockerServiceDescriptor sd = new DockerServiceDescriptor(uuid, "name", null, outputiods)
-        DockerRunner runner = new DockerRunner("busybox", "/tmp", "/tmp", uuid)
+        DockerRunner runner = new DockerRunner("busybox", "/tmp", uuid)
 
         when:
         ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)

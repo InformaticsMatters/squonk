@@ -92,7 +92,7 @@ public class GenericDatasetDockerExecutorStep extends DefaultDockerExecutorStep 
         IODescriptor writeAs = generateIODescriptorForMediaType(inputType, ioDescriptor);
 
         FilesystemWriteContext writeContext = new FilesystemWriteContext(runner.getHostWorkDir(), writeAs.getName());
-        P value = fetchMappedInput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), varman, true);
+        P value = fetchMappedInput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), ioDescriptor.getSecondaryType(), varman, true);
         Object converted = convertValue(camelContext, ioDescriptor, writeAs, value);
         varman.putValue(writeAs.getPrimaryType(), converted, writeContext);
     }
@@ -106,7 +106,7 @@ public class GenericDatasetDockerExecutorStep extends DefaultDockerExecutorStep 
         IODescriptor readAs = generateIODescriptorForMediaType(outputType, ioDescriptor);
 
         FilesystemReadContext readContext = new FilesystemReadContext(runner.getHostWorkDir(), readAs.getName());
-        Object value = varman.getValue(readAs.getPrimaryType(), readContext);
+        Object value = varman.getValue(readAs.getPrimaryType(), readAs.getSecondaryType(), readContext);
         P converted = (P) convertValue(camelContext, readAs, ioDescriptor, value);
         createMappedOutput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), converted, varman);
     }

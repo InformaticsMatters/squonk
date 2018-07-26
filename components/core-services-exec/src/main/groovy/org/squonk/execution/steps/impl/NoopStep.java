@@ -33,7 +33,7 @@ public class NoopStep extends AbstractStandardStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
-        Dataset input = fetchMappedInput("input", Dataset.class, varman, true);
+        Dataset input = fetchMappedInput("input", Dataset.class, null, varman, true);
         if (input == null) {
             throw new IllegalStateException("Input variable not found");
         }

@@ -43,7 +43,7 @@ class TypeResolverSpec extends Specification {
         TypeResolver resolver = new TypeResolver()
 
         when:
-        def h = resolver.createHttpHandler(Dataset.class)
+        def h = resolver.createHttpHandler(Dataset.class, BasicObject.class)
 
         then:
         h != null
@@ -55,7 +55,7 @@ class TypeResolverSpec extends Specification {
         TypeResolver resolver = new TypeResolver()
 
         when:
-        def h = resolver.createVariableHandler(Dataset.class)
+        def h = resolver.createVariableHandler(Dataset.class, BasicObject.class)
 
         then:
         h != null

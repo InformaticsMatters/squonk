@@ -16,15 +16,13 @@
 
 package org.squonk.types;
 
-import org.squonk.api.HttpHandler;
-import org.squonk.api.VariableHandler;
 import org.squonk.http.RequestResponseExecutor;
+import org.squonk.io.InputStreamDataSource;
+import org.squonk.io.SquonkDataSource;
 import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
 
 /** Generic handler for files that handle their data as an InputStream. Should cover files of any format.
@@ -74,7 +72,9 @@ abstract class FileHandler<T extends AbstractStreamType> extends DefaultHandler<
         InputStream is = executor.getResponseBody();
         if (is != null) {
             try {
-                return create(gunzip ? IOUtils.getGunzippedInputStream(is) : IOUtils.getGzippedInputStream(is));
+                SquonkDataSource ds = new InputStreamDataSource("", mediaType, is, null);
+                ds.setGzipContent(!gunzip);
+                return create(ds);
             } catch (Exception e) {
                 throw new IOException("Failed to create instance of " + getType().getName(), e);
             }
@@ -89,7 +89,7 @@ abstract class FileHandler<T extends AbstractStreamType> extends DefaultHandler<
 
     @Override
     public T readVariable(ReadContext context) throws Exception {
-        InputStream is = context.readStreamValue(mediaType, extension, null);
-        return create(is);
+        SquonkDataSource ds = context.readStreamValue(mediaType, extension, null);
+        return create(ds);
     }
 }

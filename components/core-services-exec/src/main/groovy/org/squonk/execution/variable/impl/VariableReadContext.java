@@ -18,6 +18,8 @@ package org.squonk.execution.variable.impl;
 
 import org.squonk.api.VariableHandler;
 import org.squonk.client.VariableClient;
+import org.squonk.io.InputStreamDataSource;
+import org.squonk.io.SquonkDataSource;
 
 import java.io.InputStream;
 
@@ -46,9 +48,12 @@ public class VariableReadContext implements VariableHandler.ReadContext{
     }
 
     @Override
-    public InputStream readStreamValue(String mediaType, String extension, String key) throws Exception {
+    public SquonkDataSource readStreamValue(String mediaType, String extension, String key) throws Exception {
         InputStream is = client.readStreamValue(notebookId, sourceId, cellId, variableName, key);
-        return is;
+        if (is == null) {
+            return null;
+        }
+        return new InputStreamDataSource(variableName, mediaType, is, null);
     }
 
 }

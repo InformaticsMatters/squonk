@@ -42,7 +42,7 @@ public class DatasetFilterGroovyStep extends AbstractStandardStep {
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
         statusMessage = MSG_PREPARING_INPUT;
-        Dataset input = fetchMappedInput("input", Dataset.class, varman, true);
+        Dataset input = fetchMappedInput("input", Dataset.class, null, varman, true);
         String script = getOption(OPTION_SCRIPT, String.class);
         if (script == null) {
             throw new IllegalStateException("Script not defined. Should be present as option named " + OPTION_SCRIPT);
