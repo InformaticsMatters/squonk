@@ -24,8 +24,9 @@ services:
         
     ################# nginx ##########################################################
     # Acts as reverse proxy
-    # create self-signed SSL cert/key using:
-    # openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/certs/squonk/privkey.pem -out images/nginx/certs/squonk/fullchain.pem
+    # place the privkey.pem and fullchain.pem certificates in the images/nginx/certs/squonk.it/ directory
+    # and generate Strong Diffie-Hellman Group like this:
+    # openssl dhparam -out images/nginx/certs/squonk.it/dhparam.pem 2048
     nginx:
         image: nginx:1.13
         restart: on-failure:10
@@ -33,13 +34,13 @@ services:
         - 80:80
         - 443:443
         volumes:
-        - ./images/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-        - ./images/nginx/default.site.conf:/etc/nginx/conf.d/default.conf:ro
-        - ./images/nginx/certs/:/etc/nginx/certs/:ro
-        - ./images/nginx/xwiki.conf:/etc/nginx/snippets/xwiki.conf:ro
-        - ./images/nginx/sites/squonk.it/html/:/usr/share/nginx/html/squonk.it/html/:ro
-        - ./images/nginx/informaticsmatters.com.conf:/etc/nginx/conf.d/informaticsmatters.com.conf:ro
-        - ./images/nginx/sites/informaticsmatters.com/jekyll/website/_site/:/usr/share/nginx/html/www.informaticsmatters.com/html/:ro
+        - ./images/nginx/nginx.conf:/etc/nginx/nginx.conf:ro,Z
+        - ./images/nginx/default.site.conf:/etc/nginx/conf.d/default.conf:ro,Z
+        - ./images/nginx/certs/:/etc/nginx/certs/:ro,Z
+        - ./images/nginx/xwiki.conf:/etc/nginx/snippets/xwiki.conf:ro,Z
+        - ./images/nginx/sites/squonk.it/html/:/usr/share/nginx/html/squonk.it/html/:ro,Z
+        - ./images/nginx/informaticsmatters.com.conf:/etc/nginx/conf.d/informaticsmatters.com.conf:ro,Z
+        - ./images/nginx/sites/informaticsmatters.com/jekyll/website/_site/:/usr/share/nginx/html/www.informaticsmatters.com/html/:ro,Z
         networks:
         - squonk_front
  

@@ -17,6 +17,8 @@ import com.bmuschko.gradle.docker.tasks.image.Dockerfile
  * limitations under the License.
  */
 
+def contextName = 'jobexecutor'
+
 description = 'Squonk Job Executor'
 
 apply plugin: 'war'
@@ -63,6 +65,7 @@ dependencies {
 tomcat {
     enableSSL = false
     httpPort = 8888
+    contextPath = contextName
 }
 
 docker {
@@ -77,7 +80,7 @@ task buildDockerfile(type: Dockerfile) {
     maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
 
     def warFile = tasks.war.outputs.files.singleFile
-    addFile('libs/' + warFile.name, "/usr/local/tomcat/webapps/job-executor.war")
+    addFile('libs/' + warFile.name, "/usr/local/tomcat/webapps/${contextName}.war")
 }
 
 task buildDockerImage(type: DockerBuildImage) {

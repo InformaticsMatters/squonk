@@ -1,0 +1,20 @@
+FROM squonk/jobexecutor:latest
+LABEL maintainer="Tim Dudgeon<tdudgeon@informaticsmatters.com>"
+
+USER 0:0
+RUN apt-get -y install unzip
+
+USER 501
+
+# copy the keycloak jars to the tomcat lib folder
+COPY keycloak-jars-tomcat8/* /usr/local/tomcat/lib/
+
+# unzip the war file
+RUN unzip -q -d /usr/local/tomcat/webapps/jobexecutor /usr/local/tomcat/webapps/jobexecutor.war &&\
+  rm -f /usr/local/tomcat/webapps/jobexecutor.war
+
+# remove unused or conflicting jars
+RUN cd /usr/local/tomcat/webapps/jobexecutor/WEB-INF/lib && rm commons-codec-*.jar commons-logging-*.jar httpclient*.jar httpcore*.jar\
+  jackson-annotations-*.jar jackson-core-*.jar jackson-databind-*.jar
+
+USER 0:0

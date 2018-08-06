@@ -17,7 +17,7 @@ services:
             KEYCLOAK_USER:
             KEYCLOAK_PASSWORD:
         volumes:
-        - ./images/keycloak/standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml:ro
+        - ./images/keycloak/standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml:ro,Z
         networks:
         - squonk_front
         - squonk_back
@@ -42,16 +42,28 @@ services:
     # inject the keycloak configuration files
     portal:
         volumes:
-        - ./images/portal/keycloak.json:/usr/local/tomcat/webapps/portal/WEB-INF/keycloak.json:ro:Z
-        - ./images/portal/context.xml:/usr/local/tomcat/webapps/portal/META-INF/context.xml:ro:Z
+        - ./images/portal/keycloak.json:/usr/local/tomcat/webapps/portal/WEB-INF/keycloak.json:ro,Z
+        - ./images/portal/context.xml:/usr/local/tomcat/webapps/portal/META-INF/context.xml:ro,Z
         environment:
            KEYCLOAK_SERVER_URL:
            PUBLIC_HOST_URL:
 
+    # Access job executor as a REST service using something like this:
+    # 1. ensure your client is registered to the squonk realm. In this case we use the 'curl' client and set it's access type to public.
+    # 2. obtain a token:
+    #    token=$(curl -kL --data "grant_type=password&client_id=curl&username=user1&password=user1" https://172.20.0.1/auth/realms/squonk/protocol/openid-connect/token | grep -Po '(?<="access_token":")[^"]*')
+    # 3. inspect the token:
+    #    echo $token
+    # 4. access job executor:
+    #    curl -kL -H "Authorization: bearer $token" http://172.20.0.1/jobexecutor/rest/v1/jobs
+    # 5. The result will be the JobStatus objects for all jobs you have submitted. Most likely and empty array.
+    # Note that the token expires after a few mins.
     jobexecutor:
         volumes:
-        - ./images/jobexecutor/keycloak.json:/usr/local/tomcat/webapps/jobexecutor/WEB-INF/keycloak.json:ro:Z
-        - ./images/jobexecutor/context.xml:/usr/local/tomcat/webapps/jobexecutor/META-INF/context.xml:ro:Z
+        - ./images/jobexecutor/keycloak.json:/usr/local/tomcat/webapps/jobexecutor/WEB-INF/keycloak.json:ro,Z
+        - ./images/jobexecutor/web.xml:/usr/local/tomcat/webapps/jobexecutor/WEB-INF/web.xml:ro,Z
+        - ./images/jobexecutor/context.xml:/usr/local/tomcat/webapps/jobexecutor/META-INF/context.xml:ro,Z
         environment:
            KEYCLOAK_SERVER_URL:
            PUBLIC_HOST_URL:
+           CATALINA_OPTS: "-Dcom.squonk.keycloak.baseurl=$KEYCLOAK_SERVER_URL"

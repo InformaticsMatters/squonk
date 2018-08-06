@@ -335,23 +335,23 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
     private void handle404Error(Message message, String warning) {
         LOG.severe("Not Found: " + warning);
-        message.setBody("{ \"error\": \"" + warning + "\"}");
+        message.setBody("{\"error\": \"" + warning + "\"}");
         message.setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
     }
 
     private void handle401Error(Message message) {
         LOG.severe("Unauthorised");
-        message.setBody("{ \"error\": \"Unauthorised\"}");
+        message.setBody("{\"error\": \"Unauthorised\"}");
         message.setHeader(Exchange.HTTP_RESPONSE_CODE, 401);
     }
 
     private void handle500Error(Message message, String warning, Exception e) {
         if (e == null) {
             LOG.severe(warning);
-            message.setBody("{ \"error\": \"" + warning + "\"}");
+            message.setBody("{\"error\": \"" + warning + "\"}");
         } else {
             LOG.log(Level.SEVERE, warning, e);
-            message.setBody("{ \"error\": \"" + warning + ": " + e.getLocalizedMessage() + "\"}");
+            message.setBody("{\"error\": \"" + warning + ": " + e.getLocalizedMessage() + "\"}");
         }
         message.setHeader(Exchange.HTTP_RESPONSE_CODE, 500);
     }

@@ -156,9 +156,18 @@ See data/pgdata/postgresql.conf
 edit shared_buffers property and restart the postgres container
 TODO - describe how to generate these chemistry databases.
 
-To export the real squonk realm from Keykloak:
-(Note: this probably will not work - TODO - fix this)
-docker run -it --link deploy_postgres_1:postgres -e POSTGRES_DATABASE=keycloak -e POSTGRES_USER=keycloak -e POSTGRES_PASSWORD=squonk --rm -v $PWD:/tmp/json jboss/keycloak-postgres:2.1.0.Final -b 0.0.0.0 -Dkeycloak.migration.action=export -Dkeycloak.migration.provider=singleFile -Dkeycloak.migration.file=/tmp/json/squonk.json -Dkeycloak.migration.realmName=squonk
+To export the real squonk realm from Keycloak:
+
+docker run -it --network deploy_squonk_back\
+  -e POSTGRES_PORT_5432_TCP_ADDR=postgres\
+  -e POSTGRES_DATABASE=keycloak -e POSTGRES_USER=keycloak -e POSTGRES_PASSWORD=squonk \
+  --rm -v $PWD:/tmp/json:z jboss/keycloak-postgres:2.1.0.Final -b 0.0.0.0 \
+  -Dkeycloak.migration.action=export\
+  -Dkeycloak.migration.provider=singleFile\
+  -Dkeycloak.migration.file=/tmp/json/squonk.json\
+  -Dkeycloak.migration.realmName=squonk
+
+The realm definition will be found in the file squonk.json
 
 
 ====================================================================================

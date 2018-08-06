@@ -12,6 +12,10 @@ cd ../../components
 
 ./gradlew common:assemble common:publish dockerBuildImages
 
+cd $base/images
+
+docker build -f Dockerfile-jobexecutor -t squonk/jobexecutor-keycloak:latest .
+
 cd $base
 
 echo finished
