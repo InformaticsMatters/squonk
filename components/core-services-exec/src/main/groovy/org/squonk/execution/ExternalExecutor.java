@@ -21,6 +21,7 @@ import org.squonk.core.DockerServiceDescriptor;
 import org.squonk.core.NextflowServiceDescriptor;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.runners.ContainerRunner;
+import org.squonk.execution.runners.DockerRunner;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.impl.FilesystemReadContext;
 import org.squonk.execution.variable.impl.FilesystemWriteContext;
@@ -57,6 +58,13 @@ public class ExternalExecutor extends ExecutableService {
 
     private static final Logger LOG = Logger.getLogger(ExternalExecutor.class.getName());
     private static final TypeResolver typeResolver = TypeResolver.getInstance();
+
+    private static final String NEXTFLOW_IMAGE = IOUtils.
+            getConfiguration("SQUONK_NEXTFLOW_IMAGE",
+                    "informaticsmatters/nextflow-docker:0.30.2");
+    private static final String NEXTFLOW_OPTIONS = IOUtils.
+            getConfiguration("SQUONK_NEXTFLOW_OPTIONS",
+                    "-with-docker ubuntu");
 
     private final ExternalJobDefinition jobDefinition;
     private final ExecutorCallback callback;
@@ -273,7 +281,80 @@ public class ExternalExecutor extends ExecutableService {
     }
 
     private void doExecuteNextflow(NextflowServiceDescriptor descriptor) throws Exception {
-        throw new IllegalStateException("NYI");
+
+        statusMessage = MSG_PREPARING_CONTAINER;
+
+        String command =  descriptor.getNextflowParams();
+        String expandedCommand;
+        if (command != null) {
+            expandedCommand = expandCommand(command, options);
+        } else {
+            expandedCommand = "";
+        }
+        String fullCommand = "nextflow run nextflow.nf " + NEXTFLOW_OPTIONS + " " + expandedCommand;
+        ContainerRunner runner = createContainerRunner(NEXTFLOW_IMAGE);
+        runner.init();
+        LOG.info("Docker Nextflow executor image: " + NEXTFLOW_IMAGE + ",hostWorkDir: " + runner.getHostWorkDir() + ", command: " + fullCommand);
+
+        // create input files
+        statusMessage = MSG_PREPARING_INPUT;
+
+        // write the command that executes everything
+        LOG.info("Writing command file");
+        runner.writeInput("execute", "#!/bin/sh\n" + fullCommand + "\n", true);
+
+        // write the nextflow file that executes everything
+        LOG.info("Writing nextflow.nf");
+        String nextflowFileContents = descriptor.getNextflowFile();
+        runner.writeInput("nextflow.nf", nextflowFileContents, false);
+
+        // write the nextflow config file if one is defined
+        String nextflowConfigContents = descriptor.getNextflowConfig();
+        if (nextflowConfigContents != null && !nextflowConfigContents.isEmpty()) {
+            // An opportunity for the runner to provide extra configuration.
+            // There may be nothing to add but the returned string
+            // will be valid.
+            nextflowConfigContents = runner.addExtraNextflowConfig(nextflowConfigContents);
+            LOG.info("Writing nextflow.config as:\n" + nextflowConfigContents);
+            runner.writeInput("nextflow.config", nextflowConfigContents, false);
+        } else {
+            LOG.info("No nextflow.config");
+        }
+
+        // The runner's either a plain Docker runner
+        // or it's an OpenShift runner.
+        if (runner instanceof DockerRunner){
+            ((DockerRunner)runner).includeDockerSocket();
+        }
+
+        // write the input data
+        handleInputs(descriptor, runner);
+
+        // run the command
+        statusMessage = MSG_RUNNING_CONTAINER;
+        LOG.info("Executing ...");
+        long t0 = System.currentTimeMillis();
+        int status = runner.execute("./execute");
+        long t1 = System.currentTimeMillis();
+        float duration = (t1 - t0) / 1000.0f;
+        LOG.info(String.format("Executed in %s seconds with return status of %s", duration, status));
+
+        if (status != 0) {
+            String log = runner.getLog();
+            statusMessage = "Error: " + log;
+            LOG.warning("Execution errors: " + log);
+            throw new RuntimeException("Container execution failed:\n" + log);
+        }
+
+        // handle the output
+        statusMessage = MSG_PREPARING_OUTPUT;
+        handleOutputs(descriptor, runner);
+
+        Properties props = runner.getFileAsProperties("output_metrics.txt");
+        generateMetricsAndStatus(props, duration);
+
+        statusMessage = MSG_PROCESSING_RESULTS_READY;
+        updateStatus(Status.RESULTS_READY);
     }
 
     private void doExecuteDocker(DockerServiceDescriptor descriptor) throws Exception {
