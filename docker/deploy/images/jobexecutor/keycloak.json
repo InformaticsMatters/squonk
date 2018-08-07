@@ -4,5 +4,6 @@
   "bearer-only": true,
   "auth-server-url": "${com.squonk.keycloak.baseurl}",
   "ssl-required": "none",
-  "resource": "squonk-jobexecutor"
+  "resource": "squonk-jobexecutor",
+  "principal-attribute": "preferred_username"
 }

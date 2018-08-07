@@ -73,6 +73,9 @@ Access the application using the token.  With curl the command would be:
 
 `curl -kL -H "Authorization: bearer $token" http://172.20.0.1/jobexecutor/rest/v1/jobs`
 
+When using a service account you can also specify a username that will be used instead of the service
+account by adding a header like this: `-H "SquonkUsername: someuser"`.
+
 
 ## THIS IS WORK IN PROGRESS
 

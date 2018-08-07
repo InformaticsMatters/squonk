@@ -28,6 +28,7 @@ import org.squonk.jobdef.JobStatus;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
+import org.squonk.util.ServiceConstants;
 
 import javax.activation.DataHandler;
 import javax.inject.Inject;
@@ -320,6 +321,13 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
             Principal p = request.getUserPrincipal();
             if (p != null) {
                 user = p.getName();
+                if (user.startsWith("service-account-")) {
+                    String delegate = message.getHeader(ServiceConstants.HEADER_SQUONK_USERNAME, String.class);
+                    if (delegate != null && !delegate.isEmpty()) {
+                        LOG.info("Service account " + user + " specified to run as user " + delegate);
+                        user = delegate;
+                    }
+                }
             }
         }
         if (user == null) {
