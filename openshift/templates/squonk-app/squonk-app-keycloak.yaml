@@ -9,7 +9,7 @@ metadata:
   name: squonk
   annotations:
     description: Squonk Application Service Definition
-    tags: squonk,core,cellexecutor,chemservices,coreservices
+    tags: squonk,core,cellexecutor,chemservices,coreservices,jobexecutor
 labels:
   template: squonk-app
   app: squonk-app
@@ -124,6 +124,34 @@ parameters:
 - name: CELL_MEM_REQUEST
   value: 500Mi
 - name: CELL_MEM_LIMIT
+  value: 500Mi
+
+# ------------
+# JobExecutor
+# ------------
+
+- name: JE_IMAGE_TAG
+  value: latest
+- name: JE_CONTAINER_RUNNER_TYPE
+  value: openshift
+- name: JE_SQUONK_CONTAINER_WORK_DIR
+  value: "/squonk/work/docker"
+- name: JE_SQUONK_POD_BASE_NAME
+  value: "squonk-cell-pod"
+- name: JE_WORK_PVC_SIZE
+  value: 20Gi
+- name: JE_JOB_PROJECT_NAME
+  value: squonk
+- name: JE_JOB_LOG_HISTORY
+  valuie: 100
+
+- name: JE_CPU_REQUEST
+  value: 100m
+- name: JE_CPU_LIMIT
+  value: 1000m
+- name: JE_MEM_REQUEST
+  value: 500Mi
+- name: JE_MEM_LIMIT
   value: 500Mi
 
 objects:
@@ -500,3 +528,84 @@ objects:
     tls:
       termination: edge
       insecureEdgeTerminationPolicy: Redirect
+
+# -----------------------------------------------------------------------------
+# JobExecutor
+# -----------------------------------------------------------------------------
+
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    name: jobexecutor
+    namespace: ${APP_NAMESPACE}
+  spec:
+    replicas: 1
+    selector:
+      name: jobexecutor
+    template:
+      metadata:
+        labels:
+          name: jobexecutor
+      spec:
+        containers:
+        - image: squonk/jobexecutor-keycloak:${JE_IMAGE_TAG}
+          name: jobexecutor
+          env:
+          - name: SQUONK_CONTAINER_RUNNER_TYPE
+            value: ${JE_CONTAINER_RUNNER_TYPE}
+          - name: SQUONK_DOCKER_WORK_DIR
+            value: ${JE_SQUONK_CONTAINER_WORK_DIR}
+          - name: SQUONK_CELL_JOB_PROJECT_NAME
+            value: ${JE_JOB_PROJECT_NAME}
+          - name: SQUONK_POD_BASE_NAME
+            value: ${JE_SQUONK_POD_BASE_NAME}
+          - name: SQUONK_POD_LOG_HISTORY
+            value: ${JE_JOB_LOG_HISTORY}
+          - name: ROUTES_BASE_HOSTNAME
+            value: ${ROUTES_BASE_HOSTNAME}
+          - name: ROUTE_PREFIX_SSO
+            value: ${ROUTE_PREFIX_SSO}
+#          - name: JAVA_OPTS
+#            value: '"-Djava.util.logging.config.file=/logging.properties"'
+#          resources:
+#            limits:
+#              cpu: ${JE_CPU_LIMIT}
+#              memory: ${JE_MEM_LIMIT}
+#            requests:
+#              cpu: ${JE_CPU_REQUEST}
+#              memory: ${JE_MEM_REQUEST}
+          volumeMounts:
+          - mountPath: ${JE_SQUONK_CONTAINER_WORK_DIR}
+            name: squonk-work-dir
+          - mountPath: /usr/local/tomcat/webapps/jobexecutor/META-INF/context.xml
+            name: jobexecutor-sso-config
+            subPath: context.xml
+            readOnly: true
+          - mountPath: /usr/local/tomcat/webapps/jobexecutor/WEB-INF/keycloak.json
+            name: jobexecutor-sso-config
+            subPath: keycloak.json
+            readOnly: true
+          - mountPath: /usr/local/tomcat/webapps/jobexecutor/WEB-INF/web.xml
+            name: jobexecutor-sso-config
+            subPath: web.xml
+            readOnly: true
+        volumes:
+        - name: squonk-work-dir
+          persistentVolumeClaim:
+            claimName: squonk-work-dir-pvc
+        - name: jobexecutor-sso-config
+          configMap:
+            name: jobexecutor-sso-config
+
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: jobexecutor
+    namespace: ${APP_NAMESPACE}
+  spec:
+    selector:
+      name: jobexecutor
+    ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

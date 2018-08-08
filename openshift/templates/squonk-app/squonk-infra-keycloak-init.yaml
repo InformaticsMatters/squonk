@@ -134,6 +134,65 @@ objects:
           echo "Registered client $CLIENT_ID in realm $KEYCLOAK_REALM"
       fi
 
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: jobexecutor-sso-config
+    namespace: ${APP_NAMESPACE}
+  data:
+    keycloak.json: |
+      {
+        "realm": "xchem",
+        "realm-public-key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkIKEMP5Ml705Pw7bIACFnjfKwklmzqC3ESrGFDHwbO8FyQCuG5g8kfw1RGLrv1PUCnmQDQJFCB9Qz+kOMbJGe+bxfLxwFSirAgTlVuNTsUrwxxwvKeJMqVbN/uEqOtg+9OfNEZTnGuQFE5QTm1/dkanWNXRjEbmZ7K6+SmtLPB8SOVaMxKjw5UHtmN+fTlWXubNCTS3WIKI2yzuC7yBvlXxWRvFByNCCYNZOnj6XFvRjS/aVRbG6nyM5N/MrZnl4N5HbjQSd1m7imS+/8WF4blEXX+j/qPYwD4oeIX6wZqnKwMO5s1ZpOeRNyFuTcl3lvlSjgYWOrW4xDw/o6S/YcQIDAQAB",
+        "bearer-only": true,
+        "auth-server-url": "https://${ROUTE_PREFIX_SSO}.${ROUTES_BASE_HOSTNAME}/auth",
+        "ssl-required": "none",
+        "resource": "squonk-jobexecutor",
+        "principal-attribute": "preferred_username"
+      }
+    context.xml: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <Context>
+          <Valve className="org.keycloak.adapters.tomcat.KeycloakAuthenticatorValve"/>
+      </Context>
+    web.xml: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+          <display-name>Job Executor</display-name>
+          <listener>
+              <listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>
+          </listener>
+          <!-- Camel servlet -->
+          <servlet>
+              <servlet-name>CamelServlet</servlet-name>
+              <servlet-class>org.apache.camel.component.servlet.CamelHttpTransportServlet</servlet-class>
+              <load-on-startup>1</load-on-startup>
+          </servlet>
+          <!-- Camel servlet mapping -->
+          <servlet-mapping>
+              <servlet-name>CamelServlet</servlet-name>
+              <url-pattern>/rest/*</url-pattern>
+          </servlet-mapping>
+          <security-constraint>
+              <web-resource-collection>
+                  <web-resource-name>jobexecutor</web-resource-name>
+                  <url-pattern>/*</url-pattern>
+              </web-resource-collection>
+              <auth-constraint>
+                  <role-name>standard-user</role-name>
+              </auth-constraint>
+          </security-constraint>
+          <login-config>
+              <auth-method>KEYCLOAK</auth-method>
+              <realm-name>squonk</realm-name>
+          </login-config>
+          <security-role>
+              <role-name>standard-user</role-name>
+          </security-role>
+      </web-app>
+
 - kind: Job
   apiVersion: batch/v1
   metadata:
