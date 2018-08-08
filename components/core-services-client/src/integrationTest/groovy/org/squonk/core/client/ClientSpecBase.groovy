@@ -95,7 +95,9 @@ abstract class ClientSpecBase extends Specification {
     }
 
     void cleanupSpec() {
-        notebookClient.deleteNotebook(editable.getNotebookId())
+        if (notebookClient && editable) {
+            notebookClient?.deleteNotebook(editable)
+        }
     }
 
     Map<String, ServiceConfig> getServiceConfigs() {
@@ -171,10 +173,10 @@ abstract class ClientSpecBase extends Specification {
         // First, try to use the OpenShift (minishift) console.
         // If there's a sensible response for a coreservices route
         // then we'll use it...
-        def proc = 'oc get routes/coreservices'.execute()
         def got_oc = true
         String output
         try {
+            def proc = 'oc get routes/coreservices'.execute()
             proc.waitForOrKill(3000)
             output = proc.text
         } catch (IOException) {

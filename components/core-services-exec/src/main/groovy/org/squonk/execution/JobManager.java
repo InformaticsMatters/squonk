@@ -49,7 +49,7 @@ public class JobManager implements ExecutorCallback {
     @Inject
     protected JobStatusRestClient jobstatusClient;
 
-    protected boolean sendStatus = false;
+    protected boolean sendStatus = true;
 
 
     private final Map<String, ExecutionData> executionDataMap = new LinkedHashMap<>();
@@ -118,10 +118,14 @@ public class JobManager implements ExecutorCallback {
             boolean async) throws Exception {
 
         ExternalJobDefinition jobDefinition = new ExternalJobDefinition(serviceDescriptor, options);
+        LOG.info("Created JobDefinition with ID " + jobDefinition.getJobId());
+
         ExternalExecutor executor = new ExternalExecutor(jobDefinition, this);
+        LOG.fine("Executor job ID is " + executor.getJobId());
+        JobStatus jobStatus = createJob(jobDefinition, username, 0);
         ExecutionData executionData = new ExecutionData();
         executionData.executor = executor;
-        executionData.jobStatus = JobStatus.create(executor.getJobId(), jobDefinition, username, new Date(), 0);
+        executionData.jobStatus = jobStatus;
         executionDataMap.put(executor.getJobId(), executionData);
 
         for (Map.Entry<String, InputStream> e : inputs.entrySet()) {
@@ -145,7 +149,7 @@ public class JobManager implements ExecutorCallback {
         } else {
             executor.execute();
         }
-        JobStatus jobStatus = updateStatus(executor.getJobId(), Status.RUNNING);
+        jobStatus = updateStatus(executor.getJobId(), Status.RUNNING);
         return jobStatus;
     }
 
@@ -318,6 +322,17 @@ public class JobManager implements ExecutorCallback {
         }
     }
 
+    private JobStatus createJob(ExternalJobDefinition jobDefinition, String username, Integer totalCount) throws IOException {
+        JobStatus jobStatus = null;
+        if (sendStatus && jobstatusClient != null) {
+            jobStatus = jobstatusClient.create(jobDefinition, username, totalCount);
+            LOG.info("Creating Job with ID " + jobDefinition.getJobId());
+        } else {
+            jobStatus = JobStatus.create(jobDefinition.getJobId(), jobDefinition, username, new Date(), 0);
+        }
+        return jobStatus;
+    }
+
     private JobStatus updateStatus(String jobId, Status status) throws IOException {
         return updateStatus(jobId, status, null, null, null);
     }
@@ -340,6 +355,7 @@ public class JobManager implements ExecutorCallback {
             LOG.warning("Job ID " + jobId + " not found. Either it is incorrect or the job has completed");
             return null;
         }
+        LOG.info("Updating Job status for job ID " + jobId);
         JobStatus jobStatus = null;
         if (sendStatus && jobstatusClient != null) {
             switch (status) {
@@ -347,12 +363,10 @@ public class JobManager implements ExecutorCallback {
                     executionData.executor.cleanup();
                     jobStatus = jobstatusClient.updateStatus(jobId, status, event, processedCount, errorCount);
                     break;
-                case RESULTS_READY:
+                default:
                     jobStatus = jobstatusClient.updateStatus(jobId, status, event, processedCount, errorCount);
                     break;
-                case RUNNING:
-                    jobStatus = jobstatusClient.updateStatus(jobId, status, event, processedCount, errorCount);
-                    break;
+
             }
         } else {
             switch (status) {

@@ -16,8 +16,10 @@
 
 package org.squonk.core;
 
+import org.apache.camel.Message;
 import org.squonk.config.SquonkServerConfig;
 import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition;
+import org.squonk.jobdef.ExternalJobDefinition;
 import org.squonk.jobdef.JobDefinition;
 import org.squonk.jobdef.JobStatus;
 import org.apache.camel.Exchange;
@@ -290,23 +292,28 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .route()
                 .process((Exchange exch) -> {
                     String json = exch.getIn().getBody(String.class);
-                    LOG.info("JSON is " + json);
+                    LOG.fine("JSON is " + json);
                     JobDefinition jobdef = JsonHandler.getInstance().objectFromJson(json, JobDefinition.class);
                     LOG.info("Received request to submit job for " + jobdef);
-
                     Integer count = exch.getIn().getHeader(HEADER_JOB_SIZE, Integer.class);
-                    Job job = null;
                     if (jobdef instanceof ExecuteCellUsingStepsJobDefinition) {
                         ExecuteCellUsingStepsJobDefinition stepsJopbDef = (ExecuteCellUsingStepsJobDefinition) jobdef;
-                        job = new StepsCellJob(jobstatusClient, stepsJopbDef);
+                        Job job = new StepsCellJob(jobstatusClient, stepsJopbDef);
+                        LOG.info("Starting Job");
+                        JobStatus result = job.start(exch.getContext(), Utils.fetchUsername(exch), count);
+                        LOG.info("Job " + result.getJobId() + " started");
+                        String jsonResult = JsonHandler.getInstance().objectToJson(result);
+                        exch.getIn().setBody(jsonResult);
+                    } else if (jobdef instanceof ExternalJobDefinition) {
+                        ExternalJobDefinition externalJob = (ExternalJobDefinition) jobdef;
+                        LOG.info("Creating job with ID " + externalJob.getJobId());
+                        JobStatus result = jobstatusClient.create(externalJob, Utils.fetchUsername(exch), count);
+                        LOG.fine("Job " + result.getJobId() + " created");
+                        String jsonResult = JsonHandler.getInstance().objectToJson(result);
+                        exch.getIn().setBody(jsonResult);
                     } else {
                         throw new IllegalStateException("Job definition type " + jobdef.getClass().getName() + " not currently supported");
                     }
-                    LOG.info("Starting Job");
-                    JobStatus result = job.start(exch.getContext(), Utils.fetchUsername(exch), count);
-                    LOG.info("Job " + result.getJobId() + " started");
-                    String jsonResult = JsonHandler.getInstance().objectToJson(result);
-                    exch.getIn().setBody(jsonResult);
                 })
                 .inOnly("seda:notifyJobStatusUpdate")
                 .endRest()
@@ -318,22 +325,26 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .route()
                 .log("Updating status of job ${header.id} to status ${header.Status} and processed count of ${header.ProcessedCount}")
                 .process((Exchange exch) -> {
-                    String id = exch.getIn().getHeader("id", String.class);
-                    String status = exch.getIn().getHeader(HEADER_JOB_STATUS, String.class);
-                    Integer processedCount = exch.getIn().getHeader(HEADER_JOB_PROCESSED_COUNT, Integer.class);
-                    Integer errorCount = exch.getIn().getHeader(HEADER_JOB_ERROR_COUNT, Integer.class);
+                    Message message = exch.getIn();
+                    String id = message.getHeader("id", String.class);
+                    String status = message.getHeader(HEADER_JOB_STATUS, String.class);
+                    Integer processedCount = message.getHeader(HEADER_JOB_PROCESSED_COUNT, Integer.class);
+                    Integer errorCount = message.getHeader(HEADER_JOB_ERROR_COUNT, Integer.class);
                     JobStatus result;
                     if (status == null) {
                         result = jobstatusClient.incrementCounts(id, processedCount, errorCount);
-                        exch.getIn().setBody(result);
                     } else {
                         String event = exch.getIn().getBody(String.class);
                         result = jobstatusClient.updateStatus(id, JobStatus.Status.valueOf(status), event, processedCount, errorCount);
-                        exch.getIn().setBody(result);
                     }
-                    exch.getIn().setHeader(HEADER_SQUONK_USERNAME, result.getUsername());
-                    String jsonResult = JsonHandler.getInstance().objectToJson(result);
-                    exch.getIn().setBody(jsonResult);
+                    if (result == null) {
+                        message.setBody("{\"error\": \"Job " + id + " not found\"}");
+                        message.setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
+                    } else {
+                        message.setHeader(HEADER_SQUONK_USERNAME, result.getUsername());
+                        String jsonResult = JsonHandler.getInstance().objectToJson(result);
+                        message.setBody(jsonResult);
+                    }
                 })
                 .inOnly("seda:notifyJobStatusUpdate")
                 .endRest();

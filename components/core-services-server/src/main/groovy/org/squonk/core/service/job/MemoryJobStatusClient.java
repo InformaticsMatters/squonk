@@ -16,11 +16,10 @@
 
 package org.squonk.core.service.job;
 
-import org.squonk.jobdef.JobDefinition;
-import org.squonk.jobdef.JobQuery;
-import org.squonk.jobdef.JobStatus;
+import org.squonk.jobdef.*;
 import org.squonk.client.JobStatusClient;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -37,9 +36,18 @@ public class MemoryJobStatusClient implements JobStatusClient {
 
     private final Map<String,JobStatus> store = new LinkedHashMap<>();
 
-    public JobStatus submit(JobDefinition jobdef, String username, Integer totalCount) {
+    @Override
+    public JobStatus submit(CellExecutorJobDefinition jobdef, String username, Integer totalCount) {
         LOG.finer("Registering JobDef: " + jobdef);
         JobStatus status = JobStatus.create(jobdef, username, new Date(), totalCount);
+        store.put(status.getJobId(), status);
+        return status;
+    }
+
+    @Override
+    public JobStatus create(ExternalJobDefinition jobdef, String username, Integer totalCount) throws IOException {
+        LOG.finer("Registering JobDef: " + jobdef);
+        JobStatus status = JobStatus.create(jobdef.getJobId(), jobdef, username, new Date(), totalCount);
         store.put(status.getJobId(), status);
         return status;
     }

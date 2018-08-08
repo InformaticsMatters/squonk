@@ -127,8 +127,8 @@ class StructureIOClientSpec extends Specification {
         Molecules.ethanol.smiles | "mol"    | "V2000"
         Molecules.ethanol.smiles | "mol:v2" | "V2000"
         Molecules.ethanol.smiles | "mol:v3" | "V3000"
-        Molecules.ethanol.v2000  | "smiles" | "CCO"
-        Molecules.ethanol.v3000  | "smiles" | "CCO"
+        Molecules.ethanol.v2000  | "smiles" | "C"
+        Molecules.ethanol.v3000  | "smiles" | "C"
     }
 
 

@@ -324,7 +324,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 if (user.startsWith("service-account-")) {
                     String delegate = message.getHeader(ServiceConstants.HEADER_SQUONK_USERNAME, String.class);
                     if (delegate != null && !delegate.isEmpty()) {
-                        LOG.info("Service account " + user + " specified to run as user " + delegate);
+                        LOG.fine("Service account " + user + " specified to run as user " + delegate);
                         user = delegate;
                     }
                 }
@@ -337,7 +337,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 throw new AuthenticationException();
             }
         }
-        LOG.info("User: " + user);
+        LOG.fine("User: " + user);
         return user;
     }
 

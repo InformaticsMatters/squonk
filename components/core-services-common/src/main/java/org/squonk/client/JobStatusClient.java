@@ -16,7 +16,8 @@
 
 package org.squonk.client;
 
-import org.squonk.jobdef.JobDefinition;
+import org.squonk.jobdef.CellExecutorJobDefinition;
+import org.squonk.jobdef.ExternalJobDefinition;
 import org.squonk.jobdef.JobQuery;
 import org.squonk.jobdef.JobStatus;
 
@@ -28,13 +29,21 @@ import java.util.List;
  */
 public interface JobStatusClient {
 
-    /** Creates the job
+    /** Submits a cell executor job for execution
      *
      * @param jobdef The Job definition
      * @param totalCount The total number of work units, or null if unknown
      * @return The Job ID
      */
-    JobStatus submit(JobDefinition jobdef, String username, Integer totalCount) throws IOException;
+    JobStatus submit(CellExecutorJobDefinition jobdef, String username, Integer totalCount) throws IOException;
+
+    /** Creates an external job, assuming execution is handled separately
+     *
+     * @param jobdef The Job definition
+     * @param totalCount The total number of work units, or null if unknown
+     * @return The Job ID
+     */
+    JobStatus create(ExternalJobDefinition jobdef, String username, Integer totalCount) throws IOException;
 
     /** Fetch the current status for the job with this ID
      *

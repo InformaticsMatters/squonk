@@ -16,8 +16,8 @@
 
 package org.squonk.jobdef;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.squonk.core.ServiceDescriptor;
-import org.squonk.io.IODescriptor;
 
 import java.util.Map;
 import java.util.UUID;
@@ -33,7 +33,9 @@ public class ExternalJobDefinition implements JobDefinition {
     protected final Map<String, Object> options;
     protected final String jobId;
 
-    public ExternalJobDefinition(ServiceDescriptor serviceDescriptor, Map<String, Object> options) {
+    public ExternalJobDefinition(
+            @JsonProperty("serviceDescriptor") ServiceDescriptor serviceDescriptor,
+            @JsonProperty("options") Map<String, Object> options) {
         this.serviceDescriptor = serviceDescriptor;
         this.options = options;
         this.jobId = UUID.randomUUID().toString();
@@ -66,5 +68,10 @@ public class ExternalJobDefinition implements JobDefinition {
 
     public Map<String, Object> getOptions() {
         return options;
+    }
+
+    @Override
+    public String toString() {
+        return "ExternalJobDefinition: [jobId=" + jobId + "]";
     }
 }

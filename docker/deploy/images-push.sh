@@ -12,6 +12,7 @@ set -e
 docker push squonk/chemservices-basic:$1
 docker push squonk/coreservices:$1
 docker push squonk/cellexecutor:$1
+docker push squonk/jobexecutor:$1
 docker push squonk/flyway:$1
 
 docker push squonk/chemcentral-search:$1
