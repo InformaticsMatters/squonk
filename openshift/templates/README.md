@@ -131,7 +131,7 @@ First create NFS exports on the node that is acting as the NFS server (probably 
 for `/exports/pv-postgresql` and `/exports/pv-rabbitmq` and then define the PVs and PVCs:
 
 ```
-oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -f infra-pvc-nfs.yaml | oc create -f -
+oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -p NFS_PATH=$OC_NFS_PATH -f infra-pvc-nfs.yaml | oc create -f -
 ```
 
 This creates PVs for the NFS mounts and binds the PVCs that RabbitMQ and PostgreSQL need. This is 'permanent' coupling
