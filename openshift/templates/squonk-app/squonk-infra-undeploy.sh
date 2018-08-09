@@ -37,6 +37,8 @@ echo "Cleaning up Keycloak"
 oc delete cm/squonk-sso-config -n $OC_PROJECT
 oc delete job/squonk-client-creator cm/squonk-client-creator
 
+echo "Cleaning up JobExecutor"
+oc delete cm/jobexecutor-sso-config
 
 echo "You still need to manually delete the squonk client from the Keycloak $KEYCLOAK_REALM realm"
 echo "You may need to delete persistent volumes"
