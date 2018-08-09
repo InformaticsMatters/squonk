@@ -138,6 +138,7 @@ objects:
   apiVersion: v1
   metadata:
     name: jobexecutor-sso-config
+    namespace: ${SQUONK_NAMESPACE}
   data:
     keycloak.json: |
       {
