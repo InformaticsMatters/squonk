@@ -270,7 +270,7 @@ First create NFS export on the node that is acting as the NFS server (probably t
 for `/exports/squonk-work-dir` and then define the PVs and PVCs:
 
 ```
-oc process -p APP_NAMESPACE=$OC_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -f squonk-pvc-nfs.yaml | oc create -f -
+oc process -p APP_NAMESPACE=$OC_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -p NFS_PATH=$OC_NFS_PATH -f squonk-pvc-nfs.yaml | oc create -f -
 
 ```
 
