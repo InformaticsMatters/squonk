@@ -41,31 +41,38 @@ Adjust the directory name according to what the PVC has grabbed.
 
 ### If using NFS with OpenShift
 
-First create NFS export on the node that is acting as the NFS server (probably the infrastructure node)
-for `/exports/pv-chemcentraldb`. You need to specify NFS export options as `*(rw,sync,no_subtree_check,no_root_squash)`
+First create NFS export on the node that is acting as the NFS server
+(probably the infrastructure node) for `/exports/pv-chemcentraldb`.
+You need to specify NFS export options as `*(rw,sync,no_subtree_check,no_root_squash)`
 due to strange permissions problems relating to NFS (TODO - resolve this).
 
 Then define the PVs and PVCs:
 
 ```
-oc process -p NFS_SERVER=$OC_NFS_SERVER -p NFS_PATH=/data -f chemcentral-pvc-nfs.yaml | oc create -n $OC_INFRA_PROJECT -f -
-
+oc process -p NFS_SERVER=$OC_NFS_SERVER \
+           -p NFS_PATH=$OC_NFS_PATH \
+           -p PVC_SIZE=$OC_SQUONK_CC_PVC_SIZE \
+           -p INFRA_NAMESPACE=$OC_INFRA_PROJECT \
+           -f chemcentral-pvc-nfs.yaml | oc create -n $OC_INFRA_PROJECT -f -
 ```
-
-
 
 ### If using dynamic provisioning
 
 ```
-oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -p PVC_SIZE=100Gi -f chemcentral-pvc-nfs.yaml | oc create -n $OC_INFRA_PROJECT -f -
+oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT \
+           -p NFS_SERVER=$OC_NFS_SERVER \
+           -p NFS_PATH=$OC_NFS_PATH \
+           -p PVC_SIZE=100Gi \
+           -f chemcentral-pvc-nfs.yaml | oc create -n $OC_INFRA_PROJECT -f -
 ```
 
-Adjust the parameters as needed and look in the `chemcentral-pvc-dynamic.yaml` for additional parameters that
-can be specified.
+Adjust the parameters as needed and look in the `chemcentral-pvc-dynamic.yaml`
+for additional parameters that can be specified.
 
 ## Deploy
 
-Deploy the chemcentral PostgreSQL database with the RDKit cartridge and the chemcentral search deployments.
+Deploy the chemcentral PostgreSQL database with the RDKit cartridge
+and the chemcentral search deployments.
 
 ```
 ./deploy.sh
@@ -73,7 +80,8 @@ Deploy the chemcentral PostgreSQL database with the RDKit cartridge and the chem
 
 ## Loading data
 
-General information about the Dockerised process for loading data into the ChemCentral database is [here](../../../StructureDatabases.md).
+General information about the Dockerised process for loading data into the
+ChemCentral database is [here](../../../StructureDatabases.md).
 
 To run this in an openshift environment you must do this:
 
@@ -96,7 +104,9 @@ oc process -f chemcentral-data-loader-pvc-minishift.yaml | oc create -f -
 Create an NFS export named `pv-chemcentral-loader`. Then:
 
 ```
-oc process -p NFS_SERVER=$OC_NFS_SERVER -f chemcentral-data-loader-pvc-nfs.yaml | oc create -f -
+oc process -p NFS_SERVER=$OC_NFS_SERVER \
+           -p NFS_PATH=$OC_NFS_PATH \
+           -f chemcentral-data-loader-pvc-nfs.yaml | oc create -f -
 ```
 
 ### Provide the datafile
@@ -117,7 +127,10 @@ Make sure the file is world readable.
 ### Run the loader
 
 ```
-oc process -f loader.yaml -p LOADER_CLASS=org.squonk.rdkit.db.loaders.EMoleculesBBSmilesLoader -p LOADER_FILE=version.smi.gz -p LIMIT=20000 | oc create -f -
+oc process -f loader.yaml \
+           -p LOADER_CLASS=org.squonk.rdkit.db.loaders.EMoleculesBBSmilesLoader \
+           -p LOADER_FILE=version.smi.gz \
+           -p LIMIT=20000 | oc create -f -
 ```
 
 ## Test it works

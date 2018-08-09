@@ -24,6 +24,7 @@ export OC_POSTGRESQL_SERVICE=db-postgresql
 export OC_PROJECT=squonk
 export OC_SQUONK_APP=squonk-notebook
 export OC_SQUONK_HOST=${OC_SQUONK_APP}.${OC_ROUTES_BASENAME}
+export OC_SQUONK_CC_PVC_SIZE=20Gi
 export OC_DOMAIN_NAME=novalocal
 export OC_NFS_SERVER=squonk-infra.$OC_DOMAIN_NAME
 export OC_NFS_PATH=/exports

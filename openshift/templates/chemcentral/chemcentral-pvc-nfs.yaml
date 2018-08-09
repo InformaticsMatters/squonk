@@ -2,8 +2,8 @@
 
 # The Squonk PVs.
 #
-# oc process -f squonk-pvc-nfs.yaml | oc create -f -
-# oc delete pv --selector template=squonk-pvc-nfs
+# oc process -f chemcentral-pvc-nfs.yaml | oc create -f -
+# oc delete pv --selector template=chemcentral-pvc-nfs
 
 kind: Template
 apiVersion: v1
