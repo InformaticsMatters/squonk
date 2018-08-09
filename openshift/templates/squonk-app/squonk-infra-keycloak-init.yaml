@@ -142,7 +142,7 @@ objects:
     keycloak.json: |
       {
         "realm": "xchem",
-        "realm-public-key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkIKEMP5Ml705Pw7bIACFnjfKwklmzqC3ESrGFDHwbO8FyQCuG5g8kfw1RGLrv1PUCnmQDQJFCB9Qz+kOMbJGe+bxfLxwFSirAgTlVuNTsUrwxxwvKeJMqVbN/uEqOtg+9OfNEZTnGuQFE5QTm1/dkanWNXRjEbmZ7K6+SmtLPB8SOVaMxKjw5UHtmN+fTlWXubNCTS3WIKI2yzuC7yBvlXxWRvFByNCCYNZOnj6XFvRjS/aVRbG6nyM5N/MrZnl4N5HbjQSd1m7imS+/8WF4blEXX+j/qPYwD4oeIX6wZqnKwMO5s1ZpOeRNyFuTcl3lvlSjgYWOrW4xDw/o6S/YcQIDAQAB",
+        "realm-public-key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnocYfSd84WHqDNBXjCKg695MoNfD2OSCZd1WOUw50EqHywQam1w/sh6CY6hrIRN2rVFwp5f72PUp8lcx+E9BMdiAp5fJV0kQOKeqo3qKTk+jFptGgva54l7DBPGm6xAOr82XPDs/d4PHQqFpSmSg1qA0uOotvaMgbf9E98ky2h2WMhmN72bprJNbjy+cT+uaRFhq5o9MZAVD50JFFFqvZYibp/NmaeePwn33mEkwcjLQe9pf9wGutSGBfW9z/Zccb6BiWBodhm318Yuh14Db1ePNha+pQepUbzG1sMDKQ7qgbZ0WLEv9MoTSLWZHwGNNCyIvd1JlKOXlfykbuJPa7QIDAQAB",
         "bearer-only": true,
         "auth-server-url": "https://${ROUTE_PREFIX_SSO}.${ROUTES_BASE_HOSTNAME}/auth",
         "ssl-required": "none",
