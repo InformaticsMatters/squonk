@@ -1,3 +1,10 @@
+---
+
+# The Squonk PVs.
+#
+# oc process -f chemcentral-data-loader-pvc-nfs.yaml | oc create -f -
+# oc delete pv,pvc --selector template=chemcentral-data-loader-pvc-nfs
+
 kind: Template
 apiVersion: v1
 metadata:
