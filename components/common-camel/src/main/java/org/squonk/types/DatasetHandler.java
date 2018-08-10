@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,7 +175,7 @@ public class DatasetHandler<T extends BasicObject> extends DefaultHandler<Datase
     }
 
     @Override
-    public Dataset<T> createMultiple(Map<String,SquonkDataSource> inputs) throws Exception {
+    protected Dataset<T> createMultiple(Map<String,SquonkDataSource> inputs) throws Exception {
 
         SquonkDataSource data = inputs.get(Dataset.DATASET_FILE_EXT);
         data.setGzipContent(true);
@@ -190,5 +190,16 @@ public class DatasetHandler<T extends BasicObject> extends DefaultHandler<Datase
             DatasetMetadata<T> datasetMetadata = JsonHandler.getInstance().objectFromJson(meta.getInputStream(), DatasetMetadata.class);
             return new Dataset<T>(data, datasetMetadata);
         }
+    }
+
+    @Override
+    protected Dataset<T> createMultiple(String mediaType, Class genericType, Map<String, InputStream> inputs) throws IOException {
+        InputStream data = inputs.get(Dataset.DATASET_FILE_EXT);
+        InputStream meta = inputs.get(Dataset.METADATA_FILE_EXT);
+        if (data == null || meta == null) {
+            throw new IllegalStateException("Inputs for data and metadata must be defined");
+        }
+        Dataset<T> result = new Dataset(data, meta);
+        return result;
     }
 }

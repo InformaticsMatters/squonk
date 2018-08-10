@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2018 Informatics Matters Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.squonk.execution
 
 import org.squonk.core.DockerServiceDescriptor
@@ -77,6 +92,48 @@ class JobManagerSpec extends Specification {
             count++
         }
         return count
+    }
+
+    void "createObjectsFromInputStreams for sdf"() {
+
+
+        def data = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
+        def iod = new IODescriptor("input", CommonMimeTypes.MIME_TYPE_MDL_SDF, SDFile.class)
+        def jobManager = new JobManager()
+
+        when:
+        def results = jobManager.createObjectsFromInputStreams([(iod.name + '_data'): data], [iod] as IODescriptor[])
+
+        then:
+        results.size() == 1
+        def sdf = results.values().iterator().next()
+        sdf instanceof SDFile
+        countSdf(sdf) == 36
+
+        cleanup:
+        data?.close()
+    }
+
+    void "createObjectsFromInputStreams for dataset"() {
+
+
+        def data = new FileInputStream("../../data/testfiles/Kinase_inhibs.json.gz")
+        def meta = new FileInputStream("../../data/testfiles/Kinase_inhibs.metadata")
+        def iod = new IODescriptor("input", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON, Dataset.class, MoleculeObject.class)
+        def jobManager = new JobManager()
+
+        when:
+        def results = jobManager.createObjectsFromInputStreams([(iod.name + '_data'): data, (iod.name + '_metadata'): meta], [iod] as IODescriptor[])
+
+        then:
+        results.size() == 1
+        def ds = results.values().iterator().next()
+        ds instanceof Dataset
+        ds.items.size() == 36
+
+        cleanup:
+        data?.close()
+        meta?.close()
     }
 
     void "sdf execute sync"() {

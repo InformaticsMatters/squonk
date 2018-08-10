@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2017 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import spock.lang.Specification
  *
  * @author timbo
  */
-class DatasetSelectSliceStepSpec extends Specification {
+class DatasetSelectRandomStepSpec extends Specification {
 
     Long producer = 1
 
@@ -50,24 +50,24 @@ class DatasetSelectSliceStepSpec extends Specification {
         return varman
     }
 
-    def createStep(skip, count) {
-        DatasetSelectSliceStep step = new DatasetSelectSliceStep()
+    def createStep(random, count) {
+        DatasetSelectRandomStep step = new DatasetSelectRandomStep()
         def opts = [:]
-        if (skip != null) opts[DatasetSelectSliceStep.OPTION_SKIP] = skip
-        if (count != null) opts[DatasetSelectSliceStep.OPTION_COUNT] = count
+        if (random != null) opts[DatasetSelectRandomStep.OPTION_RANDOM] = random
+        if (count != null) opts[DatasetSelectRandomStep.OPTION_COUNT] = count
         step.configure(producer, "job1",
                 opts,
                 ["input":new VariableKey(producer, "input")],
                 [:],
-                DatasetSelectSliceStep.SERVICE_DESCRIPTOR)
+                DatasetSelectRandomStep.SERVICE_DESCRIPTOR)
         return step
     }
     
-    void "test skip and count"() {
+    void "test random and count"() {
         
         DefaultCamelContext context = new DefaultCamelContext()
         VariableManager varman = createVariableManager()
-        DatasetSelectSliceStep step = createStep(10,10)
+        DatasetSelectRandomStep step = createStep(0.2f,10)
         
         when:
         step.execute(varman, context)
@@ -77,44 +77,7 @@ class DatasetSelectSliceStepSpec extends Specification {
         dataset != null
         dataset.generateMetadata()
         List results = dataset.getItems()
-        results.size() == 10
-        results[0].getValue("idx") == 11
-    }
-
-    void "test skip only"() {
-
-        DefaultCamelContext context = new DefaultCamelContext()
-        VariableManager varman = createVariableManager()
-        DatasetSelectSliceStep step = createStep(10,null)
-
-        when:
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
-
-        then:
-        dataset != null
-        dataset.generateMetadata()
-        List results = dataset.getItems()
-        results.size() == 90
-        results[0].getValue("idx") == 11
-    }
-
-    void "test count only"() {
-
-        DefaultCamelContext context = new DefaultCamelContext()
-        VariableManager varman = createVariableManager()
-        DatasetSelectSliceStep step = createStep(null,10)
-
-        when:
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
-
-        then:
-        dataset != null
-        dataset.generateMetadata()
-        List results = dataset.getItems()
-        results.size() == 10
-        results[0].getValue("idx") == 1
+        results.size() <= 10
     }
 
 }

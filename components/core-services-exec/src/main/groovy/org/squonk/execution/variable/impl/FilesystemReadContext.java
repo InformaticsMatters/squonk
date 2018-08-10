@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,11 @@ public class FilesystemReadContext extends AbstractFilesystemContext implements 
 
     private static final Logger LOG = Logger.getLogger(FilesystemReadContext.class.getName());
 
+    /**
+     *
+     * @param dir The directory containing the file
+     * @param baseName The base name of the file
+     */
     public FilesystemReadContext(File dir, String baseName) {
         super(dir, baseName);
     }

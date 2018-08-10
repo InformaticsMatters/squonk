@@ -58,7 +58,7 @@ token=$(curl -kL \
   -d 'grant_type=client_credentials'\
   -d 'client_id=<client-id>'\
   -d 'client_secret=<client-secret>'\
-  https://1<hostname>/auth/realms/squonk/protocol/openid-connect/token|\
+  https://<hostname>/auth/realms/squonk/protocol/openid-connect/token|\
   grep -Po '(?<="access_token":")[^"]*')
 ```
 Substitute the appropriate values for `<client-id>`, `<client-secret>` and `<hostname>`

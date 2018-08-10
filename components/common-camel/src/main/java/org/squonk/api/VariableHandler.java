@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,11 @@ public interface VariableHandler<T> extends Handler<T> {
      */
     T create(Map<String,SquonkDataSource> inputs) throws Exception;
 
-    T createMultiple(Map<String,SquonkDataSource> inputs) throws Exception;
+    //T createMultiple(Map<String,SquonkDataSource> inputs) throws Exception;
+
+    T create(String mediaType, Class genericType, Map<String, InputStream> inputs) throws Exception;
+
+    //T createMultiple(String mediaType, Class genericType, Map<String, InputStream> inputs) throws Exception;
 
 
     /** Context that allows a value to be read.

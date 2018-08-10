@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,16 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.apache.camel.CamelContext;
+import org.apache.camel.TypeConverter;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.BasicObject;
-import org.squonk.types.io.JsonHandler;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,7 +33,7 @@ import java.util.stream.Stream;
 /**
  * Created by timbo on 13/09/16.
  */
-public class DatasetSorterStep extends AbstractStandardStep {
+public class DatasetSorterStep<P extends BasicObject> extends AbstractDatasetStandardStep<P,P> {
 
     private static final Logger LOG = Logger.getLogger(DatasetSorterStep.class.getName());
 
@@ -44,35 +42,28 @@ public class DatasetSorterStep extends AbstractStandardStep {
     public static final String OPTION_DIRECTIVES = StepDefinitionConstants.DatasetSorter.OPTION_DIRECTIVES;
 
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
+    protected Dataset<P> doExecute(Dataset<P> input, Map<String,Object> options, TypeConverter converter) throws Exception {
 
-        statusMessage = MSG_PREPARING_INPUT;
-        Dataset ds = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
-        if (ds == null) {
-            throw new IllegalStateException("Input variable not found: " + VAR_INPUT_DATASET);
-        }
-
-        String directivesStr = getOption(OPTION_DIRECTIVES, String.class);
+        String directivesStr = getOption(options, OPTION_DIRECTIVES, String.class, converter);
         if (directivesStr == null) {
             throw new IllegalStateException("Sort directives must be defined as option named " + OPTION_DIRECTIVES);
         }
 
-        DatasetMetadata meta = ds.getMetadata();
+        DatasetMetadata<P> meta = input.getMetadata();
         List<SortDirective> directives = parse(directivesStr, meta);
 
-        Stream<? extends BasicObject> stream = ds.getStream();
-        Stream<? extends BasicObject> sorted = stream.sorted(new SortComparator(directives));
+        Stream<P> stream = input.getStream();
+        Stream<P> sorted = stream.sorted(new SortComparator(directives));
 
         meta.appendDatasetHistory("Sorted according to " + directives.stream()
                 .map((sd) -> sd.field + (sd.ascending ? " ASC" : " DESC"))
                 .collect(Collectors.joining(", ")));
 
-        Dataset result = new Dataset(sorted, meta);
+        Dataset<P> result = new Dataset(sorted, meta);
 
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, result, varman);
+        statusMessage = generateStatusMessage(input.getSize(), result.getSize(), -1);
 
-        statusMessage = generateStatusMessage(ds.getSize(), result.getSize(), -1);
-        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
+        return result;
     }
 
     protected List<SortDirective> parse(String string, DatasetMetadata meta) {

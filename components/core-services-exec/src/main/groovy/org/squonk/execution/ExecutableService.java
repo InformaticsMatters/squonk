@@ -26,12 +26,14 @@ import org.squonk.util.IOUtils;
 import org.squonk.util.Metrics;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-/** Base class that defines core functionality for service execution
- *
+/**
+ * Base class that defines core functionality for service execution
  */
 public class ExecutableService {
 
@@ -52,7 +54,7 @@ public class ExecutableService {
     protected static final String OPTION_DOCKER_COMMAND = StepDefinitionConstants.DockerProcessDataset.OPTION_DOCKER_COMMAND;
 
     protected final String CONTAINER_RUNNER_TYPE = IOUtils.getConfiguration("SQUONK_CONTAINER_RUNNER_TYPE",
-                    "docker").toLowerCase();
+            "docker").toLowerCase();
 
     protected final String DOCKER_SERVICES_DIR = IOUtils.getConfiguration("SQUONK_DOCKER_SERVICES_DIR", "../../data/testfiles/docker-services");
     protected final Integer DEBUG_MODE = new Integer(IOUtils.getConfiguration("SQUONK_DEBUG_MODE", "0"));
@@ -81,7 +83,8 @@ public class ExecutableService {
         return jobId;
     }
 
-    /** Usage stats that will be recorded against the execution of the job
+    /**
+     * Usage stats that will be recorded against the execution of the job
      *
      * @return
      */
@@ -137,7 +140,39 @@ public class ExecutableService {
         }
     }
 
-    /** Take the command template and substitute it with the user specified options.
+    protected <T> T getOption(Map<String, Object> map, String name, Class<T> type, TypeConverter converter) {
+        return getOption(map, name, type, converter, null);
+    }
+
+    protected <T> T getOption(Map<String, Object> map, String name, Class<T> type, TypeConverter converter, T defaultValue) {
+        Object val = map.get(name);
+        if (val == null) {
+            return defaultValue;
+        } else {
+            if (type.isAssignableFrom(val.getClass())) {
+                return (T) val;
+            } else {
+                LOG.info("Unexpected option type. Trying to convert from " + val.getClass().getName() + " to " + type.getName());
+                if (converter != null) {
+                    return converter.convertTo(type, val);
+                } else {
+                    if (val instanceof String) {
+                        try {
+                            Constructor constr = type.getConstructor(String.class);
+                            T converted = (T) constr.newInstance(val.toString());
+                            return converted;
+                        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                            throw new IllegalArgumentException("Unable to convert " + val.getClass().getName() + " to " + type.getName(), e);
+                        }
+                    }
+                    throw new IllegalArgumentException("Unable to convert " + val.getClass().getName() + " to " + type.getName());
+                }
+            }
+        }
+    }
+
+    /**
+     * Take the command template and substitute it with the user specified options.
      * The options are those that begin with 'arg.'
      * The template is a Groovy GString.
      *
@@ -145,7 +180,7 @@ public class ExecutableService {
      * @param options
      * @return
      */
-    protected String expandCommand(String cmdTemplate, Map<String,Object> options) {
+    protected String expandCommand(String cmdTemplate, Map<String, Object> options) {
         Map<String, Object> args = new LinkedHashMap<>();
         // Inject magical variables that are used to define locations of inputs and outputs.
         // For execution these are set to the empty string.
@@ -229,8 +264,7 @@ public class ExecutableService {
     }
 
     /**
-     *
-     * @param props The Properties object from which to read the metrics keys and values
+     * @param props                The Properties object from which to read the metrics keys and values
      * @param executionTimeSeconds
      * @return The custom status message, if one is specified using the key __StatusMessage__
      */

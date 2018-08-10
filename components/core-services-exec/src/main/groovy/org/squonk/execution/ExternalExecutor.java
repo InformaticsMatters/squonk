@@ -15,6 +15,7 @@
  */
 package org.squonk.execution;
 
+import org.apache.camel.CamelContext;
 import org.squonk.api.VariableHandler;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.DockerServiceDescriptor;
@@ -22,21 +23,24 @@ import org.squonk.core.NextflowServiceDescriptor;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.runners.ContainerRunner;
 import org.squonk.execution.runners.DockerRunner;
+import org.squonk.execution.steps.ExternallyExecutableStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.execution.steps.impl.AbstractDatasetStandardStep;
 import org.squonk.execution.variable.impl.FilesystemReadContext;
 import org.squonk.execution.variable.impl.FilesystemWriteContext;
 import org.squonk.io.IODescriptor;
-import org.squonk.io.InputStreamDataSource;
 import org.squonk.io.SquonkDataSource;
 import org.squonk.io.StringDataSource;
 import org.squonk.jobdef.ExternalJobDefinition;
 import org.squonk.jobdef.JobStatus;
 import org.squonk.jobdef.JobStatus.Status;
+import org.squonk.types.DefaultHandler;
 import org.squonk.types.StreamType;
-import org.squonk.types.TypeResolver;
 import org.squonk.util.IOUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +61,6 @@ import java.util.logging.Logger;
 public class ExternalExecutor extends ExecutableService {
 
     private static final Logger LOG = Logger.getLogger(ExternalExecutor.class.getName());
-    private static final TypeResolver typeResolver = TypeResolver.getInstance();
 
     private static final String NEXTFLOW_IMAGE = IOUtils.
             getConfiguration("SQUONK_NEXTFLOW_IMAGE",
@@ -68,82 +71,32 @@ public class ExternalExecutor extends ExecutableService {
 
     private final ExternalJobDefinition jobDefinition;
     private final ExecutorCallback callback;
-    private final LinkedHashMap<String, SquonkDataSource> data = new LinkedHashMap<>();
+    private final Map<String, Object> data;
+    private final CamelContext camelContext;
     private final Map<String, Object> results = new LinkedHashMap<>();
 
     private ContainerRunner runner;
     protected Status status;
 
-    public ExternalExecutor(ExternalJobDefinition jobDefinition, ExecutorCallback callback) {
+    public ExternalExecutor(ExternalJobDefinition jobDefinition,  Map<String, Object> data, CamelContext camelContext, ExecutorCallback callback) {
         super(jobDefinition.getJobId(), jobDefinition.getOptions());
         this.jobDefinition = jobDefinition;
+        this.data = data;
+        this.camelContext = camelContext;
         this.callback = callback;
+    }
+
+    /** used in testing */
+    public ExternalExecutor(ExternalJobDefinition jobDefinition,  Map<String, Object> data) {
+        super(jobDefinition.getJobId(), jobDefinition.getOptions());
+        this.jobDefinition = jobDefinition;
+        this.data = data;
+        this.camelContext = null;
+        this.callback = null;
     }
 
     public ServiceDescriptor getServiceDescriptor() {
         return jobDefinition.getServiceDescriptor();
-    }
-
-    /**
-     * Add the data to be executed. The name property must match the name in the IODescriptor for an input (in the case
-     * of a value being comprised of a single input, or must start with the name from the IODescriptor followed by
-     * and underscore followed by the identifier for the sub type in the case of datasets being comprised of multiple
-     * inputs.
-     *
-     * @param name Must match the name of an IODescriptor for an input
-     * @param data The data to add
-     */
-    public void addDataAsDataSource(String name, SquonkDataSource data) {
-        LOG.fine("Adding input to executor: " + name);
-        this.data.put(name, data);
-    }
-
-    /**
-     *
-     * @param name Must match the name of an IODescriptor for an input
-     * @param mediaType The content type of the input
-     * @param data An Input Stream to the data
-     * @param gzipped Whether the data is gzipped
-     */
-    public void addDataAsInputStream(String name, String mediaType, InputStream data, Boolean gzipped) {
-        LOG.fine("Adding input to executor: " + name);
-        this.data.put(name, new InputStreamDataSource(name, mediaType, data, gzipped));
-    }
-
-    /**
-     * Add the data to be executed.
-     *
-     * @param name  Must match the name of an IODescriptor for an input
-     * @param value The value to add, probably an instance of @{link StreamType}. e.g. DataSet or SDFile
-     */
-    public void addDataAsObject(String name, Object value) throws IOException {
-        if (name == null) {
-            throw new NullPointerException("Name cannot be null");
-        }
-        if (value == null) {
-            LOG.warning("Adding null data value. This should be avoided");
-            return;
-        }
-        if (value instanceof StreamType) {
-            StreamType streamType = (StreamType) value;
-            SquonkDataSource[] outputs = streamType.getDataSources();
-            if (outputs.length == 1) {
-                // single output - we can just use the name from the IOD
-                addDataAsDataSource(name, outputs[0]);
-            } else {
-                // multiple outputs - we need to append the name to the one from the IOD
-                for (int i = 0; i < outputs.length; i++) {
-                    if (outputs[i] != null) {
-                        addDataAsDataSource(name + "_" + outputs[i].getName(), outputs[i]);
-                    }
-                }
-            }
-        } else {
-            // hope this never happens, but would at least handle simple types
-            String txt = value.toString();
-            SquonkDataSource ds = new StringDataSource(name, "text/plain", txt, false);
-            data.put(name, ds);
-        }
     }
 
     /**
@@ -197,10 +150,10 @@ public class ExternalExecutor extends ExecutableService {
      */
     public List<SquonkDataSource> getResultsAsDataSources() throws IOException {
         Map<String, Object> objects = getResultsAsObjects();
-        return convertObjectToDataHandlers(objects);
+        return convertObjectToDataSources(objects);
     }
 
-    private static List<SquonkDataSource> convertObjectToDataHandlers(Map<String, Object> objects) throws IOException {
+    private static List<SquonkDataSource> convertObjectToDataSources(Map<String, Object> objects) throws IOException {
         List<SquonkDataSource> inputs = new ArrayList<>();
         for (Map.Entry<String, Object> e : objects.entrySet()) {
             String name = e.getKey();
@@ -267,6 +220,18 @@ public class ExternalExecutor extends ExecutableService {
                 NextflowServiceDescriptor descriptor = (NextflowServiceDescriptor) serviceDescriptor;
                 doExecuteNextflow(descriptor);
                 return;
+            } else if (serviceDescriptor instanceof DefaultServiceDescriptor){
+                String execClsName = serviceDescriptor.getServiceConfig().getExecutorClassName();
+                LOG.info("Executor class name is " + execClsName);
+                Class cls = Class.forName(execClsName);
+                if (ExternallyExecutableStep.class.isAssignableFrom(cls)) {
+                    AbstractDatasetStandardStep step = (AbstractDatasetStandardStep)cls.newInstance();
+                    updateStatus(Status.RUNNING);
+                    Map<String,Object> outputs = step.doExecute(data, options, camelContext == null ? null : camelContext.getTypeConverter());
+                    results.putAll(outputs);
+                    updateStatus(Status.RESULTS_READY);
+                    return;
+                }
             }
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "Failed to execute job", e);
@@ -275,9 +240,8 @@ public class ExternalExecutor extends ExecutableService {
             return;
         }
 
-        throw new IllegalStateException("Expected service descriptor to be a " +
-                DockerServiceDescriptor.class.getName() +
-                "  but it was a " + serviceDescriptor.getClass().getName());
+        throw new IllegalStateException("Unsupported service descriptor type " +
+                serviceDescriptor.getClass().getName());
     }
 
     private void doExecuteNextflow(NextflowServiceDescriptor descriptor) throws Exception {
@@ -473,12 +437,37 @@ public class ExternalExecutor extends ExecutableService {
             ContainerRunner runner,
             IODescriptor<P, Q> iod) throws Exception {
 
-        VariableHandler<P> vh = typeResolver.createVariableHandler(iod.getPrimaryType(), iod.getSecondaryType());
+        VariableHandler<P> vh = DefaultHandler.createVariableHandler(iod.getPrimaryType(), iod.getSecondaryType());
         File dir = runner.getHostWorkDir();
         VariableHandler.ReadContext readContext = new FilesystemReadContext(dir, iod.getName());
         P value = vh.readVariable(readContext);
         results.put(iod.getName(), value);
     }
+
+//    protected void handleInputs(
+//            DefaultServiceDescriptor serviceDescriptor,
+//            ContainerRunner runner) throws Exception {
+//
+//        IODescriptor[] inputDescriptors = serviceDescriptor.resolveInputIODescriptors();
+//        if (inputDescriptors != null) {
+//            LOG.info("Handling " + inputDescriptors.length + " inputs");
+//            for (IODescriptor iod : inputDescriptors) {
+//                LOG.info("Writing input for " + iod.getName() + " " + iod.getMediaType());
+//                Map<String, SquonkDataSource> inputs = new HashMap<>();
+//                data.forEach((name, dataSource) -> {
+//                    if (name.equalsIgnoreCase(iod.getName())) {
+//                        inputs.put(name, dataSource);
+//                    } else if (name.toLowerCase().startsWith(iod.getName().toLowerCase() + "_")) {
+//                        String part = name.substring(iod.getName().length() + 1);
+//                        inputs.put(part, dataSource);
+//                    } else {
+//                        LOG.warning("Unexpected input: " + name);
+//                    }
+//                });
+//                doHandleInput(inputs, runner, iod);
+//            }
+//        }
+//    }
 
     protected void handleInputs(
             DefaultServiceDescriptor serviceDescriptor,
@@ -488,37 +477,46 @@ public class ExternalExecutor extends ExecutableService {
         if (inputDescriptors != null) {
             LOG.info("Handling " + inputDescriptors.length + " inputs");
             for (IODescriptor iod : inputDescriptors) {
-                LOG.info("Writing input for " + iod.getName() + " " + iod.getMediaType());
-                Map<String, SquonkDataSource> inputs = new HashMap<>();
-                data.forEach((name, dataSource) -> {
-                    if (name.equalsIgnoreCase(iod.getName())) {
-                        inputs.put(name, dataSource);
-                    } else if (name.toLowerCase().startsWith(iod.getName().toLowerCase() + "_")) {
-                        String part = name.substring(iod.getName().length() + 1);
-                        inputs.put(part, dataSource);
-                    } else {
-                        LOG.warning("Unexpected input: " + name);
-                    }
-                });
-                doHandleInput(inputs, runner, iod);
+                Object value = data.get(iod.getName());
+                if (value == null) {
+                    LOG.warning("No input found for " + iod.getName());
+                } else {
+                    LOG.info("Writing input for " + iod.getName() + " " + iod.getMediaType());
+                    doHandleInput(value, runner, iod);
+                }
             }
         }
     }
 
+//    protected <P, Q> void doHandleInput(
+//            Map<String, SquonkDataSource> inputs,
+//            ContainerRunner runner,
+//            IODescriptor<P, Q> iod) throws Exception {
+//
+//        LOG.info("Handling input for " + iod.getName() + " with " + inputs.size() + " values");
+//
+//        // TODO - handle type conversion
+//
+//        VariableHandler<P> vh = DefaultHandler.createVariableHandler(iod.getPrimaryType(), iod.getSecondaryType());
+//        P value = vh.create(inputs);
+//        File dir = runner.getHostWorkDir();
+//        FilesystemWriteContext writeContext = new FilesystemWriteContext(dir, iod.getName());
+//        vh.writeVariable(value, writeContext);
+//    }
+
     protected <P, Q> void doHandleInput(
-            Map<String, SquonkDataSource> inputs,
+            P input,
             ContainerRunner runner,
             IODescriptor<P, Q> iod) throws Exception {
 
-        LOG.info("Handling input for " + iod.getName() + " with " + inputs.size() + " values");
+        LOG.info("Handling input for " + iod.getName());
 
         // TODO - handle type conversion
 
-        VariableHandler<P> vh = typeResolver.createVariableHandler(iod.getPrimaryType(), iod.getSecondaryType());
-        P value = vh.create(inputs);
+        VariableHandler<P> vh = DefaultHandler.createVariableHandler(iod.getPrimaryType(), iod.getSecondaryType());
         File dir = runner.getHostWorkDir();
         FilesystemWriteContext writeContext = new FilesystemWriteContext(dir, iod.getName());
-        vh.writeVariable(value, writeContext);
+        vh.writeVariable(input, writeContext);
     }
 
 }
