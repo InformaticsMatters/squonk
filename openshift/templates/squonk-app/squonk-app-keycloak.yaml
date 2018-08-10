@@ -31,13 +31,6 @@ parameters:
 - name: FLYWAY_IMAGE_TAG
   value: latest
 
-# ---------
-# SD Poster (Service Descriptor Poster)
-# ---------
-
-- name: SD_POSTER_IMAGE_TAG
-  value: latest
-
 # ------
 # Portal
 # ------
