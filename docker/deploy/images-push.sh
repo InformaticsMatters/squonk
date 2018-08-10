@@ -13,10 +13,11 @@ docker push squonk/chemservices-basic:$1
 docker push squonk/coreservices:$1
 docker push squonk/cellexecutor:$1
 docker push squonk/jobexecutor:$1
+docker push squonk/jobexecutor-keycloak:$1
 docker push squonk/flyway:$1
 
 docker push squonk/chemcentral-search:$1
 docker push squonk/chemcentral-loader:$1
 
-docker push squonk/portal:latest
-docker push squonk/xwiki:latest
+docker push squonk/portal:$1
+docker push squonk/xwiki:$1
