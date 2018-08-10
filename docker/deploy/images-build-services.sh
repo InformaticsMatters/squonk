@@ -17,7 +17,7 @@ cd ../../components
 cd $base/images
 
 echo "building squonk/portal:${TAG} docker image ..."
-docker build -f Dockerfile-jobexecutor -t squonk/jobexecutor-keycloak:${TAG} .
+docker build --build-arg JOBEXECUTOR_TAG=${TAG} -f Dockerfile-jobexecutor -t squonk/jobexecutor-keycloak:${TAG} .
 
 cd $base
 

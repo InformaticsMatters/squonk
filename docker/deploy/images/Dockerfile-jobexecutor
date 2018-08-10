@@ -1,4 +1,5 @@
-FROM squonk/jobexecutor:latest
+ARG JOBEXECUTOR_TAG=latest
+FROM squonk/jobexecutor:${JOBEXECUTOR_TAG}
 LABEL maintainer="Tim Dudgeon<tdudgeon@informaticsmatters.com>"
 
 USER 0:0
