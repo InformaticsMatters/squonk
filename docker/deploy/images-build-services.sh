@@ -8,13 +8,16 @@ set -e
 
 base=$PWD
 
+TAG=$(./images-get-tag.sh)
+
 cd ../../components
 
 ./gradlew common:assemble common:publish dockerBuildImages
 
 cd $base/images
 
-docker build -f Dockerfile-jobexecutor -t squonk/jobexecutor-keycloak:latest .
+echo "building squonk/portal:${TAG} docker image ..."
+docker build -f Dockerfile-jobexecutor -t squonk/jobexecutor-keycloak:${TAG} .
 
 cd $base
 
