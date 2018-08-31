@@ -3,10 +3,12 @@
 # Some Job API usage examples
 # (automated/simplified with the use of 'jq')
 #
-# You can enable the unauthenticated user by defining the environment variable
+# You must enable the unauthenticated user and prevent sending status updates
+# by defining tomcat with these environment variables:
 # `SQUONK_JOBEXECUTOR_ALLOW_UNAUTHENTICATED=true`
+# `SQUONK_JOBEXECUTOR_SEND_STATUS_UPDATES=false`
 #
-# You can start the server with the tomcatRunWar task from the jo-executor
+# You can start the server with the tomcatRunWar task from the job-executor
 # directory. That task blocks.
 
 # Run a couple of jobs...
@@ -16,7 +18,7 @@ curl -X POST \
   -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf.gz;type=chemical/x-mdl-sdfile;filename=input"\
   -H "Content-Type: multipart/mixed"\
   -H "SquonkUsername: user1"\
-  http://localhost:8888/jobexecutor/rest/v1/jobs
+  http://localhost:8888/jobexecutor/rest/v1/jobs/submit-async
 
 curl -X POST \
   -F "ExecutionParameters=@ExecutionParametersDataset.json;type=application/json;filename=ExecutionParameters.json"\
@@ -24,7 +26,7 @@ curl -X POST \
   -F "input_metadata=@../../../../data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
   -H "Content-Type: multipart/mixed"\
   -H "SquonkUsername: user1"\
-  http://localhost:8888/jobexecutor/rest/v1/jobs
+  http://localhost:8888/jobexecutor/rest/v1/jobs/submit-async
 
 
 curl -X POST \
@@ -33,7 +35,7 @@ curl -X POST \
   -F "input_metadata=@../../../../data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
   -H "Content-Type: multipart/mixed"\
   -H "SquonkUsername: user1"\
-  http://localhost:8888/jobexecutor/rest/v1/jobs
+  http://localhost:8888/jobexecutor/rest/v1/jobs/submit-async
 
 
 sleep 2
@@ -66,7 +68,7 @@ NF_JOB_ID=$(curl -X POST \
   -F "ExecutionParameters=@NextflowExecutionParametersDataset.json;type=application/json;filename=NextflowExecutionParametersDataset.json"\
   -F "input_data=@../../../../data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
   -H "Content-Type: multipart/mixed"\
-  http://localhost:8888/jobexecutor/rest/v1/jobs 2> /dev/null | jq -r .jobId)
+  http://localhost:8888/jobexecutor/rest/v1/jobs/submit-async 2> /dev/null | jq -r .jobId)
 
 NF_JOB_STATUS=$(curl http://localhost:8888/jobexecutor/rest/v1/jobs/$NF_JOB_ID/status 2> /dev/null | jq -r .status)
 while [ $NF_JOB_STATUS != "RESULTS_READY" ]; do

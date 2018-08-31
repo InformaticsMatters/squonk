@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.squonk.util.ServiceConstants;
 import javax.activation.DataHandler;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
 import java.util.HashMap;
@@ -62,6 +63,15 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+
+        if (ALLOW_UNAUTHENTICATED_USER) {
+            LOG.warning("External Job execution is running without authentication");
+        }
+
+
+        if (jobManager != null) {
+            jobManager.setCamelContext(getContext());
+        }
 
         restConfiguration().component("servlet").host("0.0.0.0");
 
@@ -100,15 +110,28 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 })
                 .endRest()
                 //
-                // submit new job
-                .post("/").description("Submit a new job")
+                // submit new async job
+                .post("/submit-async").description("Submit a new asynchronous job")
                 .bindingMode(RestBindingMode.off)
                 .outType(JobStatus.class)
                 .route()
                 .log("handling Job posting")
                 .unmarshal().mimeMultipart()
                 .process((Exchange exch) -> {
-                    handleJobSubmit(exch);
+                    handleJobSubmitAsync(exch);
+                })
+                .endRest()
+                //
+                // submit new sync job
+                .post("/submit-sync").description("Submit a new synchronous job")
+                .bindingMode(RestBindingMode.off)
+                .produces(CommonMimeTypes.MIME_TYPE_MULTIPART_MIXED)
+                .outType(JobStatus.class)
+                .route()
+                .log("handling Job posting")
+                .unmarshal().mimeMultipart()
+                .process((Exchange exch) -> {
+                    handleJobSubmitSync(exch);
                 })
                 .endRest()
                 //
@@ -189,11 +212,12 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
         return jobStatus;
     }
 
-    private void handleJobSubmit(Exchange exch) {
-        LOG.info("Submitting job");
+    private void handleJobSubmitAsync(Exchange exch) {
+        LOG.info("Submitting async job");
         Message message = exch.getIn();
         try {
-            JobStatus jobStatus = doHandleJobSubmit(exch.getIn());
+            String username = fetchUsername(message);
+            JobStatus jobStatus = doHandleJobSubmit(exch.getIn(), true);
             LOG.info("Job " + jobStatus.getJobId() + " had been submitted");
             String json = JsonHandler.getInstance().objectToJson(jobStatus);
             message.setBody(json);
@@ -204,7 +228,30 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
         }
     }
 
-    private JobStatus doHandleJobSubmit(Message message) throws Exception {
+    private void handleJobSubmitSync(Exchange exch) {
+        LOG.info("Submitting sync job");
+        Message message = exch.getIn();
+        try {
+            String username = fetchUsername(message);
+            LOG.info("Job is being submitted");
+            JobStatus jobStatus = doHandleJobSubmit(exch.getIn(), false);
+            LOG.info("Job " + jobStatus.getJobId() + " had completed with status " + jobStatus.getStatus());
+            String json = JsonHandler.getInstance().objectToJson(jobStatus);
+            message.setBody(json);
+            switch (jobStatus.getStatus()) {
+                case RESULTS_READY:
+                    // get results
+                    doHandleResults(message, username, jobStatus.getJobId());
+            }
+
+        } catch (AuthenticationException e) {
+            handle401Error(message);
+        } catch (Exception e) {
+            handle500Error(message, "Failed to submit job", e);
+        }
+    }
+
+    private JobStatus doHandleJobSubmit(Message message, boolean async) throws Exception {
 
         String body = message.getBody(String.class);
         ExecutionParameters params = JsonHandler.getInstance().objectFromJson(body, ExecutionParameters.class);
@@ -218,9 +265,13 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
             inputs.put(name, input);
             LOG.fine("Added input " + name);
         }
-
-        return jobManager.executeAsync(username, serviceDescriptor, options, inputs);
+        if (async) {
+            return jobManager.executeAsync(username, serviceDescriptor, options, inputs);
+        } else {
+            return jobManager.executeSync(username, serviceDescriptor, options, inputs);
+        }
     }
+
 
     private void handleJobResults(Exchange exch) {
         Message message = exch.getIn();
@@ -241,16 +292,20 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
             String json = JsonHandler.getInstance().objectToJson(jobStatus);
             message.setBody(json);
             message.setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_TEXT_PLAIN);
-            List<SquonkDataSource> dataSources = jobManager.getJobResultsAsDataSources(username, id);
-            LOG.finer("Found " + dataSources.size() + " DataHandlers");
-            for (SquonkDataSource dataSource : dataSources) {
-                LOG.info("Adding attachment " + dataSource.getName() + " of type " + dataSource.getContentType());
-                message.addAttachment(dataSource.getName(), new DataHandler(dataSource));
-            }
+            doHandleResults(message, username, id);
         } catch (AuthenticationException e) {
             handle401Error(message);
         } catch (Exception e) {
             handle500Error(message, "Failed to fetch data", e);
+        }
+    }
+
+    private void doHandleResults(Message message, String username, String jobId) throws IOException {
+        List<SquonkDataSource> dataSources = jobManager.getJobResultsAsDataSources(username, jobId);
+        LOG.finer("Found " + dataSources.size() + " DataHandlers");
+        for (SquonkDataSource dataSource : dataSources) {
+            LOG.info("Adding attachment " + dataSource.getName() + " of type " + dataSource.getContentType());
+            message.addAttachment(dataSource.getName(), new DataHandler(dataSource));
         }
     }
 

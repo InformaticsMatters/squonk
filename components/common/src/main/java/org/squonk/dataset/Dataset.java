@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -268,14 +268,6 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         this.metadata = new DatasetMetadata(type);
     }
 
-    public static String resolveDatasetMimeType(Class type) {
-        return TypeDescriptor.resolveMediaType(Dataset.class, type);
-    }
-
-    public static String resolveContentMimeType(Class type) {
-        return TypeDescriptor.resolveMediaType(type);
-    }
-
     /**
      * Constructor that uses an InputStream for both the data and the metadata
      *
@@ -285,6 +277,14 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
      */
     public Dataset(InputStream data, InputStream metadata) throws IOException {
         this(data, JsonHandler.getInstance().objectFromJson(metadata, DatasetMetadata.class));
+    }
+
+    public static String resolveDatasetMimeType(Class type) {
+        return TypeDescriptor.resolveMediaType(Dataset.class, type);
+    }
+
+    public static String resolveContentMimeType(Class type) {
+        return TypeDescriptor.resolveMediaType(type);
     }
 
     @Override

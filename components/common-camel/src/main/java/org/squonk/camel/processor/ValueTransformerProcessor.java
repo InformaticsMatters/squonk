@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class ValueTransformerProcessor implements Processor {
+public class ValueTransformerProcessor<T extends BasicObject> implements Processor {
 
     private static final Logger LOG = Logger.getLogger(ValueTransformerProcessor.class.getName());
 
@@ -82,14 +82,14 @@ public class ValueTransformerProcessor implements Processor {
      * @param dataset
      * @throws IOException
      */
-    public Dataset<? extends BasicObject> execute(TypeConverter typeConverter, Dataset<BasicObject> dataset) throws IOException {
+    public Dataset<T> execute(TypeConverter typeConverter, Dataset<T> dataset) throws IOException {
 
         DatasetMetadata oldMeta = dataset.getMetadata();
         if (oldMeta != null) {
             hasErrorField = oldMeta.getValueClassMappings().containsKey(errorFieldName);
         }
 
-        Stream<BasicObject> stream = addConversions(typeConverter, dataset);
+        Stream<T> stream = addConversions(typeConverter, dataset);
 
         Class type = dataset.getType();
         for (Conversion conversion : conversions) {
@@ -102,8 +102,8 @@ public class ValueTransformerProcessor implements Processor {
         return newData;
     }
 
-    public Stream<BasicObject> addConversions(TypeConverter typeConverter, Dataset<BasicObject> dataset) throws IOException {
-        Stream<BasicObject> stream = dataset.getStream();
+    public Stream<T> addConversions(TypeConverter typeConverter, Dataset<T> dataset) throws IOException {
+        Stream<T> stream = dataset.getStream();
         DatasetMetadata meta = dataset.getMetadata();
         for (Conversion conversion : conversions) {
             LOG.info("Handling conversion: " + conversion);
@@ -202,7 +202,7 @@ public class ValueTransformerProcessor implements Processor {
 
     private abstract class Conversion {
 
-        abstract Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream);
+        abstract Stream<T> execute(TypeConverter converter, Stream<T> stream);
 
         abstract void updateMetadata(DatasetMetadata meta);
 
@@ -231,7 +231,7 @@ public class ValueTransformerProcessor implements Processor {
         }
 
         @Override
-        Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream) {
+        Stream<T> execute(TypeConverter converter, Stream<T> stream) {
             return stream.peek((o) -> {
                 Object old = o.getValue(fldName);
                 if (old == null) {
@@ -281,7 +281,7 @@ public class ValueTransformerProcessor implements Processor {
         }
 
         @Override
-        public Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream) {
+        public Stream<T> execute(TypeConverter converter, Stream<T> stream) {
 
             return stream.peek((o) -> {
 
@@ -354,7 +354,7 @@ public class ValueTransformerProcessor implements Processor {
         }
 
         @Override
-        public Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream) {
+        public Stream<T> execute(TypeConverter converter, Stream<T> stream) {
 
             return stream.peek((o) -> {
                 Object value = o.getValue(oldName);
@@ -390,7 +390,7 @@ public class ValueTransformerProcessor implements Processor {
         }
 
         @Override
-        public Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream) {
+        public Stream<T> execute(TypeConverter converter, Stream<T> stream) {
 
             if (condition == null) {
                 return stream.peek((o) -> {
@@ -455,7 +455,7 @@ public class ValueTransformerProcessor implements Processor {
 
 
         @Override
-        public Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream) {
+        public Stream<T> execute(TypeConverter converter, Stream<T> stream) {
 
             Consumer c;
             try {
@@ -522,7 +522,7 @@ public class ValueTransformerProcessor implements Processor {
         }
 
         @Override
-        public Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream) {
+        public Stream<T> execute(TypeConverter converter, Stream<T> stream) {
 
             if (field == null) {
                 throw new NullPointerException("Field containing structure must be specified");
@@ -531,12 +531,14 @@ public class ValueTransformerProcessor implements Processor {
                 throw new NullPointerException("Structure format must be specified");
             }
 
-            return stream.map((o) -> {
+            Stream<MoleculeObject> results =  stream.map((o) -> {
                 Object mol = o.getValue(field);
                 MoleculeObject mo = new MoleculeObject(o.getUUID(), mol == null ? null : mol.toString(), format, o.getValues());
                 mo.getValues().remove(field);
                 return mo;
             });
+
+            return (Stream<T>)results;
         }
 
         @Override
@@ -573,7 +575,7 @@ public class ValueTransformerProcessor implements Processor {
         }
 
         @Override
-        public Stream<BasicObject> execute(TypeConverter converter, Stream<BasicObject> stream) {
+        public Stream<T> execute(TypeConverter converter, Stream<T> stream) {
             Predicate p;
             try {
                 p = createPredicate();

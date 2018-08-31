@@ -29,7 +29,7 @@ public abstract class AbstractStandardStep extends AbstractStep {
 
     protected IODescriptor[] inputs;
     protected IODescriptor[] outputs;
-
+    protected ServiceDescriptor serviceDescriptor;
 
     @Override
     public IODescriptor[] getInputs() {
@@ -68,6 +68,13 @@ public abstract class AbstractStandardStep extends AbstractStep {
             Map<String, VariableKey> inputVariableMappings,
             Map<String, String> outputVariableMappings,
             ServiceDescriptor serviceDescriptor) {
-        throw new IllegalStateException(this.getClass().getCanonicalName() + " does not support ServiceDescriptors");
+        this.outputProducerId = outputProducerId;
+        this.jobId = jobId;
+        this.options = options;
+        this.inputs = serviceDescriptor.getServiceConfig().getInputDescriptors();
+        this.outputs = serviceDescriptor.getServiceConfig().getOutputDescriptors();
+        this.inputVariableMappings.putAll(inputVariableMappings);
+        this.outputVariableMappings.putAll(outputVariableMappings);
+        this.serviceDescriptor = serviceDescriptor;
     }
 }

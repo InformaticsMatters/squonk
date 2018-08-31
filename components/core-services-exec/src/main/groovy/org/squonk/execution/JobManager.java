@@ -15,23 +15,24 @@
  */
 package org.squonk.execution;
 
+import org.apache.camel.CamelContext;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.client.JobStatusRestClient;
-import org.squonk.io.InputStreamDataSource;
+import org.squonk.io.IODescriptor;
 import org.squonk.io.SquonkDataSource;
 import org.squonk.jobdef.ExternalJobDefinition;
 import org.squonk.jobdef.JobStatus;
 import org.squonk.jobdef.JobStatus.Status;
+import org.squonk.types.DefaultHandler;
+import org.squonk.util.IOUtils;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /** Class that manages execution of jobs.
  * Currently this is a prototype for a new type of execution.
@@ -46,19 +47,33 @@ public class JobManager implements ExecutorCallback {
 
     private static final Logger LOG = Logger.getLogger(JobManager.class.getName());
 
+
     @Inject
     protected JobStatusRestClient jobstatusClient;
 
-    protected boolean sendStatus = true;
+    // probably should inject this
+    private CamelContext camelContext;
+
+    protected boolean sendStatus = Boolean.valueOf(
+            IOUtils.getConfiguration("SQUONK_JOBEXECUTOR_SEND_STATUS_UPDATES", "true"));
 
 
     private final Map<String, ExecutionData> executionDataMap = new LinkedHashMap<>();
+
+
+    public CamelContext getCamelContext() {
+        return camelContext;
+    }
+
+    public void setCamelContext(CamelContext camelContext) {
+        this.camelContext = camelContext;
+    }
 
     /** Lookup the ExecutionData instance for the job with this ID and check that it belongs to the username
      *
      * @param username
      * @param jobId
-     * @return The ExecutionData if it exists and is owned by the usr, or if not then null
+     * @return The ExecutionData if it exists and is owned by the user, or if not then null
      */
     private ExecutionData findMyExecutionData(String username, String jobId) {
         ExecutionData executionData = executionDataMap.get(jobId);
@@ -120,18 +135,16 @@ public class JobManager implements ExecutorCallback {
         ExternalJobDefinition jobDefinition = new ExternalJobDefinition(serviceDescriptor, options);
         LOG.info("Created JobDefinition with ID " + jobDefinition.getJobId());
 
-        ExternalExecutor executor = new ExternalExecutor(jobDefinition, this);
+        Map<String,Object> data = createObjectsFromInputStreams(inputs, serviceDescriptor.resolveInputIODescriptors());
+        LOG.info("Handling " + data.size() + " inputs");
+
+        ExternalExecutor executor = new ExternalExecutor(jobDefinition, data, camelContext, this);
         LOG.fine("Executor job ID is " + executor.getJobId());
         JobStatus jobStatus = createJob(jobDefinition, username, 0);
         ExecutionData executionData = new ExecutionData();
         executionData.executor = executor;
         executionData.jobStatus = jobStatus;
         executionDataMap.put(executor.getJobId(), executionData);
-
-        for (Map.Entry<String, InputStream> e : inputs.entrySet()) {
-            SquonkDataSource ds = new InputStreamDataSource(e.getKey(), null, e.getValue(), null);
-            executor.addDataAsDataSource(e.getKey(), ds);
-        }
 
         if (async) {
             // TODO - handle with a thread pool or work queue?
@@ -151,6 +164,45 @@ public class JobManager implements ExecutorCallback {
         }
         jobStatus = updateStatus(executor.getJobId(), Status.RUNNING);
         return jobStatus;
+    }
+
+    protected Map<String,Object> createObjectsFromInputStreams(Map<String, InputStream> inputs, IODescriptor[] ioDescriptors) throws Exception {
+        Map<String,Object> results = new HashMap<>();
+        Map<IODescriptor,Map<String,InputStream>> intermediates = new HashMap<>();
+        Set<String> keys = new HashSet<>(inputs.keySet());
+        for (Map.Entry<String, InputStream> e : inputs.entrySet()) {
+            String name = e.getKey();
+            InputStream is = e.getValue();
+            for(IODescriptor iod: ioDescriptors) {
+                if (iod.getName().equalsIgnoreCase(name)) {
+                    // exact match - an object that has a single InputStream
+                    Object value = DefaultHandler.buildObject(iod, Collections.singletonMap(name, is));
+                    results.put(name, value);
+                    keys.remove(name);
+                } else if (name.toLowerCase().startsWith(iod.getName() + "_")) {
+                    // object using mulitple InputStream parts
+                    // each one will be named like <name-from-iodescriptor>_<part-name>
+                    Map<String,InputStream> map = intermediates.get(iod);
+                    if (map == null) {
+                        map = new HashMap<>();
+                        intermediates.put(iod, map);
+                    }
+                    String partName = name.substring((iod.getName() + "_").length());
+                    map.put(partName, is);
+                    keys.remove(name);
+                }
+            }
+        }
+        for (Map.Entry<IODescriptor,Map<String,InputStream>> intermediate: intermediates.entrySet()) {
+            IODescriptor iod = intermediate.getKey();
+            Map<String,InputStream> values = intermediate.getValue();
+            Object value = DefaultHandler.buildObject(iod, values);
+            results.put(iod.getName(), value);
+        }
+        if (keys.size() > 0) {
+            LOG.warning("Unrecognised names in input: " + keys.stream().collect(Collectors.joining(",")));
+        }
+        return results;
     }
 
     /** Get all the current jobs for the specified user.

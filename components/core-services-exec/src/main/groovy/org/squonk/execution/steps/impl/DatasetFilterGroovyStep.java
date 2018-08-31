@@ -16,15 +16,14 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.squonk.types.BasicObject;
 import groovy.lang.GroovyClassLoader;
-import org.apache.camel.CamelContext;
+import org.apache.camel.TypeConverter;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
+import org.squonk.types.BasicObject;
 
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -32,18 +31,15 @@ import java.util.stream.Stream;
 /**
  * Created by timbo on 29/12/15.
  */
-public class DatasetFilterGroovyStep extends AbstractStandardStep {
+public class DatasetFilterGroovyStep<P extends BasicObject> extends AbstractDatasetStandardStep<P,P> {
 
     private static final Logger LOG = Logger.getLogger(DatasetFilterGroovyStep.class.getName());
 
     public static final String OPTION_SCRIPT = StepDefinitionConstants.TrustedGroovyDataset.OPTION_SCRIPT;
 
-    @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
+    protected Dataset<P> doExecute(Dataset<P> input, Map<String,Object> options, TypeConverter converter) throws Exception {
 
-        statusMessage = MSG_PREPARING_INPUT;
-        Dataset input = fetchMappedInput("input", Dataset.class, null, varman, true);
-        String script = getOption(OPTION_SCRIPT, String.class);
+        String script = getOption(options, OPTION_SCRIPT, String.class, converter);
         if (script == null) {
             throw new IllegalStateException("Script not defined. Should be present as option named " + OPTION_SCRIPT);
         }
@@ -56,14 +52,13 @@ public class DatasetFilterGroovyStep extends AbstractStandardStep {
         Predicate predicate = cls.newInstance();
         statusMessage = "Filtering ...";
         Stream output = input.getStream().filter(predicate);
-        Dataset results = new Dataset(output, deriveOutputDatasetMetadata(input.getMetadata()));
-
-        createMappedOutput("output", Dataset.class, results, varman);
+        Dataset<P> results = new Dataset(output, deriveOutputDatasetMetadata(input.getMetadata()));
         statusMessage = generateStatusMessage(input.getSize(), results.getSize(), -1);
-        LOG.info("Results: " + results.getMetadata());;
+        return results;
     }
 
-    protected DatasetMetadata deriveOutputDatasetMetadata(DatasetMetadata input) {
+
+    protected DatasetMetadata<P> deriveOutputDatasetMetadata(DatasetMetadata<P> input) {
         if (input == null) {
             return new DatasetMetadata(BasicObject.class);
         } else {

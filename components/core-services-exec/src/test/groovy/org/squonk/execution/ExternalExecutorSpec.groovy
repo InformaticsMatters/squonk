@@ -1,11 +1,27 @@
+/*
+ * Copyright (c) 2018 Informatics Matters Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.squonk.execution
 
 import org.squonk.core.DockerServiceDescriptor
+import org.squonk.core.ServiceDescriptor
 import org.squonk.dataset.Dataset
 import org.squonk.execution.runners.DockerRunner
-import org.squonk.io.FileDataSource
+import org.squonk.execution.steps.StepDefinitionConstants
+import org.squonk.execution.steps.impl.DatasetSelectSliceStep
 import org.squonk.io.IODescriptor
-import org.squonk.io.StringDataSource
 import org.squonk.jobdef.ExternalJobDefinition
 import org.squonk.jobdef.JobStatus
 import org.squonk.types.BasicObject
@@ -26,10 +42,10 @@ class ExternalExecutorSpec extends Specification {
         def inputiods = [new IODescriptor("input", CommonMimeTypes.MIME_TYPE_MDL_SDF, SDFile.class)] as IODescriptor[]
         DockerServiceDescriptor sd = new DockerServiceDescriptor(uuid, "name", inputiods, null)
         DockerRunner runner = new DockerRunner("busybox", "/tmp",uuid)
+        def data = ["input": new SDFile(new File("../../data/testfiles/Kinase_inhibs.sdf.gz"), true)]
 
         when:
-        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)
-        exec.addDataAsInputStream("input", "text/plain", new ByteArrayInputStream("Hello World!".bytes), false)
+        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), data)
         exec.handleInputs(sd, runner)
 
         then:
@@ -51,11 +67,13 @@ class ExternalExecutorSpec extends Specification {
         ] as IODescriptor[]
         DockerServiceDescriptor sd = new DockerServiceDescriptor(uuid, "name", inputiods, null)
         DockerRunner runner = new DockerRunner("busybox", "/tmp", uuid)
+        def data = [
+                "input1": new SDFile(new ByteArrayInputStream("Hello World!".bytes), false),
+                "input2": new SDFile(new ByteArrayInputStream("Goodbye World!".bytes), false)
+        ]
 
         when:
-        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)
-        exec.addDataAsInputStream("input1", "text/plain", new ByteArrayInputStream("Hello World!".bytes), false)
-        exec.addDataAsInputStream("input2", "text/plain", new ByteArrayInputStream("Goodbye World!".bytes), false)
+        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), data)
         exec.handleInputs(sd, runner)
 
         then:
@@ -77,12 +95,14 @@ class ExternalExecutorSpec extends Specification {
         ] as IODescriptor[]
         DockerServiceDescriptor sd = new DockerServiceDescriptor(uuid, "name", inputiods, null)
         DockerRunner runner = new DockerRunner("busybox", "/tmp", uuid)
+        Dataset ds = new Dataset(
+                new FileInputStream("../../data/testfiles/Kinase_inhibs.json.gz"),
+                new FileInputStream("../../data/testfiles/Kinase_inhibs.metadata"))
+        SDFile sdf = new SDFile(new ByteArrayInputStream("Goodbye World!".bytes), false)
+        def data = ["dataset": ds, "sdfile": sdf]
 
         when:
-        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)
-        exec.addDataAsInputStream("dataset_metadata", null, new FileInputStream("../../data/testfiles/Kinase_inhibs.metadata"), false)
-        exec.addDataAsInputStream("dataset_data", null, new FileInputStream("../../data/testfiles/Kinase_inhibs.json.gz"), true)
-        exec.addDataAsInputStream("sdfile", null, new ByteArrayInputStream("Goodbye World!".bytes), false)
+        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), data)
         exec.handleInputs(sd, runner)
 
         then:
@@ -107,7 +127,7 @@ class ExternalExecutorSpec extends Specification {
         DockerRunner runner = new DockerRunner("busybox", "/tmp", uuid)
 
         when:
-        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)
+        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), [:])
         exec.handleOutputs(sd, runner)
         exec.status = JobStatus.Status.RESULTS_READY
         def results = exec.getResultsAsObjects()
@@ -138,7 +158,7 @@ class ExternalExecutorSpec extends Specification {
         DockerRunner runner = new DockerRunner("busybox", "/tmp", uuid)
 
         when:
-        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), null)
+        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), [:])
         exec.handleOutputs(sd, runner)
         exec.status = JobStatus.Status.RESULTS_READY
         def results = exec.getResultsAsObjects()
@@ -149,6 +169,29 @@ class ExternalExecutorSpec extends Specification {
 
         cleanup:
         dir.deleteDir()
+    }
+
+    void "AbstractDatasetStep"() {
+
+        ServiceDescriptor sd = DatasetSelectSliceStep.SERVICE_DESCRIPTOR
+        Dataset ds = new Dataset(
+                new FileInputStream("../../data/testfiles/Kinase_inhibs.json.gz"),
+                new FileInputStream("../../data/testfiles/Kinase_inhibs.metadata"))
+        def options = [
+                (StepDefinitionConstants.DatasetSelectSlice.OPTION_SKIP): 5,
+                (StepDefinitionConstants.DatasetSelectSlice.OPTION_COUNT): 10
+        ]
+
+        when:
+        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, options), ['input':ds])
+        exec.execute()
+        def results = exec.getResultsAsObjects()
+
+        then:
+        results.size() == 1
+        Dataset ds2 = results.values().iterator().next()
+        ds2.items.size() == 10
+
     }
 
 }

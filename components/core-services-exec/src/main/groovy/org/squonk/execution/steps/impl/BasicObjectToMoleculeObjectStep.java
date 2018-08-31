@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.squonk.execution.steps.impl;
 
+import org.apache.camel.TypeConverter;
 import org.squonk.types.BasicObject;
 import org.squonk.types.TypesUtils;
 import org.squonk.execution.steps.AbstractStandardStep;
@@ -24,6 +25,7 @@ import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,7 +51,7 @@ import org.apache.camel.CamelContext;
  *
  * @author timbo
  */
-public class BasicObjectToMoleculeObjectStep extends AbstractStandardStep {
+public class BasicObjectToMoleculeObjectStep extends AbstractDatasetStandardStep<BasicObject, MoleculeObject> {
 
     private static final Logger LOG = Logger.getLogger(BasicObjectToMoleculeObjectStep.class.getName());
 
@@ -59,26 +61,18 @@ public class BasicObjectToMoleculeObjectStep extends AbstractStandardStep {
 
     public static String DEFAULT_STRUCTURE_FIELD_NAME = "structure";
 
-    @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-        statusMessage = MSG_PREPARING_INPUT;
-        String structureFieldName = getOption(OPTION_STRUCTURE_FIELD_NAME, String.class, DEFAULT_STRUCTURE_FIELD_NAME);
-        String structureFormat = getOption(OPTION_STRUCTURE_FORMAT, String.class);
-        boolean preserveUuid = getOption(OPTION_PRESERVE_UUID, Boolean.class, true);
 
-        Dataset<BasicObject> input = fetchMappedInput("input", Dataset.class, varman);
-        if (input == null) {
-            throw new IllegalStateException("No input found");
-        } else if (LOG.isLoggable(Level.FINE) && input.getMetadata() != null) {
-            LOG.fine("Input has " + input.getSize() + " items");
-        }
+    @Override
+    protected Dataset<MoleculeObject> doExecute(Dataset<BasicObject> input, Map<String,Object> options, TypeConverter converter) throws Exception {
+
+        String structureFieldName = getOption(options, OPTION_STRUCTURE_FIELD_NAME, String.class, converter, DEFAULT_STRUCTURE_FIELD_NAME);
+        String structureFormat = getOption(options, OPTION_STRUCTURE_FORMAT, String.class, converter);
+        boolean preserveUuid = getOption(options, OPTION_PRESERVE_UUID, Boolean.class, converter, true);
 
         statusMessage = "Applying conversions ...";
         Dataset<MoleculeObject> results = TypesUtils.convertBasicObjectDatasetToMoleculeObjectDataset(input, structureFieldName, structureFormat, preserveUuid);
 
-        createMappedOutput("output", Dataset.class, results, varman);
-        statusMessage = generateStatusMessage(input.getSize(), results.getSize(), -1);
-        LOG.info("Results: " + results.getMetadata());
+        return results;
     }
 
 }
