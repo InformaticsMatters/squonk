@@ -1,0 +1,29 @@
+---
+
+# Preparation and project creation for Squonk.
+
+- name: Login (admin)
+  shell: oc login {{ oc_master_hostname }} -u admin -p {{ admin_password }}
+
+# Squonk Infrastructure Project
+
+- name: Check the Squonk Project
+  shell: oc get projects
+  register: projects_result
+
+- name: Create the Squonk Project
+  shell: >
+    oc new-project {{ oc_project }}
+    --display-name='Squonk Applications'
+  when: oc_project not in projects_result.stdout
+
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
+
+# Prepare roles and service accounts
+
+- name: Prepare Roles and Service Accounts
+  shell: "{{ item }}"
+  loop:
+  - oc adm policy add-role-to-user edit {{ oc_user }}
+  - oc adm policy add-cluster-role-to-user cluster-admin -z default

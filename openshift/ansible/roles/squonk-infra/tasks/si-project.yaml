@@ -1,0 +1,34 @@
+---
+
+# Preparation and project creation for the Squonk Infrastructure.
+
+- name: Login (admin)
+  shell: oc login {{ oc_master_hostname }} -u admin -p {{ admin_password }}
+
+- name: Add cluster-admin role to admin
+  shell: oc adm policy add-cluster-role-to-user cluster-admin admin
+
+# Keycloak ImageStream
+
+- name: Check Keycloak Image Stream
+  shell: oc get is -n openshift
+  register: k_is_result
+
+- name: Deploy Keycloak Image Stream
+  shell: >
+    oc create
+    -f https://raw.githubusercontent.com/jboss-openshift/application-templates/master/sso/sso72-image-stream.json
+    -n openshift
+  when: '"redhat-sso72-openshift" not in k_is_result.stdout'
+
+# Squonk Infrastructure Project
+
+- name: Check the Infrastructure Project
+  shell: oc get projects
+  register: projects_result
+
+- name: Create the Infrastructure Project
+  shell: >
+    oc new-project {{ oc_infra_project }}
+    --display-name='Squonk Infrastructure'
+  when: oc_infra_project not in projects_result.stdout

@@ -1,0 +1,81 @@
+---
+
+# With infrastructure deployed and initialised
+# we can now continue with Squonk deployment...
+
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
+
+- name: Login as The Squonk User
+  shell: oc login {{ oc_master_hostname }} -u {{ oc_user }} -p {{ oc_user_password }}
+
+# Deploy...
+
+- name: Check Squonk
+  shell: oc get dc
+  register: dc_result
+
+- name: Deploy Squonk
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-app-keycloak.yaml
+    -p SQUONK_HOST={{ oc_squonk_host}}
+    -p APP_NAMESPACE={{ oc_project }}
+    -p LOGOUT_REDIRECT_TO={{ keycloak_logout_redirect_to }}
+    -p FLYWAY_IMAGE_TAG={{ oc_squonk_image_tag }}
+    -p PORTAL_IMAGE_TAG={{ oc_squonk_image_tag }}
+    -p CHEM_IMAGE_TAG={{ oc_squonk_image_tag }}
+    -p CORE_IMAGE_TAG={{ oc_squonk_image_tag }}
+    -p CELL_IMAGE_TAG={{ oc_squonk_image_tag }}
+    -p JE_IMAGE_TAG={{ oc_squonk_image_tag }}
+    | oc create -f -
+  when: '"coreservices" not in dc_result.stdout'
+
+# Wait for running pods
+# We expect (roughly in order of coming online)...
+#
+#   jobexecutor
+#   cellexecutor
+#   coreservices
+#   portal
+#   chemservices-basic
+
+- name: Wait for Job Executor
+  shell: oc get po | grep jobe | grep -v deploy | grep 1/1 > /dev/null
+  retries: 15
+  delay: 20
+  register: result
+  until: result.rc == 0
+  when: wait_for_pods
+
+- name: Wait for Cell Executor
+  shell: oc get po | grep cell | grep -v deploy | grep 1/1 > /dev/null
+  retries: 15
+  delay: 20
+  register: result
+  until: result.rc == 0
+  when: wait_for_pods
+
+- name: Wait for Core Services
+  shell: oc get po | grep core | grep -v deploy | grep 1/1 > /dev/null
+  retries: 15
+  delay: 20
+  register: result
+  until: result.rc == 0
+  when: wait_for_pods
+
+- name: Wait for Portal
+  shell: oc get po | grep port | grep -v deploy | grep 1/1 > /dev/null
+  retries: 15
+  delay: 20
+  register: result
+  until: result.rc == 0
+  when: wait_for_pods
+
+- name: Wait for Chem Services
+  shell: oc get po | grep chem | grep -v deploy | grep 1/1 > /dev/null
+  retries: 15
+  delay: 20
+  register: result
+  until: result.rc == 0
+  when: wait_for_pods

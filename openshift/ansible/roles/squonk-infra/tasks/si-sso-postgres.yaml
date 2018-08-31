@@ -1,0 +1,36 @@
+---
+
+- name: Move to Squonk Infrastructure Project
+  shell: oc project {{ oc_infra_project }}
+
+- name: Check SSO Deployment
+  shell: oc get dc
+  register: sso_dc_result
+
+- name: Check SSO Deployment
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/squonk-infra/sso-postgres.yaml
+    -p SSO_REALM={{ keycloak_realm }}
+    -p POSTGRESQL_SHARED_BUFFERS={{ postgresql_shared_buffer_size }}
+    -p HOSTNAME_HTTPS=sso.{{ oc_routes_basename }}
+    | oc create -f -
+  when: '"db-postgresql" not in sso_dc_result.stdout'
+
+# Wait for running pods
+
+- name: Wait for SSO
+  shell: oc get po | grep sso | grep -v deploy | grep 1/1 > /dev/null
+  retries: 15
+  delay: 20
+  register: result
+  until: result.rc == 0
+  when: wait_for_pods
+
+- name: Wait for PostgreSQL
+  shell: oc get po | grep db-postgresql | grep -v deploy | grep 1/1 > /dev/null
+  retries: 15
+  delay: 20
+  register: result
+  until: result.rc == 0
+  when: wait_for_pods

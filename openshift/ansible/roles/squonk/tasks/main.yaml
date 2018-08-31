@@ -1,0 +1,8 @@
+---
+
+# Just run these plays...
+
+- import_tasks: s-project.yaml
+- import_tasks: s-pv-pvc.yaml
+- import_tasks: s-infra-init.yaml
+- import_tasks: s-app-keycloak.yaml

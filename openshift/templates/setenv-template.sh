@@ -35,6 +35,9 @@ export OC_NFS_PATH=/exports
 # If you don't have a working copy this should be blank.
 export SQUONK_PIPELINES_PATH=../../../pipelines
 
+# Don't really like the NoCows stuff in ansible...
+export ANSIBLE_NOCOWS=1
+
 echo "OC_PROJECT set to '$OC_PROJECT'"
 echo "OC_INFRA_PROJECT set to '$OC_INFRA_PROJECT'"
 echo "OC_MASTER_HOSTNAME set to '$OC_MASTER_HOSTNAME'"

@@ -13,8 +13,10 @@
 **/derby.log
 **/*~
 **/.DS_Store
+**/*.retry
 
 openshift/jenkins/setenv.sh
+openshift/ansible/vault-pass.txt
 
 data/licenses/*
 data/testfiles/emols_order*
