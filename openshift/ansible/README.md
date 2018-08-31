@@ -1,8 +1,16 @@
 # Squonk Ansible OpenShift Deployment
-Run the playbook with the command: -
+If you provide the vault password in the file `vault-pass.txt`
+you can run the playbook from this directory with the command: -
 
     ansible-playbook -i localhost, \
         --vault-password-file vault-pass.txt \
+        site.yaml
+
+Alternatively, you can provide the vault password on the
+command-line like this...
+
+    ansible-playbook -i localhost, \
+        --ask-vault-pass \
         site.yaml
 
 ## Prerequisites
