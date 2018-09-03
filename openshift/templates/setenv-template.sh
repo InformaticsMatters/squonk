@@ -12,6 +12,7 @@ export OC_MASTER_URL=https://example.org:8443
 
 export OC_DEPLOYMENT=squonk
 export OC_ADMIN=admin
+export OC_ADMIN_PASS=admin
 export OC_USER=developer
 
 # For openshift change this to the hostname of the infra node hosting the router
@@ -34,6 +35,10 @@ export OC_NFS_PATH=/exports
 # of the working copy of the Squonk pipelines repository.
 # If you don't have a working copy this should be blank.
 export SQUONK_PIPELINES_PATH=../../../pipelines
+
+# A built-in user (blank to avoid)
+export SQUONK_GUEST_USER=guest
+export SQUONK_GUEST_PASSWORD=guest1234
 
 # Don't really like the NoCows stuff in ansible...
 export ANSIBLE_NOCOWS=1

@@ -16,7 +16,7 @@
 **/*.retry
 
 openshift/jenkins/setenv.sh
-openshift/ansible/vault-pass.txt
+**/vault-pass.txt
 
 data/licenses/*
 data/testfiles/emols_order*
