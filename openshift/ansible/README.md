@@ -2,16 +2,19 @@
 If you provide the vault password in the file `vault-pass.txt`
 you can run the playbook from this directory with the command: -
 
-    ansible-playbook -i localhost, \
-        --vault-password-file vault-pass.txt \
-        site.yaml
+    ansible-playbook site.yaml --vault-password-file vault-pass.txt
 
-Alternatively, you can provide the vault password on the
-command-line like this...
+>   The vault password file `vault-pass.txt` is listed in `.gitignore`
+    so it shouldn't be vulnerable to an accidental commit.
 
-    ansible-playbook -i localhost, \
-        --ask-vault-pass \
-        site.yaml
+>   You can also set ANSIBLE_VAULT_PASSWORD_FILE environment variable,
+    e.g. `ANSIBLE_VAULT_PASSWORD_FILE=vault-pass.txt` and Ansible will
+    automatically search for the password in that file.
+
+Alternatively, to avoid placing the password in a file you can provide the
+vault password by forcing Ansible to prompt for the vault password like this...
+
+    ansible-playbook site.yaml --ask-vault-pass
 
 ## Prerequisites
 Before running the playbook: -
@@ -35,8 +38,12 @@ on the bastion `/data` directory: -
 *   squonk-work-dir
 
 ## Creating encrypted secrets
-If you have the ansible vault password you can encrypt strings
+You can safely encrytpt varibale value using `ansible-vault`. There
+are a number of sensitive values already encrypted
+(see `squonk/defaults/main.yaml`).
+ 
+We typically use a separate encryption password for every playbook. the ansible vault password you can encrypt strings
 for the `defaults/main.yaml` file by running something like this: -
 
-    ansible-vault encrypt_string <string> \
+    ansible-vault encrypt_string "<string>" \
         --name <string name> --ask-vault-pass

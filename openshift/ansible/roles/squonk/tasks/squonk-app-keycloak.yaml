@@ -6,7 +6,7 @@
 - name: Move to Squonk Project
   shell: oc project {{ oc_project }}
 
-- name: Login as The Squonk User
+- name: Login as The Squonk Developer
   shell: oc login {{ oc_master_hostname }} -u {{ oc_user }} -p {{ oc_user_password }}
 
 # Deploy...
@@ -79,3 +79,18 @@
   register: result
   until: result.rc == 0
   when: wait_for_pods
+
+# Wait for other pods deployed here (Jobs)
+# to reach a "Completed" state.
+#
+# As we've probably waited for a long time for the pods above,
+# if it's been successful, the Postgres migration should be a NOP.
+
+- name: Wait for Postgres migration
+  shell: oc get po | grep postgres-migrate | grep -v deploy | grep Completed > /dev/null
+  retries: 12
+  delay: 5
+  register: result
+  until: result.rc == 0
+  when:
+  - wait_for_pods

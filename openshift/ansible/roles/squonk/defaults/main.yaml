@@ -12,9 +12,30 @@ oc_squonk_host: "{{ ansible_env.OC_SQUONK_HOST }}"
 oc_squonk_image_tag: "{{ ansible_env.OC_SQUONK_IMAGE_TAG }}"
 oc_user: "{{ ansible_env.OC_USER }}"
 
-# Other variables
+squonk_guest_user: "{{ lookup('env', 'SQUONK_GUEST_USER') }}"
+squonl_guest_password: "{{ lookup('env', 'SQUONK_GUEST_PASSWORD') }}"
 
-wait_for_pods: true
+# If set each deployment of Pods (infrastructure and squonk)
+# will be followed by a monitoring step that waits for the
+# expected Pods to initialise before moving on to the next step.
+wait_for_pods: yes
+
+# We can configure the 'standard-user' using a selenium script
+# and a Chrome web-driver but this requires Chrome to be available,
+# the driver to be on you r path and certificates to be properly
+# deployed in order for selenium to work properly in "headless" mode.
+# The automation works if configured not to use chrome in headless mode.
+setup_keycloak: no
+
+# Here PVs used by the application (the squonk-work-dir for example)
+# are returned to an Available state if they're currently
+# in a Released state. Note: it is the user's responsibility
+# to protect themselves for data loss here. This will inspect the
+# "state" of all PVs in the squonk *and* infrastructure projects.
+recycle_released_pvs: yes
+
+# Run the PV (NFS) creation?
+use_nfs: yes
 
 # Our root template directory
 # (relative to the role_path directory)

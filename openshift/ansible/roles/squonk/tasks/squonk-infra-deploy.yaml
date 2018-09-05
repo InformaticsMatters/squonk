@@ -45,3 +45,36 @@
     -p LOGOUT_REDIRECT_TO={{ keycloak_logout_redirect_to }}
     | oc create -f -
   when: '"squonk-client-creator" not in j_result.stdout'
+
+# Wait for the pods deployed here (Jobs)
+# to reach a "Completed" state...
+
+- name: Wait for Infrastructure DB initialisation
+  shell: oc get po | grep squonk-database-creator | grep -v deploy | grep Completed > /dev/null
+  retries: 12
+  delay: 5
+  register: result
+  until: result.rc == 0
+  when:
+  - wait_for_pods
+  - '"squonk-database-creator" not in j_result.stdout'
+
+- name: Wait for RabbitMQ initialisation
+  shell: oc get po | grep squonk-rabbitmq-creator | grep -v deploy | grep Completed > /dev/null
+  retries: 12
+  delay: 5
+  register: result
+  until: result.rc == 0
+  when:
+  - wait_for_pods
+  - '"squonk-rabbitmq-creator" not in j_result.stdout'
+
+- name: Wait for Keycloak initialisation
+  shell: oc get po | grep squonk-client-creator | grep -v deploy | grep Completed > /dev/null
+  retries: 12
+  delay: 5
+  register: result
+  until: result.rc == 0
+  when:
+  - wait_for_pods
+  - '"squonk-client-creator" not in j_result.stdout'

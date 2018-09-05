@@ -2,7 +2,10 @@
 
 # Just run these plays...
 
-- import_tasks: s-project.yaml
-- import_tasks: s-pv-pvc.yaml
-- import_tasks: s-infra-init.yaml
-- import_tasks: s-app-keycloak.yaml
+- import_tasks: create-project.yaml
+- import_tasks: create-pv-pvc.yaml
+- import_tasks: squonk-infra-deploy.yaml
+- import_tasks: squonk-app-keycloak.yaml
+
+- import_tasks: setup-keycloak.yaml
+  when: setup_keycloak

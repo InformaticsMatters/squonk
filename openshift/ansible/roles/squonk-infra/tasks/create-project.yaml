@@ -12,14 +12,14 @@
 
 - name: Check Keycloak Image Stream
   shell: oc get is -n openshift
-  register: k_is_result
+  register: is_result
 
 - name: Deploy Keycloak Image Stream
   shell: >
     oc create
     -f https://raw.githubusercontent.com/jboss-openshift/application-templates/master/sso/sso72-image-stream.json
     -n openshift
-  when: '"redhat-sso72-openshift" not in k_is_result.stdout'
+  when: '"redhat-sso72-openshift" not in is_result.stdout'
 
 # Squonk Infrastructure Project
 

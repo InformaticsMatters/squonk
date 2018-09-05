@@ -1,0 +1,85 @@
+---
+
+- name: Move to Squonk Infrastructure Project
+  shell: oc project {{ oc_infra_project }}
+
+# Check/Create PVs
+
+- name: Check Infrastructure PVs
+  shell: oc get pv
+  register: i_pv_result
+  when: use_nfs
+
+- name: Create Infrastructure PVs
+  shell: >
+    oc process
+    -p INFRA_NAMESPACE={{ oc_infra_project }}
+    -p NFS_SERVER={{ oc_nfs_server }}
+    -p NFS_PATH={{ oc_nfs_path }}
+    -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-pv-nfs.yaml
+    | oc create -f -
+  when:
+  - use_nfs
+  - '"pv-rabbitmq" not in i_pv_result.stdout'
+
+# Wait for PVs to become "Available"...
+
+- name: Wait for PVs to become Available
+  shell: >
+    oc get pv/{{ item }} | grep Available
+  retries: 6
+  delay: 5
+  register: result
+  until: result.rc == 0
+  loop:
+  - pv-postgresql
+  - pv-rabbitmq
+  when:
+  - use_nfs
+  - '"pv-rabbitmq" not in i_pv_result.stdout'
+
+# Deal with "Released" volumes.
+# Those PVs that are "Released"
+# must be "Available" to accept new binds...
+
+- name: Check Released volumnes
+  shell: oc get pv | grep Released | grep {{ oc_infra_project }}/ | cut -f 1 -d " "
+  register: released_vols
+  when: recycle_released_pvs
+
+- name: Recover Released volumes
+  shell: >
+    oc patch pv/{{ item }} --type json
+    -p $'- op: remove\n  path: /spec/claimRef'
+  with_items:
+  - "{{ released_vols.stdout_lines }}"
+  when:
+  - recycle_released_pvs
+
+# Check/Create PVCs
+
+- name: Check Infrastructure PVCs
+  shell: oc get pvc
+  register: i_pvc_result
+
+- name: Create Infrastructure PVCs
+  shell: >
+    oc process
+    -p INFRA_NAMESPACE={{ oc_infra_project }}
+    -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-pvc-nfs.yaml
+    | oc create -f -
+  when: '"rabbitmq-claim" not in i_pvc_result.stdout'
+
+# Wait for PVCs to become "Bound"...
+
+- name: Wait for PVCs to become Bound
+  shell: >
+    oc get pvc/{{ item }} | grep Bound
+  retries: 6
+  delay: 5
+  register: result
+  until: result.rc == 0
+  loop:
+  - postgresql-claim
+  - rabbitmq-claim
+  when: '"rabbitmq-claim" not in i_pvc_result.stdout'

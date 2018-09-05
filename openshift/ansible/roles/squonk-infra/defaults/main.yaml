@@ -15,7 +15,21 @@ oc_routes_basename: "{{ ansible_env.OC_ROUTES_BASENAME }}"
 # Other variables
 
 postgresql_shared_buffer_size: 1GB
-wait_for_pods: true
+
+# If set each deployment of Pods (infrastructure and squonk)
+# will be followed by a monitoring step that waits for the
+# expected Pods to initialise before moving on to the next step.
+wait_for_pods: yes
+
+# Here PVs used by the application (the squonk-work-dir for example)
+# are returned to an Available state if they're currently
+# in a Released state. Note: it is the user's responsibility
+# to protect themselves for data loss here. This will inspect the
+# "state" of all PVs in the squonk *and* infrastructure projects.
+recycle_released_pvs: yes
+
+# Run the PV (NFS) creation?
+use_nfs: yes
 
 # Our root Squonk template directory
 # (relative to the role_path directory)

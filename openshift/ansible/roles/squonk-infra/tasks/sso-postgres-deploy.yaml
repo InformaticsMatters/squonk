@@ -3,11 +3,11 @@
 - name: Move to Squonk Infrastructure Project
   shell: oc project {{ oc_infra_project }}
 
-- name: Check SSO Deployment
+- name: Check Keycloak Deployment
   shell: oc get dc
   register: sso_dc_result
 
-- name: Check SSO Deployment
+- name: Create Keycloak Deployment
   shell: >
     oc process
     -f {{ role_path }}/{{ t_dir }}/squonk-infra/sso-postgres.yaml
@@ -19,18 +19,18 @@
 
 # Wait for running pods
 
-- name: Wait for SSO
-  shell: oc get po | grep sso | grep -v deploy | grep 1/1 > /dev/null
+- name: Wait for PostgreSQL
+  shell: oc get po | grep db-postgresql | grep -v deploy | grep 1/1 > /dev/null
   retries: 15
   delay: 20
   register: result
   until: result.rc == 0
   when: wait_for_pods
 
-- name: Wait for PostgreSQL
-  shell: oc get po | grep db-postgresql | grep -v deploy | grep 1/1 > /dev/null
-  retries: 15
-  delay: 20
+- name: Wait for Keycloak
+  shell: oc get po | grep sso | grep -v deploy | grep 1/1 > /dev/null
+  retries: 10
+  delay: 30
   register: result
   until: result.rc == 0
   when: wait_for_pods

@@ -1,0 +1,34 @@
+---
+
+# This relies on the use of a Python module (in files) that uses
+# Selenium and a Chrome Web Driver and has been tested with
+# chromedriver v2.41.
+#
+# The playbook installs the required Selenium bindings for Python but the
+# Chrome Driver is (atm) the responsibility of the user and msut be available
+# on the execution path.
+
+# Is the chrome driver on the execution path?
+# Check by simply trying to get its version.
+- name: Check ChromeDriver
+  shell: chromedriver --version
+
+- name: Install Selenium (PIP)
+  pip:
+    name: selenium
+    version: 3.14.0
+
+# Setup the 'standard-user' role
+# and then (optionally) follow with creating a defined user
+
+- name: Setup Keycloak Roles
+  script: setup-keycloak-roles.py
+
+- name: Setup Keycloak Users
+  script: setup-keycloak-user.py {{ item.user }} {{ item.password }}
+  loop:
+  - user: "{{ squonk_guest_user }}"
+    password: "{{ squonk_guest_password }}"
+  when:
+  - squonk_guest_user is defined
+  - squonk_guest_password is defined

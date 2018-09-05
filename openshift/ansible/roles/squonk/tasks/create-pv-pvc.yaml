@@ -1,0 +1,83 @@
+---
+
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
+
+# Create PVs
+
+- name: Check Squonk PVs
+  shell: oc get pv
+  register: s_pv_result
+  when: use_nfs
+
+- name: Create Squonk PVs
+  shell: >
+    oc process
+    -p APP_NAMESPACE={{ oc_project }}
+    -p NFS_SERVER={{ oc_nfs_server }}
+    -p NFS_PATH={{ oc_nfs_path }}
+    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-pv-nfs.yaml
+    | oc create -f -
+  when:
+  - use_nfs
+  - '"squonk-work-dir" not in s_pv_result.stdout'
+
+# Deal with "Released" volumes.
+# Those PVs that are "Released"
+# must be "Available" to accept new binds...
+
+- name: Check Released volumnes
+  shell: oc get pv | grep Released | grep {{ oc_project }}/ | cut -f 1 -d " "
+  register: released_vols
+  when: recycle_released_pvs
+
+- name: Recover Released volumes
+  shell: >
+    oc patch pv/{{ item }} --type json
+    -p $'- op: remove\n  path: /spec/claimRef'
+  with_items:
+  - "{{ released_vols.stdout_lines }}"
+  when:
+  - recycle_released_pvs
+
+# Wait for PVs to become "Available"...
+# We only do this if we created the PV in this session.
+
+- name: Wait for PVs to become Available
+  shell: oc get pv/{{ item }} | grep Available
+  retries: 6
+  delay: 5
+  register: result
+  until: result.rc == 0
+  loop:
+  - squonk-work-dir
+  when:
+  - use_nfs
+  - '"squonk-work-dir" not in s_pv_result.stdout'
+
+# Create PVCs
+
+- name: Check Squonk PV/PVC
+  shell: oc get pvc
+  register: s_pvc_result
+
+- name: Create Infrastructure PVCs
+  shell: >
+    oc process
+    -p APP_NAMESPACE={{ oc_project }}
+    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-pvc-nfs.yaml
+    | oc create -f -
+  when: '"squonk-work-dir-pvc" not in s_pvc_result.stdout'
+
+# Wait for PVCs to become "Bound"...
+
+- name: Wait for PVCs to become Bound
+  shell: >
+    oc get pvc/{{ item }} | grep Bound
+  retries: 12
+  delay: 5
+  register: result
+  until: result.rc == 0
+  loop:
+  - squonk-work-dir-pvc
+  when: '"squonk-work-dir-pvc" not in s_pvc_result.stdout'

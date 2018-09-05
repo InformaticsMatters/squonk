@@ -26,4 +26,5 @@
   shell: "{{ item }}"
   loop:
   - oc adm policy add-role-to-user edit {{ oc_user }}
+  - oc adm policy add-scc-to-user anyuid system:serviceaccount:{{ oc_project }}:default
   - oc adm policy add-cluster-role-to-user cluster-admin -z default

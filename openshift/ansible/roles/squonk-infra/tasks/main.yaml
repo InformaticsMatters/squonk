@@ -2,8 +2,8 @@
 
 # Just run these plays...
 
-- import_tasks: si-set-facts.yaml
-- import_tasks: si-project.yaml
-- import_tasks: si-pv-pvc.yaml
-- import_tasks: si-sso-postgres.yaml
-- import_tasks: si-rabbitmq.yaml
+- import_tasks: create-project.yaml
+- import_tasks: create-pv-pvc.yaml
+- import_tasks: sso-postgres-deploy.yaml
+- import_tasks: rabbitmq-deploy.yaml
+- import_tasks: set-facts.yaml
