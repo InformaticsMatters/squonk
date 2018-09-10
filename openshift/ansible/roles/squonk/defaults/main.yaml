@@ -11,7 +11,6 @@ oc_postgresql_service: "{{ ansible_env.OC_POSTGRESQL_SERVICE }}"
 oc_squonk_host: "{{ ansible_env.OC_SQUONK_HOST }}"
 oc_squonk_image_tag: "{{ ansible_env.OC_SQUONK_IMAGE_TAG }}"
 oc_user: "{{ ansible_env.OC_USER }}"
-oc_admin_password: "{{ ansible_env.OC_ADMIN_PASSWORD }}"
 oc_user_password: "{{ ansible_env.OC_USER_PASSWORD }}"
 
 squonk_guest_user: "{{ lookup('env', 'SQUONK_GUEST_USER') }}"
