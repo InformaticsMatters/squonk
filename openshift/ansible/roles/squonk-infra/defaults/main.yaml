@@ -11,6 +11,7 @@ oc_nfs_path: "{{ ansible_env.OC_NFS_PATH }}"
 oc_nfs_server: "{{ ansible_env.OC_NFS_SERVER }}"
 oc_project: "{{ ansible_env.OC_PROJECT }}"
 oc_routes_basename: "{{ ansible_env.OC_ROUTES_BASENAME }}"
+oc_admin_password: "{{ ansible_env.OC_ADMIN_PASSWORD }}"
 
 # Other variables
 
@@ -34,13 +35,3 @@ use_nfs: yes
 # Our root Squonk template directory
 # (relative to the role_path directory)
 t_dir: ../../../templates
-
-# Secrets...
-
-admin_password: !vault |
-  $ANSIBLE_VAULT;1.1;AES256
-  64303933666332643963656539663064336631336437386665613461376464353838343262343236
-  3063363132303333393334303230346436336664343130390a316366633032393166366137356434
-  35343639663435623935316662313962656631613365656336383662303266306238643334393163
-  6463383136626466390a326238653235663964316264613164643830663466346263623866643233
-  3164

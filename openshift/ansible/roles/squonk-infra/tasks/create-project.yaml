@@ -3,7 +3,7 @@
 # Preparation and project creation for the Squonk Infrastructure.
 
 - name: Login (admin)
-  shell: oc login {{ oc_master_hostname }} -u admin -p {{ admin_password }}
+  shell: oc login {{ oc_master_hostname }} -u admin -p {{ oc_admin_password }}
 
 - name: Add cluster-admin role to admin
   shell: oc adm policy add-cluster-role-to-user cluster-admin admin

@@ -6,7 +6,7 @@
   shell: oc project {{ oc_infra_project }}
 
 - name: Login as Admin
-  shell: oc login {{ oc_master_hostname }} -u admin -p {{ admin_password }}
+  shell: oc login {{ oc_master_hostname }} -u admin -p {{ oc_admin_password }}
 
 # Prepare PostgreSQL
 

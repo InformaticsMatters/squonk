@@ -33,7 +33,7 @@ logging.info(cd.strip())
 
 # Variables (environment)
 admin = os.environ['OC_ADMIN']
-admin_pass = os.environ['OC_ADMIN_PASS']
+admin_password = os.environ['OC_ADMIN_PASSWORD']
 main_url = os.environ['OC_MASTER_URL']
 sso_project = os.environ['OC_INFRA_PROJECT']
 routes_basename = os.environ['OC_ROUTES_BASENAME']
@@ -76,7 +76,7 @@ WebDriverWait(selenium, 20).\
 u_i = selenium.find_element_by_name('username')
 u_i.send_keys(admin)
 p_i = selenium.find_element_by_name('password')
-p_i.send_keys(admin_pass)
+p_i.send_keys(admin_password)
 selenium.find_element_by_css_selector('button[type="submit"]').click()
 WebDriverWait(selenium, 20).\
     until(lambda driver: driver.find_element_by_tag_name('body'))
