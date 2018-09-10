@@ -159,7 +159,7 @@ Now we are ready to start deploying the infrastructure.
 
 #### If using dynamic provisioning with OpenShift:
 
-Dymanic provisioning allows to only specfy the PVS and OpensShift will satisfy the request dynamically
+Dymanic provisioning allows to only specify the PVS and OpensShift will satisfy the request dynamically
 using whatever dynamic provision is configured. You can use the StorageClass property to define
 what type of storage you need.
 

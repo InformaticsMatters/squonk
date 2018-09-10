@@ -3,8 +3,12 @@
 # Just run these plays...
 
 - import_tasks: create-project.yaml
+
 - import_tasks: create-nfs-pv-pvc.yaml
   when: volume_type == 'nfs'
+- import_tasks: create-dynamic-pvc.yaml
+  when: volume_type == 'dynamic'
+
 - import_tasks: sso-postgres-deploy.yaml
 - import_tasks: rabbitmq-deploy.yaml
 - import_tasks: set-facts.yaml

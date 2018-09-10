@@ -1,0 +1,33 @@
+---
+
+- name: Move to Squonk Infrastructure Project
+  shell: oc project {{ oc_infra_project }}
+
+# Check/Create PVCs
+
+- name: Check Infrastructure PVCs (dyanmic)
+  shell: oc get pvc
+  register: i_pvc_result
+
+- name: Create Infrastructure PVCs (dynamic)
+  shell: >
+    oc process
+    -p STORAGE_CLASS={{ volume_storage_class }}
+    -p POSTGRESQL_VOLUME_SIZE={{ postgresql_volume_size }}
+    -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-pvc-dynamic.yaml
+    | oc create -f -
+  when: '"rabbitmq-claim" not in i_pvc_result.stdout'
+
+# Wait for PVCs to become "Bound"...
+
+- name: Wait for PVCs to become Bound (dynamic)
+  shell: >
+    oc get pvc/{{ item }} | grep Bound
+  retries: 6
+  delay: 5
+  register: result
+  until: result.rc == 0
+  loop:
+  - postgresql-claim
+  - rabbitmq-claim
+  when: '"rabbitmq-claim" not in i_pvc_result.stdout'

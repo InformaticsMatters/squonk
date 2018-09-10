@@ -13,8 +13,8 @@
   shell: >
     oc process
     -p APP_NAMESPACE={{ oc_project }}
-    -p NFS_SERVER={{ oc_nfs_server }}
-    -p NFS_PATH={{ oc_nfs_path }}
+    -p NFS_SERVER={{ ansible_env.OC_NFS_SERVER | default('unset') }}
+    -p NFS_PATH={{ ansible_env.OC_NFS_PATH | default('unset') }}
     -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-pv-nfs.yaml
     | oc create -f -
   when: '"squonk-work-dir" not in s_pv_result.stdout'
@@ -52,11 +52,11 @@
 
 # Create PVCs
 
-- name: Check Squonk PV/PVC
+- name: Check Squonk PV/PVC (nfs)
   shell: oc get pvc
   register: s_pvc_result
 
-- name: Create Infrastructure PVCs
+- name: Create Infrastructure PVCs (nfs)
   shell: >
     oc process
     -p APP_NAMESPACE={{ oc_project }}
@@ -66,7 +66,7 @@
 
 # Wait for PVCs to become "Bound"...
 
-- name: Wait for PVCs to become Bound
+- name: Wait for PVCs to become Bound (nfs)
   shell: >
     oc get pvc/{{ item }} | grep Bound
   retries: 12

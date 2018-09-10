@@ -7,8 +7,6 @@ keycloak_realm: "{{ ansible_env.KEYCLOAK_REALM }}"
 
 oc_infra_project: "{{ ansible_env.OC_INFRA_PROJECT }}"
 oc_master_hostname: "{{ ansible_env.OC_MASTER_HOSTNAME }}"
-oc_nfs_path: "{{ ansible_env.OC_NFS_PATH }}"
-oc_nfs_server: "{{ ansible_env.OC_NFS_SERVER }}"
 oc_project: "{{ ansible_env.OC_PROJECT }}"
 oc_routes_basename: "{{ ansible_env.OC_ROUTES_BASENAME }}"
 oc_admin_password: "{{ ansible_env.OC_ADMIN_PASSWORD }}"
@@ -16,6 +14,7 @@ oc_admin_password: "{{ ansible_env.OC_ADMIN_PASSWORD }}"
 # Other variables
 
 postgresql_shared_buffer_size: 1GB
+postgresql_volume_size: 125Gi
 
 # If set each deployment of Pods (infrastructure and squonk)
 # will be followed by a monitoring step that waits for the
@@ -31,13 +30,22 @@ recycle_released_pvs: yes
 
 # What volume type are we using? One of: -
 #
-# - gluster (not implemented yet)
-# - nfs (not implemented yet)
+# - dynamic
+# - nfs
 # - none
+#
+#   When using `dynamic' remember to set
+#   the accompanying 'volume_storage_class' variable (see below)
+#
+#   When using 'nfs' you must have provisioned the NFS volumes
 #
 #   When set to 'none' the user is expected to have provisioned
 #   the persistent volumes and claims suitable for the project.
 volume_type: none
+
+# When using dynamic volumes the storage
+# class needs to be defined...
+volume_storage_class: standard
 
 # Our root Squonk template directory
 # (relative to the role_path directory)

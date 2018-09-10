@@ -37,13 +37,22 @@ recycle_released_pvs: yes
 
 # What volume type are we using? One of: -
 #
-# - gluster (not implemented yet)
-# - nfs (not implemented yet)
+# - dynamic
+# - nfs
 # - none
+#
+#   When using `dynamic' remember to set
+#   the accompanying 'volume_storage_class' variable (see below)
+#
+#   When using 'nfs' you must have provisioned the NFS volumes
 #
 #   When set to 'none' the user is expected to have provisioned
 #   the persistent volumes and claims suitable for the project.
 volume_type: none
+
+# When using dynamic volumes the storage
+# class needs to be defined...
+volume_storage_class: glusterfs-storage
 
 # Our root template directory
 # (relative to the role_path directory)
