@@ -3,9 +3,9 @@
 # Just run these plays...
 
 - import_tasks: create-project.yaml
-- import_tasks: create-pv-pvc.yaml
+- import_tasks: create-nfs-pv-pvc.yaml
+  when: volume_type == 'nfs'
 - import_tasks: squonk-infra-deploy.yaml
 - import_tasks: squonk-app-keycloak.yaml
-
 - import_tasks: setup-keycloak.yaml
   when: setup_keycloak

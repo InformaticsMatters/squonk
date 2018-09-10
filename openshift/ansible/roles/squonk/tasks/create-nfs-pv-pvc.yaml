@@ -8,7 +8,6 @@
 - name: Check Squonk PVs
   shell: oc get pv
   register: s_pv_result
-  when: use_nfs
 
 - name: Create Squonk PVs
   shell: >
@@ -18,9 +17,7 @@
     -p NFS_PATH={{ oc_nfs_path }}
     -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-pv-nfs.yaml
     | oc create -f -
-  when:
-  - use_nfs
-  - '"squonk-work-dir" not in s_pv_result.stdout'
+  when: '"squonk-work-dir" not in s_pv_result.stdout'
 
 # Deal with "Released" volumes.
 # Those PVs that are "Released"
@@ -51,9 +48,7 @@
   until: result.rc == 0
   loop:
   - squonk-work-dir
-  when:
-  - use_nfs
-  - '"squonk-work-dir" not in s_pv_result.stdout'
+  when: '"squonk-work-dir" not in s_pv_result.stdout'
 
 # Create PVCs
 

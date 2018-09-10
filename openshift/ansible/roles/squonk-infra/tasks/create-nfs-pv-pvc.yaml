@@ -8,7 +8,6 @@
 - name: Check Infrastructure PVs
   shell: oc get pv
   register: i_pv_result
-  when: use_nfs
 
 - name: Create Infrastructure PVs
   shell: >
@@ -18,9 +17,7 @@
     -p NFS_PATH={{ oc_nfs_path }}
     -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-pv-nfs.yaml
     | oc create -f -
-  when:
-  - use_nfs
-  - '"pv-rabbitmq" not in i_pv_result.stdout'
+  when: '"pv-rabbitmq" not in i_pv_result.stdout'
 
 # Wait for PVs to become "Available"...
 
@@ -34,9 +31,7 @@
   loop:
   - pv-postgresql
   - pv-rabbitmq
-  when:
-  - use_nfs
-  - '"pv-rabbitmq" not in i_pv_result.stdout'
+  when: '"pv-rabbitmq" not in i_pv_result.stdout'
 
 # Deal with "Released" volumes.
 # Those PVs that are "Released"
@@ -53,8 +48,7 @@
     -p $'- op: remove\n  path: /spec/claimRef'
   with_items:
   - "{{ released_vols.stdout_lines }}"
-  when:
-  - recycle_released_pvs
+  when: recycle_released_pvs
 
 # Check/Create PVCs
 

@@ -35,8 +35,15 @@ setup_keycloak: no
 # "state" of all PVs in the squonk *and* infrastructure projects.
 recycle_released_pvs: yes
 
-# Run the PV (NFS) creation?
-use_nfs: yes
+# What volume type are we using? One of: -
+#
+# - gluster (not implemented yet)
+# - nfs (not implemented yet)
+# - none
+#
+#   When set to 'none' the user is expected to have provisioned
+#   the persistent volumes and claims suitable for the project.
+volume_type: none
 
 # Our root template directory
 # (relative to the role_path directory)
