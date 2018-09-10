@@ -7,7 +7,7 @@
 - set_fact: oc_infra_project={{ oc_infra_project }}
 - set_fact: oc_admin_password={{ oc_admin_password }}
 - set_fact: oc_master_hostname={{ oc_master_hostname }}
-- set_fact: oc_nfs_path={{ oc_nfs_path }}
-- set_fact: oc_nfs_server={{ oc_nfs_server }}
+#- set_fact: oc_nfs_path={{ oc_nfs_path }}
+#- set_fact: oc_nfs_server={{ oc_nfs_server }}
 - set_fact: oc_project={{ oc_project }}
 - set_fact: oc_routes_basename={{ oc_routes_basename }}
