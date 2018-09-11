@@ -13,7 +13,7 @@
 # simply delete the squonk project.
 
 - name: Check Squonk Project
-  shell: oc get projects
+  shell: oc get projects | grep "{{ oc_project }} " || true
   register: projects_result
   changed_when: False
 
