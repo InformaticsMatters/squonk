@@ -245,6 +245,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
         LOG.fine("Setting status of " + serviceDescriptors.size() + " service descriptors from " + sds.getBaseUrl() +
                 " with health URL of " + healthUrl + " to " + status);
         serviceDescriptors.forEach(sd -> {
+            LOG.finer("Setting status of ServiceDescriptor " + sd.getId() + " to " + status);
             sd.getServiceConfig().setStatus(status);
             sd.getServiceConfig().setStatusLastChecked(now);
         });

@@ -8,8 +8,9 @@ Currently there is support for
 * DrugBank (this is not loaded by default for licensing reasons)
 * PDB ligands
 * Chemspace
+* Molport
 
-The code and configuration for the loaders is in the rdkit-lib module.
+The code and configuration for the loaders is in the rdkit-databases module.
 At some stage it may be broken out into a separate module.
 
 ## Loading data
@@ -18,7 +19,7 @@ At some stage it may be broken out into a separate module.
 
 Loading requires the chemcentral postgres database to be running and port 5432 to be exposed.
 This port may not be exposed by default.
-This is a separate postgres database to the the one that stores the Squonk user data as it also runs the RDKit cartridge.
+This may be a separate postgres database to the the one that stores the Squonk user data as it also runs the RDKit cartridge.
 Move into the docker/deploy dir and start the chemcentral postgres database. An example docker-compose.yml file can be found 
 in the rdkit-lib sub-project.
 
@@ -28,7 +29,7 @@ docker-compose up -d
 
 ### Configuring loaders
 
-Loaders are run using the squonk/chemcentral-loader:openshift docker image.
+Loaders are run using the squonk/chemcentral-loader docker image.
 Each loader is pre-configured with sensible defaults, but you can override these using environment variables:
 
 * CHEMCENTRAL_HOST - the hostname where postgres is running (default: localhost)
@@ -39,8 +40,10 @@ Each loader is pre-configured with sensible defaults, but you can override these
 * CHEMCENTRAL_SCHEMA - the postgres schema to use (default: vendordbs)
 * CHEMCENTRAL_TABLE - the name of the main database table (default value for each loader e.g. the Chemspace loader uses a table name of chemspace)
 * CHEMCENTRAL_LOADER_FILE - the file name containing the data to load (default value for each loader e.g. the Chemspace loader uses a default of /rdkit/chemspace.sdf.gz)
-* CHEMCENTRAL_LIMIT - the number of records to load (default value is 0 which means load all records)
-* CHEMCENTRAL_REPORTING_CHUNK - the frequency to report loading (default apprpopriate to the typical size of the dataset)
+* CHEMCENTRAL_LOADER_DIR - the directory with the files to load (e.g. for the Molport loader)
+* CHEMCENTRAL_LOADER_PATTERN - regex for the files to load where there are multiple files (e.g. for Molport)
+* CHEMCENTRAL_LIMIT - the number of records to load for each file (default value is 0 which means load all records)
+* CHEMCENTRAL_REPORTING_CHUNK - the frequency to report loading (default appropriate to the typical size of the dataset)
 * CHEMCENTRAL_ALIAS - an optional alias for the table so that it can be accessed using a symbolic name e.g. chembl_latest
 
 For testing set the loadOnly property to restrict the number of structures to load. Reset this to zero to load the 
@@ -60,11 +63,22 @@ docker run -it --rm -v $HOME/data/structures/chemspace/201711_Chemspace_represen
 
 Adjust the value of the CHEMCENTRAL_HOST variable to where postgres is running (possibly the Docker gateway address).
 
+The final parameter is the classname of the loader to use. This is passed as an argument to the container's entrypoint which
+will be something like this `/rdkit-databases-0.2-SNAPSHOT/bin/rdkit-databases`. 
+
 Adjust the volume mount that specifies the file to load. In this example we mount it to the default name expected by the loader.
 If using a different name also specify the CHEMCENTRAL_LOADER_FILE environment variable to point to the absolute file name that is mounted.
 
-The final parameter is the classname of the loader to use. This is passed as an argument to the container's entrypoint which
-will be something like this `/rdkit-databases-0.2-SNAPSHOT/bin/rdkit-databases`. 
+For loaders such as Molport that have multiple input files instead of CHEMCENTRAL_LOADER_FILE you can specify  
+CHEMCENTRAL_LOADER_DIR (the directory in the container with the files) and
+CHEMCENTRAL_LOADER_PATTERN (a regex that defines the filenames to load). To use the defaults run with a command like this:
+
+```
+docker run -it --rm -v $HOME/tmp/molport/2018-08/All\ Stock\ Compounds/SMILES:/rdkit/molport:ro,Z\
+  -e CHEMCENTRAL_HOST=172.17.0.1 -e CHEMCENTRAL_LIMIT=10000\
+  squonk/chemcentral-loader:latest\
+  org.squonk.rdkit.db.loaders.MolportSmilesLoader
+```
 
 Remove the definition of the CHEMCENTRAL_LIMIT environment variable to load the entire dataset. 
 
@@ -75,11 +89,11 @@ Adjust the loader name (the last argument) accordingly. Options are:
 * org.squonk.rdkit.db.loaders.ChemblSdfLoader - For ChEMBL (ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/)
 * org.squonk.rdkit.db.loaders.PdbLigandSdfLoader - for ligands from PDB (http://ligand-expo.rcsb.org/ld-download.html. The file you want is in the "Chemical component coordinate data files" section and called all-sdf.sdf.gz. Fetch it with something like: 'wget http://ligand-expo.rcsb.org/dictionaries/all-sdf.sdf.gz')
 * org.squonk.rdkit.db.loaders.ChemspaceSdfLoader - Chemspace (Obtain this file directly from the ChemSpace people)
+* org.squonk.rdkit.db.loaders.MolportSmilesLoader - Molport in smiles format (https://www.molport.com/shop/database-download)
 
 Source code for these loaders can be found [here](https://github.com/InformaticsMatters/squonk/tree/openshift/components/rdkit-databases/src/main/groovy/org/squonk/rdkit/db/loaders).
-Currently these are on the openshift branch only, but eventually this will be merged to master.
 
-Note that loading large datasets like eMolecules screening compounds takes several days.
+Note that loading large datasets like eMolecules screening compounds or Molport takes several days.
 To prevent lost connections to the server terminating the load you might want to look into doing the loading using a the 
 [linux screen facility](https://www.gnu.org/software/screen/manual/screen.html).
 

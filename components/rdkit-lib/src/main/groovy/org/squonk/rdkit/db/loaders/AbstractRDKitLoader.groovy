@@ -34,6 +34,8 @@ abstract class AbstractRDKitLoader {
     final RDKitTable table
     final ChemcentralConfig config
 
+    protected String separator = "\\s+"
+
 
     AbstractRDKitLoader(RDKitTable table, ChemcentralConfig config) {
         this.table = table
@@ -81,48 +83,70 @@ abstract class AbstractRDKitLoader {
     }
 
     protected void loadSmiles(String file, int limit, int reportingChunk, Map<String, Class> propertyToTypeMappings) {
+        loadSmilesFiles(Collections.singletonList(file), limit, reportingChunk, propertyToTypeMappings)
+    }
+
+    protected void loadSmilesFiles(List<String> files, int limit, int reportingChunk, Map<String, Class> propertyToTypeMappings) {
         SqlQuery q = new SqlQuery(table, config)
 
-        println "Loading file $file"
-        long t0 = System.currentTimeMillis()
-        InputStream is = IOUtils.getGunzippedInputStream(new FileInputStream(file))
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        try {
+        println "setting reportingSize to $reportingChunk"
+        RDKitTableLoader loader = q.loader()
+        loader.reportingSize = reportingChunk
 
-            Stream<MoleculeObject> mols = reader.lines().skip(1).map() { String line ->
-                //println line
-                String[] parts = line.split("\\s+")
-                def values = [:]
-                parts[1..-1].eachWithIndex{ String entry, int i ->
-                    values[""+(i+1)] = entry
+        // create the tables
+        prepareTables(loader)
+
+        files.each { file ->
+
+            println "Loading file $file"
+            long t0 = System.currentTimeMillis()
+            InputStream is = IOUtils.getGunzippedInputStream(new FileInputStream(file))
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            try {
+
+                Stream<MoleculeObject> mols = reader.lines().skip(1).map() { String line ->
+                    //println line
+                    String[] parts = line.split(separator)
+                    def values = [:]
+                    parts[1..-1].eachWithIndex { String entry, int i ->
+                        values["" + (i + 1)] = entry
+                    }
+                    MoleculeObject mo = new MoleculeObject(parts[0], 'smiles', values);
+                    return mo;
                 }
-                MoleculeObject mo = new MoleculeObject(parts[0], 'smiles', values);
-                return mo;
+
+                if (limit > 0) {
+                    mols = mols.limit(limit)
+                }
+
+                loader.loadData(mols, propertyToTypeMappings)
+
+            } finally {
+                reader.close()
             }
-
-            if (limit > 0) {
-                mols = mols.limit(limit)
-            }
-
-            println "setting reportingSize to $reportingChunk"
-            RDKitTableLoader loader = q.loader()
-            loader.reportingSize = reportingChunk
-            doLoad(loader, mols, propertyToTypeMappings)
-
-        } finally {
-            reader.close()
+            long t1 = System.currentTimeMillis()
+            println "Loaded in ${t1 - t0}ms"
         }
-        long t1 = System.currentTimeMillis()
-        println "Completed in ${t1 - t0}ms"
+
+        processTables(loader)
+
     }
 
 
     protected void doLoad(RDKitTableLoader worker, Stream<MoleculeObject> mols, Map<String, Class> propertyToTypeMappings) {
 
+        prepareTables(worker)
+        worker.loadData(mols, propertyToTypeMappings)
+        processTables(worker)
+    }
+
+    protected prepareTables(RDKitTableLoader worker) {
         worker.dropAllItems()
         worker.removeTableInfo()
         worker.createTables()
-        worker.loadData(mols, propertyToTypeMappings)
+    }
+
+    protected processTables(RDKitTableLoader worker) {
         worker.createMoleculesAndIndex()
         worker.addFpColumns()
         worker.putTableInfo()
@@ -133,5 +157,7 @@ abstract class AbstractRDKitLoader {
 
         //worker.dropAllItems()
     }
+
+
 
 }

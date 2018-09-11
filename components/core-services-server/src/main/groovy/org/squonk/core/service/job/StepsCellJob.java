@@ -117,9 +117,10 @@ public class StepsCellJob implements Job<StepsCellExecutorJobDefinition> {
             for (StepDefinition stepdef : jobdef.getSteps()) {
                 String serviceId = stepdef.getServiceId();
                 if (serviceId != null) {
-                    LOG.info("Looking up ServiceDescriptor for " + serviceId);
+                    LOG.fine("Looking up ServiceDescriptor for " + serviceId);
                     ServiceDescriptorRegistry reg = camelContext.getRegistry().lookupByNameAndType(ServiceConstants.KEY_SERVICE_REGISTRY, ServiceDescriptorRegistry.class);
                     ServiceDescriptor sd = reg.fetchServiceDescriptor(serviceId);
+                    LOG.info("Found ServiceDescriptor for service " + serviceId + ": " + sd);
                     stepdef.setServiceDescriptor(sd);
                 }
             }
