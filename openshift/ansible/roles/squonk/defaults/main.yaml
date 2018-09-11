@@ -49,7 +49,7 @@ squonl_guest_password: "{{ lookup('env', 'SQUONK_GUEST_PASSWORD') }}"
 wait_for_pods: yes
 
 # Various retry timeouts (seconds)...
-pod_ready_timeout: 300
+pod_ready_timeout: 600
 pod_terminate_timeout: 300
 pv_create_timeout: 120
 pvc_bind_timeout: 120

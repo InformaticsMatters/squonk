@@ -43,49 +43,19 @@
 #   portal
 #   chemservices-basic
 
-- name: Wait for Job Executor
-  shell: oc get po | grep jobe | grep -v deploy | grep 1/1 > /dev/null
+- name: Wait for Squonk Pods
+  shell: oc get po | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
   delay: 20
   retries: "{{ (pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
   when: wait_for_pods
-  changed_when: False
-
-- name: Wait for Cell Executor
-  shell: oc get po | grep cell | grep -v deploy | grep 1/1 > /dev/null
-  delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
-  register: result
-  until: result.rc == 0
-  when: wait_for_pods
-  changed_when: False
-
-- name: Wait for Core Services
-  shell: oc get po | grep core | grep -v deploy | grep 1/1 > /dev/null
-  delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
-  register: result
-  until: result.rc == 0
-  when: wait_for_pods
-  changed_when: False
-
-- name: Wait for Portal
-  shell: oc get po | grep port | grep -v deploy | grep 1/1 > /dev/null
-  delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
-  register: result
-  until: result.rc == 0
-  when: wait_for_pods
-  changed_when: False
-
-- name: Wait for Chem Services
-  shell: oc get po | grep chem | grep -v deploy | grep 1/1 > /dev/null
-  delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
-  register: result
-  until: result.rc == 0
-  when: wait_for_pods
+  loop:
+  - jobexecutor
+  - cellexecutor
+  - coreservices
+  - portal
+  - chemservices-basic
   changed_when: False
 
 # Wait for other pods deployed here (Jobs)
@@ -95,11 +65,13 @@
 # if it's been successful, the Postgres migration should be a NOP.
 
 - name: Wait for Postgres migration
-  shell: oc get po | grep postgres-migrate | grep -v deploy | grep Completed > /dev/null
+  shell: oc get po | grep {{ item }} | grep -v deploy | grep Completed > /dev/null
   delay: 10
   retries: "{{ (pod_ready_timeout | int / 10) | int }}"
   register: result
   until: result.rc == 0
   when:
   - wait_for_pods
+  loop:
+  - postgres-migrate
   changed_when: False
