@@ -1,7 +1,12 @@
 # Squonk Ansible OpenShift Deployment
 You can run the playbook from this directory with the command: -
 
-    ansible-playbook site.yaml
+    ansible-playbook playbooks/squonk/deploy.yaml
+
+There are `undeploy` playbooks that can be run for both the
+infrastructure and squonk: -
+
+    ansible-playbook playbooks/squonk/undeploy.yaml
 
 ## Prerequisites
 Before running the playbook: -
@@ -14,14 +19,8 @@ Before running the playbook: -
 1.  There is a `developer` user known to the cluster
 1.  You have setup your own `setenv.sh` and run `source setenv.sh`
 
-If using NFS the following NFS volumes are required for a _full_ installation
-on the bastion `/data` directory: -
-
-*   pv-rabbitmq
-*   pv-postgresql
-*   pv-chemcentral-loader
-*   pv-chemcentraldb
-*   squonk-work-dir
+If using NFS, it is correctly configured with appropriate
+provisioning for each PV that expects a volume.
 
 ## Creating encrypted secrets
 You can safely encrytpt varibale value using `ansible-vault`. There

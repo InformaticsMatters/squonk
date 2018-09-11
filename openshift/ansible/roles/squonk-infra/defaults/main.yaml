@@ -7,9 +7,27 @@ keycloak_realm: "{{ ansible_env.KEYCLOAK_REALM }}"
 
 oc_infra_project: "{{ ansible_env.OC_INFRA_PROJECT }}"
 oc_master_hostname: "{{ ansible_env.OC_MASTER_HOSTNAME }}"
-oc_project: "{{ ansible_env.OC_PROJECT }}"
 oc_routes_basename: "{{ ansible_env.OC_ROUTES_BASENAME }}"
 oc_admin_password: "{{ ansible_env.OC_ADMIN_PASSWORD }}"
+
+# What volume type are we using? One of: -
+#
+# - dynamic
+# - nfs
+# - none
+#
+#   When using `dynamic' remember to set
+#   the accompanying 'volume_storage_class' variable (see below)
+#
+#   When using 'nfs' you must have provisioned the NFS volumes
+#
+#   When set to 'none' the user is expected to have provisioned
+#   the persistent volumes and claims suitable for the project.
+oc_infra_volume_type: "{{ ansible_env.OC_INFRA_VOLUME_TYPE }}"
+
+# When using dynamic volumes the storage
+# class needs to be defined...
+oc_infra_volume_storage_class: "{{ ansible_env.OC_INFRA_VOLUME_STORAGE_CLASS }}"
 
 # Other variables
 

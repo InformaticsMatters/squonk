@@ -2,12 +2,14 @@
 
 # Just run these plays...
 
+- import_tasks: pre-flight-checks.yaml
+
 - import_tasks: create-project.yaml
 
 - import_tasks: create-nfs-pv-pvc.yaml
-  when: volume_type == 'nfs'
+  when: oc_squonk_volume_type == 'nfs'
 - import_tasks: create-dynamic-pvc.yaml
-  when: volume_type == 'dynamic'
+  when: oc_squonk_volume_type == 'dynamic'
 
 - import_tasks: squonk-infra-deploy.yaml
 - import_tasks: squonk-app-keycloak.yaml

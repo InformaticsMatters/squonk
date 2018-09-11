@@ -12,6 +12,7 @@
 # Check by simply trying to get its version.
 - name: Check ChromeDriver
   shell: chromedriver --version
+  changed_when: False
 
 - name: Install Selenium (PIP)
   pip:

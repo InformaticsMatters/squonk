@@ -2,12 +2,14 @@
 
 - name: Move to Squonk Project
   shell: oc project {{ oc_project }}
+  changed_when: False
 
 # Create PVs
 
 - name: Check Squonk PVs
   shell: oc get pv
   register: s_pv_result
+  changed_when: False
 
 - name: Create Squonk PVs
   shell: >
@@ -42,19 +44,20 @@
 
 - name: Wait for PVs to become Available
   shell: oc get pv/{{ item }} | grep Available
-  retries: 6
   delay: 5
+  retries: "{{ (pv_create_timeout | int / 5) | int }}"
   register: result
   until: result.rc == 0
   loop:
   - squonk-work-dir
-  when: '"squonk-work-dir" not in s_pv_result.stdout'
+  when: item not in s_pv_result.stdout
 
 # Create PVCs
 
 - name: Check Squonk PV/PVC (nfs)
   shell: oc get pvc
   register: s_pvc_result
+  changed_when: False
 
 - name: Create Infrastructure PVCs (nfs)
   shell: >
@@ -69,10 +72,10 @@
 - name: Wait for PVCs to become Bound (nfs)
   shell: >
     oc get pvc/{{ item }} | grep Bound
-  retries: 12
   delay: 5
+  retries: "{{ (pvc_bind_timeout | int / 5) | int }}"
   register: result
   until: result.rc == 0
   loop:
   - squonk-work-dir-pvc
-  when: '"squonk-work-dir-pvc" not in s_pvc_result.stdout'
+  when: item not in s_pvc_result.stdout

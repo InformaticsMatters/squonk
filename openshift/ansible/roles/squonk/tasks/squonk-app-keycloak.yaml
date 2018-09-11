@@ -5,15 +5,18 @@
 
 - name: Move to Squonk Project
   shell: oc project {{ oc_project }}
+  changed_when: False
 
 - name: Login as The Squonk Developer
   shell: oc login {{ oc_master_hostname }} -u {{ oc_user }} -p {{ oc_user_password }}
+  changed_when: False
 
 # Deploy...
 
 - name: Check Squonk
   shell: oc get dc
   register: dc_result
+  changed_when: False
 
 - name: Deploy Squonk
   shell: >
@@ -42,43 +45,48 @@
 
 - name: Wait for Job Executor
   shell: oc get po | grep jobe | grep -v deploy | grep 1/1 > /dev/null
-  retries: 15
   delay: 20
+  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
   when: wait_for_pods
+  changed_when: False
 
 - name: Wait for Cell Executor
   shell: oc get po | grep cell | grep -v deploy | grep 1/1 > /dev/null
-  retries: 15
   delay: 20
+  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
   when: wait_for_pods
+  changed_when: False
 
 - name: Wait for Core Services
   shell: oc get po | grep core | grep -v deploy | grep 1/1 > /dev/null
-  retries: 15
   delay: 20
+  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
   when: wait_for_pods
+  changed_when: False
 
 - name: Wait for Portal
   shell: oc get po | grep port | grep -v deploy | grep 1/1 > /dev/null
-  retries: 15
   delay: 20
+  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
   when: wait_for_pods
+  changed_when: False
 
 - name: Wait for Chem Services
   shell: oc get po | grep chem | grep -v deploy | grep 1/1 > /dev/null
-  retries: 15
   delay: 20
+  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
   when: wait_for_pods
+  changed_when: False
 
 # Wait for other pods deployed here (Jobs)
 # to reach a "Completed" state.
@@ -88,9 +96,10 @@
 
 - name: Wait for Postgres migration
   shell: oc get po | grep postgres-migrate | grep -v deploy | grep Completed > /dev/null
-  retries: 12
-  delay: 5
+  delay: 10
+  retries: "{{ (pod_ready_timeout | int / 10) | int }}"
   register: result
   until: result.rc == 0
   when:
   - wait_for_pods
+  changed_when: False

@@ -4,12 +4,14 @@
 
 - name: Login (admin)
   shell: oc login {{ oc_master_hostname }} -u admin -p {{ oc_admin_password }}
+  changed_when: False
 
 # Squonk Infrastructure Project
 
 - name: Check the Squonk Project
   shell: oc get projects
   register: projects_result
+  changed_when: False
 
 - name: Create the Squonk Project
   shell: >
@@ -19,6 +21,7 @@
 
 - name: Move to Squonk Project
   shell: oc project {{ oc_project }}
+  changed_when: False
 
 # Prepare roles and service accounts
 

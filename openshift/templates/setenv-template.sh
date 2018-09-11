@@ -31,6 +31,10 @@ export OC_SQUONK_SD_POSTER_IMAGE_TAG=latest
 export OC_DOMAIN_NAME=novalocal
 export OC_NFS_SERVER=squonk-infra.$OC_DOMAIN_NAME
 export OC_NFS_PATH=/exports
+export OC_SQUONK_VOLUME_TYPE=nfs
+export OC_SQUONK_VOLUME_STORAGE_CLASS=SetIfUsingDynamicVolumeType
+export OC_INFRA_VOLUME_TYPE=nfs
+export OC_INFRA_VOLUME_STORAGE_CLASS=SetIfUsingDynamicVolumeType
 # The path, relative to the directory holding this file,
 # of the working copy of the Squonk pipelines repository.
 # If you don't have a working copy this should be blank.
@@ -53,6 +57,10 @@ echo "OC_USER set to '$OC_USER'"
 echo "OC_SQUONK_HOST set to '$OC_SQUONK_HOST'"
 echo "OC_SQUONK_IMAGE_TAG set to '$OC_SQUONK_IMAGE_TAG'"
 echo "OC_SQUONK_SD_POSTER_IMAGE_TAG set to '$OC_SQUONK_SD_POSTER_IMAGE_TAG'"
+echo "OC_SQUONK_VOLUME_TYPE set to $OC_SQUONK_VOLUME_TYPE"
+echo "OC_SQUONK_VOLUME_STORAGE_CLASS set to $OC_SQUONK_VOLUME_STORAGE_CLASS"
+echo "OC_INFRA_VOLUME_TYPE set to $OC_INFRA_VOLUME_TYPE"
+echo "OC_INFRA_VOLUME_STORAGE_CLASS set to $OC_INFRA_VOLUME_STORAGE_CLASS"
 echo "OC_NFS_SERVER set to '$OC_NFS_SERVER'"
 echo "KEYCLOAK_SERVER_URL set to '$KEYCLOAK_SERVER_URL'"
 echo "KEYCLOAK_REALM set to '$KEYCLOAK_REALM'"

@@ -5,35 +5,21 @@
 # variables from the squonk-infra role as the variables
 # we use are exposed as facts there.
 
+infra_rabbit_name: "rabbitmq"
+
+keycloak_realm: "{{ ansible_env.KEYCLOAK_REALM }}"
 keycloak_logout_redirect_to: "{{ ansible_env.KEYCLOAK_LOGOUT_REDIRECT_TO }}"
 
+oc_admin_password: "{{ ansible_env.OC_ADMIN_PASSWORD }}"
+oc_infra_project: "{{ ansible_env.OC_INFRA_PROJECT }}"
+oc_master_hostname: "{{ ansible_env.OC_MASTER_HOSTNAME }}"
 oc_postgresql_service: "{{ ansible_env.OC_POSTGRESQL_SERVICE }}"
+oc_project: "{{ ansible_env.OC_PROJECT }}"
+oc_routes_basename: "{{ ansible_env.OC_ROUTES_BASENAME }}"
 oc_squonk_host: "{{ ansible_env.OC_SQUONK_HOST }}"
 oc_squonk_image_tag: "{{ ansible_env.OC_SQUONK_IMAGE_TAG }}"
 oc_user: "{{ ansible_env.OC_USER }}"
 oc_user_password: "{{ ansible_env.OC_USER_PASSWORD }}"
-
-squonk_guest_user: "{{ lookup('env', 'SQUONK_GUEST_USER') }}"
-squonl_guest_password: "{{ lookup('env', 'SQUONK_GUEST_PASSWORD') }}"
-
-# If set each deployment of Pods (infrastructure and squonk)
-# will be followed by a monitoring step that waits for the
-# expected Pods to initialise before moving on to the next step.
-wait_for_pods: yes
-
-# We can configure the 'standard-user' using a selenium script
-# and a Chrome web-driver but this requires Chrome to be available,
-# the driver to be on you r path and certificates to be properly
-# deployed in order for selenium to work properly in "headless" mode.
-# The automation works if configured not to use chrome in headless mode.
-setup_keycloak: no
-
-# Here PVs used by the application (the squonk-work-dir for example)
-# are returned to an Available state if they're currently
-# in a Released state. Note: it is the user's responsibility
-# to protect themselves for data loss here. This will inspect the
-# "state" of all PVs in the squonk *and* infrastructure projects.
-recycle_released_pvs: yes
 
 # What volume type are we using? One of: -
 #
@@ -48,11 +34,39 @@ recycle_released_pvs: yes
 #
 #   When set to 'none' the user is expected to have provisioned
 #   the persistent volumes and claims suitable for the project.
-volume_type: none
+oc_squonk_volume_type: "{{ ansible_env.OC_SQUONK_VOLUME_TYPE }}"
 
 # When using dynamic volumes the storage
 # class needs to be defined...
-volume_storage_class: glusterfs-storage
+oc_squonk_volume_storage_class: "{{ ansible_env.OC_SQUONK_VOLUME_STORAGE_CLASS }}"
+
+squonk_guest_user: "{{ lookup('env', 'SQUONK_GUEST_USER') }}"
+squonl_guest_password: "{{ lookup('env', 'SQUONK_GUEST_PASSWORD') }}"
+
+# If set each deployment of Pods (infrastructure and squonk)
+# will be followed by a monitoring step that waits for the
+# expected Pods to initialise before moving on to the next step.
+wait_for_pods: yes
+
+# Various retry timeouts (seconds)...
+pod_ready_timeout: 300
+pod_terminate_timeout: 300
+pv_create_timeout: 120
+pvc_bind_timeout: 120
+
+# We can configure the 'standard-user' using a selenium script
+# and a Chrome web-driver but this requires Chrome to be available,
+# the driver to be on you r path and certificates to be properly
+# deployed in order for selenium to work properly in "headless" mode.
+# The automation works if configured not to use chrome in headless mode.
+setup_keycloak: no
+
+# Here PVs used by the application (the squonk-work-dir for example)
+# are returned to an Available state if they're currently
+# in a Released state. Note: it is the user's responsibility
+# to protect themselves for data loss here. This will inspect the
+# "state" of all PVs in the squonk *and* infrastructure projects.
+recycle_released_pvs: yes
 
 # Our root template directory
 # (relative to the role_path directory)
