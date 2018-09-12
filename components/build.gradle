@@ -215,10 +215,6 @@ task chemServicesWars(type: Copy) {
         include '*.war'
         rename '.*', 'chem-services-rdkit-basic.war'
     }
-    from("chem-services-rdkit-search/build/libs") {
-        include '*.war'
-        rename '.*', 'chem-services-rdkit-search.war'
-    }
     from("chem-services-openchemlib-basic/build/libs") {
         include '*.war'
         rename '.*', 'chem-services-openchemlib-basic.war'

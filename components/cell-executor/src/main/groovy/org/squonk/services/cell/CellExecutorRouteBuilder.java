@@ -142,7 +142,9 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
 
         int i = 1;
         for (StepDefinition stepdef: steps) {
-            LOG.info("Step " + i++ + ": " + stepdef.getImplementationClass());
+            LOG.info("Step " + i++ + ": " + stepdef.getImplementationClass() +
+                    " Service ID: " + stepdef.getServiceId() +
+                    " ServiceDescriptor: " + stepdef.getServiceDescriptor());
         }
 
         VariableManager varman = new VariableManager(notebookRestClient,notebookId, editableId);

@@ -79,8 +79,8 @@ public class SMARTCypRestRouteBuilder extends RouteBuilder {
     };
 
     protected ServiceDescriptorSet sdset = new ServiceDescriptorSet(
-            "http://chemcentral-search:8080/chemcentral-search/rest/v1/db",
-            "http://chemcentral-search:8080/chemcentral-search/rest/ping",
+            "http://chemservices:8080/chem-services-smartcyp/rest/v1",
+            "http://chemservices:8080/chem-services-smartcyp/rest/ping",
             Arrays.asList(CALCULATORS_SERVICE_DESCRIPTOR));
 
 
