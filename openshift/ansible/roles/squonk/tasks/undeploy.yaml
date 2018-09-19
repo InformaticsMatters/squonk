@@ -13,20 +13,20 @@
 # simply delete the squonk project.
 
 - name: Check Squonk Project
-  shell: oc get projects | grep "{{ oc_project }} " || true
+  shell: oc get projects
   register: projects_result
   changed_when: False
 
 - name: Delete Squonk Project
   shell: oc delete project/{{ oc_project }}
-  when: oc_project in projects_result.stdout
+  when:  projects_result.stdout | regex_search('^%s\s' % oc_project, multiline=True)
 
 - name: Wait for project deletion
   shell: oc get projects
   register: pj_cmd
   retries: 20
   delay: 30
-  until: oc_project not in pj_cmd.stdout
+  until: not pj_cmd.stdout | regex_search('^%s\s' % oc_project, multiline=True)
   changed_when: False
 
 # Now undo the stuff in the infrastructure project...
@@ -64,14 +64,14 @@
   - squonk-database-creator
   - squonk-rabbitmq-creator
   - squonk-client-creator
-  when: item in job_result.stdout
+  when: job_result.stdout | regex_search('^%s\s' % item, multiline=True)
 
 - name: Wait for Jobs to Terminate
   shell: oc get jobs
   register: j_cmd
   delay: 10
   retries: "{{ (pod_terminate_timeout | int / 10) | int }}"
-  until: item not in pj_cmd.stdout
+  until: not j_cmd.stdout | regex_search('^%s\s' % item, multiline=True)
   loop:
   - squonk-database-creator
   - squonk-rabbitmq-creator
@@ -90,4 +90,4 @@
   - squonk-rabbitmq-config
   - squonk-client-creator
   - jobexecutor-sso-config
-  when: item in cm_result.stdout
+  when: cm_result.stdout | regex_search('^%s\s' % item, multiline=True)

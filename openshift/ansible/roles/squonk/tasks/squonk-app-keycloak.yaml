@@ -62,10 +62,10 @@
 # to reach a "Completed" state.
 #
 # As we've probably waited for a long time for the pods above,
-# if it's been successful, the Postgres migration should be a NOP.
+# if it's been successful, waiting for the postgres migration should be a NOP.
 
 - name: Wait for Postgres migration
-  shell: oc get po | grep {{ item }} | grep -v deploy | grep Completed > /dev/null
+  shell: oc describe jobs/{{ item }} | grep Completions | grep 1
   delay: 10
   retries: "{{ (pod_ready_timeout | int / 10) | int }}"
   register: result

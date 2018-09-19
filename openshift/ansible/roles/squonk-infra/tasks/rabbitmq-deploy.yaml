@@ -14,7 +14,7 @@
     -p INFRA_NAMESPACE={{ oc_infra_project }}
     -p RABBITMQ_HOST=rabbitmq.{{ oc_infra_project }}.svc
     | oc create -f -
-  when: '"rabbitmq" not in rmq_dc_result.stdout'
+  when:  not rmq_dc_result.stdout | regex_search('^rabbitmq\s', multiline=True)
 
 # Wait for running pods
 

@@ -6,7 +6,7 @@
   shell: oc login {{ oc_master_hostname }} -u admin -p {{ oc_admin_password }}
   changed_when: False
 
-# Squonk Infrastructure Project
+# Squonk Project
 
 - name: Check the Squonk Project
   shell: oc get projects
@@ -17,7 +17,7 @@
   shell: >
     oc new-project {{ oc_project }}
     --display-name='Squonk Applications'
-  when: oc_project not in projects_result.stdout
+  when: not projects_result.stdout | regex_search('^%s\s' % oc_project, multiline=True)
 
 - name: Move to Squonk Project
   shell: oc project {{ oc_project }}
@@ -25,9 +25,15 @@
 
 # Prepare roles and service accounts
 
+- name: Check default Cluster Roles
+  shell: oc get clusterrolebindings | grep {{ oc_project }}/default
+  register: role_result
+  changed_when: False
+
 - name: Prepare Roles and Service Accounts
   shell: "{{ item }}"
   loop:
   - oc adm policy add-role-to-user edit {{ oc_user }}
   - oc adm policy add-scc-to-user anyuid system:serviceaccount:{{ oc_project }}:default
   - oc adm policy add-cluster-role-to-user cluster-admin -z default
+  when: not role_result.stdout | regex_search('^cluster-admin\s', multiline=True)
