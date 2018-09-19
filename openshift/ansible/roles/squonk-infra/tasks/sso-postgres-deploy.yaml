@@ -2,10 +2,12 @@
 
 - name: Move to Squonk Infrastructure Project
   shell: oc project {{ oc_infra_project }}
+  changed_when: False
 
 - name: Check Keycloak Deployment
   shell: oc get dc
   register: sso_dc_result
+  changed_when: False
 
 - name: Create Keycloak Deployment
   shell: >
@@ -26,6 +28,7 @@
   register: result
   until: result.rc == 0
   when: wait_for_pods
+  changed_when: False
 
 - name: Wait for Keycloak
   shell: oc get po | grep sso | grep -v deploy | grep 1/1 > /dev/null
@@ -34,3 +37,4 @@
   register: result
   until: result.rc == 0
   when: wait_for_pods
+  changed_when: False

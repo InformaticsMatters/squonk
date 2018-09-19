@@ -2,12 +2,14 @@
 
 - name: Move to Squonk Infrastructure Project
   shell: oc project {{ oc_infra_project }}
+  changed_when: False
 
 - name: Check RabbitMQ Deployment
   shell: oc get dc
   register: rmq_dc_result
+  changed_when: False
 
-- name: Check RabbitMQ Deployment
+- name: Create RabbitMQ Deployment
   shell: >
     oc process
     -f {{ role_path }}/{{ t_dir }}/squonk-infra/rabbitmq.yaml

@@ -2,12 +2,14 @@
 
 - name: Move to Squonk Infrastructure Project
   shell: oc project {{ oc_infra_project }}
+  changed_when: False
 
 # Check/Create PVs
 
 - name: Check Infrastructure PVs
   shell: oc get pv
   register: i_pv_result
+  changed_when: False
 
 - name: Create Infrastructure PVs
   shell: >
@@ -55,6 +57,7 @@
 - name: Check Infrastructure PVCs (nfs)
   shell: oc get pvc
   register: i_pvc_result
+  changed_when: False
 
 - name: Create Infrastructure PVCs (nfs)
   shell: >
