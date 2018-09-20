@@ -19,7 +19,7 @@
     -p NFS_PATH={{ ansible_env.OC_NFS_PATH }}
     -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-pv-nfs.yaml
     | oc create -f -
-  when: '"pv-rabbitmq" not in i_pv_result.stdout'
+  when: not i_pv_result.stdout | regex_search('^pv-rabbitmq\s', multiline=True)
 
 # Wait for PVs to become "Available"...
 
@@ -33,7 +33,7 @@
   loop:
   - pv-postgresql
   - pv-rabbitmq
-  when: '"pv-rabbitmq" not in i_pv_result.stdout'
+  when: not i_pv_result.stdout | regex_search('^pv-rabbitmq\s', multiline=True)
 
 # Deal with "Released" volumes.
 # Those PVs that are "Released"
@@ -65,7 +65,7 @@
     -p INFRA_NAMESPACE={{ oc_infra_project }}
     -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-pvc-nfs.yaml
     | oc create -f -
-  when: '"rabbitmq-claim" not in i_pvc_result.stdout'
+  when: not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
 
 # Wait for PVCs to become "Bound"...
 
@@ -79,4 +79,4 @@
   loop:
   - postgresql-claim
   - rabbitmq-claim
-  when: '"rabbitmq-claim" not in i_pvc_result.stdout'
+  when: not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)

@@ -6,6 +6,7 @@
 keycloak_realm: "{{ ansible_env.KEYCLOAK_REALM }}"
 
 oc_infra_project: "{{ ansible_env.OC_INFRA_PROJECT }}"
+oc_infra_sa: "{{ ansible_env.OC_INFRA_SA }}"
 oc_master_hostname: "{{ ansible_env.OC_MASTER_HOSTNAME }}"
 oc_routes_basename: "{{ ansible_env.OC_ROUTES_BASENAME }}"
 oc_admin_password: "{{ ansible_env.OC_ADMIN_PASSWORD }}"
@@ -33,6 +34,7 @@ oc_infra_volume_storage_class: "{{ ansible_env.OC_INFRA_VOLUME_STORAGE_CLASS }}"
 
 postgresql_shared_buffer_size: 1GB
 postgresql_volume_size: 125Gi
+rabbitmq_volume_size: 1Gi
 
 # If set each deployment of Pods (infrastructure and squonk)
 # will be followed by a monitoring step that waits for the
@@ -63,7 +65,7 @@ volume_type: none
 
 # When using dynamic volumes the storage
 # class needs to be defined...
-volume_storage_class: standard
+volume_storage_class: cloud-block-volume
 
 # Our root Squonk template directory
 # (relative to the role_path directory)

@@ -10,4 +10,4 @@ oc project -q $OC_INFRA_PROJECT
 set +e
 
 oc delete all,cm,pvc,secrets --selector template=rabbitmq
-
+oc delete sa/$OC_INFRA_SA

@@ -6,7 +6,7 @@
 
 - name: Check RabbitMQ Deployment
   shell: oc get dc
-  register: rmq_dc_result
+  register: dc_result
   changed_when: False
 
 - name: Create RabbitMQ Deployment
@@ -14,9 +14,10 @@
     oc process
     -f {{ role_path }}/{{ t_dir }}/squonk-infra/rabbitmq.yaml
     -p INFRA_NAMESPACE={{ oc_infra_project }}
+    -p INFRA_SA={{ oc_infra_sa }}
     -p RABBITMQ_HOST=rabbitmq.{{ oc_infra_project }}.svc
     | oc create -f -
-  when:  not rmq_dc_result.stdout | regex_search('^rabbitmq\s', multiline=True)
+  when:  not dc_result.stdout | regex_search('^rabbitmq\s', multiline=True)
 
 # Wait for running pods
 
@@ -27,3 +28,4 @@
   register: result
   until: result.rc == 0
   when: wait_for_pods
+  changed_when: False

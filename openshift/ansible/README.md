@@ -1,7 +1,9 @@
 # Squonk Ansible OpenShift Deployment
-You can run the playbook from this directory with the command: -
+You can run the infrastructure and squonk playbook from this
+directory with the commands: -
 
     ansible-playbook playbooks/squonk-infra/deploy.yaml
+    
     ansible-playbook playbooks/squonk/deploy.yaml
 
 There are `undeploy` playbooks that can be run for both the

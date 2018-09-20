@@ -16,9 +16,10 @@
     oc process
     -p STORAGE_CLASS={{ volume_storage_class }}
     -p POSTGRESQL_VOLUME_SIZE={{ postgresql_volume_size }}
+    -p RABBITMQ_VOLUME_SIZE={{ rabbitmq_volume_size }}
     -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-pvc-dynamic.yaml
     | oc create -f -
-  when: '"rabbitmq-claim" not in i_pvc_result.stdout'
+  when: not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
 
 # Wait for PVCs to become "Bound"...
 
@@ -32,4 +33,4 @@
   loop:
   - postgresql-claim
   - rabbitmq-claim
-  when: '"rabbitmq-claim" not in i_pvc_result.stdout'
+  when: not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
