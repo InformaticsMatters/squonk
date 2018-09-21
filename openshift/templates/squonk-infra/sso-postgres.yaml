@@ -508,7 +508,7 @@ objects:
             containers:
             - image: ${BACKUP_REGISTRY}/${BACKUP_IMAGE}:${BACKUP_TAG}
               name: postgresql-backup
-              imagePullPolicy: Always
+              imagePullPolicy: IfNotPresent
               volumeMounts:
               - name: postgresql-backup-data
                 mountPath: /backup
@@ -555,7 +555,7 @@ objects:
             containers:
             - image: ${BACKUP_REGISTRY}/${BACKUP_IMAGE}:${BACKUP_TAG}
               name: postgresql-backup
-              imagePullPolicy: Always
+              imagePullPolicy: IfNotPresent
               volumeMounts:
               - name: postgresql-backup-data
                 mountPath: /backup
