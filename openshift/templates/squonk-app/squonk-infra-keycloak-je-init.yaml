@@ -1,4 +1,6 @@
-# oc process -f squonk-keycloak-init.yaml | oc create -f -
+---
+
+# oc process -f squonk-infra-jobexecutor-init.yaml | oc create -f -
 # Most likely you will need to specicify these parameters:
 # -p KEYCLOAK_REALM=realmname
 # -p ROUTES_BASE_HOSTNAME=hostname
@@ -11,15 +13,21 @@
 kind: Template
 apiVersion: v1
 metadata:
-  name: keycloak-client-create
+  name: keycloak-je-client-create
 labels:
-  template: keycloak-client-create
-message: 'Squonk client created in Keycloak'
+  template: keycloak-je-client-create
+message: 'Squonk JobExecutor client created in Keycloak'
 
 parameters:
 
 - displayName: Squonk client secret
   name: SQUONK_CLIENT_SECRET
+  from: "[a-zA-Z0-9]{32}"
+  generate: expression
+  required: true
+
+- displayName: Squonk JobExecutor client secret
+  name: SQUONK_JE_CLIENT_SECRET
   from: "[a-zA-Z0-9]{32}"
   generate: expression
   required: true
@@ -30,15 +38,15 @@ parameters:
 
 - displayName: Client ID
   name: CLIENT_ID
-  value: squonk-notebook
+  value: squonk-jobexecutor
 
 - displayName: Client Name
   name: CLIENT_NAME
-  value: Squonk Computational Notebook
+  value: Squonk Job Executor
 
 - displayName: Client Description
   name: CLIENT_DESC
-  value: Squonk Computational Notebook
+  value: Squonk Job Executor
 
 - displayName: Base hostname for routes
   name: ROUTES_BASE_HOSTNAME
@@ -46,7 +54,7 @@ parameters:
 
 - displayName: Prefix for squonk hostname
   name: ROUTE_PREFIX_SQUONK
-  value: squonk-notebook
+  value: jobexecutor
 
 - displayName: Prefix for SSO hostname
   name: ROUTE_PREFIX_SSO
@@ -60,36 +68,74 @@ parameters:
   name: LOGOUT_REDIRECT_TO
   required: true
 
+
 objects:
 
 - kind: ConfigMap
   apiVersion: v1
   metadata:
-    name: squonk-sso-config
+    name: squonk-je-sso-config
     namespace: ${SQUONK_NAMESPACE}
   data:
     keycloak.json: |
       {
         "realm": "${KEYCLOAK_REALM}",
+        "realm-public-key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuYw5ngO0369xl6FqKUBqGTHjQrdoFg4LWAanBMf1/cLhhBAuD7B4bo8GaLIS+G3cwQZsLZjpcQk54BbCXNu4HUfqJcqus0m0Qo8qfHpCavSbPWAXS9ZCVLxXHmIBBD/pE5ZJidpfT/J5pJEIgPZBPx8/vPNMiZlZrFSPbU7B2bVsgJ3WYq+sPyQ7iUyaHBi8iFXpcz+7GEgO2j0uZoY/F3ECk0qRymySqjaV4kLY6naQ+UXzF3V9fbCAskBVZbIMB5ZgyFd/Au8NAial+E1NsJjEOKvp4+6nrOuZdDfA6M5eFztBRO7aRmcmpx7DK6U+aN64KUXcFvtQrQMpaapmvwIDAQAB",
+        "bearer-only": true,
         "auth-server-url": "https://${ROUTE_PREFIX_SSO}.${ROUTES_BASE_HOSTNAME}/auth",
-        "ssl-required": "external",
-        "disable-trust-manager": true,
-        "resource": "${CLIENT_ID}",
-        "use-resource-role-mappings": false,
-        "credentials": { "secret": "${SQUONK_CLIENT_SECRET}" }
+        "ssl-required": "none",
+        "resource": "squonk-jobexecutor",
+        "principal-attribute": "preferred_username"
       }
     context.xml: |
       <?xml version="1.0" encoding="UTF-8"?>
       <Context>
-        <Valve className="org.keycloak.adapters.tomcat.KeycloakAuthenticatorValve"/>
+          <Valve className="org.keycloak.adapters.tomcat.KeycloakAuthenticatorValve"/>
       </Context>
+    web.xml: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+          <display-name>Job Executor</display-name>
+          <listener>
+              <listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>
+          </listener>
+          <!-- Camel servlet -->
+          <servlet>
+              <servlet-name>CamelServlet</servlet-name>
+              <servlet-class>org.apache.camel.component.servlet.CamelHttpTransportServlet</servlet-class>
+              <load-on-startup>1</load-on-startup>
+          </servlet>
+          <!-- Camel servlet mapping -->
+          <servlet-mapping>
+              <servlet-name>CamelServlet</servlet-name>
+              <url-pattern>/rest/*</url-pattern>
+          </servlet-mapping>
+          <security-constraint>
+              <web-resource-collection>
+                  <web-resource-name>jobexecutor</web-resource-name>
+                  <url-pattern>/*</url-pattern>
+              </web-resource-collection>
+              <auth-constraint>
+                  <role-name>standard-user</role-name>
+              </auth-constraint>
+          </security-constraint>
+          <login-config>
+              <auth-method>KEYCLOAK</auth-method>
+              <realm-name>squonk</realm-name>
+          </login-config>
+          <security-role>
+              <role-name>standard-user</role-name>
+          </security-role>
+      </web-app>
 
 - kind: ConfigMap
   apiVersion: v1
   metadata:
-    name: squonk-client-creator
+    name: squonk-je-client-creator
   data:
-    create-squonk-client.sh: |
+    create-squonk-je-client.sh: |
       #!/bin/bash
 
       set -e
@@ -136,18 +182,18 @@ objects:
 - kind: Job
   apiVersion: batch/v1
   metadata:
-    name: squonk-client-creator
+    name: squonk-je-client-creator
   spec:
     template:
       metadata:
-        name: squonk-client-creator
+        name: squonk-je-client-creator
       spec:
         volumes:
-        - name: squonk-client-creator
+        - name: squonk-je-client-creator
           configMap:
-            name: squonk-client-creator
+            name: squonk-je-client-creator
         containers:
-        - name: squonk-client-creator
+        - name: squonk-je-client-creator
           env:
           - name: KEYCLOAK_REALM
             value: ${KEYCLOAK_REALM}
@@ -181,5 +227,5 @@ objects:
           - /squonk-client-creator/create-squonk-client.sh
           volumeMounts:
           - mountPath: /squonk-client-creator
-            name: squonk-client-creator
+            name: squonk-je-client-creator
         restartPolicy: OnFailure

@@ -10,3 +10,4 @@ oc project -q $OC_PROJECT
 set +e
 
 oc delete all,cm,routes,secrets --selector template=squonk-app
+oc delete all,cm,routes,secrets --selector template=squonk-app-je

@@ -22,8 +22,15 @@ oc process\
   -f squonk-infra-rabbitmq-init.yaml\
   | oc create -f -
 
-echo "Preparing Keycloak"
+echo "Preparing Keycloak (Client)"
 oc process -f squonk-infra-keycloak-init.yaml \
+  -p KEYCLOAK_REALM=$KEYCLOAK_REALM\
+  -p ROUTES_BASE_HOSTNAME=$OC_ROUTES_BASENAME \
+  -p LOGOUT_REDIRECT_TO=$KEYCLOAK_LOGOUT_REDIRECT_TO\
+  | oc create -f -
+
+echo "Preparing Keycloak (JobExecutor)"
+oc process -f squonk-infra-keycloak-je-init.yaml \
   -p KEYCLOAK_REALM=$KEYCLOAK_REALM\
   -p ROUTES_BASE_HOSTNAME=$OC_ROUTES_BASENAME \
   -p LOGOUT_REDIRECT_TO=$KEYCLOAK_LOGOUT_REDIRECT_TO\

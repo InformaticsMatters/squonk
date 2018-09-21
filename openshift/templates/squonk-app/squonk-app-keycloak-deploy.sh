@@ -19,4 +19,9 @@ oc process -f squonk-app-keycloak.yaml\
   -p JE_IMAGE_TAG=$OC_SQUONK_IMAGE_TAG\
   | oc create -f -
 
+oc process -f squonk-app-keycloak-je.yaml\
+  -p APP_NAMESPACE=$OC_PROJECT\
+  -p JE_IMAGE_TAG=$OC_SQUONK_IMAGE_TAG\
+  | oc create -f -
+
 echo "Squonk deployment is underway. Once complete it can be accessed at http://${OC_SQUONK_HOST}/portal"

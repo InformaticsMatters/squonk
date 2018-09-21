@@ -35,7 +35,9 @@ oc delete secret/squonk-rabbitmq-credentials -n $OC_PROJECT
 
 echo "Cleaning up Keycloak"
 oc delete cm/squonk-sso-config -n $OC_PROJECT
+oc delete cm/squonk-je-sso-config -n $OC_PROJECT
 oc delete job/squonk-client-creator cm/squonk-client-creator
+oc delete job/squonk-je-client-creator cm/squonk-je-client-creator
 
 echo "Cleaning up JobExecutor"
 oc delete cm/jobexecutor-sso-config
