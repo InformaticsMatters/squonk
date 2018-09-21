@@ -59,7 +59,7 @@
   register: s_pvc_result
   changed_when: False
 
-- name: Create Infrastructure PVCs (nfs)
+- name: Create Squonk PVCs (nfs)
   shell: >
     oc process
     -p APP_NAMESPACE={{ oc_project }}

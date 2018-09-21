@@ -13,5 +13,8 @@
 
 - import_tasks: squonk-infra-deploy.yaml
 - import_tasks: squonk-app-keycloak.yaml
+- import_tasks: squonk-app-keycloak-je.yaml
+  when: deploy_jobexecutor
+
 - import_tasks: setup-keycloak.yaml
   when: setup_keycloak

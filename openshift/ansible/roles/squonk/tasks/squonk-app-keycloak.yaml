@@ -30,14 +30,12 @@
     -p CHEM_IMAGE_TAG={{ oc_squonk_image_tag }}
     -p CORE_IMAGE_TAG={{ oc_squonk_image_tag }}
     -p CELL_IMAGE_TAG={{ oc_squonk_image_tag }}
-    -p JE_IMAGE_TAG={{ oc_squonk_image_tag }}
     | oc create -f -
   when: '"coreservices" not in dc_result.stdout'
 
 # Wait for running pods
 # We expect (roughly in order of coming online)...
 #
-#   jobexecutor
 #   cellexecutor
 #   coreservices
 #   portal
@@ -51,7 +49,6 @@
   until: result.rc == 0
   when: wait_for_pods
   loop:
-  - jobexecutor
   - cellexecutor
   - coreservices
   - portal

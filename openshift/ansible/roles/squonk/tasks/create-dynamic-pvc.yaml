@@ -11,7 +11,7 @@
   register: s_pvc_result
   changed_when: False
 
-- name: Create Infrastructure PVCs (dynamic)
+- name: Create Squonk PVCs (dynamic)
   shell: >
     oc process
     -p APP_NAMESPACE={{ oc_project }}
@@ -22,7 +22,7 @@
 
 # Wait for PVCs to become "Bound"...
 
-- name: Wait for PVCs to become Bound (dynamic)
+- name: Wait for Squonk PVCs to become Bound (dynamic)
   shell: >
     oc get pvc/{{ item }} | grep Bound
   delay: 5

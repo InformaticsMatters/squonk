@@ -43,6 +43,9 @@ oc_squonk_volume_storage_class: "{{ ansible_env.OC_SQUONK_VOLUME_STORAGE_CLASS }
 squonk_guest_user: "{{ lookup('env', 'SQUONK_GUEST_USER') }}"
 squonl_guest_password: "{{ lookup('env', 'SQUONK_GUEST_PASSWORD') }}"
 
+# Deploy the job-executor?
+deploy_jobexecutor: No
+
 # If set each deployment of Pods (infrastructure and squonk)
 # will be followed by a monitoring step that waits for the
 # expected Pods to initialise before moving on to the next step.

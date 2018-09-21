@@ -170,7 +170,7 @@ parameters:
 - name: BACKUP_REGISTRY
   value: 'docker.io'
 - name: BACKUP_IMAGE
-  value: 'informaticsmatters/postgresql-backup'
+  value: 'informaticsmatters/sql-backup'
 - name: BACKUP_TAG
   value: 'stable'
 

@@ -19,7 +19,7 @@
 
 - name: Delete Squonk Project
   shell: oc delete project/{{ oc_project }}
-  when:  projects_result.stdout | regex_search('^%s\s' % oc_project, multiline=True)
+  when:  projects_result.stdout | regex_search('^%s\s.*Active$' % oc_project, multiline=True)
 
 - name: Wait for project deletion
   shell: oc get projects

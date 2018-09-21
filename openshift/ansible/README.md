@@ -6,8 +6,7 @@ directory with the commands: -
     
     ansible-playbook playbooks/squonk/deploy.yaml
 
-There are `undeploy` playbooks that can be run for both the
-infrastructure and squonk: -
+There is an `undeploy` playbook that can be run for squonk: -
 
     ansible-playbook playbooks/squonk/undeploy.yaml
 
