@@ -24,6 +24,7 @@
     -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-app-keycloak.yaml
     -p SQUONK_HOST={{ oc_squonk_host}}
     -p APP_NAMESPACE={{ oc_project }}
+    -p PULL_POLICY={{ image_pull_policy }}
     -p LOGOUT_REDIRECT_TO={{ keycloak_logout_redirect_to }}
     -p FLYWAY_IMAGE_TAG={{ oc_squonk_image_tag }}
     -p PORTAL_IMAGE_TAG={{ oc_squonk_image_tag }}

@@ -51,6 +51,10 @@ deploy_jobexecutor: No
 # expected Pods to initialise before moving on to the next step.
 wait_for_pods: yes
 
+# The Squonk OpenShift image pull policy.
+# One, typically, of "IfNotPresent" or "Always"
+image_pull_policy: Always
+
 # Various retry timeouts (seconds)...
 pod_ready_timeout: 600
 pod_terminate_timeout: 300

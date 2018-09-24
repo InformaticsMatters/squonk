@@ -497,7 +497,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
     private ServiceDescriptorSet descriptorsSdset = new ServiceDescriptorSet(
             "http://chemservices:8080/chem-services-chemaxon-basic/rest/v1/descriptors",
             "http://chemservices:8080/chem-services-chemaxon-basic/rest/ping",
-            Arrays.asList(SERVICE_DESCRIPTOR_CALCULATORS));
+            Arrays.asList(SERVICE_DESCRIPTOR_DESCRIPTORS));
 
     @Override
     public void configure() throws Exception {

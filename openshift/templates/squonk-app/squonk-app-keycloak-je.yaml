@@ -21,6 +21,8 @@ parameters:
 
 - name: APP_NAMESPACE
   value: squonk
+- name: PULL_POLICY
+  value: IfNotPresent
 
 # ------------
 # JobExecutor
@@ -73,6 +75,7 @@ objects:
         containers:
         - image: squonk/jobexecutor-keycloak:${JE_IMAGE_TAG}
           name: jobexecutor
+          imagePullPolicy: ${PULL_POLICY}
           env:
           - name: SQUONK_CONTAINER_RUNNER_TYPE
             value: ${JE_CONTAINER_RUNNER_TYPE}
