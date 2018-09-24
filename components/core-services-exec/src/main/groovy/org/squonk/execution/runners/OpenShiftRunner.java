@@ -390,7 +390,7 @@ public class OpenShiftRunner extends AbstractRunner {
         // The host working directory is typically something like
         // '/squonk/work/docker/41b47633-a2e6-49ab-b32c-9ab19caf4d4c'
         // where the final directory is an automatically assigned UUID.
-        // We use the final diretcory as the sub-path, which is where
+        // We use the final directory as the sub-path, which is where
         // the Pod we launch will be mounted.
 
         // Break up the path to get a sub-directory.
