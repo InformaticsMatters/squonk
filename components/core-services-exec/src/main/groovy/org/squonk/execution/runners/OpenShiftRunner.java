@@ -334,10 +334,12 @@ public class OpenShiftRunner extends AbstractRunner {
      *                        `/squonk/work/docker/[uuid]`.
      * @param localWorkDir    The name under which the host work dir will be
      *                        mounted in the new container. Typically `/work`.
-     * @param jobId The unique (uuid) assigned to the Cell job.
+     * @param jobId The unique ID (uuid) assigned to the Cell job.
      *              This will be used to create a sub-directory in
      *              hostBaseWorkDir into which the input data is copied
-     *              prior to running the job in a Pod.
+     *              prior to running the job in a Pod. The Job's uuid is not
+     *              necessarily the same as the uuid found in the
+     *              `hostBaseWorkDir`
      */
     public OpenShiftRunner(String imageName, String hostBaseWorkDir, String localWorkDir, String jobId) {
 
@@ -349,7 +351,6 @@ public class OpenShiftRunner extends AbstractRunner {
                  " jobId='" + jobId + "'");
 
         this.imageName = imageName;
-        this.localWorkDir = localWorkDir;
 
         // Append 'latest' if tag's not specified.
         if (!this.imageName.contains(":")) {
@@ -359,17 +360,29 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // The host base directory's leaf directory
         // will be used as a 'sub-path' for mounting into the Pod.
+        // If the paths are not provided try to obtain them
+        // from underlying defaults. If that fails ... leave
 
         if (hostBaseWorkDir == null) {
-            LOG.warning("Null hostBaseWorkDir, using getHostWorkDir() path...");
+            LOG.fine("Null hostBaseWorkDir, trying getHostWorkDir()...");
             hostBaseWorkDir = getHostWorkDir().getPath();
         }
         this.hostBaseWorkDir = hostBaseWorkDir;
 
-        if (hostBaseWorkDir == null) {
+        if (localWorkDir == null) {
+            LOG.fine("Null localWorkDir, trying getDefaultWorkDir()...");
+            localWorkDir = getDefaultWorkDir();
+        }
+        this.localWorkDir = localWorkDir;
+
+        // Paths now?
+
+        LOG.info("hostBaseWorkDir='" + this.hostBaseWorkDir + "'");
+        LOG.info("localWorkDir='" + this.localWorkDir + "'");
+        if (this.hostBaseWorkDir == null) {
             LOG.severe("Null hostBaseWorkDir");
             return;
-        } else if (localWorkDir == null) {
+        } else if (this.localWorkDir == null) {
             LOG.severe("Null localWorkDir");
             return;
         }
@@ -384,10 +397,9 @@ public class OpenShiftRunner extends AbstractRunner {
         // We expect to be given '/parent/child' so we expect to find
         // more than one '/' and we want the parent and child.
         // The child becomes the sub-path.
-        LOG.info("hostBaseWorkDir='" + hostBaseWorkDir + "'");
         int lastSlash = hostBaseWorkDir.lastIndexOf("/");
         if (lastSlash < 1) {
-            // We expect this to be greater and 0!
+            // We expect this to be greater than 0!
             // Leaving now will cause us to fail our execution-time tests.
             LOG.severe("Could not find a subPath");
             return;
@@ -452,7 +464,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         super.init();
 
-        LOG.info(podName + " (Initialising hostBaseWorkDir=" + hostBaseWorkDir + ")");
+        LOG.fine("Initialising (hostBaseWorkDir=" + hostBaseWorkDir + ")");
 
         // Only permitted on initial (created) state
         if (isRunning != RUNNER_CREATED) {
@@ -463,7 +475,7 @@ public class OpenShiftRunner extends AbstractRunner {
         // The method is here to comply with protocol.
         // The execute() method creates and prepares the dependent objects.
 
-        LOG.info(podName + " (Initialised)");
+        LOG.fine("Initialised");
 
         isRunning = RUNNER_INITIALISED;
 
