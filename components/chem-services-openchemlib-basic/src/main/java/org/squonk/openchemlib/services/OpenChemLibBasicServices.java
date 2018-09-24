@@ -69,8 +69,8 @@ public class OpenChemLibBasicServices {
     };
 
     static final ServiceDescriptorSet SD_SET = new ServiceDescriptorSet(
-            " http://chemservices:8080/chem-services-openchemlib-basic/rest/v1/calculators",
-            " http://chemservices:8080/chem-services-openchemlib-basic/rest/ping",
+            "http://chemservices:8080/chem-services-openchemlib-basic/rest/v1/calculators",
+            "http://chemservices:8080/chem-services-openchemlib-basic/rest/ping",
             Arrays.asList(ALL));
 
     private static HttpServiceDescriptor createServiceDescriptor(
