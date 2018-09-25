@@ -104,24 +104,24 @@ objects:
           - mountPath: ${JE_SQUONK_CONTAINER_WORK_DIR}
             name: squonk-work-dir
           - mountPath: /usr/local/tomcat/webapps/jobexecutor/META-INF/context.xml
-            name: jobexecutor-sso-config
+            name: squonk-je-sso-config
             subPath: context.xml
             readOnly: true
           - mountPath: /usr/local/tomcat/webapps/jobexecutor/WEB-INF/keycloak.json
-            name: jobexecutor-sso-config
+            name: squonk-je-sso-config
             subPath: keycloak.json
             readOnly: true
           - mountPath: /usr/local/tomcat/webapps/jobexecutor/WEB-INF/web.xml
-            name: jobexecutor-sso-config
+            name: squonk-je-sso-config
             subPath: web.xml
             readOnly: true
         volumes:
         - name: squonk-work-dir
           persistentVolumeClaim:
             claimName: squonk-work-dir-pvc
-        - name: jobexecutor-sso-config
+        - name: squonk-je-sso-config
           configMap:
-            name: jobexecutor-sso-config
+            name: squonk-je-sso-config
 
 - kind: Service
   apiVersion: v1

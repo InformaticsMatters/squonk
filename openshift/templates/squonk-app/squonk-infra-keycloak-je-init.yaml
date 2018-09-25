@@ -226,6 +226,6 @@ objects:
           - /bin/bash
           - /squonk-client-creator/create-squonk-client.sh
           volumeMounts:
-          - mountPath: /squonk-client-creator
+          - mountPath: /squonk-je-client-creator
             name: squonk-je-client-creator
         restartPolicy: OnFailure
