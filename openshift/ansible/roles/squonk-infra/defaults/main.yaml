@@ -5,6 +5,7 @@
 
 keycloak_realm: "{{ ansible_env.KEYCLOAK_REALM }}"
 
+oc_project: "{{ ansible_env.OC_PROJECT }}"
 oc_infra_project: "{{ ansible_env.OC_INFRA_PROJECT }}"
 oc_infra_sa: "{{ ansible_env.OC_INFRA_SA }}"
 oc_master_hostname: "{{ ansible_env.OC_MASTER_HOSTNAME }}"
