@@ -44,7 +44,7 @@ squonk_guest_user: "{{ lookup('env', 'SQUONK_GUEST_USER') }}"
 squonl_guest_password: "{{ lookup('env', 'SQUONK_GUEST_PASSWORD') }}"
 
 # Deploy the job-executor?
-deploy_jobexecutor: No
+deploy_jobexecutor: Yes
 
 # If set each deployment of Pods (infrastructure and squonk)
 # will be followed by a monitoring step that waits for the

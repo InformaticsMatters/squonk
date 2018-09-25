@@ -39,5 +39,5 @@
 - name: Create the Infrastructure Project
   shell: >
     oc new-project {{ oc_infra_project }}
-    --display-name='Squonk Infrastructure'
+    --display-name='{{ oc_infra_project_display_name }}'
   when: oc_infra_project not in projects_result.stdout

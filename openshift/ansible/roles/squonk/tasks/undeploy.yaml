@@ -40,6 +40,19 @@
   register: db_pod
   changed_when: False
 
+# Remove persistent volumes
+
+- name: Check Squonk PVs
+  shell: oc get pv
+  register: s_pv_result
+  changed_when: False
+
+- name: Delete Squonk PVs
+  shell: oc delete pv/{{ item }}
+  loop:
+  - squonk-work-dir
+  when: s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
+
 # Getting the following error: -
 #
 #   ERROR:  database "squonk" is being accessed by other users
