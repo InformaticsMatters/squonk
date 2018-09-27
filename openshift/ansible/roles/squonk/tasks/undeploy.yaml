@@ -53,19 +53,6 @@
   - squonk-work-dir
   when: s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
 
-# Getting the following error: -
-#
-#   ERROR:  database "squonk" is being accessed by other users
-#   DETAIL:  There is 1 other session using the database.
-#   command terminated with exit code 1
-#
-#- name: Drop Squonk database
-#  shell: oc rsh {{ db_pod.stdout }} /bin/bash -c "{{ item }}"
-#  loop:
-#  - psql --command 'drop database squonk;'
-#  - psql --command 'drop role squonk;'
-#  when: db_pod.stdout != ""
-
 - name: Get jobs
   shell: oc get jobs
   register: job_result
@@ -104,3 +91,8 @@
   - squonk-client-creator
   - jobexecutor-sso-config
   when: cm_result.stdout | regex_search('^%s\s' % item, multiline=True)
+
+# What's left is the database and its tables.
+# For now, deleting the database and its tables is a user action.
+#
+# ...and the client information in Keycloak.

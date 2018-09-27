@@ -26,7 +26,7 @@
     -p PULL_POLICY={{ image_pull_policy }}
     -p JE_IMAGE_TAG={{ oc_squonk_image_tag }}
     | oc create -f -
-  when: '"jobexecutor" not in dc_result.stdout'
+  when: not dc_result.stdout | regex_search('^jobexecutor\s', multipline=True)
 
 - name: Wait for Squonk JobExecutor Pod
   shell: oc get po | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
