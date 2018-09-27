@@ -75,40 +75,15 @@ objects:
       <Context>
           <Valve className="org.keycloak.adapters.tomcat.KeycloakAuthenticatorValve"/>
       </Context>
-    web.xml: |
-      <?xml version="1.0" encoding="UTF-8"?>
-      <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-          <display-name>Job Executor</display-name>
-          <listener>
-              <listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>
-          </listener>
-          <!-- Camel servlet -->
-          <servlet>
-              <servlet-name>CamelServlet</servlet-name>
-              <servlet-class>org.apache.camel.component.servlet.CamelHttpTransportServlet</servlet-class>
-              <load-on-startup>1</load-on-startup>
-          </servlet>
-          <!-- Camel servlet mapping -->
-          <servlet-mapping>
-              <servlet-name>CamelServlet</servlet-name>
-              <url-pattern>/rest/*</url-pattern>
-          </servlet-mapping>
-          <security-constraint>
-              <web-resource-collection>
-                  <web-resource-name>jobexecutor</web-resource-name>
-                  <url-pattern>/*</url-pattern>
-              </web-resource-collection>
-              <auth-constraint>
-                  <role-name>standard-user</role-name>
-              </auth-constraint>
-          </security-constraint>
-          <login-config>
-              <auth-method>KEYCLOAK</auth-method>
-              <realm-name>xchem</realm-name>
-          </login-config>
-          <security-role>
-              <role-name>standard-user</role-name>
-          </security-role>
-      </web-app>
+
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: squonk-je-client-creator
+  data:
+    create-squonk-client.sh: |
+      #!/bin/bash
+
+      set -e
+
+      # TBD

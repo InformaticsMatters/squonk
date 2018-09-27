@@ -6,9 +6,11 @@
 - name: Move to Squonk Project
   shell: oc project {{ oc_project }}
   changed_when: False
+  when: deploy_jobexecutor
 
 - name: Login as The Squonk Developer
   shell: oc login {{ oc_master_hostname }} -u {{ oc_user }} -p {{ oc_user_password }}
+  when: deploy_jobexecutor
   changed_when: False
 
 # Deploy...
@@ -16,6 +18,7 @@
 - name: Check Squonk
   shell: oc get dc
   register: dc_result
+  when: deploy_jobexecutor
   changed_when: False
 
 - name: Deploy Squonk JobExecutor
@@ -26,7 +29,9 @@
     -p PULL_POLICY={{ image_pull_policy }}
     -p JE_IMAGE_TAG={{ oc_squonk_image_tag }}
     | oc create -f -
-  when: not dc_result.stdout | regex_search('^jobexecutor\s', multipline=True)
+  when:
+  - deploy_jobexecutor
+  - not dc_result.stdout | regex_search('^jobexecutor\s', multipline=True)
 
 - name: Wait for Squonk JobExecutor Pod
   shell: oc get po | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
@@ -34,7 +39,9 @@
   retries: "{{ (pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
-  when: wait_for_pods
+  when:
+  - deploy_jobexecutor
+  - wait_for_pods
   loop:
   - jobexecutor
   changed_when: False
