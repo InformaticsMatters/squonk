@@ -63,7 +63,6 @@ objects:
     keycloak.json: |
       {
         "realm": "${KEYCLOAK_REALM}",
-        "realm-public-key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuYw5ngO0369xl6FqKUBqGTHjQrdoFg4LWAanBMf1/cLhhBAuD7B4bo8GaLIS+G3cwQZsLZjpcQk54BbCXNu4HUfqJcqus0m0Qo8qfHpCavSbPWAXS9ZCVLxXHmIBBD/pE5ZJidpfT/J5pJEIgPZBPx8/vPNMiZlZrFSPbU7B2bVsgJ3WYq+sPyQ7iUyaHBi8iFXpcz+7GEgO2j0uZoY/F3ECk0qRymySqjaV4kLY6naQ+UXzF3V9fbCAskBVZbIMB5ZgyFd/Au8NAial+E1NsJjEOKvp4+6nrOuZdDfA6M5eFztBRO7aRmcmpx7DK6U+aN64KUXcFvtQrQMpaapmvwIDAQAB",
         "bearer-only": true,
         "auth-server-url": "https://${ROUTE_PREFIX_SSO}.${ROUTES_BASE_HOSTNAME}/auth",
         "ssl-required": "none",
