@@ -28,6 +28,7 @@
     -p APP_NAMESPACE={{ oc_project }}
     -p PULL_POLICY={{ image_pull_policy }}
     -p JE_IMAGE_TAG={{ oc_squonk_image_tag }}
+    -p JE_HOST={{ oc_jobexecutor_host }}
     | oc create -f -
   when:
   - deploy_jobexecutor

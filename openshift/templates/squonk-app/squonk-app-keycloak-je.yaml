@@ -28,6 +28,8 @@ parameters:
 # JobExecutor
 # ------------
 
+- name: JE_HOST
+  required: true
 - name: JE_IMAGE_TAG
   value: latest
 - name: JE_CONTAINER_RUNNER_TYPE
@@ -135,3 +137,21 @@ objects:
     - name: http
       port: 8080
       targetPort: 8080
+
+- kind: Route
+  apiVersion: v1
+  metadata:
+    name: jobexecutor
+    namespace: ${APP_NAMESPACE}
+    annotations:
+      # Note: Set to false to avoid exhausting certificate generation request quota.
+      # Change this to true if/when you are ready for secure the route with trusted certificates.
+      kubernetes.io/tls-acme: 'false'
+  spec:
+    host: ${JE_HOST}
+    to:
+      kind: Service
+      name: jobexecutor
+    tls:
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect

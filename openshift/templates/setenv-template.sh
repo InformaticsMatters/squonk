@@ -27,6 +27,7 @@ export OC_POSTGRESQL_SERVICE=db-postgresql
 export OC_PROJECT=squonk
 export OC_SQUONK_APP=squonk-notebook
 export OC_SQUONK_HOST=${OC_SQUONK_APP}.${OC_ROUTES_BASENAME}
+export OC_JOBEXECUTOR_HOST=jobexecutor.${OC_ROUTES_BASENAME}
 export OC_SQUONK_CC_PVC_SIZE=20Gi
 export OC_SQUONK_IMAGE_TAG=latest
 export OC_SQUONK_SD_POSTER_IMAGE_TAG=latest
