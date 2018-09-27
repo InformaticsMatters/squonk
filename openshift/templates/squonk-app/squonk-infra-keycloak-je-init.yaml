@@ -24,6 +24,12 @@ parameters:
   name: SQUONK_NAMESPACE
   value: squonk
 
+- displayName: Squonk client secret
+  name: SQUONK_CLIENT_SECRET
+  from: "[a-zA-Z0-9]{32}"
+  generate: expression
+  required: true
+
 - displayName: Client ID
   name: CLIENT_ID
   value: squonk-jobexecutor
@@ -42,7 +48,7 @@ parameters:
 
 - displayName: Prefix for squonk hostname
   name: ROUTE_PREFIX_SQUONK
-  value: jobexecutor
+  value: squonk-jobexecutor
 
 - displayName: Prefix for SSO hostname
   name: ROUTE_PREFIX_SSO
@@ -81,9 +87,98 @@ objects:
   metadata:
     name: squonk-je-client-creator
   data:
-    create-squonk-client.sh: |
+    create-squonk-je-client.sh: |
       #!/bin/bash
 
       set -e
 
-      # TBD
+      KEYCLOAK_URL="https://$ROUTE_PREFIX_SSO.$ROUTES_BASE_HOSTNAME/auth"
+      CLIENT_HTTP="http://$ROUTE_PREFIX_SQUONK.$ROUTES_BASE_HOSTNAME"
+      CLIENT_HTTPS="https://$ROUTE_PREFIX_SQUONK.$ROUTES_BASE_HOSTNAME"
+      DATA="username=${KEYCLOAK_USER}&password=${KEYCLOAK_PASSWORD}&grant_type=password&client_id=admin-cli"
+      CLIENT_CONFIG="{\"clientId\":\"$CLIENT_ID\",
+        \"name\":\"$CLIENT_NAME\",
+        \"description\":\"$CLIENT_DESC\",
+        \"redirectUris\":["\"$CLIENT_HTTPS/*\",\"$CLIENT_HTTP/*\""],
+        \"protocol\":\"openid-connect\",
+        \"baseUrl\":\"$CLIENT_HTTPS\",
+        \"serviceAccountsEnabled\":\"true\",
+        \"rootUrl\":\"\",
+        \"publicClient\":\"false\",
+        \"secret\":\"$SQUONK_CLIENT_SECRET\",
+        \"adminUrl\":\"$CLIENT_HTTPS\"
+      }"
+
+      echo "Keycloak is at $KEYCLOAK_URL"
+      echo "SSO user is $KEYCLOAK_USER"
+      echo "Secret is $SQUONK_CLIENT_SECRET"
+      echo "Data: $DATA"
+      echo "$CLIENT_CONFIG"
+
+      TOKEN=$(curl -ks --data "$DATA" "$KEYCLOAK_URL/realms/$KEYCLOAK_REALM/protocol/openid-connect/token" |\
+        grep -Po '(?<="access_token":")[^"]*')
+      echo "Token: $TOKEN"
+
+      RESULT=$(curl -ks -X POST \
+        -d "$CLIENT_CONFIG" \
+        -H "Content-Type: application/json" \
+        -H "Authorization: bearer $TOKEN" \
+        "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM/clients")
+
+      if [ -n "$RESULT" ]; then
+          echo "ERROR: Unable to register client $CLIENT_ID in realm $KEYCLOAK_REALM: $RESULT"
+          exit 1
+      else
+          echo "Registered client $CLIENT_ID in realm $KEYCLOAK_REALM"
+      fi
+
+- kind: Job
+  apiVersion: batch/v1
+  metadata:
+    name: squonk-je-client-creator
+  spec:
+    template:
+      metadata:
+        name: squonk-je-client-creator
+      spec:
+        volumes:
+        - name: squonk-je-client-creator
+          configMap:
+            name: squonk-je-client-creator
+        containers:
+        - name: squonk-je-client-creator
+          env:
+          - name: KEYCLOAK_REALM
+            value: ${KEYCLOAK_REALM}
+          - name: CLIENT_ID
+            value: ${CLIENT_ID}
+          - name: CLIENT_NAME
+            value: ${CLIENT_NAME}
+          - name: CLIENT_DESC
+            value: ${CLIENT_DESC}
+          - name: SQUONK_CLIENT_SECRET
+            value: ${SQUONK_CLIENT_SECRET}
+          - name: ROUTES_BASE_HOSTNAME
+            value: ${ROUTES_BASE_HOSTNAME}
+          - name: ROUTE_PREFIX_SQUONK
+            value: ${ROUTE_PREFIX_SQUONK}
+          - name: ROUTE_PREFIX_SSO
+            value: ${ROUTE_PREFIX_SSO}
+          - name: KEYCLOAK_USER
+            valueFrom:
+              secretKeyRef:
+                name: keycloak-secrets
+                key: sso-service-user
+          - name: KEYCLOAK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: keycloak-secrets
+                key: sso-service-password
+          image: centos:7
+          command:
+          - /bin/bash
+          - /squonk-je-client-creator/create-squonk-je-client.sh
+          volumeMounts:
+          - mountPath: /squonk-je-client-creator
+            name: squonk-je-client-creator
+        restartPolicy: OnFailure
