@@ -59,9 +59,9 @@ services:
     # 5. The result will be the JobStatus objects for all jobs you have submitted. Most likely and empty array.
     # Note that the token expires after a few mins.
     jobexecutor:
+        image: squonk/jobexecutor-keycloak:${TAG}
         volumes:
         - ./images/jobexecutor/keycloak.json:/usr/local/tomcat/webapps/jobexecutor/WEB-INF/keycloak.json:ro,Z
-        - ./images/jobexecutor/web.xml:/usr/local/tomcat/webapps/jobexecutor/WEB-INF/web.xml:ro,Z
         - ./images/jobexecutor/context.xml:/usr/local/tomcat/webapps/jobexecutor/META-INF/context.xml:ro,Z
         environment:
            KEYCLOAK_SERVER_URL:

@@ -1,0 +1,68 @@
+Eample uses of jobexecutor in different setups
+
+
+# dev mode with Docker
+
+curl http://172.20.0.2:8080/jobexecutor/rest/v1/jobs
+
+curl -kL -X POST \
+  -H "SquonkUsername: user1"\
+  -F "ExecutionParameters=@ExecutionParametersSdf.json;type=application/json;filename=ExecutionParameters.json"\
+  -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf;type=chemical/x-mdl-sdfile;filename=input"\
+  -H "Content-Type: multipart/mixed"\
+  http://172.20.0.2:8080/jobexecutor/rest/v1/jobs/submit-async
+
+
+
+# basic mode with Docker
+
+
+token=$(curl -kL \
+  -H 'Content-Type: application/x-www-form-urlencoded'\
+  -d 'grant_type=client_credentials'\
+  -d 'client_id=squonk-portal'\
+  -d 'client_secret=434ecd6b-586d-4db8-a3fa-83bfeb16bf44'\
+  https://nginx/auth/realms/squonk/protocol/openid-connect/token|\
+  grep -Po '(?<="access_token":")[^"]*')
+
+curl -kL -H "Authorization: bearer $token" -H "SquonkUsername: user1" http://nginx/jobexecutor/rest/v1/jobs
+
+
+curl -kL -X POST --post301\
+  -H "Authorization: bearer $token"\
+  -H "SquonkUsername: user1"\
+  -F "ExecutionParameters=@ExecutionParametersSdf.json;type=application/json;filename=ExecutionParameters.json"\
+  -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf;type=chemical/x-mdl-sdfile;filename=input"\
+  -H "Content-Type: multipart/mixed"\
+  http://nginx/jobexecutor/rest/v1/jobs/submit-async
+
+
+
+
+# verne mode with OpenShift
+
+curl -X POST -kL --post301 --post302\
+  -F "ExecutionParameters=@ExecutionParametersSdf.json;type=application/json;filename=ExecutionParameters.json"\
+  -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf;type=chemical/x-mdl-sdfile;filename=input"\
+  -H "Content-Type: multipart/mixed"\
+  -H "Authorization: bearer $token"\
+  -H "SquonkUsername: user1"\
+  http://squonk-jobexecutor.apps.xchem.diamond.ac.uk/jobexecutor/rest/v1/jobs/submit-async
+
+
+curl -kL -X POST \
+  -F "ExecutionParameters=@ExecutionParametersSdf.json;type=application/json;filename=ExecutionParameters.json"\
+  -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf.gz;type=chemical/x-mdl-sdfile;filename=input"\
+  -H "Content-Type: multipart/mixed"\
+  -H "Authorization: bearer $token"\
+  -H "SquonkUsername: user1"\
+  http://nginx/jobexecutor/rest/v1/jobs/submit-async
+
+
+
+
+
+
+
+
+

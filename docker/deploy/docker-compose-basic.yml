@@ -6,7 +6,7 @@ services:
     ################# nginx ##########################################################
     # Acts as reverse proxy
     # create self-signed SSL cert/key using:
-    # openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/certs/squonk.it/privkey.pem -out images/nginx/certs/squonk/fullchain.pem
+    # openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/certs/squonk.it/privkey.pem -out images/nginx/certs/squonk.it/fullchain.pem
     # and generate Strong Diffie-Hellman Group like this:
     # openssl dhparam -out images/nginx/certs/squonk.it/dhparam.pem 2048
     nginx:

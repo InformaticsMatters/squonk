@@ -24,6 +24,7 @@ data/testfiles/emols_order*
 data/testfiles/all-sdf.sdf.gz
 data/testfiles/chembl_*.sdf.gz
 data/testfiles/docker-services/
+data/testfiles/*.sdf
 
 components/cdk-camel/out
 components/chemaxon-camel/out
@@ -61,6 +62,8 @@ docker/deploy/data/docker-services/*
 docker/deploy/setenv.sh
 docker/deploy/images/yyy.json
 docker/deploy/images/squonk-realm.json
+docker/deploy/images/Dockerfile-jobexecutor
+
 
 docker/deploy/images/chemservices/license.cxl
 

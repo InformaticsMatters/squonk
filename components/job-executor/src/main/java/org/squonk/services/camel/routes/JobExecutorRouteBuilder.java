@@ -115,7 +115,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 .bindingMode(RestBindingMode.off)
                 .outType(JobStatus.class)
                 .route()
-                .log("handling Job posting")
+                .log("handling async Job posting")
                 .unmarshal().mimeMultipart()
                 .process((Exchange exch) -> {
                     handleJobSubmitAsync(exch);
@@ -128,7 +128,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 .produces(CommonMimeTypes.MIME_TYPE_MULTIPART_MIXED)
                 .outType(JobStatus.class)
                 .route()
-                .log("handling Job posting")
+                .log("handling sync Job posting")
                 .unmarshal().mimeMultipart()
                 .process((Exchange exch) -> {
                     handleJobSubmitSync(exch);
@@ -387,7 +387,12 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
         }
         if (user == null) {
             if (ALLOW_UNAUTHENTICATED_USER) {
-                user = "nobody";
+                String delegate = message.getHeader(ServiceConstants.HEADER_SQUONK_USERNAME, String.class);
+                if (delegate != null && !delegate.isEmpty()) {
+                    user = delegate;
+                } else {
+                    user = "nobody";
+                }
             } else {
                 throw new AuthenticationException();
             }

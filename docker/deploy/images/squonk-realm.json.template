@@ -147,7 +147,6 @@
         "scopeParamRequired" : false,
         "composite" : false
       } ],
-      "curl" : [ ],
       "squonk-portal" : [ ],
       "account" : [ {
         "id" : "6234a170-56ee-4a70-b0bc-4641ee3a13c6",
@@ -713,119 +712,6 @@
     "useTemplateConfig" : false,
     "useTemplateScope" : false,
     "useTemplateMappers" : false
-  }, {
-       "id" : "939113a5-f5a7-4a69-97ec-397fcaa24257",
-       "clientId" : "curl",
-       "surrogateAuthRequired" : false,
-       "enabled" : true,
-       "clientAuthenticatorType" : "client-secret",
-       "secret" : "5d96b456-ca93-43d1-88ab-391fde4045b0",
-       "redirectUris" : [ "http://localhost/*" ],
-       "webOrigins" : [ ],
-       "notBefore" : 0,
-       "bearerOnly" : false,
-       "consentRequired" : false,
-       "standardFlowEnabled" : true,
-       "implicitFlowEnabled" : false,
-       "directAccessGrantsEnabled" : true,
-       "serviceAccountsEnabled" : false,
-       "publicClient" : true,
-       "frontchannelLogout" : false,
-       "protocol" : "openid-connect",
-       "attributes" : {
-         "saml.assertion.signature" : "false",
-         "saml.multivalued.roles" : "false",
-         "saml.force.post.binding" : "false",
-         "saml.encrypt" : "false",
-         "saml_force_name_id_format" : "false",
-         "saml.client.signature" : "false",
-         "saml.authnstatement" : "false",
-         "saml.server.signature" : "false"
-       },
-       "fullScopeAllowed" : true,
-       "nodeReRegistrationTimeout" : -1,
-       "protocolMappers" : [ {
-         "id" : "4b3d2e52-8471-4024-b8a2-76b921686c81",
-         "name" : "full name",
-         "protocol" : "openid-connect",
-         "protocolMapper" : "oidc-full-name-mapper",
-         "consentRequired" : true,
-         "consentText" : "${fullName}",
-         "config" : {
-           "id.token.claim" : "true",
-           "access.token.claim" : "true"
-         }
-       }, {
-         "id" : "94f62fd0-352c-4604-bb4a-cd7b86a8cb8e",
-         "name" : "username",
-         "protocol" : "openid-connect",
-         "protocolMapper" : "oidc-usermodel-property-mapper",
-         "consentRequired" : true,
-         "consentText" : "${username}",
-         "config" : {
-           "user.attribute" : "username",
-           "id.token.claim" : "true",
-           "access.token.claim" : "true",
-           "claim.name" : "preferred_username",
-           "jsonType.label" : "String"
-         }
-       }, {
-         "id" : "d2be158b-1e8f-4453-825a-a50b45a337ff",
-         "name" : "email",
-         "protocol" : "openid-connect",
-         "protocolMapper" : "oidc-usermodel-property-mapper",
-         "consentRequired" : true,
-         "consentText" : "${email}",
-         "config" : {
-           "user.attribute" : "email",
-           "id.token.claim" : "true",
-           "access.token.claim" : "true",
-           "claim.name" : "email",
-           "jsonType.label" : "String"
-         }
-       }, {
-         "id" : "277cdf3e-394b-446b-8479-b9471d98a466",
-         "name" : "given name",
-         "protocol" : "openid-connect",
-         "protocolMapper" : "oidc-usermodel-property-mapper",
-         "consentRequired" : true,
-         "consentText" : "${givenName}",
-         "config" : {
-           "user.attribute" : "firstName",
-           "id.token.claim" : "true",
-           "access.token.claim" : "true",
-           "claim.name" : "given_name",
-           "jsonType.label" : "String"
-         }
-       }, {
-         "id" : "e39da0be-ed7c-4284-a138-951bcdc261f4",
-         "name" : "role list",
-         "protocol" : "saml",
-         "protocolMapper" : "saml-role-list-mapper",
-         "consentRequired" : false,
-         "config" : {
-           "single" : "false",
-           "attribute.nameformat" : "Basic",
-           "attribute.name" : "Role"
-         }
-       }, {
-         "id" : "7acdd34a-5bb7-4a3c-9177-11983a6312cd",
-         "name" : "family name",
-         "protocol" : "openid-connect",
-         "protocolMapper" : "oidc-usermodel-property-mapper",
-         "consentRequired" : true,
-         "consentText" : "${familyName}",
-         "config" : {
-           "user.attribute" : "lastName",
-           "id.token.claim" : "true",
-           "access.token.claim" : "true",
-           "claim.name" : "family_name",
-           "jsonType.label" : "String"
-         }
-       } ],
-       "useTemplateConfig" : false,
-       "useTemplateScope" : false,
-       "useTemplateMappers" : false
   }, {
     "id" : "1a92e238-3e6b-4782-8507-1a1940742560",
     "clientId" : "realm-management",

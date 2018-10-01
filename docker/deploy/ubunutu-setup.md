@@ -188,15 +188,15 @@ The browser will complain and you will need to accept you are using non-trusted 
 Do this using something like:
 
 ```sh
-$ mkdir -p images/nginx/certs/squonk
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/certs/squonk/privkey.pem -out images/nginx/certs/squonk/fullchain.pem
+$ mkdir -p images/nginx/certs/squonk.it
+$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/certs/squonk.it/privkey.pem -out images/nginx/certs/squonk.it/fullchain.pem
 ```
 
 Whether you're using official certificates or untrusted ones
 you should also create the `dhparam.pem` file like this:
 
 ```sh
-$ openssl dhparam -out images/nginx/certs/squonk/dhparam.pem 2048
+$ openssl dhparam -out images/nginx/certs/squonk.it/dhparam.pem 2048
 ```
 
 ### Copy license files
