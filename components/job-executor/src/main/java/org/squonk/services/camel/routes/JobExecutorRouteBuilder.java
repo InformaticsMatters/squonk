@@ -301,11 +301,24 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
     }
 
     private void doHandleResults(Message message, String username, String jobId) throws IOException {
+
+        // set the results as attachments to the message
         List<SquonkDataSource> dataSources = jobManager.getJobResultsAsDataSources(username, jobId);
         LOG.finer("Found " + dataSources.size() + " DataHandlers");
         for (SquonkDataSource dataSource : dataSources) {
             LOG.info("Adding attachment " + dataSource.getName() + " of type " + dataSource.getContentType());
             message.addAttachment(dataSource.getName(), new DataHandler(dataSource));
+        }
+
+        // handle gzipping the response if requested to do so
+        String accept = message.getHeader("Accept-Encoding", String.class);
+        if (accept != null) {
+            if (accept.equalsIgnoreCase("gzip")) {
+                LOG.fine("Gzipping response");
+                message.setHeader("Content-Encoding", "gzip");
+            } else {
+                LOG.warning("Unsupported Accept-Encoding: " + accept);
+            }
         }
     }
 

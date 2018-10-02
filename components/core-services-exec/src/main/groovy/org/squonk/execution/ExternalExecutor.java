@@ -165,12 +165,14 @@ public class ExternalExecutor extends ExecutableService {
                     SquonkDataSource[] dataSources = streamType.getDataSources();
                     if (dataSources.length == 1) {
                         // single datasource - can just uses the output name
+                        dataSources[0].setGzipContent(false);
                         inputs.add(dataSources[0]);
                     } else {
                         for (SquonkDataSource ds : dataSources) {
                             LOG.fine("Adding DataHandler for " + ds.getName());
                             String dsName = ds.getName();
                             ds.setName(name + "_" + dsName);
+                            ds.setGzipContent(false);
                             inputs.add(ds);
                         }
                     }
