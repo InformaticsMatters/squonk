@@ -39,3 +39,19 @@
   loop:
   - jobexecutor
   changed_when: False
+
+# Deploy the JobExecutor route
+
+- name: Check Squonk JobExecutor Route
+  shell: oc get routes
+  register: routes_result
+  changed_when: False
+
+- name: Deploy Squonk JobExecutor Route
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-app-je-route.yaml
+    -p APP_NAMESPACE={{ oc_project }}
+    -p JE_HOST={{ oc_jobexecutor_host }}
+    | oc create -f -
+  when: not routes_result.stdout | regex_search('^jobexecutor\s', multiline=True)
