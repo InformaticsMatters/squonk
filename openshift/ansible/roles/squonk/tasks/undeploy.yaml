@@ -89,7 +89,6 @@
   - squonk-database-creator
   - squonk-rabbitmq-config
   - squonk-client-creator
-  - jobexecutor-sso-config
   when: cm_result.stdout | regex_search('^%s\s' % item, multiline=True)
 
 # What's left is the database and its tables.
