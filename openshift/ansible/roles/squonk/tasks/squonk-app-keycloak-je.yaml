@@ -27,7 +27,7 @@
     -p JE_IMAGE_TAG={{ oc_squonk_image_tag }}
     -p JE_HOST={{ oc_jobexecutor_host }}
     | oc create -f -
-  when: not dc_result.stdout | regex_search('^jobexecutor\s', multipline=True)
+  when: not dc_result.stdout | regex_search('^jobexecutor\s', multiline=True)
 
 - name: Wait for Squonk JobExecutor Pod
   shell: oc get po | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
