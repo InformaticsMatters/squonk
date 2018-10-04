@@ -44,4 +44,4 @@
   loop:
   - oc adm policy add-scc-to-user anyuid system:serviceaccount:{{ oc_project }}:default
   - oc adm policy add-cluster-role-to-user cluster-admin -z default
-  when: not crb_result.stdout | regex_search('^cluster-admin\s', multiline=True)
+  when: not crb_result.stdout | regex_search('^cluster-admin', multiline=True)
