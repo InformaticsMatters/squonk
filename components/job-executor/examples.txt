@@ -1,4 +1,5 @@
-Eample uses of jobexecutor in different setups
+# Example uses of jobexecutor in different setups
+# Run these examples from the src/test directory
 
 
 # dev mode with Docker
