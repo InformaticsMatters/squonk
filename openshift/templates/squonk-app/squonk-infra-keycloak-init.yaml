@@ -106,6 +106,9 @@ objects:
         \"baseUrl\":\"$CLIENT_HTTPS\",
         \"rootUrl\":\"\",
         \"publicClient\":\"false\",
+        \"serviceAccountsEnabled\":\"true\",
+        \"directAccessGrantsEnabled\":\"true\",
+        \"standardFlowEnabled\":\"true\",
         \"secret\":\"$SQUONK_CLIENT_SECRET\",
         \"adminUrl\":\"$CLIENT_HTTPS\"
       }"
