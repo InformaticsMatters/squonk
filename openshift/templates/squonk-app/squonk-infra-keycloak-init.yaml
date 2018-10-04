@@ -65,6 +65,28 @@ objects:
 - kind: ConfigMap
   apiVersion: v1
   metadata:
+    name: jobexecutor-sso-config
+    namespace: ${SQUONK_NAMESPACE}
+  data:
+    keycloak.json: |
+      {
+        "realm": "${KEYCLOAK_REALM}",
+        "auth-server-url": "https://${ROUTE_PREFIX_SSO}.${ROUTES_BASE_HOSTNAME}/auth",
+        "ssl-required": "external",
+        "disable-trust-manager": true,
+        "resource": "${CLIENT_ID}",
+        "use-resource-role-mappings": false,
+        "credentials": { "secret": "${SQUONK_CLIENT_SECRET}" }
+      }
+    context.xml: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <Context>
+        <Valve className="org.keycloak.adapters.tomcat.KeycloakAuthenticatorValve"/>
+      </Context>
+
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
     name: squonk-sso-config
     namespace: ${SQUONK_NAMESPACE}
   data:

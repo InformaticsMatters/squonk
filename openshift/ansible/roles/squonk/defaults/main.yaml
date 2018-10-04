@@ -22,9 +22,6 @@ oc_squonk_volume_storage_class: "{{ ansible_env.OC_SQUONK_VOLUME_STORAGE_CLASS }
 squonk_guest_user: "{{ lookup('env', 'SQUONK_GUEST_USER') }}"
 squonl_guest_password: "{{ lookup('env', 'SQUONK_GUEST_PASSWORD') }}"
 
-# Deploy the job-executor?
-deploy_jobexecutor: Yes
-
 # We can configure the 'standard-user' using a selenium script
 # and a Chrome web-driver but this requires Chrome to be available,
 # the driver to be on you r path and certificates to be properly

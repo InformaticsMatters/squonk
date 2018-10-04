@@ -82,9 +82,7 @@
     -p KEYCLOAK_REALM={{ keycloak_realm }}
     -p ROUTES_BASE_HOSTNAME={{ oc_routes_basename }}
     | oc create -f -
-  when:
-  - deploy_jobexecutor
-  - not cm_result.stdout | regex_search('^squonk-je-client-creator\s', multiline=True)
+  when: not cm_result.stdout | regex_search('^squonk-je-client-creator\s', multiline=True)
 
 - name: Wait for Infrastructure initialisation (JobExecutor)
   shell: oc describe jobs/{{ item }} | grep Completions | grep 1
@@ -94,8 +92,6 @@
   until: result.rc == 0
   loop:
   - squonk-je-client-creator
-  when:
-  - deploy_jobexecutor
-  - wait_for_pods
+  when: wait_for_pods
   changed_when: False
 
