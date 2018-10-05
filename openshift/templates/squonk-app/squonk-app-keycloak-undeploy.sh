@@ -11,3 +11,4 @@ set +e
 
 oc delete all,cm,routes,secrets --selector template=squonk-app
 oc delete all,cm,routes,secrets --selector template=squonk-app-je
+oc delete routes --selector squonk-app-je-route
