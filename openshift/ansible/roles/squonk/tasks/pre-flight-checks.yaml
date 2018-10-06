@@ -58,7 +58,7 @@
 
 - name: Extract Service Password
   set_fact:
-    keycloak_service_password: "{{ results.stdout | regex_replace(regexp,'\\1', multiline=True) | b64decode }}"
+    keycloak_service_password: "{{ secret_result.stdout | regex_replace(regexp,'\\1', multiline=True) | b64decode }}"
   vars:
     regexp: '.*sso-service-password:\s+(\S+)\s.*'
   changed_when: False
