@@ -55,5 +55,5 @@
   set_fact:
     keycloak_service_password: "{{ secret_result.stdout | regex_replace(regexp, '\\1') | b64decode }}"
   vars:
-    regexp: "^\s+{{ keycloak_service_user_password_field }}:\s+(\S+)\s*$"
+    regexp: '^\s+{{ keycloak_service_user_password_field }}:\s+(\S+)\s*$'
   changed_when: False
