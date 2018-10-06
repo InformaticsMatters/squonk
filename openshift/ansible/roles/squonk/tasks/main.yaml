@@ -15,5 +15,6 @@
 - import_tasks: squonk-app-keycloak.yaml
 - import_tasks: squonk-app-keycloak-je.yaml
 
+- import_tasks: get-keycloak-passwords.yaml
 - import_tasks: setup-keycloak.yaml
   when: setup_keycloak
