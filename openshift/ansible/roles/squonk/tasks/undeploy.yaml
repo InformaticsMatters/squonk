@@ -148,6 +148,7 @@
   uri:
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients/{{ client_result.json[0].id }}"
     method: DELETE
+    status_code: 204
     headers:
       Authorization: bearer {{ token_result.json.access_token }}
   when: client_result.json
