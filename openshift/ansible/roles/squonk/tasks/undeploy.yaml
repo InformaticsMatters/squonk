@@ -91,7 +91,8 @@
   - squonk-client-creator
   when: cm_result.stdout | regex_search('^%s\s' % item, multiline=True)
 
-# Remove the client application from keycloak
+# Remove the client application from keycloak.
+# Remember that the login user may have changed to admin.
 
 - import_tasks: get-keycloak-token.yaml
 

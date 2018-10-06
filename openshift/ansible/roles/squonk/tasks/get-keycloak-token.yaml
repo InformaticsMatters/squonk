@@ -1,13 +1,17 @@
 ---
 
-# Get some secrets from the infrastructure...
+# We need to be admin
 
-- name: Move to infrastructure project
-  shell: oc project {{ oc_infra_project }}
+- name: Login (admin)
+  shell: oc login {{ oc_master_hostname }} -u admin -p {{ oc_admin_password }}
   changed_when: False
 
+# Get some secrets from the infrastructure...
+
 - name: Find Keycloak Service User Secret
-  shell: oc get secret keycloak-secrets -o yaml | grep {{ keycloak_service_user_password_field }}
+  shell: >
+    oc get secret keycloak-secrets -n {{ oc_infra_project }} -o yaml
+    | grep {{ keycloak_service_user_password_field }}
   register: secret_result
   changed_when: False
 
