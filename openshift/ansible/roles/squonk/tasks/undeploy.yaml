@@ -91,7 +91,48 @@
   - squonk-client-creator
   when: cm_result.stdout | regex_search('^%s\s' % item, multiline=True)
 
+# Remove the client application from keycloak
+
+# First ... collect the Keycloak token.
+#
+# The token (openapi-connect) lifespan is controlled from the
+# Realm -> Tokens page and is typically 15 minutes by default.
+#
+# For individual REST API commands see
+# https://www.keycloak.org/docs-api/3.4/rest-api/index.html
+
+- name: Get Keycloak API Token
+  uri:
+    url: "{{ keycloak_server_url}}/realms/{{ keycloak_realm }}/protocol/openid-connect/token"
+    method: POST
+    body: "{{ credentials }}&grant_type=password&client_id=admin-cli"
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+  register: token_result
+  vars:
+    credentials: "username={{ keycloak_service_user }}&password={{ keycloak_service_password }}"
+  changed_when: False
+
+#- debug:
+#    msg: "{{ token_result.json.access_token }}"
+
+# We need the client ID.
+# With it we can delete it.
+
+- name: Get Portal Keycloak Client ID
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients?clientId={{ oc_squonk_app }}"
+    headers:
+      Authorization: bearer {{ token_result.json.access_token }}
+  register: client_result
+
+- name: Delete Portal Keycloak Client
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients/{{ client_result.json[0].id }}"
+    method: DELETE
+    headers:
+      Authorization: bearer {{ token_result.json.access_token }}
+  when: client_result.json
+
 # What's left is the database and its tables.
 # For now, deleting the database and its tables is a user action.
-#
-# ...and the client information in Keycloak.
