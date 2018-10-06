@@ -46,7 +46,7 @@
   shell: oc project {{ oc_infra_project }}
   changed_when: False
 
-- name: Find Keycloak Service User Secrets
+- name: Find Keycloak Service User Secret
   shell: oc get secret keycloak-secrets -o yaml | grep {{ keycloak_service_user_password_field }}
   register: secret_result
   changed_when: False
@@ -57,3 +57,16 @@
   vars:
     regexp: '^\s+{{ keycloak_service_user_password_field }}:\s+(\S+)\s*$'
   changed_when: False
+
+# create a user
+
+- name: Get API Token
+  uri:
+    url: "{{ keycloak_server_url}}"
+    body: 'username={{ keycloak_service_user }}&password={{ keycloak_service_password }}&grant_type=password&client_id=admin-cli'
+    return_content: yes
+  register: token_result
+  changed_when: False
+
+- debug:
+    msg: "{{ token_result.stdout }}"
