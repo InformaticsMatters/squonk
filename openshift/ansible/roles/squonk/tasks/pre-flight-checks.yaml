@@ -43,7 +43,7 @@
 # Get some secrets from the infrastructure...
 
 - name: Get Keycloak Secrets
-  script: oc get secret keycloak-secrets -o yaml
+  shell: oc get secret keycloak-secrets -o yaml
   register: secret_result
   changed_when: False
 
