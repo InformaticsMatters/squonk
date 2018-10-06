@@ -51,7 +51,7 @@
   register: secret_result
   changed_when: False
 
-- name: Extract Service User Password
+- name: Set Service User Password Fact
   set_fact:
     keycloak_service_password: "{{ secret_result.stdout | regex_replace(regexp, '\\1') | b64decode }}"
   vars:
