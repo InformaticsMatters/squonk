@@ -42,6 +42,10 @@
 
 # Get some secrets from the infrastructure...
 
+- name: Move to infrastructure project
+  shell: oc project {{ oc_infra_project }}
+  changed_when: False
+
 - name: Get Keycloak Secrets
   shell: oc get secret keycloak-secrets -o yaml
   register: secret_result
@@ -57,6 +61,7 @@
     keycloak_service_password: results.stdout | regex_search(regexp,'\\1', multiline=True) | base64decode
   vars:
     regexp: '^\s+sso-service-password:\s+(\S+)'
+  changed_when: False
 
 - debug:
     msg: 'SSO Service Password: "{{ sso_service_password }}"'
