@@ -40,3 +40,23 @@
   when:
   - infra_rabbit_name not in dc_result.stdout
 
+# Get some secrets from the infrastructure...
+
+- name: Get Keycloak Secrets
+  script: oc get secret keycloak-secrets -o yaml
+  register: secret_result
+  changed_when: False
+
+- name: Check Service Record
+  fail:
+    msg: There is no service password
+  when: not secret_result.stdout | regex_search('^\s+sso-service-password:\s', multiline=True)
+
+- name: Extract Service Password
+  set_fact:
+    keycloak_service_password: results.stdout | regex_search(regexp,'\\1', multiline=True) | base64decode
+  vars:
+    regexp: '^\s+sso-service-password:\s+(\S+)'
+
+- debug:
+    msg: 'SSO Service Password: "{{ sso_service_password }}"'
