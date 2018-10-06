@@ -47,20 +47,20 @@
   changed_when: False
 
 - name: Get Keycloak Secrets
-  shell: oc get secret keycloak-secrets -o yaml
+  shell: oc get secret keycloak-secrets -o yaml | grep sso-service-password
   register: secret_result
   changed_when: False
 
 - name: Check Service Record
   fail:
     msg: There is no service password
-  when: not secret_result.stdout | regex_search('^\s+sso-service-password:\s', multiline=True)
+  when: not secret_result.stdout | regex_search('^\s+sso-service-password:\s')
 
 - name: Extract Service Password
   set_fact:
-    keycloak_service_password: "{{ secret_result.stdout | regex_replace(regexp,'\\1', multiline=True) | b64decode }}"
+    keycloak_service_password: "{{ secret_result.stdout | regex_replace(regexp, '\\1') | b64decode }}"
   vars:
-    regexp: '.*sso-service-password:\s+(\S+)\s.*'
+    regexp: '^\s+sso-service-password:\s+(\S+)\s*$'
   changed_when: False
 
 - debug:
