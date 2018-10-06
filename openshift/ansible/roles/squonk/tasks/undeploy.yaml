@@ -93,6 +93,24 @@
 
 # Remove the client application from keycloak
 
+# Get some secrets from the infrastructure...
+
+- name: Move to infrastructure project
+  shell: oc project {{ oc_infra_project }}
+  changed_when: False
+
+- name: Find Keycloak Service User Secret
+  shell: oc get secret keycloak-secrets -o yaml | grep {{ keycloak_service_user_password_field }}
+  register: secret_result
+  changed_when: False
+
+- name: Set Service User Password Fact
+  set_fact:
+    keycloak_service_password: "{{ secret_result.stdout | regex_replace(regexp, '\\1') | b64decode }}"
+  vars:
+    regexp: '^\s+{{ keycloak_service_user_password_field }}:\s+(\S+)\s*$'
+  changed_when: False
+
 # First ... collect the Keycloak token.
 #
 # The token (openapi-connect) lifespan is controlled from the
