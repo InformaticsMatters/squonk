@@ -64,4 +64,4 @@
   changed_when: False
 
 - debug:
-    msg: 'SSO Service Password: "{{ sso_service_password }}"'
+    msg: 'SSO Service Password: "{{ keycloak_service_password }}"'
