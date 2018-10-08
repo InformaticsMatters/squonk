@@ -20,6 +20,6 @@
   vars:
     user: "{{ item.split()[0] }}"
     password: "{{ item.split()[1] }}"
-  loop: "{{ lookup('file', users_file).split('\n') }}"
+  loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
   tags:
   - keycloak-users

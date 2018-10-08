@@ -129,7 +129,7 @@
   register: squonk_users
   vars:
     user: "{{ item.split()[0] }}"
-  loop: "{{ lookup('file', users_file).split('\n') }}"
+  loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
   when: users_file is defined
   tags:
   - keycloak-users

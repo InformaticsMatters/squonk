@@ -27,9 +27,10 @@ oc_squonk_volume_storage_class: "{{ ansible_env.OC_SQUONK_VOLUME_STORAGE_CLASS }
 setup_keycloak: no
 
 # Path to a file that defines the users we want to add to the Keycloak realm.
-# The path os relative to the role_path directory (i.e. relative). Comment out to avoid
-# loading any users.
-#users_file: ../../users.txt
+# The path is relative to the ansible directory (where the roles directory is)
+# uncomment or define form the command-line to add users.
+# To use 'ansbible/users.txt' set to 'users.txt'
+#users_file: users.txt
 
 # Here PVs used by the application (the squonk-work-dir for example)
 # are returned to an Available state if they're currently
