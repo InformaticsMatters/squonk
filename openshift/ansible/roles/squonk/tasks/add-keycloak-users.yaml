@@ -7,7 +7,48 @@
   tags:
   - keycloak-users
 
-- name: Add Keycloak Users
+- name: Query Squonk Users
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user }}"
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  register: squonk_users
+  vars:
+    user: "{{ item.split()[0] }}"
+  loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
+  when: users_file is defined
+  changed_when: False
+  tags:
+  - keycloak-users
+
+# The above 'get' is run for each expected user.
+# The resultant `squonk_users' variable is a structure
+# with each query represented as an element in the 'results' array.
+# If the user exists it will have a 'username' property in the 'json'
+# array. i.e.
+#
+#  "results" [{
+#    "json": [{
+#      "username": "blah"
+#
+# If the user doe snot exist the 'json' array is empty.
+#
+# But, to simplify further processing, we'd like a nice flat list.
+# So, to collect all known users into a list it's...
+#
+#   squonk_users | json_query('results[*].json[*].username') | flatten
+#
+- name: Collect Squonk Users
+  set_fact:
+    known_users: "{{ squonk_users | json_query('results[*].json[*].username') | flatten }}"
+  tags:
+  - keycloak-users
+
+# Now, add all the users defined
+# that do not already exist...
+
+- name: Add Keycloak Users (that do not exist)
   uri:
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users"
     method: POST
@@ -21,5 +62,6 @@
     user: "{{ item.split()[0] }}"
     password: "{{ item.split()[1] }}"
   loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
+  when: user not in known_users
   tags:
   - keycloak-users
