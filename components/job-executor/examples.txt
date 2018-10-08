@@ -52,7 +52,7 @@ curl -X POST -kL --post301 --post302\
 
 curl -kL -X POST \
   -F "ExecutionParameters=@ExecutionParametersSdf.json;type=application/json;filename=ExecutionParameters.json"\
-  -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf.gz;type=chemical/x-mdl-sdfile;filename=input"\
+  -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf;type=chemical/x-mdl-sdfile;filename=input"\
   -H "Content-Type: multipart/mixed"\
   -H "Authorization: bearer $token"\
   -H "SquonkUsername: user1"\

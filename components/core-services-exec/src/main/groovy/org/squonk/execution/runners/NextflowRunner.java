@@ -27,10 +27,6 @@ public class NextflowRunner extends AbstractRunner {
         super(hostBaseWorkDir, jobId);
     }
 
-    protected String getDefaultWorkDir() {
-        return IOUtils.getConfiguration("SQUONK_NEXTFLOW_WORK_DIR", "/squonk/work/nextflow");
-    }
-
     @Override
     public int execute(String... cmd) {
         throw new UnsupportedOperationException("NextflowRunner does not support this execute");

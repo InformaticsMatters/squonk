@@ -133,6 +133,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 .process((Exchange exch) -> {
                     handleJobSubmitSync(exch);
                 })
+                .marshal().mimeMultipart()
                 .endRest()
                 //
                 // get the job results
@@ -242,6 +243,9 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 case RESULTS_READY:
                     // get results
                     doHandleResults(message, username, jobStatus.getJobId());
+                    break;
+                default:
+                    LOG.warning("Unexpected status: " + jobStatus.getStatus());
             }
 
         } catch (AuthenticationException e) {
@@ -304,9 +308,10 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
         // set the results as attachments to the message
         List<SquonkDataSource> dataSources = jobManager.getJobResultsAsDataSources(username, jobId);
-        LOG.finer("Found " + dataSources.size() + " DataHandlers");
+        LOG.fine("Found " + dataSources.size() + " DataHandlers");
         for (SquonkDataSource dataSource : dataSources) {
-            LOG.info("Adding attachment " + dataSource.getName() + " of type " + dataSource.getContentType());
+            LOG.fine("Adding attachment " + dataSource.getName() + " of type " + dataSource.getContentType());
+            dataSource.materialize();
             message.addAttachment(dataSource.getName(), new DataHandler(dataSource));
         }
 

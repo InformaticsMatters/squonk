@@ -147,6 +147,7 @@ public class JobManager implements ExecutorCallback {
         executionDataMap.put(executor.getJobId(), executionData);
 
         if (async) {
+            LOG.info("Async execution of job " + executor.getJobId());
             // TODO - handle with a thread pool or work queue?
             Thread t = new Thread() {
                 @Override
@@ -159,10 +160,13 @@ public class JobManager implements ExecutorCallback {
                 }
             };
             t.start();
+            jobStatus = updateStatus(executor.getJobId(), Status.RUNNING);
         } else {
+            LOG.info("Sync execution of job " + executor.getJobId());
             executor.execute();
+            jobStatus = updateStatus(executor.getJobId(), Status.RESULTS_READY);
         }
-        jobStatus = updateStatus(executor.getJobId(), Status.RUNNING);
+
         return jobStatus;
     }
 
