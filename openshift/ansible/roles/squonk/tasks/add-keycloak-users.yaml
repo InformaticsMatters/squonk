@@ -4,6 +4,8 @@
 # Remember that the login user may have changed to admin.
 
 - import_tasks: get-keycloak-token.yaml
+  tags:
+  - keycloak-users
 
 - name: Add Keycloak Users
   uri:
@@ -19,3 +21,5 @@
     user: "{{ item.split()[0] }}"
     password: "{{ item.split()[1] }}"
   loop: "{{ lookup('file', users_file).split('\n') }}"
+  tags:
+  - keycloak-users

@@ -95,6 +95,8 @@
 # Remember that the login user may have changed to admin.
 
 - import_tasks: get-keycloak-token.yaml
+  tags:
+  - keycloak-users
 
 # We need the client ID.
 # With it we can delete it.
@@ -114,6 +116,29 @@
     headers:
       Authorization: bearer {{ keycloak_token }}
   when: client_result.json
+
+- name: Get Squonk Users
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users"
+    body: '{"username": "{{ user }}"}'
+    body_format: json
+    status_code: 201
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  register: squonk_users
+  vars:
+    user: "{{ item.split()[0] }}"
+  loop: "{{ lookup('file', users_file).split('\n') }}"
+  when: users_file is defined
+  tags:
+  - keycloak-users
+
+- name: Print Squonk Users
+  debug:
+    msg: "{{ squonk_users }}"
+  tags:
+  - keycloak-users
 
 # What's left is the database and its tables.
 # For now, deleting the database and its tables is a user action.
