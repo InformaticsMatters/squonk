@@ -6,6 +6,13 @@ directory with the commands: -
     
     ansible-playbook playbooks/squonk/deploy.yaml
 
+>   Remember to first run the appropriate `setenv.sh` script.
+
+And you can provide users 'after-the-fact' with: -
+
+    ansible-playbook -e "users_file=user.txt" -t keycloak-users \
+        playbooks/squonk/deploy.yaml
+        
 There is an `undeploy` playbook that can be run for squonk: -
 
     ansible-playbook playbooks/squonk/undeploy.yaml

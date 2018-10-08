@@ -22,7 +22,7 @@
   tags:
   - keycloak-users
 
-# The above 'get' is run for each expected user.
+# The above 'query' is run for each expected user.
 # The resultant `squonk_users' variable is a structure
 # with each query represented as an element in the 'results' array.
 # If the user exists it will have a 'username' property in the 'json'
@@ -52,7 +52,12 @@
   uri:
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users"
     method: POST
-    body: '{"username": "{{ user }}", "enabled": "true"}'
+    body: >-
+      {"username": "{{ user }}",
+        "enabled": "true",
+        "credentials": [{"type": "PASSWORD",
+                         "temporary": "false",
+                         "value": "{{ password }}"}]}
     body_format: json
     status_code: 201
     validate_certs: no
