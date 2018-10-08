@@ -7,6 +7,10 @@
   tags:
   - keycloak-users
 
+# Get a list of users that are already known.
+# Here we iterate through the users file checking Keycloak to see if the user
+# exists. Existing users are collected in 'squonk_users'
+
 - name: Query Squonk Users
   uri:
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user }}"
@@ -42,11 +46,12 @@
 - name: Collect Squonk Users
   set_fact:
     known_users: "{{ squonk_users | json_query('results[*].json[*].username') | flatten }}"
+  when: users_file is defined
+  changed_when: False
   tags:
   - keycloak-users
 
-# Now, add all the users defined
-# that do not already exist...
+# Now, add all the users from the users file that do not already exist.
 
 - name: Add Keycloak Users (that do not exist)
   uri:
@@ -59,17 +64,49 @@
     validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
-  register: squonked_users
   vars:
     user: "{{ item.split()[0] }}"
   loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
-  when: user not in known_users
+  when:
+  - users_file is defined
+  - user not in known_users
+  tags:
+  - keycloak-users
+
+# We now need to set (reset) the user's password.
+# to do that we need the user's ID.
+# Rather than examine the output of the 'create user'
+# command above it's simpler to get each user again
+# and then collect the identities from the results.
+
+- name: Query Squonk Users (Reprise)
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user }}"
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  register: squonk_users
+  vars:
+    user: "{{ item.split()[0] }}"
+  loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
+  when: users_file is defined
+  changed_when: False
+  tags:
+  - keycloak-users
+
+- name: Collect Squonk User Identities
+  set_fact:
+    user_identities: "{{ squonk_users | json_query('results[*].json[*].id') | flatten }}"
+  when: users_file is defined
+  changed_when: False
   tags:
   - keycloak-users
 
 - name: Debug
   debug:
-    msg: "{{ squonked_users }}"
+    msg: "{{ user_identities }}"
+  tags:
+  - keycloak-users
 
 #- name: Set Keycloak User Passwords (for those that do not exist)
 #  uri:
