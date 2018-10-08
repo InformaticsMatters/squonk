@@ -10,7 +10,7 @@ directory with the commands: -
 
 And you can provide users 'after-the-fact' with: -
 
-    ansible-playbook -e "users_file=user.txt" -t keycloak-users \
+    ansible-playbook -e "users_file=users.txt" -t keycloak-users \
         playbooks/squonk/deploy.yaml
         
 There is an `undeploy` playbook that can be run for squonk: -
