@@ -53,20 +53,40 @@
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users"
     method: POST
     body: >-
-      {"username": "{{ user }}",
-        "enabled": "true",
-        "credentials": [{"type": "PASSWORD",
-                         "temporary": "false",
-                         "value": "{{ password }}"}]}
+      {"username": "{{ user }}"}
     body_format: json
     status_code: 201
     validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
+  register: squonked_users
   vars:
     user: "{{ item.split()[0] }}"
-    password: "{{ item.split()[1] }}"
   loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
   when: user not in known_users
   tags:
   - keycloak-users
+
+- name: Debug
+  debug:
+    msg: "{{ squonked_users }}"
+
+#- name: Set Keycloak User Passwords (for those that do not exist)
+#  uri:
+#    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ user_id }}/reset-password"
+#    method: PUT
+#    body: >-
+#      {"type": "password",
+#       "temporary": "false",
+#       "value": "{{ password }}"}
+#    body_format: json
+#    status_code: 201
+#    validate_certs: no
+#    headers:
+#      Authorization: bearer {{ keycloak_token }}
+#  vars:
+#    password: "{{ item.split()[1] }}"
+#  loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
+#  when: user not in known_users
+#  tags:
+#  - keycloak-users
