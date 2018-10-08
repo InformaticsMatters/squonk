@@ -32,9 +32,9 @@
 #    "json": [{
 #      "username": "blah"
 #
-# If the user doe snot exist the 'json' array is empty.
+# If the user does not exist the 'json' array is empty.
 #
-# But, to simplify further processing, we'd like a nice flat list.
+# To simplify further processing, we'd like a nice flat list.
 # So, to collect all known users into a list it's...
 #
 #   squonk_users | json_query('results[*].json[*].username') | flatten
