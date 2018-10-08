@@ -1,0 +1,26 @@
+---
+
+# Get a keycloak token (sets the fact 'keycloak_token').
+# Remember that the login user may have changed to admin.
+
+- import_tasks: get-keycloak-token.yaml
+
+- debug:
+    msg: '{"username": "{{ user }}", "enabled": "true", "credentials": [{"temporary": "false", "value": "{{ password }}"}]} | to_json'
+  vars:
+    user: "{{ item.split()[0] }}"
+    password: "{{ item.split()[1] }}"
+  loop: "{{ lookup('file', users_file).split('\n') }}"
+
+- name: Add Keycloak Users
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users"
+    method: POST
+    body: '{"username": "{{ user }}", "enabled": "true", "credentials": [{"temporary": "false", "value": "{{ password }}"}]} | to_json'
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  vars:
+    user: "{{ item.split()[0] }}"
+    password: "{{ item.split()[1] }}"
+  loop: "{{ lookup('file', users_file).split('\n') }}"

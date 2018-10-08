@@ -91,7 +91,7 @@
   - squonk-client-creator
   when: cm_result.stdout | regex_search('^%s\s' % item, multiline=True)
 
-# Remove the client application from keycloak.
+# Get a keycloak token (sets the fact 'keycloak_token').
 # Remember that the login user may have changed to admin.
 
 - import_tasks: get-keycloak-token.yaml
@@ -103,7 +103,7 @@
   uri:
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients?clientId={{ oc_squonk_app }}"
     headers:
-      Authorization: bearer {{ token_result.json.access_token }}
+      Authorization: bearer {{ keycloak_token }}
   register: client_result
 
 - name: Delete Portal Keycloak Client
@@ -112,7 +112,7 @@
     method: DELETE
     status_code: 204
     headers:
-      Authorization: bearer {{ token_result.json.access_token }}
+      Authorization: bearer {{ keycloak_token }}
   when: client_result.json
 
 # What's left is the database and its tables.

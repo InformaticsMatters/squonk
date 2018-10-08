@@ -1,5 +1,13 @@
 ---
 
+# This play sets two facts:
+#
+# - keycloak_service_password
+# - keycloak_token
+#
+# The token is valid for a limited time
+# defined by the Keycloak installation.
+
 # We need to be admin
 
 - name: Login (admin)

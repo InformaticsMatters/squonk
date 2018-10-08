@@ -2,6 +2,9 @@
 
 # Just run these plays...
 
+- import_tasks: add-keycloak-users.yaml
+  when: users_file is defined
+
 - import_tasks: pre-flight-checks.yaml
 
 - import_tasks: create-project.yaml

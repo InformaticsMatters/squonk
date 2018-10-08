@@ -19,15 +19,17 @@ oc_squonk_volume_type: "{{ ansible_env.OC_SQUONK_VOLUME_TYPE }}"
 # class needs to be defined...
 oc_squonk_volume_storage_class: "{{ ansible_env.OC_SQUONK_VOLUME_STORAGE_CLASS }}"
 
-squonk_guest_user: "{{ lookup('env', 'SQUONK_GUEST_USER') }}"
-squonl_guest_password: "{{ lookup('env', 'SQUONK_GUEST_PASSWORD') }}"
-
 # We can configure the 'standard-user' using a selenium script
 # and a Chrome web-driver but this requires Chrome to be available,
 # the driver to be on you r path and certificates to be properly
 # deployed in order for selenium to work properly in "headless" mode.
 # The automation works if configured not to use chrome in headless mode.
 setup_keycloak: no
+
+# Path to a file that defines the users we ant to add to Keycloak
+# (relative to the role_path directory). Comment out to avoid
+# loading any users.
+users_file: ../../users.txt
 
 # Here PVs used by the application (the squonk-work-dir for example)
 # are returned to an Available state if they're currently
