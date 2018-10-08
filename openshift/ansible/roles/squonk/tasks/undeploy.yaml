@@ -160,7 +160,7 @@
   uri:
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ item }}"
     method: DELETE
-    status_code: 201
+    status_code: 204
     validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
