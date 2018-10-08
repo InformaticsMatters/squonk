@@ -126,8 +126,8 @@
     user_id: "{{ item.0 }}"
     password: "{{ item.1.split()[1] }}"
   with_together:
-  - user_identities
-  - lookup('file', '../../' + users_file).split('\n')
+  - "{{ user_identities }}"
+  - "{{ lookup('file', '../../' + users_file).split('\n') }}"
   when: user not in known_users
   tags:
   - keycloak-users
