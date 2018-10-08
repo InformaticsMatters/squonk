@@ -158,7 +158,7 @@
 
 - name: Delete Existing Squonk Keycloak Users
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ user_id }}"
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ item }}"
     method: DELETE
     status_code: 201
     validate_certs: no
