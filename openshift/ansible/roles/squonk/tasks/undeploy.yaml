@@ -152,6 +152,7 @@
 - name: Collect Squonk User IDs
   set_fact:
     known_user_ids: "{{ squonk_users | json_query('results[*].json[*].id') | flatten }}"
+  when: users_file is defined
   tags:
   - keycloak-users
 
@@ -164,6 +165,7 @@
     headers:
       Authorization: bearer {{ keycloak_token }}
   loop: "{{ known_user_ids }}"
+  when: users_file is defined
   tags:
   - keycloak-users
 
