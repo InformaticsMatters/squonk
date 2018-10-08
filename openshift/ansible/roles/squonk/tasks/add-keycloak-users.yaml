@@ -7,6 +7,19 @@
   tags:
   - keycloak-users
 
+# Adding Squonk users and passwords.
+# The steps here are: -
+#
+# 1. Get a list of users using the 'users_file'
+#    that are already known (this might be nobody)
+# 2. Add all the users from the 'users_file' that aren't known
+# 3. Get user identities for all the users in the users_file
+# 4. Set (reset) passwords for all the users that were added in step 2.
+
+#####
+# 1 #
+#####
+#
 # Get a list of users that are already known.
 # Here we iterate through the users file checking Keycloak to see if the user
 # exists. Existing users are collected in 'squonk_users'
@@ -51,6 +64,10 @@
   tags:
   - keycloak-users
 
+#####
+# 2 #
+#####
+#
 # Now, add all the users from the users file that do not already exist.
 
 - name: Add Keycloak Users (that do not exist)
@@ -74,6 +91,10 @@
   tags:
   - keycloak-users
 
+#####
+# 3 #
+#####
+#
 # We now need to set (reset) the user's password.
 # to do that we need the user's ID.
 # Rather than examine the output of the 'create user'
@@ -103,11 +124,12 @@
   tags:
   - keycloak-users
 
-- name: Debug
-  debug:
-    msg: "{{ user_identities }}"
-  tags:
-  - keycloak-users
+#####
+# 4 #
+#####
+#
+# Now we add (reset) the password for each user that we've added
+# i.e. all the users that were not already known.
 
 - name: Set (Reset) Keycloak User Passwords (for those that do not exist)
   uri:
