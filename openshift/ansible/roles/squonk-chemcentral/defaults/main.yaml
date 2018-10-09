@@ -1,0 +1,31 @@
+---
+
+# The ChemCentral Service Account
+# in the Infrastructure project
+oc_cc_infra_sa: chemcentral-postgres
+
+# Here PVs used by the application (the squonk-work-dir for example)
+# are returned to an Available state if they're currently
+# in a Released state. Note: it is the user's responsibility
+# to protect themselves for data loss here. This will inspect the
+# "state" of all PVs in the squonk *and* infrastructure projects.
+recycle_released_pvs: yes
+
+# What volume type are we using? One of: -
+#
+# - dynamic
+# - nfs
+# - none
+#
+#   When using `dynamic' remember to set
+#   the accompanying 'volume_storage_class' variable (see below)
+#
+#   When using 'nfs' you must have provisioned the NFS volumes
+#
+#   When set to 'none' the user is expected to have provisioned
+#   the persistent volumes and claims suitable for the project.
+oc_cc_infra_volume_type: "{{ ansible_env.OC_INFRA_VOLUME_TYPE }}"
+
+# When using dynamic volumes the storage
+# class needs to be defined...
+volume_storage_class: cloud-block-volume

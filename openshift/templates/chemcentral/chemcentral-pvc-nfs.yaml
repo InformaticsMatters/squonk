@@ -10,7 +10,7 @@ apiVersion: v1
 metadata:
   name: chemcentral-pvc-nfs
   annotations:
-    description: Chemcentral Persistent Volume using NFS
+    description: Chemcentral Persistent Volume Claim using NFS
     tags: squonk,chemcentral,pvc
 labels:
   template: chemcentral-pvc-nfs
@@ -18,33 +18,10 @@ labels:
 
 parameters:
 
-- name: NFS_SERVER
-  value: infra
-- name: NFS_PATH
-  value: /exports
 - name: PVC_SIZE
   value: 20Gi
-- name: INFRA_NAMESPACE
-  value: squonk-infra
 
 objects:
-
-- kind: PersistentVolume
-  apiVersion: v1
-  metadata:
-    name: pv-chemcentral-postgresql
-  spec:
-    capacity:
-      storage: ${PVC_SIZE}
-    accessModes:
-    - ReadWriteOnce
-    persistentVolumeReclaimPolicy: Retain
-    nfs:
-      server: ${NFS_SERVER}
-      path: ${NFS_PATH}/pv-chemcentraldb
-    claimRef:
-      name: chemcentral-postgresql-claim
-      namespace: ${INFRA_NAMESPACE}
 
 - kind: PersistentVolumeClaim
   apiVersion: v1

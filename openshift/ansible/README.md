@@ -6,6 +6,8 @@ directory with the commands: -
     
     ansible-playbook playbooks/squonk/deploy.yaml
 
+    ansible-playbook playbooks/squonk-chemcentral/deploy.yaml
+
 >   Remember to first run the appropriate `setenv.sh` script.
 
 And you can provide users 'after-the-fact' with: -

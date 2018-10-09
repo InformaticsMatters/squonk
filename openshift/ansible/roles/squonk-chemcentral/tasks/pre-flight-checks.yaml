@@ -1,11 +1,11 @@
 ---
 
 # Various checks to do the best we can to make sure
-# that the environment is ready for Squonk. These should
-# be exhaustive tests and may evolve over time.
+# that the environment is ready for Squonk's ChemCentral data.
+# These should be exhaustive tests and may evolve over time.
 #
 # For example: is there an infrastructure project
-# and is there a RabbitMQ deployment in it?
+# and is there a squonk project?
 
 - name: Login (admin)
   shell: oc login {{ oc_master_hostname }} -u admin -p {{ oc_admin_password }}
@@ -25,17 +25,9 @@
       does not exist
   when: oc_infra_project not in projects_result.stdout
 
-# Check some key deployments in the infrastructure project...
-
-- name: Collect infrastructure Deployments
-  shell: oc get dc -n {{ oc_infra_project }}
-  register: dc_result
-  changed_when: False
-
-- name: Check required deployments
+- name: Check squonk project
   fail:
     msg: >-
-      RabbitMQ ({{ infra_rabbit_name }}) does not exist as a deployment
-      in the infrastructure project ({{ oc_infra_project }})
-  when:
-  - infra_rabbit_name not in dc_result.stdout
+      The Squonk project ({{ oc_project }})
+      does not exist
+  when: oc_project not in projects_result.stdout
