@@ -1,0 +1,11 @@
+---
+
+- hosts: localhost
+
+  tasks:
+  - name: Run the Loader Undeploy Tasks
+    include_role:
+      name: squonk-chemcentral
+      tasks_from: delete-loader.yaml
+    tags:
+    - chemcentral-loader

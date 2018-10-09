@@ -1,0 +1,24 @@
+---
+
+# Deletes the loader (Job) if it exists.
+# Use this  play to clean-up the loader
+# so that you can run another.
+
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
+  changed_when: False
+  tags:
+  - chemcentral-loader
+
+- name: Check Jobs
+  shell: oc get jobs
+  register: jobs_result
+  changed_when: False
+  tags:
+  - chemcentral-loader
+
+- name: Delete Loader Job
+  shell: oc delete job/chemcentral-loader
+  when: jobs_result.stdout | regex_search('^chemcentral-loader\s', multiline=True)
+  tags:
+  - chemcentral-loader

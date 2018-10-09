@@ -4,7 +4,7 @@
   shell: oc project {{ oc_project }}
   changed_when: False
   tags:
-  - chemcentral-laoder
+  - chemcentral-loader
 
 # Load data into the ChemCentral database.
 # This is achieved by launching the loader Job
@@ -15,7 +15,7 @@
   register: jobs_result
   changed_when: False
   tags:
-  - chemcentral-laoder
+  - chemcentral-loader
 
 - name: Create Loader Job
   shell: >
@@ -27,7 +27,7 @@
     | oc create -f -
   when: not jobs_result.stdout | regex_search('^chemcentral-loader\s', multiline=True)
   tags:
-  - chemcentral-laoder
+  - chemcentral-loader
 
 # Wait for loader...
 # A Job that needs to reach a "Completed" state.
@@ -41,4 +41,4 @@
   when: wait_for_pods
   changed_when: False
   tags:
-  - chemcentral-laoder
+  - chemcentral-loader
