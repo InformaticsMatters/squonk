@@ -1,0 +1,7 @@
+---
+
+# Load data into the ChemCentral database
+
+- name: Move to Squonk Infrastructure Project
+  shell: oc project {{ oc_infra_project }}
+  changed_when: False

@@ -77,4 +77,4 @@
   until: result.rc == 0
   loop:
   - "{{ pvc_name }}"
-  when: not i_pvc_result.stdout | regex_search('^%s\s' % pvc_name, multiline=True)
+  when: not i_pvc_result.stdout | regex_search('^%s\s' % item, multiline=True)

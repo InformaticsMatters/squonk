@@ -5,7 +5,11 @@
 - import_tasks: pre-flight-checks.yaml
 - import_tasks: create-service-account.yaml
 
-- import_tasks: create-nfs-pv-pvc.yaml
+- import_tasks: create-cc-nfs-pv-pvc.yaml
   when: oc_cc_infra_volume_type == 'nfs'
+- import_tasks: create-cc-data-loader-nfs-pv-pvc.yaml
+  when: oc_cc_infra_volume_type == 'nfs'
+
+# Todo - Add dynamic volumes!
 
 - import_tasks: deploy.yaml

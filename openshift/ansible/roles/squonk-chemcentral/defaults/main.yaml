@@ -2,6 +2,13 @@
 
 pv_name: pv-chemcentral-postgresql
 pvc_name: chemcentral-postgresql-claim
+data_loader_pv_name: pv-chemcentral-loader
+data_loader_pvc_name: chemcentral-data-loader-pvc
+
+# Parameters for the ChemCentral Loader
+loader_file: 123
+loader_class: org.squonk.rdkit.db.loaders.EMoleculesBBSmilesLoader
+loader_limit: 0
 
 # The ChemCentral Service Account
 # in the Infrastructure project
