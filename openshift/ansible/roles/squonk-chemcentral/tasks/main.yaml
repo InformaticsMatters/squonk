@@ -13,3 +13,4 @@
 # Todo - Add dynamic volumes!
 
 - import_tasks: deploy.yaml
+- import_tasks: load.yaml

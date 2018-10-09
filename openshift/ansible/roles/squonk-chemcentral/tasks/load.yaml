@@ -1,7 +1,44 @@
 ---
 
-# Load data into the ChemCentral database
-
-- name: Move to Squonk Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
   changed_when: False
+  tags:
+  - chemcentral-laoder
+
+# Load data into the ChemCentral database.
+# This is achieved by launching the loader Job
+# which relies on the file in the loader's PVC.
+
+- name: Check Jobs
+  shell: oc get jobs
+  register: jobs_result
+  changed_when: False
+  tags:
+  - chemcentral-laoder
+
+- name: Create Loader Job
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/chemcentral/loader.yaml
+    -p LOADER_CLASS={{ loader_class }}
+    -p LOADER_FILE={{ loader_file }}
+    -p LIMIT={{ loader_limit }}
+    | oc create -f -
+  when: not jobs_result.stdout | regex_search('^chemcentral-loader\s', multiline=True)
+  tags:
+  - chemcentral-laoder
+
+# Wait for loader...
+# A Job that needs to reach a "Completed" state.
+
+- name: Wait for Loader
+  shell: oc describe jobs/chemcentral-loader | grep Completions | grep 1
+  delay: 10
+  retries: "{{ (pod_ready_timeout | int / 10) | int }}"
+  register: result
+  until: result.rc == 0
+  when: wait_for_pods
+  changed_when: False
+  tags:
+  - chemcentral-laoder
