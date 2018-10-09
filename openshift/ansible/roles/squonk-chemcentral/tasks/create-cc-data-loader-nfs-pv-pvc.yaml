@@ -1,7 +1,7 @@
 ---
 
-- name: Move to Squonk Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
   changed_when: False
 
 # Check/Create PVs
