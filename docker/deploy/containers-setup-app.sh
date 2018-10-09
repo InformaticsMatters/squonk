@@ -39,11 +39,6 @@ sed "s/__public_host__/${PUBLIC_HOST}/g" images/portal/server.xml.template > ima
 docker-compose stop portal chemservices coreservices cellexecutor chemcentral-search
 docker-compose rm -fv portal chemservices coreservices cellexecutor chemcentral-search
 
-if [ $DEPLOYMENT_MODE == 'site' ]; then
-    docker-compose stop xwiki
-    docker-compose rm -fv xwiki
-fi
-
 docker-compose up -d --no-recreate
 
 echo "Setup complete. Access squonk at $SQUONK_URL"

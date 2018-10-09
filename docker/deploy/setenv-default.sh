@@ -1,19 +1,31 @@
 #!/usr/bin/env bash
-# The environment variable for PRIVATE_HOST will be the address of the docker gateway, something like 172.17.0.1
+# The environment variable for PRIVATE_HOST will be the address of the docker gateway, something like 172.20.0.1
 # The environment variable for PUBLIC_HOST will be the public address, something like squonk.it or the IP of the gateway
 # if you are running locally.
 # To find out what this is with docker do a:
 # docker network inspect deploy_squonk_front
 #
 
-export PUBLIC_HOST=172.20.0.1
-export PRIVATE_HOST=172.20.0.1
-
 # set the deployment mode:
 # dev - for local testing and development
 # basic - for more representative setup that uses Keycloak and NGinx
-# site - for the full Squonk site including XWiki
-export DEPLOYMENT_MODE=dev
+# site - for the full Squonk site including Informatics Matters website
+export DEPLOYMENT_MODE=basic
+
+# 'dev' setup
+#export PUBLIC_HOST=172.20.0.1
+#export PRIVATE_HOST=172.20.0.1
+
+# 'basic' setup
+# 1. set PUBLIC_HOST to 'nginx'
+# 2. modify the /etc/hosts file on the host machine to include an entry for nginx that points to the gateway address
+#    e.g. '172.20.0.1 nginx'
+# 3. enable the line below (checking that the IP address is right)
+export PUBLIC_HOST=nginx
+export PRIVATE_HOST=172.20.0.1
+export KEYCLOAK_SERVER=172.20.0.2
+
+#export TAG=$(./images-get-tag.sh)
 
 export RABBITMQ_ERLANG_COOKIE=topsecret
 
@@ -72,7 +84,7 @@ if [ $DEPLOYMENT_MODE == 'basic' ]; then
     export SQUONK_URL="http://$PUBLIC_HOST"
     export KEYCLOAK_SERVER_URL=${PUBLIC_HOST_URL}/auth
 elif [ $DEPLOYMENT_MODE == 'site' ]; then
-    export COMPOSE_FILE=docker-compose.yml:docker-compose-keycloak.yml:docker-compose-site.yml
+    export COMPOSE_FILE=docker-compose.yml:docker-compose-keycloak.ymldocker-compose-basic.yml:docker-compose-site.yml
     export SQUONK_URL="http://$PUBLIC_HOST"
     export KEYCLOAK_SERVER_URL=${PUBLIC_HOST_URL}/auth
 elif [ $DEPLOYMENT_MODE == 'dev' ]; then

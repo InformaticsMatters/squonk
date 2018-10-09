@@ -16,13 +16,12 @@ if [ ! -d images/nginx/sites/informaticsmatters.com/html ]; then
 	echo "creating dummy content for informaticsmatters.com"
 	mkdir -p images/nginx/sites/informaticsmatters.com/html
 fi
-if [ ! -d images/nginx/sites/squonk.it/html ]; then
+if [ ! -d images/nginx/sites/squonk.it/squonk-website/_site ]; then
 	echo "creating dummy content for squonk.it"
-	mkdir -p images/nginx/sites/squonk.it/html || exit 1
-	cp images/nginx/sites/index.html images/nginx/sites/squonk.it/html/
+	mkdir -p images/nginx/sites/squonk.it/squonk-website/_site || exit 1
+	cp images/nginx/sites/index.html images/nginx/sites/squonk.it/squonk-website/_site/
 fi
 
 # setup nginx
 sed "s/__public_host__/${PUBLIC_HOST}/g" images/nginx/default.ssl.conf.template > images/nginx/default.ssl.conf
-sed "s/#XWIKI_PLACEHOLDER#/include snippets\/xwiki.conf;/g" images/nginx/default.ssl.conf > images/nginx/default.site.conf
 

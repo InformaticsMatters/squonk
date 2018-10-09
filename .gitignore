@@ -21,6 +21,7 @@ data/testfiles/emols_order*
 data/testfiles/all-sdf.sdf.gz
 data/testfiles/chembl_*.sdf.gz
 data/testfiles/docker-services/
+data/testfiles/*.sdf
 
 components/cdk-camel/out
 components/chemaxon-camel/out
