@@ -106,24 +106,20 @@ objects:
           - mountPath: ${JE_SQUONK_CONTAINER_WORK_DIR}
             name: squonk-work-dir
           - mountPath: /usr/local/tomcat/webapps/jobexecutor/META-INF/context.xml
-            name: squonk-je-sso-config
+            name: jobexecutor-sso-config
             subPath: context.xml
             readOnly: true
           - mountPath: /usr/local/tomcat/webapps/jobexecutor/WEB-INF/keycloak.json
-            name: squonk-je-sso-config
+            name: jobexecutor-sso-config
             subPath: keycloak.json
             readOnly: true
-#          - mountPath: /usr/local/tomcat/webapps/jobexecutor/WEB-INF/web.xml
-#            name: squonk-je-sso-config
-#            subPath: web.xml
-#            readOnly: true
         volumes:
         - name: squonk-work-dir
           persistentVolumeClaim:
             claimName: squonk-work-dir-pvc
-        - name: squonk-je-sso-config
+        - name: jobexecutor-sso-config
           configMap:
-            name: squonk-je-sso-config
+            name: jobexecutor-sso-config
 
 - kind: Service
   apiVersion: v1
@@ -137,21 +133,3 @@ objects:
     - name: http
       port: 8080
       targetPort: 8080
-
-- kind: Route
-  apiVersion: v1
-  metadata:
-    name: jobexecutor
-    namespace: ${APP_NAMESPACE}
-    annotations:
-      # Note: Set to false to avoid exhausting certificate generation request quota.
-      # Change this to true if/when you are ready for secure the route with trusted certificates.
-      kubernetes.io/tls-acme: 'false'
-  spec:
-    host: ${JE_HOST}
-    to:
-      kind: Service
-      name: jobexecutor
-    tls:
-      termination: edge
-      insecureEdgeTerminationPolicy: Redirect

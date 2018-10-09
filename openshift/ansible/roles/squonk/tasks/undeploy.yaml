@@ -89,10 +89,85 @@
   - squonk-database-creator
   - squonk-rabbitmq-config
   - squonk-client-creator
-  - jobexecutor-sso-config
   when: cm_result.stdout | regex_search('^%s\s' % item, multiline=True)
+
+# Get a keycloak token (sets the fact 'keycloak_token').
+# Remember that the login user may have changed to admin.
+
+- import_tasks: get-keycloak-token.yaml
+  tags:
+  - keycloak-users
+
+# We need the client ID.
+# With it we can delete it.
+
+- name: Get Portal Keycloak Client ID
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients?clientId={{ oc_squonk_app }}"
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  register: client_result
+
+- name: Delete Portal Keycloak Client
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients/{{ client_result.json[0].id }}"
+    method: DELETE
+    status_code: 204
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  when: client_result.json
+
+- name: Query Squonk Users
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user }}"
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  register: squonk_users
+  vars:
+    user: "{{ item.split()[0] }}"
+  loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
+  when: users_file is defined
+  changed_when: False
+  tags:
+  - keycloak-users
+
+# The above 'get' is run for each expected user.
+# The resultant `squonk_users' variable is a structure
+# with each query represented as an element in the 'results' array.
+# If the user exists it will have an 'id' property in the 'json'
+# array. i.e.
+#
+#  "results" [{
+#    "json": [{
+#      "id": "blah"
+#
+# If the user does not exist the 'json' array is empty.
+#
+# To simplify further processing, we'd like a nice flat list.
+# So, to collect all known users into a list it's...
+#
+#   squonk_users | json_query('results[*].json[*].id') | flatten
+#
+- name: Collect Squonk User IDs
+  set_fact:
+    known_user_ids: "{{ squonk_users | json_query('results[*].json[*].id') | flatten }}"
+  when: users_file is defined
+  tags:
+  - keycloak-users
+
+- name: Delete Existing Squonk Keycloak Users
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ item }}"
+    method: DELETE
+    status_code: 204
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  loop: "{{ known_user_ids }}"
+  when: users_file is defined
+  tags:
+  - keycloak-users
 
 # What's left is the database and its tables.
 # For now, deleting the database and its tables is a user action.
-#
-# ...and the client information in Keycloak.

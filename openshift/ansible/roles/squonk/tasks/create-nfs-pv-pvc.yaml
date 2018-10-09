@@ -25,10 +25,11 @@
 # Those PVs that are "Released"
 # must be "Available" to accept new binds...
 
-- name: Check Released volumnes
+- name: Check Released volumes
   shell: oc get pv | grep Released | grep {{ oc_project }}/ | cut -f 1 -d " "
   register: released_vols
   when: recycle_released_pvs
+  changed_when: False
 
 - name: Recover Released volumes
   shell: >
@@ -51,6 +52,7 @@
   loop:
   - squonk-work-dir
   when: item not in s_pv_result.stdout
+  changed_when: False
 
 # Create PVCs
 
@@ -79,3 +81,4 @@
   loop:
   - squonk-work-dir-pvc
   when: item not in s_pvc_result.stdout
+  changed_when: False

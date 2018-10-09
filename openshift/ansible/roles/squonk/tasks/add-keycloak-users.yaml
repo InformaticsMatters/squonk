@@ -1,0 +1,156 @@
+---
+
+# Get a keycloak token (sets the fact 'keycloak_token').
+# Remember that the login user may have changed to admin.
+
+- import_tasks: get-keycloak-token.yaml
+  tags:
+  - keycloak-users
+
+# Adding Squonk users and passwords.
+# The steps here are: -
+#
+# 1. Get a list of users using the 'users_file'
+#    that are already known (this might be nobody)
+# 2. Add all the users from the 'users_file' that aren't known
+# 3. Get user identities for all the users in the users_file
+# 4. Set (reset) passwords for all the users that were added in step 2.
+
+#####
+# 1 #
+#####
+#
+# Get a list of users that are already known.
+# Here we iterate through the users file checking Keycloak to see if the user
+# exists. Existing users are collected in 'squonk_users'
+
+- name: Query Squonk Users
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user }}"
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  register: squonk_users
+  vars:
+    user: "{{ item.split()[0] }}"
+  loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
+  when: users_file is defined
+  changed_when: False
+  tags:
+  - keycloak-users
+
+# The above 'query' is run for each expected user.
+# The resultant `squonk_users' variable is a structure
+# with each query represented as an element in the 'results' array.
+# If the user exists it will have a 'username' property in the 'json'
+# array. i.e.
+#
+#  "results" [{
+#    "json": [{
+#      "username": "blah"
+#
+# If the user does not exist the 'json' array is empty.
+#
+# To simplify further processing, we'd like a nice flat list.
+# So, to collect all known users into a list it's...
+#
+#   squonk_users | json_query('results[*].json[*].username') | flatten
+#
+- name: Collect Squonk Users
+  set_fact:
+    known_users: "{{ squonk_users | json_query('results[*].json[*].username') | flatten }}"
+  when: users_file is defined
+  changed_when: False
+  tags:
+  - keycloak-users
+
+#####
+# 2 #
+#####
+#
+# Now, add all the users from the users file that do not already exist.
+
+- name: Add Keycloak Users (that do not exist)
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users"
+    method: POST
+    body: >-
+      {"username": "{{ user }}",
+       "enabled": "true"}
+    body_format: json
+    status_code: 201
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  vars:
+    user: "{{ item.split()[0] }}"
+  loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
+  when:
+  - users_file is defined
+  - user not in known_users
+  tags:
+  - keycloak-users
+
+#####
+# 3 #
+#####
+#
+# We now need to set (reset) the user's password.
+# to do that we need the user's ID.
+# Rather than examine the output of the 'create user'
+# command above it's simpler to get each user again
+# and then collect the identities from the results.
+
+- name: Query Squonk Users (Reprise)
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user }}"
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  register: squonk_users
+  vars:
+    user: "{{ item.split()[0] }}"
+  loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
+  when: users_file is defined
+  changed_when: False
+  tags:
+  - keycloak-users
+
+- name: Collect Squonk User Identities
+  set_fact:
+    user_identities: "{{ squonk_users | json_query('results[*].json[*].id') | flatten }}"
+  when: users_file is defined
+  changed_when: False
+  tags:
+  - keycloak-users
+
+#####
+# 4 #
+#####
+#
+# Now we add (reset) the password for each user that we've added
+# i.e. all the users that were not already known.
+
+- name: Set (Reset) Keycloak User Passwords (for those that do not exist)
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ user_id }}/reset-password"
+    method: PUT
+    body: >-
+      {"type": "password",
+       "temporary": "false",
+       "value": "{{ password }}"}
+    body_format: json
+    status_code: 204
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  vars:
+    user: "{{ item.1.split()[0] }}"
+    user_id: "{{ item.0 }}"
+    password: "{{ item.1.split()[1] }}"
+  with_together:
+  - "{{ user_identities }}"
+  - "{{ lookup('file', '../../' + users_file).split('\n') }}"
+  when: user not in known_users
+  tags:
+  - keycloak-users

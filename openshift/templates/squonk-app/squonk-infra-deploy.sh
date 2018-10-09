@@ -29,20 +29,12 @@ oc process -f squonk-infra-keycloak-init.yaml \
   -p LOGOUT_REDIRECT_TO=$KEYCLOAK_LOGOUT_REDIRECT_TO\
   | oc create -f -
 
-echo "Preparing Keycloak (JobExecutor)"
-oc process -f squonk-infra-keycloak-je-init.yaml \
-  -p KEYCLOAK_REALM=$KEYCLOAK_REALM\
-  -p ROUTES_BASE_HOSTNAME=$OC_ROUTES_BASENAME \
-  -p LOGOUT_REDIRECT_TO=$KEYCLOAK_LOGOUT_REDIRECT_TO\
-  | oc create -f -
-
 oc project -q $OC_PROJECT
 
 echo "Preparing roles and service accounts"
 oc adm policy add-role-to-user edit $OC_USER
 oc adm policy add-scc-to-user anyuid system:serviceaccount:${OC_PROJECT}:default
 oc adm policy add-cluster-role-to-user cluster-admin -z default
-
 
 echo "You may need to setup persistent volumes before you can deploy"
 echo "Keycloak client creation initiated. Check the output by running 'oc logs job/squonk-client-creator -n $OC_INFRA_PROJECT'"

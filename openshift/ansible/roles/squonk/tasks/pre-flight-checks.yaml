@@ -39,4 +39,3 @@
       in the infrastructure project ({{ oc_infra_project }})
   when:
   - infra_rabbit_name not in dc_result.stdout
-
