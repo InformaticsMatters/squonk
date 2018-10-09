@@ -8,7 +8,7 @@ data_loader_pvc_name: chemcentral-data-loader-pvc
 
 # Parameters for the ChemCentral Loader.
 #
-# Typical loader classes are: -
+# Supported loader classes in this role are: -
 #
 # - EMoleculesBBSmilesLoader
 # - EnamineRealDsiLoader
