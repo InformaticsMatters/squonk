@@ -56,19 +56,3 @@
   - not jobs_result.stdout | regex_search('^chemcentral-loader\s', multiline=True)
   tags:
   - chemcentral-loader
-
-- name: Debug (Multiple Files)
-  debug:
-    msg: "Multiple files!"
-  when:
-  - loader_class in ['MolportSmilesLoader']
-  tags:
-  - chemcentral-loader
-
-- name: Debug (Single Files)
-  debug:
-    msg: "Single files"
-  when:
-  - loader_class in ['EnamineRealDsiLoader', 'EMoleculesBBSmilesLoader']
-  tags:
-  - chemcentral-loader
