@@ -30,15 +30,15 @@
   - chemcentral-loader
 
 # Wait for loader...
-# A Job that needs to reach a "Completed" state.
+# A Job that needs to reach a "Succeeded" state.
 
 - name: Wait for Loader
   shell: oc describe jobs/chemcentral-loader | grep '1 Succeeded'
-  delay: 10
-  retries: "{{ (pod_ready_timeout | int / 10) | int }}"
+  delay: 20
+  retries: "{{ (data_loader_pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
-  when: wait_for_pods
+  when: wait_for_loader
   changed_when: False
   tags:
   - chemcentral-loader
