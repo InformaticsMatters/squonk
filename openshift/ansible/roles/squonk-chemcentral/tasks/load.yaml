@@ -37,7 +37,7 @@
     -p LIMIT={{ loader_limit }}
     | oc create -f -
   when:
-  - loader_class in ['EnamineRealDsiLoader']
+  - loader_class in ['EnamineRealDsiLoader', 'EMoleculesBBSmilesLoader']
   - not jobs_result.stdout | regex_search('^chemcentral-loader\s', multiline=True)
   tags:
   - chemcentral-loader
@@ -54,5 +54,21 @@
   when:
   - loader_class in ['MolportSmilesLoader']
   - not jobs_result.stdout | regex_search('^chemcentral-loader\s', multiline=True)
+  tags:
+  - chemcentral-loader
+
+- name: Debug (Multiple Files)
+  debug:
+    msg: "Multiple files!"
+  when:
+  - loader_class in ['MolportSmilesLoader']
+  tags:
+  - chemcentral-loader
+
+- name: Debug (Single Files)
+  debug:
+    msg: "Single files"
+  when:
+  - loader_class in ['MolportSmilesLoader', 'EMoleculesBBSmilesLoader']
   tags:
   - chemcentral-loader
