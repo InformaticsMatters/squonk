@@ -18,7 +18,7 @@
     -p DB_NAMESPACE={{ oc_infra_project }}
     -p APP_NAMESPACE={{ oc_project }}
     | oc create -f -
-  when:  not dc_result.stdout | regex_search('^chemcentral-search\s', multiline=True)
+  when: not dc_result.stdout | regex_search('^db-chemcentral\s', multiline=True)
 
 # Wait for running pods...
 
