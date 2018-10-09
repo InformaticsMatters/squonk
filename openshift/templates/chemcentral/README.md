@@ -53,6 +53,9 @@ oc process -p NFS_SERVER=$OC_NFS_SERVER \
            -p NFS_PATH=$OC_NFS_PATH \
            -p PVC_SIZE=$OC_SQUONK_CC_PVC_SIZE \
            -p INFRA_NAMESPACE=$OC_INFRA_PROJECT \
+           -f chemcentral-pv-nfs.yaml | oc create -n $OC_INFRA_PROJECT -f -
+
+oc process -p PVC_SIZE=$OC_SQUONK_CC_PVC_SIZE \
            -f chemcentral-pvc-nfs.yaml | oc create -n $OC_INFRA_PROJECT -f -
 ```
 
