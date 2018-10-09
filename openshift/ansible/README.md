@@ -3,9 +3,7 @@ You can run the infrastructure and squonk playbook from this
 directory with the commands: -
 
     ansible-playbook playbooks/squonk-infra/deploy.yaml
-    
     ansible-playbook playbooks/squonk/deploy.yaml
-
     ansible-playbook playbooks/squonk-chemcentral/deploy.yaml
 
 >   Remember to first run the appropriate `setenv.sh` script.
@@ -15,11 +13,10 @@ And you can provide users 'after-the-fact' with: -
     ansible-playbook -e "users_file=users.txt" -t keycloak-users \
         playbooks/squonk/deploy.yaml
         
-You can delete the laoder and r-run it with: -
+You can delete the ChemCentral loader and re-run it with: -
 
     ansible-playbook playbooks/squonk-chemcentral/delete-loader.yaml
-    ansible-playbook -t chemcentral-loader \
-        playbooks/squonk-chemcentral/deploy.yaml
+    ansible-playbook -t chemcentral-loader playbooks/squonk-chemcentral/deploy.yaml
         
 There is an `undeploy` playbook that can be run for squonk: -
 
