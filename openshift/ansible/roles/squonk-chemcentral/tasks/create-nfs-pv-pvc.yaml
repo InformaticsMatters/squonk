@@ -38,10 +38,11 @@
 # Those PVs that are "Released"
 # must be "Available" to accept new binds...
 
-- name: Check Released volumnes
+- name: Check Released volumes
   shell: oc get pv | grep Released | grep {{ oc_infra_project }}/ | cut -f 1 -d " "
   register: released_vols
   when: recycle_released_pvs
+  changed_when: False
 
 - name: Recover Released volumes
   shell: >
