@@ -20,14 +20,39 @@
   tags:
   - chemcentral-loader
 
-- name: Create Loader Job
+# The loader 'flavour' is dependent on the
+# class of loader that's expected.
+# Only one of the the following should run
+# (but it will only run if loader job does not exist).
+#
+# Use the 'delete-loader' playbook to remove running or
+# completed jobs.
+
+- name: Create Loader Job (Single File)
   shell: >
     oc process
     -f {{ role_path }}/{{ t_dir }}/chemcentral/loader.yaml
-    -p LOADER_CLASS={{ loader_class }}
+    -p LOADER_CLASS=org.squonk.rdkit.db.loaders.{{ loader_class }}
     -p LOADER_FILE={{ loader_file }}
     -p LIMIT={{ loader_limit }}
     | oc create -f -
-  when: not jobs_result.stdout | regex_search('^chemcentral-loader\s', multiline=True)
+  when:
+  - loader_class in ['EnamineRealDsiLoader']
+  - not jobs_result.stdout | regex_search('^chemcentral-loader\s', multiline=True)
+  tags:
+  - chemcentral-loader
+
+- name: Create Loader Job (Multiple Files)
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/chemcentral/loader.yaml
+    -p LOADER_CLASS=org.squonk.rdkit.db.loaders.{{ loader_class }}
+    -p LOADER_DIR={{ loader_dir }}
+    -p LOADER_PATTERN={{ loader_pattern }}
+    -p LIMIT={{ loader_limit }}
+    | oc create -f -
+  when:
+  - loader_class in ['MolportSmilesLoader']
+  - not jobs_result.stdout | regex_search('^chemcentral-loader\s', multiline=True)
   tags:
   - chemcentral-loader

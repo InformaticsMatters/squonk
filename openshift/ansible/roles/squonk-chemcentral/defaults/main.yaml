@@ -1,16 +1,28 @@
 ---
 
+# Misc variables...
 pv_name: pv-chemcentral-postgresql
 pvc_name: chemcentral-postgresql-claim
 data_loader_pv_name: pv-chemcentral-loader
 data_loader_pvc_name: chemcentral-data-loader-pvc
 
 # Parameters for the ChemCentral Loader.
+#
 # Typical loader classes are: -
+#
 # - EMoleculesBBSmilesLoader
 # - EnamineRealDsiLoader
-loader_file: DSI_new.smi.gz
-loader_class: org.squonk.rdkit.db.loaders.EnamineRealDsiLoader
+# - MolportSmilesLoader
+#
+# The class controls the flavour of loader being launched.
+loader_class: MolportSmilesLoader
+# The file (used by single-file loaders)
+loader_file: -
+# The loader base directory and file pattern
+# (for Molport-like multi-file loaders)
+loader_dir: molport-2018-08
+loader_pattern: iis_smiles-*.txt.gz
+# The number of molecules to load (0 == all)
 loader_limit: 0
 
 # The ChemCentral Service Account
@@ -18,8 +30,8 @@ loader_limit: 0
 oc_cc_infra_sa: chemcentral-postgres
 
 # Here PVs used by the application (the squonk-work-dir for example)
-# are returned to an Available state if they're currently
-# in a Released state. Note: it is the user's responsibility
+# are returned to an 'Available' state if they're currently
+# in a 'Released' state. Note: it is the user's responsibility
 # to protect themselves for data loss here. This will inspect the
 # "state" of all PVs in the squonk *and* infrastructure projects.
 recycle_released_pvs: yes
