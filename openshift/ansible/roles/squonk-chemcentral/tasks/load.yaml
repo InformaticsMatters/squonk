@@ -69,6 +69,6 @@
   debug:
     msg: "Single files"
   when:
-  - loader_class in ['MolportSmilesLoader', 'EMoleculesBBSmilesLoader']
+  - loader_class in ['EnamineRealDsiLoader', 'EMoleculesBBSmilesLoader']
   tags:
   - chemcentral-loader
