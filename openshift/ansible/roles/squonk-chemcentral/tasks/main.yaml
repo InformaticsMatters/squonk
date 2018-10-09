@@ -7,3 +7,5 @@
 
 - import_tasks: create-nfs-pv-pvc.yaml
   when: oc_cc_infra_volume_type == 'nfs'
+
+- import_tasks: deploy.yaml
