@@ -54,7 +54,7 @@
 # to reach a "Completed" state...
 
 - name: Wait for Infrastructure initialisation
-  shell: oc describe jobs/{{ item }} | grep Completions | grep 1
+  shell: oc describe jobs/{{ item }} | grep '1 Succeeded'
   delay: 20
   retries: "{{ (pod_ready_timeout | int / 20) | int }}"
   register: result
@@ -85,7 +85,7 @@
   when: not cm_result.stdout | regex_search('^squonk-je-client-creator\s', multiline=True)
 
 - name: Wait for Infrastructure initialisation (JobExecutor)
-  shell: oc describe jobs/{{ item }} | grep Completions | grep 1
+  shell: oc describe jobs/{{ item }} | grep '1 Succeeded'
   delay: 20
   retries: "{{ (pod_ready_timeout | int / 20) | int }}"
   register: result
