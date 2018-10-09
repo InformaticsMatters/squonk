@@ -1,5 +1,8 @@
 ---
 
+pv_name: pv-chemcentral-postgresql
+pvc_name: chemcentral-postgresql-claim
+
 # The ChemCentral Service Account
 # in the Infrastructure project
 oc_cc_infra_sa: chemcentral-postgres

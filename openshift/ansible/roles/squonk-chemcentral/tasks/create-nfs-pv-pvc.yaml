@@ -1,9 +1,5 @@
 ---
 
-- vars:
-    pv_name: pv-chemcentral-postgresql
-    pvc_name: chemcentral-postgresql-claim
-
 - name: Move to Squonk Infrastructure Project
   shell: oc project {{ oc_infra_project }}
   changed_when: False
