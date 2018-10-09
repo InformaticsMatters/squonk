@@ -5,19 +5,13 @@ pvc_name: chemcentral-postgresql-claim
 data_loader_pv_name: pv-chemcentral-loader
 data_loader_pvc_name: chemcentral-data-loader-pvc
 
-# Number of seconds to wait for the loader (seconds).
-# Heavily dependent on the data being loaded
-# so this is a reasonable maximum.
-data_loader_pod_ready_timeout: 600
-wait_for_laoder: yes
-
 # Parameters for the ChemCentral Loader.
 # Typical loader classes are: -
 # - EMoleculesBBSmilesLoader
 # - EnamineRealDsiLoader
 loader_file: DSI_new.smi.gz
 loader_class: org.squonk.rdkit.db.loaders.EnamineRealDsiLoader
-loader_limit: 10000
+loader_limit: 0
 
 # The ChemCentral Service Account
 # in the Infrastructure project

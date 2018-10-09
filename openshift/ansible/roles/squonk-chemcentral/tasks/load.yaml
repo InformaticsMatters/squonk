@@ -9,6 +9,9 @@
 # Load data into the ChemCentral database.
 # This is achieved by launching the loader Job
 # which relies on the file in the loader's PVC.
+#
+# The loader Job can take considerable time
+# so the rest is up to you...
 
 - name: Check Jobs
   shell: oc get jobs
@@ -26,19 +29,5 @@
     -p LIMIT={{ loader_limit }}
     | oc create -f -
   when: not jobs_result.stdout | regex_search('^chemcentral-loader\s', multiline=True)
-  tags:
-  - chemcentral-loader
-
-# Wait for loader...
-# A Job that needs to reach a "Succeeded" state.
-
-- name: Wait for Loader
-  shell: oc describe jobs/chemcentral-loader | grep '1 Succeeded'
-  delay: 20
-  retries: "{{ (data_loader_pod_ready_timeout | int / 20) | int }}"
-  register: result
-  until: result.rc == 0
-  when: wait_for_loader
-  changed_when: False
   tags:
   - chemcentral-loader
