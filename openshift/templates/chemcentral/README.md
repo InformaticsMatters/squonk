@@ -62,11 +62,9 @@ oc process -p PVC_SIZE=$OC_SQUONK_CC_PVC_SIZE \
 ### If using dynamic provisioning
 
 ```
-oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT \
-           -p NFS_SERVER=$OC_NFS_SERVER \
-           -p NFS_PATH=$OC_NFS_PATH \
-           -p PVC_SIZE=100Gi \
-           -f chemcentral-pvc-nfs.yaml | oc create -n $OC_INFRA_PROJECT -f -
+oc process -p STORAGE_CLASS=$OC_CHEMCENTRAL_VOLUME_STORAGE_CLASS \
+           -p VOLUME_SIZE=100Gi \
+           -f chemcentral-pvc-dynamic.yaml | oc create -n $OC_INFRA_PROJECT -f -
 ```
 
 Adjust the parameters as needed and look in the `chemcentral-pvc-dynamic.yaml`

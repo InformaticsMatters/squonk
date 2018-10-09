@@ -1,0 +1,33 @@
+---
+
+- name: Move to Squonk Infrastructure Project
+  shell: oc project {{ oc_infra_project }}
+  changed_when: False
+
+# Check/Create PVCs
+
+- name: Check Infrastructure PVCs (dyanmic)
+  shell: oc get pvc
+  register: i_pvc_result
+  changed_when: False
+
+- name: Create Infrastructure PVCs (dynamic)
+  shell: >
+    oc process
+    -p STORAGE_CLASS={{ oc_cc_volume_storage_class }}
+    -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-pvc-dynamic.yaml
+    | oc create -f -
+  when: not i_pvc_result.stdout | regex_search('^chemcentral-postgresql-claim\s', multiline=True)
+
+# Wait for PVCs to become "Bound"...
+
+- name: Wait for PVCs to become Bound (dynamic)
+  shell: >
+    oc get pvc/{{ item }} | grep Bound
+  retries: 6
+  delay: 5
+  register: result
+  until: result.rc == 0
+  loop:
+  - chemcentral-postgresql-claim
+  when: not i_pvc_result.stdout | regex_search('^chemcentral-postgresql-claim\s', multiline=True)

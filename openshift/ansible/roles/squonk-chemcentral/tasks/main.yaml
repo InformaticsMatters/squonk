@@ -10,7 +10,8 @@
 - import_tasks: create-cc-data-loader-nfs-pv-pvc.yaml
   when: oc_cc_infra_volume_type == 'nfs'
 
-# Todo - Add dynamic volumes!
+- import_tasks: create-dynamic-pvc.yaml
+  when: oc_cc_infra_volume_type == 'dynamic'
 
 - import_tasks: deploy.yaml
 - import_tasks: load.yaml
