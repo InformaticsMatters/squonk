@@ -16,7 +16,7 @@ And you can provide users 'after-the-fact' with: -
 You can delete the ChemCentral loader and re-run it with: -
 
     ansible-playbook playbooks/squonk-chemcentral/delete-loader.yaml
-    ansible-playbook -t chemcentral-loader playbooks/squonk-chemcentral/deploy.yaml
+    ansible-playbook playbooks/squonk-chemcentral/run-loader.yaml
         
 There is an `undeploy` playbook that can be run for squonk: -
 
