@@ -22,6 +22,10 @@ There is an `undeploy` playbook that can be run for squonk: -
 
     ansible-playbook playbooks/squonk/undeploy.yaml
 
+and for ChemCentral: -
+
+    ansible-playbook playbooks/squonk-chemcentral/undeploy.yaml
+
 ## Prerequisites
 Before running the playbook: -
 

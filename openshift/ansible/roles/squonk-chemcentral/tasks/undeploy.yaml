@@ -37,7 +37,7 @@
     -n {{ oc_infra_project }}
   when: secrets_result.stdout | regex_search('^chemcentral-database-credentials\s', multiline=True)
 
-# Delete the PVCs and the PVs
+# Delete the PVCs...
 
 - name: Check ChemCentral PVCs (Squonk)
   shell: oc get pvc -n {{ oc_project }}
@@ -61,6 +61,8 @@
     -n {{ oc_infra_project }}
   when: pvc_result.stdout | regex_search('^chemcentral-postgresql-claim\s', multiline=True)
 
+# Delete the PVs...
+
 - name: Check ChemCentral PVs
   shell: oc get pv
   register: pv_result
@@ -71,4 +73,4 @@
   loop:
   - pv-chemcentral-postgresql
   - pv-chemcentral-loader
-  when: pv_result.stdout | regex_search('^c%s\s' % item, multiline=True)
+  when: pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
