@@ -23,6 +23,8 @@ oc_squonk_host: "{{ ansible_env.OC_SQUONK_HOST }}"
 oc_squonk_image_tag: "{{ ansible_env.OC_SQUONK_IMAGE_TAG }}"
 oc_user: "{{ ansible_env.OC_USER }}"
 oc_user_password: "{{ ansible_env.OC_USER_PASSWORD }}"
+oc_nfs_server: "{{ ansible_env.OC_NFS_SERVER }}"
+oc_nfs_path: "{{ ansible_env.OC_NFS_PATH }}"
 
 # Name fo the infrastructure RabbitMQ name
 infra_rabbit_name: "rabbitmq"

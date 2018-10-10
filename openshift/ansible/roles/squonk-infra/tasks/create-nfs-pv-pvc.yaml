@@ -15,8 +15,8 @@
   shell: >
     oc process
     -p INFRA_NAMESPACE={{ oc_infra_project }}
-    -p NFS_SERVER={{ ansible_env.OC_NFS_SERVER }}
-    -p NFS_PATH={{ ansible_env.OC_NFS_PATH }}
+    -p NFS_SERVER={{ oc_nfs_server }}
+    -p NFS_PATH={{ oc_nfs_path }}
     -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-pv-nfs.yaml
     | oc create -f -
   when: not i_pv_result.stdout | regex_search('^pv-rabbitmq\s', multiline=True)

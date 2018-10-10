@@ -1,29 +1,30 @@
 ---
 
-- name: Move to Squonk Project
-  shell: oc project {{ oc_project }}
+- name: Move to Squonk Infrastructure Project
+  shell: oc project {{ oc_infra_project }}
   changed_when: False
 
 # Check/Create PVs
 
-- name: Check Loader PVs
+- name: Check Infrastructure PVs
   shell: oc get pv
   register: i_pv_result
   changed_when: False
 
-- name: Create Loader PVs
+- name: Create Infrastructure PVs
   shell: >
     oc process
-    -p APP_NAMESPACE={{ oc_project }}
-    -p NFS_SERVER={{ ansible_env.OC_NFS_SERVER }}
-    -p NFS_PATH={{ ansible_env.OC_NFS_PATH }}
-    -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-data-loader-pv-nfs.yaml
+    -p INFRA_NAMESPACE={{ oc_infra_project }}
+    -p NFS_SERVER={{ oc_nfs_server }}
+    -p NFS_PATH={{ oc_nfs_path }}
+    -p PVC_SIZE={{ pv_size }}
+    -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-pv-nfs.yaml
     | oc create -f -
-  when: not i_pv_result.stdout | regex_search('^%s\s' % data_loader_pv_name, multiline=True)
+  when: not i_pv_result.stdout | regex_search('^%s\s' % pv_name, multiline=True)
 
 # Wait for PVs to become "Available"...
 
-- name: Wait for Loader PVs to become Available
+- name: Wait for PVs to become Available
   shell: >
     oc get pv/{{ item }} | grep Available
   retries: 6
@@ -31,7 +32,7 @@
   register: result
   until: result.rc == 0
   loop:
-  - "{{ data_loader_pv_name }}"
+  - "{{ pv_name }}"
   when: not i_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
 
 # Deal with "Released" volumes.
@@ -54,22 +55,22 @@
 
 # Check/Create PVCs
 
-- name: Check Loader PVCs (nfs)
+- name: Check Infrastructure PVCs (nfs)
   shell: oc get pvc
   register: i_pvc_result
   changed_when: False
 
-- name: Create Loader PVCs (nfs)
+- name: Create Infrastructure PVCs (nfs)
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-data-loader-pvc-nfs.yaml
-    -p APP_NAMESPACE={{ oc_project }}
+    -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-pvc-nfs.yaml
+    -p PVC_SIZE={{ pv_size }}
     | oc create -f -
-  when: not i_pvc_result.stdout | regex_search('^%s\s' % data_loader_pvc_name, multiline=True)
+  when: not i_pvc_result.stdout | regex_search('^%s\s' % pvc_name, multiline=True)
 
 # Wait for PVCs to become "Bound"...
 
-- name: Wait for Loader PVCs to become Bound (nfs)
+- name: Wait for PVCs to become Bound (nfs)
   shell: >
     oc get pvc/{{ item }} | grep Bound
   retries: 6
@@ -77,5 +78,5 @@
   register: result
   until: result.rc == 0
   loop:
-  - "{{ data_loader_pvc_name }}"
+  - "{{ pvc_name }}"
   when: not i_pvc_result.stdout | regex_search('^%s\s' % item, multiline=True)
