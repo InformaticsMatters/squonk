@@ -10,13 +10,15 @@ data_loader_pvc_name: chemcentral-data-loader-pvc
 
 # Parameters for the ChemCentral Loader.
 #
-# Supported loader classes in this role are: -
+# The class controls the flavour of loader being launched.
+#
+# Refer to Squonk's
+# rdkit-databases/src/main/groovy/org/squonk/rdkit/db/loaders/
+# for an up-to-date list.
 #
 # - EMoleculesBBSmilesLoader
 # - EnamineRealDsiLoader
 # - MolportSmilesLoader
-#
-# The class controls the flavour of loader being launched.
 loader_class: MolportSmilesLoader
 # The file (used by single-file loaders)
 loader_file: Undefined
@@ -30,8 +32,9 @@ loader_pattern: iis_smiles\\-.*\\.txt\\.gz
 # The number of molecules to load (0 == all)
 loader_limit: 0
 # The identity of the loader (any string value).
-# this is used to uniquely identify loader Jobs
-# so Jobs with different markers can run at the same time.
+# This is used to uniquely identify loader Jobs
+# so Jobs with the same marker are prevented
+# from running at the same time.
 loader_marker: A
 
 # The ChemCentral Service Account
