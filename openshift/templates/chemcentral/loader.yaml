@@ -44,6 +44,12 @@ parameters:
     The file pattern of the data to load (for multi-file loaders)
   value: undefined
 
+- name: LOADER_MARKER
+  description: >
+    The unique identity of this loader.
+    Loaders with different 'markers' can run at the same time.
+  value: A
+
 - name: TABLE_NAME
   description: Name of the database table
 
@@ -59,12 +65,12 @@ objects:
 - kind: Job
   apiVersion: batch/v1
   metadata:
-    name: chemcentral-loader
+    name: chemcentral-loader-${LOADER_MARKER}
     namespace: ${APP_NAMESPACE}
   spec:
     template:
       metadata:
-        name: chemcentral-loader
+        name: chemcentral-loader-${LOADER_MARKER}
         namespace: ${APP_NAMESPACE}
       spec:
         volumes:
@@ -73,7 +79,7 @@ objects:
             claimName: chemcentral-data-loader-pvc
         containers:
         - image: squonk/chemcentral-loader:${IMAGE_TAG}
-          name: chemcentral-loader
+          name: chemcentral-loader-${LOADER_MARKER}
           env:
           - name: CHEMCENTRAL_HOST
             valueFrom:
