@@ -17,15 +17,15 @@ data_loader_pvc_name: chemcentral-data-loader-pvc
 # - MolportSmilesLoader
 #
 # The class controls the flavour of loader being launched.
-loader_class: EMoleculesBBSmilesLoader
+loader_class: MolportSmilesLoader
 # The file (used by single-file loaders)
-loader_file: DSI_new.smi.gz
+loader_file: Undefined
 # The loader base directory and file pattern
 # (for Molport-like multi-file loaders)
 loader_dir: molport-2018-08
 loader_pattern: iis_smiles-*.txt.gz
 # The number of molecules to load (0 == all)
-loader_limit: 0
+loader_limit: 1000
 
 # The ChemCentral Service Account
 # in the Infrastructure project
