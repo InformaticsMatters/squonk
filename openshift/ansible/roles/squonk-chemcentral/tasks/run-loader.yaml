@@ -3,8 +3,6 @@
 - name: Move to Squonk Project
   shell: oc project {{ oc_project }}
   changed_when: False
-  tags:
-  - chemcentral-loader
 
 # Load data into the ChemCentral database.
 # This is achieved by launching the loader Job
@@ -17,8 +15,6 @@
   shell: oc get jobs
   register: jobs_result
   changed_when: False
-  tags:
-  - chemcentral-loader
 
 # The loader 'flavour' is dependent on the
 # class of loader that's expected.
@@ -39,8 +35,6 @@
   when:
   - loader_class in ['EnamineRealDsiLoader', 'EMoleculesBBSmilesLoader']
   - not jobs_result.stdout | regex_search('^chemcentral-loader\s', multiline=True)
-  tags:
-  - chemcentral-loader
 
 - name: Create Loader Job (Multiple Files)
   shell: >
@@ -54,5 +48,3 @@
   when:
   - loader_class in ['MolportSmilesLoader']
   - not jobs_result.stdout | regex_search('^chemcentral-loader\s', multiline=True)
-  tags:
-  - chemcentral-loader
