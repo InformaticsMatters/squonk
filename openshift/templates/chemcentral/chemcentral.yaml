@@ -251,14 +251,14 @@ objects:
             httpGet:
               path: /chemcentral-search/rest/ping
               port: 8080
-            initialDelaySeconds: 30
+            initialDelaySeconds: 120
             timeoutSeconds: 1
             periodSeconds: 20
           livenessProbe:
             httpGet:
               path: /chemcentral-search/rest/ping
               port: 8080
-            initialDelaySeconds: 60
+            initialDelaySeconds: 180
             timeoutSeconds: 1
             periodSeconds: 30
 

@@ -24,8 +24,8 @@
 
 - name: Wait for ChemCentral Database Pod
   shell: oc get po | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
-  retries: 15
   delay: 20
+  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
   loop:
@@ -35,8 +35,8 @@
 
 - name: Wait for ChemCentral Search Pod
   shell: oc get po -n {{ oc_project }} | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
-  retries: 15
   delay: 20
+  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
   loop:

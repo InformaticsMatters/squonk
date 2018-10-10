@@ -24,7 +24,7 @@
 - name: Wait for PVCs to become Bound (dynamic)
   shell: >
     oc get pvc/{{ item }} | grep Bound
-  retries: 6
+  retries: 12
   delay: 5
   register: result
   until: result.rc == 0

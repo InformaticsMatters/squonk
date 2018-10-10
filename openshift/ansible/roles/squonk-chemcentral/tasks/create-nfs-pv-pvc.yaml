@@ -27,7 +27,7 @@
 - name: Wait for PVs to become Available
   shell: >
     oc get pv/{{ item }} | grep Available
-  retries: 6
+  retries: 12
   delay: 5
   register: result
   until: result.rc == 0
@@ -73,7 +73,7 @@
 - name: Wait for PVCs to become Bound (nfs)
   shell: >
     oc get pvc/{{ item }} | grep Bound
-  retries: 6
+  retries: 12
   delay: 5
   register: result
   until: result.rc == 0
