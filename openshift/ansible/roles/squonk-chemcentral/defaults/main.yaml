@@ -21,9 +21,12 @@ loader_class: MolportSmilesLoader
 # The file (used by single-file loaders)
 loader_file: Undefined
 # The loader base directory and file pattern
-# (for Molport-like multi-file loaders)
-loader_dir: "molport-2018-08"
-loader_pattern: "/iis_smiles\-.*\.txt\.gz/"
+# (for Molport-like multi-file loaders).
+#
+# The pattern is a reg-ex,
+# typically something like: iis_smiles\\-.*\\.txt\\.gz
+loader_dir: molport-2018-08
+loader_pattern: iis_smiles\\-.*\\.txt\\.gz
 # The number of molecules to load (0 == all)
 loader_limit: 1000
 
