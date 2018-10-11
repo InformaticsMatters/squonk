@@ -175,9 +175,9 @@ See [here](https://curl.haxx.se/docs/manpage.html#--post301) for more info on th
 
 The following need attention:
 
-1. Check content types and gzip encoding.
 1. Tomcat currently runs as the root user as executing jobs needs access to the docker socket.
-1. Only plain Docker services (those defined with a DockerServiceDescriptor) are supported.
-Other types will soon be added.
+1. Docker services (those defined with a DockerServiceDescriptor or NextflowServiceDescriptor) and internal services are supported.
+HTTP services (mostly for property prediction with ChemAxon and RDKit) are not yet supported.
 1. Support for accessing 'thin' services needs to be added.
-1. Handle type conversions - accept a SDFile and send it to a service that handles Dataset 
+1. Handle type conversions - accept a SDFile and send it to a service that handles Dataset
+1. Allow to specify just the service descriptor ID not the entire service descriptor in the job description
