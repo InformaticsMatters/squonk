@@ -38,6 +38,8 @@ export OC_SQUONK_VOLUME_TYPE=nfs
 export OC_SQUONK_VOLUME_STORAGE_CLASS=SetIfUsingDynamicVolumeType
 export OC_INFRA_VOLUME_TYPE=nfs
 export OC_INFRA_VOLUME_STORAGE_CLASS=SetIfUsingDynamicVolumeType
+export OC_CHEMCENTRAL_VOLUME_TYPE=nfs
+export OC_CHEMCENTRAL_VOLUME_STORAGE_CLASS=SetIfUsingDynamicVolumeType
 # The path, relative to the directory holding this file,
 # of the working copy of the Squonk pipelines repository.
 # If you don't have a working copy this should be blank.

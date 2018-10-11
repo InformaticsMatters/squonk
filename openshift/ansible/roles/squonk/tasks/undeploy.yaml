@@ -2,7 +2,7 @@
 
 # Un-deploy (uninstall) the Squonk application.
 #
-# This consists of un-deploying the application components form the squonk
+# This consists of un-deploying the application components from the squonk
 # project and the related parts of the squonk infrastructure project.
 
 - name: Login (admin)

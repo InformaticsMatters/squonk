@@ -1,0 +1,56 @@
+---
+
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
+  changed_when: False
+
+# Load data into the ChemCentral database.
+# This is achieved by launching the loader Job
+# which relies on the file in the loader's PVC.
+#
+# The loader Job can take considerable time
+# so the rest is up to you...
+
+- name: Check Jobs
+  shell: oc get jobs
+  register: jobs_result
+  changed_when: False
+
+# The loader 'flavour' is dependent on the
+# class of loader that's expected.
+# Only one of the the following should run
+# (but it will only run if loader job does not exist).
+#
+# Loaders are distinguished by their markers.
+# A loader can run as long as there isn't one
+# with the same marker.
+#
+# Use the 'delete-loader' playbook to remove running or
+# completed jobs.
+
+- name: Create Loader Job (Single File)
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/chemcentral/loader.yaml
+    -p LOADER_CLASS=org.squonk.rdkit.db.loaders.{{ loader_class }}
+    -p LOADER_FILE={{ loader_file }}
+    -p LOADER_MARKER={{ loader_marker }}
+    -p LIMIT={{ loader_limit }}
+    | oc create -f -
+  when:
+  - loader_class in ['EnamineRealDsiLoader', 'EMoleculesBBSmilesLoader']
+  - not jobs_result.stdout | regex_search('^chemcentral-loader-%s\s' % loader_marker, multiline=True)
+
+- name: Create Loader Job (Multiple Files)
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/chemcentral/loader.yaml
+    -p LOADER_CLASS=org.squonk.rdkit.db.loaders.{{ loader_class }}
+    -p LOADER_DIR={{ loader_dir }}
+    -p LOADER_PATTERN={{ loader_pattern }}
+    -p LOADER_MARKER={{ loader_marker }}
+    -p LIMIT={{ loader_limit }}
+    | oc create -f -
+  when:
+  - loader_class in ['MolportSmilesLoader']
+  - not jobs_result.stdout | regex_search('^chemcentral-loader-%s\s' % loader_marker, multiline=True)

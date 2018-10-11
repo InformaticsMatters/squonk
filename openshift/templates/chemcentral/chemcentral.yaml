@@ -104,8 +104,9 @@ objects:
       echo "Setting up db as user ${PGUSER}"
 
       echo "Creating chemcentral user"
-      psql --command "CREATE USER chemcentral WITH PASSWORD '${POSTGRES_CHEMCENTRAL_PASSWORD:-chemcentral}';"
-      echo "Chemcentral user created with password ${POSTGRES_CHEMCENTRAL_PASSWORD:-chemcentral}"
+      psql --command "CREATE USER chemcentral"
+      psql --command "ALTER USER chemcentral WITH PASSWORD '${POSTGRES_CHEMCENTRAL_PASSWORD}'"
+      echo "Chemcentral user created with password ${POSTGRES_CHEMCENTRAL_PASSWORD}"
 
       echo "Creating chemcentral database"
       createdb -O chemcentral chemcentral
@@ -251,14 +252,14 @@ objects:
             httpGet:
               path: /chemcentral-search/rest/ping
               port: 8080
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             timeoutSeconds: 1
             periodSeconds: 20
           livenessProbe:
             httpGet:
               path: /chemcentral-search/rest/ping
               port: 8080
-            initialDelaySeconds: 60
+            initialDelaySeconds: 90
             timeoutSeconds: 1
             periodSeconds: 30
 

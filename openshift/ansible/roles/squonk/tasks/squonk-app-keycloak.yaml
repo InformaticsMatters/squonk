@@ -63,7 +63,7 @@
 # if it's been successful, waiting for the postgres migration should be a NOP.
 
 - name: Wait for Postgres migration
-  shell: oc describe jobs/{{ item }} | grep Completions | grep 1
+  shell: oc describe jobs/{{ item }} | grep '1 Succeeded'  | grep 1
   delay: 10
   retries: "{{ (pod_ready_timeout | int / 10) | int }}"
   register: result

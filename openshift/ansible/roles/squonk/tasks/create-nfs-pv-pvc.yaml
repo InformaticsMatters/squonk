@@ -15,8 +15,8 @@
   shell: >
     oc process
     -p APP_NAMESPACE={{ oc_project }}
-    -p NFS_SERVER={{ ansible_env.OC_NFS_SERVER | default('unset') }}
-    -p NFS_PATH={{ ansible_env.OC_NFS_PATH | default('unset') }}
+    -p NFS_SERVER={{ oc_nfs_server | default('unset') }}
+    -p NFS_PATH={{ oc_nfs_path | default('unset') }}
     -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-pv-nfs.yaml
     | oc create -f -
   when: '"squonk-work-dir" not in s_pv_result.stdout'
