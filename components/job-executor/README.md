@@ -38,7 +38,7 @@ curl -kL -X POST \
   -F "ExecutionParameters=@ExecutionParametersSdf.json;type=application/json;filename=ExecutionParameters.json"\
   -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf;type=chemical/x-mdl-sdfile;filename=input"\
   -H "Content-Type: multipart/mixed"\
-  http://172.20.0.2:8080/jobexecutor/rest/v1/jobs/submit-async
+  http://172.20.0.2:8080/jobexecutor/rest/v1/jobs/
 ```
 
 The result is some JSON that includes the job ID, and hopefully says that the job status is `RUNNING`.
@@ -139,11 +139,8 @@ curl\
   -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf;type=chemical/x-mdl-sdfile;filename=input"\
   -H "Content-Type: multipart/mixed"\
   -H "Authorization: bearer $token"\
-  -H "SquonkUsername: user1" http://nginx/jobexecutor/rest/v1/jobs/submit-async
+  -H "SquonkUsername: user1" http://nginx/jobexecutor/rest/v1/jobs/
 ```
-
-Jobs can be submitted to the `submit-async` or the `submit-sync` endpoint. Which one to use is dependent of the service.
-We need to add this information to the service descriptor.
 
 ### Working behind reverse proxy servers.
 
@@ -166,7 +163,7 @@ curl -kL --post301\
   -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf;type=chemical/x-mdl-sdfile;filename=input"\
   -H "Content-Type: multipart/mixed"\
   -H "Authorization: bearer $token"\
-  -H "SquonkUsername: user1" http://nginx/jobexecutor/rest/v1/jobs/submit-async
+  -H "SquonkUsername: user1" http://nginx/jobexecutor/rest/v1/jobs/
 ```
 
 See [here](https://curl.haxx.se/docs/manpage.html#--post301) for more info on those options.
