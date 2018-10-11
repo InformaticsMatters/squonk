@@ -103,28 +103,6 @@ public class JobManager implements ExecutorCallback {
         return execute(username, serviceDescriptor, options, inputs, true);
     }
 
-
-    /** Submit a job and wait for it to complete.
-     * Only use if you know the job is very fast or for testing.
-     *
-     * @param serviceDescriptor
-     * @param options
-     * @param inputs
-     * @param username
-     * @return
-     * @throws Exception
-     */
-    public JobStatus executeSync(
-            String username,
-            ServiceDescriptor serviceDescriptor,
-            Map<String, Object> options,
-            Map<String, InputStream> inputs
-            ) throws Exception {
-
-        return execute(username, serviceDescriptor, options, inputs, false);
-    }
-
-
     private JobStatus execute(
             String username,
             ServiceDescriptor serviceDescriptor,
