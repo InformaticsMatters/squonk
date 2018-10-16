@@ -17,16 +17,11 @@ oc_infra_volume_type: "{{ ansible_env.OC_INFRA_VOLUME_TYPE }}"
 
 # When using dynamic volumes the storage
 # class needs to be defined...
-volume_storage_class: cloud-block-volume
-
-# When using dynamic volumes the storage
-# class needs to be defined...
 oc_infra_volume_storage_class: "{{ ansible_env.OC_INFRA_VOLUME_STORAGE_CLASS }}"
 
 # Other variables
 
 postgresql_shared_buffer_size: 1GB
-postgresql_volume_size: 125Gi
 rabbitmq_volume_size: 1Gi
 
 # Here PVs used by the application (the squonk-work-dir for example)

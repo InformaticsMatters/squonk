@@ -28,6 +28,7 @@ export OC_INFRA_DAILY_BACKUP_COUNT=0
 export OC_INFRA_DAILY_BACKUP_SCHEDULE="37 3 * * *"
 export OC_INFRA_SA=squonk
 export OC_POSTGRESQL_SERVICE=db-postgresql
+export OC_POSTGRESQL_VOLUME_SIZE=125Gi
 export OC_PROJECT=squonk
 export OC_SQUONK_APP=squonk-notebook
 export OC_SQUONK_HOST=${OC_SQUONK_APP}.${OC_ROUTES_BASENAME}
