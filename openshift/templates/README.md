@@ -75,7 +75,8 @@ application templates.
 As that `admin` user you must deploy the xpaas image streams to your OpenShift environment:
 
 ```
-oc create -f https://raw.githubusercontent.com/jboss-openshift/application-templates/master/sso/sso72-image-stream.json -n openshift
+oc create -f https://raw.githubusercontent.com/jboss-container-images/redhat-sso-7-openshift-image/sso72-dev/templates/sso72-image-stream.json -n openshift
+             
 ```
 
 This only needs to be done once.
