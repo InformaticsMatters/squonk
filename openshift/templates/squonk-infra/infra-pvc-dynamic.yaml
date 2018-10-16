@@ -28,9 +28,6 @@ parameters:
 - name: POSTGRESQL_VOLUME_SIZE
   value: 50Gi
 
-- name: POSTGRESQL_BACKUP_VOLUME_SIZE
-  value: 50Gi
-
 objects:
 
 - kind: PersistentVolumeClaim
@@ -59,18 +56,4 @@ objects:
     resources:
       requests:
         storage: "${POSTGRESQL_VOLUME_SIZE}"
-    storageClassName: ${STORAGE_CLASS}
-
-- apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: postgresql-backup-claim
-    labels:
-      application: postgresql-backup
-  spec:
-    accessModes:
-    - ReadWriteMany
-    resources:
-      requests:
-        storage: "${POSTGRESQL_BACKUP_VOLUME_SIZE}"
     storageClassName: ${STORAGE_CLASS}

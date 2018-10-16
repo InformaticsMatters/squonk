@@ -21,6 +21,16 @@
     | oc create -f -
   when: not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
 
+- name: Create Infrastructure Backup PVCs (dynamic)
+  shell: >
+    oc process
+    -p POSTGRESQL_BACKUP_VOLUME_SIZE={{ oc_infra_backup_volume_size }}
+    -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-backup-pvc-dynamic.yaml
+    | oc create -f -
+  when:
+  - not i_pvc_result.stdout | regex_search('^postgresql-backup-claim\s', multiline=True)
+  - oc_infra_backup_hourly_count > 0
+
 # Wait for PVCs to become "Bound"...
 
 - name: Wait for PVCs to become Bound (dynamic)
