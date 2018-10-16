@@ -136,38 +136,7 @@ class JobManagerSpec extends Specification {
         meta?.close()
     }
 
-    void "sdf execute sync"() {
-
-        // create the input
-        def source = new File("../../data/testfiles/Kinase_inhibs.sdf.gz")
-        def sd = createSdfServiceDescriptor()
-        //println JsonHandler.getInstance().objectToJson(sd)
-        JobManager mgr = new JobManager()
-
-
-        when:
-        def jobStatus = mgr.executeSync(USER, sd, null, ["input": new FileInputStream(source)])
-        def results = mgr.getJobResultsAsObjects(USER, jobStatus.getJobId())
-
-        then:
-        results != null
-        results.size() == 1
-        countSdf(results["output"]) == 36
-
-        cleanup:
-        mgr?.cleanupJob(USER, jobStatus?.getJobId())
-    }
-
-    void "sdf execute async"() {
-
-        // create the input
-        def source = new File("../../data/testfiles/Kinase_inhibs.sdf.gz")
-        def sd = createSdfServiceDescriptor()
-        JobManager mgr = new JobManager()
-
-        when:
-
-        def jobStatus = mgr.executeAsync(USER, sd, null, ["input": new FileInputStream(source)])
+    JobStatus waitTillResultsReady(mgr, jobStatus) {
         def jobId = jobStatus.getJobId()
         for (int i=0; i<10; i++) {
             sleep(1000)
@@ -177,6 +146,20 @@ class JobManagerSpec extends Specification {
                 break
             }
         }
+        return jobStatus
+    }
+
+    void "sdf execute"() {
+
+        // create the input
+        def source = new File("../../data/testfiles/Kinase_inhibs.sdf.gz")
+        def sd = createSdfServiceDescriptor()
+        JobManager mgr = new JobManager()
+
+        when:
+
+        def jobStatus = mgr.executeAsync(USER, sd, null, ["input": new FileInputStream(source)])
+        jobStatus = waitTillResultsReady(mgr, jobStatus)
 
         then:
 
@@ -191,7 +174,7 @@ class JobManagerSpec extends Specification {
     }
 
 
-    void "dataset execute sync"() {
+    void "dataset execute"() {
 
         // create the input
         def source1 = new File("../../data/testfiles/Kinase_inhibs.json.gz").bytes
@@ -202,7 +185,8 @@ class JobManagerSpec extends Specification {
 
 
         when:
-        def jobStatus = mgr.executeSync(USER, sd, null, ["input_data": new ByteArrayInputStream(source1), "input_metadata": new ByteArrayInputStream(source2)])
+        def jobStatus = mgr.executeAsync(USER, sd, null, ["input_data": new ByteArrayInputStream(source1), "input_metadata": new ByteArrayInputStream(source2)])
+        jobStatus = waitTillResultsReady(mgr, jobStatus)
         def results = mgr.getJobResultsAsDataSources(USER, jobStatus.getJobId())
 
         then:

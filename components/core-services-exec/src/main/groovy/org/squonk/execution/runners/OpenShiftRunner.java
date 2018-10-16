@@ -52,9 +52,6 @@ public class OpenShiftRunner extends AbstractRunner {
 
     private static final Logger LOG = Logger.getLogger(OpenShiftRunner.class.getName());
 
-    private static final String WORK_DIR_ENV_NAME = "SQUONK_DOCKER_WORK_DIR";
-    private static final String WORK_DIR_DEFAULT = "/squonk/work/docker";
-
     // SQUONK_CELL_JOB_PROJECT_NAME defines the name of the
     // project/namespace that the generated Jobs are created in.
     private static final String PROJECT_ENV_NAME = "SQUONK_CELL_JOB_PROJECT_NAME";
@@ -666,17 +663,6 @@ public class OpenShiftRunner extends AbstractRunner {
     @Override
     public Bind addBind(String hostDir, com.github.dockerjava.api.model.Volume volume, AccessMode mode) {
         throw new UnsupportedOperationException("OpenShiftRunner does not support Bind");
-    }
-
-    /**
-     * Returns the defined Docker image working directory, or a default
-     * if the expected environment variable has not been set.
-     *
-     * @return The image working directory
-     */
-    @Override
-    protected String getDefaultWorkDir() {
-        return IOUtils.getConfiguration(WORK_DIR_ENV_NAME, WORK_DIR_DEFAULT);
     }
 
     /**

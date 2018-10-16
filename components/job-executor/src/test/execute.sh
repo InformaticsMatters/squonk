@@ -18,7 +18,7 @@ curl -X POST \
   -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf.gz;type=chemical/x-mdl-sdfile;filename=input"\
   -H "Content-Type: multipart/mixed"\
   -H "SquonkUsername: user1"\
-  http://localhost:8888/jobexecutor/rest/v1/jobs/submit-async
+  http://localhost:8888/jobexecutor/rest/v1/jobs/
 
 curl -X POST \
   -F "ExecutionParameters=@ExecutionParametersDataset.json;type=application/json;filename=ExecutionParameters.json"\
@@ -26,7 +26,7 @@ curl -X POST \
   -F "input_metadata=@../../../../data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
   -H "Content-Type: multipart/mixed"\
   -H "SquonkUsername: user1"\
-  http://localhost:8888/jobexecutor/rest/v1/jobs/submit-async
+  http://localhost:8888/jobexecutor/rest/v1/jobs/
 
 
 curl -X POST \
@@ -35,7 +35,7 @@ curl -X POST \
   -F "input_metadata=@../../../../data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
   -H "Content-Type: multipart/mixed"\
   -H "SquonkUsername: user1"\
-  http://localhost:8888/jobexecutor/rest/v1/jobs/submit-async
+  http://localhost:8888/jobexecutor/rest/v1/jobs/
 
 
 sleep 2
@@ -68,7 +68,7 @@ NF_JOB_ID=$(curl -X POST \
   -F "ExecutionParameters=@NextflowExecutionParametersDataset.json;type=application/json;filename=NextflowExecutionParametersDataset.json"\
   -F "input_data=@../../../../data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
   -H "Content-Type: multipart/mixed"\
-  http://localhost:8888/jobexecutor/rest/v1/jobs/submit-async 2> /dev/null | jq -r .jobId)
+  http://localhost:8888/jobexecutor/rest/v1/jobs/ 2> /dev/null | jq -r .jobId)
 
 NF_JOB_STATUS=$(curl http://localhost:8888/jobexecutor/rest/v1/jobs/$NF_JOB_ID/status 2> /dev/null | jq -r .status)
 while [ $NF_JOB_STATUS != "RESULTS_READY" ]; do
@@ -85,7 +85,7 @@ curl http://localhost:8888/jobexecutor/rest/v1/jobs/$NF_JOB_ID/terminate | jq -r
 JOB_ID=$(curl -H "SquonkUsername: user1" http://localhost:8888/jobexecutor/rest/v1/jobs | jq -r .[0].jobId)
 while [ $JOB_ID != "null" ]; do
     echo "Deleting job $JOB_ID..."
-    curl http://localhost:8888/jobexecutor/rest/v1/jobs/$JOB_ID/terminate 2> /dev/null | jq -r .status
+    curl -H "SquonkUsername: user1" http://localhost:8888/jobexecutor/rest/v1/jobs/$JOB_ID/terminate 2> /dev/null | jq -r .status
     sleep 2
     JOB_ID=$(curl -H "SquonkUsername: user1" http://localhost:8888/jobexecutor/rest/v1/jobs 2> /dev/null | jq -r .[0].jobId)
 done

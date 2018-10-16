@@ -22,7 +22,9 @@ import org.squonk.core.DockerServiceDescriptor;
 import org.squonk.core.NextflowServiceDescriptor;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.runners.ContainerRunner;
+import org.squonk.execution.runners.DefaultServiceRunner;
 import org.squonk.execution.runners.DockerRunner;
+import org.squonk.execution.runners.ServiceRunner;
 import org.squonk.execution.steps.ExternallyExecutableStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.steps.impl.AbstractDatasetStandardStep;
@@ -75,7 +77,7 @@ public class ExternalExecutor extends ExecutableService {
     private final CamelContext camelContext;
     private final Map<String, Object> results = new LinkedHashMap<>();
 
-    private ContainerRunner runner;
+    private ServiceRunner runner;
     protected Status status;
 
     public ExternalExecutor(ExternalJobDefinition jobDefinition,  Map<String, Object> data, CamelContext camelContext, ExecutorCallback callback) {
@@ -223,17 +225,9 @@ public class ExternalExecutor extends ExecutableService {
                 doExecuteNextflow(descriptor);
                 return;
             } else if (serviceDescriptor instanceof DefaultServiceDescriptor){
-                String execClsName = serviceDescriptor.getServiceConfig().getExecutorClassName();
-                LOG.info("Executor class name is " + execClsName);
-                Class cls = Class.forName(execClsName);
-                if (ExternallyExecutableStep.class.isAssignableFrom(cls)) {
-                    AbstractDatasetStandardStep step = (AbstractDatasetStandardStep)cls.newInstance();
-                    updateStatus(Status.RUNNING);
-                    Map<String,Object> outputs = step.doExecute(data, options, camelContext == null ? null : camelContext.getTypeConverter());
-                    results.putAll(outputs);
-                    updateStatus(Status.RESULTS_READY);
-                    return;
-                }
+                DefaultServiceDescriptor descriptor = (DefaultServiceDescriptor)serviceDescriptor;
+                doExecuteDefault(descriptor);
+                return;
             }
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "Failed to execute job", e);
@@ -244,6 +238,34 @@ public class ExternalExecutor extends ExecutableService {
 
         throw new IllegalStateException("Unsupported service descriptor type " +
                 serviceDescriptor.getClass().getName());
+    }
+
+    private void doExecuteDefault(DefaultServiceDescriptor serviceDescriptor) throws Exception {
+        String execClsName = serviceDescriptor.getServiceConfig().getExecutorClassName();
+        LOG.info("Executor class name is " + execClsName);
+        Class cls = Class.forName(execClsName);
+        if (ExternallyExecutableStep.class.isAssignableFrom(cls)) {
+            AbstractDatasetStandardStep step = (AbstractDatasetStandardStep)cls.newInstance();
+            DefaultServiceRunner serviceRunner = new DefaultServiceRunner(jobId, step, camelContext);
+            this.runner = serviceRunner;
+            updateStatus(Status.RUNNING);
+            serviceRunner.execute(data, options);
+            if (serviceRunner.isResultsReady()) {
+                updateStatus(Status.RESULTS_READY);
+                //List<FileDataSource> results = serviceRunner.getResults();
+
+                handleOutputs(serviceDescriptor, serviceRunner.getHostWorkDir());
+
+                statusMessage = MSG_PROCESSING_RESULTS_READY;
+                updateStatus(Status.RESULTS_READY);
+            } else {
+                LOG.warning("Execution did not complete successfully");
+                statusMessage = "Execution did not complete successfully";
+                updateStatus(Status.ERROR);
+            }
+        } else {
+            throw new IllegalArgumentException("Executor " + execClsName + " not supported");
+        }
     }
 
     private void doExecuteNextflow(NextflowServiceDescriptor descriptor) throws Exception {
@@ -258,21 +280,22 @@ public class ExternalExecutor extends ExecutableService {
             expandedCommand = "";
         }
         String fullCommand = "nextflow run nextflow.nf " + NEXTFLOW_OPTIONS + " " + expandedCommand;
-        ContainerRunner runner = createContainerRunner(NEXTFLOW_IMAGE);
-        runner.init();
-        LOG.info("Docker Nextflow executor image: " + NEXTFLOW_IMAGE + ",hostWorkDir: " + runner.getHostWorkDir() + ", command: " + fullCommand);
+        ContainerRunner containerRunner = createContainerRunner(NEXTFLOW_IMAGE);
+        this.runner = containerRunner;
+        containerRunner.init();
+        LOG.info("Docker Nextflow executor image: " + NEXTFLOW_IMAGE + ",hostWorkDir: " + containerRunner.getHostWorkDir() + ", command: " + fullCommand);
 
         // create input files
         statusMessage = MSG_PREPARING_INPUT;
 
         // write the command that executes everything
         LOG.info("Writing command file");
-        runner.writeInput("execute", "#!/bin/sh\n" + fullCommand + "\n", true);
+        containerRunner.writeInput("execute", "#!/bin/sh\n" + fullCommand + "\n", true);
 
         // write the nextflow file that executes everything
         LOG.info("Writing nextflow.nf");
         String nextflowFileContents = descriptor.getNextflowFile();
-        runner.writeInput("nextflow.nf", nextflowFileContents, false);
+        containerRunner.writeInput("nextflow.nf", nextflowFileContents, false);
 
         // write the nextflow config file if one is defined
         String nextflowConfigContents = descriptor.getNextflowConfig();
@@ -280,33 +303,33 @@ public class ExternalExecutor extends ExecutableService {
             // An opportunity for the runner to provide extra configuration.
             // There may be nothing to add but the returned string
             // will be valid.
-            nextflowConfigContents = runner.addExtraNextflowConfig(nextflowConfigContents);
+            nextflowConfigContents = containerRunner.addExtraNextflowConfig(nextflowConfigContents);
             LOG.info("Writing nextflow.config as:\n" + nextflowConfigContents);
-            runner.writeInput("nextflow.config", nextflowConfigContents, false);
+            containerRunner.writeInput("nextflow.config", nextflowConfigContents, false);
         } else {
             LOG.info("No nextflow.config");
         }
 
         // The runner's either a plain Docker runner
         // or it's an OpenShift runner.
-        if (runner instanceof DockerRunner){
-            ((DockerRunner)runner).includeDockerSocket();
+        if (containerRunner instanceof DockerRunner){
+            ((DockerRunner)containerRunner).includeDockerSocket();
         }
 
         // write the input data
-        handleInputs(descriptor, runner);
+        handleInputs(descriptor, containerRunner);
 
         // run the command
         statusMessage = MSG_RUNNING_CONTAINER;
         LOG.info("Executing ...");
         long t0 = System.currentTimeMillis();
-        int status = runner.execute("./execute");
+        int status = containerRunner.execute("./execute");
         long t1 = System.currentTimeMillis();
         float duration = (t1 - t0) / 1000.0f;
         LOG.info(String.format("Executed in %s seconds with return status of %s", duration, status));
 
         if (status != 0) {
-            String log = runner.getLog();
+            String log = containerRunner.getLog();
             statusMessage = "Error: " + log;
             LOG.warning("Execution errors: " + log);
             throw new RuntimeException("Container execution failed:\n" + log);
@@ -314,9 +337,9 @@ public class ExternalExecutor extends ExecutableService {
 
         // handle the output
         statusMessage = MSG_PREPARING_OUTPUT;
-        handleOutputs(descriptor, runner);
+        handleOutputs(descriptor, containerRunner.getHostWorkDir());
 
-        Properties props = runner.getFileAsProperties("output_metrics.txt");
+        Properties props = containerRunner.getFileAsProperties("output_metrics.txt");
         generateMetricsAndStatus(props, duration);
 
         statusMessage = MSG_PROCESSING_RESULTS_READY;
@@ -356,41 +379,42 @@ public class ExternalExecutor extends ExecutableService {
         // screen.py '${query}' ${threshold} --d ${descriptor}
         String expandedCommand = expandCommand(command, options);
 
-        runner = createContainerRunner(image);
-        runner.init();
-        LOG.info("Docker image: " + image + ", hostWorkDir: " + runner.getHostWorkDir() + ", command: " + expandedCommand);
+        ContainerRunner containerRunner = createContainerRunner(image);
+        this.runner = containerRunner;
+        containerRunner.init();
+        LOG.info("Docker image: " + image + ", hostWorkDir: " + containerRunner.getHostWorkDir() + ", command: " + expandedCommand);
 
         // create input files
         statusMessage = MSG_PREPARING_INPUT;
 
         // write the command that executes everything
         LOG.info("Writing command file");
-        runner.writeInput("execute", "#!/bin/sh\n" + expandedCommand + "\n", true);
+        containerRunner.writeInput("execute", "#!/bin/sh\n" + expandedCommand + "\n", true);
 
         // write the input data
-        handleInputs(descriptor, runner);
+        handleInputs(descriptor, containerRunner);
 
         // run the command
         statusMessage = MSG_RUNNING_CONTAINER;
         LOG.info("Executing ...");
         updateStatus(Status.RUNNING);
         long t0 = System.currentTimeMillis();
-        int status = runner.execute(runner.getLocalWorkDir() + "/execute");
+        int status = containerRunner.execute(containerRunner.getLocalWorkDir() + "/execute");
         long t1 = System.currentTimeMillis();
         float duration = (t1 - t0) / 1000.0f;
         LOG.info(String.format("Executed in %s seconds with return status of %s", duration, status));
 
         if (status != 0) {
-            String log = runner.getLog();
+            String log = containerRunner.getLog();
             LOG.warning("Execution errors: " + log);
             throw new RuntimeException("Container execution failed:\n" + log);
         }
 
         // handle the output
         statusMessage = MSG_PREPARING_OUTPUT;
-        handleOutputs(descriptor, runner);
+        handleOutputs(descriptor, containerRunner.getHostWorkDir());
 
-        Properties props = runner.getFileAsProperties("output_metrics.txt");
+        Properties props = containerRunner.getFileAsProperties("output_metrics.txt");
         generateMetricsAndStatus(props, duration);
 
         statusMessage = MSG_PROCESSING_RESULTS_READY;
@@ -422,7 +446,7 @@ public class ExternalExecutor extends ExecutableService {
 
     protected void handleOutputs(
             DefaultServiceDescriptor serviceDescriptor,
-            ContainerRunner runner) throws Exception {
+            File workdir) throws Exception {
 
         IODescriptor[] outputDescriptors = serviceDescriptor.resolveOutputIODescriptors();
         if (outputDescriptors != null) {
@@ -430,18 +454,17 @@ public class ExternalExecutor extends ExecutableService {
 
             for (IODescriptor iod : outputDescriptors) {
                 LOG.info("Writing output for " + iod.getName() + " " + iod.getMediaType());
-                doHandleOutput(runner, iod);
+                doHandleOutput(workdir, iod);
             }
         }
     }
 
     protected <P, Q> void doHandleOutput(
-            ContainerRunner runner,
+            File workdir,
             IODescriptor<P, Q> iod) throws Exception {
 
         VariableHandler<P> vh = DefaultHandler.createVariableHandler(iod.getPrimaryType(), iod.getSecondaryType());
-        File dir = runner.getHostWorkDir();
-        VariableHandler.ReadContext readContext = new FilesystemReadContext(dir, iod.getName());
+        VariableHandler.ReadContext readContext = new FilesystemReadContext(workdir, iod.getName());
         P value = vh.readVariable(readContext);
         results.put(iod.getName(), value);
     }

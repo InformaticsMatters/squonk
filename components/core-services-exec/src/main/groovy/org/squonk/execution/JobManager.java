@@ -103,28 +103,6 @@ public class JobManager implements ExecutorCallback {
         return execute(username, serviceDescriptor, options, inputs, true);
     }
 
-
-    /** Submit a job and wait for it to complete.
-     * Only use if you know the job is very fast or for testing.
-     *
-     * @param serviceDescriptor
-     * @param options
-     * @param inputs
-     * @param username
-     * @return
-     * @throws Exception
-     */
-    public JobStatus executeSync(
-            String username,
-            ServiceDescriptor serviceDescriptor,
-            Map<String, Object> options,
-            Map<String, InputStream> inputs
-            ) throws Exception {
-
-        return execute(username, serviceDescriptor, options, inputs, false);
-    }
-
-
     private JobStatus execute(
             String username,
             ServiceDescriptor serviceDescriptor,
@@ -147,6 +125,7 @@ public class JobManager implements ExecutorCallback {
         executionDataMap.put(executor.getJobId(), executionData);
 
         if (async) {
+            LOG.info("Async execution of job " + executor.getJobId());
             // TODO - handle with a thread pool or work queue?
             Thread t = new Thread() {
                 @Override
@@ -159,10 +138,13 @@ public class JobManager implements ExecutorCallback {
                 }
             };
             t.start();
+            jobStatus = updateStatus(executor.getJobId(), Status.RUNNING);
         } else {
+            LOG.info("Sync execution of job " + executor.getJobId());
             executor.execute();
+            jobStatus = updateStatus(executor.getJobId(), Status.RESULTS_READY);
         }
-        jobStatus = updateStatus(executor.getJobId(), Status.RUNNING);
+
         return jobStatus;
     }
 

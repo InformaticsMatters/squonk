@@ -38,7 +38,7 @@ curl -kL -X POST \
   -F "ExecutionParameters=@ExecutionParametersSdf.json;type=application/json;filename=ExecutionParameters.json"\
   -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf;type=chemical/x-mdl-sdfile;filename=input"\
   -H "Content-Type: multipart/mixed"\
-  http://172.20.0.2:8080/jobexecutor/rest/v1/jobs/submit-async
+  http://172.20.0.2:8080/jobexecutor/rest/v1/jobs/
 ```
 
 The result is some JSON that includes the job ID, and hopefully says that the job status is `RUNNING`.
@@ -139,11 +139,8 @@ curl\
   -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf;type=chemical/x-mdl-sdfile;filename=input"\
   -H "Content-Type: multipart/mixed"\
   -H "Authorization: bearer $token"\
-  -H "SquonkUsername: user1" http://nginx/jobexecutor/rest/v1/jobs/submit-async
+  -H "SquonkUsername: user1" http://nginx/jobexecutor/rest/v1/jobs/
 ```
-
-Jobs can be submitted to the `submit-async` or the `submit-sync` endpoint. Which one to use is dependent of the service.
-We need to add this information to the service descriptor.
 
 ### Working behind reverse proxy servers.
 
@@ -166,7 +163,7 @@ curl -kL --post301\
   -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf;type=chemical/x-mdl-sdfile;filename=input"\
   -H "Content-Type: multipart/mixed"\
   -H "Authorization: bearer $token"\
-  -H "SquonkUsername: user1" http://nginx/jobexecutor/rest/v1/jobs/submit-async
+  -H "SquonkUsername: user1" http://nginx/jobexecutor/rest/v1/jobs/
 ```
 
 See [here](https://curl.haxx.se/docs/manpage.html#--post301) for more info on those options.
@@ -175,9 +172,9 @@ See [here](https://curl.haxx.se/docs/manpage.html#--post301) for more info on th
 
 The following need attention:
 
-1. Check content types and gzip encoding.
 1. Tomcat currently runs as the root user as executing jobs needs access to the docker socket.
-1. Only plain Docker services (those defined with a DockerServiceDescriptor) are supported.
-Other types will soon be added.
+1. Docker services (those defined with a DockerServiceDescriptor or NextflowServiceDescriptor) and internal services are supported.
+HTTP services (mostly for property prediction with ChemAxon and RDKit) are not yet supported.
 1. Support for accessing 'thin' services needs to be added.
-1. Handle type conversions - accept a SDFile and send it to a service that handles Dataset 
+1. Handle type conversions - accept a SDFile and send it to a service that handles Dataset
+1. Allow to specify just the service descriptor ID not the entire service descriptor in the job description

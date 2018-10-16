@@ -42,6 +42,7 @@ public class FilesystemReadContext extends AbstractFilesystemContext implements 
     @Override
     public String readTextValue(String mediaType, String extension, String key) throws IOException {
         File f = generateFile(extension, false);
+        LOG.fine("Reading text file " + f.getPath());
         if (f.exists()) {
             StringBuilder b = new StringBuilder();
             try (BufferedReader reader = new BufferedReader(new FileReader(f))) {

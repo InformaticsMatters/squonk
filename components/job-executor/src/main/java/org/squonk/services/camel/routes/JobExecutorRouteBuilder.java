@@ -111,27 +111,14 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 .endRest()
                 //
                 // submit new async job
-                .post("/submit-async").description("Submit a new asynchronous job")
+                .post("/").description("Submit a new job")
                 .bindingMode(RestBindingMode.off)
                 .outType(JobStatus.class)
                 .route()
-                .log("handling async Job posting")
+                .log("handling Job posting")
                 .unmarshal().mimeMultipart()
                 .process((Exchange exch) -> {
-                    handleJobSubmitAsync(exch);
-                })
-                .endRest()
-                //
-                // submit new sync job
-                .post("/submit-sync").description("Submit a new synchronous job")
-                .bindingMode(RestBindingMode.off)
-                .produces(CommonMimeTypes.MIME_TYPE_MULTIPART_MIXED)
-                .outType(JobStatus.class)
-                .route()
-                .log("handling sync Job posting")
-                .unmarshal().mimeMultipart()
-                .process((Exchange exch) -> {
-                    handleJobSubmitSync(exch);
+                    handleJobSubmit(exch);
                 })
                 .endRest()
                 //
@@ -212,12 +199,12 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
         return jobStatus;
     }
 
-    private void handleJobSubmitAsync(Exchange exch) {
+    private void handleJobSubmit(Exchange exch) {
         LOG.info("Submitting async job");
         Message message = exch.getIn();
         try {
             String username = fetchUsername(message);
-            JobStatus jobStatus = doHandleJobSubmit(exch.getIn(), true);
+            JobStatus jobStatus = doHandleJobSubmit(exch.getIn());
             LOG.info("Job " + jobStatus.getJobId() + " had been submitted");
             String json = JsonHandler.getInstance().objectToJson(jobStatus);
             message.setBody(json);
@@ -228,30 +215,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
         }
     }
 
-    private void handleJobSubmitSync(Exchange exch) {
-        LOG.info("Submitting sync job");
-        Message message = exch.getIn();
-        try {
-            String username = fetchUsername(message);
-            LOG.info("Job is being submitted");
-            JobStatus jobStatus = doHandleJobSubmit(exch.getIn(), false);
-            LOG.info("Job " + jobStatus.getJobId() + " had completed with status " + jobStatus.getStatus());
-            String json = JsonHandler.getInstance().objectToJson(jobStatus);
-            message.setBody(json);
-            switch (jobStatus.getStatus()) {
-                case RESULTS_READY:
-                    // get results
-                    doHandleResults(message, username, jobStatus.getJobId());
-            }
-
-        } catch (AuthenticationException e) {
-            handle401Error(message);
-        } catch (Exception e) {
-            handle500Error(message, "Failed to submit job", e);
-        }
-    }
-
-    private JobStatus doHandleJobSubmit(Message message, boolean async) throws Exception {
+    private JobStatus doHandleJobSubmit(Message message) throws Exception {
 
         String body = message.getBody(String.class);
         ExecutionParameters params = JsonHandler.getInstance().objectFromJson(body, ExecutionParameters.class);
@@ -265,11 +229,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
             inputs.put(name, input);
             LOG.fine("Added input " + name);
         }
-        if (async) {
-            return jobManager.executeAsync(username, serviceDescriptor, options, inputs);
-        } else {
-            return jobManager.executeSync(username, serviceDescriptor, options, inputs);
-        }
+        return jobManager.executeAsync(username, serviceDescriptor, options, inputs);
     }
 
 
@@ -304,9 +264,10 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
         // set the results as attachments to the message
         List<SquonkDataSource> dataSources = jobManager.getJobResultsAsDataSources(username, jobId);
-        LOG.finer("Found " + dataSources.size() + " DataHandlers");
+        LOG.fine("Found " + dataSources.size() + " DataHandlers");
         for (SquonkDataSource dataSource : dataSources) {
-            LOG.info("Adding attachment " + dataSource.getName() + " of type " + dataSource.getContentType());
+            LOG.fine("Adding attachment " + dataSource.getName() + " of type " + dataSource.getContentType());
+            dataSource.materialize();
             message.addAttachment(dataSource.getName(), new DataHandler(dataSource));
         }
 

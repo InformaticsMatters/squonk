@@ -128,7 +128,7 @@ class ExternalExecutorSpec extends Specification {
 
         when:
         ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), [:])
-        exec.handleOutputs(sd, runner)
+        exec.handleOutputs(sd, runner.getHostWorkDir())
         exec.status = JobStatus.Status.RESULTS_READY
         def results = exec.getResultsAsObjects()
 
@@ -159,7 +159,7 @@ class ExternalExecutorSpec extends Specification {
 
         when:
         ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), [:])
-        exec.handleOutputs(sd, runner)
+        exec.handleOutputs(sd, runner.getHostWorkDir())
         exec.status = JobStatus.Status.RESULTS_READY
         def results = exec.getResultsAsObjects()
 
