@@ -49,7 +49,7 @@
     -p BACKUP_COUNT={{ oc_infra_backup_hourly_count }}
     | oc create -f -
   when:
-  - infra_backup_hourly_count > 0
+  - oc_infra_backup_hourly_count|int > 0
 
 - name: Deploy the Daily Backup CronJob
   shell: >
@@ -60,4 +60,5 @@
     -p BACKUP_PRIOR_COUNT={{ oc_infra_backup_hourly_count }}
     | oc create -f -
   when:
-  - infra_backup_daily_count > 0
+  - oc_infra_backup_daily_count|int > 0
+  - oc_infra_backup_hourly_count|int > 0

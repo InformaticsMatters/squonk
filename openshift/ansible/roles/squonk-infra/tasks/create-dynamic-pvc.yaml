@@ -21,20 +21,6 @@
     | oc create -f -
   when: not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
 
-- name: Wait for PVCs to become Bound (dynamic)
-  shell: >
-    oc get pvc/{{ item }} | grep Bound
-  delay: 5
-  retries: "{{ (pvc_bind_timeout | int / 5) | int }}"
-  register: result
-  until: result.rc == 0
-  loop:
-  - postgresql-claim
-  - rabbitmq-claim
-  when: not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
-
-# Backup claims
-
 - name: Create Backup PVCs (dynamic)
   shell: >
     oc process
@@ -42,18 +28,32 @@
     -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-backup-pvc-dynamic.yaml
     | oc create -f -
   when:
+  - oc_infra_backup_hourly_count|int > 0
   - not i_pvc_result.stdout | regex_search('^postgresql-backup-claim\s', multiline=True)
-  - oc_infra_backup_hourly_count > 0
+
+# Wait for claims to become bound...
+
+- name: Wait for PVCs to become Bound (dynamic)
+  shell: >
+    oc get pvc/{{ item }} | grep Bound
+  delay: 15
+  retries: "{{ (pvc_bind_timeout | int / 15) | int }}"
+  register: result
+  until: result.rc == 0
+  loop:
+  - postgresql-claim
+  - rabbitmq-claim
+  when: not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
 
 - name: Wait for Backup PVCs to become Bound (dynamic)
   shell: >
     oc get pvc/{{ item }} | grep Bound
-  delay: 5
-  retries: "{{ (pvc_bind_timeout | int / 5) | int }}"
+  delay: 15
+  retries: "{{ (pvc_bind_timeout | int / 15) | int }}"
   register: result
   until: result.rc == 0
   loop:
   - postgresql-backup-claim
   when:
+  - oc_infra_backup_hourly_count|int > 0
   - not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
-  - oc_infra_backup_hourly_count > 0

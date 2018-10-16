@@ -62,8 +62,8 @@ image_pull_policy: Always
 # Various retry timeouts (seconds)...
 pod_ready_timeout: 600
 pod_terminate_timeout: 300
-pv_create_timeout: 120
-pvc_bind_timeout: 120
+pv_create_timeout: 200
+pvc_bind_timeout: 200
 
 # Our root Squonk template directory
 # (relative to the role_path directory)
