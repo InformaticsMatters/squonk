@@ -4,7 +4,7 @@
   shell: oc project {{ oc_infra_project }}
   changed_when: False
 
-# Check/Create PVCs
+# Infrastructure claims
 
 - name: Check Infrastructure PVCs (dyanmic)
   shell: oc get pvc
@@ -21,7 +21,21 @@
     | oc create -f -
   when: not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
 
-- name: Create Infrastructure Backup PVCs (dynamic)
+- name: Wait for PVCs to become Bound (dynamic)
+  shell: >
+    oc get pvc/{{ item }} | grep Bound
+  delay: 5
+  retries: "{{ (pvc_bind_timeout | int / 5) | int }}"
+  register: result
+  until: result.rc == 0
+  loop:
+  - postgresql-claim
+  - rabbitmq-claim
+  when: not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
+
+# Backup claims
+
+- name: Create Backup PVCs (dynamic)
   shell: >
     oc process
     -p POSTGRESQL_BACKUP_VOLUME_SIZE={{ oc_infra_backup_volume_size }}
@@ -31,16 +45,15 @@
   - not i_pvc_result.stdout | regex_search('^postgresql-backup-claim\s', multiline=True)
   - oc_infra_backup_hourly_count > 0
 
-# Wait for PVCs to become "Bound"...
-
-- name: Wait for PVCs to become Bound (dynamic)
+- name: Wait for Backup PVCs to become Bound (dynamic)
   shell: >
     oc get pvc/{{ item }} | grep Bound
-  retries: 6
   delay: 5
+  retries: "{{ (pvc_bind_timeout | int / 5) | int }}"
   register: result
   until: result.rc == 0
   loop:
-  - postgresql-claim
-  - rabbitmq-claim
-  when: not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
+  - postgresql-backup-claim
+  when:
+  - not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
+  - oc_infra_backup_hourly_count > 0
