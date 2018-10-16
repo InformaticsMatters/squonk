@@ -333,13 +333,20 @@ objects:
             mountPath: "/etc/x509/jgroups"
             readOnly: true
           livenessProbe:
+            timeoutSeconds: 1
+            initialDelaySeconds: 90
+            failureThreshold: 3
+            periodSeconds: 30
             exec:
               command:
               - "/bin/bash"
               - "-c"
               - "/opt/eap/bin/livenessProbe.sh"
-            initialDelaySeconds: 60
           readinessProbe:
+            timeoutSeconds: 1
+            initialDelaySeconds: 60
+            failureThreshold: 10
+            periodSeconds: 15
             exec:
               command:
               - "/bin/bash"
@@ -445,7 +452,9 @@ objects:
             protocol: TCP
           readinessProbe:
             timeoutSeconds: 1
-            initialDelaySeconds: 5
+            initialDelaySeconds: 60
+            failureThreshold: 10
+            periodSeconds: 15
             exec:
               command:
               - "/bin/sh"
@@ -454,7 +463,9 @@ objects:
               - pg_isready -h 127.0.0.1 -p 5432
           livenessProbe:
             timeoutSeconds: 1
-            initialDelaySeconds: 30
+            initialDelaySeconds: 90
+            failureThreshold: 3
+            periodSeconds: 30
             exec:
               command:
               - "/bin/sh"
