@@ -22,6 +22,7 @@ export KEYCLOAK_REALM=squonk
 export KEYCLOAK_LOGOUT_REDIRECT_TO=http://home.${OC_ROUTES_BASENAME}/
 export OC_INFRA_PROJECT=squonk-infra
 export OC_INFRA_PROJECT_DISPLAY_NAME=squonk-infra
+export OC_INFRA_DEPLOY_BACKUP=No
 export OC_INFRA_SA=squonk
 export OC_POSTGRESQL_SERVICE=db-postgresql
 export OC_PROJECT=squonk

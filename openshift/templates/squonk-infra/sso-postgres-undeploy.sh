@@ -13,5 +13,6 @@ set +e
 oc delete all -l application=sso
 oc delete secret/keycloak-secrets
 oc delete secret/postgresql-secrets
+oc delete cronjob --selector template=sso-backup
 
 echo "The PVC used by PostgreSQL has not been deleted. Remove this manually if you need."

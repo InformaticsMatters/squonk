@@ -38,3 +38,12 @@
   until: result.rc == 0
   when: wait_for_pods
   changed_when: False
+
+# Deploy backups
+
+- name: Deploy Backup CronJobs
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/squonk-infra/sso-backup.yaml
+    | oc create -f -
+  when: oc_infra_deploy_backup

@@ -15,4 +15,7 @@ oc process -f sso-postgres.yaml\
  -p HOSTNAME_HTTPS=sso.${OC_ROUTES_BASENAME}\
  | oc create -f -
 
+echo "Creating backup Cron Jobs"
+oc process -f sso-backup.yaml | oc create -f -
+
 echo "PostgreSQL and Keycloak deployed"
