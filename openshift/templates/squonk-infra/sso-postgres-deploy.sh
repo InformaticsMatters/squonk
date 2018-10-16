@@ -16,6 +16,7 @@ oc process -f sso-postgres.yaml\
  | oc create -f -
 
 echo "Creating backup Cron Jobs"
-oc process -f sso-backup.yaml | oc create -f -
+oc process -f sso-backup-hourly.yaml | oc create -f -
+oc process -f sso-backup-daily.yaml | oc create -f -
 
 echo "PostgreSQL and Keycloak deployed"

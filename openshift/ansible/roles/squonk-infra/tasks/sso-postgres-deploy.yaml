@@ -41,9 +41,23 @@
 
 # Deploy backups
 
-- name: Deploy Backup CronJobs
+- name: Deploy the Hourly Backup CronJob
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-infra/sso-backup.yaml
+    -f {{ role_path }}/{{ t_dir }}/squonk-infra/sso-backup-hourly.yaml
+    -p BACKUP_SCHEDULE={{ oc_infra_backup_hourly_schedule }}
+    -p BACKUP_COUNT={{ oc_infra_backup_hourly_count }}
     | oc create -f -
-  when: oc_infra_deploy_backup
+  when:
+  - infra_backup_hourly_count > 0
+
+- name: Deploy the Daily Backup CronJob
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/squonk-infra/sso-backup-daily.yaml
+    -p BACKUP_SCHEDULE={{ oc_infra_backup_daily_schedule }}
+    -p BACKUP_COUNT={{ oc_infra_backup_daily_count }}
+    -p BACKUP_PRIOR_COUNT={{ oc_infra_backup_hourly_count }}
+    | oc create -f -
+  when:
+  - infra_backup_daily_count > 0
