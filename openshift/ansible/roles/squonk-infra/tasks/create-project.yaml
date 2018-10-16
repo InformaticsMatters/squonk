@@ -25,7 +25,7 @@
 - name: Deploy Keycloak Image Stream
   shell: >
     oc create
-    -f https://raw.githubusercontent.com/jboss-container-images/redhat-sso-7-openshift-image/sso72-dev/templates/sso72-image-stream.json
+    -f {{ role_path }}/files/sso72-image-stream.json
     -n openshift
   when: not is_result.stdout | regex_search('^redhat-sso72-openshift\s', multiline=True)
 
