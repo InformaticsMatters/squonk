@@ -16,6 +16,7 @@
 
 package org.squonk.execution.steps.impl;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.squonk.camel.processor.ValueTransformerProcessor;
 import org.squonk.dataset.Dataset;
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
  *
  * @author timbo
  */
-public class DataTransformPotionStep<P extends BasicObject> extends AbstractDatasetStandardStep<P,P> {
+public class DataTransformPotionStep<P extends BasicObject> extends AbstractDatasetStep<P,P> {
 
     private static final Logger LOG = Logger.getLogger(DataTransformPotionStep.class.getName());
 
@@ -50,13 +51,13 @@ public class DataTransformPotionStep<P extends BasicObject> extends AbstractData
      * field named FIELD_OUTPUT_DATASET.
      *
      * @param input
-     * @param options
-     * @param converter
+     * @param context
      * @throws Exception
      */
-    protected Dataset<P> doExecute(Dataset<P> input, Map<String,Object> options, TypeConverter converter) throws Exception {
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
 
-        String potion = getOption(options, OPTION_POTION, String.class, converter);
+        TypeConverter converter = findTypeConverter(context);
+        String potion = getOption(OPTION_POTION, String.class, converter);
         if (potion == null) {
             throw new IllegalStateException("Potion must be defined as option named " + OPTION_POTION);
         }

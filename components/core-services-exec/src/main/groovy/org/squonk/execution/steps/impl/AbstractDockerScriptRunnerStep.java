@@ -20,19 +20,20 @@ import org.apache.camel.CamelContext;
 import org.squonk.api.MimeTypeResolver;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.runners.DockerRunner;
-import org.squonk.execution.steps.AbstractStandardStep;
+import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.util.IOUtils;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
  * Created by timbo on 16/07/16.
  */
-public abstract class AbstractDockerScriptRunnerStep extends AbstractStandardStep {
+public abstract class AbstractDockerScriptRunnerStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(AbstractDockerScriptRunnerStep.class.getName());
 
@@ -90,4 +91,10 @@ public abstract class AbstractDockerScriptRunnerStep extends AbstractStandardSte
     protected abstract int executeRunner();
 
     protected abstract  DockerRunner createRunner() throws IOException;
+
+    @Override
+    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+        // TODO - remove the need for this
+        throw new RuntimeException("Not implementable");
+    }
 }

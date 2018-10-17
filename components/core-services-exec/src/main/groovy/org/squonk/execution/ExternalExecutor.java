@@ -25,9 +25,8 @@ import org.squonk.execution.runners.ContainerRunner;
 import org.squonk.execution.runners.DefaultServiceRunner;
 import org.squonk.execution.runners.DockerRunner;
 import org.squonk.execution.runners.ServiceRunner;
-import org.squonk.execution.steps.ExternallyExecutableStep;
+import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.steps.impl.AbstractDatasetStandardStep;
 import org.squonk.execution.variable.impl.FilesystemReadContext;
 import org.squonk.execution.variable.impl.FilesystemWriteContext;
 import org.squonk.io.IODescriptor;
@@ -60,7 +59,7 @@ import java.util.logging.Logger;
  * </ol>
  *
  */
-public class ExternalExecutor extends ExecutableService {
+public class ExternalExecutor extends ExecutableJob {
 
     private static final Logger LOG = Logger.getLogger(ExternalExecutor.class.getName());
 
@@ -80,19 +79,35 @@ public class ExternalExecutor extends ExecutableService {
     private ServiceRunner runner;
     protected Status status;
 
-    public ExternalExecutor(ExternalJobDefinition jobDefinition,  Map<String, Object> data, CamelContext camelContext, ExecutorCallback callback) {
-        super(jobDefinition.getJobId(), jobDefinition.getOptions());
+    public ExternalExecutor(
+            ExternalJobDefinition jobDefinition,
+            Map<String, Object> data,
+            Map<String, Object> options,
+            ServiceDescriptor serviceDescriptor,
+            CamelContext camelContext,
+            ExecutorCallback callback) {
         this.jobDefinition = jobDefinition;
+        this.jobId = jobDefinition.getJobId();
         this.data = data;
+        this.options = options;
+        this.serviceDescriptor = serviceDescriptor;
         this.camelContext = camelContext;
         this.callback = callback;
+
     }
 
     /** used in testing */
-    public ExternalExecutor(ExternalJobDefinition jobDefinition,  Map<String, Object> data) {
-        super(jobDefinition.getJobId(), jobDefinition.getOptions());
+    public ExternalExecutor(
+            ExternalJobDefinition jobDefinition,
+            Map<String, Object> data,
+            Map<String, Object> options,
+            ServiceDescriptor serviceDescriptor) {
         this.jobDefinition = jobDefinition;
+        this.jobId = jobDefinition.getJobId();
         this.data = data;
+        this.options = options;
+        this.serviceDescriptor = serviceDescriptor;
+
         this.camelContext = null;
         this.callback = null;
     }
@@ -244,15 +259,15 @@ public class ExternalExecutor extends ExecutableService {
         String execClsName = serviceDescriptor.getServiceConfig().getExecutorClassName();
         LOG.info("Executor class name is " + execClsName);
         Class cls = Class.forName(execClsName);
-        if (ExternallyExecutableStep.class.isAssignableFrom(cls)) {
-            AbstractDatasetStandardStep step = (AbstractDatasetStandardStep)cls.newInstance();
+        if (AbstractStep.class.isAssignableFrom(cls)) {
+            AbstractStep step = (AbstractStep)cls.newInstance();
+            step.configure(jobId, options, serviceDescriptor);
             DefaultServiceRunner serviceRunner = new DefaultServiceRunner(jobId, step, camelContext);
             this.runner = serviceRunner;
             updateStatus(Status.RUNNING);
-            serviceRunner.execute(data, options);
+            serviceRunner.execute(data);
             if (serviceRunner.isResultsReady()) {
                 updateStatus(Status.RESULTS_READY);
-                //List<FileDataSource> results = serviceRunner.getResults();
 
                 handleOutputs(serviceDescriptor, serviceRunner.getHostWorkDir());
 
@@ -513,21 +528,6 @@ public class ExternalExecutor extends ExecutableService {
         }
     }
 
-//    protected <P, Q> void doHandleInput(
-//            Map<String, SquonkDataSource> inputs,
-//            ContainerRunner runner,
-//            IODescriptor<P, Q> iod) throws Exception {
-//
-//        LOG.info("Handling input for " + iod.getName() + " with " + inputs.size() + " values");
-//
-//        // TODO - handle type conversion
-//
-//        VariableHandler<P> vh = DefaultHandler.createVariableHandler(iod.getPrimaryType(), iod.getSecondaryType());
-//        P value = vh.create(inputs);
-//        File dir = runner.getHostWorkDir();
-//        FilesystemWriteContext writeContext = new FilesystemWriteContext(dir, iod.getName());
-//        vh.writeVariable(value, writeContext);
-//    }
 
     protected <P, Q> void doHandleInput(
             P input,

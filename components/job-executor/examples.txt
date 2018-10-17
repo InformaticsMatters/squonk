@@ -4,15 +4,32 @@
 
 # dev mode with Docker
 
-curl http://172.20.0.2:8080/jobexecutor/rest/v1/jobs
+export SVR="172.20.0.2:8080"
+
+curl -H "SquonkUsername: user1" http://$SVR /jobexecutor/rest/v1/jobs/
 
 curl -kL -X POST \
   -H "SquonkUsername: user1"\
   -F "ExecutionParameters=@ExecutionParametersSdf.json;type=application/json;filename=ExecutionParameters.json"\
   -F "input=@../../../../data/testfiles/Kinase_inhibs.sdf;type=chemical/x-mdl-sdfile;filename=input"\
   -H "Content-Type: multipart/mixed"\
-  http://172.20.0.2:8080/jobexecutor/rest/v1/jobs/
+  http://$SVR/jobexecutor/rest/v1/jobs/
 
+curl -X POST \
+  -F "ExecutionParameters=@ExecutionParametersRDKitVerify.json;type=application/json;filename=ExecutionParameters.json"\
+  -F "input_data=@../../../../data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
+  -F "input_metadata=@../../../../data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
+  -H "Content-Type: multipart/mixed"\
+  -H "SquonkUsername: user1"\
+  http://$SVR/jobexecutor/rest/v1/jobs/
+
+curl -X POST \
+  -F "ExecutionParameters=@ExecutionParametersSlice.json;type=application/json;filename=ExecutionParameters.json"\
+  -F "input_data=@../../../../data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
+  -F "input_metadata=@../../../../data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
+  -H "Content-Type: multipart/mixed"\
+  -H "SquonkUsername: user1"\
+  http://$SVR/jobexecutor/rest/v1/jobs/
 
 
 # basic mode with Docker

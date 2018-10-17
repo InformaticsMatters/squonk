@@ -229,13 +229,50 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest();
 
         rest("/v1/services")
-                .get().description("Get service definitions for the available services")
+                // GET the ServiceConfigs
+                // TODO - This is a duplicate of the next definition. Remove this one once refactoring is complete
+                .get().description("Get service config definitions for the available services")
                 .bindingMode(RestBindingMode.json)
                 .outType(HttpServiceDescriptor.class)
                 .produces(APPLICATION_JSON)
                 .route()
-                .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST)
+                .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST_SERVICE_CONFIGS)
                 .endRest()
+                // GET the ServiceConfigs
+                .get("/configs").description("Get service config definitions for the available services")
+                .bindingMode(RestBindingMode.json)
+                .outType(ServiceConfig.class)
+                .produces(APPLICATION_JSON)
+                .route()
+                .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST_SERVICE_CONFIGS)
+                .endRest()
+                // GET the ServiceDescriptors
+                .get("/descriptors").description("Get service descriptor definitions for the available services")
+                .bindingMode(RestBindingMode.off)
+                .outType(ServiceDescriptor.class)
+                .produces(APPLICATION_JSON)
+                .route()
+                .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST_SERVICE_DESCRIPTORS)
+                .process((Exchange exch) -> {
+                    // this is necessary as Jackson does not serialize List<ServiceDescriptor> correctly.
+                    // The "@class": "org.squonk.core.HttpServiceDescriptor" property is missing.
+                    List<ServiceDescriptor> sds = exch.getIn().getBody(List.class);
+                    StringBuffer buf = new StringBuffer("[");
+                    int count = 0;
+                    for (ServiceDescriptor sd : sds) {
+                        if (count > 0) {
+                            buf.append(",");
+                        }
+                        String json = JsonHandler.getInstance().objectToJson(sd);
+                        buf.append(json);
+                        count++;
+                    }
+                    buf.append("]");
+                    String result = buf.toString();
+                    exch.getIn().setBody(result);
+                })
+                .endRest()
+                // POST new service descriptors
                 .post().description("Post ServiceDescriptors for a set of available services")
                 .produces(TEXT_PLAIN)
                 .route()

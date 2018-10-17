@@ -32,7 +32,8 @@ import java.util.Date;
  * Created by timbo on 30/12/16.
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ServiceConfig implements Descriptor, Serializable{
+public class
+ServiceConfig implements Descriptor, Serializable{
 
     public enum Status {
         ACTIVE, INACTIVE, UNKNOWN

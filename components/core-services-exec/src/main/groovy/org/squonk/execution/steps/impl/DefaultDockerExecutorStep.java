@@ -21,7 +21,7 @@ import com.github.dockerjava.api.model.Volume;
 import org.apache.camel.CamelContext;
 import org.squonk.core.DockerServiceDescriptor;
 import org.squonk.execution.runners.ContainerRunner;
-import org.squonk.execution.steps.AbstractServiceStep;
+import org.squonk.execution.steps.AbstractThinDatasetStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.util.IOUtils;
@@ -35,7 +35,7 @@ import java.util.logging.Logger;
  *
  * Created by timbo on 29/12/15.
  */
-public class DefaultDockerExecutorStep extends AbstractServiceStep {
+public class DefaultDockerExecutorStep extends AbstractThinDatasetStep {
 
     private static final Logger LOG = Logger.getLogger(DefaultDockerExecutorStep.class.getName());
 
@@ -59,6 +59,7 @@ public class DefaultDockerExecutorStep extends AbstractServiceStep {
         //LOG.info(varman.getTmpVariableInfo());
 
     }
+
 
     protected void doExecute(VariableManager varman, CamelContext camelContext, DockerServiceDescriptor descriptor) throws Exception {
 
@@ -150,6 +151,13 @@ public class DefaultDockerExecutorStep extends AbstractServiceStep {
                 LOG.info("Results cleaned up");
             }
         }
+    }
+
+    @Override
+    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+        //TODO - this needs implementing. Currently external execution handles this directly
+        // See the ExternalExecutor.doExecuteDocker() method
+        throw new RuntimeException("NYI");
     }
 
 }

@@ -1,7 +1,7 @@
 package org.squonk.execution.runners;
 
 import org.apache.camel.CamelContext;
-import org.squonk.execution.steps.AbstractStep;
+import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.io.FileDataSource;
 import org.squonk.io.SquonkDataSource;
 import org.squonk.types.StreamType;
@@ -9,36 +9,42 @@ import org.squonk.util.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class DefaultServiceRunner implements ServiceRunner {
+;
 
-    private static final Logger LOG = Logger.getLogger(DefaultServiceRunner.class.getName());
+public class HttpServiceRunner implements ServiceRunner {
+
+    private static final Logger LOG = Logger.getLogger(HttpServiceRunner.class.getName());
 
     private final String jobId;
-    private final AbstractStep step;
+    private final HttpServiceDescriptor serviceDescriptor;
     private final CamelContext camelContext;
 
     private File workDir;
     private List<FileDataSource> results;
     private boolean resultsReady = false;
 
-    public DefaultServiceRunner(String jobId, AbstractStep step, CamelContext camelContext) {
+    public HttpServiceRunner(String jobId, HttpServiceDescriptor serviceDescriptor, CamelContext camelContext) {
         this.jobId = jobId;
-        this.step = step;
+        this.serviceDescriptor = serviceDescriptor;
         this.camelContext = camelContext;
     }
 
-    public void execute(Map<String, Object> data) throws Exception {
+    public void execute(Map<String, Object> data, Map<String, Object> options) throws Exception {
+
+        String execClsName = serviceDescriptor.getServiceConfig().getExecutorClassName();
+        LOG.info("Executor class name is " + execClsName);
+
         if (workDir != null) {
             throw new IllegalStateException("Already executing");
         }
         createWorkDir();
         // execute the step
-        Map<String,Object> outputs = step.executeWithData(data, camelContext);
+        Map<String,Object> outputs = null; //step.doExecuteWithDataset(data, options, camelContext == null ? null : camelContext.getTypeConverter());
         results = new ArrayList<>();
         for (Map.Entry<String,Object> e : outputs.entrySet()) {
             String name = e.getKey();

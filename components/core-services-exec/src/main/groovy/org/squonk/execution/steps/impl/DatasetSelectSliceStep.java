@@ -16,6 +16,7 @@
 
 package org.squonk.execution.steps.impl;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
@@ -34,7 +35,7 @@ import java.util.stream.Stream;
 /**
  * @author timbo
  */
-public class DatasetSelectSliceStep<P extends BasicObject> extends AbstractDatasetStandardStep<P,P> {
+public class DatasetSelectSliceStep<P extends BasicObject> extends AbstractDatasetStep<P,P> {
 
     private static final Logger LOG = Logger.getLogger(DatasetSelectSliceStep.class.getName());
 
@@ -64,10 +65,11 @@ public class DatasetSelectSliceStep<P extends BasicObject> extends AbstractDatas
      * @throws Exception
      */
     @Override
-    protected Dataset<P> doExecute(Dataset<P> input, Map<String,Object> options, TypeConverter converter) throws Exception {
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
 
-        int skip = getOption(options, OPTION_SKIP, Integer.class, converter, 0);
-        Integer count = getOption(options, OPTION_COUNT, Integer.class, converter);
+        TypeConverter converter = findTypeConverter(context);
+        int skip = getOption(OPTION_SKIP, Integer.class, converter, 0);
+        Integer count = getOption(OPTION_COUNT, Integer.class, converter);
 
         statusMessage = "Setting filters ...";
         Stream<P> stream = input.getStream().sequential();

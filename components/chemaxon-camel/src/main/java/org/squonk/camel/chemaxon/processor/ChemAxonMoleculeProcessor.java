@@ -273,7 +273,7 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
         //LOG.info("Calculating for stream " + input);
 
         Stream<MoleculeObject> result = input;
-        LOG.log(Level.INFO, "Handling evaluator {0}", evaluator);
+        //LOG.log(Level.INFO, "Handling evaluator {0}", evaluator);
         AtomicInteger count = new AtomicInteger(0);
         switch (evaluator.getMode()) {
             case Filter:
@@ -293,7 +293,6 @@ public class ChemAxonMoleculeProcessor implements Processor, ResultExtractor<Mol
                 break;
             default:
                 result = result.map((mo) -> {
-                    //LOG.log(Level.INFO, "Processing molecule {0}", mo);
                     int i = count.incrementAndGet();
                     if (i % 5000 == 0) {
                         LOG.info("Processed molecule " + i + " " + Thread.currentThread());

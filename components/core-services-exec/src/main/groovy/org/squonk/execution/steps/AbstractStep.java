@@ -19,11 +19,17 @@ package org.squonk.execution.steps;
 import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.apache.camel.spi.TypeConverterRegistry;
+import org.squonk.core.DefaultServiceDescriptor;
+import org.squonk.core.HttpServiceDescriptor;
+import org.squonk.core.ServiceConfig;
+import org.squonk.core.ServiceDescriptor;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.ExecutableService;
+import org.squonk.execution.ExecutableJob;
 import org.squonk.execution.runners.ContainerRunner;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.execution.variable.impl.FilesystemReadContext;
+import org.squonk.execution.variable.impl.FilesystemWriteContext;
 import org.squonk.io.IODescriptor;
 import org.squonk.notebook.api.VariableKey;
 import org.squonk.types.BasicObject;
@@ -35,22 +41,22 @@ import org.squonk.util.IOUtils;
 import org.squonk.util.Metrics;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
+/** Base class for steps. See {@link Step} for the basics of how steps work.
+ *
  * @author timbo
  */
-public abstract class AbstractStep extends ExecutableService implements Step, StatusUpdatable {
+public abstract class AbstractStep extends ExecutableJob implements Step, StatusUpdatable {
 
     private static final Logger LOG = Logger.getLogger(AbstractStep.class.getName());
 
-
     protected Long outputProducerId;
-
     protected final Map<String, VariableKey> inputVariableMappings = new HashMap<>();
     protected final Map<String, String> outputVariableMappings = new HashMap<>();
 
@@ -69,6 +75,70 @@ public abstract class AbstractStep extends ExecutableService implements Step, St
     public Map<String, String> getOutputVariableMappings() {
         return outputVariableMappings;
     }
+
+    /** {@inheritDoc}
+     *
+     * @param jobId
+     * @param options
+     * @param serviceDescriptor
+     */
+    public void configure(
+            String jobId,
+            Map<String, Object> options,
+            ServiceDescriptor serviceDescriptor) {
+        this.jobId = jobId;
+        this.options = options;
+        //this.inputs = serviceDescriptor.getServiceConfig().getInputDescriptors();
+        //this.outputs = serviceDescriptor.getServiceConfig().getOutputDescriptors();
+        this.inputs = serviceDescriptor == null ? null : serviceDescriptor.resolveInputIODescriptors();
+        this.outputs = serviceDescriptor == null ? null :serviceDescriptor.resolveOutputIODescriptors();
+        this.serviceDescriptor = serviceDescriptor;
+    }
+
+
+    /** {@inheritDoc}
+     */
+    @Override
+    public void configure(
+            Long outputProducerId,
+            String jobId,
+            Map<String, Object> options,
+            IODescriptor[] inputs,
+            IODescriptor[] outputs,
+            Map<String, VariableKey> inputVariableMappings,
+            Map<String, String> outputVariableMappings) {
+        configure(jobId, options, serviceDescriptor);
+        this.outputProducerId = outputProducerId;
+        this.inputs = inputs;
+        this.outputs = outputs;
+        this.inputVariableMappings.putAll(inputVariableMappings);
+        this.outputVariableMappings.putAll(outputVariableMappings);
+        // serviceDescriptor will be null
+    }
+
+    /** {@inheritDoc}
+     *
+     * @param outputProducerId
+     * @param jobId
+     * @param options
+     * @param inputVariableMappings
+     * @param outputVariableMappings
+     * @param serviceDescriptor
+     */
+    @Override
+    public void configure(
+            Long outputProducerId,
+            String jobId,
+            Map<String, Object> options,
+            Map<String, VariableKey> inputVariableMappings,
+            Map<String, String> outputVariableMappings,
+            ServiceDescriptor serviceDescriptor) {
+        configure(jobId, options, serviceDescriptor);
+        this.outputProducerId = outputProducerId;
+        this.inputVariableMappings.putAll(inputVariableMappings);
+        this.outputVariableMappings.putAll(outputVariableMappings);
+    }
+
 
     public void updateStatus(String status) {
         statusMessage = status;
@@ -269,6 +339,14 @@ public abstract class AbstractStep extends ExecutableService implements Step, St
         return result;
     }
 
+    protected TypeConverter findTypeConverter(CamelContext camelContext) {
+        if (camelContext == null) {
+            return null;
+        } else {
+            return camelContext.getTypeConverter();
+        }
+    }
+
 
     /**
      * Converts the input value of the type specified by the from IODescriptor to the format specified by the to IODescriptor.
@@ -402,5 +480,134 @@ public abstract class AbstractStep extends ExecutableService implements Step, St
         // TODO can we get the metadata somehow?
         return null;
     }
+
+    protected HttpServiceDescriptor getHttpServiceDescriptor() {
+        if (serviceDescriptor == null) {
+            throw new IllegalStateException("Service descriptor not found");
+        } else if (!(serviceDescriptor instanceof HttpServiceDescriptor)) {
+            throw new IllegalStateException("Invalid service descriptor. Expected HttpServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
+        }
+        return (HttpServiceDescriptor)serviceDescriptor;
+    }
+
+    protected String getHttpExecutionEndpoint() {
+        return getHttpServiceDescriptor().getExecutionEndpoint();
+    }
+
+    protected IODescriptor getSingleInputDescriptor() {
+        ServiceConfig serviceConfig = getHttpServiceDescriptor().getServiceConfig();
+        IODescriptor[] inputDescriptors = serviceConfig.getInputDescriptors();
+        IODescriptor inputDescriptor;
+        if (inputDescriptors != null && inputDescriptors.length == 1) {
+            inputDescriptor = inputDescriptors[0];
+        } else if (inputDescriptors == null || inputDescriptors.length == 0 ) {
+            throw new IllegalStateException("Expected one input IODescriptor. Found none");
+        } else {
+            throw new IllegalStateException("Expected one input IODescriptor. Found " + inputDescriptors.length);
+        }
+        return inputDescriptor;
+    }
+
+    protected void handleInputs(
+            CamelContext camelContext,
+            DefaultServiceDescriptor serviceDescriptor,
+            VariableManager varman,
+            ContainerRunner runner) throws Exception {
+        doHandleInputs(camelContext, serviceDescriptor, varman, runner);
+    }
+
+    protected void doHandleInputs(
+            CamelContext camelContext,
+            DefaultServiceDescriptor serviceDescriptor,
+            VariableManager varman,
+            ContainerRunner runner) throws Exception {
+        IODescriptor[] inputDescriptors = serviceDescriptor.resolveInputIODescriptors();
+        if (inputDescriptors != null) {
+            LOG.info("Handling " + inputDescriptors.length + " inputs");
+            for (IODescriptor d : inputDescriptors) {
+                LOG.info("Writing input for " + d.getName() + " " + d.getMediaType());
+                handleInput(camelContext, serviceDescriptor, varman, runner, d);
+            }
+        }
+    }
+
+    protected <P,Q> void handleInput(
+            CamelContext camelContext,
+            DefaultServiceDescriptor serviceDescriptor,
+            VariableManager varman,
+            ContainerRunner runner,
+            IODescriptor<P,Q> ioDescriptor) throws Exception {
+        doHandleInput(camelContext, serviceDescriptor, varman, runner, ioDescriptor);
+    }
+
+    protected <P,Q> void doHandleInput(
+            CamelContext camelContext,
+            DefaultServiceDescriptor serviceDescriptor,
+            VariableManager varman,
+            ContainerRunner runner,
+            IODescriptor<P,Q> ioDescriptor) throws Exception {
+        P value = fetchMappedInput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), ioDescriptor.getSecondaryType(), varman, true);
+        File dir = runner.getHostWorkDir();
+        FilesystemWriteContext writeContext = new FilesystemWriteContext(dir, ioDescriptor.getName());
+        varman.putValue(ioDescriptor.getPrimaryType(), value, writeContext);
+    }
+
+    protected <P,Q> void handleOutputs(CamelContext camelContext, DefaultServiceDescriptor serviceDescriptor, VariableManager varman, ContainerRunner runner) throws Exception {
+        doHandleOutputs(camelContext, serviceDescriptor, varman, runner);
+    }
+
+    protected <P,Q> void doHandleOutputs(
+            CamelContext camelContext,
+            DefaultServiceDescriptor serviceDescriptor,
+            VariableManager varman,
+            ContainerRunner runner) throws Exception {
+
+        IODescriptor[] outputDescriptors = serviceDescriptor.resolveOutputIODescriptors();
+        if (outputDescriptors != null) {
+            LOG.info("Handling " + outputDescriptors.length + " outputs");
+            for (IODescriptor d : outputDescriptors) {
+                handleOutput(camelContext, serviceDescriptor, varman, runner, d);
+            }
+        }
+    }
+
+    protected <P,Q> void handleOutput(
+            CamelContext camelContext,
+            DefaultServiceDescriptor serviceDescriptor,
+            VariableManager varman,
+            ContainerRunner runner,
+            IODescriptor<P,Q> ioDescriptor) throws Exception {
+        doHandleOutput(camelContext, serviceDescriptor, varman, runner, ioDescriptor);
+    }
+
+    protected <P,Q> void doHandleOutput(
+            CamelContext camelContext,
+            DefaultServiceDescriptor serviceDescriptor,
+            VariableManager varman,
+            ContainerRunner runner,
+            IODescriptor<P,Q> ioDescriptor) throws Exception {
+
+        FilesystemReadContext readContext = new FilesystemReadContext(runner.getHostWorkDir(), ioDescriptor.getName());
+        P value = varman.getValue(ioDescriptor.getPrimaryType(), ioDescriptor.getSecondaryType(), readContext);
+        createMappedOutput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), value, varman);
+    }
+
+    /** The the value as a Dataset. There must be only one item in the map and it must be a Dataset
+     *
+     * @param inputs
+     * @return
+     */
+    protected Dataset getSingleDatasetFromMap(Map<String, Object> inputs) {
+        if (inputs.size() != 1) {
+            throw new IllegalArgumentException("Map must have only one value");
+        }
+        Object value = inputs.values().iterator().next();
+        if (value instanceof Dataset) {
+            return (Dataset)value;
+        } else {
+            throw new IllegalArgumentException("Value is not a dataset");
+        }
+    }
+
 
 }

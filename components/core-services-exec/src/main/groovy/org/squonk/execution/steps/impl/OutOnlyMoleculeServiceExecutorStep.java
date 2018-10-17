@@ -22,7 +22,6 @@ import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractServiceStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.io.JsonHandler;
@@ -42,7 +41,7 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class OutOnlyMoleculeServiceExecutorStep extends AbstractServiceStep {
+public class OutOnlyMoleculeServiceExecutorStep extends AbstractDatasetStep {
 
     private static final Logger LOG = Logger.getLogger(OutOnlyMoleculeServiceExecutorStep.class.getName());
 
@@ -50,26 +49,45 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractServiceStep {
 
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
+    public OutOnlyMoleculeServiceExecutorStep() {
+        inputRequired = false;
+    }
+
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
+    public void execute(VariableManager varman, CamelContext camelContext) throws Exception {
 
         dumpConfig(Level.INFO);
+
+        Dataset results = doExecuteWithDataset(null, camelContext);
+        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
+        statusMessage = generateStatusMessage(-1, results.getSize(), -1);
+    }
+
+    /**
+     *
+     * @param input The parameter is expected to be null and is ignored
+     * @param camelContext
+     * @return
+     * @throws Exception
+     */
+    @Override
+    protected Dataset doExecuteWithDataset(Dataset input, CamelContext camelContext) throws Exception {
         statusMessage = MSG_PREPARING_INPUT;
 
         String endpoint = getHttpExecutionEndpoint();
         Object body = getOption(StepDefinitionConstants.OPTION_BODY);
         String bodyContentType = getOption(StepDefinitionConstants.OPTION_BODY_CONTENT_TYPE, String.class);
 
-        String input = null;
+        String query = null;
         if (body != null) {
             LOG.info("Body type: " + body.getClass().getName());
             if (body instanceof String) {
-                input = (String)body;
+                query = (String)body;
             } else {
-                input = JsonHandler.getInstance().objectToJson(body);
+                query = JsonHandler.getInstance().objectToJson(body);
             }
         }
-        LOG.info("Input: " + input);
+        LOG.info("Input: " + query);
 
         Map<String, Object> requestHeaders = new HashMap<>();
         requestHeaders.put("Accept-Encoding", "gzip");
@@ -84,8 +102,8 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractServiceStep {
         Map<String, Object> responseHeaders = new HashMap<>();
 
         statusMessage = "Executing ...";
-        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint,
-                input == null ? null : new ByteArrayInputStream(input.getBytes()),
+        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(camelContext, "POST", endpoint,
+                query == null ? null : new ByteArrayInputStream(query.getBytes()),
                 requestHeaders, responseHeaders, options);
 
         statusMessage = "Handling results ...";
@@ -107,9 +125,7 @@ public class OutOnlyMoleculeServiceExecutorStep extends AbstractServiceStep {
         if (results.getMetadata() != null) {
             LOG.info("Response metadata: " + results.getMetadata());
         }
-
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
-        statusMessage = generateStatusMessage(-1, results.getSize(), -1);
+        return results;
     }
 
 }

@@ -20,21 +20,25 @@ import com.fasterxml.jackson.core.JsonParseException;
 import org.apache.camel.CamelContext;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
-import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.dataset.*;
-import org.squonk.execution.steps.AbstractServiceStep;
+import org.squonk.execution.steps.AbstractThinDatasetStep;
+import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
-import org.squonk.io.IODescriptor;
 import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 import org.squonk.util.StatsRecorder;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /** Thin executor sends only the molecules (no values) to the service and combines the returned values with the
  * originals. As such the network traffic is minimised and the remote end does not need to handle values which it may
@@ -51,18 +55,19 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class MoleculeServiceThinExecutorStep extends AbstractServiceStep {
+public class MoleculeServiceThinExecutorStep extends AbstractThinDatasetStep {
 
     private static final Logger LOG = Logger.getLogger(MoleculeServiceThinExecutorStep.class.getName());
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
+        doExecuteThinDataset(varman, context);
+    }
 
-        HttpServiceDescriptor httpServiceDescriptor = getHttpServiceDescriptor();
+    @Override
+    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
 
-        updateStatus(MSG_PREPARING_INPUT);
-
-        Dataset<MoleculeObject> inputDataset = fetchMappedInput("input", Dataset.class, varman);
+        Dataset input = getSingleDatasetFromMap(inputs);
         String endpoint = getHttpExecutionEndpoint();
 
         Map<String, Object> requestHeaders = new HashMap<>();
@@ -73,27 +78,19 @@ public class MoleculeServiceThinExecutorStep extends AbstractServiceStep {
             requestHeaders.put(StatsRecorder.HEADER_SQUONK_JOB_ID, jobId);
         }
 
-        IODescriptor inputDescriptor = getSingleInputDescriptor();
-        ThinDescriptor td = getThinDescriptor(inputDescriptor);
-        if (td == null) {
-            throw new IllegalStateException("No ThinDescriptor was provided of could be inferred");
-        }
-        ThinDatasetWrapper thinWrapper = DatasetUtils.createThinDatasetWrapper(td, inputDescriptor.getSecondaryType(), options);
-        Dataset<MoleculeObject> thinDataset = thinWrapper.prepareInput(inputDataset);
-
-        InputStream inputStream = JsonHandler.getInstance().marshalStreamToJsonArray(thinDataset.getStream(), false);
+        InputStream inputStream = JsonHandler.getInstance().marshalStreamToJsonArray(input.getStream(), false);
 
         // send for execution
         updateStatus("Posting request ...");
         Map<String, Object> responseHeaders = new HashMap<>();
-        InputStream outputStream = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, inputStream, requestHeaders, responseHeaders, options);
+        InputStream resultsStream = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, inputStream, requestHeaders, responseHeaders, options);
         updateStatus("Handling results ...");
 
-        // start debug output
-//        String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(output), 1000);
+//        // start debug output
+//        String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(resultsStream), 1000);
 //        LOG.info("Results: |" + data + "|");
-//        output = new ByteArrayInputStream(data.getBytes());
-        // end debug output
+//        resultsStream = new ByteArrayInputStream(data.getBytes());
+//        // end debug output
 
         String responseMetadataJson = (String)responseHeaders.get(CamelCommonConstants.HEADER_METADATA);
         DatasetMetadata<? extends BasicObject> responseMetadata;
@@ -108,16 +105,10 @@ public class MoleculeServiceThinExecutorStep extends AbstractServiceStep {
 
         Dataset<? extends BasicObject> responseResults;
         try {
-            responseResults = JsonHandler.getInstance().unmarshalDataset(responseMetadata, IOUtils.getGunzippedInputStream(outputStream));
+            responseResults = JsonHandler.getInstance().unmarshalDataset(responseMetadata, IOUtils.getGunzippedInputStream(resultsStream));
+            return Collections.singletonMap(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, responseResults);
         } catch (JsonParseException jpe) {
             throw new RuntimeException("Service returned invalid JSON");
         }
-
-        Dataset<MoleculeObject> resultDataset = thinWrapper.generateOutput(responseResults);
-
-        createMappedOutput("output", Dataset.class, resultDataset, varman);
-        statusMessage = generateStatusMessage(inputDataset.getSize(), resultDataset.getSize(), -1);
-        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(resultDataset.getMetadata()));
     }
-
 }

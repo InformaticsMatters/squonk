@@ -110,13 +110,18 @@ public class JobManager implements ExecutorCallback {
             Map<String, InputStream> inputs,
             boolean async) throws Exception {
 
+        if (options == null) {
+            options = Collections.emptyMap();
+        }
+
         ExternalJobDefinition jobDefinition = new ExternalJobDefinition(serviceDescriptor, options);
         LOG.info("Created JobDefinition with ID " + jobDefinition.getJobId());
 
         Map<String,Object> data = createObjectsFromInputStreams(inputs, serviceDescriptor.resolveInputIODescriptors());
         LOG.info("Handling " + data.size() + " inputs");
 
-        ExternalExecutor executor = new ExternalExecutor(jobDefinition, data, camelContext, this);
+        ExternalExecutor executor = new ExternalExecutor(jobDefinition, data, options, serviceDescriptor, camelContext, this);
+        //executor.configure(jobDefinition.getJobId(), options, serviceDescriptor);
         LOG.fine("Executor job ID is " + executor.getJobId());
         JobStatus jobStatus = createJob(jobDefinition, username, 0);
         ExecutionData executionData = new ExecutionData();
@@ -324,7 +329,7 @@ public class JobManager implements ExecutorCallback {
 
                 // set status to error
                 try {
-                    updateStatus(jobStatus.getJobId(), Status.ERROR, ExecutableService.MSG_RESULTS_NOT_FETCHED, null, null);
+                    updateStatus(jobStatus.getJobId(), Status.ERROR, ExecutableJob.MSG_RESULTS_NOT_FETCHED, null, null);
                 } catch (IOException e) {
                     LOG.log(Level.SEVERE, "Failed to set job status to ERROR for job " + jobStatus.getJobId());
                 }
@@ -344,7 +349,7 @@ public class JobManager implements ExecutorCallback {
 
                 // set the status to error
                 try {
-                    updateStatus(jobStatus.getJobId(), Status.ERROR, ExecutableService.MSG_JOB_TOOK_TOO_LONG, null, null);
+                    updateStatus(jobStatus.getJobId(), Status.ERROR, ExecutableJob.MSG_JOB_TOOK_TOO_LONG, null, null);
                 } catch (IOException e) {
                     LOG.log(Level.SEVERE, "Failed to set job status to ERROR for job " + jobStatus.getJobId());
                 }

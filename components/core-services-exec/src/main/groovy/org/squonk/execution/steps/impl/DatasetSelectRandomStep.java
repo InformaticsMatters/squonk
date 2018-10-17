@@ -16,6 +16,7 @@
 
 package org.squonk.execution.steps.impl;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
@@ -36,7 +37,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class DatasetSelectRandomStep<P extends BasicObject> extends AbstractDatasetStandardStep<P,P> {
+public class DatasetSelectRandomStep<P extends BasicObject> extends AbstractDatasetStep<P,P> {
 
     private static final Logger LOG = Logger.getLogger(DatasetSelectRandomStep.class.getName());
 
@@ -65,21 +66,22 @@ public class DatasetSelectRandomStep<P extends BasicObject> extends AbstractData
      * on random based on a random probability (random option, default 0.001) of selection.
      *
      * @param input
-     * @param options
+     * @param context
      * @return
      * @throws Exception
      */
     @Override
-    protected Dataset<P> doExecute(Dataset<P> input, Map<String,Object> options, TypeConverter converter) throws Exception {
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
 
-        Float randomOpt = getOption(options, OPTION_RANDOM, Float.class, converter);
-        Integer countOpt = getOption(options, OPTION_COUNT, Integer.class, converter);
+        TypeConverter converter = findTypeConverter(context);
+        Float randomOpt = getOption(OPTION_RANDOM, Float.class, converter);
+        Integer countOpt = getOption(OPTION_COUNT, Integer.class, converter);
         float random = randomOpt == null ? 0.001f : randomOpt;
         int count = countOpt == null ? 1000 : countOpt;
 
         statusMessage = "Setting filter ...";
         Random g = new Random();
-        Stream<P> stream = (Stream)input.getStream().sequential();
+        Stream<P> stream = input.getStream().sequential();
         stream = stream.filter(o -> random < g.nextFloat()).limit(count);
 
         DatasetMetadata<P> meta = input.getMetadata();

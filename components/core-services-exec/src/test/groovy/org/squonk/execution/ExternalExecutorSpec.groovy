@@ -43,9 +43,10 @@ class ExternalExecutorSpec extends Specification {
         DockerServiceDescriptor sd = new DockerServiceDescriptor(uuid, "name", inputiods, null)
         DockerRunner runner = new DockerRunner("busybox", "/tmp",uuid)
         def data = ["input": new SDFile(new File("../../data/testfiles/Kinase_inhibs.sdf.gz"), true)]
+        def jobDef = new ExternalJobDefinition(sd, null)
 
         when:
-        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), data)
+        ExternalExecutor exec = new ExternalExecutor(jobDef, data, [:], sd)
         exec.handleInputs(sd, runner)
 
         then:
@@ -71,9 +72,10 @@ class ExternalExecutorSpec extends Specification {
                 "input1": new SDFile(new ByteArrayInputStream("Hello World!".bytes), false),
                 "input2": new SDFile(new ByteArrayInputStream("Goodbye World!".bytes), false)
         ]
+        def jobDef = new ExternalJobDefinition(sd, null)
 
         when:
-        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), data)
+        ExternalExecutor exec = new ExternalExecutor(jobDef, data, [:], sd)
         exec.handleInputs(sd, runner)
 
         then:
@@ -100,9 +102,10 @@ class ExternalExecutorSpec extends Specification {
                 new FileInputStream("../../data/testfiles/Kinase_inhibs.metadata"))
         SDFile sdf = new SDFile(new ByteArrayInputStream("Goodbye World!".bytes), false)
         def data = ["dataset": ds, "sdfile": sdf]
+        def jobDef = new ExternalJobDefinition(sd, null)
 
         when:
-        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), data)
+        ExternalExecutor exec = new ExternalExecutor(jobDef, data, [:], sd)
         exec.handleInputs(sd, runner)
 
         then:
@@ -125,9 +128,10 @@ class ExternalExecutorSpec extends Specification {
         def outputiods = [new IODescriptor("output", CommonMimeTypes.MIME_TYPE_MDL_SDF, SDFile.class)] as IODescriptor[]
         DockerServiceDescriptor sd = new DockerServiceDescriptor(uuid, "name", null, outputiods)
         DockerRunner runner = new DockerRunner("busybox", "/tmp", uuid)
+        def jobDef = new ExternalJobDefinition(sd, null)
 
         when:
-        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), [:])
+        ExternalExecutor exec = new ExternalExecutor(jobDef, [:], [:], sd)
         exec.handleOutputs(sd, runner.getHostWorkDir())
         exec.status = JobStatus.Status.RESULTS_READY
         def results = exec.getResultsAsObjects()
@@ -156,9 +160,10 @@ class ExternalExecutorSpec extends Specification {
         def outputiods = [new IODescriptor("output", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON, Dataset.class, MoleculeObject.class)] as IODescriptor[]
         DockerServiceDescriptor sd = new DockerServiceDescriptor(uuid, "name", null, outputiods)
         DockerRunner runner = new DockerRunner("busybox", "/tmp", uuid)
+        def jobDef = new ExternalJobDefinition(sd, null)
 
         when:
-        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, null), [:])
+        ExternalExecutor exec = new ExternalExecutor(jobDef, [:], [:], sd)
         exec.handleOutputs(sd, runner.getHostWorkDir())
         exec.status = JobStatus.Status.RESULTS_READY
         def results = exec.getResultsAsObjects()
@@ -171,7 +176,7 @@ class ExternalExecutorSpec extends Specification {
         dir.deleteDir()
     }
 
-    void "AbstractDatasetStep"() {
+    void "DatasetSelectSlice"() {
 
         ServiceDescriptor sd = DatasetSelectSliceStep.SERVICE_DESCRIPTOR
         Dataset ds = new Dataset(
@@ -181,9 +186,10 @@ class ExternalExecutorSpec extends Specification {
                 (StepDefinitionConstants.DatasetSelectSlice.OPTION_SKIP): 5,
                 (StepDefinitionConstants.DatasetSelectSlice.OPTION_COUNT): 10
         ]
+        def jobDef = new ExternalJobDefinition(sd, options)
 
         when:
-        ExternalExecutor exec = new ExternalExecutor(new ExternalJobDefinition(sd, options), ['input':ds])
+        ExternalExecutor exec = new ExternalExecutor(jobDef, ['input':ds], options, sd)
         exec.execute()
         def results = exec.getResultsAsObjects()
 

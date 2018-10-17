@@ -23,7 +23,6 @@ import org.apache.camel.builder.RouteBuilder;
 import org.squonk.core.*;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
-import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 import org.squonk.util.ServiceConstants;
@@ -32,13 +31,9 @@ import javax.activation.DataHandler;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
@@ -53,7 +48,8 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(ServiceDiscoveryRouteBuilder.class.getName());
 
-    public static final String ROUTE_REQUEST = "direct:request";
+    public static final String ROUTE_REQUEST_SERVICE_CONFIGS = "direct:request_service_configs";
+    public static final String ROUTE_REQUEST_SERVICE_DESCRIPTORS = "direct:request_service_descriptors";
     public static final String ROUTE_POST_SD_SET = "direct:post-service-descriptor-set";
     public static final String ROUTE_POST_SD_SINGLE = "direct:post-service-descriptor-single";
     private static Pattern EXECUTOR_PATTERN = Pattern.compile("/(\\w+)/(.*)");
@@ -101,12 +97,21 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        from(ROUTE_REQUEST)
+        from(ROUTE_REQUEST_SERVICE_CONFIGS)
                 .log("ROUTE_REQUEST")
                 .process((Exchange exch) -> {
                     ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
                     reg.init(); // this ensures the descriptors are loaded from the DB before we update anything
                     List<ServiceConfig> list = reg.fetchServiceConfigs();
+                    exch.getIn().setBody(list);
+                });
+
+        from(ROUTE_REQUEST_SERVICE_DESCRIPTORS)
+                .log("ROUTE_REQUEST")
+                .process((Exchange exch) -> {
+                    ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
+                    reg.init(); // this ensures the descriptors are loaded from the DB before we update anything
+                    List<ServiceDescriptor> list = reg.fetchServiceDescriptors();
                     exch.getIn().setBody(list);
                 });
 

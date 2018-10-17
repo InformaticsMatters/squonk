@@ -16,24 +16,27 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.squonk.execution.steps.AbstractStandardStep;
+import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.InputStreamDataSource;
 import org.squonk.io.SquonkDataSource;
 import org.squonk.types.BasicObject;
 import org.squonk.dataset.Dataset;
 import org.squonk.reader.CSVReader;
 import org.squonk.types.io.JsonHandler;
-import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import org.apache.camel.CamelContext;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.QuoteMode;
+import org.squonk.util.IOUtils;
 
 /**
  * Reads a CSV or Tab delimited file and generates a
@@ -55,7 +58,7 @@ import org.apache.commons.csv.QuoteMode;
  *
  * @author timbo
  */
-public class CSVReaderStep extends AbstractStandardStep {
+public class CSVReaderStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(CSVReader.class.getName());
 
@@ -143,14 +146,41 @@ public class CSVReaderStep extends AbstractStandardStep {
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         statusMessage = "Reading file ...";
         SquonkDataSource dataSource = fetchMappedInput(VAR_CSV_INPUT, SquonkDataSource.class, varman);
+
+        Map<String, Object> results = executeWithData(Collections.singletonMap("input", dataSource), context);
+        Dataset result = (Dataset)results.values().iterator().next();
+
+        createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, result, varman);
+        statusMessage = generateStatusMessage(-1, result.getSize(), -1);
+        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
+    }
+
+    @Override
+    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+        statusMessage = "Reading input ...";
+        if (inputs.size() != 1) {
+            throw new IllegalArgumentException("Must provide a single input");
+        }
+        Object input = inputs.values().iterator().next();
+        SquonkDataSource dataSource;
+        if (input instanceof SquonkDataSource) {
+            dataSource = (SquonkDataSource)input;
+        } else if (input instanceof InputStream) {
+            dataSource = new InputStreamDataSource("input", "", (InputStream)input, null);
+        } else {
+            throw new IllegalArgumentException("Unsupported input type: " + input.getClass().getName());
+        }
         dataSource.setGzipContent(false);
         CSVReader reader = createReader(dataSource);
-        Stream<BasicObject> mols = reader.asStream();
+        Stream<BasicObject> mols = reader.asStream().onClose(() -> {
+            try {
+                dataSource.getInputStream().close();
+            } catch (IOException ioe) {
+                LOG.warning("Failed to close InputStream");
+            }
+        });
         Dataset results = new Dataset(mols, reader.getDatasetMetadata());
-        createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
-        statusMessage = generateStatusMessage(-1, results.getSize(), -1);
-        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
-
+        return Collections.singletonMap("output", results);
     }
 
     private CSVReader createReader(SquonkDataSource dataSource) throws IOException {

@@ -61,6 +61,53 @@ class ServiceDescriptorJsonSpec extends Specification {
         obj.executionEndpoint != null
     }
 
+    void "ServiceDescriptor list"() {
+        setup:
+        ObjectMapper mapper = new ObjectMapper()
+        def descriptor1 = new HttpServiceDescriptor(
+                "cdk/logp/1",
+                "CDK LogP",
+                "CDK LogP predictions for XLogP and ALogP",
+                ["logp", "partitioning", "cdk"] as String[],
+                null,
+                "icon.png",
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
+                null,
+                null,
+                "logp1", // a URL relative to this URL?
+        )
+        def descriptor2 = new HttpServiceDescriptor(
+                "cdk/logp/2",
+                "CDK LogP",
+                "CDK LogP predictions for XLogP and ALogP",
+                ["logp", "partitioning", "cdk"] as String[],
+                null,
+                "icon.png",
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
+                null,
+                null,
+                "logp2", // a URL relative to this URL?
+        )
+
+        def list = [descriptor1, descriptor2]
+
+        when:
+        def json1 = mapper.writeValueAsString(descriptor1)
+        def json2 = mapper.writeValueAsString(descriptor2)
+        def json = "[$json1,$json2]"
+        println json
+        def obj = mapper.readValue(json, List.class)
+
+        then:
+        json != null
+        obj != null
+        obj instanceof List
+        obj.size() == 2
+    }
+
+
     @Ignore
     void "validate pipelines docker service descriptors"() {
 

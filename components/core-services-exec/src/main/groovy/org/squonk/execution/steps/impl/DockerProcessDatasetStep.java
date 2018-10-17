@@ -19,19 +19,21 @@ package org.squonk.execution.steps.impl;
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.runners.ContainerRunner;
-import org.squonk.execution.steps.AbstractStandardStep;
+import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 ;
 
-/**
+/** TODO REMOVE THIS CLASS
  * Created by timbo on 29/12/15.
+ *
  */
-public class DockerProcessDatasetStep extends AbstractStandardStep {
+public class DockerProcessDatasetStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(DockerProcessDatasetStep.class.getName());
 
@@ -102,6 +104,12 @@ public class DockerProcessDatasetStep extends AbstractStandardStep {
                 LOG.info("Results cleaned up");
             }
         }
+    }
+
+    @Override
+    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+        // TODO - remove the need for this
+        throw new RuntimeException("Not implementable");
     }
 
 }

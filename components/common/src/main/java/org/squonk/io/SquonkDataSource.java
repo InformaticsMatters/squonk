@@ -19,6 +19,7 @@ package org.squonk.io;
 import org.squonk.util.IOUtils;
 
 import javax.activation.DataSource;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,7 +107,6 @@ public abstract class SquonkDataSource implements DataSource {
     protected abstract InputStream getSourceInputStream() throws IOException;
 
     public FileDataSource writeTo(File dir, String baseName) throws IOException {
-        //InputStream source = getInputStream();
         InputStream is = getInputStream();
         String fname;
         if (baseName != null) {
@@ -114,11 +114,9 @@ public abstract class SquonkDataSource implements DataSource {
         } else {
             fname = getName();
         }
+
         if (gzipContent) {
-            //is = IOUtils.getGzippedInputStream(source);
             fname = fname + ".gz";
-        } else {
-            //is = IOUtils.getGunzippedInputStream(source);
         }
         File f = new File(dir, fname);
         LOG.warning("Writing datasource " + getName() + " to file " + f.getPath());

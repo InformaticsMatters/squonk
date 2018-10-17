@@ -16,11 +16,11 @@
 
 package org.squonk.execution.steps.impl;
 
+import org.squonk.execution.steps.AbstractStep;
 import org.squonk.types.MoleculeObject;
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.MoleculeObjectDataset;
-import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.util.MoleculeObjectUtils;
@@ -34,7 +34,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class SmilesDeduplicatorStep extends AbstractStandardStep {
+public class SmilesDeduplicatorStep extends AbstractDatasetStep {
 
     private static final Logger LOG = Logger.getLogger(SmilesDeduplicatorStep.class.getName());
 
@@ -52,19 +52,12 @@ public class SmilesDeduplicatorStep extends AbstractStandardStep {
      * transient, however if an output field is needed then specify a mapping for the 
      * field named FIELD_OUTPUT_DATASET. 
      *
-     * @param varman
-     * @param context
+     * @param input
+     * @param camelContext
      * @throws Exception
      */
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-        statusMessage = MSG_PREPARING_INPUT;
-        Dataset ds = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
-        if (ds == null) {
-            throw new IllegalStateException("Input variable not found: " + VAR_INPUT_DATASET);
-        }
-        LOG.info("Input Dataset: " + ds);
-
+    protected Dataset doExecuteWithDataset(Dataset input, CamelContext camelContext) throws Exception {
         String canonicalSmilesField = getOption(OPTION_CANONICAL_SMILES_FIELD, String.class);
         if (canonicalSmilesField == null) {
             throw new IllegalStateException(OPTION_CANONICAL_SMILES_FIELD + " must be specified");
@@ -76,18 +69,8 @@ public class SmilesDeduplicatorStep extends AbstractStandardStep {
         List<String> appendFields = readFieldList(OPTION_APPEND_FIELDS);
 
 
-        Stream<MoleculeObject> results = MoleculeObjectUtils.deduplicate(ds.getStream(), canonicalSmilesField, keepFirstFields, keepLastFields, appendFields);
-
-        LOG.info("Processing complete");
-        
-        String outFldName = mapOutputVariable(VAR_OUTPUT_DATASET);
-        if (outFldName != null) {
-            Dataset<MoleculeObject> output = new MoleculeObjectDataset(results).getDataset();
-            createVariable(outFldName, Dataset.class, output, varman);
-            statusMessage = generateStatusMessage(ds.getSize(), output.getSize(), -1);
-            LOG.info("Results: " + output.getMetadata());
-        }
-
+        Stream<MoleculeObject> results = MoleculeObjectUtils.deduplicate(input.getStream(), canonicalSmilesField, keepFirstFields, keepLastFields, appendFields);
+        return new MoleculeObjectDataset(results).getDataset();
     }
 
     private List<String> readFieldList(String option) {

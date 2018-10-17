@@ -16,6 +16,7 @@
 
 package org.squonk.execution.steps.impl;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
@@ -34,7 +35,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class DatasetMoleculesFromFieldStep<P extends BasicObject> extends AbstractDatasetStandardStep<P,MoleculeObject> {
+public class DatasetMoleculesFromFieldStep<P extends BasicObject> extends AbstractDatasetStep<P,MoleculeObject> {
 
     private static final Logger LOG = Logger.getLogger(DatasetMoleculesFromFieldStep.class.getName());
 
@@ -43,16 +44,17 @@ public class DatasetMoleculesFromFieldStep<P extends BasicObject> extends Abstra
 
     /**
      * Create a slice of the dataset skipping a number of records specified by the skip option (or 0 if not specified)
-     * and including only the number of records specified by the count option (or till teh end if not specified).
+     * and including only the number of records specified by the count option (or till the end if not specified).
      *
      * @param input
-     * @param options
-     * @param converter
+     * @param context
      * @throws Exception
      */
-    protected Dataset<MoleculeObject> doExecute(Dataset<P> input, Map<String,Object> options, TypeConverter converter) throws Exception {
+    @Override
+    protected Dataset<MoleculeObject> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
 
-        String fieldName = getOption(options, OPTION_MOLECULES_FIELD, String.class, converter);
+        TypeConverter converter = findTypeConverter(context);
+        String fieldName = getOption(OPTION_MOLECULES_FIELD, String.class, converter);
         if (fieldName == null) {
             throw new IllegalStateException("Selected field not found. Option named " + OPTION_MOLECULES_FIELD + " must present");
         }

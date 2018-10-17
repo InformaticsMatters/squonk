@@ -17,6 +17,7 @@
 package org.squonk.execution.steps.impl;
 
 import groovy.lang.GroovyClassLoader;
+import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
@@ -31,15 +32,17 @@ import java.util.stream.Stream;
 /**
  * Created by timbo on 29/12/15.
  */
-public class DatasetFilterGroovyStep<P extends BasicObject> extends AbstractDatasetStandardStep<P,P> {
+public class DatasetFilterGroovyStep<P extends BasicObject> extends AbstractDatasetStep<P,P> {
 
     private static final Logger LOG = Logger.getLogger(DatasetFilterGroovyStep.class.getName());
 
     public static final String OPTION_SCRIPT = StepDefinitionConstants.TrustedGroovyDataset.OPTION_SCRIPT;
 
-    protected Dataset<P> doExecute(Dataset<P> input, Map<String,Object> options, TypeConverter converter) throws Exception {
+    @Override
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
 
-        String script = getOption(options, OPTION_SCRIPT, String.class, converter);
+        TypeConverter converter = findTypeConverter(context);
+        String script = getOption(OPTION_SCRIPT, String.class, converter);
         if (script == null) {
             throw new IllegalStateException("Script not defined. Should be present as option named " + OPTION_SCRIPT);
         }

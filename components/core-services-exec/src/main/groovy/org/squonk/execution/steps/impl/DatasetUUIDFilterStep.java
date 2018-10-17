@@ -16,6 +16,7 @@
 
 package org.squonk.execution.steps.impl;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
@@ -35,7 +36,7 @@ import java.util.stream.Stream;
 /**
  * Created by timbo on 29/12/15.
  */
-public class DatasetUUIDFilterStep<P extends BasicObject> extends AbstractDatasetStandardStep<P,P> {
+public class DatasetUUIDFilterStep<P extends BasicObject> extends AbstractDatasetStep<P,P> {
 
     private static final Logger LOG = Logger.getLogger(DatasetUUIDFilterStep.class.getName());
 
@@ -62,9 +63,10 @@ public class DatasetUUIDFilterStep<P extends BasicObject> extends AbstractDatase
     );
 
     @Override
-    protected Dataset<P> doExecute(Dataset<P> input, Map<String,Object> options, TypeConverter converter) throws Exception {
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
 
-        String uuidsOpt = getOption(options, OPTION_UUIDS, String.class, converter);
+        TypeConverter converter = findTypeConverter(context);
+        String uuidsOpt = getOption(OPTION_UUIDS, String.class, converter);
         if (uuidsOpt == null) {
             throw new IllegalStateException("UUIDs not defined. Should be present as option named " + OPTION_UUIDS);
         }

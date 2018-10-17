@@ -16,20 +16,16 @@
 
 package org.squonk.execution.steps.impl;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.squonk.types.BasicObject;
 import org.squonk.types.TypesUtils;
-import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.MoleculeObject;
 import org.squonk.dataset.Dataset;
 
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.camel.CamelContext;
 
 /**
  * Converts a Dataset&lt;BasicObject&gt; to a Dataset&lt;MoleculeObject&gt;
@@ -51,7 +47,7 @@ import org.apache.camel.CamelContext;
  *
  * @author timbo
  */
-public class BasicObjectToMoleculeObjectStep extends AbstractDatasetStandardStep<BasicObject, MoleculeObject> {
+public class BasicObjectToMoleculeObjectStep extends AbstractDatasetStep<BasicObject, MoleculeObject> {
 
     private static final Logger LOG = Logger.getLogger(BasicObjectToMoleculeObjectStep.class.getName());
 
@@ -63,15 +59,15 @@ public class BasicObjectToMoleculeObjectStep extends AbstractDatasetStandardStep
 
 
     @Override
-    protected Dataset<MoleculeObject> doExecute(Dataset<BasicObject> input, Map<String,Object> options, TypeConverter converter) throws Exception {
+    protected Dataset<MoleculeObject> doExecuteWithDataset(Dataset<BasicObject> input, CamelContext context) throws Exception {
 
-        String structureFieldName = getOption(options, OPTION_STRUCTURE_FIELD_NAME, String.class, converter, DEFAULT_STRUCTURE_FIELD_NAME);
-        String structureFormat = getOption(options, OPTION_STRUCTURE_FORMAT, String.class, converter);
-        boolean preserveUuid = getOption(options, OPTION_PRESERVE_UUID, Boolean.class, converter, true);
+        TypeConverter converter = findTypeConverter(context);
+        String structureFieldName = getOption(OPTION_STRUCTURE_FIELD_NAME, String.class, converter, DEFAULT_STRUCTURE_FIELD_NAME);
+        String structureFormat = getOption(OPTION_STRUCTURE_FORMAT, String.class, converter);
+        boolean preserveUuid = getOption(OPTION_PRESERVE_UUID, Boolean.class, converter, true);
 
         statusMessage = "Applying conversions ...";
         Dataset<MoleculeObject> results = TypesUtils.convertBasicObjectDatasetToMoleculeObjectDataset(input, structureFieldName, structureFormat, preserveUuid);
-
         return results;
     }
 

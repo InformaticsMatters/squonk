@@ -16,16 +16,13 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.squonk.core.HttpServiceDescriptor;
-import org.squonk.dataset.*;
-import org.squonk.io.IODescriptor;
-import org.squonk.types.MoleculeObject;
 import org.apache.camel.CamelContext;
 import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
-import org.squonk.execution.steps.AbstractServiceStep;
-import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.dataset.*;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.IODescriptor;
+import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.StatsRecorder;
 
@@ -39,15 +36,30 @@ import java.util.logging.Logger;
  *
  * @author timbo
  */
-public class MoleculeServiceBasicExecutorStep extends AbstractServiceStep {
+public class MoleculeServiceBasicExecutorStep extends AbstractDatasetStep {
 
     private static final Logger LOG = Logger.getLogger(MoleculeServiceBasicExecutorStep.class.getName());
 
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
+    public void execute(VariableManager varman, CamelContext camelContext) throws Exception {
 
+        statusMessage = MSG_FETCHING_INPUT;
+
+        Dataset<MoleculeObject> input = fetchMappedInput("input", Dataset.class, varman);
+
+        Dataset<MoleculeObject> results = doExecuteWithDataset(input, camelContext);
+
+        createMappedOutput("output", Dataset.class, results, varman);
+        statusMessage = generateStatusMessage(input.getSize(), results.getSize(), -1);
+        LOG.info("Results: " + results.getMetadata());
+    }
+
+    @Override
+    protected Dataset doExecuteWithDataset(Dataset input, CamelContext camelContext) throws Exception {
 
         statusMessage = MSG_PREPARING_INPUT;
+
+        // TODO - it may be simple to handle the thin processing of the input using AbstractThinDatasetStep
 
         IODescriptor inputDescriptor = getSingleInputDescriptor();
         ThinDescriptor td = getThinDescriptor(inputDescriptor);
@@ -56,20 +68,19 @@ public class MoleculeServiceBasicExecutorStep extends AbstractServiceStep {
             thinWrapper = DatasetUtils.createThinDatasetWrapper(td, inputDescriptor.getSecondaryType(), options);
         }
 
-        Dataset<MoleculeObject> sourceDataset = fetchMappedInput("input", Dataset.class, varman);
         Dataset<MoleculeObject> dataset;
         if (thinWrapper != null) {
-            dataset = thinWrapper.prepareInput(sourceDataset);
+            dataset = thinWrapper.prepareInput(input);
         } else {
-            dataset = sourceDataset;
+            dataset = input;
         }
 
         String endpoint = getHttpExecutionEndpoint();
 
-        InputStream input = JsonHandler.getInstance().marshalStreamToJsonArray(dataset.getStream(), false);
-//            String inputData = IOUtils.convertStreamToString(input);
+        InputStream content = JsonHandler.getInstance().marshalStreamToJsonArray(dataset.getStream(), false);
+//            String inputData = IOUtils.convertStreamToString(content);
 //            LOG.info("Input: " + inputData);
-//            input = new ByteArrayInputStream(inputData.getBytes());
+//            content = new ByteArrayInputStream(inputData.getBytes());
 
         Map<String, Object> requestHeaders = new HashMap<>();
         requestHeaders.put("Accept-Encoding", "gzip");
@@ -82,7 +93,7 @@ public class MoleculeServiceBasicExecutorStep extends AbstractServiceStep {
         // send for execution
         statusMessage = "Posting request ...";
         Map<String, Object> responseHeaders = new HashMap<>();
-        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, requestHeaders, responseHeaders, options);
+        InputStream output = CamelUtils.doRequestUsingHeadersAndQueryParams(camelContext, "POST", endpoint, content, requestHeaders, responseHeaders, options);
         statusMessage = "Handling results ...";
 
 //        String data = IOUtils.convertStreamToString(IOUtils.getGunzippedInputStream(output), 1000);
@@ -99,10 +110,7 @@ public class MoleculeServiceBasicExecutorStep extends AbstractServiceStep {
         }
 
         Dataset<MoleculeObject> results = new Dataset<>(output, metadata);
-
-        createMappedOutput("output", Dataset.class, results, varman);
-        statusMessage = generateStatusMessage(sourceDataset.getSize(), results.getSize(), -1);
-        LOG.info("Results: " + results.getMetadata());
+        return results;
     }
 
 }

@@ -17,9 +17,9 @@
 package org.squonk.execution.steps.impl;
 
 import org.squonk.dataset.Dataset;
+import org.squonk.execution.steps.AbstractStep;
 import org.squonk.util.GroovyScriptExecutor;
 import org.apache.camel.CamelContext;
-import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 
@@ -31,19 +31,15 @@ import java.util.logging.Logger;
 /**
  * Created by timbo on 29/12/15.
  */
-public class TrustedGroovyDatasetScriptStep extends AbstractStandardStep {
+public class TrustedGroovyDatasetScriptStep extends AbstractDatasetStep {
 
     private static final Logger LOG = Logger.getLogger(TrustedGroovyDatasetScriptStep.class.getName());
 
-    public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
-    public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
     public static final String OPTION_SCRIPT = StepDefinitionConstants.TrustedGroovyDataset.OPTION_SCRIPT;
 
-    @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-        statusMessage = MSG_PREPARING_INPUT;
-        Dataset input = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, null, varman, true);
-        //LOG.info("Input Dataset: " + input);
+
+    protected Dataset doExecuteWithDataset(Dataset input, CamelContext camelContext) throws Exception {
+
         String script = getOption(OPTION_SCRIPT, String.class);
         if (script == null) {
             throw new IllegalStateException("Script not defined. Should be present as option named " + OPTION_SCRIPT);
@@ -56,9 +52,6 @@ public class TrustedGroovyDatasetScriptStep extends AbstractStandardStep {
         statusMessage = "Executing ...";
         Dataset results = GroovyScriptExecutor.executeAndReturnValue(Dataset.class, engine, script, bindings);
         LOG.info("Script executed");
-
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, results, varman);
-        statusMessage = generateStatusMessage(input.getSize(), results.getSize(), -1);
-        LOG.info("Results: " + results.getMetadata());
+        return results;
     }
 }

@@ -162,7 +162,8 @@ services:
     ################# core-services-server container ###################################
     # available on:
     # http://${PUBLIC_HOST}/coreservices/rest/ping
-    # http://${PUBLIC_HOST}/coreservices/rest/v1/services
+    # http://${PUBLIC_HOST}/coreservices/rest/v1/services/configs
+    # http://${PUBLIC_HOST}/coreservices/rest/v1/services/descriptors
     # http://${PUBLIC_HOST}/coreservices/rest/v1/jobs
     #
     coreservices:

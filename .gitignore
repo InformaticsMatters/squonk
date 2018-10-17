@@ -28,6 +28,7 @@ data/testfiles/*.sdf
 
 components/cdk-camel/out
 components/chemaxon-camel/out
+components/chemaxon-lib/out/
 components/common/lib
 components/common/out
 components/common-camel/out

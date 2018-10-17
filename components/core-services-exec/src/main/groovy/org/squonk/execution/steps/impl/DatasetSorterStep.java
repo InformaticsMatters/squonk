@@ -16,7 +16,7 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.apache.camel.TypeConverter;
+import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.steps.StepDefinitionConstants;
@@ -25,7 +25,6 @@ import org.squonk.types.BasicObject;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,7 +32,7 @@ import java.util.stream.Stream;
 /**
  * Created by timbo on 13/09/16.
  */
-public class DatasetSorterStep<P extends BasicObject> extends AbstractDatasetStandardStep<P,P> {
+public class DatasetSorterStep<P extends BasicObject> extends AbstractDatasetStep<P,P> {
 
     private static final Logger LOG = Logger.getLogger(DatasetSorterStep.class.getName());
 
@@ -42,9 +41,9 @@ public class DatasetSorterStep<P extends BasicObject> extends AbstractDatasetSta
     public static final String OPTION_DIRECTIVES = StepDefinitionConstants.DatasetSorter.OPTION_DIRECTIVES;
 
     @Override
-    protected Dataset<P> doExecute(Dataset<P> input, Map<String,Object> options, TypeConverter converter) throws Exception {
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext camelContext) throws Exception {
 
-        String directivesStr = getOption(options, OPTION_DIRECTIVES, String.class, converter);
+        String directivesStr = getOption(OPTION_DIRECTIVES, String.class, findTypeConverter(camelContext));
         if (directivesStr == null) {
             throw new IllegalStateException("Sort directives must be defined as option named " + OPTION_DIRECTIVES);
         }

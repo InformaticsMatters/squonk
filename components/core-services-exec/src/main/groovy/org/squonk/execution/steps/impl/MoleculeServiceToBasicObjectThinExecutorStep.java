@@ -21,7 +21,7 @@ import org.squonk.camel.CamelCommonConstants;
 import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractServiceStep;
+import org.squonk.execution.steps.AbstractThinDatasetStep;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
@@ -39,10 +39,12 @@ import java.util.stream.Stream;
 /**Thin executor sends only the molecules (no values) to the service and gets back an unrelated set of BasicObjects which
  * become the results
  *
+ * TODO REMOVE THIS CLASS
+ *
  *
  * @author timbo
  */
-public class MoleculeServiceToBasicObjectThinExecutorStep extends AbstractServiceStep {
+public class MoleculeServiceToBasicObjectThinExecutorStep extends AbstractThinDatasetStep {
 
     private static final Logger LOG = Logger.getLogger(MoleculeServiceToBasicObjectThinExecutorStep.class.getName());
 
@@ -104,6 +106,11 @@ public class MoleculeServiceToBasicObjectThinExecutorStep extends AbstractServic
         createMappedOutput("output", Dataset.class, results, varman);
         statusMessage = generateStatusMessage(dataset.getSize(), results.getSize(), -1);
         LOG.info("Results: " + results.getMetadata());
+    }
+
+    @Override
+    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+        return null;
     }
 
 }

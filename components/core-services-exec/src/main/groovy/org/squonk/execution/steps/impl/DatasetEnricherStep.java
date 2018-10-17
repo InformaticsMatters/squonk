@@ -21,8 +21,7 @@ import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractServiceStep;
-import org.squonk.execution.steps.AbstractStandardStep;
+import org.squonk.execution.steps.AbstractThinDatasetStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptor;
@@ -62,7 +61,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class DatasetEnricherStep extends AbstractServiceStep {
+public class DatasetEnricherStep extends AbstractThinDatasetStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetEnricherStep.class.getName());
 
@@ -210,6 +209,12 @@ public class DatasetEnricherStep extends AbstractServiceStep {
 
     private Object fetchValueToCompare(BasicObject bo, String mergeField) {
         return mergeField == null ? bo.getUUID() : bo.getValue(mergeField);
+    }
+
+    @Override
+    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+        // TODO - implement this
+        throw new RuntimeException("NYI");
     }
 
 }

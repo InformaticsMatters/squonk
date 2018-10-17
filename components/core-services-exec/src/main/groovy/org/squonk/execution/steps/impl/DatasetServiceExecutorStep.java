@@ -16,11 +16,11 @@
 
 package org.squonk.execution.steps.impl;
 
+import org.squonk.execution.steps.AbstractStep;
 import org.squonk.types.MoleculeObject;
 import org.apache.camel.CamelContext;
 import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
-import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.io.JsonHandler;
@@ -34,9 +34,11 @@ import java.util.logging.Logger;
  * Reads a Dataset and sends it to a service, writing the results without caring what type they are. Typically used when
  * needing to convert to a specific format needed by the next step. e.g. converting molecules to SDF.
  *
+ * TODO REMOVE THIS CLASS
+ *
  * @author timbo
  */
-public class DatasetServiceExecutorStep extends AbstractStandardStep {
+public class DatasetServiceExecutorStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetServiceExecutorStep.class.getName());
 
@@ -76,6 +78,11 @@ public class DatasetServiceExecutorStep extends AbstractStandardStep {
         createMappedOutput(VAR_OUTPUT_DATASET, InputStream.class, output, varman);
 
         statusMessage = generateStatusMessage(dataset.getSize(), -1, -1);
+    }
+
+    @Override
+    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+        throw new RuntimeException("NYI");
     }
 
 }

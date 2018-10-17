@@ -19,15 +19,21 @@ package org.squonk.execution.steps.impl;
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStandardStep;
+import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.InputStreamDataSource;
 import org.squonk.io.SquonkDataSource;
+import org.squonk.reader.CSVReader;
 import org.squonk.reader.SDFReader;
+import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -41,7 +47,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class SDFReaderStep extends AbstractStandardStep {
+public class SDFReaderStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(SDFReaderStep.class.getName());
 
@@ -62,20 +68,15 @@ public class SDFReaderStep extends AbstractStandardStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         LOG.info("execute SDFReaderStep");
-        statusMessage = "Reading SDF";
         SquonkDataSource dataSource = fetchMappedInput(VAR_SDF_INPUT, SquonkDataSource.class, varman);
-        LOG.fine("Fetched input for: " + dataSource.getName());
-        dataSource.setGzipContent(false);
-        SDFReader reader = createReader(dataSource);
-        LOG.fine("Created SDFReader");
-        try (Stream<MoleculeObject> mols = reader.asStream()) {
-            DatasetMetadata meta = reader.getDatasetMetadata();
-            Dataset results = new Dataset(mols, meta);
-            LOG.fine("Writing output");
-            createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
-            statusMessage = generateStatusMessage(-1, results.getSize(), -1);
-            LOG.fine("Writing dataset from SDF complete: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
-        }
+
+        Map<String, Object> results = executeWithData(Collections.singletonMap("input", dataSource), context);
+        Dataset result = (Dataset)results.values().iterator().next();
+
+        LOG.fine("Writing output");
+        createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, result, varman);
+        statusMessage = generateStatusMessage(-1, result.getSize(), -1);
+        LOG.fine("Writing dataset from SDF complete: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
     }
 
     private SDFReader createReader(SquonkDataSource dataSource) throws IOException {
@@ -87,6 +88,34 @@ public class SDFReaderStep extends AbstractStandardStep {
             reader.setNameFieldName(null);
         }
         return reader;
+    }
+
+    @Override
+    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+        statusMessage = "Reading SDF ...";
+        if (inputs.size() != 1) {
+            throw new IllegalArgumentException("Must provide a single input");
+        }
+        Object input = inputs.values().iterator().next();
+        SquonkDataSource dataSource;
+        if (input instanceof SquonkDataSource) {
+            dataSource = (SquonkDataSource)input;
+        } else if (input instanceof InputStream) {
+            dataSource = new InputStreamDataSource("input", "", (InputStream)input, null);
+        } else {
+            throw new IllegalArgumentException("Unsupported input type: " + input.getClass().getName());
+        }
+        dataSource.setGzipContent(false);
+        SDFReader reader = createReader(dataSource);
+        Stream<MoleculeObject> mols = reader.asStream().onClose(() -> {
+            try {
+                dataSource.getInputStream().close();
+            } catch (IOException ioe) {
+                LOG.warning("Failed to close InputStream");
+            }
+        });
+        Dataset results = new Dataset(mols, reader.getDatasetMetadata());
+        return Collections.singletonMap("output", results);
     }
 
 }

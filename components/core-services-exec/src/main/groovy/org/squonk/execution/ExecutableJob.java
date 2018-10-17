@@ -17,28 +17,30 @@
 package org.squonk.execution;
 
 import org.apache.camel.TypeConverter;
+import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.runners.ContainerRunner;
 import org.squonk.execution.runners.DockerRunner;
 import org.squonk.execution.runners.OpenShiftRunner;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.util.GroovyUtils;
+import org.squonk.io.IODescriptor;
 import org.squonk.util.IOUtils;
 import org.squonk.util.Metrics;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
- * Base class that defines core functionality for service execution
+ * Base class that defines core functionality for job execution including options, inputs/outputs
+ * and managing the status of the job.
  */
-public class ExecutableService {
+public class ExecutableJob {
 
-    private Logger LOG = Logger.getLogger(ExecutableService.class.getName());
+    private Logger LOG = Logger.getLogger(ExecutableJob.class.getName());
 
+    protected static final String MSG_FETCHING_INPUT = "Fetching input ...";
     protected static final String MSG_PREPARING_INPUT = "Preparing input ...";
     protected static final String MSG_PREPARING_OUTPUT = "Writing output ...";
     protected static final String MSG_PROCESSED = "%s processed";
@@ -59,8 +61,13 @@ public class ExecutableService {
     protected final String DOCKER_SERVICES_DIR = IOUtils.getConfiguration("SQUONK_DOCKER_SERVICES_DIR", "../../data/testfiles/docker-services");
     protected final Integer DEBUG_MODE = new Integer(IOUtils.getConfiguration("SQUONK_DEBUG_MODE", "0"));
 
-
+    protected String jobId;
     protected Map<String, Object> options;
+
+    protected IODescriptor[] inputs;
+    protected IODescriptor[] outputs;
+    protected ServiceDescriptor serviceDescriptor;
+
     protected Map<String, Integer> usageStats = new HashMap<>();
 
     protected int numProcessed = -1;
@@ -68,19 +75,21 @@ public class ExecutableService {
     protected int numErrors = -1;
 
     protected String statusMessage = null;
-    protected String jobId;
-
-    public ExecutableService(String jobId, Map<String, Object> options) {
-        this.jobId = jobId;
-        this.options = (options == null ? Collections.emptyMap() : options);
-    }
-
-    public ExecutableService() {
-        this.options = Collections.emptyMap();
-    }
 
     public String getJobId() {
         return jobId;
+    }
+
+    public ServiceDescriptor getServiceDescriptor() {
+        return serviceDescriptor;
+    }
+
+    public IODescriptor[] getInputs() {
+        return inputs;
+    }
+
+    public IODescriptor[] getOutputs() {
+        return outputs;
     }
 
     /**
@@ -136,37 +145,6 @@ public class ExecutableService {
             } else {
                 LOG.info("Unexpected option type. Trying to convert from " + val.getClass().getName() + " to " + type.getName());
                 return converter.convertTo(type, val);
-            }
-        }
-    }
-
-    protected <T> T getOption(Map<String, Object> map, String name, Class<T> type, TypeConverter converter) {
-        return getOption(map, name, type, converter, null);
-    }
-
-    protected <T> T getOption(Map<String, Object> map, String name, Class<T> type, TypeConverter converter, T defaultValue) {
-        Object val = map.get(name);
-        if (val == null) {
-            return defaultValue;
-        } else {
-            if (type.isAssignableFrom(val.getClass())) {
-                return (T) val;
-            } else {
-                LOG.info("Unexpected option type. Trying to convert from " + val.getClass().getName() + " to " + type.getName());
-                if (converter != null) {
-                    return converter.convertTo(type, val);
-                } else {
-                    if (val instanceof String) {
-                        try {
-                            Constructor constr = type.getConstructor(String.class);
-                            T converted = (T) constr.newInstance(val.toString());
-                            return converted;
-                        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                            throw new IllegalArgumentException("Unable to convert " + val.getClass().getName() + " to " + type.getName(), e);
-                        }
-                    }
-                    throw new IllegalArgumentException("Unable to convert " + val.getClass().getName() + " to " + type.getName());
-                }
             }
         }
     }

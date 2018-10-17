@@ -2,10 +2,11 @@ package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
 import org.squonk.core.NextflowServiceDescriptor;
-import org.squonk.execution.steps.AbstractServiceStep;
+import org.squonk.execution.steps.AbstractThinDatasetStep;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.util.IOUtils;
 
+import java.util.Map;
 import java.util.logging.Logger;
 
 /** Step that executes a <a href="http://nextflow.io">Nextflow</a> workflow.
@@ -16,7 +17,7 @@ import java.util.logging.Logger;
  *
  * Created by timbo on 28/07/17.
  */
-public class DatasetNextflowExecutorStep extends AbstractServiceStep {
+public class DatasetNextflowExecutorStep extends AbstractThinDatasetStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetNextflowExecutorStep.class.getName());
     protected static final String MSG_RUNNING_NEXTFLOW = "Running Nextflow";
@@ -126,5 +127,11 @@ public class DatasetNextflowExecutorStep extends AbstractServiceStep {
 //                LOG.info("Results cleaned up");
 //            }
 //        }
+    }
+
+    @Override
+    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+        // TODO - remove the need for this
+        throw new RuntimeException("Not implementable");
     }
 }

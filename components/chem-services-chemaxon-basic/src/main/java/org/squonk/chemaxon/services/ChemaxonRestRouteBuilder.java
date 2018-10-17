@@ -16,12 +16,6 @@
 
 package org.squonk.chemaxon.services;
 
-import chemaxon.jep.ChemJEP;
-import chemaxon.jep.Evaluator;
-import chemaxon.jep.context.MolContext;
-import chemaxon.nfunk.jep.ParseException;
-import chemaxon.struc.Molecule;
-import com.chemaxon.version.VersionInfo;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
@@ -33,14 +27,10 @@ import org.squonk.camel.processor.DatasetToJsonProcessor;
 import org.squonk.camel.processor.JsonToDatasetProcessor;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
-import org.squonk.chemaxon.molecule.MoleculeUtils;
 import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.core.ServiceDescriptorSet;
-import org.squonk.dataset.DatasetMetadata;
-import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.dataset.ThinDescriptor;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.http.RequestInfo;
 import org.squonk.io.IODescriptors;
 import org.squonk.mqueue.MessageQueueCredentials;
 import org.squonk.options.MoleculeTypeDescriptor;
@@ -53,11 +43,9 @@ import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonConstants;
 import org.squonk.util.CommonMimeTypes;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_NAME;

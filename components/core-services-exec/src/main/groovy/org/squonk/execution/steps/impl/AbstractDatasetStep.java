@@ -1,10 +1,9 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.TypeConverter;
 import org.squonk.dataset.Dataset;
-import org.squonk.execution.steps.AbstractStandardStep;
-import org.squonk.execution.steps.ExternallyExecutableStep;
+import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.AbstractThinDatasetStep;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.BasicObject;
 
@@ -12,14 +11,20 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public abstract class AbstractDatasetStandardStep<P extends BasicObject, Q extends BasicObject>
-        extends AbstractStandardStep implements ExternallyExecutableStep {
+public abstract class AbstractDatasetStep<P extends BasicObject, Q extends BasicObject>
+        extends AbstractThinDatasetStep {
 
-    private static final Logger LOG = Logger.getLogger(AbstractDatasetStandardStep.class.getName());
+    private static final Logger LOG = Logger.getLogger(AbstractDatasetStep.class.getName());
+
+    /** Specifies whether an input dataset is expected, which is typically the case.
+     * Set to false if there is output but no input.
+     *
+     */
+    protected boolean inputRequired = true;
 
 
     /**
-     * Execute the dataset generating a single dataset as the output.
+     * Executes assuming a single input dataset and a single output dataset.
      * This method is used when executing cells from the notebook
      *
      * @param varman
@@ -30,12 +35,12 @@ public abstract class AbstractDatasetStandardStep<P extends BasicObject, Q exten
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         statusMessage = MSG_PREPARING_INPUT;
         Dataset<P> input = (Dataset)fetchMappedInput("input", Dataset.class, varman);
-        if (input == null) {
+        if (input == null && inputRequired) {
             throw new IllegalStateException("Input variable not found: input");
         }
         LOG.fine("Input Dataset: " + input);
 
-        Dataset<Q> results = doExecute(input, options, context == null ? null : context.getTypeConverter());
+        Dataset<Q> results = doExecuteWithDataset(input, context);
 
         String outFldName = mapOutputVariable("output");
         if (outFldName != null) {
@@ -51,7 +56,8 @@ public abstract class AbstractDatasetStandardStep<P extends BasicObject, Q exten
      * @return
      * @throws Exception
      */
-    public Map<String,Object> doExecute(Map<String,Object> inputs, Map<String,Object> options, TypeConverter convertor) throws Exception {
+    @Override
+    public Map<String,Object> executeWithData(Map<String,Object> inputs, CamelContext camelContext) throws Exception {
         if (inputs.size() != 1) {
             throw new IllegalArgumentException("Single dataset expected");
         }
@@ -59,12 +65,19 @@ public abstract class AbstractDatasetStandardStep<P extends BasicObject, Q exten
         String key = entry.getKey(); // value ignored, but presumed to be "input"
         Object value = entry.getValue();
         if (value instanceof Dataset) {
-            Dataset<Q> results = doExecute((Dataset)value, options, convertor);
+            Dataset<Q> results = doExecuteWithDataset((Dataset)value, camelContext);
             return Collections.singletonMap("output", results);
         } else {
             throw new IllegalArgumentException("Input expected to be a Dataset");
         }
     }
 
-    protected abstract Dataset<Q> doExecute(Dataset<P> input, Map<String,Object> options, TypeConverter convertor) throws Exception;
+    /** Override this method to implement the required functionality
+     *
+     * @param input
+     * @param camelContext
+     * @return
+     * @throws Exception
+     */
+    protected abstract Dataset<Q> doExecuteWithDataset(Dataset<P> input, CamelContext camelContext) throws Exception;
 }

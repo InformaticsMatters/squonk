@@ -19,20 +19,22 @@ package org.squonk.execution.steps.impl;
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStandardStep;
+import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
  * Created by timbo on 13/09/16.
  */
-public class SmilesStructuresStep extends AbstractStandardStep {
+public class SmilesStructuresStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(SmilesStructuresStep.class.getName());
 
@@ -42,6 +44,17 @@ public class SmilesStructuresStep extends AbstractStandardStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
+        Map<String,Object> results = executeWithData(Collections.emptyMap(), context);
+        Dataset result = getSingleDatasetFromMap(results);
+
+        createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, result, varman);
+
+        statusMessage = generateStatusMessage(-1, result.getSize(), -1);
+        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
+    }
+
+    @Override
+    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
         statusMessage = MSG_PREPARING_INPUT;
 
 
@@ -78,11 +91,7 @@ public class SmilesStructuresStep extends AbstractStandardStep {
 
 
         Dataset<MoleculeObject> result = new Dataset<>(mols, meta);
-
-        createMappedOutput("output", Dataset.class, result, varman);
-
-        statusMessage = generateStatusMessage(-1, result.getSize(), -1);
-        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
+        return Collections.singletonMap(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, result);
     }
 
 

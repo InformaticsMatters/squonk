@@ -158,7 +158,7 @@ class JobManagerSpec extends Specification {
 
         when:
 
-        def jobStatus = mgr.executeAsync(USER, sd, null, ["input": new FileInputStream(source)])
+        def jobStatus = mgr.executeAsync(USER, sd, [:], ["input": new FileInputStream(source)])
         jobStatus = waitTillResultsReady(mgr, jobStatus)
 
         then:
@@ -185,7 +185,7 @@ class JobManagerSpec extends Specification {
 
 
         when:
-        def jobStatus = mgr.executeAsync(USER, sd, null, ["input_data": new ByteArrayInputStream(source1), "input_metadata": new ByteArrayInputStream(source2)])
+        def jobStatus = mgr.executeAsync(USER, sd, [:], ["input_data": new ByteArrayInputStream(source1), "input_metadata": new ByteArrayInputStream(source2)])
         jobStatus = waitTillResultsReady(mgr, jobStatus)
         def results = mgr.getJobResultsAsDataSources(USER, jobStatus.getJobId())
 

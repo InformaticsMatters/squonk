@@ -18,12 +18,14 @@ package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
-import org.squonk.execution.steps.AbstractStandardStep;
+import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptor;
 import org.squonk.notebook.api.VariableKey;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -33,7 +35,7 @@ import java.util.logging.Logger;
  * <p>
  * Created by timbo on 06/01/16.
  */
-public class ConverterStep<P, Q, R, S> extends AbstractStandardStep {
+public class ConverterStep<P, Q, R, S> extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(ConverterStep.class.getName());
 
@@ -103,17 +105,31 @@ public class ConverterStep<P, Q, R, S> extends AbstractStandardStep {
     public void execute(VariableManager varman, CamelContext context) throws Exception {
         statusMessage = "Fetching input";
         IODescriptor<P,Q> from = getInputs()[0];
-        P input = fetchMappedInput("input", from.getPrimaryType(), from.getSecondaryType(), varman, true);
+        IODescriptor<R,S> to = getOutputs()[0];
+        P input = fetchMappedInput(StepDefinitionConstants.VARIABLE_INPUT_DATASET, from.getPrimaryType(), from.getSecondaryType(), varman, true);
         if (input == null) {
             throw new IllegalStateException("Input variable not found");
         }
-        statusMessage = "Converting input";
-        IODescriptor<R,S> to = getOutputs()[0];
-        R output = converter.convertTo(to.getPrimaryType(), input);
+
+        Map<String,Object> results = executeWithData(Collections.singletonMap(StepDefinitionConstants.VARIABLE_INPUT_DATASET, input), context);
+        R result = (R)results.values().iterator().next();
+
         statusMessage = "Writing output";
-        createMappedOutput("output", to.getPrimaryType(), output, varman);
+        createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, to.getPrimaryType(), result, varman);
         LOG.info("Wrote input as output");
         statusMessage = "ConverterStep completed";
     }
+
+    @Override
+    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+        statusMessage = "Converting inputs";
+        if (inputs.size() != 1) {
+            throw new IllegalArgumentException("Must only have one input");
+        }
+        IODescriptor<R,S> to = getOutputs()[0];
+        R output = converter.convertTo(to.getPrimaryType(), inputs.values().iterator().next());
+        return Collections.singletonMap(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, output);
+    }
+
 
 }

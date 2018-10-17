@@ -18,30 +18,27 @@ package org.squonk.execution.steps;
 
 import org.apache.camel.CamelContext;
 import org.squonk.core.DefaultServiceDescriptor;
-import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.core.ServiceConfig;
-import org.squonk.core.ServiceDescriptor;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetUtils;
 import org.squonk.dataset.ThinDatasetWrapper;
 import org.squonk.dataset.ThinDescriptor;
 import org.squonk.execution.runners.ContainerRunner;
-import org.squonk.execution.util.GroovyUtils;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.execution.variable.impl.FilesystemReadContext;
 import org.squonk.execution.variable.impl.FilesystemWriteContext;
 import org.squonk.io.IODescriptor;
-import org.squonk.notebook.api.VariableKey;
+import org.squonk.types.io.JsonHandler;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
 /**
  *
- * Also provides the mechanism for handling thin dataset execution, though superclasses must invoke this by overriding the suitable
+ * Also provides the mechanism for handling thin dataset execution, though sub-classes must invoke this by overriding the suitable
  * methods and calling the 'Thin' equivalents. See {@link org.squonk.execution.steps.impl.ThinDatasetDockerExecutorStep} as an example.
  *
  * The thin execution requires a ThinDescriptor to be defined as part of the DockerServiceDescriptor. That ThinDescriptor
@@ -55,11 +52,9 @@ import java.util.logging.Logger;
  *
  * Created by timbo on 20/06/17.
  */
-public abstract class AbstractServiceStep extends AbstractStep {
+public abstract class AbstractThinDatasetStep extends AbstractStep {
 
-    private static final Logger LOG = Logger.getLogger(AbstractServiceStep.class.getName());
-
-    protected ServiceDescriptor serviceDescriptor;
+    private static final Logger LOG = Logger.getLogger(AbstractThinDatasetStep.class.getName());
 
     /** ThinDescriptors keyed by input name */
     private Map<String,ThinDescriptor> thinDescriptors = new HashMap<>();
@@ -67,72 +62,6 @@ public abstract class AbstractServiceStep extends AbstractStep {
     /** ThinDatasetWrappers keys by output names */
     private Map<String,ThinDatasetWrapper> wrappers = new HashMap<>();
 
-    @Override
-    public IODescriptor[] getInputs() {
-        return serviceDescriptor.resolveInputIODescriptors();
-    }
-
-    @Override
-    public IODescriptor[] getOutputs() {
-        return serviceDescriptor.resolveOutputIODescriptors();
-    }
-
-    @Override
-    public void configure(
-            Long outputProducerId,
-            String jobId,
-            Map<String, Object> options,
-            IODescriptor[] inputs,
-            IODescriptor[] outputs,
-            Map<String, VariableKey> inputVariableMappings,
-            Map<String, String> outputVariableMappings) {
-
-        throw new IllegalStateException(this.getClass().getCanonicalName() + " must provide ServiceDescriptor if no default one is defined");
-
-    }
-
-    @Override
-    public void configure(
-            Long outputProducerId,
-            String jobId,
-            Map<String, Object> options,
-            Map<String, VariableKey> inputVariableMappings,
-            Map<String, String> outputVariableMappings,
-            ServiceDescriptor serviceDescriptor) {
-        this.outputProducerId = outputProducerId;
-        this.jobId = jobId;
-        this.options = options;
-        this.inputVariableMappings.putAll(inputVariableMappings);
-        this.outputVariableMappings.putAll(outputVariableMappings);
-        this.serviceDescriptor = serviceDescriptor;
-    }
-
-    protected HttpServiceDescriptor getHttpServiceDescriptor() {
-        if (serviceDescriptor == null) {
-            throw new IllegalStateException("Service descriptor not found");
-        } else if (!(serviceDescriptor instanceof HttpServiceDescriptor)) {
-            throw new IllegalStateException("Invalid service descriptor. Expected HttpServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
-        }
-        return (HttpServiceDescriptor)serviceDescriptor;
-    }
-
-    protected String getHttpExecutionEndpoint() {
-        return getHttpServiceDescriptor().getExecutionEndpoint();
-    }
-
-    protected IODescriptor getSingleInputDescriptor() {
-        ServiceConfig serviceConfig = getHttpServiceDescriptor().getServiceConfig();
-        IODescriptor[] inputDescriptors = serviceConfig.getInputDescriptors();
-        IODescriptor inputDescriptor;
-        if (inputDescriptors != null && inputDescriptors.length == 1) {
-            inputDescriptor = inputDescriptors[0];
-        } else if (inputDescriptors == null || inputDescriptors.length == 0 ) {
-            throw new IllegalStateException("Expected one input IODescriptor. Found none");
-        } else {
-            throw new IllegalStateException("Expected one input IODescriptor. Found " + inputDescriptors.length);
-        }
-        return inputDescriptor;
-    }
 
     protected ThinDescriptor getThinDescriptor(IODescriptor inputDescriptor) {
         ThinDescriptor[] tds = getHttpServiceDescriptor().getThinDescriptors();
@@ -155,89 +84,6 @@ public abstract class AbstractServiceStep extends AbstractStep {
             throw new IllegalStateException("Expected single ThinDescriptor but found " + tds.length);
         }
         return td;
-    }
-
-    protected void handleInputs(
-            CamelContext camelContext,
-            DefaultServiceDescriptor serviceDescriptor,
-            VariableManager varman,
-            ContainerRunner runner) throws Exception {
-        doHandleInputs(camelContext, serviceDescriptor, varman, runner);
-    }
-
-    protected void doHandleInputs(
-            CamelContext camelContext,
-            DefaultServiceDescriptor serviceDescriptor,
-            VariableManager varman,
-            ContainerRunner runner) throws Exception {
-        IODescriptor[] inputDescriptors = serviceDescriptor.resolveInputIODescriptors();
-        if (inputDescriptors != null) {
-            LOG.info("Handling " + inputDescriptors.length + " inputs");
-            for (IODescriptor d : inputDescriptors) {
-                LOG.info("Writing input for " + d.getName() + " " + d.getMediaType());
-                handleInput(camelContext, serviceDescriptor, varman, runner, d);
-            }
-        }
-    }
-
-    protected <P,Q> void handleInput(
-            CamelContext camelContext,
-            DefaultServiceDescriptor serviceDescriptor,
-            VariableManager varman,
-            ContainerRunner runner,
-            IODescriptor<P,Q> ioDescriptor) throws Exception {
-        doHandleInput(camelContext, serviceDescriptor, varman, runner, ioDescriptor);
-    }
-
-    protected <P,Q> void doHandleInput(
-            CamelContext camelContext,
-            DefaultServiceDescriptor serviceDescriptor,
-            VariableManager varman,
-            ContainerRunner runner,
-            IODescriptor<P,Q> ioDescriptor) throws Exception {
-        P value = fetchMappedInput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), ioDescriptor.getSecondaryType(), varman, true);
-        File dir = runner.getHostWorkDir();
-        FilesystemWriteContext writeContext = new FilesystemWriteContext(dir, ioDescriptor.getName());
-        varman.putValue(ioDescriptor.getPrimaryType(), value, writeContext);
-    }
-
-    protected <P,Q> void handleOutputs(CamelContext camelContext, DefaultServiceDescriptor serviceDescriptor, VariableManager varman, ContainerRunner runner) throws Exception {
-        doHandleOutputs(camelContext, serviceDescriptor, varman, runner);
-    }
-
-    protected <P,Q> void doHandleOutputs(
-            CamelContext camelContext,
-            DefaultServiceDescriptor serviceDescriptor,
-            VariableManager varman,
-            ContainerRunner runner) throws Exception {
-
-        IODescriptor[] outputDescriptors = serviceDescriptor.resolveOutputIODescriptors();
-        if (outputDescriptors != null) {
-            LOG.info("Handling " + outputDescriptors.length + " outputs");
-            for (IODescriptor d : outputDescriptors) {
-                handleOutput(camelContext, serviceDescriptor, varman, runner, d);
-            }
-        }
-    }
-
-    protected <P,Q> void handleOutput(
-            CamelContext camelContext,
-            DefaultServiceDescriptor serviceDescriptor,
-            VariableManager varman,
-            ContainerRunner runner,
-            IODescriptor<P,Q> ioDescriptor) throws Exception {
-        doHandleOutput(camelContext, serviceDescriptor, varman, runner, ioDescriptor);
-    }
-    protected <P,Q> void doHandleOutput(
-            CamelContext camelContext,
-            DefaultServiceDescriptor serviceDescriptor,
-            VariableManager varman,
-            ContainerRunner runner,
-            IODescriptor<P,Q> ioDescriptor) throws Exception {
-
-        FilesystemReadContext readContext = new FilesystemReadContext(runner.getHostWorkDir(), ioDescriptor.getName());
-        P value = varman.getValue(ioDescriptor.getPrimaryType(), ioDescriptor.getSecondaryType(), readContext);
-        createMappedOutput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), value, varman);
     }
 
 
@@ -332,5 +178,34 @@ public abstract class AbstractServiceStep extends AbstractStep {
             doHandleOutput(camelContext, serviceDescriptor, varman, runner, ioDescriptor);
         }
     }
+
+    /** Handle thin execution where there is a single input and single output dataset
+     *
+     * @param varman
+     * @param context
+     * @throws Exception
+     */
+    protected void doExecuteThinDataset(VariableManager varman, CamelContext context) throws Exception {
+        updateStatus(MSG_PREPARING_INPUT);
+
+        Dataset inputDataset = fetchMappedInput(StepDefinitionConstants.VARIABLE_INPUT_DATASET, Dataset.class, varman);
+
+        IODescriptor inputDescriptor = getSingleInputDescriptor();
+        ThinDescriptor td = getThinDescriptor(inputDescriptor);
+        if (td == null) {
+            throw new IllegalStateException("No ThinDescriptor was provided of could be inferred");
+        }
+        ThinDatasetWrapper thinWrapper = DatasetUtils.createThinDatasetWrapper(td, inputDescriptor.getSecondaryType(), options);
+        Dataset thinDataset = thinWrapper.prepareInput(inputDataset);
+
+        Map<String,Object> results = executeWithData(Collections.singletonMap(StepDefinitionConstants.VARIABLE_INPUT_DATASET, thinDataset), context);
+        Dataset responseResults = getSingleDatasetFromMap(results);
+        Dataset resultDataset = thinWrapper.generateOutput(responseResults);
+
+        createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, resultDataset, varman);
+        statusMessage = generateStatusMessage(inputDataset.getSize(), resultDataset.getSize(), -1);
+        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(resultDataset.getMetadata()));
+    }
+
 
 }
