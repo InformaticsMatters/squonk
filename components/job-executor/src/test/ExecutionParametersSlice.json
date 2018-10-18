@@ -1,73 +1,7 @@
 {
-  "serviceDescriptor": {
-    "@class": "org.squonk.core.DefaultServiceDescriptor",
-    "serviceConfig": {
-      "id": "core.dataset.filter.slice.v1",
-      "name": "Dataset slice selector",
-      "description": "Generate a defined slice of the dataset",
-      "tags": [
-        "filter",
-        "slice",
-        "dataset"
-      ],
-      "icon": "icons/filter.png",
-      "inputDescriptors": [
-        {
-          "name": "input",
-          "mediaType": "application/x-squonk-dataset-basic+json",
-          "primaryType": "org.squonk.dataset.Dataset",
-          "secondaryType": "org.squonk.types.BasicObject"
-        }
-      ],
-      "outputDescriptors": [
-        {
-          "name": "output",
-          "mediaType": "application/x-squonk-dataset-basic+json",
-          "primaryType": "org.squonk.dataset.Dataset",
-          "secondaryType": "org.squonk.types.BasicObject"
-        }
-      ],
-      "optionDescriptors": [
-        {
-          "@class": "org.squonk.options.OptionDescriptor",
-          "typeDescriptor": {
-            "@class": "org.squonk.options.SimpleTypeDescriptor",
-            "type": "java.lang.Integer"
-          },
-          "key": "skip",
-          "label": "Number to skip",
-          "description": "The number of records to skip",
-          "visible": true,
-          "editable": true,
-          "minValues": 1,
-          "modes": [
-            "User"
-          ]
-        },
-        {
-          "@class": "org.squonk.options.OptionDescriptor",
-          "typeDescriptor": {
-            "@class": "org.squonk.options.SimpleTypeDescriptor",
-            "type": "java.lang.Integer"
-          },
-          "key": "count",
-          "label": "Number to include",
-          "description": "The number of records to include after skipping",
-          "visible": true,
-          "editable": true,
-          "minValues": 1,
-          "modes": [
-            "User"
-          ]
-        }
-      ],
-      "status": "ACTIVE",
-      "statusLastChecked": 1538647641362,
-      "executorClassName": "org.squonk.execution.steps.impl.DatasetSelectSliceStep"
-    }
-  },
-  "options":{
-    "skip":5,
-    "count":5
+  "serviceDescriptorId": "core.dataset.filter.slice.v1",
+  "options": {
+    "skip": 5,
+    "count": 5
   }
 }

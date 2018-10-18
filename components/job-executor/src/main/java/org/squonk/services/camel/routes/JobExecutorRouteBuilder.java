@@ -17,10 +17,12 @@
 package org.squonk.services.camel.routes;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.Message;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.ServiceDescriptorUtils;
 import org.squonk.execution.ExecutionParameters;
 import org.squonk.execution.JobManager;
 import org.squonk.io.SquonkDataSource;
@@ -51,6 +53,11 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
     private static final Logger LOG = Logger.getLogger(JobExecutorRouteBuilder.class.getName());
     private static final String ROUTE_STATS = "seda:post_stats";
 
+    protected int timerInterval = 5 * 60 * 1000;
+    protected int timerDelay =  15 * 1000;
+    protected boolean pollForServiceDescriptors = Boolean.valueOf(
+            IOUtils.getConfiguration("SQUONK_JOBEXECUTOR_POLL_FOR_SERVICE_DESCRIPTORS", "false"));
+
     /**
      * Set this environment variable to 'true' to allow testing without authentication, in which
      * case the user 'nobody' is assumed.
@@ -71,6 +78,18 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
         if (jobManager != null) {
             jobManager.setCamelContext(getContext());
+        }
+
+        if (pollForServiceDescriptors && jobManager != null) {
+            from("timer:discoverServiceDescriptors?period=" + timerInterval + "&delay=" + timerDelay)
+                    .log(LoggingLevel.WARN, "Polling for service descriptors")
+                    .to("http4://coreservices:8080/coreservices/rest/v1/services/descriptors")
+                    .process((exch) -> {
+                        String resp = exch.getIn().getBody(String.class);
+                        List<ServiceDescriptor> sds = ServiceDescriptorUtils.readJsonList(resp);
+                        LOG.fine("Discovered " + sds.size() + " service descriptors");
+                        jobManager.putServiceDescriptors(sds);
+                    });
         }
 
         restConfiguration().component("servlet").host("0.0.0.0");
@@ -219,8 +238,6 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
         String body = message.getBody(String.class);
         ExecutionParameters params = JsonHandler.getInstance().objectFromJson(body, ExecutionParameters.class);
-        ServiceDescriptor serviceDescriptor = params.getServiceDescriptor();
-        Map<String, Object> options = params.getOptions();
         Map<String, InputStream> inputs = new HashMap<>();
         String username = fetchUsername(message);
         for (Map.Entry<String, DataHandler> e : message.getAttachments().entrySet()) {
@@ -229,7 +246,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
             inputs.put(name, input);
             LOG.fine("Added input " + name);
         }
-        return jobManager.executeAsync(username, serviceDescriptor, options, inputs);
+        return jobManager.executeAsync(username, params, inputs);
     }
 
 

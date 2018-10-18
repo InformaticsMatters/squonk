@@ -16,9 +16,8 @@
 
 package org.squonk.core;
 
-import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
@@ -27,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -179,6 +177,21 @@ public class ServiceDescriptorUtils {
 
     public static <T> T readJson(String json, Class<T> cls) throws IOException {
         return jsonMapper.readValue(json, cls);
+    }
+
+    /** Read JSON containing an array of service descriptors into a List&lt;ServiceDescriptor&gt;
+     *
+     * @param json
+     * @return
+     */
+    public static List<ServiceDescriptor> readJsonList(InputStream json) throws IOException {
+        List<ServiceDescriptor> sds = JsonHandler.getInstance().objectFromJson(json, new TypeReference<List<ServiceDescriptor>>() {});
+        return sds;
+    }
+
+    public static List<ServiceDescriptor> readJsonList(String json) throws IOException {
+        List<ServiceDescriptor> sds = JsonHandler.getInstance().objectFromJson(json, new TypeReference<List<ServiceDescriptor>>() {});
+        return sds;
     }
 
     private static void completeNextflowServiceDescriptor(

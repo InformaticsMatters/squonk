@@ -17,6 +17,7 @@ package org.squonk.execution;
 
 import org.apache.camel.CamelContext;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.ServiceDescriptorUtils;
 import org.squonk.core.client.JobStatusRestClient;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.SquonkDataSource;
@@ -56,10 +57,53 @@ public class JobManager implements ExecutorCallback {
 
     protected boolean sendStatus = Boolean.valueOf(
             IOUtils.getConfiguration("SQUONK_JOBEXECUTOR_SEND_STATUS_UPDATES", "true"));
+    private boolean loadInitialServiceDescriptors = Boolean.valueOf(
+            IOUtils.getConfiguration("SQUONK_JOBEXECUTOR_LOAD_INITIAL_SERVICE_DESCRIPTORS", "true"));
+    private boolean loadTestServiceDescriptors = Boolean.valueOf(
+            IOUtils.getConfiguration("SQUONK_JOBEXECUTOR_LOAD_TEST_SERVICE_DESCRIPTORS", "false"));
 
 
     private final Map<String, ExecutionData> executionDataMap = new LinkedHashMap<>();
 
+    private final Map<String,ServiceDescriptor> serviceDescriptors = new HashMap<>();
+
+
+
+    public JobManager() {
+        initServiceDescriptors();
+    }
+
+    public JobManager(boolean loadInitialServiceDescriptors, boolean loadTestServiceDescriptors) {
+        this.loadInitialServiceDescriptors = loadInitialServiceDescriptors;
+        this.loadTestServiceDescriptors = loadTestServiceDescriptors;
+        initServiceDescriptors();
+    }
+
+    private void initServiceDescriptors() {
+        if (loadInitialServiceDescriptors) {
+            LOG.info("Loading initial service descriptors");
+            loadServiceDescriptors("service-descriptors-live.json");
+        }
+        if (loadTestServiceDescriptors) {
+            LOG.info("Loading test service descriptors");
+            loadServiceDescriptors("service-descriptors-test.json");
+        }
+    }
+
+    private void loadServiceDescriptors(String resource) {
+        try {
+            InputStream json = this.getClass().getResourceAsStream(resource);
+            if (json == null) {
+                LOG.severe("Service descriptors not found at " + resource);
+            } else {
+                List<ServiceDescriptor> sds = ServiceDescriptorUtils.readJsonList(json);
+                LOG.fine("Discovered " + sds.size() + " service descriptors");
+                putServiceDescriptors(sds);
+            }
+        } catch (IOException ioe) {
+            LOG.log(Level.SEVERE, "Failed to load service descriptors", ioe);
+        }
+    }
 
     public CamelContext getCamelContext() {
         return camelContext;
@@ -67,6 +111,14 @@ public class JobManager implements ExecutorCallback {
 
     public void setCamelContext(CamelContext camelContext) {
         this.camelContext = camelContext;
+    }
+
+    public void putServiceDescriptors(List<ServiceDescriptor> sds) {
+        sds.forEach((sd) -> {
+            LOG.fine("Adding service descriptor " + sd.getId());
+            serviceDescriptors.put(sd.getId(), sd);
+        });
+        LOG.info("Added " + sds.size() + " ServiceDescriptors. Total is now " + serviceDescriptors.size());
     }
 
     /** Lookup the ExecutionData instance for the job with this ID and check that it belongs to the username
@@ -87,8 +139,7 @@ public class JobManager implements ExecutorCallback {
      * YOu then use that ID to check the status, and when the status changes to @{link JobStatus.Status.RESULTS_READY}
      * you can then fetch the results and then cleanup.
      *
-     * @param serviceDescriptor
-     * @param options
+     * @param params
      * @param inputs
      * @param username
      * @return
@@ -96,22 +147,25 @@ public class JobManager implements ExecutorCallback {
      */
     public JobStatus executeAsync(
             String username,
-            ServiceDescriptor serviceDescriptor,
-            Map<String, Object> options,
+            ExecutionParameters params,
             Map<String, InputStream> inputs) throws Exception {
 
-        return execute(username, serviceDescriptor, options, inputs, true);
+        return execute(username, params, inputs, true);
     }
 
     private JobStatus execute(
             String username,
-            ServiceDescriptor serviceDescriptor,
-            Map<String, Object> options,
+            ExecutionParameters params,
             Map<String, InputStream> inputs,
             boolean async) throws Exception {
 
+        Map<String,Object> options = params.getOptions();
         if (options == null) {
             options = Collections.emptyMap();
+        }
+        ServiceDescriptor serviceDescriptor = serviceDescriptors.get(params.getServiceDescriptorId());
+        if (serviceDescriptor == null) {
+            throw new IllegalStateException("No service descriptor found for " + params.getServiceDescriptorId());
         }
 
         ExternalJobDefinition jobDefinition = new ExternalJobDefinition(serviceDescriptor, options);
@@ -121,7 +175,6 @@ public class JobManager implements ExecutorCallback {
         LOG.info("Handling " + data.size() + " inputs");
 
         ExternalExecutor executor = new ExternalExecutor(jobDefinition, data, options, serviceDescriptor, camelContext, this);
-        //executor.configure(jobDefinition.getJobId(), options, serviceDescriptor);
         LOG.fine("Executor job ID is " + executor.getJobId());
         JobStatus jobStatus = createJob(jobDefinition, username, 0);
         ExecutionData executionData = new ExecutionData();

@@ -100,6 +100,10 @@ public class JsonHandler {
         return mapper.readValue(s, type);
     }
 
+    public <T> T objectFromJson(InputStream is, TypeReference<T> type) throws IOException {
+        return mapper.readValue(is, type);
+    }
+
     public <T> T objectFromJson(String s, TypeReference<T> type) throws IOException {
         return mapper.readValue(s, type);
     }

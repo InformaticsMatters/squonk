@@ -1,25 +1,5 @@
 {
-  "serviceDescriptor": {
-    "@class":"org.squonk.core.DockerServiceDescriptor",
-    "serviceConfig":{
-      "id":"simple_copy",
-      "name":"simple copy",
-      "inputDescriptors":[{
-        "primaryType": "org.squonk.dataset.Dataset",
-        "secondaryType": "org.squonk.types.MoleculeObject",
-        "mediaType": "application/x-squonk-dataset-molecule+json",
-        "name": "input"
-      }],
-      "outputDescriptors":[{
-        "primaryType": "org.squonk.dataset.Dataset",
-        "secondaryType": "org.squonk.types.MoleculeObject",
-        "mediaType": "application/x-squonk-dataset-molecule+json",
-        "name": "output"
-      }]
-    },
-    "imageName":"busybox",
-    "command":"cp input.data.gz output.data.gz && cp input.metadata output.metadata"
-  },
+  "serviceDescriptorId": "test.docker.copydataset",
   "options":{
     "string_option":"string value",
     "int_option":999,

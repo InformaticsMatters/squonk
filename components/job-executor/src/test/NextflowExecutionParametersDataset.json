@@ -1,29 +1,5 @@
 {
-  "serviceDescriptor": {
-    "@class":"org.squonk.core.NextflowServiceDescriptor",
-    "serviceConfig":{
-      "id":"simple_copy",
-      "name":"simple copy",
-      "description": "a description",
-      "tags": [
-        "tag1"
-      ],
-      "inputDescriptors":[{
-        "primaryType": "org.squonk.dataset.Dataset",
-        "secondaryType": "org.squonk.types.MoleculeObject",
-        "mediaType": "application/x-squonk-dataset-molecule+json",
-        "name": "input"
-      }],
-      "outputDescriptors":[{
-        "primaryType": "org.squonk.dataset.Dataset",
-        "secondaryType": "org.squonk.types.MoleculeObject",
-        "mediaType": "application/x-squonk-dataset-molecule+json",
-        "name": "output"
-      }]
-    },
-    "nextflowParams": "-with-trace",
-    "nextflowFile": "data = file('input.data.gz')\nmeta = file('input.metadata')\n\nprocess copy {\n  publishDir '.', mode: 'move'\n\n  input:\n  file data\n  file meta\n\n  output:\n  file 'output.data.gz'\n  file 'output.metadata'\n\n  \"\"\"\n  cp $data output.data.gz\n  cp $meta output.metadata\n  \"\"\"\n}\n"
-  },
+  "serviceDescriptorId": "test.nextflow.copydataset",
   "options":{
     "string_option":"string value",
     "int_option":999,

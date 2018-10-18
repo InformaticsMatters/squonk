@@ -45,20 +45,20 @@ The result is some JSON that includes the job ID, and hopefully says that the jo
 You can then monitor the job's status like this:
 
 ```
-curl -H "SquonkUsername: user1" http://172.20.0.2:8080/jobexecutor/rest/v1/jobs/<job-id>/status
+curl -H "SquonkUsername: user1" http://172.20.0.2:8080/jobexecutor/rest/v1/jobs/<job-id>/status/
 ```
 
 Substitute in your job ID. 
 Once the status is `RESULTS_READY` you can retrieve the results using:
 
 ```
-curl -H "SquonkUsername: user1" http://172.20.0.2:8080/jobexecutor/rest/v1/jobs/<job-id>/results
+curl -H "SquonkUsername: user1" http://172.20.0.2:8080/jobexecutor/rest/v1/jobs/<job-id>/results/
 ```
 
 Once you have the results delete the job using:
 
 ```
-curl -X DELETE -H "SquonkUsername: user1" http://172.20.0.2:8080/jobexecutor/rest/v1/jobs/<job-id>
+curl -X DELETE -H "SquonkUsername: user1" http://172.20.0.2:8080/jobexecutor/rest/v1/jobs/<job-id>/
 ```
 
 ## Authentication
@@ -168,13 +168,54 @@ curl -kL --post301\
 
 See [here](https://curl.haxx.se/docs/manpage.html#--post301) for more info on those options.
 
+## Generating the ExecutionParameters
+
+The ExecutionParameters is the key to defining the service to execute. This is a simple JSON file that contains:
+
+1. The ID of the service to execute. This is the `id` field of the service descriptor. A static list of 
+service descriptors can be found in the file 
+`components/core-services-exec/src/main/resources/org/squonk/execution/service-descriptors-live.json`.
+This file should contain a reasonably complete list of service descriptors. At runtime the actual ones 
+present may differ, and can be obtained from the `coreservices` service, with an endpoint such as
+`http://coreservices:8080/coreservices/rest/v1/services/descriptors`.
+2. A list of user specified options for execution, which must match the definitions found in the service 
+descriptor.
+
+As an example here is a definition of the ExecutionParameters for executing Butina clustering.
+
+```json
+{
+  "serviceDescriptorId": "pipelines.rdkit.cluster.butina",
+  "options": {
+    "arg.threshold": 0.6,
+    "arg.descriptor": "morgan2",
+    "arg.metric": "tanimoto"
+  }
+}
+```
+
+This tells the executor to execute the service described by the service descriptor with an ID of
+`pipelines.rdkit.cluster.butina` and use a clustering threshold value of 0.6 and to use tanimoto 
+similarity with morgan fingerprints of radius 2.
+
+This service can then be invoked with a HTTP POST operation like this:
+
+```
+curl -X POST \
+  -F "ExecutionParameters=@ExecutionParameters.json;type=application/json;filename=ExecutionParameters.json"\
+  -F "input_data=@filename.data.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
+  -F "input_metadata=@filename.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
+  -H "Content-Type: multipart/mixed"\
+  -H "SquonkUsername: user1"\
+  http://server/jobexecutor/rest/v1/jobs/
+```
+The execution parameters are in the file `ExecutionParameters.json` and the input data in the files 
+`filename.data.gz` and filename.metadata
+
+
 ## THIS IS WORK IN PROGRESS
 
 The following need attention:
 
 1. Tomcat currently runs as the root user as executing jobs needs access to the docker socket.
-1. Docker services (those defined with a DockerServiceDescriptor or NextflowServiceDescriptor) and internal services are supported.
-HTTP services (mostly for property prediction with ChemAxon and RDKit) are not yet supported.
-1. Support for accessing 'thin' services needs to be added.
 1. Handle type conversions - accept a SDFile and send it to a service that handles Dataset
-1. Allow to specify just the service descriptor ID not the entire service descriptor in the job description

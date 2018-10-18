@@ -4,17 +4,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import org.squonk.core.ServiceDescriptor;
-
 import java.io.Serializable;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ExecutionParameters implements Serializable {
 
-    /** The service descriptor defining what to execute
-     */
-    private final ServiceDescriptor serviceDescriptor;
+    private final String serviceDescriptorId;
 
     /** User specified options for the execution of the cell
      */
@@ -23,15 +19,14 @@ public class ExecutionParameters implements Serializable {
 
 
     public ExecutionParameters(
-            @JsonProperty("serviceDescriptor") ServiceDescriptor serviceDescriptor,
+            @JsonProperty("serviceDescriptorId") String serviceDescriptorId,
             @JsonProperty("options") Map<String, Object> options) {
-        this.serviceDescriptor = serviceDescriptor;
+        this.serviceDescriptorId = serviceDescriptorId;
         this.options = options;
-
     }
 
-    public ServiceDescriptor getServiceDescriptor() {
-        return serviceDescriptor;
+    public String getServiceDescriptorId() {
+        return serviceDescriptorId;
     }
 
     public Map<String, Object> getOptions() {

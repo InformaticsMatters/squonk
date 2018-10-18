@@ -99,7 +99,8 @@ class JobManagerSpec extends Specification {
 
         def data = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
         def iod = new IODescriptor("input", CommonMimeTypes.MIME_TYPE_MDL_SDF, SDFile.class)
-        def jobManager = new JobManager()
+        def jobManager = new JobManager(false, true)
+        jobManager.putServiceDescriptors(Collections.singletonList(createSdfServiceDescriptor()))
 
         when:
         def results = jobManager.createObjectsFromInputStreams([(iod.name + '_data'): data], [iod] as IODescriptor[])
@@ -120,7 +121,8 @@ class JobManagerSpec extends Specification {
         def data = new FileInputStream("../../data/testfiles/Kinase_inhibs.json.gz")
         def meta = new FileInputStream("../../data/testfiles/Kinase_inhibs.metadata")
         def iod = new IODescriptor("input", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON, Dataset.class, MoleculeObject.class)
-        def jobManager = new JobManager()
+        def jobManager = new JobManager(false, true)
+        jobManager.putServiceDescriptors(Collections.singletonList(createDatasetServiceDescriptor()))
 
         when:
         def results = jobManager.createObjectsFromInputStreams([(iod.name + '_data'): data, (iod.name + '_metadata'): meta], [iod] as IODescriptor[])
@@ -154,11 +156,13 @@ class JobManagerSpec extends Specification {
         // create the input
         def source = new File("../../data/testfiles/Kinase_inhibs.sdf.gz")
         def sd = createSdfServiceDescriptor()
-        JobManager mgr = new JobManager()
+        JobManager mgr = new JobManager(false, true)
+        mgr.putServiceDescriptors(Collections.singletonList(createSdfServiceDescriptor()))
+        ExecutionParameters params = new ExecutionParameters(sd.getId(), [:])
 
         when:
 
-        def jobStatus = mgr.executeAsync(USER, sd, [:], ["input": new FileInputStream(source)])
+        def jobStatus = mgr.executeAsync(USER, params, ["input": new FileInputStream(source)])
         jobStatus = waitTillResultsReady(mgr, jobStatus)
 
         then:
@@ -181,11 +185,12 @@ class JobManagerSpec extends Specification {
         def source2 = new File("../../data/testfiles/Kinase_inhibs.metadata").bytes
         def sd = createDatasetServiceDescriptor()
         println JsonHandler.getInstance().objectToJson(sd)
-        JobManager mgr = new JobManager()
-
+        JobManager mgr = new JobManager(false, true)
+        mgr.putServiceDescriptors(Collections.singletonList(createDatasetServiceDescriptor()))
+        ExecutionParameters params = new ExecutionParameters(sd.getId(), [:])
 
         when:
-        def jobStatus = mgr.executeAsync(USER, sd, [:], ["input_data": new ByteArrayInputStream(source1), "input_metadata": new ByteArrayInputStream(source2)])
+        def jobStatus = mgr.executeAsync(USER, params, ["input_data": new ByteArrayInputStream(source1), "input_metadata": new ByteArrayInputStream(source2)])
         jobStatus = waitTillResultsReady(mgr, jobStatus)
         def results = mgr.getJobResultsAsDataSources(USER, jobStatus.getJobId())
 
