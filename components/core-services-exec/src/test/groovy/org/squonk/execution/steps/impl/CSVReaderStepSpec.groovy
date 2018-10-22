@@ -53,7 +53,7 @@ field1\tfield2\tfield3
         InputStream is = new ByteArrayInputStream(CSV1.bytes)
         VariableManager varman = new VariableManager(null, 1, 1)
         String myFileName = "myfile.csv"
-        SquonkDataSource dataSource = new InputStreamDataSource(myFileName, CommonMimeTypes.MIME_TYPE_TEXT_CSV, is, false)
+        SquonkDataSource dataSource = new InputStreamDataSource("csv", myFileName, CommonMimeTypes.MIME_TYPE_TEXT_CSV, is, false)
 
         varman.putValue(
                 new VariableKey(producer, myFileName),
@@ -87,7 +87,7 @@ field1\tfield2\tfield3
         InputStream is = new ByteArrayInputStream(TAB1.bytes)
         VariableManager varman = new VariableManager(null, 1, 1);
         String myFileName = "myfile.tab"
-        SquonkDataSource dataSource = new InputStreamDataSource(myFileName, CommonMimeTypes.MIME_TYPE_TEXT_CSV, is, false)
+        SquonkDataSource dataSource = new InputStreamDataSource("tab", myFileName, CommonMimeTypes.MIME_TYPE_TEXT_CSV, is, false)
 
         varman.putValue(
                 new VariableKey(producer, myFileName),

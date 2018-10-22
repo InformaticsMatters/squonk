@@ -196,11 +196,11 @@ class JobManagerSpec extends Specification {
 
         then:
         results != null
-        results.size() == 2
-        results[0].name == 'output_data'
-        results[1].name == 'output_metadata'
-        results[0].inputStream.bytes.length > 0
-        results[1].inputStream.text.size() > 0
+        results.size() == 1
+        def outputs = results['output']
+        outputs.size() == 2
+        outputs[0].inputStream.text.size() > 0
+        outputs[1].inputStream.bytes.length > 0
 
         cleanup:
         mgr?.cleanupJob(USER, jobStatus?.getJobId())

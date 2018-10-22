@@ -23,8 +23,10 @@ import org.squonk.util.CommonMimeTypes;
  */
 public class PngImageFileHandler extends FileHandler<PngImageFile> {
 
+    private static final String ROLE_PNG = "png";
+
     public PngImageFileHandler() {
-        super(PngImageFile.class, CommonMimeTypes.MIME_TYPE_PNG, "png", false);
+        super(PngImageFile.class, CommonMimeTypes.MIME_TYPE_PNG, ROLE_PNG, false);
     }
 
 }

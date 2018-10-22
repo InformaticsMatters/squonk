@@ -38,7 +38,7 @@ class SDFReaderStepSpec extends Specification {
         SDFReaderStep step = new SDFReaderStep()
         String myFileName = "myfile.sdf.gz"
         FileInputStream is = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
-        SquonkDataSource dataSource = new InputStreamDataSource(myFileName, CommonMimeTypes.MIME_TYPE_MDL_SDF, is, true)
+        SquonkDataSource dataSource = new InputStreamDataSource("sdf", myFileName, CommonMimeTypes.MIME_TYPE_MDL_SDF, is, true)
         Long producer = 1
         step.configure(producer, "job1", [:],
                 [IODescriptors.createSDF(myFileName)] as IODescriptor[],

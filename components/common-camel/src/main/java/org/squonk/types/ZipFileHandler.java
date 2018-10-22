@@ -23,8 +23,10 @@ import org.squonk.util.CommonMimeTypes;
  */
 public class ZipFileHandler extends FileHandler<ZipFile> {
 
+    private static final String ROLE_ZIP = "zip";
+
     public ZipFileHandler() {
-        super(ZipFile.class, CommonMimeTypes.MIME_TYPE_ZIP_FILE, "zip", false);
+        super(ZipFile.class, CommonMimeTypes.MIME_TYPE_ZIP_FILE, ROLE_ZIP, false);
     }
 
 }

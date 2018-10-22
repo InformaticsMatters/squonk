@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 import org.apache.camel.CamelContext;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.QuoteMode;
+import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 
 /**
@@ -166,7 +167,7 @@ public class CSVReaderStep extends AbstractStep {
         if (input instanceof SquonkDataSource) {
             dataSource = (SquonkDataSource)input;
         } else if (input instanceof InputStream) {
-            dataSource = new InputStreamDataSource("input", "", (InputStream)input, null);
+            dataSource = new InputStreamDataSource(SquonkDataSource.ROLE_DEFAULT, null, CommonMimeTypes.MIME_TYPE_TEXT_CSV, (InputStream)input, null);
         } else {
             throw new IllegalArgumentException("Unsupported input type: " + input.getClass().getName());
         }

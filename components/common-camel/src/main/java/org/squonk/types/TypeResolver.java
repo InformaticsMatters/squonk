@@ -70,7 +70,6 @@ public class TypeResolver implements MimeTypeResolver {
         registerHttpHandler(PngImageFile.class, PngImageFileHandler.class);
 
         registerVariableHandler(Dataset.class, DatasetHandler.class);
-        registerVariableHandler(InputStream.class, InputStreamHandler.class);
         registerVariableHandler(SquonkDataSource.class, SquonkDataSourceHandler.class);
         registerVariableHandler(String.class, StringHandler.class);
         registerVariableHandler(CPSignTrainResult.class, CPSignTrainResultHandler.class);
@@ -153,7 +152,7 @@ public class TypeResolver implements MimeTypeResolver {
             }
 
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException("Unable to create variable handler from class " + type.getName() + " and generic type " + genericType);
+            throw new RuntimeException("Unable to create variable handler from class " + type.getName() + " and generic type " + genericType, e);
         }
     }
 

@@ -19,10 +19,7 @@ package org.squonk.execution.steps;
 import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.apache.camel.spi.TypeConverterRegistry;
-import org.squonk.core.DefaultServiceDescriptor;
-import org.squonk.core.HttpServiceDescriptor;
-import org.squonk.core.ServiceConfig;
-import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.*;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.ExecutableJob;
@@ -488,6 +485,15 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
             throw new IllegalStateException("Invalid service descriptor. Expected HttpServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
         }
         return (HttpServiceDescriptor)serviceDescriptor;
+    }
+
+    protected DockerServiceDescriptor getDockerServiceDescriptor() {
+        if (serviceDescriptor == null) {
+            throw new IllegalStateException("Service descriptor not found");
+        } else if (!(serviceDescriptor instanceof DockerServiceDescriptor)) {
+            throw new IllegalStateException("Invalid service descriptor. Expected DockerServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
+        }
+        return (DockerServiceDescriptor)serviceDescriptor;
     }
 
     protected String getHttpExecutionEndpoint() {

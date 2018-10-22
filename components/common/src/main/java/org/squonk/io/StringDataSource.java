@@ -25,8 +25,8 @@ public class StringDataSource extends SquonkDataSource {
 
     private final String string;
 
-    public StringDataSource(String name, String contentType, String string, Boolean gzipped) {
-        super(name, contentType, gzipped);
+    public StringDataSource(String role, String name, String contentType, String string, Boolean gzipped) {
+        super(role, name, contentType, gzipped);
         this.string = string;
     }
 

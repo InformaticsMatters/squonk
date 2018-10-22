@@ -93,7 +93,7 @@ class ZipFileHandlerSpec extends Specification {
         @Override
         SquonkDataSource readStreamValue(String mediaType, String extension, String key) throws Exception {
             def is = new ByteArrayInputStream(bytes)
-            return new InputStreamDataSource(null, mediaType, is, false)
+            return new InputStreamDataSource(SquonkDataSource.ROLE_DEFAULT, null, mediaType, is, false)
         }
     }
 }

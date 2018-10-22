@@ -29,6 +29,7 @@ import org.squonk.reader.SDFReader;
 import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.CommonMimeTypes;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,7 +102,7 @@ public class SDFReaderStep extends AbstractStep {
         if (input instanceof SquonkDataSource) {
             dataSource = (SquonkDataSource)input;
         } else if (input instanceof InputStream) {
-            dataSource = new InputStreamDataSource("input", "", (InputStream)input, null);
+            dataSource = new InputStreamDataSource(SquonkDataSource.ROLE_DEFAULT, null, CommonMimeTypes.MIME_TYPE_MDL_SDF, (InputStream)input, null);
         } else {
             throw new IllegalArgumentException("Unsupported input type: " + input.getClass().getName());
         }

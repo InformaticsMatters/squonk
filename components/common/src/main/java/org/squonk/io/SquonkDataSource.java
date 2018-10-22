@@ -30,25 +30,43 @@ public abstract class SquonkDataSource implements DataSource {
 
     private static final Logger LOG = Logger.getLogger(SquonkDataSource.class.getName());
 
+    public static final String ROLE_DEFAULT = "value";
+    public static final String NAME_RESPONSE_BODY = "response-body";
+
+    private String role;
     private String name;
     private final String contentType;
     private Boolean sourceGzipped;
     private boolean gzipContent = true;
 
-    protected SquonkDataSource(String name, String contentType, Boolean isSourceGzipped) {
-        this.name = name;
-        this.contentType = contentType;
+    protected SquonkDataSource(String role, String name, String contentType, Boolean isSourceGzipped) {
+        this(role, name, contentType);
         this.sourceGzipped = isSourceGzipped;
         if (isSourceGzipped != null) {
             gzipContent = isSourceGzipped;
         }
     }
 
-    protected SquonkDataSource(String name, String contentType) {
+    protected SquonkDataSource(String role, String name, String contentType) {
+        this.role = role;
         this.name = name;
         this.contentType = contentType;
     }
 
+    /** Get the role of this datasource. This mostly applies when multiple datasources are associated with a single
+     * variable where the role is used to distinguish them.
+     *
+     * @return
+     */
+    public String getRole() {
+        return role;
+    }
+
+    /** Get the name of this datasource. This may not always be specified, but in the case of a file it will be the name
+     * of the file.
+     *
+     * @return
+     */
     @Override
     public String getName() {
         return name;
@@ -110,7 +128,7 @@ public abstract class SquonkDataSource implements DataSource {
         InputStream is = getInputStream();
         String fname;
         if (baseName != null) {
-            fname = baseName + "." + getName();
+            fname = baseName + "." + getRole();
         } else {
             fname = getName();
         }
@@ -121,7 +139,7 @@ public abstract class SquonkDataSource implements DataSource {
         File f = new File(dir, fname);
         LOG.warning("Writing datasource " + getName() + " to file " + f.getPath());
         Files.copy(is, f.toPath());
-        FileDataSource fds = new FileDataSource(getName(), getContentType(), f, gzipContent);
+        FileDataSource fds = new FileDataSource(getRole(), getContentType(), f, gzipContent);
         return fds;
     }
 }

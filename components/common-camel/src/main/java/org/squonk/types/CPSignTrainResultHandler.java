@@ -17,6 +17,7 @@
 package org.squonk.types;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.squonk.api.VariableHandler;
 import org.squonk.http.RequestResponseExecutor;
 import org.squonk.io.SquonkDataSource;
 import org.squonk.types.io.JsonHandler;
@@ -26,6 +27,8 @@ import org.squonk.util.IOUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -79,6 +82,12 @@ public class CPSignTrainResultHandler extends DefaultHandler<CPSignTrainResult> 
         return convertFromJsonInputStream(
                 ds.getInputStream(),
                 false);
+    }
+
+    @Override
+    public List<SquonkDataSource> readDataSources(ReadContext context) throws Exception {
+        SquonkDataSource ds = context.readStreamValue("cpsign", null);
+        return Collections.singletonList(ds);
     }
 
     private InputStream convertToJsonInputStream(CPSignTrainResult result) throws JsonProcessingException {

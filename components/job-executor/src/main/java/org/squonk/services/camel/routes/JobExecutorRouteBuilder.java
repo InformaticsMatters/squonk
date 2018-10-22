@@ -277,15 +277,19 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
         }
     }
 
-    private void doHandleResults(Message message, String username, String jobId) throws IOException {
+    private void doHandleResults(Message message, String username, String jobId) throws Exception {
 
         // set the results as attachments to the message
-        List<SquonkDataSource> dataSources = jobManager.getJobResultsAsDataSources(username, jobId);
-        LOG.fine("Found " + dataSources.size() + " DataHandlers");
-        for (SquonkDataSource dataSource : dataSources) {
-            LOG.fine("Adding attachment " + dataSource.getName() + " of type " + dataSource.getContentType());
-            dataSource.materialize();
-            message.addAttachment(dataSource.getName(), new DataHandler(dataSource));
+        Map<String,List<SquonkDataSource>> outputs = jobManager.getJobResultsAsDataSources(username, jobId);
+        LOG.fine("Found " + outputs.size() + " outputs");
+
+        for (Map.Entry<String,List<SquonkDataSource>> e : outputs.entrySet()) {
+            for (SquonkDataSource dataSource : e.getValue()) {
+                String name = (outputs.size() == 1 ? dataSource.getName() : e.getKey() + "_" + dataSource.getName());
+                LOG.fine("Adding attachment " + name + " of type " + dataSource.getContentType());
+                //dataSource.materialize();
+                message.addAttachment(name, new DataHandler(dataSource));
+            }
         }
 
         // handle gzipping the response if requested to do so

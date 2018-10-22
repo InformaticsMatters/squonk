@@ -289,7 +289,7 @@ public class JobManager implements ExecutorCallback {
      * @param jobId
      * @return
      */
-    public Map<String,Object> getJobResultsAsObjects(String username, String jobId) throws IOException {
+    public Map<String,Object> getJobResultsAsObjects(String username, String jobId) throws Exception {
         ExecutionData executionData = findMyExecutionData(username, jobId);
         if (executionData != null) {
             return executionData.executor.getResultsAsObjects();
@@ -298,7 +298,7 @@ public class JobManager implements ExecutorCallback {
         }
     }
 
-    public List<SquonkDataSource> getJobResultsAsDataSources(String username, String jobId) throws IOException {
+    public Map<String,List<SquonkDataSource>> getJobResultsAsDataSources(String username, String jobId) throws Exception {
         ExecutionData executionData = findMyExecutionData(username, jobId);
         if (executionData != null) {
             return executionData.executor.getResultsAsDataSources();

@@ -28,8 +28,8 @@ public class InputStreamDataSource extends SquonkDataSource {
     private final InputStream inputStream;
     private byte[] materialised = null;
 
-    public InputStreamDataSource(String name, String contentType, InputStream inputStream, Boolean gzipped) {
-        super(name, contentType, gzipped);
+    public InputStreamDataSource(String role, String name, String contentType, InputStream inputStream, Boolean gzipped) {
+        super(role, name, contentType, gzipped);
         this.inputStream = inputStream;
     }
 

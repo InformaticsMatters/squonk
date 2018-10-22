@@ -38,8 +38,8 @@ public class FilesystemWriteContext extends AbstractFilesystemContext implements
     }
 
     @Override
-    public void writeTextValue(String value, String mediaType, String extension, String key) throws IOException {
-        File f = generateFile(extension, false);
+    public void writeTextValue(String value, String mediaType, String role, String key) throws IOException {
+        File f = generateFile(role, false);
         LOG.fine("Writing text to file " + f.getPath());
         try (FileWriter out = new FileWriter(f)) {
             out.append(value);
@@ -47,8 +47,8 @@ public class FilesystemWriteContext extends AbstractFilesystemContext implements
     }
 
     @Override
-    public void writeStreamValue(InputStream value, String mediaType, String extension, String key, boolean gzip) throws Exception {
-        File f = generateFile(extension, gzip);
+    public void writeStreamValue(InputStream value, String mediaType, String role, String key, boolean gzip) throws Exception {
+        File f = generateFile(role, gzip);
         LOG.log(Level.FINE, "Writing stream value. file: {0} gzip: {1}", new Object[] {f.getPath(), gzip});
         try (OutputStream out = new FileOutputStream(f)) {
             IOUtils.transfer(gzip ? IOUtils.getGzippedInputStream(value) : IOUtils.getGunzippedInputStream(value), out, 4096);

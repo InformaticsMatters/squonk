@@ -23,8 +23,8 @@ public class FileDataSource extends SquonkDataSource {
 
     private final File file;
 
-    public FileDataSource(String name, String contentType, File file, Boolean gzipped) {
-        super(name, contentType, gzipped);
+    public FileDataSource(String role, String contentType, File file, Boolean gzipped) {
+        super(role, file.getName(), contentType, gzipped);
         this.file = file;
     }
 

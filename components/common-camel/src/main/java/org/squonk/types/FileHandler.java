@@ -23,6 +23,8 @@ import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
 
 /** Generic handler for files that handle their data as an InputStream. Should cover files of any format.
@@ -72,7 +74,7 @@ abstract class FileHandler<T extends AbstractStreamType> extends DefaultHandler<
         InputStream is = executor.getResponseBody();
         if (is != null) {
             try {
-                SquonkDataSource ds = new InputStreamDataSource("", mediaType, is, null);
+                SquonkDataSource ds = new InputStreamDataSource(SquonkDataSource.ROLE_DEFAULT, SquonkDataSource.NAME_RESPONSE_BODY, mediaType, is, null);
                 ds.setGzipContent(!gunzip);
                 return create(ds);
             } catch (Exception e) {
@@ -92,4 +94,11 @@ abstract class FileHandler<T extends AbstractStreamType> extends DefaultHandler<
         SquonkDataSource ds = context.readStreamValue(mediaType, extension, null);
         return create(ds);
     }
+
+    @Override
+    public List<SquonkDataSource> readDataSources(ReadContext context) throws Exception {
+        SquonkDataSource ds = context.readStreamValue(mediaType, extension, null);
+        return Collections.singletonList(ds);
+    }
+
 }

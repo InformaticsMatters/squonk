@@ -236,7 +236,7 @@ public class VariableManager {
         }
 
         @Override
-        public SquonkDataSource readStreamValue(String mediaType, String extension, String key) throws Exception {
+        public SquonkDataSource readStreamValue(String mediaType, String role, String key) throws Exception {
             String storeKey = generateStreamKey(key);
             LOG.fine("Reading tmp value " + storeKey);
             byte[] bytes = tmpValues.get(storeKey);
@@ -244,7 +244,7 @@ public class VariableManager {
                 return null;
             }
             InputStream is = new ByteArrayInputStream(bytes);
-            return new InputStreamDataSource(variableName, mediaType, is, null);
+            return new InputStreamDataSource(role, variableName, mediaType, is, null);
         }
 
         @Override

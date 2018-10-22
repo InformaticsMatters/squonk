@@ -22,12 +22,15 @@ import org.squonk.dataset.DatasetMetadata;
 import org.squonk.http.RequestResponseExecutor;
 import org.squonk.io.InputStreamDataSource;
 import org.squonk.io.SquonkDataSource;
+import org.squonk.io.StringDataSource;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.ServiceConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -71,7 +74,7 @@ public class DatasetHandler<T extends BasicObject> extends DefaultHandler<Datase
             return null;
         }
         String mediaType = TypeDescriptor.resolveMediaType(Dataset.class, genericType);
-        SquonkDataSource ds = new InputStreamDataSource(Dataset.DATASET_FILE_EXT, mediaType, is, null);
+        SquonkDataSource ds = new InputStreamDataSource(Dataset.ROLE_DATASET, SquonkDataSource.NAME_RESPONSE_BODY, mediaType, is, null);
         ds.setGzipContent(!gunzip);
         return create(json, ds);
     }
@@ -117,7 +120,7 @@ public class DatasetHandler<T extends BasicObject> extends DefaultHandler<Datase
             s = generator.getAsStream();
             data = generator.marshalData(s, false);
             is = data.getInputStream();
-            context.writeStreamValue(is, mediaType, Dataset.DATASET_FILE_EXT,null, true);
+            context.writeStreamValue(is, mediaType, Dataset.ROLE_DATASET,null, true);
             try {
                 data.getFuture().get();
             } catch (ExecutionException ex) { // reading Stream failed?
@@ -137,18 +140,32 @@ public class DatasetHandler<T extends BasicObject> extends DefaultHandler<Datase
 
         DatasetMetadata md = generator.getDatasetMetadata();
         String json = JsonHandler.getInstance().objectToJson(md);
-        context.writeTextValue(json, CommonMimeTypes.MIME_TYPE_DATASET_METADATA, Dataset.METADATA_FILE_EXT);
+        context.writeTextValue(json, CommonMimeTypes.MIME_TYPE_DATASET_METADATA, Dataset.ROLE_METADATA);
     }
 
     @Override
     public Dataset<T> readVariable(ReadContext context) throws Exception {
 
-        String json = context.readTextValue(CommonMimeTypes.MIME_TYPE_DATASET_METADATA, Dataset.METADATA_FILE_EXT);
+        String json = context.readTextValue(CommonMimeTypes.MIME_TYPE_DATASET_METADATA, Dataset.ROLE_METADATA);
         DatasetMetadata<T> meta = createMetadata(json);
         String mediaType = resolveContentMediaType(meta.getType());
-        SquonkDataSource data = context.readStreamValue(mediaType, Dataset.DATASET_FILE_EXT);
+        SquonkDataSource data = context.readStreamValue(mediaType, Dataset.ROLE_DATASET);
         Dataset<T> result = new Dataset<>(data, meta);
         return result;
+    }
+
+    @Override
+    public List<SquonkDataSource> readDataSources(ReadContext context) throws Exception {
+        String json = context.readTextValue(CommonMimeTypes.MIME_TYPE_DATASET_METADATA, Dataset.ROLE_METADATA);
+        // we have to parse out the dataset type from the metadata
+        DatasetMetadata<T> meta = createMetadata(json);
+        String mediaType = resolveContentMediaType(meta.getType());
+        SquonkDataSource metaDs = new StringDataSource(Dataset.ROLE_METADATA, null, CommonMimeTypes.MIME_TYPE_DATASET_METADATA, json, false);
+        SquonkDataSource dataDs = context.readStreamValue(mediaType, Dataset.ROLE_DATASET);
+        List<SquonkDataSource> list = new ArrayList<>();
+        list.add(metaDs);
+        list.add(dataDs);
+        return list;
     }
 
     private DatasetMetadata createMetadata(String json) throws IOException {
@@ -175,18 +192,29 @@ public class DatasetHandler<T extends BasicObject> extends DefaultHandler<Datase
     }
 
     @Override
-    protected Dataset<T> createMultiple(Map<String,SquonkDataSource> inputs) throws Exception {
+    public Dataset<T> create(List<SquonkDataSource> inputs) throws Exception {
 
-        SquonkDataSource data = inputs.get(Dataset.DATASET_FILE_EXT);
-        data.setGzipContent(true);
-        SquonkDataSource meta = inputs.get(Dataset.METADATA_FILE_EXT);
-        meta.setGzipContent(false);
+
+        SquonkDataSource data = null;
+        SquonkDataSource meta = null;
+        for (SquonkDataSource input : inputs) {
+            if (Dataset.ROLE_DATASET.equalsIgnoreCase(input.getRole())) {
+                data = input;
+            }
+            if (Dataset.ROLE_METADATA.equalsIgnoreCase(input.getRole())) {
+                meta = input;
+            }
+        }
+
+
         if (data == null) {
             throw new IllegalStateException("InputStream for data not present");
         }
+        data.setGzipContent(true);
         if (meta == null) {
             return new Dataset<T>(getGenericType(), data);
         } else {
+            meta.setGzipContent(false);
             DatasetMetadata<T> datasetMetadata = JsonHandler.getInstance().objectFromJson(meta.getInputStream(), DatasetMetadata.class);
             return new Dataset<T>(data, datasetMetadata);
         }
@@ -194,8 +222,8 @@ public class DatasetHandler<T extends BasicObject> extends DefaultHandler<Datase
 
     @Override
     protected Dataset<T> createMultiple(String mediaType, Class genericType, Map<String, InputStream> inputs) throws IOException {
-        InputStream data = inputs.get(Dataset.DATASET_FILE_EXT);
-        InputStream meta = inputs.get(Dataset.METADATA_FILE_EXT);
+        InputStream data = inputs.get(Dataset.ROLE_DATASET);
+        InputStream meta = inputs.get(Dataset.ROLE_METADATA);
         if (data == null || meta == null) {
             throw new IllegalStateException("Inputs for data and metadata must be defined");
         }

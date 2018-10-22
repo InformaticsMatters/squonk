@@ -40,8 +40,8 @@ public class FilesystemReadContext extends AbstractFilesystemContext implements 
     }
 
     @Override
-    public String readTextValue(String mediaType, String extension, String key) throws IOException {
-        File f = generateFile(extension, false);
+    public String readTextValue(String mediaType, String role, String key) throws IOException {
+        File f = generateFile(role, false);
         LOG.fine("Reading text file " + f.getPath());
         if (f.exists()) {
             StringBuilder b = new StringBuilder();
@@ -55,12 +55,12 @@ public class FilesystemReadContext extends AbstractFilesystemContext implements 
     }
 
     @Override
-    public SquonkDataSource readStreamValue(String mediaType, String extension, String key) throws Exception {
-        File f = findFile(extension);
+    public SquonkDataSource readStreamValue(String mediaType, String role, String key) throws Exception {
+        File f = findFile(role);
         if (f != null) {
-            LOG.warning("Reading file " + f.getName());
+            LOG.info("Reading file " + f.getName());
             boolean gzipped = f.getName().toLowerCase().endsWith(".gz");
-            return new FileDataSource(f.getName(), mediaType, f, gzipped);
+            return new FileDataSource(role, mediaType, f, gzipped);
         } else {
             return null;
         }
