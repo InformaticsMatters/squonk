@@ -27,6 +27,10 @@ and for ChemCentral: -
 
     ansible-playbook playbooks/squonk-chemcentral/undeploy.yaml
 
+and for the infrastructure: -
+
+    ansible-playbook playbooks/squonk-infra/undeploy.yaml
+
 ## Prerequisites
 Before running the playbook: -
 
@@ -40,4 +44,5 @@ Before running the playbook: -
     and you have run `source setenv.sh` using it.
 
 If using NFS, it is correctly configured with appropriate
-disk provisioning ready for each PV that expects a volume.
+disk provisioning ready for each PV that expects a volume -
+the Ansible playbooks do not setup NFS.
