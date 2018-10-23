@@ -4,6 +4,10 @@
 # Use this  play to clean-up the loader
 # so that you can run another with the same identity.
 
+- name: Login (admin)
+  shell: oc login {{ oc_master_hostname }} -u admin -p {{ oc_admin_password }}
+  changed_when: False
+
 - name: Move to Squonk Project
   shell: oc project {{ oc_project }}
   changed_when: False
