@@ -27,7 +27,7 @@
     -p APP_NAMESPACE={{ oc_project }}
     -p SEARCH_IMAGE_TAG={{ oc_squonk_image_tag }}
     | oc create -f -
-  when: not dc_result.stdout | regex_search('^chemcentral-search\s', multiline=True)
+  when: not dc_result.stdout | regex_search('^db-chemcentral\s', multiline=True)
 
 # Wait for running pods...
 
