@@ -3,7 +3,7 @@
 # We do a few things in the infrastructure project first.
 
 - name: Login as Admin
-  shell: oc login {{ oc_master_hostname }} -u admin -p {{ oc_admin_password }}
+  shell: oc login {{ oc_master_hostname }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
 - name: Move to Squonk Infrastructure Project

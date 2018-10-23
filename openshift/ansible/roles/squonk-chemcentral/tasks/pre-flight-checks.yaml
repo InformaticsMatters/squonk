@@ -8,7 +8,7 @@
 # and is there a squonk project?
 
 - name: Login (admin)
-  shell: oc login {{ oc_master_hostname }} -u admin -p {{ oc_admin_password }}
+  shell: oc login {{ oc_master_hostname }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
 # Check the infrastructure project exists...
