@@ -6,23 +6,32 @@
   shell: oc project {{ oc_infra_project }}
   changed_when: False
 
-- name: Check ChemCemtral Deployment
+- name: Check ChemCentral Deployment
   shell: oc get dc
   register: dc_result
   changed_when: False
 
-- name: Create ChemCemtral Deployment
+- name: Create ChemCentral Database
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral.yaml
+    -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-db.yaml
     -p DB_NAMESPACE={{ oc_infra_project }}
     -p APP_NAMESPACE={{ oc_project }}
     | oc create -f -
   when: not dc_result.stdout | regex_search('^db-chemcentral\s', multiline=True)
 
+- name: Create ChemCentral Search
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-search.yaml
+    -p APP_NAMESPACE={{ oc_project }}
+    -p SEARCH_IMAGE_TAG={{ oc_squonk_image_tag }}
+    | oc create -f -
+  when: not dc_result.stdout | regex_search('^chemcentral-search\s', multiline=True)
+
 # Wait for running pods...
 
-- name: Wait for ChemCentral Database Pod
+- name: Wait for ChemCentral Database
   shell: oc get po | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
   delay: 20
   retries: "{{ (pod_ready_timeout | int / 20) | int }}"
@@ -33,7 +42,7 @@
   when: wait_for_pods
   changed_when: False
 
-- name: Wait for ChemCentral Search Pod
+- name: Wait for ChemCentral Search
   shell: oc get po -n {{ oc_project }} | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
   delay: 20
   retries: "{{ (pod_ready_timeout | int / 20) | int }}"
