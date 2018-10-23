@@ -46,3 +46,15 @@ Before running the playbook: -
 If using NFS, it is correctly configured with appropriate
 disk provisioning ready for each PV that expects a volume -
 the Ansible playbooks do not setup NFS.
+
+## MiniShift considerations
+While it's a work-in-progress, support for MiniShift is available.
+
+Essentially you need to setup a suitable `setenv.sh` (and source it)
+and then run the `minishift` playbook to prepare the cluster before running
+the above Squonk plays.
+
+With MiniShift running you should be able to do a one-time preparation
+of MiniShift with: -
+
+    ansible-playbook playbooks/minishift/prepare.yaml

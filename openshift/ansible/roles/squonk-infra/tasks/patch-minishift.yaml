@@ -1,0 +1,15 @@
+---
+
+# To get postgres running in MiniShift we
+# set permissions on the PV that is used...
+
+- name: Get PG PVC
+  shell: oc get pvc/postgresql-claim --no-headers | tr -s ' ' | cut -f 3 -d ' '
+  register: pg_pvc_result
+  changed_when: False
+
+- name: Adjust PVC permissions
+  shell: >
+    minishift ssh -- sudo chmod 777
+    /mnt/sda1/var/lib/minishift/openshift.local.pv/{{ pg_pvc_result.stdout }}
+  changed_when: False
