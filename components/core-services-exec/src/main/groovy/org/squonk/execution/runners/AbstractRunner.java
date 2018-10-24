@@ -70,7 +70,7 @@ public abstract class AbstractRunner implements ContainerRunner {
     }
 
     public void init() throws IOException {
-        LOG.info("init() - " + hostWorkDir.getPath());
+        LOG.info("Host workdir: " + hostWorkDir.getPath());
         // The working directory cannot exist.
         // if it does this may indicate the clean-up process failed for
         // an earlier run or init()'s been called twice..

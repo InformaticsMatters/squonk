@@ -44,7 +44,7 @@ public class SmilesStructuresStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
-        Map<String,Object> results = executeWithData(Collections.emptyMap(), context);
+        Map<String,Object> results = executeForVariables(Collections.emptyMap(), context);
         Dataset result = getSingleDatasetFromMap(results);
 
         createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, result, varman);
@@ -54,7 +54,7 @@ public class SmilesStructuresStep extends AbstractStep {
     }
 
     @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
         statusMessage = MSG_PREPARING_INPUT;
 
 

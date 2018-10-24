@@ -52,7 +52,7 @@ class JobManagerSpec extends Specification {
                 null, //OptionDescriptor[] optionDescriptors,
                 null, //ThinDescriptor[] thinDescriptors,
                 // these are specific to docker execution
-                null, //String executorClassName,
+                "org.squonk.execution.steps.impl.DefaultDockerExecutorStep", //String executorClassName,
                 "busybox",
                 "cp input.sdf.gz output.sdf.gz",
                 null)
@@ -79,7 +79,7 @@ class JobManagerSpec extends Specification {
                 null, //OptionDescriptor[] optionDescriptors,
                 null, //ThinDescriptor[] thinDescriptors,
                 // these are specific to docker execution
-                null, //String executorClassName,
+                "org.squonk.execution.steps.impl.DefaultDockerExecutorStep", //String executorClassName,
                 "busybox",
                 "cp input.data.gz output.data.gz && cp input.metadata output.metadata",
                 null)

@@ -187,7 +187,7 @@ public class DatasetMergerStep extends AbstractThinDatasetStep {
     }
 
     @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
         // TODO - implement this
         throw new RuntimeException("Not implementable");
     }

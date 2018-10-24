@@ -198,7 +198,7 @@ public abstract class AbstractThinDatasetStep extends AbstractStep {
         ThinDatasetWrapper thinWrapper = DatasetUtils.createThinDatasetWrapper(td, inputDescriptor.getSecondaryType(), options);
         Dataset thinDataset = thinWrapper.prepareInput(inputDataset);
 
-        Map<String,Object> results = executeWithData(Collections.singletonMap(StepDefinitionConstants.VARIABLE_INPUT_DATASET, thinDataset), context);
+        Map<String,Object> results = executeForVariables(Collections.singletonMap(StepDefinitionConstants.VARIABLE_INPUT_DATASET, thinDataset), context);
         Dataset responseResults = getSingleDatasetFromMap(results);
         Dataset resultDataset = thinWrapper.generateOutput(responseResults);
 

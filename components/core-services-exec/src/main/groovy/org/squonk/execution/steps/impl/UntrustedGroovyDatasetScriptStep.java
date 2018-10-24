@@ -17,6 +17,7 @@
 package org.squonk.execution.steps.impl;
 
 import com.github.dockerjava.api.model.AccessMode;
+import com.github.dockerjava.api.model.SELContext;
 import com.github.dockerjava.api.model.Volume;
 import org.squonk.execution.runners.DockerRunner;
 
@@ -53,8 +54,9 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerScriptRunner
 
         DockerRunner runner = ((DockerRunner)createContainerRunner(image))
                 .withNetwork(ISOLATED_NETWORK_NAME);
+        runner.init();
         Volume maven = runner.addVolume("/var/maven_repo");
-        runner.addBind("/var/maven_repo", maven, AccessMode.ro);
+        runner.addBind("/var/maven_repo", maven, AccessMode.ro, SELContext.shared);
 
         LOG.info("Writing script file");
         runner.writeInput("run.groovy", script);

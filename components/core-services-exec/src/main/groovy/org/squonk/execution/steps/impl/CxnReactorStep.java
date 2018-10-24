@@ -62,7 +62,7 @@ public class CxnReactorStep extends AbstractStep {
         inputs.put(VARIABLE_R1, fetchMappedInput(VARIABLE_R1, Dataset.class, varman));
         inputs.put(VARIABLE_R2, fetchMappedInput(VARIABLE_R2, Dataset.class, varman));
 
-        Map<String,Object> results = executeWithData(inputs, context);
+        Map<String,Object> results = executeForVariables(inputs, context);
 
         Dataset output = (Dataset)results.values().iterator().next();
         createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
@@ -71,7 +71,7 @@ public class CxnReactorStep extends AbstractStep {
     }
 
     @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
         String reactionName = getOption(OPTION_REACTION, String.class);
         if (reactionName == null) {
             throw new IllegalStateException("Reaction must be specified");

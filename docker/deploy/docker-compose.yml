@@ -169,17 +169,11 @@ services:
     coreservices:
         image: squonk/coreservices:${TAG}
         restart: on-failure
-        volumes:
-        - ./data/docker-services:/var/local/squonk-docker-services:Z
         depends_on:
             postgres:
                 condition: service_healthy
             rabbitmq:
                 condition: service_started
-            #chemservices:
-            #    condition: service_healthy
-            #chemcentral-search:
-            #    condition: service_healthy
         environment:
             RABBITMQ_SQUONK_PASSWORD:
             POSTGRES_SQUONK_PASSWORD:

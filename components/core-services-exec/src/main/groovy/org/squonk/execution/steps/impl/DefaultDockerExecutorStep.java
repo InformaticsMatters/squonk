@@ -21,13 +21,14 @@ import com.github.dockerjava.api.model.Volume;
 import org.apache.camel.CamelContext;
 import org.squonk.core.DockerServiceDescriptor;
 import org.squonk.execution.runners.ContainerRunner;
-import org.squonk.execution.steps.AbstractThinDatasetStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.SquonkDataSource;
 import org.squonk.util.IOUtils;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Logger;
 
 
@@ -35,7 +36,7 @@ import java.util.logging.Logger;
  *
  * Created by timbo on 29/12/15.
  */
-public class DefaultDockerExecutorStep extends AbstractThinDatasetStep {
+public class DefaultDockerExecutorStep extends AbstractDockerStep {
 
     private static final Logger LOG = Logger.getLogger(DefaultDockerExecutorStep.class.getName());
 
@@ -65,15 +66,57 @@ public class DefaultDockerExecutorStep extends AbstractThinDatasetStep {
 
         statusMessage = MSG_PREPARING_CONTAINER;
 
+        ContainerRunner containerRunner = prepareContainerRunner(descriptor);
+
+        try {
+            // create input files
+            statusMessage = MSG_PREPARING_INPUT;
+
+            // fetch the input data
+            Map<String,Object> inputs = fetchInputs(camelContext, descriptor, varman, containerRunner);
+            // write the input data
+            handleInputs(inputs, descriptor, containerRunner);
+            //handleInputs(camelContext, descriptor, varman, containerRunner);
+            // run the command
+            float duration = handleExecute(containerRunner);
+
+            // handle the output
+            statusMessage = MSG_PREPARING_OUTPUT;
+            handleOutputs(camelContext, descriptor, varman, containerRunner);
+
+            handleMetrics(containerRunner, duration);
+
+        } finally {
+            // cleanup
+            if (containerRunner != null && DEBUG_MODE < 2) {
+                containerRunner.cleanup();
+                LOG.info("Results cleaned up");
+            }
+        }
+    }
+
+    @Override
+    public Map<String, List<SquonkDataSource>> executeForDataSources(Map<String, Object> inputs, CamelContext context) throws Exception {
+
+        statusMessage = MSG_PREPARING_CONTAINER;
+        DockerServiceDescriptor descriptor = getDockerServiceDescriptor();
+
+        ContainerRunner containerRunner = prepareContainerRunner(descriptor);
+
+        Map<String, List<SquonkDataSource>> outputs = doExecuteForDataSources(inputs, context, containerRunner, descriptor);
+        return outputs;
+    }
+
+    private ContainerRunner prepareContainerRunner(DockerServiceDescriptor descriptor) throws IOException {
+
         String image = getOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE, String.class);
         if (image == null || image.isEmpty()) {
             image = descriptor.getImageName();
         }
         if (image == null || image.isEmpty()) {
-            statusMessage = "Error: Docker image not defined";
             throw new IllegalStateException(
-                    "Docker image not defined. Must be set as value of the executionEndpoint property of the ServiceDescriptor or as an option named "
-                    + StepDefinitionConstants.OPTION_DOCKER_IMAGE);
+                    "Docker image not defined. Must be set as value of the imageName property of the ServiceDescriptor or as an option named "
+                            + StepDefinitionConstants.OPTION_DOCKER_IMAGE);
         }
 
         String imageVersion = getOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE_VERSION, String.class);
@@ -86,78 +129,35 @@ public class DefaultDockerExecutorStep extends AbstractThinDatasetStep {
             command = descriptor.getCommand();
         }
         if (command == null || command.isEmpty()) {
-            statusMessage = "Error: Docker command not defined";
             throw new IllegalStateException(
-                    "Run command is not defined. Must be set as value of the command property of the ServiceDescriptor as option named "
-                    + OPTION_DOCKER_COMMAND);
+                    "Docker run command is not defined. Must be set as value of the command property of the ServiceDescriptor as option named "
+                            + OPTION_DOCKER_COMMAND);
         }
         // command will be something like:
         // screen.py 'c1(c2c(oc1)ccc(c2)OCC(=O)O)C(=O)c1ccccc1' 0.3 --d morgan2
         // screen.py '${query}' ${threshold} --d ${descriptor}
         String expandedCommand = expandCommand(command, options);
 
-        ContainerRunner runner = createContainerRunner(image);
-        runner.init();
-        LOG.info("Docker image: " + image + ", hostWorkDir: " + runner.getHostWorkDir() + ", command: " + expandedCommand);
-        try {
-            // create input files
-            statusMessage = MSG_PREPARING_INPUT;
+        ContainerRunner containerRunner = createContainerRunner(image);
+        containerRunner.init();
+        LOG.info("Docker image: " + image + ", hostWorkDir: " + containerRunner.getHostWorkDir() + ", command: " + expandedCommand);
 
-            // write the command that executes everything
-            LOG.info("Writing command file");
-            runner.writeInput("execute", "#!/bin/sh\n" + expandedCommand + "\n", true);
-
-            // add the resources
-            if (descriptor.getVolumes() != null) {
-                for (Map.Entry<String, String> e : descriptor.getVolumes().entrySet()) {
-                    String dirToMount = e.getKey();
-                    String mountAs = e.getValue();
-                    Volume v = runner.addVolume(mountAs);
-                    runner.addBind(DOCKER_SERVICES_DIR + "/" + dirToMount, v, AccessMode.ro);
-                    LOG.info("Volume " + DOCKER_SERVICES_DIR + "/" + dirToMount + " mounted as " + mountAs);
-                }
-            }
-
-            // write the input data
-            handleInputs(camelContext, descriptor, varman, runner);
-
-            // run the command
-            statusMessage = MSG_RUNNING_CONTAINER;
-            LOG.info("Executing ...");
-            long t0 = System.currentTimeMillis();
-            int status = runner.execute(runner.getLocalWorkDir() + "/execute");
-            long t1 = System.currentTimeMillis();
-            float duration = (t1 - t0) / 1000.0f;
-            LOG.info(String.format("Executed in %s seconds with return status of %s", duration, status));
-
-            if (status != 0) {
-                String log = runner.getLog();
-                statusMessage = "Error: " + log;
-                LOG.warning("Execution errors: " + log);
-                throw new RuntimeException("Container execution failed:\n" + log);
-            }
-
-            // handle the output
-            statusMessage = MSG_PREPARING_OUTPUT;
-            handleOutputs(camelContext, descriptor, varman, runner);
-
-            Properties props = runner.getFileAsProperties("output_metrics.txt");
-            generateMetricsAndStatus(props, duration);
-
-        } finally {
-            // cleanup
-            if (runner != null && DEBUG_MODE < 2) {
-                runner.cleanup();
-                LOG.info("Results cleaned up");
+        // add the resources
+        if (descriptor.getVolumes() != null) {
+            for (Map.Entry<String, String> e : descriptor.getVolumes().entrySet()) {
+                String dirToMount = e.getKey();
+                String mountAs = e.getValue();
+                Volume v = containerRunner.addVolume(mountAs);
+                containerRunner.addBind(DOCKER_SERVICES_DIR + "/" + dirToMount, v, AccessMode.ro);
+                LOG.info("Volume " + DOCKER_SERVICES_DIR + "/" + dirToMount + " mounted as " + mountAs);
             }
         }
-    }
 
-    @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
-        //TODO - this needs implementing. Currently external execution handles this directly
-        // See the ExternalExecutor.doExecuteDocker() method
-        throw new RuntimeException("NYI");
+        // write the command that executes everything
+        LOG.info("Writing command file");
+        containerRunner.writeInput("execute", "#!/bin/sh\n" + expandedCommand + "\n", true);
+
+        return containerRunner;
     }
 
 }

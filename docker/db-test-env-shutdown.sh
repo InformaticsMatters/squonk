@@ -1,4 +1,5 @@
 #!/bin/bash 
 
-docker-compose -f docker-compose-db-only.yml stop
-docker-compose -f docker-compose-db-only.yml rm -vf
+export TAG=$(./deploy/images-get-tag.sh)
+
+docker-compose stop

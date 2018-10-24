@@ -25,6 +25,7 @@ import org.squonk.rdkit.db.MolSourceType
 import org.squonk.rdkit.db.RDKitTable
 import org.squonk.rdkit.db.loaders.AbstractRDKitLoader
 import org.squonk.util.IOUtils
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -77,18 +78,18 @@ M  END
 
     void setupSpec() {
         dataSource = new PGSimpleDataSource()
-        dataSource.serverName = IOUtils.getConfiguration('PRIVATE_HOST', 'localhost')
+        dataSource.serverName = 'localhost'
         dataSource.portNumber = 5432
         dataSource.databaseName = 'chemcentral'
-        dataSource.user = 'chemcentral'
-        dataSource.password = 'chemcentral'
+        dataSource.user = 'squonk'
+        dataSource.password = 'squonk'
     }
 
     void "load emols"() {
 
         ChemcentralConfig config = new ChemcentralConfig(dataSource, null)
         String filename = "../../data/testfiles/emols_100.smi.gz"
-        AbstractRDKitLoader loader = new AbstractRDKitLoader(table) {
+        AbstractRDKitLoader loader = new AbstractRDKitLoader(table, config) {
 
             @Override
             void load() {

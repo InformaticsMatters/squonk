@@ -498,7 +498,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 .to(mqueueUrl);
 
         from(ROUTE_POST_CALCULATORS_SDS)
-                .log(ROUTE_POST_CALCULATORS_SDS)
+                .log(ROUTE_POST_CALCULATORS_SDS + " (" + calculatorsSdset.getAsServiceConfigs().size() + " service descriptors)")
                 .process((Exchange exch) -> {
                     String json = JsonHandler.getInstance().objectToJson(calculatorsSdset);
                     exch.getOut().setBody(json);
@@ -507,7 +507,7 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 .to("http4:coreservices:8080/coreservices/rest/v1/services");
 
         from(ROUTE_POST_DESCRIPTORS_SDS)
-                .log(ROUTE_POST_DESCRIPTORS_SDS)
+                .log(ROUTE_POST_DESCRIPTORS_SDS + " (" + descriptorsSdset.getAsServiceConfigs().size() + " service descriptors)")
                 .process((Exchange exch) -> {
                     String json = JsonHandler.getInstance().objectToJson(descriptorsSdset);
                     exch.getOut().setBody(json);

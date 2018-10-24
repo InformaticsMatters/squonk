@@ -178,6 +178,27 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
         }
     }
 
+    private void handleError(Exchange exch, String responseCode, String errorMessage, Throwable t) {
+        Message m;
+        if (exch.hasOut()) {
+            m = exch.getOut();
+        } else {
+            m = exch.getIn();
+        }
+        m.setHeader(Exchange.HTTP_RESPONSE_CODE, responseCode);
+        StringBuilder b = new StringBuilder(errorMessage).append("\n");
+        if (t == null) {
+            //b.append("No more details are available.\n");
+        } else if (t.getMessage() == null) {
+            b.append("No message provided\n").append("\nCause is:\n\n");
+            b.append(t.toString());
+        } else {
+            b.append("Message: ").append(t.getMessage()).append("\nCause is:\n\n");
+            b.append(t.toString());
+        }
+        m.setBody(b.toString());
+    }
+
     @Override
     public void configure() throws Exception {
 
@@ -203,8 +224,10 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .process((Exchange exch) -> {
                     Throwable caused = exch.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
                     if (caused == null || caused.getMessage() == null) {
+                        LOG.warning("404 error: Cause unknown");
                         exch.getIn().setBody("Not Found: Cause unknown");
                     } else {
+                        LOG.warning("404 error: " + caused.getMessage());
                         exch.getIn().setBody("Not Found: " + caused.getMessage());
                     }
                 });
@@ -444,6 +467,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     checkNotNull(user, "Username must be specified");
                     checkNotNull(name, "Notebook name must be specified");
                     NotebookDTO result = notebookClient.createNotebook(user, name, description);
+                    LOG.info("Created notebook " + result.getId());
                     exch.getIn().setBody(result);
                 })
                 .endRest()
@@ -455,13 +479,16 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .route()
                 .process((Exchange exch) -> {
                     Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
+                    LOG.info("Deleting notebook " + notebookid);
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     boolean result = notebookClient.deleteNotebook(notebookid);
                     exch.getIn().setBody(null);
                     if (result) {
                         exch.getIn().setBody("OK");
                     } else {
-                        throw new NotFoundException("Notebook " + notebookid + " could not be deleted. May not exist or may not be yours?");
+                        String msg = "Notebook " + notebookid + " could not be deleted. May not exist or may not be yours?";
+                        LOG.warning(msg);
+                        handleError(exch, "404", msg, null);
                     }
                 })
                 .endRest()
@@ -571,7 +598,9 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     if (result) {
                         exch.getIn().setBody("OK");
                     } else {
-                        throw new NotFoundException("Editable " + editableid + " could not be deleted. May not exist or may not be yours?");
+                        String msg = "Editable " + editableid + " could not be deleted. May not exist or may not be yours?";
+                        LOG.warning(msg);
+                        handleError(exch, "404", msg, null);
                     }
                 })
                 .endRest()

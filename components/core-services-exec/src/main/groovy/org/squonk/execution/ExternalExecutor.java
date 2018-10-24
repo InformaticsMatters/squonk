@@ -23,26 +23,26 @@ import org.squonk.core.NextflowServiceDescriptor;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.execution.runners.ContainerRunner;
 import org.squonk.execution.runners.DefaultServiceRunner;
-import org.squonk.execution.runners.DockerRunner;
 import org.squonk.execution.runners.ServiceRunner;
 import org.squonk.execution.steps.AbstractStep;
-import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.execution.steps.impl.DatasetNextflowInDockerExecutorStep;
+import org.squonk.execution.steps.impl.DefaultDockerExecutorStep;
 import org.squonk.execution.variable.impl.FilesystemReadContext;
 import org.squonk.execution.variable.impl.FilesystemWriteContext;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.SquonkDataSource;
-import org.squonk.io.StringDataSource;
 import org.squonk.jobdef.ExternalJobDefinition;
 import org.squonk.jobdef.JobStatus;
 import org.squonk.jobdef.JobStatus.Status;
 import org.squonk.types.DefaultHandler;
-import org.squonk.types.StreamType;
 import org.squonk.util.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -154,34 +154,6 @@ public class ExternalExecutor extends ExecutableJob {
         return map;
     }
 
-//    /**
-//     * Fetch results as InputStreams ready to transfer.
-//     * For each output there will be one or more InputStreams.
-//     * Where there is a single InputStreams (e.g. with SDFile)
-//     * the key in the map will be the name of the output (e.g. "output").
-//     * Where there are multiple InputStreams (e.g. with Dataset)
-//     * the keys in the map will be the name of the output appended with the type of output
-//     * (e.g. "output_data" and "output_metadata").
-//     *
-//     * @return
-//     * @throws IOException
-//     */
-//    public Map<String, InputStream> getResultsAsInputStreams() throws IOException {
-////        List<SquonkDataSource> dataSources = getResultsAsDataSources();
-////        Map<String, InputStream> results = new HashMap<>();
-////        for (SquonkDataSource dataSource: dataSources) {
-////            results.put(dataSource.getName(), dataSource.getInputStream());
-////        }
-////        return results;
-//
-//        Map<String,List<SquonkDataSource> r = getResultsAsDataSources();
-//        Map<String, InputStream> map = new HashMap<>();
-//        for (SquonkDataSource dataSource: r) {
-//            map.put(dataSource.getName(), dataSource.getInputStream());
-//        }
-//        return map;
-//    }
-
     /**
      * Fetch results as SquonkDataSource ready to transfer.
      * For each output there will be one or more SquonkDataSource.
@@ -195,8 +167,7 @@ public class ExternalExecutor extends ExecutableJob {
      * @throws IOException
      */
     public Map<String,List<SquonkDataSource>> getResultsAsDataSources() throws IOException {
-//        Map<String, Object> objects = getResultsAsObjects();
-//        return convertObjectToDataSources(objects);
+
         if (Status.RESULTS_READY != status) {
             throw new IllegalStateException("Results not yet available");
         }
@@ -205,40 +176,6 @@ public class ExternalExecutor extends ExecutableJob {
         }
         return results;
     }
-
-//    private static List<SquonkDataSource> convertObjectToDataSources(Map<String, Object> objects) throws IOException {
-//        List<SquonkDataSource> inputs = new ArrayList<>();
-//        for (Map.Entry<String, Object> e : objects.entrySet()) {
-//            String name = e.getKey();
-//            Object value = e.getValue();
-//            LOG.fine("Found value " + value + " for variable " + name);
-//            if (value != null) {
-//                if (value instanceof StreamType) {
-//                    StreamType streamType = (StreamType) value;
-//                    SquonkDataSource[] dataSources = streamType.getDataSources();
-//                    if (dataSources.length == 1) {
-//                        // single datasource - can just uses the output name
-//                        dataSources[0].setGzipContent(false);
-//                        inputs.add(dataSources[0]);
-//                    } else {
-//                        for (SquonkDataSource ds : dataSources) {
-//                            LOG.fine("Adding DataHandler for " + ds.getName());
-//                            String dsName = ds.getName();
-//                            ds.setName(name + "_" + dsName);
-//                            ds.setGzipContent(false);
-//                            inputs.add(ds);
-//                        }
-//                    }
-//                } else {
-//                    // hope this never happens, but would at least handle simple types
-//                    String txt = value.toString();
-//                    SquonkDataSource ds = new StringDataSource(name, "text/plain", txt, false);
-//                    inputs.add(ds);
-//                }
-//            }
-//        }
-//        return inputs;
-//    }
 
     public Map<String, Integer> getUsageStats() {
         return usageStats;
@@ -320,159 +257,37 @@ public class ExternalExecutor extends ExecutableJob {
         }
     }
 
-    private void doExecuteNextflow(NextflowServiceDescriptor descriptor) throws Exception {
-
-        statusMessage = MSG_PREPARING_CONTAINER;
-
-        String command =  descriptor.getNextflowParams();
-        String expandedCommand;
-        if (command != null) {
-            expandedCommand = expandCommand(command, options);
-        } else {
-            expandedCommand = "";
-        }
-        String fullCommand = "nextflow run nextflow.nf " + NEXTFLOW_OPTIONS + " " + expandedCommand;
-        ContainerRunner containerRunner = createContainerRunner(NEXTFLOW_IMAGE);
-        this.runner = containerRunner;
-        containerRunner.init();
-        LOG.info("Docker Nextflow executor image: " + NEXTFLOW_IMAGE + ",hostWorkDir: " + containerRunner.getHostWorkDir() + ", command: " + fullCommand);
-        resultsDir = containerRunner.getHostWorkDir();
-
-        // create input files
-        statusMessage = MSG_PREPARING_INPUT;
-
-        // write the command that executes everything
-        LOG.info("Writing command file");
-        containerRunner.writeInput("execute", "#!/bin/sh\n" + fullCommand + "\n", true);
-
-        // write the nextflow file that executes everything
-        LOG.info("Writing nextflow.nf");
-        String nextflowFileContents = descriptor.getNextflowFile();
-        containerRunner.writeInput("nextflow.nf", nextflowFileContents, false);
-
-        // write the nextflow config file if one is defined
-        String nextflowConfigContents = descriptor.getNextflowConfig();
-        if (nextflowConfigContents != null && !nextflowConfigContents.isEmpty()) {
-            // An opportunity for the runner to provide extra configuration.
-            // There may be nothing to add but the returned string
-            // will be valid.
-            nextflowConfigContents = containerRunner.addExtraNextflowConfig(nextflowConfigContents);
-            LOG.info("Writing nextflow.config as:\n" + nextflowConfigContents);
-            containerRunner.writeInput("nextflow.config", nextflowConfigContents, false);
-        } else {
-            LOG.info("No nextflow.config");
-        }
-
-        // The runner's either a plain Docker runner
-        // or it's an OpenShift runner.
-        if (containerRunner instanceof DockerRunner){
-            ((DockerRunner)containerRunner).includeDockerSocket();
-        }
-
-        // write the input data
-        handleInputs(descriptor, containerRunner);
-
-        // run the command
-        statusMessage = MSG_RUNNING_CONTAINER;
-        LOG.info("Executing ...");
-        long t0 = System.currentTimeMillis();
-        int status = containerRunner.execute("./execute");
-        long t1 = System.currentTimeMillis();
-        float duration = (t1 - t0) / 1000.0f;
-        LOG.info(String.format("Executed in %s seconds with return status of %s", duration, status));
-
-        if (status != 0) {
-            String log = containerRunner.getLog();
-            statusMessage = "Error: " + log;
-            LOG.warning("Execution errors: " + log);
-            throw new RuntimeException("Container execution failed:\n" + log);
-        }
-
-        // handle the output
-        statusMessage = MSG_PREPARING_OUTPUT;
-        handleOutputs(descriptor, containerRunner.getHostWorkDir());
-
-        Properties props = containerRunner.getFileAsProperties("output_metrics.txt");
-        generateMetricsAndStatus(props, duration);
-
-        statusMessage = MSG_PROCESSING_RESULTS_READY;
-        updateStatus(Status.RESULTS_READY);
-    }
-
     private void doExecuteDocker(DockerServiceDescriptor descriptor) throws Exception {
 
-        statusMessage = MSG_PREPARING_CONTAINER;
-
-        String image = getOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE, String.class);
-        if (image == null || image.isEmpty()) {
-            image = descriptor.getImageName();
+        String execClsName = descriptor.getServiceConfig().getExecutorClassName();
+        LOG.info("Executor class name is " + execClsName);
+        Class cls = Class.forName(execClsName);
+        if (DefaultDockerExecutorStep.class.isAssignableFrom(cls)) {
+            DefaultDockerExecutorStep step = (DefaultDockerExecutorStep) cls.newInstance();
+            step.configure(jobId, options, descriptor);
+            Map<String, List<SquonkDataSource>> outputs = step.executeForDataSources(data, camelContext);
+            this.results.putAll(outputs);
+            statusMessage = MSG_PROCESSING_RESULTS_READY;
+            updateStatus(Status.RESULTS_READY);
+        } else {
+            throw new IllegalStateException("Expected a DefaultDockerExecutorStep but found " + execClsName);
         }
-        if (image == null || image.isEmpty()) {
-            throw new IllegalStateException(
-                    "Docker image not defined. Must be set as value of the executionEndpoint property of the ServiceDescriptor or as an option named "
-                            + StepDefinitionConstants.OPTION_DOCKER_IMAGE);
+    }
+
+    private void doExecuteNextflow(NextflowServiceDescriptor descriptor) throws Exception {
+        String execClsName = descriptor.getServiceConfig().getExecutorClassName();
+        LOG.info("Executor class name is " + execClsName);
+        Class cls = Class.forName(execClsName);
+        if (DatasetNextflowInDockerExecutorStep.class.isAssignableFrom(cls)) {
+            DatasetNextflowInDockerExecutorStep step = (DatasetNextflowInDockerExecutorStep) cls.newInstance();
+            step.configure(jobId, options, descriptor);
+            Map<String, List<SquonkDataSource>> outputs = step.executeForDataSources(data, camelContext);
+            this.results.putAll(outputs);
+            statusMessage = MSG_PROCESSING_RESULTS_READY;
+            updateStatus(Status.RESULTS_READY);
+        } else {
+            throw new IllegalStateException("Expected a DefaultDockerExecutorStep but found " + execClsName);
         }
-
-        String imageVersion = getOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE_VERSION, String.class);
-        if (imageVersion != null && !imageVersion.isEmpty()) {
-            image = image + ":" + imageVersion;
-        }
-
-        String command = getOption(OPTION_DOCKER_COMMAND, String.class);
-        if (command == null || command.isEmpty()) {
-            command = descriptor.getCommand();
-        }
-        if (command == null || command.isEmpty()) {
-            throw new IllegalStateException(
-                    "Docker run command is not defined. Must be set as value of the command property of the ServiceDescriptor as option named "
-                            + OPTION_DOCKER_COMMAND);
-        }
-        // command will be something like:
-        // screen.py 'c1(c2c(oc1)ccc(c2)OCC(=O)O)C(=O)c1ccccc1' 0.3 --d morgan2
-        // screen.py '${query}' ${threshold} --d ${descriptor}
-        String expandedCommand = expandCommand(command, options);
-
-        ContainerRunner containerRunner = createContainerRunner(image);
-        this.runner = containerRunner;
-        containerRunner.init();
-        LOG.info("Docker image: " + image + ", hostWorkDir: " + containerRunner.getHostWorkDir() + ", command: " + expandedCommand);
-        resultsDir = containerRunner.getHostWorkDir();
-
-        // create input files
-        statusMessage = MSG_PREPARING_INPUT;
-
-        // write the command that executes everything
-        LOG.info("Writing command file");
-        containerRunner.writeInput("execute", "#!/bin/sh\n" + expandedCommand + "\n", true);
-
-        // write the input data
-        handleInputs(descriptor, containerRunner);
-
-        // run the command
-        statusMessage = MSG_RUNNING_CONTAINER;
-        LOG.info("Executing ...");
-        updateStatus(Status.RUNNING);
-        long t0 = System.currentTimeMillis();
-        int status = containerRunner.execute(containerRunner.getLocalWorkDir() + "/execute");
-        long t1 = System.currentTimeMillis();
-        float duration = (t1 - t0) / 1000.0f;
-        LOG.info(String.format("Executed in %s seconds with return status of %s", duration, status));
-
-        if (status != 0) {
-            String log = containerRunner.getLog();
-            LOG.warning("Execution errors: " + log);
-            throw new RuntimeException("Container execution failed:\n" + log);
-        }
-
-        // handle the output
-        statusMessage = MSG_PREPARING_OUTPUT;
-        handleOutputs(descriptor, containerRunner.getHostWorkDir());
-
-        Properties props = containerRunner.getFileAsProperties("output_metrics.txt");
-        generateMetricsAndStatus(props, duration);
-
-        statusMessage = MSG_PROCESSING_RESULTS_READY;
-        updateStatus(Status.RESULTS_READY);
     }
 
     /** Cancel the job if it is running.
@@ -519,14 +334,6 @@ public class ExternalExecutor extends ExecutableJob {
         results.put(iod.getName(), outputs);
     }
 
-//    private <P, Q> P doBuildOutput(File workdir, IODescriptor<P, Q> iod) throws Exception {
-//
-//        VariableHandler<P> vh = DefaultHandler.createVariableHandler(iod.getPrimaryType(), iod.getSecondaryType());
-//        VariableHandler.ReadContext readContext = new FilesystemReadContext(workdir, iod.getName());
-//        P value = vh.readVariable(readContext);
-//        return value;
-//    }
-
     private <P,Q> List<SquonkDataSource> buildOutputs(File workdir, IODescriptor<P, Q> iod) throws Exception {
 
         VariableHandler<P> vh = DefaultHandler.createVariableHandler(iod.getPrimaryType(), iod.getSecondaryType());
@@ -553,7 +360,6 @@ public class ExternalExecutor extends ExecutableJob {
             }
         }
     }
-
 
     protected <P, Q> void doHandleInput(
             P input,

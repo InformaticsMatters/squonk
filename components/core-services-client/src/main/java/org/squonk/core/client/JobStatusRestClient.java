@@ -121,6 +121,8 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
     }
 
     public JobStatus updateStatus(String id, JobStatus.Status status, String event, Integer processedCount, Integer errorCount) throws IOException {
+        LOG.fine("Updating status for job " + id + " Status: " + status + " Event: "+ event +
+                " Processed: " + processedCount + " Errors: " + errorCount);
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + id);
         if (status != null) {
             b.setParameter("status", status.toString());
@@ -132,7 +134,9 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
             b.setParameter(ServiceConstants.HEADER_JOB_ERROR_COUNT, errorCount.toString());
         }
         InputStream result = executePostAsInputStream( b, event, new NameValuePair[0]);
-        return fromJson(result, JobStatus.class);
+        JobStatus jobStatus = fromJson(result, JobStatus.class);
+        LOG.fine("JobStatus updated: " + jobStatus);
+        return jobStatus;
     }
 
     public JobStatus incrementCounts(String id, int processedCount, int errorCount) throws IOException {

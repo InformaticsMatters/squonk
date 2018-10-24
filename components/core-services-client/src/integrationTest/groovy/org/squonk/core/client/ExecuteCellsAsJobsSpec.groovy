@@ -190,39 +190,6 @@ cp input.data.gz output.data.gz
 //        findResultSize(notebookId, editableId, cellId, "docker") == 36
 //    }
 
-    void "cdk sdf convert cell"() {
-
-        StepDefinition step1 = new StepDefinition(DatasetServiceExecutor.CLASSNAME)
-                .withInputs(inputs)
-                .withOutputs(outputs)
-                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
-                .withOutputVariableMapping("output", "sdf")
-                .withOption("header.Content-Encoding", "gzip")
-                .withOption("header.Accept-Encoding", "gzip")
-                .withOption("header.Content-Type", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON)
-                .withOption("header.Accept", CommonMimeTypes.MIME_TYPE_MDL_SDF)
-                .withOption(OPTION_SERVICE_ENDPOINT, "http://chemservices:8080/chem-services-cdk-basic/rest/v1/converters/dataset_to_sdf")
-
-
-        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
-        jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, outputs, step1)
-
-        when:
-        JobStatus status1 = jobClient.submit(jobdef, username, null)
-        JobStatus status2 = waitForJob(status1.jobId)
-
-        InputStream is = notebookClient.readStreamValue(notebookId, editableId, cellId, "sdf")
-        is = new GZIPInputStream(is)
-        def sdf = is.text
-        def parts = sdf.split("END")
-
-        then:
-        status1.status == JobStatus.Status.RUNNING
-        status2.status == JobStatus.Status.COMPLETED
-        parts.length == 37
-
-    }
-
     @IgnoreIf({ MiniShift.RUNNING })
     void "groovy in docker cell noop"() {
 
@@ -302,7 +269,7 @@ import static org.squonk.util.MoleculeObjectUtils.*
 import java.util.stream.Stream
 import java.util.function.Function
 
-processDatasetStream('/source/input','/source/output') { Stream<MoleculeObject> stream ->
+processDatasetStream('input','output') { Stream<MoleculeObject> stream ->
     return stream.peek() { MoleculeObject mo ->
         mo.putValue("hello", "world")
     }
@@ -339,12 +306,12 @@ import org.squonk.types.MoleculeObject
 import static org.squonk.util.MoleculeObjectUtils.*
 import java.util.stream.Stream
 
-Dataset dataset = readDatasetFromFiles('/source/input')
+Dataset dataset = readDatasetFromFiles('input')
 Stream<MoleculeObject> stream = dataset.stream.peek() { MoleculeObject mo ->
     mo.putValue("hello", "world")
 }
 dataset.replaceStream(stream)
-writeDatasetToFiles(dataset, '/source/output', true)
+writeDatasetToFiles(dataset, 'output', true)
 ''')
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
@@ -375,12 +342,12 @@ writeDatasetToFiles(dataset, '/source/output', true)
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
 import static org.squonk.util.MoleculeObjectUtils.*
 
-def dataset = readDatasetFromFiles('/source/input')
+def dataset = readDatasetFromFiles('input')
 def stream = dataset.stream.peek() { mo ->
     mo.putValue("hello", "world")
 }
 dataset.replaceStream(stream)
-writeDatasetToFiles(dataset, '/source/output', true)
+writeDatasetToFiles(dataset, 'output', true)
 ''')
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()

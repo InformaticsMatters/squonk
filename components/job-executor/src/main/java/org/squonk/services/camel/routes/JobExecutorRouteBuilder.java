@@ -35,7 +35,6 @@ import org.squonk.util.ServiceConstants;
 import javax.activation.DataHandler;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
 import java.util.HashMap;
@@ -267,7 +266,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 return;
             }
             String json = JsonHandler.getInstance().objectToJson(jobStatus);
-            message.setBody(json);
+            message.setBody("{\"Hello\":\"Mum!\"}");
             message.setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_TEXT_PLAIN);
             doHandleResults(message, username, id);
         } catch (AuthenticationException e) {
@@ -285,9 +284,16 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
         for (Map.Entry<String,List<SquonkDataSource>> e : outputs.entrySet()) {
             for (SquonkDataSource dataSource : e.getValue()) {
-                String name = (outputs.size() == 1 ? dataSource.getName() : e.getKey() + "_" + dataSource.getName());
+                String name = dataSource.getName() == null ? dataSource.getRole() : dataSource.getName();
+                if (name == null) {
+                    name = "unknown";
+                }
+                if (outputs.size() == 1) {
+                    name = e.getKey() + "_" + name;
+                }
                 LOG.fine("Adding attachment " + name + " of type " + dataSource.getContentType());
-                //dataSource.materialize();
+                dataSource.setGzipContent(false);
+
                 message.addAttachment(name, new DataHandler(dataSource));
             }
         }

@@ -18,15 +18,12 @@ package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
-import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.InputStreamDataSource;
 import org.squonk.io.SquonkDataSource;
-import org.squonk.reader.CSVReader;
 import org.squonk.reader.SDFReader;
-import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
@@ -71,7 +68,7 @@ public class SDFReaderStep extends AbstractStep {
         LOG.info("execute SDFReaderStep");
         SquonkDataSource dataSource = fetchMappedInput(VAR_SDF_INPUT, SquonkDataSource.class, varman);
 
-        Map<String, Object> results = executeWithData(Collections.singletonMap("input", dataSource), context);
+        Map<String, Object> results = executeForVariables(Collections.singletonMap("input", dataSource), context);
         Dataset result = (Dataset)results.values().iterator().next();
 
         LOG.fine("Writing output");
@@ -92,7 +89,7 @@ public class SDFReaderStep extends AbstractStep {
     }
 
     @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
         statusMessage = "Reading SDF ...";
         if (inputs.size() != 1) {
             throw new IllegalArgumentException("Must provide a single input");

@@ -92,6 +92,18 @@ public class ExecutableJob {
         return outputs;
     }
 
+    public int getNumProcessed() {
+        return numProcessed;
+    }
+
+    public int getNumResults() {
+        return numResults;
+    }
+
+    public int getNumErrors() {
+        return numErrors;
+    }
+
     /**
      * Usage stats that will be recorded against the execution of the job
      *
@@ -99,6 +111,10 @@ public class ExecutableJob {
      */
     public Map<String, Integer> getUsageStats() {
         return usageStats;
+    }
+
+    public String getStatusMessage() {
+        return statusMessage;
     }
 
     protected Object getOption(String name) {
@@ -166,14 +182,14 @@ public class ExecutableJob {
         args.put("POUT", "");
         options.forEach((k, v) -> {
             if (k.startsWith("arg.")) {
-                LOG.info("Found argument " + k + " = " + v);
+                LOG.fine("Found argument " + k + " = " + v);
                 args.put(k.substring(4), v);
             }
         });
 
         // replace windows line end characters
         String command = cmdTemplate.replaceAll("\\r\\n", "\n");
-        LOG.info("Template: " + command);
+        LOG.fine("Template: " + command);
         String expandedCommand = GroovyUtils.expandTemplate(command, args);
         LOG.info("Command: " + expandedCommand);
         return expandedCommand;
@@ -190,12 +206,12 @@ public class ExecutableJob {
         ContainerRunner runner = null;
         if (CONTAINER_RUNNER_TYPE.equals("docker")) {
 
-            LOG.info("Creating DockerRunner instance...");
+            LOG.fine("Creating DockerRunner instance...");
             runner = new DockerRunner(image, workdir, jobId);
 
         } else if (CONTAINER_RUNNER_TYPE.equals("openshift")) {
 
-            LOG.info("Creating OpenShiftRunner instance...");
+            LOG.fine("Creating OpenShiftRunner instance...");
             runner = new OpenShiftRunner(image, workdir, workdir, jobId);
 
         } else {
@@ -265,10 +281,13 @@ public class ExecutableJob {
                 }
             } else if ("__InputCount__".equals(key)) {
                 numProcessed = tryGetAsInt(props, key);
+                LOG.finer("InputCount: " + numProcessed);
             } else if ("__OutputCount__".equals(key)) {
                 numResults = tryGetAsInt(props, key);
+                LOG.finer("OutputCount: " + numResults);
             } else if ("__ErrorCount__".equals(key)) {
                 numErrors = tryGetAsInt(props, key);
+                LOG.finer("ErrorCount: " + numErrors);
             } else if (key.startsWith("__") && key.endsWith("__")) {
                 LOG.warning("Unexpected magical key: " + key);
             } else {

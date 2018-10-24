@@ -66,7 +66,7 @@ public class OpenChemLibRestRouteBuilder extends RouteBuilder {
                 .apiProperty("cors", "true");
 
         from(ROUTE_POST_SDS)
-                .log(ROUTE_POST_SDS)
+                .log(ROUTE_POST_SDS + " (" + OpenChemLibBasicServices.SD_SET.getAsServiceConfigs().size() + " service descriptors)")
                 .process((Exchange exch) -> {
                     String json = JsonHandler.getInstance().objectToJson(OpenChemLibBasicServices.SD_SET);
                     exch.getOut().setBody(json);

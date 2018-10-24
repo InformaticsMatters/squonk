@@ -28,6 +28,7 @@ import org.squonk.execution.variable.VariableManager;
 import org.squonk.execution.variable.impl.FilesystemReadContext;
 import org.squonk.execution.variable.impl.FilesystemWriteContext;
 import org.squonk.io.IODescriptor;
+import org.squonk.io.SquonkDataSource;
 import org.squonk.notebook.api.VariableKey;
 import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
@@ -36,6 +37,7 @@ import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 import org.squonk.util.Metrics;
+import org.squonk.util.Utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -300,11 +302,6 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
         varman.putValue(key, type, value);
     }
 
-    @Override
-    public String getStatusMessage() {
-        return statusMessage;
-    }
-
     protected void generateExecutionTimeMetrics(float executionTimeSeconds) {
         float mins = executionTimeSeconds / 60f;
         if (mins > 1) {
@@ -478,6 +475,24 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
         return null;
     }
 
+    /** Default implementation that assumes that the executeForVariables() method is implemented and fetches those variables
+     * and converters them to SquonkDataSources. This may not be the most efficient approach so sub-classes can override these
+     * methods.
+     *
+     * @param inputs
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    public Map<String,List<SquonkDataSource>> executeForDataSources(Map<String,Object> inputs, CamelContext context) throws Exception {
+        Map<String,List<SquonkDataSource>> results = new LinkedHashMap<>();
+        for (Map.Entry<String,Object> e : inputs.entrySet()) {
+            List<SquonkDataSource> dataSources = Utils.convertVariableToDataSources(e.getValue());
+            results.put(e.getKey(), dataSources);
+        }
+        return results;
+    }
+
     protected HttpServiceDescriptor getHttpServiceDescriptor() {
         if (serviceDescriptor == null) {
             throw new IllegalStateException("Service descriptor not found");
@@ -494,6 +509,15 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
             throw new IllegalStateException("Invalid service descriptor. Expected DockerServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
         }
         return (DockerServiceDescriptor)serviceDescriptor;
+    }
+
+    protected NextflowServiceDescriptor getNextflowServiceDescriptor() {
+        if (serviceDescriptor == null) {
+            throw new IllegalStateException("Service descriptor not found");
+        } else if (!(serviceDescriptor instanceof NextflowServiceDescriptor)) {
+            throw new IllegalStateException("Invalid service descriptor. Expected NextflowServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
+        }
+        return (NextflowServiceDescriptor)serviceDescriptor;
     }
 
     protected String getHttpExecutionEndpoint() {
@@ -552,10 +576,38 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
             VariableManager varman,
             ContainerRunner runner,
             IODescriptor<P,Q> ioDescriptor) throws Exception {
-        P value = fetchMappedInput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), ioDescriptor.getSecondaryType(), varman, true);
+        P value = fetchInput(camelContext, serviceDescriptor, varman, runner, ioDescriptor);
         File dir = runner.getHostWorkDir();
         FilesystemWriteContext writeContext = new FilesystemWriteContext(dir, ioDescriptor.getName());
         varman.putValue(ioDescriptor.getPrimaryType(), value, writeContext);
+    }
+
+    protected Map<String,Object> fetchInputs(
+            CamelContext camelContext,
+            DefaultServiceDescriptor serviceDescriptor,
+            VariableManager varman,
+            ContainerRunner runner) throws Exception {
+        Map<String,Object> inputs = new LinkedHashMap<>();
+        IODescriptor[] inputDescriptors = serviceDescriptor.resolveInputIODescriptors();
+        if (inputDescriptors != null) {
+            LOG.info("Handling " + inputDescriptors.length + " inputs");
+            for (IODescriptor iod : inputDescriptors) {
+                LOG.info("Writing input for " + iod.getName() + " " + iod.getMediaType());
+                Object input = fetchInput(camelContext, serviceDescriptor, varman, runner, iod);
+                inputs.put(iod.getName(), input);
+            }
+        }
+        return inputs;
+    }
+
+    protected <P,Q> P fetchInput(
+            CamelContext camelContext,
+            DefaultServiceDescriptor serviceDescriptor,
+            VariableManager varman,
+            ContainerRunner runner,
+            IODescriptor<P,Q> ioDescriptor) throws Exception {
+        P value = fetchMappedInput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), ioDescriptor.getSecondaryType(), varman, true);
+        return value;
     }
 
     protected <P,Q> void handleOutputs(CamelContext camelContext, DefaultServiceDescriptor serviceDescriptor, VariableManager varman, ContainerRunner runner) throws Exception {
