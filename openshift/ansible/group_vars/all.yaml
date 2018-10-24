@@ -10,6 +10,7 @@ keycloak_service_user: manager
 keycloak_service_user_password_field: sso-service-password
 
 oc_project: "{{ ansible_env.OC_PROJECT }}"
+oc_project_display_name: "{{ ansible_env.OC_PROJECT_DISPLAY_NAME }}"
 oc_infra_project: "{{ ansible_env.OC_INFRA_PROJECT }}"
 oc_infra_project_display_name: "{{ ansible_env.OC_INFRA_PROJECT_DISPLAY_NAME }}"
 oc_infra_sa: "{{ ansible_env.OC_INFRA_SA }}"
