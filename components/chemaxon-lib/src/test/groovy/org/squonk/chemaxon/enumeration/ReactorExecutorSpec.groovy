@@ -52,13 +52,13 @@ class ReactorExecutorSpec extends Specification {
     }
         
     
-    void "simple enumerate"() {
+    void "simple enumerate smiles"() {
         
         setup:
         Molecule rxn = MolImporter.importMol(new File(reaction).text)
         Molecule[] r1 = getMoleculeArrayFromFile(new FileInputStream(reactants))     
         Molecule[] r2 = getMoleculeArrayFromFile(new FileInputStream(reactants))
-        ReactorExecutor exec = new ReactorExecutor(rxn)
+        ReactorExecutor exec = new ReactorExecutor(rxn, "smiles")
         
         when:
         //long t0 = System.currentTimeMillis()
@@ -66,9 +66,32 @@ class ReactorExecutorSpec extends Specification {
         def list = results.collect(Collectors.toList())
         //long t1 = System.currentTimeMillis()
         //println "Number of products: ${list.size()} generated in ${t1-t0}ms"
-                
+        //println list[0].source
+
         then:
         list.size() > 0
+        list[0].format == 'smiles'
+    }
+
+    void "simple enumerate mol"() {
+
+        setup:
+        Molecule rxn = MolImporter.importMol(new File(reaction).text)
+        Molecule[] r1 = getMoleculeArrayFromFile(new FileInputStream(reactants))
+        Molecule[] r2 = getMoleculeArrayFromFile(new FileInputStream(reactants))
+        ReactorExecutor exec = new ReactorExecutor(rxn, "mol")
+
+        when:
+        //long t0 = System.currentTimeMillis()
+        def results = exec.enumerate(ReactorExecutor.Output.Product1, Reactor.IGNORE_REACTIVITY | Reactor.IGNORE_SELECTIVITY, r1, r2)
+        def list = results.collect(Collectors.toList())
+        //long t1 = System.currentTimeMillis()
+        //println "Number of products: ${list.size()} generated in ${t1-t0}ms"
+        //println list[0].source
+
+        then:
+        list.size() > 0
+        list[0].format == 'mol'
     }
 
     void "enumerate as stream"() {

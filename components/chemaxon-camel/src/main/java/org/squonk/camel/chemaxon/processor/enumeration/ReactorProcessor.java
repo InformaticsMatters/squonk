@@ -51,6 +51,7 @@ public class ReactorProcessor implements Processor {
     public static final String OPTION_IGNORE_SELECTIVITY = "ignoreSelectivityRules";
     public static final String OPTION_IGNORE_TOLERANCE = "ignoreToleranceRules";
     public static final String OPTION_REACTOR_OUTPUT = "reactorOutput";
+    public static final String OPTION_OUTPUT_FORMAT = "outputFormat";
 
     private final String rxnLibZipFile;
     private ReactionLibrary rxnlib;
@@ -97,6 +98,7 @@ public class ReactorProcessor implements Processor {
         Boolean ignoreReactivity = exch.getIn().getHeader(OPTION_IGNORE_REACTIVITY, Boolean.class);
         Boolean ignoreSelectivity = exch.getIn().getHeader(OPTION_IGNORE_SELECTIVITY, Boolean.class);
         Boolean ignoreTolerance = exch.getIn().getHeader(OPTION_IGNORE_TOLERANCE, Boolean.class);
+        String outputFormat = exch.getIn().getHeader(OPTION_OUTPUT_FORMAT, String.class);
 
         int ignoreRules = (ignoreReactivity == null || !ignoreReactivity ? 0 : Reactor.IGNORE_REACTIVITY)
                 | (ignoreSelectivity == null || !ignoreSelectivity  ? 0 : Reactor.IGNORE_SELECTIVITY)
@@ -117,11 +119,8 @@ public class ReactorProcessor implements Processor {
         }
 
         // perform the enumeration
-        ReactorExecutor exec = new ReactorExecutor(rxn, statsRecorder);
+        ReactorExecutor exec = new ReactorExecutor(rxn, outputFormat, statsRecorder);
         Stream<MoleculeObject> results = exec.enumerateMoleculeObjects(output, ignoreRules, dataset.getStream());
-        results = results.onClose(() -> {
-
-        });
 
         // TODO - handle stats
 

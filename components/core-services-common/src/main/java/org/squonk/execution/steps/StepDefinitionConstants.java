@@ -228,6 +228,7 @@ public interface StepDefinitionConstants {
         String OPTION_IGNORE_SELECTIVITY = "ignoreSelectivityRules";
         String OPTION_IGNORE_TOLERANCE = "ignoreToleranceRules";
         String OPTION_REACTOR_OUTPUT = "reactorOutput";
+        String OPTION_OUTPUT_FORMAT = "outputFormat";
     }
     
 }

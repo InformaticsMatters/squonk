@@ -66,6 +66,8 @@ public class CxnReactorStep extends AbstractStandardStep {
         boolean ignoreSelectivity = getOption(OPTION_IGNORE_SELECTIVITY, Boolean.class, false);
         boolean ignoreTolerance = getOption(OPTION_IGNORE_TOLERANCE, Boolean.class, false);
 
+        String outputFormat = getOption(OPTION_OUTPUT_FORMAT, String.class, "smiles");
+
         Dataset<MoleculeObject> reactants1 = fetchMappedInput(VARIABLE_R1, Dataset.class, varman);
         Dataset<MoleculeObject> reactants2 = fetchMappedInput(VARIABLE_R2, Dataset.class, varman);
         if (reactants1 == null || reactants2 == null) {
@@ -91,6 +93,7 @@ public class CxnReactorStep extends AbstractStandardStep {
         requestHeaders.put(StepDefinitionConstants.CxnReactor.OPTION_IGNORE_REACTIVITY, ignoreReactivity);
         requestHeaders.put(StepDefinitionConstants.CxnReactor.OPTION_IGNORE_SELECTIVITY, ignoreSelectivity);
         requestHeaders.put(StepDefinitionConstants.CxnReactor.OPTION_IGNORE_TOLERANCE, ignoreTolerance);
+        requestHeaders.put(StepDefinitionConstants.CxnReactor.OPTION_OUTPUT_FORMAT, outputFormat);
         // NOTE: setting the Content-Encoding will cause camel to gzip the data, we don't need to do it
         requestHeaders.put("Content-Encoding", "gzip");
         if (jobId != null) {

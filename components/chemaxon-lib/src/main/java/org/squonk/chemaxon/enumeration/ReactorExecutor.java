@@ -63,14 +63,21 @@ public class ReactorExecutor {
     private static final Logger LOG = Logger.getLogger(ReactorExecutor.class.getName());
 
     private final Molecule reaction;
+    private final String outputFormat;
+
     private final StatsRecorder statsRecorder;
 
     public ReactorExecutor(Molecule reaction) {
-        this(reaction, null);
+        this(reaction, null, null);
     }
 
-    public ReactorExecutor(Molecule reaction, StatsRecorder statsRecorder) {
+    public ReactorExecutor(Molecule reaction, String outputFormat) {
+        this(reaction, outputFormat, null);
+    }
+
+    public ReactorExecutor(Molecule reaction, String outputFormat, StatsRecorder statsRecorder) {
         this.reaction = reaction;
+        this.outputFormat = outputFormat == null ? "smiles" : outputFormat;
         this.statsRecorder = statsRecorder;
     }
 
@@ -206,7 +213,7 @@ public class ReactorExecutor {
                 //LOG.info("Processing reactor output");
                 for (Molecule product : products) {
                     try {
-                        MoleculeObject mo = MoleculeUtils.createMoleculeObject(product, "mol");
+                        MoleculeObject mo = MoleculeUtils.createMoleculeObject(product, outputFormat);
                         int i = 1;
                         for (Molecule reactant : reactants) {
                             String r = "R" + i + "_";
