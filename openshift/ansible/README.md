@@ -49,12 +49,14 @@ the Ansible playbooks do not setup NFS.
 
 ## MiniShift considerations
 While it's a work-in-progress, support for MiniShift is available.
+Tested with MiniShift: -
 
-Essentially you need to setup a suitable `setenv.sh` (and source it)
-and then run the `minishift` playbook to prepare the cluster before running
-the above Squonk plays.
+-   OpenShift 3.9.0
+-   VirtualBox 5.2.20 (OSX)
+-   MiniShift 1.16.1 and 1.25.0
 
-With MiniShift running you should be able to do a one-time preparation
-of MiniShift with: -
+You need to setup a suitable `setenv.sh` (and source it) and then run the
+`minishift` playbook to prepare the cluster **before** running
+the above Squonk plays: -
 
     ansible-playbook playbooks/minishift/prepare.yaml
