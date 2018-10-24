@@ -1,5 +1,9 @@
 ---
 
+- name: Login (admin)
+  shell: oc login {{ oc_master_hostname }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  changed_when: False
+
 - name: Move to Squonk Project
   shell: oc project {{ oc_project }}
   changed_when: False

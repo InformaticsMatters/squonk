@@ -4,6 +4,7 @@
 #
 # - dynamic
 # - nfs
+# - minishift
 # - none
 #
 #   When using `dynamic' remember to set

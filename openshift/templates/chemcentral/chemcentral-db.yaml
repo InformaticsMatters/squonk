@@ -1,17 +1,17 @@
 # Deploys PostgreSQL with the RDKit cartridge plus the chemical search service.
 #
-# oc process -f chemcentral.yaml | oc create -f -
-# oc delete all,cm,pvc,secrets --selector template=chemcentral
+# oc process -f chemcentral-db.yaml | oc create -f -
+# oc delete all,cm,pvc,secrets --selector template=chemcentral-db
 
 kind: Template
 apiVersion: v1
 metadata:
-  name: chemcentral
+  name: chemcentral-db
   annotations:
     description: Chemcentral chemical search
     tags: squonk,chemcentral
 labels:
-  template: chemcentral
+  template: chemcentral-db
   app: chemcentral
 
 parameters:
@@ -56,9 +56,6 @@ parameters:
   value: 100Mi
 - name: POSTGRES_MEM_LIMIT
   value: 500Mi
-
-- name: SEARCH_IMAGE_TAG
-  value: latest
 
 objects:
 
@@ -196,82 +193,3 @@ objects:
       targetPort: 5432
     selector:
       name: ${POSTGRES_SERVICE}
-
-# -----------------------------------------------------------------------------
-# Chemcentral search
-# -----------------------------------------------------------------------------
-
-- kind: DeploymentConfig
-  apiVersion: v1
-  metadata:
-    name: chemcentral-search
-    namespace: ${APP_NAMESPACE}
-  spec:
-    replicas: 1
-    selector:
-      name: chemcentral-search
-    template:
-      metadata:
-        labels:
-          name: chemcentral-search
-      spec:
-        containers:
-        - image: squonk/chemcentral-search:${SEARCH_IMAGE_TAG}
-          name: chemcentral-search
-          env:
-          - name: CHEMCENTRAL_HOST
-            valueFrom:
-              secretKeyRef:
-                name: chemcentral-database-credentials
-                key: host
-          - name: CHEMCENTRAL_USER
-            valueFrom:
-              secretKeyRef:
-                name: chemcentral-database-credentials
-                key: database-user
-          - name: CHEMCENTRAL_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: chemcentral-database-credentials
-                key: database-password
-          - name: RABBITMQ_HOSTNAME
-            valueFrom:
-              secretKeyRef:
-                name: squonk-rabbitmq-credentials
-                key: host
-                optional: true
-          - name: RABBITMQ_SQUONK_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: squonk-rabbitmq-credentials
-                key: pass
-                optional: true
-          ports:
-          - containerPort: 8080
-          readinessProbe:
-            httpGet:
-              path: /chemcentral-search/rest/ping
-              port: 8080
-            initialDelaySeconds: 60
-            timeoutSeconds: 1
-            periodSeconds: 20
-          livenessProbe:
-            httpGet:
-              path: /chemcentral-search/rest/ping
-              port: 8080
-            initialDelaySeconds: 90
-            timeoutSeconds: 1
-            periodSeconds: 30
-
-- kind: Service
-  apiVersion: v1
-  metadata:
-    name: chemcentral-search
-    namespace: ${APP_NAMESPACE}
-  spec:
-    ports:
-    - name: http
-      port: 8080
-      targetPort: 8080
-    selector:
-      name: chemcentral-search

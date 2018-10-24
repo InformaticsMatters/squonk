@@ -27,6 +27,10 @@ and for ChemCentral: -
 
     ansible-playbook playbooks/squonk-chemcentral/undeploy.yaml
 
+and for the infrastructure: -
+
+    ansible-playbook playbooks/squonk-infra/undeploy.yaml
+
 ## Prerequisites
 Before running the playbook: -
 
@@ -40,4 +44,19 @@ Before running the playbook: -
     and you have run `source setenv.sh` using it.
 
 If using NFS, it is correctly configured with appropriate
-disk provisioning ready for each PV that expects a volume.
+disk provisioning ready for each PV that expects a volume -
+the Ansible playbooks do not setup NFS.
+
+## MiniShift considerations
+While it's a work-in-progress, support for MiniShift is available.
+Tested with: -
+
+-   OpenShift 3.9.0
+-   VirtualBox 5.2.20 (OSX)
+-   MiniShift 1.16.1 and 1.25.0
+
+You need to setup a suitable `setenv.sh` (and source it) and then run the
+`minishift` playbook to prepare the cluster **before** running
+the above Squonk plays: -
+
+    ansible-playbook playbooks/minishift/prepare.yaml

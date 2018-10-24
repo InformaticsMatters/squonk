@@ -333,8 +333,8 @@ objects:
             mountPath: "/etc/x509/jgroups"
             readOnly: true
           livenessProbe:
-            timeoutSeconds: 1
-            initialDelaySeconds: 90
+            timeoutSeconds: 4
+            initialDelaySeconds: 120
             failureThreshold: 3
             periodSeconds: 30
             exec:
@@ -343,8 +343,8 @@ objects:
               - "-c"
               - "/opt/eap/bin/livenessProbe.sh"
           readinessProbe:
-            timeoutSeconds: 1
-            initialDelaySeconds: 60
+            timeoutSeconds: 4
+            initialDelaySeconds: 90
             failureThreshold: 10
             periodSeconds: 15
             exec:

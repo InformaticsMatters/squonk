@@ -1,0 +1,34 @@
+---
+
+# The user has created a MiniShift instance
+#
+# Here, we create an 'admin' user
+# then assign Cluster Admin role to it,
+# it's what's expected of the downstream plays.
+
+- name: Login as MiniShift system:admin
+  shell: oc login -u system:admin
+  changed_when: False
+
+- name: Get users
+  shell: oc get users
+  register: users_result
+  changed_when: False
+
+- name: Create users
+  shell: oc create user {{ item }}
+  loop:
+  - "{{ oc_admin }}"
+  - "{{ oc_user }}"
+  when: not users_result.stdout | regex_search('^%s\s' % item, multiline=True)
+
+- name: Get cluster role bindings
+  shell: oc get clusterrolebindings | grep cluster-admin
+  register: role_result
+  changed_when: False
+
+- name: Assigning cluster-admin to users
+  shell: oc adm policy add-cluster-role-to-user cluster-admin {{ item }}
+  loop:
+  - "{{ oc_admin }}"
+  when: not role_result.stdout | regex_search('^\S+\s+\S+\s+%s' % item, multiline=True)

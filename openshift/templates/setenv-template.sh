@@ -14,6 +14,7 @@ export OC_DEPLOYMENT=squonk
 export OC_ADMIN=admin
 export OC_ADMIN_PASSWORD=admin
 export OC_USER=developer
+export OC_USER_PASSWORD=developer
 
 # For openshift change this to the hostname of the infra node hosting the router
 export OC_ROUTES_BASENAME=${OC_MASTER_HOSTNAME}
@@ -21,7 +22,7 @@ export KEYCLOAK_SERVER_URL=https://sso.${OC_ROUTES_BASENAME}/auth
 export KEYCLOAK_REALM=squonk
 export KEYCLOAK_LOGOUT_REDIRECT_TO=http://home.${OC_ROUTES_BASENAME}/
 export OC_INFRA_PROJECT=squonk-infra
-export OC_INFRA_PROJECT_DISPLAY_NAME=squonk-infra
+export OC_INFRA_PROJECT_DISPLAY_NAME="Squonk Infrastructure"
 export OC_INFRA_HOURLY_BACKUP_COUNT=7
 export OC_INFRA_HOURLY_BACKUP_SCHEDULE="7 23 * * *"
 export OC_INFRA_DAILY_BACKUP_COUNT=0
@@ -31,12 +32,13 @@ export OC_INFRA_SA=squonk
 export OC_POSTGRESQL_SERVICE=db-postgresql
 export OC_POSTGRESQL_VOLUME_SIZE=125Gi
 export OC_PROJECT=squonk
+export OC_PROJECT_DISPLAY_NAME="Squonk Applications"
 export OC_SQUONK_APP=squonk-notebook
 export OC_SQUONK_HOST=${OC_SQUONK_APP}.${OC_ROUTES_BASENAME}
 export OC_JOBEXECUTOR_HOST=jobexecutor.${OC_ROUTES_BASENAME}
 export OC_SQUONK_CC_PVC_SIZE=20Gi
 export OC_SQUONK_IMAGE_TAG=latest
-export OC_SQUONK_SD_POSTER_IMAGE_TAG=latest
+export OC_PIPELINES_SD_POSTER_IMAGE_TAG=latest
 export OC_DOMAIN_NAME=novalocal
 export OC_NFS_SERVER=squonk-infra.$OC_DOMAIN_NAME
 export OC_NFS_PATH=/exports
@@ -68,7 +70,7 @@ echo "OC_USER set to '$OC_USER'"
 echo "OC_SQUONK_HOST set to '$OC_SQUONK_HOST'"
 echo "OC_JOBEXECUTOR_HOST set to '$OC_JOBEXECUTOR_HOST'"
 echo "OC_SQUONK_IMAGE_TAG set to '$OC_SQUONK_IMAGE_TAG'"
-echo "OC_SQUONK_SD_POSTER_IMAGE_TAG set to '$OC_SQUONK_SD_POSTER_IMAGE_TAG'"
+echo "OC_PIPELINES_SD_POSTER_IMAGE_TAG set to '$OC_PIPELINES_SD_POSTER_IMAGE_TAG'"
 echo "OC_SQUONK_VOLUME_TYPE set to $OC_SQUONK_VOLUME_TYPE"
 echo "OC_SQUONK_VOLUME_STORAGE_CLASS set to $OC_SQUONK_VOLUME_STORAGE_CLASS"
 echo "OC_INFRA_VOLUME_TYPE set to $OC_INFRA_VOLUME_TYPE"

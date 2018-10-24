@@ -3,7 +3,7 @@
 # We do a few things in the infrastructure project first.
 
 - name: Login as Admin
-  shell: oc login {{ oc_master_hostname }} -u admin -p {{ oc_admin_password }}
+  shell: oc login {{ oc_master_hostname }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
 - name: Move to Squonk Infrastructure Project
@@ -66,32 +66,3 @@
   when:
   - wait_for_pods
   changed_when: False
-
-# JobExecutor
-
-- name: Check ConfigMaps
-  shell: oc get cm
-  register: cm_result
-  changed_when: False
-
-- name: Initialise Keycloak (JobExecutor)
-  shell: >
-    oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-infra-keycloak-je-init.yaml
-    -p SQUONK_NAMESPACE={{ oc_project }}
-    -p KEYCLOAK_REALM={{ keycloak_realm }}
-    -p ROUTES_BASE_HOSTNAME={{ oc_routes_basename }}
-    | oc create -f -
-  when: not cm_result.stdout | regex_search('^squonk-je-client-creator\s', multiline=True)
-
-- name: Wait for Infrastructure initialisation (JobExecutor)
-  shell: oc describe jobs/{{ item }} | grep '1 Succeeded'
-  delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
-  register: result
-  until: result.rc == 0
-  loop:
-  - squonk-je-client-creator
-  when: wait_for_pods
-  changed_when: False
-
