@@ -49,7 +49,7 @@ the Ansible playbooks do not setup NFS.
 
 ## MiniShift considerations
 While it's a work-in-progress, support for MiniShift is available.
-Tested with MiniShift: -
+Tested with: -
 
 -   OpenShift 3.9.0
 -   VirtualBox 5.2.20 (OSX)

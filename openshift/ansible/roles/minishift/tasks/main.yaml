@@ -2,4 +2,4 @@
 
 # Just run these plays...
 
-- import_tasks: create-admin-user.yaml
+- import_tasks: create-users.yaml
