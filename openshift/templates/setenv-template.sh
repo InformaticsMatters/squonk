@@ -14,6 +14,7 @@ export OC_DEPLOYMENT=squonk
 export OC_ADMIN=admin
 export OC_ADMIN_PASSWORD=admin
 export OC_USER=developer
+export OC_USER_PASSWORD=developer
 
 # For openshift change this to the hostname of the infra node hosting the router
 export OC_ROUTES_BASENAME=${OC_MASTER_HOSTNAME}
