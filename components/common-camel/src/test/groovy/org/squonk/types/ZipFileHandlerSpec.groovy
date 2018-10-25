@@ -32,7 +32,7 @@ class ZipFileHandlerSpec extends Specification {
     void "test write variable"() {
 
         def h = new ZipFileHandler()
-        def data =  new FileDataSource(null, null, new File("../../data/testfiles/test.zip"), false)
+        def data =  new FileDataSource(null, null, new java.io.File("../../data/testfiles/test.zip"), false)
         def zip1 = new ZipFile(data)
         def ctx = new DummyContext()
 

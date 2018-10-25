@@ -1,6 +1,0 @@
-{
-  "serviceDescriptorId": "rdkit.calculators.verify",
-  "options": {
-    "query.filterMode": "INCLUDE_ALL"
-  }
-}

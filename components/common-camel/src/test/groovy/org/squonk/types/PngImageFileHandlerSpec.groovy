@@ -32,7 +32,7 @@ class PngImageFileHandlerSpec extends Specification {
     void "test write variable"() {
 
         def h = new PngImageFileHandler()
-        def data = new FileDataSource(null, null, new File("../../data/testfiles/image.png"), false)
+        def data = new FileDataSource(null, null, new java.io.File("../../data/testfiles/image.png"), false)
         def png1 = new PngImageFile(data    )
         def ctx = new DummyContext()
 

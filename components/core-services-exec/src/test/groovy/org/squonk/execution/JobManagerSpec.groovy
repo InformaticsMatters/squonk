@@ -158,11 +158,10 @@ class JobManagerSpec extends Specification {
         def sd = createSdfServiceDescriptor()
         JobManager mgr = new JobManager(false, true)
         mgr.putServiceDescriptors(Collections.singletonList(createSdfServiceDescriptor()))
-        ExecutionParameters params = new ExecutionParameters(sd.getId(), [:])
 
         when:
 
-        def jobStatus = mgr.executeAsync(USER, params, ["input": new FileInputStream(source)])
+        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input": new FileInputStream(source)])
         jobStatus = waitTillResultsReady(mgr, jobStatus)
 
         then:
@@ -187,10 +186,9 @@ class JobManagerSpec extends Specification {
         println JsonHandler.getInstance().objectToJson(sd)
         JobManager mgr = new JobManager(false, true)
         mgr.putServiceDescriptors(Collections.singletonList(createDatasetServiceDescriptor()))
-        ExecutionParameters params = new ExecutionParameters(sd.getId(), [:])
 
         when:
-        def jobStatus = mgr.executeAsync(USER, params, ["input_data": new ByteArrayInputStream(source1), "input_metadata": new ByteArrayInputStream(source2)])
+        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input_data": new ByteArrayInputStream(source1), "input_metadata": new ByteArrayInputStream(source2)])
         jobStatus = waitTillResultsReady(mgr, jobStatus)
         def results = mgr.getJobResultsAsDataSources(USER, jobStatus.getJobId())
 

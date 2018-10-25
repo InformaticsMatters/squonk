@@ -1,7 +1,0 @@
-{
-  "serviceDescriptorId": "core.dataset.filter.slice.v1",
-  "options": {
-    "skip": 5,
-    "count": 5
-  }
-}
