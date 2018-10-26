@@ -44,8 +44,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /** Base class for steps. See {@link Step} for the basics of how steps work.
  *
@@ -665,6 +667,28 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
         } else {
             throw new IllegalArgumentException("Value is not a dataset");
         }
+    }
+
+    /** Adds a counter to the stream and when the stream is closed will write a status message as defined by the
+     * message param which must be in message format syntax, with the count being passed in as the sole parameter.
+     * e.g. use a value like "Processed %s molecules".
+     * The contents of the stream are not modified in any way and you must use the updated stream that is returned,
+     * not the one that is passed in as a parameter.
+     * NOTE: the counting only happens once the stream starts getting consumed, and the status message only gets set
+     * once the stream is closed.
+     *
+     * @param stream
+     * @param message
+     * @param <T>
+     * @return
+     */
+    protected <T> Stream addStreamCounter(Stream<T> stream, String message) {
+        final AtomicInteger count = new AtomicInteger(0);
+        return stream.peek((o) -> {
+            count.incrementAndGet();
+        }).onClose(() -> {
+            statusMessage = String.format(message, count.intValue());
+        });
     }
 
 

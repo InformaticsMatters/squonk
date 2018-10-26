@@ -98,6 +98,35 @@ public class DatasetMergerStep extends AbstractThinDatasetStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
+        Map<String,Object> inputs = new LinkedHashMap<>();
+        for (int i = 1; i <= 5; i++) {
+            String name = VAR_INPUT_BASE + i;
+            Dataset<? extends BasicObject> nextDataset = fetchMappedInput(name, Dataset.class, varman);
+            if (nextDataset == null) {
+                break;
+            } else {
+                inputs.put(name, nextDataset);
+            }
+        }
+
+        Map<String,Object> outputs = executeForVariables(inputs, context);
+
+        Dataset output = (Dataset)outputs.get(VAR_OUTPUT);
+
+        createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
+    }
+
+    private Object fetchValueToCompare(BasicObject bo, String mergeField) {
+        return mergeField == null ? bo.getUUID() : bo.getValue(mergeField);
+    }
+
+    @Override
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
+
+        if (inputs == null || inputs.size() == 0) {
+            throw new IllegalArgumentException("No data to merge");
+        }
+
         String mergeField = getOption(OPTION_MERGE_FIELD_NAME, String.class);
         boolean keepFirst = getOption(OPTION_KEEP_FIRST, Boolean.class, true);
 
@@ -111,10 +140,13 @@ public class DatasetMergerStep extends AbstractThinDatasetStep {
         int count = 0;
         int totalRecordCount = 0;
         List<String> sources = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
-            Dataset<? extends BasicObject> nextDataset = fetchMappedInput(VAR_INPUT_BASE + i, Dataset.class, varman);
-
-            if (nextDataset != null) {
+        int i = 0;
+        while (true) {
+            i++;
+            Dataset<? extends BasicObject> nextDataset = (Dataset)inputs.get(VAR_INPUT_BASE + i);
+            if (nextDataset == null) {
+                break;
+            } else {
                 count++;
                 int size = nextDataset.getSize();
                 if (size < 0) {
@@ -131,7 +163,6 @@ public class DatasetMergerStep extends AbstractThinDatasetStep {
                     meta.getProperties().put(DatasetMetadata.PROP_CREATED, DatasetMetadata.now());
                     meta.getProperties().put(DatasetMetadata.PROP_SOURCE, SOURCE);
                 }
-
 
                 for (DatasetMetadata.PropertiesHolder ph : oldMeta.getFieldMetaProps()) {
                     String fldName = ph.getFieldName();
@@ -169,27 +200,14 @@ public class DatasetMergerStep extends AbstractThinDatasetStep {
             }
         }
 
-        meta.getProperties().put(DatasetMetadata.PROP_DESCRIPTION, "Merged from " + count + " datasets using field " + mergeField
+        meta.getProperties().put(DatasetMetadata.PROP_DESCRIPTION, "Merged from " + count
+                + " datasets using field " + mergeField
                 + ". Sources were: " + sources.stream().collect(Collectors.joining(", ")));
 
-        if (type != null) {
-            Dataset output = new Dataset(results.values(), meta);
-            createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
-            statusMessage = generateStatusMessage(totalRecordCount, output.getSize(), -1);
-            LOG.info("Results: " + JsonHandler.getInstance().objectToJson(output.getMetadata()));
-        } else {
-            LOG.info("No data to merge");
-        }
-    }
-
-    private Object fetchValueToCompare(BasicObject bo, String mergeField) {
-        return mergeField == null ? bo.getUUID() : bo.getValue(mergeField);
-    }
-
-    @Override
-    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
-        // TODO - implement this
-        throw new RuntimeException("Not implementable");
+        Dataset output = new Dataset(results.values(), meta);
+        statusMessage = generateStatusMessage(totalRecordCount, output.getSize(), -1);
+        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(output.getMetadata()));
+        return Collections.singletonMap(VAR_OUTPUT, output);
     }
 
 }

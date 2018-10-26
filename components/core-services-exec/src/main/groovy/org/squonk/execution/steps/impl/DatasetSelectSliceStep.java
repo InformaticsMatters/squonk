@@ -81,6 +81,7 @@ public class DatasetSelectSliceStep<P extends BasicObject> extends AbstractDatas
             LOG.info("Setting count to " + count);
             stream = stream.limit(count);
         }
+        stream = addStreamCounter(stream, "%s records selected");
         DatasetMetadata<P> meta = input.getMetadata();
 
         int total = -1;
@@ -97,8 +98,6 @@ public class DatasetSelectSliceStep<P extends BasicObject> extends AbstractDatas
         }
 
         meta.setSize(total); // will be recalculated
-
-        statusMessage = generateStatusMessage(input.getSize(), total, -1);
 
         return new Dataset<>(stream, meta);
     }

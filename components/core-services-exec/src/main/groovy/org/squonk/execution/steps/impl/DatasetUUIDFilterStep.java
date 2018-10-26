@@ -75,9 +75,8 @@ public class DatasetUUIDFilterStep<P extends BasicObject> extends AbstractDatase
 
         statusMessage = "Filtering ...";
         Stream<P> output = input.getStream().filter((bo) -> uuids.contains(bo.getUUID()));
+        output = addStreamCounter(output, "%s records found");
         Dataset<P> results = new Dataset(output, deriveOutputDatasetMetadata(input.getMetadata()));
-
-        statusMessage = generateStatusMessage(input.getSize(), results.getSize(), -1);
 
         return results;
     }

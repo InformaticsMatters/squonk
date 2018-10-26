@@ -73,7 +73,6 @@ public class SDFReaderStep extends AbstractStep {
 
         LOG.fine("Writing output");
         createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, result, varman);
-        statusMessage = generateStatusMessage(-1, result.getSize(), -1);
         LOG.fine("Writing dataset from SDF complete: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
     }
 
@@ -112,6 +111,7 @@ public class SDFReaderStep extends AbstractStep {
                 LOG.warning("Failed to close InputStream");
             }
         });
+        mols = addStreamCounter(mols, "%s molecules read");
         Dataset results = new Dataset(mols, reader.getDatasetMetadata());
         return Collections.singletonMap("output", results);
     }

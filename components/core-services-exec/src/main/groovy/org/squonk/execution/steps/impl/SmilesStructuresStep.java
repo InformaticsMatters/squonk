@@ -48,8 +48,6 @@ public class SmilesStructuresStep extends AbstractStep {
         Dataset result = getSingleDatasetFromMap(results);
 
         createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, result, varman);
-
-        statusMessage = generateStatusMessage(-1, result.getSize(), -1);
         LOG.info("Results: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
     }
 
@@ -88,7 +86,7 @@ public class SmilesStructuresStep extends AbstractStep {
             meta.createField(FIELD_NAME, "User provided name", "Name provided by user with smiles", String.class);
         }
         meta.setSize(mols.size());
-
+        statusMessage = mols.size() + " molecules";
 
         Dataset<MoleculeObject> result = new Dataset<>(mols, meta);
         return Collections.singletonMap(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, result);

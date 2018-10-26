@@ -83,11 +83,11 @@ public class DatasetSelectRandomStep<P extends BasicObject> extends AbstractData
         Random g = new Random();
         Stream<P> stream = input.getStream().sequential();
         stream = stream.filter(o -> random < g.nextFloat()).limit(count);
+        stream = addStreamCounter(stream, "%s records selected");
 
         DatasetMetadata<P> meta = input.getMetadata();
         meta.setSize(0); // will be recalculated
 
-        statusMessage = generateStatusMessage(input.getSize(), -1, 0);
         return new Dataset<>(stream, meta);
     }
 
