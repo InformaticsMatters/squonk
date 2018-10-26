@@ -314,7 +314,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 return;
             }
             String json = JsonHandler.getInstance().objectToJson(jobStatus);
-            message.setBody("{\"Hello\":\"Mum!\"}");
+            message.setBody(json);
             message.setHeader(Exchange.CONTENT_TYPE, CommonMimeTypes.MIME_TYPE_TEXT_PLAIN);
             doHandleResults(message, username, id);
         } catch (AuthenticationException e) {
