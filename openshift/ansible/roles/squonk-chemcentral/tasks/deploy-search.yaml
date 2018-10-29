@@ -1,0 +1,34 @@
+---
+
+# Deploy the ChemCentral Search Component.
+
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
+  changed_when: False
+
+- name: Check ChemCentral Deployment
+  shell: oc get dc
+  register: dc_result
+  changed_when: False
+
+- name: Create ChemCentral Search
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-search.yaml
+    -p APP_NAMESPACE={{ oc_project }}
+    -p SEARCH_IMAGE_TAG={{ oc_squonk_image_tag }}
+    | oc create -f -
+  when: not dc_result.stdout | regex_search('^db-chemcentral\s', multiline=True)
+
+# Wait for running pods...
+
+- name: Wait for ChemCentral Search
+  shell: oc get po -n {{ oc_project }} | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
+  delay: 20
+  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  register: result
+  until: result.rc == 0
+  loop:
+  - chemcentral-search
+  when: wait_for_pods
+  changed_when: False

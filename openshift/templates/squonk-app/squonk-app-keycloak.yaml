@@ -3,6 +3,15 @@
 # oc process -f squonk-app-keycloak.yaml | oc create -f -
 # oc delete all,cm,pvc,routes,secrets --selector template=squonk-app
 
+# ########## #
+# DEPRECATED #
+# ########## #
+#
+# THIS FILE SHOULD NOT BE USED.
+# YOU SHOULD BE USING: -
+# - squonk-app-components AND
+# - squonk-app-portal-keycloak
+
 kind: Template
 apiVersion: v1
 metadata:

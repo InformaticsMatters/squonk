@@ -13,4 +13,5 @@
 - import_tasks: create-dynamic-pvc.yaml
   when: oc_cc_infra_volume_type == 'dynamic'
 
-- import_tasks: deploy.yaml
+- import_tasks: deploy-database.yaml
+- import_tasks: deploy-search.yaml
