@@ -11,7 +11,7 @@ metadata:
     description: Infrastructure Backups
     tags: infra,postgresql,backup
 labels:
-  template: pg-backup-daily
+  template: sso-backup-daily
 
 parameters:
 
@@ -25,9 +25,9 @@ parameters:
 - name: BACKUP_SCHEDULE
   value: '37 3 * * *'
 - name: BACKUP_COUNT
-  value: 7
+  value: '7'
 - name: BACKUP_PRIOR_COUNT
-  value: 24
+  value: '24'
 
 objects:
 
