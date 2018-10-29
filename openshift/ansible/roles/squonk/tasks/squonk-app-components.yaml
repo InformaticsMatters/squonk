@@ -1,7 +1,7 @@
 ---
 
 # With infrastructure deployed and initialised
-# we can now continue with Squonk deployment...
+# we can now continue with Squonk deployment (excluding the Portal)...
 
 - name: Move to Squonk Project
   shell: oc project {{ oc_project }}
@@ -21,13 +21,10 @@
 - name: Deploy Squonk
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-app-keycloak.yaml
-    -p SQUONK_HOST={{ oc_squonk_host}}
+    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-app-components.yaml
     -p APP_NAMESPACE={{ oc_project }}
     -p PULL_POLICY={{ image_pull_policy }}
-    -p LOGOUT_REDIRECT_TO={{ keycloak_logout_redirect_to }}
     -p FLYWAY_IMAGE_TAG={{ oc_squonk_image_tag }}
-    -p PORTAL_IMAGE_TAG={{ oc_squonk_image_tag }}
     -p CHEM_IMAGE_TAG={{ oc_squonk_image_tag }}
     -p CORE_IMAGE_TAG={{ oc_squonk_image_tag }}
     -p CELL_IMAGE_TAG={{ oc_squonk_image_tag }}
@@ -39,7 +36,6 @@
 #
 #   cellexecutor
 #   coreservices
-#   portal
 #   chemservices-basic
 
 - name: Wait for Squonk Pods
@@ -52,7 +48,6 @@
   loop:
   - cellexecutor
   - coreservices
-  - portal
   - chemservices-basic
   changed_when: False
 
