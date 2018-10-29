@@ -37,33 +37,35 @@ public abstract class AbstractStreamType implements StreamType {
     private final String mediaType;
 
     public AbstractStreamType(InputStream inputStream, String mediaType, Boolean gzipped) {
-        this.dataSources = new SquonkDataSource[] {new InputStreamDataSource("data", mediaType, inputStream, gzipped)};
+        this.dataSources = new SquonkDataSource[] {new InputStreamDataSource(SquonkDataSource.ROLE_DEFAULT, null, mediaType, inputStream, gzipped)};
         this.mediaType = mediaType;
     }
 
     public AbstractStreamType(File file, String mediaType, Boolean gzipped) {
-        this.dataSources = new SquonkDataSource[] {new FileDataSource("data", mediaType, file, gzipped)};
+        this.dataSources = new SquonkDataSource[] {new FileDataSource(SquonkDataSource.ROLE_DEFAULT, mediaType, file, gzipped)};
         this.mediaType = mediaType;
     }
 
-    public AbstractStreamType(InputStream[] inputStreams, String mediaType, String[] names, String[] streamMediaTypes, Boolean[] gzipped) {
+    public AbstractStreamType(InputStream[] inputStreams, String mediaType, String[] roles, String[] names, String[] streamMediaTypes, Boolean[] gzipped) {
         assert inputStreams.length == names.length;
         assert inputStreams.length == streamMediaTypes.length;
         assert inputStreams.length == gzipped.length;
         this.mediaType = mediaType;
         dataSources = new SquonkDataSource[inputStreams.length];
         for (int i=0; i<inputStreams.length; i++) {
-            dataSources[i] = new InputStreamDataSource(names[i], streamMediaTypes[i], inputStreams[i], gzipped[i]);
+            dataSources[i] = new InputStreamDataSource(roles[i], names[i], streamMediaTypes[i], inputStreams[i], gzipped[i]);
         }
     }
 
-    public AbstractStreamType(File[] files, String mediaType, String[] names, String[] streamMediaTypes, Boolean[] gzipped) {
-        assert files.length == names.length;
+    public AbstractStreamType(File[] files, String mediaType, String[] roles, String[] streamMediaTypes, Boolean[] gzipped) {
+        assert files.length == roles.length;
         assert files.length == streamMediaTypes.length;
+        assert files.length == gzipped.length;
+
         this.mediaType = mediaType;
         dataSources = new SquonkDataSource[files.length];
         for (int i=0; i<dataSources.length; i++) {
-            dataSources[i] = new FileDataSource(names[i], streamMediaTypes[i], files[i], gzipped[i]);
+            dataSources[i] = new FileDataSource(roles[i], streamMediaTypes[i], files[i], gzipped[i]);
         }
     }
 

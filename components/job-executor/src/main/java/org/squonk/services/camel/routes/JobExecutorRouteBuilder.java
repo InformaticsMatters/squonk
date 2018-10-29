@@ -16,14 +16,15 @@
 
 package org.squonk.services.camel.routes;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Message;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
+import org.squonk.core.ServiceConfig;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptorUtils;
-import org.squonk.execution.ExecutionParameters;
 import org.squonk.execution.JobManager;
 import org.squonk.io.SquonkDataSource;
 import org.squonk.jobdef.JobStatus;
@@ -105,6 +106,29 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 .transform(constant("OK\n")).endRest();
 
 
+        rest("/v1/services").description("Service information")
+                //
+                //
+                .get("/").description("Get a summary of the available service descriptors")
+                .bindingMode(RestBindingMode.off)
+                .produces(CommonMimeTypes.MIME_TYPE_JSON)
+                .route()
+                .process((Exchange exch) -> {
+                    handleFetchServiceDescriptorInfo(exch);
+                })
+                .endRest()
+                //
+                //
+                .get("/{id}").description("Get service config for a specific service")
+                .bindingMode(RestBindingMode.off)
+                .produces(CommonMimeTypes.MIME_TYPE_JSON)
+                .outType(ServiceDescriptor.class)
+                .route()
+                .process((Exchange exch) -> {
+                    handleFetchServiceCongigById(exch);
+                })
+                .endRest();
+
         rest("/v1/jobs").description("Job execution and management")
                 //
                 // list the jobs
@@ -130,7 +154,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 .endRest()
                 //
                 // submit new async job
-                .post("/").description("Submit a new job")
+                .post("/{service}").description("Submit a new job")
                 .bindingMode(RestBindingMode.off)
                 .outType(JobStatus.class)
                 .route()
@@ -175,6 +199,29 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 .marshal().mimeMultipart()
                 .endRest()
         ;
+    }
+
+    private void handleFetchServiceDescriptorInfo(Exchange exch) throws IOException {
+        Message message = exch.getIn();
+        List<Map<String,String>> info = jobManager.fetchServiceDescriptorInfo();
+        String json = JsonHandler.getInstance().objectToJson(info);
+        message.setBody(json);
+    }
+
+    private void handleFetchServiceCongigById(Exchange exch) throws IOException {
+        Message message = exch.getIn();
+        String id = message.getHeader("id", String.class);
+        if (id == null || id.isEmpty()) {
+            handle500Error(message, "Service ID must be specified", null);
+            return;
+        }
+        ServiceConfig sd = jobManager.fetchServiceConfig(id);
+        if (sd == null) {
+            handle404Error(message, "Service " + id + " not found");
+            return;
+        }
+        String json = JsonHandler.getInstance().objectToJson(sd);
+        message.setBody(json);
     }
 
     private void handleJobsList(Exchange exch) {
@@ -223,7 +270,23 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
         Message message = exch.getIn();
         try {
             String username = fetchUsername(message);
-            JobStatus jobStatus = doHandleJobSubmit(exch.getIn());
+
+            String service = message.getHeader("service", String.class);
+            if (service == null || service.isEmpty()) {
+                handle500Error(message, "Service not specified", null);
+                return;
+            }
+            String body = message.getBody(String.class);
+            Map<String, Object> options = JsonHandler.getInstance().objectFromJson(body, new TypeReference<Map<String, Object>>() {});
+            Map<String, InputStream> inputs = new HashMap<>();
+            for (Map.Entry<String, DataHandler> e : message.getAttachments().entrySet()) {
+                String name = e.getKey();
+                InputStream input = e.getValue().getInputStream();
+                inputs.put(name, input);
+                LOG.fine("Added input " + name);
+            }
+            JobStatus jobStatus = jobManager.executeAsync(username, service, options, inputs);
+
             LOG.info("Job " + jobStatus.getJobId() + " had been submitted");
             String json = JsonHandler.getInstance().objectToJson(jobStatus);
             message.setBody(json);
@@ -233,22 +296,6 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
             handle500Error(message, "Failed to submit job", e);
         }
     }
-
-    private JobStatus doHandleJobSubmit(Message message) throws Exception {
-
-        String body = message.getBody(String.class);
-        ExecutionParameters params = JsonHandler.getInstance().objectFromJson(body, ExecutionParameters.class);
-        Map<String, InputStream> inputs = new HashMap<>();
-        String username = fetchUsername(message);
-        for (Map.Entry<String, DataHandler> e : message.getAttachments().entrySet()) {
-            String name = e.getKey();
-            InputStream input = e.getValue().getInputStream();
-            inputs.put(name, input);
-            LOG.fine("Added input " + name);
-        }
-        return jobManager.executeAsync(username, params, inputs);
-    }
-
 
     private void handleJobResults(Exchange exch) {
         Message message = exch.getIn();
@@ -277,15 +324,26 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
         }
     }
 
-    private void doHandleResults(Message message, String username, String jobId) throws IOException {
+    private void doHandleResults(Message message, String username, String jobId) throws Exception {
 
         // set the results as attachments to the message
-        List<SquonkDataSource> dataSources = jobManager.getJobResultsAsDataSources(username, jobId);
-        LOG.fine("Found " + dataSources.size() + " DataHandlers");
-        for (SquonkDataSource dataSource : dataSources) {
-            LOG.fine("Adding attachment " + dataSource.getName() + " of type " + dataSource.getContentType());
-            dataSource.materialize();
-            message.addAttachment(dataSource.getName(), new DataHandler(dataSource));
+        Map<String,List<SquonkDataSource>> outputs = jobManager.getJobResultsAsDataSources(username, jobId);
+        LOG.fine("Found " + outputs.size() + " outputs");
+
+        for (Map.Entry<String,List<SquonkDataSource>> e : outputs.entrySet()) {
+            for (SquonkDataSource dataSource : e.getValue()) {
+                String name = dataSource.getName() == null ? dataSource.getRole() : dataSource.getName();
+                if (name == null) {
+                    name = "unknown";
+                }
+                if (outputs.size() == 1) {
+                    name = e.getKey() + "_" + name;
+                }
+                LOG.fine("Adding attachment " + name + " of type " + dataSource.getContentType());
+                dataSource.setGzipContent(false);
+
+                message.addAttachment(name, new DataHandler(dataSource));
+            }
         }
 
         // handle gzipping the response if requested to do so

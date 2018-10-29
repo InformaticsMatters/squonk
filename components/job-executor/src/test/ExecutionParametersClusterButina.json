@@ -1,8 +1,0 @@
-{
-  "serviceDescriptorId": "pipelines.rdkit.cluster.butina",
-  "options": {
-    "arg.threshold": 0.6,
-    "arg.descriptor": "morgan2",
-    "arg.metric": "tanimoto"
-  }
-}

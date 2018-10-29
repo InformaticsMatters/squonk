@@ -96,7 +96,7 @@ abstract class ClientSpecBase extends Specification {
 
     void cleanupSpec() {
         if (notebookClient && editable) {
-            notebookClient?.deleteNotebook(editable)
+            notebookClient?.deleteNotebook(editable.getNotebookId())
         }
     }
 
@@ -111,7 +111,7 @@ abstract class ClientSpecBase extends Specification {
                     println "Trying for services attempt ${i + 1}"
                     def configs = servicesClient.getServiceConfigs(username)
                     println "Discovered ${configs.size()} services"
-                    if (configs.size() > 20) {
+                    if (configs.size() >= 50) {
                         results = [:]
                         configs.each { results[it.id] = it }
                         println "loaded ${configs.size()} service configs"

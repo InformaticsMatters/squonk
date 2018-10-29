@@ -24,8 +24,8 @@ public class UrlDataSource extends SquonkDataSource {
 
     private final URL url;
 
-    public UrlDataSource(String name, String contentType, URL url, Boolean gzipped) {
-        super(name, contentType, gzipped);
+    public UrlDataSource(String role, String name, String contentType, URL url, Boolean gzipped) {
+        super(role, name, contentType, gzipped);
         this.url = url;
     }
 

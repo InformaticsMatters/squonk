@@ -18,17 +18,15 @@ package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
-import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.InputStreamDataSource;
 import org.squonk.io.SquonkDataSource;
-import org.squonk.reader.CSVReader;
 import org.squonk.reader.SDFReader;
-import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.CommonMimeTypes;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,12 +68,11 @@ public class SDFReaderStep extends AbstractStep {
         LOG.info("execute SDFReaderStep");
         SquonkDataSource dataSource = fetchMappedInput(VAR_SDF_INPUT, SquonkDataSource.class, varman);
 
-        Map<String, Object> results = executeWithData(Collections.singletonMap("input", dataSource), context);
+        Map<String, Object> results = executeForVariables(Collections.singletonMap("input", dataSource), context);
         Dataset result = (Dataset)results.values().iterator().next();
 
         LOG.fine("Writing output");
         createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, result, varman);
-        statusMessage = generateStatusMessage(-1, result.getSize(), -1);
         LOG.fine("Writing dataset from SDF complete: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
     }
 
@@ -91,7 +88,7 @@ public class SDFReaderStep extends AbstractStep {
     }
 
     @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
         statusMessage = "Reading SDF ...";
         if (inputs.size() != 1) {
             throw new IllegalArgumentException("Must provide a single input");
@@ -101,7 +98,7 @@ public class SDFReaderStep extends AbstractStep {
         if (input instanceof SquonkDataSource) {
             dataSource = (SquonkDataSource)input;
         } else if (input instanceof InputStream) {
-            dataSource = new InputStreamDataSource("input", "", (InputStream)input, null);
+            dataSource = new InputStreamDataSource(SquonkDataSource.ROLE_DEFAULT, null, CommonMimeTypes.MIME_TYPE_MDL_SDF, (InputStream)input, null);
         } else {
             throw new IllegalArgumentException("Unsupported input type: " + input.getClass().getName());
         }
@@ -114,6 +111,7 @@ public class SDFReaderStep extends AbstractStep {
                 LOG.warning("Failed to close InputStream");
             }
         });
+        mols = addStreamCounter(mols, "%s molecules read");
         Dataset results = new Dataset(mols, reader.getDatasetMetadata());
         return Collections.singletonMap("output", results);
     }

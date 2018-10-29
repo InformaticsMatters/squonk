@@ -19,10 +19,7 @@ package org.squonk.execution.steps;
 import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.apache.camel.spi.TypeConverterRegistry;
-import org.squonk.core.DefaultServiceDescriptor;
-import org.squonk.core.HttpServiceDescriptor;
-import org.squonk.core.ServiceConfig;
-import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.*;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.ExecutableJob;
@@ -31,6 +28,7 @@ import org.squonk.execution.variable.VariableManager;
 import org.squonk.execution.variable.impl.FilesystemReadContext;
 import org.squonk.execution.variable.impl.FilesystemWriteContext;
 import org.squonk.io.IODescriptor;
+import org.squonk.io.SquonkDataSource;
 import org.squonk.notebook.api.VariableKey;
 import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
@@ -39,14 +37,17 @@ import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 import org.squonk.util.Metrics;
+import org.squonk.util.Utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /** Base class for steps. See {@link Step} for the basics of how steps work.
  *
@@ -303,11 +304,6 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
         varman.putValue(key, type, value);
     }
 
-    @Override
-    public String getStatusMessage() {
-        return statusMessage;
-    }
-
     protected void generateExecutionTimeMetrics(float executionTimeSeconds) {
         float mins = executionTimeSeconds / 60f;
         if (mins > 1) {
@@ -481,6 +477,24 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
         return null;
     }
 
+    /** Default implementation that assumes that the executeForVariables() method is implemented and fetches those variables
+     * and converters them to SquonkDataSources. This may not be the most efficient approach so sub-classes can override these
+     * methods.
+     *
+     * @param inputs
+     * @param context
+     * @return
+     * @throws Exception
+     */
+    public Map<String,List<SquonkDataSource>> executeForDataSources(Map<String,Object> inputs, CamelContext context) throws Exception {
+        Map<String,List<SquonkDataSource>> results = new LinkedHashMap<>();
+        for (Map.Entry<String,Object> e : inputs.entrySet()) {
+            List<SquonkDataSource> dataSources = Utils.convertVariableToDataSources(e.getValue());
+            results.put(e.getKey(), dataSources);
+        }
+        return results;
+    }
+
     protected HttpServiceDescriptor getHttpServiceDescriptor() {
         if (serviceDescriptor == null) {
             throw new IllegalStateException("Service descriptor not found");
@@ -488,6 +502,24 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
             throw new IllegalStateException("Invalid service descriptor. Expected HttpServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
         }
         return (HttpServiceDescriptor)serviceDescriptor;
+    }
+
+    protected DockerServiceDescriptor getDockerServiceDescriptor() {
+        if (serviceDescriptor == null) {
+            throw new IllegalStateException("Service descriptor not found");
+        } else if (!(serviceDescriptor instanceof DockerServiceDescriptor)) {
+            throw new IllegalStateException("Invalid service descriptor. Expected DockerServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
+        }
+        return (DockerServiceDescriptor)serviceDescriptor;
+    }
+
+    protected NextflowServiceDescriptor getNextflowServiceDescriptor() {
+        if (serviceDescriptor == null) {
+            throw new IllegalStateException("Service descriptor not found");
+        } else if (!(serviceDescriptor instanceof NextflowServiceDescriptor)) {
+            throw new IllegalStateException("Invalid service descriptor. Expected NextflowServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
+        }
+        return (NextflowServiceDescriptor)serviceDescriptor;
     }
 
     protected String getHttpExecutionEndpoint() {
@@ -546,10 +578,38 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
             VariableManager varman,
             ContainerRunner runner,
             IODescriptor<P,Q> ioDescriptor) throws Exception {
-        P value = fetchMappedInput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), ioDescriptor.getSecondaryType(), varman, true);
+        P value = fetchInput(camelContext, serviceDescriptor, varman, runner, ioDescriptor);
         File dir = runner.getHostWorkDir();
         FilesystemWriteContext writeContext = new FilesystemWriteContext(dir, ioDescriptor.getName());
         varman.putValue(ioDescriptor.getPrimaryType(), value, writeContext);
+    }
+
+    protected Map<String,Object> fetchInputs(
+            CamelContext camelContext,
+            DefaultServiceDescriptor serviceDescriptor,
+            VariableManager varman,
+            ContainerRunner runner) throws Exception {
+        Map<String,Object> inputs = new LinkedHashMap<>();
+        IODescriptor[] inputDescriptors = serviceDescriptor.resolveInputIODescriptors();
+        if (inputDescriptors != null) {
+            LOG.info("Handling " + inputDescriptors.length + " inputs");
+            for (IODescriptor iod : inputDescriptors) {
+                LOG.info("Writing input for " + iod.getName() + " " + iod.getMediaType());
+                Object input = fetchInput(camelContext, serviceDescriptor, varman, runner, iod);
+                inputs.put(iod.getName(), input);
+            }
+        }
+        return inputs;
+    }
+
+    protected <P,Q> P fetchInput(
+            CamelContext camelContext,
+            DefaultServiceDescriptor serviceDescriptor,
+            VariableManager varman,
+            ContainerRunner runner,
+            IODescriptor<P,Q> ioDescriptor) throws Exception {
+        P value = fetchMappedInput(ioDescriptor.getName(), ioDescriptor.getPrimaryType(), ioDescriptor.getSecondaryType(), varman, true);
+        return value;
     }
 
     protected <P,Q> void handleOutputs(CamelContext camelContext, DefaultServiceDescriptor serviceDescriptor, VariableManager varman, ContainerRunner runner) throws Exception {
@@ -607,6 +667,28 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
         } else {
             throw new IllegalArgumentException("Value is not a dataset");
         }
+    }
+
+    /** Adds a counter to the stream and when the stream is closed will write a status message as defined by the
+     * message param which must be in message format syntax, with the count being passed in as the sole parameter.
+     * e.g. use a value like "Processed %s molecules".
+     * The contents of the stream are not modified in any way and you must use the updated stream that is returned,
+     * not the one that is passed in as a parameter.
+     * NOTE: the counting only happens once the stream starts getting consumed, and the status message only gets set
+     * once the stream is closed.
+     *
+     * @param stream
+     * @param message
+     * @param <T>
+     * @return
+     */
+    protected <T> Stream addStreamCounter(Stream<T> stream, String message) {
+        final AtomicInteger count = new AtomicInteger(0);
+        return stream.peek((o) -> {
+            count.incrementAndGet();
+        }).onClose(() -> {
+            statusMessage = String.format(message, count.intValue());
+        });
     }
 
 

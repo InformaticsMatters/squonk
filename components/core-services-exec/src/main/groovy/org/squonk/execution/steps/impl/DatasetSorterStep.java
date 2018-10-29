@@ -53,14 +53,13 @@ public class DatasetSorterStep<P extends BasicObject> extends AbstractDatasetSte
 
         Stream<P> stream = input.getStream();
         Stream<P> sorted = stream.sorted(new SortComparator(directives));
+        sorted = addStreamCounter(sorted, MSG_PROCESSED);
 
         meta.appendDatasetHistory("Sorted according to " + directives.stream()
                 .map((sd) -> sd.field + (sd.ascending ? " ASC" : " DESC"))
                 .collect(Collectors.joining(", ")));
 
         Dataset<P> result = new Dataset(sorted, meta);
-
-        statusMessage = generateStatusMessage(input.getSize(), result.getSize(), -1);
 
         return result;
     }

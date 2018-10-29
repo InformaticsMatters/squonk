@@ -32,7 +32,7 @@ class PngImageFileHandlerSpec extends Specification {
     void "test write variable"() {
 
         def h = new PngImageFileHandler()
-        def data = new FileDataSource(null, null, new File("../../data/testfiles/image.png"), false)
+        def data = new FileDataSource(null, null, new java.io.File("../../data/testfiles/image.png"), false)
         def png1 = new PngImageFile(data    )
         def ctx = new DummyContext()
 
@@ -84,15 +84,10 @@ class PngImageFileHandlerSpec extends Specification {
             return null
         }
 
-//        @Override
-//        InputStream readStreamValue(String mediaType, String extension, String key) throws Exception {
-//            return new ByteArrayInputStream(bytes)
-//        }
-
         @Override
         SquonkDataSource readStreamValue(String mediaType, String extension, String key) throws Exception {
             def is = new ByteArrayInputStream(bytes)
-            return new InputStreamDataSource(null, mediaType, is, false)
+            return new InputStreamDataSource(SquonkDataSource.ROLE_DEFAULT, null, mediaType, is, false)
         }
     }
 }

@@ -36,7 +36,7 @@ import java.util.stream.Stream;
 import org.apache.camel.CamelContext;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.QuoteMode;
-import org.squonk.util.IOUtils;
+import org.squonk.util.CommonMimeTypes;
 
 /**
  * Reads a CSV or Tab delimited file and generates a
@@ -147,7 +147,7 @@ public class CSVReaderStep extends AbstractStep {
         statusMessage = "Reading file ...";
         SquonkDataSource dataSource = fetchMappedInput(VAR_CSV_INPUT, SquonkDataSource.class, varman);
 
-        Map<String, Object> results = executeWithData(Collections.singletonMap("input", dataSource), context);
+        Map<String, Object> results = executeForVariables(Collections.singletonMap("input", dataSource), context);
         Dataset result = (Dataset)results.values().iterator().next();
 
         createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, result, varman);
@@ -156,7 +156,7 @@ public class CSVReaderStep extends AbstractStep {
     }
 
     @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
         statusMessage = "Reading input ...";
         if (inputs.size() != 1) {
             throw new IllegalArgumentException("Must provide a single input");
@@ -166,7 +166,7 @@ public class CSVReaderStep extends AbstractStep {
         if (input instanceof SquonkDataSource) {
             dataSource = (SquonkDataSource)input;
         } else if (input instanceof InputStream) {
-            dataSource = new InputStreamDataSource("input", "", (InputStream)input, null);
+            dataSource = new InputStreamDataSource(SquonkDataSource.ROLE_DEFAULT, null, CommonMimeTypes.MIME_TYPE_TEXT_CSV, (InputStream)input, null);
         } else {
             throw new IllegalArgumentException("Unsupported input type: " + input.getClass().getName());
         }

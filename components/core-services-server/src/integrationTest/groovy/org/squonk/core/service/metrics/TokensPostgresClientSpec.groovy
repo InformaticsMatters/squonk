@@ -36,11 +36,14 @@ class TokensPostgresClientSpec extends Specification{
 
     void setupSpec() {
 
-        // need to create a dummy job status
+
         Sql db = client.createSql()
         try {
+            // need to create a dummy job status
             db.executeInsert("""INSERT INTO users.jobstatus (owner_id, uuid, status, total_count, processed_count, error_count, started, definition)
                     VALUES (1, $jobId, 'COMPLETED', 0, 0, 0, NOW(), '[]'::jsonb)""")
+            // and delete any existing usage stats
+            db.executeUpdate("DELETE FROM users.metrics_tokens_usage")
         } finally {
             db.close();
         }

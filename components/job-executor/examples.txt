@@ -1,5 +1,5 @@
 # Example uses of jobexecutor in different setups
-# Run these examples from the src/test directory
+# Run these examples from the squonk root directory
 
 
 # dev mode with Docker
@@ -9,28 +9,29 @@ export SVR="172.20.0.2:8080"
 curl -H "SquonkUsername: user1" http://$SVR/jobexecutor/rest/v1/jobs/
 
 curl -X POST \
-  -F "ExecutionParameters=@ExecutionParametersRDKitVerify.json;type=application/json;filename=ExecutionParameters.json"\
-  -F "input_data=@../../../../data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
-  -F "input_metadata=@../../../../data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
-  -H "Content-Type: multipart/mixed"\
-  -H "SquonkUsername: user1"\
-  http://$SVR/jobexecutor/rest/v1/jobs/
+    -F 'options={}''\
+    -F 'input_data=@data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data'\
+    -F 'input_metadata=@data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata'\
+    -H 'Content-Type: multipart/mixed'\
+    -H 'SquonkUsername: user1'\
+    http://$SVR/jobexecutor/rest/v1/jobs/rdkit.calculators.verify
 
 curl -X POST \
-  -F "ExecutionParameters=@ExecutionParametersSlice.json;type=application/json;filename=ExecutionParameters.json"\
-  -F "input_data=@../../../../data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
-  -F "input_metadata=@../../../../data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
-  -H "Content-Type: multipart/mixed"\
-  -H "SquonkUsername: user1"\
-  http://$SVR/jobexecutor/rest/v1/jobs/
+  -F 'options={"skip":5,"count":5}'\
+  -F 'input_data=@data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data'\
+  -F 'input_metadata=@data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata'\
+  -H 'Content-Type: multipart/mixed'\
+  -H 'SquonkUsername: user1'\
+  http://$SVR/jobexecutor/rest/v1/jobs/core.dataset.filter.slice.v1
+
 
 curl -X POST \
-  -F "ExecutionParameters=@ExecutionParametersClusterButina.json;type=application/json;filename=ExecutionParameters.json"\
-  -F "input_data=@../../../../data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
-  -F "input_metadata=@../../../../data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
-  -H "Content-Type: multipart/mixed"\
-  -H "SquonkUsername: user1"\
-  http://$SVR/jobexecutor/rest/v1/jobs/
+  -F 'options={"arg.threshold": 0.6, "arg.descriptor": "morgan2", "arg.metric": "tanimoto"}'\
+  -F 'input_data=@data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data'\
+  -F 'input_metadata=@data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata'\
+  -H 'Content-Type: multipart/mixed'\
+  -H 'SquonkUsername: user1'\
+  http://$SVR/jobexecutor/rest/v1/jobs/pipelines.rdkit.cluster.butina
 
 
 # basic mode with Docker
@@ -49,12 +50,12 @@ curl -kL -H "Authorization: bearer $token" -H "SquonkUsername: user1" http://ngi
 
 curl -kL -X POST --post301\
   -H "Authorization: bearer $token"\
-  -H "SquonkUsername: user1"\
-  -F "ExecutionParameters=@ExecutionParametersSlice.json;type=application/json;filename=ExecutionParameters.json"\
-  -F "input_data=@../../../../data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
-  -F "input_metadata=@../../../../data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
-  -H "Content-Type: multipart/mixed"\
-  http://nginx/jobexecutor/rest/v1/jobs/
+  -H 'SquonkUsername: user1'\
+  -F 'options={"skip":5,"count":5}'\
+  -F 'input_data=@data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data'\
+  -F 'input_metadata=@data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata'\
+  -H 'Content-Type: multipart/mixed'\
+  http://nginx/jobexecutor/rest/v1/jobs/core.dataset.filter.slice.v1
 
 
 
@@ -62,11 +63,11 @@ curl -kL -X POST --post301\
 # verne mode with OpenShift
 
 curl -X POST -kL --post301 --post302\
-  -F "ExecutionParameters=@ExecutionParametersSlice.json;type=application/json;filename=ExecutionParameters.json"\
-  -F "input_data=@../../../../data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
-  -F "input_metadata=@../../../../data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
+  -F 'options={"skip":5,"count":5}'\
+  -F "input_data=@data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
+  -F "input_metadata=@data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
   -H "Content-Type: multipart/mixed"\
   -H "Authorization: bearer $token"\
   -H "SquonkUsername: user1"\
-  http://squonk-jobexecutor.apps.xchem.diamond.ac.uk/jobexecutor/rest/v1/jobs/
+  http://squonk-jobexecutor.apps.xchem.diamond.ac.uk/jobexecutor/rest/v1/jobs/core.dataset.filter.slice.v1
 

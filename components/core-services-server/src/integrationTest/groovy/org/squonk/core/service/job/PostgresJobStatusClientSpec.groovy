@@ -99,7 +99,7 @@ class PostgresJobStatusClientSpec extends Specification {
         status.username == TestUtils.TEST_USERNAME
         status.jobDefinition instanceof DoNothingJobDefinition
         status.status == JobStatus.Status.RESULTS_READY
-        status.completed == null
+        status.completed != null
     }
 
     void "first event"() {
@@ -116,7 +116,7 @@ class PostgresJobStatusClientSpec extends Specification {
         status.status == JobStatus.Status.RESULTS_READY
         status.events.size() == 1
         status.events[0] == "Going wrong"
-        status.completed == null
+        status.completed != null
     }
 
     void "update event"() {

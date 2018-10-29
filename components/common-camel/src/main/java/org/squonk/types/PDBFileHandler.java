@@ -23,8 +23,10 @@ import org.squonk.util.CommonMimeTypes;
  */
 public class PDBFileHandler extends FileHandler<PDBFile> {
 
+    private static final String ROLE_MOL = "pdb";
+
     public PDBFileHandler() {
-        super(PDBFile.class, CommonMimeTypes.MIME_TYPE_PDB,"pdb", true);
+        super(PDBFile.class, CommonMimeTypes.MIME_TYPE_PDB,ROLE_MOL, true);
     }
 
 }

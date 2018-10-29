@@ -57,7 +57,7 @@ public abstract class AbstractDatasetStep<P extends BasicObject, Q extends Basic
      * @throws Exception
      */
     @Override
-    public Map<String,Object> executeWithData(Map<String,Object> inputs, CamelContext camelContext) throws Exception {
+    public Map<String,Object> executeForVariables(Map<String,Object> inputs, CamelContext camelContext) throws Exception {
         if (inputs.size() != 1) {
             throw new IllegalArgumentException("Single dataset expected");
         }

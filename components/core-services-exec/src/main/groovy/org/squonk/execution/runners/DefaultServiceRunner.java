@@ -38,7 +38,7 @@ public class DefaultServiceRunner implements ServiceRunner {
         }
         createWorkDir();
         // execute the step
-        Map<String,Object> outputs = step.executeWithData(data, camelContext);
+        Map<String,Object> outputs = step.executeForVariables(data, camelContext);
         results = new ArrayList<>();
         for (Map.Entry<String,Object> e : outputs.entrySet()) {
             String name = e.getKey();

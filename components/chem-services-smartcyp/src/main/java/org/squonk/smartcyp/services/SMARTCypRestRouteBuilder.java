@@ -140,6 +140,7 @@ public class SMARTCypRestRouteBuilder extends RouteBuilder {
 
         from(ROUTE_POST_SDS)
                 .log(ROUTE_POST_SDS)
+                .log(sdset + " (" + sdset.getAsServiceConfigs().size() + " service descriptors)")
                 .process((Exchange exch) -> {
                     String json = JsonHandler.getInstance().objectToJson(sdset);
                     exch.getOut().setBody(json);

@@ -1,8 +1,0 @@
-{
-  "serviceDescriptorId": "test.docker.copydataset",
-  "options":{
-    "string_option":"string value",
-    "int_option":999,
-    "float_option":["java.lang.Float",123.456]
-  }
-}

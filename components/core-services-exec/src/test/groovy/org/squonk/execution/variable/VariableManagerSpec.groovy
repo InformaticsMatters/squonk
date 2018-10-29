@@ -77,7 +77,7 @@ class VariableManagerSpec extends Specification {
     void "read pdb"() {
         VariableManager varman = new VariableManager(null, 1, 1);
         String pdbcontent = "I'm a pdb file"
-        PDBFile value = new PDBFile(new StringDataSource(null, null, pdbcontent, false))
+        PDBFile value = new PDBFile(new StringDataSource("pdb", null, null, pdbcontent, false))
         VariableKey var = new VariableKey(99, "protein")
         varman.putValue(var, PDBFile, value)
         println varman.tmpVariableInfo
@@ -97,7 +97,7 @@ class VariableManagerSpec extends Specification {
         File dir = new File(System.getProperty("java.io.tmpdir"))
         VariableManager varman = new VariableManager(null, 1, 1);
         String pdbcontent = "I'm a pdb file"
-        PDBFile value = new PDBFile(new StringDataSource(null, null, pdbcontent, false))
+        PDBFile value = new PDBFile(new StringDataSource("pdb", null, null, pdbcontent, false))
         File expectedFile = new File(dir, "protein.pdb.gz")
 
         when:

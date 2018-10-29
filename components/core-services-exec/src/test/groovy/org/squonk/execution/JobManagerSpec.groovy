@@ -52,7 +52,7 @@ class JobManagerSpec extends Specification {
                 null, //OptionDescriptor[] optionDescriptors,
                 null, //ThinDescriptor[] thinDescriptors,
                 // these are specific to docker execution
-                null, //String executorClassName,
+                "org.squonk.execution.steps.impl.DefaultDockerExecutorStep", //String executorClassName,
                 "busybox",
                 "cp input.sdf.gz output.sdf.gz",
                 null)
@@ -79,7 +79,7 @@ class JobManagerSpec extends Specification {
                 null, //OptionDescriptor[] optionDescriptors,
                 null, //ThinDescriptor[] thinDescriptors,
                 // these are specific to docker execution
-                null, //String executorClassName,
+                "org.squonk.execution.steps.impl.DefaultDockerExecutorStep", //String executorClassName,
                 "busybox",
                 "cp input.data.gz output.data.gz && cp input.metadata output.metadata",
                 null)
@@ -158,11 +158,10 @@ class JobManagerSpec extends Specification {
         def sd = createSdfServiceDescriptor()
         JobManager mgr = new JobManager(false, true)
         mgr.putServiceDescriptors(Collections.singletonList(createSdfServiceDescriptor()))
-        ExecutionParameters params = new ExecutionParameters(sd.getId(), [:])
 
         when:
 
-        def jobStatus = mgr.executeAsync(USER, params, ["input": new FileInputStream(source)])
+        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input": new FileInputStream(source)])
         jobStatus = waitTillResultsReady(mgr, jobStatus)
 
         then:
@@ -187,20 +186,19 @@ class JobManagerSpec extends Specification {
         println JsonHandler.getInstance().objectToJson(sd)
         JobManager mgr = new JobManager(false, true)
         mgr.putServiceDescriptors(Collections.singletonList(createDatasetServiceDescriptor()))
-        ExecutionParameters params = new ExecutionParameters(sd.getId(), [:])
 
         when:
-        def jobStatus = mgr.executeAsync(USER, params, ["input_data": new ByteArrayInputStream(source1), "input_metadata": new ByteArrayInputStream(source2)])
+        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input_data": new ByteArrayInputStream(source1), "input_metadata": new ByteArrayInputStream(source2)])
         jobStatus = waitTillResultsReady(mgr, jobStatus)
         def results = mgr.getJobResultsAsDataSources(USER, jobStatus.getJobId())
 
         then:
         results != null
-        results.size() == 2
-        results[0].name == 'output_data'
-        results[1].name == 'output_metadata'
-        results[0].inputStream.bytes.length > 0
-        results[1].inputStream.text.size() > 0
+        results.size() == 1
+        def outputs = results['output']
+        outputs.size() == 2
+        outputs[0].inputStream.text.size() > 0
+        outputs[1].inputStream.bytes.length > 0
 
         cleanup:
         mgr?.cleanupJob(USER, jobStatus?.getJobId())

@@ -152,20 +152,34 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
 
         // and execute
         try {
-            LOG.info("Executing job " + jobid + " for user " + username);
+            LOG.fine("Executing job " + jobid + " for user " + username);
             executor.execute(camelContext);
             List<Step> definedSteps = executor.getDefinedSteps();
             String statusMessage = null;
+            int numProcessed = 0;
+            int numResults = 0;
+            int numErrors = 0;
             if (definedSteps != null && !definedSteps.isEmpty()) {
                 Step s = definedSteps.get(definedSteps.size() - 1);
                 if (s != null) {
                     statusMessage = s.getStatusMessage();
+                    if (s.getNumProcessed() > 0) {
+                        numProcessed = s.getNumProcessed();
+                    }
+                    if (s.getNumResults() > 0) {
+                        numResults = s.getNumResults();
+                    }
+                    if (s.getNumErrors() > 0) {
+                        numErrors = s.getNumErrors();
+                    }
                 }
             } else {
                 statusMessage = executor.getCurrentStatus();
             }
-            LOG.info("Job " + jobid + " complete. Updating status");
-            jobstatusClient.updateStatus(jobid, JobStatus.Status.COMPLETED, statusMessage);
+            LOG.fine("Job " + jobid + " complete. Updating status");
+
+            // TODO - review how stats are set
+            jobstatusClient.updateStatus(jobid, JobStatus.Status.COMPLETED, statusMessage, numProcessed, numErrors);
             LOG.info("Status updated to COMPLETED");
         } catch (Exception e) {
             LOG.log(Level.WARNING, "Failed to execute job " + jobid, e);

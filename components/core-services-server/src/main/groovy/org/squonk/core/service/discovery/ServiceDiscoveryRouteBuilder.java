@@ -18,6 +18,7 @@ package org.squonk.core.service.discovery;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.Message;
 import org.apache.camel.builder.RouteBuilder;
 import org.squonk.core.*;
@@ -53,7 +54,6 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     public static final String ROUTE_POST_SD_SET = "direct:post-service-descriptor-set";
     public static final String ROUTE_POST_SD_SINGLE = "direct:post-service-descriptor-single";
     private static Pattern EXECUTOR_PATTERN = Pattern.compile("/(\\w+)/(.*)");
-    protected String DOCKER_SERVICES_DIR = IOUtils.getConfiguration("SQUONK_DOCKER_SERVICES_DIR", "../../data/testfiles/docker-services");
 
 
     /**
@@ -74,9 +74,6 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 
     private final Map<String, String> locations = new LinkedHashMap<>();
 
-    public ServiceDiscoveryRouteBuilder() {
-        LOG.info("Services will be looked for in " + DOCKER_SERVICES_DIR);
-    }
 
     public static final HttpServiceDescriptor[] TEST_SERVICE_DESCRIPTORS = new HttpServiceDescriptor[]{
             new HttpServiceDescriptor(
@@ -98,7 +95,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
     public void configure() throws Exception {
 
         from(ROUTE_REQUEST_SERVICE_CONFIGS)
-                .log("ROUTE_REQUEST")
+                .log(LoggingLevel.DEBUG, ROUTE_REQUEST_SERVICE_CONFIGS)
                 .process((Exchange exch) -> {
                     ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
                     reg.init(); // this ensures the descriptors are loaded from the DB before we update anything
@@ -107,7 +104,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
                 });
 
         from(ROUTE_REQUEST_SERVICE_DESCRIPTORS)
-                .log("ROUTE_REQUEST")
+                .log(LoggingLevel.DEBUG, ROUTE_REQUEST_SERVICE_DESCRIPTORS)
                 .process((Exchange exch) -> {
                     ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
                     reg.init(); // this ensures the descriptors are loaded from the DB before we update anything
@@ -121,7 +118,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
          *
          */
         from(ROUTE_POST_SD_SET)
-                .log("ROUTE_POST_SD_SET")
+                .log(LoggingLevel.DEBUG, ROUTE_POST_SD_SET)
                 .process((Exchange exch) -> {
                     String contentType = exch.getIn().getHeader(Exchange.CONTENT_TYPE, String.class);
                     String content = exch.getIn().getBody(String.class);
@@ -150,7 +147,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
          *
          */
         from(ROUTE_POST_SD_SINGLE)
-                .log("ROUTE_POST_SD_SINGLE")
+                .log(LoggingLevel.DEBUG, ROUTE_POST_SD_SINGLE)
                 .process((Exchange exch) -> {
                     String baseUrl = exch.getIn().getHeader("Base-URL", String.class);
                     if (baseUrl == null) {
@@ -180,7 +177,7 @@ public class ServiceDiscoveryRouteBuilder extends RouteBuilder {
 
         // This checks the currently available services on a scheduled basis
         from("timer:discover?period=" + timerInterval + "&repeatCount=" + timerRepeats + "&delay=" + timerDelay)
-                .log("UPDATE_SERVICES")
+                .log(LoggingLevel.DEBUG, "UPDATE_SERVICES")
                 .process(exch -> {
                     ServiceDescriptorRegistry reg = fetchDescriptorRegistry(exch.getContext());
                     reg.init(); // this ensures the previous descriptors are loaded from the DB before we update anything

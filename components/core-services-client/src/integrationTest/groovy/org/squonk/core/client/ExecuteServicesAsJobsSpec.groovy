@@ -53,7 +53,7 @@ class ExecuteServicesAsJobsSpec extends ClientSpecBase {
 
     void "get specified service"() {
         when:
-        def config = getServiceConfigs()["cdk.logp"]
+        def config = getServiceConfigs()["rdkit.calculators.verify"]
 
         then:
         config != null

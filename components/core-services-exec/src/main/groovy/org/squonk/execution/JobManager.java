@@ -16,6 +16,7 @@
 package org.squonk.execution;
 
 import org.apache.camel.CamelContext;
+import org.squonk.core.ServiceConfig;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptorUtils;
 import org.squonk.core.client.JobStatusRestClient;
@@ -105,6 +106,33 @@ public class JobManager implements ExecutorCallback {
         }
     }
 
+    public List<Map<String,String>> fetchServiceDescriptorInfo() {
+        List<Map<String,String>> results = new ArrayList<>();
+        for (ServiceDescriptor sd : serviceDescriptors.values()) {
+            Map<String,String> info = new LinkedHashMap<>(3);
+            info.put("id", sd.getId());
+            String name = sd.getServiceConfig().getName();
+            if (name != null && !name.isEmpty()) {
+                info.put("name", name);
+            }
+            String desc = sd.getServiceConfig().getName();
+            if (desc != null && !desc.isEmpty()) {
+                info.put("description", desc);
+            }
+            results.add(info);
+        }
+        return results;
+    }
+
+    public ServiceConfig fetchServiceConfig(String id) {
+        ServiceDescriptor sd = serviceDescriptors.get(id);
+        if (sd == null) {
+            return null;
+        } else {
+            return sd.getServiceConfig();
+        }
+    }
+
     public CamelContext getCamelContext() {
         return camelContext;
     }
@@ -136,10 +164,11 @@ public class JobManager implements ExecutorCallback {
     }
 
     /** Submit a new job. The call will return immediately with the JobStatus from which you can obtain the job's ID.
-     * YOu then use that ID to check the status, and when the status changes to @{link JobStatus.Status.RESULTS_READY}
+     * You then use that ID to check the status, and when the status changes to @{link JobStatus.Status.RESULTS_READY}
      * you can then fetch the results and then cleanup.
      *
-     * @param params
+     * @param serviceId
+     * @param options
      * @param inputs
      * @param username
      * @return
@@ -147,25 +176,26 @@ public class JobManager implements ExecutorCallback {
      */
     public JobStatus executeAsync(
             String username,
-            ExecutionParameters params,
+            String serviceId,
+            Map<String,Object> options,
             Map<String, InputStream> inputs) throws Exception {
 
-        return execute(username, params, inputs, true);
+        return execute(username, serviceId, options, inputs, true);
     }
 
     private JobStatus execute(
             String username,
-            ExecutionParameters params,
+            String serviceId,
+            Map<String, Object> options,
             Map<String, InputStream> inputs,
             boolean async) throws Exception {
 
-        Map<String,Object> options = params.getOptions();
         if (options == null) {
             options = Collections.emptyMap();
         }
-        ServiceDescriptor serviceDescriptor = serviceDescriptors.get(params.getServiceDescriptorId());
+        ServiceDescriptor serviceDescriptor = serviceDescriptors.get(serviceId);
         if (serviceDescriptor == null) {
-            throw new IllegalStateException("No service descriptor found for " + params.getServiceDescriptorId());
+            throw new IllegalStateException("No service descriptor found for " + serviceId);
         }
 
         ExternalJobDefinition jobDefinition = new ExternalJobDefinition(serviceDescriptor, options);
@@ -289,7 +319,7 @@ public class JobManager implements ExecutorCallback {
      * @param jobId
      * @return
      */
-    public Map<String,Object> getJobResultsAsObjects(String username, String jobId) throws IOException {
+    public Map<String,Object> getJobResultsAsObjects(String username, String jobId) throws Exception {
         ExecutionData executionData = findMyExecutionData(username, jobId);
         if (executionData != null) {
             return executionData.executor.getResultsAsObjects();
@@ -298,7 +328,7 @@ public class JobManager implements ExecutorCallback {
         }
     }
 
-    public List<SquonkDataSource> getJobResultsAsDataSources(String username, String jobId) throws IOException {
+    public Map<String,List<SquonkDataSource>> getJobResultsAsDataSources(String username, String jobId) throws Exception {
         ExecutionData executionData = findMyExecutionData(username, jobId);
         if (executionData != null) {
             return executionData.executor.getResultsAsDataSources();

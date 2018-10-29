@@ -46,7 +46,7 @@ public class IntegerToStringStep extends AbstractStep {
     }
 
     @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
         if (inputs.size() != 1) {
             throw new IllegalArgumentException("Must be a single input");
         }

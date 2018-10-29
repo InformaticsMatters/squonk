@@ -61,8 +61,8 @@ class AbstractStreamTypeSpec extends Specification {
             super(input, type, gzipped)
         }
 
-        SimpleAbstractStreamType(inputs, type, names, types, gzippeds) {
-            super(inputs, type, names, types, gzippeds)
+        SimpleAbstractStreamType(inputs, type, roles, types, gzippeds) {
+            super(inputs, type, roles, roles, types, gzippeds)
         }
 
     }

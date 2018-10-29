@@ -109,7 +109,7 @@ public class MoleculeServiceToBasicObjectThinExecutorStep extends AbstractThinDa
     }
 
     @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
         return null;
     }
 

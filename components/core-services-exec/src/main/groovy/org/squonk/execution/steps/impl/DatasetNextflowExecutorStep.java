@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  *
  * Created by timbo on 28/07/17.
  */
-public class DatasetNextflowExecutorStep extends AbstractThinDatasetStep {
+public class DatasetNextflowExecutorStep extends AbstractDockerStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetNextflowExecutorStep.class.getName());
     protected static final String MSG_RUNNING_NEXTFLOW = "Running Nextflow";
@@ -130,7 +130,7 @@ public class DatasetNextflowExecutorStep extends AbstractThinDatasetStep {
     }
 
     @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
         // TODO - remove the need for this
         throw new RuntimeException("Not implementable");
     }

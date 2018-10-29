@@ -65,7 +65,7 @@ public class MoleculeServiceThinExecutorStep extends AbstractThinDatasetStep {
     }
 
     @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
 
         Dataset input = getSingleDatasetFromMap(inputs);
         String endpoint = getHttpExecutionEndpoint();

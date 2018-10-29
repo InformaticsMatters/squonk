@@ -44,17 +44,15 @@ public class SmilesStructuresStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
-        Map<String,Object> results = executeWithData(Collections.emptyMap(), context);
+        Map<String,Object> results = executeForVariables(Collections.emptyMap(), context);
         Dataset result = getSingleDatasetFromMap(results);
 
         createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, result, varman);
-
-        statusMessage = generateStatusMessage(-1, result.getSize(), -1);
         LOG.info("Results: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
     }
 
     @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
         statusMessage = MSG_PREPARING_INPUT;
 
 
@@ -88,7 +86,7 @@ public class SmilesStructuresStep extends AbstractStep {
             meta.createField(FIELD_NAME, "User provided name", "Name provided by user with smiles", String.class);
         }
         meta.setSize(mols.size());
-
+        statusMessage = mols.size() + " molecules";
 
         Dataset<MoleculeObject> result = new Dataset<>(mols, meta);
         return Collections.singletonMap(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, result);

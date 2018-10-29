@@ -23,6 +23,8 @@ import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -31,7 +33,7 @@ import java.util.logging.Logger;
 public class SDFileHandler extends DefaultHandler<SDFile> {
 
     private static final Logger LOG = Logger.getLogger(SDFileHandler.class.getName());
-    private static final String EXT = "sdf";
+    private static final String ROLE_SDF = "sdf";
 
 
     public SDFileHandler() {
@@ -73,13 +75,19 @@ public class SDFileHandler extends DefaultHandler<SDFile> {
     public void writeVariable(SDFile sdf, WriteContext context) throws Exception {
         LOG.fine("Writing as SDFile");
         //context.writeStreamValue(sdf.getInputStream());
-        context.writeStreamValue(sdf.getInputStream(), CommonMimeTypes.MIME_TYPE_MDL_SDF, EXT,null, true);
+        context.writeStreamValue(sdf.getInputStream(), CommonMimeTypes.MIME_TYPE_MDL_SDF, ROLE_SDF,null, true);
     }
 
     @Override
     public SDFile readVariable(ReadContext context) throws Exception {
-        SquonkDataSource ds = context.readStreamValue(CommonMimeTypes.MIME_TYPE_MDL_SDF, EXT);
+        SquonkDataSource ds = context.readStreamValue(CommonMimeTypes.MIME_TYPE_MDL_SDF, ROLE_SDF);
         return new SDFile(ds);
+    }
+
+    @Override
+    public List<SquonkDataSource> readDataSources(ReadContext context) throws Exception {
+        SquonkDataSource ds = context.readStreamValue(CommonMimeTypes.MIME_TYPE_MDL_SDF, ROLE_SDF);
+        return Collections.singletonList(ds);
     }
 
 }

@@ -18,17 +18,19 @@ package org.squonk.execution.steps;
 
 import org.squonk.execution.variable.VariableManager;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.camel.CamelContext;
 import org.squonk.io.IODescriptor;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.io.SquonkDataSource;
 import org.squonk.notebook.api.VariableKey;
 
 /** Interface for executable steps. A step is executable in 2 ways:
  *
  * 1. External execution where the input data is provided by the client and the results are
- * returned to the client. Execution is handled by the {@link #executeWithData(Map, CamelContext)}
+ * returned to the client. Execution is handled by the {@link #executeForVariables(Map, CamelContext)}
  * method, with the inputs being present in the first parameter. In this mode the step is configured
  * using the {@link #configure(String jobId, Map options, ServiceDescriptor serviceDescriptor)} method.
  *
@@ -130,8 +132,16 @@ public interface Step {
      * @return
      * @throws Exception
      */
-    Map<String,Object> executeWithData(Map<String,Object> inputs, CamelContext context) throws Exception;
+    Map<String,Object> executeForVariables(Map<String,Object> inputs, CamelContext context) throws Exception;
 
+    Map<String,List<SquonkDataSource>> executeForDataSources(Map<String,Object> inputs, CamelContext context) throws Exception;
+
+
+    int getNumProcessed();
+
+    int getNumResults();
+
+    int getNumErrors();
 
     /** Get a message indicating the current status of the execution
      *

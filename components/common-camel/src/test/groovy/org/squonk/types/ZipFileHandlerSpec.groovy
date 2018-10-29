@@ -32,7 +32,7 @@ class ZipFileHandlerSpec extends Specification {
     void "test write variable"() {
 
         def h = new ZipFileHandler()
-        def data =  new FileDataSource(null, null, new File("../../data/testfiles/test.zip"), false)
+        def data =  new FileDataSource(null, null, new java.io.File("../../data/testfiles/test.zip"), false)
         def zip1 = new ZipFile(data)
         def ctx = new DummyContext()
 
@@ -93,7 +93,7 @@ class ZipFileHandlerSpec extends Specification {
         @Override
         SquonkDataSource readStreamValue(String mediaType, String extension, String key) throws Exception {
             def is = new ByteArrayInputStream(bytes)
-            return new InputStreamDataSource(null, mediaType, is, false)
+            return new InputStreamDataSource(SquonkDataSource.ROLE_DEFAULT, null, mediaType, is, false)
         }
     }
 }

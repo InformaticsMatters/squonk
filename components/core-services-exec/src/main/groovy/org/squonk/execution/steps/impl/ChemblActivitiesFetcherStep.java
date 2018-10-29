@@ -45,7 +45,7 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
 
-        Map<String, Object> results = executeWithData(Collections.emptyMap(), context);
+        Map<String, Object> results = executeForVariables(Collections.emptyMap(), context);
         Dataset dataset = (Dataset)results.get(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET);
 
         createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, dataset, varman);
@@ -54,7 +54,7 @@ public class ChemblActivitiesFetcherStep extends AbstractStep {
     }
 
     @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
         dumpConfig(Level.INFO);
 
         int batchSize = getOption(OPTION_BATCH_SIZE, Integer.class, 500);

@@ -8,7 +8,7 @@ networks:
 services:
 
     postgres:
-        image: informaticsmatters/rdkit_cartridge:Release_2016_03_1
+        image: informaticsmatters/rdkit_cartridge:Release_2017_09_2
         volumes:
         - ./deploy/images/postgres/docker-healthcheck.sh:/usr/local/bin/docker-healthcheck.sh:ro,Z
         - ./deploy/images/postgres/init-postgres-db.sh:/docker-entrypoint-initdb.d/init-postgres-db.sh:ro,Z
@@ -25,6 +25,15 @@ services:
             timeout: 2s
             retries: 10 
 
+    flyway:
+        image: squonk/flyway:${TAG}
+        environment:
+            POSTGRES_PASSWORD: squonk
+        networks:
+        - squonk_back
+        depends_on:
+            postgres:
+                condition: service_healthy
 
     rabbitmq:
         image: rabbitmq:3-management
@@ -57,13 +66,18 @@ services:
             rabbitmq:
                 condition: service_healthy
 
-    # coreserives sometimes fails to start because chemservices is too slow to start. If this happens increase the number of retries in the healthcheck
     chemservices:
-        image: squonk/chemservices-basic:latest
+        image: squonk/chemservices-basic:${TAG}
         ports:
         - "8092:8080"
+        depends_on:
+            coreservices:
+                condition: service_healthy
         volumes:
-        - ./deploy/images/chemservices/chemaxon_reaction_library.zip:/chemaxon_reaction_library.zip:ro,z
+        - ./deploy/images/chemservices/license.cxl:/usr/local/tomcat/license.cxl:ro,z
+        environment:
+            CHEMAXON_LICENSE_URL: /usr/local/tomcat/license.cxl
+            RABBITMQ_SQUONK_PASSWORD: squonk
         networks:
         - squonk_back
         healthcheck:
@@ -72,8 +86,8 @@ services:
             timeout: 5s
             retries: 10
 
-    chemcentral:
-            image: squonk/chemcentral-search:latest
+    chemcentral-search:
+            image: squonk/chemcentral-search:${TAG}
             ports:
             - "8093:8080"
             networks:
@@ -89,18 +103,14 @@ services:
                 retries: 10
 
     coreservices:
-        image: squonk/coreservices:latest
+        image: squonk/coreservices:${TAG}
         ports:
         - 8091:8080
-        volumes:
-        - ./docker-services:/var/local/squonk-docker-services:z
         depends_on:
             postgres:
-                condition: service_started
+                condition: service_healthy
             rabbitmq:
                 condition: service_started
-            chemservices:
-                condition: service_healthy
         environment:
             SQUONK_DOCKER_SERVICES_DIR: "/var/local/squonk-docker-services"
         networks:
@@ -112,7 +122,7 @@ services:
             retries: 3
 
     cellexecutor:
-        image: squonk/cellexecutor:latest
+        image: squonk/cellexecutor:${TAG}
         depends_on:
         - coreservices
         - rabbitmq

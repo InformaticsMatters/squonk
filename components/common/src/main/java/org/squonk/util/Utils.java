@@ -16,9 +16,16 @@
 
 package org.squonk.util;
 
-import java.io.InputStream;
+import org.squonk.io.SquonkDataSource;
+import org.squonk.io.StringDataSource;
+import org.squonk.types.StreamType;
+
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -138,6 +145,21 @@ public class Utils {
             return null;
         }
         return constructor.newInstance(constructorArgs);
+    }
+
+    public static List<SquonkDataSource> convertVariableToDataSources(Object variable) throws IOException {
+        List<SquonkDataSource> results = new ArrayList<>();
+        if (variable instanceof StreamType) {
+            StreamType streamType = (StreamType) variable;
+            SquonkDataSource[] dataSources = streamType.getDataSources();
+            results.addAll(Arrays.asList(dataSources));
+        } else {
+            // hope this never happens, but would at least handle simple types
+            String txt = variable.toString();
+            SquonkDataSource ds = new StringDataSource(SquonkDataSource.ROLE_DEFAULT, null, "text/plain", txt, false);
+            results.add(ds);
+        }
+        return results;
     }
 
 }

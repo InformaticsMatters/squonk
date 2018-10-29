@@ -109,8 +109,8 @@ import java.util.stream.StreamSupport;
  */
 public class Dataset<T extends BasicObject> implements DatasetProvider, StreamProvider<T>, StreamType {
 
-    public static final String DATASET_FILE_EXT = "data";
-    public static final String METADATA_FILE_EXT = "metadata";
+    public static final String ROLE_DATASET = "data";
+    public static final String ROLE_METADATA = "metadata";
 
     private static final Logger LOG = Logger.getLogger(Dataset.class.getName());
     private static final String MSG_ALREADY_CONSUMED = "Input not defined or already consumed";
@@ -192,7 +192,8 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     public Dataset(Class<T> type, URL url, DatasetMetadata<T> metadata) {
         this.type = type;
         this.dataSource = new UrlDataSource(
-                DATASET_FILE_EXT,
+                ROLE_DATASET,
+                null,
                 resolveContentMimeType(metadata.getType()),
                 url,
                 null
@@ -222,7 +223,8 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         }
         this.type = type;
         this.dataSource = new InputStreamDataSource(
-                DATASET_FILE_EXT,
+                ROLE_DATASET,
+                null,
                 resolveContentMimeType(metadata.getType()),
                 inputStream,
                 null);
@@ -249,7 +251,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     public Dataset(File file, DatasetMetadata<T> metadata) {
         this.type = metadata.getType();
         this.dataSource = new FileDataSource(
-                DATASET_FILE_EXT,
+                ROLE_DATASET,
                 resolveContentMimeType(metadata.getType()),
                 file,
                 file.getName().toLowerCase().endsWith(".gz"));
@@ -584,9 +586,9 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
     public SquonkDataSource[] getDataSources() throws IOException {
         String json = JsonHandler.getInstance().objectToJson(getMetadata());
         //InputStream metaInput = new ByteArrayInputStream(JsonHandler.getInstance().objectToBytes(getMetadata()));
-        SquonkDataSource meta = new StringDataSource(METADATA_FILE_EXT, CommonMimeTypes.MIME_TYPE_DATASET_METADATA, json, false);
+        SquonkDataSource meta = new StringDataSource(ROLE_METADATA, null, CommonMimeTypes.MIME_TYPE_DATASET_METADATA, json, false);
         SquonkDataSource data = getAsDataSource(true);
-        data.setName(DATASET_FILE_EXT);
+        data.setName(ROLE_DATASET);
         return new SquonkDataSource[]{data, meta};
     }
 
@@ -600,7 +602,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
         } else {
             JsonHandler.MarshalData data = JsonHandler.getInstance().marshalData(getStream(), gzip);
             InputStream is = data.getInputStream();
-            SquonkDataSource ds = new InputStreamDataSource(DATASET_FILE_EXT, CommonMimeTypes.MIME_TYPE_MOLECULE_OBJECT_JSON, is, null);
+            SquonkDataSource ds = new InputStreamDataSource(ROLE_DATASET, null, CommonMimeTypes.MIME_TYPE_MOLECULE_OBJECT_JSON, is, null);
             ds.setGzipContent(gzip);
             return ds;
         }
@@ -608,7 +610,7 @@ public class Dataset<T extends BasicObject> implements DatasetProvider, StreamPr
 
     @Override
     public String[] getStreamNames() {
-        return new String[]{DATASET_FILE_EXT, METADATA_FILE_EXT};
+        return new String[]{ROLE_DATASET, ROLE_METADATA};
     }
 
     @Override

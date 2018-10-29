@@ -51,7 +51,12 @@ public class TrustedGroovyDatasetScriptStep extends AbstractDatasetStep {
         ScriptEngine engine = GroovyScriptExecutor.createScriptEngine(this.getClass().getClassLoader());
         statusMessage = "Executing ...";
         Dataset results = GroovyScriptExecutor.executeAndReturnValue(Dataset.class, engine, script, bindings);
-        LOG.info("Script executed");
+        int size = results.getSize();
+        if (size > 0) {
+            LOG.info(String.format("Script executed. %s results", size));
+        } else {
+            LOG.info("Script executed");
+        }
         return results;
     }
 }

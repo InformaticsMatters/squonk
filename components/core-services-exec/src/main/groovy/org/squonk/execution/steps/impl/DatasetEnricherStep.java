@@ -114,13 +114,37 @@ public class DatasetEnricherStep extends AbstractThinDatasetStep {
 
     @Override
     public void execute(VariableManager varman, CamelContext context) throws Exception {
+
+        statusMessage = MSG_FETCHING_INPUT;
+        Dataset<? extends BasicObject> mainDataset = fetchMappedInput(VAR_INPUT, Dataset.class, varman);
+        Dataset<? extends BasicObject> extraDataset = fetchMappedInput(VAR_NEW_DATA, Dataset.class, varman);
+        Map<String,Object> inputs = new HashMap<>();
+        inputs.put(VAR_INPUT, mainDataset);
+        inputs.put(VAR_NEW_DATA, extraDataset);
+
+        Map<String,Object> outputs =  executeForVariables(inputs, context);
+
+        statusMessage = "Writing results";
+        Dataset output = (Dataset)outputs.get(VAR_OUTPUT);
+        createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
+        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(output.getMetadata()));
+    }
+
+    private Object fetchValueToCompare(BasicObject bo, String mergeField) {
+        return mergeField == null ? bo.getUUID() : bo.getValue(mergeField);
+    }
+
+    @Override
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
+
         final String mainField = getOption(OPT_MAIN_FIELD, String.class);
         final String extraField = getOption(OPT_EXTRA_FIELD, String.class);
         final String mergeMode = getOption(OPT_MERGE_MODE, String.class, "both");
         final Mode mode = Mode.valueOf(mergeMode);
 
-        Dataset<? extends BasicObject> mainDataset = fetchMappedInput(VAR_INPUT, Dataset.class, varman);
-        Dataset<? extends BasicObject> extraDataset = fetchMappedInput(VAR_NEW_DATA, Dataset.class, varman);
+
+        Dataset<? extends BasicObject> mainDataset = (Dataset)inputs.get(VAR_INPUT);
+        Dataset<? extends BasicObject> extraDataset = (Dataset)inputs.get(VAR_NEW_DATA);
         if (mainDataset == null) {
             throw new IllegalStateException("Input dataset not defined");
         }
@@ -158,7 +182,6 @@ public class DatasetEnricherStep extends AbstractThinDatasetStep {
             });
         }
 
-        AtomicInteger count = new AtomicInteger(0);
         Stream<? extends BasicObject> enrichedStream = mainDataset.getStream().peek((BasicObject bo) -> {
             Object comparator = fetchValueToCompare(bo, mainField);
             if (comparator != null) {
@@ -169,10 +192,11 @@ public class DatasetEnricherStep extends AbstractThinDatasetStep {
                     } else {
                         bo.getValues().putAll(updates.getValues());
                     }
-                    count.incrementAndGet();
                 }
             }
         });
+
+        enrichedStream = addStreamCounter(enrichedStream, MSG_PROCESSED);
 
         Object extraDesc = extraMeta.getProperties().get(DatasetMetadata.PROP_DESCRIPTION);
         String what = null;
@@ -201,20 +225,8 @@ public class DatasetEnricherStep extends AbstractThinDatasetStep {
         }
 
         statusMessage = "Writing results";
-        Dataset output = new Dataset(mainType, enrichedStream, mainMeta);
-        createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
-        statusMessage = count.get() + " records updated";
-        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(output.getMetadata()));
-    }
-
-    private Object fetchValueToCompare(BasicObject bo, String mergeField) {
-        return mergeField == null ? bo.getUUID() : bo.getValue(mergeField);
-    }
-
-    @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
-        // TODO - implement this
-        throw new RuntimeException("NYI");
+        Dataset<? extends BasicObject> output = new Dataset(enrichedStream, mainMeta);
+        return Collections.singletonMap(VAR_OUTPUT, output);
     }
 
 }

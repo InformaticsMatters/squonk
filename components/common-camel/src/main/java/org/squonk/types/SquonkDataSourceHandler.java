@@ -16,12 +16,16 @@
 
 package org.squonk.types;
 
+import org.squonk.api.VariableHandler;
+import org.squonk.dataset.Dataset;
 import org.squonk.http.RequestResponseExecutor;
 import org.squonk.io.InputStreamDataSource;
 import org.squonk.io.SquonkDataSource;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by timbo on 23/03/2016.
@@ -29,7 +33,7 @@ import java.io.InputStream;
 public class SquonkDataSourceHandler extends DefaultHandler<SquonkDataSource> {
 
     private final String mediaType;
-    private final String extension;
+    private final String role;
     private final String key;
     private final boolean gzip;
 
@@ -38,10 +42,10 @@ public class SquonkDataSourceHandler extends DefaultHandler<SquonkDataSource> {
         this(null, null, null, true);
     }
 
-    public SquonkDataSourceHandler(String mediaType, String extension, String key, boolean gzip) {
+    public SquonkDataSourceHandler(String mediaType, String role, String key, boolean gzip) {
         super(SquonkDataSource.class);
         this.mediaType = mediaType;
-        this.extension = extension;
+        this.role = role;
         this.key = key;
         this.gzip = gzip;
     }
@@ -80,7 +84,7 @@ public class SquonkDataSourceHandler extends DefaultHandler<SquonkDataSource> {
                 encoded = true;
             }
             String filename = executor.getResponseHeader("filename");
-            SquonkDataSource dataSource = new InputStreamDataSource(filename, executor.getResponseHeader("Content-Type"), is, encoded);
+            SquonkDataSource dataSource = new InputStreamDataSource(Dataset.ROLE_DATASET,filename, executor.getResponseHeader("Content-Type"), is, encoded);
             dataSource.setGzipContent(!gunzip);
             return dataSource;
         }
@@ -89,13 +93,19 @@ public class SquonkDataSourceHandler extends DefaultHandler<SquonkDataSource> {
 
     @Override
     public void writeVariable(SquonkDataSource value, WriteContext context) throws Exception {
-        context.writeStreamValue(value.getInputStream(), mediaType, extension, key, gzip);
+        context.writeStreamValue(value.getInputStream(), mediaType, role, key, gzip);
     }
 
     @Override
     public SquonkDataSource readVariable(ReadContext context) throws Exception {
-        SquonkDataSource ds = context.readStreamValue(mediaType, extension, key);
+        SquonkDataSource ds = context.readStreamValue(mediaType, role, key);
         return ds;
+    }
+
+    @Override
+    public List<SquonkDataSource> readDataSources(ReadContext context) throws Exception {
+        SquonkDataSource ds = context.readStreamValue(mediaType, role, key);
+        return Collections.singletonList(ds);
     }
 
 }

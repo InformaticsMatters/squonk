@@ -55,6 +55,9 @@ public class DatasetFilterGroovyStep<P extends BasicObject> extends AbstractData
         Predicate predicate = cls.newInstance();
         statusMessage = "Filtering ...";
         Stream output = input.getStream().filter(predicate);
+
+        output = addStreamCounter(output, MSG_PROCESSED);
+
         Dataset<P> results = new Dataset(output, deriveOutputDatasetMetadata(input.getMetadata()));
         statusMessage = generateStatusMessage(input.getSize(), results.getSize(), -1);
         return results;

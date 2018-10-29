@@ -23,8 +23,10 @@ import org.squonk.util.CommonMimeTypes;
  */
 public class MolFileHandler extends FileHandler<MolFile> {
 
+    private static final String ROLE_MOL = "mol";
+
     public MolFileHandler() {
-        super(MolFile.class, CommonMimeTypes.MIME_TYPE_MDL_MOLFILE, "mol", false);
+        super(MolFile.class, CommonMimeTypes.MIME_TYPE_MDL_MOLFILE, ROLE_MOL, false);
     }
 
 }

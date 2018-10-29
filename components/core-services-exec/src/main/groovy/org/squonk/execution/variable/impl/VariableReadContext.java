@@ -48,12 +48,12 @@ public class VariableReadContext implements VariableHandler.ReadContext{
     }
 
     @Override
-    public SquonkDataSource readStreamValue(String mediaType, String extension, String key) throws Exception {
+    public SquonkDataSource readStreamValue(String mediaType, String role, String key) throws Exception {
         InputStream is = client.readStreamValue(notebookId, sourceId, cellId, variableName, key);
         if (is == null) {
             return null;
         }
-        return new InputStreamDataSource(variableName, mediaType, is, null);
+        return new InputStreamDataSource(role, variableName, mediaType, is, null);
     }
 
 }

@@ -16,13 +16,11 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.squonk.execution.steps.AbstractStep;
-import org.squonk.types.MoleculeObject;
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
+import org.squonk.types.MoleculeObject;
 import org.squonk.util.MoleculeObjectUtils;
 
 import java.util.ArrayList;
@@ -70,6 +68,7 @@ public class SmilesDeduplicatorStep extends AbstractDatasetStep {
 
 
         Stream<MoleculeObject> results = MoleculeObjectUtils.deduplicate(input.getStream(), canonicalSmilesField, keepFirstFields, keepLastFields, appendFields);
+        results = addStreamCounter(results, "%s unique smiles from " + input.getSize());
         return new MoleculeObjectDataset(results).getDataset();
     }
 

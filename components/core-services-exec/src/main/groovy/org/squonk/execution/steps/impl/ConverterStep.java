@@ -111,7 +111,7 @@ public class ConverterStep<P, Q, R, S> extends AbstractStep {
             throw new IllegalStateException("Input variable not found");
         }
 
-        Map<String,Object> results = executeWithData(Collections.singletonMap(StepDefinitionConstants.VARIABLE_INPUT_DATASET, input), context);
+        Map<String,Object> results = executeForVariables(Collections.singletonMap(StepDefinitionConstants.VARIABLE_INPUT_DATASET, input), context);
         R result = (R)results.values().iterator().next();
 
         statusMessage = "Writing output";
@@ -121,7 +121,7 @@ public class ConverterStep<P, Q, R, S> extends AbstractStep {
     }
 
     @Override
-    public Map<String, Object> executeWithData(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
         statusMessage = "Converting inputs";
         if (inputs.size() != 1) {
             throw new IllegalArgumentException("Must only have one input");
