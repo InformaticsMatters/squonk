@@ -33,7 +33,13 @@ setup_keycloak: no
 # The path is relative to the ansible directory (where the roles directory is)
 # uncomment or define form the command-line to add users.
 # To use 'ansbible/users.txt' set to 'users.txt'
-#users_file: users.txt
+#users_file: example-users.txt
+
+# Add the built-in nobody user?
+# If 'yes' then a 'noby' user is added to keycloak
+# using a randomly assigned password. The password is printed as the
+# role executes but it is not stored anywhere.
+add_nobody_user: yes
 
 # Here PVs used by the application (the squonk-work-dir for example)
 # are returned to an Available state if they're currently
