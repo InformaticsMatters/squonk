@@ -9,7 +9,10 @@ directory with the commands: -
 >   Remember to first `source` an appropriately crafted
     `../templates/setenv.sh` script first!
 
-And you can provide users 'after-the-fact' with: -
+You can add users from a text file (that contains one user and space-separated
+password per line) 'after-the-fact' by defining the `user_file` playbook
+variable and then limiting the deployment to just the tasks relating to
+_keycloak users_ with the following: -
 
     ansible-playbook -e "users_file=users.txt" -t keycloak-users \
         playbooks/squonk/deploy.yaml
