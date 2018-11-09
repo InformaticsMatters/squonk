@@ -56,6 +56,10 @@ parameters:
   name: KEYCLOAK_REALM
   value: squonk
 
+- displayName: Keycloak Realm SSL Required
+  name: KEYCLOAK_SSL_REQUIRED
+  value: external
+
 - displayName: Redirect URL after logout
   name: LOGOUT_REDIRECT_TO
   required: true
@@ -72,7 +76,7 @@ objects:
       {
         "realm": "${KEYCLOAK_REALM}",
         "auth-server-url": "https://${ROUTE_PREFIX_SSO}.${ROUTES_BASE_HOSTNAME}/auth",
-        "ssl-required": "external",
+        "ssl-required": "${KEYCLOAK_SSL_REQUIRED}",
         "disable-trust-manager": true,
         "resource": "${CLIENT_ID}",
         "use-resource-role-mappings": false,
@@ -95,7 +99,7 @@ objects:
       {
         "realm": "${KEYCLOAK_REALM}",
         "auth-server-url": "https://${ROUTE_PREFIX_SSO}.${ROUTES_BASE_HOSTNAME}/auth",
-        "ssl-required": "external",
+        "ssl-required": "${KEYCLOAK_SSL_REQUIRED}",
         "disable-trust-manager": true,
         "resource": "${CLIENT_ID}",
         "use-resource-role-mappings": false,

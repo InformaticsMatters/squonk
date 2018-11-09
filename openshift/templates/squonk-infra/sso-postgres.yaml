@@ -166,6 +166,12 @@ parameters:
   name: HOSTNAME_HTTPS
   value: ''
   required: false
+- displayName: Termination policy for insecure traffic
+  description: 'indicates the desired behavior for insecure connections to
+    the route. Typically one of Allow, Disable or Redirect'
+  name: ROUTE_INSECURE_POLICY
+  value: Disable
+  required: false
 
 - name: BACKUP_REGISTRY
   value: 'docker.io'
@@ -285,6 +291,7 @@ objects:
     to:
       name: secure-${APPLICATION_NAME}
     tls:
+      insecureEdgeTerminationPolicy: "${ROUTE_INSECURE_POLICY}"
       termination: reencrypt
 
 - kind: DeploymentConfig
