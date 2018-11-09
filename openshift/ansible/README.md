@@ -17,7 +17,7 @@ _keycloak users_ with the following: -
     ansible-playbook -e "users_file=example-users.txt" -t keycloak-users \
         playbooks/squonk/deploy.yaml
 
->   `example-users.txt` is a demon file. You can use the file `users.txt`
+>   `example-users.txt` is a demo file. You can use the file `users.txt`
     to safely add your own users. It is prevented form being committed to
     Git as it's listed in the project's `.gitignore` file.
 
@@ -58,15 +58,18 @@ the Ansible playbooks do not setup NFS.
 While it's a work-in-progress, support for MiniShift is available.
 Tested with: -
 
--   OpenShift 3.9.0
+-   OpenShift 3.9.0 (MiniShift 1.25.0)
 -   VirtualBox 5.2.20 (OSX)
--   MiniShift 1.16.1 and 1.25.0
+-   MiniShift 1.25.0 and 1.26.1
 
 Start MiniShift with something like: -
 
     minishift start --cpus 4 --memory 8GB --disk-size 40GB \
         --openshift-version 3.9.0 --vm-driver virtualbox
-        
+
+>   If you're using MiniShift v1.26 or later you cannot use the OpenShift
+    v3.9.0 image, you must move to OpenShift v3.10.0 or later.
+ 
 You need to setup a suitable `setenv.sh` (and source it) and then run the
 `minishift` playbook to prepare the cluster **before** running
 the above Squonk plays. From this directory, run: -
