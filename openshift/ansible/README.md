@@ -14,9 +14,13 @@ password per line) 'after-the-fact' by defining the `user_file` playbook
 variable and then limiting the deployment to just the tasks relating to
 _keycloak users_ with the following: -
 
-    ansible-playbook -e "users_file=users.txt" -t keycloak-users \
+    ansible-playbook -e "users_file=example-users.txt" -t keycloak-users \
         playbooks/squonk/deploy.yaml
-        
+
+>   `example-users.txt` is a demon file. You can use the file `users.txt`
+    to safely add your own users. It is prevented form being committed to
+    Git as it's listed in the project's `.gitignore` file.
+
 You can delete the ChemCentral loader and re-run it with: -
 
     ansible-playbook playbooks/squonk-chemcentral/delete-loader.yaml
