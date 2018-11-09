@@ -31,3 +31,9 @@ rabbitmq_volume_size: 1Gi
 # to protect themselves for data loss here. This will inspect the
 # "state" of all PVs in the squonk *and* infrastructure projects.
 recycle_released_pvs: yes
+
+# Keycloak default roles.
+# A list of role that need to be added to Keycloak.
+# Each is also added to the default set of roles.
+keycloak_default_roles:
+  - standard-user
