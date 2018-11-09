@@ -55,6 +55,11 @@ Tested with: -
 -   VirtualBox 5.2.20 (OSX)
 -   MiniShift 1.16.1 and 1.25.0
 
+Start MiniShift with something like: -
+
+    minishift start --cpus 4 --memory 8GB --disk-size 40GB \
+        --openshift-version 3.9.0 --vm-driver virtualbox
+        
 You need to setup a suitable `setenv.sh` (and source it) and then run the
 `minishift` playbook to prepare the cluster **before** running
 the above Squonk plays. From this directory, run: -
