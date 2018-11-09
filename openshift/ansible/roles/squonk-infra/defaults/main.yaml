@@ -33,7 +33,7 @@ rabbitmq_volume_size: 1Gi
 recycle_released_pvs: yes
 
 # Keycloak default roles.
-# A list of role that need to be added to Keycloak.
-# Each is also added to the default set of roles.
+# A list of roles that need to be added to Keycloak.
+# Each is also added to the default set of roles for the realm.
 keycloak_default_roles:
   - standard-user
