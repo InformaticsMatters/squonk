@@ -2,8 +2,12 @@
 
 # Get a keycloak token (sets the fact 'keycloak_token').
 # Remember that the login user may have changed to admin.
+#
+# The actions for getting the KeyCloak token
+# are located in a squonk-infra role playbook.
 
-- import_tasks: get-keycloak-token.yaml
+- import_tasks: >
+    "{{ role_path }}/../../roles/squonk-infra/tasks/get-keycloak-token.yaml"
   tags:
   - keycloak-users
 
