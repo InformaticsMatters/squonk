@@ -57,6 +57,6 @@ Tested with: -
 
 You need to setup a suitable `setenv.sh` (and source it) and then run the
 `minishift` playbook to prepare the cluster **before** running
-the above Squonk plays: -
+the above Squonk plays. From this directory, run: -
 
     ansible-playbook playbooks/minishift/prepare.yaml
