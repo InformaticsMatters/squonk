@@ -63,6 +63,9 @@ recycle_released_pvs: yes
 #   the persistent volumes and claims suitable for the project.
 oc_cc_infra_volume_type: "{{ ansible_env.OC_CHEMCENTRAL_VOLUME_TYPE }}"
 
+# The volume size for the PostgreSQL ChemCentral database.
+oc_cc_postgresql_volume_size: "{{ ansible_env.OC_CHEMCENTRAL_POSTGRESQL_VOLUME_SIZE }}"
+
 # When using dynamic volumes the storage
 # class needs to be defined...
 oc_cc_volume_storage_class: "{{ ansible_env.OC_CHEMCENTRAL_VOLUME_STORAGE_CLASS }}"

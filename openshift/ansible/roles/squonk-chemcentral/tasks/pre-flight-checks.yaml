@@ -11,7 +11,7 @@
   shell: oc login {{ oc_master_hostname }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
-# Check the infrastructure project exists...
+# Check the infrastructure and squonk projects exist...
 
 - name: Collect projects
   shell: oc get projects
