@@ -1,0 +1,19 @@
+---
+
+# Extract the 'Major.Minor.Patch' version of MiniShift
+# into the variable 'minishift_version'...
+
+- name: Query MiniShift Verison
+  shell: minishift version
+  register: version_result
+  changed_when: False
+
+- name: Extract MiniShift Version
+  set_fact:
+    minishift_version: "{{ version_result.stdout | regex_replace(query, '\\1') }}"
+  vars:
+    query: '^minishift v(\d+[.]\d+[.]\d+).*'
+
+- name: Echo Minishift Version
+  debug:
+    msg: MiniShift version is '{{ minishift_version }}'

@@ -1,40 +1,10 @@
 ---
 
-# To get postgres running in MiniShift we
-# set permissions on the PV that is used...
-#
-# But the path to the PV changes when we get to Minishift v1.26.0
+# Just defer to the minishift role's playbook...
 
-- name: Query MiniShift Verison
-  shell: minishift version
-  register: version_result
-  changed_when: False
-
-- name: Extract MiniShift Version
-  set_fact:
-    minishift_version: "{{ version_result.stdout | regex_replace(query, '\\1') }}"
+- import_tasks: "{{ role_path }}/../../roles/minishift/tasks/patch-volume.yaml"
   vars:
-    query: '^minishift v(\d+[.]\d+[.]\d+).*'
+    claim: postgresql-claim
+  tags:
+  - keycloak-users
 
-- name: Echo Minishift Version
-  debug:
-    msg: MiniShift version is '{{ minishift_version }}'
-
-- name: Get PG PVC
-  shell: oc get pvc/postgresql-claim --no-headers | tr -s ' ' | cut -f 3 -d ' '
-  register: pg_pvc_result
-  changed_when: False
-
-- name: Adjust PVC permissions (pre v1.26)
-  shell: >
-    minishift ssh -- sudo chmod 777
-    /mnt/sda1/var/lib/minishift/openshift.local.pv/{{ pg_pvc_result.stdout }}
-  when: minishift_version is version('1.26.0', '<')
-  changed_when: False
-
-- name: Adjust PVC permissions (post v1.25)
-  shell: >
-    minishift ssh -- sudo chmod 777
-    /mnt/sda1/var/lib/minishift/base/openshift.local.pv/{{ pg_pvc_result.stdout }}
-  when: minishift_version is version('1.26.0', '>=')
-  changed_when: False
