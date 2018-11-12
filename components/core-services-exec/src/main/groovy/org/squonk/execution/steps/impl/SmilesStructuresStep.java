@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,31 +17,53 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
+import org.squonk.core.DefaultServiceDescriptor;
+import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStandardStep;
+import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.IODescriptors;
+import org.squonk.options.MultiLineTextTypeDescriptor;
+import org.squonk.options.OptionDescriptor;
 import org.squonk.types.MoleculeObject;
-import org.squonk.types.io.JsonHandler;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
  * Created by timbo on 13/09/16.
  */
-public class SmilesStructuresStep extends AbstractStandardStep {
+public class SmilesStructuresStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(SmilesStructuresStep.class.getName());
+
+    public static final DefaultServiceDescriptor SERVICE_DESCRIPTOR = new DefaultServiceDescriptor("core.dataset.smiles.v1",
+            "SmilesStructures",
+            "Generate a dataset from provided SMILES strings",
+            new String[]{"structure", "smiles", "dataset"},
+            null, "icons/molecule.png",
+            ServiceConfig.Status.ACTIVE,
+            new Date(),
+            null,
+            IODescriptors.createMoleculeObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+            new OptionDescriptor[]{
+
+                    new OptionDescriptor<>(new MultiLineTextTypeDescriptor(10, 80, MultiLineTextTypeDescriptor.MIME_TYPE_TEXT_PLAIN),
+                            StepDefinitionConstants.SmilesStructures.OPTION_SMILES, "Smiles",
+                            "Smiles as text, with optional name", OptionDescriptor.Mode.User)
+
+            },
+            null, null, null,
+            SmilesStructuresStep.class.getName()
+    );
 
     protected static final String OPTION_SMILES = StepDefinitionConstants.SmilesStructures.OPTION_SMILES;
     protected static final String FIELD_NAME = "Name";
 
-    @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
 
+    @Override
+    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
         statusMessage = MSG_PREPARING_INPUT;
 
 
@@ -75,14 +97,10 @@ public class SmilesStructuresStep extends AbstractStandardStep {
             meta.createField(FIELD_NAME, "User provided name", "Name provided by user with smiles", String.class);
         }
         meta.setSize(mols.size());
-
+        statusMessage = mols.size() + " molecules";
 
         Dataset<MoleculeObject> result = new Dataset<>(mols, meta);
-
-        createMappedOutput("output", Dataset.class, result, varman);
-
-        statusMessage = generateStatusMessage(-1, result.getSize(), -1);
-        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
+        return Collections.singletonMap(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, result);
     }
 
 

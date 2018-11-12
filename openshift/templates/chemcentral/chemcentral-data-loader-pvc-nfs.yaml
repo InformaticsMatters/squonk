@@ -1,10 +1,17 @@
+---
+
+# The Squonk PVs.
+#
+# oc process -f chemcentral-data-loader-pvc-nfs.yaml | oc create -f -
+# oc delete pv,pvc --selector template=chemcentral-data-loader-pvc-nfs
+
 kind: Template
 apiVersion: v1
 metadata:
   name: chemcentral-data-loader-pvc-nfs
   annotations:
-    description: Data loader Persistent Volume using NFS
-    tags: squonk,pv
+    description: Data loader Persistent Volume Claim using NFS
+    tags: squonk,pvc
 labels:
   template: chemcentral-data-loader-pvc-nfs
   app: chemcentral
@@ -15,30 +22,8 @@ parameters:
   value: squonk
 - name: PVC_SIZE
   value: 100Mi
-- name: NFS_SERVER
-  value: infra
-- name: NFS_PATH
-  value: /exports
 
 objects:
-
-- kind: PersistentVolume
-  apiVersion: v1
-  metadata:
-    name: pv-chemcentral-loader
-    namespace: ${APP_NAMESPACE}
-  spec:
-    capacity:
-      storage: ${PVC_SIZE}
-    accessModes:
-    - ReadWriteMany
-    persistentVolumeReclaimPolicy: Recycle
-    nfs:
-      server: ${NFS_SERVER}
-      path: ${NFS_PATH}/pv-chemcentral-loader
-    claimRef:
-      name: chemcentral-data-loader-pvc
-      namespace: ${APP_NAMESPACE}
 
 - kind: PersistentVolumeClaim
   apiVersion: v1

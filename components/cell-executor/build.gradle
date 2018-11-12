@@ -36,6 +36,7 @@ dependencies {
     compile "org.apache.camel:camel-core:$camelVersion"
     compile "org.apache.camel:camel-rabbitmq:$camelVersion"
     compile "org.apache.camel:camel-jackson:$camelVersion"
+    compile "org.apache.camel:camel-servlet:$camelVersion"
     compile "org.apache.camel:camel-cdi:$camelVersion"
 
     compile "org.codehaus.groovy:groovy-all:$groovyVersion"

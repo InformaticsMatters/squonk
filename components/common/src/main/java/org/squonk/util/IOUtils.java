@@ -307,4 +307,14 @@ public class IOUtils {
         return h;
     }
 
+    public static boolean deleteDirRecursive(File path) {
+        boolean ret = true;
+        if (path.isDirectory()) {
+            for (File f : path.listFiles()) {
+                ret = ret && deleteDirRecursive(f);
+            }
+        }
+        return ret && path.delete();
+    }
+
 }

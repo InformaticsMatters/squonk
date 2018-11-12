@@ -70,6 +70,7 @@ public abstract class VerifyStructureProcessor implements Processor {
                 throw new IllegalArgumentException("Unsupported filter mode: " + filterMode);
             }
         }
+        LOG.fine("Filter Mode (opt/value: " + filterModeOpt + "/" + filterMode);
 
         boolean filter = filterMode == null || !VALUE_INCLUDE_ALL.equals(filterMode.toUpperCase());
 

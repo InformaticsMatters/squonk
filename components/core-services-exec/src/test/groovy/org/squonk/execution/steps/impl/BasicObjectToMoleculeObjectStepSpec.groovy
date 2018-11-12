@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,9 @@
 
 package org.squonk.execution.steps.impl
 
-import org.squonk.io.IODescriptor
-import org.squonk.io.IODescriptors
-import org.squonk.io.IORoute
+import org.squonk.dataset.Dataset
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
-import org.squonk.dataset.Dataset
-
-import org.squonk.execution.variable.VariableManager
-import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
 /**
@@ -39,66 +33,43 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
             new BasicObject([struct: "CCC", num: 3, hello: 'world']),
     ]
     Dataset ds = new Dataset(BasicObject.class, input)
-    Long producer = 1
 
     void "simple convert"() {
 
-        VariableManager varman = new VariableManager(null, 1, 1);
-
-        varman.putValue(
-                new VariableKey(producer, "input"),
-                Dataset.class,
-                ds)
-
         BasicObjectToMoleculeObjectStep step = new BasicObjectToMoleculeObjectStep()
-        step.configure(producer, "job1",
-                [(BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FIELD_NAME): 'struct'],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                ["input": new VariableKey(producer, "input")],
-                [:])
+        step.configure("simple convert",
+                [(BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FIELD_NAME): 'struct',
+                (BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FORMAT): 'smiles'],
+                BasicObjectToMoleculeObjectStep.SERVICE_DESCRIPTOR)
 
         when:
-        step.execute(varman, null)
-        def molsds = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", ds), null)
+        def molsds = resultsMap["output"]
 
         then:
-
         molsds != null
         def items = molsds.items
         items.size() == 3
         items[0] instanceof MoleculeObject
         items[0].values.size() == 2
         items[0].uuid == input[0].uuid
-
     }
 
 
     void "uuid and format props"() {
 
-        VariableManager varman = new VariableManager(null, 1, 1);
-
-        varman.putValue(
-                new VariableKey(producer, "input"),
-                Dataset.class,
-                ds)
-
         BasicObjectToMoleculeObjectStep step = new BasicObjectToMoleculeObjectStep()
-        step.configure(producer, "job1", [
+        step.configure( "uuid and format props", [
                 (BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FIELD_NAME): 'struct',
                 (BasicObjectToMoleculeObjectStep.OPTION_STRUCTURE_FORMAT)    : 'smiles',
                 (BasicObjectToMoleculeObjectStep.OPTION_PRESERVE_UUID)       : false
-        ],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], ["input": new VariableKey(producer, "input")],
-                [:])
+        ],BasicObjectToMoleculeObjectStep.SERVICE_DESCRIPTOR)
 
         when:
-        step.execute(varman, null)
-        def molsds = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", ds), null)
+        def molsds = resultsMap["output"]
 
         then:
-
         molsds != null
         def items = molsds.items
         items.size() == 3
@@ -106,7 +77,6 @@ class BasicObjectToMoleculeObjectStepSpec extends Specification {
         items[0].values.size() == 2
         items[0].uuid != input[0].uuid
         items[0].format == 'smiles'
-
     }
 
 }

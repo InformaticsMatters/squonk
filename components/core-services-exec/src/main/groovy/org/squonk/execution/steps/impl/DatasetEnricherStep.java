@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,15 @@ import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractServiceStep;
-import org.squonk.execution.steps.AbstractStandardStep;
+import org.squonk.execution.steps.AbstractThinStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
 import org.squonk.options.DatasetFieldTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.types.BasicObject;
-import org.squonk.types.io.JsonHandler;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -62,7 +58,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class DatasetEnricherStep extends AbstractServiceStep {
+public class DatasetEnricherStep extends AbstractThinStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetEnricherStep.class.getName());
 
@@ -113,15 +109,21 @@ public class DatasetEnricherStep extends AbstractServiceStep {
             DatasetEnricherStep.class.getName()
     );
 
+    private Object fetchValueToCompare(BasicObject bo, String mergeField) {
+        return mergeField == null ? bo.getUUID() : bo.getValue(mergeField);
+    }
+
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
+    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
+
         final String mainField = getOption(OPT_MAIN_FIELD, String.class);
         final String extraField = getOption(OPT_EXTRA_FIELD, String.class);
         final String mergeMode = getOption(OPT_MERGE_MODE, String.class, "both");
         final Mode mode = Mode.valueOf(mergeMode);
 
-        Dataset<? extends BasicObject> mainDataset = fetchMappedInput(VAR_INPUT, Dataset.class, varman);
-        Dataset<? extends BasicObject> extraDataset = fetchMappedInput(VAR_NEW_DATA, Dataset.class, varman);
+
+        Dataset<? extends BasicObject> mainDataset = (Dataset)inputs.get(VAR_INPUT);
+        Dataset<? extends BasicObject> extraDataset = (Dataset)inputs.get(VAR_NEW_DATA);
         if (mainDataset == null) {
             throw new IllegalStateException("Input dataset not defined");
         }
@@ -159,7 +161,6 @@ public class DatasetEnricherStep extends AbstractServiceStep {
             });
         }
 
-        AtomicInteger count = new AtomicInteger(0);
         Stream<? extends BasicObject> enrichedStream = mainDataset.getStream().peek((BasicObject bo) -> {
             Object comparator = fetchValueToCompare(bo, mainField);
             if (comparator != null) {
@@ -170,10 +171,11 @@ public class DatasetEnricherStep extends AbstractServiceStep {
                     } else {
                         bo.getValues().putAll(updates.getValues());
                     }
-                    count.incrementAndGet();
                 }
             }
         });
+
+        enrichedStream = addStreamCounter(enrichedStream, MSG_PROCESSED);
 
         Object extraDesc = extraMeta.getProperties().get(DatasetMetadata.PROP_DESCRIPTION);
         String what = null;
@@ -202,14 +204,8 @@ public class DatasetEnricherStep extends AbstractServiceStep {
         }
 
         statusMessage = "Writing results";
-        Dataset output = new Dataset(mainType, enrichedStream, mainMeta);
-        createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
-        statusMessage = count.get() + " records updated";
-        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(output.getMetadata()));
-    }
-
-    private Object fetchValueToCompare(BasicObject bo, String mergeField) {
-        return mergeField == null ? bo.getUUID() : bo.getValue(mergeField);
+        Dataset<? extends BasicObject> output = new Dataset(enrichedStream, mainMeta);
+        return Collections.singletonMap(VAR_OUTPUT, output);
     }
 
 }

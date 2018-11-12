@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,18 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.TypeConverter;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractServiceStep;
-import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptors;
 import org.squonk.options.OptionDescriptor;
+import org.squonk.types.BasicObject;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Random;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -37,7 +37,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class DatasetSelectRandomStep extends AbstractServiceStep {
+public class DatasetSelectRandomStep<P extends BasicObject> extends AbstractDatasetStep<P,P> {
 
     private static final Logger LOG = Logger.getLogger(DatasetSelectRandomStep.class.getName());
 
@@ -62,43 +62,33 @@ public class DatasetSelectRandomStep extends AbstractServiceStep {
             DatasetSelectRandomStep.class.getName()
     );
 
-    /**
-     * Create a random subset of the dataset up to a maximun (count option, default 1000) number of values selecting items from the start
+    /** Create a random subset of the dataset up to a maximum (count option, default 1000) number of values selecting items from the start
      * on random based on a random probability (random option, default 0.001) of selection.
      *
-     * @param varman
+     * @param input
      * @param context
+     * @return
      * @throws Exception
      */
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-        statusMessage = MSG_PREPARING_INPUT;
-        Dataset ds = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
-        if (ds == null) {
-            throw new IllegalStateException("Input variable not found: " + VAR_INPUT_DATASET);
-        }
-        LOG.fine("Input Dataset: " + ds);
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
 
-        Float randomOpt = getOption(OPTION_RANDOM, Float.class, context.getTypeConverter());
-        Integer countOpt = getOption(OPTION_COUNT, Integer.class, context.getTypeConverter());
+        TypeConverter converter = findTypeConverter(context);
+        Float randomOpt = getOption(OPTION_RANDOM, Float.class, converter);
+        Integer countOpt = getOption(OPTION_COUNT, Integer.class, converter);
         float random = randomOpt == null ? 0.001f : randomOpt;
         int count = countOpt == null ? 1000 : countOpt;
 
         statusMessage = "Setting filter ...";
         Random g = new Random();
-        Stream stream = (Stream)ds.getStream().sequential();
+        Stream<P> stream = input.getStream().sequential();
         stream = stream.filter(o -> random < g.nextFloat()).limit(count);
+        stream = addStreamCounter(stream, "%s records selected");
 
-        DatasetMetadata meta = ds.getMetadata();
+        DatasetMetadata<P> meta = input.getMetadata();
         meta.setSize(0); // will be recalculated
-        Dataset results = new Dataset(stream, meta);
-        String outFldName = mapOutputVariable(VAR_OUTPUT_DATASET);
-        if (outFldName != null) {
-            createVariable(outFldName, Dataset.class, results, varman);
-        }
 
-        statusMessage = generateStatusMessage(ds.getSize(), results.getSize(), -1);
-        LOG.info("Results: " + ds.getMetadata());
+        return new Dataset<>(stream, meta);
     }
 
 }

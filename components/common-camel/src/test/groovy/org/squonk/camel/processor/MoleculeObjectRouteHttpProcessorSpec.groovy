@@ -16,6 +16,8 @@
 
 package org.squonk.camel.processor
 
+import org.squonk.io.SquonkDataSource
+import org.squonk.io.StringDataSource
 import org.squonk.types.MoleculeObject
 import org.apache.camel.Exchange
 import org.apache.camel.ProducerTemplate
@@ -69,8 +71,8 @@ class MoleculeObjectRouteHttpProcessorSpec extends Specification {
 
             @Override
             SDFile convertTo(Class type, Exchange exch, Object value) throws TypeConversionException {
-                InputStream is = new ByteArrayInputStream("Hello world!".getBytes())
-                return new SDFile(is)
+                def ds = new StringDataSource(SquonkDataSource.ROLE_DEFAULT, null, null, "Hello world!", false)
+                return new SDFile(ds)
             }
         })
 

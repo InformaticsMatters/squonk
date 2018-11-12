@@ -28,8 +28,27 @@ parameters:
   required: true
 
 - name: LOADER_FILE
-  description: The data file to load
-  required: true
+  description: >
+    The data file to load (for single-file loaders).
+    Relative to the mount-point in the container
+  value: undefined
+
+- name: LOADER_DIR
+  description: >
+    The directory of the data to load (for multi-file loaders).
+    Relative to the mount-point in the container
+  value: undefined
+
+- name: LOADER_PATTERN
+  description: >
+    The file pattern of the data to load (for multi-file loaders)
+  value: undefined
+
+- name: LOADER_MARKER
+  description: >
+    The unique identity of this loader.
+    Loaders with different 'markers' can run at the same time.
+  value: A
 
 - name: TABLE_NAME
   description: Name of the database table
@@ -46,12 +65,12 @@ objects:
 - kind: Job
   apiVersion: batch/v1
   metadata:
-    name: chemcentral-loader
+    name: chemcentral-loader-${LOADER_MARKER}
     namespace: ${APP_NAMESPACE}
   spec:
     template:
       metadata:
-        name: chemcentral-loader
+        name: chemcentral-loader-${LOADER_MARKER}
         namespace: ${APP_NAMESPACE}
       spec:
         volumes:
@@ -60,7 +79,7 @@ objects:
             claimName: chemcentral-data-loader-pvc
         containers:
         - image: squonk/chemcentral-loader:${IMAGE_TAG}
-          name: chemcentral-loader
+          name: chemcentral-loader-${LOADER_MARKER}
           env:
           - name: CHEMCENTRAL_HOST
             valueFrom:
@@ -87,6 +106,10 @@ objects:
             value: ${TABLE_NAME}
           - name: CHEMCENTRAL_LOADER_FILE
             value: /data/${LOADER_FILE}
+          - name: CHEMCENTRAL_LOADER_DIR
+            value: /data/${LOADER_DIR}
+          - name: CHEMCENTRAL_LOADER_PATTERN
+            value: ${LOADER_PATTERN}
           - name: CHEMCENTRAL_LIMIT
             value: ${LIMIT}
           - name: CHEMCENTRAL_REPORTING_CHUNK

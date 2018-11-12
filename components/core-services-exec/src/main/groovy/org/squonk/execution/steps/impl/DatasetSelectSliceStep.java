@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,25 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.TypeConverter;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractServiceStep;
-import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptors;
 import org.squonk.options.OptionDescriptor;
+import org.squonk.types.BasicObject;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
- *
  * @author timbo
  */
-public class DatasetSelectSliceStep extends AbstractServiceStep {
+public class DatasetSelectSliceStep<P extends BasicObject> extends AbstractDatasetStep<P,P> {
 
     private static final Logger LOG = Logger.getLogger(DatasetSelectSliceStep.class.getName());
 
@@ -60,28 +59,21 @@ public class DatasetSelectSliceStep extends AbstractServiceStep {
 
     /**
      * Create a slice of the dataset skipping a number of records specified by the skip option (or 0 if not specified)
-     * and including only the number of records specified by the count option (or till teh end if not specified).
+     * and including only the number of records specified by the count option (or till the end if not specified).
      *
-     * @param varman
-     * @param context
+     * @param input The dataset to slice
      * @throws Exception
      */
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-        statusMessage = MSG_PREPARING_INPUT;
-        Dataset ds = fetchMappedInput("input", Dataset.class, varman);
-        if (ds == null) {
-            throw new IllegalStateException("Input variable not found: input");
-        }
-        LOG.fine("Input Dataset: " + ds);
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
 
-
-        Integer skip = getOption(OPTION_SKIP, Integer.class);
-        Integer count = getOption(OPTION_COUNT, Integer.class);
+        TypeConverter converter = findTypeConverter(context);
+        int skip = getOption(OPTION_SKIP, Integer.class, converter, 0);
+        Integer count = getOption(OPTION_COUNT, Integer.class, converter);
 
         statusMessage = "Setting filters ...";
-        Stream stream = (Stream)ds.getStream().sequential();
-        if (skip != null) {
+        Stream<P> stream = input.getStream().sequential();
+        if (skip > 0) {
             LOG.info("Setting skip to " + skip);
             stream = stream.skip(skip);
         }
@@ -89,18 +81,25 @@ public class DatasetSelectSliceStep extends AbstractServiceStep {
             LOG.info("Setting count to " + count);
             stream = stream.limit(count);
         }
-        DatasetMetadata meta = ds.getMetadata();
-        meta.setSize(0); // will be recalculated
+        stream = addStreamCounter(stream, "%s records selected");
+        DatasetMetadata<P> meta = input.getMetadata();
 
-        Dataset results = new Dataset(stream, meta);
-        
-        String outFldName = mapOutputVariable("output");
-        if (outFldName != null) {
-            createVariable(outFldName, Dataset.class, results, varman);
+        int total = -1;
+        if (count == null) {
+            int i = input.getSize();
+            if (i > 0) {
+                // assume this value is correct
+                total = Math.max(i - skip, 0);
+            } else {
+                // we can't tell how many
+            }
+        } else {
+            total = count;
         }
 
-        statusMessage = generateStatusMessage(ds.getSize(), results.getSize(), -1);
-        LOG.info("Results: " + ds.getMetadata());
+        meta.setSize(total); // will be recalculated
+
+        return new Dataset<>(stream, meta);
     }
 
 }

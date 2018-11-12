@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,11 @@
 
 package org.squonk.execution.steps.impl
 
-import org.squonk.io.IODescriptor
-import org.squonk.io.IODescriptors
-import org.squonk.io.IORoute
-import org.squonk.types.MoleculeObject
+import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.DatasetMetadata
 import org.squonk.dataset.transform.TransformDefinitions
-import org.apache.camel.impl.DefaultCamelContext
-
-import org.squonk.execution.variable.VariableManager
-import org.squonk.notebook.api.VariableKey
+import org.squonk.types.MoleculeObject
 import spock.lang.Specification
 
 /**
@@ -44,34 +38,23 @@ class ValueTransformerStepSpec extends Specification {
             new MoleculeObject("CC", "smiles", [num:"99",hello:'mars',foo:'bar']),
             new MoleculeObject("CCC", "smiles", [num:"100",hello:'mum'])
         ]
-        Dataset ds = new Dataset(MoleculeObject.class, mols)
+        Dataset input = new Dataset(MoleculeObject.class, mols)
         
         TransformDefinitions tdefs = new TransformDefinitions()
         .deleteField("foo")
         .renameField("hello", "goodbye")
         .convertField("num", Integer.class);
         
-        
-        VariableManager varman = new VariableManager(null,1,1);
-        Long producer = 1
-        varman.putValue(
-            new VariableKey(producer, "input"),
-            Dataset.class, 
-            ds)
-        
         ValueTransformerStep step = new ValueTransformerStep()
-        step.configure(producer, "job1",
+        step.configure("test write mols",
                 [(ValueTransformerStep.OPTION_TRANSFORMS):tdefs],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                [(ValueTransformerStep.VAR_INPUT_DATASET):new VariableKey(producer, "input")],
-                [:]
+                ValueTransformerStep.SERVICE_DESCRIPTOR
         )
         
         when:
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, ValueTransformerStep.VAR_OUTPUT_DATASET), Dataset.class)
-        
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def dataset = resultsMap["output"]
+
         then:
         dataset != null
         dataset.generateMetadata()

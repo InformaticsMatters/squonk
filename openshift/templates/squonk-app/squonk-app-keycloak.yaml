@@ -3,13 +3,22 @@
 # oc process -f squonk-app-keycloak.yaml | oc create -f -
 # oc delete all,cm,pvc,routes,secrets --selector template=squonk-app
 
+# ########## #
+# DEPRECATED #
+# ########## #
+#
+# THIS FILE SHOULD NOT BE USED.
+# YOU SHOULD BE USING: -
+# - squonk-app-components AND
+# - squonk-app-portal-keycloak
+
 kind: Template
 apiVersion: v1
 metadata:
   name: squonk
   annotations:
     description: Squonk Application Service Definition
-    tags: squonk,core,cellexecutor,chemservices,coreservices
+    tags: squonk,core,cellexecutor,chemservices,coreservices,jobexecutor
 labels:
   template: squonk-app
   app: squonk-app
@@ -23,19 +32,14 @@ parameters:
 
 - name: APP_NAMESPACE
   value: squonk
+- name: PULL_POLICY
+  value: IfNotPresent
 
 # ------
 # Flyway (DB Migration)
 # ------
 
 - name: FLYWAY_IMAGE_TAG
-  value: latest
-
-# ---------
-# SD Poster (Service Descriptor Poster)
-# ---------
-
-- name: SD_POSTER_IMAGE_TAG
   value: latest
 
 # ------
@@ -183,6 +187,7 @@ objects:
         containers:
         - image: squonk/coreservices:${CORE_IMAGE_TAG}
           name: coreservices
+          imagePullPolicy: ${PULL_POLICY}
           env:
           - name: RABBITMQ_HOSTNAME
             valueFrom:
@@ -256,14 +261,18 @@ objects:
         labels:
           name: chemservices-basic
       spec:
+        # Initialisation Containers...
         initContainers:
         - image: yauritux/busybox-curl
           name: wait-for-core-before-chem
           command: ['sh', '-c',
             'until (( curl http://coreservices:8080/rest/ping --connect-timeout 5 )); do sleep 2; done']
+
+        # Pod Containers...
         containers:
         - image: squonk/chemservices-basic:${CHEM_IMAGE_TAG}
           name: chemservices-basic
+          imagePullPolicy: ${PULL_POLICY}
           env:
           - name: POSTGRES_HOSTNAME
             valueFrom:
@@ -292,15 +301,19 @@ objects:
               path: /chem-services-cdk-basic/rest/ping
               port: 8080
             initialDelaySeconds: 60
-            timeoutSeconds: 1
+            timeoutSeconds: 4
             periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /chem-services-cdk-basic/rest/ping
               port: 8080
-            initialDelaySeconds: 30
-            timeoutSeconds: 1
+            initialDelaySeconds: 90
+            timeoutSeconds: 4
             periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
 #          resources:
 #            limits:
 #              cpu: ${CHEM_CPU_LIMIT}
@@ -343,6 +356,7 @@ objects:
         containers:
         - image: squonk/cellexecutor:${CELL_IMAGE_TAG}
           name: cellexecutor
+          imagePullPolicy: ${PULL_POLICY}
           env:
           - name: RABBITMQ_HOSTNAME
             valueFrom:
@@ -420,6 +434,7 @@ objects:
         containers:
         - image: squonk/portal:${PORTAL_IMAGE_TAG}
           name: portal
+          imagePullPolicy: ${PULL_POLICY}
           env:
           - name: POSTGRES_HOSTNAME
             valueFrom:

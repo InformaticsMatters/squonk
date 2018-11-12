@@ -1,0 +1,39 @@
+---
+
+# What volume type are we using? One of: -
+#
+# - dynamic
+# - nfs
+# - minishift
+# - none
+#
+#   When using `dynamic' remember to set
+#   the accompanying 'volume_storage_class' variable (see below)
+#
+#   When using 'nfs' you must have provisioned the NFS volumes
+#
+#   When set to 'none' the user is expected to have provisioned
+#   the persistent volumes and claims suitable for the project.
+oc_infra_volume_type: "{{ ansible_env.OC_INFRA_VOLUME_TYPE }}"
+
+# When using dynamic volumes the storage
+# class needs to be defined...
+oc_infra_volume_storage_class: "{{ ansible_env.OC_INFRA_VOLUME_STORAGE_CLASS }}"
+
+# Other variables
+
+postgresql_shared_buffer_size: 1GB
+rabbitmq_volume_size: 1Gi
+
+# Here PVs used by the application (the squonk-work-dir for example)
+# are returned to an Available state if they're currently
+# in a Released state. Note: it is the user's responsibility
+# to protect themselves for data loss here. This will inspect the
+# "state" of all PVs in the squonk *and* infrastructure projects.
+recycle_released_pvs: yes
+
+# Keycloak default roles.
+# A list of roles that need to be added to Keycloak.
+# Each is also added to the default set of roles for the realm.
+keycloak_default_roles:
+  - standard-user

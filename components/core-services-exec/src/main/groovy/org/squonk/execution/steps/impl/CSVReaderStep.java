@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,32 +16,44 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.squonk.execution.steps.AbstractStandardStep;
-import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
-import org.squonk.types.BasicObject;
-import org.squonk.dataset.Dataset;
-import org.squonk.reader.CSVReader;
-import org.squonk.types.io.JsonHandler;
-import org.squonk.util.IOUtils;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 import org.apache.camel.CamelContext;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.QuoteMode;
+import org.squonk.core.DefaultServiceDescriptor;
+import org.squonk.core.ServiceConfig;
+import org.squonk.dataset.Dataset;
+import org.squonk.execution.steps.AbstractStep;
+import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.io.IODescriptor;
+import org.squonk.io.IODescriptors;
+import org.squonk.io.InputStreamDataSource;
+import org.squonk.io.SquonkDataSource;
+import org.squonk.options.FileTypeDescriptor;
+import org.squonk.options.OptionDescriptor;
+import org.squonk.reader.CSVReader;
+import org.squonk.types.BasicObject;
+import org.squonk.types.CSVFile;
+import org.squonk.util.CommonMimeTypes;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * Reads a CSV or Tab delimited file and generates a
  * {@link Dataset} of {@link BasicObject}s.
  * <p>
  * The SDFile is passed as an {@link java.io.InputStream} (can be gzipped). By
- default the input is expected in the variable named by the VAR_CSV_INPUT
- constant, though that name can be mapped to a different name. The resulting
- Dataset is contained in the variable named by the VAR_DATASET_OUTPUT
- constant, or a variable mapped to that name.
- <p>
+ * default the input is expected in the variable named by the VAR_CSV_INPUT
+ * constant, though that name can be mapped to a different name. The resulting
+ * Dataset is contained in the variable named by the VAR_DATASET_OUTPUT
+ * constant, or a variable mapped to that name.
+ * <p>
  * The parsing is implemented using the Apache Common CSV 1.1 library. Options
  * here correspond for options available from that library (the CSVFormat class
  * in particular). See <a href="http://camel.apache.org/csv.html">here</a> for
@@ -50,18 +62,49 @@ import org.apache.commons.csv.QuoteMode;
  * The {@link CSVReader} class acts as a bridge between this
  * class and the Apache Commons CSV library.
  *
- *
  * @author timbo
  */
-public class CSVReaderStep extends AbstractStandardStep {
+public class CSVReaderStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(CSVReader.class.getName());
+
+    public static final DefaultServiceDescriptor SERVICE_DESCRIPTOR = new DefaultServiceDescriptor("core.import.csv.v1",
+            "CsvUpload",
+            "CSV upload",
+            new String[]{"file", "upload", "csv", "tab"},
+            null, "icons/file_upload_basic.png",
+            ServiceConfig.Status.ACTIVE,
+            new Date(),
+            null,
+            new IODescriptor[]{
+                    IODescriptors.createCSV("fileContent"),
+                    IODescriptors.createBasicObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET)
+            },
+            new OptionDescriptor[]{
+
+                    new OptionDescriptor<>(new FileTypeDescriptor(new String[]{"csv", "tab", "txt"}),
+                            StepDefinitionConstants.CsvUpload.OPTION_FILE_UPLOAD, "CSV/TAB File",
+                            "Upload comma or tab separated text file", OptionDescriptor.Mode.User)
+                            .withMinMaxValues(1, 1),
+                    new OptionDescriptor<>(String.class, StepDefinitionConstants.CsvUpload.OPTION_CSV_FORMAT_TYPE,
+                            "File type", "Type of CSV or TAB file", OptionDescriptor.Mode.User)
+                            .withValues(new String[]{"TDF", "EXCEL", "MYSQL", "RFC4180", "DEFAULT"})
+                            .withDefaultValue("DEFAULT")
+                            .withMinMaxValues(1, 1),
+                    new OptionDescriptor<>(Boolean.class, StepDefinitionConstants.CsvUpload.OPTION_NAME_FIRST_LINE_IS_HEADER,
+                            "First line is header",
+                            "First line contains field names", OptionDescriptor.Mode.User)
+                            .withMinMaxValues(1, 1)
+
+            },
+            null, null, null,
+            CSVReaderStep.class.getName()
+    );
 
     /**
      * The type of CSV format. One of the CSVFormat constants found here:
      * http://commons.apache.org/proper/commons-csv/archives/1.1/apidocs/index.html
      * If not present then CSVFormat.DEFAULT is used.
-     *
      */
     public static final String OPTION_FORMAT_TYPE = StepDefinitionConstants.CsvUpload.OPTION_CSV_FORMAT_TYPE;
 
@@ -129,30 +172,48 @@ public class CSVReaderStep extends AbstractStandardStep {
      */
     public static final String OPTION_ALLOW_MISSING_COLUMN_NAMES = "allowMissingColumnNames";
 
-    /**
-     * Expected variable name for the input
-     */
-    public static final String VAR_CSV_INPUT = StepDefinitionConstants.VARIABLE_FILE_INPUT;
-    /**
-     * Variable name for the MoleculeObjectDataset output
-     */
-    public static final String VAR_DATASET_OUTPUT = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
 
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-        statusMessage = "Reading file ...";
-        String filename = fetchMappedInput(VAR_CSV_INPUT, String.class, varman);
-        try (InputStream is = fetchMappedInput(VAR_CSV_INPUT, InputStream.class, varman)) {
-            CSVReader reader = createReader(IOUtils.getGunzippedInputStream(is), filename);
-            Stream<BasicObject> mols = reader.asStream();
-            Dataset results = new Dataset(mols, reader.getDatasetMetadata());
-            createMappedOutput(VAR_DATASET_OUTPUT, Dataset.class, results, varman);
-            statusMessage = generateStatusMessage(-1, results.getSize(), -1);
-            LOG.info("Results: " + JsonHandler.getInstance().objectToJson(results.getMetadata()));
+    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
+        statusMessage = "Reading input ...";
+        if (inputs.size() != 1) {
+            throw new IllegalArgumentException("Must provide a single input");
         }
+        Object input = inputs.values().iterator().next();
+        SquonkDataSource dataSource;
+        if (input instanceof SquonkDataSource) {
+            dataSource = (SquonkDataSource) input;
+        } else if (input instanceof InputStream) {
+            dataSource = new InputStreamDataSource(SquonkDataSource.ROLE_DEFAULT, null, CommonMimeTypes.MIME_TYPE_TEXT_CSV, (InputStream) input, null);
+        } else if (input instanceof CSVFile) {
+            CSVFile csv = (CSVFile) input;
+            dataSource = csv.getDataSources()[0];
+        } else {
+            throw new IllegalArgumentException("Unsupported input type: " + input.getClass().getName());
+        }
+        dataSource.setGzipContent(false);
+        CSVReader reader = createReader(dataSource);
+        AtomicInteger count = new AtomicInteger(0);
+        Stream<BasicObject> mols = reader.asStream()
+                .peek((bo) -> {
+                    count.incrementAndGet();
+                })
+                .onClose(() -> {
+                    numProcessed = count.intValue();
+                    LOG.info("Read " + numProcessed + " lines");
+                    numResults = numProcessed;
+                    statusMessage = numProcessed + " processed";
+                    try {
+                        dataSource.getInputStream().close();
+                    } catch (IOException ioe) {
+                        LOG.warning("Failed to close InputStream");
+                    }
+                });
+        Dataset results = new Dataset(mols, reader.getDatasetMetadata());
+        return Collections.singletonMap(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, results);
     }
 
-    private CSVReader createReader(InputStream input, String filename) throws IOException {
+    private CSVReader createReader(SquonkDataSource dataSource) throws IOException {
 
         String csvFormatOption = getOption(OPTION_FORMAT_TYPE, String.class);
         LOG.fine("CSVFormat string = " + csvFormatOption);
@@ -235,7 +296,7 @@ public class CSVReaderStep extends AbstractStandardStep {
         }
         LOG.info("CSV: " + csv);
 
-        return new CSVReader(input, csv, csvFormatOption, filename);
+        return new CSVReader(dataSource, csv, csvFormatOption);
     }
 
 }

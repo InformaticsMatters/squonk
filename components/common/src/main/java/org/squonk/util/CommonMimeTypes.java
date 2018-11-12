@@ -16,6 +16,8 @@
 
 package org.squonk.util;
 
+import org.squonk.types.TypeDescriptor;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,15 +39,17 @@ public interface CommonMimeTypes {
     String MIME_TYPE_BASIC_OBJECT_JSON = "application/x-squonk-basic-object+json";
     String MIME_TYPE_MOLECULE_OBJECT_JSON = "application/x-squonk-molecule-object+json";
 
-    // when using thes make sure you add +json or +yaml to the end
-    String SERVICE_DESCRIPTOR_BASE = "application/x-squonk-service-descriptor-";
-    String MIME_TYPE_SERVICE_DESCRIPTOR_DOCKER = SERVICE_DESCRIPTOR_BASE + "docker";
+    // when using these make sure you add +json or +yaml to the end
+    String SERVICE_DESCRIPTOR_BASE = "application/x-squonk-service-descriptor";
+    String MIME_TYPE_SERVICE_DESCRIPTOR_JSON = SERVICE_DESCRIPTOR_BASE + "+json";
+    String MIME_TYPE_SERVICE_DESCRIPTOR_YAML = SERVICE_DESCRIPTOR_BASE + "+yaml";
+    String MIME_TYPE_SERVICE_DESCRIPTOR_DOCKER = SERVICE_DESCRIPTOR_BASE + "-docker";
     String MIME_TYPE_SERVICE_DESCRIPTOR_DOCKER_JSON = MIME_TYPE_SERVICE_DESCRIPTOR_DOCKER + "+json";
     String MIME_TYPE_SERVICE_DESCRIPTOR_DOCKER_YAML = MIME_TYPE_SERVICE_DESCRIPTOR_DOCKER + "+yaml";
-    String MIME_TYPE_SERVICE_DESCRIPTOR_NEXTFLOW = SERVICE_DESCRIPTOR_BASE + "nextflow";
+    String MIME_TYPE_SERVICE_DESCRIPTOR_NEXTFLOW = SERVICE_DESCRIPTOR_BASE + "-nextflow";
     String MIME_TYPE_SERVICE_DESCRIPTOR_NEXTFLOW_JSON = MIME_TYPE_SERVICE_DESCRIPTOR_NEXTFLOW + "+json";
     String MIME_TYPE_SERVICE_DESCRIPTOR_NEXTFLOW_YAML = MIME_TYPE_SERVICE_DESCRIPTOR_NEXTFLOW + "+yaml";
-    String MIME_TYPE_SERVICE_DESCRIPTOR_SET = SERVICE_DESCRIPTOR_BASE + "set";
+    String MIME_TYPE_SERVICE_DESCRIPTOR_SET = SERVICE_DESCRIPTOR_BASE + "-set";
     String MIME_TYPE_SERVICE_DESCRIPTOR_SET_JSON = MIME_TYPE_SERVICE_DESCRIPTOR_SET + "+json";
     String MIME_TYPE_SERVICE_DESCRIPTOR_SET_YAML = MIME_TYPE_SERVICE_DESCRIPTOR_SET + "+yaml";
 

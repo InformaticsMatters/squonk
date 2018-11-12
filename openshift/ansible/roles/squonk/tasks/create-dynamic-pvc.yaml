@@ -1,0 +1,34 @@
+---
+
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
+  changed_when: False
+
+# Create PVCs
+
+- name: Check Squonk PV/PVC (dyanmic)
+  shell: oc get pvc
+  register: s_pvc_result
+  changed_when: False
+
+- name: Create Squonk PVCs (dynamic)
+  shell: >
+    oc process
+    -p APP_NAMESPACE={{ oc_project }}
+    -p STORAGE_CLASS={{ oc_squonk_volume_storage_class }}
+    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-pvc-dynamic.yaml
+    | oc create -f -
+  when: '"squonk-work-dir-pvc" not in s_pvc_result.stdout'
+
+# Wait for PVCs to become "Bound"...
+
+- name: Wait for Squonk PVCs to become Bound (dynamic)
+  shell: >
+    oc get pvc/{{ item }} | grep Bound
+  delay: 5
+  retries: "{{ (pvc_bind_timeout | int / 5) | int }}"
+  register: result
+  until: result.rc == 0
+  loop:
+  - squonk-work-dir-pvc
+  when: item not in s_pvc_result.stdout

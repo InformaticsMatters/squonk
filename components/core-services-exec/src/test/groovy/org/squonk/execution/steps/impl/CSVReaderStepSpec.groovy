@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,9 @@
 
 package org.squonk.execution.steps.impl
 
-import org.squonk.dataset.Dataset
-
-import org.squonk.execution.variable.VariableManager
-import org.squonk.io.IODescriptor
-import org.squonk.io.IODescriptors
-import org.squonk.io.IORoute
-import org.squonk.notebook.api.VariableKey
+import org.squonk.io.InputStreamDataSource
+import org.squonk.io.SquonkDataSource
+import org.squonk.util.CommonMimeTypes
 import spock.lang.Specification
 
 /**
@@ -43,67 +39,50 @@ field1\tfield2\tfield3
 2\ttwo\tduo
 3\tthree\ttres'''
 
-    Long producer = 1
 
     void "simple csv reader with header"() {
-        //println "simple csv reader with header"
+
         InputStream is = new ByteArrayInputStream(CSV1.bytes)
-        VariableManager varman = new VariableManager(null, 1, 1);
 
-        varman.putValue(
-                new VariableKey(producer, "input"),
-                InputStream.class,
-                is)
-        varman.putValue(
-                new VariableKey(producer, "input"),
-                String.class,
-                "some filename")
-
+        String myFileName = "myfile.csv"
+        SquonkDataSource input = new InputStreamDataSource("csv", myFileName, CommonMimeTypes.MIME_TYPE_TEXT_CSV, is, false)
 
         CSVReaderStep step = new CSVReaderStep()
-        step.configure(producer, "job1", [
+        step.configure("simple csv reader with header", [
                 (CSVReaderStep.OPTION_FORMAT_TYPE)               : 'DEFAULT',
                 (CSVReaderStep.OPTION_USE_HEADER_FOR_FIELD_NAMES): true,
                 (CSVReaderStep.OPTION_SKIP_HEADER_LINE)          : true
         ],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], [(CSVReaderStep.VAR_CSV_INPUT): new VariableKey(producer, "input")], [:]
+                CSVReaderStep.SERVICE_DESCRIPTOR
         )
 
         when:
-        step.execute(varman, null)
-        Dataset dataset = varman.getValue(new VariableKey(producer, CSVReaderStep.VAR_DATASET_OUTPUT), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input), null)
+        def dataset = resultsMap["output"]
 
         then:
         dataset != null
         def items = dataset.items
         items.size() == 3
         items[0].values.size() == 3
-        dataset.metadata.getProperties()['source'].contains("some filename")
+        dataset.metadata.getProperties()['source'].contains(myFileName)
     }
 
     void "simple tab reader without header"() {
-        //println "simple tab reader without header"
-        InputStream is = new ByteArrayInputStream(TAB1.bytes)
-        VariableManager varman = new VariableManager(null, 1, 1);
-        varman.putValue(
-                new VariableKey(producer, "input"),
-                InputStream.class,
-                is)
 
+        InputStream is = new ByteArrayInputStream(TAB1.bytes)
+        String myFileName = "myfile.tab"
+        SquonkDataSource input = new InputStreamDataSource("tab", myFileName, CommonMimeTypes.MIME_TYPE_TEXT_CSV, is, false)
 
         CSVReaderStep step = new CSVReaderStep()
 
-        step.configure(producer, "job1",
+        step.configure("simple tab reader without header",
                 [(CSVReaderStep.OPTION_FORMAT_TYPE): 'TDF'],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                [(CSVReaderStep.VAR_CSV_INPUT): new VariableKey(producer, "input")],
-                [:])
+                CSVReaderStep.SERVICE_DESCRIPTOR)
 
         when:
-        step.execute(varman, null)
-        Dataset dataset = varman.getValue(new VariableKey(producer, CSVReaderStep.VAR_DATASET_OUTPUT), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input), null)
+        def dataset = resultsMap["output"]
 
         then:
         dataset != null

@@ -16,9 +16,8 @@
 
 package org.squonk.core;
 
-import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
@@ -27,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -86,8 +84,8 @@ public class ServiceDescriptorUtils {
 
     }
 
-    public static <T extends ServiceDescriptor> T readServiceDescriptor(String p, Class<T> type) {
-        return readServiceDescriptor(new java.io.File(p), type);
+    public static <T extends ServiceDescriptor> T readServiceDescriptor(String path, Class<T> type) {
+        return readServiceDescriptor(new java.io.File(path), type);
     }
 
     public static <T extends ServiceDescriptor> T readServiceDescriptor(java.io.File f, Class<T> type) {
@@ -135,6 +133,36 @@ public class ServiceDescriptorUtils {
         return sd;
     }
 
+    /** Create the service descriptor from the provided content. The type of service descriptor is determined
+     * from the provided mediaType.
+     *
+     * @param data
+     * @param mediaType
+     * @return
+     */
+    public static ServiceDescriptor buildServiceDescriptor(String data, String mediaType) throws IOException {
+        LOG.info(String.format("mediaType: %s", mediaType));
+
+        if (data == null || data.isEmpty()) {
+            throw new IOException("No service descriptor content");
+        }
+
+        if (mediaType == null) {
+            throw new IOException("Mime type for service descriptor not defined");
+        } else {
+            if (!mediaType.toLowerCase().startsWith(CommonMimeTypes.SERVICE_DESCRIPTOR_BASE)) {
+                throw new IOException("Unexpected mime type for service descriptor: " + mediaType);
+            }
+            if (mediaType.toLowerCase().endsWith("+json")) {
+                return readJson(data, ServiceDescriptor.class);
+            } else if (mediaType.toLowerCase().endsWith("+yaml")) {
+                return ServiceDescriptorUtils.readYaml(data, ServiceDescriptor.class);
+            } else {
+                throw new IOException("Unexpected mime type for service descriptor: " + mediaType);
+            }
+        }
+    }
+
     public static <T> T readYaml(InputStream yaml, Class<T> cls) throws IOException {
         return yamlMapper.readValue(yaml, cls);
     }
@@ -149,6 +177,21 @@ public class ServiceDescriptorUtils {
 
     public static <T> T readJson(String json, Class<T> cls) throws IOException {
         return jsonMapper.readValue(json, cls);
+    }
+
+    /** Read JSON containing an array of service descriptors into a List&lt;ServiceDescriptor&gt;
+     *
+     * @param json
+     * @return
+     */
+    public static List<ServiceDescriptor> readJsonList(InputStream json) throws IOException {
+        List<ServiceDescriptor> sds = JsonHandler.getInstance().objectFromJson(json, new TypeReference<List<ServiceDescriptor>>() {});
+        return sds;
+    }
+
+    public static List<ServiceDescriptor> readJsonList(String json) throws IOException {
+        List<ServiceDescriptor> sds = JsonHandler.getInstance().objectFromJson(json, new TypeReference<List<ServiceDescriptor>>() {});
+        return sds;
     }
 
     private static void completeNextflowServiceDescriptor(

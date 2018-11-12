@@ -16,6 +16,8 @@
 
 package org.squonk.core;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IORoute;
 
@@ -33,6 +35,8 @@ import org.squonk.io.IORoute;
  *
  * Created by timbo on 04/01/17.
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public interface ServiceDescriptor {
 
     String getId();

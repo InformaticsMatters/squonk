@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,9 @@
 
 package org.squonk.execution.steps.impl
 
-import org.squonk.io.IODescriptor
-import org.squonk.io.IODescriptors
-import org.squonk.io.IORoute
-import org.squonk.types.BasicObject
 import groovy.transform.Canonical
 import org.squonk.dataset.Dataset
-
-import org.squonk.execution.variable.VariableManager
-import org.squonk.notebook.api.VariableKey
+import org.squonk.types.BasicObject
 import spock.lang.Specification
 
 /**
@@ -105,34 +99,23 @@ class Filter {
             new BasicObject([i:6, f:6.6f, s:'six']),
     ]
     Dataset ds = new Dataset(BasicObject.class, input)
-    Long producer = 1
 
     void "simple filter step"() {
 
-        VariableManager varman = new VariableManager(null, 1, 1);
-
-        varman.putValue(
-                new VariableKey(producer,"input"),
-                Dataset.class,
-                ds)
 
         DatasetFilterGroovyStep step = new DatasetFilterGroovyStep()
-        step.configure(producer, "job1",
+        step.configure("simple filter step",
                 [(DatasetFilterGroovyStep.OPTION_SCRIPT):'i < 5 && f > 2.0'],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                ["input":new VariableKey(producer, "input")],
-                [:]
+                DatasetFilterGroovyStep.SERVICE_DESCRIPTOR
         )
 
         when:
-        step.execute(varman, null)
-        Dataset output = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", ds), null)
+        def result = resultsMap["output"]
 
         then:
-
-        output != null
-        output.items.size() == 3
+        result != null
+        result.items.size() == 3
     }
 
 }

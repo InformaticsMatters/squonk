@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,62 +17,82 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
+import org.squonk.core.DefaultServiceDescriptor;
+import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.IODescriptors;
+import org.squonk.options.MultiLineTextTypeDescriptor;
+import org.squonk.options.OptionDescriptor;
 import org.squonk.types.BasicObject;
-import org.squonk.types.io.JsonHandler;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
+/** Sorts a dataset according to one or more sort directives.
+ * Note: valid DatasetMetadata must be present in the dataset.
+ *
  * Created by timbo on 13/09/16.
  */
-public class DatasetSorterStep extends AbstractStandardStep {
+public class DatasetSorterStep<P extends BasicObject> extends AbstractDatasetStep<P,P> {
 
     private static final Logger LOG = Logger.getLogger(DatasetSorterStep.class.getName());
+
+    public static final DefaultServiceDescriptor SERVICE_DESCRIPTOR = new DefaultServiceDescriptor("core.dataset.sorter.v1",
+            "Dataset sorter",
+            "Sort the dataset",
+            new String[]{"sort", "dataset"},
+            null, "icons/filter.png",
+            ServiceConfig.Status.ACTIVE,
+            new Date(),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+            new OptionDescriptor[]{
+
+                    new OptionDescriptor<>(
+                            new MultiLineTextTypeDescriptor(10, 80, MultiLineTextTypeDescriptor.MIME_TYPE_TEXT_PLAIN),
+                            StepDefinitionConstants.DatasetSorter.OPTION_DIRECTIVES,
+                            "Sort directives",
+                            "Definition of the sort directives: field_name ASC|DESC", OptionDescriptor.Mode.User)
+                            .withMinMaxValues(1,1)
+
+            },
+            null, null, null,
+            DatasetSorterStep.class.getName()
+    );
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
     public static final String OPTION_DIRECTIVES = StepDefinitionConstants.DatasetSorter.OPTION_DIRECTIVES;
 
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext camelContext) throws Exception {
 
-        statusMessage = MSG_PREPARING_INPUT;
-        Dataset ds = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
-        if (ds == null) {
-            throw new IllegalStateException("Input variable not found: " + VAR_INPUT_DATASET);
-        }
-
-        String directivesStr = getOption(OPTION_DIRECTIVES, String.class);
+        String directivesStr = getOption(OPTION_DIRECTIVES, String.class, findTypeConverter(camelContext));
         if (directivesStr == null) {
             throw new IllegalStateException("Sort directives must be defined as option named " + OPTION_DIRECTIVES);
         }
 
-        DatasetMetadata meta = ds.getMetadata();
+        DatasetMetadata<P> meta = input.getMetadata();
         List<SortDirective> directives = parse(directivesStr, meta);
 
-        Stream<? extends BasicObject> stream = ds.getStream();
-        Stream<? extends BasicObject> sorted = stream.sorted(new SortComparator(directives));
+        Stream<P> stream = input.getStream();
+        Stream<P> sorted = stream.sorted(new SortComparator(directives));
+        sorted = addStreamCounter(sorted, MSG_PROCESSED);
 
         meta.appendDatasetHistory("Sorted according to " + directives.stream()
                 .map((sd) -> sd.field + (sd.ascending ? " ASC" : " DESC"))
                 .collect(Collectors.joining(", ")));
 
-        Dataset result = new Dataset(sorted, meta);
+        Dataset<P> result = new Dataset(sorted, meta);
 
-        createMappedOutput(VAR_OUTPUT_DATASET, Dataset.class, result, varman);
-
-        statusMessage = generateStatusMessage(ds.getSize(), result.getSize(), -1);
-        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(result.getMetadata()));
+        return result;
     }
 
     protected List<SortDirective> parse(String string, DatasetMetadata meta) {

@@ -1,5 +1,7 @@
 package org.squonk.execution.runners;
 
+import org.squonk.util.IOUtils;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -18,6 +20,9 @@ import java.util.logging.Logger;
  * Created by timbo on 01/08/17.
  */
 public abstract class AbstractRunner implements ContainerRunner {
+
+    public static final String DEFAULT_SQUONK_WORK_DIR = "/squonk/work/docker";
+    private static final String WORK_DIR_ENV_NAME = "SQUONK_DOCKER_WORK_DIR";
 
     private static final Logger LOG = Logger.getLogger(AbstractRunner.class.getName());
 
@@ -65,7 +70,7 @@ public abstract class AbstractRunner implements ContainerRunner {
     }
 
     public void init() throws IOException {
-        LOG.info("init() - " + hostWorkDir.getPath());
+        LOG.info("Host workdir: " + hostWorkDir.getPath());
         // The working directory cannot exist.
         // if it does this may indicate the clean-up process failed for
         // an earlier run or init()'s been called twice..
@@ -81,7 +86,15 @@ public abstract class AbstractRunner implements ContainerRunner {
         hostWorkDir.setWritable(true, false);
     }
 
-    protected abstract String getDefaultWorkDir();
+    /**
+     * Returns the defined working directory, or a default
+     * if the expected environment variable has not been set.
+     *
+     * @return The working directory
+     */
+    public static String getDefaultWorkDir() {
+        return IOUtils.getConfiguration(WORK_DIR_ENV_NAME, DEFAULT_SQUONK_WORK_DIR);
+    }
 
     public abstract void stop();
 
@@ -136,13 +149,7 @@ public abstract class AbstractRunner implements ContainerRunner {
     }
 
     protected boolean deleteRecursive(File path) {
-        boolean ret = true;
-        if (path.isDirectory()) {
-            for (File f : path.listFiles()) {
-                ret = ret && deleteRecursive(f);
-            }
-        }
-        return ret && path.delete();
+        return IOUtils.deleteDirRecursive(path);
     }
 
     public boolean isRunning() {

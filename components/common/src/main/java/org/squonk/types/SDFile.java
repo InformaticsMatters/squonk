@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,11 @@
 
 package org.squonk.types;
 
+import org.squonk.io.SquonkDataSource;
 import org.squonk.util.CommonMimeTypes;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 
 /** Wrapper around data from an SD file to allow strong typing and type conversion
@@ -29,12 +32,19 @@ public class SDFile extends AbstractStreamType {
     public static final String PROP_NAME_FIELD_NAME = "SDF_NAME_FIELD_NAME";
     private static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_MDL_SDF;
     
-    public SDFile(InputStream input) {
-        super(input);
+    public SDFile(InputStream input, Boolean gzipped) {
+        super(input, MEDIA_TYPE, gzipped);
     }
 
-    public String getMediaType() {
-        return MEDIA_TYPE;
+    public SDFile(String data, Boolean gzipped) {
+        this(new ByteArrayInputStream(data.getBytes()), gzipped);
     }
-    
+
+    public SDFile(File file, Boolean gzipped) {
+        super(file, MEDIA_TYPE, gzipped);
+    }
+
+    public SDFile(SquonkDataSource dataSource) {
+        super(dataSource, MEDIA_TYPE);
+    }
 }

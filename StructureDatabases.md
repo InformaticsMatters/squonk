@@ -46,7 +46,7 @@ Each loader is pre-configured with sensible defaults, but you can override these
 * CHEMCENTRAL_REPORTING_CHUNK - the frequency to report loading (default appropriate to the typical size of the dataset)
 * CHEMCENTRAL_ALIAS - an optional alias for the table so that it can be accessed using a symbolic name e.g. chembl_latest
 
-For testing set the loadOnly property to restrict the number of structures to load. Reset this to zero to load the 
+For testing set the CHEMCENTRAL_LIMIT property to restrict the number of structures to load. Reset this to zero to load the 
 entire dataset.
 
 ### Running a loader

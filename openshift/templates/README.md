@@ -75,7 +75,8 @@ application templates.
 As that `admin` user you must deploy the xpaas image streams to your OpenShift environment:
 
 ```
-oc create -f https://raw.githubusercontent.com/jboss-openshift/application-templates/master/sso/sso72-image-stream.json -n openshift
+oc create -f https://raw.githubusercontent.com/jboss-container-images/redhat-sso-7-openshift-image/sso72-dev/templates/sso72-image-stream.json -n openshift
+             
 ```
 
 This only needs to be done once.
@@ -131,7 +132,8 @@ First create NFS exports on the node that is acting as the NFS server (probably 
 for `/exports/pv-postgresql` and `/exports/pv-rabbitmq` and then define the PVs and PVCs:
 
 ```
-oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -f infra-pvc-nfs.yaml | oc create -f -
+oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -p NFS_PATH=$OC_NFS_PATH -f infra-pv-nfs.yaml | oc create -f -
+oc process -p INFRA_NAMESPACE=$OC_INFRA_PROJECT -f infra-pvc-nfs.yaml | oc create -f -
 ```
 
 This creates PVs for the NFS mounts and binds the PVCs that RabbitMQ and PostgreSQL need. This is 'permanent' coupling
@@ -158,7 +160,7 @@ Now we are ready to start deploying the infrastructure.
 
 #### If using dynamic provisioning with OpenShift:
 
-Dymanic provisioning allows to only specfy the PVS and OpensShift will satisfy the request dynamically
+Dymanic provisioning allows to only specify the PVS and OpensShift will satisfy the request dynamically
 using whatever dynamic provision is configured. You can use the StorageClass property to define
 what type of storage you need.
 
@@ -282,8 +284,8 @@ First create NFS export on the node that is acting as the NFS server (probably t
 for `/exports/squonk-work-dir` and then define the PVs and PVCs:
 
 ```
-oc process -p APP_NAMESPACE=$OC_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -f squonk-pvc-nfs.yaml | oc create -f -
-
+oc process -p APP_NAMESPACE=$OC_PROJECT -p NFS_SERVER=$OC_NFS_SERVER -p NFS_PATH=$OC_NFS_PATH -f squonk-pv-nfs.yaml | oc create -f -
+oc process -p APP_NAMESPACE=$OC_PROJECT -f squonk-pvc-nfs.yaml | oc create -f -
 ```
 
 #### If using dynamic provisioning with OpenShift:
@@ -325,7 +327,7 @@ To confirm that the keycloak initialisation has completed run this:
 ```
 oc logs job/squonk-client-creator -n $OC_INFRA_PROJECT
 ```
-The output should end with `Registered client squonk-notebook in realm squonk`
+The output should end with `Registered client squonk-notebook in realm [...]`
 
 
 Make sure you have created the `standard-user` role and the required users in Keycloak (see above).

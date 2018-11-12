@@ -29,7 +29,7 @@ import java.util.Properties;
  * All container runner classes must implement the ContainerRunner interface
  * or throw an UnsupportedExc exception.
  */
-public interface ContainerRunner {
+public interface ContainerRunner extends ServiceRunner {
 
     File getHostWorkDir();
 
@@ -93,14 +93,6 @@ public interface ContainerRunner {
      * @return The container log
      */
     String getLog();
-
-    /**
-     * Cleans up the running container. This method blocks
-     * until the action is complete. After this call the running container
-     * will have been removed from the container eco-system and can no-longer
-     * be used.
-     */
-    void cleanup();
 
     Properties getFileAsProperties(String file)
             throws IOException;

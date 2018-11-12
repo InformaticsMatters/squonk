@@ -21,9 +21,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.squonk.client.JobStatusClient;
 import org.squonk.core.config.SquonkClientConfig;
-import org.squonk.jobdef.JobDefinition;
-import org.squonk.jobdef.JobQuery;
-import org.squonk.jobdef.JobStatus;
+import org.squonk.jobdef.*;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.ServiceConstants;
 
@@ -57,19 +55,19 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
      * Submit this as a new Job. This is the entrypoint for submitting a job.
      *
      * @param username Username of the authenticated user
-     * @param jobdef The definition of the job
+     * @param jobDef The definition of the job
      * @return The status of the submitted job, which includes the job ID that can be used to
      * further monitor and handle the job.
      * @throws java.io.IOException
      */
-    public JobStatus submit(JobDefinition jobdef, String username, Integer totalCount) throws IOException {
-        if (jobdef == null) {
+    public JobStatus submit(CellExecutorJobDefinition jobDef, String username, Integer totalCount) throws IOException {
+        if (jobDef == null) {
             throw new IllegalStateException("Job definition must be specified");
         }
         if (username == null) {
             throw new IllegalStateException("Username must be specified");
         }
-        String json = toJson(jobdef);
+        String json = toJson(jobDef);
         URIBuilder b = new URIBuilder().setPath(baseUrl);
         if (totalCount != null && totalCount > 0) {
             b = b.setParameter(ServiceConstants.HEADER_JOB_SIZE, totalCount.toString());
@@ -78,6 +76,24 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
         InputStream result = executePostAsInputStream( b, json, new BasicNameValuePair(ServiceConstants.HEADER_SQUONK_USERNAME, username));
         return fromJson(result, JobStatus.class);
     }
+
+    public JobStatus create(ExternalJobDefinition jobDef, String username, Integer totalCount) throws IOException {
+        if (jobDef == null) {
+            throw new IllegalStateException("Job definition must be specified");
+        }
+        if (username == null) {
+            throw new IllegalStateException("Username must be specified");
+        }
+        String json = toJson(jobDef);
+        URIBuilder b = new URIBuilder().setPath(baseUrl);
+        if (totalCount != null && totalCount > 0) {
+            b = b.setParameter(ServiceConstants.HEADER_JOB_SIZE, totalCount.toString());
+        }
+        LOG.info("About to post job of " + json);
+        InputStream result = executePostAsInputStream( b, json, new BasicNameValuePair(ServiceConstants.HEADER_SQUONK_USERNAME, username));
+        return fromJson(result, JobStatus.class);
+    }
+
 
     /** Fetch the current status for the job with this ID
      *
@@ -105,6 +121,8 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
     }
 
     public JobStatus updateStatus(String id, JobStatus.Status status, String event, Integer processedCount, Integer errorCount) throws IOException {
+        LOG.fine("Updating status for job " + id + " Status: " + status + " Event: "+ event +
+                " Processed: " + processedCount + " Errors: " + errorCount);
         URIBuilder b = new URIBuilder().setPath(baseUrl + "/" + id);
         if (status != null) {
             b.setParameter("status", status.toString());
@@ -116,7 +134,9 @@ public class JobStatusRestClient extends AbstractHttpClient implements JobStatus
             b.setParameter(ServiceConstants.HEADER_JOB_ERROR_COUNT, errorCount.toString());
         }
         InputStream result = executePostAsInputStream( b, event, new NameValuePair[0]);
-        return fromJson(result, JobStatus.class);
+        JobStatus jobStatus = fromJson(result, JobStatus.class);
+        LOG.fine("JobStatus updated: " + jobStatus);
+        return jobStatus;
     }
 
     public JobStatus incrementCounts(String id, int processedCount, int errorCount) throws IOException {

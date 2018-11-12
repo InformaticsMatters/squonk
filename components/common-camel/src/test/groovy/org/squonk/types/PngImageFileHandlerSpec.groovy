@@ -17,6 +17,9 @@
 package org.squonk.types
 
 import org.squonk.api.VariableHandler
+import org.squonk.io.FileDataSource
+import org.squonk.io.InputStreamDataSource
+import org.squonk.io.SquonkDataSource
 import spock.lang.Specification
 
 /**
@@ -29,8 +32,8 @@ class PngImageFileHandlerSpec extends Specification {
     void "test write variable"() {
 
         def h = new PngImageFileHandler()
-        def fis = new FileInputStream("../../data/testfiles/image.png")
-        def png1 = new PngImageFile(fis)
+        def data = new FileDataSource(null, null, new java.io.File("../../data/testfiles/image.png"), false)
+        def png1 = new PngImageFile(data    )
         def ctx = new DummyContext()
 
         when:
@@ -38,9 +41,6 @@ class PngImageFileHandlerSpec extends Specification {
 
         then:
         ctx.bytes.length > 0
-
-        cleanup:
-        fis?.close()
     }
 
     void "test read variable"() {
@@ -85,8 +85,9 @@ class PngImageFileHandlerSpec extends Specification {
         }
 
         @Override
-        InputStream readStreamValue(String mediaType, String extension, String key) throws Exception {
-            return new ByteArrayInputStream(bytes)
+        SquonkDataSource readStreamValue(String mediaType, String extension, String key) throws Exception {
+            def is = new ByteArrayInputStream(bytes)
+            return new InputStreamDataSource(SquonkDataSource.ROLE_DEFAULT, null, mediaType, is, false)
         }
     }
 }

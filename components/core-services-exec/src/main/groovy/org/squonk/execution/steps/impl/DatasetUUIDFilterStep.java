@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,31 +17,26 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.TypeConverter;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractServiceStep;
-import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptors;
 import org.squonk.options.MultiLineTextTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.types.BasicObject;
 import org.squonk.util.CommonMimeTypes;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
  * Created by timbo on 29/12/15.
  */
-public class DatasetUUIDFilterStep extends AbstractServiceStep {
+public class DatasetUUIDFilterStep<P extends BasicObject> extends AbstractDatasetStep<P,P> {
 
     private static final Logger LOG = Logger.getLogger(DatasetUUIDFilterStep.class.getName());
 
@@ -68,11 +63,10 @@ public class DatasetUUIDFilterStep extends AbstractServiceStep {
     );
 
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
 
-        statusMessage = MSG_PREPARING_INPUT;
-        Dataset<? extends BasicObject> input = fetchMappedInput("input", Dataset.class, varman, true);
-        String uuidsOpt = getOption(OPTION_UUIDS, String.class);
+        TypeConverter converter = findTypeConverter(context);
+        String uuidsOpt = getOption(OPTION_UUIDS, String.class, converter);
         if (uuidsOpt == null) {
             throw new IllegalStateException("UUIDs not defined. Should be present as option named " + OPTION_UUIDS);
         }
@@ -80,12 +74,11 @@ public class DatasetUUIDFilterStep extends AbstractServiceStep {
         Set<UUID> uuids = parseUUIDs(uuidsOpt);
 
         statusMessage = "Filtering ...";
-        Stream <? extends BasicObject>output = input.getStream().filter((bo) -> uuids.contains(bo.getUUID()));
-        Dataset<? extends BasicObject> results = new Dataset(output, deriveOutputDatasetMetadata(input.getMetadata()));
+        Stream<P> output = input.getStream().filter((bo) -> uuids.contains(bo.getUUID()));
+        output = addStreamCounter(output, "%s records found");
+        Dataset<P> results = new Dataset(output, deriveOutputDatasetMetadata(input.getMetadata()));
 
-        createMappedOutput("output", Dataset.class, results, varman);
-        statusMessage = generateStatusMessage(input.getSize(), results.getSize(), -1);
-        LOG.info("Results: " + results.getMetadata());;
+        return results;
     }
 
     protected Set<UUID> parseUUIDs(String s) {

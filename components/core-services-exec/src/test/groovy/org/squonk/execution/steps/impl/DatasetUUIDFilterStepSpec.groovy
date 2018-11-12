@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,6 @@
 package org.squonk.execution.steps.impl
 
 import org.squonk.dataset.Dataset
-import org.squonk.execution.variable.VariableManager
-import org.squonk.io.IODescriptor
-import org.squonk.io.IODescriptors
-import org.squonk.notebook.api.VariableKey
 import org.squonk.types.BasicObject
 import spock.lang.Specification
 
@@ -38,31 +34,23 @@ class DatasetUUIDFilterStepSpec extends Specification {
             new BasicObject([i: 5, f: 5.5f, s: 'five']),
             new BasicObject([i: 6, f: 6.6f, s: 'six']),
     ]
-    Dataset ds = new Dataset(BasicObject.class, input)
-    Long producer = 1
 
     void "simple filter step"() {
 
-        VariableManager varman = new VariableManager(null, 1, 1);
-
         def uuids = input[1].UUID.toString() + "," + input[3].UUID.toString() + " , \n" + input[5].UUID.toString()
 
-        varman.putValue(
-                new VariableKey(producer, "input"),
-                Dataset.class,
-                ds)
 
         DatasetUUIDFilterStep step = new DatasetUUIDFilterStep()
-        step.configure(producer, "job1",
+        step.configure("simple filter step",
                 [(DatasetUUIDFilterStep.OPTION_UUIDS): uuids],
-                ["input": new VariableKey(producer, "input")],
-                [:],
                 DatasetUUIDFilterStep.SERVICE_DESCRIPTOR
         )
+        Dataset ds = new Dataset(BasicObject.class, input)
+        ds.generateMetadata()
 
         when:
-        step.execute(varman, null)
-        Dataset output = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", ds), null)
+        def output = resultsMap["output"]
 
         then:
 
@@ -81,9 +69,6 @@ class DatasetUUIDFilterStepSpec extends Specification {
         then:
         step.parseUUIDs("""${UUID.randomUUID().toString()} ${UUID.randomUUID().toString()} , ${UUID.randomUUID().toString()},${UUID.randomUUID().toString()}
  ${UUID.randomUUID().toString()}\n\n${UUID.randomUUID().toString()} \n${UUID.randomUUID().toString()}, ${UUID.randomUUID().toString()}""").size() == 8
-
-
-
     }
 
 

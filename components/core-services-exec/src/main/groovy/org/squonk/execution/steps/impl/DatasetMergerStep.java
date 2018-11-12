@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ package org.squonk.execution.steps.impl;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractServiceStep;
+import org.squonk.execution.steps.AbstractThinStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
 import org.squonk.options.DatasetsFieldOptionDescriptor;
@@ -48,7 +47,7 @@ import org.squonk.types.io.JsonHandler;
  *
  * @author timbo
  */
-public class DatasetMergerStep extends AbstractServiceStep {
+public class DatasetMergerStep extends AbstractThinStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetMergerStep.class.getName());
 
@@ -96,8 +95,17 @@ public class DatasetMergerStep extends AbstractServiceStep {
     private static final String SOURCE = "Squonk DatasetMergerStep";
 
 
+    private Object fetchValueToCompare(BasicObject bo, String mergeField) {
+        return mergeField == null ? bo.getUUID() : bo.getValue(mergeField);
+    }
+
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
+    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
+
+        if (inputs == null || inputs.size() == 0) {
+            throw new IllegalArgumentException("No data to merge");
+        }
+
         String mergeField = getOption(OPTION_MERGE_FIELD_NAME, String.class);
         boolean keepFirst = getOption(OPTION_KEEP_FIRST, Boolean.class, true);
 
@@ -111,10 +119,13 @@ public class DatasetMergerStep extends AbstractServiceStep {
         int count = 0;
         int totalRecordCount = 0;
         List<String> sources = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
-            Dataset<? extends BasicObject> nextDataset = fetchMappedInput(VAR_INPUT_BASE + i, Dataset.class, varman);
-
-            if (nextDataset != null) {
+        int i = 0;
+        while (true) {
+            i++;
+            Dataset<? extends BasicObject> nextDataset = (Dataset)inputs.get(VAR_INPUT_BASE + i);
+            if (nextDataset == null) {
+                break;
+            } else {
                 count++;
                 int size = nextDataset.getSize();
                 if (size < 0) {
@@ -131,7 +142,6 @@ public class DatasetMergerStep extends AbstractServiceStep {
                     meta.getProperties().put(DatasetMetadata.PROP_CREATED, DatasetMetadata.now());
                     meta.getProperties().put(DatasetMetadata.PROP_SOURCE, SOURCE);
                 }
-
 
                 for (DatasetMetadata.PropertiesHolder ph : oldMeta.getFieldMetaProps()) {
                     String fldName = ph.getFieldName();
@@ -169,21 +179,14 @@ public class DatasetMergerStep extends AbstractServiceStep {
             }
         }
 
-        meta.getProperties().put(DatasetMetadata.PROP_DESCRIPTION, "Merged from " + count + " datasets using field " + mergeField
+        meta.getProperties().put(DatasetMetadata.PROP_DESCRIPTION, "Merged from " + count
+                + " datasets using field " + mergeField
                 + ". Sources were: " + sources.stream().collect(Collectors.joining(", ")));
 
-        if (type != null) {
-            Dataset output = new Dataset(results.values(), meta);
-            createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
-            statusMessage = generateStatusMessage(totalRecordCount, output.getSize(), -1);
-            LOG.info("Results: " + JsonHandler.getInstance().objectToJson(output.getMetadata()));
-        } else {
-            LOG.info("No data to merge");
-        }
-    }
-
-    private Object fetchValueToCompare(BasicObject bo, String mergeField) {
-        return mergeField == null ? bo.getUUID() : bo.getValue(mergeField);
+        Dataset output = new Dataset(results.values(), meta);
+        statusMessage = generateStatusMessage(totalRecordCount, output.getSize(), -1);
+        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(output.getMetadata()));
+        return Collections.singletonMap(VAR_OUTPUT, output);
     }
 
 }

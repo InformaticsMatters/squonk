@@ -1,0 +1,70 @@
+---
+
+# With infrastructure deployed and initialised
+# we can now continue with Squonk deployment (excluding the Portal)...
+
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
+  changed_when: False
+
+- name: Login as The Squonk Developer
+  shell: oc login {{ oc_master_hostname }} -u {{ oc_user }} -p {{ oc_user_password }}
+  changed_when: False
+
+# Deploy...
+
+- name: Check Squonk
+  shell: oc get dc
+  register: dc_result
+  changed_when: False
+
+- name: Deploy Squonk
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-app-components.yaml
+    -p APP_NAMESPACE={{ oc_project }}
+    -p PULL_POLICY={{ image_pull_policy }}
+    -p FLYWAY_IMAGE_TAG={{ oc_squonk_image_tag }}
+    -p CHEM_IMAGE_TAG={{ oc_squonk_image_tag }}
+    -p CORE_IMAGE_TAG={{ oc_squonk_image_tag }}
+    -p CELL_IMAGE_TAG={{ oc_squonk_image_tag }}
+    | oc create -f -
+  when: '"coreservices" not in dc_result.stdout'
+
+# Wait for running pods
+# We expect (roughly in order of coming online)...
+#
+#   cellexecutor
+#   coreservices
+#   chemservices-basic
+
+- name: Wait for Squonk Pods
+  shell: oc get po | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
+  delay: 20
+  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  register: result
+  until: result.rc == 0
+  when: wait_for_pods
+  loop:
+  - cellexecutor
+  - coreservices
+  - chemservices-basic
+  changed_when: False
+
+# Wait for other pods deployed here (Jobs)
+# to reach a "Completed" state.
+#
+# As we've probably waited for a long time for the pods above,
+# if it's been successful, waiting for the postgres migration should be a NOP.
+
+- name: Wait for Postgres migration
+  shell: oc describe jobs/{{ item }} | grep '1 Succeeded'  | grep 1
+  delay: 10
+  retries: "{{ (pod_ready_timeout | int / 10) | int }}"
+  register: result
+  until: result.rc == 0
+  when:
+  - wait_for_pods
+  loop:
+  - postgres-migrate
+  changed_when: False

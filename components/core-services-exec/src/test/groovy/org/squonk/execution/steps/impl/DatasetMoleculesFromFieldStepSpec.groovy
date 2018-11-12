@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,6 @@ package org.squonk.execution.steps.impl
 
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
-import org.squonk.execution.variable.VariableManager
-import org.squonk.io.IODescriptor
-import org.squonk.io.IODescriptors
-import org.squonk.notebook.api.VariableKey
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
 import spock.lang.Specification
@@ -32,7 +28,6 @@ import spock.lang.Specification
  */
 class DatasetMoleculesFromFieldStepSpec extends Specification {
 
-    Long producer = 1
 
     def createDataset() {
         def bos = []
@@ -53,35 +48,23 @@ class DatasetMoleculesFromFieldStepSpec extends Specification {
         return ds
     }
 
-    def createVariableManager() {
-        VariableManager varman = new VariableManager(null, 1, 1);
-        varman.putValue(
-                new VariableKey(producer, "input"),
-                Dataset.class,
-                createDataset())
-        return varman
-    }
-
-    def createStep(field) {
+    def createStep(field, jobId) {
         DatasetMoleculesFromFieldStep step = new DatasetMoleculesFromFieldStep()
-        step.configure(producer, "job1",
+        step.configure(jobId,
                 [(DatasetMoleculesFromFieldStep.OPTION_MOLECULES_FIELD): field],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                ["input": new VariableKey(producer, "input")],
-                [:])
+                DatasetMoleculesFromFieldStep.SERVICE_DESCRIPTOR)
         return step
     }
 
     void "get 25 mols"() {
 
         def context = new DefaultCamelContext()
-        def varman = createVariableManager()
-        def step = createStep("mols")
+        def step = createStep("mols", "get 25 mols")
+        def input = createDataset()
 
         when:
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input), null)
+        def dataset = resultsMap["output"]
 
         then:
         dataset != null

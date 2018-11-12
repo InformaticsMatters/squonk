@@ -1,0 +1,37 @@
+---
+
+# Un-deploy (uninstall) the Squonk infrastructure.
+#
+# This consists of un-deploying the application components form the squonk
+# project and the related parts of the squonk infrastructure project.
+
+- name: Login (admin)
+  shell: oc login {{ oc_master_hostname }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  changed_when: False
+
+# To un-deploy the infrastructure, the fastest way is to
+# simply delete the project.
+
+- name: Check Squonk Project
+  shell: oc get projects
+  register: projects_result
+  changed_when: False
+
+# But stop if Squonk is deployed!
+
+- name: Check Squonk Project
+  fail:
+    msg: 'You cannot delete the infrastructure while Squonk exists as a project'
+  when:  projects_result.stdout | regex_search('^%s\s.*Active$' % oc_project, multiline=True)
+
+- name: Delete Squonk-Infra Project
+  shell: oc delete project/{{ oc_infra_project }}
+  when:  projects_result.stdout | regex_search('^%s\s.*Active$' % oc_infra_project, multiline=True)
+
+- name: Wait for Squonk-Infra project deletion
+  shell: oc get projects
+  register: pj_cmd
+  retries: 20
+  delay: 30
+  until: not pj_cmd.stdout | regex_search('^%s\s' % oc_infra_project, multiline=True)
+  changed_when: False

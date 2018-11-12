@@ -166,11 +166,17 @@ parameters:
   name: HOSTNAME_HTTPS
   value: ''
   required: false
+- displayName: Termination policy for insecure traffic
+  description: 'indicates the desired behavior for insecure connections to
+    the route. Typically one of Allow, Disable or Redirect'
+  name: ROUTE_INSECURE_POLICY
+  value: Disable
+  required: false
 
 - name: BACKUP_REGISTRY
   value: 'docker.io'
 - name: BACKUP_IMAGE
-  value: 'informaticsmatters/postgresql-backup'
+  value: 'informaticsmatters/sql-backup'
 - name: BACKUP_TAG
   value: 'stable'
 
@@ -285,6 +291,7 @@ objects:
     to:
       name: secure-${APPLICATION_NAME}
     tls:
+      insecureEdgeTerminationPolicy: "${ROUTE_INSECURE_POLICY}"
       termination: reencrypt
 
 - kind: DeploymentConfig
@@ -333,13 +340,20 @@ objects:
             mountPath: "/etc/x509/jgroups"
             readOnly: true
           livenessProbe:
+            timeoutSeconds: 4
+            initialDelaySeconds: 120
+            failureThreshold: 3
+            periodSeconds: 30
             exec:
               command:
               - "/bin/bash"
               - "-c"
               - "/opt/eap/bin/livenessProbe.sh"
-            initialDelaySeconds: 60
           readinessProbe:
+            timeoutSeconds: 4
+            initialDelaySeconds: 90
+            failureThreshold: 10
+            periodSeconds: 15
             exec:
               command:
               - "/bin/bash"
@@ -445,7 +459,9 @@ objects:
             protocol: TCP
           readinessProbe:
             timeoutSeconds: 1
-            initialDelaySeconds: 5
+            initialDelaySeconds: 60
+            failureThreshold: 10
+            periodSeconds: 15
             exec:
               command:
               - "/bin/sh"
@@ -454,7 +470,9 @@ objects:
               - pg_isready -h 127.0.0.1 -p 5432
           livenessProbe:
             timeoutSeconds: 1
-            initialDelaySeconds: 30
+            initialDelaySeconds: 90
+            failureThreshold: 3
+            periodSeconds: 30
             exec:
               command:
               - "/bin/sh"
@@ -485,89 +503,3 @@ objects:
         - name: "postgresql-pvol"
           persistentVolumeClaim:
             claimName: "postgresql-claim"
-
-# The HOURLY CronJob (running at HH:07).
-# This job will create new postgres backups
-# Keeping the last 24 backups in the directory /backup/hourly
-- kind: CronJob
-  apiVersion: batch/v2alpha1
-  metadata:
-    name: postgresql-backup-hourly
-  spec:
-    schedule: '7 * * * *'
-    startingDeadlineSeconds: 180
-    concurrencyPolicy: Forbid
-    jobTemplate:
-      spec:
-        template:
-          metadata:
-            labels:
-              name: postgresql-backup
-          spec:
-            # Application containers
-            containers:
-            - image: ${BACKUP_REGISTRY}/${BACKUP_IMAGE}:${BACKUP_TAG}
-              name: postgresql-backup
-              imagePullPolicy: Always
-              volumeMounts:
-              - name: postgresql-backup-data
-                mountPath: /backup
-
-              env:
-              - name: BACKUP_TYPE
-                value: hourly
-              - name: BACKUP_COUNT
-                value: '24'
-              - name: PGHOST
-                value: db-postgresql
-              - name: PGADMINPASS
-                valueFrom:
-                  secretKeyRef:
-                    name: postgresql-secrets
-                    key: database-admin-password
-
-            volumes:
-            - name: postgresql-backup-data
-              persistentVolumeClaim:
-                claimName: postgresql-backup-claim
-            restartPolicy: Never
-
-# The DAILY CronJob (running at 03:37).
-# This job will keep the oldest of the hourly backups
-# (when there are 24 hourly backups).
-# Keeping the last 7 backups in the directory /backup/daily
-- kind: CronJob
-  apiVersion: batch/v2alpha1
-  metadata:
-    name: postgresql-backup-daily
-  spec:
-    schedule: '37 3 * * *'
-    startingDeadlineSeconds: 180
-    concurrencyPolicy: Forbid
-    jobTemplate:
-      spec:
-        template:
-          metadata:
-            labels:
-              name: postgresql-backup
-          spec:
-            # Application containers
-            containers:
-            - image: ${BACKUP_REGISTRY}/${BACKUP_IMAGE}:${BACKUP_TAG}
-              name: postgresql-backup
-              imagePullPolicy: Always
-              volumeMounts:
-              - name: postgresql-backup-data
-                mountPath: /backup
-
-              env:
-              - name: BACKUP_TYPE
-                value: daily
-              - name: BACKUP_COUNT
-                value: '7'
-
-            volumes:
-            - name: postgresql-backup-data
-              persistentVolumeClaim:
-                claimName: postgresql-backup-claim
-            restartPolicy: Never

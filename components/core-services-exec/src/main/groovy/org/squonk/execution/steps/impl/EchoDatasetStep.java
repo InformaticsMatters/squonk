@@ -18,7 +18,7 @@ package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
-import org.squonk.execution.steps.AbstractStandardStep;
+import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.variable.VariableManager;
 
 import java.util.logging.Logger;
@@ -27,17 +27,13 @@ import java.util.logging.Logger;
  *
  * Created by timbo on 06/01/16.
  */
-public class EchoDatasetStep extends AbstractStandardStep {
+public class EchoDatasetStep extends AbstractDatasetStep {
 
     private static final Logger LOG = Logger.getLogger(EchoDatasetStep.class.getName());
 
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-        Dataset input = fetchMappedInput("input", Dataset.class, varman, true);
-        if (input == null) {
-            throw new IllegalStateException("Input variable not found");
-        }
-        createMappedOutput("output", Dataset.class, input, varman);
-        LOG.info("Wrote input as output");
+    protected Dataset doExecuteWithDataset(Dataset input, CamelContext camelContext) throws Exception {
+        return input;
     }
+
 }

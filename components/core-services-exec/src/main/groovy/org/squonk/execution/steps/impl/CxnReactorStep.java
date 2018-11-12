@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.apache.camel.CamelContext;
 import org.squonk.camel.util.CamelUtils;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStandardStep;
+import org.squonk.execution.steps.AbstractStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
 import org.squonk.execution.variable.VariableManager;
 import org.squonk.types.MoleculeObject;
@@ -28,6 +28,7 @@ import org.squonk.types.io.JsonHandler;
 import org.squonk.util.StatsRecorder;
 
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +41,7 @@ import static org.squonk.execution.steps.StepDefinitionConstants.CxnReactor.*;
 /**
  * @author timbo
  */
-public class CxnReactorStep extends AbstractStandardStep {
+public class CxnReactorStep extends AbstractStep {
 
     private static final Logger LOG = Logger.getLogger(CxnReactorStep.class.getName());
 
@@ -51,12 +52,7 @@ public class CxnReactorStep extends AbstractStandardStep {
 
 
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-
-        statusMessage = "Reading inputs and options ...";
-
-        dumpConfig(Level.INFO);
-
+    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
         String reactionName = getOption(OPTION_REACTION, String.class);
         if (reactionName == null) {
             throw new IllegalStateException("Reaction must be specified");
@@ -68,8 +64,9 @@ public class CxnReactorStep extends AbstractStandardStep {
 
         String outputFormat = getOption(OPTION_OUTPUT_FORMAT, String.class, "smiles");
 
-        Dataset<MoleculeObject> reactants1 = fetchMappedInput(VARIABLE_R1, Dataset.class, varman);
-        Dataset<MoleculeObject> reactants2 = fetchMappedInput(VARIABLE_R2, Dataset.class, varman);
+        Dataset<MoleculeObject> reactants1 = (Dataset<MoleculeObject>)inputs.get(VARIABLE_R1);
+        Dataset<MoleculeObject> reactants2 = (Dataset<MoleculeObject>)inputs.get(VARIABLE_R2);
+
         if (reactants1 == null || reactants2 == null) {
             // TODO - allow single reactants
             throw new IllegalStateException("Must specify reactants for R1 and R2");
@@ -114,10 +111,8 @@ public class CxnReactorStep extends AbstractStandardStep {
         // end debug output
 
         Dataset<MoleculeObject> output = new Dataset<>(results, new DatasetMetadata(MoleculeObject.class));
-        createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
-        statusMessage = generateStatusMessage(-1, output.getSize(), -1);
-        LOG.info("Results: " + output.getMetadata());
-
+        return Collections.singletonMap(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, output);
     }
+
 
 }

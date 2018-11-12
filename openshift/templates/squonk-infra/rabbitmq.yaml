@@ -26,6 +26,9 @@ parameters:
 - name: INFRA_NAMESPACE
   value: openrisknet-infra
 
+- name: INFRA_SA
+  value: default
+
 # --------
 # RabbitMQ
 # --------
@@ -138,6 +141,7 @@ objects:
         labels:
           name: rabbitmq
       spec:
+        serviceAccountName: ${INFRA_SA}
         containers:
         - image: rabbitmq:${RABBITMQ_IMAGE_TAG}
           name: rabbitmq

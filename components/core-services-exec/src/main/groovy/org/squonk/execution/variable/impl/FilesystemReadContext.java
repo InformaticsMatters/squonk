@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.squonk.execution.variable.impl;
 
 import org.squonk.api.VariableHandler;
+import org.squonk.io.FileDataSource;
+import org.squonk.io.SquonkDataSource;
 
 import java.io.*;
 import java.util.logging.Logger;
@@ -26,14 +28,21 @@ import java.util.logging.Logger;
  */
 public class FilesystemReadContext extends AbstractFilesystemContext implements VariableHandler.ReadContext {
 
+    private static final Logger LOG = Logger.getLogger(FilesystemReadContext.class.getName());
 
+    /**
+     *
+     * @param dir The directory containing the file
+     * @param baseName The base name of the file
+     */
     public FilesystemReadContext(File dir, String baseName) {
         super(dir, baseName);
     }
 
     @Override
-    public String readTextValue(String mediaType, String extension, String key) throws IOException {
-        File f = generateFile(extension, false);
+    public String readTextValue(String mediaType, String role, String key) throws IOException {
+        File f = generateFile(role, false);
+        LOG.fine("Reading text file " + f.getPath());
         if (f.exists()) {
             StringBuilder b = new StringBuilder();
             try (BufferedReader reader = new BufferedReader(new FileReader(f))) {
@@ -45,15 +54,15 @@ public class FilesystemReadContext extends AbstractFilesystemContext implements 
         }
     }
 
-
     @Override
-    public InputStream readStreamValue(String mediaType, String extension, String key) throws Exception {
-        File f = findFile(extension);
+    public SquonkDataSource readStreamValue(String mediaType, String role, String key) throws Exception {
+        File f = findFile(role);
         if (f != null) {
-            return new FileInputStream(f);
+            LOG.info("Reading file " + f.getName());
+            boolean gzipped = f.getName().toLowerCase().endsWith(".gz");
+            return new FileDataSource(role, mediaType, f, gzipped);
         } else {
             return null;
         }
     }
-
 }

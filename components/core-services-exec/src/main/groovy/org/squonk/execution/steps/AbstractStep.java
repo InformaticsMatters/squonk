@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,45 +19,33 @@ package org.squonk.execution.steps;
 import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.apache.camel.spi.TypeConverterRegistry;
+import org.squonk.core.*;
 import org.squonk.dataset.Dataset;
-import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.ExecutableService;
-import org.squonk.execution.runners.ContainerRunner;
-import org.squonk.execution.variable.VariableManager;
+import org.squonk.execution.ExecutableJob;
 import org.squonk.io.IODescriptor;
 import org.squonk.notebook.api.VariableKey;
 import org.squonk.types.BasicObject;
 import org.squonk.types.TypeResolver;
-import org.squonk.types.io.JsonHandler;
-import org.squonk.util.CommonMimeTypes;
-import org.squonk.util.IOUtils;
 import org.squonk.util.Metrics;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
-/**
+/** Base class for steps. See {@link Step} for the basics of how steps work.
+ *
  * @author timbo
  */
-public abstract class AbstractStep extends ExecutableService implements Step, StatusUpdatable {
+public abstract class AbstractStep extends ExecutableJob implements Step, StatusUpdatable {
 
     private static final Logger LOG = Logger.getLogger(AbstractStep.class.getName());
 
-
-    protected Long outputProducerId;
-
     protected final Map<String, VariableKey> inputVariableMappings = new HashMap<>();
     protected final Map<String, String> outputVariableMappings = new HashMap<>();
-
-
-    @Override
-    public Long getOutputProducerId() {
-        return outputProducerId;
-    }
 
     @Override
     public Map<String, VariableKey> getInputVariableMappings() {
@@ -68,6 +56,24 @@ public abstract class AbstractStep extends ExecutableService implements Step, St
     public Map<String, String> getOutputVariableMappings() {
         return outputVariableMappings;
     }
+
+    /** {@inheritDoc}
+     *
+     * @param jobId
+     * @param options
+     * @param serviceDescriptor
+     */
+    public void configure(
+            String jobId,
+            Map<String, Object> options,
+            ServiceDescriptor serviceDescriptor) {
+        this.jobId = jobId;
+        this.options = options;
+        this.inputs = serviceDescriptor == null ? null : serviceDescriptor.resolveInputIODescriptors();
+        this.outputs = serviceDescriptor == null ? null :serviceDescriptor.resolveOutputIODescriptors();
+        this.serviceDescriptor = serviceDescriptor;
+    }
+
 
     public void updateStatus(String status) {
         statusMessage = status;
@@ -82,7 +88,6 @@ public abstract class AbstractStep extends ExecutableService implements Step, St
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder("Step configuration: [class:").append(this.getClass().getName())
-                .append(" producerID:").append(outputProducerId)
                 .append(" inputs:[");
         int count = 0;
         for (Map.Entry<String, VariableKey> e : inputVariableMappings.entrySet()) {
@@ -119,117 +124,22 @@ public abstract class AbstractStep extends ExecutableService implements Step, St
     }
 
 
-    protected VariableKey mapInputVariable(String name) {
-        VariableKey mapped = inputVariableMappings.get(name);
-        return mapped;
+    public Map<String,Object> execute(Map<String,Object> inputs, CamelContext context) throws Exception {
+        Map<String,Object> preparedInputs = prepareInputs(inputs, context);
+        Map<String,Object> outputs = doExecute(preparedInputs, context);
+        Map<String,Object> preparedOutputs = prepareOutputs(outputs, context);
+        return preparedOutputs;
     }
 
-    protected String mapOutputVariable(String name) {
-        String mapped = outputVariableMappings.get(name);
-        return (mapped == null) ? name : mapped;
+    protected Map<String,Object> prepareInputs(Map<String,Object> inputs, CamelContext context) throws Exception {
+        return inputs;
     }
 
-    protected <T> T fetchMappedInput(String internalName, Class<T> type, VariableManager varman) throws Exception {
-        return fetchMappedInput(internalName, type, varman, false);
+    protected Map<String,Object> prepareOutputs(Map<String,Object> outputs, CamelContext context) throws Exception {
+        return outputs;
     }
 
-
-    /**
-     * Map the variable name using the variable mappings and fetch the
-     * corresponding value.
-     *
-     * @param <T>
-     * @param internalName
-     * @param type
-     * @param varman
-     * @param required     Whether a value is required
-     * @return
-     * @throws IOException
-     * @throws IllegalStateException If required is true and no value is present
-     */
-    protected <T> T fetchMappedInput(String internalName, Class<T> type, VariableManager varman, boolean required) throws Exception {
-        VariableKey mappedVar = mapInputVariable(internalName);
-        LOG.info("VariableKey mapped to " + internalName + " is " + mappedVar);
-        if (mappedVar == null) {
-            if (required) {
-                throw new IllegalStateException(buildVariableNotFoundMessage(internalName));
-            } else {
-                return null;
-            }
-        }
-        T input = fetchInput(mappedVar, type, varman);
-        if (input == null && required) {
-            throw new IllegalStateException(buildVariableNotFoundMessage(internalName));
-        }
-        return input;
-    }
-
-
-    private String buildVariableNotFoundMessage(String internalName) {
-        StringBuilder b = new StringBuilder("Mandatory input variable not found: ");
-        b.append(internalName).append(". Mappings present:");
-        inputVariableMappings.forEach((k, v) -> {
-            b.append(" ").append(k).append(" -> ").append(v);
-        });
-        return b.toString();
-    }
-
-    /**
-     * Fetch the value with this name
-     *
-     * @param <T>
-     * @param var
-     * @param type
-     * @param varman
-     * @return
-     * @throws IOException
-     */
-    protected <T> T fetchInput(VariableKey var, Class<T> type, VariableManager varman) throws Exception {
-        //System.out.println("Getting value for variable " + externalName);
-        T value = (T) varman.getValue(var, type);
-        return value;
-    }
-
-    //
-
-    /**
-     * Map the variable name and then submit it. See {@link #createVariable} for
-     * details.
-     *
-     * @param <T>
-     * @param localName
-     * @param value
-     * @param varman
-     * @return
-     * @throws IOException
-     */
-    protected <T> void createMappedOutput(String localName, Class<T> type, T value, VariableManager varman) throws Exception {
-        String outFldName = mapOutputVariable(localName);
-        createVariable(outFldName, type, value, varman);
-    }
-
-    /**
-     * Creates a variable with the specified name. If the name starts with an
-     * underscore (_) then a temporary variable (PersistenceType.NONE) is
-     * created, otherwise the provided persistence type is used.
-     *
-     * @param <T>
-     * @param mappedName
-     * @param value
-     * @param varman
-     * @return
-     * @throws IOException
-     */
-    protected <T> void createVariable(String mappedName, Class<T> type, T value, VariableManager varman) throws Exception {
-        LOG.fine("Creating variable " + mappedName + "  for producer " + getOutputProducerId());
-        VariableKey key = new VariableKey(getOutputProducerId(), mappedName);
-        varman.putValue(key, type, value);
-    }
-
-    @Override
-    public String getStatusMessage() {
-        return statusMessage;
-    }
+    protected abstract Map<String,Object> doExecute(Map<String,Object> inputs, CamelContext context) throws Exception;
 
     protected void generateExecutionTimeMetrics(float executionTimeSeconds) {
         float mins = executionTimeSeconds / 60f;
@@ -262,6 +172,14 @@ public abstract class AbstractStep extends ExecutableService implements Step, St
         return result;
     }
 
+    protected TypeConverter findTypeConverter(CamelContext camelContext) {
+        if (camelContext == null) {
+            return null;
+        } else {
+            return camelContext.getTypeConverter();
+        }
+    }
+
 
     /**
      * Converts the input value of the type specified by the from IODescriptor to the format specified by the to IODescriptor.
@@ -286,111 +204,109 @@ public abstract class AbstractStep extends ExecutableService implements Step, St
         return typeConverter.convertTo(to.getPrimaryType(), value);
     }
 
+    protected DefaultServiceDescriptor getDefaultServiceDescriptor() {
+        if (serviceDescriptor == null) {
+            throw new IllegalStateException("Service descriptor not found");
+        } else if (!(serviceDescriptor instanceof DefaultServiceDescriptor)) {
+            throw new IllegalStateException("Invalid service descriptor. Expected DefaultServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
+        }
+        return (DefaultServiceDescriptor)serviceDescriptor;
+    }
 
-    /**
-     * Fetch the input using the default name for the input variable
+
+    protected HttpServiceDescriptor getHttpServiceDescriptor() {
+        if (serviceDescriptor == null) {
+            throw new IllegalStateException("Service descriptor not found");
+        } else if (!(serviceDescriptor instanceof HttpServiceDescriptor)) {
+            throw new IllegalStateException("Invalid service descriptor. Expected HttpServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
+        }
+        return (HttpServiceDescriptor)serviceDescriptor;
+    }
+
+    protected DockerServiceDescriptor getDockerServiceDescriptor() {
+        if (serviceDescriptor == null) {
+            throw new IllegalStateException("Service descriptor not found");
+        } else if (!(serviceDescriptor instanceof DockerServiceDescriptor)) {
+            throw new IllegalStateException("Invalid service descriptor. Expected DockerServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
+        }
+        return (DockerServiceDescriptor)serviceDescriptor;
+    }
+
+    protected NextflowServiceDescriptor getNextflowServiceDescriptor() {
+        if (serviceDescriptor == null) {
+            throw new IllegalStateException("Service descriptor not found");
+        } else if (!(serviceDescriptor instanceof NextflowServiceDescriptor)) {
+            throw new IllegalStateException("Invalid service descriptor. Expected NextflowServiceDescriptor but found " + serviceDescriptor.getClass().getSimpleName());
+        }
+        return (NextflowServiceDescriptor)serviceDescriptor;
+    }
+
+    protected String getHttpExecutionEndpoint() {
+        return getHttpServiceDescriptor().getExecutionEndpoint();
+    }
+
+    protected IODescriptor getSingleInputDescriptor() {
+        ServiceConfig serviceConfig = getHttpServiceDescriptor().getServiceConfig();
+        IODescriptor[] inputDescriptors = serviceConfig.getInputDescriptors();
+        IODescriptor inputDescriptor;
+        if (inputDescriptors != null && inputDescriptors.length == 1) {
+            inputDescriptor = inputDescriptors[0];
+        } else if (inputDescriptors == null || inputDescriptors.length == 0 ) {
+            throw new IllegalStateException("Expected one input IODescriptor. Found none");
+        } else {
+            throw new IllegalStateException("Expected one input IODescriptor. Found " + inputDescriptors.length);
+        }
+        return inputDescriptor;
+    }
+
+    /** The the value as a Dataset. There must be only one item in the map and it must be a Dataset
      *
-     * @param varman
-     * @param runner
-     * @param mediaType
+     * @param inputs
      * @return
-     * @throws Exception
      */
-    protected DatasetMetadata handleDockerInput(VariableManager varman, ContainerRunner runner, String mediaType) throws Exception {
-        return handleDockerInput(varman, runner, mediaType, StepDefinitionConstants.VARIABLE_INPUT_DATASET);
+    protected Dataset getSingleDatasetFromMap(Map<String, Object> inputs) {
+        if (inputs.size() != 1) {
+            throw new IllegalArgumentException("Map must have only one value");
+        }
+        Object value = inputs.values().iterator().next();
+        if (value instanceof Dataset) {
+            return (Dataset)value;
+        } else {
+            throw new IllegalArgumentException("Value is not a dataset");
+        }
     }
 
-    /**
-     * Fetch the input in the case that the input has been renamed from the default name
+    /** Adds a counter to the stream and when the stream is closed will write a status message as defined by the
+     * message param which must be in message format syntax, with the count being passed in as the sole parameter.
+     * e.g. use a value like "Processed %s molecules".
+     * The contents of the stream are not modified in any way and you must use the updated stream that is returned,
+     * not the one that is passed in as a parameter.
+     * NOTE: the counting only happens once the stream starts getting consumed, and the status message only gets set
+     * once the stream is closed.
      *
-     * @param varman
-     * @param runner
-     * @param mediaType
-     * @param varName
+     * @param stream
+     * @param message
+     * @param <T>
      * @return
-     * @throws Exception
      */
-    protected DatasetMetadata handleDockerInput(VariableManager varman, ContainerRunner runner, String mediaType, String varName) throws Exception {
-
-        if (mediaType == null) {
-            mediaType = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON;
-        }
-
-        switch (mediaType) {
-            case CommonMimeTypes.MIME_TYPE_DATASET_BASIC_JSON:
-            case CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON:
-                Dataset dataset = fetchMappedInput(varName, Dataset.class, varman, true);
-                writeAsDataset(dataset, runner);
-                return dataset.getMetadata();
-            case CommonMimeTypes.MIME_TYPE_MDL_SDF:
-                InputStream sdf = fetchMappedInput(varName, InputStream.class, varman, true);
-                writeAsSDF(sdf, runner);
-                return null; // TODO can we getServiceDescriptors the metadata somehow?
-            default:
-                throw new IllegalArgumentException("Unsupported media type: " + mediaType);
-        }
+    protected <T> Stream<T> addStreamCounter(Stream<T> stream, String message) {
+        final AtomicInteger count = new AtomicInteger(0);
+        return stream.peek((o) -> {
+            count.incrementAndGet();
+        }).onClose(() -> {
+            statusMessage = String.format(message, count.intValue());
+        });
     }
 
-    protected DatasetMetadata handleDockerOutput(DatasetMetadata inputMetadata, VariableManager varman, ContainerRunner runner, String mediaType) throws Exception {
-
-        if (mediaType == null) {
-            mediaType = CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON;
-        }
-
-        switch (mediaType) {
-            case CommonMimeTypes.MIME_TYPE_DATASET_BASIC_JSON:
-            case CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON:
-                return readAsDataset(inputMetadata, varman, runner);
-            case CommonMimeTypes.MIME_TYPE_MDL_SDF:
-                return readAsSDF(inputMetadata, varman, runner);
-            default:
-                throw new IllegalArgumentException("Unsupported media type: " + mediaType);
-        }
+    protected <T extends BasicObject> void addResultsCounter(Dataset<T> dataset) throws IOException {
+        Stream<T> stream = dataset.getStream();
+        final AtomicInteger count = new AtomicInteger(0);
+        stream = stream.peek((o) -> {
+            count.incrementAndGet();
+        }).onClose(() -> {
+            numResults = count.intValue();
+            statusMessage = generateStatusMessage(numProcessed, numResults, numErrors);
+        });
+        dataset.replaceStream(stream);
     }
-
-    protected void writeAsDataset(Dataset input, ContainerRunner runner) throws IOException {
-        LOG.info("Writing metadata input.meta");
-        runner.writeInput("input.meta", JsonHandler.getInstance().objectToJson(input.getMetadata()));
-        LOG.info("Writing data input.data.gz");
-        runner.writeInput("input.data.gz", input.getInputStream(true));
-    }
-
-    protected void writeAsSDF(InputStream sdf, ContainerRunner runner) throws IOException {
-        LOG.fine("Writing SDF");
-        //runner.writeInput("input.sdf.gz", IOUtils.getGzippedInputStream(sdf));
-
-        String data = IOUtils.convertStreamToString(sdf);
-        //LOG.info("DATA: " + data);
-        LOG.info("Writing SDF input.sdf.gz");
-        runner.writeInput("input.sdf.gz", IOUtils.getGzippedInputStream(new ByteArrayInputStream(data.getBytes())));
-    }
-
-    protected DatasetMetadata readAsDataset(DatasetMetadata inputMetadata, VariableManager varman, ContainerRunner runner) throws Exception {
-        DatasetMetadata meta;
-        try (InputStream is = runner.readOutput("output.meta")) {
-            if (is == null) {
-                meta = inputMetadata;
-            } else {
-                meta = JsonHandler.getInstance().objectFromJson(is, DatasetMetadata.class);
-            }
-        }
-
-        try (InputStream is = runner.readOutput("output.data.gz")) {
-            Dataset<? extends BasicObject> dataset = new Dataset(IOUtils.getGunzippedInputStream(is), meta);
-            createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, dataset, varman);
-            LOG.fine("Results: " + dataset.getMetadata());
-            return dataset.getMetadata();
-        }
-    }
-
-
-    protected DatasetMetadata readAsSDF(DatasetMetadata inputMetadata, VariableManager varman, ContainerRunner runner) throws Exception {
-
-        try (InputStream is = runner.readOutput("output.sdf.gz")) {
-            createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, InputStream.class, is, varman);
-        }
-        // TODO can we get the metadata somehow?
-        return null;
-    }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,49 +17,71 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.TypeConverter;
+import org.squonk.core.DefaultServiceDescriptor;
+import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractStandardStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
+import org.squonk.io.IODescriptors;
+import org.squonk.options.DatasetFieldTypeDescriptor;
+import org.squonk.options.OptionDescriptor;
 import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
  * Allows to create a new Dataset from the molecules in a specified field. That field must be of type MoleculeObject[]
+ * The resulting dataset contains all the molecules that were found for that field in all the records of the dataset
  *
  * @author timbo
  */
-public class DatasetMoleculesFromFieldStep extends AbstractStandardStep {
+public class DatasetMoleculesFromFieldStep<P extends BasicObject> extends AbstractDatasetStep<P,MoleculeObject> {
 
     private static final Logger LOG = Logger.getLogger(DatasetMoleculesFromFieldStep.class.getName());
+
+    public static final DefaultServiceDescriptor SERVICE_DESCRIPTOR = new DefaultServiceDescriptor("core.dataset.moleculesfromfield.v1",
+            "MoleculesFromField",
+            "Create a new datset from all the molecules from a field",
+            new String[]{"molecule", "extractor", "flatmap", "dataset"},
+            null, "icons/molecule_generator.png",
+            ServiceConfig.Status.ACTIVE,
+            new Date(),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+            new OptionDescriptor[]{
+
+                    new OptionDescriptor<>(new DatasetFieldTypeDescriptor(new Class[] {MoleculeObject[].class}),
+                            StepDefinitionConstants.DatasetMoleculesFromFieldStep.OPTION_MOLECULES_FIELD,
+                            "Field with molecules",
+                            "Field that contains an Array of MoleculeObjects",
+                            OptionDescriptor.Mode.User)
+                            .withMinMaxValues(1,1)
+
+            },
+            null, null, null,
+            DatasetMoleculesFromFieldStep.class.getName()
+    );
 
     public static final String OPTION_MOLECULES_FIELD = StepDefinitionConstants.DatasetMoleculesFromFieldStep.OPTION_MOLECULES_FIELD;
     public static final String FIELD_NAME_ORIGIN = "MoleculeSource";
 
     /**
-     * Create a slice of the dataset skipping a number of records specified by the skip option (or 0 if not specified)
-     * and including only the number of records specified by the count option (or till teh end if not specified).
      *
-     * @param varman
+     * @param input
      * @param context
      * @throws Exception
      */
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-        statusMessage = MSG_PREPARING_INPUT;
-        Dataset<? extends BasicObject> ds = fetchMappedInput("input", Dataset.class, varman);
-        if (ds == null) {
-            throw new IllegalStateException("Input variable not found: input");
-        }
-        LOG.info("Input Dataset: " + ds);
+    protected Dataset<MoleculeObject> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
 
-        String fieldName = getOption(OPTION_MOLECULES_FIELD, String.class);
+        TypeConverter converter = findTypeConverter(context);
+        String fieldName = getOption(OPTION_MOLECULES_FIELD, String.class, converter);
         if (fieldName == null) {
             throw new IllegalStateException("Selected field not found. Option named " + OPTION_MOLECULES_FIELD + " must present");
         }
@@ -67,7 +89,7 @@ public class DatasetMoleculesFromFieldStep extends AbstractStandardStep {
 
 
         statusMessage = "Setting molecule extractor ...";
-        Stream<MoleculeObject> stream = ds.getStream()
+        Stream<MoleculeObject> stream = input.getStream()
                 .sequential()
                 .flatMap((mo) -> {
                     UUID uuid = mo.getUUID();
@@ -79,21 +101,14 @@ public class DatasetMoleculesFromFieldStep extends AbstractStandardStep {
                     }
                 });
 
-        DatasetMetadata origMeta = ds.getMetadata();
-        DatasetMetadata meta = new DatasetMetadata(MoleculeObject.class);
+        DatasetMetadata<P> origMeta = input.getMetadata();
+        DatasetMetadata<MoleculeObject> meta = new DatasetMetadata<>(MoleculeObject.class);
         meta.appendDatasetHistory("Dataset created molecules from field " + fieldName + " of source dataset: " + origMeta.getProperty(DatasetMetadata.PROP_DESCRIPTION));
         meta.createField(FIELD_NAME_ORIGIN, this.getClass().getSimpleName() , "UUID of source molecule", UUID.class);
+        Dataset<MoleculeObject> results = new Dataset(stream, meta);
 
-        Dataset results = new Dataset(stream, meta);
-
-        statusMessage = "Writing results ...";
-        String outFldName = mapOutputVariable("output");
-        if (outFldName != null) {
-            createVariable(outFldName, Dataset.class, results, varman);
-        }
-
-        statusMessage = generateStatusMessage(ds.getSize(), results.getSize(), -1);
-        LOG.info("Results: " + results.getMetadata());
+        statusMessage = generateStatusMessage(input.getSize(), results.getSize(), -1);
+        return results;
     }
 
 }

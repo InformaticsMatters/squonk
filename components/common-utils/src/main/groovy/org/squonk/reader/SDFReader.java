@@ -17,6 +17,7 @@
 package org.squonk.reader;
 
 import org.squonk.dataset.DatasetMetadata;
+import org.squonk.io.SquonkDataSource;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.MoleculeObjectIterable;
 import org.squonk.util.IOUtils;
@@ -59,6 +60,10 @@ public class SDFReader implements MoleculeObjectIterable, Iterator<MoleculeObjec
 
     public SDFReader(InputStream is) throws IOException {
         this(is, null);
+    }
+
+    public SDFReader(SquonkDataSource dataSource) throws IOException {
+        this(dataSource.getInputStream(), dataSource.getName());
     }
 
     /**

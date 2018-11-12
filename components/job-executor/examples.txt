@@ -1,0 +1,89 @@
+# Example uses of jobexecutor in different setups
+# Run these examples from the squonk root directory
+
+
+# dev mode with Docker
+
+export SVR="172.20.0.2:8080"
+
+curl -H "SquonkUsername: user1" http://$SVR/jobexecutor/rest/v1/jobs/
+
+curl -X POST \
+    -F 'options={}''\
+    -F 'input_data=@data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data'\
+    -F 'input_metadata=@data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata'\
+    -H 'Content-Type: multipart/mixed'\
+    -H 'SquonkUsername: user1'\
+    http://$SVR/jobexecutor/rest/v1/jobs/rdkit.calculators.verify
+
+curl -X POST \
+  -F 'options={"skip":5,"count":5}'\
+  -F 'input_data=@data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data'\
+  -F 'input_metadata=@data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata'\
+  -H 'Content-Type: multipart/mixed'\
+  -H 'SquonkUsername: user1'\
+  http://$SVR/jobexecutor/rest/v1/jobs/core.dataset.filter.slice.v1
+
+
+curl -X POST \
+  -F 'options={"arg.threshold": 0.6, "arg.descriptor": "morgan2", "arg.metric": "tanimoto"}'\
+  -F 'input_data=@data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data'\
+  -F 'input_metadata=@data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata'\
+  -H 'Content-Type: multipart/mixed'\
+  -H 'SquonkUsername: user1'\
+  http://$SVR/jobexecutor/rest/v1/jobs/pipelines.rdkit.cluster.butina
+
+
+# basic mode with Docker
+
+
+token=$(curl -kL \
+  -H 'Content-Type: application/x-www-form-urlencoded'\
+  -d 'grant_type=client_credentials'\
+  -d 'client_id=squonk-portal'\
+  -d 'client_secret=434ecd6b-586d-4db8-a3fa-83bfeb16bf44'\
+  https://nginx/auth/realms/squonk/protocol/openid-connect/token|\
+  grep -Po '(?<="access_token":")[^"]*')
+
+curl -kL -H "Authorization: bearer $token" -H "SquonkUsername: user1" http://nginx/jobexecutor/rest/v1/jobs
+
+
+curl -kL -X POST --post301\
+  -H "Authorization: bearer $token"\
+  -H 'SquonkUsername: user1'\
+  -F 'options={"skip":5,"count":5}'\
+  -F 'input_data=@data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data'\
+  -F 'input_metadata=@data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata'\
+  -H 'Content-Type: multipart/mixed'\
+  http://nginx/jobexecutor/rest/v1/jobs/core.dataset.filter.slice.v1
+
+
+
+
+# verne mode with OpenShift
+
+# get token
+token=$(curl -kL \
+  -H 'Content-Type: application/x-www-form-urlencoded'\
+  -d 'grant_type=client_credentials'\
+  -d 'client_id=squonk-notebook'\
+  -d 'client_secret=<client-secret>'\
+  https://sso.apps.xchem.diamond.ac.uk/auth/realms/xchem/protocol/openid-connect/token|\
+  grep -Po '(?<="access_token":")[^"]*')
+
+# list services
+curl -kL -H "Authorization: bearer $token" http://jobexecutor.squonk.svc:8080/jobexecutor/rest/v1/services/
+
+# list jobs
+curl -kL -H "Authorization: bearer $token" -H "SquonkUsername: user1" http://jobexecutor.squonk.svc:8080/jobexecutor/rest/v1/jobs/
+
+# post a job
+curl -X POST -kL --post301 --post302\
+  -F 'options={"skip":5,"count":5}'\
+  -F "input_data=@Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
+  -F "input_metadata=@Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
+  -H "Content-Type: multipart/mixed"\
+  -H "Authorization: bearer $token"\
+  -H "SquonkUsername: user1"\
+  http://jobexecutor.squonk.svc:8080/jobexecutor/rest/v1/jobs/core.dataset.filter.slice.v1
+

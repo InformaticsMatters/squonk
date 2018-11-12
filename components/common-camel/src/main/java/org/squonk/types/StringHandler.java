@@ -19,12 +19,16 @@ package org.squonk.types;
 import org.squonk.api.HttpHandler;
 import org.squonk.api.VariableHandler;
 import org.squonk.http.RequestResponseExecutor;
+import org.squonk.io.SquonkDataSource;
+import org.squonk.io.StringDataSource;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by timbo on 23/03/2016.
@@ -79,5 +83,12 @@ public class StringHandler extends DefaultHandler<String> {
     @Override
     public String readVariable(ReadContext context) throws Exception {
         return context.readTextValue(CommonMimeTypes.MIME_TYPE_TEXT_PLAIN, EXT);
+    }
+
+    @Override
+    public List<SquonkDataSource> readDataSources(ReadContext context) throws Exception {
+        String s = context.readTextValue(CommonMimeTypes.MIME_TYPE_TEXT_PLAIN, EXT);
+        SquonkDataSource ds = new StringDataSource(SquonkDataSource.ROLE_DEFAULT, null, CommonMimeTypes.MIME_TYPE_TEXT_PLAIN, s, false);
+        return Collections.singletonList(ds);
     }
 }

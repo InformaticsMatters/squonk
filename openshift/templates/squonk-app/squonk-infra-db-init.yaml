@@ -61,7 +61,8 @@ objects:
       export PGPASSWORD=${POSTGRESQL_ADMIN_PASSWORD}
       export PGHOST=${POSTGRESQL_HOST:-postgres}
 
-      psql --command "CREATE USER squonk WITH PASSWORD '${SQUONK_USER_PASSWORD}'"
+      psql --command "CREATE USER squonk"
+      psql --command "ALTER USER squonk WITH PASSWORD '${SQUONK_USER_PASSWORD}'"
       echo "Created users"
 
       createdb -O squonk squonk
@@ -72,7 +73,7 @@ objects:
       psql -d squonk --command "GRANT USAGE ON SCHEMA users TO squonk"
       psql -d squonk --command "CREATE SCHEMA notebooks AUTHORIZATION squonk"
       psql -d squonk --command "GRANT USAGE ON SCHEMA notebooks TO squonk"
-      
+
       echo "Setup complete"
 
 - kind: Job

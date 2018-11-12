@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,11 @@
 
 package org.squonk.api;
 
-import org.squonk.io.IODescriptor;
-import org.squonk.util.Utils;
+import org.squonk.io.SquonkDataSource;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 
 /** Interfaces for a class that wants to define how it will be persisted using the Notebook/Variable API.
@@ -57,56 +55,55 @@ public interface VariableHandler<T> extends Handler<T> {
      */
     T readVariable(ReadContext context) throws Exception;
 
+    List<SquonkDataSource> readDataSources(ReadContext context) throws Exception;
+
     /** Create the variable handled by this handler
      *
-     * @param input An InputStream from which the value must be composed
+     * @param input An SquonkDataSource from which the value must be composed
      * @return The assembled value
      */
-    T create(InputStream input) throws Exception;
+    T create(SquonkDataSource input) throws Exception;
 
 
-    /** Create an instance from one or more InputStreams. The inputs are passed in as a Map with the key identifying the
+    /** Create an instance from one or more SquonkDataSources. The name of the dataSource identifies the
      * type of input. Where there is only a single input the name is ignored and the
-     * {@link #create(InputStream)} method is called with that one input.
-     * Where there are multiple inputs the {@link #createMultiple(Map<String,InputStream>)} method is
-     * called that MUST be overrided by any subclass wanting to handle multiple inputs. The overriding method should use
-     * the names that are present as the keys to the Map to distinguish the different inputs.
+     * {@link #create(SquonkDataSource)} method is called with that one input.
      *
-     * @param inputs multiple InputStreams where the key is a name that identifies the type of input
+     * @param inputs multiple datasources defining the variable.
      * @return
      * @throws Exception
      */
-    T create(Map<String,InputStream> inputs) throws Exception;
+    T create(List<SquonkDataSource> inputs) throws Exception;
 
-    T createMultiple(Map<String,InputStream> inputs) throws Exception;
-
+    T create(String mediaType, Class genericType, Map<String, InputStream> inputs) throws Exception;
 
     /** Context that allows a value to be read.
      *
      */
     interface ReadContext {
 
-        String readTextValue(String mediaType, String extension, String key) throws Exception;
+        String readTextValue(String mediaType, String role, String key) throws Exception;
 
-        default String readTextValue(String mediaType, String extension) throws Exception {
-            return readTextValue(mediaType, extension, null);
+        default String readTextValue(String mediaType, String role) throws Exception {
+            return readTextValue(mediaType, role, null);
         }
 
-        InputStream readStreamValue(String mediaType, String extension, String key) throws Exception;
+        SquonkDataSource readStreamValue(String mediaType, String role, String key) throws Exception;
 
-        default InputStream readStreamValue(String mediaType, String extension) throws Exception {
-            return readStreamValue(mediaType, extension, null);
+        default SquonkDataSource readStreamValue(String mediaType, String role) throws Exception {
+            return readStreamValue(mediaType, role, null);
         }
+
     }
 
     /** Context that allows a value to be written.
      *
      */
     interface WriteContext {
-        void writeTextValue(String value, String mediaType, String extension, String key) throws Exception;
-        void writeStreamValue(InputStream value, String mediaType, String extension, String key, boolean gzip) throws Exception;
-        default void writeTextValue(String value, String mediaType, String extension) throws Exception {
-            writeTextValue(value, mediaType, extension, null);
+        void writeTextValue(String value, String mediaType, String role, String key) throws Exception;
+        void writeStreamValue(InputStream value, String mediaType, String role, String key, boolean gzip) throws Exception;
+        default void writeTextValue(String value, String mediaType, String role) throws Exception {
+            writeTextValue(value, mediaType, role, null);
         }
         void deleteVariable() throws Exception;
     }

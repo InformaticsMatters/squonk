@@ -23,8 +23,10 @@ import org.squonk.util.CommonMimeTypes;
  */
 public class Mol2FileHandler extends FileHandler<Mol2File> {
 
+    private static final String ROLE_MOL2 = "mol2";
+
     public Mol2FileHandler() {
-        super(Mol2File.class, CommonMimeTypes.MIME_TYPE_TRIPOS_MOL2, "mol2", true);
+        super(Mol2File.class, CommonMimeTypes.MIME_TYPE_TRIPOS_MOL2, ROLE_MOL2, true);
     }
 
 }

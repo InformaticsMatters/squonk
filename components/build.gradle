@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,10 +59,14 @@ allprojects {
     project.ext.set('flywayVersion', '3.2.1')
 
     // Define the tag label for docker images.
+    // If SQUONK_IMAGE_TAG is set then it is used.
     // It's the Git branch name or 'latest' if building from 'master'
-    def dockerImageTag = grgit.branch.getCurrent().name
-    if (dockerImageTag == 'master') {
-        dockerImageTag = 'latest'
+    def dockerImageTag = System.getenv('SQUONK_IMAGE_TAG')
+    if (dockerImageTag == null || dockerImageTag.length() == 0) {
+        dockerImageTag = grgit.branch.getCurrent().name
+        if (dockerImageTag == 'master') {
+            dockerImageTag = 'latest'
+        }
     }
     project.ext.set('dockerImageTag', dockerImageTag)
 
@@ -135,7 +139,7 @@ subprojects {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '3.2.1'
+    gradleVersion = '3.5.1'
 }
 
 project.ext.set('dockerHost', getDockerHost())
@@ -253,6 +257,7 @@ task dockerBuildImages() {
         'chem-services-rdkit-search:buildDockerImage', // squonk/chemcentral-search
         'core-services-server:buildDockerImage',       // squonk/coreservices
         'cell-executor:dockerBuildImage',              // squonk/cellexecutor
+        'job-executor:buildDockerImage',               // squonk/jobexecutor
         'rdkit-databases:dockerBuildImage',            // squonk/chemcentral-loader
         'database:buildDockerImage'                    // squonk/flyway
     ]
@@ -281,6 +286,7 @@ task integrationTestInit() {
 }
 
 task integrationTestEnvPrepare(type: Exec) {
+    description 'Setup integration test environment'
     //dependsOn 'dockerFileChemServices', 'core-services-server:buildDockerFile', 'cell-executor:dockerBuildImage'
 
     workingDir '../docker'

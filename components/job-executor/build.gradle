@@ -1,0 +1,94 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+
+/*
+ * Copyright (c) 2017 Informatics Matters Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+def contextName = 'jobexecutor'
+
+description = 'Squonk Job Executor'
+
+apply plugin: 'war'
+apply plugin: 'com.bmuschko.tomcat'
+apply plugin: 'com.bmuschko.docker-remote-api'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+}
+
+dependencies {
+
+    compile project(':common')
+    compile project(':common-utils')
+    compile project(':common-camel')
+    compile project(':core-services-common')
+    compile project(':core-services-exec')
+    compile project(':core-services-client')
+
+    compile "org.jboss.weld.servlet:weld-servlet-core:$weldVersion"
+    
+    compile "org.apache.camel:camel-core:$camelVersion"
+    compile "org.apache.camel:camel-jackson:$camelVersion"
+    compile "org.apache.camel:camel-servlet:$camelVersion"
+    compile "org.apache.camel:camel-cdi:$camelVersion"
+    //compile "org.apache.camel:camel-swagger:$camelVersion"
+    //compile "org.apache.camel:camel-swagger-java:$camelVersion"
+
+    providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+
+    // currently doesn't run with tomcat8 - need to work out why.
+    //def tomcatVersion = '8.0.53'
+    def tomcatVersion = '7.0.59'
+
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+
+}
+
+
+tomcat {
+    enableSSL = false
+    httpPort = 8888
+    contextPath = contextName
+}
+
+docker {
+    url = dockerHost
+    certPath = dockerCertPath
+}
+
+task buildDockerfile(type: Dockerfile) {
+
+    destFile = project.file('build/Dockerfile')
+    from "informaticsmatters/tomcat:8.0-jre8"
+    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
+
+    def warFile = tasks.war.outputs.files.singleFile
+    addFile('libs/' + warFile.name, "/usr/local/tomcat/webapps/${contextName}.war")
+}
+
+task buildDockerImage(type: DockerBuildImage) {
+
+    description = "Build the job executor docker image"
+
+    dependsOn = [war, buildDockerfile]
+
+    inputDir = buildDockerfile.destFile.parentFile
+    tag = "squonk/jobexecutor:${dockerImageTag}"
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,8 @@
 
 package org.squonk.execution.steps.impl
 
-import org.squonk.io.IODescriptor
-import org.squonk.io.IODescriptors
-import org.squonk.io.IORoute
-import org.squonk.types.MoleculeObject
 import org.squonk.dataset.Dataset
-
-import org.squonk.execution.variable.VariableManager
-import org.squonk.notebook.api.VariableKey
+import org.squonk.types.MoleculeObject
 import spock.lang.Specification
 
 /**
@@ -40,25 +34,15 @@ class DatasetWriterStepSpec extends Specification {
                 new MoleculeObject("CCC", "smiles")
         ]
         Dataset ds = new Dataset(MoleculeObject.class, mols)
-
-        VariableManager varman = new VariableManager(null, 1, 1);
         DatasetWriterStep step = new DatasetWriterStep()
-        Long producer = 1
-        step.configure(producer, "job1",
+        step.configure("test write mols",
                 [:],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                [(DatasetWriterStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
-                [:]
+                DatasetWriterStep.SERVICE_DESCRIPTOR
         )
-        varman.putValue(
-                new VariableKey(producer, "input"),
-                Dataset.class,
-                ds)
 
         when:
-        step.execute(varman, null)
-        Dataset dataset = varman.getValue(new VariableKey(producer, DatasetWriterStep.VAR_OUTPUT_DATASET), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", ds), null)
+        def dataset = resultsMap["output"]
 
         then:
         dataset != null

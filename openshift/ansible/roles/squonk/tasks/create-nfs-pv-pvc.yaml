@@ -1,0 +1,84 @@
+---
+
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
+  changed_when: False
+
+# Create PVs
+
+- name: Check Squonk PVs
+  shell: oc get pv
+  register: s_pv_result
+  changed_when: False
+
+- name: Create Squonk PVs
+  shell: >
+    oc process
+    -p APP_NAMESPACE={{ oc_project }}
+    -p NFS_SERVER={{ oc_nfs_server | default('unset') }}
+    -p NFS_PATH={{ oc_nfs_path | default('unset') }}
+    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-pv-nfs.yaml
+    | oc create -f -
+  when: '"squonk-work-dir" not in s_pv_result.stdout'
+
+# Deal with "Released" volumes.
+# Those PVs that are "Released"
+# must be "Available" to accept new binds...
+
+- name: Check Released volumes
+  shell: oc get pv | grep Released | grep {{ oc_project }}/ | cut -f 1 -d " "
+  register: released_vols
+  when: recycle_released_pvs
+  changed_when: False
+
+- name: Recover Released volumes
+  shell: >
+    oc patch pv/{{ item }} --type json
+    -p $'- op: remove\n  path: /spec/claimRef'
+  with_items:
+  - "{{ released_vols.stdout_lines }}"
+  when:
+  - recycle_released_pvs
+
+# Wait for PVs to become "Available"...
+# We only do this if we created the PV in this session.
+
+- name: Wait for PVs to become Available
+  shell: oc get pv/{{ item }} | grep Available
+  delay: 5
+  retries: "{{ (pv_create_timeout | int / 5) | int }}"
+  register: result
+  until: result.rc == 0
+  loop:
+  - squonk-work-dir
+  when: item not in s_pv_result.stdout
+  changed_when: False
+
+# Create PVCs
+
+- name: Check Squonk PV/PVC (nfs)
+  shell: oc get pvc
+  register: s_pvc_result
+  changed_when: False
+
+- name: Create Squonk PVCs (nfs)
+  shell: >
+    oc process
+    -p APP_NAMESPACE={{ oc_project }}
+    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-pvc-nfs.yaml
+    | oc create -f -
+  when: '"squonk-work-dir-pvc" not in s_pvc_result.stdout'
+
+# Wait for PVCs to become "Bound"...
+
+- name: Wait for PVCs to become Bound (nfs)
+  shell: >
+    oc get pvc/{{ item }} | grep Bound
+  delay: 5
+  retries: "{{ (pvc_bind_timeout | int / 5) | int }}"
+  register: result
+  until: result.rc == 0
+  loop:
+  - squonk-work-dir-pvc
+  when: item not in s_pvc_result.stdout
+  changed_when: False

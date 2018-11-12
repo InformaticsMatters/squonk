@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,6 @@
 
 package org.squonk.execution.steps.impl
 
-import org.squonk.dataset.Dataset
-import org.squonk.execution.variable.VariableManager
-import org.squonk.io.IODescriptor
-import org.squonk.io.IODescriptors
-import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
 /**
@@ -30,23 +25,18 @@ import spock.lang.Specification
 class ChemblActivitiesFetcherStepSpec extends Specification {
 	
     void "test fetch"() {
-        VariableManager varman = new VariableManager(null,1,1);
-    
         
         ChemblActivitiesFetcherStep step = new ChemblActivitiesFetcherStep()
         Long producer = 1
-        step.configure(producer, "job1",
+        step.configure("test fetch",
                 [(ChemblActivitiesFetcherStep.OPTION_ASSAY_ID):'CHEMBL864878'],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                [:], [:])
+                ChemblActivitiesFetcherStep.SERVICE_DESCRIPTOR)
         
         when:
-        step.execute(varman, null)
+        def resultsMap = step.doExecute(null, null)
+        def dataset = resultsMap["output"]
         
         then:
-
-        def dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
         dataset != null
         dataset.items.size() == 10
         

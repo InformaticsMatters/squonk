@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,9 @@ package org.squonk.rdkit.services;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.cdi.ContextName;
 import org.apache.camel.management.event.CamelContextStartedEvent;
-import org.apache.camel.management.event.RouteStartedEvent;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
-import org.apache.http.impl.conn.SystemDefaultDnsResolver;
 import org.squonk.api.MimeTypeResolver;
 import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.core.ServiceDescriptorSet;
@@ -43,8 +40,6 @@ import org.squonk.util.CommonMimeTypes;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Default;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -93,7 +88,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     .withDefaultValue(100)
                                     .withMinMaxValues(1, 1)
                     },
-                    StepDefinitionConstants.OutOnlyMoleculeServiceExecutor.CLASSNAME,
+                    StepDefinitionConstants.OutOnlyDatasetExecutor.CLASSNAME,
                     "search"
 
             ),
@@ -132,7 +127,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     .withDefaultValue(100)
                                     .withMinMaxValues(1, 1)
                     },
-                    StepDefinitionConstants.OutOnlyMoleculeServiceExecutor.CLASSNAME,
+                    StepDefinitionConstants.OutOnlyDatasetExecutor.CLASSNAME,
                     "search"
 
             ),
@@ -167,7 +162,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                                     .withMinMaxValues(1, 1),
                     },
                     new ThinDescriptor("input", null),
-                    StepDefinitionConstants.MoleculeServiceBasicExecutor.CLASSNAME,
+                    StepDefinitionConstants.DatasetHttpExecutor.CLASSNAME,
                     "multisearch"
             )
     };

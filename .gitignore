@@ -13,17 +13,22 @@
 **/derby.log
 **/*~
 **/.DS_Store
+**/*.retry
+**/geckodriver.log
 
 openshift/jenkins/setenv.sh
+**/vault-pass.txt
 
 data/licenses/*
 data/testfiles/emols_order*
 data/testfiles/all-sdf.sdf.gz
 data/testfiles/chembl_*.sdf.gz
 data/testfiles/docker-services/
+data/testfiles/*.sdf
 
 components/cdk-camel/out
 components/chemaxon-camel/out
+components/chemaxon-lib/out/
 components/common/lib
 components/common/out
 components/common-camel/out
@@ -58,6 +63,8 @@ docker/deploy/data/docker-services/*
 docker/deploy/setenv.sh
 docker/deploy/images/yyy.json
 docker/deploy/images/squonk-realm.json
+docker/deploy/images/Dockerfile-jobexecutor
+
 
 docker/deploy/images/chemservices/license.cxl
 
@@ -79,5 +86,7 @@ docker/deploy/images/keycloak/keycloak.jks
 docker/deploy/images/chemservices/*.zip
 
 openshift/templates/certs
+openshift/ansible/users.txt
+openshift/ansible/setenv.sh
 
 **/doxygen-output/

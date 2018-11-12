@@ -234,6 +234,7 @@ public class CDKMoleculeIOUtils {
                                 throw new RuntimeException("Failed to read molecule " + mo.getUUID(), e);
                             } else {
                                 LOG.warning("Failed to read molecule " + mo.getUUID());
+                                // TODO - replace with an empty molecule. See #20
                             }
                         }
                     });
@@ -246,7 +247,7 @@ public class CDKMoleculeIOUtils {
         };
         t.start();
 
-        return new CDKSDFile(in);
+        return new CDKSDFile(in, false);
     }
 
     public static Stream<MoleculeObject> convertMoleculeObjects(Stream<MoleculeObject> input, String toFormat) throws CDKException {

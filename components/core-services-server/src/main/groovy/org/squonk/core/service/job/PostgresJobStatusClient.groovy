@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package org.squonk.core.service.job;
+package org.squonk.core.service.job
 
+import org.squonk.jobdef.CellExecutorJobDefinition
+import org.squonk.jobdef.ExternalJobDefinition;
 import org.squonk.jobdef.JobDefinition
 import org.squonk.jobdef.JobQuery
 import org.squonk.jobdef.JobStatus
@@ -54,10 +56,37 @@ public class PostgresJobStatusClient implements JobStatusClient {
         this.db = new Sql(dataSource)
     }
 
+    /** Create and execute a new job
+     *
+     * @param jobDef
+     * @param username
+     * @param totalCount The total number of work units, or null if unknown
+     * @return
+     */
     @Override
-    JobStatus submit(JobDefinition jobdef, String username, Integer totalCount) {
-        log.info("Registering JobDef: " + jobdef);
-        JobStatus status = JobStatus.create(jobdef, username, new Date(), totalCount == null ? 0 : totalCount)
+    JobStatus submit(CellExecutorJobDefinition jobDef, String username, Integer totalCount) {
+        registerJob(null, jobDef, username, totalCount);
+    }
+
+    /** Create a new external job
+     *
+     * @param jobDef
+     * @param username
+     * @param totalCount The total number of work units, or null if unknown
+     * @return
+     * @throws IOException
+     */
+    @Override
+    JobStatus create(ExternalJobDefinition jobDef, String username, Integer totalCount) throws IOException {
+        return registerJob(jobDef.getJobId(), jobDef, username, totalCount);
+    }
+
+    private JobStatus registerJob(String jobId, JobDefinition jobDef, String username, Integer totalCount) {
+        log.info("Registering JobDef: " + jobDef)
+        if (jobId == null) {
+            jobId = UUID.randomUUID().toString();
+        }
+        JobStatus status = JobStatus.create(jobId, jobDef, username, new Date(), totalCount == null ? 0 : totalCount)
         int count
         try {
             db.withTransaction {
@@ -72,6 +101,7 @@ public class PostgresJobStatusClient implements JobStatusClient {
             throw new SQLException("Failed to insert JobStatus into database - user $username might not exist?")
         }
     }
+
 
     private static final String SQL_INSERT = """INSERT INTO users.jobstatus (owner_id, uuid, status, total_count, processed_count, error_count, definition)
 (SELECT id, ?, ?, ?, ?, ?, ?::jsonb FROM users.users u WHERE u.username = ?)"""
@@ -189,6 +219,7 @@ public class PostgresJobStatusClient implements JobStatusClient {
 
     @Override
     public JobStatus updateStatus(String id, JobStatus.Status status, String event, Integer processedCount, Integer errorCount) {
+        log.info("Updating status for job $id to $status")
         synchronized (lock) {
             JobStatus result = null
             try {

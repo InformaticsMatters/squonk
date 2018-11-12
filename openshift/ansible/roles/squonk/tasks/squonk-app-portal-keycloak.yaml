@@ -1,0 +1,44 @@
+---
+
+# With infrastructure deployed and initialised
+# we can now continue with Squonk deployment...
+
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
+  changed_when: False
+
+- name: Login as The Squonk Developer
+  shell: oc login {{ oc_master_hostname }} -u {{ oc_user }} -p {{ oc_user_password }}
+  changed_when: False
+
+# Deploy...
+
+- name: Get DeploymentConfigs
+  shell: oc get dc
+  register: dc_result
+  changed_when: False
+
+- name: Deploy Portal
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-app-portal-keycloak.yaml
+    -p SQUONK_HOST={{ oc_squonk_host}}
+    -p APP_NAMESPACE={{ oc_project }}
+    -p PULL_POLICY={{ image_pull_policy }}
+    -p LOGOUT_REDIRECT_TO={{ keycloak_logout_redirect_to }}
+    -p PORTAL_IMAGE_TAG={{ oc_squonk_image_tag }}
+    | oc create -f -
+  when: '"portal" not in dc_result.stdout'
+
+# Wait for running pods...
+
+- name: Wait for Portal
+  shell: oc get po | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
+  delay: 20
+  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  register: result
+  until: result.rc == 0
+  when: wait_for_pods
+  loop:
+  - portal
+  changed_when: False

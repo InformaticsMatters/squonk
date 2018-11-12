@@ -1,0 +1,49 @@
+---
+
+# What volume type are we using? One of: -
+#
+# - dynamic
+# - nfs
+# - none
+#
+#   When using `dynamic' remember to set
+#   the accompanying 'volume_storage_class' variable (see below)
+#
+#   When using 'nfs' you must have provisioned the NFS volumes
+#
+#   When set to 'none' the user is expected to have provisioned
+#   the persistent volumes and claims suitable for the project.
+oc_squonk_volume_type: "{{ ansible_env.OC_SQUONK_VOLUME_TYPE }}"
+
+# When using dynamic volumes the storage
+# class needs to be defined...
+oc_squonk_volume_storage_class: "{{ ansible_env.OC_SQUONK_VOLUME_STORAGE_CLASS }}"
+
+# Deploy the JobExecutor?
+deploy_je: yes
+
+# We can configure the 'standard-user' using a selenium script
+# and a Chrome web-driver but this requires Chrome to be available,
+# the driver to be on you r path and certificates to be properly
+# deployed in order for selenium to work properly in "headless" mode.
+# The automation works if configured not to use chrome in headless mode.
+setup_keycloak: no
+
+# Path to a file that defines the users we want to add to the Keycloak realm.
+# The path is relative to the ansible directory (where the roles directory is)
+# uncomment or define form the command-line to add users.
+# To use 'ansbible/users.txt' set to 'users.txt'
+#users_file: example-users.txt
+
+# Add the built-in nobody user?
+# If 'yes' then a 'noby' user is added to keycloak
+# using a randomly assigned password. The password is printed as the
+# role executes but it is not stored anywhere.
+add_nobody_user: yes
+
+# Here PVs used by the application (the squonk-work-dir for example)
+# are returned to an Available state if they're currently
+# in a Released state. Note: it is the user's responsibility
+# to protect themselves for data loss here. This will inspect the
+# "state" of all PVs in the squonk *and* infrastructure projects.
+recycle_released_pvs: yes

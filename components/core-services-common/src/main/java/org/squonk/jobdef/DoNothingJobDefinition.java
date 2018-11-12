@@ -16,12 +16,51 @@
 
 package org.squonk.jobdef;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.squonk.io.IODescriptor;
+
 /**
  * Job for testing purposes only. 
  * Does absolutely nothing, but should return a JobStatus that indicates successful completion.
  *
  * @author timbo
  */
-public class DoNothingJobDefinition implements JobDefinition {
-    
+public class DoNothingJobDefinition implements CellExecutorJobDefinition {
+
+    public DoNothingJobDefinition() {
+
+    }
+
+    public DoNothingJobDefinition(
+            @JsonProperty("notebookId") Long notebookId,
+            @JsonProperty("editableId") Long editableId,
+            @JsonProperty("cellId") Long cellId,
+            @JsonProperty("inputs") IODescriptor[] inputs,
+            @JsonProperty("outputs") IODescriptor[] outputs) {
+    }
+
+    @Override
+    public Long getNotebookId() {
+        return 1l;
+    }
+
+    @Override
+    public Long getEditableId() {
+        return 1l;
+    }
+
+    @Override
+    public Long getCellId() {
+        return 1l;
+    }
+
+    @Override
+    public IODescriptor[] getInputs() {
+        return new IODescriptor[0];
+    }
+
+    @Override
+    public IODescriptor[] getOutputs() {
+        return new IODescriptor[0];
+    }
 }

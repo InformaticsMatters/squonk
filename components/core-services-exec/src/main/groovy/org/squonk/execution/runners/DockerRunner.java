@@ -77,27 +77,18 @@ public class DockerRunner extends AbstractRunner {
 
     /**
      * @param imageName       The Docker image to run. Must already be pulled
-     * @param hostBaseWorkDir The directory on the host that will be used to create a work dir. Must exist or be creatable and be writeable.
-     * @param localWorkDir    The name under which the host work dir will be mounted in the new container
+     * @param workDir The directory on the host that will be used to create a work dir. Must exist or be creatable and be writeable.
      */
-    public DockerRunner(String imageName, String hostBaseWorkDir, String localWorkDir, String jobId) {
+    public DockerRunner(String imageName, String workDir, String jobId) {
 
-        super(hostBaseWorkDir, jobId);
-
-        this.imageName = imageName;
-        this.localWorkDir = localWorkDir;
-    }
-
-    public DockerRunner(String imageName, String jobId) {
-
-        super(null, jobId);
+        super(workDir, jobId);
 
         this.imageName = imageName;
         this.localWorkDir = getHostWorkDir().getPath();
     }
 
-    protected String getDefaultWorkDir() {
-        return IOUtils.getConfiguration("SQUONK_DOCKER_WORK_DIR", "/squonk/work/docker");
+    public DockerRunner(String imageName, String jobId) {
+        this(imageName, null, jobId);
     }
 
     protected DockerClient getDockerClient() {
@@ -117,12 +108,11 @@ public class DockerRunner extends AbstractRunner {
         super.init();
         Volume work = new Volume(localWorkDir);
         volumes.add(work);
-        Bind b = new Bind(getHostWorkDir().getPath(), work, AccessMode.rw, SELContext.single);
+        Bind b = new Bind(getHostWorkDir().getPath(), work, AccessMode.rw, SELContext.shared);
         binds.add(b);
 
         // properties read from environment variables
-        config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-                .build();
+        config = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
         dockerClient = DockerClientBuilder.getInstance(config).build();
     }
 

@@ -16,8 +16,8 @@
 
 package org.squonk.camel.typeConverters
 
-import org.squonk.dataset.Dataset
 import org.squonk.dataset.MoleculeObjectDataset
+import org.squonk.io.FileDataSource
 import org.squonk.types.SDFile
 import spock.lang.Specification
 
@@ -29,8 +29,8 @@ class MoleculeStreamTypeConverterSpec extends Specification {
 
     void "sdf to dataset"() {
 
-        InputStream is = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
-        SDFile sdf = new SDFile(is)
+        def data = new FileDataSource(null, null, new File("../../data/testfiles/Kinase_inhibs.sdf.gz"), true)
+        SDFile sdf = new SDFile(data)
 
         when:
         MoleculeObjectDataset ds = MoleculeStreamTypeConverter.convertSDFileToMoleculeObjectDataset(sdf, null)
@@ -38,10 +38,6 @@ class MoleculeStreamTypeConverterSpec extends Specification {
         then:
         ds != null
         ds.items.size() == 36
-
-        cleanup:
-        is.close()
-
     }
 
 }

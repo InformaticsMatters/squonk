@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,13 +38,19 @@ public class StandardServiceDescriptors {
 
         services = new ServiceDescriptorSet(URL, null, Arrays.asList(new ServiceDescriptor[]{
 
-                // this one allows to execute arbitary script in the specified docker container
-                GenericDatasetDockerExecutorStep.SERVICE_DESCRIPTOR,
                 DatasetSelectSliceStep.SERVICE_DESCRIPTOR,
                 DatasetSelectRandomStep.SERVICE_DESCRIPTOR,
                 DatasetMergerStep.SERVICE_DESCRIPTOR,
                 DatasetEnricherStep.SERVICE_DESCRIPTOR,
                 DatasetUUIDFilterStep.SERVICE_DESCRIPTOR
+                // add these once the portal has been refactored to used these as services
+                //BasicObjectToMoleculeObjectStep.SERVICE_DESCRIPTOR,
+                //ChemblActivitiesFetcherStep.SERVICE_DESCRIPTOR,
+                //DatasetFilterGroovyStep.SERVICE_DESCRIPTOR,
+                //DatasetMoleculesFromFieldStep.SERVICE_DESCRIPTOR,
+                //SmilesStructuresStep.SERVICE_DESCRIPTOR,
+                //MolfileReaderStep.SERVICE_DESCRIPTOR,
+                //ValueTransformerStep.SERVICE_DESCRIPTOR
         }));
 
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,49 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.squonk.execution.steps.AbstractStandardStep;
+import org.apache.camel.CamelContext;
 import org.squonk.camel.processor.ValueTransformerProcessor;
-import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
+import org.squonk.core.DefaultServiceDescriptor;
+import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.transform.TransformDefinitions;
-import org.apache.camel.CamelContext;
+import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.io.IODescriptors;
+import org.squonk.options.MultiLineTextTypeDescriptor;
+import org.squonk.options.OptionDescriptor;
 import org.squonk.types.io.JsonHandler;
 
+import java.util.Date;
 import java.util.logging.Logger;
 
 /**
  *
  * @author timbo
  */
-public class ValueTransformerStep extends AbstractStandardStep {
+public class ValueTransformerStep extends AbstractDatasetStep {
 
     private static final Logger LOG = Logger.getLogger(ValueTransformerStep.class.getName());
+
+
+    public static final DefaultServiceDescriptor SERVICE_DESCRIPTOR = new DefaultServiceDescriptor(
+            "core.dataset.transformvalues.v1",
+            "TransformValues",
+            "Transform dataset values",
+            new String[]{"transform", "convert", "dataset"},
+            null, "icons/transform_basic.png",
+            ServiceConfig.Status.ACTIVE,
+            new Date(),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+            new OptionDescriptor[]{
+
+                    new OptionDescriptor<>(new MultiLineTextTypeDescriptor(10, 60, MultiLineTextTypeDescriptor.MIME_TYPE_SCRIPT_GROOVY),
+                            StepDefinitionConstants.ValueTransformer.OPTION_TRANSFORMS, "Transform Definitions",
+                            "Definition of the transforms to perform", OptionDescriptor.Mode.User)
+            },
+            null, null, null,
+            ValueTransformerStep.class.getName()
+    );
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;
@@ -43,22 +68,15 @@ public class ValueTransformerStep extends AbstractStandardStep {
      * Add the transforms to the dataset Stream. NOTE: transforms will not occur
      * until a terminal operation is performed on the Stream. Normally no output is
      * created as the transforms are added to the input dataset which will be
-     * transient, however if an output field is needed then specify a mapping for the 
-     * field named FIELD_OUTPUT_DATASET. 
+     * transient, however if an output field is needed then specify a mapping for the
+     * field named FIELD_OUTPUT_DATASET.
      *
-     * @param varman
-     * @param context
+     * @param input
+     * @param camelContext
      * @throws Exception
      */
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-        statusMessage = MSG_PREPARING_INPUT;
-        Dataset ds = fetchMappedInput(VAR_INPUT_DATASET, Dataset.class, varman);
-        if (ds == null) {
-            throw new IllegalStateException("Input variable not found: " + VAR_INPUT_DATASET);
-        }
-        LOG.info("Input Dataset: " + ds);
-
+    protected Dataset doExecuteWithDataset(Dataset input, CamelContext camelContext) throws Exception {
         Object val = getOption(OPTION_TRANSFORMS);
         if (val == null) {
             throw new IllegalStateException("Transforms must be defined as option named " + OPTION_TRANSFORMS);
@@ -73,17 +91,9 @@ public class ValueTransformerStep extends AbstractStandardStep {
         LOG.info("Transform Definitions: " + txs);
         statusMessage = "Transforming dataset ...";
         ValueTransformerProcessor p = ValueTransformerProcessor.create(txs);
-        Dataset result = p.execute(context.getTypeConverter(), ds);
+        Dataset result = p.execute(camelContext.getTypeConverter(), input);
+        return result;
 
-        LOG.info("Transforms complete");
-        
-        String outFldName = mapOutputVariable(VAR_OUTPUT_DATASET);
-        if (outFldName != null) {
-            createVariable(outFldName, Dataset.class, result, varman);
-        }
-
-        statusMessage = generateStatusMessage(ds.getSize(), result.getSize(), -1);
-        LOG.info("Results: " + result.getMetadata());
     }
 
 }

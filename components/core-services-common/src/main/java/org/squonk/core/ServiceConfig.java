@@ -16,6 +16,7 @@
 
 package org.squonk.core;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.squonk.io.IODescriptor;
 import org.squonk.options.OptionDescriptor;
@@ -30,7 +31,9 @@ import java.util.Date;
  *
  * Created by timbo on 30/12/16.
  */
-public class ServiceConfig implements Descriptor, Serializable{
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class
+ServiceConfig implements Descriptor, Serializable{
 
     public enum Status {
         ACTIVE, INACTIVE, UNKNOWN

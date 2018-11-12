@@ -28,13 +28,11 @@ import spock.lang.Ignore
  *
  * @author timbo
  */
-@Ignore
 class ServiceDescriptorJsonSpec extends Specification {
 
 
     void "ServiceDescriptor json"() {
         setup:
-        println "ServiceDescriptor json()"
         ObjectMapper mapper = new ObjectMapper()
         def descriptor = new HttpServiceDescriptor(
                 "cdk/logp",
@@ -53,7 +51,7 @@ class ServiceDescriptorJsonSpec extends Specification {
         when:
         def json = mapper.writeValueAsString(descriptor)
         println json
-        def obj = mapper.readValue(json, HttpServiceDescriptor.class)
+        def obj = mapper.readValue(json, ServiceDescriptor.class)
 
         then:
         json != null
@@ -63,35 +61,51 @@ class ServiceDescriptorJsonSpec extends Specification {
         obj.executionEndpoint != null
     }
 
-    void "validate pipelines docker service descriptors"() {
+    void "ServiceDescriptor list"() {
+        setup:
+        ObjectMapper mapper = new ObjectMapper()
+        def descriptor1 = new HttpServiceDescriptor(
+                "cdk/logp/1",
+                "CDK LogP",
+                "CDK LogP predictions for XLogP and ALogP",
+                ["logp", "partitioning", "cdk"] as String[],
+                null,
+                "icon.png",
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
+                null,
+                null,
+                "logp1", // a URL relative to this URL?
+        )
+        def descriptor2 = new HttpServiceDescriptor(
+                "cdk/logp/2",
+                "CDK LogP",
+                "CDK LogP predictions for XLogP and ALogP",
+                ["logp", "partitioning", "cdk"] as String[],
+                null,
+                "icon.png",
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
+                null,
+                null,
+                "logp2", // a URL relative to this URL?
+        )
 
-        def list = []
-        def dir = new File("../../data/testfiles/docker-services/")
-        dir.eachFileRecurse (FileType.FILES) { file ->
-            if (file.getName().endsWith(".dsd.json"))
-            list << file
-        }
+        def list = [descriptor1, descriptor2]
 
         when:
-
-        def descriptors = []
-        int errors = 0
-        list.each { file ->
-            println "Trying $file"
-            try {
-                descriptors << JsonHandler.getInstance().objectFromJson(new FileInputStream(file), DockerServiceDescriptor.class)
-            } catch (IOException ex) {
-                errors++
-                println "Failed to read $file"
-            }
-        }
-        println "Read ${descriptors.size()} docker descriptors"
-
+        def json1 = mapper.writeValueAsString(descriptor1)
+        def json2 = mapper.writeValueAsString(descriptor2)
+        def json = "[$json1,$json2]"
+        println json
+        def obj = mapper.readValue(json, List.class)
 
         then:
-        descriptors.size() > 0
-        errors == 0
-
+        json != null
+        obj != null
+        obj instanceof List
+        obj.size() == 2
     }
+
 }
 

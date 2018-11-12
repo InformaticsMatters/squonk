@@ -1,0 +1,9 @@
+---
+
+- hosts: localhost
+
+  tasks:
+  - name: Run the Squonk ChemCentral Undeploy Tasks
+    include_role:
+      name: squonk-chemcentral
+      tasks_from: undeploy.yaml

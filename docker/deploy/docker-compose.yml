@@ -77,7 +77,7 @@ services:
             retries: 5
 
     flyway:
-        image: squonk/flyway:latest
+        image: squonk/flyway:${TAG}
         environment:
             POSTGRES_PASSWORD:
         networks:
@@ -113,7 +113,7 @@ services:
     # curl -X POST -T mols.json "http://${PUBLIC_HOST}:8092/chem-services-cdk-basic/rest/v1/calculators/logp"
     #
     chemservices:
-        image: squonk/chemservices-basic:latest
+        image: squonk/chemservices-basic:${TAG}
         restart: on-failure
         volumes:
         - ./images/chemservices/license.cxl:/usr/local/tomcat/license.cxl:ro,z
@@ -138,9 +138,7 @@ services:
     # http://${PUBLIC_HOST}:8093/chemcentral-search/rest/v1/db/search?table=emolecules_order_bb&limit=5&mode=sim&q=CN1C%3DNC2%3DC1C(%3DO)N(C)C(%3DO)N2C"
     #
     chemcentral-search:
-        image: squonk/chemcentral-search:latest
-        ports:
-        - "8093:8080"
+        image: squonk/chemcentral-search:${TAG}
         networks:
         - squonk_back
         environment:
@@ -164,23 +162,18 @@ services:
     ################# core-services-server container ###################################
     # available on:
     # http://${PUBLIC_HOST}/coreservices/rest/ping
-    # http://${PUBLIC_HOST}/coreservices/rest/v1/services
+    # http://${PUBLIC_HOST}/coreservices/rest/v1/services/configs
+    # http://${PUBLIC_HOST}/coreservices/rest/v1/services/descriptors
     # http://${PUBLIC_HOST}/coreservices/rest/v1/jobs
     #
     coreservices:
-        image: squonk/coreservices:latest
+        image: squonk/coreservices:${TAG}
         restart: on-failure
-        volumes:
-        - ./data/docker-services:/var/local/squonk-docker-services:Z
         depends_on:
             postgres:
                 condition: service_healthy
             rabbitmq:
                 condition: service_started
-            #chemservices:
-            #    condition: service_healthy
-            #chemcentral-search:
-            #    condition: service_healthy
         environment:
             RABBITMQ_SQUONK_PASSWORD:
             POSTGRES_SQUONK_PASSWORD:
@@ -195,19 +188,19 @@ services:
             timeout: 5s
             retries: 5
 
-    ################# cell-executor container #########################################
+    ################# cellexecutor container #########################################
     # you must create the /squonk/work/docker and /squonk/work/nextflow directories,
     # or point to other directories under /squonk/ using the SQUONK_DOCKER_WORK_DIR and/or
     # SQUONK_NEXTFLOW_WORK_DIR environment variables.
     cellexecutor:
-        image: squonk/cellexecutor:latest
+        image: squonk/cellexecutor:${TAG}
         restart: on-failure
         depends_on:
         - rabbitmq
         volumes:
         - /var/run/docker.sock:/var/run/docker.sock
-        - /squonk/work:/squonk/work:Z
-        - /var/maven_repo:/var/maven_repo:ro,Z
+        - /squonk/work:/squonk/work:z
+        - /var/maven_repo:/var/maven_repo:ro,z
         - ./images/cellexecutor/logging.properties:/logging.properties:ro,Z
         security_opt:
         - label:disable # disable SELinux so that we can access docker.sock
@@ -224,10 +217,41 @@ services:
         networks:
         - squonk_back
 
+    ################# jobexecutor container #########################################
+    # you must create the /squonk/work/docker and /squonk/work/nextflow directories,
+    # or point to other directories under /squonk/ using the SQUONK_DOCKER_WORK_DIR and/or
+    # SQUONK_NEXTFLOW_WORK_DIR environment variables.
+    #
+    # See docker-compose-keycloak.yml for accessing this as a secured service
+    #
+    # Tomcat runs as root as it needs to access the docker socket
+    jobexecutor:
+        restart: on-failure
+        user: 0:0
+        depends_on:
+        - coreservices
+        volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - /squonk/work:/squonk/work:z
+        - /var/maven_repo:/var/maven_repo:ro,z
+        #- ./images/jobexecutor/logging.properties:/logging.properties:ro,Z
+        security_opt:
+        - label:disable # disable SELinux so that we can access docker.sock
+        environment:
+            DOCKER_HOST: unix:///var/run/docker.sock
+            SQUONK_CONTAINER_RUNNER_TYPE: docker
+            SQUONK_DOCKER_WORK_DIR:
+            SQUONK_DEBUG_MODE:
+            registry.url: https://index.docker.io/v1/
+            #JAVA_OPTS: '"-Djava.util.logging.config.file=/logging.properties"'
+        networks:
+        - squonk_front
+        - squonk_back
+
     ################# portal ##########################################################
     # available on http://${PUBLIC_HOST}/portal
     portal:
-        image: squonk/portal:latest
+        image: squonk/portal:${TAG}
         restart: on-failure
         volumes:
         - ./images/portal/logging.properties:/usr/local/tomcat/conf/logging.properties:ro,Z

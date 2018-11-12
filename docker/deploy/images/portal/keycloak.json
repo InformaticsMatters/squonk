@@ -4,7 +4,7 @@
   "auth-server-url": "${com.squonk.keycloak.baseurl}",
   "ssl-required": "external",
   "disable-trust-manager": true,
-  "resource": "portal",
+  "resource": "squonk-portal",
   "credentials": {
     "secret": "434ecd6b-586d-4db8-a3fa-83bfeb16bf44"
   },

@@ -147,7 +147,7 @@
         "scopeParamRequired" : false,
         "composite" : false
       } ],
-      "portal" : [ ],
+      "squonk-portal" : [ ],
       "account" : [ {
         "id" : "6234a170-56ee-4a70-b0bc-4641ee3a13c6",
         "name" : "view-profile",
@@ -596,7 +596,7 @@
     "useTemplateMappers" : false
   }, {
     "id" : "201a4a6c-03a0-42ab-a85a-3174ae545920",
-    "clientId" : "portal",
+    "clientId" : "squonk-portal",
     "name" : "Squonk Portal",
     "baseUrl" : "http://__public_host__/portal",
     "surrogateAuthRequired" : false,

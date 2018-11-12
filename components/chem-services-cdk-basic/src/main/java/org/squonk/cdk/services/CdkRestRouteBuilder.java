@@ -65,7 +65,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 .to(mqueueUrl);
 
         from(ROUTE_POST_CALCULATORS_SDS)
-                .log(ROUTE_POST_CALCULATORS_SDS)
+                .log(ROUTE_POST_CALCULATORS_SDS + " (" + CdkBasicServices.SD_SET.getAsServiceConfigs().size() + " service descriptors)")
                 .process((Exchange exch) -> {
                     String json = JsonHandler.getInstance().objectToJson(CdkBasicServices.SD_SET);
                     exch.getOut().setBody(json);
@@ -74,7 +74,7 @@ public class CdkRestRouteBuilder extends RouteBuilder {
                 .to("http4:coreservices:8080/coreservices/rest/v1/services");
 
         from(ROUTE_POST_CONVERTORS_SDS)
-                .log(ROUTE_POST_CONVERTORS_SDS)
+                .log(ROUTE_POST_CONVERTORS_SDS + " (" + CdkConverterServices.SD_SET.getAsServiceConfigs().size() + " service descriptors)")
                 .process((Exchange exch) -> {
                     String json = JsonHandler.getInstance().objectToJson(CdkConverterServices.SD_SET);
                     exch.getOut().setBody(json);

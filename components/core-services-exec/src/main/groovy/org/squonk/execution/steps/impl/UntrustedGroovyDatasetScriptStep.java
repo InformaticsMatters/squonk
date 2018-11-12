@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.squonk.execution.steps.impl;
 
 import com.github.dockerjava.api.model.AccessMode;
+import com.github.dockerjava.api.model.SELContext;
 import com.github.dockerjava.api.model.Volume;
 import org.squonk.execution.runners.DockerRunner;
 
@@ -31,12 +32,7 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerScriptRunner
     private static final Logger LOG = Logger.getLogger(UntrustedGroovyDatasetScriptStep.class.getName());
 
 
-
-    protected int executeRunner() {
-        return runner.execute("run.groovy");
-    }
-
-    protected DockerRunner createRunner() throws IOException {
+    protected DockerRunner prepareContainerRunner() throws IOException {
         statusMessage = MSG_PREPARING_CONTAINER;
 
         String image = getOption(OPTION_DOCKER_IMAGE, String.class);
@@ -51,15 +47,14 @@ public class UntrustedGroovyDatasetScriptStep extends AbstractDockerScriptRunner
         }
         LOG.info("Docker image: " + image + ", Script: " + script);
 
-
-        String localWorkDir = "/source";
-        DockerRunner runner = ((DockerRunner)createContainerRunner(image, localWorkDir))
+        DockerRunner runner = ((DockerRunner)createContainerRunner(image))
                 .withNetwork(ISOLATED_NETWORK_NAME);
+        runner.init();
         Volume maven = runner.addVolume("/var/maven_repo");
-        runner.addBind("/var/maven_repo", maven, AccessMode.ro);
+        runner.addBind("/var/maven_repo", maven, AccessMode.ro, SELContext.shared);
 
         LOG.info("Writing script file");
-        runner.writeInput("run.groovy", script);
+        runner.writeInput("execute", script);
 
         return runner;
     }

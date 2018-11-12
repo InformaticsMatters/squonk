@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ public class SMARTCypRestRouteBuilder extends RouteBuilder {
                 new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("input")},
                 new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output")},
                 options,
-                StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME,
+                StepDefinitionConstants.DatasetHttpExecutor.CLASSNAME,
                 endpoint
         );
     }
@@ -140,6 +140,7 @@ public class SMARTCypRestRouteBuilder extends RouteBuilder {
 
         from(ROUTE_POST_SDS)
                 .log(ROUTE_POST_SDS)
+                .log(sdset + " (" + sdset.getAsServiceConfigs().size() + " service descriptors)")
                 .process((Exchange exch) -> {
                     String json = JsonHandler.getInstance().objectToJson(sdset);
                     exch.getOut().setBody(json);

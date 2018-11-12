@@ -137,7 +137,7 @@ public class MoleculeObjectUtils {
      * @throws IOException
      */
     public static Dataset<MoleculeObject> readDatasetFromFiles(String basePath) throws IOException {
-        return  readDatasetFromFiles(new File(basePath + ".data.gz"), new File(basePath+".meta"));
+        return  readDatasetFromFiles(new File(basePath + ".data.gz"), new File(basePath+".metadata"));
     }
 
 
@@ -225,7 +225,7 @@ public class MoleculeObjectUtils {
      * @throws IOException
      */
     public static void writeDatasetToFiles(Dataset<MoleculeObject> dataset, String basePath, boolean regenerateMetadata) throws IOException {
-        writeDatasetToFiles(dataset, new File(basePath+".data.gz"), new File(basePath+".meta"), regenerateMetadata);
+        writeDatasetToFiles(dataset, new File(basePath+".data.gz"), new File(basePath+".metadata"), regenerateMetadata);
     }
 
     /** Convenience method for processing a dataset of molecules.

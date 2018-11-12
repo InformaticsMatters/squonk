@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,9 +76,16 @@ public final class StepDefinition implements Serializable {
     public StepDefinition() {
     }
 
+    public StepDefinition(Class implementationClass) {
+        this(implementationClass.getName(), null);
+    }
+
     public StepDefinition(String implementationClass) {
-        this.implementationClass = implementationClass;
-        this.serviceId = null;
+        this(implementationClass, null);
+    }
+
+    public StepDefinition(Class implementationClass, String serviceId) {
+        this(implementationClass.getName(), serviceId);
     }
 
     public StepDefinition(String implementationClass, String serviceId) {

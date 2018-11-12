@@ -1,0 +1,30 @@
+---
+
+# Just run these plays...
+
+- import_tasks: pre-flight-checks.yaml
+
+- import_tasks: create-project.yaml
+
+# NFS volumes...
+- import_tasks: create-nfs-pv-pvc.yaml
+  when: oc_squonk_volume_type == 'nfs'
+# Dynamic volumes...
+- import_tasks: create-dynamic-pvc.yaml
+  when: oc_squonk_volume_type == 'dynamic'
+# MiniShift volumes...
+- import_tasks: create-minishift-pvc.yaml
+  when: oc_squonk_volume_type == 'minishift'
+
+- import_tasks: squonk-infra-deploy.yaml
+- import_tasks: squonk-app-components.yaml
+- import_tasks: squonk-app-portal-keycloak.yaml
+- import_tasks: squonk-app-keycloak-je.yaml
+  when: deploy_je
+
+- import_tasks: setup-keycloak.yaml
+  when: setup_keycloak
+- import_tasks: add-keycloak-users.yaml
+  when: users_file is defined
+- import_tasks: add-keycloak-nobody-user.yaml
+  when: add_nobody_user

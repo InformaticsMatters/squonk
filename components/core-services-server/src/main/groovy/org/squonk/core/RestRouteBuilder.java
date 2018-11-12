@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
 
 package org.squonk.core;
 
+import org.apache.camel.Message;
 import org.squonk.config.SquonkServerConfig;
 import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition;
+import org.squonk.jobdef.ExternalJobDefinition;
 import org.squonk.jobdef.JobDefinition;
 import org.squonk.jobdef.JobStatus;
 import org.apache.camel.Exchange;
@@ -176,6 +178,31 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
         }
     }
 
+    private void handleError(Exchange exch, String responseCode, String errorMessage) {
+        handleError(exch, responseCode, errorMessage, null);
+    }
+
+    private void handleError(Exchange exch, String responseCode, String errorMessage, Throwable t) {
+        Message m;
+        if (exch.hasOut()) {
+            m = exch.getOut();
+        } else {
+            m = exch.getIn();
+        }
+        m.setHeader(Exchange.HTTP_RESPONSE_CODE, responseCode);
+        StringBuilder b = new StringBuilder(errorMessage).append("\n");
+        if (t == null) {
+            //b.append("No more details are available.\n");
+        } else if (t.getMessage() == null) {
+            b.append("No message provided\n").append("\nCause is:\n\n");
+            b.append(t.toString());
+        } else {
+            b.append("Message: ").append(t.getMessage()).append("\nCause is:\n\n");
+            b.append(t.toString());
+        }
+        m.setBody(b.toString());
+    }
+
     @Override
     public void configure() throws Exception {
 
@@ -201,8 +228,10 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .process((Exchange exch) -> {
                     Throwable caused = exch.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
                     if (caused == null || caused.getMessage() == null) {
+                        LOG.warning("404 error: Cause unknown");
                         exch.getIn().setBody("Not Found: Cause unknown");
                     } else {
+                        LOG.warning("404 error: " + caused.getMessage());
                         exch.getIn().setBody("Not Found: " + caused.getMessage());
                     }
                 });
@@ -227,13 +256,50 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .endRest();
 
         rest("/v1/services")
-                .get().description("Get service definitions for the available services")
+                // GET the ServiceConfigs
+                // TODO - This is a duplicate of the next definition. Remove this one once refactoring is complete
+                .get().description("Get service config definitions for the available services")
                 .bindingMode(RestBindingMode.json)
                 .outType(HttpServiceDescriptor.class)
                 .produces(APPLICATION_JSON)
                 .route()
-                .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST)
+                .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST_SERVICE_CONFIGS)
                 .endRest()
+                // GET the ServiceConfigs
+                .get("/configs").description("Get service config definitions for the available services")
+                .bindingMode(RestBindingMode.json)
+                .outType(ServiceConfig.class)
+                .produces(APPLICATION_JSON)
+                .route()
+                .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST_SERVICE_CONFIGS)
+                .endRest()
+                // GET the ServiceDescriptors
+                .get("/descriptors").description("Get service descriptor definitions for the available services")
+                .bindingMode(RestBindingMode.off)
+                .outType(ServiceDescriptor.class)
+                .produces(APPLICATION_JSON)
+                .route()
+                .to(ServiceDiscoveryRouteBuilder.ROUTE_REQUEST_SERVICE_DESCRIPTORS)
+                .process((Exchange exch) -> {
+                    // this is necessary as Jackson does not serialize List<ServiceDescriptor> correctly.
+                    // The "@class": "org.squonk.core.HttpServiceDescriptor" property is missing.
+                    List<ServiceDescriptor> sds = exch.getIn().getBody(List.class);
+                    StringBuffer buf = new StringBuffer("[");
+                    int count = 0;
+                    for (ServiceDescriptor sd : sds) {
+                        if (count > 0) {
+                            buf.append(",");
+                        }
+                        String json = JsonHandler.getInstance().objectToJson(sd);
+                        buf.append(json);
+                        count++;
+                    }
+                    buf.append("]");
+                    String result = buf.toString();
+                    exch.getIn().setBody(result);
+                })
+                .endRest()
+                // POST new service descriptors
                 .post().description("Post ServiceDescriptors for a set of available services")
                 .produces(TEXT_PLAIN)
                 .route()
@@ -290,23 +356,28 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .route()
                 .process((Exchange exch) -> {
                     String json = exch.getIn().getBody(String.class);
-                    LOG.info("JSON is " + json);
+                    LOG.fine("JSON is " + json);
                     JobDefinition jobdef = JsonHandler.getInstance().objectFromJson(json, JobDefinition.class);
                     LOG.info("Received request to submit job for " + jobdef);
-
                     Integer count = exch.getIn().getHeader(HEADER_JOB_SIZE, Integer.class);
-                    Job job = null;
                     if (jobdef instanceof ExecuteCellUsingStepsJobDefinition) {
                         ExecuteCellUsingStepsJobDefinition stepsJopbDef = (ExecuteCellUsingStepsJobDefinition) jobdef;
-                        job = new StepsCellJob(jobstatusClient, stepsJopbDef);
+                        Job job = new StepsCellJob(jobstatusClient, stepsJopbDef);
+                        LOG.info("Starting Job");
+                        JobStatus result = job.start(exch.getContext(), Utils.fetchUsername(exch), count);
+                        LOG.info("Job " + result.getJobId() + " started");
+                        String jsonResult = JsonHandler.getInstance().objectToJson(result);
+                        exch.getIn().setBody(jsonResult);
+                    } else if (jobdef instanceof ExternalJobDefinition) {
+                        ExternalJobDefinition externalJob = (ExternalJobDefinition) jobdef;
+                        LOG.info("Creating job with ID " + externalJob.getJobId());
+                        JobStatus result = jobstatusClient.create(externalJob, Utils.fetchUsername(exch), count);
+                        LOG.fine("Job " + result.getJobId() + " created");
+                        String jsonResult = JsonHandler.getInstance().objectToJson(result);
+                        exch.getIn().setBody(jsonResult);
                     } else {
                         throw new IllegalStateException("Job definition type " + jobdef.getClass().getName() + " not currently supported");
                     }
-                    LOG.info("Starting Job");
-                    JobStatus result = job.start(exch.getContext(), Utils.fetchUsername(exch), count);
-                    LOG.info("Job " + result.getJobId() + " started");
-                    String jsonResult = JsonHandler.getInstance().objectToJson(result);
-                    exch.getIn().setBody(jsonResult);
                 })
                 .inOnly("seda:notifyJobStatusUpdate")
                 .endRest()
@@ -318,22 +389,26 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .route()
                 .log("Updating status of job ${header.id} to status ${header.Status} and processed count of ${header.ProcessedCount}")
                 .process((Exchange exch) -> {
-                    String id = exch.getIn().getHeader("id", String.class);
-                    String status = exch.getIn().getHeader(HEADER_JOB_STATUS, String.class);
-                    Integer processedCount = exch.getIn().getHeader(HEADER_JOB_PROCESSED_COUNT, Integer.class);
-                    Integer errorCount = exch.getIn().getHeader(HEADER_JOB_ERROR_COUNT, Integer.class);
+                    Message message = exch.getIn();
+                    String id = message.getHeader("id", String.class);
+                    String status = message.getHeader(HEADER_JOB_STATUS, String.class);
+                    Integer processedCount = message.getHeader(HEADER_JOB_PROCESSED_COUNT, Integer.class);
+                    Integer errorCount = message.getHeader(HEADER_JOB_ERROR_COUNT, Integer.class);
                     JobStatus result;
                     if (status == null) {
                         result = jobstatusClient.incrementCounts(id, processedCount, errorCount);
-                        exch.getIn().setBody(result);
                     } else {
                         String event = exch.getIn().getBody(String.class);
                         result = jobstatusClient.updateStatus(id, JobStatus.Status.valueOf(status), event, processedCount, errorCount);
-                        exch.getIn().setBody(result);
                     }
-                    exch.getIn().setHeader(HEADER_SQUONK_USERNAME, result.getUsername());
-                    String jsonResult = JsonHandler.getInstance().objectToJson(result);
-                    exch.getIn().setBody(jsonResult);
+                    if (result == null) {
+                        message.setBody("{\"error\": \"Job " + id + " not found\"}");
+                        message.setHeader(Exchange.HTTP_RESPONSE_CODE, 404);
+                    } else {
+                        message.setHeader(HEADER_SQUONK_USERNAME, result.getUsername());
+                        String jsonResult = JsonHandler.getInstance().objectToJson(result);
+                        message.setBody(jsonResult);
+                    }
                 })
                 .inOnly("seda:notifyJobStatusUpdate")
                 .endRest();
@@ -396,6 +471,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     checkNotNull(user, "Username must be specified");
                     checkNotNull(name, "Notebook name must be specified");
                     NotebookDTO result = notebookClient.createNotebook(user, name, description);
+                    LOG.info("Created notebook " + result.getId());
                     exch.getIn().setBody(result);
                 })
                 .endRest()
@@ -407,13 +483,16 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                 .route()
                 .process((Exchange exch) -> {
                     Long notebookid = exch.getIn().getHeader(NOTEBOOKID, Long.class);
+                    LOG.info("Deleting notebook " + notebookid);
                     checkNotNull(notebookid, "Notebook ID must be specified");
                     boolean result = notebookClient.deleteNotebook(notebookid);
                     exch.getIn().setBody(null);
                     if (result) {
                         exch.getIn().setBody("OK");
                     } else {
-                        throw new NotFoundException("Notebook " + notebookid + " could not be deleted. May not exist or may not be yours?");
+                        String msg = "Notebook " + notebookid + " could not be deleted. May not exist or may not be yours?";
+                        LOG.warning(msg);
+                        handleError(exch, "404", msg);
                     }
                 })
                 .endRest()
@@ -523,7 +602,9 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     if (result) {
                         exch.getIn().setBody("OK");
                     } else {
-                        throw new NotFoundException("Editable " + editableid + " could not be deleted. May not exist or may not be yours?");
+                        String msg = "Editable " + editableid + " could not be deleted. May not exist or may not be yours?";
+                        LOG.warning(msg);
+                        handleError(exch, "404", msg);
                     }
                 })
                 .endRest()
@@ -623,32 +704,50 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     Long cellid = exch.getIn().getHeader(CELLID, Long.class);
 
                     if (notebookid == null) {
-                        throw new IllegalArgumentException("Must specify notebookid");
+                        handleError(exch, "500", "Notebook ID not specified");
+                        return;
                     }
                     if (sourceid == null) {
-                        throw new IllegalArgumentException("Must specify sourceid");
+                        handleError(exch, "500", "Source ID not specified");
+                        return;
                     }
                     if (cellid == null) {
-                        throw new IllegalArgumentException("Must specify cellid");
+                        handleError(exch, "500", "Cell ID not specified");
+                        return;
                     }
                     if (varname == null) {
-                        throw new IllegalArgumentException("Must specify variable name");
+                        handleError(exch, "500", "Variable name not specified");
+                        return;
                     }
                     if (type == null) {
-                        throw new IllegalArgumentException("Must specify variable type");
+                        handleError(exch, "500", "Variable type not specified");
+                        return;
                     }
                     // TODO -set the mime type and encoding
+                    // TODO - distinguish between a variable that is not present and one that has no value
                     switch (type) {
                         case s:
                             InputStream is = notebookClient.readStreamValue(notebookid, sourceid, cellid, varname, key);
-                            exch.getIn().setBody(is);
+                            //log.info("Stream Variable: " + is);
+                            if (is == null) {
+                                String.format("Text variable %s:%s for %s:%s:%s not found", varname, key, notebookid, sourceid, cellid);
+                            } else {
+                                exch.getIn().setBody(is);
+                            }
                             break;
                         case t:
                             String t = notebookClient.readTextValue(notebookid, sourceid, cellid, varname, key);
-                            exch.getIn().setBody(t);
+                            //log.info("String Variable: " + t);
+                            if (t == null) {
+                                handleError(exch, "404",
+                                        String.format("Stream variable %s:%s for %s:%s:%s not found", varname, key, notebookid, sourceid, cellid));
+                            } else {
+                                exch.getIn().setBody(t);
+                            }
                             break;
                         default:
-                            throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
+                            handleError(exch, "404",
+                                    String.format("Invalid variable type. Must be s (stream) or t (text). Found %s", type));
                     }
                 })
                 .endRest()
@@ -672,19 +771,24 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     Long cellid = exch.getIn().getHeader(CELLID, Long.class);
 
                     if (notebookid == null) {
-                        throw new IllegalArgumentException("Must specify notebookid");
+                        handleError(exch, "500", "Notebook ID not specified");
+                        return;
                     }
                     if (editableid == null) {
-                        throw new IllegalArgumentException("Must specify editableid");
+                        handleError(exch, "500", "Editable ID not specified");
+                        return;
                     }
                     if (cellid == null) {
-                        throw new IllegalArgumentException("Must specify cellid");
+                        handleError(exch, "500", "Cell ID not specified");
+                        return;
                     }
                     if (varname == null) {
-                        throw new IllegalArgumentException("Must specify variable name");
+                        handleError(exch, "500", "Variable name not specified");
+                        return;
                     }
                     if (type == null) {
-                        throw new IllegalArgumentException("Must specify variable type");
+                        handleError(exch, "500", "Variable type not specified");
+                        return;
                     }
 
                     switch (type) {
@@ -717,16 +821,20 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     LOG.info("DELETE: " + notebookid + " " + editableid + " " + cellid + " " + varname);
 
                     if (notebookid == null) {
-                        throw new IllegalArgumentException("Must specify notebookid");
+                        handleError(exch, "500", "Notebook ID not specified");
+                        return;
                     }
                     if (editableid == null) {
-                        throw new IllegalArgumentException("Must specify editableid");
+                        handleError(exch, "500", "Editable ID not specified");
+                        return;
                     }
                     if (cellid == null) {
-                        throw new IllegalArgumentException("Must specify cellid");
+                        handleError(exch, "500", "Cell ID not specified");
+                        return;
                     }
                     if (varname == null) {
-                        throw new IllegalArgumentException("Must specify variable name");
+                        handleError(exch, "500", "Variable name not specified");
+                        return;
                     }
 
                     notebookClient.deleteVariable(notebookid, editableid, cellid, varname);

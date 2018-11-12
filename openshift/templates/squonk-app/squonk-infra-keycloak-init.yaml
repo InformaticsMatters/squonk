@@ -56,12 +56,38 @@ parameters:
   name: KEYCLOAK_REALM
   value: squonk
 
+- displayName: Keycloak Realm SSL Required
+  name: KEYCLOAK_SSL_REQUIRED
+  value: external
+
 - displayName: Redirect URL after logout
   name: LOGOUT_REDIRECT_TO
   required: true
 
-
 objects:
+
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: jobexecutor-sso-config
+    namespace: ${SQUONK_NAMESPACE}
+  data:
+    keycloak.json: |
+      {
+        "realm": "${KEYCLOAK_REALM}",
+        "auth-server-url": "https://${ROUTE_PREFIX_SSO}.${ROUTES_BASE_HOSTNAME}/auth",
+        "ssl-required": "${KEYCLOAK_SSL_REQUIRED}",
+        "disable-trust-manager": true,
+        "resource": "${CLIENT_ID}",
+        "use-resource-role-mappings": false,
+        "principal-attribute": "preferred_username",
+        "credentials": { "secret": "${SQUONK_CLIENT_SECRET}" }
+      }
+    context.xml: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <Context>
+        <Valve className="org.keycloak.adapters.tomcat.KeycloakAuthenticatorValve"/>
+      </Context>
 
 - kind: ConfigMap
   apiVersion: v1
@@ -73,7 +99,7 @@ objects:
       {
         "realm": "${KEYCLOAK_REALM}",
         "auth-server-url": "https://${ROUTE_PREFIX_SSO}.${ROUTES_BASE_HOSTNAME}/auth",
-        "ssl-required": "external",
+        "ssl-required": "${KEYCLOAK_SSL_REQUIRED}",
         "disable-trust-manager": true,
         "resource": "${CLIENT_ID}",
         "use-resource-role-mappings": false,
@@ -107,6 +133,9 @@ objects:
         \"baseUrl\":\"$CLIENT_HTTPS\",
         \"rootUrl\":\"\",
         \"publicClient\":\"false\",
+        \"serviceAccountsEnabled\":\"true\",
+        \"directAccessGrantsEnabled\":\"true\",
+        \"standardFlowEnabled\":\"true\",
         \"secret\":\"$SQUONK_CLIENT_SECRET\",
         \"adminUrl\":\"$CLIENT_HTTPS\"
       }"
