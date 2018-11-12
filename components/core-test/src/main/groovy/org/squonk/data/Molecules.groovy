@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,18 @@
 
 package org.squonk.data
 
-import org.squonk.types.MoleculeObject
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.DatasetMetadata
 import org.squonk.dataset.MoleculeObjectDataset
 import org.squonk.reader.SDFReader
+import org.squonk.types.MoleculeObject
 
 /**
  * Created by timbo on 24/01/2016.
  */
 class Molecules {
 
+    static final String BUILDING_BLOCKS_SDF = "../../data/testfiles/Building_blocks_GBP.sdf.gz"
     static final String DHFR_STANDARDIZED_SDF = "../../data/testfiles/dhfr_standardized.sdf.gz"
     static final String KINASE_INHIBS_SDF = "../../data/testfiles/Kinase_inhibs.sdf.gz"
     static final String SMILES_10000 = "../../data/testfiles/nci10000.smiles"
@@ -214,7 +215,6 @@ M  END
     static Dataset<MoleculeObject> datasetFromSDF(String file) {
         SDFReader reader = new SDFReader(new FileInputStream(file))
         return new MoleculeObjectDataset(reader.asStream()).getDataset()
-
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import spock.lang.Specification
 class UntrustedGroovyDatasetStepSpec extends Specification {
 
 
-    Long producer = 1
+    DefaultCamelContext context = new DefaultCamelContext()
 
     def createDataset() {
         def mols = [
@@ -47,16 +47,8 @@ class UntrustedGroovyDatasetStepSpec extends Specification {
         ]
 
         Dataset ds = new Dataset(MoleculeObject.class, mols)
+        ds.generateMetadata()
         return ds
-    }
-
-    def createVariableManager(varname) {
-        VariableManager varman = new VariableManager(null, 1, 1);
-        varman.putValue(
-                new VariableKey(producer, varname),
-                Dataset.class,
-                createDataset())
-        return varman
     }
 
     def createStep(jobid, options) {
@@ -64,34 +56,29 @@ class UntrustedGroovyDatasetStepSpec extends Specification {
                 [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[], [new IORoute(IORoute.Route.FILE)] as IORoute[],
                 [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], [new IORoute(IORoute.Route.FILE)] as IORoute[],
                 [new OptionDescriptor(String.class, "script", "", "", OptionDescriptor.Mode.User)] as OptionDescriptor[],
-                null, StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME, "informaticsmatters/groovy", null, [:])
+                null, StepDefinitionConstants.UntrustedGroovyDatasetScript.CLASSNAME, "informaticsmatters/groovy",
+                "execute", [:])
 
         UntrustedGroovyDatasetScriptStep step = new UntrustedGroovyDatasetScriptStep()
-        step.configure(producer, jobid,
-                options,
-                [("input"): new VariableKey(producer, "input")],
-                [:],
-                dsd
-        )
+        step.configure(jobid, options, dsd)
         return step
     }
 
     void "simple copy dataset"() {
 
-        DefaultCamelContext context = new DefaultCamelContext()
-        VariableManager varman = createVariableManager("input")
         Map options = ['script' :'''
-def file1 = new File('input.meta')
-file1.renameTo 'output.meta'
+def file1 = new File('input.metadata')
+file1.renameTo 'output.metadata'
 def file2 = new File('input.data.gz')
 file2.renameTo 'output.data.gz'
 ''']
         String jobid = UUID.randomUUID().toString()
         UntrustedGroovyDatasetScriptStep step = createStep(jobid, options)
+        Dataset input = createDataset()
 
         when:
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def dataset = resultsMap["output"]
 
         then:
         dataset != null
@@ -103,7 +90,6 @@ file2.renameTo 'output.data.gz'
     void "groovy consumer"() {
 
         DefaultCamelContext context = new DefaultCamelContext()
-        VariableManager varman = createVariableManager("input")
         Map options = ['script' :'''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
@@ -118,10 +104,11 @@ processDataset('input','output') { MoleculeObject mo ->
 
         String jobid = UUID.randomUUID().toString()
         UntrustedGroovyDatasetScriptStep step = createStep(jobid, options)
+        Dataset input = createDataset()
 
         when:
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def dataset = resultsMap["output"]
 
         then:
         dataset != null
@@ -135,7 +122,6 @@ processDataset('input','output') { MoleculeObject mo ->
     void "groovy function"() {
 
         DefaultCamelContext context = new DefaultCamelContext()
-        VariableManager varman = createVariableManager("input")
         Map options = ['script' :'''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
@@ -153,10 +139,11 @@ processDatasetStream('input','output') { Stream<MoleculeObject> stream ->
 
         String jobid = UUID.randomUUID().toString()
         UntrustedGroovyDatasetScriptStep step = createStep(jobid, options)
+        Dataset input = createDataset()
 
         when:
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def dataset = resultsMap["output"]
 
         then:
         dataset != null

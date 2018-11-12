@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,26 +52,7 @@ public class CxnReactorStep extends AbstractStep {
 
 
     @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-
-        statusMessage = "Reading inputs and options ...";
-
-        dumpConfig(Level.INFO);
-
-        Map<String,Object> inputs = new HashMap();
-        inputs.put(VARIABLE_R1, fetchMappedInput(VARIABLE_R1, Dataset.class, varman));
-        inputs.put(VARIABLE_R2, fetchMappedInput(VARIABLE_R2, Dataset.class, varman));
-
-        Map<String,Object> results = executeForVariables(inputs, context);
-
-        Dataset output = (Dataset)results.values().iterator().next();
-        createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
-        statusMessage = generateStatusMessage(-1, output.getSize(), -1);
-        LOG.info("Results: " + output.getMetadata());
-    }
-
-    @Override
-    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
         String reactionName = getOption(OPTION_REACTION, String.class);
         if (reactionName == null) {
             throw new IllegalStateException("Reaction must be specified");

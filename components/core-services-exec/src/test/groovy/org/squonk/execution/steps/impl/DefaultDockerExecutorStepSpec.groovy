@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,18 @@
 package org.squonk.execution.steps.impl
 
 import org.apache.camel.impl.DefaultCamelContext
-import org.squonk.io.IODescriptor
-import org.squonk.dataset.Dataset
 import org.squonk.core.DockerServiceDescriptor
-import org.squonk.execution.variable.VariableManager
+import org.squonk.dataset.Dataset
+import org.squonk.io.IODescriptor
 import org.squonk.io.IODescriptors
 import org.squonk.io.IORoute
-import org.squonk.notebook.api.VariableKey
 import org.squonk.types.MoleculeObject
-import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  * Created by timbo on 13/09/16.
  */
 class DefaultDockerExecutorStepSpec extends Specification {
-
-
-    Long producer = 1
 
     def createDataset() {
         def mols = [
@@ -48,43 +42,29 @@ class DefaultDockerExecutorStepSpec extends Specification {
         return ds
     }
 
-    def createVariableManager(varname) {
-        VariableManager varman = new VariableManager(null, 1, 1);
-        varman.putValue(
-                new VariableKey(producer, varname),
-                Dataset.class,
-                createDataset())
-        return varman
-    }
 
-    def createStep(args, cmd, inputRead, inputWrite, outputRead, outputWrite) {
+    def createStep(options, cmd, jobId) {
         DockerServiceDescriptor dsd = new DockerServiceDescriptor("id.busybox", "name", "desc",  null, null, null, null, null,
-                [IODescriptors.createMoleculeObjectDataset(inputWrite)] as IODescriptor[], [new IORoute(IORoute.Route.FILE)] as IORoute[],
-                [IODescriptors.createMoleculeObjectDataset(outputRead)] as IODescriptor[], [new IORoute(IORoute.Route.FILE)] as IORoute[],
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[], [new IORoute(IORoute.Route.FILE)] as IORoute[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[], [new IORoute(IORoute.Route.FILE)] as IORoute[],
                 null, null, "executor", 'busybox', cmd, [:])
 
         DefaultDockerExecutorStep step = new DefaultDockerExecutorStep()
-        step.configure(producer, "job1",
-                args,
-                [(inputWrite): new VariableKey(producer, inputRead)],
-                [(outputRead): outputWrite],
-                dsd
-        )
+        step.configure(jobId, options, dsd)
         return step
     }
 
-
-    @Ignore
     void "simple execute using json"() {
 
         DefaultCamelContext context = new DefaultCamelContext()
-        VariableManager varman = createVariableManager("input_v")
         Map args = ['docker.executor.id' :'id.busybox']
-        DefaultDockerExecutorStep step = createStep(args, 'cp input_d.data.gz output_d.data.gz && cp input_d.metadata output_d.metadata', "input_v", "input_d", "output_d", "output_v")
+        String jobid = UUID.randomUUID().toString()
+        DefaultDockerExecutorStep step = createStep(args, 'cp input.data.gz output.data.gz && cp input.metadata output.metadata', jobid)
+        Dataset ds = createDataset()
 
         when:
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, "output_v"), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", ds), null)
+        def dataset = resultsMap["output"]
 
         then:
         dataset != null
@@ -93,24 +73,4 @@ class DefaultDockerExecutorStepSpec extends Specification {
         results.size() == 4
 
     }
-
-    // need a way to do conversions without the CDK web service
-//    void "execute using sdf"() {
-//
-//        DefaultCamelContext context = new DefaultCamelContext()
-//        VariableManager varman = createVariableManager()
-//        Map args = ['docker.executor.id' :'id.busybox']
-//        CannedDockerProcessDatasetStep step = createStep(args,'cp input.sdf.gz output.sdf.gz',  CommonMimeTypes.MIME_TYPE_MDL_SDF,  CommonMimeTypes.MIME_TYPE_MDL_SDF)
-//
-//        when:
-//        step.execute(varman, context)
-//        Dataset dataset = varman.getValue(new VariableKey(producer, StepDefinitionConstants.VARIABLE_OUTPUT_DATASET), Dataset.class)
-//
-//        then:
-//        dataset != null
-//        dataset.generateMetadata()
-//        List results = dataset.getItems()
-//        results.size() == 4
-//
-//    }
 }

@@ -3,10 +3,11 @@
 # Some Job API usage examples
 # (automated/simplified with the use of 'jq')
 #
-# You must enable the unauthenticated user and prevent sending status updates
-# by defining tomcat with these environment variables:
+# You must enable the unauthenticated user, prevent sending status updates and load the test
+# service descriptors by defining tomcat with these environment variables:
 # `SQUONK_JOBEXECUTOR_ALLOW_UNAUTHENTICATED=true`
 # `SQUONK_JOBEXECUTOR_SEND_STATUS_UPDATES=false`
+# `SQUONK_JOBEXECUTOR_LOAD_TEST_SERVICE_DESCRIPTORS=true`
 #
 # You can start the server with the tomcatRunWar task from the job-executor
 # directory. That task blocks.

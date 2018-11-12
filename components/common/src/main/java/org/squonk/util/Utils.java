@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,21 +145,6 @@ public class Utils {
             return null;
         }
         return constructor.newInstance(constructorArgs);
-    }
-
-    public static List<SquonkDataSource> convertVariableToDataSources(Object variable) throws IOException {
-        List<SquonkDataSource> results = new ArrayList<>();
-        if (variable instanceof StreamType) {
-            StreamType streamType = (StreamType) variable;
-            SquonkDataSource[] dataSources = streamType.getDataSources();
-            results.addAll(Arrays.asList(dataSources));
-        } else {
-            // hope this never happens, but would at least handle simple types
-            String txt = variable.toString();
-            SquonkDataSource ds = new StringDataSource(SquonkDataSource.ROLE_DEFAULT, null, "text/plain", txt, false);
-            results.add(ds);
-        }
-        return results;
     }
 
 }

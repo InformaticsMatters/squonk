@@ -31,32 +31,19 @@ class DatasetNextflowExecutorStepSpec extends Specification {
         ServiceDescriptorUtils.readServiceDescriptor(path, NextflowServiceDescriptor.class)
     }
 
-    static VariableManager createAndPrepareVariableManager() {
-        def varman = new VariableManager(null, 1, 1)
-        varman.putValue(
-                new VariableKey(0, "output"),
-                Dataset.class,
-                createDataset())
-        return varman
-    }
-
-    @Ignore
     void "thick execute"() {
 
         def nsd = createServiceDescriptor("src/test/groovy/org/squonk/execution/steps/impl/nextflow1.nsd.yml")
         println "Creating executor " + nsd.serviceConfig.executorClassName
         def step = Class.forName(nsd.serviceConfig.executorClassName).newInstance()
-        def varman = createAndPrepareVariableManager()
         def jobId = UUID.randomUUID().toString()
-        step.configure(1, jobId, ['arg.message':'WTF Venus'],
-                ["input": new VariableKey(0, "output")],
-                [:],
-                nsd)
+        step.configure(jobId, ['arg.message':'WTF Venus'], nsd)
         def context = new DefaultCamelContext()
+        def input = createDataset()
 
         when:
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(1, "output"), Dataset.class)
+        def resultsMap = step.execute(Collections.singletonMap("input", input), context)
+        def dataset = resultsMap["output"]
 
         then:
         dataset != null
@@ -65,23 +52,19 @@ class DatasetNextflowExecutorStepSpec extends Specification {
         results.size() == 4
     }
 
-    @Ignore
     void "thin execute"() {
 
         def nsd = createServiceDescriptor("src/test/groovy/org/squonk/execution/steps/impl/nextflow2.nsd.yml")
         println "Creating executor " + nsd.serviceConfig.executorClassName
         def step = Class.forName(nsd.serviceConfig.executorClassName).newInstance()
-        def varman = createAndPrepareVariableManager()
         def jobId = UUID.randomUUID().toString()
-        step.configure(1, jobId, ['arg.message':'WTF Venus'],
-                ["input": new VariableKey(0, "output")],
-                [:],
-                nsd)
+        step.configure(jobId, ['arg.message':'WTF Venus'], nsd)
         def context = new DefaultCamelContext()
+        def input = createDataset()
 
         when:
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(1, "output"), Dataset.class)
+        def resultsMap = step.execute(Collections.singletonMap("input", input), context)
+        def dataset = resultsMap["output"]
 
         then:
         dataset != null

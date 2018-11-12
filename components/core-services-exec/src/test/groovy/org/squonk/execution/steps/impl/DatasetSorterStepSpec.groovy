@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,6 @@ package org.squonk.execution.steps.impl
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.DatasetMetadata
-import org.squonk.execution.variable.VariableManager
-import org.squonk.io.IODescriptor
-import org.squonk.io.IODescriptors
-import org.squonk.io.IORoute
-import org.squonk.notebook.api.VariableKey
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
 import spock.lang.Specification
@@ -32,9 +27,6 @@ import spock.lang.Specification
  * Created by timbo on 13/09/16.
  */
 class DatasetSorterStepSpec extends Specification {
-
-
-    Long producer = 1
 
     def createDataset() {
         def mols = [
@@ -45,26 +37,16 @@ class DatasetSorterStepSpec extends Specification {
         ]
 
         Dataset ds = new Dataset(MoleculeObject.class, mols)
+        ds.generateMetadata()
         return ds
     }
 
-    def createVariableManager() {
-        VariableManager varman = new VariableManager(null, 1, 1);
-        varman.putValue(
-                new VariableKey(producer, "input"),
-                Dataset.class,
-                createDataset())
-        return varman
-    }
 
-    def createStep(expression) {
+    def createStep(expression, jobId) {
         DatasetSorterStep step = new DatasetSorterStep()
-        step.configure(producer, "job1",
+        step.configure(jobId,
                 [(DatasetSorterStep.OPTION_DIRECTIVES): expression],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                [(DatasetSorterStep.VAR_INPUT_DATASET): new VariableKey(producer, "input")],
-                [:]
+                DatasetSorterStep.SERVICE_DESCRIPTOR
         )
         return step
     }
@@ -147,16 +129,16 @@ class DatasetSorterStepSpec extends Specification {
     void "sort tests"() {
 
         DefaultCamelContext context = new DefaultCamelContext()
-        VariableManager varman = createVariableManager()
-        DatasetSorterStep step = createStep(expression)
+        DatasetSorterStep step = createStep(expression, "sort tests")
+        Dataset input = createDataset()
 
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, ValueTransformerStep.VAR_OUTPUT_DATASET), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def result = resultsMap["output"]
 
         expect:
-        dataset != null
-        dataset.generateMetadata()
-        List results = dataset.getItems()
+        result != null
+        result.generateMetadata()
+        List results = result.getItems()
         results.size() == 4
         results[0].getValue('idx') == zero
         results[1].getValue('idx') == one

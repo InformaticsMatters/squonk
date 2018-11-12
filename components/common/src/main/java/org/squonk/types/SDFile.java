@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.squonk.types;
 import org.squonk.io.SquonkDataSource;
 import org.squonk.util.CommonMimeTypes;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 
@@ -35,6 +36,10 @@ public class SDFile extends AbstractStreamType {
         super(input, MEDIA_TYPE, gzipped);
     }
 
+    public SDFile(String data, Boolean gzipped) {
+        this(new ByteArrayInputStream(data.getBytes()), gzipped);
+    }
+
     public SDFile(File file, Boolean gzipped) {
         super(file, MEDIA_TYPE, gzipped);
     }
@@ -42,6 +47,4 @@ public class SDFile extends AbstractStreamType {
     public SDFile(SquonkDataSource dataSource) {
         super(dataSource, MEDIA_TYPE);
     }
-
-    
 }

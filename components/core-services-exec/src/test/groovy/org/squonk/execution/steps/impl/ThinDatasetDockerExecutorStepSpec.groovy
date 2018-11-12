@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,22 +23,19 @@ import org.squonk.execution.variable.VariableManager
 import org.squonk.io.IODescriptor
 import org.squonk.io.IODescriptors
 import org.squonk.io.IORoute
-import org.squonk.notebook.api.VariableKey
+import org.squonk.io.InputStreamDataSource
 import org.squonk.types.MoleculeObject
 import org.squonk.types.SDFile
 import org.squonk.types.ZipFile
-import org.squonk.util.IOUtils
-import spock.lang.Ignore
+import org.squonk.util.CommonMimeTypes
 import spock.lang.Specification
-
-import java.util.zip.GZIPInputStream
 
 /**
  * Created by timbo on 08/05/17.
  */
 class ThinDatasetDockerExecutorStepSpec extends Specification {
 
-    Long producer = 1
+    DefaultCamelContext context = new DefaultCamelContext()
 
     Dataset createDataset() {
         def mols = [
@@ -49,17 +46,18 @@ class ThinDatasetDockerExecutorStepSpec extends Specification {
         ]
 
         Dataset ds = new Dataset(MoleculeObject.class, mols)
+        ds.generateMetadata()
         return ds
     }
 
     ZipFile createZipFile() {
         def fis = new FileInputStream("../../data/testfiles/test.zip")
-        return new ZipFile(fis)
+        return new ZipFile(new InputStreamDataSource("zipfile", "zipfile", CommonMimeTypes.MIME_TYPE_ZIP_FILE, fis, false))
     }
 
     SDFile createSDFile() {
         def fis = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
-        return new SDFile(fis)
+        return new SDFile(new InputStreamDataSource("sdf", "sdf", CommonMimeTypes.MIME_TYPE_MDL_SDF, fis, false))
     }
 
     def createVariableManager() {
@@ -67,68 +65,58 @@ class ThinDatasetDockerExecutorStepSpec extends Specification {
         return varman
     }
 
-    def createStep(args, cmd, inputRead, outputWrite,
-                   inputIODescriptor, outputIODescriptor) {
+    def createStep(options, cmd, jobId, inputIod, outputIod) {
 
         DockerServiceDescriptor dsd = new DockerServiceDescriptor("id.busybox", "name", "desc", null, null, null, null, null,
-                [inputIODescriptor] as IODescriptor[], [new IORoute(IORoute.Route.FILE)] as IORoute[],
-                [outputIODescriptor] as IODescriptor[], [new IORoute(IORoute.Route.FILE)] as IORoute[],
+                [inputIod] as IODescriptor[],
+                [new IORoute(IORoute.Route.FILE)] as IORoute[],
+                [outputIod] as IODescriptor[],
+                [new IORoute(IORoute.Route.FILE)] as IORoute[],
                 null, null, "executor", 'busybox', cmd, [:])
 
         ThinDatasetDockerExecutorStep step = new ThinDatasetDockerExecutorStep()
-        step.configure(producer, "job1",
-                args,
-                [(inputIODescriptor.name): new VariableKey(producer, inputRead)],
-                [(outputIODescriptor.name): outputWrite],
+        step.configure(jobId,
+                options,
                 dsd
         )
         return step
     }
 
-    @Ignore
+
     void "simple execute using dataset"() {
 
-        DefaultCamelContext context = new DefaultCamelContext()
-        VariableManager varman = createVariableManager()
-        varman.putValue(
-                new VariableKey(producer, "output_previous"),
-                Dataset.class,
-                createDataset())
-        Map args = ['docker.executor.id': 'id.busybox']
-        DefaultDockerExecutorStep step = createStep(args, 'cp input_d.data.gz output_d.data.gz && cp input_d.metadata output_d.metadata',
-                "output_previous", "output_v",
-                IODescriptors.createMoleculeObjectDataset("input_d"),
-                IODescriptors.createMoleculeObjectDataset("output_d"))
+        Map options = ['docker.executor.id': 'id.busybox']
+        DefaultDockerExecutorStep step = createStep(options,
+                'cp input.data.gz output.data.gz && cp input.metadata output.metadata',
+                UUID.randomUUID().toString(),
+                IODescriptors.createMoleculeObjectDataset("input"),
+                IODescriptors.createMoleculeObjectDataset("output"))
+        Dataset input = createDataset()
 
         when:
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, "output_v"), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def result = resultsMap["output"]
 
         then:
-        dataset != null
-        dataset.generateMetadata()
-        List results = dataset.getItems()
+        result != null
+        result.generateMetadata()
+        List results = result.getItems()
         results.size() == 4
     }
 
-    @Ignore
     void "simple execute using zip"() {
 
-        DefaultCamelContext context = new DefaultCamelContext()
-        VariableManager varman = createVariableManager()
-        varman.putValue(
-                new VariableKey(producer, "input_v"),
-                ZipFile.class,
-                createZipFile())
+        ZipFile input = createZipFile()
         Map args = ['docker.executor.id': 'id.busybox']
-        DefaultDockerExecutorStep step = createStep(args, 'cp input_d.zip output_d.zip',
-                "input_v", "output_v",
-                IODescriptors.createZipFile("input_d"),
-                IODescriptors.createZipFile("output_d"))
+        DefaultDockerExecutorStep step = createStep(args, 'cp input.zip output.zip',
+                UUID.randomUUID().toString(),
+                IODescriptors.createZipFile("input"),
+                IODescriptors.createZipFile("output"))
 
         when:
-        step.execute(varman, context)
-        ZipFile zip = varman.getValue(new VariableKey(producer, "output_v"), ZipFile.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def zip = resultsMap["output"]
+
 
         then:
         zip != null
@@ -136,28 +124,22 @@ class ThinDatasetDockerExecutorStepSpec extends Specification {
 
     }
 
-    @Ignore
     void "execute as sdf"() {
 
-        DefaultCamelContext context = new DefaultCamelContext()
-        VariableManager varman = createVariableManager()
-        varman.putValue(
-                new VariableKey(producer, "input_v"),
-                SDFile.class,
-                createSDFile())
+        SDFile input = createSDFile()
         Map args = ['docker.executor.id': 'id.busybox']
-        DefaultDockerExecutorStep step = createStep(args, 'cp input_d.sdf.gz output_d.sdf.gz',
-                "input_v", "output_v",
-                IODescriptors.createSDF("input_d"),
-                IODescriptors.createSDF("output_d"))
+        DefaultDockerExecutorStep step = createStep(args, 'cp input.sdf.gz output.sdf.gz',
+                UUID.randomUUID().toString(),
+                IODescriptors.createSDF("input"),
+                IODescriptors.createSDF("output"))
 
         when:
-        step.execute(varman, context)
-        SDFile sdf = varman.getValue(new VariableKey(producer, "output_v"), SDFile.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def output = resultsMap["output"]
 
         then:
-        sdf != null
-        sdf.gunzipedInputStream.text.contains('$$$$')
+        output != null
+        output.gunzipedInputStream.text.contains('$$$$')
 
     }
 

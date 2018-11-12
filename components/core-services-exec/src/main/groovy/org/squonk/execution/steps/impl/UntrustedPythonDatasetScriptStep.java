@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.squonk.execution.steps.impl;
 
+import org.squonk.execution.runners.ContainerRunner;
 import org.squonk.execution.runners.DockerRunner;
 
 import java.io.IOException;
@@ -29,11 +30,7 @@ public class UntrustedPythonDatasetScriptStep extends AbstractDockerScriptRunner
     private static final Logger LOG = Logger.getLogger(UntrustedPythonDatasetScriptStep.class.getName());
 
 
-    protected int executeRunner() {
-        return runner.execute("run.py");
-    }
-
-    protected DockerRunner createRunner() throws IOException {
+    protected ContainerRunner prepareContainerRunner() throws IOException {
         statusMessage = MSG_PREPARING_CONTAINER;
 
         String image = getOption(OPTION_DOCKER_IMAGE, String.class);
@@ -52,7 +49,7 @@ public class UntrustedPythonDatasetScriptStep extends AbstractDockerScriptRunner
                 .withNetwork(ISOLATED_NETWORK_NAME);
 
         LOG.info("Writing script file");
-        runner.writeInput("run.py", script);
+        runner.writeInput("execute", script);
 
         return runner;
     }

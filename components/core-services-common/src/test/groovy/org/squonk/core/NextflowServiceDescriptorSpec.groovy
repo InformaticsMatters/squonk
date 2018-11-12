@@ -36,39 +36,4 @@ class NextflowServiceDescriptorSpec extends Specification {
 
     }
 
-    @Ignore
-    void "validate nextflow service descriptors"() {
-
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        def list = []
-        def dir = new File("../../data/testfiles/docker-services/")
-        dir.eachFileRecurse (FileType.FILES) { file ->
-            if (file.getName().endsWith(".nsd.yml"))
-                list << file
-        }
-
-        when:
-
-        def descriptors = []
-        int errors = 0
-        list.each { file ->
-            println "Trying $file"
-            try {
-                descriptors << mapper.readValue(new FileInputStream(file), NextflowServiceDescriptor.class)
-            } catch (IOException ex) {
-                errors++
-                println "Failed to read $file"
-                ex.printStackTrace()
-            }
-        }
-        println "Read ${descriptors.size()} nextflow descriptors"
-
-
-        then:
-        descriptors.size() > 0
-        errors == 0
-
-    }
-
-
 }

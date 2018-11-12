@@ -18,8 +18,6 @@ package org.squonk.execution.steps.impl
 
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
-import org.squonk.execution.variable.VariableManager
-import org.squonk.notebook.api.VariableKey
 import org.squonk.types.MoleculeObject
 import spock.lang.Specification
 
@@ -28,8 +26,6 @@ import spock.lang.Specification
  * @author timbo
  */
 class DatasetSelectSliceStepSpec extends Specification {
-
-    Long producer = 1
 
     def createDataset() {
         def mols = []
@@ -41,37 +37,24 @@ class DatasetSelectSliceStepSpec extends Specification {
         return ds
     }
 
-    def createVariableManager() {
-        VariableManager varman = new VariableManager(null,1,1);
-        varman.putValue(
-                new VariableKey(producer, "input"),
-                Dataset.class,
-                createDataset())
-        return varman
-    }
-
-    def createStep(skip, count) {
+    def createStep(skip, count, jobId) {
         DatasetSelectSliceStep step = new DatasetSelectSliceStep()
         def opts = [:]
         if (skip != null) opts[DatasetSelectSliceStep.OPTION_SKIP] = skip
         if (count != null) opts[DatasetSelectSliceStep.OPTION_COUNT] = count
-        step.configure(producer, "job1",
-                opts,
-                ["input":new VariableKey(producer, "input")],
-                [:],
-                DatasetSelectSliceStep.SERVICE_DESCRIPTOR)
+        step.configure(jobId, opts, DatasetSelectSliceStep.SERVICE_DESCRIPTOR)
         return step
     }
     
     void "test skip and count"() {
         
         DefaultCamelContext context = new DefaultCamelContext()
-        VariableManager varman = createVariableManager()
-        DatasetSelectSliceStep step = createStep(10,10)
+        DatasetSelectSliceStep step = createStep(10, 10, "test skip and count")
+        Dataset input = createDataset()
         
         when:
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input), null)
+        def dataset = resultsMap["output"]
         
         then:
         dataset != null
@@ -84,12 +67,12 @@ class DatasetSelectSliceStepSpec extends Specification {
     void "test skip only"() {
 
         DefaultCamelContext context = new DefaultCamelContext()
-        VariableManager varman = createVariableManager()
-        DatasetSelectSliceStep step = createStep(10,null)
+        DatasetSelectSliceStep step = createStep(10, null, "test skip only")
+        Dataset input = createDataset()
 
         when:
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input), null)
+        def dataset = resultsMap["output"]
 
         then:
         dataset != null
@@ -102,12 +85,12 @@ class DatasetSelectSliceStepSpec extends Specification {
     void "test count only"() {
 
         DefaultCamelContext context = new DefaultCamelContext()
-        VariableManager varman = createVariableManager()
-        DatasetSelectSliceStep step = createStep(null,10)
+        DatasetSelectSliceStep step = createStep(null, 10, "test count only")
+        Dataset input = createDataset()
 
         when:
-        step.execute(varman, context)
-        Dataset dataset = varman.getValue(new VariableKey(producer, "output"), Dataset.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input), null)
+        def dataset = resultsMap["output"]
 
         then:
         dataset != null

@@ -234,6 +234,7 @@ public class CDKMoleculeIOUtils {
                                 throw new RuntimeException("Failed to read molecule " + mo.getUUID(), e);
                             } else {
                                 LOG.warning("Failed to read molecule " + mo.getUUID());
+                                // TODO - replace with an empty molecule. See #20
                             }
                         }
                     });

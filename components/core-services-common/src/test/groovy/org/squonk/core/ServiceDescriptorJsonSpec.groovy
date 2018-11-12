@@ -107,37 +107,5 @@ class ServiceDescriptorJsonSpec extends Specification {
         obj.size() == 2
     }
 
-
-    @Ignore
-    void "validate pipelines docker service descriptors"() {
-
-        def list = []
-        def dir = new File("../../data/testfiles/docker-services/")
-        dir.eachFileRecurse (FileType.FILES) { file ->
-            if (file.getName().endsWith(".dsd.json"))
-            list << file
-        }
-
-        when:
-
-        def descriptors = []
-        int errors = 0
-        list.each { file ->
-            println "Trying $file"
-            try {
-                descriptors << JsonHandler.getInstance().objectFromJson(new FileInputStream(file), DockerServiceDescriptor.class)
-            } catch (IOException ex) {
-                errors++
-                println "Failed to read $file"
-            }
-        }
-        println "Read ${descriptors.size()} docker descriptors"
-
-
-        then:
-        descriptors.size() > 0
-        errors == 0
-
-    }
 }
 

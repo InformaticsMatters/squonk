@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -418,7 +418,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
     }
 
     String readTextValue(Sql db, Long notebookId, Long sourceId, Long cellId, String variableName, String key) {
-        log.fine("Reading text variable $variableName:$key for $sourceId")
+        log.fine("Reading text variable $variableName:$key for $notebookId:$sourceId:$cellId")
         String result =  doFetchVar(db, notebookId, sourceId, cellId, variableName, key, true)
         return result
     }
@@ -444,7 +444,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
 
     void writeTextValue(Sql db, Long notebookId, Long editableId, Long cellId, String variableName, String value, String key) {
         // TODO - include the notebookId in the process to increase security
-        log.fine("Writing text variable $variableName:$key for $editableId:$cellId")
+        log.fine("Writing text variable $variableName:$key for $notebookId:$editableId:$cellId")
 
         db.executeInsert("""\
                 |INSERT INTO users.nb_variable AS t (source_id, cell_id, var_name, var_key, created, updated, val_text)
@@ -469,7 +469,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
 
 
     InputStream readStreamValue(Sql db, Long notebookId, Long sourceId, Long cellId, String variableName, String key) {
-        log.fine("Reading stream variable $variableName:$key for $sourceId")
+        log.fine("Reading stream variable $variableName:$key for $notebookId:$sourceId:$cellId")
         InputStream result = doFetchVar(db, notebookId, sourceId, cellId, variableName, key, false)
         return result
     }
@@ -501,7 +501,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
 
     void writeStreamValue(Sql db, Long notebookId, Long editableId, Long cellId, String variableName, InputStream value, String key) {
         // TODO - include the notebookId in the process to increase security
-        log.fine("Writing stream variable $variableName:$key for $editableId:$cellId")
+        log.fine("Writing stream variable $variableName:$key for $notebookId:$editableId:$cellId")
         Sql db2 = new Sql(db) {
             protected void setParameters(List<Object> params, PreparedStatement ps) {
                 ps.setLong(1, params[0])
@@ -524,7 +524,7 @@ class NotebookPostgresClient implements NotebookVariableClient {
 
     void deleteVariable(Sql db, Long notebookId, Long editableId, Long cellId, String variableName) throws Exception {
         db.withTransaction {
-            log.info("Deleting variable $editableId, $cellId, $variableName")
+            log.fine("Deleting variable $variableName for $notebookId:$editableId:$cellId")
             db.executeUpdate("DELETE FROM users.nb_variable WHERE source_id=$editableId AND cell_id=$cellId AND var_name=$variableName")
         }
     }

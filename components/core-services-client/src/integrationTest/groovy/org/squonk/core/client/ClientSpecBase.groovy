@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.squonk.execution.variable.impl.VariableWriteContext
 import org.squonk.jobdef.JobStatus
 import org.squonk.notebook.api.NotebookDTO
 import org.squonk.notebook.api.NotebookEditableDTO
+import org.squonk.notebook.api.VariableKey
 import org.squonk.types.DatasetHandler
 import org.squonk.types.MoleculeObject
 import org.squonk.types.io.JsonHandler
@@ -52,7 +53,11 @@ abstract class ClientSpecBase extends Specification {
     @Shared
     Long editableId
     @Shared
-    Long cellId = 1
+    Long sourceCellId = 1
+    @Shared
+    VariableKey sourceVariableKey = new VariableKey(sourceCellId, "output")
+    @Shared
+    Long cellId = 2
 
     static NotebookRestClient createNotebookRestClient() {
         //new NotebookRestClient("$coreservicesHost:$coreservicesPort")
@@ -81,6 +86,7 @@ abstract class ClientSpecBase extends Specification {
 
     private Future<Map<String, ServiceConfig>> serviceConfigsFuture
 
+    protected int datasetSize = 36
 
     void doSetupSpec(String name) {
         getServiceConfigs() // need to wait for everything to start
@@ -88,10 +94,15 @@ abstract class ClientSpecBase extends Specification {
         editable = notebookClient.listEditables(notebookDTO.getId(), username)[0]
         DatasetHandler dh = new DatasetHandler(MoleculeObject.class)
         Dataset dataset = Molecules.datasetFromSDF(Molecules.KINASE_INHIBS_SDF)
-        VariableWriteContext vhcontext = new VariableWriteContext(notebookClient, editable.notebookId, editable.id, 1, "input")
-        dh.writeVariable(dataset, vhcontext)
+        loadDataset(dataset, sourceVariableKey)
         notebookId = editable.notebookId
         editableId = editable.id
+    }
+
+    void loadDataset(dataset, variableKey) {
+        DatasetHandler dh = new DatasetHandler(MoleculeObject.class)
+        VariableWriteContext vhcontext = new VariableWriteContext(notebookClient, editable.notebookId, editable.id, variableKey.cellId, variableKey.variableName)
+        dh.writeVariable(dataset, vhcontext)
     }
 
     void cleanupSpec() {

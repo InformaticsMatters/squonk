@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,18 +21,15 @@ import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractThinDatasetStep;
+import org.squonk.execution.steps.AbstractThinStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
 import org.squonk.options.DatasetFieldTypeDescriptor;
 import org.squonk.options.OptionDescriptor;
 import org.squonk.types.BasicObject;
-import org.squonk.types.io.JsonHandler;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -61,7 +58,7 @@ import java.util.stream.Stream;
  *
  * @author timbo
  */
-public class DatasetEnricherStep extends AbstractThinDatasetStep {
+public class DatasetEnricherStep extends AbstractThinStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetEnricherStep.class.getName());
 
@@ -112,30 +109,12 @@ public class DatasetEnricherStep extends AbstractThinDatasetStep {
             DatasetEnricherStep.class.getName()
     );
 
-    @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-
-        statusMessage = MSG_FETCHING_INPUT;
-        Dataset<? extends BasicObject> mainDataset = fetchMappedInput(VAR_INPUT, Dataset.class, varman);
-        Dataset<? extends BasicObject> extraDataset = fetchMappedInput(VAR_NEW_DATA, Dataset.class, varman);
-        Map<String,Object> inputs = new HashMap<>();
-        inputs.put(VAR_INPUT, mainDataset);
-        inputs.put(VAR_NEW_DATA, extraDataset);
-
-        Map<String,Object> outputs =  executeForVariables(inputs, context);
-
-        statusMessage = "Writing results";
-        Dataset output = (Dataset)outputs.get(VAR_OUTPUT);
-        createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
-        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(output.getMetadata()));
-    }
-
     private Object fetchValueToCompare(BasicObject bo, String mergeField) {
         return mergeField == null ? bo.getUUID() : bo.getValue(mergeField);
     }
 
     @Override
-    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
 
         final String mainField = getOption(OPT_MAIN_FIELD, String.class);
         final String extraField = getOption(OPT_EXTRA_FIELD, String.class);

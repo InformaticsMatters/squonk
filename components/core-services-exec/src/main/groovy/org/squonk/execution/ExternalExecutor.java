@@ -35,6 +35,7 @@ import org.squonk.jobdef.ExternalJobDefinition;
 import org.squonk.jobdef.JobStatus;
 import org.squonk.jobdef.JobStatus.Status;
 import org.squonk.types.DefaultHandler;
+import org.squonk.types.TypeHandlerUtils;
 import org.squonk.util.IOUtils;
 
 import java.io.File;
@@ -128,10 +129,6 @@ public class ExternalExecutor extends ExecutableJob {
      * @return
      */
     public Map<String, Object> getResultsAsObjects() throws Exception {
-//        if (Status.RESULTS_READY != status) {
-//            throw new IllegalStateException("Results not available");
-//        }
-//        return results;
 
         Map<String,List<SquonkDataSource>> r = getResultsAsDataSources();
         Map<String, Object> map = new HashMap<>();
@@ -265,7 +262,12 @@ public class ExternalExecutor extends ExecutableJob {
         if (DefaultDockerExecutorStep.class.isAssignableFrom(cls)) {
             DefaultDockerExecutorStep step = (DefaultDockerExecutorStep) cls.newInstance();
             step.configure(jobId, options, descriptor);
-            Map<String, List<SquonkDataSource>> outputs = step.executeForDataSources(data, camelContext);
+            Map<String,Object> variables = step.doExecute(data, camelContext);
+            Map<String, List<SquonkDataSource>> outputs = new HashMap<>();
+            for (Map.Entry<String,Object> e: variables.entrySet()) {
+                List<SquonkDataSource> dataSources = TypeHandlerUtils.convertVariableToDataSources(e.getValue());
+                outputs.put(e.getKey(), dataSources);
+            }
             this.results.putAll(outputs);
             statusMessage = MSG_PROCESSING_RESULTS_READY;
             updateStatus(Status.RESULTS_READY);

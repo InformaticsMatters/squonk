@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,6 @@
 
 package org.squonk.execution.steps.impl
 
-
-import org.squonk.execution.variable.VariableManager
-import org.squonk.io.IODescriptor
-import org.squonk.io.IODescriptors
-import org.squonk.notebook.api.VariableKey
 import spock.lang.Specification
 
 /**
@@ -30,24 +25,15 @@ class EchoStringStepSpec extends Specification {
 
     void "simple test"() {
         String value = "hello"
-        VariableManager varman = new VariableManager(null,1,1);
-        Long producer = 1
-        varman.putValue(
-                new VariableKey(producer, "input"),
-                String.class,
-                value)
 
         EchoStringStep step = new EchoStringStep()
-        step.configure(producer, "job1",
+        step.configure("simple test",
                 [:],
-                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
-                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
-                ["input":new VariableKey(producer, "input")],
-                ["output":"output"])
+                EchoStringStep.SERVICE_DESCRIPTOR)
 
         when:
-        step.execute(varman, null)
-        String result = varman.getValue(new VariableKey(producer, "output"), String.class)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", value), null)
+        def result = resultsMap["output"]
 
         then:
         result == value

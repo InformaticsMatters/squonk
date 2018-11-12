@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,23 +23,18 @@ import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetUtils;
 import org.squonk.dataset.ThinDatasetWrapper;
 import org.squonk.dataset.ThinDescriptor;
-import org.squonk.execution.runners.ContainerRunner;
-import org.squonk.execution.variable.VariableManager;
-import org.squonk.execution.variable.impl.FilesystemReadContext;
-import org.squonk.execution.variable.impl.FilesystemWriteContext;
 import org.squonk.io.IODescriptor;
-import org.squonk.types.io.JsonHandler;
 
-import java.io.File;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
 /**
  *
- * Also provides the mechanism for handling thin dataset execution, though sub-classes must invoke this by overriding the suitable
- * methods and calling the 'Thin' equivalents. See {@link org.squonk.execution.steps.impl.ThinDatasetDockerExecutorStep} as an example.
+ * Also provides the mechanism for handling thin execution, though sub-classes must invoke this by setting the enableThinExecution
+ * property to true (it is set to false by default).
+ * See {@link org.squonk.execution.steps.impl.ThinDatasetDockerExecutorStep} as an example.
  *
  * The thin execution requires a ThinDescriptor to be defined as part of the DockerServiceDescriptor. That ThinDescriptor
  * defines that a certain input is mapped to a certain output for thin execution. Typically there is one input (named "input")
@@ -52,15 +47,17 @@ import java.util.logging.Logger;
  *
  * Created by timbo on 20/06/17.
  */
-public abstract class AbstractThinDatasetStep extends AbstractStep {
+public abstract class AbstractThinStep extends AbstractStep {
 
-    private static final Logger LOG = Logger.getLogger(AbstractThinDatasetStep.class.getName());
+    private static final Logger LOG = Logger.getLogger(AbstractThinStep.class.getName());
 
     /** ThinDescriptors keyed by input name */
     private Map<String,ThinDescriptor> thinDescriptors = new HashMap<>();
 
     /** ThinDatasetWrappers keys by output names */
     private Map<String,ThinDatasetWrapper> wrappers = new HashMap<>();
+
+    protected boolean enableThinExecution = false;
 
 
     protected ThinDescriptor getThinDescriptor(IODescriptor inputDescriptor) {
@@ -87,38 +84,54 @@ public abstract class AbstractThinDatasetStep extends AbstractStep {
     }
 
 
-    protected void handleThinInputs(
-            CamelContext camelContext,
-            DefaultServiceDescriptor serviceDescriptor,
-            VariableManager varman,
-            ContainerRunner runner) throws Exception {
+    @Override
+    protected Map<String,Object> prepareInputs(
+            Map<String,Object> inputs,
+            CamelContext camelContext) throws Exception {
+
+        if (!enableThinExecution) {
+            return inputs;
+        }
+
+        DefaultServiceDescriptor serviceDescriptor = getDefaultServiceDescriptor();
 
         IODescriptor[] inputDescriptors = serviceDescriptor.resolveInputIODescriptors();
         IODescriptor[] outputDescriptors = serviceDescriptor.resolveOutputIODescriptors();
+        Map<String,Object> results = new HashMap<>();
         if (inputDescriptors != null) {
             LOG.info("Handling " + inputDescriptors.length + " inputs");
-            for (IODescriptor d : inputDescriptors) {
-                ThinDescriptor td = findThinDescriptorForInput(serviceDescriptor, d.getName());
+            for (IODescriptor iod : inputDescriptors) {
+                Object value = inputs.get(iod.getName());
+                ThinDescriptor td = findThinDescriptorForInput(serviceDescriptor, iod.getName());
                 if (td != null) {
-                    thinDescriptors.put(d.getName(), td);
-                } else if (inputDescriptors.length == 1 && outputDescriptors.length == 1) {
+                    thinDescriptors.put(iod.getName(), td);
+                } else if (value instanceof Dataset && inputDescriptors.length == 1 && outputDescriptors.length == 1) {
                     LOG.info("Creating default ThinDescriptor");
                     // special case where there is 1 input and 1 output and no ThinDescriptor defined so we create one with default params
-                    thinDescriptors.put(d.getName(), new ThinDescriptor(d.getName(), outputDescriptors[0].getName()));
+                    td = new ThinDescriptor(iod.getName(), outputDescriptors[0].getName());
+                    thinDescriptors.put(iod.getName(), td);
+                }
+                if (td != null) {
+                    if (value instanceof Dataset) {
+                        Dataset thin = prepareInput((Dataset) value, camelContext, serviceDescriptor, iod);
+                        results.put(iod.getName(), thin);
+                    } else {
+                        throw new IllegalStateException("Only Datasets support thin execution");
+                    }
+                } else {
+                    results.put(iod.getName(), value);
                 }
             }
         }
-
-        doHandleInputs(camelContext, serviceDescriptor, varman, runner);
+        return results;
     }
 
     @SuppressWarnings("unchecked")
-    protected <P,Q> void handleThinInput(
+    protected Dataset prepareInput(
+            Dataset input,
             CamelContext camelContext,
             DefaultServiceDescriptor serviceDescriptor,
-            VariableManager varman,
-            ContainerRunner runner,
-            IODescriptor<P,Q> ioDescriptor) throws Exception {
+            IODescriptor ioDescriptor) throws Exception {
 
         LOG.info("Handling input for " + ioDescriptor);
         ThinDescriptor td = thinDescriptors.get(ioDescriptor.getName());
@@ -126,22 +139,18 @@ public abstract class AbstractThinDatasetStep extends AbstractStep {
             LOG.info("Thin execution: " + td.toString());
 
             ThinDatasetWrapper wrapper = DatasetUtils.createThinDatasetWrapper(td, ioDescriptor.getSecondaryType(), options);
-
             if (td.getOutput() != null) {
                 // put the wrapper to the map under the output name so that it can be used when the corresponding output is processed
                 wrappers.put(td.getOutput(), wrapper);
             }
 
             // process the input to make it thin
-            Dataset thick = fetchMappedInput(ioDescriptor.getName(), Dataset.class, ioDescriptor.getSecondaryType(), varman, true);
-            Dataset thin = wrapper.prepareInput(thick);
 
-            File hostWorkDir = runner.getHostWorkDir();
-            LOG.info("Handling thin input for " + ioDescriptor.getName() + " in " + hostWorkDir.toString());
-            FilesystemWriteContext context = new FilesystemWriteContext(hostWorkDir, ioDescriptor.getName());
-            varman.putValue(Dataset.class, thin, context);
+            Dataset thin = wrapper.prepareInput(input);
+            return thin;
+
         } else {
-            doHandleInput(camelContext, serviceDescriptor, varman, runner, ioDescriptor);
+            return input;
         }
     }
 
@@ -157,55 +166,45 @@ public abstract class AbstractThinDatasetStep extends AbstractStep {
         return null;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
-    protected <P,Q> void handleThinOutput(
+        protected Map<String,Object> prepareOutputs(Map<String,Object> outputs, CamelContext camelContext) throws Exception {
+
+        if (!enableThinExecution) {
+            return outputs;
+        }
+
+        IODescriptor[] outputDescriptors = serviceDescriptor.resolveOutputIODescriptors();
+        Map<String,Object> results = new LinkedHashMap<>(outputs.size());
+        if (outputDescriptors != null) {
+            LOG.info("Handling " + outputDescriptors.length + " outputs");
+            for (IODescriptor iod : outputDescriptors) {
+                String name = iod.getName();
+                Object value = outputs.get(name);
+                if (value == null) {
+                    LOG.warning("Encountered null output for " + name);
+                } else {
+                    Object result = prepareOutput(value, camelContext, iod);
+                    results.put(name, result);
+                }
+            }
+        }
+        return results;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    protected Object prepareOutput(
+            Object output,
             CamelContext camelContext,
-            DefaultServiceDescriptor serviceDescriptor,
-            VariableManager varman,
-            ContainerRunner runner,
-            IODescriptor<P,Q> ioDescriptor) throws Exception {
+            IODescriptor iod) throws Exception {
 
-        ThinDatasetWrapper wrapper = wrappers.get(ioDescriptor.getName());
-        if (ioDescriptor.getPrimaryType() == Dataset.class && wrapper != null) {
-            File hostWorkDir = runner.getHostWorkDir();
-            LOG.info("Handling thin output for " + ioDescriptor.getName() + " in " + hostWorkDir.toString());
-            FilesystemReadContext context = new FilesystemReadContext(hostWorkDir, ioDescriptor.getName());
-            // TODO - determine the secondary type
-            Dataset thin = varman.getValue(Dataset.class, null, context);
-            Dataset thick = wrapper.generateOutput(thin);
-            createMappedOutput(ioDescriptor.getName(), Dataset.class, thick, varman);
+        ThinDatasetWrapper wrapper = wrappers.get(iod.getName());
+        if (iod.getPrimaryType() == Dataset.class && wrapper != null) {
+            Dataset thick = wrapper.generateOutput((Dataset)output);
+            return thick;
         } else {
-            doHandleOutput(camelContext, serviceDescriptor, varman, runner, ioDescriptor);
+            return output;
         }
     }
-
-    /** Handle thin execution where there is a single input and single output dataset
-     *
-     * @param varman
-     * @param context
-     * @throws Exception
-     */
-    protected void doExecuteThinDataset(VariableManager varman, CamelContext context) throws Exception {
-        updateStatus(MSG_PREPARING_INPUT);
-
-        Dataset inputDataset = fetchMappedInput(StepDefinitionConstants.VARIABLE_INPUT_DATASET, Dataset.class, varman);
-
-        IODescriptor inputDescriptor = getSingleInputDescriptor();
-        ThinDescriptor td = getThinDescriptor(inputDescriptor);
-        if (td == null) {
-            throw new IllegalStateException("No ThinDescriptor was provided of could be inferred");
-        }
-        ThinDatasetWrapper thinWrapper = DatasetUtils.createThinDatasetWrapper(td, inputDescriptor.getSecondaryType(), options);
-        Dataset thinDataset = thinWrapper.prepareInput(inputDataset);
-
-        Map<String,Object> results = executeForVariables(Collections.singletonMap(StepDefinitionConstants.VARIABLE_INPUT_DATASET, thinDataset), context);
-        Dataset responseResults = getSingleDatasetFromMap(results);
-        Dataset resultDataset = thinWrapper.generateOutput(responseResults);
-
-        createMappedOutput(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, Dataset.class, resultDataset, varman);
-        statusMessage = generateStatusMessage(inputDataset.getSize(), resultDataset.getSize(), -1);
-        LOG.info("Results: " + JsonHandler.getInstance().objectToJson(resultDataset.getMetadata()));
-    }
-
-
 }

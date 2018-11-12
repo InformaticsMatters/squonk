@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,16 +37,12 @@ public interface StepDefinitionConstants {
     String OPTION_DOCKER_IMAGE = "dockerImage";
     String OPTION_DOCKER_IMAGE_VERSION = "dockerImageVersion";
 
-    interface MoleculeServiceThinExecutor {
-        String CLASSNAME = "org.squonk.execution.steps.impl.MoleculeServiceThinExecutorStep";
+    interface DatasetHttpExecutor {
+        String CLASSNAME = "org.squonk.execution.steps.impl.DatasetHttpExecutorStep";
     }
 
-    interface MoleculeServiceBasicExecutor {
-        String CLASSNAME = "org.squonk.execution.steps.impl.MoleculeServiceBasicExecutorStep";
-    }
-
-    interface OutOnlyMoleculeServiceExecutor {
-        String CLASSNAME = "org.squonk.execution.steps.impl.OutOnlyMoleculeServiceExecutorStep";
+    interface OutOnlyDatasetExecutor {
+        String CLASSNAME = "org.squonk.execution.steps.impl.OutOnlyDatasetExecutorStep";
     }
 
     interface ChemblActivitiesFetcher {
@@ -94,10 +90,8 @@ public interface StepDefinitionConstants {
          String OPTION_NAME_FIRST_LINE_IS_HEADER = "firstLineIsHeader";
     }
 
-    interface StructureUpload {
-        String CLASSNAME = "org.squonk.execution.steps.impl.StructureReaderStep";
-        String OPTION_FILE_UPLOAD = "fileUpload";
-        String OPTION_FILE_FORMAT = "fileFormat";
+    interface MolfileUpload {
+        String CLASSNAME = "org.squonk.execution.steps.impl.MolfileReaderStep";
     }
 
     interface PdbUpload {

@@ -1,15 +1,32 @@
+/*
+ * Copyright (c) 2018 Informatics Matters Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
 import org.squonk.api.VariableHandler;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.execution.runners.ContainerRunner;
-import org.squonk.execution.steps.AbstractThinDatasetStep;
+import org.squonk.execution.steps.AbstractThinStep;
 import org.squonk.execution.variable.impl.FilesystemReadContext;
 import org.squonk.execution.variable.impl.FilesystemWriteContext;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.SquonkDataSource;
 import org.squonk.types.DefaultHandler;
+import org.squonk.types.TypeHandlerUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,72 +36,90 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-public abstract class AbstractDockerStep extends AbstractThinDatasetStep {
+/** Base class for steps that run in containers, typically Docker containers.
+ *
+ */
+public abstract class AbstractContainerStep extends AbstractThinStep {
 
-    private static final Logger LOG = Logger.getLogger(AbstractDockerStep.class.getName());
+    private static final Logger LOG = Logger.getLogger(AbstractContainerStep.class.getName());
+
+    protected Float containerExecutionTime = null;
 
     @Override
-    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
 
-        Map<String, List<SquonkDataSource>> dataSourcesMap = executeForDataSources(inputs, context);
+        statusMessage = MSG_PREPARING_CONTAINER;
+        DefaultServiceDescriptor dsd = getDefaultServiceDescriptor();
+        ContainerRunner containerRunner = prepareContainerRunner();
+
+        Map<String, List<SquonkDataSource>> dataSourcesMap = doExecuteForDataSources(inputs, context, containerRunner, dsd);
         Map<String, Object> results = new LinkedHashMap<>();
         for (IODescriptor iod : serviceDescriptor.getServiceConfig().getOutputDescriptors()) {
-            VariableHandler vh = DefaultHandler.createVariableHandler(iod.getPrimaryType(), iod.getSecondaryType());
             List<SquonkDataSource> dataSources = dataSourcesMap.get(iod.getName());
             if (dataSources == null || dataSources.isEmpty()) {
                 LOG.warning("No dataSources found for variable " + iod.getName());
             } else {
-                Object variable = vh.create(dataSources);
+                Object variable = TypeHandlerUtils.convertDataSourcesToVariable(dataSources, iod.getPrimaryType(), iod.getSecondaryType());
                 results.put(iod.getName(), variable);
             }
         }
         return results;
     }
 
-    protected Map<String, List<SquonkDataSource>> doExecuteForDataSources(Map<String, Object> inputs, CamelContext context, ContainerRunner containerRunner, DefaultServiceDescriptor descriptor) throws Exception {
+    protected Map<String, List<SquonkDataSource>> doExecuteForDataSources(
+            Map<String, Object> inputs,
+            CamelContext context,
+            ContainerRunner containerRunner,
+            DefaultServiceDescriptor descriptor) throws Exception {
 
         // create input files
         statusMessage = MSG_PREPARING_INPUT;
 
         // write the input data
-        handleInputs(inputs, descriptor, containerRunner);
+        writeInputs(inputs, descriptor, containerRunner);
 
-        float duration = handleExecute(containerRunner);
+        handleExecute(containerRunner);
 
         // handle the outputs
         statusMessage = MSG_PREPARING_OUTPUT;
-        Map<String,List<SquonkDataSource>> results = handleOutputs(descriptor, containerRunner.getHostWorkDir());
+        Map<String,List<SquonkDataSource>> results = readOutputs(descriptor, containerRunner.getHostWorkDir());
 
-        handleMetrics(containerRunner, duration);
+        handleMetrics(containerRunner);
 
         return results;
     }
 
-    protected float handleExecute(ContainerRunner containerRunner) {
+    protected abstract ContainerRunner prepareContainerRunner() throws IOException;
+
+    protected void handleExecute(ContainerRunner containerRunner) {
         // run the command
         statusMessage = MSG_RUNNING_CONTAINER;
         LOG.info("Executing ...");
         long t0 = System.currentTimeMillis();
-        int status = containerRunner.execute(containerRunner.getLocalWorkDir() + "/execute");
+        int status = executeContainerRunner(containerRunner);
         long t1 = System.currentTimeMillis();
-        float duration = (t1 - t0) / 1000.0f;
-        LOG.info(String.format("Executed in %s seconds with return status of %s", duration, status));
+        containerExecutionTime = (t1 - t0) / 1000.0f;
+        LOG.info(String.format("Executed in %s seconds with return status of %s", containerExecutionTime, status));
 
         if (status != 0) {
             String log = containerRunner.getLog();
             LOG.warning("Execution errors: " + log);
+            statusMessage = "Container execution failed";
             throw new RuntimeException("Container execution failed:\n" + log);
         }
-        return duration;
     }
 
-    protected void handleMetrics(ContainerRunner containerRunner, float duration) throws IOException {
+    protected int executeContainerRunner(ContainerRunner containerRunner) {
+        return containerRunner.execute(containerRunner.getLocalWorkDir() + "/execute");
+    }
+
+    protected void handleMetrics(ContainerRunner containerRunner) throws IOException {
         statusMessage = MSG_PROCESSING_RESULTS_READY;
         Properties props = containerRunner.getFileAsProperties("output_metrics.txt");
-        generateMetricsAndStatus(props, duration);
+        generateMetricsAndStatus(props, containerExecutionTime);
     }
 
-    protected void handleInputs(
+    protected void writeInputs(
             Map<String,Object> data,
             DefaultServiceDescriptor serviceDescriptor,
             ContainerRunner runner) throws Exception {
@@ -98,22 +133,19 @@ public abstract class AbstractDockerStep extends AbstractThinDatasetStep {
                     LOG.warning("No input found for " + iod.getName());
                 } else {
                     LOG.info("Writing input for " + iod.getName() + " " + iod.getMediaType());
-                    doHandleInput(value, runner, iod);
+                    doWriteInput(value, runner, iod);
                 }
             }
         }
     }
 
 
-    protected <P, Q> void doHandleInput(
+    protected <P, Q> void doWriteInput(
             P input,
             ContainerRunner runner,
             IODescriptor<P, Q> iod) throws Exception {
 
         LOG.info("Handling input for " + iod.getName());
-
-        // TODO - handle type conversion
-
         VariableHandler<P> vh = DefaultHandler.createVariableHandler(iod.getPrimaryType(), iod.getSecondaryType());
         File dir = runner.getHostWorkDir();
         FilesystemWriteContext writeContext = new FilesystemWriteContext(dir, iod.getName());
@@ -121,7 +153,7 @@ public abstract class AbstractDockerStep extends AbstractThinDatasetStep {
     }
 
 
-    protected Map<String,List<SquonkDataSource>> handleOutputs(DefaultServiceDescriptor serviceDescriptor, File workdir) throws Exception {
+    protected Map<String,List<SquonkDataSource>> readOutputs(DefaultServiceDescriptor serviceDescriptor, File workdir) throws Exception {
 
         IODescriptor[] outputDescriptors = serviceDescriptor.resolveOutputIODescriptors();
         Map<String,List<SquonkDataSource>> results = new LinkedHashMap<>();
@@ -130,14 +162,14 @@ public abstract class AbstractDockerStep extends AbstractThinDatasetStep {
 
             for (IODescriptor iod : outputDescriptors) {
                 LOG.info("Reading output for " + iod.getName() + " " + iod.getMediaType());
-                List<SquonkDataSource> result = doHandleOutput(workdir, iod);
+                List<SquonkDataSource> result = doReadOutput(workdir, iod);
                 results.put(iod.getName(), result);
             }
         }
         return results;
     }
 
-    protected <P, Q> List<SquonkDataSource> doHandleOutput(File workdir, IODescriptor<P, Q> iod) throws Exception {
+    protected <P, Q> List<SquonkDataSource> doReadOutput(File workdir, IODescriptor<P, Q> iod) throws Exception {
         List<SquonkDataSource> outputs = buildOutputs(workdir, iod);
         return outputs;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,17 @@ package org.squonk.execution.steps.impl;
 import groovy.lang.GroovyClassLoader;
 import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
+import org.squonk.core.DefaultServiceDescriptor;
+import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.io.IODescriptors;
+import org.squonk.options.MultiLineTextTypeDescriptor;
+import org.squonk.options.OptionDescriptor;
 import org.squonk.types.BasicObject;
 
-import java.util.Map;
+import java.util.Date;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -35,6 +40,28 @@ import java.util.stream.Stream;
 public class DatasetFilterGroovyStep<P extends BasicObject> extends AbstractDatasetStep<P,P> {
 
     private static final Logger LOG = Logger.getLogger(DatasetFilterGroovyStep.class.getName());
+
+    public static final DefaultServiceDescriptor SERVICE_DESCRIPTOR = new DefaultServiceDescriptor(
+            "core.dataset.filter.groovy.v1",
+            "GroovyDatasetFilter",
+            "Filter dataset using Groovy script",
+            new String[]{"script", "groovy", "filter", "dataset"},
+            null, "icons/program_filter.png",
+            ServiceConfig.Status.ACTIVE,
+            new Date(),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+            new OptionDescriptor[]{
+
+                    new OptionDescriptor<>(
+                            new MultiLineTextTypeDescriptor(20, 60, MultiLineTextTypeDescriptor.MIME_TYPE_SCRIPT_GROOVY),
+                            "script",
+                            "Filter (Groovy expression)",
+                            "Filter as groovy expression. e.g. logp < 5 && molweight < 500", OptionDescriptor.Mode.User)
+            },
+            null, null, null,
+            DatasetFilterGroovyStep.class.getName()
+    );
 
     public static final String OPTION_SCRIPT = StepDefinitionConstants.TrustedGroovyDataset.OPTION_SCRIPT;
 

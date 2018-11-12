@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2018 Informatics Matters Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
@@ -19,7 +35,7 @@ import java.util.logging.Logger;
  *
  * Created by timbo on 28/07/17.
  */
-public class DatasetNextflowInDockerExecutorStep extends AbstractDockerStep {
+public class DatasetNextflowInDockerExecutorStep extends AbstractContainerStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetNextflowInDockerExecutorStep.class.getName());
     private static final String NEXTFLOW_IMAGE = IOUtils.getConfiguration("SQUONK_NEXTFLOW_IMAGE", "informaticsmatters/nextflow-docker:0.30.2");
@@ -28,69 +44,20 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractDockerStep {
     protected static final String MSG_RUNNING_NEXTFLOW = "Running Nextflow";
 
 
-    @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-
-        if (serviceDescriptor == null) {
-            throw new IllegalStateException("No service descriptor present ");
-        } else if (!(serviceDescriptor instanceof NextflowServiceDescriptor)) {
-            throw new IllegalStateException("Expected service descriptor to be a " +
-                    NextflowServiceDescriptor.class.getName() +
-                    "  but it was a " + serviceDescriptor.getClass().getName());
-        }
-        NextflowServiceDescriptor descriptor = (NextflowServiceDescriptor) serviceDescriptor;
-
-        LOG.info("Input types are " + IOUtils.joinArray(descriptor.getServiceConfig().getInputDescriptors(), ","));
-        LOG.info("Output types are " + IOUtils.joinArray(descriptor.getServiceConfig().getOutputDescriptors(), ","));
-
-        // this executes this cell
-        doExecute(varman, context, descriptor);
-        //LOG.info(varman.getTmpVariableInfo());
-    }
-
-    protected void doExecute(VariableManager varman, CamelContext camelContext, NextflowServiceDescriptor descriptor) throws Exception {
-
-        ContainerRunner containerRunner = prepareContainerRunner(descriptor);
-        try {
-            // create input files
-            statusMessage = MSG_PREPARING_INPUT;
-            // write the input data
-            // fetch the input data
-            Map<String,Object> inputs = fetchInputs(camelContext, descriptor, varman, containerRunner);
-            // write the input data
-            handleInputs(inputs, descriptor, containerRunner);
-            //handleInputs(camelContext, descriptor, varman, runner);
-
-            // run the command
-            float duration = handleExecute(containerRunner);
-            // handle the output
-            statusMessage = MSG_PREPARING_OUTPUT;
-            handleOutputs(camelContext, descriptor, varman, containerRunner);
-
-            handleMetrics(containerRunner, duration);
-
-        } finally {
-            // cleanup
-            if (DEBUG_MODE < 2) {
-                containerRunner.cleanup();
-                LOG.info("Results cleaned up");
-            }
-        }
-    }
-
-
-    @Override
     public Map<String, List<SquonkDataSource>> executeForDataSources(Map<String, Object> inputs, CamelContext context) throws Exception {
 
         statusMessage = MSG_PREPARING_CONTAINER;
         NextflowServiceDescriptor descriptor = getNextflowServiceDescriptor();
-        ContainerRunner containerRunner = prepareContainerRunner(descriptor);
+        ContainerRunner containerRunner = prepareContainerRunner();
 
         Map<String, List<SquonkDataSource>> outputs = doExecuteForDataSources(inputs, context, containerRunner, descriptor);
         return outputs;
     }
 
-    private ContainerRunner prepareContainerRunner(NextflowServiceDescriptor descriptor) throws IOException {
+    protected ContainerRunner prepareContainerRunner() throws IOException {
+
+        NextflowServiceDescriptor descriptor = getNextflowServiceDescriptor();
+
         statusMessage = MSG_PREPARING_CONTAINER;
 
         String command =  descriptor.getNextflowParams();

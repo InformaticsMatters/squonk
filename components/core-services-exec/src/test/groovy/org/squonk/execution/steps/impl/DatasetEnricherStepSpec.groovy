@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,8 @@ package org.squonk.execution.steps.impl
 
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
-import org.squonk.execution.variable.VariableManager
-import org.squonk.io.IODescriptor
-import org.squonk.io.IODescriptors
-import org.squonk.notebook.api.VariableKey
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
-import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
 
 /**
@@ -69,39 +64,23 @@ class DatasetEnricherStepSpec extends Specification {
         ]
     }
 
-
-    Long producer = 1
-
     void "merge bo datasets using field"() {
 
         DefaultCamelContext context = new DefaultCamelContext()
 
         Dataset ds1 = new Dataset(BasicObject.class, objs1())
         Dataset ds2 = new Dataset(BasicObject.class, objs2())
-
-
-        VariableManager varman = new VariableManager(null, 1, 1);
-
-        varman.putValue(
-                new VariableKey(producer, "input1"),
-                Dataset.class,
-                ds1)
-
-        varman.putValue(
-                new VariableKey(producer, "input2"),
-                Dataset.class,
-                ds2)
+        def inputs = [(DatasetEnricherStep.VAR_INPUT): ds1, (DatasetEnricherStep.VAR_NEW_DATA): ds2]
 
         DatasetEnricherStep step = new DatasetEnricherStep()
-        step.configure(producer, "job1", [(DatasetEnricherStep.OPT_MAIN_FIELD): 'id', (DatasetEnricherStep.OPT_EXTRA_FIELD): 'id'],
-                [(DatasetEnricherStep.VAR_INPUT)   : new VariableKey(producer, "input1"),
-                 (DatasetEnricherStep.VAR_NEW_DATA): new VariableKey(producer, "input2")],
-                [:],
+        step.configure(
+                "merge bo datasets using field",
+                [(DatasetEnricherStep.OPT_MAIN_FIELD): 'id', (DatasetEnricherStep.OPT_EXTRA_FIELD): 'id'],
                 DatasetEnricherStep.SERVICE_DESCRIPTOR)
 
         when:
-        step.execute(varman, context)
-        Dataset result = varman.getValue(new VariableKey(producer, DatasetEnricherStep.VAR_OUTPUT), Dataset.class)
+        def resultsMap = step.doExecute(inputs, context)
+        def result = resultsMap["output"]
 
         then:
         result != null
@@ -117,30 +96,15 @@ class DatasetEnricherStepSpec extends Specification {
 
         Dataset ds1 = new Dataset(BasicObject.class, objs1())
         Dataset ds2 = new Dataset(BasicObject.class, objs2())
-
-
-        VariableManager varman = new VariableManager(null, 1, 1);
-
-        varman.putValue(
-                new VariableKey(producer, "input1"),
-                Dataset.class,
-                ds1)
-
-        varman.putValue(
-                new VariableKey(producer, "input2"),
-                Dataset.class,
-                ds2)
+        def inputs = [(DatasetEnricherStep.VAR_INPUT): ds1, (DatasetEnricherStep.VAR_NEW_DATA): ds2]
 
         DatasetEnricherStep step = new DatasetEnricherStep()
-        step.configure(producer, "job1", null,
-                [(DatasetEnricherStep.VAR_INPUT)   : new VariableKey(producer, "input1"),
-                 (DatasetEnricherStep.VAR_NEW_DATA): new VariableKey(producer, "input2")],
-                [:],
+        step.configure("merge bo datasets using uuid", null,
                 DatasetEnricherStep.SERVICE_DESCRIPTOR)
 
         when:
-        step.execute(varman, context)
-        Dataset result = varman.getValue(new VariableKey(producer, DatasetEnricherStep.VAR_OUTPUT), Dataset.class)
+        def resultsMap = step.doExecute(inputs, context)
+        def result = resultsMap["output"]
 
         then:
         result != null
@@ -150,58 +114,22 @@ class DatasetEnricherStepSpec extends Specification {
 
     }
 
-
-    private void testBOValues(items) {
-
-        items.size() == 3
-
-        BasicObject bo1 = items[0]
-        BasicObject bo2 = items[1]
-        BasicObject bo3 = items[2]
-
-        assert bo1.getValue('a') == '1'
-        assert bo1.getValue('b') == '1'
-        assert bo1.getValue('hello') == 'jupiter'
-
-        assert bo2.getValue('a') == '99'
-        assert bo2.getValue('b') == '99'
-        assert bo2.getValue('hello') == 'saturn'
-        assert bo2.getValue('foo') == 'baz'
-
-        assert bo3.getValues().size() == 3
-    }
-
-
     void "merge mo datasets using field"() {
 
         DefaultCamelContext context = new DefaultCamelContext()
 
         Dataset ds1 = new Dataset(MoleculeObject.class, mols1())
         Dataset ds2 = new Dataset(MoleculeObject.class, mols2())
-
-
-        VariableManager varman = new VariableManager(null, 1, 1);
-
-        varman.putValue(
-                new VariableKey(producer, "input1"),
-                Dataset.class,
-                ds1)
-
-        varman.putValue(
-                new VariableKey(producer, "input2"),
-                Dataset.class,
-                ds2)
+        def inputs = [(DatasetEnricherStep.VAR_INPUT): ds1, (DatasetEnricherStep.VAR_NEW_DATA): ds2]
 
         DatasetEnricherStep step = new DatasetEnricherStep()
-        step.configure(producer, "job1", [(DatasetEnricherStep.OPT_MAIN_FIELD): 'id', (DatasetEnricherStep.OPT_EXTRA_FIELD): 'id', (DatasetEnricherStep.OPT_MERGE_MODE): "both"],
-                [(DatasetEnricherStep.VAR_INPUT)   : new VariableKey(producer, "input1"),
-                 (DatasetEnricherStep.VAR_NEW_DATA): new VariableKey(producer, "input2")],
-                [:],
+        step.configure("merge mo datasets using field",
+                [(DatasetEnricherStep.OPT_MAIN_FIELD): 'id', (DatasetEnricherStep.OPT_EXTRA_FIELD): 'id', (DatasetEnricherStep.OPT_MERGE_MODE): "both"],
                 DatasetEnricherStep.SERVICE_DESCRIPTOR)
 
         when:
-        step.execute(varman, context)
-        Dataset result = varman.getValue(new VariableKey(producer, DatasetEnricherStep.VAR_OUTPUT), Dataset.class)
+        def resultsMap = step.doExecute(inputs, context)
+        def result = resultsMap["output"]
 
         then:
         result != null
@@ -217,34 +145,18 @@ class DatasetEnricherStepSpec extends Specification {
 
         Dataset ds1 = new Dataset(MoleculeObject.class, mols1())
         Dataset ds2 = new Dataset(MoleculeObject.class, mols2())
-
-
-        VariableManager varman = new VariableManager(null, 1, 1);
-
-        varman.putValue(
-                new VariableKey(producer, "input1"),
-                Dataset.class,
-                ds1)
-
-        varman.putValue(
-                new VariableKey(producer, "input2"),
-                Dataset.class,
-                ds2)
+        def inputs = [(DatasetEnricherStep.VAR_INPUT): ds1, (DatasetEnricherStep.VAR_NEW_DATA): ds2]
 
         DatasetEnricherStep step = new DatasetEnricherStep()
-        step.configure(producer, "job1", [(DatasetEnricherStep.OPT_MERGE_MODE): "both"],
-                [(DatasetEnricherStep.VAR_INPUT)   : new VariableKey(producer, "input1"),
-                 (DatasetEnricherStep.VAR_NEW_DATA): new VariableKey(producer, "input2")],
-                [:],
+        step.configure("merge mo datasets using uuid",
+                [(DatasetEnricherStep.OPT_MERGE_MODE): "both"],
                 DatasetEnricherStep.SERVICE_DESCRIPTOR
         )
 
 
         when:
-        step.execute(varman, context)
-        Dataset result = varman.getValue(new VariableKey(producer, DatasetEnricherStep.VAR_OUTPUT), Dataset.class)
-        //def meta = result.metadata
-        //println "META: " + JsonHandler.instance.objectToJson(meta)
+        def resultsMap = step.doExecute(inputs, context)
+        def result = resultsMap["output"]
 
         then:
         result != null
@@ -276,6 +188,27 @@ class DatasetEnricherStepSpec extends Specification {
         assert mo3.getValue('c') == '1000'
 
 
+    }
+
+
+    private void testBOValues(items) {
+
+        items.size() == 3
+
+        BasicObject bo1 = items[0]
+        BasicObject bo2 = items[1]
+        BasicObject bo3 = items[2]
+
+        assert bo1.getValue('a') == '1'
+        assert bo1.getValue('b') == '1'
+        assert bo1.getValue('hello') == 'jupiter'
+
+        assert bo2.getValue('a') == '99'
+        assert bo2.getValue('b') == '99'
+        assert bo2.getValue('hello') == 'saturn'
+        assert bo2.getValue('foo') == 'baz'
+
+        assert bo3.getValues().size() == 3
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,6 @@ package org.squonk.execution.steps.impl
 
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.dataset.Dataset
-
-import org.squonk.execution.variable.VariableManager
-import org.squonk.io.IODescriptor
-import org.squonk.io.IODescriptors
-import org.squonk.notebook.api.VariableKey
 import org.squonk.types.BasicObject
 import org.squonk.types.MoleculeObject
 import spock.lang.Specification
@@ -57,47 +52,23 @@ class DatasetMergerStepSpec extends Specification {
             new MoleculeObject("CCC", "smiles", [id:4,c:"100"])
     ]}
 
-    Long producer = 1
+    DefaultCamelContext context = new DefaultCamelContext()
     
     void "merge 2 datasets keep first"() {
-        println "merge 2 datasets keep first()"
-        
-        DefaultCamelContext context = new DefaultCamelContext()
-
-//        objs1.each {
-//            println "objs1 " + it
-//        }
-//        objs2.each {
-//            println "objs2 " + it
-//        }
 
         Dataset ds1 = new Dataset(BasicObject.class, objs1())
         Dataset ds2 = new Dataset(BasicObject.class, objs2())
         
-        
-        VariableManager varman = new VariableManager(null,1,1);
-        
-        varman.putValue(
-            new VariableKey(producer, "input1"),
-            Dataset.class, 
-            ds1)
-        
-        varman.putValue(
-                new VariableKey(producer, "input2"),
-                Dataset.class,
-            ds2)
-        
         DatasetMergerStep step = new DatasetMergerStep()
-        step.configure(producer, "job1", [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
-                [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2")],
-                [:],
+        step.configure("merge 2 datasets keep first",
+                [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
                 DatasetMergerStep.SERVICE_DESCRIPTOR
         )
         
         when:
-        step.execute(varman, context)
-        Dataset result = varman.getValue(new VariableKey(producer, DatasetMergerStep.VAR_OUTPUT), Dataset.class)
-        
+        def resultsMap = step.doExecute([input1: ds1, input2: ds2], context)
+        def result = resultsMap["output"]
+
         then:
         result != null
         def items = result.items
@@ -110,37 +81,19 @@ class DatasetMergerStepSpec extends Specification {
     }
     
     void "merge 2 datasets keep last"() {
-        println "merge 2 datasets keep last()"
-        
-        DefaultCamelContext context = new DefaultCamelContext()
         
         Dataset ds1 = new Dataset(BasicObject.class, objs1())
         Dataset ds2 = new Dataset(BasicObject.class, objs2())
         
-        
-        VariableManager varman = new VariableManager(null,1,1);
-
-        varman.putValue(
-                new VariableKey(producer, "input1"),
-                Dataset.class,
-                ds1)
-
-        varman.putValue(
-                new VariableKey(producer, "input2"),
-                Dataset.class,
-                ds2)
-        
         DatasetMergerStep step = new DatasetMergerStep()
-        step.configure(producer, "job1",
+        step.configure("merge 2 datasets keep last",
                 [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id', (DatasetMergerStep.OPTION_KEEP_FIRST):false],
-                [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2")],
-                [:],
                 DatasetMergerStep.SERVICE_DESCRIPTOR)
         
         when:
-        step.execute(varman, context)
-        Dataset result = varman.getValue(new VariableKey(producer, DatasetMergerStep.VAR_OUTPUT), Dataset.class)
-        
+        def resultsMap = step.doExecute([input1: ds1, input2: ds2], context)
+        def result = resultsMap["output"]
+
         then:
         result != null
         def items = result.items
@@ -154,42 +107,20 @@ class DatasetMergerStepSpec extends Specification {
     
     
     void "merge 3 datasets"() {
-        println "merge 3 datasets()"
-        
-        DefaultCamelContext context = new DefaultCamelContext()
         
         Dataset ds1 = new Dataset(BasicObject.class, objs1())
         Dataset ds2 = new Dataset(BasicObject.class, objs2())
         Dataset ds3 = new Dataset(BasicObject.class, objs3())
         
-        VariableManager varman = new VariableManager(null,1,1);
-
-        varman.putValue(
-                new VariableKey(producer, "input1"),
-                Dataset.class,
-                ds1)
-
-        varman.putValue(
-                new VariableKey(producer, "input2"),
-                Dataset.class,
-                ds2)
-
-        varman.putValue(
-                new VariableKey(producer, "input3"),
-                Dataset.class,
-                ds3)
-        
         DatasetMergerStep step = new DatasetMergerStep()
-        step.configure(producer, "job1",
+        step.configure("merge 3 datasets",
                 [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
-                [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2"), (DatasetMergerStep.VAR_INPUT_3):new VariableKey(producer, "input3")],
-                [:],
                 DatasetMergerStep.SERVICE_DESCRIPTOR)
         
         when:
-        step.execute(varman, context)
-        Dataset result = varman.getValue(new VariableKey(producer, DatasetMergerStep.VAR_OUTPUT), Dataset.class)
-        
+        def resultsMap = step.doExecute([input1: ds1, input2: ds2, input3: ds3], context)
+        def result = resultsMap["output"]
+
         then:
         result != null
         def items = result.items
@@ -208,24 +139,24 @@ class DatasetMergerStepSpec extends Specification {
 //        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1);
 //
 //        varman.putValue(
-//                new VariableKey(producer, "input1"),
+//                new VariableKey(cellId, "input1"),
 //                Dataset.class,
 //                ds1)
 //
 //        varman.putValue(
-//                new VariableKey(producer, "input2"),
+//                new VariableKey(cellId, "input2"),
 //                Dataset.class,
 //                ds2)
 //
 //        DatasetMergerStep step = new DatasetMergerStep()
-//        step.configure(producer,
+//        step.configure(cellId,
 //                [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
-//                [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2")],
+//                [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(cellId, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(cellId, "input2")],
 //                [:])
 //
 //        when:
 //        step.execute(varman, context)
-//        Dataset result = varman.getValue(new VariableKey(producer, DatasetMergerStep.VAR_OUTPUT), Dataset.class)
+//        Dataset result = varman.getValue(new VariableKey(cellId, DatasetMergerStep.VAR_OUTPUT), Dataset.class)
 //
 //        then:
 //        result != null
@@ -246,24 +177,24 @@ class DatasetMergerStepSpec extends Specification {
 //        VariableManager varman = new VariableManager(new MemoryVariableClient(),1,1);
 //
 //        varman.putValue(
-//                new VariableKey(producer, "input1"),
+//                new VariableKey(cellId, "input1"),
 //                Dataset.class,
 //                ds1)
 //
 //        varman.putValue(
-//                new VariableKey(producer, "input2"),
+//                new VariableKey(cellId, "input2"),
 //                Dataset.class,
 //                ds2)
 //
 //        DatasetMergerStep step = new DatasetMergerStep()
-//        step.configure(producer,
+//        step.configure(cellId,
 //                [(DatasetMergerStep.OPTION_MERGE_FIELD_NAME):'id'],
-//                [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(producer, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(producer, "input2")],
+//                [(DatasetMergerStep.VAR_INPUT_1):new VariableKey(cellId, "input1"), (DatasetMergerStep.VAR_INPUT_2):new VariableKey(cellId, "input2")],
 //                [:])
 //
 //        when:
 //        step.execute(varman, context)
-//        Dataset result = varman.getValue(new VariableKey(producer, DatasetMergerStep.VAR_OUTPUT), Dataset.class)
+//        Dataset result = varman.getValue(new VariableKey(cellId, DatasetMergerStep.VAR_OUTPUT), Dataset.class)
 //
 //        then:
 //        result != null

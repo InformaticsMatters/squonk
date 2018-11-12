@@ -87,5 +87,6 @@ docker/deploy/images/chemservices/*.zip
 
 openshift/templates/certs
 openshift/ansible/users.txt
+openshift/ansible/setenv.sh
 
 **/doxygen-output/

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018s Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,12 +51,18 @@ public class VariableManager {
 
     private final VariableClient client;
     private final Long notebookId;
-    private final Long sourceId;
+    private final Long cellId;
 
-    public VariableManager(VariableClient client, Long notebookId, Long sourceId) {
+    /**
+     *
+     * @param client The client that allows to read and write variables.
+     * @param notebookId The ID of the notebook
+     * @param cellId The ID of the cell whose variables are written by this VaraibleManager
+     */
+    public VariableManager(VariableClient client, Long notebookId, Long cellId) {
         this.client = client;
         this.notebookId = notebookId;
-        this.sourceId = sourceId;
+        this.cellId = cellId;
     }
 
     public String getTmpVariableInfo() {
@@ -147,7 +153,7 @@ public class VariableManager {
     public <V> V getValue(Class<V> primaryType, Class secondaryType, VariableHandler.ReadContext context) throws Exception {
 
         VariableHandler<V> vh = typeResolver.createVariableHandler(primaryType, secondaryType);
-        LOG.info("Using read variable handler " + vh + " for type " + primaryType.getName());
+        LOG.fine("Using read variable handler " + vh + " for type " + primaryType.getName());
 
         if (vh != null) {
             V result = (V) vh.readVariable(context);
@@ -196,7 +202,7 @@ public class VariableManager {
         if (client == null || key.getVariableName().startsWith("_")) {
             return new TmpContext(key.getCellId(), key.getVariableName());
         } else {
-            return new VariableWriteContext(client, notebookId, sourceId, key.getCellId(), key.getVariableName());
+            return new VariableWriteContext(client, notebookId, cellId, key.getCellId(), key.getVariableName());
         }
     }
 
@@ -204,7 +210,7 @@ public class VariableManager {
         if (client == null || key.getVariableName().startsWith("_")) {
             return new TmpContext(key.getCellId(), key.getVariableName());
         } else {
-            return new VariableReadContext(client, notebookId, sourceId, key.getCellId(), key.getVariableName());
+            return new VariableReadContext(client, notebookId, cellId, key.getCellId(), key.getVariableName());
         }
     }
 
@@ -220,11 +226,11 @@ public class VariableManager {
         }
 
         String generateTextKey(String key) {
-            return "T#" + notebookId + "#" + sourceId + "#" + cellId + "#" + variableName + "#" + key;
+            return "T#" + notebookId + "#" + VariableManager.this.cellId + "#" + cellId + "#" + variableName + "#" + key;
         }
 
         String generateStreamKey(String key) {
-            return "S#" + notebookId + "#" + sourceId + "#" + cellId + "#" + variableName + "#" + key;
+            return "S#" + notebookId + "#" + VariableManager.this.cellId + "#" + cellId + "#" + variableName + "#" + key;
         }
 
         @Override
@@ -271,8 +277,8 @@ public class VariableManager {
 
         @Override
         public void deleteVariable() throws Exception {
-            tmpValues.entrySet().removeIf(e -> e.getKey().startsWith("T#" + notebookId + "#" + sourceId + "#" + cellId + "#" + variableName + "#")
-            || e.getKey().startsWith("S#" + notebookId + "#" + sourceId + "#" + cellId + "#" + variableName + "#"));
+            tmpValues.entrySet().removeIf(e -> e.getKey().startsWith("T#" + notebookId + "#" + VariableManager.this.cellId + "#" + cellId + "#" + variableName + "#")
+            || e.getKey().startsWith("S#" + notebookId + "#" + VariableManager.this.cellId + "#" + cellId + "#" + variableName + "#"));
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -176,6 +176,10 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
             jobstatusClient = PostgresJobStatusClient.INSTANCE;
             notebookClient = NotebookPostgresClient.INSTANCE;
         }
+    }
+
+    private void handleError(Exchange exch, String responseCode, String errorMessage) {
+        handleError(exch, responseCode, errorMessage, null);
     }
 
     private void handleError(Exchange exch, String responseCode, String errorMessage, Throwable t) {
@@ -488,7 +492,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     } else {
                         String msg = "Notebook " + notebookid + " could not be deleted. May not exist or may not be yours?";
                         LOG.warning(msg);
-                        handleError(exch, "404", msg, null);
+                        handleError(exch, "404", msg);
                     }
                 })
                 .endRest()
@@ -600,7 +604,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     } else {
                         String msg = "Editable " + editableid + " could not be deleted. May not exist or may not be yours?";
                         LOG.warning(msg);
-                        handleError(exch, "404", msg, null);
+                        handleError(exch, "404", msg);
                     }
                 })
                 .endRest()
@@ -700,32 +704,50 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     Long cellid = exch.getIn().getHeader(CELLID, Long.class);
 
                     if (notebookid == null) {
-                        throw new IllegalArgumentException("Must specify notebookid");
+                        handleError(exch, "500", "Notebook ID not specified");
+                        return;
                     }
                     if (sourceid == null) {
-                        throw new IllegalArgumentException("Must specify sourceid");
+                        handleError(exch, "500", "Source ID not specified");
+                        return;
                     }
                     if (cellid == null) {
-                        throw new IllegalArgumentException("Must specify cellid");
+                        handleError(exch, "500", "Cell ID not specified");
+                        return;
                     }
                     if (varname == null) {
-                        throw new IllegalArgumentException("Must specify variable name");
+                        handleError(exch, "500", "Variable name not specified");
+                        return;
                     }
                     if (type == null) {
-                        throw new IllegalArgumentException("Must specify variable type");
+                        handleError(exch, "500", "Variable type not specified");
+                        return;
                     }
                     // TODO -set the mime type and encoding
+                    // TODO - distinguish between a variable that is not present and one that has no value
                     switch (type) {
                         case s:
                             InputStream is = notebookClient.readStreamValue(notebookid, sourceid, cellid, varname, key);
-                            exch.getIn().setBody(is);
+                            //log.info("Stream Variable: " + is);
+                            if (is == null) {
+                                String.format("Text variable %s:%s for %s:%s:%s not found", varname, key, notebookid, sourceid, cellid);
+                            } else {
+                                exch.getIn().setBody(is);
+                            }
                             break;
                         case t:
                             String t = notebookClient.readTextValue(notebookid, sourceid, cellid, varname, key);
-                            exch.getIn().setBody(t);
+                            //log.info("String Variable: " + t);
+                            if (t == null) {
+                                handleError(exch, "404",
+                                        String.format("Stream variable %s:%s for %s:%s:%s not found", varname, key, notebookid, sourceid, cellid));
+                            } else {
+                                exch.getIn().setBody(t);
+                            }
                             break;
                         default:
-                            throw new IllegalArgumentException("Invalid variable type. Must be s (stream) or t (text)");
+                            handleError(exch, "404",
+                                    String.format("Invalid variable type. Must be s (stream) or t (text). Found %s", type));
                     }
                 })
                 .endRest()
@@ -749,19 +771,24 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     Long cellid = exch.getIn().getHeader(CELLID, Long.class);
 
                     if (notebookid == null) {
-                        throw new IllegalArgumentException("Must specify notebookid");
+                        handleError(exch, "500", "Notebook ID not specified");
+                        return;
                     }
                     if (editableid == null) {
-                        throw new IllegalArgumentException("Must specify editableid");
+                        handleError(exch, "500", "Editable ID not specified");
+                        return;
                     }
                     if (cellid == null) {
-                        throw new IllegalArgumentException("Must specify cellid");
+                        handleError(exch, "500", "Cell ID not specified");
+                        return;
                     }
                     if (varname == null) {
-                        throw new IllegalArgumentException("Must specify variable name");
+                        handleError(exch, "500", "Variable name not specified");
+                        return;
                     }
                     if (type == null) {
-                        throw new IllegalArgumentException("Must specify variable type");
+                        handleError(exch, "500", "Variable type not specified");
+                        return;
                     }
 
                     switch (type) {
@@ -794,16 +821,20 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     LOG.info("DELETE: " + notebookid + " " + editableid + " " + cellid + " " + varname);
 
                     if (notebookid == null) {
-                        throw new IllegalArgumentException("Must specify notebookid");
+                        handleError(exch, "500", "Notebook ID not specified");
+                        return;
                     }
                     if (editableid == null) {
-                        throw new IllegalArgumentException("Must specify editableid");
+                        handleError(exch, "500", "Editable ID not specified");
+                        return;
                     }
                     if (cellid == null) {
-                        throw new IllegalArgumentException("Must specify cellid");
+                        handleError(exch, "500", "Cell ID not specified");
+                        return;
                     }
                     if (varname == null) {
-                        throw new IllegalArgumentException("Must specify variable name");
+                        handleError(exch, "500", "Variable name not specified");
+                        return;
                     }
 
                     notebookClient.deleteVariable(notebookid, editableid, cellid, varname);

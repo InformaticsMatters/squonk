@@ -18,20 +18,26 @@ package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
+import org.squonk.core.DefaultServiceDescriptor;
+import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.io.IODescriptors;
+import org.squonk.options.DatasetFieldTypeDescriptor;
+import org.squonk.options.OptionDescriptor;
 import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
 
 import java.util.Arrays;
-import java.util.Map;
+import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
  * Allows to create a new Dataset from the molecules in a specified field. That field must be of type MoleculeObject[]
+ * The resulting dataset contains all the molecules that were found for that field in all the records of the dataset
  *
  * @author timbo
  */
@@ -39,12 +45,33 @@ public class DatasetMoleculesFromFieldStep<P extends BasicObject> extends Abstra
 
     private static final Logger LOG = Logger.getLogger(DatasetMoleculesFromFieldStep.class.getName());
 
+    public static final DefaultServiceDescriptor SERVICE_DESCRIPTOR = new DefaultServiceDescriptor("core.dataset.moleculesfromfield.v1",
+            "MoleculesFromField",
+            "Create a new datset from all the molecules from a field",
+            new String[]{"molecule", "extractor", "flatmap", "dataset"},
+            null, "icons/molecule_generator.png",
+            ServiceConfig.Status.ACTIVE,
+            new Date(),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+            new OptionDescriptor[]{
+
+                    new OptionDescriptor<>(new DatasetFieldTypeDescriptor(new Class[] {MoleculeObject[].class}),
+                            StepDefinitionConstants.DatasetMoleculesFromFieldStep.OPTION_MOLECULES_FIELD,
+                            "Field with molecules",
+                            "Field that contains an Array of MoleculeObjects",
+                            OptionDescriptor.Mode.User)
+                            .withMinMaxValues(1,1)
+
+            },
+            null, null, null,
+            DatasetMoleculesFromFieldStep.class.getName()
+    );
+
     public static final String OPTION_MOLECULES_FIELD = StepDefinitionConstants.DatasetMoleculesFromFieldStep.OPTION_MOLECULES_FIELD;
     public static final String FIELD_NAME_ORIGIN = "MoleculeSource";
 
     /**
-     * Create a slice of the dataset skipping a number of records specified by the skip option (or 0 if not specified)
-     * and including only the number of records specified by the count option (or till the end if not specified).
      *
      * @param input
      * @param context

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,14 @@
 
 package org.squonk.core.service.discovery;
 
-import org.squonk.core.DockerServiceDescriptor;
 import org.squonk.core.ServiceConfig;
 import org.squonk.core.ServiceDescriptor;
 import org.squonk.core.ServiceDescriptorSet;
-import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.steps.impl.GenericDatasetDockerExecutorStep;
-import org.squonk.io.IODescriptors;
-import org.squonk.io.IORoute;
-import org.squonk.options.MultiLineTextTypeDescriptor;
-import org.squonk.options.OptionDescriptor;
-import org.squonk.util.CommonMimeTypes;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;

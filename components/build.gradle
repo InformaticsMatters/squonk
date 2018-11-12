@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ allprojects {
     // look at the jackson2-version property here (with correct tag) to get the right Jackson version
     // https://github.com/apache/camel/blob/master/parent/pom.xml
     project.ext.set('jacksonVersion', '2.8.4')
-    project.ext.set('cdkVersion', '2.1.1')
+    project.ext.set('cdkVersion', '2.2')
     project.ext.set('groovyVersion', '2.4.4')
     project.ext.set('weldVersion', '2.3.2.Final')
     project.ext.set('postgresDriverVersion', '9.4-1201-jdbc41')
@@ -286,6 +286,7 @@ task integrationTestInit() {
 }
 
 task integrationTestEnvPrepare(type: Exec) {
+    description 'Setup integration test environment'
     //dependsOn 'dockerFileChemServices', 'core-services-server:buildDockerFile', 'cell-executor:dockerBuildImage'
 
     workingDir '../docker'

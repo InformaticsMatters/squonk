@@ -62,12 +62,28 @@ curl -kL -X POST --post301\
 
 # verne mode with OpenShift
 
+# get token
+token=$(curl -kL \
+  -H 'Content-Type: application/x-www-form-urlencoded'\
+  -d 'grant_type=client_credentials'\
+  -d 'client_id=squonk-notebook'\
+  -d 'client_secret=<client-secret>'\
+  https://sso.apps.xchem.diamond.ac.uk/auth/realms/xchem/protocol/openid-connect/token|\
+  grep -Po '(?<="access_token":")[^"]*')
+
+# list services
+curl -kL -H "Authorization: bearer $token" http://jobexecutor.squonk.svc:8080/jobexecutor/rest/v1/services/
+
+# list jobs
+curl -kL -H "Authorization: bearer $token" -H "SquonkUsername: user1" http://jobexecutor.squonk.svc:8080/jobexecutor/rest/v1/jobs/
+
+# post a job
 curl -X POST -kL --post301 --post302\
   -F 'options={"skip":5,"count":5}'\
-  -F "input_data=@data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
-  -F "input_metadata=@data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
+  -F "input_data=@Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
+  -F "input_metadata=@Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata"\
   -H "Content-Type: multipart/mixed"\
   -H "Authorization: bearer $token"\
   -H "SquonkUsername: user1"\
-  http://squonk-jobexecutor.apps.xchem.diamond.ac.uk/jobexecutor/rest/v1/jobs/core.dataset.filter.slice.v1
+  http://jobexecutor.squonk.svc:8080/jobexecutor/rest/v1/jobs/core.dataset.filter.slice.v1
 

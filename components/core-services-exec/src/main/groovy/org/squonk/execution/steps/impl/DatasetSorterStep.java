@@ -17,24 +17,55 @@
 package org.squonk.execution.steps.impl;
 
 import org.apache.camel.CamelContext;
+import org.squonk.core.DefaultServiceDescriptor;
+import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.execution.steps.StepDefinitionConstants;
+import org.squonk.io.IODescriptors;
+import org.squonk.options.MultiLineTextTypeDescriptor;
+import org.squonk.options.OptionDescriptor;
 import org.squonk.types.BasicObject;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
+/** Sorts a dataset according to one or more sort directives.
+ * Note: valid DatasetMetadata must be present in the dataset.
+ *
  * Created by timbo on 13/09/16.
  */
 public class DatasetSorterStep<P extends BasicObject> extends AbstractDatasetStep<P,P> {
 
     private static final Logger LOG = Logger.getLogger(DatasetSorterStep.class.getName());
+
+    public static final DefaultServiceDescriptor SERVICE_DESCRIPTOR = new DefaultServiceDescriptor("core.dataset.sorter.v1",
+            "Dataset sorter",
+            "Sort the dataset",
+            new String[]{"sort", "dataset"},
+            null, "icons/filter.png",
+            ServiceConfig.Status.ACTIVE,
+            new Date(),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_INPUT_DATASET),
+            IODescriptors.createBasicObjectDatasetArray(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET),
+            new OptionDescriptor[]{
+
+                    new OptionDescriptor<>(
+                            new MultiLineTextTypeDescriptor(10, 80, MultiLineTextTypeDescriptor.MIME_TYPE_TEXT_PLAIN),
+                            StepDefinitionConstants.DatasetSorter.OPTION_DIRECTIVES,
+                            "Sort directives",
+                            "Definition of the sort directives: field_name ASC|DESC", OptionDescriptor.Mode.User)
+                            .withMinMaxValues(1,1)
+
+            },
+            null, null, null,
+            DatasetSorterStep.class.getName()
+    );
 
     public static final String VAR_INPUT_DATASET = StepDefinitionConstants.VARIABLE_INPUT_DATASET;
     public static final String VAR_OUTPUT_DATASET = StepDefinitionConstants.VARIABLE_OUTPUT_DATASET;

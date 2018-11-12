@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import java.util.logging.Logger;
 
 import static org.squonk.mqueue.MessageQueueCredentials.*;
 
-//import org.squonk.notebook.client.CellClient;
 
 /** Consumes a steps job from the message queue and executes it, updating the status of the job accordingly.
  * Created by timbo on 07/01/16.
@@ -154,13 +153,13 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
         try {
             LOG.fine("Executing job " + jobid + " for user " + username);
             executor.execute(camelContext);
-            List<Step> definedSteps = executor.getDefinedSteps();
+            List<Step> executedSteps = executor.getExecutedSteps();
             String statusMessage = null;
             int numProcessed = 0;
             int numResults = 0;
             int numErrors = 0;
-            if (definedSteps != null && !definedSteps.isEmpty()) {
-                Step s = definedSteps.get(definedSteps.size() - 1);
+            if (executedSteps != null && !executedSteps.isEmpty()) {
+                Step s = executedSteps.get(executedSteps.size() - 1);
                 if (s != null) {
                     statusMessage = s.getStatusMessage();
                     if (s.getNumProcessed() > 0) {

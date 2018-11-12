@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,78 +36,15 @@ import java.util.logging.Logger;
  *
  * Created by timbo on 29/12/15.
  */
-public class DefaultDockerExecutorStep extends AbstractDockerStep {
+public class DefaultDockerExecutorStep extends AbstractContainerStep {
 
     private static final Logger LOG = Logger.getLogger(DefaultDockerExecutorStep.class.getName());
 
-    @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-
-        if (serviceDescriptor == null) {
-            throw new IllegalStateException("No service descriptor present ");
-        } else if (!(serviceDescriptor instanceof DockerServiceDescriptor)) {
-            throw new IllegalStateException("Expected service descriptor to be a " +
-                    DockerServiceDescriptor.class.getName() +
-                    "  but it was a " + serviceDescriptor.getClass().getName());
-        }
-        DockerServiceDescriptor descriptor = (DockerServiceDescriptor) serviceDescriptor;
-
-        LOG.info("Input types are " + IOUtils.joinArray(descriptor.getServiceConfig().getInputDescriptors(), ","));
-        LOG.info("Output types are " + IOUtils.joinArray(descriptor.getServiceConfig().getOutputDescriptors(), ","));
-
-        // this executes this cell
-        doExecute(varman, context, descriptor);
-        //LOG.info(varman.getTmpVariableInfo());
-
-    }
-
-
-    protected void doExecute(VariableManager varman, CamelContext camelContext, DockerServiceDescriptor descriptor) throws Exception {
-
-        statusMessage = MSG_PREPARING_CONTAINER;
-
-        ContainerRunner containerRunner = prepareContainerRunner(descriptor);
-
-        try {
-            // create input files
-            statusMessage = MSG_PREPARING_INPUT;
-
-            // fetch the input data
-            Map<String,Object> inputs = fetchInputs(camelContext, descriptor, varman, containerRunner);
-            // write the input data
-            handleInputs(inputs, descriptor, containerRunner);
-            //handleInputs(camelContext, descriptor, varman, containerRunner);
-            // run the command
-            float duration = handleExecute(containerRunner);
-
-            // handle the output
-            statusMessage = MSG_PREPARING_OUTPUT;
-            handleOutputs(camelContext, descriptor, varman, containerRunner);
-
-            handleMetrics(containerRunner, duration);
-
-        } finally {
-            // cleanup
-            if (containerRunner != null && DEBUG_MODE < 2) {
-                containerRunner.cleanup();
-                LOG.info("Results cleaned up");
-            }
-        }
-    }
 
     @Override
-    public Map<String, List<SquonkDataSource>> executeForDataSources(Map<String, Object> inputs, CamelContext context) throws Exception {
+    protected ContainerRunner prepareContainerRunner() throws IOException {
 
-        statusMessage = MSG_PREPARING_CONTAINER;
         DockerServiceDescriptor descriptor = getDockerServiceDescriptor();
-
-        ContainerRunner containerRunner = prepareContainerRunner(descriptor);
-
-        Map<String, List<SquonkDataSource>> outputs = doExecuteForDataSources(inputs, context, containerRunner, descriptor);
-        return outputs;
-    }
-
-    private ContainerRunner prepareContainerRunner(DockerServiceDescriptor descriptor) throws IOException {
 
         String image = getOption(StepDefinitionConstants.OPTION_DOCKER_IMAGE, String.class);
         if (image == null || image.isEmpty()) {

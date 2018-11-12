@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,17 @@
 
 package org.squonk.core.client
 
-import org.squonk.io.IODescriptor
+import org.squonk.data.Molecules
+import org.squonk.dataset.Dataset
+import org.squonk.execution.steps.StepDefinition
+import org.squonk.execution.steps.impl.DatasetHttpExecutorStep
 import org.squonk.io.IODescriptors
 import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition
 import org.squonk.jobdef.JobStatus
 import org.squonk.jobdef.StepsCellExecutorJobDefinition
-import org.squonk.execution.steps.StepDefinition
-import org.squonk.execution.steps.StepDefinitionConstants
 import org.squonk.notebook.api.VariableKey
+import org.squonk.reader.SDFReader
+import org.squonk.types.SDFile
 import spock.lang.Stepwise
 
 /**
@@ -32,8 +35,8 @@ import spock.lang.Stepwise
 @Stepwise
 class ExecuteServicesAsJobsSpec extends ClientSpecBase {
 
-    static def inputs = [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[]
-    static def outputs = [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[]
+    static def inputs = IODescriptors.createMoleculeObjectDatasetArray("input")
+    static def outputs = IODescriptors.createMoleculeObjectDatasetArray("output")
 
 
 
@@ -69,19 +72,48 @@ class ExecuteServicesAsJobsSpec extends ClientSpecBase {
 
     void "input loaded"() {
         when:
-        int count = findResultSize(notebookId, editableId, cellId, "input")
+        int count = findResultSize(notebookId, editableId, 1, "output")
 
         then:
-        count == 36
+        count == datasetSize
+    }
+
+    void "cdk convert to sdf"() {
+
+        // this tests a CDK bug that prevents SDF being written for large number of records
+        // the bug was present in CDK version 2.1.1 and fixed in 2.2
+
+        Dataset dataset = Molecules.datasetFromSDF(Molecules.BUILDING_BLOCKS_SDF) // has 7003 records
+        def bigVar = new VariableKey(sourceCellId, "sdf")
+        loadDataset(dataset, bigVar)
+
+        def sdfOutput = IODescriptors.createSDFArray("output")
+        StepDefinition step = new StepDefinition(DatasetHttpExecutorStep.class, "cdk.export.sdf")
+                .withInputs(inputs)
+                .withOutputs(sdfOutput)
+                .withInputVariableMapping("input", bigVar)
+
+        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
+        jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, sdfOutput, step)
+
+        when:
+        JobStatus status1 = jobClient.submit(jobdef, username, null)
+        JobStatus status2 = waitForJob(status1.jobId)
+        InputStream is = readData(notebookId, editableId, cellId, "output")
+        SDFile sdf = new SDFile(is, true)
+
+        then:
+        status1.status == JobStatus.Status.RUNNING
+        status2.status == JobStatus.Status.COMPLETED
+        countSdf(sdf) == 7003
     }
 
     void "cdk logp"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME, "cdk.logp")
+        StepDefinition step = new StepDefinition(DatasetHttpExecutorStep.class, "cdk.logp")
                 .withInputs(inputs)
                 .withOutputs(outputs)
-                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
-                .withOutputVariableMapping("output", "cdklogp")
+                .withInputVariableMapping("input", sourceVariableKey)
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
         jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, outputs, step)
@@ -93,17 +125,15 @@ class ExecuteServicesAsJobsSpec extends ClientSpecBase {
         then:
         status1.status == JobStatus.Status.RUNNING
         status2.status == JobStatus.Status.COMPLETED
-        findResultSize(notebookId, editableId, cellId, "cdklogp") == 36
+        findResultSize(notebookId, editableId, cellId, "output") == datasetSize
     }
 
     void "chemaxon logp"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME, "chemaxon.calculators.logp")
+        StepDefinition step = new StepDefinition(DatasetHttpExecutorStep.class, "chemaxon.calculators.logp")
                 .withInputs(inputs)
                 .withOutputs(outputs)
-                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
-                .withOutputVariableMapping("output", "cxnlogp")
-
+                .withInputVariableMapping("input", sourceVariableKey)
 
         StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
         jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, outputs, step)
@@ -115,16 +145,15 @@ class ExecuteServicesAsJobsSpec extends ClientSpecBase {
         then:
         status1.status == JobStatus.Status.RUNNING
         status2.status == JobStatus.Status.COMPLETED
-        findResultSize(notebookId, editableId, cellId, "cxnlogp") == 36
+        findResultSize(notebookId, editableId, cellId, "output") == datasetSize
     }
 
     void "chemaxon spherex"() {
 
-        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME, "chemaxon.clustering.sperex")
+        StepDefinition step = new StepDefinition(DatasetHttpExecutorStep.class, "chemaxon.clustering.sperex")
                 .withInputs(inputs)
                 .withOutputs(outputs)
-                .withInputVariableMapping("input", new VariableKey(cellId, "input"))
-                .withOutputVariableMapping("output", "spherex")
+                .withInputVariableMapping("input", sourceVariableKey)
                 .withOption('header.min_clusters', 3)
                 .withOption('header.max_clusters', 6)
 
@@ -138,15 +167,15 @@ class ExecuteServicesAsJobsSpec extends ClientSpecBase {
         then:
         status1.status == JobStatus.Status.RUNNING
         status2.status == JobStatus.Status.COMPLETED
-        findResultSize(notebookId, editableId, cellId, "spherex") == 36
+        findResultSize(notebookId, editableId, cellId, "output") == datasetSize
     }
 
 //    void "chemaxon screen"() {
 //
-//        StepDefinition step = new StepDefinition(StepDefinitionConstants.MoleculeServiceThinExecutor.CLASSNAME)
+//        StepDefinition step = new StepDefinition(StepDefinitionConstants.DatasetHttpExecutor.CLASSNAME)
 //                .withInputs(inputs)
 //                .withOutputs(outputs)
-//                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, new VariableKey(cellId, "input"))
+//                .withInputVariableMapping(StepDefinitionConstants.VARIABLE_INPUT_DATASET, sourceVariableKey)
 //                .withOutputVariableMapping(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, "screen")
 //                .withOption(StepDefinitionConstants.OPTION_SERVICE_ENDPOINT, CONFIG.basicChemaxonChemServicesBaseUrl+"/descriptors/screening/ecfp4")
 //                .withOption('option.filter', true)
@@ -168,4 +197,13 @@ class ExecuteServicesAsJobsSpec extends ClientSpecBase {
 //        count >= 1
 //        count < 36
 //    }
+
+    int countSdf(input) {
+        SDFReader reader = new SDFReader(input.getInputStream())
+        int count = 0
+        reader.each {
+            count++
+        }
+        return count
+    }
 }

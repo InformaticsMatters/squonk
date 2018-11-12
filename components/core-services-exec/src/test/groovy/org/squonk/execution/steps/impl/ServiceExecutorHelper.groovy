@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,9 +40,14 @@ class ServiceExecutorHelper {
             new MoleculeObject("CCC", "smiles", [num: "100", hello: 'mum'])
     ]
 
-    static CamelContext createCamelContext() {
+    static CamelContext createCamelContext(routeBuilder) {
         DefaultCamelContext context = new DefaultCamelContext()
-        context.addRoutes(new RouteBuilder() {
+        context.addRoutes(routeBuilder)
+        return context
+    }
+
+    static CamelContext createCamelContext() {
+        def routeBuilder = new RouteBuilder() {
             void configure() {
 
                 restConfiguration().component("jetty").host("0.0.0.0").port(8888);
@@ -80,9 +85,9 @@ class ServiceExecutorHelper {
                 InputStream out = JsonHandler.getInstance().marshalStreamToJsonArray(list.stream(), false)
                 exch.in.body = out
             }
-        })
+        }
 
-        return context
+        return createCamelContext(routeBuilder)
     }
 
 }

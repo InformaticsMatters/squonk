@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ package org.squonk.execution.steps.impl;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.DatasetMetadata;
-import org.squonk.execution.steps.AbstractThinDatasetStep;
+import org.squonk.execution.steps.AbstractThinStep;
 import org.squonk.execution.steps.StepDefinitionConstants;
-import org.squonk.execution.variable.VariableManager;
 import org.squonk.io.IODescriptor;
 import org.squonk.io.IODescriptors;
 import org.squonk.options.DatasetsFieldOptionDescriptor;
@@ -48,7 +47,7 @@ import org.squonk.types.io.JsonHandler;
  *
  * @author timbo
  */
-public class DatasetMergerStep extends AbstractThinDatasetStep {
+public class DatasetMergerStep extends AbstractThinStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetMergerStep.class.getName());
 
@@ -96,32 +95,12 @@ public class DatasetMergerStep extends AbstractThinDatasetStep {
     private static final String SOURCE = "Squonk DatasetMergerStep";
 
 
-    @Override
-    public void execute(VariableManager varman, CamelContext context) throws Exception {
-        Map<String,Object> inputs = new LinkedHashMap<>();
-        for (int i = 1; i <= 5; i++) {
-            String name = VAR_INPUT_BASE + i;
-            Dataset<? extends BasicObject> nextDataset = fetchMappedInput(name, Dataset.class, varman);
-            if (nextDataset == null) {
-                break;
-            } else {
-                inputs.put(name, nextDataset);
-            }
-        }
-
-        Map<String,Object> outputs = executeForVariables(inputs, context);
-
-        Dataset output = (Dataset)outputs.get(VAR_OUTPUT);
-
-        createMappedOutput(VAR_OUTPUT, Dataset.class, output, varman);
-    }
-
     private Object fetchValueToCompare(BasicObject bo, String mergeField) {
         return mergeField == null ? bo.getUUID() : bo.getValue(mergeField);
     }
 
     @Override
-    public Map<String, Object> executeForVariables(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
 
         if (inputs == null || inputs.size() == 0) {
             throw new IllegalArgumentException("No data to merge");
