@@ -21,6 +21,7 @@ import org.squonk.io.SquonkDataSource;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 
 /** Wrapper around an image file
  *
@@ -29,9 +30,14 @@ import java.io.IOException;
 public class ImageFile extends AbstractStreamType {
 
 
-    public ImageFile(SquonkDataSource input, String mediaType) {
-        super(input, mediaType);
+    public ImageFile(SquonkDataSource input) {
+        super(input);
     }
+
+    public ImageFile(InputStream input, String mediaType) {
+        super(input, mediaType, false);
+    }
+
 
 
     /** Generate and return a BufferedImage corresponding to this ImageFile.

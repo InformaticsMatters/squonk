@@ -19,6 +19,7 @@ package org.squonk.types;
 import org.squonk.io.SquonkDataSource;
 import org.squonk.io.FileDataSource;
 import org.squonk.io.InputStreamDataSource;
+import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 
 import javax.activation.DataSource;
@@ -69,9 +70,9 @@ public abstract class AbstractStreamType implements StreamType {
         }
     }
 
-    public AbstractStreamType(SquonkDataSource dataSource, String mediaType) {
+    public AbstractStreamType(SquonkDataSource dataSource) {
         this.dataSources = new SquonkDataSource[] {dataSource};
-        this.mediaType = mediaType;
+        this.mediaType = dataSource.getContentType();
     }
 
     public AbstractStreamType(SquonkDataSource[] dataSources, String mediaType) {
@@ -191,6 +192,12 @@ public abstract class AbstractStreamType implements StreamType {
             for (SquonkDataSource ds: dataSources) {
                 ds.materialize();
             }
+        }
+    }
+
+    protected void verifyMediaTypeIsCorrect(SquonkDataSource input, String mediaType) {
+        if (input.getContentType() != null && !mediaType.equals(input.getContentType())) {
+            throw new IllegalArgumentException("Content type expected to be " + mediaType);
         }
     }
 

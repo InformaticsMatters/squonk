@@ -30,7 +30,7 @@ import java.io.InputStream;
 public class SDFile extends AbstractStreamType {
 
     public static final String PROP_NAME_FIELD_NAME = "SDF_NAME_FIELD_NAME";
-    private static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_MDL_SDF;
+    public static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_MDL_SDF;
     
     public SDFile(InputStream input, Boolean gzipped) {
         super(input, MEDIA_TYPE, gzipped);
@@ -44,7 +44,8 @@ public class SDFile extends AbstractStreamType {
         super(file, MEDIA_TYPE, gzipped);
     }
 
-    public SDFile(SquonkDataSource dataSource) {
-        super(dataSource, MEDIA_TYPE);
+    public SDFile(SquonkDataSource input) {
+        super(input);
+        verifyMediaTypeIsCorrect(input, MEDIA_TYPE);
     }
 }

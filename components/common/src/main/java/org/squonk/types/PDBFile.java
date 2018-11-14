@@ -25,10 +25,11 @@ import org.squonk.util.CommonMimeTypes;
  */
 public class PDBFile extends AbstractStreamType {
 
-    private static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_PDB;
+    public static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_PDB;
 
     public PDBFile(SquonkDataSource input) {
-        super(input, MEDIA_TYPE);
+        super(input);
+        verifyMediaTypeIsCorrect(input, MEDIA_TYPE);
     }
     
 }

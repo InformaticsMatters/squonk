@@ -25,10 +25,11 @@ import org.squonk.util.CommonMimeTypes;
  */
 public class CSVFile extends AbstractStreamType {
 
-    private static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_TEXT_CSV;
+    public static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_TEXT_CSV;
 
     public CSVFile(SquonkDataSource input) {
-        super(input, MEDIA_TYPE);
+        super(input);
+        verifyMediaTypeIsCorrect(input, MEDIA_TYPE);
     }
     
 }

@@ -25,10 +25,11 @@ import org.squonk.util.CommonMimeTypes;
  */
 public class ZipFile extends AbstractStreamType {
 
-    private static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_ZIP_FILE;
+    public static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_ZIP_FILE;
 
     public ZipFile(SquonkDataSource input) {
-        super(input, MEDIA_TYPE);
+        super(input);
+        verifyMediaTypeIsCorrect(input, MEDIA_TYPE);
     }
     
 }
