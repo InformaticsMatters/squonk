@@ -20,6 +20,7 @@ import org.squonk.api.VariableHandler
 import org.squonk.io.FileDataSource
 import org.squonk.io.InputStreamDataSource
 import org.squonk.io.SquonkDataSource
+import org.squonk.util.CommonMimeTypes
 import spock.lang.Specification
 
 /**
@@ -32,8 +33,8 @@ class PngImageFileHandlerSpec extends Specification {
     void "test write variable"() {
 
         def h = new PngImageFileHandler()
-        def data = new FileDataSource(null, null, new java.io.File("../../data/testfiles/image.png"), false)
-        def png1 = new PngImageFile(data    )
+        def data = new FileDataSource(null, CommonMimeTypes.MIME_TYPE_PNG, new java.io.File("../../data/testfiles/image.png"), false)
+        def png1 = new PngImageFile(data)
         def ctx = new DummyContext()
 
         when:

@@ -20,4 +20,3 @@ docker push squonk/chemcentral-search:$1
 docker push squonk/chemcentral-loader:$1
 
 docker push squonk/portal:$1
-docker push squonk/xwiki:$1

@@ -88,9 +88,11 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                     .process((exch) -> {
                         String resp = exch.getIn().getBody(String.class);
                         List<ServiceDescriptor> sds = ServiceDescriptorUtils.readJsonList(resp);
-                        LOG.fine("Discovered " + sds.size() + " service descriptors");
+                        LOG.info("Discovered " + sds.size() + " service descriptors");
                         jobManager.putServiceDescriptors(sds);
                     });
+        } else {
+            LOG.warning("Service descriptors are not being dynamically updated");
         }
 
         restConfiguration().component("servlet").host("0.0.0.0");

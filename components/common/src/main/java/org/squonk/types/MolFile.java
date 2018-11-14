@@ -26,10 +26,11 @@ import org.squonk.util.CommonMimeTypes;
  */
 public class MolFile extends AbstractStreamType {
 
-    private static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_MDL_MOLFILE;
+    public static final String MEDIA_TYPE = CommonMimeTypes.MIME_TYPE_MDL_MOLFILE;
 
     public MolFile(SquonkDataSource input) {
-        super(input, MEDIA_TYPE);
+        super(input);
+        verifyMediaTypeIsCorrect(input, MEDIA_TYPE);
     }
 
     

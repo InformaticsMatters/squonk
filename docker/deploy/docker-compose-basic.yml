@@ -2,24 +2,24 @@ version: '2.1'
         
 services:
 
-
     ################# nginx ##########################################################
     # Acts as reverse proxy
     # create self-signed SSL cert/key using:
+    # mkdir -p images/nginx/certs/squonk.it
     # openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/certs/squonk.it/privkey.pem -out images/nginx/certs/squonk.it/fullchain.pem
     # and generate Strong Diffie-Hellman Group like this:
     # openssl dhparam -out images/nginx/certs/squonk.it/dhparam.pem 2048
     nginx:
         image: nginx:1.13
-        restart: on-failure:10
+        restart: on-failure:5
         ports:
         - 80:80
         - 443:443
         volumes:
         - ./images/nginx/default.ssl.conf:/etc/nginx/conf.d/default.conf:ro,Z
         - ./images/nginx/certs/:/etc/nginx/certs/:ro,Z
-        - ./images/nginx/sites/index.html:/usr/share/nginx/html/index.html:ro,Z
-        - ./images/nginx/sites/squonk.it/html/:/usr/share/nginx/html/squonk.it/html/:ro,Z
+        - ./images/nginx/sites/index.html:/usr/share/nginx/html/index.html:ro,z
+        - ./images/nginx/sites/squonk.it/_site/:/usr/share/nginx/html/squonk.it/html/:ro,z
         networks:
         - squonk_front
         depends_on:

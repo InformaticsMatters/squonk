@@ -15,6 +15,7 @@ docker-compose stop keycloak
 docker-compose rm -fv keycloak
 COMPOSE_FILE="$COMPOSE_FILE:docker-compose-setup.yml"
 docker-compose up -d --no-recreate keycloak stage2
+echo "keycloak started"
 
 keycloak_url="http://${KEYCLOAK_SERVER}:8080/auth"
 echo "keycloak_url: $keycloak_url"
