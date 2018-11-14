@@ -110,6 +110,8 @@ parameters:
   value: latest
 - name: CELL_CONTAINER_RUNNER_TYPE
   value: openshift
+- name: CELL_SQUONK_NEXTFLOW_IMAGE
+  value: informaticsmatters/nextflow:18.10.1
 - name: CELL_SQUONK_CONTAINER_WORK_DIR
   value: "/squonk/work/docker"
 - name: CELL_SQUONK_POD_BASE_NAME
@@ -378,6 +380,8 @@ objects:
             value: ${CELL_SQUONK_POD_BASE_NAME}
           - name: SQUONK_POD_LOG_HISTORY
             value: ${CELL_JOB_LOG_HISTORY}
+          - name: SQUONK_NEXTFLOW_IMAGE
+            value: ${CELL_SQUONK_NEXTFLOW_IMAGE}
 #          - name: JAVA_OPTS
 #            value: '"-Djava.util.logging.config.file=/logging.properties"'
 #          resources:

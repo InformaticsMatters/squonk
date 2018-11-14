@@ -38,6 +38,7 @@ export OC_PROJECT_DISPLAY_NAME="Squonk Applications"
 export OC_SQUONK_APP=squonk-notebook
 export OC_SQUONK_HOST=${OC_SQUONK_APP}.${OC_ROUTES_BASENAME}
 export OC_JOBEXECUTOR_HOST=jobexecutor.${OC_ROUTES_BASENAME}
+export OC_SQUONK_NEXTFLOW_IMAGE="informaticsmatters/nextflow:18.10.1"
 export OC_SQUONK_CC_PVC_SIZE=20Gi
 export OC_SQUONK_IMAGE_TAG=latest
 export OC_PIPELINES_SD_POSTER_IMAGE_TAG=latest
