@@ -15,31 +15,16 @@ export DEPLOYMENT_MODE=basic
 # 'dev' setup
 #export PUBLIC_HOST=172.20.0.1
 #export PRIVATE_HOST=172.20.0.1
+#unset KEYCLOAK_SERVER
 
-# 'basic' setup
+# 'basic' or 'site' setup
 # 1. set PUBLIC_HOST to 'nginx'
 # 2. modify the /etc/hosts file on the host machine to include an entry for nginx that points to the gateway address
 #    e.g. '172.20.0.1 nginx'
-# 3. enable the line below (checking that the IP address is right)
+# 3. define KEYCLOAK_SERVER (checking that the IP address is right)
 export PUBLIC_HOST=nginx
 export PRIVATE_HOST=172.20.0.1
 export KEYCLOAK_SERVER=172.20.0.2
-
-#export TAG=$(./images-get-tag.sh)
-
-# 'dev' setup
-export PUBLIC_HOST=172.20.0.1
-export PRIVATE_HOST=172.20.0.1
-
-# 'basic' setup
-# 1. set PUBLIC_HOST to 'nginx'
-# 2. modify the /etc/hosts file on the host machine to include an entry for nginx that points to the gateway address
-#    e.g. '172.20.0.1 nginx'
-# 3. enable the line below (checking that the IP address is right)
-#export PUBLIC_HOST=nginx
-#export PRIVATE_HOST=172.20.0.1
-#export KEYCLOAK_SERVER=172.20.0.2
-
 
 export TAG=$(./images-get-tag.sh)
 

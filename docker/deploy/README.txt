@@ -102,11 +102,22 @@ Your host machine must have Java, Ant, jq, Docker and Docker-compose installed.
 First define the environment. Create setenv.sh by copying setenv-default.sh and editing
 it as appropriate. This file defines the type of Squonk environment you want to deploy
 and passwords to use etc. There are 3 types of environment you can run:
-dev - for local testing and development. This uses basic authentication so does not inlcude Keycloak, XWiki and NGinx
+dev - for local testing and development. This uses basic authentication so does not inlcude Keycloak and NGinx
 basic - for more representative setup that uses Keycloak and NGinx
-site - for the full Squonk site also including XWiki
+site - for the full Squonk site also including the informatics matters web site
+If using basic or site then you must fist create certificates for nginx:
 
-Then source that file:
+mkdir -p images/nginx/certs/squonk.it
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout images/nginx/certs/squonk.it/privkey.pem -out images/nginx/certs/squonk.it/fullchain.pem
+openssl dhparam -out images/nginx/certs/squonk.it/dhparam.pem 2048
+
+The squonk web site is initiated with a dummy page that is fine for testing.
+If instead you want a real site then place the contents in
+images/nginx/sites/squonk.it/_site/
+This is designed for sites created with Jekyll, but as long as the content gets put into that
+directory it doesn't really matter how it is created.
+
+Then source the setenv.sh file:
 
 source setenv.sh
 
