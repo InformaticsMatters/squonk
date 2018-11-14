@@ -243,6 +243,7 @@ services:
             SQUONK_DOCKER_WORK_DIR:
             SQUONK_DEBUG_MODE:
             registry.url: https://index.docker.io/v1/
+            SQUONK_JOBEXECUTOR_POLL_FOR_SERVICE_DESCRIPTORS: 'true'
             #JAVA_OPTS: '"-Djava.util.logging.config.file=/logging.properties"'
         networks:
         - squonk_front
