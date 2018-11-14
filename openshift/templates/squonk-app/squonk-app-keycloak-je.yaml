@@ -93,6 +93,8 @@ objects:
             value: ${ROUTES_BASE_HOSTNAME}
           - name: ROUTE_PREFIX_SSO
             value: ${ROUTE_PREFIX_SSO}
+          - name: SQUONK_JOBEXECUTOR_POLL_FOR_SERVICE_DESCRIPTORS
+            value: "true"
 #          - name: JAVA_OPTS
 #            value: '"-Djava.util.logging.config.file=/logging.properties"'
 #          resources:
