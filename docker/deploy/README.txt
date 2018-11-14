@@ -53,7 +53,12 @@ Container name: cellexecutor
 Image source: squonk/cellexecutor
 This orchestrates job execution, brokering execution of REST web services and Docker based job execution.
 
-7. Portal
+7. JobExecutor
+--------------
+Image source: squonk/jobexecutor or squonk/jobexecutor-keycloak
+This provides external execution of Squonk services
+
+8. Portal
 ---------
 Container name: portal
 Image source: squonk/portal
@@ -61,19 +66,11 @@ This provides the front end web application. Currently this module is not in the
 The portal application primarily interacts with the coreservices container.
 Authentication/Authorization is provides by the keycloak container.
 
-8. XWiki
---------
-Container name: xwiki
-Image source: squonk/xwiki
-The provides the Wiki that contains the user documentation.
-It is optional and most sites will probably not run this and point to the one on squonk.it for the documentation. 
-Authentication/Authorization is provides by the keycloak container.
-
 9. NGinx
 --------
 Container name: nginx
 Image source: nginx
-This provides the front end reverse proxy to all services (currently portal and xwiki).
+This provides the front end reverse proxy to all services (currently portal and jobexecutor).
 This is the only service that is public facing.
 
 
@@ -116,7 +113,7 @@ source setenv.sh
 Then build the images and fire them up:
 
 ./images-build-all.sh
-./containers-setup-core.sh
+./containers-setup-infra.sh
 ./containers-setup-app.sh
 
 ====================================================================================
@@ -135,7 +132,7 @@ Alternatively if you are pulling from pre-built docker images do something like 
 
 ```sh
 ./pull-docker-images.sh
-/containers-setup-core.sh
+/containers-setup-infra.sh
 /containers-setup-app.sh
 ```
 
@@ -176,15 +173,9 @@ The realm definition will be found in the file squonk.json
 ====================================================================================
 ====================================================================================
 
-XWiki
------
-1. Provide mechanism for custom values for xwiki.authentication.validationKey adn xwiki.authentication.encryptionKey in xwiki.cfg.
-2. Examine other aspects of xwiki.cfg that might need attention.
-3. Upgrade XWIki to latest version. Particular attention to migrating existing content and keycloak security authentication. 
-
 Rabbitmq
 --------
-1. Find better way to do initial congiguration
+1. Find better way to do initial configuration
 
 Keycloak
 --------
@@ -196,9 +187,5 @@ Chemservices
 1. Break out into separate services for each vendor rather than one uber-service to allow ChemAxon ones to be 
 excluded if you don't have license file and to allow faster startup.
 
-Postgres
---------
-1. Seperate out the chemsearch from the squonk user data into 2 different databases so that the chemserch can be 
-shared across multiple Squonk instances and lower the memory requirements for a Squonk instance.
 
 

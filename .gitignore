@@ -78,7 +78,7 @@ docker/deploy/images/nginx/cert.crt
 docker/deploy/images/nginx/cert.key
 docker/deploy/images/nginx/default.ssl.conf
 docker/deploy/images/nginx/default.site.conf
-docker/deploy/images/nginx/sites/squonk.it/*
+docker/deploy/images/nginx/sites/squonk.it
 docker/deploy/images/nginx/sites/informaticsmatters.com/*
 
 docker/deploy/images/keycloak/keycloak.jks
