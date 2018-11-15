@@ -361,13 +361,13 @@ public class OpenShiftRunner extends AbstractRunner {
         // from underlying defaults. If that fails ... leave
 
         if (hostBaseWorkDir == null) {
-            LOG.fine("Null hostBaseWorkDir, trying getHostWorkDir()...");
+            LOG.info("Null hostBaseWorkDir, trying getHostWorkDir()...");
             hostBaseWorkDir = getHostWorkDir().getPath();
         }
         this.hostBaseWorkDir = hostBaseWorkDir;
 
         if (localWorkDir == null) {
-            LOG.fine("Null localWorkDir, trying getDefaultWorkDir()...");
+            LOG.info("Null localWorkDir, trying getDefaultWorkDir()...");
             localWorkDir = getDefaultWorkDir();
         }
         this.localWorkDir = localWorkDir;
@@ -439,11 +439,11 @@ public class OpenShiftRunner extends AbstractRunner {
                 "process.executor = 'k8s'\n" +
                 "k8s {\n" +
                 "  storageClaimName = '%s'\n" +
-                "  storageMountPath = '/source'\n" +
+                "  storageMountPath = '%s'\n" +
                 "  storageSubPath = '%s'\n" +
                 "}\n",
                 OS_DATA_VOLUME_PVC_NAME,
-                jobId,
+                localWorkDir,
                 jobId);
 
         return originalConfig + "\n" + additionalConfig;
