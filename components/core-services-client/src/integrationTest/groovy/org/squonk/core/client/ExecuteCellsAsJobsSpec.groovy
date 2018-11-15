@@ -16,8 +16,12 @@
 
 package org.squonk.core.client
 
+import org.squonk.core.DefaultServiceDescriptor
 import org.squonk.core.DockerServiceDescriptor
+import org.squonk.dataset.Dataset
 import org.squonk.execution.steps.StepDefinition
+import org.squonk.execution.steps.StepDefinitionConstants
+import org.squonk.execution.steps.impl.DatasetMergerStep
 import org.squonk.execution.steps.impl.DatasetSelectSliceStep
 import org.squonk.execution.steps.impl.DefaultDockerExecutorStep
 import org.squonk.execution.steps.impl.NoopStep
@@ -28,6 +32,8 @@ import org.squonk.io.IORoute
 import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition
 import org.squonk.jobdef.JobStatus
 import org.squonk.jobdef.StepsCellExecutorJobDefinition
+import org.squonk.notebook.api.VariableKey
+import org.squonk.types.BasicObject
 import org.squonk.util.CommonMimeTypes
 import spock.lang.Ignore
 import spock.lang.IgnoreIf
@@ -134,6 +140,85 @@ class ExecuteCellsAsJobsSpec extends ClientSpecBase {
         status2.status == JobStatus.Status.COMPLETED
         findResultSize(notebookId, editableId, cellId, "output") == 10
     }
+
+    void "dataset merger cell"() {
+
+        VariableKey sourceVariableKey1 = new VariableKey(sourceCellId, "output1")
+        VariableKey sourceVariableKey2 = new VariableKey(sourceCellId, "output2")
+        Dataset ds1 = new Dataset(BasicObject.class, [
+                new BasicObject([id:1, a:"1", hello:'world']),
+                new BasicObject([id:2,a:"99",hello:'mars',foo:'bar']),
+                new BasicObject([id:3,a:"100",hello:'mum'])
+        ])
+        Dataset ds2 = new Dataset(BasicObject.class, [
+                new BasicObject([id:2,b:"1",hello:'jupiter']),
+                new BasicObject([id:3,b:"99",hello:'saturn',foo:'baz']),
+                new BasicObject([id:4,b:"100",hello:'uranus'])
+        ])
+
+        loadDataset(ds1, sourceVariableKey1)
+        loadDataset(ds2, sourceVariableKey2)
+
+        StepDefinition step = new StepDefinition(DatasetMergerStep.class)
+                .withInputs(DatasetMergerStep.SERVICE_DESCRIPTOR.serviceConfig.inputDescriptors)
+                .withOutputs(DatasetMergerStep.SERVICE_DESCRIPTOR.serviceConfig.outputDescriptors)
+                .withInputVariableMapping("input2", sourceVariableKey1)
+                .withInputVariableMapping("input4", sourceVariableKey2)
+                .withOption(DatasetMergerStep.OPTION_MERGE_FIELD_NAME, 'id')
+                .withServiceDescriptor(DatasetMergerStep.SERVICE_DESCRIPTOR)
+
+        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
+        jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, outputs, step)
+
+        when:
+        JobStatus status1 = jobClient.submit(jobdef, username, null)
+        JobStatus status2 = waitForJob(status1.jobId)
+
+        then:
+        status1.status == JobStatus.Status.RUNNING
+        status2.status == JobStatus.Status.COMPLETED
+        def dataset = readDataset(notebookId, editableId, cellId, "output")
+        dataset.generateMetadata()
+        dataset.size == 4
+
+        BasicObject bo2 = dataset.items.find {
+            it.getValue('id') == 2
+        }
+        // original value should be retained
+        bo2.getValue('hello') == 'mars'
+    }
+
+    void "dataset cdk logp cell"() {
+
+        DefaultServiceDescriptor sd = new DefaultServiceDescriptor("dataset.cdk.logp", "logp", "logp",  null, null, null, null, null,
+                [IODescriptors.createMoleculeObjectDataset("input")] as IODescriptor[],
+                [IODescriptors.createMoleculeObjectDataset("output")] as IODescriptor[],
+                null, null, null, null,
+                StepDefinitionConstants.DatasetHttpExecutor.CLASSNAME)
+
+
+        StepDefinition step = new StepDefinition(DatasetSelectSliceStep.class)
+                .withInputs(inputs)
+                .withOutputs(outputs)
+                .withInputVariableMapping("input", sourceVariableKey)
+                .withServiceDescriptor(DatasetSelectSliceStep.SERVICE_DESCRIPTOR)
+
+        StepsCellExecutorJobDefinition jobdef = new ExecuteCellUsingStepsJobDefinition()
+        jobdef.configureCellAndSteps(notebookId, editableId, cellId, inputs, outputs, step)
+
+        when:
+        JobStatus status1 = jobClient.submit(jobdef, username, null)
+        JobStatus status2 = waitForJob(status1.jobId)
+
+        then:
+        status1.status == JobStatus.Status.RUNNING
+        status2.status == JobStatus.Status.COMPLETED
+        def dataset = readDataset(notebookId, editableId, cellId, "output")
+        dataset.generateMetadata()
+        dataset.size == datasetSize
+        dataset.items[0].values.size() == 2
+    }
+
 
     void "docker cell no conversion"() {
 

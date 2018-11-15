@@ -57,12 +57,11 @@ public class DatasetMergerStep extends AbstractThinStep {
             ServiceConfig.Status.ACTIVE,
             new Date(),
             new IODescriptor[]{
-                    // this is done backwards as JSPlumb displays the endpoints in reverse order.
-                    IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 5),
-                    IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 4),
-                    IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 3),
+                    IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 1),
                     IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 2),
-                    IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 1)
+                    IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 3),
+                    IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 4),
+                    IODescriptors.createMoleculeObjectDataset(StepDefinitionConstants.VARIABLE_INPUT_DATASET + 5)
             },
             // TODO - find a way to dynamically determine the output type based on the first bound input
             // the consequence of not doing this is that the merger cell always reports its output as BasicObject
@@ -119,13 +118,13 @@ public class DatasetMergerStep extends AbstractThinStep {
         int count = 0;
         int totalRecordCount = 0;
         List<String> sources = new ArrayList<>();
-        int i = 0;
-        while (true) {
-            i++;
+        for (int i = 1; i <= 5; i++) {
             Dataset<? extends BasicObject> nextDataset = (Dataset)inputs.get(VAR_INPUT_BASE + i);
             if (nextDataset == null) {
-                break;
+                LOG.info("Input" + i + " not present");
+                continue;
             } else {
+                LOG.info("Processing input" + i);
                 count++;
                 int size = nextDataset.getSize();
                 if (size < 0) {

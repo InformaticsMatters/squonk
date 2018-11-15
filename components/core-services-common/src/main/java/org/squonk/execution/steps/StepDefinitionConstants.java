@@ -209,8 +209,8 @@ public interface StepDefinitionConstants {
 
     interface CxnReactor {
         String CLASSNAME = "org.squonk.execution.steps.impl.CxnReactorStep";
-        String VARIABLE_R1 = "R1";
-        String VARIABLE_R2 = "R2";
+        String VARIABLE_R1 = "Reactant1";
+        String VARIABLE_R2 = "Reactant2";
         String OPTION_REACTION = "reaction";
         String OPTION_IGNORE_REACTIVITY = "ignoreReactivityRules";
         String OPTION_IGNORE_SELECTIVITY = "ignoreSelectivityRules";

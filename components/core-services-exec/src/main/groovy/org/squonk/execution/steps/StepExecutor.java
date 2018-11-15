@@ -152,7 +152,15 @@ public class StepExecutor {
             LOG.info("Step input descriptors: " + Arrays.stream(stepInputDescriptors).map((iod) -> iod.getName()).collect(Collectors.joining(",")));
             LOG.info("Step output descriptors: " + Arrays.stream(stepOutputDescriptors).map((iod) -> iod.getName()).collect(Collectors.joining(",")));
             LOG.info("Step input mappings: " + stepInputVariableMappings.entrySet().stream()
-                    .map((e) -> e.getKey() + "->" + e.getValue().getCellId() + ":" + e.getValue().getVariableName())
+                    .map((e) -> {
+                        String name = e.getKey();
+                        VariableKey value = e.getValue();
+                        if (value == null) {
+                            return name + " -> undefined";
+                        } else {
+                            return name + " -> " + value.getCellId() + ":" + value.getVariableName();
+                        }
+                    })
                     .collect(Collectors.joining(",")));
             LOG.info("Step output mappings: " + stepOutputVariableMappings.entrySet().stream()
                     .map((e) -> e.getKey() + "->" + e.getValue())
@@ -164,40 +172,44 @@ public class StepExecutor {
             for (IODescriptor iod : stepInputDescriptors) {
                 String variableName = iod.getName();
                 VariableKey key = stepInputVariableMappings.get(iod.getName());
-                Object input;
-                // this IODescriptor is the one provided by the job that defines the actual data types of the inputs
-                IODescriptor d = findIODescriptor(jobInputDescriptors, variableName);
-                if (key.getCellId().equals(cellId)) {
-                    // one of the inputs execution of the cell has already created e.g. output of a previous step
-                    LOG.info(String.format("Using variable %s as type %s", iod.getName(), iod.getPrimaryType().getName()));
-                    input = inputs.getInput(key.getCellId(), key.getVariableName());
-                    if (input == null) {
-                        // try as a saved variable
-                        LOG.info(String.format("Reading cell's variable %s as type %s", iod.getName(), d.getPrimaryType().getName()));
-                        input = varman.getValue(key, iod.getPrimaryType(), iod.getSecondaryType());
-                        LOG.info("Read cell's variable: " + input);
-                    }
-                } else if (d != null && d.getPrimaryType() != iod.getPrimaryType()) {
-                    // the type the step needs is different to what is present so conversion is needed
-                    // - should we also consider the secondary type when converting?
-                    LOG.info(String.format("Reading variable %s as type %s", iod.getName(), d.getPrimaryType().getName()));
-                    Object var = varman.getValue(key, d.getPrimaryType(), d.getSecondaryType());
-                    LOG.info(String.format("Converting input variable %s from %s to %s", iod.getName(),
-                            d.getPrimaryType().getName(), iod.getPrimaryType().getName()));
-                    Object converted = context.getTypeConverter().convertTo(iod.getPrimaryType(), var);
-                    if (converted == null) {
-                        throw new IllegalStateException(String.format("Can't convert input %s to %s",
-                                d.getPrimaryType().getName(), iod.getPrimaryType().getName()));
-                    }
-                    input = converted;
-                    inputs.setInput(key.getCellId(), iod.getName(), input);
+                if (key == null) {
+                    LOG.info("Variable binding for " + variableName + " not present. Ignoring variable");
                 } else {
-                    // no type conversion needed
-                    LOG.info(String.format("Reading variable %s as type %s", iod.getName(), iod.getPrimaryType().getName()));
-                    input = varman.getValue(key, iod.getPrimaryType(), iod.getSecondaryType());
-                    inputs.setInput(key.getCellId(), iod.getName(), input);
+                    Object input;
+                    // this IODescriptor is the one provided by the job that defines the actual data types of the inputs
+                    IODescriptor d = findIODescriptor(jobInputDescriptors, variableName);
+                    if (key.getCellId().equals(cellId)) {
+                        // one of the inputs execution of the cell has already created e.g. output of a previous step
+                        LOG.info(String.format("Using variable %s as type %s", iod.getName(), iod.getPrimaryType().getName()));
+                        input = inputs.getInput(key.getCellId(), key.getVariableName());
+                        if (input == null) {
+                            // try as a saved variable
+                            LOG.info(String.format("Reading cell's variable %s as type %s", iod.getName(), d.getPrimaryType().getName()));
+                            input = varman.getValue(key, iod.getPrimaryType(), iod.getSecondaryType());
+                            LOG.info("Read cell's variable: " + input);
+                        }
+                    } else if (d != null && d.getPrimaryType() != iod.getPrimaryType()) {
+                        // the type the step needs is different to what is present so conversion is needed
+                        // - should we also consider the secondary type when converting?
+                        LOG.info(String.format("Reading variable %s as type %s", iod.getName(), d.getPrimaryType().getName()));
+                        Object var = varman.getValue(key, d.getPrimaryType(), d.getSecondaryType());
+                        LOG.info(String.format("Converting input variable %s from %s to %s", iod.getName(),
+                                d.getPrimaryType().getName(), iod.getPrimaryType().getName()));
+                        Object converted = context.getTypeConverter().convertTo(iod.getPrimaryType(), var);
+                        if (converted == null) {
+                            throw new IllegalStateException(String.format("Can't convert input %s to %s",
+                                    d.getPrimaryType().getName(), iod.getPrimaryType().getName()));
+                        }
+                        input = converted;
+                        inputs.setInput(key.getCellId(), iod.getName(), input);
+                    } else {
+                        // no type conversion needed
+                        LOG.info(String.format("Reading variable %s as type %s", iod.getName(), iod.getPrimaryType().getName()));
+                        input = varman.getValue(key, iod.getPrimaryType(), iod.getSecondaryType());
+                        inputs.setInput(key.getCellId(), iod.getName(), input);
+                    }
+                    stepInputs.put(iod.getName(), input);
                 }
-                stepInputs.put(iod.getName(), input);
             }
 
             // execute

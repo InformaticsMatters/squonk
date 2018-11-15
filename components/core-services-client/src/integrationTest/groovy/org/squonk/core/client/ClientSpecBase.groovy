@@ -41,9 +41,6 @@ abstract class ClientSpecBase extends Specification {
     static String username = 'squonkuser'
     static JsonHandler JSON = JsonHandler.instance
 
-    //static String coreservicesHost = System.getenv("CORESERVICES_HOST")
-    //static String coreservicesPort = System.getenv("CORESERVICES_TCP_8080")
-
     static String coreservicesServer = getCoreServicesUrl()
 
     @Shared
@@ -60,7 +57,6 @@ abstract class ClientSpecBase extends Specification {
     Long cellId = 2
 
     static NotebookRestClient createNotebookRestClient() {
-        //new NotebookRestClient("$coreservicesHost:$coreservicesPort")
         new NotebookRestClient(coreservicesServer);
     }
 
@@ -159,6 +155,15 @@ abstract class ClientSpecBase extends Specification {
 
     InputStream readData(notebookId, editableId, cellId, varname) {
         return notebookClient.readStreamValue(notebookId, editableId, cellId, varname)
+    }
+
+    Dataset readDataset(notebookId, editableId, cellId, varname) {
+        DatasetMetadata meta = readMetadata(notebookId, editableId, cellId, varname)
+        if (meta == null) {
+            throw new NullPointerException("No dataset metadata")
+        }
+        InputStream data = readData(notebookId, editableId, cellId, varname)
+        return new Dataset(data, meta)
     }
 
     JobStatus waitForJob(def jobId, int numSecsToWait) {

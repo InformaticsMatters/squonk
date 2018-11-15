@@ -69,7 +69,7 @@ public class CxnReactorStep extends AbstractStep {
 
         if (reactants1 == null || reactants2 == null) {
             // TODO - allow single reactants
-            throw new IllegalStateException("Must specify reactants for R1 and R2");
+            throw new IllegalStateException("Must specify reactants for Reactant1 and Reactant2");
         }
 
         statusMessage = "Setting reactant IDs ...";
@@ -111,6 +111,9 @@ public class CxnReactorStep extends AbstractStep {
         // end debug output
 
         Dataset<MoleculeObject> output = new Dataset<>(results, new DatasetMetadata(MoleculeObject.class));
+        Stream<MoleculeObject> stream = output.getStream();
+        Stream output2 = addStreamCounter(stream, "Enumerated %s products");
+        output.replaceStream(output2);
         return Collections.singletonMap(StepDefinitionConstants.VARIABLE_OUTPUT_DATASET, output);
     }
 
