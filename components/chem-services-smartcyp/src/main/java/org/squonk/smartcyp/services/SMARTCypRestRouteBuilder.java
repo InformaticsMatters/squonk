@@ -74,7 +74,7 @@ public class SMARTCypRestRouteBuilder extends RouteBuilder {
             createServiceDescriptor(
                     "smartcyp.predict", "SMARTCyp", "Cytochrome P450 metabolism prediction using SMARTCyp",
                     new String[]{"p450", "cytochrome", "metabolism", "molecularproperties", "smartcyp"},
-                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/SMARTCyp",
+                    "/docs/cells/SMARTCyp",
                     "icons/properties_add.png", ROUTE_SMARTCYP, createSMARTCypOptionDescriptors())
     };
 

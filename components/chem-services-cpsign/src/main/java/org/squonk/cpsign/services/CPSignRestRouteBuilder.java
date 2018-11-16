@@ -70,13 +70,13 @@ public class CPSignRestRouteBuilder extends RouteBuilder {
             createServiceDescriptor(
                     "cpsign.regression.train", "CPSign Regression Train", "Train a regression predictive model using CPSign",
                     new String[]{"predictivemodel", "machinelearning", "cpsign"},
-                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/CPSign",
+                    "/docs/cells/CPSign",
                     "icons/properties_add.png", ROUTE_CPSIGN_TRAIN, createRegressionOptionDescriptors()),
 
             createServiceDescriptor(
                     "cpsign.classifiction.train", "CPSign Classification Train", "Train a classification predictive model using CPSign",
                     new String[]{"predictivemodel", "machinelearning", "cpsign"},
-                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/CPSign",
+                    "/docs/cells/CPSign",
                     "icons/properties_add.png", ROUTE_CPSIGN_TRAIN, createClassificationOptionDescriptors())
     };
 

@@ -70,7 +70,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     "ChemCentral structure search",
                     "Structure search in the ChemCentral database using RDKit PostgreSQL cartridge",
                     new String[]{"search", "rdkit"},
-                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Chemcentral+Structure+Search",
+                    "/docs/cells/Chemcentral%20Structure%20Search/",
                     "icons/structure_search.png",
                     null, // inputType - taken from the structure option
                     new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output")},
@@ -97,7 +97,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     "ChemCentral similarity search",
                     "Similarity search in the ChemCentral database using RDKit PostgreSQL cartridge",
                     new String[]{"search", "rdkit"},
-                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Chemcentral+Similarity+Search",
+                    "/docs/cells/Chemcentral%20Similarity%20Search/",
                     "icons/structure_search.png",
                     null, // inputType - taken from the structure option
                     new IODescriptor[] {IODescriptors.createMoleculeObjectDataset("output")},
@@ -138,7 +138,7 @@ public class RdkitSearchRestRouteBuilder extends RouteBuilder {
                     new String[]{
                             "search", "rdkit"
                     },
-                    "https://squonk.it/xwiki/bin/view/Cell+Directory/Data/Chemcentral+multi-search",
+                    "/docs/cells/Chemcentral%20multi-search/",
                     "icons/structure_search.png",
                     IODescriptors.createMoleculeObjectDataset("input"),
                     IODescriptors.createMoleculeObjectDataset("output"),
