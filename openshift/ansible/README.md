@@ -55,14 +55,15 @@ disk provisioning ready for each PV that expects a volume -
 the Ansible playbooks do not setup NFS.
 
 ## MiniShift considerations
-While it's a work-in-progress, support for MiniShift is available.
-Tested with: -
+While it's a work-in-progress, support for some versions of MiniShift is
+available. We've tested with: -
 
 -   OpenShift 3.9.0 (MiniShift 1.25.0)
+-   OpenShift 3.11.0 (MiniShift 1.27.0)
 -   VirtualBox 5.2.20 (OSX)
--   MiniShift 1.25.0 and 1.26.1
+-   MiniShift 1.25.0, 1.26.1 and 1.27.0
 
-Start MiniShift with something like: -
+Start MiniShift (pre-1.26) with something like: -
 
     minishift start --cpus 4 --memory 8GB --disk-size 40GB \
         --openshift-version 3.9.0 --vm-driver virtualbox
