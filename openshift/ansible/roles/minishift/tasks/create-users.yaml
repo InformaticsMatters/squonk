@@ -23,7 +23,7 @@
   when: not users_result.stdout | regex_search('^%s\s' % item, multiline=True)
 
 - name: Get cluster role bindings
-  shell: oc get clusterrolebindings | grep cluster-admin
+  shell: oc adm policy who-can cluster-admin - --all-namespaces -o yaml
   register: role_result
   changed_when: False
 
@@ -31,4 +31,6 @@
   shell: oc adm policy add-cluster-role-to-user cluster-admin {{ item }}
   loop:
   - "{{ oc_admin }}"
-  when: not role_result.stdout | regex_search('^\S+\s+\S+\s+%s' % item, multiline=True)
+  vars:
+    role_bindings: "{{ role_result.stdout | from_yaml }}"
+  when: oc_admin not in role_bindings.users
