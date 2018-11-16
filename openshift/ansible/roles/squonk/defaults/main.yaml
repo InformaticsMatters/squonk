@@ -2,8 +2,6 @@
 
 # The image (and tag) for the container
 # that will be used to run NextFlow pipleines...
-#
-# Typically 'informaticsmatters/nextflow-docker:18.10.1'
 oc_squonk_nextflow_image: "{{ ansible_env.OC_SQUONK_NEXTFLOW_IMAGE }}"
 
 # What volume type are we using? One of: -
