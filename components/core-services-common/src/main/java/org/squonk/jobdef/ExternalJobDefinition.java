@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import java.util.UUID;
  */
 public class ExternalJobDefinition implements JobDefinition {
 
-    //protected final IODescriptor[] inputs;
-    //protected final IODescriptor[] outputs;
     protected final ServiceDescriptor serviceDescriptor;
     protected final Map<String, Object> options;
     protected final String jobId;
@@ -40,23 +38,6 @@ public class ExternalJobDefinition implements JobDefinition {
         this.options = options;
         this.jobId = UUID.randomUUID().toString();
     }
-
-//    /** The inputs the execution accepts.
-//     *
-//     * @return
-//     */
-//    IODescriptor[] getInputs() {
-//        return inputs;
-//    }
-//
-//    /** The outputs the cell produces.
-//     *
-//     * @return
-//     */
-//    IODescriptor[] getOutputs() {
-//        return outputs;
-//    }
-
 
     public String getJobId() {
         return jobId;

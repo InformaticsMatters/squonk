@@ -38,7 +38,7 @@ import java.util.logging.Logger;
 public class DatasetNextflowInDockerExecutorStep extends AbstractContainerStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetNextflowInDockerExecutorStep.class.getName());
-    private static final String NEXTFLOW_IMAGE = IOUtils.getConfiguration("SQUONK_NEXTFLOW_IMAGE", "informaticsmatters/nextflow-docker:0.30.2");
+    private static final String NEXTFLOW_IMAGE = IOUtils.getConfiguration("SQUONK_NEXTFLOW_IMAGE", "informaticsmatters/nextflow:18.10.1");
     private static final String NEXTFLOW_OPTIONS = IOUtils.getConfiguration("SQUONK_NEXTFLOW_OPTIONS", "-with-docker centos:7 -with-trace");
 
     protected static final String MSG_RUNNING_NEXTFLOW = "Running Nextflow";
@@ -73,11 +73,11 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractContainerStep {
         LOG.info("Docker Nextflow executor image: " + NEXTFLOW_IMAGE + ", hostWorkDir: " + runner.getHostWorkDir() + ", command: " + fullCommand);
 
         // write the command that executes everything
-        LOG.info("Writing command file");
+        LOG.fine("Writing command file");
         runner.writeInput("execute", "#!/bin/sh\n" + fullCommand + "\n", true);
 
         // write the nextflow file that executes everything
-        LOG.info("Writing nextflow.nf");
+        LOG.fine("Writing nextflow.nf");
         String nextflowFileContents = descriptor.getNextflowFile();
         runner.writeInput("nextflow.nf", nextflowFileContents, false);
 
@@ -88,10 +88,10 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractContainerStep {
             // There may be nothing to add but the returned string
             // will be valid.
             nextflowConfigContents = runner.addExtraNextflowConfig(nextflowConfigContents);
-            LOG.info("Writing nextflow.config as:\n" + nextflowConfigContents);
+            LOG.fine("Writing nextflow.config as:\n" + nextflowConfigContents);
             runner.writeInput("nextflow.config", nextflowConfigContents, false);
         } else {
-            LOG.info("No nextflow.config");
+            LOG.fine("No nextflow.config");
         }
 
         // The runner's either a plain Docker runner

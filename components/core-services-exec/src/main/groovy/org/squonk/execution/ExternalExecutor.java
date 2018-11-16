@@ -64,18 +64,10 @@ public class ExternalExecutor extends ExecutableJob {
 
     private static final Logger LOG = Logger.getLogger(ExternalExecutor.class.getName());
 
-    private static final String NEXTFLOW_IMAGE = IOUtils.
-            getConfiguration("SQUONK_NEXTFLOW_IMAGE",
-                    "informaticsmatters/nextflow-docker:0.30.2");
-    private static final String NEXTFLOW_OPTIONS = IOUtils.
-            getConfiguration("SQUONK_NEXTFLOW_OPTIONS",
-                    "-with-docker ubuntu");
-
     private final ExternalJobDefinition jobDefinition;
     private final ExecutorCallback callback;
     private final Map<String, Object> data;
     private final CamelContext camelContext;
-    //private final Map<String, Object> results = new LinkedHashMap<>();
     private Map<String,List<SquonkDataSource>> results = new LinkedHashMap<>();
     private File resultsDir;
 
@@ -328,9 +320,7 @@ public class ExternalExecutor extends ExecutableJob {
         }
     }
 
-    protected <P, Q> void doHandleOutput(
-            File workdir,
-            IODescriptor<P, Q> iod) throws Exception {
+    protected <P, Q> void doHandleOutput(File workdir, IODescriptor<P, Q> iod) throws Exception {
 
         List<SquonkDataSource> outputs = buildOutputs(workdir, iod);
         results.put(iod.getName(), outputs);
@@ -344,9 +334,7 @@ public class ExternalExecutor extends ExecutableJob {
         return dataSources;
     }
 
-    protected void handleInputs(
-            DefaultServiceDescriptor serviceDescriptor,
-            ContainerRunner runner) throws Exception {
+    protected void handleInputs(DefaultServiceDescriptor serviceDescriptor, ContainerRunner runner) throws Exception {
 
         IODescriptor[] inputDescriptors = serviceDescriptor.resolveInputIODescriptors();
         if (inputDescriptors != null) {
@@ -363,10 +351,7 @@ public class ExternalExecutor extends ExecutableJob {
         }
     }
 
-    protected <P, Q> void doHandleInput(
-            P input,
-            ContainerRunner runner,
-            IODescriptor<P, Q> iod) throws Exception {
+    protected <P, Q> void doHandleInput(P input, ContainerRunner runner, IODescriptor<P, Q> iod) throws Exception {
 
         LOG.info("Handling input for " + iod.getName());
 
