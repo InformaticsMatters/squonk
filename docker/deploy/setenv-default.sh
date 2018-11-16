@@ -49,9 +49,6 @@ export POSTGRES_KEYCLOAK_PASSWORD=squonk
 # password for the squonk user in postgres
 export POSTGRES_SQUONK_PASSWORD=squonk
 
-# password for the xwik user in postgres
-export POSTGRES_XWIKI_PASSWORD=squonk
-
 # The interval (in ms) that Docker service descriptors are reloaded by the coreservices module
 # export SQUONK_SERVICE_DISCOVERY_INTERVAL=900000
 
