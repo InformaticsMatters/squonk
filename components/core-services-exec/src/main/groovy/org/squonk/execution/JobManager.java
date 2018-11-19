@@ -26,8 +26,10 @@ import org.squonk.jobdef.ExternalJobDefinition;
 import org.squonk.jobdef.JobStatus;
 import org.squonk.jobdef.JobStatus.Status;
 import org.squonk.types.DefaultHandler;
+import org.squonk.types.TypeResolver;
 import org.squonk.util.IOUtils;
 
+import javax.activation.DataSource;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
@@ -178,7 +180,7 @@ public class JobManager implements ExecutorCallback {
             String username,
             String serviceId,
             Map<String,Object> options,
-            Map<String, InputStream> inputs) throws Exception {
+            Map<String, DataSource> inputs) throws Exception {
 
         return execute(username, serviceId, options, inputs, true);
     }
@@ -187,7 +189,7 @@ public class JobManager implements ExecutorCallback {
             String username,
             String serviceId,
             Map<String, Object> options,
-            Map<String, InputStream> inputs,
+            Map<String, DataSource> inputs,
             boolean async) throws Exception {
 
         if (options == null) {
@@ -201,7 +203,7 @@ public class JobManager implements ExecutorCallback {
         ExternalJobDefinition jobDefinition = new ExternalJobDefinition(serviceDescriptor, options);
         LOG.info("Created JobDefinition with ID " + jobDefinition.getJobId());
 
-        Map<String,Object> data = createObjectsFromInputStreams(inputs, serviceDescriptor.resolveInputIODescriptors());
+        Map<String,Object> data = createObjectsFromDataSources(inputs, serviceDescriptor.resolveInputIODescriptors());
         LOG.info("Handling " + data.size() + " inputs");
 
         ExternalExecutor executor = new ExternalExecutor(jobDefinition, data, options, serviceDescriptor, camelContext, this);
@@ -236,41 +238,119 @@ public class JobManager implements ExecutorCallback {
         return jobStatus;
     }
 
-    protected Map<String,Object> createObjectsFromInputStreams(Map<String, InputStream> inputs, IODescriptor[] ioDescriptors) throws Exception {
-        Map<String,Object> results = new HashMap<>();
-        Map<IODescriptor,Map<String,InputStream>> intermediates = new HashMap<>();
-        Set<String> keys = new HashSet<>(inputs.keySet());
-        for (Map.Entry<String, InputStream> e : inputs.entrySet()) {
-            String name = e.getKey();
-            InputStream is = e.getValue();
-            for(IODescriptor iod: ioDescriptors) {
-                if (iod.getName().equalsIgnoreCase(name)) {
+    protected Map<String,Object> createObjectsFromDataSources(Map<String, DataSource> inputs, IODescriptor[] ioDescriptors) throws Exception {
+        // group the datasources by their input name
+        Map<IODescriptor,List<DataSource>> collectedDataSources = collectDataSources(inputs, ioDescriptors);
+        // now convert them to objects of the type specified by the datasource
+        Map<IODescriptor, Object> collectedObjects = collectObjects(collectedDataSources);
+        // now convert the value types if necessary e.g. convert sdf to datasource
+        Map<IODescriptor, Object> convertedObjects = convertObjects(collectedObjects);
+        // generate the output
+        Map<String,Object> results = new LinkedHashMap<>();
+        for (Map.Entry<IODescriptor,Object> e : convertedObjects.entrySet()) {
+            results.put(e.getKey().getName(), e.getValue());
+        }
+        return results;
+    }
+
+    private Map<IODescriptor,List<DataSource>> collectDataSources(Map<String, DataSource> inputs, IODescriptor[] ioDescriptors) throws Exception {
+        Map<IODescriptor,List<DataSource>> results = new LinkedHashMap<>();
+        int count = 0;
+        for (Map.Entry<String, DataSource> e : inputs.entrySet()) {
+            String dataSourceName = e.getKey();
+            DataSource dataSource = e.getValue();
+            String contentType = dataSource.getContentType();
+            LOG.fine("Key: " + e.getKey() + " DataSourceName: " + dataSourceName + " ContentType: " + contentType);
+            for (IODescriptor iod : ioDescriptors) {
+                String inputName = iod.getName();
+                if (inputName.equalsIgnoreCase(dataSourceName)) {
                     // exact match - an object that has a single InputStream
-                    Object value = DefaultHandler.buildObject(iod, Collections.singletonMap(name, is));
-                    results.put(name, value);
-                    keys.remove(name);
-                } else if (name.toLowerCase().startsWith(iod.getName() + "_")) {
-                    // object using mulitple InputStream parts
-                    // each one will be named like <name-from-iodescriptor>_<part-name>
-                    Map<String,InputStream> map = intermediates.get(iod);
-                    if (map == null) {
-                        map = new HashMap<>();
-                        intermediates.put(iod, map);
+                    count++;
+                    if (results.containsKey(iod)) {
+                        throw new IllegalStateException("Duplicate DataSources found for " + inputName);
+                    } else {
+                        results.put(iod, Collections.singletonList(dataSource));
+                        LOG.fine("Collected datasource " + dataSource.getName());
                     }
-                    String partName = name.substring((iod.getName() + "_").length());
-                    map.put(partName, is);
-                    keys.remove(name);
+                } else if (dataSourceName.toLowerCase().startsWith(inputName + "_")) {
+                    // object using multiple InputStream parts
+                    // each one will be named like <name-from-iodescriptor>_<part-name>
+                    count++;
+                    if (results.containsKey(iod)) {
+                        results.get(iod).add(dataSource);
+                    } else {
+                        List<DataSource> list = new ArrayList<>();
+                        list.add(dataSource);
+                        results.put(iod, list);
+                        LOG.fine("Collected datasource " + dataSource.getName());
+                    }
                 }
             }
         }
-        for (Map.Entry<IODescriptor,Map<String,InputStream>> intermediate: intermediates.entrySet()) {
-            IODescriptor iod = intermediate.getKey();
-            Map<String,InputStream> values = intermediate.getValue();
-            Object value = DefaultHandler.buildObject(iod, values);
-            results.put(iod.getName(), value);
+        if (count != inputs.size()) {
+            LOG.warning("Inconsistent DataSets. Found " + count + " that matched input descriptors but " + inputs.size() + " were present");
         }
-        if (keys.size() > 0) {
-            LOG.warning("Unrecognised names in input: " + keys.stream().collect(Collectors.joining(",")));
+        return results;
+    }
+
+    private Map<IODescriptor, Object> collectObjects(Map<IODescriptor,List<DataSource>> inputs) throws Exception {
+        if (inputs.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<IODescriptor, Object> results = new LinkedHashMap<>();
+        for (Map.Entry<IODescriptor, List<DataSource>> e : inputs.entrySet()) {
+            IODescriptor iod = e.getKey();
+            List<DataSource> dataSources = e.getValue();
+            LOG.fine("Building objects for " + dataSources.stream().map((d) -> d.getName()).collect(Collectors.joining(",")));
+            Object value = null;
+            if (dataSources.size() == 1) {
+                DataSource ds = dataSources.get(0);
+                IODescriptor dsIod = TypeResolver.getInstance().createIODescriptor(iod.getName(), ds.getContentType());
+                value = DefaultHandler.buildObject(dsIod, Collections.singletonMap(iod.getName(), ds.getInputStream()));
+                results.put(iod, value);
+            } else if (dataSources.size() > 1) {
+                Map<String, InputStream> inputStreams = new LinkedHashMap<>(dataSources.size());
+                for (DataSource ds : dataSources) {
+                    String dsn = ds.getName();
+                    String prefix = iod.getName() + "_";
+                    if (dsn.toLowerCase().startsWith(prefix)) {
+                        String trimmed = dsn.substring(prefix.length());
+                        inputStreams.put(trimmed, ds.getInputStream());
+                        LOG.fine("Put trimmed input " + trimmed);
+                    } else {
+                        throw new IllegalStateException("Unexpected datasource name " + dsn + " for input " + iod.getName());
+                    }
+                }
+                value = DefaultHandler.buildObject(iod, inputStreams);
+                results.put(iod, value);
+            }
+
+        }
+        return results;
+    }
+
+    /** Convert the inputs to the types defined by the IODescriptor.
+     *
+     * @param inputs
+     * @return
+     */
+    private Map<IODescriptor, Object> convertObjects(Map<IODescriptor, Object> inputs) {
+        Map<IODescriptor, Object> results = new LinkedHashMap<>(inputs.size());
+        for (Map.Entry<IODescriptor, Object> e : inputs.entrySet()) {
+            IODescriptor iod = e.getKey();
+            Object val = e.getValue();
+            if (iod.getPrimaryType().isAssignableFrom(val.getClass())) {
+                results.put(iod, val);
+            } else {
+                Object converted = camelContext.getTypeConverter().convertTo(iod.getPrimaryType(), val);
+                if (converted == null) {
+                    throw new IllegalStateException(String.format("Can't convert input %s to %s",
+                            iod.getPrimaryType().getName(), iod.getPrimaryType().getName()));
+                } else {
+                    LOG.info("Converted " + val.getClass().getName() + " to " + iod.getPrimaryType().getName());
+                    results.put(iod, converted);
+                }
+            }
         }
         return results;
     }

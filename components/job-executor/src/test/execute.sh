@@ -14,7 +14,7 @@
 
 # Run a couple of jobs...
 
-
+echo "submitting job core.dataset.filter.slice.v1"
 curl -X POST \
   -F 'options={}'\
   -F "input_data=@../../../../data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
@@ -24,6 +24,7 @@ curl -X POST \
   http://localhost:8888/jobexecutor/rest/v1/jobs/core.dataset.filter.slice.v1
 
 
+echo "submitting job pipelines.rdkit.cluster.butina"
 curl -X POST \
   -F 'options={"arg.threshold": 0.6, "arg.descriptor": "morgan2", "arg.metric": "tanimoto"}'\
   -F "input_data=@../../../../data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\
@@ -58,7 +59,7 @@ curl -H "SquonkUsername: user1" http://localhost:8888/jobexecutor/rest/v1/jobs/$
 
 # Run a nextflow job (without a user)
 # wand wait until READY
-
+echo "submitting job test.nextflow.copydataset"
 NF_JOB_ID=$(curl -X POST \
   -F 'options={}'\
   -F "input_data=@../../../../data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data"\

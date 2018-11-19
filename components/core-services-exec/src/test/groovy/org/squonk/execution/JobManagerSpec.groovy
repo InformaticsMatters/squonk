@@ -15,8 +15,11 @@
  */
 package org.squonk.execution
 
+import org.apache.camel.impl.DefaultCamelContext
+import org.squonk.camel.typeConverters.MoleculeStreamTypeConverter
 import org.squonk.core.DockerServiceDescriptor
 import org.squonk.dataset.Dataset
+import org.squonk.io.FileDataSource
 import org.squonk.io.IODescriptor
 import org.squonk.jobdef.JobStatus
 import org.squonk.reader.SDFReader
@@ -96,14 +99,14 @@ class JobManagerSpec extends Specification {
 
     void "createObjectsFromInputStreams for sdf"() {
 
-
-        def data = new FileInputStream("../../data/testfiles/Kinase_inhibs.sdf.gz")
+        def data = new FileDataSource("sdf", CommonMimeTypes.MIME_TYPE_MDL_SDF,
+                new File("../../data/testfiles/Kinase_inhibs.sdf.gz"), true)
         def iod = new IODescriptor("input", CommonMimeTypes.MIME_TYPE_MDL_SDF, SDFile.class)
         def jobManager = new JobManager(false, true)
         jobManager.putServiceDescriptors(Collections.singletonList(createSdfServiceDescriptor()))
 
         when:
-        def results = jobManager.createObjectsFromInputStreams([(iod.name + '_data'): data], [iod] as IODescriptor[])
+        def results = jobManager.createObjectsFromDataSources([(iod.name + '_data'): data], [iod] as IODescriptor[])
 
         then:
         results.size() == 1
@@ -112,20 +115,22 @@ class JobManagerSpec extends Specification {
         countSdf(sdf) == 36
 
         cleanup:
-        data?.close()
+        data?.inputStream.close()
     }
 
     void "createObjectsFromInputStreams for dataset"() {
 
-
-        def data = new FileInputStream("../../data/testfiles/Kinase_inhibs.json.gz")
-        def meta = new FileInputStream("../../data/testfiles/Kinase_inhibs.metadata")
-        def iod = new IODescriptor("input", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON, Dataset.class, MoleculeObject.class)
+        def data = new FileDataSource("data", "input_data", CommonMimeTypes.MIME_TYPE_MOLECULE_OBJECT_JSON,
+                new File("../../data/testfiles/Kinase_inhibs.json.gz"), true)
+        def meta = new FileDataSource("metadata", "input_metadata", CommonMimeTypes.MIME_TYPE_DATASET_METADATA,
+                new File("../../data/testfiles/Kinase_inhibs.metadata"), false)
+        def iod = new IODescriptor("input", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON,
+                Dataset.class, MoleculeObject.class)
         def jobManager = new JobManager(false, true)
         jobManager.putServiceDescriptors(Collections.singletonList(createDatasetServiceDescriptor()))
 
         when:
-        def results = jobManager.createObjectsFromInputStreams([(iod.name + '_data'): data, (iod.name + '_metadata'): meta], [iod] as IODescriptor[])
+        def results = jobManager.createObjectsFromDataSources([(iod.name + '_data'): data, (iod.name + '_metadata'): meta], [iod] as IODescriptor[])
 
         then:
         results.size() == 1
@@ -134,8 +139,8 @@ class JobManagerSpec extends Specification {
         ds.items.size() == 36
 
         cleanup:
-        data?.close()
-        meta?.close()
+        data?.inputStream.close()
+        meta?.inputStream.close()
     }
 
     JobStatus waitTillResultsReady(mgr, jobStatus) {
@@ -154,14 +159,15 @@ class JobManagerSpec extends Specification {
     void "sdf execute"() {
 
         // create the input
-        def source = new File("../../data/testfiles/Kinase_inhibs.sdf.gz")
+        def source = new FileDataSource("sdf", CommonMimeTypes.MIME_TYPE_MDL_SDF,
+                new File("../../data/testfiles/Kinase_inhibs.sdf.gz"), true)
         def sd = createSdfServiceDescriptor()
         JobManager mgr = new JobManager(false, true)
         mgr.putServiceDescriptors(Collections.singletonList(createSdfServiceDescriptor()))
 
         when:
 
-        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input": new FileInputStream(source)])
+        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input": source])
         jobStatus = waitTillResultsReady(mgr, jobStatus)
 
         then:
@@ -176,19 +182,51 @@ class JobManagerSpec extends Specification {
         mgr?.cleanupJob(USER, jobStatus?.getJobId())
     }
 
-
     void "dataset execute"() {
 
         // create the input
-        def source1 = new File("../../data/testfiles/Kinase_inhibs.json.gz").bytes
-        def source2 = new File("../../data/testfiles/Kinase_inhibs.metadata").bytes
+        def data = new FileDataSource("data", "input_data", CommonMimeTypes.MIME_TYPE_MOLECULE_OBJECT_JSON,
+                new File("../../data/testfiles/Kinase_inhibs.json.gz"), true)
+        def meta = new FileDataSource("metadata", "input_metadata", CommonMimeTypes.MIME_TYPE_DATASET_METADATA,
+                new File("../../data/testfiles/Kinase_inhibs.metadata"), false)
         def sd = createDatasetServiceDescriptor()
         println JsonHandler.getInstance().objectToJson(sd)
         JobManager mgr = new JobManager(false, true)
         mgr.putServiceDescriptors(Collections.singletonList(createDatasetServiceDescriptor()))
 
         when:
-        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input_data": new ByteArrayInputStream(source1), "input_metadata": new ByteArrayInputStream(source2)])
+        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input_data": data, "input_metadata": meta])
+        jobStatus = waitTillResultsReady(mgr, jobStatus)
+        def results = mgr.getJobResultsAsDataSources(USER, jobStatus.getJobId())
+
+        then:
+        results != null
+        results.size() == 1
+        def outputs = results['output']
+        outputs.size() == 2
+        outputs[0].inputStream.text.size() > 0
+        outputs[1].inputStream.bytes.length > 0
+
+        cleanup:
+        mgr?.cleanupJob(USER, jobStatus?.getJobId())
+    }
+
+    void "dataset execute with convert from sdf"() {
+
+        // create the input as SDF
+        def sdf = new FileDataSource("sdf", CommonMimeTypes.MIME_TYPE_MDL_SDF,
+                new File("../../data/testfiles/Kinase_inhibs.sdf.gz"), true)
+        // but the service descriptor specifies dataset
+        def sd = createDatasetServiceDescriptor()
+        println JsonHandler.getInstance().objectToJson(sd)
+        JobManager mgr = new JobManager(false, true)
+        def camelContext = new DefaultCamelContext()
+        camelContext.typeConverterRegistry.addTypeConverters(new MoleculeStreamTypeConverter())
+        mgr.setCamelContext(camelContext)
+        mgr.putServiceDescriptors(Collections.singletonList(createDatasetServiceDescriptor()))
+
+        when:
+        def jobStatus = mgr.executeAsync(USER, sd.getId(), [:], ["input": sdf])
         jobStatus = waitTillResultsReady(mgr, jobStatus)
         def results = mgr.getJobResultsAsDataSources(USER, jobStatus.getJobId())
 

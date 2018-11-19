@@ -23,8 +23,28 @@ public class FileDataSource extends SquonkDataSource {
 
     private final File file;
 
+    /** The datasource name is taken from the file name
+     *
+     * @param role
+     * @param contentType
+     * @param file
+     * @param gzipped
+     */
     public FileDataSource(String role, String contentType, File file, Boolean gzipped) {
         super(role, file.getName(), contentType, gzipped);
+        this.file = file;
+    }
+
+    /** Constructor for when you want to specify a different name for datasource.
+     *
+     * @param role
+     * @param name
+     * @param contentType
+     * @param file
+     * @param gzipped
+     */
+    public FileDataSource(String role, String name, String contentType, File file, Boolean gzipped) {
+        super(role, name, contentType, gzipped);
         this.file = file;
     }
 
@@ -46,5 +66,13 @@ public class FileDataSource extends SquonkDataSource {
     @Override
     public boolean canReadMultipleTimes() {
         return true;
+    }
+
+    /** Get the name of the original file as it might be different to the datasource name
+     *
+     * @return
+     */
+    public String getOriginalFilename() {
+        return file.getName();
     }
 }

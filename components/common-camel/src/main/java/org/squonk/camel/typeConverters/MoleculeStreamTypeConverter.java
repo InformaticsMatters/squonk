@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.squonk.camel.typeConverters;
 
+import org.apache.camel.TypeConverters;
 import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
 import org.apache.camel.Converter;
@@ -37,7 +38,7 @@ import java.util.stream.Stream;
  * @author timbo
  */
 @Converter
-public class MoleculeStreamTypeConverter {
+public class MoleculeStreamTypeConverter implements TypeConverters {
 
 
     @Converter

@@ -34,6 +34,7 @@ import org.squonk.util.IOUtils;
 import org.squonk.util.ServiceConstants;
 
 import javax.activation.DataHandler;
+import javax.activation.DataSource;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -280,12 +281,13 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
             }
             String body = message.getBody(String.class);
             Map<String, Object> options = JsonHandler.getInstance().objectFromJson(body, new TypeReference<Map<String, Object>>() {});
-            Map<String, InputStream> inputs = new HashMap<>();
+            Map<String, DataSource> inputs = new HashMap<>();
             for (Map.Entry<String, DataHandler> e : message.getAttachments().entrySet()) {
                 String name = e.getKey();
-                InputStream input = e.getValue().getInputStream();
-                inputs.put(name, input);
-                LOG.fine("Added input " + name);
+                DataHandler dataHandler = e.getValue();
+                inputs.put(name, dataHandler.getDataSource());
+                LOG.info("Found attachment " + name + " with dataHandler " + dataHandler.getDataSource().getName() +
+                        " of ContentType " + dataHandler.getDataSource().getContentType());
             }
             JobStatus jobStatus = jobManager.executeAsync(username, service, options, inputs);
 
@@ -343,6 +345,8 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 }
                 LOG.fine("Adding attachment " + name + " of type " + dataSource.getContentType());
                 dataSource.setGzipContent(false);
+
+                // TODO - consider if we can handle conversions - difficult if there are multiple outputs?
 
                 message.addAttachment(name, new DataHandler(dataSource));
             }

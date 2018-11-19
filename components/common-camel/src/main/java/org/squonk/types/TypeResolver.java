@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2018 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ import org.squonk.io.IODescriptor;
 import org.squonk.io.SquonkDataSource;
 import org.squonk.util.Utils;
 
+import javax.activation.DataSource;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -107,6 +107,11 @@ public class TypeResolver implements MimeTypeResolver {
 
     public String resolveMediaType(Class primaryType, Class secondaryType) {
         return TypeDescriptor.resolveMediaType(primaryType, secondaryType);
+    }
+
+    public IODescriptor createIODescriptor(DataSource dataSource) {
+        String mediaType = dataSource.getContentType();
+        return new IODescriptor(dataSource.getName(), mediaType, resolvePrimaryType(mediaType), resolveGenericType(mediaType));
     }
 
     public IODescriptor createIODescriptor(String name, String mediaType) {
