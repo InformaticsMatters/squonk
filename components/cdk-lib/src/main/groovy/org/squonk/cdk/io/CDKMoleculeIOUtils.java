@@ -211,30 +211,45 @@ public class CDKMoleculeIOUtils {
         final PipedInputStream in = new PipedInputStream();
         final PipedOutputStream out = new PipedOutputStream(in);
 
+
         Thread t = new Thread() {
             public void run() {
                 try (SDFWriter writer = new SDFWriter(out)) {
+                    // TODO - change this to a map (MoleculeObject -> IAtomContainer operation followed by an operation
+                    // to write to SDF
                     mols.forEachOrdered((mo) -> {
-                        try {
-                            IAtomContainer mol = fetchMolecule(mo, false);
-                            for (Map.Entry<String, Object> e : mo.getValues().entrySet()) {
-                                String key = e.getKey();
-                                Object val = e.getValue();
-                                if (key != null && val != null) {
-                                    mol.setProperty(key, val);
+                        IAtomContainer mol = fetchMolecule(mo, false);
+                        if (mol == null) {
+                            if (haltOnError) {
+                                String msg = "Failed to read molecule " + mo.getUUID();
+                                if (mo.getFormat().startsWith("smiles")) {
+                                    msg += ". Original smiles: " + mo.getSource();
                                 }
+                                throw new RuntimeException(msg);
+                            } else {
+                                LOG.warning("Failed to read molecule " + mo.getUUID());
+                                mol = handleErrorWithEmptyMolecule(mo, null);
                             }
-                            // for some reason CDK adds this property with no value, so we remove it
-                            //mol.removeProperty("cdk:Title");
-                            mol.removeProperty("cdk:Remark");
-                            //LOG.info("WRITING MOL");
+                        } else {
+                            copyPropertiesToIAtomContainer(mo, mol);
+                        }
+                        try {
                             writer.write(mol);
                         } catch (CDKException e) {
                             if (haltOnError) {
-                                throw new RuntimeException("Failed to read molecule " + mo.getUUID(), e);
+                                String msg = "Failed to write molecule " + mo.getUUID();
+                                if (mo.getFormat().startsWith("smiles")) {
+                                    msg += ". Original smiles: " + mo.getSource();
+                                }
+                                throw new RuntimeException(msg, e);
                             } else {
-                                LOG.warning("Failed to read molecule " + mo.getUUID());
-                                // TODO - replace with an empty molecule. See #20
+                                LOG.warning("Failed to write molecule " + mo.getUUID());
+                                AtomContainer emptyMol = handleErrorWithEmptyMolecule(mo, e.getLocalizedMessage());
+                                try {
+                                    writer.write(emptyMol);
+                                } catch (CDKException e1) {
+                                    LOG.log(Level.WARNING, "Failed to write empty molecule " + mo.getUUID(), e1);
+                                }
                             }
                         }
                     });
@@ -248,6 +263,40 @@ public class CDKMoleculeIOUtils {
         t.start();
 
         return new CDKSDFile(in, false);
+    }
+
+    /**
+     * Replace with an empty molecule. See #20
+     *
+     * @param mo
+     * @param errorMessage
+     */
+    private static AtomContainer handleErrorWithEmptyMolecule(MoleculeObject mo, String errorMessage) {
+        AtomContainer emptyMol = new AtomContainer();
+        StringBuilder b = new StringBuilder("Invalid molecule encountered\n");
+        b.append("Molecule is replaced with an empty molecule\n");
+        if (mo.getFormat().startsWith("smiles")) {
+            b.append("Original smiles: ").append(mo.getSource()).append("\n");
+        }
+        if (errorMessage != null) {
+            b.append("Error was: " + errorMessage).append("\n");
+        }
+        copyPropertiesToIAtomContainer(mo, emptyMol);
+        emptyMol.setProperty(MoleculeObject.INVALID_FORMAT_PROP, b.toString());
+        return emptyMol;
+    }
+
+    private static void copyPropertiesToIAtomContainer(MoleculeObject mo, IAtomContainer iac) {
+        for (Map.Entry<String, Object> e : mo.getValues().entrySet()) {
+            String key = e.getKey();
+            Object val = e.getValue();
+            if (key != null && val != null) {
+                iac.setProperty(key, val);
+            }
+        }
+        // for some reason CDK adds this property with no value, so we remove it
+        //mol.removeProperty("cdk:Title");
+        iac.removeProperty("cdk:Remark");
     }
 
     public static Stream<MoleculeObject> convertMoleculeObjects(Stream<MoleculeObject> input, String toFormat) throws CDKException {

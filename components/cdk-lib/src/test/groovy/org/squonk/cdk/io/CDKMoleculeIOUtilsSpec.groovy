@@ -220,11 +220,55 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         when:
         CDKSDFile sdf = CDKMoleculeIOUtils.covertToSDFile(mols.stream(), true)
         String content = IOUtils.convertStreamToString(sdf.inputStream)
-        println content
+        //println content
 
         then:
         content.length() > 0
         content.split('fruit').length == 6
+    }
+
+    void "write sdf handle invalid continue"() {
+
+        def mols = [
+                new MoleculeObject('CC1=CC(=O)C=CC1=O', 'smiles', [fruit: 'apple', index: 1]),
+                new MoleculeObject('S(SC1=NC2=CC=CC=C2S1)', 'smiles', [fruit: 'orange', index: 2]),
+                new MoleculeObject('CC(=OZZZZZZZZZZZ(C)(C)C', 'smiles', [fruit: 'pear', index: 3]),
+                new MoleculeObject('[O-][N+](=O)C1=CC(=C(Cl)C=C1)[N+]([O-])=O', 'smiles', [fruit: 'banana', index: 4]),
+                new MoleculeObject('OC1C(O)C(O)C(OP(O)(O)=O)C(O)C1O', 'smiles', [fruit: 'melon', index: 5])
+        ]
+
+        when:
+        CDKSDFile sdf = CDKMoleculeIOUtils.covertToSDFile(mols.stream(), false)
+        String content = IOUtils.convertStreamToString(sdf.inputStream)
+        //println content
+
+        then:
+        content.length() > 0
+        content.split('fruit').length == 6
+    }
+
+    void "write sdf handle invalid fail"() {
+
+        // this doesn't work very well.
+        // rather than throwing exception the results are truncated
+        // this is because the stream procecssing is being done in a different thread.
+
+        def mols = [
+                new MoleculeObject('CC1=CC(=O)C=CC1=O', 'smiles', [fruit: 'apple', index: 1]),
+                new MoleculeObject('S(SC1=NC2=CC=CC=C2S1)', 'smiles', [fruit: 'orange', index: 2]),
+                new MoleculeObject('CC(=OZZZZZZZZZZZ(C)(C)C', 'smiles', [fruit: 'pear', index: 3]),
+                new MoleculeObject('[O-][N+](=O)C1=CC(=C(Cl)C=C1)[N+]([O-])=O', 'smiles', [fruit: 'banana', index: 4]),
+                new MoleculeObject('OC1C(O)C(O)C(OP(O)(O)=O)C(O)C1O', 'smiles', [fruit: 'melon', index: 5])
+        ]
+
+        when:
+        CDKSDFile sdf = CDKMoleculeIOUtils.covertToSDFile(mols.stream(), true)
+        String content = IOUtils.convertStreamToString(sdf.inputStream)
+        //println content
+
+        then:
+        content.length() > 0
+        content.split('fruit').length == 3 // ideally this would throw exception.
     }
 
     void "write sdf kinase"() {
@@ -265,21 +309,21 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         iter = mols.iterator()
         SmilesGenerator generator = new SmilesGenerator(SmiFlavor.Absolute);
 
-        print "smiles"
+        //print "smiles"
         propnames.each { n ->
-            print "," + n
+            //print "," + n
         }
-        println ""
+        //println ""
         while (iter.hasNext()) {
             def mol = iter.next()
             String smi = generator.create(mol);
-            print smi
+            //print smi
 
             def props = mol.getProperties()
             propnames.each { n ->
-                print "," + props[n]
+                //print "," + props[n]
             }
-            println ""
+            //println ""
         }
 
 

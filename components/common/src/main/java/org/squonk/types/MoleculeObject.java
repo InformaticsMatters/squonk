@@ -38,6 +38,8 @@ public class MoleculeObject extends BasicObject {
 
     private static final long serialVersionUID = 1L;
 
+    public static final String INVALID_FORMAT_PROP = "ERROR_INVALID_FORMAT";
+
     public static final String FORMAT_SMILES = "smiles";
     public static final String FORMAT_MOLFILE = "mol";
     public static final String FORMAT_INCHI = "inchi";
