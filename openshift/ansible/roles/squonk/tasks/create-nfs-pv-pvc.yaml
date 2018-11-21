@@ -6,10 +6,15 @@
 
 # Create PVs
 
-- name: Check Squonk PVs
+- name: Get Squonk PVs
   shell: oc get pv
   register: s_pv_result
   changed_when: False
+
+- name: Check Work Directory PV (in Recycle State)
+  fail:
+    msg: "Work Directory PV (squonk-work-dir) is in Recycle state"
+  when: s_pv_result.stdout | regex_search('^squonk-work-dir\s+\S+\s+\S+\s+Recycle\s' % data_loader_pv_name, multiline=True)
 
 - name: Create Squonk PVs
   shell: >
