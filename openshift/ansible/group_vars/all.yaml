@@ -31,7 +31,7 @@ oc_squonk_cell_image_tag: "{{ ansible_env.OC_SQUONK_CELL_IMAGE_TAG }}"
 oc_squonk_chem_image_tag: "{{ ansible_env.OC_SQUONK_CHEM_IMAGE_TAG }}"
 oc_squonk_core_image_tag: "{{ ansible_env.OC_SQUONK_CORE_IMAGE_TAG }}"
 oc_squonk_je_image_tag: "{{ ansible_env.OC_SQUONK_JE_IMAGE_TAG }}"
-oc_squonk_search_image_tag: "{{ ansible_env.SEARCH_IMAGE_TAG }}"
+oc_squonk_search_image_tag: "{{ ansible_env.OC_SQUONK_SEARCH_IMAGE_TAG }}"
 oc_squonk_portal_image_tag: "{{ ansible_env.OC_SQUONK_PORTAL_IMAGE_TAG }}"
 oc_squonk_flyway_image_tag: "{{ ansible_env.OC_SQUONK_FLYWAY_IMAGE_TAG }}"
 
