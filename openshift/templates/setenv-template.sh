@@ -38,10 +38,19 @@ export OC_PROJECT_DISPLAY_NAME="Squonk Applications"
 export OC_SQUONK_APP=squonk-notebook
 export OC_SQUONK_HOST=${OC_SQUONK_APP}.${OC_ROUTES_BASENAME}
 export OC_JOBEXECUTOR_HOST=jobexecutor.${OC_ROUTES_BASENAME}
-export OC_SQUONK_NEXTFLOW_IMAGE="informaticsmatters/nextflow:18.10.1"
 export OC_SQUONK_CC_PVC_SIZE=20Gi
-export OC_SQUONK_IMAGE_TAG=latest
+
+export OC_SQUONK_CELL_IMAGE_TAG=latest
+export OC_SQUONK_CHEM_IMAGE_TAG=latest
+export OC_SQUONK_CORE_IMAGE_TAG=latest
+export OC_SQUONK_JE_IMAGE_TAG=latest
+export OC_SQUONK_PORTAL_IMAGE_TAG=latest
+export OC_SQUONK_SEARCH_IMAGE_TAG=latest
+export OC_SQUONK_FLYWAY_IMAGE_TAG=latest
+
 export OC_PIPELINES_SD_POSTER_IMAGE_TAG=latest
+export OC_SQUONK_NEXTFLOW_IMAGE="informaticsmatters/nextflow:18.10.1"
+
 export OC_DOMAIN_NAME=novalocal
 export OC_NFS_SERVER=squonk-infra.$OC_DOMAIN_NAME
 export OC_NFS_PATH=/exports
