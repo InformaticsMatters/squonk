@@ -1,0 +1,9 @@
+---
+
+- hosts: localhost
+
+  tasks:
+  - name: Run the Squonk Role Update Image Task
+    include_role:
+      name: squonk
+      tasks_from: update-image-versions.yaml

@@ -154,6 +154,8 @@ objects:
     replicas: 1
     selector:
       name: coreservices
+    strategy:
+      type: Recreate
     template:
       metadata:
         labels:
@@ -231,6 +233,8 @@ objects:
     replicas: 1
     selector:
       name: chemservices-basic
+    strategy:
+      type: Recreate
     template:
       metadata:
         labels:
@@ -323,6 +327,8 @@ objects:
     replicas: 1
     selector:
       name: cellexecutor
+    strategy:
+      type: Recreate
     template:
       metadata:
         labels:

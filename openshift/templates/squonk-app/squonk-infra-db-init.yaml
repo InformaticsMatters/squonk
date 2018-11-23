@@ -1,3 +1,5 @@
+---
+
 # oc process -f squonk-db-init.yaml | oc create -f -
 # oc delete all,secrets --selector template=db-prepare
 #

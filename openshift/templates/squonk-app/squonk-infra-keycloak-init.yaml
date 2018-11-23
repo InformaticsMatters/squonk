@@ -1,3 +1,5 @@
+---
+
 # oc process -f squonk-keycloak-init.yaml | oc create -f -
 # Most likely you will need to specicify these parameters:
 # -p KEYCLOAK_REALM=realmname

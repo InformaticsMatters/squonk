@@ -27,7 +27,7 @@
     -p JE_IMAGE_TAG={{ oc_squonk_je_image_tag }}
     -p JE_HOST={{ oc_jobexecutor_host }}
     | oc create -f -
-  when: not dc_result.stdout | regex_search('^jobexecutor\s', multiline=True)
+  when: not dc_result.stdout | regex_search('^jobexecutor-keycloak\s', multiline=True)
 
 - name: Wait for Squonk JobExecutor Pod
   shell: oc get po | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
@@ -37,7 +37,7 @@
   until: result.rc == 0
   when: wait_for_pods
   loop:
-  - jobexecutor
+  - jobexecutor-keycloak
   changed_when: False
 
 # Deploy the JobExecutor route
@@ -54,4 +54,4 @@
     -p APP_NAMESPACE={{ oc_project }}
     -p JE_HOST={{ oc_jobexecutor_host }}
     | oc create -f -
-  when: not routes_result.stdout | regex_search('^jobexecutor\s', multiline=True)
+  when: not routes_result.stdout | regex_search('^jobexecutor-keycloak\s', multiline=True)

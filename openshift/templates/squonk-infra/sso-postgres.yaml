@@ -1,3 +1,5 @@
+---
+
 # SSO template adapted from https://github.com/jboss-openshift/application-templates/blob/master/sso/sso72-x509-postgresql-persistent.json
 # This was changed in the following ways:
 # 1.  The PVC definition was removed so that it could be decoupled from deploying the app
@@ -15,7 +17,7 @@
 # 13. Standardized randomly generated password pattern to "[a-zA-Z0-9]{12}"
 # 14. Added HOSTNAME_HTTPS parameter and use for HTTPS route name
 # 15. Removed HTTP route
----
+
 kind: Template
 apiVersion: v1
 metadata:

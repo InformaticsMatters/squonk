@@ -1,3 +1,5 @@
+---
+
 # oc process -f squonk-app-je-keycloak.yaml | oc create -f -
 # oc delete all,cm,pvc,routes,secrets --selector template=squonk-app-je
 
@@ -63,20 +65,22 @@ objects:
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
-    name: jobexecutor
+    name: jobexecutor-keycloak
     namespace: ${APP_NAMESPACE}
   spec:
     replicas: 1
     selector:
-      name: jobexecutor
+      name: jobexecutor-keycloak
+    strategy:
+      type: Recreate
     template:
       metadata:
         labels:
-          name: jobexecutor
+          name: jobexecutor-keycloak
       spec:
         containers:
         - image: squonk/jobexecutor-keycloak:${JE_IMAGE_TAG}
-          name: jobexecutor
+          name: jobexecutor-keycloak
           imagePullPolicy: ${PULL_POLICY}
           env:
           - name: SQUONK_CONTAINER_RUNNER_TYPE
@@ -130,7 +134,7 @@ objects:
     namespace: ${APP_NAMESPACE}
   spec:
     selector:
-      name: jobexecutor
+      name: jobexecutor-keycloak
     ports:
     - name: http
       port: 8080

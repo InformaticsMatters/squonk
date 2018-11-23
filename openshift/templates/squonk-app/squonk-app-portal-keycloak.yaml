@@ -65,6 +65,8 @@ objects:
     replicas: 1
     selector:
       name: portal
+    strategy:
+      type: Recreate
     template:
       metadata:
         labels:
