@@ -46,7 +46,7 @@ allprojects {
     apply plugin: 'jacoco' // Code coverage
 
     sourceCompatibility = 1.8
-    version = '0.2-SNAPSHOT'
+    version = '0.2.0-SNAPSHOT'
 
     project.ext.set('camelVersion', '2.18.0')
     // look at the jackson2-version property here (with correct tag) to get the right Jackson version
