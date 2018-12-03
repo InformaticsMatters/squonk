@@ -35,4 +35,6 @@ public interface TypeDescriptor<T> extends Serializable {
 
     T readOptionValue(Map<String, Object> options, String key);
 
+    String getJsonSchemaType();
+
 }

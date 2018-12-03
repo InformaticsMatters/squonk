@@ -45,4 +45,18 @@ public class SimpleTypeDescriptor<T> implements Serializable, TypeDescriptor<T> 
     public T readOptionValue(Map<String, Object> options, String key) {
         return (T)options.get(key);
     }
+
+    @Override
+    public String getJsonSchemaType() {
+        if (type == String.class) {
+            return "string";
+        } else if (type == Integer.class) {
+            return "integer";
+        } else if (type == Float.class) {
+            return "float";
+        } else if (type == Boolean.class) {
+            return "boolean";
+        }
+        return null;
+    }
 }
