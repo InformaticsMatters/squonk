@@ -92,7 +92,7 @@ file2.renameTo 'output.data.gz'
         DefaultCamelContext context = new DefaultCamelContext()
         Map options = ['script' :'''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
-@Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
+@Grab(group='org.squonk.components', module='common', version='*')
 import org.squonk.types.MoleculeObject
 import static org.squonk.util.MoleculeObjectUtils.*
 import java.util.function.Consumer
@@ -124,7 +124,7 @@ processDataset('input','output') { MoleculeObject mo ->
         DefaultCamelContext context = new DefaultCamelContext()
         Map options = ['script' :'''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
-@Grab(group='org.squonk.components', module='common', version='0.2-SNAPSHOT')
+@Grab(group='org.squonk.components', module='common', version='*')
 import org.squonk.types.MoleculeObject
 import static org.squonk.util.MoleculeObjectUtils.*
 import java.util.stream.Stream
