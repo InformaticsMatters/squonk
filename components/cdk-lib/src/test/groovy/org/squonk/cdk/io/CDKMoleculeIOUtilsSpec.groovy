@@ -19,6 +19,7 @@ package org.squonk.cdk.io
 import org.openscience.cdk.DefaultChemObjectBuilder
 import org.openscience.cdk.fingerprint.SignatureFingerprinter
 import org.openscience.cdk.interfaces.IChemObjectBuilder
+import org.openscience.cdk.io.listener.PropertiesListener
 import org.openscience.cdk.signature.MoleculeSignature
 import org.openscience.cdk.smiles.SmiFlavor
 import org.openscience.cdk.smiles.SmilesGenerator
@@ -486,5 +487,66 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         "CCO ethanol" | true
     }
 
+
+    static String aromatic_molfile = '''
+  Mrv1729 12031811142D          
+
+  6  6  0  0  0  0            999 V2000
+  -11.3170    3.4589    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+  -12.0314    3.0464    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+  -12.0314    2.2214    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+  -11.3170    1.8089    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+  -10.6025    2.2214    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+  -10.6025    3.0464    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+  1  2  4  0  0  0  0
+  2  3  4  0  0  0  0
+  3  4  4  0  0  0  0
+  4  5  4  0  0  0  0
+  5  6  4  0  0  0  0
+  1  6  4  0  0  0  0
+M  END
+'''
+
+    /** SDF format does not allow aromatic bonds as they are a query feature in MDL land, but it is common to find
+     * SDFs with aromatic structures and CDK has a option to allow this that we turn on.
+     * This test checks that this works.
+     *
+     */
+    void "write aromatic sdf"() {
+
+
+        IAtomContainer iac = CDKMoleculeIOUtils.v2000ToMolecule(aromatic_molfile)
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        SDFWriter writer = CDKMoleculeIOUtils.createSDFWriter(out)
+
+        when:
+        writer.write(iac)
+
+        then:
+        new String(out.getBytes()).endsWith('$$$$')
+    }
+
+    void "simple write"() {
+
+        //MDLV2000Reader reader = new MDLV2000Reader(new ByteArrayInputStream(aromatic_molfile.bytes))
+        //IAtomContainer iac = reader.read(new AtomContainer());
+        SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance())
+        IAtomContainer iac = parser.parseSmiles("c1ccccc1")
+        println "Bond 1 is aromatic? ${iac.getBond(1).isAromatic()}"
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        SDFWriter writer = new SDFWriter(out)
+        Properties props = new Properties()
+        props.setProperty("WriteAromaticBondTypes", "true")
+        writer.addChemObjectIOListener(new PropertiesListener(props))
+
+        when:
+        writer.write(iac)
+        writer.close()
+        String sdf = new String(out.toByteArray())
+        //println sdf
+
+        then:
+        sdf.endsWith('$$$$')
+    }
 }
 
