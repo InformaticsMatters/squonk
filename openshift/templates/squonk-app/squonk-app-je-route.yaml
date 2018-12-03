@@ -1,3 +1,5 @@
+---
+
 # oc process -f squonk-app-je-route.yaml | oc create -f -
 # oc delete routes --selector template=squonk-app-je-route
 

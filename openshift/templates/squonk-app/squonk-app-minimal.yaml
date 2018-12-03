@@ -1,3 +1,5 @@
+---
+
 # THIS FILE WAS USED FOR A MINIMAL SQUONK SETUP WITHOUT KEYCLOAK
 #
 # oc adm policy add-cluster-role-to-user cluster-admin -z default

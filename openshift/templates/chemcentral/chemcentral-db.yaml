@@ -1,3 +1,5 @@
+---
+
 # Deploys PostgreSQL with the RDKit cartridge plus the chemical search service.
 #
 # oc process -f chemcentral-db.yaml | oc create -f -

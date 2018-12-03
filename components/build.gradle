@@ -46,7 +46,7 @@ allprojects {
     apply plugin: 'jacoco' // Code coverage
 
     sourceCompatibility = 1.8
-    version = '0.2-SNAPSHOT'
+    version = '0.2.0-SNAPSHOT'
 
     project.ext.set('camelVersion', '2.18.0')
     // look at the jackson2-version property here (with correct tag) to get the right Jackson version
@@ -65,7 +65,14 @@ allprojects {
     if (dockerImageTag == null || dockerImageTag.length() == 0) {
         dockerImageTag = grgit.branch.getCurrent().name
         if (dockerImageTag == 'master') {
-            dockerImageTag = 'latest'
+            // As we're here SQUONK_IMAGE_TAG is not set.
+            // It's the master branch so the docker image tag should be...
+            // a version number if's not a SNAPSHOT or 'latest'
+            if (!version.endsWith('-SNAPSHOT')) {
+                dockerImageTag = version
+            } else {
+                dockerImageTag = 'latest'
+            }
         }
     }
     project.ext.set('dockerImageTag', dockerImageTag)

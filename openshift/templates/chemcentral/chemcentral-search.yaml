@@ -1,3 +1,5 @@
+---
+
 # Deploys the chemical search service.
 #
 # oc process -f chemcentral-search.yaml | oc create -f -

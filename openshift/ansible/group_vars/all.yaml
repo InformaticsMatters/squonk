@@ -69,7 +69,7 @@ wait_for_pods: yes
 
 # The Squonk OpenShift image pull policy.
 # One, typically, of "IfNotPresent" or "Always"
-image_pull_policy: Always
+image_pull_policy: IfNotPresent
 
 # Various retry timeouts (seconds)...
 pod_ready_timeout: 600

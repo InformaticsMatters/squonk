@@ -44,11 +44,11 @@ parameters:
 - name: PORTAL_CPU_REQUEST
   value: 500m
 - name: PORTAL_CPU_LIMIT
-  value: 1000m
+  value: 2000m
 - name: PORTAL_MEM_REQUEST
   value: 500Mi
 - name: PORTAL_MEM_LIMIT
-  value: 1Gi
+  value: 2Gi
 
 objects:
 
@@ -65,6 +65,8 @@ objects:
     replicas: 1
     selector:
       name: portal
+    strategy:
+      type: Recreate
     template:
       metadata:
         labels:
@@ -115,13 +117,13 @@ objects:
 #              port: 8080
 #            initialDelaySeconds: 30
 #            timeoutSeconds: 5
-#          resources:
-#            limits:
-#              cpu: ${PORTAL_CPU_LIMIT}
-#              memory: ${PORTAL_MEM_LIMIT}
-#            requests:
-#              cpu: ${PORTAL_CPU_REQUEST}
-#              memory: ${PORTAL_MEM_REQUEST}
+          resources:
+            limits:
+              cpu: ${PORTAL_CPU_LIMIT}
+              memory: ${PORTAL_MEM_LIMIT}
+            requests:
+              cpu: ${PORTAL_CPU_REQUEST}
+              memory: ${PORTAL_MEM_REQUEST}
         volumes:
           - name: squonk-sso-config
             configMap:

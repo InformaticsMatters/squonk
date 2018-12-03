@@ -23,9 +23,6 @@ oc_squonk_volume_type: "{{ ansible_env.OC_SQUONK_VOLUME_TYPE }}"
 # class needs to be defined...
 oc_squonk_volume_storage_class: "{{ ansible_env.OC_SQUONK_VOLUME_STORAGE_CLASS }}"
 
-# Deploy the JobExecutor?
-deploy_je: yes
-
 # We can configure the 'standard-user' using a selenium script
 # and a Chrome web-driver but this requires Chrome to be available,
 # the driver to be on you r path and certificates to be properly
