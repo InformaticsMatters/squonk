@@ -16,6 +16,7 @@
 
 package org.squonk.options;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -35,6 +36,7 @@ public interface TypeDescriptor<T> extends Serializable {
 
     T readOptionValue(Map<String, Object> options, String key);
 
+    @JsonIgnore
     String getJsonSchemaType();
 
 }

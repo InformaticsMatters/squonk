@@ -20,9 +20,11 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.Encoding;
@@ -37,6 +39,7 @@ import org.squonk.io.IODescriptor;
 import org.squonk.options.OptionDescriptor;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Logger;
 
@@ -45,44 +48,93 @@ public class ServiceDescriptorToOpenAPIConverter {
     private static final Logger LOG = Logger.getLogger(ServiceDescriptorToOpenAPIConverter.class.getName());
 
     private final String baseUrl;
+    private String infoName = "Informatics Matters Ltd.";
+    private String infoUrl = "https://squonk.it";
+    private String infoEmail = "info@informaticsmatters.com";
 
     public ServiceDescriptorToOpenAPIConverter(String baseUrl) {
         this.baseUrl = baseUrl;
     }
 
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    public String getInfoEmail() {
+        return infoEmail;
+    }
+
+    public void setInfoEmail(String infoEmail) {
+        this.infoEmail = infoEmail;
+    }
+
+    public String getInfoUrl() {
+        return infoUrl;
+    }
+
+    public void setInfoUrl(String infoUrl) {
+        this.infoUrl = infoUrl;
+    }
+
     public OpenAPI convertToOpenApi(ServiceDescriptor sd) throws IOException {
+        return convertToOpenApi(Collections.singletonList(sd));
+    }
+
+    public OpenAPI convertToOpenApi(Collection<ServiceDescriptor> sds) throws IOException {
         OpenAPI openApi = new OpenAPI();
-        handleInfo(sd, openApi);
-        handleServers(sd, openApi);
-        handlePaths(sd, openApi);
+        handleInfo(openApi);
+        handleServers(openApi);
+        for (ServiceDescriptor sd : sds) {
+            handlePaths(sd, openApi);
+        }
         return openApi;
     }
 
-    public String convertToString(ServiceDescriptor sd) throws IOException {
+    public String convertToJson(ServiceDescriptor sd) throws IOException {
         OpenAPI openApi = convertToOpenApi(sd);
-        return openApiToString(openApi);
+        return openApiToJson(openApi);
     }
 
-    public static String openApiToString(OpenAPI oai) throws IOException {
+    public static String openApiToJson(OpenAPI oai) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
+        configureObjectMapper(mapper);
 
+        return serialize(oai, mapper);
+    }
+
+    public static String openApiToYaml(OpenAPI oai) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        configureObjectMapper(mapper);
+
+        return serialize(oai, mapper);
+    }
+
+    private static void configureObjectMapper(ObjectMapper mapper) {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
 
+
+    public static String serialize(OpenAPI oai,  ObjectMapper mapper) throws IOException {
         return mapper.writer(new DefaultPrettyPrinter()).writeValueAsString(oai);
     }
 
-    protected void handleInfo(ServiceDescriptor sd, OpenAPI openApi) {
+    protected void handleInfo(OpenAPI openApi) {
         Info info = new Info();
         info.description("Squonk services accessible as external jobs")
-                .title("Squonk job execution");
+                .title("Squonk job execution")
+                .contact(new Contact()
+                        .name(infoName)
+                        .email(infoEmail)
+                        .url(infoUrl)
+                );
 
         openApi.info(info);
     }
 
-    protected void handleServers(ServiceDescriptor sd, OpenAPI openApi) {
+    protected void handleServers(OpenAPI openApi) {
         openApi.servers(Collections.singletonList(
                 new Server().url(baseUrl)
                         .description("Squonk job executor service")
@@ -100,9 +152,7 @@ public class ServiceDescriptorToOpenAPIConverter {
         }
 
         createRequestBody(sd, operation);
-
         createResponse(sd, operation);
-
 
         pathItem.post(operation)
                 .description(sd.getServiceConfig().getDescription());

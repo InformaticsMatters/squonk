@@ -10,7 +10,7 @@ class ServiceDescriptorToOpenAPIConverterSpec extends Specification {
 
     void "to openapi"() {
 
-        def converter = new ServiceDescriptorToOpenAPIConverter("http://foo.bar.com/execute/")
+        def converter = new ServiceDescriptorToOpenAPIConverter("http://squonk.it/jobexecutor/rest/v1/jobs")
         def sd = new DefaultServiceDescriptor(
                 "core.dataset.filter.slice.v1",
                 "Dataset slice selector",
@@ -31,7 +31,7 @@ class ServiceDescriptorToOpenAPIConverterSpec extends Specification {
 
         when:
         OpenAPI oai = converter.convertToOpenApi(sd)
-        println converter.openApiToString(oai)
+        println converter.openApiToYaml(oai)
 
         then:
         oai != null
