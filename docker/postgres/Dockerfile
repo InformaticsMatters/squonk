@@ -23,10 +23,8 @@ USER postgres
 RUN /etc/init.d/postgresql start &&\
   psql --command "CREATE USER squonk WITH PASSWORD 'squonk';" &&\
   psql --command "CREATE USER keycloak WITH PASSWORD 'keycloak';" &&\
-  psql --command "CREATE USER xwiki WITH PASSWORD 'xwiki';" &&\
   createdb -O squonk squonk &&\
   createdb -O keycloak keycloak &&\
-  createdb -O xwiki xwiki &&\
   psql -d squonk --command "CREATE SCHEMA users AUTHORIZATION squonk;"
 
 

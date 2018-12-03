@@ -37,18 +37,8 @@
       "scopeParamRequired" : false,
       "composite" : false
     }, {
-      "id" : "55c4c63e-bb01-44c3-bc48-fcd9828a6933",
-      "name" : "XWiki.XWikiAdminGroup",
-      "scopeParamRequired" : false,
-      "composite" : false
-    }, {
       "id" : "25269475-a8bc-44dc-ad70-140fefa4b0c3",
       "name" : "admin-user",
-      "scopeParamRequired" : false,
-      "composite" : false
-    }, {
-      "id" : "cd6c52bf-9ec8-4871-8da6-474b98ef1b36",
-      "name" : "XWiki.XWikiAllGroup",
       "scopeParamRequired" : false,
       "composite" : false
     }, {
@@ -139,7 +129,6 @@
       } ],
       "security-admin-console" : [ ],
       "admin-cli" : [ ],
-      "xwiki" : [ ],
       "broker" : [ {
         "id" : "16c3dbe6-a0e1-4f1c-bb7e-0960d2c9aa89",
         "name" : "read-token",
@@ -189,7 +178,7 @@
       "digits" : 0
     } ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "XWiki.XWikiAdminGroup", "admin-user", "XWiki.XWikiAllGroup" ],
+    "realmRoles" : [ "admin-user" ],
     "clientRoles" : {
       "account" : [ "view-profile", "manage-account" ]
     },
@@ -214,7 +203,7 @@
       "digits" : 0
     } ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "standard-user", "XWiki.XWikiAllGroup" ],
+    "realmRoles" : [ "standard-user" ],
     "clientRoles" : {
       "account" : [ "view-profile", "manage-account" ]
     },
@@ -239,33 +228,7 @@
       "digits" : 0
     } ],
     "requiredActions" : [ ],
-    "realmRoles" : [ "standard-user", "XWiki.XWikiAllGroup" ],
-    "clientRoles" : {
-      "account" : [ "view-profile", "manage-account" ]
-    },
-    "groups" : [ ]
-  }, {
-    "id" : "22c1ea4b-678e-4036-9d5e-82dc3fd48b43",
-    "createdTimestamp" : 1457955250013,
-    "username" : "wikiadmin",
-    "enabled" : true,
-    "totp" : false,
-    "emailVerified" : false,
-    "firstName" : "Wiki",
-    "lastName" : "Admin",
-    "email" : "wikiadmin@squonk.it",
-    "credentials" : [ {
-      "type" : "password",
-      "hashedSaltedValue" : "DHJE3AAO4S0taAdjmyZO4GUY16NkY8AZaR+7QVqlCd5bj2byE5IwTEG2HGFqkqwy9hG/FnjH8FUK1keQ58FbZg==",
-      "salt" : "b17jxX9SKV2CF7HNwBCM4w==",
-      "hashIterations" : 1,
-      "counter" : 0,
-      "algorithm" : "pbkdf2",
-      "digits" : 0,
-      "createdDate" : 1457955265000
-    } ],
-    "requiredActions" : [ ],
-    "realmRoles" : [ "XWiki.XWikiAdminGroup", "XWiki.XWikiAllGroup", "standard-user", "admin-user", "offline_access" ],
+    "realmRoles" : [ "standard-user" ],
     "clientRoles" : {
       "account" : [ "view-profile", "manage-account" ]
     },
@@ -284,13 +247,13 @@
     "id" : "6fde7ede-ba65-4be1-b0a5-724a12b68050",
     "clientId" : "account",
     "name" : "${client_account}",
-    "baseUrl" : "/auth/realms/xwiki/account",
+    "baseUrl" : "/auth/realms/squonk/account",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "clientAuthenticatorType" : "client-secret",
     "secret" : "50422ae6-e1a8-4035-b650-0632ea71c9e6",
     "defaultRoles" : [ "view-profile", "manage-account" ],
-    "redirectUris" : [ "/auth/realms/xwiki/account/*" ],
+    "redirectUris" : [ "/auth/realms/squonk/account/*" ],
     "webOrigins" : [ ],
     "notBefore" : 0,
     "bearerOnly" : false,
@@ -820,12 +783,12 @@
     "id" : "40fcbd61-6802-487c-8193-b9d7b4ea0562",
     "clientId" : "security-admin-console",
     "name" : "${client_security-admin-console}",
-    "baseUrl" : "/auth/admin/xwiki/console/index.html",
+    "baseUrl" : "/auth/admin/squonk/console/index.html",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "clientAuthenticatorType" : "client-secret",
     "secret" : "d0187e88-3f15-4857-856b-aae5c63e0202",
-    "redirectUris" : [ "/auth/admin/xwiki/console/*" ],
+    "redirectUris" : [ "/auth/admin/squonk/console/*" ],
     "webOrigins" : [ ],
     "notBefore" : 0,
     "bearerOnly" : false,
@@ -915,124 +878,6 @@
         "id.token.claim" : "true",
         "access.token.claim" : "true",
         "claim.name" : "preferred_username",
-        "Claim JSON Type" : "String"
-      }
-    } ],
-    "useTemplateConfig" : false,
-    "useTemplateScope" : false,
-    "useTemplateMappers" : false
-  }, {
-    "id" : "955917a7-5bb1-46df-84a1-3d63c5a57590",
-    "clientId" : "xwiki",
-    "name" : "Squonk Wiki",
-    "baseUrl" : "http://__public_host__/xwiki",
-    "surrogateAuthRequired" : false,
-    "enabled" : true,
-    "clientAuthenticatorType" : "client-secret",
-    "secret" : "fa007a05-a152-426c-ae75-6cbed2c43319",
-    "redirectUris" : [ "http://__public_host__/*", "https://__public_host__/*" ],
-    "webOrigins" : [ "http://__public_host__/xwiki/", "https://__public_host__/xwiki/" ],
-    "notBefore" : 0,
-    "bearerOnly" : false,
-    "consentRequired" : false,
-    "standardFlowEnabled" : true,
-    "implicitFlowEnabled" : false,
-    "directAccessGrantsEnabled" : false,
-    "serviceAccountsEnabled" : false,
-    "publicClient" : false,
-    "frontchannelLogout" : false,
-    "protocol" : "openid-connect",
-    "attributes" : {
-      "saml.assertion.signature" : "false",
-      "saml.force.post.binding" : "false",
-      "saml.multivalued.roles" : "false",
-      "saml.signature.algorithm" : "RSA_SHA256",
-      "saml.encrypt" : "false",
-      "saml_force_name_id_format" : "false",
-      "saml.client.signature" : "false",
-      "saml.authnstatement" : "true",
-      "saml_name_id_format" : "username",
-      "saml.server.signature" : "false",
-      "saml_signature_canonicalization_method" : "http://www.w3.org/2001/10/xml-exc-c14n#"
-    },
-    "fullScopeAllowed" : true,
-    "nodeReRegistrationTimeout" : -1,
-    "protocolMappers" : [ {
-      "id" : "99ec6d1f-a8ea-482a-aec7-384c7440e74e",
-      "name" : "username",
-      "protocol" : "openid-connect",
-      "protocolMapper" : "oidc-usermodel-property-mapper",
-      "consentRequired" : true,
-      "consentText" : "${username}",
-      "config" : {
-        "user.attribute" : "username",
-        "id.token.claim" : "true",
-        "access.token.claim" : "true",
-        "claim.name" : "preferred_username",
-        "Claim JSON Type" : "String"
-      }
-    }, {
-      "id" : "c3f8b8a1-d192-455d-b5a6-b66e9182be38",
-      "name" : "email",
-      "protocol" : "openid-connect",
-      "protocolMapper" : "oidc-usermodel-property-mapper",
-      "consentRequired" : true,
-      "consentText" : "${email}",
-      "config" : {
-        "user.attribute" : "email",
-        "id.token.claim" : "true",
-        "access.token.claim" : "true",
-        "claim.name" : "email",
-        "Claim JSON Type" : "String"
-      }
-    }, {
-      "id" : "f796df3c-825b-4f6c-9105-e68b59eed24c",
-      "name" : "full name",
-      "protocol" : "openid-connect",
-      "protocolMapper" : "oidc-full-name-mapper",
-      "consentRequired" : true,
-      "consentText" : "${fullName}",
-      "config" : {
-        "id.token.claim" : "true",
-        "access.token.claim" : "true"
-      }
-    }, {
-      "id" : "040ec1ea-584f-40e4-aecb-d81aa9e232e1",
-      "name" : "role list",
-      "protocol" : "saml",
-      "protocolMapper" : "saml-role-list-mapper",
-      "consentRequired" : false,
-      "config" : {
-        "single" : "false",
-        "attribute.nameformat" : "Basic",
-        "attribute.name" : "Role"
-      }
-    }, {
-      "id" : "70862512-bfb6-4a1d-97be-61d97c402d45",
-      "name" : "family name",
-      "protocol" : "openid-connect",
-      "protocolMapper" : "oidc-usermodel-property-mapper",
-      "consentRequired" : true,
-      "consentText" : "${familyName}",
-      "config" : {
-        "user.attribute" : "lastName",
-        "id.token.claim" : "true",
-        "access.token.claim" : "true",
-        "claim.name" : "family_name",
-        "Claim JSON Type" : "String"
-      }
-    }, {
-      "id" : "ff8e3218-17d9-4360-93ae-2683fd190d98",
-      "name" : "given name",
-      "protocol" : "openid-connect",
-      "protocolMapper" : "oidc-usermodel-property-mapper",
-      "consentRequired" : true,
-      "consentText" : "${givenName}",
-      "config" : {
-        "user.attribute" : "firstName",
-        "id.token.claim" : "true",
-        "access.token.claim" : "true",
-        "claim.name" : "given_name",
         "Claim JSON Type" : "String"
       }
     } ],

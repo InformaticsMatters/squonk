@@ -82,7 +82,7 @@ if [ $DEPLOYMENT_MODE == 'basic' ]; then
     export SQUONK_URL="http://$PUBLIC_HOST"
     export KEYCLOAK_SERVER_URL=${PUBLIC_HOST_URL}/auth
 elif [ $DEPLOYMENT_MODE == 'site' ]; then
-    export COMPOSE_FILE=docker-compose.yml:docker-compose-keycloak.ymldocker-compose-basic.yml:docker-compose-site.yml
+    export COMPOSE_FILE=docker-compose.yml:docker-compose-keycloak.yml:docker-compose-basic.yml:docker-compose-site.yml
     export SQUONK_URL="http://$PUBLIC_HOST"
     export KEYCLOAK_SERVER_URL=${PUBLIC_HOST_URL}/auth
 elif [ $DEPLOYMENT_MODE == 'dev' ]; then

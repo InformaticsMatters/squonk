@@ -22,17 +22,16 @@ This is configured initially using the images/rabbitmq/rabbitmq-setup.sh script.
 ----------------------
 Container name: postgres
 Image source: informaticsmatters/rdkit_cartridge
-PostgreSQL database running RDKit cartridge (for chemsearch) based on the informaticsmatters/rdkit_cartrige image and provides:
+PostgreSQL database running RDKit cartridge (for chemcentral search) based on the informaticsmatters/rdkit_cartrige image and provides:
 - all the Squonk runtime data (squonk schema)
 - keycloak configuration data (keycloak schema)
-- xwiki content (xwiki schema)
 Schemas and users are created when a new environment is set up using the contents of the images/init-postgres-db.sh file.
 
 3. Keycloak SSO
 ---------------
 Container name: keycloak
 Image source: jboss/keycloak-postgres
-This provides SSO capabilities to the portal and xwiki applications. The realm is named squonk.
+This provides SSO capabilities to the portal applications. The realm is named squonk.
 
 4. Chemservices
 ---------------
@@ -190,7 +189,7 @@ Rabbitmq
 
 Keycloak
 --------
-1. Provide mechanism for generating custom secrets and keys, and applying to xwiki and portal containers.
+1. Provide mechanism for generating custom secrets and keys, and applying portal containers.
 2. Update docs above on how to export squonk realm configuration.
 
 Chemservices

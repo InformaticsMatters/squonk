@@ -261,8 +261,7 @@ $ ./containers-setup-app.sh
 This will have started the Squonk containers and we are ready to run. Access Squonk from the 
 URL that is reported by the script.
 
-This should start the following services (containers). The xwiki
-is normally only used on the production site.
+This should start the following services (containers). 
 
 -   nginx (nginx) - not present in dev mode
 -   portal (squonk/portal)

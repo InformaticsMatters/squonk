@@ -63,7 +63,6 @@ services:
         environment:
             POSTGRES_PASSWORD:
             POSTGRES_KEYCLOAK_PASSWORD:
-            POSTGRES_XWIKI_PASSWORD:
             POSTGRES_SQUONK_PASSWORD:
         ports:
         - "5432:5432"
