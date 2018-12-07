@@ -31,7 +31,6 @@ public class SimpleTypeDescriptor<T> implements Serializable, TypeDescriptor<T> 
     public SimpleTypeDescriptor(@JsonProperty("type") Class<T> type) {
         this.type = type;
     }
-
     @Override
     public Class<T> getType() {
         return type;
@@ -47,15 +46,19 @@ public class SimpleTypeDescriptor<T> implements Serializable, TypeDescriptor<T> 
     }
 
     @Override
-    public String getJsonSchemaType() {
+    public String[] getJsonSchemaType() {
         if (type == String.class) {
-            return "string";
+            return new String[] { "string" };
         } else if (type == Integer.class) {
-            return "integer";
+            return new String[] { "integer", "int32" };
+        } else if (type == Long.class) {
+            return new String[] { "integer", "int64" };
         } else if (type == Float.class) {
-            return "float";
+            return new String[] { "number", "float" };
+        } else if (type == Double.class) {
+            return new String[] { "number", "double" };
         } else if (type == Boolean.class) {
-            return "boolean";
+            return new String[] { "boolean" };
         }
         return null;
     }

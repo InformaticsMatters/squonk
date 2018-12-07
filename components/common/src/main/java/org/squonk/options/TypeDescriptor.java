@@ -36,7 +36,13 @@ public interface TypeDescriptor<T> extends Serializable {
 
     T readOptionValue(Map<String, Object> options, String key);
 
+    /** Get the JSON schema type, and optionally the format.
+     * The returned array may contain one ot two elements.
+     *
+     *
+     * @return The type as the first element of the array. If format is defined this will be the second element.
+     */
     @JsonIgnore
-    String getJsonSchemaType();
+    String[] getJsonSchemaType();
 
 }

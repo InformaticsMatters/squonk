@@ -146,7 +146,7 @@ public class ServiceDescriptorToOpenAPIConverter {
         PathItem pathItem = new PathItem();
 
         Operation operation = new Operation()
-                .description("Post the job");
+                .summary("Post the job");
         for (OptionDescriptor option : sd.getServiceConfig().getOptionDescriptors()) {
             createParameter(option, operation);
         }
@@ -155,6 +155,7 @@ public class ServiceDescriptorToOpenAPIConverter {
         createResponse(sd, operation);
 
         pathItem.post(operation)
+                .summary(sd.getServiceConfig().getName())
                 .description(sd.getServiceConfig().getDescription());
 
         openApi.path("/" + sd.getServiceConfig().getId(), pathItem);
@@ -219,11 +220,12 @@ public class ServiceDescriptorToOpenAPIConverter {
 
     private static Schema createSchema(OptionDescriptor option) {
         Schema schema = new Schema();
-        String type = option.getTypeDescriptor().getJsonSchemaType();
-        if (type == null) {
+        String[] type = option.getTypeDescriptor().getJsonSchemaType();
+        if (type == null || type.length == 0) {
             LOG.warning("Undefined Json schema type for " + option.getTypeDescriptor().getType().getName());
         } else {
-            schema.type(type);
+            schema.type(type[0]);
+            if (type.length == 2) schema.format(type[1]);
         }
         schema.minItems(option.getMinValues()).maxItems(option.getMaxValues());
         // TODO - handle option.getValues() as the enum property
