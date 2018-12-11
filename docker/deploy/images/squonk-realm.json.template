@@ -184,6 +184,22 @@
     },
     "groups" : [ ]
   }, {
+       "id" : "0a7a79c5-1118-43a1-a524-774e5f19fbb9",
+       "createdTimestamp" : 1544526481783,
+       "username" : "service-account-squonk-portal",
+       "enabled" : true,
+       "totp" : false,
+       "emailVerified" : false,
+       "email" : "service-account-squonk-portal@placeholder.org",
+       "serviceAccountClientId" : "squonk-portal",
+       "credentials" : [ ],
+       "requiredActions" : [ ],
+       "realmRoles" : [ "offline_access", "uma_authorization", "standard-user" ],
+       "clientRoles" : {
+         "account" : [ "view-profile", "manage-account" ]
+       },
+       "groups" : [ ]
+     }, {
     "id" : "4c09d169-e68d-4de2-845a-616d91ee9716",
     "createdTimestamp" : 1445362574025,
     "username" : "user1",
@@ -574,7 +590,7 @@
     "standardFlowEnabled" : true,
     "implicitFlowEnabled" : false,
     "directAccessGrantsEnabled" : false,
-    "serviceAccountsEnabled" : false,
+    "serviceAccountsEnabled" : true,
     "publicClient" : false,
     "frontchannelLogout" : false,
     "protocol" : "openid-connect",

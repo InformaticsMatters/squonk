@@ -85,6 +85,7 @@ public class ServiceDescriptorToOpenAPIConverter {
         handleInfo(openApi);
         handleServers(openApi);
         for (ServiceDescriptor sd : sds) {
+            LOG.info("Handling Service Descriptor " + sd.getId());
             handlePaths(sd, openApi);
         }
         return openApi;
@@ -147,8 +148,10 @@ public class ServiceDescriptorToOpenAPIConverter {
 
         Operation operation = new Operation()
                 .summary("Post the job");
-        for (OptionDescriptor option : sd.getServiceConfig().getOptionDescriptors()) {
-            createParameter(option, operation);
+        if (sd.getServiceConfig().getOptionDescriptors() != null) {
+            for (OptionDescriptor option : sd.getServiceConfig().getOptionDescriptors()) {
+                createParameter(option, operation);
+            }
         }
 
         createRequestBody(sd, operation);
@@ -170,9 +173,11 @@ public class ServiceDescriptorToOpenAPIConverter {
         Content content = new Content().addMediaType("multipart/mixed", mediaType);
         body.content(content);
 
-        for (IODescriptor iod : sd.getServiceConfig().getInputDescriptors()) {
-            schema.addProperties(iod.getName(), new Schema().type("object"));
-            mediaType.addEncoding(iod.getName(), new Encoding().contentType(iod.getMediaType()));
+        if (sd.getServiceConfig().getInputDescriptors() != null) {
+            for (IODescriptor iod : sd.getServiceConfig().getInputDescriptors()) {
+                schema.addProperties(iod.getName(), new Schema().type("object"));
+                mediaType.addEncoding(iod.getName(), new Encoding().contentType(iod.getMediaType()));
+            }
         }
 
         operation.requestBody(body);
@@ -212,8 +217,11 @@ public class ServiceDescriptorToOpenAPIConverter {
                 .schema(schema)
                 .in(in == null ? "query" : in)
                 .name(option.getLabel())
-                .description(option.getDescription())
-                .required(option.getMinValues() > 0);
+                .description(option.getDescription());
+
+        if (option.getMinValues() != null && option.getMinValues() > 0) {
+            parameter.setRequired(true);
+        }
 
         operation.addParametersItem(parameter);
     }

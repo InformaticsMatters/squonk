@@ -26,6 +26,11 @@ if [ ! -f images/cellexecutor/logging.properties ]; then
 	cp images/cellexecutor/logging.properties.default images/cellexecutor/logging.properties
 fi
 
+if [ ! -f images/jobexecutor/logging.properties ]; then
+	echo "Creating default logging config for jobexecutor"
+	cp images/cellexecutor/logging.properties.default images/jobexecutor/logging.properties
+fi
+
 if [ ! -f images/portal/logging.properties ]; then
 	echo "Creating default logging config for portal"
 	cp images/portal/logging.properties.default images/portal/logging.properties

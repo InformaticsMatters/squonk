@@ -70,6 +70,7 @@ docker/deploy/images/Dockerfile-jobexecutor
 docker/deploy/images/chemservices/license.cxl
 
 docker/deploy/images/cellexecutor/logging.properties
+docker/deploy/images/jobexecutor/logging.properties
 
 docker/deploy/images/portal/server.xml
 docker/deploy/images/portal/logging.properties
