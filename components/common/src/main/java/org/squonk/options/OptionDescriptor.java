@@ -158,7 +158,7 @@ public class OptionDescriptor<T> implements Serializable {
      * @param mode
      */
     public OptionDescriptor(Class<T> type, String key, String label, String description, Mode mode) {
-        this(new SimpleTypeDescriptor<T>(type), key, label, description, null, null, true, true, 1, null, mode);
+        this(new SimpleTypeDescriptor<T>(type), key, label, description, null, null, true, true, 1, 1, mode);
     }
 
     public OptionDescriptor<T> withDefaultValue(T defaultValue) {
@@ -179,11 +179,17 @@ public class OptionDescriptor<T> implements Serializable {
 
     public OptionDescriptor<T> withMinValues(int minValues) {
         this.minValues = minValues;
+        if (this.maxValues < minValues) {
+            this.maxValues = minValues;
+        }
         return this;
     }
 
     public OptionDescriptor<T> withMaxValues(int maxValues) {
         this.maxValues = maxValues;
+        if (this.minValues > maxValues) {
+            this.minValues = maxValues;
+        }
         return this;
     }
 

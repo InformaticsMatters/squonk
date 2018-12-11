@@ -185,7 +185,6 @@ class ServiceDescriptorUtilsSpec extends Specification {
         then:
         descriptors.size() > 0
         errors == 0
-
     }
 
 }

@@ -16,6 +16,7 @@
 
 package org.squonk.options;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -34,5 +35,14 @@ public interface TypeDescriptor<T> extends Serializable {
     void putOptionValue(Map<String, Object> options, String key, T value);
 
     T readOptionValue(Map<String, Object> options, String key);
+
+    /** Get the JSON schema type, and optionally the format.
+     * The returned array may contain one ot two elements.
+     *
+     *
+     * @return The type as the first element of the array. If format is defined this will be the second element.
+     */
+    @JsonIgnore
+    String[] getJsonSchemaType();
 
 }

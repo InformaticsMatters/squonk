@@ -230,6 +230,7 @@ services:
         depends_on:
         - coreservices
         volumes:
+        - ./images/jobexecutor/logging.properties:/usr/local/tomcat/conf/logging.properties:ro,Z
         - /var/run/docker.sock:/var/run/docker.sock
         - /squonk/work:/squonk/work:z
         - /var/maven_repo:/var/maven_repo:ro,z
