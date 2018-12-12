@@ -1,0 +1,90 @@
+---
+
+# oc process -f squonk-keycloak-init.yaml | oc create -f -
+# Most likely you will need to specicify these parameters:
+# -p KEYCLOAK_REALM=realmname
+# -p ROUTES_BASE_HOSTNAME=hostname
+#
+# To clean up:
+# oc delete secret/squonk-keycloak-config -n squonk
+# oc delete job/squonk-client-creator cm/squonk-client-creator
+#
+
+kind: Template
+apiVersion: v1
+metadata:
+  name: keycloak-client-create
+labels:
+  template: keycloak-client-create
+message: 'Squonk client created in Keycloak'
+
+parameters:
+
+- displayName: Squonk client secret
+  name: SQUONK_CLIENT_SECRET
+  value: "1234"
+
+- displayName: Squonk namespace (Project)
+  name: SQUONK_NAMESPACE
+  value: squonk
+
+- displayName: Client ID
+  name: CLIENT_ID
+  value: squonk-notebook
+
+- displayName: Client Name
+  name: CLIENT_NAME
+  value: Squonk Computational Notebook
+
+- displayName: Client Description
+  name: CLIENT_DESC
+  value: Squonk Computational Notebook
+
+- displayName: Base hostname for routes
+  name: ROUTES_BASE_HOSTNAME
+  value: dev.openrisknet.org
+
+- displayName: Prefix for squonk hostname
+  name: ROUTE_PREFIX_SQUONK
+  value: squonk-notebook
+
+- displayName: Prefix for SSO hostname
+  name: ROUTE_PREFIX_SSO
+  value: sso
+
+- displayName: Keycloak Realm
+  name: KEYCLOAK_REALM
+  value: squonk
+
+- displayName: Keycloak Realm SSL Required
+  name: KEYCLOAK_SSL_REQUIRED
+  value: external
+
+- displayName: Redirect URL after logout
+  name: LOGOUT_REDIRECT_TO
+  required: true
+
+objects:
+
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: jobexecutor-sso-config
+    namespace: ${SQUONK_NAMESPACE}
+  data:
+    keycloak.json: |
+      {
+        "realm": "${KEYCLOAK_REALM}",
+        "auth-server-url": "https://${ROUTE_PREFIX_SSO}.${ROUTES_BASE_HOSTNAME}/auth",
+        "ssl-required": "${KEYCLOAK_SSL_REQUIRED}",
+        "disable-trust-manager": true,
+        "resource": "${CLIENT_ID}",
+        "use-resource-role-mappings": false,
+        "principal-attribute": "preferred_username",
+        "credentials": { "secret": "${SQUONK_CLIENT_SECRET}" }
+      }
+    context.xml: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <Context>
+        <Valve className="org.keycloak.adapters.tomcat.KeycloakAuthenticatorValve"/>
+      </Context>
