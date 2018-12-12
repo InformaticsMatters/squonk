@@ -17,6 +17,7 @@
 package org.squonk.services.camel.routes;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.swagger.v3.oas.models.OpenAPI;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Message;
@@ -24,6 +25,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.core.ServiceConfig;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.ServiceDescriptorToOpenAPIConverter;
 import org.squonk.core.ServiceDescriptorUtils;
 import org.squonk.execution.JobManager;
 import org.squonk.io.SquonkDataSource;
@@ -40,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,6 +111,17 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 .route()
                 .transform(constant("OK\n")).endRest();
 
+        rest("/v1/swagger").description("Service information")
+                //
+                //
+                .get("/").description("Get OpenAPI definitions for services")
+                .bindingMode(RestBindingMode.off)
+                .produces(CommonMimeTypes.MIME_TYPE_JSON)
+                .route()
+                .process((Exchange exch) -> {
+                    handleFetchSwagger(exch);
+                })
+                .endRest();
 
         rest("/v1/services").description("Service information")
                 //
@@ -202,6 +216,16 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 .marshal().mimeMultipart()
                 .endRest()
         ;
+    }
+
+    private void handleFetchSwagger(Exchange exch) throws IOException {
+        Message message = exch.getIn();
+        Collection sds = jobManager.fetchServiceDescriptors();
+        ServiceDescriptorToOpenAPIConverter converter = new ServiceDescriptorToOpenAPIConverter("");
+        OpenAPI oai = converter.convertToOpenApi(sds);
+        String json = ServiceDescriptorToOpenAPIConverter.openApiToJson(oai);
+        message.setBody(json);
+        message.setHeader("Content-Type", CommonMimeTypes.MIME_TYPE_JSON);
     }
 
     private void handleFetchServiceDescriptorInfo(Exchange exch) throws IOException {

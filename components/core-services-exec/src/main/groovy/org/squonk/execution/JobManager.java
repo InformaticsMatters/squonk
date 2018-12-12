@@ -15,9 +15,11 @@
  */
 package org.squonk.execution;
 
+import io.swagger.v3.oas.models.OpenAPI;
 import org.apache.camel.CamelContext;
 import org.squonk.core.ServiceConfig;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.ServiceDescriptorToOpenAPIConverter;
 import org.squonk.core.ServiceDescriptorUtils;
 import org.squonk.core.client.JobStatusRestClient;
 import org.squonk.io.IODescriptor;
@@ -71,7 +73,6 @@ public class JobManager implements ExecutorCallback {
     private final Map<String,ServiceDescriptor> serviceDescriptors = new HashMap<>();
 
 
-
     public JobManager() {
         initServiceDescriptors();
     }
@@ -106,6 +107,16 @@ public class JobManager implements ExecutorCallback {
         } catch (IOException ioe) {
             LOG.log(Level.SEVERE, "Failed to load service descriptors", ioe);
         }
+    }
+
+    public Collection<ServiceDescriptor> fetchServiceDescriptors() {
+        return serviceDescriptors.values();
+    }
+
+    public OpenAPI fetchServiceDescriptorSwagger(String baseUrl) throws IOException {
+        ServiceDescriptorToOpenAPIConverter converter = new ServiceDescriptorToOpenAPIConverter(baseUrl);
+        OpenAPI oai = converter.convertToOpenApi(serviceDescriptors.values());
+        return oai;
     }
 
     public List<Map<String,String>> fetchServiceDescriptorInfo() {
