@@ -3,17 +3,8 @@
 # Preparation and project creation for the Squonk Infrastructure.
 
 - name: Login (admin)
-  shell: oc login {{ oc_master_hostname }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
-
-- name: Check cluster-admin Roles
-  shell: oc get clusterrolebindings | grep cluster-admin
-  register: role_result
-  changed_when: False
-
-- name: Add cluster-admin role to admin
-  shell: oc adm policy add-cluster-role-to-user cluster-admin admin
-  when: not role_result.stdout | regex_search('^\S+\s+\S+\s+admin', multiline=True)
 
 # Keycloak ImageStream
 

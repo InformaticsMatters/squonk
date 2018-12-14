@@ -8,7 +8,7 @@
   changed_when: False
 
 - name: Login as The Squonk Developer
-  shell: oc login {{ oc_master_hostname }} -u {{ oc_user }} -p {{ oc_user_password }}
+  shell: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 
 # Deploy...
