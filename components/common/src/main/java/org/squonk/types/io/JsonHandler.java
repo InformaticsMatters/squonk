@@ -21,6 +21,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.ContextAttributes;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
+import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.oas.models.media.Schema;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.types.BasicObject;
@@ -282,6 +286,23 @@ public class JsonHandler {
         ObjectReader reader = mapper.readerFor(metadata.getType()).with(ContextAttributes.getEmpty().withSharedAttribute(JsonHandler.ATTR_DATASET_METADATA, metadata));
         MappingIterator iter = reader.readValues(json);
         return new Dataset<>(metadata.getType(), iter, metadata);
+    }
+
+    public static String getJsonSchemaAsString(Class clazz) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
+        //JsonSchema schema = mapper.generateJsonSchema(clazz);
+
+        JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
+        JsonSchema schema = schemaGen.generateSchema(clazz);
+
+        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
+    }
+
+    public static Map<String, Schema> getJsonSchemaObjects(Class clazz) {
+        ModelConverters mc = new ModelConverters();
+        Map<String, Schema> schemas = mc.read(clazz);
+        return schemas;
     }
 
 }

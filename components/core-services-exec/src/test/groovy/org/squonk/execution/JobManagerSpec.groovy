@@ -246,10 +246,11 @@ class JobManagerSpec extends Specification {
 
     void "generate swagger"() {
         JobManager mgr = new JobManager(true, true)
+        ServiceDescriptorToOpenAPIConverter converter = new ServiceDescriptorToOpenAPIConverter("")
 
         when:
         OpenAPI oai = mgr.fetchServiceDescriptorSwagger("http://squonk.it")
-        String json = ServiceDescriptorToOpenAPIConverter.openApiToJson(oai)
+        String json = converter.openApiToJson(oai)
         println json
 
         then:

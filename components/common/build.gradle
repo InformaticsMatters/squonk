@@ -21,9 +21,11 @@ apply plugin: 'maven-publish'
 dependencies {
 
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    compile "com.fasterxml.jackson.module:jackson-module-jsonSchema:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
 
     compile "io.swagger.core.v3:swagger-models:2.0.6"
+    compile "io.swagger.core.v3:swagger-core:2.0.6"
 
     testCompile project(':core-test')
 }
