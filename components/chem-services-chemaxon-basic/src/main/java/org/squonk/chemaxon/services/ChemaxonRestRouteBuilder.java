@@ -17,6 +17,7 @@
 package org.squonk.chemaxon.services;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
@@ -26,6 +27,7 @@ import org.squonk.camel.chemaxon.processor.screening.MoleculeScreenerProcessor;
 import org.squonk.camel.processor.DatasetToJsonProcessor;
 import org.squonk.camel.processor.JsonToDatasetProcessor;
 import org.squonk.camel.processor.MoleculeObjectRouteHttpProcessor;
+import org.squonk.chemaxon.enumeration.ReactionLibrary;
 import org.squonk.chemaxon.molecule.ChemTermsEvaluator;
 import org.squonk.core.HttpServiceDescriptor;
 import org.squonk.core.ServiceDescriptorSet;
@@ -43,10 +45,12 @@ import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonConstants;
 import org.squonk.util.CommonMimeTypes;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_NAME;
 import static org.squonk.mqueue.MessageQueueCredentials.MQUEUE_JOB_METRICS_EXCHANGE_PARAMS;
@@ -648,17 +652,38 @@ public class ChemaxonRestRouteBuilder extends RouteBuilder {
                 .process(new MoleculeObjectRouteHttpProcessor(ChemaxonDescriptorsRouteBuilder.CHEMAXON_CLUSTERING_SPHEREX_ECFP4, resolver, ROUTE_STATS))
                 .endRest();
 
-        rest("v1/reactor").description("Library enumeration using ChemAxon Reactor")
-                .bindingMode(RestBindingMode.off)
-                .consumes("application/json")
-                .produces("application/json")
-                .post("react").description("Simple enumeration")
-                .route()
-                .process(new JsonToDatasetProcessor(MoleculeObject.class))
-                .process(new ReactorProcessor("/chemaxon_reaction_library.zip", ROUTE_STATS))
-                .process(new DatasetToJsonProcessor(MoleculeObject.class))
-                .endRest();
 
+        File rxnlibFile = new File("/chemaxon_reaction_library.zip");
+        if (rxnlibFile.exists()) {
+            final ReactionLibrary rxnlib = new ReactionLibrary(rxnlibFile);
+
+            rest("v1/reactor").description("Library enumeration using ChemAxon Reactor")
+                    //
+                    // perform enumeration
+                    .post("react").description("Simple enumeration")
+                    .bindingMode(RestBindingMode.off)
+                    .consumes("application/json")
+                    .produces("application/json")
+                    .route()
+                    .process(new JsonToDatasetProcessor(MoleculeObject.class))
+                    .process(new ReactorProcessor(rxnlib, ROUTE_STATS))
+                    .process(new DatasetToJsonProcessor(MoleculeObject.class))
+                    .endRest()
+                    //
+                    // get reactions
+                    // NOTE: this is used directly from the portal app so if anything is changed here the portal
+                    // will likely need updating.
+                    .get("reaction_names").description("Get the names of the reactions in the library")
+                    .produces("application/json")
+                    .bindingMode(RestBindingMode.json)
+                    .route()
+                    .process((exch) -> {
+                        exch.getIn().setBody(rxnlib.getReactionNames());
+                    });
+
+        } else {
+            LOG.warning("Reactor is disabled as reaction library was not found. Should be at " + rxnlibFile.getPath());
+        }
     }
 
 }
