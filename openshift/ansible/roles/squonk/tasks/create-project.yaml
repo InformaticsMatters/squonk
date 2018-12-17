@@ -3,7 +3,7 @@
 # Preparation and project creation for Squonk.
 
 - name: Login (admin)
-  shell: oc login {{ oc_master_hostname }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
 # Squonk Project

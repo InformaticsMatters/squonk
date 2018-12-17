@@ -6,7 +6,7 @@
 # project and the related parts of the squonk infrastructure project.
 
 - name: Login (admin)
-  shell: oc login {{ oc_master_hostname }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
 # To un-deploy the infrastructure, the fastest way is to

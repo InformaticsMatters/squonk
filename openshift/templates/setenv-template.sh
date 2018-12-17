@@ -26,7 +26,7 @@ export OC_ROUTES_BASENAME=${OC_MASTER_HOSTNAME}
 export KEYCLOAK_SERVER_URL=https://sso.${OC_ROUTES_BASENAME}/auth
 export KEYCLOAK_REALM=squonk
 export KEYCLOAK_SSL_REQUIRED=external
-export KEYCLOAK_INSECURE_ROUTE=Disable
+export KEYCLOAK_INSECURE_ROUTE=None
 export KEYCLOAK_LOGOUT_REDIRECT_TO=http://home.${OC_ROUTES_BASENAME}/
 export OC_INFRA_PROJECT=squonk-infra
 export OC_INFRA_PROJECT_DISPLAY_NAME="Squonk Infrastructure"
@@ -70,10 +70,6 @@ export OC_CHEMCENTRAL_VOLUME_STORAGE_CLASS=SetIfUsingDynamicVolumeType
 # of the working copy of the Squonk pipelines repository.
 # If you don't have a working copy this should be blank.
 export SQUONK_PIPELINES_PATH=../../../pipelines
-
-# A built-in user (blank to avoid)
-export SQUONK_GUEST_USER=guest
-export SQUONK_GUEST_PASSWORD=guest1234
 
 # Don't really like the NoCows stuff in ansible...
 export ANSIBLE_NOCOWS=1
