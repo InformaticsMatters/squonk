@@ -13,6 +13,7 @@ keycloak_service_user_password_field: sso-service-password
 
 oc_project: "{{ ansible_env.OC_PROJECT }}"
 oc_project_display_name: "{{ ansible_env.OC_PROJECT_DISPLAY_NAME }}"
+oc_project_sa: "{{ ansible_env.OC_PROJECT_SA }}"
 oc_infra_project: "{{ ansible_env.OC_INFRA_PROJECT }}"
 oc_infra_project_display_name: "{{ ansible_env.OC_INFRA_PROJECT_DISPLAY_NAME }}"
 oc_infra_sa: "{{ ansible_env.OC_INFRA_SA }}"
@@ -27,6 +28,7 @@ oc_postgresql_volume_size: "{{ ansible_env.OC_POSTGRESQL_VOLUME_SIZE }}"
 oc_infra_backup_volume_size: "{{ ansible_env.OC_INFRA_BACKUP_VOLUME_SIZE }}"
 oc_squonk_app: "{{ ansible_env.OC_SQUONK_APP }}"
 oc_squonk_host: "{{ ansible_env.OC_SQUONK_HOST }}"
+oc_squonk_client_secret: "{{ ansible_env.OC_SQUONK_CLIENT_SECRET }}"
 
 oc_squonk_cell_image_tag: "{{ ansible_env.OC_SQUONK_CELL_IMAGE_TAG }}"
 oc_squonk_chem_image_tag: "{{ ansible_env.OC_SQUONK_CHEM_IMAGE_TAG }}"
@@ -62,6 +64,10 @@ oc_infra_backup_daily_count: "{{ ansible_env.OC_INFRA_DAILY_BACKUP_COUNT }}"
 
 # Name fo the infrastructure RabbitMQ name
 infra_rabbit_name: "rabbitmq"
+
+# Validate certificates
+# With tasks like curl
+validate_certificates: no
 
 # If set each deployment of Pods (infrastructure and squonk)
 # will be followed by a monitoring step that waits for the

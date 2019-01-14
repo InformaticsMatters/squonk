@@ -23,6 +23,9 @@ parameters:
 - name: SQUONK_NAMESPACE
   value: squonk
 
+- name: INFRA_SA
+  value: skuonk
+
 - name: RABBITMQ_HOST
   value: rabbitmq.openrisknet-infra.svc
 
@@ -74,6 +77,7 @@ objects:
       metadata:
         name: squonk-rabbitmq-creator
       spec:
+        serviceAccountName: ${INFRA_SA}
         volumes:
         - name: squonk-rabbitmq-config
           configMap:

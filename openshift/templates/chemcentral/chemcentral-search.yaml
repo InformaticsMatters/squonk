@@ -22,6 +22,10 @@ parameters:
   description: Namespace for the chemcentral search service
   value: squonk
 
+- name: APP_SA
+  description: Service Account for the chemcentral search service
+  value: squonk
+
 - name: POSTGRES_SERVICE
   displayName: PostgreSQL RDKit cartridge service name
   value: db-chemcentral
@@ -49,6 +53,7 @@ objects:
         labels:
           name: chemcentral-search
       spec:
+        serviceAccountName: ${APP_SA}
         containers:
         - image: squonk/chemcentral-search:${SEARCH_IMAGE_TAG}
           name: chemcentral-search

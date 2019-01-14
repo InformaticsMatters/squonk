@@ -2,8 +2,8 @@
 
 # Preparation and project creation for Squonk.
 
-- name: Login (admin)
-  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+- name: Login (user)
+  shell: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 
 # Squonk Project
@@ -20,34 +20,3 @@
   when: >
     not projects_result.stdout
     | regex_search('^%s\s' % oc_project, multiline=True)
-
-- name: Move to Squonk Project
-  shell: oc project {{ oc_project }}
-  changed_when: False
-
-# Prepare roles and service accounts
-
-- name: Check Role Bindings
-  shell: oc get rolebindings
-  register: rb_result
-  changed_when: False
-
-- name: Allow User Edit (oc_user)
-  shell: oc adm policy add-role-to-user edit {{ oc_user }}
-  when: >
-    not rb_result.stdout
-    | regex_search('^edit\s+\S+\s+%s' % oc_user, multiline=True)
-
-- name: Check Cluster Role Bindings
-  shell: oc get clusterrolebindings
-  register: crb_result
-  changed_when: False
-
-- name: Set Roles (default)
-  shell: "{{ item }}"
-  loop:
-  - oc adm policy add-scc-to-user anyuid system:serviceaccount:{{ oc_project }}:default
-  - oc adm policy add-cluster-role-to-user cluster-admin -z default
-  when: >
-    not crb_result.stdout
-    | regex_search('^cluster-admin.+%s/default$' % oc_project, multiline=True)

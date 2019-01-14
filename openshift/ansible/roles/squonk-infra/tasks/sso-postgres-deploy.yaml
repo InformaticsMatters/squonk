@@ -4,6 +4,12 @@
   shell: oc project {{ oc_infra_project }}
   changed_when: False
 
+- name: Login (user)
+  shell: >
+    oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
+    --insecure-skip-tls-verify=true
+  changed_when: False
+
 - name: Check Keycloak Deployment
   shell: oc get dc
   register: sso_dc_result
@@ -17,6 +23,7 @@
     -p POSTGRESQL_SHARED_BUFFERS={{ postgresql_shared_buffer_size }}
     -p HOSTNAME_HTTPS=sso.{{ oc_routes_basename }}
     -p ROUTE_INSECURE_POLICY={{ keycloak_insecure_route }}
+    -p SSO_SA={{ oc_infra_sa }}
     | oc create -f -
   when: '"db-postgresql" not in sso_dc_result.stdout'
 
@@ -43,6 +50,7 @@
     -f {{ role_path }}/{{ t_dir }}/squonk-infra/sso-backup-hourly.yaml
     -p BACKUP_SCHEDULE={{ oc_infra_backup_hourly_schedule }}
     -p BACKUP_COUNT={{ oc_infra_backup_hourly_count }}
+    -p BACKUP_SA={{ oc_infra_sa }}
     | oc create -f -
   when:
   - oc_infra_backup_hourly_count|int > 0
@@ -54,6 +62,7 @@
     -p BACKUP_SCHEDULE={{ oc_infra_backup_daily_schedule }}
     -p BACKUP_COUNT={{ oc_infra_backup_daily_count }}
     -p BACKUP_PRIOR_COUNT={{ oc_infra_backup_hourly_count }}
+    -p BACKUP_SA={{ oc_infra_sa }}
     | oc create -f -
   when:
   - oc_infra_backup_daily_count|int > 0

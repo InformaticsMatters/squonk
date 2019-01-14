@@ -4,6 +4,12 @@
   shell: oc project {{ oc_infra_project }}
   changed_when: False
 
+- name: Login (admin)
+  shell: >
+    oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+    --insecure-skip-tls-verify=true
+  changed_when: False
+
 # Check/Create PVs
 
 - name: Check Infrastructure PVs

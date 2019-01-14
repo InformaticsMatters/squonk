@@ -3,7 +3,9 @@
 # Preparation and project creation for the Squonk Infrastructure.
 
 - name: Login (admin)
-  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  shell: >
+    oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+    --insecure-skip-tls-verify=true
   changed_when: False
 
 # Keycloak ImageStream
@@ -21,6 +23,12 @@
   when: not is_result.stdout | regex_search('^redhat-sso72-openshift\s', multiline=True)
 
 # Squonk Infrastructure Project
+
+- name: Login (user)
+  shell: >
+    oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
+    --insecure-skip-tls-verify=true
+  changed_when: False
 
 - name: Check the Infrastructure Project
   shell: oc get projects

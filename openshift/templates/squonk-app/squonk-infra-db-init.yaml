@@ -30,6 +30,11 @@ parameters:
   name: SQUONK_NAMESPACE
   value: squonk
 
+- displayName: Squonk Infrastructure Service Account
+  description: Squonk Infrastructure Service Account
+  name: INFRA_SA
+  value: squonk
+
 - displayName: Database host
   description: Database host
   name: DATABASE_HOST
@@ -87,6 +92,7 @@ objects:
       metadata:
         name: squonk-database-creator
       spec:
+        serviceAccountName: ${INFRA_SA}
         volumes:
         - name: squonk-database-creator
           configMap:
