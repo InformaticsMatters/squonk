@@ -255,6 +255,7 @@ public class JsonHandler {
                 //LOG.info("Writing to json: "  + i);
                 try {
                     sw.write(i);
+                    sw.flush();
                 } catch (IOException ex) {
                     throw new RuntimeException("Failed to write object: " + i, ex);
                 }

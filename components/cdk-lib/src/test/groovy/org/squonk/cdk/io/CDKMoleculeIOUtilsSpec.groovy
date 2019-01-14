@@ -16,31 +16,29 @@
 
 package org.squonk.cdk.io
 
+import org.openscience.cdk.ChemFile
 import org.openscience.cdk.DefaultChemObjectBuilder
 import org.openscience.cdk.fingerprint.SignatureFingerprinter
-import org.openscience.cdk.interfaces.IChemObjectBuilder
-import org.openscience.cdk.signature.MoleculeSignature
-import org.openscience.cdk.smiles.SmiFlavor
-import org.openscience.cdk.smiles.SmilesGenerator
-import org.squonk.types.MoleculeObject
-import org.openscience.cdk.ChemFile
 import org.openscience.cdk.interfaces.IAtomContainer
 import org.openscience.cdk.interfaces.IPDBPolymer
+import org.openscience.cdk.io.*
 import org.openscience.cdk.io.formats.IChemFormat
+import org.openscience.cdk.signature.MoleculeSignature
 import org.openscience.cdk.silent.AtomContainer
 import org.openscience.cdk.silent.SilentChemObjectBuilder
+import org.openscience.cdk.smiles.SmiFlavor
+import org.openscience.cdk.smiles.SmilesGenerator
 import org.openscience.cdk.smiles.SmilesParser
 import org.openscience.cdk.tools.CDKHydrogenAdder
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator
 import org.squonk.data.Molecules
 import org.squonk.types.CDKSDFile
+import org.squonk.types.MoleculeObject
 import org.squonk.util.IOUtils
-
-import java.util.zip.GZIPInputStream
 import spock.lang.Specification
 
-import org.openscience.cdk.io.*;
+import java.util.zip.GZIPInputStream
 
 /**
  *

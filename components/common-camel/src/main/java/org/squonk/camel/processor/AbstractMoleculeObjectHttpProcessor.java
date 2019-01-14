@@ -31,6 +31,7 @@ import org.squonk.util.CamelRouteStatsRecorder;
 import org.squonk.util.StatsRecorder;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.squonk.util.CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON;
@@ -82,7 +83,8 @@ public abstract class AbstractMoleculeObjectHttpProcessor implements Processor {
 
         // get all the info about the requested input and output
         RequestInfo requestInfo = RequestInfo.build(supportedInputMimeTypes, supportedOutputMimeTypes, exch);
-        LOG.info(requestInfo.toString());
+        LOG.fine(requestInfo.toString());
+        requestInfo.dumpHeaders(LOG, Level.FINE);
 
         // work out what handlers are needed for the input and output
         // might as well fail now if we can't handle input or output

@@ -26,13 +26,17 @@ import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.ThinDatasetWrapper;
 import org.squonk.io.DepictionParameters;
+import org.squonk.io.DepictionParameters.OutputFormat;
 import org.squonk.io.QueryParams;
 import org.squonk.options.types.Structure;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
+import org.squonk.util.ServiceConstants;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -45,13 +49,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.squonk.io.DepictionParameters.OutputFormat;
-import org.squonk.util.ServiceConstants;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
-
-import static org.squonk.io.DepictionParameters.OutputFormat.*;
+import static org.squonk.io.DepictionParameters.OutputFormat.svg;
 
 /**
  * Created by timbo on 01/09/16.
@@ -195,7 +193,7 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
     protected InputStream doDatasetConvert(Dataset<MoleculeObject> mols, String toFormat, boolean gzip) throws IOException {
 
         if ("sdf".equals(toFormat)) {
-            LOG.fine("Conversion to " + toFormat + ". Gzip? " + gzip);
+            LOG.info("Conversion to " + toFormat + ". Gzip? " + gzip);
             URIBuilder b = createURIBuilder(getDatasetConvertBase() + "/dataset_to_sdf");
 
 
@@ -206,7 +204,7 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
                     new BasicNameValuePair("Accept-Encoding", "gzip")
             };
 
-            InputStream is = executePostAsInputStream(b, new InputStreamEntity(mols.getInputStream(true)), headers);
+            InputStream is = executePostAsInputStreamStreaming(b, new InputStreamEntity(mols.getInputStream(true)), headers);
             return gzip ? is : IOUtils.getGunzippedInputStream(is);
 
         }
