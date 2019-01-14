@@ -21,27 +21,30 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.media.Content;
-import io.swagger.v3.oas.models.media.Encoding;
-import io.swagger.v3.oas.models.media.MediaType;
-import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.servers.Server;
 import org.squonk.io.IODescriptor;
+import org.squonk.jobdef.JobStatus;
 import org.squonk.options.OptionDescriptor;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class ServiceDescriptorToOpenAPIConverter {
 
@@ -52,8 +55,20 @@ public class ServiceDescriptorToOpenAPIConverter {
     private String infoUrl = "https://squonk.it";
     private String infoEmail = "info@informaticsmatters.com";
 
+    private final ObjectMapper yamlMapper;
+    private final ObjectMapper jsonMapper;
+
+    private Map<String,Schema> schemas = new HashMap<>();
+
     public ServiceDescriptorToOpenAPIConverter(String baseUrl) {
         this.baseUrl = baseUrl;
+        yamlMapper = new ObjectMapper(new YAMLFactory());
+        jsonMapper = new ObjectMapper();
+        configureObjectMapper(yamlMapper);
+        configureObjectMapper(jsonMapper);
+        schemas.putAll(createJsonSchema(JobStatus.class));
+
+        LOG.info("Created schemas for " + schemas.keySet().stream().collect(Collectors.joining(",")));
     }
 
     public String getBaseUrl() {
@@ -81,9 +96,11 @@ public class ServiceDescriptorToOpenAPIConverter {
     }
 
     public OpenAPI convertToOpenApi(Collection<ServiceDescriptor> sds) throws IOException {
-        OpenAPI openApi = new OpenAPI();
+        OpenAPI openApi = new OpenAPI()
+                .components(new Components());
         handleInfo(openApi);
         handleServers(openApi);
+        handleStaticServices(openApi);
         for (ServiceDescriptor sd : sds) {
             LOG.info("Handling Service Descriptor " + sd.getId());
             handlePaths(sd, openApi);
@@ -96,18 +113,12 @@ public class ServiceDescriptorToOpenAPIConverter {
         return openApiToJson(openApi);
     }
 
-    public static String openApiToJson(OpenAPI oai) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        configureObjectMapper(mapper);
-
-        return serialize(oai, mapper);
+    public String openApiToJson(Object oai) throws IOException {
+        return serialize(oai, jsonMapper);
     }
 
-    public static String openApiToYaml(OpenAPI oai) throws IOException {
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        configureObjectMapper(mapper);
-
-        return serialize(oai, mapper);
+    public String openApiToYaml(Object oai) throws IOException {
+        return serialize(oai, yamlMapper);
     }
 
     private static void configureObjectMapper(ObjectMapper mapper) {
@@ -118,7 +129,7 @@ public class ServiceDescriptorToOpenAPIConverter {
     }
 
 
-    public static String serialize(OpenAPI oai,  ObjectMapper mapper) throws IOException {
+    public static String serialize(Object oai,  ObjectMapper mapper) throws IOException {
         return mapper.writer(new DefaultPrettyPrinter()).writeValueAsString(oai);
     }
 
@@ -140,6 +151,54 @@ public class ServiceDescriptorToOpenAPIConverter {
                 new Server().url(baseUrl)
                         .description("Squonk job executor service")
         ));
+    }
+
+    protected void handleStaticServices(OpenAPI openApi) {
+        handleSchemas(openApi);
+        handleGetJobStatus(openApi);
+    }
+
+    protected void handleSchemas(OpenAPI openApi) {
+        schemas.entrySet().forEach((e) -> openApi.getComponents().addSchemas(e.getKey(), e.getValue()));
+    }
+
+    protected void handleGetJobStatus(OpenAPI openApi) {
+
+        openApi.path("/${id}/status", new PathItem()
+                .get(new Operation()
+                        .summary("Get job status")
+                        .description("Get the JobStatus object for a specified Job")
+                        .addParametersItem(new Parameter()
+                                .schema(new StringSchema())
+                                .in("header")
+                                .name("Authorization")
+                                .description("Authentication token"))
+                        .addParametersItem(new Parameter()
+                                .schema(new StringSchema())
+                                .in("header")
+                                .name("SquonkUsername")
+                                .description("Squonk user to delegate to"))
+                        .addParametersItem(new Parameter()
+                                .schema(new StringSchema())
+                                .in("path")
+                                .name("id")
+                                .required(true)
+                                .description("Job ID"))
+                        .summary("Get job status")
+                        .description("Get job status for the specified job id and user.")
+                        .responses(new ApiResponses()
+                                .addApiResponse("404", new ApiResponse()
+                                        .description("No such job")
+                                        .content(new Content()
+                                                .addMediaType("application/json", new MediaType()
+                                                        .schema(new Schema()
+                                                                .type("object")))))
+                                .addApiResponse("200", new ApiResponse()
+                                        .description("Job status")
+                                        .content(new Content()
+                                                .addMediaType("application/json", new MediaType()
+                                                        .schema(new Schema().$ref("#/components/schemas/JobStatus"))))))));
+
     }
 
 
@@ -238,6 +297,13 @@ public class ServiceDescriptorToOpenAPIConverter {
         schema.minItems(option.getMinValues()).maxItems(option.getMaxValues());
         // TODO - handle option.getValues() as the enum property
         return schema;
+    }
+
+
+    public static Map<String, Schema> createJsonSchema(Class clazz) {
+        ModelConverters mc = new ModelConverters();
+        Map<String, Schema> schemas = mc.read(clazz);
+        return schemas;
     }
 
 }

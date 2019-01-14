@@ -223,7 +223,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
         Collection sds = jobManager.fetchServiceDescriptors();
         ServiceDescriptorToOpenAPIConverter converter = new ServiceDescriptorToOpenAPIConverter("");
         OpenAPI oai = converter.convertToOpenApi(sds);
-        String json = ServiceDescriptorToOpenAPIConverter.openApiToJson(oai);
+        String json = converter.openApiToJson(oai);
         message.setBody(json);
         message.setHeader("Content-Type", CommonMimeTypes.MIME_TYPE_JSON);
     }

@@ -17,6 +17,7 @@
 package org.squonk.types.io
 
 import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.DatasetMetadata
 import org.squonk.dataset.DatasetSpec
@@ -169,6 +170,35 @@ class JsonHandlerSpec extends Specification {
 //        then:
 //        1 == 1
 //    }
+
+    void "create json schema string"() {
+
+        when:
+        String js = JsonHandler.getJsonSchemaAsString(MoleculeObject.class)
+        println js
+
+        then:
+        js.length() > 0
+
+    }
+
+    void "create json schema object"() {
+
+        JsonHandler jsonHandler = JsonHandler.getInstance()
+
+
+        when:
+        Map schemas = jsonHandler.getJsonSchemaObjects(MoleculeObject.class)
+        schemas.each {k,v ->
+            String json = jsonHandler.getObjectMapper().writer(new DefaultPrettyPrinter()).writeValueAsString(v);
+            println "Schema: $k -> $json"
+        }
+
+        then:
+        schemas.size() == 1
+
+
+    }
 
 }
 

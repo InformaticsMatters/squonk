@@ -56,6 +56,12 @@ public class ReactorProcessor implements Processor {
     private final String rxnLibZipFile;
     private ReactionLibrary rxnlib;
 
+    public ReactorProcessor(ReactionLibrary rxnLib, String statsRouteUri) {
+        this.rxnlib = rxnLib;
+        this.statsRouteUri = statsRouteUri;
+        this.rxnLibZipFile = rxnLib.getPath();
+    }
+
     public ReactorProcessor(String rxnLibZipFile, String statsRouteUri) {
         this.rxnLibZipFile = rxnLibZipFile;
         this.statsRouteUri = statsRouteUri;

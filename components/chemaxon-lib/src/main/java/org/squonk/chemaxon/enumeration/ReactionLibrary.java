@@ -35,13 +35,20 @@ public class ReactionLibrary {
     private static final String EXTENSION = ".mrv";
 
     private final ZipFile zipFile;
+    private final String path;
 
     public ReactionLibrary(String path) throws IOException {
+        this.path = path;
         this.zipFile = new ZipFile(path);
     }
 
     public ReactionLibrary(File file) throws IOException {
+        this.path = file.getPath();
         this.zipFile = new ZipFile(file);
+    }
+
+    public String getPath() {
+        return path;
     }
 
     public List<String> getReactionNames() {
