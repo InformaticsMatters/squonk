@@ -15,6 +15,9 @@ labels:
 
 parameters:
 
+- name: BACKUP_SA
+  value: default
+
 - name: BACKUP_REGISTRY
   value: 'docker.io'
 - name: BACKUP_IMAGE
@@ -50,6 +53,7 @@ objects:
             labels:
               name: postgresql-backup-daily
           spec:
+            serviceAccountName: ${BACKUP_SA}
             # Application containers
             containers:
             - image: ${BACKUP_REGISTRY}/${BACKUP_IMAGE}:${BACKUP_TAG}

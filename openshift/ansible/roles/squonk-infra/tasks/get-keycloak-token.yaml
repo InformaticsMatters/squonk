@@ -11,7 +11,9 @@
 # We need to be admin
 
 - name: Login (admin)
-  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  shell: >
+    oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+    --insecure-skip-tls-verify=true
   changed_when: False
 
 # Get some secrets from the infrastructure...
@@ -40,6 +42,7 @@
     body: "{{ credentials }}&grant_type=password&client_id=admin-cli"
     headers:
       Content-Type: "application/x-www-form-urlencoded"
+    validate_certs: "{{ validate_certificates }}"
   register: token_result
   vars:
     credentials: "username={{ keycloak_service_user }}&password={{ keycloak_service_password }}"

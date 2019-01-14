@@ -33,8 +33,10 @@ export OC_POSTGRESQL_SERVICE=db-postgresql
 export OC_POSTGRESQL_VOLUME_SIZE=10Gi
 export OC_PROJECT=squonk
 export OC_PROJECT_DISPLAY_NAME="Squonk Applications"
+export OC_PROJECT_SA=squonk
 export OC_SQUONK_APP=squonk-notebook
 export OC_SQUONK_HOST=${OC_SQUONK_APP}.${OC_ROUTES_BASENAME}
+export OC_SQUONK_CLIENT_SECRET=squonk1234
 export OC_JOBEXECUTOR_HOST=jobexecutor.${OC_ROUTES_BASENAME}
 export OC_SQUONK_CC_PVC_SIZE=20Gi
 

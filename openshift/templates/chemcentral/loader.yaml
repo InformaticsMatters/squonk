@@ -17,6 +17,10 @@ parameters:
   description: Namespace for the chemcentral search service
   value: squonk
 
+- name: APP_SA
+  description: Service Account for the chemcentral search service
+  value: squonk
+
 - name: IMAGE_TAG
   description: Tag name for the squonk/chemcentral-loader image
   value: latest
@@ -79,6 +83,7 @@ objects:
         - name: data-dir
           persistentVolumeClaim:
             claimName: chemcentral-data-loader-pvc
+        serviceAccountName: ${APP_SA}
         containers:
         - image: squonk/chemcentral-loader:${IMAGE_TAG}
           name: chemcentral-loader-${LOADER_MARKER}

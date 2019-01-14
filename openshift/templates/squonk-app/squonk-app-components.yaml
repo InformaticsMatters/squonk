@@ -27,6 +27,9 @@ parameters:
 
 - name: APP_NAMESPACE
   value: squonk
+- name: APP_SA
+  value: squonk
+
 - name: PULL_POLICY
   value: IfNotPresent
 
@@ -125,6 +128,7 @@ objects:
         labels:
           name: postgres-migrate
       spec:
+        serviceAccountName: ${APP_SA}
         containers:
         - image: squonk/flyway:${FLYWAY_IMAGE_TAG}
           name: postgres-migrate
@@ -161,6 +165,7 @@ objects:
         labels:
           name: coreservices
       spec:
+        serviceAccountName: ${APP_SA}
         containers:
         - image: squonk/coreservices:${CORE_IMAGE_TAG}
           name: coreservices
@@ -240,6 +245,8 @@ objects:
         labels:
           name: chemservices-basic
       spec:
+        serviceAccountName: ${APP_SA}
+
         # Initialisation Containers...
         initContainers:
         - image: yauritux/busybox-curl
@@ -334,6 +341,7 @@ objects:
         labels:
           name: cellexecutor
       spec:
+        serviceAccountName: ${APP_SA}
         containers:
         - image: squonk/cellexecutor:${CELL_IMAGE_TAG}
           name: cellexecutor

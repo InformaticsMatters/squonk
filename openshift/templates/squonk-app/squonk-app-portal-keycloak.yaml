@@ -25,6 +25,9 @@ parameters:
 
 - name: APP_NAMESPACE
   value: squonk
+- name: APP_SA
+  value: squonk
+
 - name: PULL_POLICY
   value: IfNotPresent
 
@@ -72,6 +75,7 @@ objects:
         labels:
           name: portal
       spec:
+        serviceAccountName: ${APP_SA}
         initContainers:
         - image: yauritux/busybox-curl
           name: wait-for-core-before-portal

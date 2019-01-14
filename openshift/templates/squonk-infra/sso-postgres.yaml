@@ -175,12 +175,8 @@ parameters:
   value: Disable
   required: false
 
-- name: BACKUP_REGISTRY
-  value: 'docker.io'
-- name: BACKUP_IMAGE
-  value: 'informaticsmatters/sql-backup'
-- name: BACKUP_TAG
-  value: 'stable'
+- name: SSO_SA
+  value: default
 
 objects:
 
@@ -327,6 +323,7 @@ objects:
           application: "${APPLICATION_NAME}"
       spec:
         terminationGracePeriodSeconds: 75
+        serviceAccountName: ${SSO_SA}
         containers:
         - name: "${APPLICATION_NAME}"
           image: "${APPLICATION_NAME}"
@@ -452,6 +449,9 @@ objects:
           application: "${APPLICATION_NAME}"
       spec:
         terminationGracePeriodSeconds: 60
+        serviceAccountName: ${SSO_SA}
+#        securityContext:
+#          fsGroup: 1000100001
         containers:
         - name: "db-postgresql"
           image: postgresql

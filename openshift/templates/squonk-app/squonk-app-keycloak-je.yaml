@@ -23,6 +23,9 @@ parameters:
 
 - name: APP_NAMESPACE
   value: squonk
+- name: APP_SA
+  value: squonk
+
 - name: PULL_POLICY
   value: IfNotPresent
 
@@ -78,6 +81,7 @@ objects:
         labels:
           name: jobexecutor-keycloak
       spec:
+        serviceAccountName: ${APP_SA}
         containers:
         - image: squonk/jobexecutor-keycloak:${JE_IMAGE_TAG}
           name: jobexecutor-keycloak

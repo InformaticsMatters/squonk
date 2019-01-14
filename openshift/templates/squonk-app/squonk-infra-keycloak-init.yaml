@@ -22,12 +22,14 @@ parameters:
 
 - displayName: Squonk client secret
   name: SQUONK_CLIENT_SECRET
-  from: "[a-zA-Z0-9]{32}"
-  generate: expression
   required: true
 
 - displayName: Squonk namespace (Project)
   name: SQUONK_NAMESPACE
+  value: squonk
+
+- displayName: Squonk Infrastructure Service Account
+  name: INFRA_SA
   value: squonk
 
 - displayName: Client ID
@@ -174,6 +176,7 @@ objects:
       metadata:
         name: squonk-client-creator
       spec:
+        serviceAccountName: ${INFRA_SA}
         volumes:
         - name: squonk-client-creator
           configMap:

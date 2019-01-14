@@ -37,7 +37,7 @@ objects:
     namespace: ${APP_NAMESPACE}
   spec:
     accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
     resources:
       requests:
         storage: ${CELL_WORK_PVC_SIZE}
