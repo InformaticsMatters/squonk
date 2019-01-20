@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
- *
  * @author timbo
  */
 public class RDKitMoleculeProcessor implements Processor {
@@ -57,7 +57,7 @@ public class RDKitMoleculeProcessor implements Processor {
         List<EvaluatorDefinition> defs = definitions;
         Stream<MoleculeObject> mols = dataset.getStream();
 
-        Map<String,Integer> stats = new HashMap<>();
+        Map<String, Integer> stats = new HashMap<>();
         Stream<MoleculeObject> results = evaluate(exch, mols, defs, stats);
 
         StatsRecorder recorder = exch.getIn().getHeader(StatsRecorder.HEADER_STATS_RECORDER, StatsRecorder.class);
@@ -80,21 +80,20 @@ public class RDKitMoleculeProcessor implements Processor {
         // java.lang.UnsatisfiedLinkError: org.RDKit.RDKFuncsJNI.rdkitVersion_get()Ljava/lang/String;
         // So we hard code the version number instead. Remember to update it.
         //String source = "RDKit " + RDKFuncs.getRdkitVersion();
-        String source = "RDKit 2018.03.1";
+        String source = "RDKit 2018.09.1";
         for (EvaluatorDefinition eval : definitions) {
             original.createField(eval.propName, source, "Molecular property calculation: " + eval.function.toString(), eval.function.getType());
         }
         return original;
     }
 
-    Stream<MoleculeObject> evaluate(Exchange exchange, Stream<MoleculeObject> mols, List<EvaluatorDefinition> definitions, Map<String,Integer> stats) {
+    Stream<MoleculeObject> evaluate(Exchange exchange, Stream<MoleculeObject> mols, List<EvaluatorDefinition> definitions, Map<String, Integer> stats) {
 
         return mols.peek((mo) -> {
             ROMol rdkitMol = MolReader.findROMol(mo);
             if (rdkitMol != null) {
                 definitions.stream().forEach((definition) -> {
-                    MolEvaluator.evaluate(mo, rdkitMol, definition);
-                    ExecutionStats.increment(stats, Metrics.generate(Metrics.PROVIDER_RDKIT, definition.function.getMetricsCode()), 1);
+                    evaluateImpl(mo, rdkitMol, definition, stats);
                 });
             } else {
                 LOG.warning("No molecule found to process");
@@ -102,15 +101,24 @@ public class RDKitMoleculeProcessor implements Processor {
         });
     }
 
+    private void evaluateImpl(MoleculeObject mo, ROMol rdkitMol, EvaluatorDefinition definition, Map<String, Integer> stats) {
+        try {
+            MolEvaluator.evaluate(mo, rdkitMol, definition);
+            ExecutionStats.increment(stats, Metrics.generate(Metrics.PROVIDER_RDKIT, definition.function.getMetricsCode()), 1);
+        } catch (Throwable t) {
+            LOG.log(Level.WARNING, "Calculation failed", t);
+        }
+    }
+
 
     /**
      * Add a new calculation using an expression.
-     *
+     * <p>
      * TODO allow the expressions to be read from header to allow dynamic configuration.
      * <br>
      * Note: the return type is the instance, to allow the fluent builder pattern to be used.
      *
-     * @param name The name for the calculated property
+     * @param name     The name for the calculated property
      * @param function The RDKit function to execute
      * @return
      */
