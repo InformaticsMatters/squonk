@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -221,11 +221,42 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
     private void handleFetchSwagger(Exchange exch) throws IOException {
         Message message = exch.getIn();
         Collection sds = jobManager.fetchServiceDescriptors();
-        ServiceDescriptorToOpenAPIConverter converter = new ServiceDescriptorToOpenAPIConverter("");
+        ServiceDescriptorToOpenAPIConverter converter = createConverter(message);
         OpenAPI oai = converter.convertToOpenApi(sds);
-        String json = converter.openApiToJson(oai);
-        message.setBody(json);
-        message.setHeader("Content-Type", CommonMimeTypes.MIME_TYPE_JSON);
+        String yaml = converter.openApiToYaml(oai);
+        message.setBody(yaml);
+        message.setHeader("Content-Type", CommonMimeTypes.MIME_TYPE_YAML);
+    }
+
+    /** Create the ServiceDescriptorToOpenAPIConverter configured to point to the Job executor REST API.
+     *
+     * This is quite a hacky way of defining the location of the REST services.
+     * There may be better ways.
+     *
+     * @param message
+     * @return
+     * @throws IOException
+     */
+    private ServiceDescriptorToOpenAPIConverter createConverter(Message message) throws IOException {
+
+        String url = message.getHeader("CamelHttpUrl", String.class);
+        String uri = message.getHeader("CamelHttpUri", String.class);
+        String host = message.getHeader("host", String.class);
+        String server;
+        if (url.startsWith("https://")) {
+            server = "https://" + host;
+        } else if (url.startsWith("http://")) {
+            server = "http://" + host;
+        } else {
+            throw new IOException("Unexpected request URL: " + url);
+        }
+        if (uri.endsWith("/")) {
+            uri = uri.substring(0, uri.length() -1);
+        }
+        String path = uri.replace("/rest/v1/swagger", "/rest/v1/jobs");
+        LOG.info("ServiceDescriptorToOpenAPIConverter config: server=" + server + " path=" + path);
+        Collection sds = jobManager.fetchServiceDescriptors();
+        return new ServiceDescriptorToOpenAPIConverter(server, path);
     }
 
     private void handleFetchServiceDescriptorInfo(Exchange exch) throws IOException {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.squonk.camel.cdk.processor
 
+import org.apache.camel.CamelContext
 import org.squonk.cdk.molecule.MolecularDescriptors
 
 import org.squonk.camel.testsupport.CamelSpecificationBase
@@ -92,11 +93,11 @@ class CDKMolecularDescriptorProcessorSpec extends CamelSpecificationBase {
         recorder.data.size() == 5
         recorder.data*.value == [2, 2, 2, 2, 2]
     }
-    
-    
+
+
     @Override
-    RouteBuilder createRouteBuilder() {
-        return new RouteBuilder() {
+    void addRoutes(CamelContext context) {
+        context.addRoutes(new RouteBuilder() {
             public void configure() {
                 from("direct:start")
                 .process(new CDKMolecularDescriptorProcessor()
@@ -107,7 +108,7 @@ class CDKMolecularDescriptorProcessorSpec extends CamelSpecificationBase {
                     .calculate(MolecularDescriptors.Descriptor.WienerNumbers))
                 .to('mock:result')
             }
-        }
+        })
     }
 	
 }

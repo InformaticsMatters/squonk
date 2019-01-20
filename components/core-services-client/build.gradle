@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ dependencies {
     testCompile project(':common-camel')
     testCompile project(':core-services-exec')
     testCompile project(':core-test')
+    testCompile "org.apache.camel:camel-core:$camelVersion"
+    testCompile "org.apache.camel:camel-jetty:$camelVersion"
     
 }
 

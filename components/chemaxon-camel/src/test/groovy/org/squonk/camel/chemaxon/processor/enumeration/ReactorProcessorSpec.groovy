@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,9 @@
 
 package org.squonk.camel.chemaxon.processor.enumeration
 
-import chemaxon.formats.MolImporter
-import chemaxon.struc.Molecule
-import org.squonk.camel.testsupport.CamelSpecificationBase
+import org.apache.camel.CamelContext
 import org.apache.camel.builder.RouteBuilder
-import org.squonk.chemaxon.molecule.MoleculeUtils
+import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
 import org.squonk.types.MoleculeObject
@@ -60,17 +58,17 @@ class ReactorProcessorSpec extends CamelSpecificationBase {
         println "Number of products: ${results.size()} generated in ${t1-t0}ms"
         results.size() > 0
     }
-    
-    
+
+
     @Override
-    RouteBuilder createRouteBuilder() {
-        return new RouteBuilder() {
+    void addRoutes(CamelContext context) {
+        context.addRoutes(new RouteBuilder() {
             public void configure() {
                 from("direct:start")
                 .process(new ReactorProcessor("../../docker/deploy/images/chemservices/chemaxon_reaction_library.zip", null))
                 .to('mock:result')
             }
-        }
+        })
     }
 }
 

@@ -41,8 +41,21 @@ echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 # set up the proxy details in the tomcat apps 
 sed "s/__public_host__/${PUBLIC_HOST}/g" images/portal/server.xml.template > images/portal/server.xml
 
-docker-compose stop nginx portal chemservices coreservices cellexecutor jobexecutor chemcentral-search
-docker-compose rm -fv nginx portal chemservices coreservices cellexecutor jobexecutor chemcentral-search
+
+if [ $DEPLOYMENT_MODE == 'basic' ]; then
+    docker-compose stop   nginx portal chemservices coreservices cellexecutor jobexecutor chemcentral-search
+    docker-compose rm -fv nginx portal chemservices coreservices cellexecutor jobexecutor chemcentral-search
+elif [ $DEPLOYMENT_MODE == 'site' ]; then
+    docker-compose stop   nginx portal chemservices coreservices cellexecutor jobexecutor chemcentral-search
+    docker-compose rm -fv nginx portal chemservices coreservices cellexecutor jobexecutor chemcentral-search
+elif [ $DEPLOYMENT_MODE == 'dev' ]; then
+    docker-compose stop   portal chemservices coreservices cellexecutor jobexecutor chemcentral-search swagger
+    docker-compose rm -fv portal chemservices coreservices cellexecutor jobexecutor chemcentral-search swagger
+else
+    echo "ERROR: Must define DEPLOYMENT_MODE to be one of basic, site or dev"
+    return
+fi
+
 
 docker-compose up -d --no-recreate
 

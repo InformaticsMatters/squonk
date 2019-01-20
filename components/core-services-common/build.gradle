@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,9 @@ dependencies {
     compile 'javax.enterprise:cdi-api:1.2'
     
     compile 'org.apache.httpcomponents:httpclient:4.5'
+
+    compile "io.swagger.core.v3:swagger-models:2.0.6"
+    compile "io.swagger.core.v3:swagger-core:2.0.6"
     
     compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"

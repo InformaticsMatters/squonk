@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,7 @@ abstract class CamelSpecificationBase extends Specification {
 
     def setup() {
         camelContext = createCamelContext()
-        RouteBuilder rb = createRouteBuilder()
-        println "ctx=$camelContext rb=$rb"
-        camelContext.addRoutes(rb)
+        addRoutes(camelContext)
         camelContext.start()
         template = camelContext.createProducerTemplate()
     }
@@ -48,7 +46,7 @@ abstract class CamelSpecificationBase extends Specification {
         new DefaultCamelContext()
     }
 
-    abstract RouteBuilder createRouteBuilder()
+    abstract void addRoutes(CamelContext context)
 
 
 }

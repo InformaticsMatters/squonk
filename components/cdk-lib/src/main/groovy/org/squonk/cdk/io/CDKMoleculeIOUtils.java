@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -209,7 +210,7 @@ public class CDKMoleculeIOUtils {
 
     public static CDKSDFile covertToSDFile(Stream<MoleculeObject> mols, boolean haltOnError) throws IOException, CDKException {
 
-        LOG.fine("Converting to SDF");
+        LOG.info("Converting to SDF");
 
         final PipedInputStream in = new PipedInputStream();
         final PipedOutputStream out = new PipedOutputStream(in);
@@ -221,7 +222,11 @@ public class CDKMoleculeIOUtils {
                 try (SDFWriter writer = new SDFWriter(bwriter)) {
                     // TODO - change this to a map (MoleculeObject -> IAtomContainer operation followed by an operation
                     // to write to SDF
+                    AtomicInteger count = new AtomicInteger(0);
                     mols.forEachOrdered((mo) -> {
+                        if (count.incrementAndGet() % 1000 == 0) {
+                            LOG.info("Processed " + count.get() + " mols");
+                        }
                         IAtomContainer mol = fetchMolecule(mo, false);
                         if (mol == null) {
                             if (haltOnError) {

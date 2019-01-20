@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -179,24 +179,6 @@ class JsonHandlerSpec extends Specification {
 
         then:
         js.length() > 0
-
-    }
-
-    void "create json schema object"() {
-
-        JsonHandler jsonHandler = JsonHandler.getInstance()
-
-
-        when:
-        Map schemas = jsonHandler.getJsonSchemaObjects(MoleculeObject.class)
-        schemas.each {k,v ->
-            String json = jsonHandler.getObjectMapper().writer(new DefaultPrettyPrinter()).writeValueAsString(v);
-            println "Schema: $k -> $json"
-        }
-
-        then:
-        schemas.size() == 1
-
 
     }
 

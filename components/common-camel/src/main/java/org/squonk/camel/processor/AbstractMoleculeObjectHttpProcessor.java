@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,10 +115,10 @@ public abstract class AbstractMoleculeObjectHttpProcessor implements Processor {
             exch.getIn().setHeader(StatsRecorder.HEADER_STATS_RECORDER, new CamelRouteStatsRecorder(jobId, pt));
         }
 
+        LOG.fine("Processing dataset");
         Object results = processDataset(exch, dataset, requestInfo);
 
-        writeOutput(exch, results, requestInfo,  acceptHandler, executor);
-
+        writeOutput(exch, results, requestInfo, acceptHandler, executor);
     }
 
     protected abstract Object processDataset(

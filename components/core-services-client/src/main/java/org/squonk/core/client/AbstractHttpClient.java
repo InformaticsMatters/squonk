@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,31 +21,20 @@ import org.apache.http.*;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.nio.IOControl;
-import org.apache.http.nio.client.methods.AsyncByteConsumer;
-import org.apache.http.nio.client.methods.HttpAsyncMethods;
-import org.apache.http.nio.protocol.HttpAsyncRequestProducer;
-import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +46,6 @@ public class AbstractHttpClient implements AutoCloseable {
 
     private static final Logger LOG = Logger.getLogger(AbstractHttpClient.class.getName());
     protected transient final CloseableHttpClient httpclient;
-    protected transient final CloseableHttpAsyncClient asyncHttpclient;
     private boolean closed = false;
     protected transient final PoolingHttpClientConnectionManager connectionManager;
 
@@ -78,18 +66,12 @@ public class AbstractHttpClient implements AutoCloseable {
         httpclient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
                 .setDefaultRequestConfig(requestConfig).build();
-
-        asyncHttpclient = HttpAsyncClients.createDefault();
-        asyncHttpclient.start();
     }
 
     @Override
     public void close() throws Exception {
         if (httpclient != null) {
             httpclient.close();
-        }
-        if (asyncHttpclient != null) {
-            asyncHttpclient.close();
         }
         closed = true;
     }
@@ -289,89 +271,6 @@ public class AbstractHttpClient implements AutoCloseable {
         } catch (URISyntaxException e) {
             throw new IOException("Bad URI. Really?", e);
         }
-    }
-
-    /** Streaming pose operation using AsyncHttpClient
-     * Note this method is experimental but should eventually replace other POST and PUT operations as the standard
-     * HttpClient is blocking and does not yield the response until the data is fully written.
-     * Currently this method is only used for SDF conversion in the StructureIOClient class
-     *
-     * @param b
-     * @param body
-     * @param headers
-     * @return
-     * @throws IOException
-     */
-    protected InputStream executePostAsInputStreamStreaming(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {
-        try {
-            URI uri = b.build();
-            debugConnections("POST", uri);
-            LOG.info("POSTing to " + uri);
-
-            final HttpPost request = new HttpPost(uri);
-            if (headers != null && headers.length > 0) {
-                addHeaders(request, headers);
-            }
-            if (body != null) {
-                LOG.finer("Setting POST body: " + body);
-                request.setEntity(body);
-            }
-            LOG.fine("Posting commencing");
-            final HttpAsyncRequestProducer producer = HttpAsyncMethods.create(request);
-            final PipedInputStream pis = new PipedInputStream();
-            final PipedOutputStream pout = new PipedOutputStream(pis);
-            AsyncByteConsumer<HttpResponse> consumer = new AsyncByteConsumer<HttpResponse>() {
-
-                private HttpResponse response;
-
-                @Override
-                protected void onByteReceived(ByteBuffer buf, IOControl ioctrl) throws IOException {
-                    // ByteBuffer is a strange beast. Find out how it works before you make mistakes
-                    // https://worldmodscode.wordpress.com/2012/12/14/the-java-bytebuffer-a-crash-course/
-
-                    final byte[] bytes = new byte[buf.remaining()];
-                    buf.duplicate().get(bytes);
-                    LOG.fine("Received " + buf.toString() + " " + bytes.length);
-                    pout.write(bytes);
-                    pout.flush();
-                }
-
-                @Override
-                protected void onResponseReceived(final HttpResponse response) {
-                    this.response = response;
-                    LOG.fine("Response received");
-                }
-
-                @Override
-                protected HttpResponse buildResult(HttpContext context) throws Exception {
-                    LOG.fine("Build Result");
-                    IOUtils.close(pout);
-                    return this.response;
-                }
-
-            };
-
-            asyncHttpclient.execute(producer, consumer, new FutureCallback<HttpResponse>() {
-
-                public void completed(final HttpResponse response) {
-                    LOG.fine("Completed: " + request.getRequestLine() + "->" + response.getStatusLine());
-                }
-
-                public void failed(final Exception ex) {
-                    LOG.info("Failed: " + request.getRequestLine() + "->" + ex);
-                }
-
-                public void cancelled() {
-                    LOG.fine("Cancelled: "+ request.getRequestLine());
-                }
-            });
-
-            return pis;
-
-        } catch (URISyntaxException e1) {
-            throw new IOException("Bad URI. Really?", e1);
-        }
-
     }
 
     protected CloseableHttpResponse doPut(URIBuilder b, AbstractHttpEntity body, NameValuePair... headers) throws IOException {

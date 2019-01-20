@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,9 @@ package org.squonk.core;
 
 import org.apache.camel.Message;
 import org.squonk.config.SquonkServerConfig;
+import org.squonk.dataset.Dataset;
+import org.squonk.dataset.DatasetMetadata;
+import org.squonk.dataset.MoleculeObjectDataset;
 import org.squonk.jobdef.ExecuteCellUsingStepsJobDefinition;
 import org.squonk.jobdef.ExternalJobDefinition;
 import org.squonk.jobdef.JobDefinition;
@@ -730,7 +733,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                             InputStream is = notebookClient.readStreamValue(notebookid, sourceid, cellid, varname, key);
                             //log.info("Stream Variable: " + is);
                             if (is == null) {
-                                String.format("Text variable %s:%s for %s:%s:%s not found", varname, key, notebookid, sourceid, cellid);
+                                String.format("Stream variable %s:%s for %s:%s:%s not found", varname, key, notebookid, sourceid, cellid);
                             } else {
                                 exch.getIn().setBody(is);
                             }
@@ -740,7 +743,7 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                             //log.info("String Variable: " + t);
                             if (t == null) {
                                 handleError(exch, "404",
-                                        String.format("Stream variable %s:%s for %s:%s:%s not found", varname, key, notebookid, sourceid, cellid));
+                                        String.format("Text variable %s:%s for %s:%s:%s not found", varname, key, notebookid, sourceid, cellid));
                             } else {
                                 exch.getIn().setBody(t);
                             }
