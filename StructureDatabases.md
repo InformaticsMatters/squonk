@@ -9,6 +9,7 @@ Currently there is support for
 * PDB ligands
 * Chemspace
 * Molport
+* LTKB dataset from FDA
 
 The code and configuration for the loaders is in the rdkit-databases module.
 At some stage it may be broken out into a separate module.
@@ -90,6 +91,7 @@ Adjust the loader name (the last argument) accordingly. Options are:
 * org.squonk.rdkit.db.loaders.PdbLigandSdfLoader - for ligands from PDB (http://ligand-expo.rcsb.org/ld-download.html. The file you want is in the "Chemical component coordinate data files" section and called all-sdf.sdf.gz. Fetch it with something like: 'wget http://ligand-expo.rcsb.org/dictionaries/all-sdf.sdf.gz')
 * org.squonk.rdkit.db.loaders.ChemspaceSdfLoader - Chemspace (Obtain this file directly from the ChemSpace people)
 * org.squonk.rdkit.db.loaders.MolportSmilesLoader - Molport in smiles format (https://www.molport.com/shop/database-download)
+* org.squonk.rdkit.db.loaders.LTKBLoader - LTKB dataset (see https://www.fda.gov/ScienceResearch/BioinformaticsTools/LiverToxicityKnowledgeBase/ucm2024036.htm)
 
 Source code for these loaders can be found [here](https://github.com/InformaticsMatters/squonk/tree/openshift/components/rdkit-databases/src/main/groovy/org/squonk/rdkit/db/loaders).
 
