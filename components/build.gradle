@@ -243,8 +243,6 @@ task dockerFileChemServices(type: Dockerfile) {
     addFile('*.war', "/usr/local/tomcat/webapps/")
     addFile('chemaxon_reaction_library.zip', '/chemaxon_reaction_library.zip')
 
-    user("0") // temp workaround for https://github.com/InformaticsMatters/squonk/issues/31
-
     exposePort(8080)
 }
 
