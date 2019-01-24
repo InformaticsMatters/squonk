@@ -147,8 +147,9 @@ that is deployed.
 
 _Obtain a token_:
 
-```token=$(curl --data "grant_type=password&client_id=squonk-portal&username=user1&password=user1"\
- https://<server:port>/auth/realms/squonk/protocol/openid-connect/token |\
+```
+token=$(curl --data "grant_type=password&client_id=squonk-portal&username=user1&password=user1"\
+  https://<server:port>/auth/realms/squonk/protocol/openid-connect/token |\
   grep -Po '(?<="access_token":")[^"]*')
 ```
 Adjust the username, password and hostname accordingly. In `basic` mode in the docker environment the hostname is likely `nginx`.
