@@ -39,11 +39,11 @@ and for the infrastructure: -
     ansible-playbook playbooks/squonk-infra/undeploy.yaml
 
 ## Prerequisites
-Before running the playbook: -
+Before running the playbooks: -
 
-1.  You're on the bastion node
-1.  You have installed Ansible (any version from 2.5)
-1.  The `oc` command-set is available to you as a user
+1.  You're on the bastion node, or you are on a node with...
+    1.  Ansible installed (any version from 2.5)
+    1.  The `oc` command-set is available to you as a user
 1.  An OpenShift cluster has been installed
 1.  There is an `admin` user known to the cluster
 1.  There is a `developer` user known to the cluster
