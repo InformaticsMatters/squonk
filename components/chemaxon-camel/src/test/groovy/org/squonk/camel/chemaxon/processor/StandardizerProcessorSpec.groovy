@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.squonk.camel.chemaxon.processor
 
 import chemaxon.struc.Molecule
+import org.apache.camel.CamelContext
 import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.squonk.types.MoleculeObject
 import org.apache.camel.builder.RouteBuilder
@@ -70,13 +71,13 @@ class StandardizerProcessorSpec extends CamelSpecificationBase {
     }
 
     @Override
-    RouteBuilder createRouteBuilder() {
-        return new RouteBuilder() {
+    void addRoutes(CamelContext context) {
+        context.addRoutes(new RouteBuilder() {
             public void configure() {
                 from("direct:start")
                 .process(new StandardizerProcessor('addexplicith'))
                 .to('mock:result')
             }
-        }
+        })
     }
 }

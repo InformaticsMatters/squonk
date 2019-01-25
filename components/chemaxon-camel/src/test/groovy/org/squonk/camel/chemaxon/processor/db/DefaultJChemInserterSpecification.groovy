@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import chemaxon.jchem.db.DatabaseProperties
 import chemaxon.jchem.db.StructureTableOptions
 import chemaxon.jchem.db.UpdateHandler
 import chemaxon.util.ConnectionHandler
+import org.apache.camel.CamelContext
 import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.squonk.types.MoleculeObject
 import org.apache.camel.builder.RouteBuilder
@@ -101,7 +102,7 @@ class DefaultJChemInserterSpecification extends CamelSpecificationBase {
     }
 
     @Override
-    RouteBuilder createRouteBuilder() {
+    void addRoutes(CamelContext context) {
 
         println "creating route builder"
         ConnectionHandler conh = new ConnectionHandler()
@@ -110,13 +111,13 @@ class DefaultJChemInserterSpecification extends CamelSpecificationBase {
         updateHandlerProcessor = new DefaultJChemInserter('TEST', null, [:])
         updateHandlerProcessor.connectionHandler = conh
 
-        return new RouteBuilder() {
+        context.addRoutes(new RouteBuilder() {
             public void configure() {
                 from('direct:start')
                 .log('Processing data ${body}')
                 .process(updateHandlerProcessor)
                 .to('mock:result')
             }
-        }
+        })
     }
 }

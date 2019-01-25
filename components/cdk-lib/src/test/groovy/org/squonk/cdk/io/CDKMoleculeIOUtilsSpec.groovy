@@ -16,71 +16,69 @@
 
 package org.squonk.cdk.io
 
+import org.openscience.cdk.ChemFile
 import org.openscience.cdk.DefaultChemObjectBuilder
 import org.openscience.cdk.fingerprint.SignatureFingerprinter
-import org.openscience.cdk.interfaces.IChemObjectBuilder
-import org.openscience.cdk.signature.MoleculeSignature
-import org.openscience.cdk.smiles.SmiFlavor
-import org.openscience.cdk.smiles.SmilesGenerator
-import org.squonk.types.MoleculeObject
-import org.openscience.cdk.ChemFile
 import org.openscience.cdk.interfaces.IAtomContainer
 import org.openscience.cdk.interfaces.IPDBPolymer
+import org.openscience.cdk.io.*
 import org.openscience.cdk.io.formats.IChemFormat
+import org.openscience.cdk.signature.MoleculeSignature
 import org.openscience.cdk.silent.AtomContainer
 import org.openscience.cdk.silent.SilentChemObjectBuilder
+import org.openscience.cdk.smiles.SmiFlavor
+import org.openscience.cdk.smiles.SmilesGenerator
 import org.openscience.cdk.smiles.SmilesParser
 import org.openscience.cdk.tools.CDKHydrogenAdder
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator
 import org.squonk.data.Molecules
 import org.squonk.types.CDKSDFile
+import org.squonk.types.MoleculeObject
 import org.squonk.util.IOUtils
-
-import java.util.zip.GZIPInputStream
 import spock.lang.Specification
 
-import org.openscience.cdk.io.*;
+import java.util.zip.GZIPInputStream
 
 /**
  *
  * @author timbo
  */
 class CDKMoleculeIOUtilsSpec extends Specification {
-	
-    
+
+
     void "molecule iterable for smiles"() {
-        
+
         String smiles5 = '''CC1=CC(=O)C=CC1=O	1
 S(SC1=NC2=CC=CC=C2S1)C3=NC4=C(S3)C=CC=C4	2
 OC1=C(Cl)C=C(C=C1[N+]([O-])=O)[N+]([O-])=O	3
 [O-][N+](=O)C1=CNC(=N)S1	4
 NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
-        
+
         when:
         def iter = CDKMoleculeIOUtils.moleculeIterable(new ByteArrayInputStream(smiles5.getBytes()))
-        
+
         then:
         iter != null
         iter.iterator().collect().size() == 5
     }
-    
-    
+
+
     void "molecule iterable for sdf"() {
-        
+
         String file = '../../data/testfiles/dhfr_standardized.sdf.gz'
         GZIPInputStream gzip = new GZIPInputStream(new FileInputStream(file))
-        
+
         when:
         def iter = CDKMoleculeIOUtils.moleculeIterable(gzip)
-        
+
         then:
         iter != null
         iter.iterator().collect().size() == 756
     }
-    
+
     void "read molecule guess format"() {
-         
+
         expect:
         IAtomContainer mol = CDKMoleculeIOUtils.readMolecule(source)
         mol.getAtomCount() > 0
@@ -95,7 +93,7 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         CDKMoleculeIOUtils.readMolecule(source, format) instanceof IAtomContainer
 
         where:
-        source | format
+        source                   | format
         Molecules.ethanol.smiles | "smiles"
         Molecules.ethanol.v2000  | "mol:v2"
         Molecules.ethanol.v3000  | "mol:v3"
@@ -192,7 +190,6 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         containersList != null
         containersList.size() == 1
     }
-
 
 //    void "reader direct multiple v3000"() {
 //
@@ -299,12 +296,12 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         while (iter.hasNext()) {
             def mol = iter.next()
             def props = mol.getProperties()
-            props.each { k,v ->
+            props.each { k, v ->
                 if (!propnames.contains(k) && !k.startsWith("cdk:")) {
                     propnames.add(k)
                 }
             }
-         }
+        }
 
         iter = mols.iterator()
         SmilesGenerator generator = new SmilesGenerator(SmiFlavor.Absolute);
@@ -340,7 +337,7 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         InputStream is = new GZIPInputStream(new FileInputStream("../../data/testfiles/1cx2.pdb.gz"))
         PDBReader reader = new PDBReader(is);
         ChemFile file = reader.read(new ChemFile());
-        IPDBPolymer structure = (IPDBPolymer)ChemFileManipulator
+        IPDBPolymer structure = (IPDBPolymer) ChemFileManipulator
                 .getAllAtomContainers(file).get(0);
 
         //println structure.getClass().name
@@ -374,8 +371,8 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
     }
 
     void "read smiles write mol2"() {
-        SmilesParser   sp  = new SmilesParser(SilentChemObjectBuilder.getInstance());
-        IAtomContainer m   = sp.parseSmiles("c1ccccc1");
+        SmilesParser sp = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        IAtomContainer m = sp.parseSmiles("c1ccccc1");
 
         def out = new ByteArrayOutputStream()
 
@@ -451,7 +448,7 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
             //println canonicalSignature
             def fp = fingerprinter.getRawFingerprint(m)
             //println "------------------------------------------------"
-            fp.each { k,v ->
+            fp.each { k, v ->
                 soFar << k
                 //println "$v $k"
             }
@@ -484,6 +481,28 @@ NC1=CC2=C(C=C1)C(=O)C3=C(C=CC=C3)C2=O	5'''
         smiles        | result
         "CCO"         | false
         "CCO ethanol" | true
+    }
+
+    void "convert v2000 to smiles"() {
+
+        when:
+        def mol = CDKMoleculeIOUtils.v2000ToMolecule(Molecules.ethanol.v2000)
+        def mo = CDKMoleculeIOUtils.convertToSmiles(mol)
+
+        then:
+        mo.source == "CCO"
+        mo.format == "smiles"
+    }
+
+    void "convert v3000 to smiles"() {
+
+        when:
+        def mol = CDKMoleculeIOUtils.v3000ToMolecule(Molecules.ethanol.v3000)
+        def mo = CDKMoleculeIOUtils.convertToSmiles(mol)
+
+        then:
+        mo.source == "CCO"
+        mo.format == "smiles"
     }
 
 }

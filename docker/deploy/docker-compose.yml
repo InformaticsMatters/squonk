@@ -111,6 +111,15 @@ services:
     # Test using something like this:
     # curl -X POST -T mols.json "http://${PUBLIC_HOST}:8092/chem-services-cdk-basic/rest/v1/calculators/logp"
     #
+    # Test SDF conversion with something like this:
+    # curl -X POST --data-binary @/tmp/lipinski.data.gz http://chemservices:8080/chem-services-cdk-basic/rest/v1/converters/dataset_to_sdf \
+    #   -H 'Content-Type: application/x-squonk-dataset-molecule+json' -H 'Content-Encoding: gzip' -H 'Accept: chemical/x-mdl-sdfile'
+    #
+    # Example of reading notebook variable and sending for conversion:
+    # curl http://coreservices:8080/coreservices/rest/v1/notebooks/15/v/15/1/output/s/default |\
+    #   curl -X POST --data-binary @- http://chemservices:8080/chem-services-cdk-basic/rest/v1/converters/dataset_to_sdf\
+    #   -H 'Content-Type: application/x-squonk-dataset-molecule+json' -H 'Content-Encoding: gzip' -H 'Accept: chemical/x-mdl-sdfile'
+    #
     chemservices:
         image: squonk/chemservices-basic:${TAG}
         restart: on-failure

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ public interface CommonMimeTypes {
     String MIME_TYPE_TEXT_PLAIN = "text/plain";
     String MIME_TYPE_TEXT_CSV = "text/csv";
     String MIME_TYPE_JSON = "application/json";
+    String MIME_TYPE_YAML = "text/yaml";
     String MIME_TYPE_MULTIPART_MIXED = "multipart/mixed";
     String MIME_TYPE_DATASET_METADATA = "application/x-squonk-dataset-metadata+json";
     String MIME_TYPE_DATASET_BASIC_JSON = "application/x-squonk-dataset-basic+json";

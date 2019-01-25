@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.squonk.types.MoleculeObject
 class Molecules {
 
     static final String BUILDING_BLOCKS_SDF = "../../data/testfiles/Building_blocks_GBP.sdf.gz"
+    static final String SCREENING_COMPOUNDS_SDF = "../../data/testfiles/Screening_Collection.sdf.gz"
     static final String DHFR_STANDARDIZED_SDF = "../../data/testfiles/dhfr_standardized.sdf.gz"
     static final String KINASE_INHIBS_SDF = "../../data/testfiles/Kinase_inhibs.sdf.gz"
     static final String SMILES_10000 = "../../data/testfiles/nci10000.smiles"

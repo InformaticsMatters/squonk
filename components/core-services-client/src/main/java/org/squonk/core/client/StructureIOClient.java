@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,17 @@ import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.dataset.ThinDatasetWrapper;
 import org.squonk.io.DepictionParameters;
+import org.squonk.io.DepictionParameters.OutputFormat;
 import org.squonk.io.QueryParams;
 import org.squonk.options.types.Structure;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
+import org.squonk.util.ServiceConstants;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -45,20 +49,15 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.squonk.io.DepictionParameters.OutputFormat;
-import org.squonk.util.ServiceConstants;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
-
-import static org.squonk.io.DepictionParameters.OutputFormat.*;
+import static org.squonk.io.DepictionParameters.OutputFormat.svg;
 
 /**
  * Created by timbo on 01/09/16.
  */
 @Default
 @ApplicationScoped
-public abstract class StructureIOClient extends AbstractHttpClient implements Serializable {
+public abstract class StructureIOClient extends AbstractAsyncHttpClient implements Serializable {
+
     private static final Logger LOG = Logger.getLogger(StructureIOClient.class.getName());
 
     private static final String SVG_TEXT1_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n" +
@@ -149,11 +148,11 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
         }
     }
 
-    public InputStream datasetExportToSdf(Dataset<MoleculeObject> mols, boolean gzip) throws IOException {
+    public InputStream datasetExportToSdf(Dataset<MoleculeObject> mols, boolean gzip) throws Exception {
         return datasetExport(mols, "sdf", gzip);
     }
 
-    public InputStream datasetExport(Dataset<MoleculeObject> mols, String toFormat, boolean gzip) throws IOException {
+    public InputStream datasetExport(Dataset<MoleculeObject> mols, String toFormat, boolean gzip) throws Exception {
         throw new UnsupportedOperationException("NYI");
     }
 
@@ -174,11 +173,12 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
         ThinDatasetWrapper thinWrapper = new ThinDatasetWrapper(MoleculeObject.class, false, false);
         Dataset<MoleculeObject> thin = thinWrapper.prepareInput(dataset);
 
-        Map<String, String> responseHeaders = new LinkedHashMap<>();
-        InputStream output = executePostAsInputStream(b, new InputStreamEntity(thin.getInputStream(true)),
-                headers.toArray(new NameValuePair[headers.size()]), responseHeaders);
+        AsyncResponse asyncResponse = executePost(b, new InputStreamEntity(thin.getInputStream(true)),
+                headers.toArray(new NameValuePair[headers.size()]));
 
-        String responseMetaJson = responseHeaders.get(ServiceConstants.HEADER_METADATA);
+        checkResponse(asyncResponse);
+
+        String responseMetaJson = readFirstheader(asyncResponse.getHttpResponse().get(), ServiceConstants.HEADER_METADATA);
         DatasetMetadata<MoleculeObject> responseMeta = null;
         if (responseMetaJson != null && !responseMetaJson.isEmpty()) {
             responseMeta = JsonHandler.getInstance().objectFromJson(responseMetaJson, new TypeReference<DatasetMetadata<MoleculeObject>>() {
@@ -187,15 +187,15 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
         if (responseMeta == null) {
             responseMeta = new DatasetMetadata<>(MoleculeObject.class);
         }
-        Dataset<MoleculeObject> responseDataset = new Dataset<>(output, responseMeta);
+        Dataset<MoleculeObject> responseDataset = new Dataset<>(asyncResponse.getInputStream(), responseMeta);
         Dataset<MoleculeObject> result = thinWrapper.generateOutput(responseDataset);
         return result;
     }
 
-    protected InputStream doDatasetConvert(Dataset<MoleculeObject> mols, String toFormat, boolean gzip) throws IOException {
+    protected InputStream doDatasetConvert(Dataset<MoleculeObject> mols, String toFormat, boolean gzip) throws Exception {
 
         if ("sdf".equals(toFormat)) {
-            LOG.fine("Conversion to " + toFormat + ". Gzip? " + gzip);
+            LOG.info("Conversion to " + toFormat + ". Gzip? " + gzip);
             URIBuilder b = createURIBuilder(getDatasetConvertBase() + "/dataset_to_sdf");
 
 
@@ -203,21 +203,27 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
                     new BasicNameValuePair("Content-Type", CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON),
                     new BasicNameValuePair("Content-Encoding", "gzip"),
                     new BasicNameValuePair("Accept", CommonMimeTypes.MIME_TYPE_MDL_SDF),
-                    new BasicNameValuePair("Accept-Encoding", "gzip")
+                    // GZIP is temporarily disabled as it causes the response to block until the entire dataset is written
+                    //new BasicNameValuePair("Accept-Encoding", "gzip")
             };
 
-            InputStream is = executePostAsInputStream(b, new InputStreamEntity(mols.getInputStream(true)), headers);
-            return gzip ? is : IOUtils.getGunzippedInputStream(is);
+            AsyncResponse asyncResponse = executePost(b, new InputStreamEntity(mols.getInputStream(true)), headers);
+
+            checkResponse(asyncResponse);
+
+            InputStream is = asyncResponse.getInputStream();
+            return gzip ? IOUtils.getGzippedInputStream(is) : is ;//IOUtils.getGunzippedInputStream(is);
 
         }
         throw new IllegalArgumentException("Format " + toFormat + " not supported");
     }
 
-    protected Structure doMolConvert(String mol, String toFormat) throws IOException {
+    protected Structure doMolConvert(String mol, String toFormat) throws Exception {
         URIBuilder b = createURIBuilder(getMolConvertBase());
         b.addParameter("format", toFormat);
-        try (InputStream is = executePostAsInputStream(b, mol)) {
-            String m = IOUtils.convertStreamToString(is);
+        try (AsyncResponse asyncResponse = executePost(b, new StringEntity(mol), null)) {
+            checkResponse(asyncResponse);
+            String m = IOUtils.convertStreamToString(asyncResponse.getInputStream());
             return new Structure(m, toFormat);
         }
     }
@@ -247,9 +253,10 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
         queryParams.add(DepictionParameters.PROP_MOL_FORMAT, molFormat);
         queryParams.add(DepictionParameters.PROP_IMG_FORMAT, imgFormat.toString());
         queryParams.consume((k, v) -> b.addParameter(k, v));
-        try (InputStream is = executeGetAsInputStream(b)) {
-            return IOUtils.convertStreamToBytes(is);
-        } catch (IOException e) {
+        try (AsyncResponse asyncResponse = executeGet(b, null)) {
+            checkResponse(asyncResponse);
+            return IOUtils.convertStreamToBytes(asyncResponse.getInputStream());
+        } catch (Exception e) {
             LOG.log(Level.SEVERE, "Failed to generate image", e);
             return handleErrorImage("Failed to generate image", depict);
         }
@@ -261,9 +268,10 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
         queryParams.add(DepictionParameters.PROP_MOL_FORMAT, molFormat);
         queryParams.add(DepictionParameters.PROP_IMG_FORMAT, DepictionParameters.IMG_FORMAT_SVG);
         queryParams.consume((k, v) -> b.addParameter(k, v));
-        try (InputStream is = executePostAsInputStream(b, new StringEntity(mol))) {
-            return IOUtils.convertStreamToString(is);
-        } catch (IOException e) {
+        try (AsyncResponse asyncResponse = executePost(b, new StringEntity(mol), null)) {
+            checkResponse(asyncResponse);
+            return IOUtils.convertStreamToString(asyncResponse.getInputStream());
+        } catch (Exception e) {
             LOG.log(Level.FINE, "Failed to generate svg", e);
             return renderErrorSVG(depict, "Failed to generate svg", e.getClass().getName());
         }
@@ -276,9 +284,10 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
         queryParams.add(DepictionParameters.PROP_MOL_FORMAT, molFormat);
         queryParams.add(DepictionParameters.PROP_IMG_FORMAT, DepictionParameters.IMG_FORMAT_SVG);
         queryParams.consume((k, v) -> b.addParameter(k, v));
-        try (InputStream is = executeGetAsInputStream(b)) {
-            return IOUtils.convertStreamToString(is);
-        } catch (IOException e) {
+        try (AsyncResponse asyncResponse = executeGet(b, null)) {
+            checkResponse(asyncResponse);
+            return IOUtils.convertStreamToString(asyncResponse.getInputStream());
+        } catch (Exception e) {
             LOG.log(Level.FINE, "Failed to generate image", e);
             return renderErrorSVG(depict, "Failed to generate image", e.getClass().getName());
         }
@@ -290,9 +299,10 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
         queryParams.add(DepictionParameters.PROP_MOL_FORMAT, molFormat);
         queryParams.add(DepictionParameters.PROP_IMG_FORMAT, imgFormat.toString());
         queryParams.consume((k, v) -> b.addParameter(k, v));
-        try (InputStream is = executePostAsInputStream(b, new StringEntity(mol))) {
-            return IOUtils.convertStreamToBytes(is);
-        } catch (IOException e) {
+        try (AsyncResponse asyncResponse = executePost(b, new StringEntity(mol), null)) {
+            checkResponse(asyncResponse);
+            return IOUtils.convertStreamToBytes(asyncResponse.getInputStream());
+        } catch (Exception e) {
             return handleErrorImage("Failed to generate image", depict);
         }
     }
@@ -364,7 +374,7 @@ public abstract class StructureIOClient extends AbstractHttpClient implements Se
         }
 
         @Override
-        public InputStream datasetExport(Dataset<MoleculeObject> mols, String toFormat, boolean gzip) throws IOException {
+        public InputStream datasetExport(Dataset<MoleculeObject> mols, String toFormat, boolean gzip) throws Exception {
             return doDatasetConvert(mols, toFormat, gzip);
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,10 +42,11 @@ import java.util.logging.Logger;
 /**
  * Created by timbo on 01/01/16.
  */
-public class AbstractHttpClient {
+public class AbstractHttpClient implements AutoCloseable {
 
     private static final Logger LOG = Logger.getLogger(AbstractHttpClient.class.getName());
     protected transient final CloseableHttpClient httpclient;
+    private boolean closed = false;
     protected transient final PoolingHttpClientConnectionManager connectionManager;
 
     public AbstractHttpClient() {
@@ -53,7 +54,8 @@ public class AbstractHttpClient {
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectionRequestTimeout(4000)
                 .setConnectTimeout(4000)
-                .setSocketTimeout(4000).build();
+                .setSocketTimeout(10000)
+                .build();
 
         connectionManager = new PoolingHttpClientConnectionManager();
         // Increase max total connection from the default of 20
@@ -64,6 +66,22 @@ public class AbstractHttpClient {
         httpclient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
                 .setDefaultRequestConfig(requestConfig).build();
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (httpclient != null) {
+            httpclient.close();
+        }
+        closed = true;
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        if (!closed) {
+            close();
+        }
     }
 
     protected void debugConnections(String method, URI uri) {
@@ -192,7 +210,7 @@ public class AbstractHttpClient {
     protected InputStream executePostAsInputStream(URIBuilder b, AbstractHttpEntity body, NameValuePair[] requestHeaders, Map<String,String> responseHeaders) throws IOException {
 
         CloseableHttpResponse response = doPost(b, body, requestHeaders);
-        LOG.fine(response.getStatusLine().toString());
+        LOG.fine("POST complete: " + response.getStatusLine().toString());
         checkResponse(response);
         if (responseHeaders != null) {
             Header[] headers = response.getAllHeaders();
@@ -241,6 +259,7 @@ public class AbstractHttpClient {
             debugConnections("POST", uri);
             LOG.fine("POSTing to " + uri);
             HttpPost httpPost = new HttpPost(uri);
+
             if (headers != null && headers.length > 0) {
                 addHeaders(httpPost, headers);
             }

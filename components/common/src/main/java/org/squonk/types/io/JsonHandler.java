@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import com.fasterxml.jackson.databind.cfg.ContextAttributes;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
-import io.swagger.v3.core.converter.ModelConverters;
-import io.swagger.v3.oas.models.media.Schema;
 import org.squonk.dataset.Dataset;
 import org.squonk.dataset.DatasetMetadata;
 import org.squonk.types.BasicObject;
@@ -193,7 +191,7 @@ public class JsonHandler {
     public <T> InputStream marshalStreamToJsonArray(Stream<T> stream, boolean gzip) throws IOException {
         final PipedInputStream pis = new PipedInputStream();
         final OutputStream pout = new PipedOutputStream(pis);
-        final OutputStream out = (gzip ? new GZIPOutputStream(pout) : pout);
+        final OutputStream out = (gzip ? new GZIPOutputStream(pout, true) : pout);
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<Boolean> c = new Callable() {
             public Boolean call() throws Exception {
@@ -232,7 +230,7 @@ public class JsonHandler {
     public <T> MarshalData marshalData(Stream<T> stream, boolean gzip) throws IOException {
         final PipedInputStream pis = new PipedInputStream();
         final OutputStream pout = new PipedOutputStream(pis);
-        final OutputStream out = (gzip ? new GZIPOutputStream(pout) : pout);
+        final OutputStream out = (gzip ? new GZIPOutputStream(pout, true) : pout);
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<Boolean> c = new Callable() {
             public Boolean call() throws Exception {
@@ -255,6 +253,7 @@ public class JsonHandler {
                 //LOG.info("Writing to json: "  + i);
                 try {
                     sw.write(i);
+                    sw.flush();
                 } catch (IOException ex) {
                     throw new RuntimeException("Failed to write object: " + i, ex);
                 }
@@ -291,18 +290,11 @@ public class JsonHandler {
     public static String getJsonSchemaAsString(Class clazz) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
-        //JsonSchema schema = mapper.generateJsonSchema(clazz);
 
         JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
         JsonSchema schema = schemaGen.generateSchema(clazz);
 
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
-    }
-
-    public static Map<String, Schema> getJsonSchemaObjects(Class clazz) {
-        ModelConverters mc = new ModelConverters();
-        Map<String, Schema> schemas = mc.read(clazz);
-        return schemas;
     }
 
 }

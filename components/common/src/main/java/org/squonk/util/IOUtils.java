@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,14 +81,15 @@ public class IOUtils {
 
             final PipedInputStream pis = new PipedInputStream();
             final OutputStream out = new PipedOutputStream(pis);
-            final OutputStream gzip = new GZIPOutputStream(out);
+            final OutputStream gzip = new GZIPOutputStream(out, true);
 
             final ExecutorService executor = Executors.newSingleThreadExecutor();
             Callable c = (Callable) () -> {
-                byte[] bytes = new byte[1000];
+                byte[] bytes = new byte[4096];
                 int len = 0;
                 while ((len = pb.read(bytes)) > 0) {
                     gzip.write(bytes, 0, len);
+                    gzip.flush();
                 }
                 pb.close();
                 gzip.close();
@@ -202,6 +203,7 @@ public class IOUtils {
                     break;
                 }
                 out.write(buffer, 0, rsz);
+                out.flush();
                 count += (long)rsz;
             }
 

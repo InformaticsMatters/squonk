@@ -19,7 +19,7 @@ RUN unzip -q -d /usr/local/tomcat/webapps/portal /usr/local/tomcat/webapps/ROOT.
  chown -R 501:0 /usr/local/tomcat/webapps/portal /usr/local/tomcat/bin/setenv.sh
 
 # remove unused or conflicting jars
-RUN cd /usr/local/tomcat/webapps/portal/WEB-INF/lib && rm commons-codec-*.jar commons-logging-*.jar httpclient*.jar httpcore*.jar\
+RUN cd /usr/local/tomcat/webapps/portal/WEB-INF/lib && rm commons-codec-*.jar commons-logging-*.jar httpclient-4*.jar httpcore-4*.jar\
  keycloak*.jar jackson-annotations-*.jar jackson-core-*.jar jackson-databind-*.jar servlet-api-3.0.jar
 
 COPY portal/tomcat-users.xml /usr/local/tomcat/conf/
