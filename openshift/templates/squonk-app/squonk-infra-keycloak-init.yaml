@@ -134,7 +134,7 @@ objects:
         \"description\":\"$CLIENT_DESC\",
         \"redirectUris\":["\"$CLIENT_HTTPS/portal/*\",\"$CLIENT_HTTP/portal/*\",\"${LOGOUT_REDIRECT_TO}/*\""],
         \"protocol\":\"openid-connect\",
-        \"server\":\"$CLIENT_HTTPS\",
+        \"baseUrl\":\"$CLIENT_HTTPS\",
         \"rootUrl\":\"\",
         \"publicClient\":\"false\",
         \"serviceAccountsEnabled\":\"true\",

@@ -43,11 +43,11 @@ objects:
     name: scc-squonk
   allowPrivilegedContainer: false
   runAsUser:
-    type: MustRunAsRange
+    type: RunAsAny
   seLinuxContext:
     type: MustRunAs
   fsGroup:
-    type: MustRunAs
+    type: RunAsAny
   supplementalGroups:
     type: RunAsAny
   volumes:
