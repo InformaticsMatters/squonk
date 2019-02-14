@@ -1,0 +1,35 @@
+---
+
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
+  changed_when: False
+
+# Check/Create PVCs
+
+- name: Check Loader PVCs (dynamic)
+  shell: oc get pvc
+  register: i_pvc_result
+  changed_when: False
+
+- name: Create Loader PVCs (dynamic)
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-data-loader-pvc-dynamic.yaml
+    -p APP_NAMESPACE={{ oc_project }}
+    -p PVC_SIZE={{ pv_loader_size }}
+    -p STORAGE_CLASS={{ oc_cc_volume_storage_class }}
+    | oc create -f -
+  when: not i_pvc_result.stdout | regex_search('^%s\s' % data_loader_pvc_name, multiline=True)
+
+# Wait for PVCs to become "Bound"...
+
+- name: Wait for Loader PVCs to become Bound (nfs)
+  shell: >
+    oc get pvc/{{ item }} | grep Bound
+  retries: 12
+  delay: 5
+  register: result
+  until: result.rc == 0
+  loop:
+  - "{{ data_loader_pvc_name }}"
+  when: not i_pvc_result.stdout | regex_search('^%s\s' % item, multiline=True)

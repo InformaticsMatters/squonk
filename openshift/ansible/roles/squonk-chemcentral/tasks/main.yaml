@@ -10,9 +10,13 @@
   when: oc_cc_infra_volume_type == 'nfs'
 - import_tasks: create-data-loader-nfs-pv-pvc.yaml
   when: oc_cc_infra_volume_type == 'nfs'
+
 # Dynamic volumes...
 - import_tasks: create-dynamic-pvc.yaml
   when: oc_cc_infra_volume_type == 'dynamic'
+- import_tasks: create-dynamic-data-loader-pvc.yaml
+  when: oc_cc_infra_volume_type == 'dynamic'
+
 # MiniShift volumes...
 - import_tasks: create-minishift-pvc.yaml
   when: oc_cc_infra_volume_type == 'minishift'

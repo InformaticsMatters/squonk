@@ -2,7 +2,7 @@
 
 # Misc variables...
 pv_size: 300Gi
-pv_loader_size: 4Gi
+pv_loader_size: 10Gi
 pv_name: pv-chemcentral-postgresql
 pvc_name: chemcentral-postgresql-claim
 data_loader_pv_name: pv-chemcentral-loader
