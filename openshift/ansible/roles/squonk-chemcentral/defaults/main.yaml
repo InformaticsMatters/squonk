@@ -35,7 +35,7 @@ loader_limit: 0
 # This is used to uniquely identify loader Jobs
 # so Jobs with the same marker are prevented
 # from running at the same time.
-loader_marker: A
+loader_marker: a
 
 # The ChemCentral Service Account
 # in the Infrastructure project

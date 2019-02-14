@@ -21,6 +21,37 @@ _keycloak users_ with the following: -
     to safely add your own users. It is prevented form being committed to
     Git as it's listed in the project's `.gitignore` file.
 
+In order to load data into the ChemCentral database you will need to prepare
+the loader data volume with suitable source data (running a relevant
+**prep-loader** playbook) before running a **loader**.
+
+Loading data requires: -
+
+1.  Creating a volume to store the source data
+    (using the `create-loader-volume` playbook)
+1.  Loading data using a suitable `prep-loader` playbook. This creates the
+    loader volume (just in case you forgot) and then runs task that runs
+    an OpenShift `Job` template which does the preparation (downloading).
+    Inspect the exiting `prep-loader` playbooks,
+    their matching role tasks (typically called
+    `roles/squonk-chemcentral/tasks/prep-loader-<something>`)
+    and the matching OpenShift templates (typically called
+    `templates/chemcentral/prep-loader-<something>`)
+1.  Running a loader playbook (like `run-loader`)
+
+As an example, you can prepare and load the example/free eMolecules
+data set with the following...
+
+    ansible-playbook playbooks/squonk-chemcentral/prep-loader-emolecules.yaml
+    ansible-playbook playbooks/squonk-chemcentral/run-loader.yaml \
+        -e loader_class=EMoleculesBBSmilesLoader \
+        -e loader_file=version.smi.gz
+    
+When loading is complete you can remove the loader volume created and used by
+the preparation task: -
+
+    ansible-playbook playbooks/squonk-chemcentral/delete-loader-volume.yaml
+
 You can delete the ChemCentral loader and re-run it with: -
 
     ansible-playbook playbooks/squonk-chemcentral/delete-loader.yaml

@@ -1,0 +1,15 @@
+---
+
+- hosts: localhost
+
+  tasks:
+
+  - name: Run the Loader Preparation Tasks
+    include_role:
+      name: squonk-chemcentral
+      tasks_from: create-loader-volume.yaml
+
+  - name: Run the Loader Preparation Tasks
+    include_role:
+      name: squonk-chemcentral
+      tasks_from: prep-loader-emolecules.yaml

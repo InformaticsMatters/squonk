@@ -1,0 +1,9 @@
+---
+
+- hosts: localhost
+
+  tasks:
+  - name: Delete the Loader (Data) Volume
+    include_role:
+      name: squonk-chemcentral
+      tasks_from: delete-loader-volume.yaml

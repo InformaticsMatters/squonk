@@ -23,7 +23,7 @@
 
 # Wait for PVCs to become "Bound"...
 
-- name: Wait for Loader PVCs to become Bound (nfs)
+- name: Wait for Loader PVCs to become Bound (dynamic)
   shell: >
     oc get pvc/{{ item }} | grep Bound
   retries: 12
