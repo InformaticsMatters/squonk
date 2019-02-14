@@ -7,7 +7,7 @@
 # Refer to 'setenv-template.sh' for further documentation.
 
 export OC_MASTER_HOSTNAME=$(minishift ip):8443
-export OC_MASTER_URL=
+export OC_MASTER_URL=${OC_MASTER_HOSTNAME}
 
 export OC_DEPLOYMENT=squonk
 export OC_ADMIN=admin
