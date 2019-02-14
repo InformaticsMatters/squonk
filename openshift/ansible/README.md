@@ -46,6 +46,9 @@ data set with the following...
     ansible-playbook playbooks/squonk-chemcentral/run-loader.yaml \
         -e loader_class=EMoleculesBBSmilesLoader \
         -e loader_file=version.smi.gz
+
+>   Variables that control the `run-loader` playbook are defined in
+    `roles/squonk-chemcentral/defaults/main.yaml`
     
 When loading is complete you can remove the loader volume created and used by
 the preparation task: -
