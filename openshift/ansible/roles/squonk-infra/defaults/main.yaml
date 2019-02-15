@@ -37,3 +37,12 @@ recycle_released_pvs: yes
 # Each is also added to the default set of roles for the realm.
 keycloak_default_roles:
   - standard-user
+
+# Default values for variables used when creating
+# new database for projects. The following  (not defined here)
+# must be defined by the user on the command-line:
+#
+# new_db
+# new_db_namespace
+new_db_user: "{{ lookup('password','/dev/null chars=lowercase length=10') }}"
+new_db_user_password: "{{ lookup('password','/dev/null chars=ascii_letters,digits length=10') }}"

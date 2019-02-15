@@ -1,0 +1,89 @@
+---
+
+# Create a new user, password and database.
+# The database name has to be supplied,
+# along with the namespace it'll be used from with these variables: -
+#
+#  new_db
+#  new_db_namespace
+#  new_db_user           < -randomly generated if not defined
+#  new_db_user_password  < -randomly generated if not defined
+
+- name: Assert required variables have been defined
+  assert:
+    that:
+    - new_db is defined
+    - new_db_namespace is defined
+
+- name: Login (user)
+  shell: >
+    oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
+    --insecure-skip-tls-verify=true
+  changed_when: False
+
+  # Check and create the user's namespace (Project)
+  # and create it if it does not exist.
+
+- name: Check the New Project
+  shell: oc get projects
+  register: projects_result
+  changed_when: False
+
+- name: Create the New Project
+  shell: >
+    oc new-project {{ new_db_namespace }}
+  when: new_db_namespace not in projects_result.stdout
+
+  # If we did nto create the new project assert there are
+  # no database credentials - we can only create one set of database credentials
+  # per project atm...
+
+- name: Move to New Project
+  shell: oc project {{ new_db_namespace }}
+  changed_when: False
+  when: new_db_namespace in projects_result.stdout
+
+- name: Check the New Project Secrets
+  shell: oc get secrets
+  register: secrets_result
+  changed_when: False
+  when: new_db_namespace in projects_result.stdout
+
+- name: Assert New Project Secrets do not Exist
+  assert:
+    that: "'database-credentials' not in secrets_result.stdout"
+    msg: "The new project already appears to have database credentials"
+  when: new_db_namespace in projects_result.stdout
+
+  # Now create the database and user
+  # in the infrastructure project...
+
+- name: Move to Infrastructure Project
+  shell: oc project {{ oc_infra_project }}
+  changed_when: False
+
+- name: Remove prior Temporary Objects (Infrastructure)
+  shell: oc delete all,cm --selector template=db-create
+
+- name: Create User and Database
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-db-create.yaml
+    -p DB_USER={{ new_db_user }}
+    -p DB_USER_PASSWORD={{ new_db_user_password }}
+    -p DB={{ new_db }}
+    -p DB_NAMESPACE={{ new_db_namespace }}
+    -p INFRA_SA={{ oc_infra_sa }}
+    -p DB_HOST={{ oc_postgresql_service }}.{{ oc_infra_project }}.svc
+    | oc create -f -
+
+- name: Wait for User and Database
+  shell: oc describe jobs/db-creator | grep '1 Succeeded'
+  delay: 20
+  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  register: result
+  until: result.rc == 0
+  changed_when: False
+
+#- name: Remove Temporary Objects (Infrastructure)
+#  shell: oc delete all,cm --selector template=db-create
