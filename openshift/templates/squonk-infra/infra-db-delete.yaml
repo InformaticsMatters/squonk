@@ -60,11 +60,13 @@ objects:
       export PGPASSWORD=${POSTGRESQL_ADMIN_PASSWORD}
       export PGHOST=${POSTGRESQL_HOST:-postgres}
 
+      echo "# Deleting database (${DB})..."
       psql --command "DROP DATABASE IF EXISTS ${DB}"
-      echo "Deleted database"
 
+      echo "# Deleting user (${DB_USER})..."
       psql --command "DROP USER IF EXISTS ${DB_USER}"
-      echo "Deleted user"
+
+      echo "# Delete complete"
 
 - kind: Job
   apiVersion: batch/v1

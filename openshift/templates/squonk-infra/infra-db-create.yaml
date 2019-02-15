@@ -91,17 +91,18 @@ objects:
 
       psql --command "CREATE USER ${DB_USER}"
       psql --command "ALTER USER ${DB_USER} WITH PASSWORD '${DB_USER_PASSWORD}'"
-      echo "Created user"
+      echo "# Created user (${DB_USER})"
 
       createdb -O ${DB_USER} ${DB}
-      echo "Created database"
+      echo "# Created database (${DB})"
 
       psql --command "GRANT CONNECT ON DATABASE ${DB} to ${DB_USER}"
       psql -d ${DB} --command "CREATE SCHEMA users AUTHORIZATION ${DB_USER}"
       psql -d ${DB} --command "GRANT USAGE ON SCHEMA users TO ${DB_USER}"
       psql -d ${DB} --command "CREATE SCHEMA notebooks AUTHORIZATION ${DB_USER}"
       psql -d ${DB} --command "GRANT USAGE ON SCHEMA notebooks TO ${DB_USER}"
-      echo "Setup complete"
+
+      echo "# Create complete"
 
 - kind: Job
   apiVersion: batch/v1
