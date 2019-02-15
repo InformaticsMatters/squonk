@@ -1,6 +1,6 @@
 ---
 
-# oc process -f squonk-db-init.yaml | oc create -f -
+# oc process -f squonk-infra-db-init.yaml | oc create -f -
 # oc delete all,secrets --selector template=db-prepare
 #
 # To manually remove the Squonk database artifacts from Postgres open a terminal to the

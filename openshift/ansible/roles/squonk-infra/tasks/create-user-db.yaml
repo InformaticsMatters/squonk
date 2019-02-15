@@ -8,6 +8,16 @@
 #  new_db_namespace
 #  new_db_user           < -randomly generated if not defined
 #  new_db_user_password  < -randomly generated if not defined
+#
+# It is an error to deploy another set of credentials
+# using the same database and namespace, but you can create
+# more than one set of credentials (using different databases).
+#
+# At the successful end of this play: -
+#
+# - The user's project (new_db_namespace) will exist
+# - A set of secrets called 'database-credentials-<new_db>' will
+#   be present in the user's project
 
 - name: Assert required variables have been defined
   assert:
@@ -24,12 +34,12 @@
   # Check and create the user's namespace (Project)
   # and create it if it does not exist.
 
-- name: Check the New Project
+- name: Check the User Project
   shell: oc get projects
   register: projects_result
   changed_when: False
 
-- name: Create the New Project
+- name: Create the User Project
   shell: >
     oc new-project {{ new_db_namespace }}
   when: new_db_namespace not in projects_result.stdout
@@ -38,24 +48,23 @@
   # no database credentials - we can only create one set of database credentials
   # per project atm...
 
-- name: Move to New Project
+- name: Move to User Project
   shell: oc project {{ new_db_namespace }}
   changed_when: False
-  when: new_db_namespace in projects_result.stdout
 
-- name: Check the New Project Secrets
+- name: Check the User Project's Secrets
   shell: oc get secrets
   register: secrets_result
   changed_when: False
-  when: new_db_namespace in projects_result.stdout
 
-- name: Assert New Project Secrets do not Exist
+- name: Assert User Project Secret does not exist
   assert:
-    that: "'database-credentials' not in secrets_result.stdout"
-    msg: "The new project already appears to have database credentials"
-  when: new_db_namespace in projects_result.stdout
+    that: secret_name not in secrets_result.stdout
+    msg: "The new project already appears to have credentials for this database"
+  vars:
+    secret_name: database-credentials-{{ new_db }}
 
-  # Now create the database and user
+  # Now create the database and user credentials
   # in the infrastructure project...
 
 - name: Login as Admin
@@ -66,7 +75,7 @@
   shell: oc project {{ oc_infra_project }}
   changed_when: False
 
-- name: Remove prior Temporary Objects (Infrastructure)
+- name: Remove prior temporary Objects (Infrastructure)
   shell: oc delete all,cm --selector template=db-create
 
 - name: Create User and Database
@@ -81,13 +90,10 @@
     -p DB_HOST={{ oc_postgresql_service }}.{{ oc_infra_project }}.svc
     | oc create -f -
 
-- name: Wait for User and Database
+- name: Wait for User and Database Job
   shell: oc describe jobs/db-creator | grep '1 Succeeded'
   delay: 20
   retries: "{{ (pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
   changed_when: False
-
-#- name: Remove Temporary Objects (Infrastructure)
-#  shell: oc delete all,cm --selector template=db-create

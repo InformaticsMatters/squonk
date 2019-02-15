@@ -69,7 +69,7 @@ objects:
 - kind: Secret
   apiVersion: v1
   metadata:
-    name: database-credentials
+    name: database-credentials-${DB}
     namespace: ${DB_NAMESPACE}
   stringData:
     db-user: ${DB_USER}
@@ -88,10 +88,6 @@ objects:
       export PGUSER=${POSTGRESQL_ADMIN_USER:-postgres}
       export PGPASSWORD=${POSTGRESQL_ADMIN_PASSWORD}
       export PGHOST=${POSTGRESQL_HOST:-postgres}
-
-      echo $PGUSER
-      echo $PGPASSWORD
-      echo $PGHOST
 
       psql --command "CREATE USER ${DB_USER}"
       psql --command "ALTER USER ${DB_USER} WITH PASSWORD '${DB_USER_PASSWORD}'"
