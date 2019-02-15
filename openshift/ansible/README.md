@@ -72,6 +72,19 @@ and for the infrastructure: -
 
     ansible-playbook playbooks/squonk-infra/undeploy.yaml
 
+## Playbooks for the infrastructure database
+You can add and remove users and databases to the Infrastructure database
+using two convenient playbooks (refer to them for documentation): -
+
+    ansible-playbook playbooks/squonk-infra/create-user-db.yaml \
+        -e new_db=mydb \
+        -e new_db_user=me \
+        -e new_db_namespace=myproject
+        
+    ansible-playbook playbooks/squonk-infra/delete-user-db.yaml \
+        -e db=mydb \
+        -e db_user=me
+
 ## Prerequisites
 Before running the playbooks: -
 
