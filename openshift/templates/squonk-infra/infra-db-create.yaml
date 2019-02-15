@@ -89,6 +89,10 @@ objects:
       export PGPASSWORD=${POSTGRESQL_ADMIN_PASSWORD}
       export PGHOST=${POSTGRESQL_HOST:-postgres}
 
+      echo $PGUSER
+      echo $PGPASSWORD
+      echo $PGHOST
+
       psql --command "CREATE USER ${DB_USER}"
       psql --command "ALTER USER ${DB_USER} WITH PASSWORD '${DB_USER_PASSWORD}'"
       echo "Created user"
