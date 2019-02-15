@@ -180,6 +180,10 @@ parameters:
 
 objects:
 
+# NOTE: As it's currently hard-coded,
+#       if you modify the 'database-service' secret
+#       you *MUST* check the rest of the project.
+
 - kind: Secret
   apiVersion: v1
   metadata:
