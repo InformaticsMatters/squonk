@@ -75,7 +75,7 @@ objects:
     db-user: ${DB_USER}
     db-user-password: ${DB_USER_PASSWORD}
     db: ${DB}
-    db-service: db-postgresql
+    db-service: ${DB_HOST}
 
 - kind: ConfigMap
   apiVersion: v1
