@@ -13,6 +13,10 @@
 # using the same database and namespace, but you can create
 # more than one set of credentials (using different databases).
 #
+# Note: If the project does not exist it will be created by the 'admin' user.
+#       At the moment access to any other user needs to be granted by the admin
+#       user, separately to this task.
+#
 # At the successful end of this play: -
 #
 # - The user's project (new_db_namespace) will exist
@@ -44,16 +48,11 @@
     oc new-project {{ new_db_namespace }}
   when: new_db_namespace not in projects_result.stdout
 
-  # If we did not create the new project assert there are
-  # no database credentials - we can only create one set of database credentials
-  # per project atm...
-
-- name: Move to User Project
-  shell: oc project {{ new_db_namespace }}
-  changed_when: False
+  # Assert there are no database credentials -
+  # At the moment we only allow one set of database credentials per project
 
 - name: Check the User Project's Secrets
-  shell: oc get secrets
+  shell: oc get secrets --namespace  {{ new_db_namespace }}
   register: secrets_result
   changed_when: False
 
@@ -66,10 +65,6 @@
 
   # Now create the database and user credentials
   # in the infrastructure project...
-
-- name: Login as Admin
-  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
-  changed_when: False
 
 - name: Move to Infrastructure Project
   shell: oc project {{ oc_infra_project }}
