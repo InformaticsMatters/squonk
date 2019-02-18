@@ -25,7 +25,7 @@
     - new_db is defined
     - new_db_namespace is defined
 
-- name: Login (user)
+- name: Login (admin)
   shell: >
     oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
     --insecure-skip-tls-verify=true
