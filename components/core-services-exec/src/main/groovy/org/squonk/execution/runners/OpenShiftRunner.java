@@ -420,8 +420,8 @@ public class OpenShiftRunner extends AbstractRunner {
      * Given an existing configuration string this method adds material
      * to allow a Nextflow container to run properly in our OpenShift
      * environment. This mainly consists of exposing the name of the
-     * shared data volume claim, a suitable mount path and the sub-path
-     * we're using.
+     * shared data volume claim, a suitable mount path, the sub-path
+     * we're using and the service account for the namespace we're in.
      *
      * @param originalConfig The original configuration string.
      *                       If this is null, null is returned.
@@ -441,10 +441,12 @@ public class OpenShiftRunner extends AbstractRunner {
                 "  storageClaimName = '%s'\n" +
                 "  storageMountPath = '%s'\n" +
                 "  storageSubPath = '%s'\n" +
+                "  serviceAccount = '%s'\n" +
                 "}\n",
                 OS_DATA_VOLUME_PVC_NAME,
                 localWorkDir,
-                jobId);
+                jobId,
+                OS_SA);
 
         return originalConfig + "\n" + additionalConfig;
 
