@@ -88,10 +88,10 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractContainerStep {
             // There may be nothing to add but the returned string
             // will be valid.
             nextflowConfigContents = runner.addExtraNextflowConfig(nextflowConfigContents);
-            LOG.fine("Writing nextflow.config as:\n" + nextflowConfigContents);
+            LOG.info("Writing nextflow.config as:\n" + nextflowConfigContents);
             runner.writeInput("nextflow.config", nextflowConfigContents, false);
         } else {
-            LOG.fine("No nextflow.config");
+            LOG.info("No nextflow.config");
         }
 
         // The runner's either a plain Docker runner
