@@ -550,7 +550,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 .endMetadata()
                 .withNewSpec()
                 .withContainers(podContainer)
-//                .withServiceAccount(OS_SA)
+                .withServiceAccount(OS_SA)
                 .withRestartPolicy(OS_POD_RESTART_POLICY)
                 .withVolumes(volume)
                 .endSpec().build();
