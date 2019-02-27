@@ -21,12 +21,18 @@ parameters:
 # -------------
 # Configuration
 # -------------
-# Common (not specific to any service)
 
 - name: APP_NAMESPACE
   value: squonk
 - name: APP_SA
   value: squonk
+
+- name: APP_ACME_ENABLE
+  description: >-
+    Set to false to avoid exhausting certificate generation request quota.
+    Change this to true if/when you are ready for secure the route with
+    trusted certificates.
+  value: "false"
 
 - name: PULL_POLICY
   value: IfNotPresent
@@ -152,9 +158,7 @@ objects:
     name: portal
     namespace: ${APP_NAMESPACE}
     annotations:
-      # Note: Set to false to avoid exhausting certificate generation request quota.
-      # Change this to true if/when you are ready for secure the route with trusted certificates.
-      kubernetes.io/tls-acme: 'false'
+      kubernetes.io/tls-acme: ${APP_ACME_ENABLE}
   spec:
     host: ${SQUONK_HOST}
     path: /portal

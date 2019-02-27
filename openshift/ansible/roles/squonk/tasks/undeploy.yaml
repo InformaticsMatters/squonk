@@ -5,6 +5,14 @@
 # This consists of un-deploying the application components from the squonk
 # project and the related parts of the squonk infrastructure project.
 
+- name: Delete Squonk?
+  pause:
+    prompt: >-
+      Delete the Squonk project?
+      Note that 'delete_database' is {{ delete_database }}.
+      Hit return to delete Squonk.
+      Hit Ctrl+c and then "a" if you've changed your mind
+
 - name: Login (admin)
   shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
@@ -29,15 +37,21 @@
   until: not pj_cmd.stdout | regex_search('^%s\s' % oc_project, multiline=True)
   changed_when: False
 
+# Delete SCC
+
+- name: Check Squonk SCC
+  shell: oc get scc
+  register: scc_result
+  changed_when: False
+
+- name: Delete Squonk SCC
+  shell: oc delete scc/scc-squonk
+  when: scc_result.stdout | regex_search('^scc-squonk', multiline=True)
+
 # Now undo the stuff in the infrastructure project...
 
 - name: Move to Squonk Infrastructure Project
   shell: oc project {{ oc_infra_project }}
-  changed_when: False
-
-- name: Get database pod
-  shell: oc get pod -o name -l deploymentConfig={{ oc_postgresql_service }}
-  register: db_pod
   changed_when: False
 
 # Remove persistent volumes
@@ -61,7 +75,7 @@
 - name: Delete Jobs
   shell: oc delete job/{{ item }}
   loop:
-  - squonk-database-creator
+  - db-creator
   - squonk-rabbitmq-creator
   - squonk-client-creator
   when: job_result.stdout | regex_search('^%s\s' % item, multiline=True)
@@ -73,7 +87,7 @@
   retries: "{{ (pod_terminate_timeout | int / 10) | int }}"
   until: not j_cmd.stdout | regex_search('^%s\s' % item, multiline=True)
   loop:
-  - squonk-database-creator
+  - db-creator
   - squonk-rabbitmq-creator
   - squonk-client-creator
   changed_when: False
@@ -86,10 +100,37 @@
 - name: Delete ConfigMaps
   shell: oc delete cm/{{ item }}
   loop:
-  - squonk-database-creator
+  - db-creator
   - squonk-rabbitmq-config
   - squonk-client-creator
   when: cm_result.stdout | regex_search('^%s\s' % item, multiline=True)
+
+# Delete the Squonk Database.
+# Caution - this deletes the database as well as the user.
+
+- name: Remove prior temporary Objects (Infrastructure)
+  shell: oc delete all,cm --selector template=db-delete
+  when: delete_database
+
+- name: Delete Squonk DB
+  shell: >
+    oc process
+    -f {{ role_path }}/{{ t_dir }}/infra/infra-db-delete.yaml
+    -p DB_HOST={{ oc_postgresql_service }}.{{ oc_infra_project }}.svc
+    -p DB={{ oc_squonk_db }}
+    -p DB_USER={{ oc_squonk_user }}
+    -p INFRA_SA={{ oc_infra_sa }}
+    | oc create -f -
+  when: delete_database
+
+- name: Wait for User and Database Job
+  shell: oc describe jobs/db-deleter | grep '1 Succeeded'
+  delay: 20
+  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  register: result
+  until: result.rc == 0
+  changed_when: False
+  when: delete_database
 
 # Get a keycloak token (sets the fact 'keycloak_token').
 # Remember that the login user may have changed to admin.

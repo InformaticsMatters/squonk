@@ -48,3 +48,11 @@ add_nobody_user: yes
 # to protect themselves for data loss here. This will inspect the
 # "state" of all PVs in the squonk *and* infrastructure projects.
 recycle_released_pvs: yes
+
+# Enable ACME routes?
+# A string that's either 'true' or 'false'.
+# This applies to all routes, i.e. those used by the JobExecutor and Portal.
+enable_acme: "false"
+
+# Set to delete the Squonk database when Squonk is deployed.
+delete_database: no

@@ -5,6 +5,13 @@
 # This consists of un-deploying the application components from the squonk
 # project and the related parts of the squonk infrastructure project.
 
+- name: Delete Squonk ChemCentral?
+  pause:
+    prompt: >-
+      Delete the ChemCentral components and related databases?
+      Hit return to delete ChemCentral.
+      Hit Ctrl+c and then "a" if you've changed your mind
+
 - name: Login (admin)
   shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False

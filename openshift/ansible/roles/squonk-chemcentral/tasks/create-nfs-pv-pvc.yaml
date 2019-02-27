@@ -17,7 +17,7 @@
     -p INFRA_NAMESPACE={{ oc_infra_project }}
     -p NFS_SERVER={{ oc_nfs_server }}
     -p NFS_PATH={{ oc_nfs_path }}
-    -p PVC_SIZE={{ pv_size }}
+    -p PVC_SIZE={{ oc_cc_postgresql_volume_size }}
     -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-pv-nfs.yaml
     | oc create -f -
   when: not i_pv_result.stdout | regex_search('^%s\s' % pv_name, multiline=True)
@@ -64,7 +64,7 @@
   shell: >
     oc process
     -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-pvc-nfs.yaml
-    -p PVC_SIZE={{ pv_size }}
+    -p PVC_SIZE={{ oc_cc_postgresql_volume_size }}
     | oc create -f -
   when: not i_pvc_result.stdout | regex_search('^%s\s' % pvc_name, multiline=True)
 

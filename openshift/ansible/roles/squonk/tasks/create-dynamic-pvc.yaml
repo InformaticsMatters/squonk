@@ -22,6 +22,7 @@
     oc process
     -p APP_NAMESPACE={{ oc_project }}
     -p STORAGE_CLASS={{ oc_squonk_volume_storage_class }}
+    -p CELL_WORK_PVC_SIZE={{ oc_cell_work_pvc_size }}
     -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-pvc-dynamic.yaml
     | oc create -f -
   when: '"squonk-work-dir-pvc" not in s_pvc_result.stdout'

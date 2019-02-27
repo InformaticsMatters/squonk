@@ -54,5 +54,6 @@
     -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-app-je-route.yaml
     -p APP_NAMESPACE={{ oc_project }}
     -p JE_HOST={{ oc_jobexecutor_host }}
+    -p JE_ACME_ENABLE={{ enable_acme }}
     | oc create -f -
   when: not routes_result.stdout | regex_search('^jobexecutor-keycloak\s', multiline=True)

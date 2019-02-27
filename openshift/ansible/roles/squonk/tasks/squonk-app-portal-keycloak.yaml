@@ -25,6 +25,7 @@
     -p SQUONK_HOST={{ oc_squonk_host}}
     -p APP_NAMESPACE={{ oc_project }}
     -p APP_SA={{ oc_project_sa }}
+    -p APP_ACME_ENABLE={{ enable_acme }}
     -p PULL_POLICY={{ image_pull_policy }}
     -p LOGOUT_REDIRECT_TO={{ keycloak_logout_redirect_to }}
     -p PORTAL_IMAGE_TAG={{ oc_squonk_portal_image_tag }}

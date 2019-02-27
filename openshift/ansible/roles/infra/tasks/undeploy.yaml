@@ -1,9 +1,15 @@
 ---
 
-# Un-deploy (uninstall) the Squonk infrastructure.
+# Un-deploy (uninstall) the Infrastructure.
 #
-# This consists of un-deploying the application components form the squonk
-# project and the related parts of the squonk infrastructure project.
+#  USE with EXTREME caution.
+
+- name: Delete Infrastructure?
+  pause:
+    prompt: >-
+      Delete the Infrastructure project?
+      Press return to continue.
+      Press Ctrl+c and then "a" if you've changed your mind
 
 - name: Login (admin)
   shell: >
@@ -37,3 +43,15 @@
   delay: 30
   until: not pj_cmd.stdout | regex_search('^%s\s' % oc_infra_project, multiline=True)
   changed_when: False
+
+# Delete SCC
+
+- name: Check Infra SCC
+  shell: oc get scc
+  register: scc_result
+  changed_when: False
+
+- name: Delete Squonk SCC
+  shell: oc delete scc/scc-squonk
+  when: scc_result.stdout | regex_search('^scc-squonk', multiline=True)
+

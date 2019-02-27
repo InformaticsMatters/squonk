@@ -48,7 +48,7 @@
   register: j_result
   changed_when: False
 
-- name: Initialise DB
+- name: Create Squonk DB
   shell: >
     oc process
     -f {{ role_path }}/{{ t_dir }}/infra/infra-db-create.yaml
@@ -59,7 +59,7 @@
     -p DB_USER_PASSWORD={{ db_password }}
     -p INFRA_SA={{ oc_infra_sa }}
     | oc create -f -
-  when: not j_result.stdout | regex_search('^squonk-database-creator\s', multiline=True)
+  when: not j_result.stdout | regex_search('^db-creator\s', multiline=True)
 
 # Prepare RabbitMQ
 
