@@ -12,8 +12,8 @@ apiVersion: v1
 metadata:
   name: infra-persistence-dynamic
   annotations:
-    description: Squonk Infrastructure Persistence using dynamic provisioning
-    tags: squonk,infra,pv,pvc
+    description: Infrastructure Persistence using dynamic provisioning
+    tags: infra,pv,pvc
 labels:
   template: infra-pvc-dynamic
 

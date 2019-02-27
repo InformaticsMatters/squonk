@@ -10,8 +10,8 @@ apiVersion: v1
 metadata:
   name: infra-persistence-nfs
   annotations:
-    description: Squonk Infrastructure Persistence using NFS
-    tags: squonk,infra,pv,pvc
+    description: Infrastructure Persistence using NFS
+    tags: infra,pv,pvc
 labels:
   template: infra-pvc-nfs
 

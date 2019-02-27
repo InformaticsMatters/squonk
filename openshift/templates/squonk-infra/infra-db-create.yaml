@@ -62,7 +62,7 @@ parameters:
 - displayName: Infrastructure Service Account
   description: Infrastructure Service Account
   name: INFRA_SA
-  value: squonk
+  value: openrisknet-infra
 
 objects:
 

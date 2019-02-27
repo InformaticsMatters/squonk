@@ -11,8 +11,8 @@ apiVersion: v1
 metadata:
   name: infra-persistence-minishift
   annotations:
-    description: Squonk Infrastructure Persistent Volume Claims for Minishift
-    tags: squonk,infra,pvc
+    description: Infrastructure Persistent Volume Claims for Minishift
+    tags: infra,pvc
 labels:
   template: infra-pvc-minishift
 
@@ -56,5 +56,3 @@ objects:
     resources:
       requests:
         storage: "${POSTGRESQL_VOLUME_SIZE}"
-
-

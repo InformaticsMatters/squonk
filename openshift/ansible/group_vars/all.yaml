@@ -30,6 +30,10 @@ oc_squonk_app: "{{ ansible_env.OC_SQUONK_APP }}"
 oc_squonk_host: "{{ ansible_env.OC_SQUONK_HOST }}"
 oc_squonk_client_secret: "{{ ansible_env.OC_SQUONK_CLIENT_SECRET }}"
 
+oc_squonk_db: squonk
+oc_squonk_user: squonk
+oc_squonk_user_password: "{{ lookup('password', '/dev/null length=10 chars=ascii_letters') }}"
+
 oc_squonk_cell_image_tag: "{{ ansible_env.OC_SQUONK_CELL_IMAGE_TAG }}"
 oc_squonk_chem_image_tag: "{{ ansible_env.OC_SQUONK_CHEM_IMAGE_TAG }}"
 oc_squonk_core_image_tag: "{{ ansible_env.OC_SQUONK_CORE_IMAGE_TAG }}"
