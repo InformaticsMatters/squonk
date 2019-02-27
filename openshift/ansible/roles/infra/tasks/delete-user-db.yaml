@@ -33,7 +33,7 @@
 - name: Delete User and Database
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/infra/infra-db-delete.yaml
+    -f {{ role_path }}/files/infra-db-delete.yaml
     -p DB_USER={{ db_user }}
     -p DB={{ db }}
     -p INFRA_SA={{ oc_infra_sa }}

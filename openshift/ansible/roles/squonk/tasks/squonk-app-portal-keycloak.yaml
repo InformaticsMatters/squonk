@@ -21,7 +21,7 @@
 - name: Deploy Portal
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-app-portal-keycloak.yaml
+    -f {{ role_path }}/files/squonk-app-portal-keycloak.yaml
     -p SQUONK_HOST={{ oc_squonk_host}}
     -p APP_NAMESPACE={{ oc_project }}
     -p APP_SA={{ oc_project_sa }}

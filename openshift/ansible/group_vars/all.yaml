@@ -88,7 +88,3 @@ pod_ready_timeout: 600
 pod_terminate_timeout: 300
 pv_create_timeout: 200
 pvc_bind_timeout: 200
-
-# Our root Squonk template directory
-# (relative to the role_path directory)
-t_dir: ../../../templates

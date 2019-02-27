@@ -21,7 +21,7 @@
   shell: >
     oc process
     -p APP_NAMESPACE={{ oc_project }}
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-pvc-minishift.yaml
+    -f {{ role_path }}/files/squonk-pvc-minishift.yaml
     | oc create -f -
   when: '"squonk-work-dir-pvc" not in s_pvc_result.stdout'
 

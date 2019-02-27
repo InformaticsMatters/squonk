@@ -28,7 +28,7 @@
 - name: Create DB Secrets
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-infra-db-secrets.yaml
+    -f {{ role_path }}/files/squonk-infra-db-secrets.yaml
     -p SQUONK_USER={{ oc_squonk_user }}
     -p SQUONK_USER_PASSWORD={{ db_password }}
     -p DATABASE_HOST={{ oc_postgresql_service }}.{{ oc_infra_project }}.svc
@@ -51,7 +51,7 @@
 - name: Create Squonk DB
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/infra/infra-db-create.yaml
+    -f {{ role_path }}/../infra/files/infra-db-create.yaml
     -p DB_HOST={{ oc_postgresql_service }}.{{ oc_infra_project }}.svc
     -p DB_NAMESPACE={{ oc_project }}
     -p DB={{ oc_squonk_db }}
@@ -66,7 +66,7 @@
 - name: Initialise RabbitMQ
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-infra-rabbitmq-init.yaml
+    -f {{ role_path }}/files/squonk-infra-rabbitmq-init.yaml
     -p SQUONK_NAMESPACE={{ oc_project }}
     -p INFRA_SA={{ oc_infra_sa }}
     -p RABBITMQ_HOST=rabbitmq.{{ oc_infra_project }}.svc
@@ -78,7 +78,7 @@
 - name: Initialise Keycloak (Client)
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-infra-keycloak-init.yaml
+    -f {{ role_path }}/files/squonk-infra-keycloak-init.yaml
     -p SQUONK_NAMESPACE={{ oc_project }}
     -p INFRA_SA={{ oc_infra_sa }}
     -p KEYCLOAK_REALM={{ keycloak_realm }}

@@ -1,4 +1,5 @@
 setenv.sh
 setenv-diamond.sh
 setenv-scaleway.sh
+setenv-aws.sh
 certs/

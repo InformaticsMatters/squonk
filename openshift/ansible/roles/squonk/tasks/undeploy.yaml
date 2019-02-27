@@ -115,7 +115,7 @@
 - name: Delete Squonk DB
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/infra/infra-db-delete.yaml
+    -f {{ role_path }}/../infra/files/infra-db-delete.yaml
     -p DB_HOST={{ oc_postgresql_service }}.{{ oc_infra_project }}.svc
     -p DB={{ oc_squonk_db }}
     -p DB_USER={{ oc_squonk_user }}
@@ -139,7 +139,7 @@
 # are located in an infra role playbook.
 
 - import_tasks: >
-    "{{ role_path }}/../../roles/infra/tasks/get-keycloak-token.yaml"
+    "{{ role_path }}/../infra/tasks/get-keycloak-token.yaml"
   tags:
   - keycloak-users
 

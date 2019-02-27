@@ -18,7 +18,7 @@
 - name: Create ChemCentral Database
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-db.yaml
+    -f {{ role_path }}/files/chemcentral-db.yaml
     -p DB_NAMESPACE={{ oc_infra_project }}
     -p APP_NAMESPACE={{ oc_project }}
     -p APP_SA={{ oc_cc_infra_sa }}

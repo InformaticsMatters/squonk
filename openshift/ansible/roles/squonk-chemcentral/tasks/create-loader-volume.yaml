@@ -14,7 +14,7 @@
 - name: Create Loader PVCs (dynamic)
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-data-loader-pvc-dynamic.yaml
+    -f {{ role_path }}/files/chemcentral-data-loader-pvc-dynamic.yaml
     -p APP_NAMESPACE={{ oc_project }}
     -p PVC_SIZE={{ oc_cc_loader_volume_size }}
     -p STORAGE_CLASS={{ oc_cc_volume_storage_class }}
