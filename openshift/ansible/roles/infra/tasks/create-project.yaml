@@ -1,6 +1,6 @@
 ---
 
-# Preparation and project creation for the Squonk Infrastructure.
+# Preparation and project creation for the Infrastructure.
 
 - name: Login (admin)
   shell: >
@@ -22,7 +22,7 @@
     -n openshift
   when: not is_result.stdout | regex_search('^redhat-sso72-openshift\s', multiline=True)
 
-# Squonk Infrastructure Project
+# Infrastructure Project
 
 - name: Login (user)
   shell: >

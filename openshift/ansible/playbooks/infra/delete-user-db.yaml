@@ -6,5 +6,5 @@
 
   - name: Run the User Database Tasks
     include_role:
-      name: squonk-infra
+      name: infra
       tasks_from: delete-user-db.yaml

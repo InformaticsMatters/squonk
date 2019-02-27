@@ -51,7 +51,7 @@
 - name: Initialise DB
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-db-create.yaml
+    -f {{ role_path }}/{{ t_dir }}/infra/infra-db-create.yaml
     -p DB_HOST={{ oc_postgresql_service }}.{{ oc_infra_project }}.svc
     -p DB_NAMESPACE={{ oc_project }}
     -p DB={{ oc_squonk_db }}

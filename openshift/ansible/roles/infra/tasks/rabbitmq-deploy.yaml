@@ -18,7 +18,7 @@
 - name: Create RabbitMQ Deployment
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-infra/rabbitmq.yaml
+    -f {{ role_path }}/{{ t_dir }}/infra/rabbitmq.yaml
     -p INFRA_NAMESPACE={{ oc_infra_project }}
     -p INFRA_SA={{ oc_infra_sa }}
     -p RABBITMQ_HOST=rabbitmq.{{ oc_infra_project }}.svc

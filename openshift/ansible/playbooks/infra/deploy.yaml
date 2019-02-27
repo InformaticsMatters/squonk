@@ -3,4 +3,4 @@
 - hosts: localhost
 
   roles:
-  - squonk-infra
+  - infra

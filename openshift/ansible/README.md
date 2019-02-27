@@ -2,7 +2,7 @@
 You can run the infrastructure and squonk playbook from this
 directory with the commands: -
 
-    ansible-playbook playbooks/squonk-infra/deploy.yaml
+    ansible-playbook playbooks/infra/deploy.yaml
     ansible-playbook playbooks/squonk/deploy.yaml
     ansible-playbook playbooks/squonk-chemcentral/deploy.yaml
 
@@ -70,18 +70,18 @@ and for ChemCentral: -
 
 and for the infrastructure: -
 
-    ansible-playbook playbooks/squonk-infra/undeploy.yaml
+    ansible-playbook playbooks/infra/undeploy.yaml
 
 ## Playbooks for the infrastructure database
 You can add and remove users and databases to the Infrastructure database
 using two convenient playbooks (refer to them for documentation): -
 
-    ansible-playbook playbooks/squonk-infra/create-user-db.yaml \
+    ansible-playbook playbooks/infra/create-user-db.yaml \
         -e new_db=mydb \
         -e new_db_user=me \
         -e new_db_namespace=myproject
         
-    ansible-playbook playbooks/squonk-infra/delete-user-db.yaml \
+    ansible-playbook playbooks/infra/delete-user-db.yaml \
         -e db=mydb \
         -e db_user=me
 

@@ -1,4 +1,4 @@
 ---
 
 #dependencies:
-#- { role: squonk-infra }
+#- { role: infra }

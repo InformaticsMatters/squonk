@@ -1,6 +1,6 @@
 ---
 
-- name: Move to Squonk Infrastructure Project
+- name: Move to Infrastructure Project
   shell: oc project {{ oc_infra_project }}
   changed_when: False
 
@@ -23,7 +23,7 @@
     -p INFRA_NAMESPACE={{ oc_infra_project }}
     -p NFS_SERVER={{ oc_nfs_server }}
     -p NFS_PATH={{ oc_nfs_path }}
-    -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-pv-nfs.yaml
+    -f {{ role_path }}/{{ t_dir }}/infra/infra-pv-nfs.yaml
     | oc create -f -
   when: not i_pv_result.stdout | regex_search('^pv-rabbitmq\s', multiline=True)
 
@@ -70,7 +70,7 @@
   shell: >
     oc process
     -p INFRA_NAMESPACE={{ oc_infra_project }}
-    -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-pvc-nfs.yaml
+    -f {{ role_path }}/{{ t_dir }}/infra/infra-pvc-nfs.yaml
     | oc create -f -
   when: not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
 

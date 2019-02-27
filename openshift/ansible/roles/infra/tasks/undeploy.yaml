@@ -26,11 +26,11 @@
     msg: 'You cannot delete the infrastructure while Squonk exists as a project'
   when:  projects_result.stdout | regex_search('^%s\s.*Active$' % oc_project, multiline=True)
 
-- name: Delete Squonk-Infra Project
+- name: Delete Infra Project
   shell: oc delete project/{{ oc_infra_project }}
   when:  projects_result.stdout | regex_search('^%s\s.*Active$' % oc_infra_project, multiline=True)
 
-- name: Wait for Squonk-Infra project deletion
+- name: Wait for Infra project deletion
   shell: oc get projects
   register: pj_cmd
   retries: 20

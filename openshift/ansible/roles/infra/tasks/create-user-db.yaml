@@ -76,7 +76,7 @@
 - name: Create User and Database
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-infra/infra-db-create.yaml
+    -f {{ role_path }}/{{ t_dir }}/infra/infra-db-create.yaml
     -p DB_USER={{ new_db_user }}
     -p DB_USER_PASSWORD={{ new_db_user_password }}
     -p DB={{ new_db }}
