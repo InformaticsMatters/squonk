@@ -1,4 +1,9 @@
 # Squonk Ansible OpenShift Deployment
+
+If using MiniShift see the instructions at the bottom of this page that must be
+executed first to set up the MiniShift environment. After that the deployment is
+the same as for OpenShift.
+
 You can run the infrastructure and squonk playbook from this
 directory with the commands: -
 
@@ -73,8 +78,10 @@ and for the infrastructure: -
     ansible-playbook playbooks/infra/undeploy.yaml
 
 ## Playbooks for the infrastructure database
-You can add and remove users and databases to the Infrastructure database
-using two convenient playbooks (refer to them for documentation): -
+Other applications might want to use the PostgreSQL database that is deployed in
+the Infrastructure project. Typically you might want to create a new database and create
+a user for that database. You can do this using two convenient playbooks (refer to them 
+for documentation): -
 
     ansible-playbook playbooks/infra/create-user-db.yaml \
         -e new_db=mydb \
@@ -84,6 +91,10 @@ using two convenient playbooks (refer to them for documentation): -
     ansible-playbook playbooks/infra/delete-user-db.yaml \
         -e db=mydb \
         -e db_user=me
+
+The result will be secrets created in your project (`myproject` in the above example) containing 
+the database credentials that your application can use. This process is used during the Squonk 
+deployment to create the database that it uses.
 
 ## Prerequisites
 Before running the playbooks: -
@@ -106,9 +117,9 @@ While it's a work-in-progress, support for some versions of MiniShift is
 available. We've tested with: -
 
 -   OpenShift 3.9.0 (MiniShift 1.25.0)
--   OpenShift 3.11.0 (MiniShift 1.27.0)
+-   OpenShift 3.11.0 (MiniShift 1.27.0, 1.32.0)
 -   VirtualBox 5.2.20 (OSX)
--   MiniShift 1.25.0, 1.26.1 and 1.27.0
+-   MiniShift 1.25.0, 1.26.1, 1.27.0, 1.31.0 and 1.32.0 
 
 Start MiniShift (pre-1.26) with something like: -
 
@@ -118,8 +129,12 @@ Start MiniShift (pre-1.26) with something like: -
 >   If you're using MiniShift v1.26 or later you cannot use the OpenShift
     v3.9.0 image, you must move to OpenShift v3.10.0 or later.
  
-You need to setup a suitable `setenv.sh` (and source it) and then run the
-`minishift` playbook to prepare the cluster **before** running
+You need to setup a suitable `setenv.sh` (and source it). The one in 
+`openshift/templates/setenv-minishift.sh` should work in most cases.
+Then run the `minishift` playbook to prepare the cluster **before** running
 the above Squonk plays. From this directory, run: -
 
     ansible-playbook playbooks/minishift/prepare.yaml
+
+>   The MiniShift installation does not use trusted certificates so you need to tell your
+    browser to ignore the security concerns that this causes.

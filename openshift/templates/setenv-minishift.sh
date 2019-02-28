@@ -6,7 +6,9 @@
 #
 # Refer to 'setenv-template.sh' for further documentation.
 #
-# Tested with various minishift versions, latest is v1.31.0
+# Tested with various minishift versions, latest is v1.32.0
+
+set -e
 
 export OC_MASTER_HOSTNAME=$(minishift ip):8443
 export OC_MASTER_URL=${OC_MASTER_HOSTNAME}
