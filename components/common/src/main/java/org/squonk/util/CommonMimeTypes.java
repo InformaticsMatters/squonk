@@ -16,8 +16,6 @@
 
 package org.squonk.util;
 
-import org.squonk.types.TypeDescriptor;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,8 +33,9 @@ public interface CommonMimeTypes {
     String MIME_TYPE_YAML = "text/yaml";
     String MIME_TYPE_MULTIPART_MIXED = "multipart/mixed";
     String MIME_TYPE_DATASET_METADATA = "application/x-squonk-dataset-metadata+json";
-    String MIME_TYPE_DATASET_BASIC_JSON = "application/x-squonk-dataset-basic+json";
-    String MIME_TYPE_DATASET_MOLECULE_JSON = "application/x-squonk-dataset-molecule+json";
+    String MIME_TYPE_DATASET_BASE = "application/x-squonk-dataset-";
+    String MIME_TYPE_DATASET_BASIC_JSON = MIME_TYPE_DATASET_BASE + "basic+json";
+    String MIME_TYPE_DATASET_MOLECULE_JSON = MIME_TYPE_DATASET_BASE + "molecule+json";
     String MIME_TYPE_BASIC_OBJECT_JSON = "application/x-squonk-basic-object+json";
     String MIME_TYPE_MOLECULE_OBJECT_JSON = "application/x-squonk-molecule-object+json";
 

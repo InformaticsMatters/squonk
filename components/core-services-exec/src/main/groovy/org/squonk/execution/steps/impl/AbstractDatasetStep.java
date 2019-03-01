@@ -59,11 +59,11 @@ public abstract class AbstractDatasetStep<P extends BasicObject, Q extends Basic
     @Override
     protected Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext camelContext) throws Exception {
         if (inputRequired && inputs.size() == 0) {
-            throw new IllegalArgumentException("Single dataset expected");
+            throw new IllegalArgumentException("Single dataset expected - found none");
         } else if (inputs.size() > 1) {
             throw new IllegalArgumentException("Single dataset expected - found " + inputs.size());
         } else if (!inputRequired && inputs.size() > 0) {
-            throw new IllegalArgumentException("Input found but non was expected");
+            throw new IllegalArgumentException("Input found but was not expected");
         }
         Dataset dataset = null;
         if (inputs.size() == 1) {
