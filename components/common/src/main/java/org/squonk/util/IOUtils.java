@@ -18,6 +18,8 @@ package org.squonk.util;
 
 import java.io.*;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Spliterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -317,6 +319,58 @@ public class IOUtils {
             }
         }
         return ret && path.delete();
+    }
+
+    /** Parse out a header into it's component values.
+     * For a header like this:
+     * <code>form-data; name="input_data"; filename="nci10.data"</code>
+     * you would get back a Map containing 3 values:
+     * <ol>
+     *     <li>Key of "form-data" and value of null</li>
+     *     <li>Key of "name" and value of input_data</li>
+     *     <li>Key of "filename" and value of nci10.data</li>
+     * </ol>
+     * Note that quotes and leading and trailing whitespace are removed.
+     *
+     * @param value
+     * @return
+     */
+    public static Map<String,String> parseHttpHeader(String value) {
+        Map<String,String> result = new LinkedHashMap<>();
+        if (value != null) {
+            String[] parts = value.split(";");
+            for (String part: parts) {
+                part = part.trim();
+                if (!part.isEmpty()) {
+                    int pos = part.indexOf("=");
+                    if (pos > 0) {
+                        String left = part.substring(0, pos).trim();
+                        String right = part.substring(pos + 1).trim();
+                        if (right.startsWith("\"")) {
+                            right = right.substring(1);
+                        }
+                        if (right.endsWith("\"")) {
+                            right = right.substring(0, right.length() -1);
+                        }
+                        LOG.finer("Putting values " + left + " -> " + right);
+                        result.put(left, right);
+                    } else {
+                        result.put(part,null);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+
+    public static String readPropertyFromHttpHeader(String propName, String header) {
+        String result = null;
+        if (propName != null && header != null) {
+            Map<String,String> values = parseHttpHeader(header);
+            result = values.get(propName);
+        }
+        return result;
     }
 
 }

@@ -131,5 +131,22 @@ class IOUtilsSpec extends Specification {
 
     }
 
+    void "parse header"() {
+
+        expect:
+        def map = IOUtils.parseHttpHeader(input)
+        map.size() == size
+        map[name] == result
+
+        where:
+        input                                                       | size | name   | result
+        'form-data; name="input_data"; filename="nci10.data"'       | 3    | 'name' | 'input_data'
+        'form-data;name="input_data";filename="nci10.data"'       | 3    | 'name' | 'input_data'
+        'form-data; name=input_data; filename=nci10.data'           | 3    | 'name' | 'input_data'
+        'form-data; name="input_data"; filename="nci10.data"'       | 3    | 'form-data' | null
+
+    }
+
+
 }
 

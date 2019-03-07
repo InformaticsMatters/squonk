@@ -21,13 +21,23 @@ class AsyncHttpClientSpec extends CamelSpecificationBase {
         when:
         def url = "http://localhost:8888/data"
         AbstractAsyncHttpClient.AsyncResponse resp = client.executeGet(new URIBuilder().setPath(url), null)
-        println resp.httpResponse.get().getStatusLine()
-        //GZIPInputStream gzip = new GZIPInputStream(resp.inputStream)
-        BufferedReader reader = new BufferedReader(new InputStreamReader(resp.inputStream))
-//        reader.eachLine {
-//            println "OUTPUT $it"
-//        }
+        def http = resp.httpResponse.get()
+        println http.getStatusLine()
+        http.getAllHeaders().each {
+            println "Header $it.name -> $it.value"
+        }
 
+        def is = resp.inputStream
+        byte[] buf = new byte[1024]
+        while (true) {
+            int size = is.read(buf)
+            if (size < 0) {
+                println "No more data"
+                break
+            }
+            println "Read $size"
+        }
+        is.close()
 
         then:
         resp != null
@@ -47,18 +57,20 @@ class AsyncHttpClientSpec extends CamelSpecificationBase {
                     void process(Exchange exchange) throws Exception {
                         PipedInputStream pin = new PipedInputStream()
                         PipedOutputStream pout = new PipedOutputStream(pin)
-                        //GZIPOutputStream gzip = new GZIPOutputStream(pout)
+                        GZIPOutputStream gzip = new GZIPOutputStream(pout)
+                        OutputStream out = gzip
+                        //OutputStream out = pout
                         exchange.getIn().setBody(pin)
                         Thread t = new Thread() {
                             @Override
                             void run() {
-                                (1..100).each {
-                                    //println "writing $it"
-                                    pout.write("$it A very very long string indeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeed\n".bytes)
-                                    pout
-                                    sleep(100)
+                                (1..1000).each {
+                                    println "writing $it"
+                                    out.write("$it A very very long string indeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeed\n".bytes)
+                                    out.flush()
+                                    sleep(1)
                                 }
-                                pout.close()
+                                out.close()
                                 println "closed"
                             }
                         }
