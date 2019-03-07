@@ -12,7 +12,7 @@ directory with the commands: -
     ansible-playbook playbooks/squonk-chemcentral/deploy.yaml
 
 >   Remember to first `source` an appropriately crafted
-    `../templates/setenv.sh` script first!
+    `../env/setenv.sh` script first!
 
 You can add users from a text file (that contains one user and space-separated
 password per line) 'after-the-fact' by defining the `user_file` playbook
@@ -40,8 +40,7 @@ Loading data requires: -
     Inspect the exiting `prep-loader` playbooks,
     their matching role tasks (typically called
     `roles/squonk-chemcentral/tasks/prep-loader-<something>`)
-    and the matching OpenShift templates (typically called
-    `templates/chemcentral/prep-loader-<something>`)
+    and the matching OpenShift templates
 1.  Running a loader playbook (like `run-loader`)
 
 As an example, you can prepare and load the example/free eMolecules
@@ -78,22 +77,23 @@ and for the infrastructure: -
     ansible-playbook playbooks/infra/undeploy.yaml
 
 ## Playbooks for the infrastructure database
-Other applications might want to use the PostgreSQL database that is deployed in
-the Infrastructure project. Typically you might want to create a new database and create
-a user for that database. You can do this using two convenient playbooks (refer to them 
-for documentation): -
+Other applications might want to use the PostgreSQL database that is deployed
+in the Infrastructure project. Typically you might want to create a new
+database and create a user for that database. You can do this using two
+convenient playbooks (refer to them for documentation): -
 
     ansible-playbook playbooks/infra/create-user-db.yaml \
-        -e new_db=mydb \
-        -e new_db_user=me \
-        -e new_db_namespace=myproject
+        -e db=mydb \
+        -e db_user=me \
+        -e db_namespace=myproject
         
     ansible-playbook playbooks/infra/delete-user-db.yaml \
         -e db=mydb \
         -e db_user=me
 
-The result will be secrets created in your project (`myproject` in the above example) containing 
-the database credentials that your application can use. This process is used during the Squonk 
+The result will be secrets created in your project
+(`myproject` in the above example) containing  the database credentials that
+your application can use. This process is used during the Squonk 
 deployment to create the database that it uses.
 
 ## Prerequisites
@@ -105,7 +105,7 @@ Before running the playbooks: -
 1.  An OpenShift cluster has been installed
 1.  There is an `admin` user known to the cluster
 1.  There is a `developer` user known to the cluster
-1.  You have setup your own `setenv.sh` (typically in `openshift/templates`)
+1.  You have setup your own `setenv.sh` (typically in `openshift/env`)
     and you have run `source setenv.sh` using it.
 
 If using NFS, it is correctly configured with appropriate
@@ -129,12 +129,14 @@ Start MiniShift (pre-1.26) with something like: -
 >   If you're using MiniShift v1.26 or later you cannot use the OpenShift
     v3.9.0 image, you must move to OpenShift v3.10.0 or later.
  
-You need to setup a suitable `setenv.sh` (and source it). The one in 
-`openshift/templates/setenv-minishift.sh` should work in most cases.
+You need to setup a suitable `setenv.sh` (and source it).
+`openshift/env/setenv-minishift.sh` should work in most cases.
 Then run the `minishift` playbook to prepare the cluster **before** running
 the above Squonk plays. From this directory, run: -
 
-    ansible-playbook playbooks/minishift/prepare.yaml
+    $ source ../env/setenv-minishift.sh
+    $ ansible-playbook playbooks/minishift/prepare.yaml
 
->   The MiniShift installation does not use trusted certificates so you need to tell your
-    browser to ignore the security concerns that this causes.
+>   The MiniShift installation does not use trusted certificates so
+    you need to instruct your browser to ignore the security concerns
+    that this causes.
