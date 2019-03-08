@@ -38,7 +38,7 @@ import java.util.logging.Logger;
 public class DatasetNextflowInDockerExecutorStep extends AbstractContainerStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetNextflowInDockerExecutorStep.class.getName());
-    private static final String NEXTFLOW_IMAGE = IOUtils.getConfiguration("SQUONK_NEXTFLOW_IMAGE", "informaticsmatters/nextflow:18.10.1");
+    private static final String NEXTFLOW_IMAGE = IOUtils.getConfiguration("SQUONK_NEXTFLOW_IMAGE", "informaticsmatters/nextflow:19.01.0");
     private static final String NEXTFLOW_OPTIONS = IOUtils.getConfiguration("SQUONK_NEXTFLOW_OPTIONS", "-with-docker centos:7 -with-trace");
 
     protected static final String MSG_RUNNING_NEXTFLOW = "Running Nextflow";
