@@ -60,12 +60,15 @@
   shell: oc get pv
   register: s_pv_result
   changed_when: False
+  when: oc_squonk_volume_type == 'nfs'
 
 - name: Delete Squonk PVs
   shell: oc delete pv/{{ item }}
   loop:
   - squonk-work-dir
-  when: s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
+  when:
+  - s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
+  - oc_squonk_volume_type == 'nfs'
 
 - name: Get jobs
   shell: oc get jobs
