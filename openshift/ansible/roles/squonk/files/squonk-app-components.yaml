@@ -76,7 +76,7 @@ parameters:
 - name: CORE_MEM_REQUEST
   value: 500Mi
 - name: CORE_MEM_LIMIT
-  value: 2Gi
+  value: 4Gi
 
 # ------------
 # CellExecutor
@@ -106,7 +106,7 @@ parameters:
 - name: CELL_MEM_REQUEST
   value: 500Mi
 - name: CELL_MEM_LIMIT
-  value: 500Mi
+  value: 1Gi
 
 objects:
 
@@ -201,9 +201,11 @@ objects:
             httpGet:
               path: /coreservices/rest/ping
               port: 8080
+            failureThreshold: 3
+            successThreshold: 1
             initialDelaySeconds: 30
             timeoutSeconds: 5
-            periodSeconds: 30
+            periodSeconds: 60
           resources:
             limits:
               cpu: ${CORE_CPU_LIMIT}
