@@ -57,7 +57,7 @@ parameters:
 - name: PORTAL_MEM_REQUEST
   value: 500Mi
 - name: PORTAL_MEM_LIMIT
-  value: 2Gi
+  value: 4Gi
 
 objects:
 
