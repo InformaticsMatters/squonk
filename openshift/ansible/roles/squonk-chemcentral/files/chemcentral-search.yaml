@@ -13,7 +13,7 @@ metadata:
     description: Chemcentral chemical search
     tags: squonk,chemcentral
 labels:
-  template: chemcentral-search
+  template: chemcentral-db
   app: chemcentral
 
 parameters:

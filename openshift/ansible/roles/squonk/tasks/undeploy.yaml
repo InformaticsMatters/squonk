@@ -8,7 +8,7 @@
 - name: Delete Squonk?
   pause:
     prompt: >-
-      Delete the Squonk project?
+      Delete Squonk from {{ oc_master_url }}?
       Note that 'delete_database' is {{ delete_database }}.
       Hit return to delete Squonk.
       Hit Ctrl+c and then "a" if you've changed your mind

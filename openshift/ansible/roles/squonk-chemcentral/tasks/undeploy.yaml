@@ -8,7 +8,7 @@
 - name: Delete Squonk ChemCentral?
   pause:
     prompt: >-
-      Delete the ChemCentral components and related databases?
+      Delete ChemCentral and related databases from {{ oc_master_url }}?
       Hit return to delete ChemCentral.
       Hit Ctrl+c and then "a" if you've changed your mind
 
@@ -29,7 +29,7 @@
 
 - name: Delete ChemCentral (Squonk)
   shell: >
-    oc delete all,cm,secret --selector template=chemcentral
+    oc delete all,cm,secret --selector template=chemcentral-db
     -n {{ oc_project }}
   when: secrets_result.stdout | regex_search('^chemcentral-database-credentials\s', multiline=True)
 
@@ -40,7 +40,7 @@
 
 - name: Delete ChemCentral (Infrastructure)
   shell: >
-    oc delete all,cm,secret --selector template=chemcentral
+    oc delete all,cm,secret --selector template=chemcentral-db
     -n {{ oc_infra_project }}
   when: secrets_result.stdout | regex_search('^chemcentral-database-credentials\s', multiline=True)
 
@@ -68,16 +68,19 @@
     -n {{ oc_infra_project }}
   when: pvc_result.stdout | regex_search('^chemcentral-postgresql-claim\s', multiline=True)
 
-# Delete the PVs...
+# Delete the PVs (NFS)...
 
 - name: Check ChemCentral PVs
   shell: oc get pv
   register: pv_result
   changed_when: False
+  when: oc_cc_infra_volume_type == 'nfs'
 
 - name: Delete ChemCentral PVs
   shell: oc delete pv/{{ item }}
   loop:
   - pv-chemcentral-postgresql
   - pv-chemcentral-loader
-  when: pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
+  when:
+  - oc_cc_infra_volume_type == 'nfs'
+  - pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
