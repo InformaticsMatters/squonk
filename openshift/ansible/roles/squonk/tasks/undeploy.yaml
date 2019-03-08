@@ -56,13 +56,13 @@
 
 # Remove persistent volumes
 
-- name: Check Squonk PVs
+- name: Check Squonk PVs (nfs)
   shell: oc get pv
   register: s_pv_result
   changed_when: False
   when: oc_squonk_volume_type == 'nfs'
 
-- name: Delete Squonk PVs
+- name: Delete Squonk PVs (nfs)
   shell: oc delete pv/{{ item }}
   loop:
   - squonk-work-dir

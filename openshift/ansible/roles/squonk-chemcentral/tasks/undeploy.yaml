@@ -70,13 +70,13 @@
 
 # Delete the PVs (NFS)...
 
-- name: Check ChemCentral PVs
+- name: Check ChemCentral PVs (nfs)
   shell: oc get pv
   register: pv_result
   changed_when: False
   when: oc_cc_infra_volume_type == 'nfs'
 
-- name: Delete ChemCentral PVs
+- name: Delete ChemCentral PVs (nfs)
   shell: oc delete pv/{{ item }}
   loop:
   - pv-chemcentral-postgresql

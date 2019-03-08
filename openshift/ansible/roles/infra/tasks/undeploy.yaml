@@ -45,3 +45,20 @@
 - name: Delete Infra SCC
   shell: oc delete scc/scc-squonk
   when: scc_result.stdout | regex_search('^scc-squonk', multiline=True)
+
+# Remove persistent volumes
+
+- name: Check Infra PVs (nfs)
+  shell: oc get pv
+  register: s_pv_result
+  changed_when: False
+  when: oc_infra_volume_type == 'nfs'
+
+- name: Delete Infra PVs (nfs)
+  shell: oc delete pv/{{ item }}
+  loop:
+  - pv-postgresql
+  - pv-rabbitmq
+  when:
+  - s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
+  - oc_infra_volume_type == 'nfs'
