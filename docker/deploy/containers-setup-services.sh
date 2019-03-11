@@ -35,6 +35,7 @@ echo "Setting up for server private:${PRIVATE_HOST} public:${PUBLIC_HOST}"
 
 # set up the proxy details in the tomcat apps 
 sed "s/__public_host__/${PUBLIC_HOST}/g" images/portal/server.xml.template > images/portal/server.xml
+sed "s/__public_host__/${PUBLIC_HOST}/g" images/jobexecutor/server.xml.template > images/jobexecutor/server.xml
 
 docker-compose stop chemservices coreservices cellexecutor jobexecutor chemcentral-search
 docker-compose rm -fv chemservices coreservices cellexecutor jobexecutor chemcentral-search

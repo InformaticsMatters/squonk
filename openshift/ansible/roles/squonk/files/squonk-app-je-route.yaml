@@ -34,7 +34,7 @@ parameters:
 - name: JE_ACME_ENABLE
   description: >-
     Set to false to avoid exhausting certificate generation request quota.
-    Change this to true if/when you are ready for secure the route with
+    Change this to true if/when you are ready to secure the route with
     trusted certificates.
   value: "false"
 
@@ -49,6 +49,7 @@ objects:
       kubernetes.io/tls-acme: ${JE_ACME_ENABLE}
   spec:
     host: ${JE_HOST}
+    path: /jobexecutor
     to:
       kind: Service
       name: jobexecutor

@@ -1,6 +1,6 @@
 ---
 
-# Patches MniShift volumes by setting w/r/x permissions globally.
+# Patches Minishift volumes by setting w/r/x permissions globally.
 # This is often used to get postgres running in MiniShift we
 # set permissions on the PV that is used.
 #

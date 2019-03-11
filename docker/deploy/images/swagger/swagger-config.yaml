@@ -1,0 +1,3 @@
+---
+url: "https://nginx/jobexecutor/rest/v1/swagger"
+oauth2RedirectUrl: "https://nginx/swagger/oauth2-redirect.html"

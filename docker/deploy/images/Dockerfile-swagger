@@ -1,0 +1,5 @@
+FROM swaggerapi/swagger-ui:v3.20.5
+LABEL maintainer="Tim Dudgeon<tdudgeon@informaticsmatters.com>"
+
+COPY ./swagger/index.html /usr/share/nginx/html/index.html
+

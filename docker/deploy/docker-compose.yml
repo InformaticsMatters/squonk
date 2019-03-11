@@ -254,6 +254,7 @@ services:
             registry.url: https://index.docker.io/v1/
             SQUONK_JOBEXECUTOR_POLL_FOR_SERVICE_DESCRIPTORS: 'true'
             #JAVA_OPTS: '"-Djava.util.logging.config.file=/logging.properties"'
+            SQUONK_JOBEXECUTOR_SERVER: "https://nginx"
         networks:
         - squonk_front
         - squonk_back

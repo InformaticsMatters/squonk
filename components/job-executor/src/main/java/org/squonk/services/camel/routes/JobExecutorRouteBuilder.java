@@ -100,7 +100,15 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
             LOG.warning("Service descriptors are not being dynamically updated");
         }
 
-        restConfiguration().component("servlet").host("0.0.0.0");
+        restConfiguration()
+                .component("servlet")
+                .host("0.0.0.0")
+                .enableCORS(true)
+                .corsHeaderProperty("Access-Control-Allow-Headers",
+                        "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, " +
+                                "Access-Control-Request-Headers, authorization")
+                .corsHeaderProperty("Access-Control-Allow-Credentials", "true")
+        ;
 
 
         /* These are the REST endpoints - exposed as public web services
@@ -229,13 +237,26 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
     }
 
     private void handleFetchSwagger(Exchange exch) throws IOException {
+
         Message message = exch.getIn();
+
         Collection sds = jobManager.fetchServiceDescriptors();
         ServiceDescriptorToOpenAPIConverter converter = createConverter(message);
         OpenAPI oai = converter.convertToOpenApi(sds);
-        String yaml = converter.openApiToYaml(oai);
-        message.setBody(yaml);
-        message.setHeader("Content-Type", CommonMimeTypes.MIME_TYPE_YAML);
+
+        String accept = message.getHeader("Accept", String.class);
+        String result;
+        String contentType;
+        if (accept != null && CommonMimeTypes.MIME_TYPE_YAML.equals(accept)) {
+            result = converter.openApiToYaml(oai);
+            contentType = CommonMimeTypes.MIME_TYPE_YAML;
+        } else {
+            // anything else use JSON
+            result = converter.openApiToJson(oai);
+            contentType = CommonMimeTypes.MIME_TYPE_JSON;
+        }
+        message.setHeader("Content-Type", contentType);
+        message.setBody(result);
     }
 
 

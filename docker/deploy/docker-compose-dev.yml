@@ -29,13 +29,3 @@ services:
         environment:
             SQUONK_JOBEXECUTOR_ALLOW_UNAUTHENTICATED: "true"
 
-
-    swagger:
-        image: swaggerapi/swagger-ui:latest
-        ports:
-        - 9999:8080
-        networks:
-        - squonk_front
-        environment:
-            API_URL: "http://localhost:8094/jobexecutor/rest/v1/swagger"
-
