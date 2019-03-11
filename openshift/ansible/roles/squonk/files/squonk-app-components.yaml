@@ -206,13 +206,13 @@ objects:
             initialDelaySeconds: 30
             timeoutSeconds: 5
             periodSeconds: 60
-          resources:
-            limits:
-              cpu: ${CORE_CPU_LIMIT}
-              memory: ${CORE_MEM_LIMIT}
-            requests:
-              cpu: ${CORE_CPU_REQUEST}
-              memory: ${CORE_MEM_REQUEST}
+#          resources:
+#            limits:
+#              cpu: ${CORE_CPU_LIMIT}
+#              memory: ${CORE_MEM_LIMIT}
+#            requests:
+#              cpu: ${CORE_CPU_REQUEST}
+#              memory: ${CORE_MEM_REQUEST}
 
 - kind: Service
   apiVersion: v1

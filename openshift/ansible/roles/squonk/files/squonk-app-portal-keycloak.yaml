@@ -127,13 +127,13 @@ objects:
 #              port: 8080
 #            initialDelaySeconds: 30
 #            timeoutSeconds: 5
-          resources:
-            limits:
-              cpu: ${PORTAL_CPU_LIMIT}
-              memory: ${PORTAL_MEM_LIMIT}
-            requests:
-              cpu: ${PORTAL_CPU_REQUEST}
-              memory: ${PORTAL_MEM_REQUEST}
+#          resources:
+#            limits:
+#              cpu: ${PORTAL_CPU_LIMIT}
+#              memory: ${PORTAL_MEM_LIMIT}
+#            requests:
+#              cpu: ${PORTAL_CPU_REQUEST}
+#              memory: ${PORTAL_MEM_REQUEST}
         volumes:
           - name: squonk-sso-config
             configMap:
