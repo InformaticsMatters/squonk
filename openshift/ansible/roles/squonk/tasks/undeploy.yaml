@@ -88,8 +88,8 @@
   loop:
   - squonk-work-dir
   when:
-  - s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
   - oc_squonk_volume_type == 'nfs'
+  - s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
 
 - name: Get jobs
   shell: oc get jobs

@@ -41,6 +41,15 @@
   - sso
   changed_when: False
 
+# SSO may not be completely ready for the next step (add-keycloak-roles)
+# so we pause here for a few seconds so that its route can be
+# established.
+
+- name: Post deploy pause
+  pause:
+    seconds: 10
+  when: wait_for_pods
+
 # Deploy backups.
 # No point waiting for these - they're cron-jobs!
 
