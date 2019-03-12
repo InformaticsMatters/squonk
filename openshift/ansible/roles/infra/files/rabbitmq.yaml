@@ -34,7 +34,7 @@ parameters:
 # --------
 
 - name: RABBITMQ_IMAGE_TAG
-  value: 3.6.15-management
+  value: 3.6.16-management
   description: >
     The version tag for the RabbitMQ container.
     This value is also set in the rabbitmq.config ConfigMap below.
