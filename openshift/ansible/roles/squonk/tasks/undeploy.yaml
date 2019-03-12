@@ -8,7 +8,7 @@
 - name: Delete Squonk?
   pause:
     prompt: >-
-      Delete the Squonk project?
+      Delete Squonk from {{ oc_master_url }}?
       Note that 'delete_database' is {{ delete_database }}.
       Hit return to delete Squonk.
       Hit Ctrl+c and then "a" if you've changed your mind
@@ -56,16 +56,19 @@
 
 # Remove persistent volumes
 
-- name: Check Squonk PVs
+- name: Check Squonk PVs (nfs)
   shell: oc get pv
   register: s_pv_result
   changed_when: False
+  when: oc_squonk_volume_type == 'nfs'
 
-- name: Delete Squonk PVs
+- name: Delete Squonk PVs (nfs)
   shell: oc delete pv/{{ item }}
   loop:
   - squonk-work-dir
-  when: s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
+  when:
+  - s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
+  - oc_squonk_volume_type == 'nfs'
 
 - name: Get jobs
   shell: oc get jobs

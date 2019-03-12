@@ -76,7 +76,7 @@ parameters:
 - name: CORE_MEM_REQUEST
   value: 500Mi
 - name: CORE_MEM_LIMIT
-  value: 2Gi
+  value: 4Gi
 
 # ------------
 # CellExecutor
@@ -88,6 +88,8 @@ parameters:
   value: openshift
 - name: CELL_SQUONK_NEXTFLOW_IMAGE
   value: informaticsmatters/nextflow:18.10.1
+- name: CELL_SQUONK_NEXTFLOW_OPTIONS
+  value: ""
 - name: CELL_SQUONK_CONTAINER_WORK_DIR
   value: "/squonk/work/docker"
 - name: CELL_SQUONK_POD_BASE_NAME
@@ -106,7 +108,7 @@ parameters:
 - name: CELL_MEM_REQUEST
   value: 500Mi
 - name: CELL_MEM_LIMIT
-  value: 500Mi
+  value: 1Gi
 
 objects:
 
@@ -201,16 +203,18 @@ objects:
             httpGet:
               path: /coreservices/rest/ping
               port: 8080
+            failureThreshold: 3
+            successThreshold: 1
             initialDelaySeconds: 30
             timeoutSeconds: 5
-            periodSeconds: 30
-          resources:
-            limits:
-              cpu: ${CORE_CPU_LIMIT}
-              memory: ${CORE_MEM_LIMIT}
-            requests:
-              cpu: ${CORE_CPU_REQUEST}
-              memory: ${CORE_MEM_REQUEST}
+            periodSeconds: 60
+#          resources:
+#            limits:
+#              cpu: ${CORE_CPU_LIMIT}
+#              memory: ${CORE_MEM_LIMIT}
+#            requests:
+#              cpu: ${CORE_CPU_REQUEST}
+#              memory: ${CORE_MEM_REQUEST}
 
 - kind: Service
   apiVersion: v1
@@ -371,6 +375,8 @@ objects:
             value: ${CELL_JOB_LOG_HISTORY}
           - name: SQUONK_NEXTFLOW_IMAGE
             value: ${CELL_SQUONK_NEXTFLOW_IMAGE}
+          - name: SQUONK_NEXTFLOW_OPTIONS
+            value: ${CELL_SQUONK_NEXTFLOW_OPTIONS}
 #          - name: JAVA_OPTS
 #            value: '"-Djava.util.logging.config.file=/logging.properties"'
 #          resources:

@@ -436,7 +436,6 @@ public class OpenShiftRunner extends AbstractRunner {
         // Add all the stuff Nextflow needs from our OpenShift world...
         // The following requires Nextflow 0.31.0 or later.
         String additionalConfig = String.format(
-                "process.executor = 'k8s'\n" +
                 "k8s {\n" +
                 "  storageClaimName = '%s'\n" +
                 "  storageMountPath = '%s'\n" +
