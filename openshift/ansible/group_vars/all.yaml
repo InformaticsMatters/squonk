@@ -63,7 +63,7 @@ oc_jobexecutor_host: "{{ ansible_env.OC_JOBEXECUTOR_HOST }}"
 
 # The Squonk OpenShift image pull policy.
 # One, typically, of "IfNotPresent" or "Always"
-image_pull_policy: IfNotPresent
+image_pull_policy: "{{ ansible_env.OC_IMAGE_PULL_POLICY or 'IfNotPresent' }}"
 
 # Name fo the infrastructure RabbitMQ name
 infra_rabbit_name: "rabbitmq"

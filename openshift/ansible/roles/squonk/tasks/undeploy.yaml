@@ -17,17 +17,38 @@
   shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
-# To un-deploy squonk, the fastest way is to
-# simply delete the squonk project.
-
 - name: Check Squonk Project
   shell: oc get projects
   register: projects_result
   changed_when: False
 
+- name: Set Squonk Deployment fact
+  set_fact:
+    squonk_project_exists: "{{ (projects_result.stdout|regex_search('^%s\\s.*Active$' % oc_project, multiline=True) or '')|length > 0 }}"
+
+# Must not continue if it looks like ChemCentral has been deployed.
+# If so then you must un-deploy that first
+
+- name: Get Squonk Pods
+  shell: oc get po
+  register: pods_result
+  when: squonk_project_exists
+
+- name: Check ChemCentral Deployment
+  fail:
+    msg: >-
+      ChemCentral appears to be deployed.
+      You must remove ChemCentral first.
+  when:
+  - squonk_project_exists
+  - pods_result.stdout | regex_search('^chemcentral', multiline=True)
+
+# To un-deploy squonk, the fastest way is to
+# simply delete the squonk project.
+
 - name: Delete Squonk Project
   shell: oc delete project/{{ oc_project }}
-  when:  projects_result.stdout | regex_search('^%s\s.*Active$' % oc_project, multiline=True)
+  when: squonk_project_exists
 
 - name: Wait for project deletion
   shell: oc get projects

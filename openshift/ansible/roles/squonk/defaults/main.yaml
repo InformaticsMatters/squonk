@@ -1,8 +1,10 @@
 ---
 
 # The image (and tag) for the container
-# that will be used to run NextFlow pipleines...
+# that will be used to run NextFlow pipelines...
 oc_squonk_nextflow_image: "{{ ansible_env.OC_SQUONK_NEXTFLOW_IMAGE }}"
+# And the options passed to the nextflow command...
+oc_squonk_nextflow_options: "{{ ansible_env.OC_SQUONK_NEXTFLOW_OPTIONS }}"
 
 # What volume type are we using? One of: -
 #
