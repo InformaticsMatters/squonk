@@ -60,35 +60,46 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractContainerStep {
 
         statusMessage = MSG_PREPARING_CONTAINER;
 
-        String command =  descriptor.getNextflowParams();
+        String command = descriptor.getNextflowParams();
         String expandedCommand;
         if (command != null) {
             expandedCommand = expandCommand(command, options);
         } else {
             expandedCommand = "";
         }
-        String fullCommand = "nextflow run nextflow.nf " + NEXTFLOW_OPTIONS + " " + expandedCommand;
+        String fullCommand = "nextflow run main.nf " + NEXTFLOW_OPTIONS;
         ContainerRunner runner = createContainerRunner(NEXTFLOW_IMAGE);
         runner.init();
-        LOG.info("Docker Nextflow executor image: " + NEXTFLOW_IMAGE + ", hostWorkDir: " + runner.getHostWorkDir() + ", command: " + fullCommand);
+        LOG.info("Nextflow executor image: " + NEXTFLOW_IMAGE +
+                 ", hostWorkDir: " + runner.getHostWorkDir() +
+                 ", command: " + fullCommand);
 
         // write the command that executes everything
-        LOG.fine("Writing command file");
+        LOG.info("Writing execute file...");
         runner.writeInput("execute", "#!/bin/sh\n" + fullCommand + "\n", true);
 
         // write the nextflow file that executes everything
-        LOG.fine("Writing nextflow.nf");
+        LOG.info("Writing main.nf file with content...");
         String nextflowFileContents = descriptor.getNextflowFile();
-        runner.writeInput("nextflow.nf", nextflowFileContents, false);
+        runner.writeInput("main.nf", nextflowFileContents, false);
 
-        // write the nextflow config file if one is defined
-        String nextflowConfigContents = descriptor.getNextflowConfig();
-        if (nextflowConfigContents != null && !nextflowConfigContents.isEmpty()) {
+        // Construct nextflow configuration
+        String nextflowConfigContents = "";
+        if (!expandedCommand.isEmpty()) {
+            // Add the configured parameters.
+            // the expanded command should be a series of 'params'
+            // settings, one per line.
+            nextflowConfigContents += expandedCommand + "\n";
+        }
+        // Add the nextflow config file (if one is defined)
+        nextflowConfigContents += descriptor.getNextflowConfig();
+        // Write?
+        if (!nextflowConfigContents.isEmpty()) {
             // An opportunity for the runner to provide extra configuration.
             // There may be nothing to add but the returned string
             // will be valid.
             nextflowConfigContents = runner.addExtraNextflowConfig(nextflowConfigContents);
-            LOG.info("Writing nextflow.config as:\n" + nextflowConfigContents);
+            LOG.info("Writing nextflow.config file...\n" + nextflowConfigContents);
             runner.writeInput("nextflow.config", nextflowConfigContents, false);
         } else {
             LOG.info("No nextflow.config");
