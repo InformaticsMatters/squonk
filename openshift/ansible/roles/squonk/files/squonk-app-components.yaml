@@ -369,6 +369,11 @@ objects:
             value: ${CELL_JOB_PROJECT_NAME}
           - name: SQUONK_POD_BASE_NAME
             value: ${CELL_SQUONK_POD_BASE_NAME}
+          - name: SQUONK_POD_ENVIRONMENT
+            valueFrom:
+              secretKeyRef:
+                name: squonk-cellexecutor-secrets
+                key: pod-env
           - name: SQUONK_SERVICE_ACCOUNT
             value: ${APP_SA}
           - name: SQUONK_POD_LOG_HISTORY

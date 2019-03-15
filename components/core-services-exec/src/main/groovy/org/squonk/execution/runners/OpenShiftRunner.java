@@ -33,6 +33,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Queue;
 import java.util.logging.Logger;
+import java.util.ArrayList;
 
 /**
  * An OpenShift-based Docker image executor that expects inputs and outputs.
@@ -66,12 +67,19 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String PVC_NAME_ENV_NAME = "SQUONK_WORK_DIR_PVC_NAME";
     private static final String PVC_NAME_DEFAULT = "squonk-work-dir-pvc";
 
-    private static final String OBJ_BASE_NAME_ENV_NAME = "SQUONK_POD_BASE_NAME";
-    private static final String OBJ_BASE_NAME_DEFAULT = "squonk-cell-pod";
+    private static final String POD_BASE_NAME_ENV_NAME = "SQUONK_POD_BASE_NAME";
+    private static final String POD_BASE_NAME_DEFAULT = "squonk-cell-pod";
+
+    // The Pod Environment is a string that consists of name=value pairs
+    // separated by a line-feed. If present, each name/value pair is injected
+    // as environemnt variable into the Pod container.
+    private static final String POD_ENVIRONMENT_ENV_NAME = "SQUONK_POD_ENVIRONMENT";
+    private static final String POD_ENVIRONMENT_DEFAULT = "";
 
     private static final String OS_SA;
     private static final String OS_PROJECT;
-    private static final String OS_OBJ_BASE_NAME;
+    private static final String OS_POD_BASE_NAME;
+    private static final String OS_POD_ENVIRONMENT;
     private static final String OS_DATA_VOLUME_PVC_NAME;
     private static final String OS_IMAGE_PULL_POLICY = "IfNotPresent";
     private static final String OS_POD_RESTART_POLICY = "Never";
@@ -411,7 +419,7 @@ public class OpenShiftRunner extends AbstractRunner {
         LOG.info("subPath='" + subPath + "'");
 
         // Form the string that will be used to name all our OS objects...
-        podName = String.format("%s-%s", OS_OBJ_BASE_NAME, subPath);
+        podName = String.format("%s-%s", OS_POD_BASE_NAME, subPath);
         LOG.info("podName='" + podName + "'");
 
     }
@@ -532,6 +540,29 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withName(podName)
                 .withSubPath(subPath).build();
 
+        // Create environment variables for the container.
+        // This array is driven by the content of the
+        // OS_POD_ENVIRONMENT string - a mulit-line string
+        // of <NAME>=<VALUE> pairs.
+        List<EnvVar> containerEnv = new ArrayList<>();
+        if (OS_POD_ENVIRONMENT.length() > 0) {
+            String lines[] = OS_POD_ENVIRONMENT.split("[\r\n]+");
+            for (String line : lines) {
+                String items[] = line.split("=");
+                if (items.length == 2) {
+                    String name = items[0].trim();
+                    String value = items[1].trim();
+                    LOG.info("...adding EnvVar " + name + "='" + value + "'");
+                    containerEnv.add(new EnvVar(name, value, null));
+                } else {
+                    LOG.warning("..adding EnvVar - Expected 2 items," +
+                                " got " + items.length +
+                                " for '" + line + "'");
+                }
+            }
+        }
+        LOG.info("Number of container variables: " + containerEnv.size());
+
         // Container (that will run in the Pod)
         Container podContainer = new ContainerBuilder()
                 .withName(podName)
@@ -539,6 +570,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withCommand(cmd)
                 .withWorkingDir(localWorkDir)
                 .withImagePullPolicy(OS_IMAGE_PULL_POLICY)
+                .withEnv(containerEnv)
                 .withVolumeMounts(volumeMount).build();
 
         // The Pod, which runs the container image...
@@ -774,9 +806,18 @@ public class OpenShiftRunner extends AbstractRunner {
         LOG.info("OS_DATA_VOLUME_PVC_NAME='" + OS_DATA_VOLUME_PVC_NAME + "'");
 
         // And the base-name for all Pods we create...
-        OS_OBJ_BASE_NAME = IOUtils
-                .getConfiguration(OBJ_BASE_NAME_ENV_NAME, OBJ_BASE_NAME_DEFAULT);
-        LOG.info("OS_OBJ_BASE_NAME='" + OS_OBJ_BASE_NAME + "'");
+        OS_POD_BASE_NAME = IOUtils
+                .getConfiguration(POD_BASE_NAME_ENV_NAME, POD_BASE_NAME_DEFAULT);
+        LOG.info("OS_POD_BASE_NAME='" + OS_POD_BASE_NAME + "'");
+
+        // And the environment setting for all Pods we create...
+        OS_POD_ENVIRONMENT = IOUtils
+                .getConfiguration(POD_ENVIRONMENT_ENV_NAME, POD_ENVIRONMENT_DEFAULT);
+        if (OS_POD_ENVIRONMENT.length() == 0) {
+            LOG.info("OS_POD_ENVIRONMENT=(Empty)");
+        } else {
+            LOG.info("OS_POD_ENVIRONMENT='...'");
+        }
 
         // Get the configured log cpacity
         // (maximum number of lines collected from a Pod).

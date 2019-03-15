@@ -156,6 +156,19 @@
   changed_when: False
   when: delete_database
 
+# Delete application secrets
+
+- name: Get Secrets
+  shell: oc get secrets
+  register: secret_result
+  changed_when: False
+
+- name: Delete Secrets
+  shell: oc delete secrets/{{ item }}
+  loop:
+  - squonk-cellexecutor-secrets
+  when: secret_result.stdout | regex_search('^%s\s' % item, multiline=True)
+
 # Get a keycloak token (sets the fact 'keycloak_token').
 # Remember that the login user may have changed to admin.
 #
