@@ -64,6 +64,11 @@ export OC_SQUONK_SEARCH_IMAGE_TAG=latest
 export OC_SQUONK_FLYWAY_IMAGE_TAG=latest
 export OC_PIPELINES_SD_POSTER_IMAGE_TAG=latest
 
+# A YAML string of environment variable names and values
+# that wil be passed to the launched cell pod containers.
+# Empty to avoid creating any environment variables.
+export OC_SQUONK_POD_ENVIRONMENT=""
+
 export OC_POSTGRESQL_VOLUME_SIZE=125Gi
 export OC_CELL_WORK_PVC_SIZE=5Gi
 export OC_CHEMCENTRAL_POSTGRESQL_VOLUME_SIZE=300Gi
