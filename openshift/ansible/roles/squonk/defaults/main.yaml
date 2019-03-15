@@ -5,6 +5,17 @@
 oc_squonk_nextflow_image: "{{ ansible_env.OC_SQUONK_NEXTFLOW_IMAGE }}"
 # And the options passed to the nextflow command...
 oc_squonk_nextflow_options: "{{ ansible_env.OC_SQUONK_NEXTFLOW_OPTIONS }}"
+# Pod (container) environment variables...
+# Optional.
+# It is interpreted as a YAML string of keys and values
+# The values will be injected into the container using the keys as
+# environment variable names. To create ENV_A and ENV_B: -
+#
+# ENV_A: A string
+# ENV_B: |
+#   A multi-line
+#   string of stuff
+oc_squonk_pod_environment: "{{ ansible_env.OC_SQUONK_POD_ENVIRONMENT }}"
 
 # What volume type are we using? One of: -
 #

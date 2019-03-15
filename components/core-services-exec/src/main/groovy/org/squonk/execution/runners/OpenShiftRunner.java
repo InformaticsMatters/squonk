@@ -27,6 +27,7 @@ import io.fabric8.kubernetes.client.dsl.LogWatch;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 import org.squonk.util.IOUtils;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.logging.Logger;
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * An OpenShift-based Docker image executor that expects inputs and outputs.
@@ -70,9 +72,9 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String POD_BASE_NAME_ENV_NAME = "SQUONK_POD_BASE_NAME";
     private static final String POD_BASE_NAME_DEFAULT = "squonk-cell-pod";
 
-    // The Pod Environment is a string that consists of name=value pairs
-    // separated by a line-feed. If present, each name/value pair is injected
-    // as environemnt variable into the Pod container.
+    // The Pod Environment is a string that consists of YAML name:value pairs.
+    // If the environment string is present, each name/value pair is injected
+    // as a separate environemnt variable into the Pod container.
     private static final String POD_ENVIRONMENT_ENV_NAME = "SQUONK_POD_ENVIRONMENT";
     private static final String POD_ENVIRONMENT_DEFAULT = "";
 
@@ -111,6 +113,8 @@ public class OpenShiftRunner extends AbstractRunner {
     private boolean isExecuting;
     private boolean stopRequested;
     private boolean podCreated;
+
+    private Yaml yaml = new Yaml();
 
     /**
      * The PodWatcher receives events form the launched Pod
@@ -542,23 +546,16 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // Create environment variables for the container.
         // This array is driven by the content of the
-        // OS_POD_ENVIRONMENT string - a mulit-line string
-        // of <NAME>=<VALUE> pairs.
+        // OS_POD_ENVIRONMENT YAML string of <NAME>=<VALUE> pairs.
         List<EnvVar> containerEnv = new ArrayList<>();
         if (OS_POD_ENVIRONMENT.length() > 0) {
-            String lines[] = OS_POD_ENVIRONMENT.split("[\r\n]+");
-            for (String line : lines) {
-                String items[] = line.split("=");
-                if (items.length == 2) {
-                    String name = items[0].trim();
-                    String value = items[1].trim();
-                    LOG.info("...adding EnvVar " + name + "='" + value + "'");
-                    containerEnv.add(new EnvVar(name, value, null));
-                } else {
-                    LOG.warning("..adding EnvVar - Expected 2 items," +
-                                " got " + items.length +
-                                " for '" + line + "'");
-                }
+            Map<String, Object> map =
+                    (Map<String, Object>) yaml.load(OS_POD_ENVIRONMENT);
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                String name = entry.getKey().trim();
+                String value = entry.getValue().toString().trim();
+                LOG.info("...adding EnvVar " + name);
+                containerEnv.add(new EnvVar(name, value, null));
             }
         }
         LOG.info("Number of container variables: " + containerEnv.size());
