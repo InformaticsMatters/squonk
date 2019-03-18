@@ -564,7 +564,6 @@ public class OpenShiftRunner extends AbstractRunner {
         Container podContainer = new ContainerBuilder()
                 .withName(podName)
                 .withImage(imageName)
-                .withCommand(cmd)
                 .withWorkingDir(localWorkDir)
                 .withImagePullPolicy(OS_IMAGE_PULL_POLICY)
                 .withEnv(containerEnv)

@@ -8,8 +8,6 @@
 #
 # Tested with various minishift versions, latest is v1.32.0
 
-set -e
-
 export OC_MASTER_HOSTNAME=$(minishift ip):8443
 export OC_MASTER_URL=${OC_MASTER_HOSTNAME}
 
@@ -44,16 +42,20 @@ export OC_SQUONK_CLIENT_SECRET=squonk1234
 export OC_JOBEXECUTOR_HOST=jobexecutor.${OC_ROUTES_BASENAME}
 export OC_SQUONK_CC_PVC_SIZE=20Gi
 
-export OC_SQUONK_CELL_IMAGE_TAG=latest
+export OC_IMAGE_PULL_POLICY=Always
+
+export OC_SQUONK_CELL_IMAGE_TAG=issue-36
 export OC_SQUONK_CHEM_IMAGE_TAG=latest
 export OC_SQUONK_CORE_IMAGE_TAG=latest
 export OC_SQUONK_JE_IMAGE_TAG=latest
 export OC_SQUONK_PORTAL_IMAGE_TAG=latest
 export OC_SQUONK_SEARCH_IMAGE_TAG=latest
 export OC_SQUONK_FLYWAY_IMAGE_TAG=latest
+export OC_PIPELINES_SD_POSTER_IMAGE_TAG=issue-26
 
-export OC_PIPELINES_SD_POSTER_IMAGE_TAG=latest
-export OC_SQUONK_NEXTFLOW_IMAGE="informaticsmatters/nextflow:18.10.1"
+export OC_SQUONK_NEXTFLOW_IMAGE="informaticsmatters/tej:latest"
+export OC_SQUONK_NEXTFLOW_OPTIONS=" "
+export OC_SQUONK_POD_ENVIRONMENT=""
 
 export OC_DOMAIN_NAME=novalocal
 export OC_NFS_SERVER=squonk-infra.$OC_DOMAIN_NAME
