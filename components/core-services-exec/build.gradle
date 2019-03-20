@@ -42,6 +42,7 @@ dependencies {
     compile "org.postgresql:postgresql:$postgresDriverVersion"
     compile 'com.github.docker-java:docker-java:3.0.7'
     compile 'io.fabric8:openshift-client:3.1.12'
+    compile 'org.yaml:snakeyaml:1.24'
     compile('io.nextflow:nextflow:0.25.4') {
         exclude group:'ch.qos.logback',module:'logback-classic'
     }

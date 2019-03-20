@@ -49,6 +49,12 @@ export OC_SQUONK_HOST=${OC_SQUONK_APP}.${OC_ROUTES_BASENAME}
 export OC_SQUONK_CLIENT_SECRET=squonk1234
 export OC_JOBEXECUTOR_HOST=jobexecutor.${OC_ROUTES_BASENAME}
 
+# Options for the pull policy are:
+#   Always
+#   IfNotPresent
+#   Never
+export OC_IMAGE_PULL_POLICY=IfNotPresent
+
 export OC_SQUONK_CELL_IMAGE_TAG=latest
 export OC_SQUONK_CHEM_IMAGE_TAG=latest
 export OC_SQUONK_CORE_IMAGE_TAG=latest
@@ -56,14 +62,20 @@ export OC_SQUONK_JE_IMAGE_TAG=latest
 export OC_SQUONK_PORTAL_IMAGE_TAG=latest
 export OC_SQUONK_SEARCH_IMAGE_TAG=latest
 export OC_SQUONK_FLYWAY_IMAGE_TAG=latest
+export OC_PIPELINES_SD_POSTER_IMAGE_TAG=latest
+
+# A YAML string of environment variable names and values
+# that wil be passed to the launched cell pod containers.
+# Empty to avoid creating any environment variables.
+export OC_SQUONK_POD_ENVIRONMENT=""
 
 export OC_POSTGRESQL_VOLUME_SIZE=125Gi
 export OC_CELL_WORK_PVC_SIZE=5Gi
 export OC_CHEMCENTRAL_POSTGRESQL_VOLUME_SIZE=300Gi
 export OC_CHEMCENTRAL_LOADER_VOLUME_SIZE=5Gi
 
-export OC_PIPELINES_SD_POSTER_IMAGE_TAG=latest
-export OC_SQUONK_NEXTFLOW_IMAGE="informaticsmatters/nextflow:18.10.1"
+export OC_SQUONK_NEXTFLOW_IMAGE="informaticsmatters/nextflow:19.01.0"
+export OC_SQUONK_NEXTFLOW_OPTIONS="-with-docker centos:7 -with-trace"
 
 export OC_DOMAIN_NAME=novalocal
 export OC_NFS_SERVER=squonk-infra.$OC_DOMAIN_NAME

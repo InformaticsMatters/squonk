@@ -27,12 +27,15 @@ import io.fabric8.kubernetes.client.dsl.LogWatch;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 import org.squonk.util.IOUtils;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Queue;
 import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * An OpenShift-based Docker image executor that expects inputs and outputs.
@@ -66,12 +69,19 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String PVC_NAME_ENV_NAME = "SQUONK_WORK_DIR_PVC_NAME";
     private static final String PVC_NAME_DEFAULT = "squonk-work-dir-pvc";
 
-    private static final String OBJ_BASE_NAME_ENV_NAME = "SQUONK_POD_BASE_NAME";
-    private static final String OBJ_BASE_NAME_DEFAULT = "squonk-cell-pod";
+    private static final String POD_BASE_NAME_ENV_NAME = "SQUONK_POD_BASE_NAME";
+    private static final String POD_BASE_NAME_DEFAULT = "squonk-cell-pod";
+
+    // The Pod Environment is a string that consists of YAML name:value pairs.
+    // If the environment string is present, each name/value pair is injected
+    // as a separate environemnt variable into the Pod container.
+    private static final String POD_ENVIRONMENT_ENV_NAME = "SQUONK_POD_ENVIRONMENT";
+    private static final String POD_ENVIRONMENT_DEFAULT = "";
 
     private static final String OS_SA;
     private static final String OS_PROJECT;
-    private static final String OS_OBJ_BASE_NAME;
+    private static final String OS_POD_BASE_NAME;
+    private static final String OS_POD_ENVIRONMENT;
     private static final String OS_DATA_VOLUME_PVC_NAME;
     private static final String OS_IMAGE_PULL_POLICY = "IfNotPresent";
     private static final String OS_POD_RESTART_POLICY = "Never";
@@ -103,6 +113,8 @@ public class OpenShiftRunner extends AbstractRunner {
     private boolean isExecuting;
     private boolean stopRequested;
     private boolean podCreated;
+
+    private Yaml yaml = new Yaml();
 
     /**
      * The PodWatcher receives events form the launched Pod
@@ -411,7 +423,7 @@ public class OpenShiftRunner extends AbstractRunner {
         LOG.info("subPath='" + subPath + "'");
 
         // Form the string that will be used to name all our OS objects...
-        podName = String.format("%s-%s", OS_OBJ_BASE_NAME, subPath);
+        podName = String.format("%s-%s", OS_POD_BASE_NAME, subPath);
         LOG.info("podName='" + podName + "'");
 
     }
@@ -532,13 +544,33 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withName(podName)
                 .withSubPath(subPath).build();
 
+        // Create environment variables for the container.
+        // This array is driven by the content of the
+        // OS_POD_ENVIRONMENT YAML string of <NAME>=<VALUE> pairs.
+        List<EnvVar> containerEnv = new ArrayList<>();
+        if (OS_POD_ENVIRONMENT.length() > 0) {
+            Map<String, Object> map =
+                    (Map<String, Object>) yaml.load(OS_POD_ENVIRONMENT);
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                String name = entry.getKey().trim();
+                String value = entry.getValue().toString().trim();
+                LOG.info("...adding EnvVar " + name);
+                containerEnv.add(new EnvVar(name, value, null));
+            }
+        }
+        LOG.info("Number of OS_POD_ENVIRONMENT variables: " + containerEnv.size());
+
+        // Set the container's profile (a nextflow feature) via an expected variable.
+        // Here we're always running in a kubernetes enviornment.
+        containerEnv.add(new EnvVar("NF_PROFILE_NAME", "kubernetes", null));
+
         // Container (that will run in the Pod)
         Container podContainer = new ContainerBuilder()
                 .withName(podName)
                 .withImage(imageName)
-                .withCommand(cmd)
                 .withWorkingDir(localWorkDir)
                 .withImagePullPolicy(OS_IMAGE_PULL_POLICY)
+                .withEnv(containerEnv)
                 .withVolumeMounts(volumeMount).build();
 
         // The Pod, which runs the container image...
@@ -774,9 +806,18 @@ public class OpenShiftRunner extends AbstractRunner {
         LOG.info("OS_DATA_VOLUME_PVC_NAME='" + OS_DATA_VOLUME_PVC_NAME + "'");
 
         // And the base-name for all Pods we create...
-        OS_OBJ_BASE_NAME = IOUtils
-                .getConfiguration(OBJ_BASE_NAME_ENV_NAME, OBJ_BASE_NAME_DEFAULT);
-        LOG.info("OS_OBJ_BASE_NAME='" + OS_OBJ_BASE_NAME + "'");
+        OS_POD_BASE_NAME = IOUtils
+                .getConfiguration(POD_BASE_NAME_ENV_NAME, POD_BASE_NAME_DEFAULT);
+        LOG.info("OS_POD_BASE_NAME='" + OS_POD_BASE_NAME + "'");
+
+        // And the environment setting for all Pods we create...
+        OS_POD_ENVIRONMENT = IOUtils
+                .getConfiguration(POD_ENVIRONMENT_ENV_NAME, POD_ENVIRONMENT_DEFAULT);
+        if (OS_POD_ENVIRONMENT.length() == 0) {
+            LOG.info("OS_POD_ENVIRONMENT=(Empty)");
+        } else {
+            LOG.info("OS_POD_ENVIRONMENT='...'");
+        }
 
         // Get the configured log cpacity
         // (maximum number of lines collected from a Pod).

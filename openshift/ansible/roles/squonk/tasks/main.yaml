@@ -18,6 +18,7 @@
   when: oc_squonk_volume_type == 'minishift'
 
 - import_tasks: squonk-infra-deploy.yaml
+- import_tasks: squonk-app-secrets.yaml
 - import_tasks: squonk-app-components.yaml
 - import_tasks: squonk-app-portal-keycloak.yaml
 - import_tasks: squonk-app-keycloak-je.yaml

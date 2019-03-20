@@ -1,6 +1,7 @@
 ---
 
-# Just defer to the minishift role's playbook...
+# Just defer to the patch task
+# in minishift role's playbook...
 
 - import_tasks: "{{ role_path }}/../../roles/minishift/tasks/patch-volume.yaml"
   vars:
@@ -8,3 +9,8 @@
   tags:
   - keycloak-users
 
+- import_tasks: "{{ role_path }}/../../roles/minishift/tasks/patch-volume.yaml"
+  vars:
+    claim: rabbitmq-claim
+  tags:
+    - keycloak-users

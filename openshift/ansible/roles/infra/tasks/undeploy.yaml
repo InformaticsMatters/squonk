@@ -60,5 +60,5 @@
   - pv-postgresql
   - pv-rabbitmq
   when:
-  - s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
   - oc_infra_volume_type == 'nfs'
+  - s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
