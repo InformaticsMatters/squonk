@@ -562,7 +562,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // Set the container's profile (a nextflow feature) via an expected variable.
         // Here we're always running in a kubernetes enviornment.
-        containerEnv.add(new EnvVar('NF_PROFILE_NAME', 'kubernetes', null))
+        containerEnv.add(new EnvVar("NF_PROFILE_NAME", "kubernetes", null));
 
         // Container (that will run in the Pod)
         Container podContainer = new ContainerBuilder()
