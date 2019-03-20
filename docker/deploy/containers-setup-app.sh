@@ -49,8 +49,8 @@ elif [ $DEPLOYMENT_MODE == 'site' ]; then
     docker-compose stop   nginx portal chemservices coreservices cellexecutor jobexecutor chemcentral-search
     docker-compose rm -fv nginx portal chemservices coreservices cellexecutor jobexecutor chemcentral-search
 elif [ $DEPLOYMENT_MODE == 'dev' ]; then
-    docker-compose stop   portal chemservices coreservices cellexecutor jobexecutor chemcentral-search swagger
-    docker-compose rm -fv portal chemservices coreservices cellexecutor jobexecutor chemcentral-search swagger
+    docker-compose stop   portal chemservices coreservices cellexecutor jobexecutor chemcentral-search
+    docker-compose rm -fv portal chemservices coreservices cellexecutor jobexecutor chemcentral-search
 else
     echo "ERROR: Must define DEPLOYMENT_MODE to be one of basic, site or dev"
     return
