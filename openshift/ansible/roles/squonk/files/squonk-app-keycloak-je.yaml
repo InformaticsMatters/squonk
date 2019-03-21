@@ -43,6 +43,8 @@ parameters:
   value: "/squonk/work/docker"
 - name: JE_SQUONK_POD_BASE_NAME
   value: "squonk-cell-pod"
+- name: JE_NEXTFLOW_IMAGE
+  value: informaticsmatters/nextflow:19.01.1
 - name: JE_WORK_PVC_SIZE
   value: 20Gi
 - name: JE_JOB_PROJECT_NAME
@@ -95,6 +97,11 @@ objects:
             value: ${JE_JOB_PROJECT_NAME}
           - name: SQUONK_POD_BASE_NAME
             value: ${JE_SQUONK_POD_BASE_NAME}
+          - name: SQUONK_POD_ENVIRONMENT
+            valueFrom:
+              secretKeyRef:
+                name: squonk-app-secrets
+                key: pod-env
           - name: SQUONK_POD_LOG_HISTORY
             value: ${JE_JOB_LOG_HISTORY}
           - name: ROUTES_BASE_HOSTNAME
@@ -103,6 +110,8 @@ objects:
             value: ${ROUTE_PREFIX_SSO}
           - name: SQUONK_JOBEXECUTOR_POLL_FOR_SERVICE_DESCRIPTORS
             value: "true"
+          - name: SQUONK_NEXTFLOW_IMAGE
+            value: ${JE_NEXTFLOW_IMAGE}
 #          - name: JAVA_OPTS
 #            value: '"-Djava.util.logging.config.file=/logging.properties"'
 #          resources:

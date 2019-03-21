@@ -27,6 +27,7 @@
     -p PULL_POLICY={{ image_pull_policy }}
     -p JE_IMAGE_TAG={{ oc_squonk_je_image_tag }}
     -p JE_HOST={{ oc_jobexecutor_host }}
+    -p JE_NEXTFLOW_IMAGE={{ oc_squonk_nextflow_image }}
     | oc create -f -
   when: not dc_result.stdout | regex_search('^jobexecutor-keycloak\s', multiline=True)
 

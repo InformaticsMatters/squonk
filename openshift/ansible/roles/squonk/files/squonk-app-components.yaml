@@ -87,9 +87,7 @@ parameters:
 - name: CELL_CONTAINER_RUNNER_TYPE
   value: openshift
 - name: CELL_SQUONK_NEXTFLOW_IMAGE
-  value: informaticsmatters/nextflow:18.10.1
-- name: CELL_SQUONK_NEXTFLOW_OPTIONS
-  value: ""
+  value: informaticsmatters/nextflow:19.01.1
 - name: CELL_SQUONK_CONTAINER_WORK_DIR
   value: "/squonk/work/docker"
 - name: CELL_SQUONK_POD_BASE_NAME
@@ -372,7 +370,7 @@ objects:
           - name: SQUONK_POD_ENVIRONMENT
             valueFrom:
               secretKeyRef:
-                name: squonk-cellexecutor-secrets
+                name: squonk-app-secrets
                 key: pod-env
           - name: SQUONK_SERVICE_ACCOUNT
             value: ${APP_SA}
@@ -380,8 +378,6 @@ objects:
             value: ${CELL_JOB_LOG_HISTORY}
           - name: SQUONK_NEXTFLOW_IMAGE
             value: ${CELL_SQUONK_NEXTFLOW_IMAGE}
-          - name: SQUONK_NEXTFLOW_OPTIONS
-            value: ${CELL_SQUONK_NEXTFLOW_OPTIONS}
 #          - name: JAVA_OPTS
 #            value: '"-Djava.util.logging.config.file=/logging.properties"'
 #          resources:
