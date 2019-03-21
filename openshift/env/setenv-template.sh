@@ -65,7 +65,7 @@ export OC_SQUONK_FLYWAY_IMAGE_TAG=latest
 export OC_PIPELINES_SD_POSTER_IMAGE_TAG=latest
 
 # A YAML string of environment variable names and values
-# that wil be passed to the launched cell pod containers.
+# that will be passed to the launched cell pod containers.
 # Empty to avoid creating any environment variables.
 export OC_SQUONK_POD_ENVIRONMENT=""
 
@@ -75,7 +75,6 @@ export OC_CHEMCENTRAL_POSTGRESQL_VOLUME_SIZE=300Gi
 export OC_CHEMCENTRAL_LOADER_VOLUME_SIZE=5Gi
 
 export OC_SQUONK_NEXTFLOW_IMAGE="informaticsmatters/nextflow:19.01.0"
-export OC_SQUONK_NEXTFLOW_OPTIONS="-with-docker centos:7 -with-trace"
 
 export OC_DOMAIN_NAME=novalocal
 export OC_NFS_SERVER=squonk-infra.$OC_DOMAIN_NAME

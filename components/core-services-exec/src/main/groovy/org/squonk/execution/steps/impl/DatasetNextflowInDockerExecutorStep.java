@@ -39,10 +39,6 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractContainerStep {
 
     private static final Logger LOG = Logger.getLogger(DatasetNextflowInDockerExecutorStep.class.getName());
     private static final String NEXTFLOW_IMAGE = IOUtils.getConfiguration("SQUONK_NEXTFLOW_IMAGE", "informaticsmatters/nextflow:19.01.0");
-    private static final String NEXTFLOW_OPTIONS = IOUtils.getConfiguration("SQUONK_NEXTFLOW_OPTIONS", "-with-docker centos:7 -with-trace");
-
-    protected static final String MSG_RUNNING_NEXTFLOW = "Running Nextflow";
-
 
     public Map<String, List<SquonkDataSource>> executeForDataSources(Map<String, Object> inputs, CamelContext context) throws Exception {
 
@@ -67,16 +63,10 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractContainerStep {
         } else {
             expandedCommand = "";
         }
-        String fullCommand = "nextflow run main.nf " + NEXTFLOW_OPTIONS;
         ContainerRunner runner = createContainerRunner(NEXTFLOW_IMAGE);
         runner.init();
         LOG.info("Nextflow executor image: " + NEXTFLOW_IMAGE +
-                 ", hostWorkDir: " + runner.getHostWorkDir() +
-                 ", command: " + fullCommand);
-
-        // write the command that executes everything
-        LOG.info("Writing execute file...");
-        runner.writeInput("execute", "#!/bin/sh\n" + fullCommand + "\n", true);
+                 " hostWorkDir: " + runner.getHostWorkDir());
 
         // write the nextflow file that executes everything
         LOG.info("Writing main.nf file with content...");
@@ -93,17 +83,12 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractContainerStep {
         }
         // Add the nextflow config file (if one is defined)
         nextflowConfigContents += descriptor.getNextflowConfig();
-        // Write?
-        if (!nextflowConfigContents.isEmpty()) {
-            // An opportunity for the runner to provide extra configuration.
-            // There may be nothing to add but the returned string
-            // will be valid.
-            nextflowConfigContents = runner.addExtraNextflowConfig(nextflowConfigContents);
-            LOG.info("Writing nextflow.config file...\n" + nextflowConfigContents);
-            runner.writeInput("nextflow.config", nextflowConfigContents, false);
-        } else {
-            LOG.info("No nextflow.config");
-        }
+        // An opportunity for the runner to provide extra configuration.
+        // There may be nothing to add but the returned string
+        // will be valid.
+        nextflowConfigContents = runner.addExtraNextflowConfig(nextflowConfigContents);
+        LOG.info("Writing nextflow.config file...\n" + nextflowConfigContents);
+        runner.writeInput("nextflow.config", nextflowConfigContents, false);
 
         // The runner's either a plain Docker runner
         // or it's an OpenShift runner.
