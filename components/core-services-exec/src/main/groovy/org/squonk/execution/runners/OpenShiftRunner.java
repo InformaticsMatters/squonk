@@ -507,11 +507,15 @@ public class OpenShiftRunner extends AbstractRunner {
      * Executes the container image and blocks until the container
      * (an OpenShift 'Pod') has completed. This method must only be called
      * once, subsequent calls are ignored.
+     *
+     * The container image is expected to utilise CMD or ENTRYPOINT in order
+     * to provide the command to run as the command passed to this method
+     * is no longer used.
      * <p/>
      * The runner instance must have been initialised before calling
      * execute() otherwise an error will be immediately returned.
      *
-     * @param cmd The command sequence to run in the container
+     * @param cmd A command sequence (unused for this runner)
      * @return Execution status (non-zero on error)
      *
      * @throws IllegalStateException if the method is called incorrectly
@@ -573,6 +577,7 @@ public class OpenShiftRunner extends AbstractRunner {
         LOG.info("Number of OS_POD_ENVIRONMENT variables: " + containerEnv.size());
 
         // Has a profile name been set?
+        // If so add a suitable environment variable to pass it to the Pod.
         if (nextflowProfileName.length() > 0) {
             // Set the container's profile (a nextflow feature)
             // via NF_PROFILE_NAME.
