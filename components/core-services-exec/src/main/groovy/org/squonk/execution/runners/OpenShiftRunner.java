@@ -106,9 +106,16 @@ public class OpenShiftRunner extends AbstractRunner {
     private final String hostBaseWorkDir;
     private final String localWorkDir;
     private String subPath;
-
     private String podName;
     private String imageName;
+
+    // The nextflow profile name.
+    // This is modified if the call to addExtraNextflowConfig() is made.
+    // A call to addExtraNextflowConfig indicates that nextflow is running
+    // in a OpenShift/Kubernetes environment, and so the profile name
+    // would become 'kubernetes'. If it is set the value is placed into
+    // the NF_PROFILE_NAME variable of the Container.
+    private String nextflowProfileName = "";
 
     private boolean isExecuting;
     private boolean stopRequested;
@@ -281,7 +288,7 @@ public class OpenShiftRunner extends AbstractRunner {
     }
 
     /**
-     * The LogStream is used to collect the stdout from the launhced Pod.
+     * The LogStream is used to collect the stdout from the launched Pod.
      * It is created from within the PodWatcher when we're confident the
      * Pod's running.
      */
@@ -441,6 +448,11 @@ public class OpenShiftRunner extends AbstractRunner {
      */
     public String addExtraNextflowConfig(String originalConfig) {
 
+        // A hint we're going to run a nextflow process.
+        // so set the profile name (passed to the POD in an Environment variable)
+        // to 'kubernetes'.
+        nextflowProfileName = "kubernetes";
+
         if (originalConfig == null) {
             return null;
         }
@@ -495,11 +507,15 @@ public class OpenShiftRunner extends AbstractRunner {
      * Executes the container image and blocks until the container
      * (an OpenShift 'Pod') has completed. This method must only be called
      * once, subsequent calls are ignored.
+     *
+     * The container image is expected to utilise CMD or ENTRYPOINT in order
+     * to provide the command to run as the command passed to this method
+     * is no longer used.
      * <p/>
      * The runner instance must have been initialised before calling
      * execute() otherwise an error will be immediately returned.
      *
-     * @param cmd The command sequence to run in the container
+     * @param cmd A command sequence (unused for this runner)
      * @return Execution status (non-zero on error)
      *
      * @throws IllegalStateException if the method is called incorrectly
@@ -560,9 +576,13 @@ public class OpenShiftRunner extends AbstractRunner {
         }
         LOG.info("Number of OS_POD_ENVIRONMENT variables: " + containerEnv.size());
 
-        // Set the container's profile (a nextflow feature) via an expected variable.
-        // Here we're always running in a kubernetes enviornment.
-        containerEnv.add(new EnvVar("NF_PROFILE_NAME", "kubernetes", null));
+        // Has a profile name been set?
+        // If so add a suitable environment variable to pass it to the Pod.
+        if (nextflowProfileName.length() > 0) {
+            // Set the container's profile (a nextflow feature)
+            // via NF_PROFILE_NAME.
+            containerEnv.add(new EnvVar("NF_PROFILE_NAME", nextflowProfileName, null));
+        }
 
         // Container (that will run in the Pod)
         Container podContainer = new ContainerBuilder()

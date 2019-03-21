@@ -44,17 +44,16 @@ export OC_SQUONK_CC_PVC_SIZE=20Gi
 
 export OC_IMAGE_PULL_POLICY=Always
 
-export OC_SQUONK_CELL_IMAGE_TAG=issue-36
+export OC_SQUONK_CELL_IMAGE_TAG=latest
 export OC_SQUONK_CHEM_IMAGE_TAG=latest
 export OC_SQUONK_CORE_IMAGE_TAG=latest
 export OC_SQUONK_JE_IMAGE_TAG=latest
 export OC_SQUONK_PORTAL_IMAGE_TAG=latest
 export OC_SQUONK_SEARCH_IMAGE_TAG=latest
 export OC_SQUONK_FLYWAY_IMAGE_TAG=latest
-export OC_PIPELINES_SD_POSTER_IMAGE_TAG=issue-26
+export OC_PIPELINES_SD_POSTER_IMAGE_TAG=latest
 
-export OC_SQUONK_NEXTFLOW_IMAGE="informaticsmatters/tej:latest"
-export OC_SQUONK_NEXTFLOW_OPTIONS=" "
+export OC_SQUONK_NEXTFLOW_IMAGE="informaticsmatters/nextflow:19.01.0"
 export OC_SQUONK_POD_ENVIRONMENT=""
 
 export OC_DOMAIN_NAME=novalocal
