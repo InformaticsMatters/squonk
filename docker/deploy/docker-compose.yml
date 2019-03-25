@@ -211,7 +211,7 @@ services:
         - /var/maven_repo:/var/maven_repo:ro,z
         - ./images/cellexecutor/logging.properties:/logging.properties:ro,Z
         security_opt:
-        - label:disable # disable SELinux so that we can access docker.sock
+        - label:type:container_runtime_t # fix SELinux so that we can access docker.sock
         environment:
             RABBITMQ_SQUONK_PASSWORD:
             DOCKER_HOST: unix:///var/run/docker.sock
@@ -245,7 +245,7 @@ services:
         - /var/maven_repo:/var/maven_repo:ro,z
         #- ./images/jobexecutor/logging.properties:/logging.properties:ro,Z
         security_opt:
-        - label:disable # disable SELinux so that we can access docker.sock
+        - label:type:container_runtime_t # fix SELinux so that we can access docker.sock
         environment:
             DOCKER_HOST: unix:///var/run/docker.sock
             SQUONK_CONTAINER_RUNNER_TYPE: docker

@@ -175,16 +175,32 @@
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients?clientId={{ oc_squonk_app }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
-  register: client_result
+  register: notebook_client_result
 
 - name: Delete Portal Keycloak Client
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients/{{ client_result.json[0].id }}"
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients/{{ notebook_client_result.json[0].id }}"
     method: DELETE
     status_code: 204
     headers:
       Authorization: bearer {{ keycloak_token }}
-  when: client_result.json
+  when: notebook_client_result.json
+
+- name: Get JobExecutor Keycloak Client ID
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients?clientId={{ oc_jobexecutor_client }}"
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  register: jobexecutor_client_result
+
+- name: Delete JobExecutor Keycloak Client
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients/{{ jobexecutor_client_result.json[0].id }}"
+    method: DELETE
+    status_code: 204
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  when: jobexecutor_client_result.json
 
 - name: Query Squonk Users
   uri:

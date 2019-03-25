@@ -32,25 +32,41 @@ parameters:
   name: INFRA_SA
   value: squonk
 
-- displayName: Client ID
-  name: CLIENT_ID
+- displayName: Notebook ID
+  name: NOTEBOOK_ID
   value: squonk-notebook
 
-- displayName: Client Name
-  name: CLIENT_NAME
+- displayName: Notebook Name
+  name: NOTEBOOK_NAME
   value: Squonk Computational Notebook
 
-- displayName: Client Description
-  name: CLIENT_DESC
+- displayName: Notebook Description
+  name: NOTEBOOK_DESC
   value: Squonk Computational Notebook
+
+- displayName: JobExecutor ID
+  name: JOBEXECUTOR_ID
+  value: squonk-jobexecutor
+
+- displayName: JobExecutor Name
+  name: JOBEXECUTOR_NAME
+  value: Squonk JobExecutor
+
+- displayName: JobExecutor Description
+  name: JOBEXECUTOR_DESC
+  value: Squonk JobExecutor
 
 - displayName: Base hostname for routes
   name: ROUTES_BASE_HOSTNAME
   value: dev.openrisknet.org
 
-- displayName: Prefix for squonk hostname
-  name: ROUTE_PREFIX_SQUONK
+- displayName: Prefix for squonk notebook hostname
+  name: ROUTE_PREFIX_NOTEBOOK
   value: squonk-notebook
+
+- displayName: Prefix for squonk jobexecutor hostname
+  name: ROUTE_PREFIX_JOBEXECUTOR
+  value: jobexecutor
 
 - displayName: Prefix for SSO hostname
   name: ROUTE_PREFIX_SSO
@@ -82,10 +98,9 @@ objects:
         "auth-server-url": "https://${ROUTE_PREFIX_SSO}.${ROUTES_BASE_HOSTNAME}/auth",
         "ssl-required": "${KEYCLOAK_SSL_REQUIRED}",
         "disable-trust-manager": true,
-        "resource": "${CLIENT_ID}",
+        "resource": "${JOBEXECUTOR_ID}",
         "use-resource-role-mappings": false,
-        "principal-attribute": "preferred_username",
-        "credentials": { "secret": "${SQUONK_CLIENT_SECRET}" }
+        "principal-attribute": "preferred_username"
       }
     context.xml: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -105,7 +120,7 @@ objects:
         "auth-server-url": "https://${ROUTE_PREFIX_SSO}.${ROUTES_BASE_HOSTNAME}/auth",
         "ssl-required": "${KEYCLOAK_SSL_REQUIRED}",
         "disable-trust-manager": true,
-        "resource": "${CLIENT_ID}",
+        "resource": "${NOTEBOOK_ID}",
         "use-resource-role-mappings": false,
         "credentials": { "secret": "${SQUONK_CLIENT_SECRET}" }
       }
@@ -126,46 +141,77 @@ objects:
       set -e
 
       KEYCLOAK_URL="https://$ROUTE_PREFIX_SSO.$ROUTES_BASE_HOSTNAME/auth"
-      CLIENT_HTTP="http://$ROUTE_PREFIX_SQUONK.$ROUTES_BASE_HOSTNAME"
-      CLIENT_HTTPS="https://$ROUTE_PREFIX_SQUONK.$ROUTES_BASE_HOSTNAME"
+      NOTEBOOK_HTTP="http://$ROUTE_PREFIX_NOTEBOOK.$ROUTES_BASE_HOSTNAME"
+      NOTEBOOK_HTTPS="https://$ROUTE_PREFIX_NOTEBOOK.$ROUTES_BASE_HOSTNAME"
+      JOBEXECUTOR_HTTP="http://$ROUTE_PREFIX_JOBEXECUTOR.$ROUTES_BASE_HOSTNAME"
+      JOBEXECUTOR_HTTPS="https://$ROUTE_PREFIX_JOBEXECUTOR.$ROUTES_BASE_HOSTNAME"
       DATA="username=${KEYCLOAK_USER}&password=${KEYCLOAK_PASSWORD}&grant_type=password&client_id=admin-cli"
-      CLIENT_CONFIG="{\"clientId\":\"$CLIENT_ID\",
-        \"name\":\"$CLIENT_NAME\",
-        \"description\":\"$CLIENT_DESC\",
-        \"redirectUris\":["\"$CLIENT_HTTPS/portal/*\",\"$CLIENT_HTTP/portal/*\",\"${LOGOUT_REDIRECT_TO}/*\""],
+
+      NOTEBOOK_CONFIG="{\"clientId\":\"$NOTEBOOK_ID\",
+        \"name\":\"$NOTEBOOK_NAME\",
+        \"description\":\"$NOTEBOOK_DESC\",
+        \"redirectUris\":["\"$NOTEBOOK_HTTPS/portal/*\",\"$NOTEBOOK_HTTP/portal/*\",\"${LOGOUT_REDIRECT_TO}/*\""],
         \"protocol\":\"openid-connect\",
-        \"baseUrl\":\"$CLIENT_HTTPS\",
+        \"baseUrl\":\"$NOTEBOOK_HTTPS\",
         \"rootUrl\":\"\",
         \"publicClient\":\"false\",
-        \"serviceAccountsEnabled\":\"true\",
-        \"directAccessGrantsEnabled\":\"true\",
+        \"serviceAccountsEnabled\":\"false\",
+        \"directAccessGrantsEnabled\":\"false\",
         \"standardFlowEnabled\":\"true\",
         \"secret\":\"$SQUONK_CLIENT_SECRET\",
-        \"adminUrl\":\"$CLIENT_HTTPS\"
+        \"adminUrl\":\"$NOTEBOOK_HTTPS\"
       }"
+
+      JOBEXECUTOR_CONFIG="{\"clientId\":\"$JOBEXECUTOR_ID\",
+              \"name\":\"$JOBEXECUTOR_NAME\",
+              \"description\":\"$JOBEXECUTOR_DESC\",
+              \"redirectUris\":["\"$JOBEXECUTOR_HTTPS/jobexecutor/*\",\"$JOBEXECUTOR_HTTP/jobexecutor/*\""],
+              \"protocol\":\"openid-connect\",
+              \"baseUrl\":\"$JOBEXECUTOR_HTTPS\",
+              \"rootUrl\":\"\",
+              \"publicClient\":\"true\",
+              \"serviceAccountsEnabled\":\"true\",
+              \"directAccessGrantsEnabled\":\"true\",
+              \"standardFlowEnabled\":\"true\",
+              \"adminUrl\":\"$JOBEXECUTOR_HTTPS\"
+            }"
 
       echo "Keycloak is at $KEYCLOAK_URL"
       echo "SSO user is $KEYCLOAK_USER"
       echo "Secret is $SQUONK_CLIENT_SECRET"
       echo "Data: $DATA"
-      echo "$CLIENT_CONFIG"
+      echo "$NOTEBOOK_CONFIG"
+      echo "$JOBEXECUTOR_CONFIG"
 
       TOKEN=$(curl -ks --data "$DATA" "$KEYCLOAK_URL/realms/$KEYCLOAK_REALM/protocol/openid-connect/token" |\
         grep -Po '(?<="access_token":")[^"]*')
       echo "Token: $TOKEN"
 
       RESULT=$(curl -ks -X POST \
-        -d "$CLIENT_CONFIG" \
+        -d "$NOTEBOOK_CONFIG" \
         -H "Content-Type: application/json" \
         -H "Authorization: bearer $TOKEN" \
         "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM/clients")
 
       if [ -n "$RESULT" ]; then
-          echo "ERROR: Unable to register client $CLIENT_ID in realm $KEYCLOAK_REALM: $RESULT"
+          echo "ERROR: Unable to register portal client $NOTEBOOK_ID in realm $KEYCLOAK_REALM: $RESULT"
           exit 1
       else
-          echo "Registered client $CLIENT_ID in realm $KEYCLOAK_REALM"
+          echo "Registered client NOTEBOOK_ID in realm $KEYCLOAK_REALM"
       fi
+
+      RESULT=$(curl -ks -X POST \
+              -d "$JOBEXECUTOR_CONFIG" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: bearer $TOKEN" \
+              "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM/clients")
+
+            if [ -n "$RESULT" ]; then
+                echo "ERROR: Unable to register jobexecutor client $JOBEXECUTOR_ID in realm $KEYCLOAK_REALM: $RESULT"
+                exit 1
+            else
+                echo "Registered client $JOBEXECUTOR_ID in realm $KEYCLOAK_REALM"
+            fi
 
 - kind: Job
   apiVersion: batch/v1
@@ -186,18 +232,26 @@ objects:
           env:
           - name: KEYCLOAK_REALM
             value: ${KEYCLOAK_REALM}
-          - name: CLIENT_ID
-            value: ${CLIENT_ID}
-          - name: CLIENT_NAME
-            value: ${CLIENT_NAME}
-          - name: CLIENT_DESC
-            value: ${CLIENT_DESC}
+          - name: NOTEBOOK_ID
+            value: ${NOTEBOOK_ID}
+          - name: NOTEBOOK_NAME
+            value: ${NOTEBOOK_NAME}
+          - name: NOTEBOOK_DESC
+            value: ${NOTEBOOK_DESC}
+          - name: JOBEXECUTOR_ID
+            value: ${JOBEXECUTOR_ID}
+          - name: JOBEXECUTOR_NAME
+            value: ${JOBEXECUTOR_NAME}
+          - name: JOBEXECUTOR_DESC
+            value: ${JOBEXECUTOR_DESC}
           - name: SQUONK_CLIENT_SECRET
             value: ${SQUONK_CLIENT_SECRET}
           - name: ROUTES_BASE_HOSTNAME
             value: ${ROUTES_BASE_HOSTNAME}
-          - name: ROUTE_PREFIX_SQUONK
-            value: ${ROUTE_PREFIX_SQUONK}
+          - name: ROUTE_PREFIX_NOTEBOOK
+            value: ${ROUTE_PREFIX_NOTEBOOK}
+          - name: ROUTE_PREFIX_JOBEXECUTOR
+            value: ${ROUTE_PREFIX_JOBEXECUTOR}
           - name: ROUTE_PREFIX_SSO
             value: ${ROUTE_PREFIX_SSO}
           - name: KEYCLOAK_USER

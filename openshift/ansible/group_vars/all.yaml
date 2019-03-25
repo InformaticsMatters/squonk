@@ -47,6 +47,8 @@ oc_squonk_app: "{{ ansible_env.OC_SQUONK_APP }}"
 oc_squonk_host: "{{ ansible_env.OC_SQUONK_HOST }}"
 oc_squonk_client_secret: "{{ ansible_env.OC_SQUONK_CLIENT_SECRET }}"
 
+oc_jobexecutor_client: squonk-jobexecutor
+
 oc_squonk_db: squonk
 oc_squonk_user: squonk
 oc_squonk_user_password: "{{ lookup('password', '/dev/null length=10 chars=ascii_letters') }}"
