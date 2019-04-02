@@ -77,7 +77,7 @@
                port="8080" protocol="HTTP/1.1"
                connectionTimeout="20000"
                redirectPort="8443"
-               proxyName="172.20.0.1" proxyPort="443" scheme="https"
+               proxyName="nginx" proxyPort="443" scheme="https"
                />
     -->
     <!-- Define a SSL/TLS HTTP/1.1 Connector on port 8443
