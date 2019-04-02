@@ -163,18 +163,18 @@ objects:
       }"
 
       JOBEXECUTOR_CONFIG="{\"clientId\":\"$JOBEXECUTOR_ID\",
-              \"name\":\"$JOBEXECUTOR_NAME\",
-              \"description\":\"$JOBEXECUTOR_DESC\",
-              \"redirectUris\":["\"$JOBEXECUTOR_HTTPS/jobexecutor/*\",\"$JOBEXECUTOR_HTTP/jobexecutor/*\""],
-              \"protocol\":\"openid-connect\",
-              \"baseUrl\":\"$JOBEXECUTOR_HTTPS\",
-              \"rootUrl\":\"\",
-              \"publicClient\":\"true\",
-              \"serviceAccountsEnabled\":\"true\",
-              \"directAccessGrantsEnabled\":\"true\",
-              \"standardFlowEnabled\":\"true\",
-              \"adminUrl\":\"$JOBEXECUTOR_HTTPS\"
-            }"
+        \"name\":\"$JOBEXECUTOR_NAME\",
+        \"description\":\"$JOBEXECUTOR_DESC\",
+        \"redirectUris\":["\"$JOBEXECUTOR_HTTPS/jobexecutor/*\",\"$JOBEXECUTOR_HTTP/jobexecutor/*\""],
+        \"protocol\":\"openid-connect\",
+        \"baseUrl\":\"$JOBEXECUTOR_HTTPS\",
+        \"rootUrl\":\"\",
+        \"publicClient\":\"true\",
+        \"serviceAccountsEnabled\":\"true\",
+        \"directAccessGrantsEnabled\":\"true\",
+        \"standardFlowEnabled\":\"true\",
+        \"adminUrl\":\"$JOBEXECUTOR_HTTPS\"
+      }"
 
       echo "Keycloak is at $KEYCLOAK_URL"
       echo "SSO user is $KEYCLOAK_USER"
@@ -201,17 +201,17 @@ objects:
       fi
 
       RESULT=$(curl -ks -X POST \
-              -d "$JOBEXECUTOR_CONFIG" \
-              -H "Content-Type: application/json" \
-              -H "Authorization: bearer $TOKEN" \
-              "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM/clients")
+        -d "$JOBEXECUTOR_CONFIG" \
+        -H "Content-Type: application/json" \
+        -H "Authorization: bearer $TOKEN" \
+        "$KEYCLOAK_URL/admin/realms/$KEYCLOAK_REALM/clients")
 
-            if [ -n "$RESULT" ]; then
-                echo "ERROR: Unable to register jobexecutor client $JOBEXECUTOR_ID in realm $KEYCLOAK_REALM: $RESULT"
-                exit 1
-            else
-                echo "Registered client $JOBEXECUTOR_ID in realm $KEYCLOAK_REALM"
-            fi
+      if [ -n "$RESULT" ]; then
+          echo "ERROR: Unable to register jobexecutor client $JOBEXECUTOR_ID in realm $KEYCLOAK_REALM: $RESULT"
+          exit 1
+      else
+          echo "Registered client $JOBEXECUTOR_ID in realm $KEYCLOAK_REALM"
+      fi
 
 - kind: Job
   apiVersion: batch/v1

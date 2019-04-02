@@ -49,6 +49,18 @@ objects:
         name: chemcentral-prep-loader-emolecules
         namespace: ${APP_NAMESPACE}
       spec:
+        # A 'preferred' (not guaranteed)
+        # node selection affinity...
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: purpose
+                  operator: In
+                  values:
+                  - app
         volumes:
         - name: loader-command
           configMap:

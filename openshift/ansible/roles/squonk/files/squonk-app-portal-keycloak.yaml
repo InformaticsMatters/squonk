@@ -81,6 +81,18 @@ objects:
         labels:
           name: portal
       spec:
+        # A 'preferred' (not guaranteed)
+        # node selection affinity...
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: purpose
+                  operator: In
+                  values:
+                  - app
         serviceAccountName: ${APP_SA}
         initContainers:
         - image: yauritux/busybox-curl

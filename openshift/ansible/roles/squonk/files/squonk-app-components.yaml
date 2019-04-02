@@ -165,7 +165,21 @@ objects:
         labels:
           name: coreservices
       spec:
+        # A 'preferred' (not guaranteed)
+        # node selection affinity...
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: purpose
+                  operator: In
+                  values:
+                  - app
+
         serviceAccountName: ${APP_SA}
+
         containers:
         - image: squonk/coreservices:${CORE_IMAGE_TAG}
           name: coreservices
@@ -247,6 +261,19 @@ objects:
         labels:
           name: chemservices-basic
       spec:
+        # A 'preferred' (not guaranteed)
+        # node selection affinity...
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: purpose
+                  operator: In
+                  values:
+                  - app
+
         serviceAccountName: ${APP_SA}
 
         # Initialisation Containers...
@@ -343,7 +370,21 @@ objects:
         labels:
           name: cellexecutor
       spec:
+        # A 'preferred' (not guaranteed)
+        # node selection affinity...
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: purpose
+                  operator: In
+                  values:
+                  - app
+
         serviceAccountName: ${APP_SA}
+
         containers:
         - image: squonk/cellexecutor:${CELL_IMAGE_TAG}
           name: cellexecutor

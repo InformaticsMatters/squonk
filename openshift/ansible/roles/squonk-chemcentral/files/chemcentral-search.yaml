@@ -53,6 +53,19 @@ objects:
         labels:
           name: chemcentral-search
       spec:
+        # A 'preferred' (not guaranteed)
+        # node selection affinity...
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: purpose
+                  operator: In
+                  values:
+                  - app
+
         serviceAccountName: ${APP_SA}
         containers:
         - image: squonk/chemcentral-search:${SEARCH_IMAGE_TAG}

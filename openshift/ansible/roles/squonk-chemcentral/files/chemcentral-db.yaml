@@ -137,7 +137,21 @@ objects:
         labels:
           name: ${POSTGRES_SERVICE}
       spec:
+        # A 'preferred' (not guaranteed)
+        # node selection affinity...
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: purpose
+                  operator: In
+                  values:
+                  - app
+
         serviceAccountName: ${APP_SA}
+
         containers:
         - image: informaticsmatters/rdkit_cartridge:${POSTGRES_IMAGE_TAG}
           name: ${POSTGRES_SERVICE}
