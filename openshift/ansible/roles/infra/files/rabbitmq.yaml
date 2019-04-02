@@ -141,6 +141,18 @@ objects:
         labels:
           name: rabbitmq
       spec:
+        # A 'preferred' (not guaranteed)
+        # node selection affinity...
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: purpose
+                  operator: In
+                  values:
+                  - app
         serviceAccountName: ${INFRA_SA}
         containers:
         - image: rabbitmq:${RABBITMQ_IMAGE_TAG}

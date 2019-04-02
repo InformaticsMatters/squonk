@@ -41,13 +41,13 @@ objects:
   apiVersion: v1
   metadata:
     name: scc-infra
-  allowPrivilegedContainer: false
+  allowPrivilegedContainer: true
   runAsUser:
-    type: MustRunAsRange
+    type: RunAsAny
   seLinuxContext:
-    type: MustRunAs
+    type: RunAsAny
   fsGroup:
-    type: MustRunAs
+    type: RunAsAny
   supplementalGroups:
     type: RunAsAny
   volumes:

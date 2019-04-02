@@ -326,6 +326,18 @@ objects:
           deploymentConfig: "${APPLICATION_NAME}"
           application: "${APPLICATION_NAME}"
       spec:
+        # A 'preferred' (not guaranteed)
+        # node selection affinity...
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: purpose
+                  operator: In
+                  values:
+                  - app
         terminationGracePeriodSeconds: 75
         serviceAccountName: ${SSO_SA}
         containers:
@@ -452,6 +464,18 @@ objects:
           deploymentConfig: "db-postgresql"
           application: "${APPLICATION_NAME}"
       spec:
+        # A 'preferred' (not guaranteed)
+        # node selection affinity...
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: purpose
+                  operator: In
+                  values:
+                  - app
         terminationGracePeriodSeconds: 60
         serviceAccountName: ${SSO_SA}
 #        securityContext:
