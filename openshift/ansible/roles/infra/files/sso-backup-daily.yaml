@@ -39,7 +39,7 @@ objects:
 # (when there are 24 hourly backups).
 # Keeping the last 7 backups in the directory /backup/daily
 - kind: CronJob
-  apiVersion: batch/v2alpha1
+  apiVersion: batch/v1beta1
   metadata:
     name: postgresql-backup-daily
   spec:
