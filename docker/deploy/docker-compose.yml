@@ -240,7 +240,6 @@ services:
         - coreservices
         volumes:
         - ./images/jobexecutor/logging.properties:/usr/local/tomcat/conf/logging.properties:ro,Z
-        - ./images/jobexecutor/web.xml:/usr/local/tomcat/webapps/jobexecutor/WEB-INF/web.xml:ro,Z
         - /var/run/docker.sock:/var/run/docker.sock
         - /squonk/work:/squonk/work:z
         - /var/maven_repo:/var/maven_repo:ro,z

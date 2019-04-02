@@ -96,6 +96,7 @@ objects:
       {
         "realm": "${KEYCLOAK_REALM}",
         "auth-server-url": "https://${ROUTE_PREFIX_SSO}.${ROUTES_BASE_HOSTNAME}/auth",
+        "bearer-only": true,
         "ssl-required": "${KEYCLOAK_SSL_REQUIRED}",
         "disable-trust-manager": true,
         "resource": "${JOBEXECUTOR_ID}",
