@@ -27,13 +27,3 @@ services:
                 condition: service_healthy
             portal:
                 condition: service_healthy
-
-    swagger:
-        image: swaggerapi/swagger-ui:v3.20.5
-        ports:
-        - 8888:8080
-        networks:
-        - squonk_front
-        environment:
-            #BASE_URL: /swagger
-            API_URL: "https://nginx/jobexecutor/rest/v1/swagger"
