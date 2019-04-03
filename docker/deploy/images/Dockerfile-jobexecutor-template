@@ -24,6 +24,4 @@ RUN unzip -q -d /usr/local/tomcat/webapps/jobexecutor /usr/local/tomcat/webapps/
 RUN cd /usr/local/tomcat/webapps/jobexecutor/WEB-INF/lib && rm commons-codec-*.jar commons-logging-*.jar httpclient-4*.jar httpcore-4*.jar\
   jackson-annotations-*.jar jackson-core-*.jar jackson-databind-*.jar
 
-COPY jobexecutor/web.xml /usr/local/tomcat/webapps/jobexecutor/WEB-INF/
-
 USER 0:0
