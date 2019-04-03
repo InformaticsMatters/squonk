@@ -35,6 +35,13 @@ parameters:
 
 - name: JE_HOST
   required: true
+- name: JE_KEYCLOAK_SERVER_URL
+  required: true
+- name: JE_KEYCLOAK_SERVER_REALM
+  required: true
+- name: JE_SQUONK_JOBEXECUTOR_SERVER
+  required: true
+
 - name: JE_IMAGE_TAG
   value: latest
 - name: JE_CONTAINER_RUNNER_TYPE
@@ -124,6 +131,12 @@ objects:
             value: "true"
           - name: SQUONK_NEXTFLOW_IMAGE
             value: ${JE_NEXTFLOW_IMAGE}
+          - name: KEYCLOAK_SERVER_URL
+            value: ${JE_KEYCLOAK_SERVER_URL}
+          - name: KEYCLOAK_SERVER_REALM
+            value: ${JE_KEYCLOAK_SERVER_REALM}
+          - name: SQUONK_JOBEXECUTOR_SERVER
+            value: ${JE_SQUONK_JOBEXECUTOR_SERVER}
 #          - name: JAVA_OPTS
 #            value: '"-Djava.util.logging.config.file=/logging.properties"'
 #          resources:

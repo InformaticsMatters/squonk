@@ -28,6 +28,9 @@
     -p JE_IMAGE_TAG={{ oc_squonk_je_image_tag }}
     -p JE_HOST={{ oc_jobexecutor_host }}
     -p JE_NEXTFLOW_IMAGE={{ oc_squonk_nextflow_image }}
+    -p JE_KEYCLOAK_SERVER_URL={{ keycloak_server_url }}
+    -p JE_KEYCLOAK_SERVER_REALM={{ keycloak_realm }}
+    -p JE_SQUONK_JOBEXECUTOR_SERVER=https://{{ oc_jobexecutor_host }}
     | oc create -f -
   when: not dc_result.stdout | regex_search('^jobexecutor-keycloak\s', multiline=True)
 
