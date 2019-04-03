@@ -144,6 +144,10 @@ objects:
             name: jobexecutor-sso-config
             subPath: keycloak.json
             readOnly: true
+          - mountPath: /usr/local/tomcat/webapps/jobexecutor/WEB-INF/web.xml
+            name: jobexecutor-sso-config
+            subPath: web.xml
+            readOnly: true
         volumes:
         - name: squonk-work-dir
           persistentVolumeClaim:
