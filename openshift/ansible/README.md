@@ -14,6 +14,10 @@ directory with the commands: -
 >   Remember to first `source` an appropriately crafted
     `../env/setenv.sh` script first!
 
+>   If you see an error relating to `../../../env/{{ ansible_env.IM_PARAMETER_FILE }}`
+    you've probably not sourced your setenv file or provided a value
+    for the `IM_PARAMETER_FILE` environment variable
+
 You can add users from a text file (that contains one user and space-separated
 password per line) 'after-the-fact' by defining the `user_file` playbook
 variable and then limiting the deployment to just the tasks relating to

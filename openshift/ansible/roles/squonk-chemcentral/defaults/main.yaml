@@ -59,13 +59,13 @@ recycle_released_pvs: yes
 #
 #   When set to 'none' the user is expected to have provisioned
 #   the persistent volumes and claims suitable for the project.
-oc_cc_infra_volume_type: "{{ ansible_env.OC_CHEMCENTRAL_VOLUME_TYPE }}"
+oc_cc_infra_volume_type: dynamic
 
 # The volume size for the PostgreSQL ChemCentral database
 # and the loader volume size.
-oc_cc_postgresql_volume_size: "{{ ansible_env.OC_CHEMCENTRAL_POSTGRESQL_VOLUME_SIZE }}"
-oc_cc_loader_volume_size: "{{ ansible_env.OC_CHEMCENTRAL_LOADER_VOLUME_SIZE }}"
+oc_cc_postgresql_volume_size: 350Gi
+oc_cc_loader_volume_size: 1Gi
 
 # When using dynamic volumes the storage
 # class needs to be defined...
-oc_cc_volume_storage_class: "{{ ansible_env.OC_CHEMCENTRAL_VOLUME_STORAGE_CLASS }}"
+oc_cc_volume_storage_class: glusterfs-storage

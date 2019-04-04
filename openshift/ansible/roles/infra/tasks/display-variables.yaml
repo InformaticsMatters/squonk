@@ -1,0 +1,11 @@
+---
+
+- name: Collect Variables
+  set_fact:
+    im_vars: "{{ im_vars|default({})|combine({item: hostvars['127.0.0.1'][item]}) }}"
+  with_items: "{{ hostvars['127.0.0.1'] }}"
+  when: '"oc_" in item'
+
+- name: Display Variables
+  debug:
+    var: im_vars

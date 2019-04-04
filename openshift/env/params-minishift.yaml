@@ -1,0 +1,26 @@
+---
+
+# Squonk Ansible parameter adjustments for...
+# MiniShift
+
+oc_master_hostname: "{{ ansible_env.IM_MASTER_HOSTNAME }}"
+oc_master_port: 8443
+oc_routes_basename: "{{ oc_master_hostname }}.nip.io"
+
+keycloak_server_protocol: http
+keycloak_insecure_route: Allow
+
+oc_infra_backup_hourly_count: 0
+oc_infra_backup_daily_count: 0
+
+oc_squonk_volume_type: minishift
+oc_infra_volume_type: minishift
+oc_cc_infra_volume_type: minishift
+
+oc_postgresql_volume_size: 10Gi
+oc_cc_postgresql_volume_size: 10Gi
+
+image_pull_policy: Always
+
+oc_infra_project: squonk
+oc_infra_project_display_name: Squonk

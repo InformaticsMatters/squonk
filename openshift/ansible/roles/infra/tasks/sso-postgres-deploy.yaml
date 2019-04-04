@@ -53,6 +53,11 @@
 # Deploy backups.
 # No point waiting for these - they're cron-jobs!
 
+- name: Get CronJobs
+  shell: oc get cronjobs
+  register: cj_result
+  changed_when: false
+
 - name: Deploy the Hourly Backup CronJob
   shell: >
     oc process
@@ -63,6 +68,7 @@
     | oc create -f -
   when:
   - oc_infra_backup_hourly_count|int > 0
+  - '"postgresql-backup-hourly" not in cj_result.stdout'
 
 - name: Deploy the Daily Backup CronJob
   shell: >
@@ -76,3 +82,4 @@
   when:
   - oc_infra_backup_daily_count|int > 0
   - oc_infra_backup_hourly_count|int > 0
+  - '"postgresql-backup-daily" not in cj_result.stdout'
