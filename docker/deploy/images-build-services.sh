@@ -14,16 +14,6 @@ cd ../../components
 
 ./gradlew common:assemble common:publish dockerBuildImages
 
-cd $base/images
-
-sed "s/__TAG__/$TAG/g" Dockerfile-jobexecutor-template > Dockerfile-jobexecutor
-
-echo "building squonk/jobexecutor-keycloak:${TAG} docker image ..."
-docker build -f Dockerfile-jobexecutor -t squonk/jobexecutor-keycloak:${TAG} .
-
-echo "building swagger docker image"
-docker build -f Dockerfile-swagger -t squonk/swagger-ui:${TAG} .
-
 cd $base
 
 echo finished
