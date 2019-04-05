@@ -31,6 +31,8 @@
     -p JE_KEYCLOAK_SERVER_URL={{ keycloak_server_url }}
     -p JE_KEYCLOAK_SERVER_REALM={{ keycloak_realm }}
     -p JE_SQUONK_JOBEXECUTOR_SERVER=https://{{ oc_jobexecutor_host }}
+    -p JE_CPU_REQUEST={{ oc_squonk_je_cpu_request }}
+    -p JE_MEM_REQUEST={{ oc_squonk_je_mem_request }}
     | oc create -f -
   when: not dc_result.stdout | regex_search('^jobexecutor-keycloak\s', multiline=True)
 

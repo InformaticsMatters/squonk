@@ -24,6 +24,10 @@
     -p HOSTNAME_HTTPS=sso.{{ oc_routes_basename }}
     -p ROUTE_INSECURE_POLICY={{ keycloak_insecure_route }}
     -p SSO_SA={{ oc_infra_sa }}
+    -p PG_CPU_REQUEST={{ oc_infra_postgresql_cpu_request }}
+    -p PG_MEM_REQUEST={{ oc_infra_postgresql_mem_request }}
+    -p SSO_CPU_REQUEST={{ oc_infra_sso_cpu_request }}
+    -p SSO_MEM_REQUEST={{ oc_infra_sso_mem_request }}
     | oc create -f -
   when: '"db-postgresql" not in sso_dc_result.stdout'
 

@@ -52,9 +52,9 @@ parameters:
 - name: CHEM_CPU_LIMIT
   value: 1000m
 - name: CHEM_MEM_REQUEST
-  value: 500Mi
+  value: 4500Mi
 - name: CHEM_MEM_LIMIT
-  value: 1Gi
+  value: 8Gi
 
 # ------------
 # CoreServices
@@ -70,13 +70,13 @@ parameters:
   value: 1Gi
 
 - name: CORE_CPU_REQUEST
-  value: 500m
+  value: 100m
 - name: CORE_CPU_LIMIT
   value: 2000m
 - name: CORE_MEM_REQUEST
-  value: 500Mi
+  value: 3500Mi
 - name: CORE_MEM_LIMIT
-  value: 4Gi
+  value: 8Gi
 
 # ------------
 # CellExecutor
@@ -104,9 +104,9 @@ parameters:
 - name: CELL_CPU_LIMIT
   value: 1000m
 - name: CELL_MEM_REQUEST
-  value: 500Mi
+  value: 400Mi
 - name: CELL_MEM_LIMIT
-  value: 1Gi
+  value: 2Gi
 
 objects:
 
@@ -220,13 +220,13 @@ objects:
             initialDelaySeconds: 30
             timeoutSeconds: 5
             periodSeconds: 60
-#          resources:
-#            limits:
-#              cpu: ${CORE_CPU_LIMIT}
-#              memory: ${CORE_MEM_LIMIT}
-#            requests:
-#              cpu: ${CORE_CPU_REQUEST}
-#              memory: ${CORE_MEM_REQUEST}
+          resources:
+            limits:
+              cpu: ${CORE_CPU_LIMIT}
+              memory: ${CORE_MEM_LIMIT}
+            requests:
+              cpu: ${CORE_CPU_REQUEST}
+              memory: ${CORE_MEM_REQUEST}
 
 - kind: Service
   apiVersion: v1
@@ -329,13 +329,13 @@ objects:
             periodSeconds: 30
             successThreshold: 1
             failureThreshold: 3
-#          resources:
-#            limits:
-#              cpu: ${CHEM_CPU_LIMIT}
-#              memory: ${CHEM_MEM_LIMIT}
-#            requests:
-#              cpu: ${CHEM_CPU_REQUEST}
-#              memory: ${CHEM_MEM_REQUEST}
+          resources:
+            limits:
+              cpu: ${CHEM_CPU_LIMIT}
+              memory: ${CHEM_MEM_LIMIT}
+            requests:
+              cpu: ${CHEM_CPU_REQUEST}
+              memory: ${CHEM_MEM_REQUEST}
 
 - kind: Service
   apiVersion: v1
@@ -421,13 +421,13 @@ objects:
             value: ${CELL_SQUONK_NEXTFLOW_IMAGE}
 #          - name: JAVA_OPTS
 #            value: '"-Djava.util.logging.config.file=/logging.properties"'
-#          resources:
-#            limits:
-#              cpu: ${CELL_CPU_LIMIT}
-#              memory: ${CELL_MEM_LIMIT}
-#            requests:
-#              cpu: ${CELL_CPU_REQUEST}
-#              memory: ${CELL_MEM_REQUEST}
+          resources:
+            limits:
+              cpu: ${CELL_CPU_LIMIT}
+              memory: ${CELL_MEM_LIMIT}
+            requests:
+              cpu: ${CELL_CPU_REQUEST}
+              memory: ${CELL_MEM_REQUEST}
           volumeMounts:
           - mountPath: ${CELL_SQUONK_CONTAINER_WORK_DIR}
             name: squonk-work-dir

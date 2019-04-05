@@ -54,14 +54,14 @@ parameters:
   generate: expression
   required: true
 
-- name: POSTGRES_CPU_REQUEST
+- name: CCDB_CPU_REQUEST
   value: 100m
-- name: POSTGRES_CPU_LIMIT
+- name: CCDB_CPU_LIMIT
   value: 1000m
-- name: POSTGRES_MEM_REQUEST
+- name: CCDB_MEM_REQUEST
   value: 100Mi
-- name: POSTGRES_MEM_LIMIT
-  value: 500Mi
+- name: CCDB_MEM_LIMIT
+  value: 2Gi
 
 objects:
 
@@ -80,7 +80,7 @@ objects:
 - kind: Secret
   apiVersion: v1
   metadata:
-    name: chemcentral-database-credentials
+    name: chemcentral-database-credentials-search
     namespace: ${APP_NAMESPACE}
   stringData:
     host: ${POSTGRES_SERVICE}.${DB_NAMESPACE}.svc
@@ -180,13 +180,13 @@ objects:
             timeoutSeconds: 1
             # Default period is 10 seconds
             periodSeconds: 20
-#          resources:
-#            limits:
-#              cpu: ${POSTGRES_CPU_LIMIT}
-#              memory: ${POSTGRES_MEM_LIMIT}
-#            requests:
-#              cpu: ${POSTGRES_CPU_REQUEST}
-#              memory: ${POSTGRES_MEM_REQUEST}
+          resources:
+            limits:
+              cpu: ${CCDB_CPU_LIMIT}
+              memory: ${CCDB_MEM_LIMIT}
+            requests:
+              cpu: ${CCDB_CPU_REQUEST}
+              memory: ${CCDB_MEM_REQUEST}
           terminationMessagePath: /dev/termination-log
           volumeMounts:
           - mountPath: /var/lib/postgresql/data

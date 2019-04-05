@@ -19,6 +19,18 @@ oc_squonk_volume_type: dynamic
 # class needs to be defined...
 oc_squonk_volume_storage_class: glusterfs-storage
 
+# Memory/CPU requests
+oc_squonk_cell_cpu_request: 100m
+oc_squonk_cell_mem_request: 400Mi
+oc_squonk_chem_cpu_request: 100m
+oc_squonk_chem_mem_request: 4500Mi
+oc_squonk_core_cpu_request: 100m
+oc_squonk_core_mem_request: 3500Mi
+oc_squonk_je_cpu_request: 100m
+oc_squonk_je_mem_request: 2200Mi
+oc_squonk_portal_cpu_request: 500m
+oc_squonk_portal_mem_request: 1Gi
+
 # We can configure the 'standard-user' using a selenium script
 # and a Chrome web-driver but this requires Chrome to be available,
 # the driver to be on you r path and certificates to be properly

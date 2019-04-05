@@ -61,6 +61,12 @@ recycle_released_pvs: yes
 #   the persistent volumes and claims suitable for the project.
 oc_cc_infra_volume_type: dynamic
 
+# Memory/CPU requests
+oc_cc_postgresql_cpu_request: 100m
+oc_cc_postgresql_mem_request: 100Mi
+oc_cc_search_cpu_request: 250m
+oc_cc_search_mem_request: 1200Mi
+
 # The volume size for the PostgreSQL ChemCentral database
 # and the loader volume size.
 oc_cc_postgresql_volume_size: 350Gi

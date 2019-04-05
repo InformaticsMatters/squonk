@@ -24,3 +24,34 @@ image_pull_policy: Always
 
 oc_infra_project: squonk
 oc_infra_project_display_name: Squonk
+
+# -----------------------------------------------------------------------------
+# Parameter adjustments to 'squeeze' Squonk into a small MiniShift instance
+# (i.e. something like 4 cores and 8Gi RAM)...
+# -----------------------------------------------------------------------------
+
+# Reduced infrastructure CPU/Mem requests
+oc_infra_postgresql_cpu_request: 100m
+oc_infra_postgresql_mem_request: 100Mi
+oc_infra_sso_cpu_request: 100m
+oc_infra_sso_mem_request: 100Mi
+oc_infra_rabbitmq_cpu_request: 100m
+oc_infra_rabbitmq_mem_request: 100Mi
+
+# Reduced Squonk CPU/Mem requests
+oc_squonk_cell_cpu_request: 100m
+oc_squonk_cell_mem_request: 100Mi
+oc_squonk_chem_cpu_request: 100m
+oc_squonk_chem_mem_request: 100Mi
+oc_squonk_core_cpu_request: 100m
+oc_squonk_core_mem_request: 100Mi
+oc_squonk_je_cpu_request: 100m
+oc_squonk_je_mem_request: 100Mi
+oc_squonk_portal_cpu_request: 100m
+oc_squonk_portal_mem_request: 100Mi
+
+# Reduced ChemCentral Search CPU/Mem requests
+oc_cc_postgresql_cpu_request: 100m
+oc_cc_postgresql_mem_request: 100Mi
+oc_cc_search_cpu_request: 100m
+oc_cc_search_mem_request: 100Mi
