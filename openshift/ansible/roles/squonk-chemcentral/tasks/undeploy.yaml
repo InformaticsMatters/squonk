@@ -7,7 +7,7 @@
 
 - name: Delete Squonk ChemCentral?
   pause:
-    prompt: >-
+    prompt: |-
       Delete ChemCentral and related databases from {{ oc_master_url }}?
       Hit return to delete ChemCentral.
       Hit Ctrl+c and then "a" if you've changed your mind

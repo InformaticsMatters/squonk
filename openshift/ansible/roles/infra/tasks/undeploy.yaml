@@ -6,7 +6,7 @@
 
 - name: Delete Infrastructure?
   pause:
-    prompt: >-
+    prompt: |-
       Delete the Infrastructure from {{ oc_master_url }}?
       Press return to continue.
       Press Ctrl+c and then "a" if you've changed your mind
