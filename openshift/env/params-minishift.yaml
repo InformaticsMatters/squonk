@@ -22,8 +22,8 @@ oc_cc_postgresql_volume_size: 10Gi
 
 image_pull_policy: Always
 
-oc_infra_project: squonk
-oc_infra_project_display_name: Squonk
+oc_infra_project: squonk-infra
+oc_infra_project_display_name: Squonk Infrastructure
 
 # -----------------------------------------------------------------------------
 # Parameter adjustments to 'squeeze' Squonk into a small MiniShift instance
