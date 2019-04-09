@@ -106,7 +106,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 .enableCORS(true)
                 .corsHeaderProperty("Access-Control-Allow-Headers",
                         "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, " +
-                                "Access-Control-Request-Headers, authorization")
+                                "Access-Control-Request-Headers, Authorization")
                 .corsHeaderProperty("Access-Control-Allow-Credentials", "true")
         ;
 

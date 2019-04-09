@@ -16,11 +16,14 @@
 
 package org.squonk.core
 
+import io.swagger.v3.core.converter.ModelConverters
 import io.swagger.v3.oas.models.OpenAPI
 import org.squonk.execution.steps.StepDefinitionConstants
 import org.squonk.io.IODescriptors
+import org.squonk.jobdef.JobStatus
 import org.squonk.options.OptionDescriptor
 import org.squonk.types.MoleculeObject
+import org.squonk.types.NumberRange
 import spock.lang.Specification
 
 class ServiceDescriptorToOpenAPIConverterSpec extends Specification {
@@ -62,6 +65,18 @@ class ServiceDescriptorToOpenAPIConverterSpec extends Specification {
         then:
         oai != null
         oai.getServers().size() == 1
+
+    }
+
+    void "test read Integer"() {
+        ModelConverters modelConverters = new ModelConverters();
+
+        when:
+        def ss = modelConverters.read(NumberRange.Integer.class)
+
+        then:
+        ss.size() == 1
+        ss.containsKey("Integer")
 
     }
 

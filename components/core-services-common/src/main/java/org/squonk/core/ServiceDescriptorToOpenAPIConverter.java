@@ -38,6 +38,7 @@ import org.squonk.io.IODescriptor;
 import org.squonk.jobdef.JobDefinition;
 import org.squonk.jobdef.JobStatus;
 import org.squonk.options.OptionDescriptor;
+import org.squonk.types.NumberRange;
 import org.squonk.util.CommonMimeTypes;
 import org.squonk.util.IOUtils;
 import org.squonk.util.MimeTypeUtils;
@@ -47,23 +48,25 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-/** Class that generates an OpenAPI (Swagger) definition of the Job Executor.
+/**
+ * Class that generates an OpenAPI (Swagger) definition of the Job Executor.
  * Does this by converting the ServiceDescriptor definitions into OpenAPI.
- *
+ * <p>
  * Configuration:
- *
+ * <p>
  * Pass in the server and the base path into the constructor.
  * The server will be the scheme, host and port.
  * The base path will be the path to the services, probably '/jobexecutor/rest'
- *
+ * <p>
  * Authentication using Keycloak is supported. If the environment variable KEYCLOAK_SERVER_URL is set then security is
  * enabled using that server and the OIDC and OAuth2 protocols. The KEYCLOAK_SERVER_REALM environment variable can be
  * set to specify the realm to use. If not set then 'squonk' is used as the realm name.
- *
  */
 public class ServiceDescriptorToOpenAPIConverter {
 
     private static final Logger LOG = Logger.getLogger(ServiceDescriptorToOpenAPIConverter.class.getName());
+
+    private static final ModelConverters modelConverters = new ModelConverters();
 
     private final String server;
     private final String basePath; // probably something like jobexecutor/rest
@@ -77,15 +80,24 @@ public class ServiceDescriptorToOpenAPIConverter {
     private final Yaml yaml;
     private final Json json;
 
-    private Map<String, Schema> schemas = new HashMap<>();
+    private Map<String, Schema> schemas = new LinkedHashMap<>();
 
     public ServiceDescriptorToOpenAPIConverter(String server, String basePath) {
         this.server = server;
         this.basePath = basePath;
         yaml = new Yaml();
         json = new Json();
-        schemas.putAll(createJsonSchema(JobStatus.class));
-        schemas.putAll(createJsonSchema(JobDefinition.class));
+        schemas.putAll(modelConverters.read(JobStatus.class));
+        schemas.putAll(modelConverters.read(JobDefinition.class));
+
+        Map<String, Schema> s = modelConverters.read(NumberRange.Integer.class);
+        schemas.put("IntegerRange", s.get("Integer"));
+
+        s = modelConverters.read(NumberRange.Double.class);
+        schemas.put("DoubleRange", s.get("Double"));
+
+        s = modelConverters.read(NumberRange.Float.class);
+        schemas.put("FloatRange", s.get("Float"));
 
         LOG.info("Created schemas for " + schemas.keySet().stream().collect(Collectors.joining(",")));
     }
@@ -420,15 +432,35 @@ public class ServiceDescriptorToOpenAPIConverter {
         body.content(content);
 
         OptionDescriptor[] optionDescriptors = sd.getServiceConfig().getOptionDescriptors();
-        if (optionDescriptors != null && optionDescriptors.length > 0) {
-            schema.addProperties("options", new Schema().type("object"));
-            /*TODO - define a schema for the option based on the optionDescriptors, or maybe better to create
-            request parameters for the options and not have them in the body at all?
-            */
-            //for (OptionDescriptor option : sd.getServiceConfig().getOptionDescriptors()) {
-            //createParameter(option, operation);
+        // For now we must define the options object as we expect it as the first item that is posted (the message body).
+        // Better for it to be only defined if there are options, or to handle as request parameters.
+        //
+        // There are problems with defining options as parameters. Serialization as query parameters is tricky as some are
+        // objects, requiring serialization as json (needing the style=deepObject and expand=true) but those options really
+        // mess up simple string options, so making this very hard to handle in a consistent manner.
+        // Handling as header parameters would be easier, but cors does not permit this as all allowed headers need to be
+        // defined in the Access-Control-Allow-Headers header which is not practical (and wildcards cannot be used)
+        // See https://swagger.io/docs/specification/describing-parameters/ and https://swagger.io/docs/specification/serialization/
+        // for more info.
+        //
+        // As an alternative using a parameter described using `content` provides a way of handling the complex properties
+        // (e.g. range fields) but it turns out that Swagger-UI currently has a bug that prevents it displaying these.
+        // https://github.com/swagger-api/swagger-ui/issues/4442
+        //
+        Schema optionsSchema = new Schema()
+                .type("object");
+        schema.addProperties("options", optionsSchema);
 
-            //}
+        if (optionDescriptors != null && optionDescriptors.length > 0) {
+            for (OptionDescriptor option : sd.getServiceConfig().getOptionDescriptors()) {
+                Schema s = createSchema(option);
+                if (s == null) {
+                    LOG.warning("Unable to create schema for option " + option.getLabel() + ". Using generic JSON.");
+                    optionsSchema.addProperties(option.getKey(), new Schema().type("object"));
+                } else {
+                    optionsSchema.addProperties(option.getKey(), s);
+                }
+            }
         }
 
         // Media types that need handling in addition to dataset types:
@@ -507,53 +539,161 @@ public class ServiceDescriptorToOpenAPIConverter {
         );
     }
 
-    private static void createParameter(OptionDescriptor option, Operation operation) {
+//    private static void createParameter(OptionDescriptor option, Operation operation) {
+//
+//        String key = option.getKey();
+//        String in = null;
+//        String name = key;
+//        if (key.startsWith("query.")) {
+//            in = "query";
+//            name = key.substring(6);
+//        } else if (key.equals("body.")) {
+//            // ignore as will be part of the body?
+//            return;
+//        } else if (key.startsWith("header.")) {
+//            in = "header";
+//            name = key.substring(7);
+//        } else {
+//            in = "query";
+//        }
+//
+//        Schema schema = createSchema(option);
+//
+//        Parameter parameter = new Parameter()
+//
+//                .schema(schema)
+//                .in(in == null ? "query" : in)
+//                .name(name)
+//                .description(option.getDescription())
+//                .style(Parameter.StyleEnum.SIMPLE)
+//                .explode(true);
+//
+//        operation.addParametersItem(parameter);
+//    }
 
-        String key = option.getKey();
-        String in = null;
-        if (key.startsWith("query.")) {
-            in = "query";
-        } else if (key.equals("body.")) {
-            // ignore as will be part of the body?
-        } else if (key.startsWith("header.")) {
-            in = "header";
-        } else {
-            in = "query";
-        }
+    private static void createParameter(OptionDescriptor option, Operation operation) {
 
         Schema schema = createSchema(option);
 
-        Parameter parameter = new Parameter()
-                .schema(schema)
-                .in(in == null ? "query" : in)
-                .name(option.getKey())
-                .description(option.getDescription());
+        Parameter parameter = createParameter(option);
+        if (parameter == null) {
+            LOG.warning("Unable to create parameter for option " + option.getLabel());
+        } else {
+            operation.addParametersItem(parameter);
+        }
+    }
 
-        if (option.getMinValues() != null && option.getMinValues() > 0) {
-            parameter.setRequired(true);
+
+    private static Parameter createParameter(OptionDescriptor option) {
+
+        String key = option.getKey();
+        String in = null;
+        String name = key;
+        if (key.startsWith("query.")) {
+            in = "query";
+            name = key.substring(6);
+        } else if (key.equals("body.")) {
+            // ignore as will be part of the body?
+            return null;
+        } else if (key.startsWith("header.")) {
+//            in = "header";
+//            name = key.substring(7);
+            LOG.warning("Cannot handle header parameters");
+            return null;
+        } else {
+            in = "query";
         }
 
-        operation.addParametersItem(parameter);
+
+        Parameter parameter = new Parameter()
+                .name(name)
+                .description(option.getDescription())
+                .in("query");
+
+        String[] schemaType = option.getTypeDescriptor().getJsonSchemaType();
+        Schema schema;
+        if (schemaType == null || schemaType.length == 0) {
+            Class type = option.getTypeDescriptor().getType();
+            Map<String, Schema> ss = modelConverters.read(type);
+            if (ss.size() > 0) {
+                schema = ss.values().iterator().next();
+            } else {
+                LOG.warning("Unable to determine schema for OptionDescriptor " + option.getDescription());
+                schema = new Schema();
+            }
+            parameter.content(new Content()
+                    .addMediaType("application/json", new MediaType().schema(schema)));
+        } else {
+            schema = new Schema();
+            schema.type(schemaType[0]);
+            if (schemaType.length == 2) schema.format(schemaType[1]);
+            parameter
+                    .schema(schema)
+                    .style(Parameter.StyleEnum.SIMPLE)
+                    .explode(false);
+        }
+
+        schema.minItems(option.getMinValues())
+                .maxItems(option.getMaxValues());
+
+        // handle any enum values
+        Object[] values = option.getValues();
+        if (values != null && values.length > 0) {
+            for (Object value : values) {
+                schema.addEnumItemObject(value);
+            }
+        }
+
+        // handle any default value
+        Object def = option.getDefaultValue();
+        if (def != null) {
+            schema.setDefault(def);
+        }
+
+        return parameter;
     }
 
     private static Schema createSchema(OptionDescriptor option) {
-        Schema schema = new Schema();
-        String[] type = option.getTypeDescriptor().getJsonSchemaType();
-        if (type == null || type.length == 0) {
-            LOG.warning("Undefined Json schema type for " + option.getTypeDescriptor().getType().getName());
+
+        String[] schemaType = option.getTypeDescriptor().getJsonSchemaType();
+        Schema schema;
+        if (schemaType == null || schemaType.length == 0) {
+            Class type = option.getTypeDescriptor().getType();
+            Map<String, Schema> ss = modelConverters.read(type);
+            if (ss.size() > 0) {
+                schema = ss.values().iterator().next();
+            } else {
+                LOG.warning("Unable to determine schema for OptionDescriptor " + option.getDescription());
+                schema = new Schema();
+            }
         } else {
-            schema.type(type[0]);
-            if (type.length == 2) schema.format(type[1]);
+            schema = new Schema();
+            schema.type(schemaType[0]);
+            if (schemaType.length == 2) schema.format(schemaType[1]);
         }
+
         schema.minItems(option.getMinValues()).maxItems(option.getMaxValues());
-        // TODO - handle option.getValues() as the enum property
+
+        // handle any enum values
+        Object[] values = option.getValues();
+        if (values != null && values.length > 0) {
+            for (Object value : values) {
+                schema.addEnumItemObject(value);
+            }
+        }
+
+        // handle any default value
+        Object def = option.getDefaultValue();
+        if (def != null) {
+            schema.setDefault(def);
+        }
+
         return schema;
     }
 
 
     public static Map<String, Schema> createJsonSchema(Class clazz) {
-        ModelConverters mc = new ModelConverters();
-        Map<String, Schema> schemas = mc.read(clazz);
+        Map<String, Schema> schemas = modelConverters.read(clazz);
         return schemas;
     }
 

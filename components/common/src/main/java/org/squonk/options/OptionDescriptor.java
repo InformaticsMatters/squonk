@@ -320,5 +320,4 @@ public class OptionDescriptor<T> implements Serializable {
         return false;
     }
 
-
 }

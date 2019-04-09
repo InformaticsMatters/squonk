@@ -45,4 +45,5 @@ public interface TypeDescriptor<T> extends Serializable {
     @JsonIgnore
     String[] getJsonSchemaType();
 
+
 }

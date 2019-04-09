@@ -366,13 +366,14 @@ public class JobManager implements ExecutorCallback {
         for (Map.Entry<IODescriptor, Object> e : inputs.entrySet()) {
             IODescriptor iod = e.getKey();
             Object val = e.getValue();
-            if (iod.getPrimaryType().isAssignableFrom(val.getClass())) {
+            LOG.info("Testing " + val.getClass().getName() + " to " + iod.getPrimaryType().getName());
+            if (iod.getPrimaryType() == val.getClass() || iod.getPrimaryType().isAssignableFrom(val.getClass())) {
                 results.put(iod, val);
             } else {
                 Object converted = camelContext.getTypeConverter().convertTo(iod.getPrimaryType(), val);
                 if (converted == null) {
                     throw new IllegalStateException(String.format("Can't convert input %s to %s",
-                            iod.getPrimaryType().getName(), iod.getPrimaryType().getName()));
+                            val.getClass().getName(), iod.getPrimaryType().getName()));
                 } else {
                     LOG.info("Converted " + val.getClass().getName() + " to " + iod.getPrimaryType().getName());
                     results.put(iod, converted);
