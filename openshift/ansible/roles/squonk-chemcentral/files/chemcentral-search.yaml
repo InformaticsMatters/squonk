@@ -34,9 +34,9 @@ parameters:
   value: latest
 
 - name: CCS_CPU_REQUEST
-  value: 2500m
+  value: 250m
 - name: CCS_CPU_LIMIT
-  value: 1000m
+  value: 2000m
 - name: CCS_MEM_REQUEST
   value: 1200Mi
 - name: CCS_MEM_LIMIT

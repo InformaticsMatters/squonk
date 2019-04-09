@@ -66,6 +66,15 @@ parameters:
 - name: REPORTING_CHUNK
   description: How often to report progress
 
+- name: CCL_CPU_REQUEST
+  value: 250m
+- name: CCL_CPU_LIMIT
+  value: 2000m
+- name: CCL_MEM_REQUEST
+  value: 100Mi
+- name: CCL_MEM_LIMIT
+  value: 2Gi
+
 objects:
 
 - kind: Job
@@ -138,4 +147,11 @@ objects:
           volumeMounts:
           - mountPath: /data
             name: data-dir
+          resources:
+            limits:
+              cpu: ${CCL_CPU_LIMIT}
+              memory: ${CCL_MEM_LIMIT}
+            requests:
+              cpu: ${CCL_CPU_REQUEST}
+              memory: ${CCL_MEM_REQUEST}
         restartPolicy: Never

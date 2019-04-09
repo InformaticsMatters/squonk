@@ -66,6 +66,8 @@ oc_cc_postgresql_cpu_request: 100m
 oc_cc_postgresql_mem_request: 100Mi
 oc_cc_search_cpu_request: 250m
 oc_cc_search_mem_request: 1200Mi
+oc_cc_loader_cpu_request: 250m
+oc_cc_loader_mem_request: 100Mi
 
 # The volume size for the PostgreSQL ChemCentral database
 # and the loader volume size.

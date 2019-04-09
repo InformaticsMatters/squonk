@@ -62,7 +62,7 @@ parameters:
 - name: JE_CPU_REQUEST
   value: 100m
 - name: JE_CPU_LIMIT
-  value: 1000m
+  value: 4000m
 - name: JE_MEM_REQUEST
   value: 2200Mi
 - name: JE_MEM_LIMIT

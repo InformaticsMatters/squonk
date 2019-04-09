@@ -58,6 +58,8 @@
     -p LOADER_PATTERN={{ loader_pattern }}
     -p LOADER_MARKER={{ loader_marker }}
     -p LIMIT={{ loader_limit }}
+    -p CCL_CPU_REQUEST={{ oc_cc_loader_cpu_request }}
+    -p CCL_MEM_REQUEST={{ oc_cc_loader_mem_request }}
     | oc create -f -
   when:
   - loader_class in ['MolportSmilesLoader']

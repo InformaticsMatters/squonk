@@ -57,7 +57,7 @@ parameters:
 - name: CCDB_CPU_REQUEST
   value: 100m
 - name: CCDB_CPU_LIMIT
-  value: 1000m
+  value: 4000m
 - name: CCDB_MEM_REQUEST
   value: 100Mi
 - name: CCDB_MEM_LIMIT

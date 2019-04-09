@@ -55,3 +55,5 @@ oc_cc_postgresql_cpu_request: 100m
 oc_cc_postgresql_mem_request: 100Mi
 oc_cc_search_cpu_request: 100m
 oc_cc_search_mem_request: 100Mi
+oc_cc_loader_cpu_request: 100m
+oc_cc_loader_mem_request: 100Mi

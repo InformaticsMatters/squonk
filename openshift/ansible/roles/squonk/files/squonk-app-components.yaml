@@ -49,8 +49,6 @@ parameters:
 
 - name: CHEM_CPU_REQUEST
   value: 100m
-- name: CHEM_CPU_LIMIT
-  value: 1000m
 - name: CHEM_MEM_REQUEST
   value: 4500Mi
 - name: CHEM_MEM_LIMIT
@@ -102,11 +100,11 @@ parameters:
 - name: CELL_CPU_REQUEST
   value: 100m
 - name: CELL_CPU_LIMIT
-  value: 1000m
+  value: 4000m
 - name: CELL_MEM_REQUEST
   value: 400Mi
 - name: CELL_MEM_LIMIT
-  value: 2Gi
+  value: 8Gi
 
 objects:
 
@@ -331,7 +329,6 @@ objects:
             failureThreshold: 3
           resources:
             limits:
-              cpu: ${CHEM_CPU_LIMIT}
               memory: ${CHEM_MEM_LIMIT}
             requests:
               cpu: ${CHEM_CPU_REQUEST}
