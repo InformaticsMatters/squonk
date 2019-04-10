@@ -5,19 +5,19 @@ For this project see **KeePass > Squonk > Ansible Vault Password**.
 
 You will be prompted for the password when decrypting...
 
-    $ ansible-vault decrypt <file>.vault --output=<file>
+    $ ansible-vault decrypt <file>.vault --output=setenv.sh
     Vault password:
     Decryption successful
 
-If you need to re-encrytp a file you can run the following,
+If you need to re-encrypt a file you can run the following,
 but make sure you use the correct password for the project,
 which you will have to enter twice...
 
-    $ ansible-vault encrypt <file> --output=<file>.vault
+    $ ansible-vault encrypt setenv.sh --output=<file>.vault
     New Vault password:
     Confirm New Vault password:
     Encryption successful
 
 ---
 
-[Ansible Vault]: https://docs.ansible.com/ansible/2.4/vault.html
+[Ansible Vault]: https://docs.ansible.com/ansible/latest/user_guide/vault.html

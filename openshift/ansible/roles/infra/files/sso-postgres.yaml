@@ -157,11 +157,6 @@ parameters:
   name: POSTGRESQL_IMAGE_STREAM_TAG
   value: '9.5'
   required: true
-- displayName: Container Memory Limit
-  description: Container memory limit.
-  name: MEMORY_LIMIT
-  value: 2Gi
-  required: false
 - displayName: Custom HTTPS Route Hostname
   description: 'Custom hostname for https service route.  Leave blank for default
     hostname, e.g.: <application-name>.<project>.<default-domain-suffix>'
@@ -177,6 +172,24 @@ parameters:
 
 - name: SSO_SA
   value: default
+
+- name: PG_CPU_REQUEST
+  value: 250m
+- name: PG_CPU_LIMIT
+  value: 1000m
+- name: PG_MEM_REQUEST
+  value: 100Mi
+- name: PG_MEM_LIMIT
+  value: 500Mi
+
+- name: SSO_CPU_REQUEST
+  value: 250m
+- name: SSO_CPU_LIMIT
+  value: 1000m
+- name: SSO_MEM_REQUEST
+  value: 600Mi
+- name: SSO_MEM_LIMIT
+  value: 2Gi
 
 objects:
 
@@ -346,7 +359,11 @@ objects:
           imagePullPolicy: Always
           resources:
             limits:
-              memory: "${MEMORY_LIMIT}"
+              cpu: ${PG_CPU_LIMIT}
+              memory: ${PG_MEM_LIMIT}
+            requests:
+              cpu: ${PG_CPU_REQUEST}
+              memory: ${PG_MEM_REQUEST}
           volumeMounts:
           - name: sso-x509-https-volume
             mountPath: "/etc/x509/https"
@@ -487,6 +504,13 @@ objects:
           ports:
           - containerPort: 5432
             protocol: TCP
+          resources:
+            limits:
+              cpu: ${PG_CPU_LIMIT}
+              memory: ${PG_MEM_LIMIT}
+            requests:
+              cpu: ${PG_CPU_REQUEST}
+              memory: ${PG_MEM_REQUEST}
           readinessProbe:
             timeoutSeconds: 1
             initialDelaySeconds: 60

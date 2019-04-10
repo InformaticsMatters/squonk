@@ -1,0 +1,17 @@
+---
+
+# Squonk Ansible parameter adjustments for...
+# Diamond (Verne)
+
+oc_master_hostname: okd.xchem.diamond.ac.uk
+oc_routes_basename: apps.xchem.diamond.ac.uk
+
+keycloak_realm: xchem
+
+oc_infra_project: xchem-infra
+oc_infra_project_display_name: XChem Infrastructure
+oc_infra_sa: xchem
+oc_infra_backup_hourly_count: 0
+oc_infra_backup_daily_count: 0
+
+image_pull_policy: Always

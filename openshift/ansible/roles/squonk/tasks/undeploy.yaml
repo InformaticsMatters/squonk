@@ -7,7 +7,7 @@
 
 - name: Delete Squonk?
   pause:
-    prompt: >-
+    prompt: |-
       Delete Squonk from {{ oc_master_url }}?
       Note that 'delete_database' is {{ delete_database }}.
       Hit return to delete Squonk.

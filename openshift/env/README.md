@@ -23,18 +23,23 @@ Before doing this you need to do some basic setup, so let's get started.
 ## Setup
 
 ### Configure the Installation
+You will need to provide two files: -
+
+-   A `setenv.sh` file to define a small number of sensitive variables
+-   A _params_ file to define non-sensitive deployment variables
 
 Before you start you must have or create the OpenShift `admin` account
 (`OC_ADMIN_USER`) and its password (`OC_ADMIN_PASSWORD`). If you're using
 the [OKD Orchestrator] to create your cluster this will have been done for you.
 
-Now back on the node where the installation is happening
-(e.g. the bastion node):
+Now back on the node where the installation will be deployed from
+(the Ansible _control_ node) where you have this repository cloned, i.e.
+the bastion node or your workstation where you have Ansible and the `oc`
+command-set: -
 
-Create/edit `setenv.sh` from the supplied `setenv-template.sh` template
-and populate suitable variable values.
-
-Once done, _source_ the file...
+Create/edit `setenv.sh` from an existing file and prepare a set of Ansible
+parameters in a `params-???.yaml` file and populate suitable variable
+values. Once done, _source_ the setenv file...
 
     $ source setenv.sh
 

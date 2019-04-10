@@ -30,6 +30,12 @@
     -p CORE_IMAGE_TAG={{ oc_squonk_core_image_tag }}
     -p CELL_IMAGE_TAG={{ oc_squonk_cell_image_tag }}
     -p CELL_SQUONK_NEXTFLOW_IMAGE={{ oc_squonk_nextflow_image }}
+    -p CELL_CPU_REQUEST={{ oc_squonk_cell_cpu_request }}
+    -p CELL_MEM_REQUEST={{ oc_squonk_cell_mem_request }}
+    -p CHEM_CPU_REQUEST={{ oc_squonk_chem_cpu_request }}
+    -p CHEM_MEM_REQUEST={{ oc_squonk_chem_mem_request }}
+    -p CORE_CPU_REQUEST={{ oc_squonk_core_cpu_request }}
+    -p CORE_MEM_REQUEST={{ oc_squonk_core_mem_request }}
     | oc create -f -
   when: '"coreservices" not in dc_result.stdout'
 

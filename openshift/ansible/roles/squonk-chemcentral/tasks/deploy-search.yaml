@@ -22,6 +22,8 @@
     -p APP_NAMESPACE={{ oc_project }}
     -p APP_SA={{ oc_project_sa }}
     -p SEARCH_IMAGE_TAG={{ oc_squonk_search_image_tag }}
+    -p CCS_CPU_REQUEST={{ oc_cc_search_cpu_request }}
+    -p CCS_MEM_REQUEST={{ oc_cc_search_mem_request }}
     | oc create -f -
   when: not dc_result.stdout | regex_search('^chemcentral-search\s', multiline=True)
 
