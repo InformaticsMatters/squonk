@@ -21,7 +21,7 @@
 - import_tasks: squonk-app-secrets.yaml
 - import_tasks: squonk-app-components.yaml
 - import_tasks: squonk-app-portal-keycloak.yaml
-- import_tasks: squonk-app-keycloak-je.yaml
+- import_tasks: squonk-app-je-keycloak.yaml
 
 - import_tasks: setup-keycloak.yaml
   when: setup_keycloak

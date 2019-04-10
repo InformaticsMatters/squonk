@@ -62,11 +62,11 @@ parameters:
 - name: JE_CPU_REQUEST
   value: 100m
 - name: JE_CPU_LIMIT
-  value: 1000m
+  value: 4000m
 - name: JE_MEM_REQUEST
-  value: 500Mi
+  value: 2200Mi
 - name: JE_MEM_LIMIT
-  value: 500Mi
+  value: 8Gi
 
 objects:
 
@@ -139,13 +139,13 @@ objects:
             value: ${JE_SQUONK_JOBEXECUTOR_SERVER}
 #          - name: JAVA_OPTS
 #            value: '"-Djava.util.logging.config.file=/logging.properties"'
-#          resources:
-#            limits:
-#              cpu: ${JE_CPU_LIMIT}
-#              memory: ${JE_MEM_LIMIT}
-#            requests:
-#              cpu: ${JE_CPU_REQUEST}
-#              memory: ${JE_MEM_REQUEST}
+          resources:
+            limits:
+              cpu: ${JE_CPU_LIMIT}
+              memory: ${JE_MEM_LIMIT}
+            requests:
+              cpu: ${JE_CPU_REQUEST}
+              memory: ${JE_MEM_REQUEST}
           volumeMounts:
           - mountPath: ${JE_SQUONK_CONTAINER_WORK_DIR}
             name: squonk-work-dir

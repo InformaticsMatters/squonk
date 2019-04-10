@@ -1,0 +1,23 @@
+---
+
+# Squonk Ansible parameter adjustments for...
+# OpenRiskNet Development
+
+oc_master_hostname: dev.openrisknet.org
+oc_master_port: 8443
+oc_routes_basename: dev.openrisknet.org
+
+keycloak_realm: openrisknet
+
+oc_infra_project: xchem-infra
+oc_infra_project_display_name: OpenRiskNet Infrastructure
+oc_infra_sa: openrisknet
+oc_infra_backup_hourly_count: 0
+oc_infra_backup_daily_count: 0
+
+oc_postgresql_volume_size: 5Gi
+oc_cell_work_pvc_size: 1Gi
+oc_cc_postgresql_volume_size: 5Gi
+oc_cc_loader_volume_size: 1Gi
+
+image_pull_policy: Always

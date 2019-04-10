@@ -1,8 +1,2 @@
 setenv.sh
-setenv-diamond.sh
-setenv-scaleway.sh
-setenv-aws.sh
-setenv-orn-prod.sh
-setenv-orn-dev.sh
-setenv-verne.sh
 certs/

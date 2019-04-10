@@ -33,6 +33,15 @@ parameters:
 - name: SEARCH_IMAGE_TAG
   value: latest
 
+- name: CCS_CPU_REQUEST
+  value: 250m
+- name: CCS_CPU_LIMIT
+  value: 2000m
+- name: CCS_MEM_REQUEST
+  value: 1200Mi
+- name: CCS_MEM_LIMIT
+  value: 8Gi
+
 objects:
 
 # -----------------------------------------------------------------------------
@@ -74,17 +83,17 @@ objects:
           - name: CHEMCENTRAL_HOST
             valueFrom:
               secretKeyRef:
-                name: chemcentral-database-credentials
+                name: chemcentral-database-credentials-search
                 key: host
           - name: CHEMCENTRAL_USER
             valueFrom:
               secretKeyRef:
-                name: chemcentral-database-credentials
+                name: chemcentral-database-credentials-search
                 key: database-user
           - name: CHEMCENTRAL_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: chemcentral-database-credentials
+                name: chemcentral-database-credentials-search
                 key: database-password
           - name: RABBITMQ_HOSTNAME
             valueFrom:
@@ -100,6 +109,13 @@ objects:
                 optional: true
           ports:
           - containerPort: 8080
+          resources:
+            limits:
+              cpu: ${CCS_CPU_LIMIT}
+              memory: ${CCS_MEM_LIMIT}
+            requests:
+              cpu: ${CCS_CPU_REQUEST}
+              memory: ${CCS_MEM_REQUEST}
           readinessProbe:
             httpGet:
               path: /chemcentral-search/rest/ping

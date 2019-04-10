@@ -21,7 +21,7 @@
 - name: Deploy Squonk JobExecutor
   shell: >
     oc process
-    -f {{ role_path }}/files/squonk-app-keycloak-je.yaml
+    -f {{ role_path }}/files/squonk-app-je-keycloak.yaml
     -p APP_NAMESPACE={{ oc_project }}
     -p APP_SA={{ oc_project_sa }}
     -p PULL_POLICY={{ image_pull_policy }}
@@ -31,6 +31,8 @@
     -p JE_KEYCLOAK_SERVER_URL={{ keycloak_server_url }}
     -p JE_KEYCLOAK_SERVER_REALM={{ keycloak_realm }}
     -p JE_SQUONK_JOBEXECUTOR_SERVER=https://{{ oc_jobexecutor_host }}
+    -p JE_CPU_REQUEST={{ oc_squonk_je_cpu_request }}
+    -p JE_MEM_REQUEST={{ oc_squonk_je_mem_request }}
     | oc create -f -
   when: not dc_result.stdout | regex_search('^jobexecutor-keycloak\s', multiline=True)
 

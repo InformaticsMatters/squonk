@@ -22,6 +22,8 @@
     -p INFRA_NAMESPACE={{ oc_infra_project }}
     -p INFRA_SA={{ oc_infra_sa }}
     -p RABBITMQ_HOST=rabbitmq.{{ oc_infra_project }}.svc
+    -p RABBITMQ_CPU_REQUEST={{ oc_infra_rabbitmq_cpu_request }}
+    -p RABBITMQ_MEM_REQUEST={{ oc_infra_rabbitmq_mem_request }}
     | oc create -f -
   when:  not dc_result.stdout | regex_search('^rabbitmq\s', multiline=True)
 

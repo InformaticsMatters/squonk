@@ -1,20 +1,5 @@
 ---
 
-# The image (and tag) for the container
-# that will be used to run NextFlow pipelines...
-oc_squonk_nextflow_image: "{{ ansible_env.OC_SQUONK_NEXTFLOW_IMAGE }}"
-# Pod (container) environment variables...
-# Optional.
-# It is interpreted as a YAML string of keys and values
-# The values will be injected into the container using the keys as
-# environment variable names. To create ENV_A and ENV_B: -
-#
-# ENV_A: A string
-# ENV_B: |
-#   A multi-line
-#   string of stuff
-oc_squonk_pod_environment: "{{ ansible_env.OC_SQUONK_POD_ENVIRONMENT }}"
-
 # What volume type are we using? One of: -
 #
 # - dynamic
@@ -28,11 +13,23 @@ oc_squonk_pod_environment: "{{ ansible_env.OC_SQUONK_POD_ENVIRONMENT }}"
 #
 #   When set to 'none' the user is expected to have provisioned
 #   the persistent volumes and claims suitable for the project.
-oc_squonk_volume_type: "{{ ansible_env.OC_SQUONK_VOLUME_TYPE }}"
+oc_squonk_volume_type: dynamic
 
 # When using dynamic volumes the storage
 # class needs to be defined...
-oc_squonk_volume_storage_class: "{{ ansible_env.OC_SQUONK_VOLUME_STORAGE_CLASS }}"
+oc_squonk_volume_storage_class: glusterfs-storage
+
+# Memory/CPU requests
+oc_squonk_cell_cpu_request: 100m
+oc_squonk_cell_mem_request: 400Mi
+oc_squonk_chem_cpu_request: 100m
+oc_squonk_chem_mem_request: 4500Mi
+oc_squonk_core_cpu_request: 100m
+oc_squonk_core_mem_request: 3500Mi
+oc_squonk_je_cpu_request: 100m
+oc_squonk_je_mem_request: 2200Mi
+oc_squonk_portal_cpu_request: 500m
+oc_squonk_portal_mem_request: 1Gi
 
 # We can configure the 'standard-user' using a selenium script
 # and a Chrome web-driver but this requires Chrome to be available,

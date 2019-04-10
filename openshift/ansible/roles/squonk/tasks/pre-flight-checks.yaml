@@ -35,7 +35,7 @@
 - name: Check required deployments
   fail:
     msg: >-
-      RabbitMQ ({{ infra_rabbit_name }}) does not exist as a deployment
+      RabbitMQ ({{ oc_infra_rabbit_name }}) does not exist as a deployment
       in the infrastructure project ({{ oc_infra_project }})
   when:
-  - infra_rabbit_name not in dc_result.stdout
+  - oc_infra_rabbit_name not in dc_result.stdout

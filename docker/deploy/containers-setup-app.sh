@@ -8,6 +8,8 @@ if [ ! $PUBLIC_HOST ]; then
 	exit 1
 fi
 
+echo "Using image tag of $IMAGE_TAG"
+
 set -e
 
 base=$PWD
