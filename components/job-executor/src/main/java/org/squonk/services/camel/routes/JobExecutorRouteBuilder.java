@@ -23,6 +23,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Message;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.impl.DefaultAttachment;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.core.ServiceConfig;
 import org.squonk.core.ServiceDescriptor;
@@ -55,6 +56,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(JobExecutorRouteBuilder.class.getName());
     private static final String ROUTE_STATS = "seda:post_stats";
+    private static final String CONTENT_TRANSFER_ENCODING = IOUtils.getConfiguration("CONTENT_TRANSFER_ENCODING", "8bit");
 
     protected int timerInterval = 5 * 60 * 1000;
     protected int timerDelay = 15 * 1000;
@@ -542,7 +544,12 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
                 // TODO - consider if we can handle conversions - difficult if there are multiple outputs?
 
-                message.addAttachment(name, new DataHandler(dataSource));
+                // we need to set the Content-Transfer-Encoding header otherwise the DatasetMetadata gets base64 encoded.
+                // It's unclear at this stage what the best option is so we let this be configured.
+                DefaultAttachment attachment = new DefaultAttachment(dataSource);
+                attachment.setHeader("Content-Transfer-Encoding", CONTENT_TRANSFER_ENCODING);
+
+                message.addAttachmentObject(name, attachment);
             }
         }
 

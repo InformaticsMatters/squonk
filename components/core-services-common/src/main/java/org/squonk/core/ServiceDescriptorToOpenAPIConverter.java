@@ -453,11 +453,13 @@ public class ServiceDescriptorToOpenAPIConverter {
 
         if (optionDescriptors != null && optionDescriptors.length > 0) {
             for (OptionDescriptor option : sd.getServiceConfig().getOptionDescriptors()) {
+                LOG.finer("Handling option " + option.getLabel());
                 Schema s = createSchema(option);
                 if (s == null) {
                     LOG.warning("Unable to create schema for option " + option.getLabel() + ". Using generic JSON.");
                     optionsSchema.addProperties(option.getKey(), new Schema().type("object"));
                 } else {
+                    LOG.fine("Schema for option " + option.getLabel() + " created.");
                     optionsSchema.addProperties(option.getKey(), s);
                 }
             }
