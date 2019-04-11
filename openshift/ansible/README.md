@@ -48,7 +48,7 @@ _keycloak users_ with the following: -
     to safely add your own users. It is prevented form being committed to
     Git as it's listed in the project's `.gitignore` file.
 
-## Posting Squonk pipelines
+## Posting Squonk pipelines
 The playbooks for posting pipelines to Squonk are in this project.
 There is one role, shared with each set of pipelines that can be posted.
 
