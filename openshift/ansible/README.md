@@ -34,6 +34,12 @@ directory with the commands: -
 >   If you see an error relating to `../../../env/{{ ansible_env.IM_PARAMETER_FILE }}`
     you've probably not sourced your setenv file or provided a value
     for the `IM_PARAMETER_FILE` environment variable
+    
+>   If you see the error `User "admin" cannot create imagestreams.image.openshift.io`
+    in the `Deploy Keycloak Image Stream` playbook task you're probably using
+    **MiniShift** but you've not run the MiniShift preparation playbook, which you
+    have to do before running any other playbooks.
+    See the **Minishift considerations** section at the end of this document.
 
 ## Adding users
 You can add users from a text file (that contains one user and space-separated
@@ -166,8 +172,8 @@ You need to setup a suitable `setenv.sh` (and source it).
 Then run the `minishift` playbook to prepare the cluster **before** running
 the above Squonk plays. From this directory, run: -
 
-    $ source ../env/setenv-minishift.sh
-    $ ansible-playbook playbooks/minishift/prepare.yaml
+    source ../env/setenv-minishift.sh
+    ansible-playbook playbooks/minishift/prepare.yaml
 
 >   The MiniShift installation does not use trusted certificates so
     you need to instruct your browser to ignore the security concerns
