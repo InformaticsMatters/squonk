@@ -1,0 +1,14 @@
+---
+
+# Deploy the Squonk 'Sygnature Pipelines' to the Squonk application.
+# Here we run the 'generic' pipelines role
+# 'tuning' it with variables to run it for 'Sygnature'
+
+- hosts: localhost
+  vars_files:
+  - ../../../env/{{ ansible_env.IM_PARAMETER_FILE }}
+
+  roles:
+  - role: squonk-pipelines
+    vars:
+      origin: pipelines_sygnature
