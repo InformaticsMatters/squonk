@@ -123,15 +123,27 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 .transform(constant("OK\n")).endRest();
 
         // everything under /rest/v1 will potentially be secured except for /rest/v1/swagger
-        rest("/v1/swagger").description("Service information")
+        rest("/v1/swagger/swagger.json").description("Service information")
                 //
                 //
-                .get("/").description("Get OpenAPI definitions for services")
+                .get("/").description("Get OpenAPI definitions for services as JSON")
                 .bindingMode(RestBindingMode.off)
                 .produces(CommonMimeTypes.MIME_TYPE_JSON)
                 .route()
                 .process((Exchange exch) -> {
-                    handleFetchSwagger(exch);
+                    handleFetchSwagger(exch, "json");
+                })
+                .endRest();
+
+        rest("/v1/swagger/swagger.yaml").description("Service information")
+                //
+                //
+                .get("/").description("Get OpenAPI definitions for services as YAML")
+                .bindingMode(RestBindingMode.off)
+                .produces(CommonMimeTypes.MIME_TYPE_YAML)
+                .route()
+                .process((Exchange exch) -> {
+                    handleFetchSwagger(exch, "yaml");
                 })
                 .endRest();
 
@@ -238,7 +250,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
         ;
     }
 
-    private void handleFetchSwagger(Exchange exch) throws IOException {
+    private void handleFetchSwagger(Exchange exch, String format) throws IOException {
 
         Message message = exch.getIn();
 
@@ -246,10 +258,9 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
         ServiceDescriptorToOpenAPIConverter converter = createConverter(message);
         OpenAPI oai = converter.convertToOpenApi(sds);
 
-        String accept = message.getHeader("Accept", String.class);
         String result;
         String contentType;
-        if (accept != null && CommonMimeTypes.MIME_TYPE_YAML.equals(accept)) {
+        if ("yaml".equalsIgnoreCase(format)) {
             result = converter.openApiToYaml(oai);
             contentType = CommonMimeTypes.MIME_TYPE_YAML;
         } else {
