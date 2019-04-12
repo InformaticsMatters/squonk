@@ -289,7 +289,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
         LOG.info("JOBS_SERVER: " + JOBS_SERVER);
 
-        if (JOBS_SERVER == null) {
+        if (JOBS_SERVER == null || JOBS_SERVER.isEmpty()) {
 
             // Here we sniff out the server and path that the services are exposed as.
             // This relies on Tomcat/Camel providing the right information, and this usually requires
