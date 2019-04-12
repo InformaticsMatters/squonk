@@ -39,8 +39,6 @@ parameters:
   required: true
 - name: JE_KEYCLOAK_SERVER_REALM
   required: true
-- name: JE_SQUONK_JOBEXECUTOR_SERVER
-  required: true
 
 - name: JE_IMAGE_TAG
   value: latest
@@ -135,12 +133,13 @@ objects:
             value: ${JE_KEYCLOAK_SERVER_URL}
           - name: KEYCLOAK_SERVER_REALM
             value: ${JE_KEYCLOAK_SERVER_REALM}
-          # This can be used to override the server name that is used by swagger, but if the proxy configuration in
-          # Tomcat's server.xml configuration is correct the value should be determined automatically
-          #- name: SQUONK_JOBEXECUTOR_SERVER
-          #  value: ${JE_SQUONK_JOBEXECUTOR_SERVER}
-#          - name: JAVA_OPTS
-#            value: '"-Djava.util.logging.config.file=/logging.properties"'
+#           The SQUONK_JOBEXECUTOR_SERVER variable can be used to override the server name that is used by swagger, but if
+#           the proxy configuration in Tomcat's server.xml configuration is correct the value will be determined automatically
+#            - name: SQUONK_JOBEXECUTOR_SERVER
+#              value: jobexecutor.example.com
+#          Allow to provide a different logging policy
+#           - name: JAVA_OPTS
+#             value: '"-Djava.util.logging.config.file=/logging.properties"'
           resources:
             limits:
               cpu: ${JE_CPU_LIMIT}
