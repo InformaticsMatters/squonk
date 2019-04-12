@@ -135,8 +135,10 @@ objects:
             value: ${JE_KEYCLOAK_SERVER_URL}
           - name: KEYCLOAK_SERVER_REALM
             value: ${JE_KEYCLOAK_SERVER_REALM}
-          - name: SQUONK_JOBEXECUTOR_SERVER
-            value: ${JE_SQUONK_JOBEXECUTOR_SERVER}
+          # This can be used to override the server name that is used by swagger, but if the proxy configuration in
+          # Tomcat's server.xml configuration is correct the value should be determined automatically
+          #- name: SQUONK_JOBEXECUTOR_SERVER
+          #  value: ${JE_SQUONK_JOBEXECUTOR_SERVER}
 #          - name: JAVA_OPTS
 #            value: '"-Djava.util.logging.config.file=/logging.properties"'
           resources:
@@ -160,6 +162,10 @@ objects:
           - mountPath: /usr/local/tomcat/webapps/jobexecutor/WEB-INF/web.xml
             name: jobexecutor-sso-config
             subPath: web.xml
+            readOnly: true
+          - mountPath: /usr/local/tomcat/conf/server.xml
+            name: jobexecutor-sso-config
+            subPath: server.xml
             readOnly: true
         volumes:
         - name: squonk-work-dir

@@ -77,6 +77,7 @@ public class ServiceDescriptorToOpenAPIConverter {
     private String infoUrl = "https://squonk.it";
     private String infoEmail = "info@informaticsmatters.com";
 
+    // OpenAPI serializers
     private final Yaml yaml;
     private final Json json;
 
@@ -89,15 +90,6 @@ public class ServiceDescriptorToOpenAPIConverter {
         json = new Json();
         schemas.putAll(modelConverters.read(JobStatus.class));
         schemas.putAll(modelConverters.read(JobDefinition.class));
-
-        Map<String, Schema> s = modelConverters.read(NumberRange.Integer.class);
-        schemas.put("IntegerRange", s.get("Integer"));
-
-        s = modelConverters.read(NumberRange.Double.class);
-        schemas.put("DoubleRange", s.get("Double"));
-
-        s = modelConverters.read(NumberRange.Float.class);
-        schemas.put("FloatRange", s.get("Float"));
 
         LOG.info("Created schemas for " + schemas.keySet().stream().collect(Collectors.joining(",")));
     }
@@ -136,8 +128,9 @@ public class ServiceDescriptorToOpenAPIConverter {
         handleInfo(openApi);
         handleServers(openApi);
         handleStaticServices(openApi);
+        LOG.info("Handling " + sds.size() + " ServiceDescriptors");
         for (ServiceDescriptor sd : sds) {
-            LOG.info("Handling Service Descriptor " + sd.getId());
+            LOG.fine("Handling Service Descriptor " + sd.getId());
             handlePaths(sd, openApi);
         }
         return openApi;
@@ -155,7 +148,7 @@ public class ServiceDescriptorToOpenAPIConverter {
         Info info = new Info();
         info.description("Squonk services accessible as external jobs")
                 .title("Squonk job execution")
-                .version("0.2")
+                .version("1.0")
                 .contact(new Contact()
                         .name(infoName)
                         .email(infoEmail)
@@ -188,12 +181,6 @@ public class ServiceDescriptorToOpenAPIConverter {
     protected void handleSchemas(OpenAPI openApi) {
         schemas.entrySet().forEach((e) -> openApi.getComponents().addSchemas(e.getKey(), e.getValue()));
     }
-
-//    protected void handleResponses(OpenAPI openApi) {
-//        Components components = openApi.getComponents();
-//        components.addResponses("401", new ApiResponse()
-//                .description("Unauthorized"));
-//    }
 
     protected void handleLinks(OpenAPI openApi) {
         openApi.getComponents()
@@ -541,120 +528,6 @@ public class ServiceDescriptorToOpenAPIConverter {
         );
     }
 
-//    private static void createParameter(OptionDescriptor option, Operation operation) {
-//
-//        String key = option.getKey();
-//        String in = null;
-//        String name = key;
-//        if (key.startsWith("query.")) {
-//            in = "query";
-//            name = key.substring(6);
-//        } else if (key.equals("body.")) {
-//            // ignore as will be part of the body?
-//            return;
-//        } else if (key.startsWith("header.")) {
-//            in = "header";
-//            name = key.substring(7);
-//        } else {
-//            in = "query";
-//        }
-//
-//        Schema schema = createSchema(option);
-//
-//        Parameter parameter = new Parameter()
-//
-//                .schema(schema)
-//                .in(in == null ? "query" : in)
-//                .name(name)
-//                .description(option.getDescription())
-//                .style(Parameter.StyleEnum.SIMPLE)
-//                .explode(true);
-//
-//        operation.addParametersItem(parameter);
-//    }
-
-    private static void createParameter(OptionDescriptor option, Operation operation) {
-
-        Schema schema = createSchema(option);
-
-        Parameter parameter = createParameter(option);
-        if (parameter == null) {
-            LOG.warning("Unable to create parameter for option " + option.getLabel());
-        } else {
-            operation.addParametersItem(parameter);
-        }
-    }
-
-
-    private static Parameter createParameter(OptionDescriptor option) {
-
-        String key = option.getKey();
-        String in = null;
-        String name = key;
-        if (key.startsWith("query.")) {
-            in = "query";
-            name = key.substring(6);
-        } else if (key.equals("body.")) {
-            // ignore as will be part of the body?
-            return null;
-        } else if (key.startsWith("header.")) {
-//            in = "header";
-//            name = key.substring(7);
-            LOG.warning("Cannot handle header parameters");
-            return null;
-        } else {
-            in = "query";
-        }
-
-
-        Parameter parameter = new Parameter()
-                .name(name)
-                .description(option.getDescription())
-                .in("query");
-
-        String[] schemaType = option.getTypeDescriptor().getJsonSchemaType();
-        Schema schema;
-        if (schemaType == null || schemaType.length == 0) {
-            Class type = option.getTypeDescriptor().getType();
-            Map<String, Schema> ss = modelConverters.read(type);
-            if (ss.size() > 0) {
-                schema = ss.values().iterator().next();
-            } else {
-                LOG.warning("Unable to determine schema for OptionDescriptor " + option.getDescription());
-                schema = new Schema();
-            }
-            parameter.content(new Content()
-                    .addMediaType("application/json", new MediaType().schema(schema)));
-        } else {
-            schema = new Schema();
-            schema.type(schemaType[0]);
-            if (schemaType.length == 2) schema.format(schemaType[1]);
-            parameter
-                    .schema(schema)
-                    .style(Parameter.StyleEnum.SIMPLE)
-                    .explode(false);
-        }
-
-        schema.minItems(option.getMinValues())
-                .maxItems(option.getMaxValues());
-
-        // handle any enum values
-        Object[] values = option.getValues();
-        if (values != null && values.length > 0) {
-            for (Object value : values) {
-                schema.addEnumItemObject(value);
-            }
-        }
-
-        // handle any default value
-        Object def = option.getDefaultValue();
-        if (def != null) {
-            schema.setDefault(def);
-        }
-
-        return parameter;
-    }
-
     private static Schema createSchema(OptionDescriptor option) {
 
         String[] schemaType = option.getTypeDescriptor().getJsonSchemaType();
@@ -692,7 +565,6 @@ public class ServiceDescriptorToOpenAPIConverter {
 
         return schema;
     }
-
 
     public static Map<String, Schema> createJsonSchema(Class clazz) {
         Map<String, Schema> schemas = modelConverters.read(clazz);

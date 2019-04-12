@@ -286,10 +286,19 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
     private ServiceDescriptorToOpenAPIConverter createConverter(Message message) throws IOException {
         String server;
         String path;
+
+        LOG.info("JOBS_SERVER: " + JOBS_SERVER);
+
         if (JOBS_SERVER == null) {
+
+            // Here we sniff out the server and path that the services are exposed as.
+            // This relies on Tomcat/Camel providing the right information, and this usually requires
+            // the proxy settings in the
+
             String url = message.getHeader("CamelHttpUrl", String.class);
             String uri = message.getHeader("CamelHttpUri", String.class);
             String host = message.getHeader("host", String.class);
+            LOG.info("CamelHttpUrl: " + url + " CamelHttpUri: " + uri + " host: " + host);
 
             if (url.startsWith("https://")) {
                 server = "https://" + host;
@@ -298,10 +307,9 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
             } else {
                 throw new IOException("Unexpected request URL: " + url);
             }
-            if (uri.endsWith("/")) {
-                uri = uri.substring(0, uri.length() - 1);
-            }
-            path = uri.replace("/rest/v1/swagger", "/rest");
+            int loc = uri.indexOf("/rest/v1/swagger");
+            LOG.finer("LOC: " + loc);
+            path = uri.substring(0, loc + 5);
         } else {
             server = JOBS_SERVER;
             path = JOBS_PATH;
