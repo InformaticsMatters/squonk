@@ -9,7 +9,7 @@ oc_routes_basename: dev.openrisknet.org
 
 keycloak_realm: openrisknet
 
-oc_infra_project: xchem-infra
+oc_infra_project: openrisknet-infra
 oc_infra_project_display_name: OpenRiskNet Infrastructure
 oc_infra_sa: openrisknet
 oc_infra_backup_hourly_count: 0
