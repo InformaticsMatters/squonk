@@ -55,18 +55,23 @@ public abstract class AbstractFilesystemContext {
             name = name + "." + extension;
         }
         File f = new File(dir, name);
+        String path = f.getPath();
 
         if (f.exists()) {
+            LOG.info("Found file " + f.getPath());
             return f;
         }
         f = new File(dir, name + ".gz");
         if (f.exists()) {
+            LOG.info("Found file " + f.getPath());
             return f;
         }
         f = new File(dir, name + ".GZ");
         if (f.exists()) {
+            LOG.info("Found file " + f.getPath());
             return f;
         }
+        LOG.warning("File " + path + " not found (nor with .gz or .GZ extensions)");
         return null;
     }
 

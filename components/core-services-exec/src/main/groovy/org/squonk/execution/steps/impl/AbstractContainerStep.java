@@ -34,10 +34,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Base class for steps that run in containers, typically Docker containers.
- *
+/**
+ * Base class for steps that run in containers, typically Docker containers.
  */
 public abstract class AbstractContainerStep extends AbstractThinStep {
 
@@ -53,6 +54,26 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
         ContainerRunner containerRunner = prepareContainerRunner();
 
         Map<String, List<SquonkDataSource>> dataSourcesMap = doExecuteForDataSources(inputs, context, containerRunner, dsd);
+        LOG.info("Execution generated " + dataSourcesMap.size() + " outputs");
+        int i = 1;
+        if (LOG.isLoggable(Level.FINE)) {
+            for (Map.Entry<String, List<SquonkDataSource>> e : dataSourcesMap.entrySet()) {
+                StringBuilder b = new StringBuilder("Output ")
+                        .append(i)
+                        .append(": ")
+                        .append(e.getKey())
+                        .append(" -> [");
+                for (SquonkDataSource sds : e.getValue()) {
+                    b.append(" ")
+                            .append(sds.getName())
+                            .append(":")
+                            .append(sds.getContentType());
+                }
+                b.append(" ]");
+                LOG.fine(b.toString());
+                i++;
+            }
+        }
         Map<String, Object> results = new LinkedHashMap<>();
         for (IODescriptor iod : serviceDescriptor.getServiceConfig().getOutputDescriptors()) {
             List<SquonkDataSource> dataSources = dataSourcesMap.get(iod.getName());
@@ -82,7 +103,7 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
 
         // handle the outputs
         statusMessage = MSG_PREPARING_OUTPUT;
-        Map<String,List<SquonkDataSource>> results = readOutputs(descriptor, containerRunner.getHostWorkDir());
+        Map<String, List<SquonkDataSource>> results = readOutputs(descriptor, containerRunner.getHostWorkDir());
 
         handleMetrics(containerRunner);
 
@@ -120,7 +141,7 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
     }
 
     protected void writeInputs(
-            Map<String,Object> data,
+            Map<String, Object> data,
             DefaultServiceDescriptor serviceDescriptor,
             ContainerRunner runner) throws Exception {
 
@@ -153,10 +174,10 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
     }
 
 
-    protected Map<String,List<SquonkDataSource>> readOutputs(DefaultServiceDescriptor serviceDescriptor, File workdir) throws Exception {
+    protected Map<String, List<SquonkDataSource>> readOutputs(DefaultServiceDescriptor serviceDescriptor, File workdir) throws Exception {
 
         IODescriptor[] outputDescriptors = serviceDescriptor.resolveOutputIODescriptors();
-        Map<String,List<SquonkDataSource>> results = new LinkedHashMap<>();
+        Map<String, List<SquonkDataSource>> results = new LinkedHashMap<>();
         if (outputDescriptors != null) {
             LOG.info("Handling " + outputDescriptors.length + " outputs");
 
@@ -174,7 +195,7 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
         return outputs;
     }
 
-    private <P,Q> List<SquonkDataSource> buildOutputs(File workdir, IODescriptor<P, Q> iod) throws Exception {
+    private <P, Q> List<SquonkDataSource> buildOutputs(File workdir, IODescriptor<P, Q> iod) throws Exception {
         VariableHandler<P> vh = DefaultHandler.createVariableHandler(iod.getPrimaryType(), iod.getSecondaryType());
         VariableHandler.ReadContext readContext = new FilesystemReadContext(workdir, iod.getName());
         List<SquonkDataSource> dataSources = vh.readDataSources(readContext);
