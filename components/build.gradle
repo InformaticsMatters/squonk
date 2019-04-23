@@ -126,7 +126,7 @@ allprojects {
         reports {
             xml.enabled true
             csv.enabled false
-            html.destination "${buildDir}/reports/coverage"
+            html.destination file("${buildDir}/reports/coverage")
         }
     }
 
