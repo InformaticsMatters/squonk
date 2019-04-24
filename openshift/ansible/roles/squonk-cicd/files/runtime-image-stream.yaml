@@ -1,0 +1,33 @@
+---
+
+# The ImageStream for the Squonk Runtime Images.
+
+kind: Template
+apiVersion: template.openshift.io/v1
+metadata:
+  name: openshift-squonk-runtime
+
+parameters:
+
+- name: APP_NAMESPACE
+  value: squonk-cicd
+
+objects:
+
+- kind: ImageStream
+  apiVersion: image.openshift.io/v1
+  metadata:
+    name: openshift-squonk-runtime
+    namespace: ${APP_NAMESPACE}
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - from:
+        kind: DockerImage
+        name: informaticsmatters/openshift-squonk-runtime:latest
+      name: latest
+      importPolicy:
+        scheduled: true
+      referencePolicy:
+        type: Source

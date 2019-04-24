@@ -1,0 +1,78 @@
+---
+
+# The BuildConfig and output ImageStream for Squonk.
+#
+# Uses thew 'upstream' container ImageStream as
+# the origin of the build environment. It's an incremental
+# build, with build artifacts cached for re-use.
+
+kind: Template
+apiVersion: template.openshift.io/v1
+metadata:
+  name: squonk-build
+
+parameters:
+
+- name: APP_NAMESPACE
+  value: squonk-cicd
+- name: APP_SA
+  value: squonk
+
+- name: GITHUB_TRIGGER_SECRET
+  required: true
+
+- name: CXN_MAVEN_USER
+  required: true
+- name: CXN_MAVEN_PASSWORD
+  required: true
+
+objects:
+
+- kind: ImageStream
+  apiVersion: image.openshift.io/v1
+  metadata:
+    name: squonk-build
+    namespace: ${APP_NAMESPACE}
+  spec:
+    lookupPolicy:
+      local: false
+
+- kind: BuildConfig
+  apiVersion: build.openshift.io/v1
+  metadata:
+    labels:
+      build: squonk-build
+    name: squonk-build
+    namespace: ${APP_NAMESPACE}
+  spec:
+    serviceAccount: ${APP_SA}
+    failedBuildsHistoryLimit: 2
+    output:
+      to:
+        kind: ImageStreamTag
+        name: squonk-build:latest
+    runPolicy: Serial
+    source:
+      git:
+        uri: https://github.com/InformaticsMatters/squonk.git
+      type: Git
+    strategy:
+      sourceStrategy:
+        env:
+        - name: ORG_GRADLE_PROJECT_cxnMavenPassword
+          value: ${CXN_MAVEN_PASSWORD}
+        - name: ORG_GRADLE_PROJECT_cxnMavenUser
+          value: ${CXN_MAVEN_USER}
+        from:
+          kind: ImageStreamTag
+          name: openshift-squonk-build:latest
+          namespace: ${APP_NAMESPACE}
+      incremental: true
+      type: Source
+    successfulBuildsHistoryLimit: 5
+    triggers:
+    - type: GitHub
+      github:
+        secret: ${GITHUB_TRIGGER_SECRET}
+    - type: ConfigChange
+    - type: ImageChange

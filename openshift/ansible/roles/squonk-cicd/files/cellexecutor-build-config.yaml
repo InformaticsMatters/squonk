@@ -1,0 +1,65 @@
+---
+
+# The BuildConfig and output ImageStream for Squonk CellExecutor.
+#
+# Uses thew 'build' container as a source for material.
+
+kind: Template
+apiVersion: template.openshift.io/v1
+metadata:
+  name: squonk-build
+
+parameters:
+
+- name: APP_NAMESPACE
+  value: squonk-cicd
+- name: APP_SA
+  value: squonk
+
+objects:
+
+- kind: ImageStream
+  apiVersion: image.openshift.io/v1
+  metadata:
+    name: squonk-cellexecutor
+    namespace: ${APP_NAMESPACE}
+  spec:
+    lookupPolicy:
+      local: false
+
+- kind: BuildConfig
+  apiVersion: build.openshift.io/v1
+  metadata:
+    labels:
+      build: squonk-cellexecutor
+    name: squonk-cellexecutor
+    namespace: ${APP_NAMESPACE}
+  spec:
+    serviceAccount: ${APP_SA}
+    failedBuildsHistoryLimit: 2
+    output:
+      to:
+        kind: ImageStreamTag
+        name: squonk-cellexecutor:latest
+    runPolicy: Serial
+    source:
+      images:
+        - from:
+            kind: ImageStreamTag
+            name: 'squonk-build:latest'
+            namespace: ${APP_NAMESPACE}
+          paths:
+          - destinationDir: .
+            sourcePath: /tmp/src/components/cell-executor/build/distributions
+      type: Image
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: openshift-squonk-runtime:latest
+          namespace: ${APP_NAMESPACE}
+      type: Source
+    successfulBuildsHistoryLimit: 5
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
