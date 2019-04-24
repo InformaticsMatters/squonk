@@ -2,7 +2,9 @@
 
 # The BuildConfig and output ImageStream for Squonk CellExecutor.
 #
-# Uses thew 'build' container as a source for material.
+# Uses thew 'build' container as a source for material,
+# injecting material into the runtime container that
+# forms the base of the eventual image.
 
 kind: Template
 apiVersion: template.openshift.io/v1
@@ -46,7 +48,7 @@ objects:
       images:
         - from:
             kind: ImageStreamTag
-            name: 'squonk-build:latest'
+            name: squonk-build:latest
             namespace: ${APP_NAMESPACE}
           paths:
           - destinationDir: .
@@ -63,3 +65,9 @@ objects:
     triggers:
     - type: ConfigChange
     - type: ImageChange
+    - type: ImageChange
+      imageChange:
+        from:
+          kind: ImageStreamTag
+          name: squonk-build:latest
+          namespace: ${APP_NAMESPACE}

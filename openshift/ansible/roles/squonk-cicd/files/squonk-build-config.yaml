@@ -67,7 +67,7 @@ objects:
           kind: ImageStreamTag
           name: openshift-squonk-build:latest
           namespace: ${APP_NAMESPACE}
-      incremental: true
+        incremental: true
       type: Source
     successfulBuildsHistoryLimit: 5
     triggers:
