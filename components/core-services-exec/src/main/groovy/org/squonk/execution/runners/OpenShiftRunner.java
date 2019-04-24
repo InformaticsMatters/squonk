@@ -584,7 +584,13 @@ public class OpenShiftRunner extends AbstractRunner {
             containerEnv.add(new EnvVar("NF_PROFILE_NAME", nextflowProfileName, null));
         }
 
-        // Container (that will run in the Pod)
+        // Container (that will run in the Pod).
+        //
+        // We do not set the command for the container.
+        // Instead, we set the working directory to the 'localWorkDir'
+        // (typically /squonk/work/docker) where we've writtren
+        // an 'execute' scipt). We then rely on the
+        // base container's CMD to run './execute'.
         Container podContainer = new ContainerBuilder()
                 .withName(podName)
                 .withImage(imageName)
@@ -681,6 +687,7 @@ public class OpenShiftRunner extends AbstractRunner {
             LOG.info(podName + " containerExitCode=" + containerExitCode);
         }
 
+        LOG.info(podName + " (Log) " + getLog());
         LOG.info(podName + " (Execute complete)");
 
         // ---
