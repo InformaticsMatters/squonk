@@ -12,14 +12,24 @@
   shell: oc project {{ oc_project }}
   changed_when: False
 
+- name: Set job-name fact
+  set_fact:
+    job_name: "{{ sd_poster[origin].job_name }}"
+  changed_when: False
+
+- name: Display job-name
+  debug:
+    var: job_name
+  changed_when: False
+
 - name: Get jobs
   shell: oc get jobs
   register: jobs_result
   changed_when: False
 
 - name: Delete existing SD poster job
-  shell: oc delete jobs/{{ origin }}
-  when: jobs_result.stdout | regex_search('^%s ' % origin, multiline=True)
+  shell: oc delete jobs/{{ job_name }}
+  when: jobs_result.stdout | regex_search('^%s ' % job_name, multiline=True)
 
 - name: Run SD poster job (always)
   shell: >
@@ -28,11 +38,12 @@
     -p POSTER_SA={{ oc_project_sa }}
     -p POSTER_IMAGE={{ sd_poster[origin].image }}
     -p POSTER_IMAGE_TAG={{ sd_poster[origin].tag }}
-    -p POSTER_JOB_NAME={{ origin }}
+    -p POSTER_JOB_NAME={{ job_name }}
+    -p PULL_POLICY={{ image_pull_policy }}
     | oc create -f -
 
 - name: Wait for SD poster success
-  shell: oc describe jobs/{{ origin }} | grep '1 Succeeded'  | grep 1
+  shell: oc describe jobs/{{ job_name }} | grep '1 Succeeded'  | grep 1
   delay: 10
   retries: "{{ (pod_ready_timeout|int / 10)|int }}"
   register: result

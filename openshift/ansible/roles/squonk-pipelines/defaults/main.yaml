@@ -14,6 +14,8 @@ sd_poster:
   pipelines:
     image: "squonk/rdkit-pipelines-sdposter"
     tag: "latest"
+    job_name: rdkit-sd-poster
   pipelines_sygnature:
     image: "squonk/sygnature-pipelines-sdposter"
     tag: "latest"
+    job_name: sygnature-sd-poster
