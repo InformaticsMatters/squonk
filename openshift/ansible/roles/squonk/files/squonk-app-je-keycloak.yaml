@@ -49,7 +49,7 @@ parameters:
 - name: JE_SQUONK_POD_BASE_NAME
   value: "squonk-cell-pod"
 - name: JE_NEXTFLOW_IMAGE
-  value: informaticsmatters/nextflow:19.01.1
+  value: informaticsmatters/nextflow:19.01.0
 - name: JE_WORK_PVC_SIZE
   value: 20Gi
 - name: JE_JOB_PROJECT_NAME

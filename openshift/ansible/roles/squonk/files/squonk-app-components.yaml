@@ -85,7 +85,7 @@ parameters:
 - name: CELL_CONTAINER_RUNNER_TYPE
   value: openshift
 - name: CELL_SQUONK_NEXTFLOW_IMAGE
-  value: informaticsmatters/nextflow:19.01.1
+  value: informaticsmatters/nextflow:19.01.0
 - name: CELL_SQUONK_CONTAINER_WORK_DIR
   value: "/squonk/work/docker"
 - name: CELL_SQUONK_POD_BASE_NAME
