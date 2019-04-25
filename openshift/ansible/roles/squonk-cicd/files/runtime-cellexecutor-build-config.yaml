@@ -9,7 +9,7 @@
 kind: Template
 apiVersion: template.openshift.io/v1
 metadata:
-  name: squonk-build
+  name: cellexecutor-build
 
 parameters:
 
@@ -20,21 +20,49 @@ parameters:
 
 objects:
 
+# The (input) build container image stream.
+# This is the stream that is used to identify the build
+# image that's the base-image for the CellExecutor.
+
 - kind: ImageStream
   apiVersion: image.openshift.io/v1
   metadata:
-    name: squonk-cellexecutor
+    name: cellexecutor-runtime
+    namespace: ${APP_NAMESPACE}
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - from:
+        kind: DockerImage
+        name: squonk/s2i-cellexecutor:latest
+      name: latest
+      importPolicy:
+        scheduled: true
+      referencePolicy:
+        type: Source
+
+# The (output) container image stream.
+# This is the stream that is used to write the
+# built CellExecutor image to.
+
+- kind: ImageStream
+  apiVersion: image.openshift.io/v1
+  metadata:
+    name: cellexecutor
     namespace: ${APP_NAMESPACE}
   spec:
     lookupPolicy:
       local: false
 
+# The CellExecutor s2i BuildConfig...
+
 - kind: BuildConfig
   apiVersion: build.openshift.io/v1
   metadata:
     labels:
-      build: squonk-cellexecutor
-    name: squonk-cellexecutor
+      build: cellexecutor-build
+    name: cellexecutor-build
     namespace: ${APP_NAMESPACE}
   spec:
     serviceAccount: ${APP_SA}
@@ -42,7 +70,8 @@ objects:
     output:
       to:
         kind: ImageStreamTag
-        name: squonk-cellexecutor:latest
+        name: cellexecutor:latest
+        namespace: ${APP_NAMESPACE}
     runPolicy: Serial
     source:
       images:
@@ -58,7 +87,7 @@ objects:
       sourceStrategy:
         from:
           kind: ImageStreamTag
-          name: openshift-squonk-runtime:latest
+          name: cellexecutor-runtime:latest
           namespace: ${APP_NAMESPACE}
       type: Source
     successfulBuildsHistoryLimit: 5

@@ -1,10 +1,9 @@
 ---
 
-# The BuildConfig and output ImageStream for Squonk.
+# The BuildConfig and output ImageStream for the main Squonk build.
 #
-# Uses thew 'upstream' container ImageStream as
-# the origin of the build environment. It's an incremental
-# build, with build artifacts cached for re-use.
+# The source image is the Squonk build image (s2i-build-squonk).
+# The output image is the 'build-squonk' ImageStream (defined here)
 
 kind: Template
 apiVersion: template.openshift.io/v1
@@ -28,6 +27,32 @@ parameters:
 
 objects:
 
+# The (input) build container image stream.
+# This is the stream that is used to identify the build
+# image that's common to all the Squonk components.
+
+- kind: ImageStream
+  apiVersion: image.openshift.io/v1
+  metadata:
+    name: build
+    namespace: ${APP_NAMESPACE}
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - from:
+        kind: DockerImage
+        name: squonk/s2i:latest
+      name: latest
+      importPolicy:
+        scheduled: true
+      referencePolicy:
+        type: Source
+
+# The incremental (output) container image stream.
+# This is the stream that is used to write the
+# incremental build to.
+
 - kind: ImageStream
   apiVersion: image.openshift.io/v1
   metadata:
@@ -36,6 +61,8 @@ objects:
   spec:
     lookupPolicy:
       local: false
+
+# The Squonk s2i BuildConfig
 
 - kind: BuildConfig
   apiVersion: build.openshift.io/v1
@@ -51,6 +78,7 @@ objects:
       to:
         kind: ImageStreamTag
         name: squonk-build:latest
+        namespace: ${APP_NAMESPACE}
     runPolicy: Serial
     source:
       git:
@@ -65,7 +93,7 @@ objects:
           value: ${CXN_MAVEN_USER}
         from:
           kind: ImageStreamTag
-          name: openshift-squonk-build:latest
+          name: build:latest
           namespace: ${APP_NAMESPACE}
         incremental: true
       type: Source
