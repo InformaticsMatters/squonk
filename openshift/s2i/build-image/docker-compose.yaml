@@ -1,0 +1,9 @@
+---
+
+version: '3'
+services:
+
+  build:
+    image: squonk/s2i:latest
+    build:
+      context: .

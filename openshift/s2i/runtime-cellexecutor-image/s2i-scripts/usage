@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+cat <<EOF
+This is the Squonk S2I runtime image.
+
+It is used to compile the runtime image
+based on artifacts created by the build image.
+EOF
