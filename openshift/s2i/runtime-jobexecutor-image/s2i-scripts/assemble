@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+echo "=-> Assembling..."
+
+unzip -q -d /usr/local/tomcat/webapps/jobexecutor \
+        /tmp/src/job-executor-0.2.0-SNAPSHOT.war
+cd /usr/local/tomcat/webapps/jobexecutor/WEB-INF/lib
+rm commons-codec-*.jar commons-logging-*.jar httpclient-4*.jar \
+        httpcore-4*.jar jboss-logging-*.jar jackson-annotations-*.jar \
+        jackson-core-*.jar jackson-databind-*.jar bcpkix-jdk15on-*.jar \
+        bcprov-jdk15on-*.jar
+
+echo "=-> Assembled"

@@ -12,7 +12,6 @@ LABEL io.openshift.s2i.scripts-url="image://${HOME}/${s2i_dir}"
 WORKDIR ${HOME}/${s2i_dir}
 COPY s2i-scripts/* ${HOME}/${s2i_dir}/
 RUN chown -R 1001:1001 ${HOME}
-RUN chmod 0777 /tmp
 
 # Finally ---------------------------------------------------------------------
 

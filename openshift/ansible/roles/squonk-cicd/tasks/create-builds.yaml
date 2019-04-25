@@ -1,7 +1,7 @@
 ---
 
-- name: Login (admin)
-  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+- name: Login (user)
+  shell: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 
 - name: Get BuildConfigs
@@ -20,10 +20,13 @@
     | oc create -f -
   when: not bc_result.stdout | regex_search('^squonk-build\s', multiline=True)
 
-- name: Create the Squonk CellExecutor s2i Build
+- name: Create the Component s2i Builds
   shell: >
-    oc process -f {{ role_path }}/files/runtime-cellexecutor-build-config.yaml
+    oc process -f {{ role_path }}/files/runtime-{{ item }}-build-config.yaml
     -p APP_NAMESPACE={{ oc_cicd_project }}
     -p APP_SA={{ oc_cicd_project_sa }}
     | oc create -f -
-  when: not bc_result.stdout | regex_search('^cellexecutor-build\s', multiline=True)
+  loop:
+  - cellexecutor
+  - jobexecutor
+  when: not bc_result.stdout | regex_search('^%s-build\s' % item, multiline=True)

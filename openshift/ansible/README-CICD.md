@@ -37,7 +37,15 @@ directory with the commands: -
     preparation playbook, which you have to do before running any other
     playbooks.
 
+### Adding a GitHub web-hook
+Refer to the OKD 3.11 documentation on [webhooks]. You can obtain the Github
+web-hook URL for the Squonk CI/CD build config using the following command: -
+
+    oc describe bc/squonk-build
+    
 ## Removing the CI/CD components
 Remove the CI/CD deployment with the following playbook...
 
     ansible-playbook playbooks/squonk-cicd/undeploy.yaml
+
+[webhooks]: https://docs.openshift.com/container-platform/3.11/dev_guide/builds/triggering_builds.html#github-webhooks

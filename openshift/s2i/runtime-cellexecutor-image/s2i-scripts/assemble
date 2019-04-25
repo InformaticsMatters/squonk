@@ -2,6 +2,6 @@
 
 echo "=-> Assembling..."
 
-tar -C /tmp -xvf /tmp/src/distributions/cell-executor-0.2.0-SNAPSHOT.tar
+tar -C /tmp -xvf /tmp/src/cell-executor-0.2.0-SNAPSHOT.tar
 
 echo "=-> Assembled"

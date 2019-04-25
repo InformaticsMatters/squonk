@@ -1,6 +1,6 @@
 ---
 
-# The BuildConfig and output ImageStream for Squonk CellExecutor.
+# The BuildConfig and output ImageStream for Squonk JobExecutor.
 #
 # Uses thew 'build' container as a source for material,
 # injecting material into the runtime container that
@@ -9,7 +9,7 @@
 kind: Template
 apiVersion: template.openshift.io/v1
 metadata:
-  name: cellexecutor-build
+  name: jobexecutor-build
 
 parameters:
 
@@ -22,12 +22,12 @@ objects:
 
 # The (input) build container image stream.
 # This is the stream that is used to identify the build
-# image that's the base-image for the CellExecutor.
+# image that's the base-image for the JobExecutor.
 
 - kind: ImageStream
   apiVersion: image.openshift.io/v1
   metadata:
-    name: cellexecutor-runtime
+    name: jobexecutor-runtime
     namespace: ${APP_NAMESPACE}
   spec:
     lookupPolicy:
@@ -35,7 +35,7 @@ objects:
     tags:
     - from:
         kind: DockerImage
-        name: squonk/s2i-cellexecutor:latest
+        name: squonk/s2i-jobexecutor:latest
       name: latest
       importPolicy:
         scheduled: true
@@ -44,25 +44,25 @@ objects:
 
 # The (output) container image stream.
 # This is the stream that is used to write the
-# built CellExecutor image to.
+# built JobExecutor image to.
 
 - kind: ImageStream
   apiVersion: image.openshift.io/v1
   metadata:
-    name: cellexecutor
+    name: jobexecutor
     namespace: ${APP_NAMESPACE}
   spec:
     lookupPolicy:
       local: false
 
-# The CellExecutor s2i BuildConfig...
+# The JobExecutor s2i BuildConfig...
 
 - kind: BuildConfig
   apiVersion: build.openshift.io/v1
   metadata:
     labels:
-      build: cellexecutor-build
-    name: cellexecutor-build
+      build: jobexecutor-build
+    name: jobexecutor-build
     namespace: ${APP_NAMESPACE}
   spec:
     serviceAccount: ${APP_SA}
@@ -70,7 +70,7 @@ objects:
     output:
       to:
         kind: ImageStreamTag
-        name: cellexecutor:latest
+        name: jobexecutor:latest
         namespace: ${APP_NAMESPACE}
     runPolicy: Serial
     source:
@@ -83,13 +83,13 @@ objects:
           # '.' is essentially '/tmp/src' in the destination image.
           paths:
           - destinationDir: .
-            sourcePath: /tmp/src/components/cell-executor/build/distributions/cell-executor-0.2.0-SNAPSHOT.tar
+            sourcePath: /tmp/src/components/job-executor/build/libs/job-executor-0.2.0-SNAPSHOT.war
       type: Image
     strategy:
       sourceStrategy:
         from:
           kind: ImageStreamTag
-          name: cellexecutor-runtime:latest
+          name: jobexecutor-runtime:latest
           namespace: ${APP_NAMESPACE}
       type: Source
     successfulBuildsHistoryLimit: 5

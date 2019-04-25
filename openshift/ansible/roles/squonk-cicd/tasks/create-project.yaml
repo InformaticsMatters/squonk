@@ -2,13 +2,13 @@
 
 # Preparation and project creation for Squonk CI/CD.
 
-- name: Login (admin)
-  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+- name: Login (user)
+  shell: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 
 # Squonk CI/CD Project
 
-- name: Check the Squonk Project
+- name: Check the Squonk CI/CD Project
   shell: oc get projects
   register: projects_result
   changed_when: False
