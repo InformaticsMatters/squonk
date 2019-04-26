@@ -75,15 +75,15 @@ objects:
     runPolicy: Serial
     source:
       images:
-        - from:
-            kind: ImageStreamTag
-            name: squonk-build:latest
-            namespace: ${APP_NAMESPACE}
-          # destinationDir is relative to '/tmp/src'
-          # '.' is essentially '/tmp/src' in the destination image.
-          paths:
-          - destinationDir: .
-            sourcePath: /tmp/src/components/job-executor/build/libs/job-executor-0.2.0-SNAPSHOT.war
+      - from:
+          kind: ImageStreamTag
+          name: squonk-build:latest
+          namespace: ${APP_NAMESPACE}
+        # destinationDir is relative to '/tmp/src'
+        # '.' is essentially '/tmp/src' in the destination image.
+        paths:
+        - destinationDir: .
+          sourcePath: /tmp/src/components/job-executor/build/libs/job-executor-0.2.0-SNAPSHOT.war
       type: Image
     strategy:
       sourceStrategy:
