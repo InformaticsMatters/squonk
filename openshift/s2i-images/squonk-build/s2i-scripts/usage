@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+cat <<EOF
+
+This is the Squonk Java S2I build image.
+
+It is used to compile image artifacts
+that are used in the runtime image in a process
+that follows the guidance on how to use a
+non-builder image for the final application.
+
+EOF

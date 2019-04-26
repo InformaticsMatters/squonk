@@ -21,7 +21,7 @@ If using Minishift see the instructions at the bottom of this page that must be
 executed first to set up the Minishift environment. After that the deployment is
 the same as for OpenShift.
 
-You can run the infrastructure and Aquonk playbook from this
+You can run the infrastructure and Squonk playbook from this
 directory with the commands: -
 
     ansible-playbook playbooks/infra/deploy.yaml
@@ -151,13 +151,13 @@ While it's a work-in-progress, support for some versions of Minishift is
 available. We tend to follow recent minishift releases, at the moment we've
 tested with: -
 
--   OpenShift 3.11.0  on MiniShift 1.32.0
+-   OpenShift 3.11.0  on MiniShift 1.33.0
 -   VirtualBox 5.2.20 (OSX)
 
 On OSX, using VirtualBox, you can start a suitable Minishift
 with something like: -
 
-    minishift start --cpus 4 --memory 8GB --disk-size 40GB \
+    minishift start --cpus 4 --memory 8GB --disk-size 80GB \
         --openshift-version 3.11.0 --vm-driver virtualbox
 
 You need the `oc` executable on your path. For MiniShift do this:

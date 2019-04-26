@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# Besides the tar command, all other output to standard out must
+# be suppressed. Otherwise, the tar stream will be corrupted.
+#
+# The output from the save-artifacts script should be a tar archive stream
+# of the build artifacts. Here, the script expects that any build artifacts
+# that are to be carried over to a subsequent build have been placed by the
+# assemble script into the directory /home/squonk/cache.
+#
+# If the /opt/app-root/cache directory doesn’t exist, the script first creates
+# it. This is done to ensure we are always returning something from the script.
+# The README.txt file is created as a marker file, as the S2I build process
+# discards the output if all it contains is empty directories with no files.
+
+mkdir -p /tmp/cache
+echo "Incremental Build" > /tmp/cache/README.txt
+
+tar -C /tmp -cf - cache

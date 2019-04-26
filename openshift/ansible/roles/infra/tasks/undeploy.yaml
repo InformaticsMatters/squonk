@@ -2,7 +2,7 @@
 
 # Un-deploy (uninstall) the Infrastructure.
 #
-#  USE with EXTREME caution.
+# USE with EXTREME caution.
 
 - name: Delete Infrastructure?
   pause:
@@ -25,7 +25,7 @@
 
 - name: Delete Infra Project
   shell: oc delete project/{{ oc_infra_project }}
-  when:  projects_result.stdout | regex_search('^%s\s.*Active$' % oc_infra_project, multiline=True)
+  when: projects_result.stdout | regex_search('^%s\s.*Active$' % oc_infra_project, multiline=True)
 
 - name: Wait for Infra project deletion
   shell: oc get projects
