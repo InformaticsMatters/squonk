@@ -14,6 +14,6 @@ WORKDIR /home/tomcat/${s2i_dir}
 COPY s2i-scripts/* /home/tomcat/${s2i_dir}/
 RUN chown -R tomcat:tomcat /home/tomcat/${s2i_dir}
 
-# Back to image's original user and path...
-USER tomcat
+# Back to image's original user (tomcat is 501 in this image) and path...
+USER 501
 WORKDIR /usr/local/tomcat
