@@ -471,6 +471,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
             String body = message.getBody(String.class);
             options = JsonHandler.getInstance().objectFromJson(body, new TypeReference<Map<String, Object>>() {
             });
+            LOG.info("Found " + options.size() + " options");
 
 
             LOG.info("Found " + message.getAttachments().size() + " attachments");
