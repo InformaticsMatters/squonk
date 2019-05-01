@@ -1,0 +1,51 @@
+---
+
+# Squonk Security Context Constraints.
+# Essentially we start with the 'restricted' SCC and add what we need.
+# For background, refer to the blog article:
+#
+#   https://blog.openshift.com/understanding-service-accounts-sccs/
+#
+# And:
+#
+#   https://docs.openshift.com/container-platform/3.11/
+#     admin_guide/manage_scc.html
+#
+#   https://docs.openshift.com/container-platform/3.11/
+#     install_config/persistent_storage/pod_security_context.html
+
+kind: Template
+apiVersion: v1
+metadata:
+ name: scc-squonk
+ annotations:
+   description: Squonk SCC Definition
+   tags: scc,squonk
+labels:
+  template: scc-squonk
+  app: scc-squonk
+
+parameters:
+
+- name: APP_NAMESPACE
+  value: squonk-cicd
+- name: APP_SA
+  value: skuonk
+
+objects:
+
+- kind: SecurityContextConstraints
+  apiVersion: v1
+  metadata:
+    name: scc-squonk-cicd
+  allowPrivilegedContainer: false
+  runAsUser:
+    type: MustRunAs
+  seLinuxContext:
+    type: MustRunAs
+  fsGroup:
+    type: MustRunAs
+  supplementalGroups:
+    type: MustRunAs
+  volumes:
+  - "*"
