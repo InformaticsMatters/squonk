@@ -410,8 +410,6 @@ objects:
               secretKeyRef:
                 name: squonk-app-secrets
                 key: pod-env
-          - name: SQUONK_SERVICE_ACCOUNT
-            value: ${APP_SA}
           - name: SQUONK_POD_LOG_HISTORY
             value: ${CELL_JOB_LOG_HISTORY}
           - name: SQUONK_NEXTFLOW_IMAGE
