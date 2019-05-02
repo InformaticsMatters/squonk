@@ -29,9 +29,6 @@ curl -k -H "Authorization: bearer $token" "https://jobexecutor.$SVR/jobexecutor/
 
 curl -k -H "Authorization: bearer $token" -X DELETE "https://jobexecutor.$SVR/jobexecutor/rest/v1/jobs/$JOBID"
 
-# set the JOBID variable to whatever was returned when the job was submitted
-JOBID='set-the-job-id-from-the-job-status'
-
 # execute the conformer generator services
 curl -k\
   -F 'options={"arg.num":3, "arg.method":"RMSD"}'\
@@ -40,6 +37,9 @@ curl -k\
   -H "Content-Type: multipart/mixed"\
   -H "Authorization: bearer $token"\
   -H "SquonkUsername: user1" "https://jobexecutor.$SVR/jobexecutor/rest/v1/jobs/pipelines.rdkit.conformer.basic"
+
+# set the JOBID variable to whatever was returned when the job was submitted
+JOBID='set-the-job-id-from-the-job-status'
 
 curl -k -H "Authorization: bearer $token" "https://jobexecutor.$SVR/jobexecutor/rest/v1/jobs/$JOBID/status/"
 
