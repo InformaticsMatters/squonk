@@ -52,8 +52,6 @@ parameters:
   value: informaticsmatters/nextflow:19.01.0
 - name: JE_WORK_PVC_SIZE
   value: 20Gi
-- name: JE_JOB_PROJECT_NAME
-  value: squonk
 - name: JE_JOB_LOG_HISTORY
   valuie: 100
 
@@ -111,7 +109,9 @@ objects:
           - name: SQUONK_DOCKER_WORK_DIR
             value: ${JE_SQUONK_CONTAINER_WORK_DIR}
           - name: SQUONK_CELL_JOB_PROJECT_NAME
-            value: ${JE_JOB_PROJECT_NAME}
+            value: ${APP_NAMESPACE}
+          - name: SQUONK_SERVICE_ACCOUNT
+            value: ${APP_SA}
           - name: SQUONK_POD_BASE_NAME
             value: ${JE_SQUONK_POD_BASE_NAME}
           - name: SQUONK_POD_ENVIRONMENT

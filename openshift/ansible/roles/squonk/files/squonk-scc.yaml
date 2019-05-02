@@ -28,13 +28,6 @@ labels:
   template: scc-squonk
   app: scc-squonk
 
-parameters:
-
-- name: APP_NAMESPACE
-  value: squonk
-- name: APP_SA
-  value: skuonk
-
 objects:
 
 - kind: SecurityContextConstraints

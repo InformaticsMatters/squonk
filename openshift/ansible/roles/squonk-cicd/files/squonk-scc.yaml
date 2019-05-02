@@ -17,20 +17,13 @@
 kind: Template
 apiVersion: v1
 metadata:
- name: scc-squonk
+ name: scc-squonk-cicd
  annotations:
    description: Squonk SCC Definition
-   tags: scc,squonk
+   tags: scc,squonk,cicd
 labels:
-  template: scc-squonk
-  app: scc-squonk
-
-parameters:
-
-- name: APP_NAMESPACE
-  value: squonk-cicd
-- name: APP_SA
-  value: skuonk
+  template: scc-squonk-cicd
+  app: scc-squonk-cicd
 
 objects:
 

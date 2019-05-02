@@ -24,7 +24,7 @@ parameters:
   value: squonk
 
 - name: INFRA_SA
-  value: skuonk
+  value: squonk
 
 - name: RABBITMQ_HOST
   value: rabbitmq.openrisknet-infra.svc
