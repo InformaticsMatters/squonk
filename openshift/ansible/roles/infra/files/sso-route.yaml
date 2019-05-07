@@ -1,0 +1,58 @@
+---
+
+# Taken from sso-postgres.yaml
+
+kind: Template
+apiVersion: v1
+metadata:
+  name: sso-route
+  annotations:
+    description: SSO Route Definition
+    tags: sso,route
+labels:
+  template: sso-route
+  app: sso-route
+
+parameters:
+
+- displayName: Application Name
+  description: The name for the application.
+  name: APPLICATION_NAME
+  value: sso
+  required: true
+
+- displayName: Custom HTTPS Route Hostname
+  description: >
+    Custom hostname for https service route.  Leave blank for default
+    hostname, e.g.: <application-name>.<project>.<default-domain-suffix>
+  name: HOSTNAME_HTTPS
+  value: ''
+  required: false
+
+- displayName: Termination policy for insecure traffic
+  description: >
+    indicates the desired behavior for insecure connections to
+    the route. Typically one of Allow, Disable or Redirect'
+  name: ROUTE_INSECURE_POLICY
+  value: Disable
+  required: false
+
+objects:
+
+- kind: Route
+  apiVersion: v1
+  id: "${APPLICATION_NAME}-https"
+  metadata:
+    name: secure-${APPLICATION_NAME}
+    labels:
+      application: "${APPLICATION_NAME}"
+    annotations:
+      description: Route for application's https service.
+      kubernetes.io/tls-acme: "false"
+  spec:
+    host: "${HOSTNAME_HTTPS}"
+    to:
+      name: secure-${APPLICATION_NAME}
+    tls:
+      insecureEdgeTerminationPolicy: "${ROUTE_INSECURE_POLICY}"
+      termination: reencrypt

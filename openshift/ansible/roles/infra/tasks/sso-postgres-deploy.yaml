@@ -21,8 +21,6 @@
     -f {{ role_path }}/files/sso-postgres.yaml
     -p SSO_REALM={{ keycloak_realm }}
     -p POSTGRESQL_SHARED_BUFFERS={{ postgresql_shared_buffer_size }}
-    -p HOSTNAME_HTTPS=sso.{{ oc_routes_basename }}
-    -p ROUTE_INSECURE_POLICY={{ keycloak_insecure_route }}
     -p SSO_SA={{ oc_infra_sa }}
     -p PG_CPU_REQUEST={{ oc_infra_postgresql_cpu_request }}
     -p PG_MEM_REQUEST={{ oc_infra_postgresql_mem_request }}
