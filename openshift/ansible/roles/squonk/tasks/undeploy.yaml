@@ -175,6 +175,7 @@
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients?clientId={{ oc_squonk_app }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
+    validate_certs: "{{ validate_certificates }}"
   register: notebook_client_result
 
 - name: Delete Portal Keycloak Client
@@ -184,6 +185,7 @@
     status_code: 204
     headers:
       Authorization: bearer {{ keycloak_token }}
+    validate_certs: "{{ validate_certificates }}"
   when: notebook_client_result.json
 
 - name: Get JobExecutor Keycloak Client ID
@@ -191,6 +193,7 @@
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients?clientId={{ oc_jobexecutor_client }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
+    validate_certs: "{{ validate_certificates }}"
   register: jobexecutor_client_result
 
 - name: Delete JobExecutor Keycloak Client
@@ -200,14 +203,15 @@
     status_code: 204
     headers:
       Authorization: bearer {{ keycloak_token }}
+    validate_certs: "{{ validate_certificates }}"
   when: jobexecutor_client_result.json
 
 - name: Query Squonk Users
   uri:
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user }}"
-    validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
+    validate_certs: "{{ validate_certificates }}"
   register: squonk_users
   vars:
     user: "{{ item.split()[0] }}"
@@ -246,9 +250,9 @@
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ item }}"
     method: DELETE
     status_code: 204
-    validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
+    validate_certs: "{{ validate_certificates }}"
   loop: "{{ known_user_ids }}"
   when: users_file is defined
   tags:
