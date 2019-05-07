@@ -74,7 +74,26 @@ and a **tag**, which are defined in `roles/squonk-pipelines/defaults/main.yaml`
 If you add a new set of pipelines the expectation is that you'd add a new
 playbook (in `playbooks/squonk-pipelines`) and adjust the role's `sd_poster`
 variable to include the container image and tag for your new pipelines.
+
+### Validating (testing) pipelines
+Once pipelines have been deployed you can validate their basic operation
+using the _validate pipelines_ playbook. It relies on the built-in `user1`
+user and creates a Keycloak login for the user and then runs some example
+pipelines before removing the user.
+
+    ansible-playbook playbooks/squonk/validate-pipelines.yaml
+
+Remember that this playbook creates jobs on the server, so running it
+on an _active_ deployment is unwise. Use it as a sanity check when it's safe
+or after initial deployment to verify the installation.
  
+If you get into trouble with failed tests a convenient _cleanup_
+playbook also exists. It also creates the keycloak login for the `user1`
+user, clean up and then removes the user. Use this playbook with caution as it
+removes all the jobs with a status of  `RESULTS_READY` and `ERROR`: -
+
+    ansible-playbook playbooks/squonk/validate-cleanup.yaml
+
 ## Populating the ChemCentral database
 In order to load data into the ChemCentral database you will need to prepare
 the loader data volume with suitable source data (running a relevant
