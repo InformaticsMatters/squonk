@@ -31,6 +31,10 @@
     method: POST
   register: je
 
+- name: Display access token
+  debug:
+    var: je.json.access_token
+
 # Run the test ----------------------------------------------------------------
 
 - name: Display a name for the test
@@ -68,8 +72,8 @@
       Authorization: bearer {{ je.json.access_token }}
   register: resp
   until: resp.json.status == 'RESULTS_READY'
-  retries: 12
-  delay: 6
+  delay: 10
+  retries: "{{ (job_wait_time_s|int / 10)|int }}"
 
 - name: Delete Job
   uri:
