@@ -26,6 +26,8 @@
     -p PG_MEM_REQUEST={{ oc_infra_postgresql_mem_request }}
     -p SSO_CPU_REQUEST={{ oc_infra_sso_cpu_request }}
     -p SSO_MEM_REQUEST={{ oc_infra_sso_mem_request }}
+    -p SSO_CPU_LIMIT={{ oc_infra_sso_cpu_limit }}
+    -p SSO_MEM_LIMIT={{ oc_infra_sso_mem_limit }}
     | oc create -f -
   when: '"db-postgresql" not in sso_dc_result.stdout'
 

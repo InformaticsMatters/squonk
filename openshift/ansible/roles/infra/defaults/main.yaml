@@ -24,7 +24,9 @@ oc_infra_volume_storage_class: glusterfs-storage
 oc_infra_postgresql_cpu_request: 250m
 oc_infra_postgresql_mem_request: 100Mi
 oc_infra_sso_cpu_request: 250m
-oc_infra_sso_mem_request: 600Mi
+oc_infra_sso_cpu_limit: 1000m
+oc_infra_sso_mem_request: 2Gi
+oc_infra_sso_mem_limit: 2Gi
 oc_infra_rabbitmq_cpu_request: 200m
 oc_infra_rabbitmq_mem_request: 250Mi
 
