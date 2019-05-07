@@ -51,10 +51,15 @@
     warn: False
     chdir: ../../../..
   register: resp
+  changed_when: false
 
 - name: Get Job ID
   set_fact:
     job_id: "{{ resp.stdout | from_json | json_query('jobId') }}"
+
+- name: Display Job ID
+  debug:
+    var: job_id
 
 - name: Wait for RESULTS_READY
   uri:
