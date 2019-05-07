@@ -2,9 +2,9 @@
 
 # Here we...
 #
-# - Create a test user
-# - Run a core set of pipelines
-# - Destroy the test user
+# - Add a test user
+# - Run a series of pipelines tests
+# - Remove the test user
 
 # Create the test user.
 # Just defer to the add playbook,
@@ -14,10 +14,10 @@
 # - user_name
 # - user_password
 
-- import_tasks: add-test-user.yaml
+- import_tasks: add-user1.yaml
 
 # Now assert variables
-# and run a series of tests...
+# and run a series of tests (each in its own play)...
 
 - name: Assert state
   assert:
@@ -26,9 +26,13 @@
     - test_user_name and test_user_name|length > 0
     - test_user_password and test_user_password|length > 0
 
+- name: Set API facts
+  set_fact:
+    je_rest_v1: https://{{ oc_jobexecutor_host }}/jobexecutor/rest/v1
+
 - import_tasks: validate-pipelines-01-dataset-slice.yaml
 
 # Destroy the test user
 # (just defer to the destroy playbook)
 
-- import_tasks: remove-test-user.yaml
+- import_tasks: remove-user1.yaml

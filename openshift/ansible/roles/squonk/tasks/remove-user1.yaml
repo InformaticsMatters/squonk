@@ -9,7 +9,7 @@
 - import_tasks: >
     "{{ role_path }}/../infra/tasks/get-keycloak-token.yaml"
 
-- name: remove the 'test' user
+- name: Remove user1
   uri:
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ test_user_id }}"
     method: DELETE
