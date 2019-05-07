@@ -1,0 +1,34 @@
+---
+
+# Here we...
+#
+# - Create a test user
+# - Run a core set of pipelines
+# - Destroy the test user
+
+# Create the test user.
+# Just defer to the add playbook,
+# which sets the following facts:
+#
+# - user_id
+# - user_name
+# - user_password
+
+- import_tasks: add-test-user.yaml
+
+# Now assert variables
+# and run a series of tests...
+
+- name: Assert state
+  assert:
+    that:
+    - test_user_id and test_user_id|length > 0
+    - test_user_name and test_user_name|length > 0
+    - test_user_password and test_user_password|length > 0
+
+- import_tasks: validate-pipelines-01-dataset-slice.yaml
+
+# Destroy the test user
+# (just defer to the destroy playbook)
+
+- import_tasks: remove-test-user.yaml
