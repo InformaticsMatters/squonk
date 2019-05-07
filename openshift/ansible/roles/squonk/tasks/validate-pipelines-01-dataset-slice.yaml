@@ -3,8 +3,9 @@
 # A pipelines validation script.
 # Rules: -
 #
-#   One test
-#   Don't fail
+#   - One test
+#   - Don't fail
+#   - Clean up (i.e. remove jobs)
 #
 # The script can expect the following variables
 # to be available (defined by the validate-pipelines playbook)...
