@@ -1,5 +1,10 @@
 # Example usage of jobexecutor API in Minishift.
 # Assumes Minishift is set up, user1/user1 exists and the pipelines services have been loaded.
+#
+# See also: openshift/ansible/playbooks/squonk/validate-pipelines.yaml
+#           and the pipelines validation section of openshift/ansible/README.md
+#           where the tests shown here have been resproduced
+#           to simplify validation of deployments.
 
 # Adjust to wherever Minishift is running
 SVR=192.168.99.100.nip.io

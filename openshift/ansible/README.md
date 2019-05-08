@@ -85,11 +85,11 @@ pipelines before removing the user.
 
 Remember that this playbook creates jobs on the server, so running it
 on an _active_ deployment is unwise. Use it as a sanity check when it's safe
-or after initial deployment to verify the installation.
+or after initial deployment to quickly verify the installation.
  
 If you get into trouble with failed tests a convenient _cleanup_
 playbook also exists. It also creates the keycloak login for the `user1`
-user, clean up and then removes the user. Use this playbook with caution as it
+user, cleans up and then removes the user. Use this playbook with caution as it
 removes all the jobs with a status of  `RESULTS_READY` and `ERROR`: -
 
     ansible-playbook playbooks/squonk/validate-cleanup.yaml
