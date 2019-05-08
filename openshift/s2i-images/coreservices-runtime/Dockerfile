@@ -8,7 +8,7 @@ ARG s2i_dir=s2i
 
 # Path to the image's custom S2I scripts (the container home directory).
 # The HOME directory in the base image is '/home/jenkins'.
-LABEL io.openshift.s2i.scripts-url="image://home/${s2i_dir}"
+LABEL io.openshift.s2i.scripts-url="image:///home/${s2i_dir}"
 
 USER 0
 WORKDIR /home/${s2i_dir}
