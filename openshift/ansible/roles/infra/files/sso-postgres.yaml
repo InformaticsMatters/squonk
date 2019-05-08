@@ -330,11 +330,11 @@ objects:
           imagePullPolicy: Always
           resources:
             limits:
-              cpu: ${PG_CPU_LIMIT}
-              memory: ${PG_MEM_LIMIT}
+              cpu: ${SSO_CPU_LIMIT}
+              memory: ${SSO_MEM_LIMIT}
             requests:
-              cpu: ${PG_CPU_REQUEST}
-              memory: ${PG_MEM_REQUEST}
+              cpu: ${SSO_CPU_REQUEST}
+              memory: ${SSO_MEM_REQUEST}
           volumeMounts:
           - name: sso-x509-https-volume
             mountPath: "/etc/x509/https"
