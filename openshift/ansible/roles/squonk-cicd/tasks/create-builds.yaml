@@ -29,4 +29,5 @@
   loop:
   - cellexecutor
   - jobexecutor
+  - coreservices
   when: not bc_result.stdout | regex_search('^%s-build\s' % item, multiline=True)

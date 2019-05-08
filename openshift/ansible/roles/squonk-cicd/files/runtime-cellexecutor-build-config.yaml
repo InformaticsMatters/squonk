@@ -22,7 +22,7 @@ objects:
 
 # The (input) build container image stream.
 # This is the stream that is used to identify the build
-# image that's the base-image for the CellExecutor.
+# image that's the base-image for the runtime container image.
 
 - kind: ImageStream
   apiVersion: image.openshift.io/v1
@@ -44,7 +44,7 @@ objects:
 
 # The (output) container image stream.
 # This is the stream that is used to write the
-# built CellExecutor image to.
+# built image to.
 
 - kind: ImageStream
   apiVersion: image.openshift.io/v1
@@ -55,7 +55,7 @@ objects:
     lookupPolicy:
       local: false
 
-# The CellExecutor s2i BuildConfig...
+# The s2i BuildConfig...
 
 - kind: BuildConfig
   apiVersion: build.openshift.io/v1

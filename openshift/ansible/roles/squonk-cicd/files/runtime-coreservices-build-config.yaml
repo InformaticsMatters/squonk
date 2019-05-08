@@ -1,6 +1,6 @@
 ---
 
-# The BuildConfig and output ImageStream for Squonk JobExecutor.
+# The BuildConfig and output ImageStream for Squonk CoreServices.
 #
 # Uses thew 'build' container as a source for material,
 # injecting material into the runtime container that
@@ -9,7 +9,7 @@
 kind: Template
 apiVersion: template.openshift.io/v1
 metadata:
-  name: jobexecutor-build
+  name: coreservices-build
 
 parameters:
 
@@ -27,7 +27,7 @@ objects:
 - kind: ImageStream
   apiVersion: image.openshift.io/v1
   metadata:
-    name: jobexecutor-runtime
+    name: coreservices-runtime
     namespace: ${APP_NAMESPACE}
   spec:
     lookupPolicy:
@@ -35,7 +35,7 @@ objects:
     tags:
     - from:
         kind: DockerImage
-        name: squonk/s2i-jobexecutor:latest
+        name: squonk/s2i-coreservices:latest
       name: latest
       importPolicy:
         scheduled: true
@@ -49,7 +49,7 @@ objects:
 - kind: ImageStream
   apiVersion: image.openshift.io/v1
   metadata:
-    name: jobexecutor
+    name: coreservices
     namespace: ${APP_NAMESPACE}
   spec:
     lookupPolicy:
@@ -61,8 +61,8 @@ objects:
   apiVersion: build.openshift.io/v1
   metadata:
     labels:
-      build: jobexecutor-build
-    name: jobexecutor-build
+      build: coreservices-build
+    name: coreservices-build
     namespace: ${APP_NAMESPACE}
   spec:
     serviceAccount: ${APP_SA}
@@ -70,7 +70,7 @@ objects:
     output:
       to:
         kind: ImageStreamTag
-        name: jobexecutor:latest
+        name: coreservices:latest
         namespace: ${APP_NAMESPACE}
     runPolicy: Serial
     source:
@@ -83,13 +83,13 @@ objects:
         # '.' is essentially '/tmp/src' in the destination image.
         paths:
         - destinationDir: .
-          sourcePath: /tmp/src/components/job-executor/build/libs/job-executor-0.2.0-SNAPSHOT.war
+          sourcePath: /tmp/src/components/core-services-server/build/libs/core-services-server-0.2.0-SNAPSHOT.war
       type: Image
     strategy:
       sourceStrategy:
         from:
           kind: ImageStreamTag
-          name: jobexecutor-runtime:latest
+          name: coreservices-runtime:latest
           namespace: ${APP_NAMESPACE}
       type: Source
     successfulBuildsHistoryLimit: 5
