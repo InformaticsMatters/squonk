@@ -28,6 +28,7 @@
     | oc create -f -
   loop:
   - cellexecutor
-  - jobexecutor
   - coreservices
+  - flyway
+  - jobexecutor
   when: not bc_result.stdout | regex_search('^%s-build\s' % item, multiline=True)

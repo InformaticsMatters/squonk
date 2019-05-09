@@ -1,6 +1,6 @@
 ---
 
-# The BuildConfig and output ImageStream for Squonk CoreServices.
+# The BuildConfig and output ImageStream for Squonk Flyway.
 #
 # Uses the 'build' container as a source for material,
 # injecting material into the runtime container that
@@ -9,7 +9,7 @@
 kind: Template
 apiVersion: template.openshift.io/v1
 metadata:
-  name: coreservices-build
+  name: flyway-build
 
 parameters:
 
@@ -27,7 +27,7 @@ objects:
 - kind: ImageStream
   apiVersion: image.openshift.io/v1
   metadata:
-    name: coreservices-runtime
+    name: flyway-runtime
     namespace: ${APP_NAMESPACE}
   spec:
     lookupPolicy:
@@ -35,7 +35,7 @@ objects:
     tags:
     - from:
         kind: DockerImage
-        name: squonk/s2i-coreservices:latest
+        name: squonk/s2i-flyway:latest
       name: latest
       importPolicy:
         scheduled: true
@@ -49,7 +49,7 @@ objects:
 - kind: ImageStream
   apiVersion: image.openshift.io/v1
   metadata:
-    name: coreservices
+    name: flyway
     namespace: ${APP_NAMESPACE}
   spec:
     lookupPolicy:
@@ -61,8 +61,8 @@ objects:
   apiVersion: build.openshift.io/v1
   metadata:
     labels:
-      build: coreservices-build
-    name: coreservices-build
+      build: flyway-build
+    name: flyway-build
     namespace: ${APP_NAMESPACE}
   spec:
     serviceAccount: ${APP_SA}
@@ -70,7 +70,7 @@ objects:
     output:
       to:
         kind: ImageStreamTag
-        name: coreservices:latest
+        name: flyway:latest
         namespace: ${APP_NAMESPACE}
     runPolicy: Serial
     source:
@@ -83,13 +83,17 @@ objects:
         # '.' is essentially '/tmp/src' in the destination image.
         paths:
         - destinationDir: .
-          sourcePath: /tmp/src/components/core-services-server/build/libs/core-services-server-0.2.0-SNAPSHOT.war
+          sourcePath: /tmp/src/components/database/src/main/upgrade-postgres.sh
+        - destinationDir: .
+          sourcePath: /tmp/src/components/database/src/main/flyway.conf
+        - destinationDir: .
+          sourcePath: /tmp/src/components/database/src/main/resources/db/migration/
       type: Image
     strategy:
       sourceStrategy:
         from:
           kind: ImageStreamTag
-          name: coreservices-runtime:latest
+          name: flyway-runtime:latest
           namespace: ${APP_NAMESPACE}
       type: Source
     successfulBuildsHistoryLimit: 5

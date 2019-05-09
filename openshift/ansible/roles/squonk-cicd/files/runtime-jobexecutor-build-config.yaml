@@ -2,7 +2,7 @@
 
 # The BuildConfig and output ImageStream for Squonk JobExecutor.
 #
-# Uses thew 'build' container as a source for material,
+# Uses the 'build' container as a source for material,
 # injecting material into the runtime container that
 # forms the base of the eventual image.
 
