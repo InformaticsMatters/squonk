@@ -18,6 +18,15 @@ parameters:
 - name: APP_SA
   value: squonk
 
+- name: CPU_REQUEST
+  value: 500m
+- name: CPU_LIMIT
+  value: 1000m
+- name: MEM_REQUEST
+  value: 4Gi
+- name: MEM_LIMIT
+  value: 16Gi
+
 objects:
 
 # The (input) build container image stream.

@@ -25,6 +25,15 @@ parameters:
 - name: CXN_MAVEN_PASSWORD
   required: true
 
+- name: CPU_REQUEST
+  value: 1000m
+- name: CPU_LIMIT
+  value: 1000m
+- name: MEM_REQUEST
+  value: 4Gi
+- name: MEM_LIMIT
+  value: 16Gi
+
 objects:
 
 # The (input) build container image stream.
@@ -74,6 +83,13 @@ objects:
   spec:
     serviceAccount: ${APP_SA}
     failedBuildsHistoryLimit: 2
+    resources:
+      requests:
+        cpu: ${CPU_REQUEST}
+        memory: ${MEM_REQUEST}
+      limits:
+        cpu: ${CPU_LIMIT}
+        memory: ${MEM_LIMIT}
     output:
       to:
         kind: ImageStreamTag
