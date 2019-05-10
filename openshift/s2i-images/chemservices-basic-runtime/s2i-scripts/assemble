@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+echo "=-> Assembling..."
+
+cp /tmp/src/*.war /usr/local/tomcat/webapps
+
+echo "=-> Assembled"

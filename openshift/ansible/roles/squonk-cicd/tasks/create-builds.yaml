@@ -28,6 +28,7 @@
     | oc create -f -
   loop:
   - cellexecutor
+  - chemservices-basic
   - coreservices
   - flyway
   - jobexecutor
