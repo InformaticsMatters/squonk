@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+echo "=-> Assembling..."
+
+cp /tmp/src/upgrade-postgres.sh /flyway-3.2.1
+cp /tmp/src/flyway.conf /flyway-3.2.1/conf
+cp /tmp/src/*.sql /flyway-3.2.1/sql
+
+echo "=-> Assembled"

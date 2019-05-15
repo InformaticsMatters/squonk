@@ -1,0 +1,98 @@
+---
+
+# What volume type are we using? One of: -
+#
+# - dynamic
+# - nfs
+# - minishift
+# - none
+#
+#   When using `dynamic' remember to set
+#   the accompanying 'volume_storage_class' variable (see below)
+#
+#   When using 'nfs' you must have provisioned the NFS volumes
+#
+#   When set to 'none' the user is expected to have provisioned
+#   the persistent volumes and claims suitable for the project.
+oc_infra_volume_type: dynamic
+
+# When using dynamic volumes the storage
+# class needs to be defined...
+oc_infra_volume_storage_class: glusterfs-storage
+
+# Memory/CPU requests
+oc_infra_postgresql_cpu_request: 250m
+oc_infra_postgresql_mem_request: 100Mi
+oc_infra_sso_cpu_request: 250m
+oc_infra_sso_cpu_limit: 1000m
+oc_infra_sso_mem_request: 2Gi
+oc_infra_sso_mem_limit: 2Gi
+oc_infra_rabbitmq_cpu_request: 200m
+oc_infra_rabbitmq_mem_request: 250Mi
+
+# Infrastructure backup schedules.
+#
+# We basically run upto two backup processes in the infrastructure project,
+# one called 'hourly' (which actually runs at the rate you define) and one
+# called 'daily'.
+#
+# Define the schedule and number of backups required.
+# If the number is zero the corresponding backup is not deployed.
+#
+# The 'hourly' backup is the only backup type that actually creates new backup
+# files, the others simply copy the oldest backup file from the prior backup
+# type. Consequently you *must* have an hourly backup if you are running any
+# other backup (daily, weekly etc). So set all counts to zero or only set
+# the non-hourly counts to zero.
+oc_infra_backup_hourly_schedule: "7 23 * * *"
+oc_infra_backup_hourly_count: 7
+oc_infra_backup_daily_schedule: "37 3 * * *"
+oc_infra_backup_daily_count: 0
+
+oc_infra_project: infra
+oc_infra_project_display_name: The Infrastructure Project
+oc_infra_sa: infra
+
+oc_infra_backup_volume_size: "125Gi"
+
+oc_postgresql_volume_size: 125Gi
+
+postgresql_shared_buffer_size: 1GB
+rabbitmq_volume_size: 1Gi
+
+# Here PVs used by the application (the squonk-work-dir for example)
+# are returned to an Available state if they're currently
+# in a Released state. Note: it is the user's responsibility
+# to protect themselves for data loss here. This will inspect the
+# "state" of all PVs in the squonk *and* infrastructure projects.
+recycle_released_pvs: yes
+
+# Keycloak default roles.
+# A list of roles that need to be added to Keycloak.
+# Each is also added to the default set of roles for the realm.
+keycloak_default_roles:
+- standard-user
+
+# Default values for variables used when creating
+# new database for projects. The following  (not defined here)
+# must be defined by the user on the command-line:
+#
+# db
+# db_namespace
+db_user: "{{ lookup('password','/dev/null chars=lowercase length=10') }}"
+db_user_password: "{{ lookup('password','/dev/null chars=ascii_letters,digits length=10') }}"
+
+# Various retry timeouts (seconds)...
+pod_ready_timeout: 600
+pod_terminate_timeout: 300
+pv_create_timeout: 200
+pvc_bind_timeout: 200
+
+# Validate certificates
+# With tasks like curl
+validate_certificates: no
+
+# If set each deployment of Pods
+# will be followed by a monitoring step that waits for the
+# expected Pods to initialise before moving on to the next step.
+wait_for_pods: yes

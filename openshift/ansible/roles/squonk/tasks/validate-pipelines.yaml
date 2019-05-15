@@ -1,0 +1,42 @@
+---
+
+# Here we...
+#
+# - Add a test user
+# - Run a series of pipelines tests
+# - Remove the test user
+
+# Create the test user.
+# Just defer to the add playbook,
+# which sets the following facts:
+#
+# - user_id
+# - user_name
+# - user_password
+
+- import_tasks: add-user1.yaml
+
+# Now assert variables
+# and run a series of tests (each in its own play)...
+
+- name: Assert state
+  assert:
+    that:
+    - test_user_id and test_user_id|length > 0
+    - test_user_name and test_user_name|length > 0
+    - test_user_password and test_user_password|length > 0
+
+# User removal is done via a handler.
+# In order to run a handler we need a tasks that 'changes'.
+# So we force a change and notify the user-removal handler here...
+
+- name: Set API facts
+  set_fact:
+    je_rest_v1: https://{{ oc_jobexecutor_host }}/jobexecutor/rest/v1
+    job_wait_time_s: 300
+  changed_when: true
+  notify:
+  - Remove user 1
+
+- import_tasks: validate-pipelines-01-core-dataset-filter-slice.yaml
+#- import_tasks: validate-pipelines-02-conformer-basic.yaml

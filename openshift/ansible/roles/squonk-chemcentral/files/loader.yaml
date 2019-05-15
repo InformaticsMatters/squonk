@@ -1,0 +1,157 @@
+---
+
+kind: Template
+apiVersion: v1
+metadata:
+  name: chemcentral-loader
+  annotations:
+    description: Chemcentral database loader
+    tags: squonk,chemcentral,loader
+labels:
+  template: loader
+  app: chemcentral
+
+parameters:
+
+- name: APP_NAMESPACE
+  description: Namespace for the chemcentral search service
+  value: squonk
+
+- name: APP_SA
+  description: Service Account for the chemcentral search service
+  value: squonk
+
+- name: IMAGE_TAG
+  description: Tag name for the squonk/chemcentral-loader image
+  value: latest
+
+- name: SCHEMA_NAME
+  description: Name of the database schema
+  value: vendordbs
+
+- name: LOADER_CLASS
+  description: Classname of the loader to use
+  required: true
+
+- name: LOADER_FILE
+  description: >
+    The data file to load (for single-file loaders).
+    Relative to the mount-point in the container
+  value: undefined
+
+- name: LOADER_DIR
+  description: >
+    The directory of the data to load (for multi-file loaders).
+    Relative to the mount-point in the container
+  value: undefined
+
+- name: LOADER_PATTERN
+  description: >
+    The file pattern of the data to load (for multi-file loaders)
+  value: undefined
+
+- name: LOADER_MARKER
+  description: >
+    The unique identity of this loader.
+    Loaders with different 'markers' can run at the same time.
+  value: A
+
+- name: TABLE_NAME
+  description: Name of the database table
+
+- name: LIMIT
+  description: How many records to load
+  value: "0"
+
+- name: REPORTING_CHUNK
+  description: How often to report progress
+
+- name: CCL_CPU_REQUEST
+  value: 250m
+- name: CCL_CPU_LIMIT
+  value: 2000m
+- name: CCL_MEM_REQUEST
+  value: 100Mi
+- name: CCL_MEM_LIMIT
+  value: 2Gi
+
+objects:
+
+- kind: Job
+  apiVersion: batch/v1
+  metadata:
+    name: chemcentral-loader-${LOADER_MARKER}
+    namespace: ${APP_NAMESPACE}
+  spec:
+    template:
+      metadata:
+        name: chemcentral-loader-${LOADER_MARKER}
+        namespace: ${APP_NAMESPACE}
+      spec:
+        # A 'preferred' (not guaranteed)
+        # node selection affinity...
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: purpose
+                  operator: In
+                  values:
+                  - app
+        volumes:
+        - name: data-dir
+          persistentVolumeClaim:
+            claimName: chemcentral-data-loader-pvc
+        serviceAccountName: ${APP_SA}
+        containers:
+        - image: squonk/chemcentral-loader:${IMAGE_TAG}
+          name: chemcentral-loader-${LOADER_MARKER}
+          env:
+          - name: CHEMCENTRAL_HOST
+            valueFrom:
+              secretKeyRef:
+                name: chemcentral-database-credentials
+                key: host
+          - name: CHEMCENTRAL_USER
+            valueFrom:
+              secretKeyRef:
+                name: chemcentral-database-credentials
+                key: database-user
+          - name: CHEMCENTRAL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: chemcentral-database-credentials
+                key: database-password
+          - name: CHEMCENTRAL_PORT
+            value: "5432"
+          - name: CHEMCENTRAL_DATABASE
+            value: chemcentral
+          - name: CHEMCENTRAL_SCHEMA
+            value: vendordbs
+          - name: CHEMCENTRAL_TABLE
+            value: ${TABLE_NAME}
+          - name: CHEMCENTRAL_LOADER_FILE
+            value: /data/${LOADER_FILE}
+          - name: CHEMCENTRAL_LOADER_DIR
+            value: /data/${LOADER_DIR}
+          - name: CHEMCENTRAL_LOADER_PATTERN
+            value: ${LOADER_PATTERN}
+          - name: CHEMCENTRAL_LIMIT
+            value: ${LIMIT}
+          - name: CHEMCENTRAL_REPORTING_CHUNK
+            value: ${REPORTING_CHUNK}
+          args:
+          - ${LOADER_CLASS}
+          volumeMounts:
+          - mountPath: /data
+            name: data-dir
+          resources:
+            limits:
+              cpu: ${CCL_CPU_LIMIT}
+              memory: ${CCL_MEM_LIMIT}
+            requests:
+              cpu: ${CCL_CPU_REQUEST}
+              memory: ${CCL_MEM_REQUEST}
+        restartPolicy: Never

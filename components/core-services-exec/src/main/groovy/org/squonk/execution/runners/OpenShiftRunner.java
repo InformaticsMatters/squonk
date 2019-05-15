@@ -27,12 +27,15 @@ import io.fabric8.kubernetes.client.dsl.LogWatch;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
 import org.squonk.util.IOUtils;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Queue;
 import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * An OpenShift-based Docker image executor that expects inputs and outputs.
@@ -66,12 +69,19 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String PVC_NAME_ENV_NAME = "SQUONK_WORK_DIR_PVC_NAME";
     private static final String PVC_NAME_DEFAULT = "squonk-work-dir-pvc";
 
-    private static final String OBJ_BASE_NAME_ENV_NAME = "SQUONK_POD_BASE_NAME";
-    private static final String OBJ_BASE_NAME_DEFAULT = "squonk-cell-pod";
+    private static final String POD_BASE_NAME_ENV_NAME = "SQUONK_POD_BASE_NAME";
+    private static final String POD_BASE_NAME_DEFAULT = "squonk-cell-pod";
+
+    // The Pod Environment is a string that consists of YAML name:value pairs.
+    // If the environment string is present, each name/value pair is injected
+    // as a separate environemnt variable into the Pod container.
+    private static final String POD_ENVIRONMENT_ENV_NAME = "SQUONK_POD_ENVIRONMENT";
+    private static final String POD_ENVIRONMENT_DEFAULT = "";
 
     private static final String OS_SA;
     private static final String OS_PROJECT;
-    private static final String OS_OBJ_BASE_NAME;
+    private static final String OS_POD_BASE_NAME;
+    private static final String OS_POD_ENVIRONMENT;
     private static final String OS_DATA_VOLUME_PVC_NAME;
     private static final String OS_IMAGE_PULL_POLICY = "IfNotPresent";
     private static final String OS_POD_RESTART_POLICY = "Never";
@@ -96,13 +106,22 @@ public class OpenShiftRunner extends AbstractRunner {
     private final String hostBaseWorkDir;
     private final String localWorkDir;
     private String subPath;
-
     private String podName;
     private String imageName;
+
+    // The nextflow profile name.
+    // This is modified if the call to addExtraNextflowConfig() is made.
+    // A call to addExtraNextflowConfig indicates that nextflow is running
+    // in a OpenShift/Kubernetes environment, and so the profile name
+    // would become 'kubernetes'. If it is set the value is placed into
+    // the NF_PROFILE_NAME variable of the Container.
+    private String nextflowProfileName = "";
 
     private boolean isExecuting;
     private boolean stopRequested;
     private boolean podCreated;
+
+    private Yaml yaml = new Yaml();
 
     /**
      * The PodWatcher receives events form the launched Pod
@@ -269,7 +288,7 @@ public class OpenShiftRunner extends AbstractRunner {
     }
 
     /**
-     * The LogStream is used to collect the stdout from the launhced Pod.
+     * The LogStream is used to collect the stdout from the launched Pod.
      * It is created from within the PodWatcher when we're confident the
      * Pod's running.
      */
@@ -411,7 +430,7 @@ public class OpenShiftRunner extends AbstractRunner {
         LOG.info("subPath='" + subPath + "'");
 
         // Form the string that will be used to name all our OS objects...
-        podName = String.format("%s-%s", OS_OBJ_BASE_NAME, subPath);
+        podName = String.format("%s-%s", OS_POD_BASE_NAME, subPath);
         LOG.info("podName='" + podName + "'");
 
     }
@@ -420,14 +439,19 @@ public class OpenShiftRunner extends AbstractRunner {
      * Given an existing configuration string this method adds material
      * to allow a Nextflow container to run properly in our OpenShift
      * environment. This mainly consists of exposing the name of the
-     * shared data volume claim, a suitable mount path and the sub-path
-     * we're using.
+     * shared data volume claim, a suitable mount path, the sub-path
+     * we're using and the service account for the namespace we're in.
      *
      * @param originalConfig The original configuration string.
      *                       If this is null, null is returned.
      * @return originalConfig with further config appended.
      */
     public String addExtraNextflowConfig(String originalConfig) {
+
+        // A hint we're going to run a nextflow process.
+        // so set the profile name (passed to the POD in an Environment variable)
+        // to 'kubernetes'.
+        nextflowProfileName = "kubernetes";
 
         if (originalConfig == null) {
             return null;
@@ -436,15 +460,16 @@ public class OpenShiftRunner extends AbstractRunner {
         // Add all the stuff Nextflow needs from our OpenShift world...
         // The following requires Nextflow 0.31.0 or later.
         String additionalConfig = String.format(
-                "process.executor = 'k8s'\n" +
                 "k8s {\n" +
                 "  storageClaimName = '%s'\n" +
                 "  storageMountPath = '%s'\n" +
                 "  storageSubPath = '%s'\n" +
+                "  serviceAccount = '%s'\n" +
                 "}\n",
                 OS_DATA_VOLUME_PVC_NAME,
                 localWorkDir,
-                jobId);
+                jobId,
+                OS_SA);
 
         return originalConfig + "\n" + additionalConfig;
 
@@ -482,11 +507,15 @@ public class OpenShiftRunner extends AbstractRunner {
      * Executes the container image and blocks until the container
      * (an OpenShift 'Pod') has completed. This method must only be called
      * once, subsequent calls are ignored.
+     *
+     * The container image is expected to utilise CMD or ENTRYPOINT in order
+     * to provide the command to run as the command passed to this method
+     * is no longer used.
      * <p/>
      * The runner instance must have been initialised before calling
      * execute() otherwise an error will be immediately returned.
      *
-     * @param cmd The command sequence to run in the container
+     * @param cmd A command sequence (unused for this runner)
      * @return Execution status (non-zero on error)
      *
      * @throws IllegalStateException if the method is called incorrectly
@@ -531,13 +560,43 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withName(podName)
                 .withSubPath(subPath).build();
 
-        // Container (that will run in the Pod)
+        // Create environment variables for the container.
+        // This array is driven by the content of the
+        // OS_POD_ENVIRONMENT YAML string of <NAME>=<VALUE> pairs.
+        List<EnvVar> containerEnv = new ArrayList<>();
+        if (OS_POD_ENVIRONMENT.length() > 0) {
+            Map<String, Object> map =
+                    (Map<String, Object>) yaml.load(OS_POD_ENVIRONMENT);
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                String name = entry.getKey().trim();
+                String value = entry.getValue().toString().trim();
+                LOG.info("...adding EnvVar " + name);
+                containerEnv.add(new EnvVar(name, value, null));
+            }
+        }
+        LOG.info("Number of OS_POD_ENVIRONMENT variables: " + containerEnv.size());
+
+        // Has a profile name been set?
+        // If so add a suitable environment variable to pass it to the Pod.
+        if (nextflowProfileName.length() > 0) {
+            // Set the container's profile (a nextflow feature)
+            // via NF_PROFILE_NAME.
+            containerEnv.add(new EnvVar("NF_PROFILE_NAME", nextflowProfileName, null));
+        }
+
+        // Container (that will run in the Pod).
+        //
+        // We do not set the command for the container.
+        // Instead, we set the working directory to the 'localWorkDir'
+        // (typically /squonk/work/docker) where we've writtren
+        // an 'execute' scipt). We then rely on the
+        // base container's CMD to run './execute'.
         Container podContainer = new ContainerBuilder()
                 .withName(podName)
                 .withImage(imageName)
-                .withCommand(cmd)
                 .withWorkingDir(localWorkDir)
                 .withImagePullPolicy(OS_IMAGE_PULL_POLICY)
+                .withEnv(containerEnv)
                 .withVolumeMounts(volumeMount).build();
 
         // The Pod, which runs the container image...
@@ -548,7 +607,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 .endMetadata()
                 .withNewSpec()
                 .withContainers(podContainer)
-//                .withServiceAccount(OS_SA)
+                .withServiceAccount(OS_SA)
                 .withRestartPolicy(OS_POD_RESTART_POLICY)
                 .withVolumes(volume)
                 .endSpec().build();
@@ -628,6 +687,7 @@ public class OpenShiftRunner extends AbstractRunner {
             LOG.info(podName + " containerExitCode=" + containerExitCode);
         }
 
+        LOG.info(podName + " (Log) " + getLog());
         LOG.info(podName + " (Execute complete)");
 
         // ---
@@ -773,9 +833,18 @@ public class OpenShiftRunner extends AbstractRunner {
         LOG.info("OS_DATA_VOLUME_PVC_NAME='" + OS_DATA_VOLUME_PVC_NAME + "'");
 
         // And the base-name for all Pods we create...
-        OS_OBJ_BASE_NAME = IOUtils
-                .getConfiguration(OBJ_BASE_NAME_ENV_NAME, OBJ_BASE_NAME_DEFAULT);
-        LOG.info("OS_OBJ_BASE_NAME='" + OS_OBJ_BASE_NAME + "'");
+        OS_POD_BASE_NAME = IOUtils
+                .getConfiguration(POD_BASE_NAME_ENV_NAME, POD_BASE_NAME_DEFAULT);
+        LOG.info("OS_POD_BASE_NAME='" + OS_POD_BASE_NAME + "'");
+
+        // And the environment setting for all Pods we create...
+        OS_POD_ENVIRONMENT = IOUtils
+                .getConfiguration(POD_ENVIRONMENT_ENV_NAME, POD_ENVIRONMENT_DEFAULT);
+        if (OS_POD_ENVIRONMENT.length() == 0) {
+            LOG.info("OS_POD_ENVIRONMENT=(Empty)");
+        } else {
+            LOG.info("OS_POD_ENVIRONMENT='...'");
+        }
 
         // Get the configured log cpacity
         // (maximum number of lines collected from a Pod).

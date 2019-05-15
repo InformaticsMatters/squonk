@@ -126,7 +126,7 @@ allprojects {
         reports {
             xml.enabled true
             csv.enabled false
-            html.destination "${buildDir}/reports/coverage"
+            html.destination file("${buildDir}/reports/coverage")
         }
     }
 
@@ -237,7 +237,7 @@ task dockerFileChemServices(type: Dockerfile) {
 
     destFile = project.file('build/chem-services-basic/Dockerfile')
     // if changing the version you must also update the hardcoded version number in org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor
-    from "informaticsmatters/rdkit-tomcat-debian:Release_2018_03_01"
+    from "informaticsmatters/rdkit-tomcat-debian:Release_2018_09_1"
     maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
 
     addFile('*.war', "/usr/local/tomcat/webapps/")

@@ -15,9 +15,11 @@
  */
 package org.squonk.execution;
 
+import io.swagger.v3.oas.models.OpenAPI;
 import org.apache.camel.CamelContext;
 import org.squonk.core.ServiceConfig;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.ServiceDescriptorToOpenAPIConverter;
 import org.squonk.core.ServiceDescriptorUtils;
 import org.squonk.core.client.JobStatusRestClient;
 import org.squonk.io.IODescriptor;
@@ -71,7 +73,6 @@ public class JobManager implements ExecutorCallback {
     private final Map<String,ServiceDescriptor> serviceDescriptors = new HashMap<>();
 
 
-
     public JobManager() {
         initServiceDescriptors();
     }
@@ -106,6 +107,16 @@ public class JobManager implements ExecutorCallback {
         } catch (IOException ioe) {
             LOG.log(Level.SEVERE, "Failed to load service descriptors", ioe);
         }
+    }
+
+    public Collection<ServiceDescriptor> fetchServiceDescriptors() {
+        return serviceDescriptors.values();
+    }
+
+    public OpenAPI fetchServiceDescriptorSwagger(String baseUrl) throws IOException {
+        ServiceDescriptorToOpenAPIConverter converter = new ServiceDescriptorToOpenAPIConverter(baseUrl);
+        OpenAPI oai = converter.convertToOpenApi(serviceDescriptors.values());
+        return oai;
     }
 
     public List<Map<String,String>> fetchServiceDescriptorInfo() {
@@ -192,6 +203,12 @@ public class JobManager implements ExecutorCallback {
             Map<String, DataSource> inputs,
             boolean async) throws Exception {
 
+        if (inputs == null) {
+            LOG.info("Executing with no inputs");
+        } else {
+            LOG.info("Executing with " + inputs.size() + "  inputs");
+        }
+
         if (options == null) {
             options = Collections.emptyMap();
         }
@@ -240,7 +257,7 @@ public class JobManager implements ExecutorCallback {
 
     protected Map<String,Object> createObjectsFromDataSources(Map<String, DataSource> inputs, IODescriptor[] ioDescriptors) throws Exception {
         // group the datasources by their input name
-        Map<IODescriptor,List<DataSource>> collectedDataSources = collectDataSources(inputs, ioDescriptors);
+        Map<IODescriptor,Map<String,DataSource>> collectedDataSources = collectDataSources(inputs, ioDescriptors);
         // now convert them to objects of the type specified by the datasource
         Map<IODescriptor, Object> collectedObjects = collectObjects(collectedDataSources);
         // now convert the value types if necessary e.g. convert sdf to datasource
@@ -253,8 +270,16 @@ public class JobManager implements ExecutorCallback {
         return results;
     }
 
-    private Map<IODescriptor,List<DataSource>> collectDataSources(Map<String, DataSource> inputs, IODescriptor[] ioDescriptors) throws Exception {
-        Map<IODescriptor,List<DataSource>> results = new LinkedHashMap<>();
+    /** The inputs map has keys that are the form fields. The value of the DataSource name that is the value of this key
+     * depends on what is specified the Content-Disposition header so cannot be relied on.
+     *
+     * @param inputs
+     * @param ioDescriptors
+     * @return
+     * @throws Exception
+     */
+    private Map<IODescriptor,Map<String,DataSource>> collectDataSources(Map<String, DataSource> inputs, IODescriptor[] ioDescriptors) throws Exception {
+        Map<IODescriptor,Map<String,DataSource>> results = new LinkedHashMap<>();
         int count = 0;
         for (Map.Entry<String, DataSource> e : inputs.entrySet()) {
             String dataSourceName = e.getKey();
@@ -269,21 +294,21 @@ public class JobManager implements ExecutorCallback {
                     if (results.containsKey(iod)) {
                         throw new IllegalStateException("Duplicate DataSources found for " + inputName);
                     } else {
-                        results.put(iod, Collections.singletonList(dataSource));
-                        LOG.fine("Collected datasource " + dataSource.getName());
+                        results.put(iod, Collections.singletonMap(dataSourceName, dataSource));
+                        LOG.fine("Collected DataSource " + dataSourceName);
                     }
                 } else if (dataSourceName.toLowerCase().startsWith(inputName + "_")) {
                     // object using multiple InputStream parts
                     // each one will be named like <name-from-iodescriptor>_<part-name>
                     count++;
                     if (results.containsKey(iod)) {
-                        results.get(iod).add(dataSource);
+                        results.get(iod).put(dataSourceName, dataSource);
                     } else {
-                        List<DataSource> list = new ArrayList<>();
-                        list.add(dataSource);
-                        results.put(iod, list);
-                        LOG.fine("Collected datasource " + dataSource.getName());
+                        Map<String,DataSource> map = new LinkedHashMap<>();
+                        map.put(dataSourceName, dataSource);
+                        results.put(iod, map);
                     }
+                    LOG.fine("Collected DataSource " + dataSourceName);
                 }
             }
         }
@@ -293,32 +318,34 @@ public class JobManager implements ExecutorCallback {
         return results;
     }
 
-    private Map<IODescriptor, Object> collectObjects(Map<IODescriptor,List<DataSource>> inputs) throws Exception {
+    private Map<IODescriptor, Object> collectObjects(Map<IODescriptor,Map<String,DataSource>> inputs) throws Exception {
         if (inputs.isEmpty()) {
             return Collections.emptyMap();
         }
         Map<IODescriptor, Object> results = new LinkedHashMap<>();
-        for (Map.Entry<IODescriptor, List<DataSource>> e : inputs.entrySet()) {
+        for (Map.Entry<IODescriptor, Map<String,DataSource>> e : inputs.entrySet()) {
             IODescriptor iod = e.getKey();
-            List<DataSource> dataSources = e.getValue();
-            LOG.fine("Building objects for " + dataSources.stream().map((d) -> d.getName()).collect(Collectors.joining(",")));
+            Map<String,DataSource> dataSources = e.getValue();
+
+            LOG.fine("Building objects for " + dataSources.keySet().stream().collect(Collectors.joining(",")));
             Object value = null;
             if (dataSources.size() == 1) {
-                DataSource ds = dataSources.get(0);
+                DataSource ds = dataSources.values().iterator().next();
                 IODescriptor dsIod = TypeResolver.getInstance().createIODescriptor(iod.getName(), ds.getContentType());
                 value = DefaultHandler.buildObject(dsIod, Collections.singletonMap(iod.getName(), ds.getInputStream()));
                 results.put(iod, value);
             } else if (dataSources.size() > 1) {
                 Map<String, InputStream> inputStreams = new LinkedHashMap<>(dataSources.size());
-                for (DataSource ds : dataSources) {
-                    String dsn = ds.getName();
+                for (Map.Entry<String,DataSource> dse : dataSources.entrySet()) {
+                    String fieldName = dse.getKey();
+                    DataSource ds = dse.getValue();
                     String prefix = iod.getName() + "_";
-                    if (dsn.toLowerCase().startsWith(prefix)) {
-                        String trimmed = dsn.substring(prefix.length());
+                    if (fieldName.toLowerCase().startsWith(prefix)) {
+                        String trimmed = fieldName.substring(prefix.length());
                         inputStreams.put(trimmed, ds.getInputStream());
                         LOG.fine("Put trimmed input " + trimmed);
                     } else {
-                        throw new IllegalStateException("Unexpected datasource name " + dsn + " for input " + iod.getName());
+                        throw new IllegalStateException("Unexpected DataSource name " + fieldName + " for input " + iod.getName());
                     }
                 }
                 value = DefaultHandler.buildObject(iod, inputStreams);
@@ -339,13 +366,14 @@ public class JobManager implements ExecutorCallback {
         for (Map.Entry<IODescriptor, Object> e : inputs.entrySet()) {
             IODescriptor iod = e.getKey();
             Object val = e.getValue();
-            if (iod.getPrimaryType().isAssignableFrom(val.getClass())) {
+            LOG.info("Testing " + val.getClass().getName() + " to " + iod.getPrimaryType().getName());
+            if (iod.getPrimaryType() == val.getClass() || iod.getPrimaryType().isAssignableFrom(val.getClass())) {
                 results.put(iod, val);
             } else {
                 Object converted = camelContext.getTypeConverter().convertTo(iod.getPrimaryType(), val);
                 if (converted == null) {
                     throw new IllegalStateException(String.format("Can't convert input %s to %s",
-                            iod.getPrimaryType().getName(), iod.getPrimaryType().getName()));
+                            val.getClass().getName(), iod.getPrimaryType().getName()));
                 } else {
                     LOG.info("Converted " + val.getClass().getName() + " to " + iod.getPrimaryType().getName());
                     results.put(iod, converted);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,8 @@ import org.squonk.types.MoleculeObject;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -234,17 +236,25 @@ public class CDKMoleculeIOUtils {
     }
 
     public static CDKSDFile covertToSDFile(Stream<MoleculeObject> mols, boolean haltOnError) throws IOException, CDKException {
+
+        LOG.info("Converting to SDF");
+
         final PipedInputStream in = new PipedInputStream();
         final PipedOutputStream out = new PipedOutputStream(in);
-
+        final BufferedWriter bwriter = new BufferedWriter(new OutputStreamWriter(out));
 
         Thread t = new Thread() {
             public void run() {
-                try (SDFWriter writer = createSDFWriter(out)) {
 
+                LOG.fine("Running SDF conversion");
+                try (SDFWriter writer = new SDFWriter(bwriter)) {
                     // TODO - change this to a map (MoleculeObject -> IAtomContainer operation followed by an operation
                     // to write to SDF
+                    AtomicInteger count = new AtomicInteger(0);
                     mols.forEachOrdered((mo) -> {
+                        if (count.incrementAndGet() % 1000 == 0) {
+                            LOG.info("Processed " + count.get() + " mols");
+                        }
                         IAtomContainer mol = fetchMolecule(mo, false);
                         if (mol == null) {
                             if (haltOnError) {
@@ -262,7 +272,8 @@ public class CDKMoleculeIOUtils {
                         }
                         try {
                             writer.write(mol);
-                        } catch (CDKException e) {
+                            bwriter.flush();
+                        } catch (CDKException | IOException e) {
                             if (haltOnError) {
                                 String msg = "Failed to write molecule " + mo.getUUID();
                                 if (mo.getFormat().startsWith("smiles")) {
@@ -274,14 +285,16 @@ public class CDKMoleculeIOUtils {
                                 AtomContainer emptyMol = handleErrorWithEmptyMolecule(mo, e.getLocalizedMessage());
                                 try {
                                     writer.write(emptyMol);
-                                } catch (CDKException e1) {
+                                    bwriter.flush();
+                                } catch (CDKException | IOException e1) {
                                     LOG.log(Level.WARNING, "Failed to write empty molecule " + mo.getUUID(), e1);
                                 }
                             }
                         }
                     });
-                    LOG.fine("Writing to SDF complete");
+                    LOG.info("Writing to SDF complete");
                     mols.close();
+                    writer.close();
                 } catch (IOException e) {
                     throw new RuntimeException("Failed to create SDFWriter", e);
                 }

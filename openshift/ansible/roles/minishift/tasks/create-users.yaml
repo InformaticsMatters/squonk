@@ -7,7 +7,7 @@
 # it's what's expected of the downstream plays.
 
 - name: Login as MiniShift system:admin
-  shell: oc login -u system:admin
+  shell: oc login {{ oc_master_url }} -u system:admin
   changed_when: False
 
 - name: Get users

@@ -1,0 +1,83 @@
+---
+
+# Get a keycloak token (sets the fact 'keycloak_token').
+# Remember that the login user may have changed to admin.
+#
+# The actions for getting the KeyCloak token
+# are located in a infra role playbook.
+
+- import_tasks: >
+    "{{ role_path }}/../infra/tasks/get-keycloak-token.yaml"
+
+# Now add the user...
+
+- name: Set the user fact (and assign a password)
+  set_fact:
+    test_user_name: user1
+    test_user_password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"
+
+- name: Query existing Squonk Users
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ test_user_name }}"
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  register: user_check
+  changed_when: False
+
+- name: Assert user1 does not exist
+  assert:
+    that: not user_check | json_query('json')
+
+- name: Expose user1 password
+  debug:
+    msg: User {{ test_user_name }} has password {{ test_user_password }}
+  when:
+    - not user_check | json_query('json')
+
+- name: Add user1 (if it does not exist)
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users"
+    method: POST
+    body: >-
+      {"username": "{{ test_user_name }}",
+       "enabled": "true"}
+    body_format: json
+    status_code: 201
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  when:
+  - not user_check | json_query('json')
+
+- name: Query user1 (to get its assigned identity)
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ test_user_name }}"
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  register: test_user
+  when:
+  - not user_check | json_query('json')
+
+- name: Set user1 User Identity fact
+  set_fact:
+    test_user_id: "{{ test_user | json_query('json[0].id') }}"
+  when:
+  - not user_check | json_query('json')
+
+- name: Set (Reset) Keycloak user1 User Password
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ test_user_id }}/reset-password"
+    method: PUT
+    body: >-
+      {"type": "password",
+       "temporary": "false",
+       "value": "{{ test_user_password }}"}
+    body_format: json
+    status_code: 204
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+  when:
+  - not user_check | json_query('json')

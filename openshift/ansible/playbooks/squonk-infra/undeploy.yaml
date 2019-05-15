@@ -1,9 +1,0 @@
----
-
-- hosts: localhost
-
-  tasks:
-  - name: Run the Squonk-Infra Role Undeploy Tasks
-    include_role:
-      name: squonk-infra
-      tasks_from: undeploy.yaml

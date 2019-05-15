@@ -55,7 +55,8 @@ public class SDFileHandler extends DefaultHandler<SDFile> {
         if (sdf == null) {
             executor.setResponseBody(null);
         } else {
-            executor.setResponseBody(gzip ? IOUtils.getGzippedInputStream(sdf.getInputStream()) : sdf.getInputStream());
+            // setting the Content-Encoding is enough to handle compression
+            executor.setResponseBody(IOUtils.getGunzippedInputStream(sdf.getInputStream()));
             if (gzip) {
                 executor.setResponseHeader("Content-Encoding", "gzip");
             }

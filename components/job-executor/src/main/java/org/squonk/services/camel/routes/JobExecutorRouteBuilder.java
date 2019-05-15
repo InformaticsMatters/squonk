@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,17 @@
 package org.squonk.services.camel.routes;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.swagger.v3.oas.models.OpenAPI;
+import org.apache.camel.Attachment;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Message;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.impl.DefaultAttachment;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.squonk.core.ServiceConfig;
 import org.squonk.core.ServiceDescriptor;
+import org.squonk.core.ServiceDescriptorToOpenAPIConverter;
 import org.squonk.core.ServiceDescriptorUtils;
 import org.squonk.execution.JobManager;
 import org.squonk.io.SquonkDataSource;
@@ -40,9 +44,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,9 +56,10 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
     private static final Logger LOG = Logger.getLogger(JobExecutorRouteBuilder.class.getName());
     private static final String ROUTE_STATS = "seda:post_stats";
+    private static final String CONTENT_TRANSFER_ENCODING = IOUtils.getConfiguration("CONTENT_TRANSFER_ENCODING", "8bit");
 
     protected int timerInterval = 5 * 60 * 1000;
-    protected int timerDelay =  15 * 1000;
+    protected int timerDelay = 15 * 1000;
     protected boolean pollForServiceDescriptors = Boolean.valueOf(
             IOUtils.getConfiguration("SQUONK_JOBEXECUTOR_POLL_FOR_SERVICE_DESCRIPTORS", "false"));
 
@@ -66,6 +69,9 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
      */
     protected static boolean ALLOW_UNAUTHENTICATED_USER = Boolean.valueOf(
             IOUtils.getConfiguration("SQUONK_JOBEXECUTOR_ALLOW_UNAUTHENTICATED", "false"));
+
+    protected static final String JOBS_SERVER = IOUtils.getConfiguration("SQUONK_JOBEXECUTOR_SERVER", null);
+    protected static final String JOBS_PATH = IOUtils.getConfiguration("SQUONK_JOBEXECUTOR_PATH", "/jobexecutor/rest");
 
     @Inject
     private JobManager jobManager;
@@ -84,7 +90,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
         if (pollForServiceDescriptors && jobManager != null) {
             from("timer:discoverServiceDescriptors?period=" + timerInterval + "&delay=" + timerDelay)
-                    .log(LoggingLevel.WARN, "Polling for service descriptors")
+                    .log(LoggingLevel.INFO, "Polling for service descriptors")
                     .to("http4://coreservices:8080/coreservices/rest/v1/services/descriptors")
                     .process((exch) -> {
                         String resp = exch.getIn().getBody(String.class);
@@ -96,7 +102,15 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
             LOG.warning("Service descriptors are not being dynamically updated");
         }
 
-        restConfiguration().component("servlet").host("0.0.0.0");
+        restConfiguration()
+                .component("servlet")
+                .host("0.0.0.0")
+                .enableCORS(true)
+                .corsHeaderProperty("Access-Control-Allow-Headers",
+                        "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, " +
+                                "Access-Control-Request-Headers, Authorization")
+                .corsHeaderProperty("Access-Control-Allow-Credentials", "true")
+        ;
 
 
         /* These are the REST endpoints - exposed as public web services
@@ -108,6 +122,30 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 .route()
                 .transform(constant("OK\n")).endRest();
 
+        // everything under /rest/v1 will potentially be secured except for /rest/v1/swagger
+        rest("/v1/swagger/swagger.json").description("Service information")
+                //
+                //
+                .get("/").description("Get OpenAPI definitions for services as JSON")
+                .bindingMode(RestBindingMode.off)
+                .produces(CommonMimeTypes.MIME_TYPE_JSON)
+                .route()
+                .process((Exchange exch) -> {
+                    handleFetchSwagger(exch, "json");
+                })
+                .endRest();
+
+        rest("/v1/swagger/swagger.yaml").description("Service information")
+                //
+                //
+                .get("/").description("Get OpenAPI definitions for services as YAML")
+                .bindingMode(RestBindingMode.off)
+                .produces(CommonMimeTypes.MIME_TYPE_YAML)
+                .route()
+                .process((Exchange exch) -> {
+                    handleFetchSwagger(exch, "yaml");
+                })
+                .endRest();
 
         rest("/v1/services").description("Service information")
                 //
@@ -140,6 +178,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 .produces(CommonMimeTypes.MIME_TYPE_JSON)
                 .outType(List.class)
                 .route()
+                .log("Getting jobs")
                 .process((Exchange exch) -> {
                     handleJobsList(exch);
                 })
@@ -159,9 +198,16 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
                 // submit new async job
                 .post("/{service}").description("Submit a new job")
                 .bindingMode(RestBindingMode.off)
+                .produces(CommonMimeTypes.MIME_TYPE_JSON)
                 .outType(JobStatus.class)
                 .route()
-                .log("handling Job posting")
+                .log("Handling Job posting")
+//                .process((Exchange exch) -> {
+//                    Message in = exch.getIn();
+//                    String body = in.getBody(String.class);
+//                    LOG.info("BODY:\n" + body);
+//                    in.setBody(body);
+//                })
                 .unmarshal().mimeMultipart()
                 .process((Exchange exch) -> {
                     handleJobSubmit(exch);
@@ -204,9 +250,78 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
         ;
     }
 
+    private void handleFetchSwagger(Exchange exch, String format) throws IOException {
+
+        Message message = exch.getIn();
+
+        Collection sds = jobManager.fetchServiceDescriptors();
+        ServiceDescriptorToOpenAPIConverter converter = createConverter(message);
+        OpenAPI oai = converter.convertToOpenApi(sds);
+
+        String result;
+        String contentType;
+        if ("yaml".equalsIgnoreCase(format)) {
+            result = converter.openApiToYaml(oai);
+            contentType = CommonMimeTypes.MIME_TYPE_YAML;
+        } else {
+            // anything else use JSON
+            result = converter.openApiToJson(oai);
+            contentType = CommonMimeTypes.MIME_TYPE_JSON;
+        }
+        message.setHeader("Content-Type", contentType);
+        message.setBody(result);
+    }
+
+
+    /**
+     * Create the ServiceDescriptorToOpenAPIConverter configured to point to the Job executor REST API.
+     * <p>
+     * This is quite a hacky way of defining the location of the REST services.
+     * There may be better ways.
+     *
+     * @param message
+     * @return
+     * @throws IOException
+     */
+    private ServiceDescriptorToOpenAPIConverter createConverter(Message message) throws IOException {
+        String server;
+        String path;
+
+        LOG.info("JOBS_SERVER: " + JOBS_SERVER);
+
+        if (JOBS_SERVER == null || JOBS_SERVER.isEmpty()) {
+
+            // Here we sniff out the server and path that the services are exposed as.
+            // This relies on Tomcat/Camel providing the right information, and this usually requires
+            // the proxy settings in the
+
+            String url = message.getHeader("CamelHttpUrl", String.class);
+            String uri = message.getHeader("CamelHttpUri", String.class);
+            String host = message.getHeader("host", String.class);
+            LOG.info("CamelHttpUrl: " + url + " CamelHttpUri: " + uri + " host: " + host);
+
+            if (url.startsWith("https://")) {
+                server = "https://" + host;
+            } else if (url.startsWith("http://")) {
+                server = "http://" + host;
+            } else {
+                throw new IOException("Unexpected request URL: " + url);
+            }
+            int loc = uri.indexOf("/rest/v1/swagger");
+            LOG.finer("LOC: " + loc);
+            path = uri.substring(0, loc + 5);
+        } else {
+            server = JOBS_SERVER;
+            path = JOBS_PATH;
+        }
+        LOG.info("ServiceDescriptorToOpenAPIConverter config: server=" + server + " path=" + path);
+        Collection sds = jobManager.fetchServiceDescriptors();
+        return new ServiceDescriptorToOpenAPIConverter(server, path);
+    }
+
     private void handleFetchServiceDescriptorInfo(Exchange exch) throws IOException {
         Message message = exch.getIn();
-        List<Map<String,String>> info = jobManager.fetchServiceDescriptorInfo();
+        List<Map<String, String>> info = jobManager.fetchServiceDescriptorInfo();
         String json = JsonHandler.getInstance().objectToJson(info);
         message.setBody(json);
     }
@@ -236,7 +351,7 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
             exch.getIn().setBody(json);
         } catch (AuthenticationException e) {
             handle401Error(message);
-        }  catch (Exception e) {
+        } catch (Exception e) {
             handle500Error(message, "Failed to list jobs", e);
         }
     }
@@ -268,38 +383,139 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
         return jobStatus;
     }
 
+//    private void handleJobSubmitParts(Exchange exch) {
+//        Message message = exch.getIn();
+//        String service = message.getHeader("service", String.class);
+//        LOG.info("Submitting async job for " + service);
+//
+//        HttpServletRequest req = message.getBody(HttpServletRequest.class);
+//        int i = 1;
+//        try {
+//            Collection<Part> parts = req.getParts();
+//            for (Part part : parts) {
+//                LOG.info("Part " + i + " " + part.getName() + " " + part.getContentType());
+//            }
+//            message.setBody("{\"OK\"}");
+//            message.setHeader(Exchange.HTTP_RESPONSE_CODE, 201); // created
+//        } catch (IOException | ServletException e) {
+//            handle500Error(message, "Failed to read parts", e);
+//        }
+//    }
+//
+//
+//    private void handleJobSubmitFileUpload(Exchange exch) {
+//        Message message = exch.getIn();
+//        String service = message.getHeader("service", String.class);
+//        LOG.info("Submitting async job for " + service);
+//
+//        HttpServletRequest req = message.getBody(HttpServletRequest.class);
+//
+//        try {
+//            ServletFileUpload servletFileUpload = new ServletFileUpload();
+//            FileItemIterator iter = servletFileUpload.getItemIterator(req);
+//            int i = 1;
+//            while (iter.hasNext()) {
+//                FileItemStream fis = iter.next();
+//                String contentType = fis.getContentType();
+//                String fieldName = fis.getFieldName();
+//                String name = fis.getName();
+//                FileItemHeaders headers = fis.getHeaders();
+//                StringBuilder b = new StringBuilder("Part" + i);
+//                b.append(" ContentType=").append(contentType)
+//                        .append(" FieldName=").append(fieldName)
+//                        .append(" Name=").append(name)
+//                        .append(" Headers:");
+//                Iterator<String> headerIter = headers.getHeaderNames();
+//                while (headerIter.hasNext()) {
+//                    String headerName = headerIter.next();
+//                    String headerValue = headers.getHeader(headerName);
+//                    b.append(headerName).append("->").append(headerValue);
+//                }
+//                try (InputStream is = fis.openStream()) {
+//                    byte[] bytes = IOUtils.convertStreamToBytes(is);
+//                    b.append(" Length=").append(bytes.length).append("\n");
+//                }
+//                LOG.info(b.toString());
+//            }
+//            message.setBody("{\"OK\"}");
+//            message.setHeader(Exchange.HTTP_RESPONSE_CODE, 201); // created
+//
+//        } catch (FileUploadException | IOException e) {
+//            handle500Error(message, "Failed to read parts", e);
+//        }
+//
+//    }
+
     private void handleJobSubmit(Exchange exch) {
-        LOG.info("Submitting async job");
+
         Message message = exch.getIn();
+        String service = message.getHeader("service", String.class);
+        LOG.info("Submitting async job for " + service);
         try {
             String username = fetchUsername(message);
 
-            String service = message.getHeader("service", String.class);
             if (service == null || service.isEmpty()) {
                 handle500Error(message, "Service not specified", null);
                 return;
             }
-            String body = message.getBody(String.class);
-            Map<String, Object> options = JsonHandler.getInstance().objectFromJson(body, new TypeReference<Map<String, Object>>() {});
+
+            Map<String, Object> options = null;
             Map<String, DataSource> inputs = new HashMap<>();
-            for (Map.Entry<String, DataHandler> e : message.getAttachments().entrySet()) {
-                String name = e.getKey();
-                DataHandler dataHandler = e.getValue();
-                inputs.put(name, dataHandler.getDataSource());
-                LOG.info("Found attachment " + name + " with dataHandler " + dataHandler.getDataSource().getName() +
-                        " of ContentType " + dataHandler.getDataSource().getContentType());
+
+//            dumpMapValues(message.getHeaders(), Level.INFO, "Body headers: ");
+
+            String bHeader = message.getHeader("Content-Disposition", String.class);
+            String bFieldName = IOUtils.readPropertyFromHttpHeader("name", bHeader);
+
+            LOG.info("Reading options from body");
+            String body = message.getBody(String.class);
+            options = JsonHandler.getInstance().objectFromJson(body, new TypeReference<Map<String, Object>>() {
+            });
+            LOG.info("Found " + options.size() + " options");
+
+
+            LOG.info("Found " + message.getAttachments().size() + " attachments");
+            Map<String, Attachment> attachments = message.getAttachmentObjects();
+            for (Map.Entry<String, Attachment> e : attachments.entrySet()) {
+                String key = e.getKey();
+                Attachment a = e.getValue();
+                String aHeader = a.getHeader("Content-Disposition");
+                String aFieldName = IOUtils.readPropertyFromHttpHeader("name", aHeader);
+
+                if (aFieldName == null) {
+                    LOG.warning("Content-disposition header did not contain field name. Defaulting to the attachment key which may not be correct.");
+                    aFieldName = key;
+                } else {
+                    LOG.info("Field name for attachment is " + aFieldName);
+                }
+                DataHandler dataHandler = a.getDataHandler();
+                DataSource dataSource = dataHandler.getDataSource();
+                inputs.put(aFieldName, dataSource);
+                LOG.info("Found DataSource for field " + aFieldName + " of ContentType " + dataSource.getContentType());
             }
+
             JobStatus jobStatus = jobManager.executeAsync(username, service, options, inputs);
 
             LOG.info("Job " + jobStatus.getJobId() + " had been submitted");
             String json = JsonHandler.getInstance().objectToJson(jobStatus);
             message.setBody(json);
+            message.setHeader(Exchange.HTTP_RESPONSE_CODE, 201); // created
         } catch (AuthenticationException e) {
             handle401Error(message);
         } catch (Exception e) {
             handle500Error(message, "Failed to submit job", e);
         }
     }
+
+//    private String readFormFieldName(Attachment attachment) {
+//        String header = attachment.getHeader("Content-Disposition");
+//        String result = null;
+//        if (header != null) {
+//            Map<String, String> values = IOUtils.parseHttpHeader(header);
+//            result = values.get("name");
+//        }
+//        return result;
+//    }
 
     private void handleJobResults(Exchange exch) {
         Message message = exch.getIn();
@@ -331,10 +547,10 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
     private void doHandleResults(Message message, String username, String jobId) throws Exception {
 
         // set the results as attachments to the message
-        Map<String,List<SquonkDataSource>> outputs = jobManager.getJobResultsAsDataSources(username, jobId);
+        Map<String, List<SquonkDataSource>> outputs = jobManager.getJobResultsAsDataSources(username, jobId);
         LOG.fine("Found " + outputs.size() + " outputs");
 
-        for (Map.Entry<String,List<SquonkDataSource>> e : outputs.entrySet()) {
+        for (Map.Entry<String, List<SquonkDataSource>> e : outputs.entrySet()) {
             for (SquonkDataSource dataSource : e.getValue()) {
                 String name = dataSource.getName() == null ? dataSource.getRole() : dataSource.getName();
                 if (name == null) {
@@ -348,7 +564,12 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
 
                 // TODO - consider if we can handle conversions - difficult if there are multiple outputs?
 
-                message.addAttachment(name, new DataHandler(dataSource));
+                // we need to set the Content-Transfer-Encoding header otherwise the DatasetMetadata gets base64 encoded.
+                // It's unclear at this stage what the best option is so we let this be configured.
+                DefaultAttachment attachment = new DefaultAttachment(dataSource);
+                attachment.setHeader("Content-Transfer-Encoding", CONTENT_TRANSFER_ENCODING);
+
+                message.addAttachmentObject(name, attachment);
             }
         }
 
@@ -484,6 +705,14 @@ public class JobExecutorRouteBuilder extends RouteBuilder {
         AuthenticationException() {
             super("Authentication required");
         }
+    }
+
+    private void dumpMapValues(Map map, Level level, String prefix) {
+        StringBuilder b = new StringBuilder(prefix);
+        map.forEach((k, v) -> {
+            b.append(k.toString()).append("->").append(v == null ? "null" : v.toString()).append("\n");
+        });
+        LOG.log(level, b.toString());
     }
 
 }

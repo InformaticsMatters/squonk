@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,6 +83,7 @@ public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectRout
 
         // prepare it
         MoleculeObjectDataset processed = prepareDataset(dataset, requestInfo.getAcceptType().equalsIgnoreCase(MIME_TYPE_DATASET_BASIC_JSON));
+        LOG.fine("Dataset prepared");
 
         if (routeUri != null) {
             // send the molecules to the route for processing and get back an updated set of molecules
@@ -116,8 +117,9 @@ public class MoleculeObjectRouteHttpProcessor extends AbstractMoleculeObjectRout
             // handle as SDF
             // this relies on a type converter being registered
             Class<SDFile> cls = (sdfClass == null ? SDFile.class : sdfClass);
-            LOG.fine("Converting to cls " + cls);
+            LOG.info("Converting to cls " + cls);
             SDFile sdf = exch.getContext().getTypeConverter().convertTo(cls, exch, results);
+            LOG.fine("Created SDF");
             if (sdf == null) {
                 throw new IllegalStateException("No type converter registered for converting to SDF?");
             }

@@ -15,7 +15,8 @@
   shell: >
     oc process
     -p STORAGE_CLASS={{ oc_cc_volume_storage_class }}
-    -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-pvc-dynamic.yaml
+    -p POSTGRESQL_VOLUME_SIZE={{ oc_cc_postgresql_volume_size }}
+    -f {{ role_path }}/files/chemcentral-pvc-dynamic.yaml
     | oc create -f -
   when: not i_pvc_result.stdout | regex_search('^chemcentral-postgresql-claim\s', multiline=True)
 

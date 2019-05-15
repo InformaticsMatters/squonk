@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import chemaxon.jchem.db.JChemSearch
 import chemaxon.sss.search.JChemSearchOptions
 import chemaxon.struc.Molecule
 import chemaxon.util.ConnectionHandler
+import org.apache.camel.CamelContext
 import org.squonk.camel.testsupport.CamelSpecificationBase
 
 import groovy.sql.Sql
@@ -284,11 +285,11 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
         body.split('atomSetRGB').length > 25
         // this doesn't test it works correctly, just that it returns data
     }
-    
-    
+
+
     @Override
-    RouteBuilder createRouteBuilder() {
-        return new RouteBuilder() {
+    void addRoutes(CamelContext context) {
+        context.addRoutes(new RouteBuilder() {
             public void configure() {
                 
                 from("direct:dhfr/molecules")
@@ -363,7 +364,7 @@ class JChemDBSearcherSpec extends CamelSpecificationBase {
                     .hitColorAndAlignOptions("hitColoring:y align:r")
                 ).to('mock:result')
             }
-        }
+        })
     }
 }
 

@@ -35,6 +35,7 @@ abstract class AbstractRDKitLoader {
     final ChemcentralConfig config
 
     protected String separator = "\\s+"
+    protected int structureCol = 0
 
 
     AbstractRDKitLoader(RDKitTable table, ChemcentralConfig config) {
@@ -86,6 +87,10 @@ abstract class AbstractRDKitLoader {
         loadSmilesFiles(Collections.singletonList(file), limit, reportingChunk, propertyToTypeMappings)
     }
 
+    protected String[] tokenizeLine(String line) {
+        return line.split(separator)
+    }
+
     protected void loadSmilesFiles(List<String> files, int limit, int reportingChunk, Map<String, Class> propertyToTypeMappings) {
         SqlQuery q = new SqlQuery(table, config)
 
@@ -106,12 +111,15 @@ abstract class AbstractRDKitLoader {
 
                 Stream<MoleculeObject> mols = reader.lines().skip(1).map() { String line ->
                     //println line
-                    String[] parts = line.split(separator)
+                    String[] parts = tokenizeLine(line)
+                    //println "splitting with $separator gave $parts.length tokens"
                     def values = [:]
-                    parts[1..-1].eachWithIndex { String entry, int i ->
-                        values["" + (i + 1)] = entry
+                    parts.eachWithIndex { String entry, int i ->
+                        values["" + i] = entry
                     }
-                    MoleculeObject mo = new MoleculeObject(parts[0], 'smiles', values);
+                    def smiles = parts[structureCol]
+                    //println "Creating mol with $smiles"
+                    MoleculeObject mo = new MoleculeObject(smiles, 'smiles', values);
                     return mo;
                 }
 

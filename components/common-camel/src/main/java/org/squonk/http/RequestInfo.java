@@ -17,7 +17,10 @@
 package org.squonk.http;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -27,16 +30,18 @@ public class RequestInfo<T> {
 
     private static final Logger LOG = Logger.getLogger(RequestInfo.class.getName());
 
-    private String contentType;
-    private String acceptType;
-    private boolean gzipContent;
-    private boolean gzipAccept;
+    private final String contentType;
+    private final String acceptType;
+    private final boolean gzipContent;
+    private final boolean gzipAccept;
+    private final Map<String,Object> allHeaders;
 
-    public RequestInfo(String contentType, String acceptType, boolean gzipContent, boolean gzipAccept) {
+    private RequestInfo(String contentType, String acceptType, boolean gzipContent, boolean gzipAccept, Map<String,Object> headers) {
         this.contentType = contentType;
         this.acceptType = acceptType;
         this.gzipContent = gzipContent;
         this.gzipAccept = gzipAccept;
+        this.allHeaders = headers;
     }
 
     public String getContentType() {
@@ -57,21 +62,14 @@ public class RequestInfo<T> {
 
 
     public static RequestInfo build(String[] supportedInputMimeTypes, String[] supportedOutputMimeTypes, Exchange exch) {
-        String contentType = exch.getIn().getHeader("Content-Type", String.class);
-        String contentEncodingTypes = exch.getIn().getHeader("Content-Encoding", String.class);
-        String acceptTypes = exch.getIn().getHeader("Accept", String.class);
-        String acceptEncodingTypes = exch.getIn().getHeader("Accept-Encoding", String.class);
 
-        return build(
-                supportedInputMimeTypes, supportedOutputMimeTypes,
-                contentType, contentEncodingTypes,
-                acceptTypes, acceptEncodingTypes);
-    }
+        Message msg = exch.getIn();
+        Map<String,Object> headers = msg.getHeaders();
 
-    public static RequestInfo build(
-            String[] supportedInputMimeTypes, String[] supportedOutputMimeTypes,
-            String contentType, String contentEncodingTypes,
-            String acceptTypes, String acceptEncodingTypes) {
+        String contentType = msg.getHeader("Content-Type", String.class);
+        String contentEncodingTypes = msg.getHeader("Content-Encoding", String.class);
+        String acceptTypes = msg.getHeader("Accept", String.class);
+        String acceptEncodingTypes = msg.getHeader("Accept-Encoding", String.class);
 
         if (contentType == null) {
             contentType = supportedInputMimeTypes[0];
@@ -84,12 +82,12 @@ public class RequestInfo<T> {
         String acceptType = findType(acceptTypes, supportedOutputMimeTypes);
         if (acceptType == null) {
             acceptType = supportedOutputMimeTypes[0];
-            LOG.info("Cannot determine Accept-Type. Assuming default of " + acceptType);
+            LOG.info("Cannot determine Accept. Assuming default of " + acceptType);
         }
 
         boolean gzipAccept = (findType(acceptEncodingTypes, "gzip") != null);
 
-        return new RequestInfo(contentType, acceptType, gzipContent, gzipAccept);
+        return new RequestInfo(contentType, acceptType, gzipContent, gzipAccept, headers);
     }
 
 
@@ -116,5 +114,11 @@ public class RequestInfo<T> {
          .append(" gzip-input:").append(gzipContent)
          .append(" gzip-output:").append(gzipAccept);
          return b.toString();
+    }
+
+    public void dumpHeaders(Logger logger, Level level) {
+        StringBuilder b = new StringBuilder("Headers:");
+        allHeaders.forEach((k,v) -> b.append("\n  ").append(k).append(" -> ").append(v));
+        logger.log(level, b.toString());
     }
 }

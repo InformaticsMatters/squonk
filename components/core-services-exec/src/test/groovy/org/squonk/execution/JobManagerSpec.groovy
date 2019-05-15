@@ -15,9 +15,11 @@
  */
 package org.squonk.execution
 
+import io.swagger.v3.oas.models.OpenAPI
 import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.camel.typeConverters.MoleculeStreamTypeConverter
 import org.squonk.core.DockerServiceDescriptor
+import org.squonk.core.ServiceDescriptorToOpenAPIConverter
 import org.squonk.dataset.Dataset
 import org.squonk.io.FileDataSource
 import org.squonk.io.IODescriptor
@@ -240,6 +242,22 @@ class JobManagerSpec extends Specification {
 
         cleanup:
         mgr?.cleanupJob(USER, jobStatus?.getJobId())
+    }
+
+    void "generate swagger"() {
+        JobManager mgr = new JobManager(true, true)
+        ServiceDescriptorToOpenAPIConverter converter = new ServiceDescriptorToOpenAPIConverter("")
+
+        when:
+        OpenAPI oai = mgr.fetchServiceDescriptorSwagger("http://squonk.it")
+        String json = converter.openApiToJson(oai)
+        println json
+
+        then:
+        json.length() > 100
+        json.contains("http://squonk.it")
+
+
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package example
 
+import org.apache.camel.CamelContext
 import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
 
@@ -89,10 +90,10 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
 //        gzip.close()
 //    }
 
-    
-   @Override
-    RouteBuilder createRouteBuilder() {
-        return new RouteBuilder() {
+
+    @Override
+    void addRoutes(CamelContext context) {
+        context.addRoutes(new RouteBuilder() {
             public void configure() {
                 from("direct:handleMoleculeObjects")
                 .to("language:python:classpath:molecule_objects.py?transform=false")
@@ -116,7 +117,7 @@ class PlatformNeutralMoleculesSpec extends CamelSpecificationBase {
                 .to('mock:result')
                 
             }
-        }
+        })
     }
 }
 

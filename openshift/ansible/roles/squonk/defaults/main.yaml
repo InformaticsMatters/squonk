@@ -1,9 +1,5 @@
 ---
 
-# The image (and tag) for the container
-# that will be used to run NextFlow pipleines...
-oc_squonk_nextflow_image: "{{ ansible_env.OC_SQUONK_NEXTFLOW_IMAGE }}"
-
 # What volume type are we using? One of: -
 #
 # - dynamic
@@ -17,11 +13,23 @@ oc_squonk_nextflow_image: "{{ ansible_env.OC_SQUONK_NEXTFLOW_IMAGE }}"
 #
 #   When set to 'none' the user is expected to have provisioned
 #   the persistent volumes and claims suitable for the project.
-oc_squonk_volume_type: "{{ ansible_env.OC_SQUONK_VOLUME_TYPE }}"
+oc_squonk_volume_type: dynamic
 
 # When using dynamic volumes the storage
 # class needs to be defined...
-oc_squonk_volume_storage_class: "{{ ansible_env.OC_SQUONK_VOLUME_STORAGE_CLASS }}"
+oc_squonk_volume_storage_class: glusterfs-storage
+
+# Memory/CPU requests
+oc_squonk_cell_cpu_request: 100m
+oc_squonk_cell_mem_request: 400Mi
+oc_squonk_chem_cpu_request: 100m
+oc_squonk_chem_mem_request: 4500Mi
+oc_squonk_core_cpu_request: 100m
+oc_squonk_core_mem_request: 3500Mi
+oc_squonk_je_cpu_request: 100m
+oc_squonk_je_mem_request: 2200Mi
+oc_squonk_portal_cpu_request: 500m
+oc_squonk_portal_mem_request: 1Gi
 
 # We can configure the 'standard-user' using a selenium script
 # and a Chrome web-driver but this requires Chrome to be available,
@@ -48,3 +56,11 @@ add_nobody_user: yes
 # to protect themselves for data loss here. This will inspect the
 # "state" of all PVs in the squonk *and* infrastructure projects.
 recycle_released_pvs: yes
+
+# Enable ACME routes?
+# A string that's either 'true' or 'false'.
+# This applies to all routes, i.e. those used by the JobExecutor and Portal.
+enable_acme: "false"
+
+# Set to delete the Squonk database when Squonk is deployed.
+delete_database: no

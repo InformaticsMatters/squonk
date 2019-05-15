@@ -54,6 +54,12 @@ public class DefaultServiceRunner implements ServiceRunner {
         }
         createWorkDir();
         // execute the step
+        if (data == null) {
+            LOG.info("Executing with no inputs");
+        } else {
+            LOG.info("Executing with " + data.size() + " inputs");
+        }
+
         Map<String,Object> outputs = step.execute(data, camelContext);
         results = new ArrayList<>();
         for (Map.Entry<String,Object> e : outputs.entrySet()) {

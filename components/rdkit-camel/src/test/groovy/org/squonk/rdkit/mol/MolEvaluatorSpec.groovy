@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.squonk.rdkit.mol
 
-import spock.lang.Specification
 import org.RDKit.RWMol
+import spock.lang.Specification
 
-/**
- *
- * @author timbo
- */
 class MolEvaluatorSpec extends Specification {
-	
-    
-    void "calc logp"() {
-        
-        when:
-        def logp = MolEvaluator.calculate(RWMol.MolFromSmiles('CCCC'), EvaluatorDefinition.Function.LOGP)
-        
-        then:
-        logp != null
-        logp instanceof Float
-    }
-}
 
+    static def evaluator = new MolEvaluator()
+    static def mol = RWMol.MolFromSmiles("NC1C=CC=CC1")
+
+    void "test calcs"() {
+
+        when:
+        def calcs = EvaluatorDefinition.Function.values()
+
+        then:
+        calcs.each {
+            def val = evaluator.calculate(mol, it)
+            println "Testing $it $val"
+            assert val != null : "$it failed"
+        }
+
+    }
+
+}

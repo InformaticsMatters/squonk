@@ -1,0 +1,145 @@
+---
+
+# Deploys the chemical search service.
+#
+# oc process -f chemcentral-search.yaml | oc create -f -
+# oc delete all,cm,pvc,secrets --selector template=chemcentral-search
+
+kind: Template
+apiVersion: v1
+metadata:
+  name: chemcentral-search
+  annotations:
+    description: Chemcentral chemical search
+    tags: squonk,chemcentral
+labels:
+  template: chemcentral-db
+  app: chemcentral
+
+parameters:
+
+- name: APP_NAMESPACE
+  description: Namespace for the chemcentral search service
+  value: squonk
+
+- name: APP_SA
+  description: Service Account for the chemcentral search service
+  value: squonk
+
+- name: POSTGRES_SERVICE
+  displayName: PostgreSQL RDKit cartridge service name
+  value: db-chemcentral
+
+- name: SEARCH_IMAGE_TAG
+  value: latest
+
+- name: CCS_CPU_REQUEST
+  value: 250m
+- name: CCS_CPU_LIMIT
+  value: 2000m
+- name: CCS_MEM_REQUEST
+  value: 1200Mi
+- name: CCS_MEM_LIMIT
+  value: 8Gi
+
+objects:
+
+# -----------------------------------------------------------------------------
+# Chemcentral search
+# -----------------------------------------------------------------------------
+
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    name: chemcentral-search
+    namespace: ${APP_NAMESPACE}
+  spec:
+    replicas: 1
+    selector:
+      name: chemcentral-search
+    template:
+      metadata:
+        labels:
+          name: chemcentral-search
+      spec:
+        # A 'preferred' (not guaranteed)
+        # node selection affinity...
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: purpose
+                  operator: In
+                  values:
+                  - app
+
+        serviceAccountName: ${APP_SA}
+        containers:
+        - image: squonk/chemcentral-search:${SEARCH_IMAGE_TAG}
+          name: chemcentral-search
+          env:
+          - name: CHEMCENTRAL_HOST
+            valueFrom:
+              secretKeyRef:
+                name: chemcentral-database-credentials-search
+                key: host
+          - name: CHEMCENTRAL_USER
+            valueFrom:
+              secretKeyRef:
+                name: chemcentral-database-credentials-search
+                key: database-user
+          - name: CHEMCENTRAL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: chemcentral-database-credentials-search
+                key: database-password
+          - name: RABBITMQ_HOSTNAME
+            valueFrom:
+              secretKeyRef:
+                name: squonk-rabbitmq-credentials
+                key: host
+                optional: true
+          - name: RABBITMQ_SQUONK_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-rabbitmq-credentials
+                key: pass
+                optional: true
+          ports:
+          - containerPort: 8080
+          resources:
+            limits:
+              cpu: ${CCS_CPU_LIMIT}
+              memory: ${CCS_MEM_LIMIT}
+            requests:
+              cpu: ${CCS_CPU_REQUEST}
+              memory: ${CCS_MEM_REQUEST}
+          readinessProbe:
+            httpGet:
+              path: /chemcentral-search/rest/ping
+              port: 8080
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 20
+          livenessProbe:
+            httpGet:
+              path: /chemcentral-search/rest/ping
+              port: 8080
+            initialDelaySeconds: 90
+            timeoutSeconds: 1
+            periodSeconds: 30
+
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: chemcentral-search
+    namespace: ${APP_NAMESPACE}
+  spec:
+    ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+    selector:
+      name: chemcentral-search

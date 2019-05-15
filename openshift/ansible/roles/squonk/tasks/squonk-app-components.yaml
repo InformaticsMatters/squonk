@@ -3,12 +3,12 @@
 # With infrastructure deployed and initialised
 # we can now continue with Squonk deployment (excluding the Portal)...
 
-- name: Move to Squonk Project
-  shell: oc project {{ oc_project }}
+- name: Login as The Squonk Developer
+  shell: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 
-- name: Login as The Squonk Developer
-  shell: oc login {{ oc_master_hostname }} -u {{ oc_user }} -p {{ oc_user_password }}
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
   changed_when: False
 
 # Deploy...
@@ -21,14 +21,21 @@
 - name: Deploy Squonk
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-app-components.yaml
+    -f {{ role_path }}/files/squonk-app-components.yaml
     -p APP_NAMESPACE={{ oc_project }}
+    -p APP_SA={{ oc_project_sa }}
     -p PULL_POLICY={{ image_pull_policy }}
     -p FLYWAY_IMAGE_TAG={{ oc_squonk_flyway_image_tag }}
     -p CHEM_IMAGE_TAG={{ oc_squonk_chem_image_tag }}
     -p CORE_IMAGE_TAG={{ oc_squonk_core_image_tag }}
     -p CELL_IMAGE_TAG={{ oc_squonk_cell_image_tag }}
     -p CELL_SQUONK_NEXTFLOW_IMAGE={{ oc_squonk_nextflow_image }}
+    -p CELL_CPU_REQUEST={{ oc_squonk_cell_cpu_request }}
+    -p CELL_MEM_REQUEST={{ oc_squonk_cell_mem_request }}
+    -p CHEM_CPU_REQUEST={{ oc_squonk_chem_cpu_request }}
+    -p CHEM_MEM_REQUEST={{ oc_squonk_chem_mem_request }}
+    -p CORE_CPU_REQUEST={{ oc_squonk_core_cpu_request }}
+    -p CORE_MEM_REQUEST={{ oc_squonk_core_mem_request }}
     | oc create -f -
   when: '"coreservices" not in dc_result.stdout'
 

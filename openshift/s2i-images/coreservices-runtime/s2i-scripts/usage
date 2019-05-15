@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+cat <<EOF
+This is a Squonk S2I runtime image.
+
+It is used to compile the CoreServices runtime image
+based on artifacts created by the build image.
+EOF

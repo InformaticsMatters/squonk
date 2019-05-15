@@ -4,6 +4,12 @@
   shell: oc project {{ oc_project }}
   changed_when: False
 
+- name: Login (admin)
+  shell: >
+    oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+    --insecure-skip-tls-verify=true
+  changed_when: False
+
 # Create PVCs
 
 - name: Check Squonk PV/PVC (minishift)
@@ -15,7 +21,7 @@
   shell: >
     oc process
     -p APP_NAMESPACE={{ oc_project }}
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-pvc-minishift.yaml
+    -f {{ role_path }}/files/squonk-pvc-minishift.yaml
     | oc create -f -
   when: '"squonk-work-dir-pvc" not in s_pvc_result.stdout'
 

@@ -1,0 +1,84 @@
+---
+
+# Prepares the loader's data volume with source files that will
+# be used as the origin of material loaded into the ChemCentral database.
+#
+# oc process -f prep-loader-emolecules.yaml | oc create -f -
+# oc delete all,cm,pvc,secrets --selector template=prep-loader-emolecules
+
+kind: Template
+apiVersion: v1
+metadata:
+  name: chemcentral-loader-prep
+  annotations:
+    description: Chemcentral database loader preparation
+    tags: squonk,chemcentral,loader
+labels:
+  template: prep-loader-emolecules
+  app: chemcentral
+
+parameters:
+
+- name: APP_NAMESPACE
+  description: Namespace for the chemcentral search service
+  value: squonk
+
+- name: APP_SA
+  description: Service Account for the chemcentral search service
+  value: squonk
+
+objects:
+
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: loader-command
+  data:
+    prep.sh: |
+      wget http://downloads.emolecules.com/free/2019-02-01/version.smi.gz \
+        -O /data/version.smi.gz
+
+- kind: Job
+  apiVersion: batch/v1
+  metadata:
+    name: chemcentral-prep-loader-emolecules
+    namespace: ${APP_NAMESPACE}
+  spec:
+    template:
+      metadata:
+        name: chemcentral-prep-loader-emolecules
+        namespace: ${APP_NAMESPACE}
+      spec:
+        # A 'preferred' (not guaranteed)
+        # node selection affinity...
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                - key: purpose
+                  operator: In
+                  values:
+                  - app
+        volumes:
+        - name: loader-command
+          configMap:
+            name: loader-command
+        - name: data-dir
+          persistentVolumeClaim:
+            claimName: chemcentral-data-loader-pvc
+        serviceAccountName: ${APP_SA}
+        containers:
+        - image: alpine:3.9
+          name: chemcentral-prep-loader-emolecules
+          env:
+          command:
+          - /bin/sh
+          - /command/prep.sh
+          volumeMounts:
+          - mountPath: /command
+            name: loader-command
+          - mountPath: /data
+            name: data-dir
+        restartPolicy: Never

@@ -5,13 +5,30 @@
 # This consists of un-deploying the application components from the squonk
 # project and the related parts of the squonk infrastructure project.
 
+- name: Delete Squonk ChemCentral?
+  pause:
+    prompt: |-
+      Delete ChemCentral and related databases from {{ oc_master_url }}?
+      Hit return to delete ChemCentral.
+      Hit Ctrl+c and then "a" if you've changed your mind
+
 - name: Login (admin)
-  shell: oc login {{ oc_master_hostname }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
+
+- name: Check Squonk Project
+  shell: oc get projects
+  register: projects_result
+  changed_when: False
+
+- name: Set Squonk Deployment fact
+  set_fact:
+    squonk_project_exists: "{{ (projects_result.stdout|regex_search('^%s\\s.*Active$' % oc_project, multiline=True) or '')|length > 0 }}"
 
 # Delete any existing/pending loader
 
 - import_tasks: delete-loader.yaml
+  when: squonk_project_exists
 
 # Now the main components...
 
@@ -19,12 +36,15 @@
   shell: oc get secrets -n {{ oc_project }}
   register: secrets_result
   changed_when: False
+  when: squonk_project_exists
 
 - name: Delete ChemCentral (Squonk)
   shell: >
-    oc delete all,cm,secret --selector template=chemcentral
+    oc delete all,cm,secret --selector template=chemcentral-db
     -n {{ oc_project }}
-  when: secrets_result.stdout | regex_search('^chemcentral-database-credentials\s', multiline=True)
+  when:
+  - squonk_project_exists
+  - secrets_result.stdout | regex_search('^chemcentral-database-credentials\s', multiline=True)
 
 - name: Check ChemCentral (Infrastructure)
   shell: oc get secrets -n {{ oc_infra_project }}
@@ -33,7 +53,7 @@
 
 - name: Delete ChemCentral (Infrastructure)
   shell: >
-    oc delete all,cm,secret --selector template=chemcentral
+    oc delete all,cm,secret --selector template=chemcentral-db
     -n {{ oc_infra_project }}
   when: secrets_result.stdout | regex_search('^chemcentral-database-credentials\s', multiline=True)
 
@@ -43,12 +63,15 @@
   shell: oc get pvc -n {{ oc_project }}
   register: pvc_result
   changed_when: False
+  when: squonk_project_exists
 
 - name: Delete ChemCentral Data Loader PVC (Squonk)
   shell: >
     oc delete pvc/chemcentral-data-loader-pvc
     -n {{ oc_project }}
-  when: pvc_result.stdout | regex_search('^chemcentral-data-loader-pvc\s', multiline=True)
+  when:
+  - squonk_project_exists
+  - pvc_result.stdout | regex_search('^chemcentral-data-loader-pvc\s', multiline=True)
 
 - name: Check ChemCentral PVCs (Infrastructure)
   shell: oc get pvc -n {{ oc_infra_project }}
@@ -61,16 +84,19 @@
     -n {{ oc_infra_project }}
   when: pvc_result.stdout | regex_search('^chemcentral-postgresql-claim\s', multiline=True)
 
-# Delete the PVs...
+# Delete the PVs (NFS)...
 
-- name: Check ChemCentral PVs
+- name: Check ChemCentral PVs (nfs)
   shell: oc get pv
   register: pv_result
   changed_when: False
+  when: oc_cc_infra_volume_type == 'nfs'
 
-- name: Delete ChemCentral PVs
+- name: Delete ChemCentral PVs (nfs)
   shell: oc delete pv/{{ item }}
   loop:
   - pv-chemcentral-postgresql
   - pv-chemcentral-loader
-  when: pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
+  when:
+  - oc_cc_infra_volume_type == 'nfs'
+  - pv_result.stdout | regex_search('^%s\s' % item, multiline=True)

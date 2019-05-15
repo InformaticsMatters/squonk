@@ -21,6 +21,9 @@ with the `SquonkUsername` header.
 
 This is a good approach for testing.
 
+Note: you may need to add the `-k` flag to curl to allow use of self-signed certificates and/or the `-L` flag to allow
+curl to follow redirects.
+
 _Listing services_
 
 You can get a summary of the services that are available:
@@ -147,8 +150,9 @@ that is deployed.
 
 _Obtain a token_:
 
-```token=$(curl --data "grant_type=password&client_id=squonk-portal&username=user1&password=user1"\
- https://<server:port>/auth/realms/squonk/protocol/openid-connect/token |\
+```
+token=$(curl --data "grant_type=password&client_id=squonk-jobexecutor&username=user1&password=user1"\
+  https://<server:port>/auth/realms/squonk/protocol/openid-connect/token |\
   grep -Po '(?<="access_token":")[^"]*')
 ```
 Adjust the username, password and hostname accordingly. In `basic` mode in the docker environment the hostname is likely `nginx`.
@@ -167,14 +171,16 @@ The result will be the JobStatus objects for all jobs you have submitted. Most l
 ## Using a service account
 
 When accessing from an application better than using individual user accounts you can use a service account.
-We currently use the `squonk-portal` client in the Keycloak realm to authenticate against (this may change in future).
-That client must be set up to support service accounts. In the Keycloak admin console go to the appropriate client 
-(e.g. `squonk-portal`) in the appropriate realm (e.g. `squonk`) and:
+We use the `squonk-jobexecutor` client in the Keycloak realm to authenticate against.
+That client must be set up to support service accounts. In the Keycloak admin console go to the `squonk-jobexecutor`
+client in the appropriate realm (e.g. `squonk`) and:
 
 1. Make sure the `Access type` is set to `confidential`
 3. Enable the `Service accounts` option
 4. On the `Service Account Roles` tab add the appropriate roles (e.g. `standard-user`)
 5. Make a record of the client secret from the `Credentials` tab
+
+This means you must also specify the client secret in your requests.
 
 _Obtain a token_:
 
@@ -184,7 +190,7 @@ Use a POST request to get the token. With curl the command would be:
 token=$(curl\
   -H 'Content-Type: application/x-www-form-urlencoded'\
   -d 'grant_type=client_credentials'\
-  -d 'client_id=squonk-portal'\
+  -d 'client_id=squonk-jobexecutor'\
   -d 'client_secret=<client-secret>'\
   https://<server:port>/auth/realms/squonk/protocol/openid-connect/token|\
   grep -Po '(?<="access_token":")[^"]*')

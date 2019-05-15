@@ -52,12 +52,7 @@ Container name: cellexecutor
 Image source: squonk/cellexecutor
 This orchestrates job execution, brokering execution of REST web services and Docker based job execution.
 
-7. JobExecutor
---------------
-Image source: squonk/jobexecutor or squonk/jobexecutor-keycloak
-This provides external execution of Squonk services
-
-8. Portal
+7. Portal
 ---------
 Container name: portal
 Image source: squonk/portal
@@ -65,11 +60,11 @@ This provides the front end web application. Currently this module is not in the
 The portal application primarily interacts with the coreservices container.
 Authentication/Authorization is provides by the keycloak container.
 
-9. NGinx
+8. NGinx
 --------
 Container name: nginx
 Image source: nginx
-This provides the front end reverse proxy to all services (currently portal and jobexecutor).
+This provides the front end reverse proxy to all services (currently portal and keycloak).
 This is the only service that is public facing.
 
 

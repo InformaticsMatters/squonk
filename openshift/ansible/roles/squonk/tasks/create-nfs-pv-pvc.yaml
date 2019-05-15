@@ -4,6 +4,12 @@
   shell: oc project {{ oc_project }}
   changed_when: False
 
+- name: Login (admin)
+  shell: >
+    oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+    --insecure-skip-tls-verify=true
+  changed_when: False
+
 # Create PVs
 
 - name: Get Squonk PVs
@@ -22,7 +28,8 @@
     -p APP_NAMESPACE={{ oc_project }}
     -p NFS_SERVER={{ oc_nfs_server | default('unset') }}
     -p NFS_PATH={{ oc_nfs_path | default('unset') }}
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-pv-nfs.yaml
+    -p CELL_WORK_PVC_SIZE={{ oc_cell_work_pvc_size }}
+    -f {{ role_path }}/files/squonk-pv-nfs.yaml
     | oc create -f -
   when: '"squonk-work-dir" not in s_pv_result.stdout'
 
@@ -70,7 +77,8 @@
   shell: >
     oc process
     -p APP_NAMESPACE={{ oc_project }}
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-pvc-nfs.yaml
+    -p CELL_WORK_PVC_SIZE={{ oc_cell_work_pvc_size }}
+    -f {{ role_path }}/files/squonk-pvc-nfs.yaml
     | oc create -f -
   when: '"squonk-work-dir-pvc" not in s_pvc_result.stdout'
 

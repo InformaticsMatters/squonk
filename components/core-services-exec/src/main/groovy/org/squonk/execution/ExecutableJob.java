@@ -181,15 +181,16 @@ public class ExecutableJob {
         args.put("PIN", "");
         args.put("POUT", "");
         options.forEach((k, v) -> {
+            LOG.fine("Looking at option " + k + " = " + v);
             if (k.startsWith("arg.")) {
-                LOG.fine("Found argument " + k + " = " + v);
+                LOG.info("Found argument " + k + " = " + v);
                 args.put(k.substring(4), v);
             }
         });
 
         // replace windows line end characters
         String command = cmdTemplate.replaceAll("\\r\\n", "\n");
-        LOG.fine("Template: " + command);
+        LOG.info("Template: " + command);
         String expandedCommand = GroovyUtils.expandTemplate(command, args);
         LOG.info("Command: " + expandedCommand);
         return expandedCommand;

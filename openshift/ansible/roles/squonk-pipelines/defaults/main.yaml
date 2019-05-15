@@ -1,0 +1,21 @@
+---
+
+# The default pipelines to post.
+# The value must be a value the 1st-level of the sd_poster map (below)
+origin: pipelines
+
+# A map of SD-Poster images and tags.
+#
+# The 1st-level index is the symbolic name of the pipelines
+# to be posted (i.e. 'pipelines' or 'pipelines_sygnature').
+# The 2nd-level identifies the image and tag of the
+# image responsible for publishing the pipelines definitions.
+sd_poster:
+  pipelines:
+    image: "squonk/rdkit-pipelines-sdposter"
+    tag: "latest"
+    job_name: rdkit-sd-poster
+  pipelines_sygnature:
+    image: "squonk/sygnature-pipelines-sdposter"
+    tag: "latest"
+    job_name: sygnature-sd-poster

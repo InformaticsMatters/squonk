@@ -1,0 +1,89 @@
+---
+
+- name: Move to Infrastructure Project
+  shell: oc project {{ oc_infra_project }}
+  changed_when: False
+
+- name: Login (user)
+  shell: >
+    oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
+    --insecure-skip-tls-verify=true
+  changed_when: False
+
+- name: Check Keycloak Deployment
+  shell: oc get dc
+  register: sso_dc_result
+  changed_when: False
+
+- name: Create Keycloak Deployment
+  shell: >
+    oc process
+    -f {{ role_path }}/files/sso-postgres.yaml
+    -p SSO_REALM={{ keycloak_realm }}
+    -p POSTGRESQL_SHARED_BUFFERS={{ postgresql_shared_buffer_size }}
+    -p SSO_SA={{ oc_infra_sa }}
+    -p PG_CPU_REQUEST={{ oc_infra_postgresql_cpu_request }}
+    -p PG_MEM_REQUEST={{ oc_infra_postgresql_mem_request }}
+    -p SSO_CPU_REQUEST={{ oc_infra_sso_cpu_request }}
+    -p SSO_MEM_REQUEST={{ oc_infra_sso_mem_request }}
+    -p SSO_CPU_LIMIT={{ oc_infra_sso_cpu_limit }}
+    -p SSO_MEM_LIMIT={{ oc_infra_sso_mem_limit }}
+    | oc create -f -
+  when: '"db-postgresql" not in sso_dc_result.stdout'
+
+# Wait for running pods
+
+- name: Wait for Pods
+  shell: oc get po | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
+  delay: 20
+  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  register: result
+  until: result.rc == 0
+  when: wait_for_pods
+  loop:
+  - db-postgresql
+  - sso
+  changed_when: False
+
+# SSO may not be completely ready for the next step (add-keycloak-roles)
+# so we pause here for a few seconds so that its route can be
+# established.
+
+- name: Post deploy pause
+  pause:
+    seconds: 10
+  when: wait_for_pods
+
+# Deploy backups.
+# No point waiting for these - they're cron-jobs!
+
+- name: Get CronJobs
+  shell: oc get cronjobs
+  register: cj_result
+  changed_when: false
+
+- name: Deploy the Hourly Backup CronJob
+  shell: >
+    oc process
+    -f {{ role_path }}/files/sso-backup-hourly.yaml
+    -p BACKUP_SCHEDULE="{{ oc_infra_backup_hourly_schedule }}"
+    -p BACKUP_COUNT={{ oc_infra_backup_hourly_count }}
+    -p BACKUP_SA={{ oc_infra_sa }}
+    | oc create -f -
+  when:
+  - oc_infra_backup_hourly_count|int > 0
+  - '"postgresql-backup-hourly" not in cj_result.stdout'
+
+- name: Deploy the Daily Backup CronJob
+  shell: >
+    oc process
+    -f {{ role_path }}/files/sso-backup-daily.yaml
+    -p BACKUP_SCHEDULE="{{ oc_infra_backup_daily_schedule }}"
+    -p BACKUP_COUNT={{ oc_infra_backup_daily_count }}
+    -p BACKUP_PRIOR_COUNT={{ oc_infra_backup_hourly_count }}
+    -p BACKUP_SA={{ oc_infra_sa }}
+    | oc create -f -
+  when:
+  - oc_infra_backup_daily_count|int > 0
+  - oc_infra_backup_hourly_count|int > 0
+  - '"postgresql-backup-daily" not in cj_result.stdout'

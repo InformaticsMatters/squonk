@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package examples
 
+import org.apache.camel.CamelContext
 import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
 import spock.lang.Shared
@@ -122,9 +123,9 @@ C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3'''
 //
 //
 //
-  @Override
-    RouteBuilder createRouteBuilder() {
-        return new RouteBuilder() {
+    @Override
+    void addRoutes(CamelContext context) {
+        context.addRoutes(new RouteBuilder() {
             public void configure() {
                 from("direct:count")
                 .to("language:python:classpath:counter.py?transform=false")
@@ -150,7 +151,7 @@ C1=CC=C(C=C1)P(C2=CC=CC=C2)C3=CC=CC=C3'''
 
 
             }
-        }
+        })
     }
 }
 

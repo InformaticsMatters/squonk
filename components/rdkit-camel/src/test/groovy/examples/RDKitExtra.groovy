@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package example
 
+import org.apache.camel.CamelContext
 import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
 
@@ -70,10 +71,10 @@ class RDKitExtraTest extends CamelSpecificationBase {
 //        // For now we just find the size of the dist matrix because clustering doesn't work
 //        result == 130
 //    }
-    
-   @Override
-    RouteBuilder createRouteBuilder() {
-        return new RouteBuilder() {
+
+    @Override
+    void addRoutes(CamelContext context) {
+        context.addRoutes(new RouteBuilder() {
             public void configure() {
                 from("direct:findMCS")
                 .to("language:python:classpath:molecule_objects.py?transform=false")
@@ -94,7 +95,7 @@ class RDKitExtraTest extends CamelSpecificationBase {
                 .to('mock:result')               
                
             }
-        }
+        })
     }
 }
 

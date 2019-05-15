@@ -2,6 +2,10 @@
 
 # Deploy the ChemCentral database
 
+- name: Login (admin)
+  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  changed_when: False
+
 - name: Move to Squonk Infrastructure Project
   shell: oc project {{ oc_infra_project }}
   changed_when: False
@@ -14,9 +18,12 @@
 - name: Create ChemCentral Database
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/chemcentral/chemcentral-db.yaml
+    -f {{ role_path }}/files/chemcentral-db.yaml
     -p DB_NAMESPACE={{ oc_infra_project }}
     -p APP_NAMESPACE={{ oc_project }}
+    -p APP_SA={{ oc_cc_infra_sa }}
+    -p CCDB_CPU_REQUEST={{ oc_cc_postgresql_cpu_request }}
+    -p CCDB_MEM_REQUEST={{ oc_cc_postgresql_mem_request }}
     | oc create -f -
   when: not dc_result.stdout | regex_search('^db-chemcentral\s', multiline=True)
 

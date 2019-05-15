@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import java.io.InputStream;
 public class DatasetTypeConverter {
 
     @Converter
-    public static SDFile convertDatasetToSDFile(Dataset<MoleculeObject> dataset, Exchange exchange) throws IOException {
+    public static SDFile convertDatasetToSDFile(Dataset<MoleculeObject> dataset, Exchange exchange) throws Exception {
         if (dataset.getType() == MoleculeObject.class) {
             return convertMoleculeObjectDatasetToSDFile(new MoleculeObjectDataset(dataset), exchange);
         } else {
@@ -43,7 +43,7 @@ public class DatasetTypeConverter {
     }
 
     @Converter
-    public static SDFile convertMoleculeObjectDatasetToSDFile(MoleculeObjectDataset dataset, Exchange exchange) throws IOException {
+    public static SDFile convertMoleculeObjectDatasetToSDFile(MoleculeObjectDataset dataset, Exchange exchange) throws Exception {
         InputStream is = StructureIOClient.CDK.datasetExportToSdf(dataset.getDataset(), false);
         SDFile sdf = new SDFile(is, false);
         return sdf;

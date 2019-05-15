@@ -3,12 +3,12 @@
 # With infrastructure deployed and initialised
 # we can now continue with Squonk deployment...
 
-- name: Move to Squonk Project
-  shell: oc project {{ oc_project }}
+- name: Login as The Squonk Developer
+  shell: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 
-- name: Login as The Squonk Developer
-  shell: oc login {{ oc_master_hostname }} -u {{ oc_user }} -p {{ oc_user_password }}
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
   changed_when: False
 
 # Deploy...
@@ -21,12 +21,16 @@
 - name: Deploy Portal
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-app-portal-keycloak.yaml
+    -f {{ role_path }}/files/squonk-app-portal-keycloak.yaml
     -p SQUONK_HOST={{ oc_squonk_host}}
     -p APP_NAMESPACE={{ oc_project }}
+    -p APP_SA={{ oc_project_sa }}
+    -p APP_ACME_ENABLE={{ enable_acme }}
     -p PULL_POLICY={{ image_pull_policy }}
     -p LOGOUT_REDIRECT_TO={{ keycloak_logout_redirect_to }}
     -p PORTAL_IMAGE_TAG={{ oc_squonk_portal_image_tag }}
+    -p PORTAL_CPU_REQUEST={{ oc_squonk_portal_cpu_request }}
+    -p PORTAL_MEM_REQUEST={{ oc_squonk_portal_mem_request }}
     | oc create -f -
   when: '"portal" not in dc_result.stdout'
 

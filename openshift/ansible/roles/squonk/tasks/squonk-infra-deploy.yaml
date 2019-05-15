@@ -1,10 +1,41 @@
 ---
 
+# We have to get the user password as a fact.
+# It changes each time it's accessed so, by setting a fact,
+# we get a randomly -assigned password we can re-use.
+
+- name: Set Facts
+  set_fact:
+    db_password: "{{ oc_squonk_user_password }}"
+
 # We do a few things in the infrastructure project first.
 
 - name: Login as Admin
-  shell: oc login {{ oc_master_hostname }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
+
+# Adjust the squonk project (add secrets etc.)
+
+- name: Move to Squonk Project
+  shell: oc project {{ oc_project }}
+  changed_when: False
+
+- name: Check Secrets
+  shell: oc get secrets
+  register: s_result
+  changed_when: False
+
+- name: Create DB Secrets
+  shell: >
+    oc process
+    -f {{ role_path }}/files/squonk-infra-db-secrets.yaml
+    -p SQUONK_USER={{ oc_squonk_user }}
+    -p SQUONK_USER_PASSWORD={{ db_password }}
+    -p DATABASE_HOST={{ oc_postgresql_service }}.{{ oc_infra_project }}.svc
+    | oc create -f -
+  when: not s_result.stdout | regex_search('^squonk-database-credentials\s', multiline=True)
+
+# Move to infrastructure for the rest...
 
 - name: Move to Squonk Infrastructure Project
   shell: oc project {{ oc_infra_project }}
@@ -17,22 +48,27 @@
   register: j_result
   changed_when: False
 
-- name: Initialise Infrastructure DB
+- name: Create Squonk DB
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-infra-db-init.yaml
-    -p SQUONK_NAMESPACE={{ oc_project }}
-    -p DATABASE_HOST={{ oc_postgresql_service }}.{{ oc_infra_project }}.svc
+    -f {{ role_path }}/../infra/files/infra-db-create.yaml
+    -p DB_HOST={{ oc_postgresql_service }}.{{ oc_infra_project }}.svc
+    -p DB_NAMESPACE={{ oc_project }}
+    -p DB={{ oc_squonk_db }}
+    -p DB_USER={{ oc_squonk_user }}
+    -p DB_USER_PASSWORD={{ db_password }}
+    -p INFRA_SA={{ oc_infra_sa }}
     | oc create -f -
-  when: not j_result.stdout | regex_search('^squonk-database-creator\s', multiline=True)
+  when: not j_result.stdout | regex_search('^db-creator\s', multiline=True)
 
 # Prepare RabbitMQ
 
 - name: Initialise RabbitMQ
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-infra-rabbitmq-init.yaml
+    -f {{ role_path }}/files/squonk-infra-rabbitmq-init.yaml
     -p SQUONK_NAMESPACE={{ oc_project }}
+    -p INFRA_SA={{ oc_infra_sa }}
     -p RABBITMQ_HOST=rabbitmq.{{ oc_infra_project }}.svc
     | oc create -f -
   when: not j_result.stdout | regex_search('^squonk-rabbitmq-creator\s', multiline=True)
@@ -42,10 +78,12 @@
 - name: Initialise Keycloak (Client)
   shell: >
     oc process
-    -f {{ role_path }}/{{ t_dir }}/squonk-app/squonk-infra-keycloak-init.yaml
+    -f {{ role_path }}/files/squonk-infra-keycloak-init.yaml
     -p SQUONK_NAMESPACE={{ oc_project }}
+    -p INFRA_SA={{ oc_infra_sa }}
     -p KEYCLOAK_REALM={{ keycloak_realm }}
     -p ROUTES_BASE_HOSTNAME={{ oc_routes_basename }}
+    -p SQUONK_CLIENT_SECRET={{ oc_squonk_client_secret }}
     -p LOGOUT_REDIRECT_TO={{ keycloak_logout_redirect_to }}
     -p KEYCLOAK_SSL_REQUIRED={{ keycloak_ssl_required }}
     | oc create -f -
@@ -63,7 +101,7 @@
   loop:
   - squonk-rabbitmq-creator
   - squonk-client-creator
-  - squonk-database-creator
+  - db-creator
   when:
   - wait_for_pods
   changed_when: False

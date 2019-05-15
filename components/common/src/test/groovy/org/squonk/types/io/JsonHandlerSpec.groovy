@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.squonk.types.io
 
 import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.DatasetMetadata
 import org.squonk.dataset.DatasetSpec
@@ -169,6 +170,17 @@ class JsonHandlerSpec extends Specification {
 //        then:
 //        1 == 1
 //    }
+
+    void "create json schema string"() {
+
+        when:
+        String js = JsonHandler.getJsonSchemaAsString(MoleculeObject.class)
+        println js
+
+        then:
+        js.length() > 0
+
+    }
 
 }
 

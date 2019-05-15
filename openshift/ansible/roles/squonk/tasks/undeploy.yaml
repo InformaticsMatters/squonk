@@ -5,21 +5,50 @@
 # This consists of un-deploying the application components from the squonk
 # project and the related parts of the squonk infrastructure project.
 
-- name: Login (admin)
-  shell: oc login {{ oc_master_hostname }} -u {{ oc_admin }} -p {{ oc_admin_password }}
-  changed_when: False
+- name: Delete Squonk?
+  pause:
+    prompt: |-
+      Delete Squonk from {{ oc_master_url }}?
+      Note that 'delete_database' is {{ delete_database }}.
+      Hit return to delete Squonk.
+      Hit Ctrl+c and then "a" if you've changed your mind
 
-# To un-deploy squonk, the fastest way is to
-# simply delete the squonk project.
+- name: Login (admin)
+  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  changed_when: False
 
 - name: Check Squonk Project
   shell: oc get projects
   register: projects_result
   changed_when: False
 
+- name: Set Squonk Deployment fact
+  set_fact:
+    squonk_project_exists: "{{ (projects_result.stdout|regex_search('^%s\\s.*Active$' % oc_project, multiline=True) or '')|length > 0 }}"
+
+# Must not continue if it looks like ChemCentral has been deployed.
+# If so then you must un-deploy that first
+
+- name: Get Squonk Pods
+  shell: oc get po
+  register: pods_result
+  when: squonk_project_exists
+
+- name: Check ChemCentral Deployment
+  fail:
+    msg: >-
+      ChemCentral appears to be deployed.
+      You must remove ChemCentral first.
+  when:
+  - squonk_project_exists
+  - pods_result.stdout | regex_search('^chemcentral', multiline=True)
+
+# To un-deploy squonk, the fastest way is to
+# simply delete the squonk project.
+
 - name: Delete Squonk Project
   shell: oc delete project/{{ oc_project }}
-  when:  projects_result.stdout | regex_search('^%s\s.*Active$' % oc_project, multiline=True)
+  when: squonk_project_exists
 
 - name: Wait for project deletion
   shell: oc get projects
@@ -29,29 +58,38 @@
   until: not pj_cmd.stdout | regex_search('^%s\s' % oc_project, multiline=True)
   changed_when: False
 
+# Delete SCC
+
+- name: Check Squonk SCC
+  shell: oc get scc
+  register: scc_result
+  changed_when: False
+
+- name: Delete Squonk SCC
+  shell: oc delete scc/scc-squonk
+  when: scc_result.stdout | regex_search('^scc-squonk', multiline=True)
+
 # Now undo the stuff in the infrastructure project...
 
 - name: Move to Squonk Infrastructure Project
   shell: oc project {{ oc_infra_project }}
   changed_when: False
 
-- name: Get database pod
-  shell: oc get pod -o name -l deploymentConfig={{ oc_postgresql_service }}
-  register: db_pod
-  changed_when: False
-
 # Remove persistent volumes
 
-- name: Check Squonk PVs
+- name: Check Squonk PVs (nfs)
   shell: oc get pv
   register: s_pv_result
   changed_when: False
+  when: oc_squonk_volume_type == 'nfs'
 
-- name: Delete Squonk PVs
+- name: Delete Squonk PVs (nfs)
   shell: oc delete pv/{{ item }}
   loop:
   - squonk-work-dir
-  when: s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
+  when:
+  - oc_squonk_volume_type == 'nfs'
+  - s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
 
 - name: Get jobs
   shell: oc get jobs
@@ -61,7 +99,7 @@
 - name: Delete Jobs
   shell: oc delete job/{{ item }}
   loop:
-  - squonk-database-creator
+  - db-creator
   - squonk-rabbitmq-creator
   - squonk-client-creator
   when: job_result.stdout | regex_search('^%s\s' % item, multiline=True)
@@ -73,7 +111,7 @@
   retries: "{{ (pod_terminate_timeout | int / 10) | int }}"
   until: not j_cmd.stdout | regex_search('^%s\s' % item, multiline=True)
   loop:
-  - squonk-database-creator
+  - db-creator
   - squonk-rabbitmq-creator
   - squonk-client-creator
   changed_when: False
@@ -86,19 +124,46 @@
 - name: Delete ConfigMaps
   shell: oc delete cm/{{ item }}
   loop:
-  - squonk-database-creator
+  - db-creator
   - squonk-rabbitmq-config
   - squonk-client-creator
   when: cm_result.stdout | regex_search('^%s\s' % item, multiline=True)
+
+# Delete the Squonk Database.
+# Caution - this deletes the database as well as the user.
+
+- name: Remove prior temporary Objects (Infrastructure)
+  shell: oc delete all,cm --selector template=db-delete
+  when: delete_database
+
+- name: Delete Squonk DB
+  shell: >
+    oc process
+    -f {{ role_path }}/../infra/files/infra-db-delete.yaml
+    -p DB_HOST={{ oc_postgresql_service }}.{{ oc_infra_project }}.svc
+    -p DB={{ oc_squonk_db }}
+    -p DB_USER={{ oc_squonk_user }}
+    -p INFRA_SA={{ oc_infra_sa }}
+    | oc create -f -
+  when: delete_database
+
+- name: Wait for User and Database Job
+  shell: oc describe jobs/db-deleter | grep '1 Succeeded'
+  delay: 20
+  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  register: result
+  until: result.rc == 0
+  changed_when: False
+  when: delete_database
 
 # Get a keycloak token (sets the fact 'keycloak_token').
 # Remember that the login user may have changed to admin.
 #
 # The actions for getting the KeyCloak token
-# are located in a squonk-infra role playbook.
+# are located in an infra role playbook.
 
 - import_tasks: >
-    "{{ role_path }}/../../roles/squonk-infra/tasks/get-keycloak-token.yaml"
+    "{{ role_path }}/../infra/tasks/get-keycloak-token.yaml"
   tags:
   - keycloak-users
 
@@ -110,23 +175,43 @@
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients?clientId={{ oc_squonk_app }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
-  register: client_result
+    validate_certs: "{{ validate_certificates }}"
+  register: notebook_client_result
 
 - name: Delete Portal Keycloak Client
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients/{{ client_result.json[0].id }}"
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients/{{ notebook_client_result.json[0].id }}"
     method: DELETE
     status_code: 204
     headers:
       Authorization: bearer {{ keycloak_token }}
-  when: client_result.json
+    validate_certs: "{{ validate_certificates }}"
+  when: notebook_client_result.json
+
+- name: Get JobExecutor Keycloak Client ID
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients?clientId={{ oc_jobexecutor_client }}"
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+    validate_certs: "{{ validate_certificates }}"
+  register: jobexecutor_client_result
+
+- name: Delete JobExecutor Keycloak Client
+  uri:
+    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients/{{ jobexecutor_client_result.json[0].id }}"
+    method: DELETE
+    status_code: 204
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+    validate_certs: "{{ validate_certificates }}"
+  when: jobexecutor_client_result.json
 
 - name: Query Squonk Users
   uri:
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user }}"
-    validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
+    validate_certs: "{{ validate_certificates }}"
   register: squonk_users
   vars:
     user: "{{ item.split()[0] }}"
@@ -165,9 +250,9 @@
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ item }}"
     method: DELETE
     status_code: 204
-    validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
+    validate_certs: "{{ validate_certificates }}"
   loop: "{{ known_user_ids }}"
   when: users_file is defined
   tags:

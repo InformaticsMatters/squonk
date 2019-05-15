@@ -1,14 +1,47 @@
 # Squonk Ansible OpenShift Deployment
-You can run the infrastructure and squonk playbook from this
+
+## Prerequisites
+Before running the playbooks: -
+
+1.  You're on the bastion node, or you are on a node with...
+    1.  Ansible installed (any version from 2.5)
+    1.  The `oc` command-set is available to you as a user
+1.  An OpenShift cluster has been installed
+1.  There is an `admin` user known to the cluster
+1.  There is a `developer` user known to the cluster
+1.  You have setup your own `setenv.sh` (typically in `openshift/env`),
+    created a suitable `params` file and you have run `source setenv.sh`.
+
+>   If using NFS, it is correctly configured with appropriate
+    disk provisioning ready for each PV that expects a volume -
+    the Ansible playbooks do not setup NFS.
+
+## Deploying the key application components
+If using Minishift see the instructions at the bottom of this page that must be
+executed first to set up the Minishift environment. After that the deployment is
+the same as for OpenShift.
+
+You can run the infrastructure and Squonk playbook from this
 directory with the commands: -
 
-    ansible-playbook playbooks/squonk-infra/deploy.yaml
+    ansible-playbook playbooks/infra/deploy.yaml
     ansible-playbook playbooks/squonk/deploy.yaml
     ansible-playbook playbooks/squonk-chemcentral/deploy.yaml
 
 >   Remember to first `source` an appropriately crafted
-    `../templates/setenv.sh` script first!
+    `../env/setenv.sh` script first!
 
+>   If you see an error relating to `../../../env/{{ ansible_env.IM_PARAMETER_FILE }}`
+    you've probably not sourced your setenv file or provided a value
+    for the `IM_PARAMETER_FILE` environment variable
+    
+>   If you see the error `User "admin" cannot create imagestreams.image.openshift.io`
+    in the `Deploy Keycloak Image Stream` playbook task you're probably using
+    **MiniShift** but you've not run the MiniShift preparation playbook, which you
+    have to do before running any other playbooks.
+    See the **Minishift considerations** section at the end of this document.
+
+## Adding users
 You can add users from a text file (that contains one user and space-separated
 password per line) 'after-the-fact' by defining the `user_file` playbook
 variable and then limiting the deployment to just the tasks relating to
@@ -20,6 +53,80 @@ _keycloak users_ with the following: -
 >   `example-users.txt` is a demo file. You can use the file `users.txt`
     to safely add your own users. It is prevented form being committed to
     Git as it's listed in the project's `.gitignore` file.
+
+## Posting Squonk pipelines
+The playbooks for posting pipelines to Squonk are in this project.
+There is one role, shared with each set of pipelines that can be posted.
+
+>   The details of each postable pipeline is defined in the `default/main.yaml`
+    file of the `squonk-pipleines` role. There you'll find a map detailing
+    image and tags names of each pipelines image-posting container.
+
+Deployment of the 'public' pipelines is achieved with the following
+Ansible play: -
+
+    ansible-playbook playbooks/squonk-pipelines/deploy-pipelines.yaml
+
+Essentially there is one role and a playbook for each set of pipelines we
+expect to deploy with it. The role simply needs a poster container **image**
+and a **tag**, which are defined in `roles/squonk-pipelines/defaults/main.yaml`
+
+If you add a new set of pipelines the expectation is that you'd add a new
+playbook (in `playbooks/squonk-pipelines`) and adjust the role's `sd_poster`
+variable to include the container image and tag for your new pipelines.
+
+### Validating (testing) pipelines
+Once pipelines have been deployed you can validate their basic operation
+using the _validate pipelines_ playbook. It relies on the built-in `user1`
+user and creates a Keycloak login for the user and then runs some example
+pipelines before removing the user.
+
+    ansible-playbook playbooks/squonk/validate-pipelines.yaml
+
+Remember that this playbook creates jobs on the server, so running it
+on an _active_ deployment is unwise. Use it as a sanity check when it's safe
+or after initial deployment to quickly verify the installation.
+ 
+If you get into trouble with failed tests a convenient _cleanup_
+playbook also exists. It also creates the keycloak login for the `user1`
+user, cleans up and then removes the user. Use this playbook with caution as it
+removes all the jobs with a status of  `RESULTS_READY` and `ERROR`: -
+
+    ansible-playbook playbooks/squonk/validate-cleanup.yaml
+
+## Populating the ChemCentral database
+In order to load data into the ChemCentral database you will need to prepare
+the loader data volume with suitable source data (running a relevant
+**prep-loader** playbook) before running a **loader**.
+
+Loading data requires: -
+
+1.  Creating a volume to store the source data
+    (using the `create-loader-volume` playbook)
+1.  Loading data using a suitable `prep-loader` playbook. This creates the
+    loader volume (just in case you forgot) and then runs task that runs
+    an OpenShift `Job` template which does the preparation (downloading).
+    Inspect the exiting `prep-loader` playbooks,
+    their matching role tasks (typically called
+    `roles/squonk-chemcentral/tasks/prep-loader-<something>`)
+    and the matching OpenShift templates
+1.  Running a loader playbook (like `run-loader`)
+
+As an example, you can prepare and load the example/free eMolecules
+data set with the following...
+
+    ansible-playbook playbooks/squonk-chemcentral/prep-loader-emolecules.yaml
+    ansible-playbook playbooks/squonk-chemcentral/run-loader.yaml \
+        -e loader_class=EMoleculesBBSmilesLoader \
+        -e loader_file=version.smi.gz
+
+>   Variables that control the `run-loader` playbook are defined in
+    `roles/squonk-chemcentral/defaults/main.yaml`
+    
+When loading is complete you can remove the loader volume created and used by
+the preparation task: -
+
+    ansible-playbook playbooks/squonk-chemcentral/delete-loader-volume.yaml
 
 You can delete the ChemCentral loader and re-run it with: -
 
@@ -36,43 +143,56 @@ and for ChemCentral: -
 
 and for the infrastructure: -
 
-    ansible-playbook playbooks/squonk-infra/undeploy.yaml
+    ansible-playbook playbooks/infra/undeploy.yaml
 
-## Prerequisites
-Before running the playbook: -
+## Playbooks for the infrastructure database
+Other applications might want to use the PostgreSQL database that is deployed
+in the Infrastructure project. Typically you might want to create a new
+database and create a user for that database. You can do this using two
+convenient playbooks (refer to them for documentation): -
 
-1.  You're on the bastion node
-1.  You have installed Ansible (any version from 2.5)
-1.  The `oc` command-set is available to you as a user
-1.  An OpenShift cluster has been installed
-1.  There is an `admin` user known to the cluster
-1.  There is a `developer` user known to the cluster
-1.  You have setup your own `setenv.sh` (typically in `openshift/templates`)
-    and you have run `source setenv.sh` using it.
+    ansible-playbook playbooks/infra/create-user-db.yaml \
+        -e db=mydb \
+        -e db_user=me \
+        -e db_namespace=myproject
+        
+    ansible-playbook playbooks/infra/delete-user-db.yaml \
+        -e db=mydb \
+        -e db_user=me
 
-If using NFS, it is correctly configured with appropriate
-disk provisioning ready for each PV that expects a volume -
-the Ansible playbooks do not setup NFS.
+The result will be secrets created in your project
+(`myproject` in the above example) containing  the database credentials that
+your application can use. This process is used during the Squonk 
+deployment to create the database that it uses.
 
-## MiniShift considerations
-While it's a work-in-progress, support for some versions of MiniShift is
-available. We've tested with: -
+## Minishift considerations
+While it's a work-in-progress, support for some versions of Minishift is
+available. We tend to follow recent minishift releases, at the moment we've
+tested with: -
 
--   OpenShift 3.9.0 (MiniShift 1.25.0)
--   OpenShift 3.11.0 (MiniShift 1.27.0)
+-   OpenShift 3.11.0  on MiniShift 1.33.0
 -   VirtualBox 5.2.20 (OSX)
--   MiniShift 1.25.0, 1.26.1 and 1.27.0
 
-Start MiniShift (pre-1.26) with something like: -
+On OSX, using VirtualBox, you can start a suitable Minishift
+with something like: -
 
-    minishift start --cpus 4 --memory 8GB --disk-size 40GB \
-        --openshift-version 3.9.0 --vm-driver virtualbox
+    minishift start --cpus 4 --memory 8GB --disk-size 80GB \
+        --openshift-version 3.11.0 --vm-driver virtualbox
 
->   If you're using MiniShift v1.26 or later you cannot use the OpenShift
-    v3.9.0 image, you must move to OpenShift v3.10.0 or later.
+You need the `oc` executable on your path. For MiniShift do this:
+
+    eval $(minishift oc-env)
  
-You need to setup a suitable `setenv.sh` (and source it) and then run the
-`minishift` playbook to prepare the cluster **before** running
-the above Squonk plays. From this directory, run: -
+You need to setup a suitable `setenv.sh` (and source it).
+`openshift/env/setenv-minishift.sh` should work in most cases.
+Then run the `minishift` playbook to prepare the cluster **before** running
+the above Squonk plays.
 
+From this directory, run: -
+
+    source ../env/setenv-minishift.sh
     ansible-playbook playbooks/minishift/prepare.yaml
+
+>   The MiniShift installation does not use trusted certificates so
+    you need to instruct your browser to ignore the security concerns
+    that this causes.

@@ -185,8 +185,32 @@ class ServiceDescriptorUtilsSpec extends Specification {
         then:
         descriptors.size() > 0
         errors == 0
-
     }
+
+
+//    void "read galaxy xml"() {
+//
+//        when:
+//        def tool = new XmlSlurper().parse(new File("src/test/groovy/org/squonk/core/galaxy-addh.xml"))
+//        def macros = new XmlSlurper().parse(new File("src/test/groovy/org/squonk/core/macros.xml"))
+//        def id = tool.@id
+//        def name = tool.@name
+//        def description = tool.description.text()
+//        def command = tool.command.text()
+//        println "ID: $id NAME: $name"
+//        println "DESC: $description"
+//
+//        tool.childNodes().each {
+//            println it.name
+//        }
+//
+//        then:
+//        id == 'openbabel_addh'
+//        name.text() != null
+//        description != null
+//        command.text() != null
+//
+//    }
 
 }
 

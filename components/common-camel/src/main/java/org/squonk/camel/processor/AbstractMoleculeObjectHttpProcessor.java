@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.squonk.util.CamelRouteStatsRecorder;
 import org.squonk.util.StatsRecorder;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.squonk.util.CommonMimeTypes.MIME_TYPE_DATASET_MOLECULE_JSON;
@@ -82,7 +83,8 @@ public abstract class AbstractMoleculeObjectHttpProcessor implements Processor {
 
         // get all the info about the requested input and output
         RequestInfo requestInfo = RequestInfo.build(supportedInputMimeTypes, supportedOutputMimeTypes, exch);
-        LOG.info(requestInfo.toString());
+        LOG.fine(requestInfo.toString());
+        requestInfo.dumpHeaders(LOG, Level.FINE);
 
         // work out what handlers are needed for the input and output
         // might as well fail now if we can't handle input or output
@@ -113,10 +115,10 @@ public abstract class AbstractMoleculeObjectHttpProcessor implements Processor {
             exch.getIn().setHeader(StatsRecorder.HEADER_STATS_RECORDER, new CamelRouteStatsRecorder(jobId, pt));
         }
 
+        LOG.fine("Processing dataset");
         Object results = processDataset(exch, dataset, requestInfo);
 
-        writeOutput(exch, results, requestInfo,  acceptHandler, executor);
-
+        writeOutput(exch, results, requestInfo, acceptHandler, executor);
     }
 
     protected abstract Object processDataset(

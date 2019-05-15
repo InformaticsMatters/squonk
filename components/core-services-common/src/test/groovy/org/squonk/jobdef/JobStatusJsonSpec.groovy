@@ -17,6 +17,7 @@
 package org.squonk.jobdef
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.squonk.types.io.JsonHandler
 import spock.lang.Specification
 
 /**
@@ -52,6 +53,18 @@ class JobStatusJsonSpec extends Specification {
         obj instanceof JobStatus
         obj.jobId == 'jobone'
     }
+
+    void "json schema"() {
+
+        when:
+        String js = JsonHandler.getInstance().getJsonSchemaAsString(JobStatus.class)
+        println js
+
+        then:
+        js.length() > 0
+
+    }
+
 	
 }
 

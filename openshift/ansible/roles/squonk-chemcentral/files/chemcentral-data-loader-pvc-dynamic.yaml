@@ -1,0 +1,41 @@
+---
+
+# The Squonk ChemCentral Data Loader (source) PVCs.
+#
+# oc process -f chemcentral-data-loader-pvc-dynamic.yaml | oc create -f -
+# oc delete pv,pvc --selector template=chemcentral-data-loader-pvc-dynamic
+
+kind: Template
+apiVersion: v1
+metadata:
+  name: chemcentral-data-loader-pvc-nfs
+  annotations:
+    description: Data loader Persistent Volume Claim using Dynamic Volumes
+    tags: squonk,pvc
+labels:
+  template: chemcentral-data-loader-pvc-dynamic
+  app: chemcentral
+
+parameters:
+
+- name: APP_NAMESPACE
+  value: squonk
+- name: STORAGE_CLASS
+  value: standard
+- name: PVC_SIZE
+  value: 100Mi
+
+objects:
+
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    name: chemcentral-data-loader-pvc
+    namespace: ${APP_NAMESPACE}
+  spec:
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: ${PVC_SIZE}
+    storageClassName: ${STORAGE_CLASS}

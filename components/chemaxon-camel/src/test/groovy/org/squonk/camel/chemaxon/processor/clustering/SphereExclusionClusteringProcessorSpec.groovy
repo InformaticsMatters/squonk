@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.squonk.camel.chemaxon.processor.clustering
 
 import com.chemaxon.descriptors.fingerprints.ecfp.*
 import com.chemaxon.descriptors.metrics.BinaryMetrics
+import org.apache.camel.CamelContext
 import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.squonk.types.MoleculeObject;
 import org.apache.camel.builder.RouteBuilder
@@ -86,9 +87,9 @@ class SphereExclusionClusteringProcessorSpec extends CamelSpecificationBase {
     }
 
     @Override
-    RouteBuilder createRouteBuilder() {
+    void addRoutes(CamelContext context) {
               
-        return new RouteBuilder() {
+        context.addRoutes(new RouteBuilder() {
             
             EcfpGenerator gen = new EcfpParameters().getDescriptorGenerator(); // default ECFP
             
@@ -104,6 +105,6 @@ class SphereExclusionClusteringProcessorSpec extends CamelSpecificationBase {
                     .clusterPropertyName('abcd'))
                 .to('mock:result')
             }
-        }
+        })
     }
 }

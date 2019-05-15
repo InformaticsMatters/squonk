@@ -21,10 +21,3 @@ services:
     chemcentral-search:
         ports:
         - "8093:8080"
-
-    jobexecutor:
-        image: squonk/jobexecutor:${TAG}
-        ports:
-        - "8094:8080"
-        environment:
-            SQUONK_JOBEXECUTOR_ALLOW_UNAUTHENTICATED: "true"
