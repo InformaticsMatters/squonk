@@ -216,12 +216,14 @@ public class CDKMoleculeIOUtils {
         SDFWriter writer = new SDFWriter(out);
         // set custom properties
         writer.addChemObjectIOListener(new PropertiesListener(WRITER_PROPERTIES));
+        writer.customizeJob();
         return writer;
     }
 
     public static MDLV2000Writer createMDLV2000Writer(Writer out) {
         MDLV2000Writer writer = new MDLV2000Writer(out);
         writer.addChemObjectIOListener(new PropertiesListener(WRITER_PROPERTIES));
+        writer.customizeJob();
         return writer;
     }
 

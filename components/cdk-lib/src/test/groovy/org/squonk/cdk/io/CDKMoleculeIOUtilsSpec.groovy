@@ -37,6 +37,7 @@ import org.openscience.cdk.tools.manipulator.ChemFileManipulator
 import org.squonk.data.Molecules
 import org.squonk.types.CDKSDFile
 import org.squonk.util.IOUtils
+import spock.lang.Ignore
 
 import java.util.zip.GZIPInputStream
 import spock.lang.Specification
@@ -521,32 +522,90 @@ M  END
 
         when:
         writer.write(iac)
+        writer.close()
 
         then:
-        new String(out.getBytes()).endsWith('$$$$')
+        new String(out.toByteArray()).endsWith('$$$$\n')
     }
 
-    void "simple write"() {
+    void "simple sdfwriter write"() {
 
-        //MDLV2000Reader reader = new MDLV2000Reader(new ByteArrayInputStream(aromatic_molfile.bytes))
-        //IAtomContainer iac = reader.read(new AtomContainer());
+//        MDLV2000Reader reader = new MDLV2000Reader(new ByteArrayInputStream(aromatic_molfile.bytes))
+//        IAtomContainer iac = reader.read(new AtomContainer());
+
         SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance())
         IAtomContainer iac = parser.parseSmiles("c1ccccc1")
+
         println "Bond 1 is aromatic? ${iac.getBond(1).isAromatic()}"
         ByteArrayOutputStream out = new ByteArrayOutputStream()
         SDFWriter writer = new SDFWriter(out)
-        Properties props = new Properties()
-        props.setProperty("WriteAromaticBondTypes", "true")
-        writer.addChemObjectIOListener(new PropertiesListener(props))
+//        Properties props = new Properties()
+//        props.setProperty("WriteAromaticBondTypes", "true")
+//        writer.addChemObjectIOListener(new PropertiesListener(props))
+//        writer.customizeJob()
 
         when:
         writer.write(iac)
         writer.close()
         String sdf = new String(out.toByteArray())
-        //println sdf
+        println sdf
 
         then:
-        sdf.endsWith('$$$$')
+        sdf.endsWith('$$$$\n')
+    }
+
+    void "simple v2000writer write"() {
+
+        MDLV2000Reader reader = new MDLV2000Reader(new ByteArrayInputStream(aromatic_molfile.bytes))
+        IAtomContainer iac = reader.read(new AtomContainer());
+
+//        SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance())
+//        IAtomContainer iac = parser.parseSmiles("c1ccccc1")
+
+        println "Bond 1 is aromatic? ${iac.getBond(1).isAromatic()}"
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        MDLV2000Writer writer = new MDLV2000Writer(out)
+        Properties props = new Properties()
+        props.setProperty("WriteAromaticBondTypes", "true")
+        writer.addChemObjectIOListener(new PropertiesListener(props))
+        writer.customizeJob()
+
+        when:
+        writer.write(iac)
+        writer.close()
+        String sdf = new String(out.toByteArray())
+        println sdf
+
+        then:
+        sdf.endsWith('END\n')
+    }
+
+    // fails because MDLV3000Writer does not seem to have a customizeJob() method
+    @Ignore
+    void "simple v3000writer write"() {
+
+        MDLV2000Reader reader = new MDLV2000Reader(new ByteArrayInputStream(aromatic_molfile.bytes))
+        IAtomContainer iac = reader.read(new AtomContainer());
+
+//        SmilesParser parser = new SmilesParser(SilentChemObjectBuilder.getInstance())
+//        IAtomContainer iac = parser.parseSmiles("c1ccccc1")
+
+        println "Bond 1 is aromatic? ${iac.getBond(1).isAromatic()}"
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        MDLV3000Writer writer = new MDLV3000Writer(out)
+        Properties props = new Properties()
+        props.setProperty("WriteAromaticBondTypes", "true")
+        writer.addChemObjectIOListener(new PropertiesListener(props))
+//        writer.customizeJob()
+
+        when:
+        writer.write(iac)
+        writer.close()
+        String sdf = new String(out.toByteArray())
+        println sdf
+
+        then:
+        sdf.endsWith('END\n')
     }
 }
 
