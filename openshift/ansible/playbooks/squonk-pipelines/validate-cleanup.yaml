@@ -9,5 +9,5 @@
   tasks:
   - name: Run the Squonk Pipeline Validation Clean-Up Tasks
     include_role:
-      name: squonk
+      name: squonk-pipelines
       tasks_from: validate-cleanup.yaml

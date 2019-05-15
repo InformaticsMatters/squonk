@@ -3,9 +3,10 @@
 - hosts: localhost
   vars_files:
   - ../../../env/{{ ansible_env.IM_PARAMETER_FILE }}
+  force_handlers: true
 
   tasks:
   - name: Run the Squonk Pipeline Validation Tasks
     include_role:
-      name: squonk
+      name: squonk-pipelines
       tasks_from: validate-pipelines.yaml

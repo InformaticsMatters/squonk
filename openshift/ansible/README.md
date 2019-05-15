@@ -81,7 +81,11 @@ using the _validate pipelines_ playbook. It relies on the built-in `user1`
 user and creates a Keycloak login for the user and then runs some example
 pipelines before removing the user.
 
-    ansible-playbook playbooks/squonk/validate-pipelines.yaml
+    ansible-playbook playbooks/squonk-pipelines/validate-pipelines.yaml
+
+>   If a validation user already exists (**user1**), you will need to
+    provide the validation playbook with its password by appending
+    `-e user1_password=<ThePassword>` to the play execution.
 
 Remember that this playbook creates jobs on the server, so running it
 on an _active_ deployment is unwise. Use it as a sanity check when it's safe
@@ -89,10 +93,13 @@ or after initial deployment to quickly verify the installation.
  
 If you get into trouble with failed tests a convenient _cleanup_
 playbook also exists. It also creates the keycloak login for the `user1`
-user, cleans up and then removes the user. Use this playbook with caution as it
-removes all the jobs with a status of  `RESULTS_READY` and `ERROR`: -
+user (if required), cleans up and then removes the user
+(if it didn't already exist).
 
-    ansible-playbook playbooks/squonk/validate-cleanup.yaml
+Use this playbook with caution as it removes all the jobs with a status of
+`RESULTS_READY` and `ERROR`: -
+
+    ansible-playbook playbooks/squonk-pipelines/validate-cleanup.yaml
 
 ## Populating the ChemCentral database
 In order to load data into the ChemCentral database you will need to prepare

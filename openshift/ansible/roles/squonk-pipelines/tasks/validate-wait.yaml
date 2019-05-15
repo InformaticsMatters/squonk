@@ -1,0 +1,46 @@
+---
+
+# Waits for the given 'job_id'.
+# Waiting until RESULTS_READY or ERROR.
+#
+# If there's a failure of the job the 'job_failures' task is updated
+# to name the test and the failure (status)
+
+- name: Assert wait variables ({{ job_name }})
+  assert:
+    that:
+    - job_id and job_id|length > 0
+    - job_name and job_name|length > 0
+
+- name: Wait for Job ({{ job_name }})
+  uri:
+    url: "{{ je_rest_v1 }}/jobs/{{ job_id }}/status"
+    headers:
+      Authorization: bearer {{ je.json.access_token }}
+  register: resp
+  until: resp.json.status in ['RESULTS_READY', 'ERROR']
+  delay: 10
+  retries: "{{ (job_wait_time_s|int / 10)|int }}"
+
+# A job's failed if its status is not RESULTS_READY...
+
+- name: Display failure events ({{ job_name }})
+  debug:
+    var: resp.json.events
+  when: resp.json.status not in ['RESULTS_READY']
+
+# Test failures are added to the 'job_failures' map.
+# This is indexed by 'job_name' and its value is a list,
+# containing the status and the first line of the 'events'...
+
+- name: Record failure ({{ job_name }})
+  set_fact:
+    job_failures: "{{ job_failures|combine({job_name: [resp.json.status, resp.json.events[0]]}) }}"
+  when: resp.json.status not in ['RESULTS_READY']
+
+- name: Delete Job ({{ job_name }})
+  uri:
+    url: "{{ je_rest_v1 }}/jobs/{{ job_id }}"
+    method: DELETE
+    headers:
+      Authorization: bearer {{ je.json.access_token }}

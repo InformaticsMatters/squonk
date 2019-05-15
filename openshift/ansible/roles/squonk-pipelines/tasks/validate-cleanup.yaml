@@ -18,8 +18,8 @@
     body:
     - ['grant_type', 'password']
     - ['client_id', '{{ oc_jobexecutor_client }}']
-    - ['username', '{{ test_user_name }}']
-    - ['password', '{{ test_user_password }}']
+    - ['username', '{{ user1_name }}']
+    - ['password', '{{ user1_password }}']
     body_format: form-urlencoded
     method: POST
   register: je
@@ -31,7 +31,6 @@
 - name: Set API facts
   set_fact:
     je_rest_v1: https://{{ oc_jobexecutor_host }}/jobexecutor/rest/v1
-    job_wait_time_s: 300
   changed_when: true
   notify:
   - Remove user 1

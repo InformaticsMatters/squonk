@@ -1,0 +1,25 @@
+---
+
+# Gets an access token (for the test user).
+#
+# The token will be made available as the 'je_access_token' fact.
+
+- name: Get Temporary JE Access Token
+  uri:
+    url: "{{ keycloak_server_url}}/realms/{{ keycloak_realm }}/protocol/openid-connect/token"
+    body:
+    - ['grant_type', 'password']
+    - ['client_id', '{{ oc_jobexecutor_client }}']
+    - ['username', '{{ user1_name }}']
+    - ['password', '{{ user1_password }}']
+    body_format: form-urlencoded
+    method: POST
+  register: je
+
+- name: Set access token fact
+  set_fact:
+    je_access_token: "{{ je.json.access_token }}"
+
+- name: Display access token
+  debug:
+    var: je_access_token

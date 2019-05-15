@@ -22,21 +22,45 @@
 - name: Assert state
   assert:
     that:
-    - test_user_id and test_user_id|length > 0
-    - test_user_name and test_user_name|length > 0
-    - test_user_password and test_user_password|length > 0
+    - user1_id is defined and user1_id|length > 0
+    - user1_name is defined and user1_name|length > 0
+    - user1_password is defined and user1_password|length > 0
 
 # User removal is done via a handler.
 # In order to run a handler we need a tasks that 'changes'.
 # So we force a change and notify the user-removal handler here...
 
+# Set facts each validation play might need...
+
 - name: Set API facts
   set_fact:
     je_rest_v1: https://{{ oc_jobexecutor_host }}/jobexecutor/rest/v1
     job_wait_time_s: 300
+    job_failures: {}
   changed_when: true
   notify:
   - Remove user 1
 
+# Run the validation plays...
+
 - import_tasks: validate-pipelines-01-core-dataset-filter-slice.yaml
-#- import_tasks: validate-pipelines-02-conformer-basic.yaml
+- import_tasks: validate-pipelines-02-conformer-basic.yaml
+
+# Check for job failure.
+# Print failed jobs and then assert.
+# The user removal is dealt with by a handler so it will get removed
+# regardless of failure.
+
+- name: Display failures
+  debug:
+    var: job_failures
+  when: job_failures
+
+- name: Display Job Executor REST Endpoint
+  debug:
+    var: je_rest_v1
+  when: job_failures
+
+- name: Assert there are no failures
+  assert:
+    that: job_failures|length == 0
