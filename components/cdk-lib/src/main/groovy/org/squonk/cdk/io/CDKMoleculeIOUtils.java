@@ -22,6 +22,7 @@ import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.io.*;
 import org.openscience.cdk.io.formats.IChemFormat;
+import org.openscience.cdk.io.listener.PropertiesListener;
 import org.openscience.cdk.silent.AtomContainer;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmiFlavor;
@@ -29,15 +30,14 @@ import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
+import org.squonk.cdk.CDKSettings;
 import org.squonk.types.CDKSDFile;
 import org.squonk.types.MoleculeObject;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -49,6 +49,12 @@ public class CDKMoleculeIOUtils {
 
     private static final Logger LOG = Logger.getLogger(CDKMoleculeIOUtils.class.getName());
     private static final SmilesParser smilesParser = new SmilesParser(SilentChemObjectBuilder.getInstance());
+
+    private static Properties WRITER_PROPERTIES = new Properties();
+    static {
+        // set custom property to be more tolerant of aromatic bonds
+        WRITER_PROPERTIES.setProperty("WriteAromaticBondTypes", CDKSettings.WriteAromaticBondTypes);
+    }
 
 
     public static Iterator<IAtomContainer> moleculeIterator(final InputStream is)
@@ -208,6 +214,27 @@ public class CDKMoleculeIOUtils {
         return mols;
     }
 
+    public static SDFWriter createSDFWriter(OutputStream out) {
+        SDFWriter writer = new SDFWriter(out);
+        // set custom properties
+        writer.addChemObjectIOListener(new PropertiesListener(WRITER_PROPERTIES));
+        writer.customizeJob();
+        return writer;
+    }
+
+    public static MDLV2000Writer createMDLV2000Writer(Writer out) {
+        MDLV2000Writer writer = new MDLV2000Writer(out);
+        writer.addChemObjectIOListener(new PropertiesListener(WRITER_PROPERTIES));
+        writer.customizeJob();
+        return writer;
+    }
+
+    public static MDLV3000Writer createMDLV3000Writer(Writer out) {
+        MDLV3000Writer writer = new MDLV3000Writer(out);
+        writer.addChemObjectIOListener(new PropertiesListener(WRITER_PROPERTIES));
+        return writer;
+    }
+
     public static CDKSDFile covertToSDFile(Stream<MoleculeObject> mols, boolean haltOnError) throws IOException, CDKException {
 
         LOG.info("Converting to SDF");
@@ -218,6 +245,7 @@ public class CDKMoleculeIOUtils {
 
         Thread t = new Thread() {
             public void run() {
+
                 LOG.fine("Running SDF conversion");
                 try (SDFWriter writer = new SDFWriter(bwriter)) {
                     // TODO - change this to a map (MoleculeObject -> IAtomContainer operation followed by an operation
@@ -388,7 +416,7 @@ public class CDKMoleculeIOUtils {
 
     public static MoleculeObject convertToMolfileV2000(IAtomContainer mol) throws IOException, CDKException {
         StringWriter writer = new StringWriter();
-        try (MDLV2000Writer mdl = new MDLV2000Writer(writer)) {
+        try (MDLV2000Writer mdl = createMDLV2000Writer(writer)) {
             mdl.write(mol);
         }
         String source = writer.toString();
@@ -397,7 +425,7 @@ public class CDKMoleculeIOUtils {
 
     public static MoleculeObject convertToMolfileV3000(IAtomContainer mol) throws IOException, CDKException {
         StringWriter writer = new StringWriter();
-        try (MDLV3000Writer mdl = new MDLV3000Writer(writer)) {
+        try (MDLV3000Writer mdl = createMDLV3000Writer(writer)) {
             mdl.write(mol);
         }
         String source = writer.toString();
