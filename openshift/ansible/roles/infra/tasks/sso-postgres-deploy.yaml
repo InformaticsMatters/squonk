@@ -28,6 +28,7 @@
     -p SSO_MEM_REQUEST={{ oc_infra_sso_mem_request }}
     -p SSO_CPU_LIMIT={{ oc_infra_sso_cpu_limit }}
     -p SSO_MEM_LIMIT={{ oc_infra_sso_mem_limit }}
+    -p SSO_JAVA_TOOL_OPTIONS={{ oc_infra_sso_java_tool_options }}
     | oc create -f -
   when: '"db-postgresql" not in sso_dc_result.stdout'
 
