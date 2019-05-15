@@ -215,11 +215,18 @@ public class CDKMoleculeIOUtils {
     }
 
     public static SDFWriter createSDFWriter(OutputStream out) {
-        SDFWriter writer = new SDFWriter(out);
+        return configureSDFWriter(new SDFWriter(out));
+    }
+
+    public static SDFWriter createSDFWriter(BufferedWriter writer) {
+        return configureSDFWriter(new SDFWriter(writer));
+    }
+
+    private static SDFWriter configureSDFWriter(SDFWriter sdfwriter) {
         // set custom properties
-        writer.addChemObjectIOListener(new PropertiesListener(WRITER_PROPERTIES));
-        writer.customizeJob();
-        return writer;
+        sdfwriter.addChemObjectIOListener(new PropertiesListener(WRITER_PROPERTIES));
+        sdfwriter.customizeJob();
+        return sdfwriter;
     }
 
     public static MDLV2000Writer createMDLV2000Writer(Writer out) {
@@ -247,7 +254,7 @@ public class CDKMoleculeIOUtils {
             public void run() {
 
                 LOG.fine("Running SDF conversion");
-                try (SDFWriter writer = new SDFWriter(bwriter)) {
+                try (SDFWriter writer = createSDFWriter(bwriter)) {
                     // TODO - change this to a map (MoleculeObject -> IAtomContainer operation followed by an operation
                     // to write to SDF
                     AtomicInteger count = new AtomicInteger(0);
