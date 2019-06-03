@@ -32,8 +32,8 @@ keycloak_server_url: "{{ keycloak_server_protocol }}://sso.{{ oc_routes_basename
 keycloak_logout_redirect_to: http://home.{{ oc_routes_basename }}/
 keycloak_ssl_required: external
 keycloak_insecure_route: Redirect
-keycloak_service_user: manager
-keycloak_service_user_password_field: sso-service-password
+keycloak_admin_user: admin
+keycloak_admin_user_password_field: sso-admin-password
 
 # Users
 oc_admin: admin

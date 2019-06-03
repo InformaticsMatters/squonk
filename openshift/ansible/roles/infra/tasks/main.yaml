@@ -19,6 +19,7 @@
 
 - import_tasks: sso-postgres-deploy.yaml
 - import_tasks: sso-route.yaml
+- import_tasks: add-keycloak-realms.yaml
 - import_tasks: add-keycloak-roles.yaml
 
 - import_tasks: rabbitmq-deploy.yaml

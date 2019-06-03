@@ -37,13 +37,9 @@
 #    "name": "standard-user"
 #
 # To simplify further processing, we'd like a nice flat list.
-# So, to collect all known role names into a list it's...
-#
-#   realm_roles | json_query('json[*].name') | flatten
-#
 - name: Collect known Roles
   set_fact:
-    known_roles: "{{ realm_roles | json_query('json[*].name') | flatten }}"
+    known_roles: "{{ realm_roles|json_query('json[*].name')|flatten }}"
   changed_when: False
 
 #####
@@ -92,7 +88,7 @@
 
 - name: Collect known Default Roles
   set_fact:
-    known_default_roles: "{{ realm_representation | json_query('json.defaultRoles') }}"
+    known_default_roles: "{{ realm_representation|json_query('json.defaultRoles') }}"
   changed_when: False
 
 - name: Extend Realm Representation Default Roles

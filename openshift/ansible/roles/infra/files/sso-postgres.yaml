@@ -18,6 +18,7 @@
 # 14. Added HOSTNAME_HTTPS parameter and use for HTTPS route name
 # 15. Removed HTTP route
 # 16. Moved route to its own definition (sso-route.yaml)
+# 17. Removed SSO_REALM, SSO_SERVICE_USERNAME, SSO_SERVICE_PASSWORD
 
 kind: Template
 apiVersion: v1
@@ -135,23 +136,6 @@ parameters:
   from: "[a-zA-Z0-9]{12}"
   generate: expression
   required: true
-- displayName: RH-SSO Realm
-  description: Realm to be created in the RH-SSO server (e.g. demorealm).
-  name: SSO_REALM
-  value: squonk
-  required: false
-- displayName: RH-SSO Service Username
-  description: The username used to access the RH-SSO service. This is used by clients
-    to create the appliction client(s) within the specified RH-SSO realm.
-  name: SSO_SERVICE_USERNAME
-  value: manager
-  required: false
-- displayName: RH-SSO Service Password
-  description: The password for the RH-SSO service user.
-  name: SSO_SERVICE_PASSWORD
-  from: "[a-zA-Z0-9]{12}"
-  generate: expression
-  required: true
 - displayName: PostgreSQL Image Stream Tag
   description: The tag to use for the "postgresql" image stream.  Typically, this
     aligns with the major.minor version of PostgreSQL.
@@ -217,8 +201,6 @@ objects:
    labels:
       application: "${APPLICATION_NAME}"
   stringData:
-    sso-service-user: "${SSO_SERVICE_USERNAME}"
-    sso-service-password: "${SSO_SERVICE_PASSWORD}"
     sso-admin-user: "${SSO_ADMIN_USERNAME}"
     sso-admin-password: "${SSO_ADMIN_PASSWORD}"
 
@@ -360,7 +342,6 @@ objects:
               port: 8080
               scheme: HTTP
           readinessProbe:
-            initialDelaySeconds: 30
             failureThreshold: 10
             initialDelaySeconds: 30
             #periodSeconds: 30
@@ -420,12 +401,6 @@ objects:
             value: "${SSO_ADMIN_USERNAME}"
           - name: KEYCLOAK_PASSWORD
             value: "${SSO_ADMIN_PASSWORD}"
-          - name: SSO_REALM
-            value: "${SSO_REALM}"
-          - name: SSO_USERNAME
-            value: "${SSO_SERVICE_USERNAME}"
-          - name: SSO_PASSWORD
-            value: "${SSO_SERVICE_PASSWORD}"
           - name: JAVA_TOOL_OPTIONS
             value: "${SSO_JAVA_TOOL_OPTIONS}"
         volumes:

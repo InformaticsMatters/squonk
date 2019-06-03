@@ -19,7 +19,6 @@
   shell: >
     oc process
     -f {{ role_path }}/files/sso-postgres.yaml
-    -p SSO_REALM={{ keycloak_realm }}
     -p POSTGRESQL_SHARED_BUFFERS={{ postgresql_shared_buffer_size }}
     -p SSO_SA={{ oc_infra_sa }}
     -p PG_CPU_REQUEST={{ oc_infra_postgresql_cpu_request }}
