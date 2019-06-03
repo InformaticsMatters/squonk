@@ -344,12 +344,12 @@ objects:
             valueFrom:
               secretKeyRef:
                 name: keycloak-secrets
-                key: sso-service-user
+                key: sso-admin-user
           - name: KEYCLOAK_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: keycloak-secrets
-                key: sso-service-password
+                key: sso-admin-password
           image: centos:7
           command:
           - /bin/bash

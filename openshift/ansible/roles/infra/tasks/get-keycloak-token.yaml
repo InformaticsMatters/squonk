@@ -35,10 +35,6 @@
 # Now get the API token.
 # There's a time-limit using this.
 
-- name: Display credentials
-  debug:
-    msg: "username={{ keycloak_admin_user }} password={{ keycloak_admin_password }}"
-
 - name: Get Keycloak API Token (master realm)
   uri:
     url: "{{ keycloak_server_url}}/realms/master/protocol/openid-connect/token"

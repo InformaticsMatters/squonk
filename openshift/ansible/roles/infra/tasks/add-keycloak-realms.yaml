@@ -50,7 +50,8 @@
     url: "{{ keycloak_server_url }}/admin/realms"
     method: POST
     body: >-
-      {"realm": "{{ keycloak_realm }}"}
+      {"realm": "{{ keycloak_realm }}",
+       "enabled": "true"}
     body_format: json
     status_code: 201
     validate_certs: no
