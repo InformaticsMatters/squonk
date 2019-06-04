@@ -32,10 +32,13 @@
     -p CELL_SQUONK_NEXTFLOW_IMAGE={{ oc_squonk_nextflow_image }}
     -p CELL_CPU_REQUEST={{ oc_squonk_cell_cpu_request }}
     -p CELL_MEM_REQUEST={{ oc_squonk_cell_mem_request }}
+    -p CELL_JAVA_TOOL_OPTIONS={{ oc_squonk_cell_java_tool_options }}
     -p CHEM_CPU_REQUEST={{ oc_squonk_chem_cpu_request }}
     -p CHEM_MEM_REQUEST={{ oc_squonk_chem_mem_request }}
+    -p CHEM_JAVA_TOOL_OPTIONS={{ oc_squonk_chem_java_tool_options }}
     -p CORE_CPU_REQUEST={{ oc_squonk_core_cpu_request }}
     -p CORE_MEM_REQUEST={{ oc_squonk_core_mem_request }}
+    -p CORE_JAVA_TOOL_OPTIONS={{ oc_squonk_core_java_tool_options }}
     | oc create -f -
   when: '"coreservices" not in dc_result.stdout'
 

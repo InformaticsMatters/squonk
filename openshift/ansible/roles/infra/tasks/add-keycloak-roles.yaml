@@ -20,7 +20,7 @@
 #
 # Get a list of roles that are already known.
 
-- name: Get exisiting Roles for the Realm
+- name: Get exisiting Realm Roles ({{ keycloak_realm }})
   uri:
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/roles"
     validate_certs: no

@@ -262,15 +262,17 @@ objects:
         \"adminUrl\":\"$JOBEXECUTOR_HTTPS\"
       }"
 
-      echo "Keycloak is at $KEYCLOAK_URL"
-      echo "SSO user is $KEYCLOAK_USER"
+      echo "Keycloak URL is $KEYCLOAK_URL"
+      echo "Keycloak user is $KEYCLOAK_USER"
       echo "Secret is $SQUONK_CLIENT_SECRET"
       echo "Data: $DATA"
       echo "$NOTEBOOK_CONFIG"
       echo "$JOBEXECUTOR_CONFIG"
 
-      TOKEN=$(curl -ks --data "$DATA" "$KEYCLOAK_URL/realms/$KEYCLOAK_REALM/protocol/openid-connect/token" |\
-        grep -Po '(?<="access_token":")[^"]*')
+      TOKEN_RESP=$(curl -ks --data "$DATA" "$KEYCLOAK_URL/realms/master/protocol/openid-connect/token")
+      echo "Token Response: TOKEN_RESP"
+
+      TOKEN=$(echo $TOKEN_RESP | grep -Po '(?<="access_token":")[^"]*')
       echo "Token: $TOKEN"
 
       RESULT=$(curl -ks -X POST \
