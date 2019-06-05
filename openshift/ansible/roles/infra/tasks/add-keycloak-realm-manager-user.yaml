@@ -45,10 +45,6 @@
     - manager_user_id is defined
     - manager_user_id|length > 0
 
-- name: Display assigned user ID
-  debug:
-    var: manager_user_id
-
 - name: Set (Reset) manager password
   uri:
     url: "{{ user_endpoint }}/users/{{ manager_user_id }}/reset-password"

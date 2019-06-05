@@ -94,10 +94,6 @@
   - manager_user_id|length == 0
   - manager_password is defined
 
-- name: Debug
-  debug:
-    var: manager_user_id
-
 # Create the manager account if it does not exist...
 
 - name: Assert user ID
@@ -125,10 +121,6 @@
   set_fact:
     client_id: "{{ rm_client_id.json[0].id }}"
 
-- name: Debug
-  debug:
-    msg: manager_user_id={{ manager_user_id }} client_id={{ client_id }}
-
 # Now get the Roles available from the 'real-management' client...
 # We're looking for the 'realm-admin' role so we can get its ID...
 
@@ -143,10 +135,6 @@
   - keycloak-users
   vars:
     method: users/{{ manager_user_id }}/role-mappings/clients/{{ client_id }}/available
-
-- name: Debug
-  debug:
-    var: rm_roles
 
 # Using 'max' as a convenient way of getting the ID
 # which is put in a list of 1 by the json_query...
@@ -164,10 +152,6 @@
       manager_user_id={{ manager_user_id }}
       client_id={{ client_id }}
       realm_admin_id={{ realm_admin_id }}
-
-- name: Show Token
-  debug:
-    var: keycloak_token
 
 # Now, finally, add the role to the manager account...
 
