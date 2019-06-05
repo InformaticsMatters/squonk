@@ -136,22 +136,26 @@
   vars:
     method: users/{{ manager_user_id }}/role-mappings/clients/{{ client_id }}/available
 
-# Using 'max' as a convenient way of getting the ID
-# which is put in a list of 1 by the json_query...
-# (might fix this one day...)
+# 'realm-admin' might not be in the 'available' list.
+# It isn't if the role's already assigned,
+# so we need to protect ourselves from not finding it...
 
-- name: Extract realm-admin role ID
+- name: Search for realm-admin role ID
   set_fact:
-    realm_admin_id: "{{ rm_roles|json_query(query)|max }}"
+    realm_admin_id_list: "{{ rm_roles|json_query(query) }}"
   vars:
     query: "json[?name=='realm-admin'].id"
+  tags:
+  - keycloak-users
 
-- name: Show variables
-  debug:
-    msg: >-
-      manager_user_id={{ manager_user_id }}
-      client_id={{ client_id }}
-      realm_admin_id={{ realm_admin_id }}
+- name: Get realm-admin role ID
+  set_fact:
+    realm_admin_id: "{{ realm_admin_id_list[0] }}"
+  when:
+  - realm_admin_id_list is defined
+  - realm_admin_id_list|length > 0
+  tags:
+  - keycloak-users
 
 # Now, finally, add the role to the manager account...
 
@@ -171,5 +175,7 @@
       Authorization: bearer {{ keycloak_token }}
   vars:
     method: users/{{ manager_user_id }}/role-mappings/clients/{{ client_id }}
+  when:
+  - realm_admin_id is defined
   tags:
   - keycloak-users

@@ -17,10 +17,15 @@
 - import_tasks: patch-minishift.yaml
   when: oc_infra_volume_type == 'minishift'
 
+# Deploy Keycloak (and its database)
+# and create the route...
 - import_tasks: keycloak-postgres-deploy.yaml
 - import_tasks: keycloak-route.yaml
 
+# Setup the realm, realm manager and expected roles...
 - import_tasks: add-keycloak-realm.yaml
-- import_tasks: add-keycloak-realm-admin.yaml
+- import_tasks: add-keycloak-realm-manager.yaml
 - import_tasks: add-keycloak-realm-roles.yaml
+
+# Finally, RabbitMQ is part of the infrastructure...
 - import_tasks: rabbitmq-deploy.yaml
