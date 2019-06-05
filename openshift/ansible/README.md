@@ -47,11 +47,11 @@ password per line) 'after-the-fact' by defining the `user_file` playbook
 variable and then limiting the deployment to just the tasks relating to
 _keycloak users_ with the following: -
 
-    ansible-playbook -e "users_file=example-users.txt" -t keycloak-users \
+    ansible-playbook -e "users_file=example.user" -t keycloak-users \
         playbooks/squonk/deploy.yaml
 
->   `example-users.txt` is a demo file. You can use the file `users.txt`
-    to safely add your own users. It is prevented form being committed to
+>   `example.user` is a demo file. You can use the file `users.user`
+    to safely add your own users. It is prevented from being committed to
     Git as it's listed in the project's `.gitignore` file.
 
 ## Posting Squonk pipelines

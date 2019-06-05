@@ -1,17 +1,27 @@
 ---
 
+# Variables that control this set of tasks are: -
+#
+# - keycloak_server_url   The Keycloak server authentication URL
+#                         typically 'https://sso.example.org/auth'
+# - keycloak_realm        The realm the users are to be added to
+# - users_file            A users file, located in the ansibel directory
+#                         that's simple text with one user and space-separated
+#                         password per line. See ansible/example.user
+
+# -----------------------------------------------------------------------------
+
 # Get a keycloak token (sets the fact 'keycloak_token').
 # Remember that the login user may have changed to admin.
 #
 # The actions for getting the KeyCloak token
 # are located in an infra role playbook.
 
-- import_tasks: >
-    "{{ role_path }}/../infra/tasks/get-keycloak-token.yaml"
+- include_tasks: get-keycloak-token.yaml
   tags:
   - keycloak-users
 
-# Adding Squonk users and passwords.
+# Adding users and passwords.
 # The steps here are: -
 #
 # 1. Get a list of users using the 'users_file'
@@ -26,25 +36,30 @@
 #
 # Get a list of users that are already known.
 # Here we iterate through the users file checking Keycloak to see if the user
-# exists. Existing users are collected in 'squonk_users'
+# exists. Existing users are collected in 'keycloak_users'
 
-- name: Query Squonk Users
+- name: Set API endpoint
+  set_fact:
+    keycloak_endpoint: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}"
+  tags:
+    - keycloak-users
+
+- name: Query Users
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user }}"
+    url: "{{ keycloak_endpoint }}/users?username={{ user }}"
     validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
-  register: squonk_users
+  register: keycloak_users
   vars:
     user: "{{ item.split()[0] }}"
   loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
-  when: users_file is defined
   changed_when: False
   tags:
   - keycloak-users
 
 # The above 'query' is run for each expected user.
-# The resultant `squonk_users' variable is a structure
+# The resultant `keycloak_users' variable is a structure
 # with each query represented as an element in the 'results' array.
 # If the user exists it will have a 'username' property in the 'json'
 # array. i.e.
@@ -54,16 +69,10 @@
 #      "username": "blah"
 #
 # If the user does not exist the 'json' array is empty.
-#
 # To simplify further processing, we'd like a nice flat list.
-# So, to collect all known users into a list it's...
-#
-#   squonk_users | json_query('results[*].json[*].username') | flatten
-#
-- name: Collect Squonk Users
+- name: Collect Users
   set_fact:
-    known_users: "{{ squonk_users | json_query('results[*].json[*].username') | flatten }}"
-  when: users_file is defined
+    known_users: "{{ keycloak_users|json_query('results[*].json[*].username')|flatten }}"
   changed_when: False
   tags:
   - keycloak-users
@@ -76,7 +85,7 @@
 
 - name: Add Keycloak Users (that do not exist)
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users"
+    url: "{{ keycloak_endpoint }}/users"
     method: POST
     body: >-
       {"username": "{{ user }}",
@@ -89,9 +98,7 @@
   vars:
     user: "{{ item.split()[0] }}"
   loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
-  when:
-  - users_file is defined
-  - user not in known_users
+  when: user not in known_users
   tags:
   - keycloak-users
 
@@ -105,25 +112,23 @@
 # command above it's simpler to get each user again
 # and then collect the identities from the results.
 
-- name: Query Squonk Users (Reprise)
+- name: Query Users (Reprise)
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user }}"
+    url: "{{ keycloak_endpoint }}/users?username={{ user }}"
     validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
-  register: squonk_users
+  register: keycloak_users
   vars:
     user: "{{ item.split()[0] }}"
   loop: "{{ lookup('file', '../../' + users_file).split('\n') }}"
-  when: users_file is defined
   changed_when: False
   tags:
   - keycloak-users
 
-- name: Collect Squonk User Identities
+- name: Collect User Identities
   set_fact:
-    user_identities: "{{ squonk_users | json_query('results[*].json[*].id') | flatten }}"
-  when: users_file is defined
+    user_identities: "{{ keycloak_users|json_query('results[*].json[*].id')|flatten }}"
   changed_when: False
   tags:
   - keycloak-users
@@ -137,7 +142,7 @@
 
 - name: Set (Reset) Keycloak User Passwords (for those that do not exist)
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ user_id }}/reset-password"
+    url: "{{ keycloak_endpoint }}/users/{{ user_id }}/reset-password"
     method: PUT
     body: >-
       {"type": "password",

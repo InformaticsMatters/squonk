@@ -25,7 +25,7 @@
 
 - import_tasks: setup-keycloak.yaml
   when: setup_keycloak
-- import_tasks: add-keycloak-users.yaml
+- import_tasks: "{{ role_path }}/../infra/tasks/add-keycloak-realm-users.yaml"
   when: users_file is defined
 - import_tasks: add-keycloak-nobody-user.yaml
   when: add_nobody_user

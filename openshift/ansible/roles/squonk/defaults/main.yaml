@@ -45,8 +45,8 @@ setup_keycloak: no
 # Path to a file that defines the users we want to add to the Keycloak realm.
 # The path is relative to the ansible directory (where the roles directory is)
 # uncomment or define form the command-line to add users.
-# To use 'ansbible/users.txt' set to 'users.txt'
-#users_file: example-users.txt
+# To use 'ansbible/my.user' set to 'my.user'
+#users_file: example.user
 
 # Add the built-in nobody user?
 # If 'yes' then a 'noby' user is added to keycloak

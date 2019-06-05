@@ -1,8 +1,20 @@
 ---
 
+# Variables that control this set of tasks are: -
+#
+# - keycloak_server_url               The Keycloak server authentication URL
+#                                     typically 'https://sso.example.org/auth'
+# - keycloak_realm                    The Keycloak realm the user's in
+# - keycloak_api_secrets              The name of the secrets the password's in
+# - keycloak_api_user                 The name of the Keycloak REST API user
+# - keycloak_api_user_password_field  The name of the users' password field
+#                                     in the secrets
+
+# -----------------------------------------------------------------------------
+
 # This play sets two facts:
 #
-# - keycloak_service_password
+# - keycloak_api_password
 # - keycloak_token
 #
 # The token is valid for a limited time
@@ -15,29 +27,35 @@
     oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
     --insecure-skip-tls-verify=true
   changed_when: False
+  tags:
+    - keycloak-users
 
 # Get some secrets from the infrastructure...
 
-- name: Find Keycloak Admin Secret
+- name: Get Keycloak API User's Password ({{ keycloak_api_user_password_field }})
   shell: >
-    oc get secret keycloak-secrets -n {{ oc_infra_project }} -o yaml
-    | grep {{ keycloak_admin_user_password_field }}
+    oc get secret {{ keycloak_api_secrets }} -n {{ oc_infra_project }} -o yaml
+    | grep {{ keycloak_api_user_password_field }}
   register: secret_result
   changed_when: False
+  tags:
+    - keycloak-users
 
-- name: Set Admin User Password Fact
+- name: Set Keycloak API User Password Fact
   set_fact:
-    keycloak_admin_password: "{{ secret_result.stdout | regex_replace(regexp, '\\1') | b64decode }}"
+    keycloak_api_password: "{{ secret_result.stdout|regex_replace(regexp, '\\1')|b64decode }}"
   vars:
-    regexp: '^\s+{{ keycloak_admin_user_password_field }}:\s+(\S+)\s*$'
+    regexp: '^\s+{{ keycloak_api_user_password_field }}:\s+(\S+)\s*$'
   changed_when: False
+  tags:
+    - keycloak-users
 
 # Now get the API token.
 # There's a time-limit using this.
 
-- name: Get Keycloak API Token (master realm)
+- name: Get Keycloak API Token ({{ keycloak_realm }} realm)
   uri:
-    url: "{{ keycloak_server_url}}/realms/master/protocol/openid-connect/token"
+    url: "{{ keycloak_server_url}}/realms/{{ keycloak_realm }}/protocol/openid-connect/token"
     method: POST
     body: "{{ credentials }}&grant_type=password&client_id=admin-cli"
     headers:
@@ -45,10 +63,14 @@
     validate_certs: "{{ validate_certificates }}"
   register: token_result
   vars:
-    credentials: "username={{ keycloak_admin_user }}&password={{ keycloak_admin_password }}"
+    credentials: "username={{ keycloak_api_user }}&password={{ keycloak_api_password }}"
   changed_when: False
+  tags:
+    - keycloak-users
 
 - name: Set Keycloak API Token Fact
   set_fact:
     keycloak_token: "{{ token_result.json.access_token }}"
   changed_when: False
+  tags:
+    - keycloak-users

@@ -17,9 +17,10 @@
 - import_tasks: patch-minishift.yaml
   when: oc_infra_volume_type == 'minishift'
 
-- import_tasks: sso-postgres-deploy.yaml
-- import_tasks: sso-route.yaml
-- import_tasks: add-keycloak-realms.yaml
-- import_tasks: add-keycloak-roles.yaml
+- import_tasks: keycloak-postgres-deploy.yaml
+- import_tasks: keycloak-route.yaml
 
+- import_tasks: add-keycloak-realm.yaml
+- import_tasks: add-keycloak-realm-admin.yaml
+- import_tasks: add-keycloak-realm-roles.yaml
 - import_tasks: rabbitmq-deploy.yaml

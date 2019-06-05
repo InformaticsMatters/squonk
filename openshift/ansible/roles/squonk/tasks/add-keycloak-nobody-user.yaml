@@ -6,7 +6,7 @@
 # The actions for getting the KeyCloak token
 # are located in a infra role playbook.
 
-- import_tasks: >
+- include_tasks: >
     "{{ role_path }}/../infra/tasks/get-keycloak-token.yaml"
   tags:
   - keycloak-users

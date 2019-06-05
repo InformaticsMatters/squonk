@@ -102,7 +102,7 @@ parameters:
 - displayName: Database Admin Password
   description: Database postgres user password
   name: DB_ADMIN_PASSWORD
-  from: "[a-zA-Z0-9]{12}"
+  from: "[a-zA-Z0-9]{20}"
   generate: expression
   required: true
 - displayName: Database Username
@@ -114,7 +114,7 @@ parameters:
 - displayName: Database Password
   description: Database user password
   name: DB_PASSWORD
-  from: "[a-zA-Z0-9]{12}"
+  from: "[a-zA-Z0-9]{20}"
   generate: expression
   required: true
 - displayName: ImageStream Namespace
@@ -133,7 +133,7 @@ parameters:
 - displayName: RH-SSO Administrator Password
   description: RH-SSO Server administrator password
   name: SSO_ADMIN_PASSWORD
-  from: "[a-zA-Z0-9]{12}"
+  from: "[a-zA-Z0-9]{20}"
   generate: expression
   required: true
 - displayName: PostgreSQL Image Stream Tag

@@ -3,7 +3,7 @@
 # Get a keycloak token (sets the fact 'keycloak_token').
 # Remember that the login user may have changed to admin.
 
-- import_tasks: get-keycloak-token.yaml
+- include_tasks: get-keycloak-token.yaml
 
 # Adding keycloak roles.
 # The steps here are: -

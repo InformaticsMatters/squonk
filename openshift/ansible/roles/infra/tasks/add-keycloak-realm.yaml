@@ -2,20 +2,26 @@
 
 # Get a keycloak token (sets the fact 'keycloak_token').
 # Remember that the login user may have changed to admin.
+# For these actions wee need to be the master admin user.
 
-- import_tasks: get-keycloak-token.yaml
+- include_tasks: get-keycloak-token.yaml
+  vars:
+    keycloak_realm: master
+    keycloak_api_secrets: keycloak-secrets
+    keycloak_api_user: admin
+    keycloak_api_user_password_field: sso-admin-password
 
-# Adding keycloak raelms.
+# Adding keycloak realms.
 # The steps here are: -
 #
-# 1. Get a list of realms using the 'users_file'
+# 1. Get a list of realms
 # 2. Add the realm if it's not known
 
 #####
 # 1 #
 #####
 #
-# Get a list of roles that are already known.
+# Get a list of realms that are already known.
 
 - name: Get exisiting Realms
   uri:
@@ -43,7 +49,7 @@
 # 2 #
 #####
 #
-# Now, add all the roles we need.
+# Now, add all the realms we need.
 
 - name: Add Realm (if it does not exist)
   uri:
