@@ -11,6 +11,8 @@ Before running the playbooks: -
 1.  There is a `developer` user known to the cluster
 1.  You have setup your own `setenv.sh` (typically in `openshift/env`),
     created a suitable `params` file and you have run `source setenv.sh`.
+1.  You have Python (ideally 3.7) and satisfy the requirements
+    with something like `pip install -r requirements.txt` from this directory.
 
 >   If using NFS, it is correctly configured with appropriate
     disk provisioning ready for each PV that expects a volume -

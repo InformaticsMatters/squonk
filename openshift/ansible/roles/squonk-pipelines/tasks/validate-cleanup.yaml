@@ -22,6 +22,7 @@
     - ['password', '{{ user1_password }}']
     body_format: form-urlencoded
     method: POST
+    validate_certs: "{{ validate_certificates }}"
   register: je
 
 - name: Display access token
@@ -48,6 +49,7 @@
     method: DELETE
     headers:
       Authorization: bearer {{ je.json.access_token }}
+    validate_certs: "{{ validate_certificates }}"
   changed_when: true
   loop: "{{ resp | json_query('json[?status==`RESULTS_READY`].jobId') | flatten }}"
 
@@ -57,5 +59,6 @@
     method: DELETE
     headers:
       Authorization: bearer {{ je.json.access_token }}
+    validate_certs: "{{ validate_certificates }}"
   changed_when: true
   loop: "{{ resp | json_query('json[?status==`ERROR`].jobId') | flatten }}"

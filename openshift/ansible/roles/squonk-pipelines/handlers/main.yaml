@@ -5,7 +5,7 @@
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ user1_id }}"
     method: DELETE
     status_code: 204
-    validate_certs: no
+    validate_certs: "{{ validate_certificates }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
   when:

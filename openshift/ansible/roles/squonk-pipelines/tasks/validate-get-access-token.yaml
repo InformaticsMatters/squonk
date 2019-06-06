@@ -14,6 +14,7 @@
     - ['password', '{{ user1_password }}']
     body_format: form-urlencoded
     method: POST
+    validate_certs: "{{ validate_certificates }}"
   register: je
 
 - name: Set access token fact
