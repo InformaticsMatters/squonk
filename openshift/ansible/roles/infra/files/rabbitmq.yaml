@@ -154,6 +154,13 @@ objects:
                   values:
                   - app
         serviceAccountName: ${INFRA_SA}
+        # To access the mounted volumes
+        # we set the security context's fsGroup
+        # to the group that will be using the volume
+        # In this case it's the rabbitmq group in the container
+        # (obtained empirically)
+        securityContext:
+          fsGroup: 999
         containers:
         - image: rabbitmq:${RABBITMQ_IMAGE_TAG}
           name: rabbitmq

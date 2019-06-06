@@ -455,8 +455,13 @@ objects:
                   - app
         terminationGracePeriodSeconds: 60
         serviceAccountName: ${SSO_SA}
-#        securityContext:
-#          fsGroup: 1000100001
+        # To access the mounted database volume
+        # we set the security context's fsGroup
+        # to the group that will be using the volume
+        # In this case it's the postgres group in the container
+        # (obtained empirically)
+        securityContext:
+          fsGroup: 26
         containers:
         - name: "db-postgresql"
           image: postgresql

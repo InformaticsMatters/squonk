@@ -7,6 +7,13 @@
 - import_tasks: create-project.yaml
 - import_tasks: create-service-account.yaml
 
+# Some diagnostic debug...
+- name: Display squonk volume configuration
+  debug:
+    msg: >-
+      volume_type={{ oc_squonk_volume_type }}
+      volume_storage_class={{ oc_squonk_volume_storage_class }}
+
 # NFS volumes...
 - import_tasks: create-nfs-pv-pvc.yaml
   when: oc_squonk_volume_type == 'nfs'

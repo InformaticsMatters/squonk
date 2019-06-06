@@ -43,8 +43,8 @@
   changed_when: False
 
 - name: Delete Infra SCC
-  shell: oc delete scc/scc-squonk
-  when: scc_result.stdout | regex_search('^scc-squonk', multiline=True)
+  shell: oc delete scc/scc-infra
+  when: scc_result.stdout | regex_search('^scc-infra', multiline=True)
 
 # Remove persistent volumes
 

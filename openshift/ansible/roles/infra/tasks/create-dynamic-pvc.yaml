@@ -40,7 +40,7 @@
 
 # Wait for claims to become bound...
 
-- name: Wait for PVCs to become Bound (dynamic)
+- name: Wait for Application PVCs to become Bound (dynamic)
   shell: >
     oc get pvc/{{ item }} | grep Bound
   delay: 15
@@ -50,7 +50,9 @@
   loop:
   - postgresql-claim
   - rabbitmq-claim
-  when: not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
+  when:
+  - not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
+  - oc_wait_for_volume_bind|bool
 
 - name: Wait for Backup PVCs to become Bound (dynamic)
   shell: >
@@ -64,3 +66,4 @@
   when:
   - oc_infra_backup_hourly_count|int > 0
   - not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
+  - oc_wait_for_volume_bind|bool

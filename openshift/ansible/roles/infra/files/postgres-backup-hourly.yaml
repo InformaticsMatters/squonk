@@ -19,14 +19,14 @@ parameters:
   value: default
 
 - name: BACKUP_REGISTRY
-  value: 'docker.io'
+  value: docker.io
 - name: BACKUP_IMAGE
-  value: 'informaticsmatters/sql-backup'
+  value: informaticsmatters/sql-backup
 - name: BACKUP_TAG
-  value: 'stable'
+  value: stable
 
 - name: BACKUP_SCHEDULE
-  value: '7 * * * *'
+  value: 7 * * * *
 - name: BACKUP_COUNT
   value: '24'
 

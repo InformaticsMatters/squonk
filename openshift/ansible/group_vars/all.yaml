@@ -11,6 +11,11 @@
 #       should you end up changing names of variables or their default
 #       values here.
 
+# Whether to wait for volumes to bind.
+# On AWS (or maybe OpenShift v4) volumes are bound when the PVC is used,
+# bot when the PVC is created.
+oc_wait_for_volume_bind: yes
+
 # Variables expected to be defined in the user's environment...
 
 oc_admin_password: "{{ ansible_env.IM_ADMIN_PASSWORD | default('admin', true) }}"
