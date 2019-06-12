@@ -304,6 +304,12 @@ public class ExternalExecutor extends ExecutableJob {
         if (runner != null && DEBUG_MODE < 2) {
             runner.cleanup();
             LOG.info("Results cleaned up");
+        } else {
+            if (runner == null) {
+                LOG.info("Skipping cleanup (runner=null)");
+            } else {
+                LOG.info("Skipping cleanup (DEBUG_MODE=" + DEBUG_MODE + ")");
+            }
         }
     }
 
