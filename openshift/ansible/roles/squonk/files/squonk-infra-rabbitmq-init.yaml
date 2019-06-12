@@ -38,9 +38,9 @@ parameters:
   required: true
 
 - name: SQUONK_VHOST
-  value: %2Fsquonk
+  value: /squonk
   description: >
-    The RabbitMQ Virtual Host, with a leading '/'
+    Our RabbitMQ Virtual Host
 
 objects:
 
