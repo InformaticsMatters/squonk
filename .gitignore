@@ -18,7 +18,7 @@
 
 openshift/jenkins/setenv.sh
 **/vault-pass.txt
-openshift/ansible/manager.user
+openshift/ansible/users.user
 
 data/licenses/*
 data/testfiles/emols_order*
