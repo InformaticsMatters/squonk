@@ -11,6 +11,8 @@ Before running the playbooks: -
 1.  There is a `developer` user known to the cluster
 1.  You have setup your own `setenv.sh` (typically in `openshift/env`),
     created a suitable `params` file and you have run `source setenv.sh`.
+1.  You have Python (ideally 3.7) and satisfy the requirements
+    with something like `pip install -r requirements.txt` from this directory.
 
 >   If using NFS, it is correctly configured with appropriate
     disk provisioning ready for each PV that expects a volume -
@@ -47,11 +49,11 @@ password per line) 'after-the-fact' by defining the `user_file` playbook
 variable and then limiting the deployment to just the tasks relating to
 _keycloak users_ with the following: -
 
-    ansible-playbook -e "users_file=example-users.txt" -t keycloak-users \
+    ansible-playbook -e "users_file=example.user" -t keycloak-users \
         playbooks/squonk/deploy.yaml
 
->   `example-users.txt` is a demo file. You can use the file `users.txt`
-    to safely add your own users. It is prevented form being committed to
+>   `example.user` is a demo file. You can use the file `users.user`
+    to safely add your own users. It is prevented from being committed to
     Git as it's listed in the project's `.gitignore` file.
 
 ## Posting Squonk pipelines

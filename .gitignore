@@ -18,6 +18,7 @@
 
 openshift/jenkins/setenv.sh
 **/vault-pass.txt
+openshift/ansible/manager.user
 
 data/licenses/*
 data/testfiles/emols_order*
@@ -88,7 +89,7 @@ docker/deploy/images/keycloak/keycloak.jks
 docker/deploy/images/chemservices/*.zip
 
 openshift/templates/certs
-openshift/ansible/users.txt
+openshift/ansible/users.user
 openshift/ansible/setenv.sh
 
 **/doxygen-output/

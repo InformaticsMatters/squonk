@@ -1,0 +1,60 @@
+---
+
+- name: Check variables
+  assert:
+    that:
+    - manager_username is defined
+    - manager_password is defined
+    - keycloak_server_url is defined
+    - keycloak_realm is defined
+
+- name: Set API endpoint
+  set_fact:
+    user_endpoint: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}"
+
+- name: Add manager
+  uri:
+    url: "{{ keycloak_endpoint }}/users"
+    method: POST
+    body: >-
+      {"username": "{{ manager_username }}",
+       "enabled": "true"}
+    body_format: json
+    status_code: 201
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}
+    return_content: yes
+  register: manager_resp
+
+# The user ID is in the returned 'location' field.
+# "location": "https://sso.192.168.99.100.nip.io/auth/admin/realms/squonk/
+#                users/394c1e02-0b2b-433c-9512-0bfce6aabf9d"
+
+- name: Extract assigned user ID
+  set_fact:
+    manager_user_id: >-
+      {{ manager_resp
+         |json_query('location')
+         |urlsplit('path')
+         |basename }}
+
+- name: Asssert ID
+  assert:
+    that:
+    - manager_user_id is defined
+    - manager_user_id|length > 0
+
+- name: Set (Reset) manager password
+  uri:
+    url: "{{ user_endpoint }}/users/{{ manager_user_id }}/reset-password"
+    method: PUT
+    body: >-
+      {"type": "password",
+       "temporary": "false",
+       "value": "{{ manager_password }}"}
+    body_format: json
+    status_code: 204
+    validate_certs: no
+    headers:
+      Authorization: bearer {{ keycloak_token }}

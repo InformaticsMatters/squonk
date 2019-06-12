@@ -31,4 +31,6 @@
   until: result.rc == 0
   loop:
   - chemcentral-postgresql-claim
-  when: not i_pvc_result.stdout | regex_search('^chemcentral-postgresql-claim\s', multiline=True)
+  when:
+  - not i_pvc_result.stdout | regex_search('^chemcentral-postgresql-claim\s', multiline=True)
+  - oc_wait_for_volume_bind|bool

@@ -6,7 +6,7 @@
 # The actions for getting the KeyCloak token
 # are located in a infra role playbook.
 
-- import_tasks: >
+- include_tasks: >
     "{{ role_path }}/../infra/tasks/get-keycloak-token.yaml"
 
 # Check the expected user exists.
@@ -19,9 +19,9 @@
 - name: Query existing Squonk Users
   uri:
     url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user1_name }}"
-    validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
+    validate_certs: "{{ validate_certificates }}"
   register: user_check
   changed_when: False
 
@@ -60,7 +60,7 @@
        "enabled": "true"}
     body_format: json
     status_code: 201
-    validate_certs: no
+    validate_certs: "{{ validate_certificates }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
   when:
@@ -91,7 +91,7 @@
        "value": "{{ user1_password }}"}
     body_format: json
     status_code: 204
-    validate_certs: no
+    validate_certs: "{{ validate_certificates }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
   when:

@@ -18,8 +18,7 @@
 - name: Create Keycloak Deployment
   shell: >
     oc process
-    -f {{ role_path }}/files/sso-postgres.yaml
-    -p SSO_REALM={{ keycloak_realm }}
+    -f {{ role_path }}/files/keycloak-postgres.yaml
     -p POSTGRESQL_SHARED_BUFFERS={{ postgresql_shared_buffer_size }}
     -p SSO_SA={{ oc_infra_sa }}
     -p PG_CPU_REQUEST={{ oc_infra_postgresql_cpu_request }}
@@ -53,7 +52,9 @@
 - name: Post deploy pause
   pause:
     seconds: 10
-  when: wait_for_pods
+  when:
+  - wait_for_pods
+  - '"db-postgresql" not in sso_dc_result.stdout'
 
 # Deploy backups.
 # No point waiting for these - they're cron-jobs!
@@ -66,7 +67,7 @@
 - name: Deploy the Hourly Backup CronJob
   shell: >
     oc process
-    -f {{ role_path }}/files/sso-backup-hourly.yaml
+    -f {{ role_path }}/files/postgres-backup-hourly.yaml
     -p BACKUP_SCHEDULE="{{ oc_infra_backup_hourly_schedule }}"
     -p BACKUP_COUNT={{ oc_infra_backup_hourly_count }}
     -p BACKUP_SA={{ oc_infra_sa }}
@@ -78,7 +79,7 @@
 - name: Deploy the Daily Backup CronJob
   shell: >
     oc process
-    -f {{ role_path }}/files/sso-backup-daily.yaml
+    -f {{ role_path }}/files/postgres-backup-daily.yaml
     -p BACKUP_SCHEDULE="{{ oc_infra_backup_daily_schedule }}"
     -p BACKUP_COUNT={{ oc_infra_backup_daily_count }}
     -p BACKUP_PRIOR_COUNT={{ oc_infra_backup_hourly_count }}

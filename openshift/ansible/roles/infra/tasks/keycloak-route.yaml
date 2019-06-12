@@ -10,15 +10,15 @@
     --insecure-skip-tls-verify=true
   changed_when: False
 
-- name: Check SSO Route
+- name: Check Keycloak Route
   shell: oc get routes
   register: routes_result
   changed_when: False
 
-- name: Deploy SSO Route
+- name: Deploy Keycloak Route
   shell: >
     oc process
-    -f {{ role_path }}/files/sso-route.yaml
+    -f {{ role_path }}/files/keycloak-route.yaml
     -p HOSTNAME_HTTPS=sso.{{ oc_routes_basename }}
     -p ROUTE_INSECURE_POLICY={{ keycloak_insecure_route }}
     | oc create -f -

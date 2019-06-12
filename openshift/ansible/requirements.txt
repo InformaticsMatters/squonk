@@ -1,0 +1,4 @@
+ansible == 2.7.11
+
+# For json_query in Ansible...
+jmespath == 0.9.4
