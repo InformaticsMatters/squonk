@@ -45,15 +45,15 @@ parameters:
 - name: JE_CONTAINER_RUNNER_TYPE
   value: openshift
 - name: JE_SQUONK_CONTAINER_WORK_DIR
-  value: "/squonk/work/docker"
+  value: /squonk/work/docker
 - name: JE_SQUONK_POD_BASE_NAME
-  value: "squonk-cell-pod"
+  value: squonk-cell-pod
 - name: JE_NEXTFLOW_IMAGE
   value: informaticsmatters/nextflow:19.01.0
 - name: JE_WORK_PVC_SIZE
   value: 20Gi
 - name: JE_JOB_LOG_HISTORY
-  valuie: 100
+  value: '100'
 
 - name: JE_CPU_REQUEST
   value: 100m

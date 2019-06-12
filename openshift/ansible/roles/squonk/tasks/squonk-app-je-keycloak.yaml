@@ -32,6 +32,7 @@
     -p JE_KEYCLOAK_SERVER_REALM={{ keycloak_realm }}
     -p JE_CPU_REQUEST={{ oc_squonk_je_cpu_request }}
     -p JE_MEM_REQUEST={{ oc_squonk_je_mem_request }}
+    -p JE_JAVA_TOOL_OPTIONS={{ oc_squonk_je_java_tool_options }}
     | oc create -f -
   when: not dc_result.stdout | regex_search('^jobexecutor-keycloak\s', multiline=True)
 

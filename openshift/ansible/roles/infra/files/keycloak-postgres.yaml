@@ -18,6 +18,7 @@
 # 14. Added HOSTNAME_HTTPS parameter and use for HTTPS route name
 # 15. Removed HTTP route
 # 16. Moved route to its own definition (sso-route.yaml)
+# 17. Removed SSO_REALM, SSO_SERVICE_USERNAME, SSO_SERVICE_PASSWORD
 
 kind: Template
 apiVersion: v1
@@ -70,7 +71,7 @@ parameters:
 - displayName: Database Name
   description: Database name
   name: DB_DATABASE
-  value: sso
+  value: keycloak
   required: true
 - displayName: Datasource Minimum Pool Size
   description: Sets xa-pool/min-pool-size for the configured datasource.
@@ -101,7 +102,7 @@ parameters:
 - displayName: Database Admin Password
   description: Database postgres user password
   name: DB_ADMIN_PASSWORD
-  from: "[a-zA-Z0-9]{12}"
+  from: "[a-zA-Z0-9]{20}"
   generate: expression
   required: true
 - displayName: Database Username
@@ -113,7 +114,7 @@ parameters:
 - displayName: Database Password
   description: Database user password
   name: DB_PASSWORD
-  from: "[a-zA-Z0-9]{12}"
+  from: "[a-zA-Z0-9]{20}"
   generate: expression
   required: true
 - displayName: ImageStream Namespace
@@ -132,31 +133,14 @@ parameters:
 - displayName: RH-SSO Administrator Password
   description: RH-SSO Server administrator password
   name: SSO_ADMIN_PASSWORD
-  from: "[a-zA-Z0-9]{12}"
-  generate: expression
-  required: true
-- displayName: RH-SSO Realm
-  description: Realm to be created in the RH-SSO server (e.g. demorealm).
-  name: SSO_REALM
-  value: squonk
-  required: false
-- displayName: RH-SSO Service Username
-  description: The username used to access the RH-SSO service. This is used by clients
-    to create the appliction client(s) within the specified RH-SSO realm.
-  name: SSO_SERVICE_USERNAME
-  value: manager
-  required: false
-- displayName: RH-SSO Service Password
-  description: The password for the RH-SSO service user.
-  name: SSO_SERVICE_PASSWORD
-  from: "[a-zA-Z0-9]{12}"
+  from: "[a-zA-Z0-9]{20}"
   generate: expression
   required: true
 - displayName: PostgreSQL Image Stream Tag
   description: The tag to use for the "postgresql" image stream.  Typically, this
     aligns with the major.minor version of PostgreSQL.
   name: POSTGRESQL_IMAGE_STREAM_TAG
-  value: '9.5'
+  value: '10'
   required: true
 
 - name: SSO_SA
@@ -217,8 +201,6 @@ objects:
    labels:
       application: "${APPLICATION_NAME}"
   stringData:
-    sso-service-user: "${SSO_SERVICE_USERNAME}"
-    sso-service-password: "${SSO_SERVICE_PASSWORD}"
     sso-admin-user: "${SSO_ADMIN_USERNAME}"
     sso-admin-password: "${SSO_ADMIN_PASSWORD}"
 
@@ -236,8 +218,7 @@ objects:
       application: "${APPLICATION_NAME}"
     annotations:
       description: The web server's http port.
-      service.alpha.openshift.io/dependencies: '[{"name": "db-postgresql",
-        "kind": "Service"}]'
+      service.alpha.openshift.io/dependencies: '[{"name": "db-postgresql", "kind": "Service"}]'
 
 - kind: Service
   apiVersion: v1
@@ -254,8 +235,7 @@ objects:
     annotations:
       description: The web server's https port.
       service.alpha.openshift.io/serving-cert-secret-name: sso-x509-https-secret
-      service.alpha.openshift.io/dependencies: '[{"name": "db-postgresql",
-        "kind": "Service"}]'
+      service.alpha.openshift.io/dependencies: '[{"name": "db-postgresql", "kind": "Service"}]'
 
 - kind: Service
   apiVersion: v1
@@ -308,7 +288,7 @@ objects:
         from:
           kind: ImageStreamTag
           namespace: "${IMAGE_STREAM_NAMESPACE}"
-          name: redhat-sso72-openshift:1.1
+          name: keycloak:4.8.3.Final
     - type: ConfigChange
     replicas: 1
     selector:
@@ -338,13 +318,13 @@ objects:
         - name: "${APPLICATION_NAME}"
           image: "${APPLICATION_NAME}"
           imagePullPolicy: Always
-          resources:
-            limits:
-              cpu: ${SSO_CPU_LIMIT}
-              memory: ${SSO_MEM_LIMIT}
-            requests:
-              cpu: ${SSO_CPU_REQUEST}
-              memory: ${SSO_MEM_REQUEST}
+          #resources:
+          #  limits:
+          #    cpu: ${SSO_CPU_LIMIT}
+          #    memory: ${SSO_MEM_LIMIT}
+          #  requests:
+          #    cpu: ${SSO_CPU_REQUEST}
+          #    memory: ${SSO_MEM_REQUEST}
           volumeMounts:
           - name: sso-x509-https-volume
             mountPath: "/etc/x509/https"
@@ -353,25 +333,22 @@ objects:
             mountPath: "/etc/x509/jgroups"
             readOnly: true
           livenessProbe:
-            timeoutSeconds: 4
-            initialDelaySeconds: 120
+            #timeoutSeconds: 4
+            initialDelaySeconds: 60
             failureThreshold: 3
-            periodSeconds: 30
-            exec:
-              command:
-              - "/bin/bash"
-              - "-c"
-              - "/opt/eap/bin/livenessProbe.sh"
+            #periodSeconds: 30
+            httpGet:
+              path: /auth/realms/master
+              port: 8080
+              scheme: HTTP
           readinessProbe:
-            timeoutSeconds: 4
-            initialDelaySeconds: 90
             failureThreshold: 10
-            periodSeconds: 15
-            exec:
-              command:
-              - "/bin/bash"
-              - "-c"
-              - "/opt/eap/bin/readinessProbe.sh"
+            initialDelaySeconds: 30
+            #periodSeconds: 30
+            httpGet:
+              path: /auth/realms/master
+              port: 8080
+              scheme: HTTP
           ports:
           - name: jolokia
             containerPort: 8778
@@ -386,11 +363,17 @@ objects:
             containerPort: 8888
             protocol: TCP
           env:
+          - name: DB_VENDOR
+            value: POSTGRES
+          - name: DB_ADDR
+            value: db-postgresql
           - name: DB_SERVICE_PREFIX_MAPPING
             value: "db-postgresql=DB"
           - name: DB_JNDI
             value: "${DB_JNDI}"
-          - name: DB_USERNAME
+          - name: DB_SCHEMA
+            value: public
+          - name: DB_USER
             value: "${DB_USERNAME}"
           - name: DB_PASSWORD
             value: "${DB_PASSWORD}"
@@ -414,16 +397,10 @@ objects:
             value: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
           - name: JGROUPS_CLUSTER_PASSWORD
             value: "${JGROUPS_CLUSTER_PASSWORD}"
-          - name: SSO_ADMIN_USERNAME
+          - name: KEYCLOAK_USER
             value: "${SSO_ADMIN_USERNAME}"
-          - name: SSO_ADMIN_PASSWORD
+          - name: KEYCLOAK_PASSWORD
             value: "${SSO_ADMIN_PASSWORD}"
-          - name: SSO_REALM
-            value: "${SSO_REALM}"
-          - name: SSO_SERVICE_USERNAME
-            value: "${SSO_SERVICE_USERNAME}"
-          - name: SSO_SERVICE_PASSWORD
-            value: "${SSO_SERVICE_PASSWORD}"
           - name: JAVA_TOOL_OPTIONS
             value: "${SSO_JAVA_TOOL_OPTIONS}"
         volumes:
@@ -478,8 +455,13 @@ objects:
                   - app
         terminationGracePeriodSeconds: 60
         serviceAccountName: ${SSO_SA}
-#        securityContext:
-#          fsGroup: 1000100001
+        # To access the mounted database volume
+        # we set the security context's fsGroup
+        # to the group that will be using the volume
+        # In this case it's the postgres group in the container
+        # (obtained empirically)
+        securityContext:
+          fsGroup: 26
         containers:
         - name: "db-postgresql"
           image: postgresql

@@ -38,4 +38,6 @@
   until: result.rc == 0
   loop:
   - squonk-work-dir-pvc
-  when: item not in s_pvc_result.stdout
+  when:
+  - item not in s_pvc_result.stdout
+  - oc_wait_for_volume_bind|true

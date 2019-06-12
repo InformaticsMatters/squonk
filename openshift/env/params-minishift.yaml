@@ -35,18 +35,23 @@ oc_infra_postgresql_cpu_request: 100m
 oc_infra_postgresql_mem_request: 100Mi
 oc_infra_sso_cpu_request: 100m
 oc_infra_sso_mem_request: 100Mi
+oc_infra_sso_java_tool_options: -Xmx80m
 oc_infra_rabbitmq_cpu_request: 100m
 oc_infra_rabbitmq_mem_request: 100Mi
 
 # Reduced Squonk CPU/Mem requests
 oc_squonk_cell_cpu_request: 100m
 oc_squonk_cell_mem_request: 100Mi
+oc_squonk_cell_java_tool_options: -Xmx80m
 oc_squonk_chem_cpu_request: 100m
 oc_squonk_chem_mem_request: 100Mi
+oc_squonk_chem_java_tool_options: -Xmx80m
 oc_squonk_core_cpu_request: 100m
 oc_squonk_core_mem_request: 100Mi
+oc_squonk_core_java_tool_options: -Xmx80m
 oc_squonk_je_cpu_request: 100m
 oc_squonk_je_mem_request: 100Mi
+oc_squonk_je_java_tool_options: -Xmx80m
 oc_squonk_portal_cpu_request: 100m
 oc_squonk_portal_mem_request: 100Mi
 

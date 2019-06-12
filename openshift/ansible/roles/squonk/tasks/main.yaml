@@ -7,6 +7,13 @@
 - import_tasks: create-project.yaml
 - import_tasks: create-service-account.yaml
 
+# Some diagnostic debug...
+- name: Display squonk volume configuration
+  debug:
+    msg: >-
+      volume_type={{ oc_squonk_volume_type }}
+      volume_storage_class={{ oc_squonk_volume_storage_class }}
+
 # NFS volumes...
 - import_tasks: create-nfs-pv-pvc.yaml
   when: oc_squonk_volume_type == 'nfs'
@@ -25,7 +32,7 @@
 
 - import_tasks: setup-keycloak.yaml
   when: setup_keycloak
-- import_tasks: add-keycloak-users.yaml
+- import_tasks: "{{ role_path }}/../infra/tasks/add-keycloak-realm-users.yaml"
   when: users_file is defined
 - import_tasks: add-keycloak-nobody-user.yaml
   when: add_nobody_user

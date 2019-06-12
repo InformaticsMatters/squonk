@@ -1,17 +1,17 @@
 ---
 
-# oc process -f sso-backup-hourly.yaml | oc create -f -
-# oc delete cronjob --selector template=sso-backup-hourly
+# oc process -f sso-backup-daily.yaml | oc create -f -
+# oc delete cronjob --selector template=sso-backup-daily
 
 kind: Template
 apiVersion: v1
 metadata:
-  name: pg-backup-hourly
+  name: pg-backup-daily
   annotations:
     description: Infrastructure Backups
     tags: infra,postgresql,backup
 labels:
-  template: sso-backup-hourly
+  template: sso-backup-daily
 
 parameters:
 
@@ -19,26 +19,29 @@ parameters:
   value: default
 
 - name: BACKUP_REGISTRY
-  value: 'docker.io'
+  value: docker.io
 - name: BACKUP_IMAGE
-  value: 'informaticsmatters/sql-backup'
+  value: informaticsmatters/sql-backup
 - name: BACKUP_TAG
-  value: 'stable'
+  value: stable
 
 - name: BACKUP_SCHEDULE
-  value: '7 * * * *'
+  value: 37 3 * * *
 - name: BACKUP_COUNT
+  value: '7'
+- name: BACKUP_PRIOR_COUNT
   value: '24'
 
 objects:
 
-# The HOURLY CronJob (running at HH:07).
-# This job will create new postgres backups
-# Keeping the last 24 backups in the directory /backup/hourly
+# The DAILY CronJob (running at 03:37).
+# This job will keep the oldest of the hourly backups
+# (when there are 24 hourly backups).
+# Keeping the last 7 backups in the directory /backup/daily
 - kind: CronJob
   apiVersion: batch/v1beta1
   metadata:
-    name: postgresql-backup-hourly
+    name: postgresql-backup-daily
   spec:
     schedule: ${BACKUP_SCHEDULE}
     startingDeadlineSeconds: 180
@@ -48,13 +51,13 @@ objects:
         template:
           metadata:
             labels:
-              name: postgresql-backup-hourly
+              name: postgresql-backup-daily
           spec:
             serviceAccountName: ${BACKUP_SA}
             # Application containers
             containers:
             - image: ${BACKUP_REGISTRY}/${BACKUP_IMAGE}:${BACKUP_TAG}
-              name: postgresql-backup-hourly
+              name: postgresql-backup-daily
               imagePullPolicy: IfNotPresent
               volumeMounts:
               - name: postgresql-backup-data
@@ -62,16 +65,11 @@ objects:
 
               env:
               - name: BACKUP_TYPE
-                value: hourly
+                value: daily
               - name: BACKUP_COUNT
                 value: ${BACKUP_COUNT}
-              - name: PGHOST
-                value: db-postgresql
-              - name: PGADMINPASS
-                valueFrom:
-                  secretKeyRef:
-                    name: postgresql-secrets
-                    key: database-admin-password
+              - name: BACKUP_PRIOR_COUNT
+                value: ${BACKUP_PRIOR_COUNT}
 
             volumes:
             - name: postgresql-backup-data
