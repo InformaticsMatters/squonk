@@ -67,6 +67,9 @@ parameters:
 - name: KEYCLOAK_MEM_LIMIT
   value: 800Mi
 
+# These JVM settings are not used but are here as an example of the default ones that are used.
+# If changing these then you must uncomment the JAVA_OPTS environment variable in the keycloak
+# DeploymentConfig and then they will be used instead of the default wildfly settings.
 - name: KEYCLOAK_JAVA_OPTS
   value: >-
     -server
@@ -76,7 +79,7 @@ parameters:
     -XX:MaxMetaspaceSize=256m
     -Djava.net.preferIPv4Stack=true
     -Djboss.modules.system.pkgs=org.jboss.byteman
-    -Djava.awt.headless=true"
+    -Djava.awt.headless=true
   description: >-
     A value used for the Java application's JAVA_OPTS
     environment variable. The values are used by the container's
