@@ -1,0 +1,23 @@
+The postgres and keycloak templates were adapted from
+https://github.com/jboss-openshift/application-templates/blob/master/sso/sso72-x509-postgresql-persistent.json
+These were then modified to use keycloak images (jboss/keycloak) instead of the Red Hat SSO product images.
+
+That original template was changed in the following ways:
+
+1.  The PVC definition was removed so that it could be decoupled from deploying the app
+2.  DB_DATABASE paramemter default changed from root to keycloak.
+3.  SSO_ADMIN_USERNAME default set changed to admin (was previously randomly generated)
+4.  Resource requests and limits were updated
+5.  Renamed database (service, dc etc.) from sso-postgresql (${APPLICATION_NAME}-postgresql) to db-postgresql
+6.  Added parameters for the postgresql admin username and password (DB_ADMIN_USERNAME, DB_ADMIN_PASSWORD)
+7.  Added 'postgresql-secrets' secret containing postgresql usernames and passwords
+8.  Added 'keycloak-secrets' secret containing keycloak usernames and password
+9.  Removed VOLUME_CAPACITY parameter
+10. Standardized randomly generated password pattern to "[a-zA-Z0-9]{12}"
+11. Added HOSTNAME_HTTPS parameter and use for HTTPS route name
+12. Removed HTTP route
+13. Moved route to its own definition (sso-route.yaml)
+14. Removed SSO_REALM, SSO_SERVICE_USERNAME and SSO_SERVICE_PASSWORD parameters as they don't work with keycloak images.
+    Instead the realm needs to be created using the keycloak REST API
+15. Split the template into two parts, one for creating postgres, the other for creating keycloak. This allows keycloak to
+    be deployed independently (e.g. during an upgrade)
