@@ -44,7 +44,7 @@
     -n {{ oc_project }}
   when:
   - squonk_project_exists
-  - secrets_result.stdout | regex_search('^chemcentral-database-credentials\s', multiline=True)
+  - secrets_result.stdout | regex_search('^chemcentral-database-credentials-search\s', multiline=True)
 
 - name: Check ChemCentral (Infrastructure)
   shell: oc get secrets -n {{ oc_infra_project }}
@@ -55,7 +55,7 @@
   shell: >
     oc delete all,cm,secret --selector template=chemcentral-db
     -n {{ oc_infra_project }}
-  when: secrets_result.stdout | regex_search('^chemcentral-database-credentials\s', multiline=True)
+  when: secrets_result.stdout | regex_search('^chemcentral-database-credentials-search\s', multiline=True)
 
 # Delete the PVCs...
 

@@ -38,9 +38,11 @@ parameters:
   required: true
 
 - name: SQUONK_VHOST
-  value: /squonk
-  description: >
-    Our RabbitMQ Virtual Host
+  value: "%2Fsquonk"
+  description: >-
+    Our RabbitMQ Virtual Host.
+    The value is used in curl commands so be careful with the characters
+    you use. '/' has to be passed in as the URL-encoded value '%2F'.
 
 objects:
 
