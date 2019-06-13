@@ -21,8 +21,15 @@ parameters:
 - displayName: Application Name
   description: The name for the application.
   name: APPLICATION_NAME
+  value: keycloak
+  required: true
+
+- displayName: Service Name
+  description: The name for the application service.
+  name: SERVICE_NAME
   value: sso
   required: true
+
 - displayName: JGroups Cluster Password
   description: The password for the JGroups cluster.
   name: JGROUPS_CLUSTER_PASSWORD
@@ -45,19 +52,22 @@ parameters:
   value: openshift
   required: true
 
-- name: SSO_SA
+- name: KEYCLOAK_SA
   value: default
 
-- name: SSO_CPU_REQUEST
-  value: 250m
-- name: SSO_CPU_LIMIT
-  value: 1000m
-- name: SSO_MEM_REQUEST
-  value: 200Mi
-- name: SSO_MEM_LIMIT
-  value: 650Mi
+- name: KEYCLOAK_IMAGE
+  value: keycloak:4.8.3.Final
 
-- name: SSO_JAVA_OPTS
+- name: KEYCLOAK_CPU_REQUEST
+  value: 250m
+- name: KEYCLOAK_CPU_LIMIT
+  value: 1000m
+- name: KEYCLOAK_MEM_REQUEST
+  value: 200Mi
+- name: KEYCLOAK_MEM_LIMIT
+  value: 800Mi
+
+- name: KEYCLOAK_JAVA_OPTS
   value: >-
     -server
     -Xms64m
@@ -86,7 +96,7 @@ objects:
     selector:
       deploymentConfig: "${APPLICATION_NAME}"
   metadata:
-    name: secure-${APPLICATION_NAME}
+    name: secure-${SERVICE_NAME}
     labels:
       application: "${APPLICATION_NAME}"
     annotations:
@@ -104,7 +114,7 @@ objects:
     selector:
       deploymentConfig: "${APPLICATION_NAME}"
   metadata:
-    name: "${APPLICATION_NAME}-ping"
+    name: ${SERVICE_NAME}-ping
     labels:
       application: "${APPLICATION_NAME}"
     annotations:
@@ -130,7 +140,7 @@ objects:
         from:
           kind: ImageStreamTag
           namespace: "${IMAGE_STREAM_NAMESPACE}"
-          name: keycloak:4.8.3.Final
+          name: "${KEYCLOAK_IMAGE}"
     - type: ConfigChange
     replicas: 1
     selector:
@@ -155,24 +165,23 @@ objects:
                   values:
                   - app
         terminationGracePeriodSeconds: 75
-        serviceAccountName: ${SSO_SA}
+        serviceAccountName: ${KEYCLOAK_SA}
         containers:
-        - name: "${APPLICATION_NAME}"
-          image: "${APPLICATION_NAME}"
+        - name: ${APPLICATION_NAME}
           imagePullPolicy: Always
           resources:
             limits:
-              cpu: ${SSO_CPU_LIMIT}
-              memory: ${SSO_MEM_LIMIT}
+              cpu: ${KEYCLOAK_CPU_LIMIT}
+              memory: ${KEYCLOAK_MEM_LIMIT}
             requests:
-              cpu: ${SSO_CPU_REQUEST}
-              memory: ${SSO_MEM_REQUEST}
+              cpu: ${KEYCLOAK_CPU_REQUEST}
+              memory: ${KEYCLOAK_MEM_REQUEST}
           volumeMounts:
           - name: sso-x509-https-volume
-            mountPath: "/etc/x509/https"
+            mountPath: /etc/x509/https
             readOnly: true
           - name: sso-x509-jgroups-volume
-            mountPath: "/etc/x509/jgroups"
+            mountPath: /etc/x509/jgroups
             readOnly: true
           livenessProbe:
             timeoutSeconds: 4
@@ -259,7 +268,7 @@ objects:
                 name: keycloak-secrets
                 key: sso-admin-password
           #- name: JAVA_OPTS
-          #  value: "${SSO_JAVA_OPTS}"
+          #  value: "${KEYCLOAK_JAVA_OPTS}"
         volumes:
         - name: sso-x509-https-volume
           secret:

@@ -12,21 +12,22 @@
 
 - name: Check SSO Deployment
   shell: oc get dc
-  register: sso_dc_result
+  register: dc_result
   changed_when: False
 
 - name: Create Keycloak Deployment
   shell: >
     oc process
     -f {{ role_path }}/files/keycloak.yaml
-    -p SSO_SA={{ oc_infra_sa }}
     -p APPLICATION_NAME={{ oc_infra_keycloak_app_name }}
-    -p SSO_CPU_REQUEST={{ oc_infra_sso_cpu_request }}
-    -p SSO_MEM_REQUEST={{ oc_infra_sso_mem_request }}
-    -p SSO_CPU_LIMIT={{ oc_infra_sso_cpu_limit }}
-    -p SSO_MEM_LIMIT={{ oc_infra_sso_mem_limit }}
+    -p SERVICE_NAME={{ oc_infra_keycloak_svc_name }}
+    -p KEYCLOAK_SA={{ oc_infra_sa }}
+    -p KEYCLOAK_CPU_REQUEST={{ oc_infra_keycloak_cpu_request }}
+    -p KEYCLOAK_MEM_REQUEST={{ oc_infra_keycloak_mem_request }}
+    -p KEYCLOAK_CPU_LIMIT={{ oc_infra_keycloak_cpu_limit }}
+    -p KEYCLOAK_MEM_LIMIT={{ oc_infra_keycloak_mem_limit }}
     | oc create -f -
-  when: oc_infra_keycloak_app_name not in sso_dc_result.stdout
+  when: oc_infra_keycloak_app_name not in dc_result.stdout
 
 # Wait for running pods
 
@@ -38,7 +39,7 @@
   until: result.rc == 0
   when: wait_for_pods
   loop:
-  - sso
+  - keycloak
   changed_when: False
 
 # SSO may not be completely ready for the next step (add-keycloak-roles)
@@ -49,4 +50,4 @@
     seconds: 10
   when:
   - wait_for_pods
-  - oc_infra_keycloak_app_name not in sso_dc_result.stdout
+  - oc_infra_keycloak_app_name not in dc_result.stdout
