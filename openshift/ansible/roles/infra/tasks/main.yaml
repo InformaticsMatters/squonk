@@ -24,9 +24,12 @@
 - import_tasks: patch-minishift.yaml
   when: oc_infra_volume_type == 'minishift'
 
-# Deploy Keycloak (and its database)
-# and create the route...
-- import_tasks: keycloak-postgres-deploy.yaml
+# Deploy Postgres and Keycloak
+# and create the Keycloak route...
+- import_tasks: postgres-secrets.yaml
+- import_tasks: postgres.yaml
+- import_tasks: keycloak-secrets.yaml
+- import_tasks: keycloak.yaml
 - import_tasks: keycloak-route.yaml
 
 # Setup the realm, realm manager and expected roles...

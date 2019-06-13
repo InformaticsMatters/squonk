@@ -11,7 +11,7 @@ metadata:
     tags: sso,route
 labels:
   template: sso-route
-  app: sso-route
+  app: keycloak
 
 parameters:
 
