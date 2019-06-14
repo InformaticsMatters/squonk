@@ -32,9 +32,9 @@ parameters:
 - displayName: Termination policy for insecure traffic
   description: >
     indicates the desired behavior for insecure connections to
-    the route. Typically one of Allow or Redirect'
+    the route. Typically one of Allow or Redirect
   name: ROUTE_INSECURE_POLICY
-  value: Disable
+  value: Redirect
   required: false
 
 objects:
