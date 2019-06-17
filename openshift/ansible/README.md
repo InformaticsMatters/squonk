@@ -176,11 +176,11 @@ deployment to create the database that it uses.
 
 ## Minishift considerations
 While it's a work-in-progress, support for some versions of Minishift is
-available. We tend to follow recent minishift releases, at the moment we've
+available. We tend to follow recent Minishift releases, at the moment we've
 tested with: -
 
--   OpenShift 3.11.0  on MiniShift 1.33.0
--   VirtualBox 5.2.20 (OSX)
+-   OpenShift 3.11.0 on Minishift 1.34.0
+-   VirtualBox 5.2.20 and 6.0.8 (OSX)
 
 On OSX, using VirtualBox, you can start a suitable Minishift
 with something like: -
