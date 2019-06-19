@@ -76,4 +76,12 @@ public interface Step {
 
     Map<String, String> getOutputVariableMappings();
 
+    /** Execution clean-up.
+     *
+     * This method must not block and, as
+     * handling errors that occur while cleaning up or closing
+     * is extremely difficult, the method MUST NOT throw any exceptions.
+     */
+    void cleanup();
+
 }

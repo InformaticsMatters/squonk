@@ -88,6 +88,12 @@ public interface ContainerRunner extends ServiceRunner {
         throws IOException;
 
     /**
+     * Clean-up the execution. Everything created by the Runner is to be
+     * deleted, depending on the DEBUG mode.
+     */
+    void cleanup();
+
+    /**
      * Returns the container's log content.
      *
      * @return The container log

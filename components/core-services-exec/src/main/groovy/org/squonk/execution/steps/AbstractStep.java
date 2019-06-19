@@ -131,6 +131,10 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
         return preparedOutputs;
     }
 
+    public void cleanup() {
+        doCleanup();
+    }
+
     protected Map<String,Object> prepareInputs(Map<String,Object> inputs, CamelContext context) throws Exception {
         return inputs;
     }
@@ -140,6 +144,9 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
     }
 
     protected abstract Map<String,Object> doExecute(Map<String,Object> inputs, CamelContext context) throws Exception;
+
+    protected void doCleanup() {
+    }
 
     protected void generateExecutionTimeMetrics(float executionTimeSeconds) {
         float mins = executionTimeSeconds / 60f;
