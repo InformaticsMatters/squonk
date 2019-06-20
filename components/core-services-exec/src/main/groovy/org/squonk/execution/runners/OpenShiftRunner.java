@@ -72,6 +72,9 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String POD_BASE_NAME_ENV_NAME = "SQUONK_POD_BASE_NAME";
     private static final String POD_BASE_NAME_DEFAULT = "squonk-cell-pod";
 
+    private static final String POD_START_GRACE_PERIOD_M_ENV_NAME = "SQUONK_POD_START_GRACE_PERIOD_M";
+    private static final String POD_START_GRACE_PERIOD_M_DEFAULT = "5";
+
     // The Pod Environment is a string that consists of YAML name:value pairs.
     // If the environment string is present, each name/value pair is injected
     // as a separate environemnt variable into the Pod container.
@@ -86,14 +89,16 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String OS_IMAGE_PULL_POLICY = "IfNotPresent";
     private static final String OS_POD_RESTART_POLICY = "Never";
 
-    public static final int LOG_HISTORY;
-
     // The OpenShift Job is given a period of time to start.
     // This time accommodates a reasonable time to pull the image
     // from an external repository. We need to do this
     // because I'm not sure, at the moment how to detect pull errors
     // from within OpenShift - so this is 'belt-and-braces' protection.
-    private static final long POD_START_GRACE_PERIOD_M = 15;
+    // Set via the enviornment with a default.
+    // The value cannot be less than 1 (minute).
+    private static final int OS_POD_START_GRACE_PERIOD_M;
+
+    public static final int LOG_HISTORY;
 
     // Time between checks on the 'job watcher' completion state.
     private static final long WATCHER_POLL_PERIOD_MILLIS = 1000;
@@ -675,7 +680,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 // Have we waited too long for the Pod to start?
                 long now = System.currentTimeMillis();
                 long elapsedMins = (now - podStartTimeMillis) / 60000;
-                if (elapsedMins >= POD_START_GRACE_PERIOD_M) {
+                if (elapsedMins >= OS_POD_START_GRACE_PERIOD_M) {
                     LOG.warning(podName + " failed to start. Leaving.");
                     podStartFailure = true;
                 }
@@ -845,6 +850,17 @@ public class OpenShiftRunner extends AbstractRunner {
         } else {
             LOG.info("OS_POD_ENVIRONMENT='...'");
         }
+
+        // And the Pod start grace period
+        String gracePeriod = IOUtils
+                .getConfiguration(POD_START_GRACE_PERIOD_M_ENV_NAME,
+                        POD_START_GRACE_PERIOD_M_DEFAULT);
+        int gracePeriodInt = Integer.parseInt(gracePeriod);
+        if (gracePeriodInt < 1) {
+            gracePeriodInt = 1;
+        }
+        OS_POD_START_GRACE_PERIOD_M = gracePeriodInt;
+        LOG.info("OS_POD_START_GRACE_PERIOD_M=" + OS_POD_START_GRACE_PERIOD_M);
 
         // Get the configured log cpacity
         // (maximum number of lines collected from a Pod).
