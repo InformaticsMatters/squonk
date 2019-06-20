@@ -32,10 +32,10 @@
 - name: Wait for ChemCentral Search
   shell: oc get po -n {{ oc_project }} | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
   delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  retries: "{{ (oc_pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
   loop:
   - chemcentral-search
-  when: wait_for_pods
+  when: oc_wait_for_pods|bool
   changed_when: False

@@ -25,9 +25,9 @@
     -p SQUONK_HOST={{ oc_squonk_host}}
     -p APP_NAMESPACE={{ oc_project }}
     -p APP_SA={{ oc_project_sa }}
-    -p APP_ACME_ENABLE={{ enable_acme }}
-    -p PULL_POLICY={{ image_pull_policy }}
-    -p LOGOUT_REDIRECT_TO={{ keycloak_logout_redirect_to }}
+    -p APP_ACME_ENABLE={{ oc_enable_acme }}
+    -p PULL_POLICY={{ oc_image_pull_policy }}
+    -p LOGOUT_REDIRECT_TO={{ oc_keycloak_logout_redirect_to }}
     -p PORTAL_IMAGE_TAG={{ oc_squonk_portal_image_tag }}
     -p PORTAL_CPU_REQUEST={{ oc_squonk_portal_cpu_request }}
     -p PORTAL_MEM_REQUEST={{ oc_squonk_portal_mem_request }}
@@ -39,10 +39,10 @@
 - name: Wait for Portal
   shell: oc get po | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
   delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  retries: "{{ (oc_pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
-  when: wait_for_pods
+  when: oc_wait_for_pods|bool
   loop:
   - portal
   changed_when: False

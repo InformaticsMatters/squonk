@@ -24,7 +24,7 @@
 
 - name: Query existing Squonk Users
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user_name }}"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/users?username={{ user_name }}"
     validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
@@ -41,7 +41,7 @@
 
 - name: Add 'nobody' (if it does not exist)
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/users"
     method: POST
     body: >-
       {"username": "{{ user_name }}",
@@ -58,7 +58,7 @@
 
 - name: Query 'nobody' user (to get its assigned identity)
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user_name }}"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/users?username={{ user_name }}"
     validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
@@ -78,7 +78,7 @@
 
 - name: Set (Reset) Keycloak 'nobody' User Password
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ nobody_user_id }}/reset-password"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/users/{{ nobody_user_id }}/reset-password"
     method: PUT
     body: >-
       {"type": "password",

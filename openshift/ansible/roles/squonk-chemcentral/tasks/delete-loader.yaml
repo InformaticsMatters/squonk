@@ -19,4 +19,4 @@
 
 - name: Delete Loader Job
   shell: oc delete job/chemcentral-loader
-  when: jobs_result.stdout | regex_search('^chemcentral-loader-%s\s' % loader_marker, multiline=True)
+  when: jobs_result.stdout | regex_search('^chemcentral-loader-%s\s' % oc_cc_loader_marker, multiline=True)

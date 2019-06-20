@@ -6,10 +6,10 @@
 
 - include_tasks: get-keycloak-token.yaml
   vars:
-    keycloak_realm: master
-    keycloak_api_secrets: keycloak-secrets
-    keycloak_api_user: admin
-    keycloak_api_user_password_field: sso-admin-password
+    oc_keycloak_realm: master
+    oc_keycloak_api_secrets: keycloak-secrets
+    oc_keycloak_api_user: admin
+    oc_keycloak_api_user_password_field: sso-admin-password
 
 # Adding keycloak realms.
 # The steps here are: -
@@ -25,7 +25,7 @@
 
 - name: Get exisiting Realms
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms"
+    url: "{{ oc_keycloak_server_url }}/admin/realms"
     validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
@@ -53,10 +53,10 @@
 
 - name: Add Realm (if it does not exist)
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms"
+    url: "{{ oc_keycloak_server_url }}/admin/realms"
     method: POST
     body: >-
-      {"realm": "{{ keycloak_realm }}",
+      {"realm": "{{ oc_keycloak_realm }}",
        "enabled": "true"}
     body_format: json
     status_code: 201
@@ -64,6 +64,6 @@
     headers:
       Authorization: bearer {{ keycloak_token }}
   loop:
-  - "{{ keycloak_realm }}"
+  - "{{ oc_keycloak_realm }}"
   when:
   - item not in known_realms

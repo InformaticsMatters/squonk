@@ -2,10 +2,10 @@
 
 - name: Remove user 1
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ user1_id }}"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/users/{{ user1_id }}"
     method: DELETE
     status_code: 204
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
   when:

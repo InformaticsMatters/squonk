@@ -19,7 +19,7 @@
   shell: >
     oc process
     -f {{ role_path }}/files/postgres.yaml
-    -p POSTGRESQL_SHARED_BUFFERS={{ postgresql_shared_buffer_size }}
+    -p POSTGRESQL_SHARED_BUFFERS={{ oc_postgresql_shared_buffer_size }}
     -p POSTGRES_SA={{ oc_infra_sa }}
     -p PG_CPU_REQUEST={{ oc_infra_postgresql_cpu_request }}
     -p PG_CPU_LIMIT={{ oc_infra_postgresql_cpu_limit }}
@@ -33,10 +33,10 @@
 - name: Wait for Pods
   shell: oc get po | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
   delay: 10
-  retries: "{{ (pod_ready_timeout | int / 10) | int }}"
+  retries: "{{ (oc_pod_ready_timeout | int / 10) | int }}"
   register: result
   until: result.rc == 0
-  when: wait_for_pods
+  when: oc_wait_for_pods|bool
   loop:
   - db-postgresql
   changed_when: False

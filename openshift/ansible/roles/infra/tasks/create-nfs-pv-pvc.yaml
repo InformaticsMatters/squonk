@@ -48,7 +48,7 @@
 - name: Check Released volumes
   shell: oc get pv | grep Released | grep {{ oc_infra_project }}/ | cut -f 1 -d " "
   register: released_vols
-  when: recycle_released_pvs
+  when: oc_recycle_released_pvs|bool
   changed_when: False
 
 - name: Recover Released volumes
@@ -57,7 +57,7 @@
     -p $'- op: remove\n  path: /spec/claimRef'
   with_items:
   - "{{ released_vols.stdout_lines }}"
-  when: recycle_released_pvs
+  when: oc_recycle_released_pvs|bool
 
 # Check/Create PVCs
 

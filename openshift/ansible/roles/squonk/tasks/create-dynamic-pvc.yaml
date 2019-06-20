@@ -33,7 +33,7 @@
   shell: >
     oc get pvc/{{ item }} | grep Bound
   delay: 5
-  retries: "{{ (pvc_bind_timeout | int / 5) | int }}"
+  retries: "{{ (oc_pvc_bind_timeout | int / 5) | int }}"
   register: result
   until: result.rc == 0
   loop:

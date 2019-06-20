@@ -106,7 +106,7 @@
   register: dc_result
   until: dc_result.stdout | regex_search(pattern % new_version, multiline=True)
   delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  retries: "{{ (oc_pod_ready_timeout | int / 20) | int }}"
   vars:
     pattern: '^.*controller "cellexecutor-%s" successfully rolled.*$'
     new_version: "{{ versions['squonk/cellexecutor'][1] }}"
@@ -117,7 +117,7 @@
   register: dc_result
   until: dc_result.stdout | regex_search(pattern % new_version, multiline=True)
   delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  retries: "{{ (oc_pod_ready_timeout | int / 20) | int }}"
   vars:
     pattern: '^.*controller "chemservices-basic-%s" successfully rolled.*$'
     new_version: "{{ versions['squonk/chemservices-basic'][1] }}"
@@ -128,7 +128,7 @@
   register: dc_result
   until: dc_result.stdout | regex_search(pattern % new_version, multiline=True)
   delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  retries: "{{ (oc_pod_ready_timeout | int / 20) | int }}"
   vars:
     pattern: '^.*controller "coreservices-%s" successfully rolled.*$'
     new_version: "{{ versions['squonk/coreservices'][1] }}"
@@ -139,7 +139,7 @@
   register: dc_result
   until: dc_result.stdout | regex_search(pattern % new_version, multiline=True)
   delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  retries: "{{ (oc_pod_ready_timeout | int / 20) | int }}"
   vars:
     pattern: '^.*controller "jobexecutor-keycloak-%s" successfully rolled.*$'
     new_version: "{{ versions['squonk/jobexecutor-keycloak'][1] }}"
@@ -150,7 +150,7 @@
   register: dc_result
   until: dc_result.stdout | regex_search(pattern % new_version, multiline=True)
   delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  retries: "{{ (oc_pod_ready_timeout | int / 20) | int }}"
   vars:
     pattern: '^.*controller "portal-%s" successfully rolled.*$'
     new_version: "{{ versions['squonk/portal'][1] }}"

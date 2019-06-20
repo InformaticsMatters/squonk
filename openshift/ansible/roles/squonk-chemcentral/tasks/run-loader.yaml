@@ -38,14 +38,14 @@
     -f {{ role_path }}/files/loader.yaml
     -p APP_NAMESPACE={{ oc_project }}
     -p APP_SA={{ oc_project_sa }}
-    -p LOADER_CLASS=org.squonk.rdkit.db.loaders.{{ loader_class }}
-    -p LOADER_FILE={{ loader_file }}
-    -p LOADER_MARKER={{ loader_marker }}
-    -p LIMIT={{ loader_limit }}
+    -p LOADER_CLASS=org.squonk.rdkit.db.loaders.{{ oc_cc_loader_class }}
+    -p LOADER_FILE={{ oc_cc_loader_file }}
+    -p LOADER_MARKER={{ oc_cc_loader_marker }}
+    -p LIMIT={{ oc_cc_loader_limit }}
     | oc create -f -
   when:
-  - loader_class in ['EnamineRealDsiLoader', 'EMoleculesBBSmilesLoader']
-  - not jobs_result.stdout | regex_search('^chemcentral-loader-%s\s' % loader_marker, multiline=True)
+  - oc_cc_loader_class in ['EnamineRealDsiLoader', 'EMoleculesBBSmilesLoader']
+  - not jobs_result.stdout | regex_search('^chemcentral-loader-%s\s' % oc_cc_loader_marker, multiline=True)
 
 - name: Create Loader Job (Multiple Files)
   shell: >
@@ -53,14 +53,14 @@
     -f {{ role_path }}/files/loader.yaml
     -p APP_NAMESPACE={{ oc_project }}
     -p APP_SA={{ oc_project_sa }}
-    -p LOADER_CLASS=org.squonk.rdkit.db.loaders.{{ loader_class }}
-    -p LOADER_DIR={{ loader_dir }}
-    -p LOADER_PATTERN={{ loader_pattern }}
-    -p LOADER_MARKER={{ loader_marker }}
-    -p LIMIT={{ loader_limit }}
+    -p LOADER_CLASS=org.squonk.rdkit.db.loaders.{{ oc_cc_loader_class }}
+    -p LOADER_DIR={{ oc_cc_loader_dir }}
+    -p LOADER_PATTERN={{ oc_cc_loader_pattern }}
+    -p LOADER_MARKER={{ oc_cc_loader_marker }}
+    -p LIMIT={{ oc_cc_loader_limit }}
     -p CCL_CPU_REQUEST={{ oc_cc_loader_cpu_request }}
     -p CCL_MEM_REQUEST={{ oc_cc_loader_mem_request }}
     | oc create -f -
   when:
-  - loader_class in ['MolportSmilesLoader']
-  - not jobs_result.stdout | regex_search('^chemcentral-loader-%s\s' % loader_marker, multiline=True)
+  - oc_cc_loader_class in ['MolportSmilesLoader']
+  - not jobs_result.stdout | regex_search('^chemcentral-loader-%s\s' % oc_cc_loader_marker, multiline=True)

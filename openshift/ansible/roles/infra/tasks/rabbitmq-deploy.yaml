@@ -32,8 +32,8 @@
 - name: Wait for RabbitMQ
   shell: oc get po | grep rabbitmq | grep -v deploy | grep 1/1 > /dev/null
   delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  retries: "{{ (oc_pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
-  when: wait_for_pods
+  when: oc_wait_for_pods|bool
   changed_when: False

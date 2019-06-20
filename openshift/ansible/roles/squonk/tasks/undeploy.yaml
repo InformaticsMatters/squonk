@@ -9,7 +9,7 @@
   pause:
     prompt: |-
       Delete Squonk from {{ oc_master_url }}?
-      Note that 'delete_database' is {{ delete_database }}.
+      Note that 'oc_delete_database' is {{ oc_delete_database }}.
       Hit return to delete Squonk.
       Hit Ctrl+c and then "a" if you've changed your mind
 
@@ -108,7 +108,7 @@
   shell: oc get jobs
   register: j_cmd
   delay: 10
-  retries: "{{ (pod_terminate_timeout | int / 10) | int }}"
+  retries: "{{ (oc_pod_terminate_timeout | int / 10) | int }}"
   until: not j_cmd.stdout | regex_search('^%s\s' % item, multiline=True)
   loop:
   - db-creator
@@ -134,7 +134,7 @@
 
 - name: Remove prior temporary Objects (Infrastructure)
   shell: oc delete all,cm --selector template=db-delete
-  when: delete_database
+  when: oc_delete_database|bool
 
 - name: Delete Squonk DB
   shell: >
@@ -145,16 +145,16 @@
     -p DB_USER={{ oc_squonk_user }}
     -p INFRA_SA={{ oc_infra_sa }}
     | oc create -f -
-  when: delete_database
+  when: oc_delete_database|bool
 
 - name: Wait for User and Database Job
   shell: oc describe jobs/db-deleter | grep '1 Succeeded'
   delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  retries: "{{ (oc_pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
   changed_when: False
-  when: delete_database
+  when: oc_delete_database|bool
 
 # Get a keycloak token (sets the fact 'keycloak_token').
 # Remember that the login user may have changed to admin.
@@ -172,46 +172,46 @@
 
 - name: Get Portal Keycloak Client ID
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients?clientId={{ oc_squonk_app }}"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/clients?clientId={{ oc_squonk_app }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
   register: notebook_client_result
 
 - name: Delete Portal Keycloak Client
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients/{{ notebook_client_result.json[0].id }}"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/clients/{{ notebook_client_result.json[0].id }}"
     method: DELETE
     status_code: 204
     headers:
       Authorization: bearer {{ keycloak_token }}
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
   when: notebook_client_result.json
 
 - name: Get JobExecutor Keycloak Client ID
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients?clientId={{ oc_jobexecutor_client }}"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/clients?clientId={{ oc_jobexecutor_client }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
   register: jobexecutor_client_result
 
 - name: Delete JobExecutor Keycloak Client
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/clients/{{ jobexecutor_client_result.json[0].id }}"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/clients/{{ jobexecutor_client_result.json[0].id }}"
     method: DELETE
     status_code: 204
     headers:
       Authorization: bearer {{ keycloak_token }}
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
   when: jobexecutor_client_result.json
 
 - name: Query Squonk Users
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user }}"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/users?username={{ user }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
   register: squonk_users
   vars:
     user: "{{ item.split()[0] }}"
@@ -247,12 +247,12 @@
 
 - name: Delete Existing Squonk Keycloak Users
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ item }}"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/users/{{ item }}"
     method: DELETE
     status_code: 204
     headers:
       Authorization: bearer {{ keycloak_token }}
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
   loop: "{{ known_user_ids }}"
   when: users_file is defined
   tags:

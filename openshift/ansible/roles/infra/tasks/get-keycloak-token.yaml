@@ -2,13 +2,13 @@
 
 # Variables that control this set of tasks are: -
 #
-# - keycloak_server_url               The Keycloak server authentication URL
-#                                     typically 'https://sso.example.org/auth'
-# - keycloak_realm                    The Keycloak realm the user's in
-# - keycloak_api_secrets              The name of the secrets the password's in
-# - keycloak_api_user                 The name of the Keycloak REST API user
-# - keycloak_api_user_password_field  The name of the users' password field
-#                                     in the secrets
+# - oc_keycloak_server_url              The Keycloak server authentication URL
+#                                       typically 'https://sso.example.org/auth'
+# - oc_keycloak_realm                   The Keycloak realm the user's in
+# - oc_keycloak_api_secrets             The name of the secrets the password's in
+# - oc_keycloak_api_user                The name of the Keycloak REST API user
+# - oc_keycloak_api_user_password_field The name of the users' password field
+#                                       in the secrets
 
 # -----------------------------------------------------------------------------
 
@@ -32,10 +32,10 @@
 
 # Get some secrets from the infrastructure...
 
-- name: Get Keycloak API User's Password ({{ keycloak_api_user_password_field }})
+- name: Get Keycloak API User's Password ({{ oc_keycloak_api_user_password_field }})
   shell: >
-    oc get secret {{ keycloak_api_secrets }} -n {{ oc_infra_project }} -o yaml
-    | grep {{ keycloak_api_user_password_field }}
+    oc get secret {{ oc_keycloak_api_secrets }} -n {{ oc_infra_project }} -o yaml
+    | grep {{ oc_keycloak_api_user_password_field }}
   register: secret_result
   changed_when: False
   tags:
@@ -45,7 +45,7 @@
   set_fact:
     keycloak_api_password: "{{ secret_result.stdout|regex_replace(regexp, '\\1')|b64decode }}"
   vars:
-    regexp: '^\s+{{ keycloak_api_user_password_field }}:\s+(\S+)\s*$'
+    regexp: '^\s+{{ oc_keycloak_api_user_password_field }}:\s+(\S+)\s*$'
   changed_when: False
   tags:
     - keycloak-users
@@ -53,17 +53,17 @@
 # Now get the API token.
 # There's a time-limit using this.
 
-- name: Get Keycloak API Token ({{ keycloak_realm }} realm)
+- name: Get Keycloak API Token ({{ oc_keycloak_realm }} realm)
   uri:
-    url: "{{ keycloak_server_url}}/realms/{{ keycloak_realm }}/protocol/openid-connect/token"
+    url: "{{ oc_keycloak_server_url }}/realms/{{ oc_keycloak_realm }}/protocol/openid-connect/token"
     method: POST
     body: "{{ credentials }}&grant_type=password&client_id=admin-cli"
     headers:
       Content-Type: "application/x-www-form-urlencoded"
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
   register: token_result
   vars:
-    credentials: "username={{ keycloak_api_user }}&password={{ keycloak_api_password }}"
+    credentials: "username={{ oc_keycloak_api_user }}&password={{ keycloak_api_password }}"
   changed_when: False
   tags:
     - keycloak-users

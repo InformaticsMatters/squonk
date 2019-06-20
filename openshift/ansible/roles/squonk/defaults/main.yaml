@@ -35,13 +35,6 @@ oc_squonk_je_java_tool_options: -Xmx7800m
 oc_squonk_portal_cpu_request: 500m
 oc_squonk_portal_mem_request: 1Gi
 
-# We can configure the 'standard-user' using a selenium script
-# and a Chrome web-driver but this requires Chrome to be available,
-# the driver to be on you r path and certificates to be properly
-# deployed in order for selenium to work properly in "headless" mode.
-# The automation works if configured not to use chrome in headless mode.
-setup_keycloak: no
-
 # Path to a file that defines the users we want to add to the Keycloak realm.
 # The path is relative to the ansible directory (where the roles directory is)
 # uncomment or define form the command-line to add users.
@@ -52,19 +45,19 @@ setup_keycloak: no
 # If 'yes' then a 'noby' user is added to keycloak
 # using a randomly assigned password. The password is printed as the
 # role executes but it is not stored anywhere.
-add_nobody_user: yes
+oc_add_nobody_user: yes
 
 # Here PVs used by the application (the squonk-work-dir for example)
 # are returned to an Available state if they're currently
 # in a Released state. Note: it is the user's responsibility
 # to protect themselves for data loss here. This will inspect the
 # "state" of all PVs in the squonk *and* infrastructure projects.
-recycle_released_pvs: yes
+oc_recycle_released_pvs: yes
 
 # Enable ACME routes?
 # A string that's either 'true' or 'false'.
 # This applies to all routes, i.e. those used by the JobExecutor and Portal.
-enable_acme: "false"
+oc_enable_acme: "false"
 
 # Set to delete the Squonk database when Squonk is deployed.
-delete_database: no
+oc_delete_database: no

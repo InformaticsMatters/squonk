@@ -18,10 +18,10 @@
 
 - name: Query existing Squonk Users
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user1_name }}"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/users?username={{ user1_name }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
   register: user_check
   changed_when: False
 
@@ -53,14 +53,14 @@
 
 - name: Add user (if it does not exist)
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/users"
     method: POST
     body: >-
       {"username": "{{ user1_name }}",
        "enabled": "true"}
     body_format: json
     status_code: 201
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
   when:
@@ -68,7 +68,7 @@
 
 - name: Query user (to get its assigned identity)
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users?username={{ user1_name }}"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/users?username={{ user1_name }}"
     validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
@@ -83,7 +83,7 @@
 
 - name: Set (Reset) Keycloak user1 User Password
   uri:
-    url: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}/users/{{ user1_id }}/reset-password"
+    url: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}/users/{{ user1_id }}/reset-password"
     method: PUT
     body: >-
       {"type": "password",
@@ -91,7 +91,7 @@
        "value": "{{ user1_password }}"}
     body_format: json
     status_code: 204
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
   when:

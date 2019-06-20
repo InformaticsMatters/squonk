@@ -19,7 +19,7 @@
     -p PVC_SIZE={{ oc_cc_loader_volume_size }}
     -p STORAGE_CLASS={{ oc_cc_volume_storage_class }}
     | oc create -f -
-  when: not i_pvc_result.stdout | regex_search('^%s\s' % data_loader_pvc_name, multiline=True)
+  when: not i_pvc_result.stdout | regex_search('^%s\s' % oc_cc_data_loader_pvc_name, multiline=True)
 
 # Wait for PVCs to become "Bound"...
 
@@ -31,5 +31,5 @@
   register: result
   until: result.rc == 0
   loop:
-  - "{{ data_loader_pvc_name }}"
+  - "{{ oc_cc_data_loader_pvc_name }}"
   when: not i_pvc_result.stdout | regex_search('^%s\s' % item, multiline=True)
