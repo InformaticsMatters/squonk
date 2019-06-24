@@ -45,7 +45,7 @@
     | oc create -f -
   when:
   - oc_cc_loader_class in ['EnamineRealDsiLoader', 'EMoleculesBBSmilesLoader']
-  - not jobs_result.stdout | regex_search('^chemcentral-loader-%s\s' % oc_cc_loader_marker, multiline=True)
+  - not jobs_result.stdout|regex_search('^chemcentral-loader-%s\s' % oc_cc_loader_marker, multiline=True)
 
 - name: Create Loader Job (Multiple Files)
   shell: >
@@ -63,4 +63,4 @@
     | oc create -f -
   when:
   - oc_cc_loader_class in ['MolportSmilesLoader']
-  - not jobs_result.stdout | regex_search('^chemcentral-loader-%s\s' % oc_cc_loader_marker, multiline=True)
+  - not jobs_result.stdout|regex_search('^chemcentral-loader-%s\s' % oc_cc_loader_marker, multiline=True)

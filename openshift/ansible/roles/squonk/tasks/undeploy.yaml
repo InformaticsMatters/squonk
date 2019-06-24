@@ -32,7 +32,7 @@
 - name: Get Squonk Pods
   shell: oc get po
   register: pods_result
-  when: squonk_project_exists
+  when: squonk_project_exists|bool
 
 - name: Check ChemCentral Deployment
   fail:
@@ -40,22 +40,22 @@
       ChemCentral appears to be deployed.
       You must remove ChemCentral first.
   when:
-  - squonk_project_exists
-  - pods_result.stdout | regex_search('^chemcentral', multiline=True)
+  - squonk_project_exists|bool
+  - pods_result.stdout|regex_search('^chemcentral', multiline=True)
 
 # To un-deploy squonk, the fastest way is to
 # simply delete the squonk project.
 
 - name: Delete Squonk Project
   shell: oc delete project/{{ oc_project }}
-  when: squonk_project_exists
+  when: squonk_project_exists|bool
 
 - name: Wait for project deletion
   shell: oc get projects
   register: pj_cmd
   retries: 20
   delay: 30
-  until: not pj_cmd.stdout | regex_search('^%s\s' % oc_project, multiline=True)
+  until: not pj_cmd.stdout|regex_search('^%s\s' % oc_project, multiline=True)
   changed_when: False
 
 # Delete SCC
@@ -67,7 +67,7 @@
 
 - name: Delete Squonk SCC
   shell: oc delete scc/scc-squonk
-  when: scc_result.stdout | regex_search('^scc-squonk', multiline=True)
+  when: scc_result.stdout|regex_search('^scc-squonk', multiline=True)
 
 # Now undo the stuff in the infrastructure project...
 
@@ -127,7 +127,7 @@
   - db-creator
   - squonk-rabbitmq-config
   - squonk-client-creator
-  when: cm_result.stdout | regex_search('^%s\s' % item, multiline=True)
+  when: cm_result.stdout|regex_search('^%s\s' % item, multiline=True)
 
 # Delete the Squonk Database.
 # Caution - this deletes the database as well as the user.
@@ -162,8 +162,8 @@
 # The actions for getting the KeyCloak token
 # are located in an infra role playbook.
 
-- include_tasks: >
-    "{{ role_path }}/../infra/tasks/get-keycloak-token.yaml"
+- include_tasks: >-
+    {{ role_path }}/../infra/tasks/get-keycloak-token.yaml
   tags:
   - keycloak-users
 

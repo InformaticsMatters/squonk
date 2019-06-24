@@ -6,8 +6,8 @@
 # The actions for getting the KeyCloak token
 # are located in a infra role playbook.
 
-- include_tasks: >
-    "{{ role_path }}/../infra/tasks/get-keycloak-token.yaml"
+- include_tasks: >-
+    {{ role_path }}/../infra/tasks/get-keycloak-token.yaml
 
 # Check the expected user exists.
 # If they do then a password is required.
@@ -33,8 +33,7 @@
     - user1_password is defined
     - user1_password|length > 0
     fail_msg: You must define the 'user1_password' variable
-  when:
-  - user_check | json_query('json')
+  when: user_check|json_query('json')
 
 # Otherwise assign a password (if we need to) and create the user...
 
@@ -43,7 +42,7 @@
     user1_password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"
   when:
   - user1_password is undefined
-  - not user_check | json_query('json')
+  - not user_check|json_query('json')
 
 - name: Expose user password
   debug:
@@ -94,11 +93,9 @@
     validate_certs: "{{ oc_validate_certificates }}"
     headers:
       Authorization: bearer {{ keycloak_token }}
-  when:
-  - not user_check | json_query('json')
+  when: not user_check|json_query('json')
 
 - name: Set a 'we created the test user' fact
   set_fact:
     validate_created_user1: true
-  when:
-  - not user_check | json_query('json')
+  when: not user_check|json_query('json')

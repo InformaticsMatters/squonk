@@ -25,7 +25,7 @@
     -p CCS_CPU_REQUEST={{ oc_cc_search_cpu_request }}
     -p CCS_MEM_REQUEST={{ oc_cc_search_mem_request }}
     | oc create -f -
-  when: not dc_result.stdout | regex_search('^chemcentral-search\s', multiline=True)
+  when: not dc_result.stdout|regex_search('^chemcentral-search\s', multiline=True)
 
 # Wait for running pods...
 

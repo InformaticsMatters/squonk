@@ -25,7 +25,7 @@
     -p CCDB_CPU_REQUEST={{ oc_cc_postgresql_cpu_request }}
     -p CCDB_MEM_REQUEST={{ oc_cc_postgresql_mem_request }}
     | oc create -f -
-  when: not dc_result.stdout | regex_search('^db-chemcentral\s', multiline=True)
+  when: not dc_result.stdout|regex_search('^db-chemcentral\s', multiline=True)
 
 # Wait for running pods...
 

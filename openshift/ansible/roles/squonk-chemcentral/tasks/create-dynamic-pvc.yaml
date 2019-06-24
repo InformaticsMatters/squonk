@@ -18,7 +18,7 @@
     -p POSTGRESQL_VOLUME_SIZE={{ oc_cc_postgresql_volume_size }}
     -f {{ role_path }}/files/chemcentral-pvc-dynamic.yaml
     | oc create -f -
-  when: not i_pvc_result.stdout | regex_search('^chemcentral-postgresql-claim\s', multiline=True)
+  when: not i_pvc_result.stdout|regex_search('^chemcentral-postgresql-claim\s', multiline=True)
 
 # Wait for PVCs to become "Bound"...
 
@@ -32,5 +32,5 @@
   loop:
   - chemcentral-postgresql-claim
   when:
-  - not i_pvc_result.stdout | regex_search('^chemcentral-postgresql-claim\s', multiline=True)
+  - not i_pvc_result.stdout|regex_search('^chemcentral-postgresql-claim\s', multiline=True)
   - oc_wait_for_volume_bind|bool

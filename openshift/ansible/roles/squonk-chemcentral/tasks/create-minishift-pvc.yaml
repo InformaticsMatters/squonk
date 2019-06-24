@@ -17,7 +17,7 @@
     -p POSTGRESQL_VOLUME_SIZE={{ oc_cc_postgresql_volume_size }}
     -f {{ role_path }}/files/chemcentral-pvc-minishift.yaml
     | oc create -f -
-  when: not i_pvc_result.stdout | regex_search('^chemcentral-postgresql-claim\s', multiline=True)
+  when: not i_pvc_result.stdout|regex_search('^chemcentral-postgresql-claim\s', multiline=True)
 
 # Wait for claims to become bound...
 
@@ -30,7 +30,7 @@
   until: result.rc == 0
   loop:
   - chemcentral-postgresql-claim
-  when: not i_pvc_result.stdout | regex_search('^chemcentral-postgresql-claim\s', multiline=True)
+  when: not i_pvc_result.stdout|regex_search('^chemcentral-postgresql-claim\s', multiline=True)
 
 # Squonk claims
 
@@ -61,5 +61,5 @@
   until: result.rc == 0
   loop:
   - chemcentral-data-loader-pvc
-  when: not i_pvc_result.stdout | regex_search('^chemcentral-data-loader-pvc\s', multiline=True)
+  when: not i_pvc_result.stdout|regex_search('^chemcentral-data-loader-pvc\s', multiline=True)
 

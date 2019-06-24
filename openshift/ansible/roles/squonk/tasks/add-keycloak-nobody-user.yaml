@@ -36,8 +36,7 @@
 - name: Expose 'nobody' password
   debug:
     msg: User {{ user_name }} has password {{ user_password }}
-  when:
-  - not user_check | json_query('json')
+  when: not user_check|json_query('json')
 
 - name: Add 'nobody' (if it does not exist)
   uri:
@@ -51,8 +50,7 @@
     validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
-  when:
-  - not user_check | json_query('json')
+  when: not user_check|json_query('json')
   tags:
   - keycloak-users
 
@@ -63,16 +61,14 @@
     headers:
       Authorization: bearer {{ keycloak_token }}
   register: nobody_user
-  when:
-  - not user_check | json_query('json')
+  when: not user_check|json_query('json')
   tags:
   - keycloak-users
 
 - name: Get 'nobody' User Identity
   set_fact:
     nobody_user_id: "{{ nobody_user | json_query('json[0].id') }}"
-  when:
-  - not user_check | json_query('json')
+  when: not user_check|json_query('json')
   tags:
   - keycloak-users
 
@@ -89,7 +85,6 @@
     validate_certs: no
     headers:
       Authorization: bearer {{ keycloak_token }}
-  when:
-  - not user_check | json_query('json')
+  when: not user_check|json_query('json')
   tags:
   - keycloak-users

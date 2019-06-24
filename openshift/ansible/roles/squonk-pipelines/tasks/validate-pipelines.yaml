@@ -54,12 +54,12 @@
 - name: Display failures
   debug:
     var: job_failures
-  when: job_failures
+  when: job_failures|length > 0
 
 - name: Display Job Executor REST Endpoint
   debug:
     var: je_rest_v1
-  when: job_failures
+  when: job_failures|length > 0
 
 - name: Assert there are no failures
   assert:

@@ -74,8 +74,7 @@
   retries: "{{ (oc_pod_ready_timeout | int / 10) | int }}"
   register: result
   until: result.rc == 0
-  when:
-  - oc_wait_for_pods|bool
+  when: oc_wait_for_pods|bool
   loop:
   - postgres-migrate
   changed_when: False
