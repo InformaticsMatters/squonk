@@ -136,6 +136,9 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
     }
 
     protected void handleCleanup() {
+        // This block essentially replicates the actions
+        // In the cleanup() method of ExternalExecutor.java
+        // At some point we might want to rationalise the interfaces.
         if (containerRunner != null && DEBUG_MODE < 2) {
             containerRunner.cleanup();
             LOG.info("Results cleaned up");
@@ -194,7 +197,6 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
 
     protected Map<String, List<SquonkDataSource>> readOutputs(DefaultServiceDescriptor serviceDescriptor, File workdir) throws Exception {
 
-        //!!!
         IODescriptor[] outputDescriptors = serviceDescriptor.resolveOutputIODescriptors();
         Map<String, List<SquonkDataSource>> results = new LinkedHashMap<>();
         if (outputDescriptors != null) {

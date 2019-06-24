@@ -301,6 +301,9 @@ public class ExternalExecutor extends ExecutableJob {
      *
      */
     public void cleanup() {
+        // This block essentially replicates the actions
+        // In the handleCleanup()() method of AbstractContainerStep.java
+        // At some point we might want to rationalise the interfaces.
         if (runner != null && DEBUG_MODE < 2) {
             runner.cleanup();
             LOG.info("Results cleaned up");

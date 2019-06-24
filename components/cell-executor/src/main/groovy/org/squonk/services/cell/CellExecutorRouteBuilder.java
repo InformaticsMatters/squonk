@@ -184,9 +184,9 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
         } catch (Exception e) {
             LOG.log(Level.WARNING, "Failed to execute job " + jobid, e);
             jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Failed to execute job. " + e.getMessage());
+        } finally {
+            executor.cleanup();
         }
-
-        executor.cleanup();
 
     }
 
