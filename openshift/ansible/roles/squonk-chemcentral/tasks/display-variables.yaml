@@ -31,10 +31,10 @@
   with_items: "{{ ansible_env }}"
   when: item.startswith('IM_')
 
-- name: Display our environment
+- name: Display environment variables
   debug:
     var: im_vars
 
-- name: Display our variables
+- name: Display Ansible variables
   debug:
     var: oc_vars

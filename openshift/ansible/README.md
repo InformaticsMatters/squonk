@@ -180,6 +180,62 @@ The result will be secrets created in your project
 your application can use. This process is used during the Squonk 
 deployment to create the database that it uses.
 
+## Displaying playbook variables
+We have a number of playbooks and a large number of variables control these
+playbooks. As variables are not located in a single location it's often difficult
+to know what variables exist and what values they'll have when a playbook is
+executed.
+
+As knowing a variable's value is likely to be important when you run a
+playbook there is a way to display them (using a playbook).
+
+There are two types of variable: -
+
+1.  Ansible variables
+2.  Environment variables
+
+All our Ansible variables being `oc_` and all our environment variables begin
+`IM_`. Each of our roles provides a `display-variables.yaml` play that displays
+these variables and their values. It can be run with a corresponding playbook.
+For example, to display all the variables available to the **infra** role you
+can run the following: -
+
+    ansible-playbook playbooks/infra/display-variables.yaml
+
+The playbook spends a few moments gathering the variables that it has access
+to and then prints them and their values. At the end of the plybook's output
+you will see the environment and Ansible variables printed for you, looking
+a bit like this: -
+
+    TASK [infra : Display environment variables] ******************************
+    ok: [127.0.0.1] => {
+        "im_vars": {
+            "IM_PARAMETER_FILE": "params-minishift.yaml"
+        }
+    }
+    
+    TASK [infra : Display Ansible variables] **********************************
+    ok: [127.0.0.1] => {
+        "oc_vars": {
+            "oc_admin": "admin", 
+            "oc_cc_infra_volume_type": "minishift", 
+            "oc_cc_loader_cpu_request": "100m", 
+            "oc_cc_loader_mem_request": "100Mi", 
+            "oc_cc_postgresql_cpu_request": "100m", 
+            "oc_cc_postgresql_mem_request": "100Mi", 
+            ...
+        }
+    }
+
+As well as a playbook for **infra** there are separate playbooks to display
+the variables available for the **squonk**, **squonk-chemcentral**,
+**squonk-cicd** and **squonk-pipelines** roles: -
+
+    ansible-playbook playbooks/squonk/display-variables.yaml
+    ansible-playbook playbooks/squonk-chemcentral/display-variables.yaml
+    ansible-playbook playbooks/squonk-cicd/display-variables.yaml
+    ansible-playbook playbooks/squonk-pipelines/display-variables.yaml
+
 ## Minishift considerations
 While it's a work-in-progress, support for some versions of Minishift is
 available. We tend to follow recent Minishift releases, at the moment we've
