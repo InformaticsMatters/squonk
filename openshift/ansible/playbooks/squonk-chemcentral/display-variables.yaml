@@ -1,0 +1,11 @@
+---
+
+- hosts: localhost
+  vars_files:
+  - ../../../env/{{ ansible_env.IM_PARAMETER_FILE }}
+
+  tasks:
+  - name: Run the Squonk 'Display Varibales' Tasks
+    include_role:
+      name: squonk-chemcentral
+      tasks_from: display-variables.yaml
