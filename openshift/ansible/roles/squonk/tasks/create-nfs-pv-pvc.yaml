@@ -40,7 +40,7 @@
 - name: Check Released volumes
   shell: oc get pv | grep Released | grep {{ oc_project }}/ | cut -f 1 -d " "
   register: released_vols
-  when: recycle_released_pvs
+  when: oc_recycle_released_pvs|bool
   changed_when: False
 
 - name: Recover Released volumes
@@ -49,8 +49,7 @@
     -p $'- op: remove\n  path: /spec/claimRef'
   with_items:
   - "{{ released_vols.stdout_lines }}"
-  when:
-  - recycle_released_pvs
+  when: oc_recycle_released_pvs|bool
 
 # Wait for PVs to become "Available"...
 # We only do this if we created the PV in this session.
@@ -58,7 +57,7 @@
 - name: Wait for PVs to become Available
   shell: oc get pv/{{ item }} | grep Available
   delay: 5
-  retries: "{{ (pv_create_timeout | int / 5) | int }}"
+  retries: "{{ (oc_pv_create_timeout | int / 5) | int }}"
   register: result
   until: result.rc == 0
   loop:
@@ -88,7 +87,7 @@
   shell: >
     oc get pvc/{{ item }} | grep Bound
   delay: 5
-  retries: "{{ (pvc_bind_timeout | int / 5) | int }}"
+  retries: "{{ (oc_pvc_bind_timeout | int / 5) | int }}"
   register: result
   until: result.rc == 0
   loop:

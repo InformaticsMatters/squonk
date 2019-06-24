@@ -62,20 +62,20 @@ oc_infra_backup_volume_size: "125Gi"
 
 oc_postgresql_volume_size: 125Gi
 
-postgresql_shared_buffer_size: 1GB
-rabbitmq_volume_size: 1Gi
+oc_postgresql_shared_buffer_size: 1GB
+oc_rabbitmq_volume_size: 1Gi
 
 # Here PVs used by the application (the squonk-work-dir for example)
 # are returned to an Available state if they're currently
 # in a Released state. Note: it is the user's responsibility
 # to protect themselves for data loss here. This will inspect the
 # "state" of all PVs in the squonk *and* infrastructure projects.
-recycle_released_pvs: yes
+oc_recycle_released_pvs: yes
 
 # Keycloak default roles.
 # A list of roles that need to be added to Keycloak.
 # Each is also added to the default set of roles for the realm.
-keycloak_default_roles:
+oc_keycloak_default_roles:
 - standard-user
 
 # Default values for variables used when creating
@@ -84,20 +84,20 @@ keycloak_default_roles:
 #
 # db
 # db_namespace
-db_user: "{{ lookup('password','/dev/null chars=lowercase length=10') }}"
-db_user_password: "{{ lookup('password','/dev/null chars=ascii_letters,digits length=10') }}"
+oc_db_user: "{{ lookup('password','/dev/null chars=lowercase length=10') }}"
+oc_db_user_password: "{{ lookup('password','/dev/null chars=ascii_letters,digits length=10') }}"
 
 # Various retry timeouts (seconds)...
-pod_ready_timeout: 600
-pod_terminate_timeout: 300
-pv_create_timeout: 200
-pvc_bind_timeout: 200
+oc_pod_ready_timeout: 600
+oc_pod_terminate_timeout: 300
+oc_pv_create_timeout: 200
+oc_pvc_bind_timeout: 200
 
 # Validate certificates
 # With tasks like curl
-validate_certificates: no
+oc_validate_certificates: no
 
 # If set each deployment of Pods
 # will be followed by a monitoring step that waits for the
 # expected Pods to initialise before moving on to the next step.
-wait_for_pods: yes
+oc_wait_for_pods: yes

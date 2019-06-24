@@ -13,7 +13,7 @@ oc_infra_volume_storage_class: gp2
 oc_squonk_volume_storage_class: gp2
 oc_cc_volume_storage_class: gp2
 
-keycloak_realm: openrisknet
+oc_keycloak_realm: openrisknet
 
 oc_infra_project: openrisknet-infra
 oc_infra_project_display_name: OpenRiskNet Infrastructure
@@ -21,4 +21,4 @@ oc_infra_sa: openrisknet
 oc_infra_backup_hourly_count: 7
 oc_infra_backup_daily_count: 0
 
-image_pull_policy: Always
+oc_image_pull_policy: Always

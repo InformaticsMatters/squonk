@@ -11,6 +11,6 @@
   roles:
   - role: squonk-pipelines
     vars:
-      origin: pipelines_sygnature
-      image_pull_policy: Never
+      oc_p_origin: pipelines_sygnature
+      oc_image_pull_policy: Never
 

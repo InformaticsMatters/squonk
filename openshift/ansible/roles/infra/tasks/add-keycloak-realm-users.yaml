@@ -2,12 +2,12 @@
 
 # Variables that control this set of tasks are: -
 #
-# - keycloak_server_url   The Keycloak server authentication URL
-#                         typically 'https://sso.example.org/auth'
-# - keycloak_realm        The realm the users are to be added to
-# - users_file            A users file, located in the ansibel directory
-#                         that's simple text with one user and space-separated
-#                         password per line. See ansible/example.user
+# - oc_keycloak_server_url  The Keycloak server authentication URL
+#                           typically 'https://sso.example.org/auth'
+# - oc_keycloak_realm       The realm the users are to be added to
+# - users_file              A users file, located in the ansibel directory
+#                           that's simple text with one user and space-separated
+#                           password per line. See ansible/example.user
 
 # -----------------------------------------------------------------------------
 
@@ -40,7 +40,7 @@
 
 - name: Set API endpoint
   set_fact:
-    keycloak_endpoint: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}"
+    keycloak_endpoint: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}"
   tags:
     - keycloak-users
 

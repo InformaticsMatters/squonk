@@ -25,14 +25,14 @@
 
 - name: Delete Infra Project
   shell: oc delete project/{{ oc_infra_project }}
-  when: projects_result.stdout | regex_search('^%s\s.*Active$' % oc_infra_project, multiline=True)
+  when: projects_result.stdout|regex_search('^%s\s.*Active$' % oc_infra_project, multiline=True)
 
 - name: Wait for Infra project deletion
   shell: oc get projects
   register: pj_cmd
   retries: 20
   delay: 30
-  until: not pj_cmd.stdout | regex_search('^%s\s' % oc_infra_project, multiline=True)
+  until: not pj_cmd.stdout|regex_search('^%s\s' % oc_infra_project, multiline=True)
   changed_when: False
 
 # Delete SCC
@@ -44,7 +44,7 @@
 
 - name: Delete Infra SCC
   shell: oc delete scc/scc-infra
-  when: scc_result.stdout | regex_search('^scc-infra', multiline=True)
+  when: scc_result.stdout|regex_search('^scc-infra', multiline=True)
 
 # Remove persistent volumes
 
@@ -61,4 +61,4 @@
   - pv-rabbitmq
   when:
   - oc_infra_volume_type == 'nfs'
-  - s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
+  - s_pv_result.stdout|regex_search('^%s\s' % item, multiline=True)

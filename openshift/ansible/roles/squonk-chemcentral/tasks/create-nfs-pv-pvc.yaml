@@ -20,7 +20,7 @@
     -p PVC_SIZE={{ oc_cc_postgresql_volume_size }}
     -f {{ role_path }}/files/chemcentral-pv-nfs.yaml
     | oc create -f -
-  when: not i_pv_result.stdout | regex_search('^%s\s' % pv_name, multiline=True)
+  when: not i_pv_result.stdout|regex_search('^%s\s' % oc_cc_pv_name, multiline=True)
 
 # Wait for PVs to become "Available"...
 
@@ -32,8 +32,8 @@
   register: result
   until: result.rc == 0
   loop:
-  - "{{ pv_name }}"
-  when: not i_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
+  - "{{ oc_cc_pv_name }}"
+  when: not i_pv_result.stdout|regex_search('^%s\s' % item, multiline=True)
 
 # Deal with "Released" volumes.
 # Those PVs that are "Released"
@@ -42,7 +42,7 @@
 - name: Check Released volumes
   shell: oc get pv | grep Released | grep {{ oc_infra_project }}/ | cut -f 1 -d " "
   register: released_vols
-  when: recycle_released_pvs
+  when: oc_recycle_released_pvs|bool
   changed_when: False
 
 - name: Recover Released volumes
@@ -51,7 +51,7 @@
     -p $'- op: remove\n  path: /spec/claimRef'
   with_items:
   - "{{ released_vols.stdout_lines }}"
-  when: recycle_released_pvs
+  when: oc_recycle_released_pvs|bool
 
 # Check/Create PVCs
 
@@ -66,7 +66,7 @@
     -f {{ role_path }}/files/chemcentral-pvc-nfs.yaml
     -p PVC_SIZE={{ oc_cc_postgresql_volume_size }}
     | oc create -f -
-  when: not i_pvc_result.stdout | regex_search('^%s\s' % pvc_name, multiline=True)
+  when: not i_pvc_result.stdout|regex_search('^%s\s' % oc_cc_pvc_name, multiline=True)
 
 # Wait for PVCs to become "Bound"...
 
@@ -78,5 +78,5 @@
   register: result
   until: result.rc == 0
   loop:
-  - "{{ pvc_name }}"
-  when: not i_pvc_result.stdout | regex_search('^%s\s' % item, multiline=True)
+  - "{{ oc_cc_pvc_name }}"
+  when: not i_pvc_result.stdout|regex_search('^%s\s' % item, multiline=True)

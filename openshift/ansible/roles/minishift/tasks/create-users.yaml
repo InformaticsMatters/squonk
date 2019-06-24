@@ -20,7 +20,7 @@
   loop:
   - "{{ oc_admin }}"
   - "{{ oc_user }}"
-  when: not users_result.stdout | regex_search('^%s\s' % item, multiline=True)
+  when: not users_result.stdout|regex_search('^%s\s' % item, multiline=True)
 
 - name: Get cluster role bindings
   shell: oc adm policy who-can cluster-admin - --all-namespaces -o yaml

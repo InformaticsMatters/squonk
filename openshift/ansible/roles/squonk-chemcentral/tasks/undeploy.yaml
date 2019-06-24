@@ -28,7 +28,7 @@
 # Delete any existing/pending loader
 
 - import_tasks: delete-loader.yaml
-  when: squonk_project_exists
+  when: squonk_project_exists|bool
 
 # Now the main components...
 
@@ -36,15 +36,15 @@
   shell: oc get secrets -n {{ oc_project }}
   register: secrets_result
   changed_when: False
-  when: squonk_project_exists
+  when: squonk_project_exists|bool
 
 - name: Delete ChemCentral (Squonk)
   shell: >
     oc delete all,cm,secret --selector template=chemcentral-db
     -n {{ oc_project }}
   when:
-  - squonk_project_exists
-  - secrets_result.stdout | regex_search('^chemcentral-database-credentials-search\s', multiline=True)
+  - squonk_project_exists|bool
+  - secrets_result.stdout|regex_search('^chemcentral-database-credentials-search\s', multiline=True)
 
 - name: Check ChemCentral (Infrastructure)
   shell: oc get secrets -n {{ oc_infra_project }}
@@ -55,7 +55,7 @@
   shell: >
     oc delete all,cm,secret --selector template=chemcentral-db
     -n {{ oc_infra_project }}
-  when: secrets_result.stdout | regex_search('^chemcentral-database-credentials-search\s', multiline=True)
+  when: secrets_result.stdout|regex_search('^chemcentral-database-credentials-search\s', multiline=True)
 
 # Delete the PVCs...
 
@@ -63,7 +63,7 @@
   shell: oc get pvc -n {{ oc_project }}
   register: pvc_result
   changed_when: False
-  when: squonk_project_exists
+  when: squonk_project_exists|bool
 
 - name: Delete ChemCentral Data Loader PVC (Squonk)
   shell: >
@@ -82,7 +82,7 @@
   shell: >
     oc delete pvc/chemcentral-postgresql-claim
     -n {{ oc_infra_project }}
-  when: pvc_result.stdout | regex_search('^chemcentral-postgresql-claim\s', multiline=True)
+  when: pvc_result.stdout|regex_search('^chemcentral-postgresql-claim\s', multiline=True)
 
 # Delete the PVs (NFS)...
 
@@ -99,4 +99,4 @@
   - pv-chemcentral-loader
   when:
   - oc_cc_infra_volume_type == 'nfs'
-  - pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
+  - pv_result.stdout|regex_search('^%s\s' % item, multiline=True)

@@ -5,12 +5,12 @@
     that:
     - manager_username is defined
     - manager_password is defined
-    - keycloak_server_url is defined
-    - keycloak_realm is defined
+    - oc_keycloak_server_url is defined
+    - oc_keycloak_realm is defined
 
 - name: Set API endpoint
   set_fact:
-    user_endpoint: "{{ keycloak_server_url }}/admin/realms/{{ keycloak_realm }}"
+    user_endpoint: "{{ oc_keycloak_server_url }}/admin/realms/{{ oc_keycloak_realm }}"
 
 - name: Add manager
   uri:

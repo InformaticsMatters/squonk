@@ -1,0 +1,27 @@
+---
+
+# Displays all of our variables known to this Ansible role.
+#
+# See the similarly named task
+# in the "infra" project for more details
+# on how this works.
+
+- name: Collect our variables
+  set_fact:
+    oc_vars: "{{ oc_vars|default({})|combine({item: vars[item]}) }}"
+  with_items: "{{ vars }}"
+  when: item.startswith('oc_')
+
+- name: Collect our Environment
+  set_fact:
+    im_vars: "{{ im_vars|default({})|combine({item: ansible_env[item]}) }}"
+  with_items: "{{ ansible_env }}"
+  when: item.startswith('IM_')
+
+- name: Display environment variables
+  debug:
+    var: im_vars
+
+- name: Display Ansible variables
+  debug:
+    var: oc_vars

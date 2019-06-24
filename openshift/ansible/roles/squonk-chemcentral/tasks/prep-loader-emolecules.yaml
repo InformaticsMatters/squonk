@@ -19,7 +19,7 @@
 
 - name: Delete Pre-Exisiting Loader Prep
   shell: oc delete all,cm,pvc,secrets --selector template=prep-loader-emolecules
-  when: jobs_result.stdout | regex_search('^chemcentral-prep-loader-emolecules\s', multiline=True)
+  when: jobs_result.stdout|regex_search('^chemcentral-prep-loader-emolecules\s', multiline=True)
 
 - name: Run Pre-Loader
   shell: >
@@ -32,7 +32,7 @@
 - name: Wait for loader preparation
   shell: oc describe jobs/chemcentral-prep-loader-emolecules | grep '1 Succeeded'  | grep 1
   delay: 10
-  retries: "{{ (pod_ready_timeout | int / 10) | int }}"
+  retries: "{{ (oc_pod_ready_timeout | int / 10) | int }}"
   register: result
   until: result.rc == 0
   changed_when: False

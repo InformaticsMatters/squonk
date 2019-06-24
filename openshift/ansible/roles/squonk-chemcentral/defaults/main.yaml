@@ -1,10 +1,10 @@
 ---
 
 # Misc variables...
-pv_name: pv-chemcentral-postgresql
-pvc_name: chemcentral-postgresql-claim
-data_loader_pv_name: pv-chemcentral-loader
-data_loader_pvc_name: chemcentral-data-loader-pvc
+oc_cc_pv_name: pv-chemcentral-postgresql
+oc_cc_pvc_name: chemcentral-postgresql-claim
+oc_cc_data_loader_pv_name: pv-chemcentral-loader
+oc_cc_data_loader_pvc_name: chemcentral-data-loader-pvc
 
 # Parameters for the ChemCentral Loader.
 #
@@ -17,23 +17,23 @@ data_loader_pvc_name: chemcentral-data-loader-pvc
 # - EMoleculesBBSmilesLoader
 # - EnamineRealDsiLoader
 # - MolportSmilesLoader
-loader_class: MolportSmilesLoader
+oc_cc_loader_class: MolportSmilesLoader
 # The file (used by single-file loaders)
-loader_file: Undefined
+oc_cc_loader_file: Undefined
 # The loader base directory and file pattern
 # (for Molport-like multi-file loaders).
 #
 # The pattern is a reg-ex,
 # typically something like: iis_smiles\\-.*\\.txt\\.gz
-loader_dir: molport-2018-08
-loader_pattern: iis_smiles\\-.*\\.txt\\.gz
+oc_cc_loader_dir: molport-2018-08
+oc_cc_loader_pattern: iis_smiles\\-.*\\.txt\\.gz
 # The number of molecules to load (0 == all)
-loader_limit: 0
+oc_cc_loader_limit: 0
 # The identity of the loader (any string value).
 # This is used to uniquely identify loader Jobs
 # so Jobs with the same marker are prevented
 # from running at the same time.
-loader_marker: a
+oc_cc_loader_marker: a
 
 # The ChemCentral Service Account
 # in the Infrastructure project
@@ -44,7 +44,7 @@ oc_cc_infra_sa: chemcentral-postgres
 # in a 'Released' state. Note: it is the user's responsibility
 # to protect themselves for data loss here. This will inspect the
 # "state" of all PVs in the squonk *and* infrastructure projects.
-recycle_released_pvs: yes
+oc_recycle_released_pvs: yes
 
 # What volume type are we using? One of: -
 #

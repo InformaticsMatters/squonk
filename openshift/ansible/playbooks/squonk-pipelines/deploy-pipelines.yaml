@@ -11,4 +11,4 @@
   roles:
   - role: squonk-pipelines
     vars:
-      origin: pipelines
+      oc_p_origin: pipelines

@@ -17,7 +17,7 @@
     url: "{{ je_rest_v1 }}/jobs/{{ job_id }}/status"
     headers:
       Authorization: bearer {{ je.json.access_token }}
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
   register: resp
   until: resp.json.status in ['RESULTS_READY', 'ERROR']
   delay: 10
@@ -45,4 +45,4 @@
     method: DELETE
     headers:
       Authorization: bearer {{ je.json.access_token }}
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"

@@ -14,7 +14,7 @@
 
 - name: Get Temporary JE Access Token
   uri:
-    url: "{{ keycloak_server_url}}/realms/{{ keycloak_realm }}/protocol/openid-connect/token"
+    url: "{{ oc_keycloak_server_url}}/realms/{{ oc_keycloak_realm }}/protocol/openid-connect/token"
     body:
     - ['grant_type', 'password']
     - ['client_id', '{{ oc_jobexecutor_client }}']
@@ -22,7 +22,7 @@
     - ['password', '{{ user1_password }}']
     body_format: form-urlencoded
     method: POST
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
   register: je
 
 - name: Display access token
@@ -49,7 +49,7 @@
     method: DELETE
     headers:
       Authorization: bearer {{ je.json.access_token }}
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
   changed_when: true
   loop: "{{ resp | json_query('json[?status==`RESULTS_READY`].jobId') | flatten }}"
 
@@ -59,6 +59,6 @@
     method: DELETE
     headers:
       Authorization: bearer {{ je.json.access_token }}
-    validate_certs: "{{ validate_certificates }}"
+    validate_certs: "{{ oc_validate_certificates }}"
   changed_when: true
   loop: "{{ resp | json_query('json[?status==`ERROR`].jobId') | flatten }}"

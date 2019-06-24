@@ -14,7 +14,7 @@
 
 - name: Set job-name fact
   set_fact:
-    job_name: "{{ sd_poster[origin].job_name }}"
+    job_name: "{{ oc_p_sd_poster[oc_p_origin].job_name }}"
   changed_when: False
 
 - name: Display job-name
@@ -36,16 +36,16 @@
     oc process
     -f {{ role_path }}/files/post-service-descriptors.yaml
     -p POSTER_SA={{ oc_project_sa }}
-    -p POSTER_IMAGE={{ sd_poster[origin].image }}
-    -p POSTER_IMAGE_TAG={{ sd_poster[origin].tag }}
+    -p POSTER_IMAGE={{ oc_p_sd_poster[oc_p_origin].image }}
+    -p POSTER_IMAGE_TAG={{ oc_p_sd_poster[oc_p_origin].tag }}
     -p POSTER_JOB_NAME={{ job_name }}
-    -p PULL_POLICY={{ image_pull_policy }}
+    -p PULL_POLICY={{ oc_image_pull_policy }}
     | oc create -f -
 
 - name: Wait for SD poster success
   shell: oc describe jobs/{{ job_name }} | grep '1 Succeeded'  | grep 1
   delay: 10
-  retries: "{{ (pod_ready_timeout|int / 10)|int }}"
+  retries: "{{ (oc_pod_ready_timeout|int / 10)|int }}"
   register: result
   until: result.rc == 0
   changed_when: False

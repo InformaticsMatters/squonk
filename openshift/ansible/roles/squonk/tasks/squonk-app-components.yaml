@@ -24,7 +24,7 @@
     -f {{ role_path }}/files/squonk-app-components.yaml
     -p APP_NAMESPACE={{ oc_project }}
     -p APP_SA={{ oc_project_sa }}
-    -p PULL_POLICY={{ image_pull_policy }}
+    -p PULL_POLICY={{ oc_image_pull_policy }}
     -p FLYWAY_IMAGE_TAG={{ oc_squonk_flyway_image_tag }}
     -p CHEM_IMAGE_TAG={{ oc_squonk_chem_image_tag }}
     -p CORE_IMAGE_TAG={{ oc_squonk_core_image_tag }}
@@ -52,10 +52,10 @@
 - name: Wait for Squonk Pods
   shell: oc get po | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
   delay: 20
-  retries: "{{ (pod_ready_timeout | int / 20) | int }}"
+  retries: "{{ (oc_pod_ready_timeout | int / 20) | int }}"
   register: result
   until: result.rc == 0
-  when: wait_for_pods
+  when: oc_wait_for_pods|bool
   loop:
   - cellexecutor
   - coreservices
@@ -71,11 +71,10 @@
 - name: Wait for Postgres migration
   shell: oc describe jobs/{{ item }} | grep '1 Succeeded'  | grep 1
   delay: 10
-  retries: "{{ (pod_ready_timeout | int / 10) | int }}"
+  retries: "{{ (oc_pod_ready_timeout | int / 10) | int }}"
   register: result
   until: result.rc == 0
-  when:
-  - wait_for_pods
+  when: oc_wait_for_pods|bool
   loop:
   - postgres-migrate
   changed_when: False
