@@ -67,7 +67,7 @@ The playbooks for posting pipelines to Squonk are in this project.
 There is one role, shared with each set of pipelines that can be posted.
 
 >   The details of each postable pipeline is defined in the `default/main.yaml`
-    file of the `squonk-pipleines` role. There you'll find a map detailing
+    file of the `squonk-pipelines` role. There you'll find a map detailing
     image and tags names of each pipelines image-posting container.
 
 Deployment of the 'public' pipelines is achieved with the following
