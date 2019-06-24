@@ -45,13 +45,14 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
     private static final Logger LOG = Logger.getLogger(AbstractContainerStep.class.getName());
 
     protected Float containerExecutionTime = null;
+    protected ContainerRunner containerRunner = null;
 
     @Override
     public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
 
         statusMessage = MSG_PREPARING_CONTAINER;
         DefaultServiceDescriptor dsd = getDefaultServiceDescriptor();
-        ContainerRunner containerRunner = prepareContainerRunner();
+        containerRunner = prepareContainerRunner();
 
         Map<String, List<SquonkDataSource>> dataSourcesMap = doExecuteForDataSources(inputs, context, containerRunner, dsd);
         LOG.info("Execution generated " + dataSourcesMap.size() + " outputs");
@@ -84,7 +85,13 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
                 results.put(iod.getName(), variable);
             }
         }
+
         return results;
+    }
+
+    @Override
+    public void doCleanup() {
+        handleCleanup();
     }
 
     protected Map<String, List<SquonkDataSource>> doExecuteForDataSources(
@@ -96,12 +103,10 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
         // create input files
         statusMessage = MSG_PREPARING_INPUT;
 
-        // write the input data
         writeInputs(inputs, descriptor, containerRunner);
 
         handleExecute(containerRunner);
 
-        // handle the outputs
         statusMessage = MSG_PREPARING_OUTPUT;
         Map<String, List<SquonkDataSource>> results = readOutputs(descriptor, containerRunner.getHostWorkDir());
 
@@ -127,6 +132,22 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
             LOG.warning("Execution errors: " + log);
             statusMessage = "Container execution failed";
             throw new RuntimeException("Container execution failed:\n" + log);
+        }
+    }
+
+    protected void handleCleanup() {
+        // This block essentially replicates the actions
+        // In the cleanup() method of ExternalExecutor.java
+        // At some point we might want to rationalise the interfaces.
+        if (containerRunner != null && DEBUG_MODE < 2) {
+            containerRunner.cleanup();
+            LOG.info("Results cleaned up");
+        } else {
+            if (containerRunner == null) {
+                LOG.info("Skipping cleanup (containerRunner=null)");
+            } else {
+                LOG.info("Skipping cleanup (DEBUG_MODE=" + DEBUG_MODE + ")");
+            }
         }
     }
 

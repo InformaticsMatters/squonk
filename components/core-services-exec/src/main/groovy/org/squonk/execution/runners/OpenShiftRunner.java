@@ -491,7 +491,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         super.init();
 
-        LOG.fine("Initialising (hostBaseWorkDir=" + hostBaseWorkDir + ")");
+        LOG.info("Initialising (hostBaseWorkDir=" + hostBaseWorkDir + ")");
 
         // Only permitted on initial (created) state
         if (isRunning != RUNNER_CREATED) {
@@ -502,7 +502,7 @@ public class OpenShiftRunner extends AbstractRunner {
         // The method is here to comply with protocol.
         // The execute() method creates and prepares the dependent objects.
 
-        LOG.fine("Initialised");
+        LOG.info("Initialised");
 
         isRunning = RUNNER_INITIALISED;
 
@@ -746,7 +746,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         isRunning = RUNNER_STOPPING;
 
-        LOG.fine(podName + " (Stopping)");
+        LOG.info(podName + " (Stopping...)");
 
         // Setting 'stopRequested' should cause the 'execute()'
         // method  to complete. We wait here until it does.
@@ -762,7 +762,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         }
 
-        LOG.fine(podName + " (Stopped)");
+        LOG.info(podName + " (Stopped)");
 
         isRunning = RUNNER_STOPPED;
 
@@ -784,34 +784,37 @@ public class OpenShiftRunner extends AbstractRunner {
      */
     public void cleanup() {
 
-        LOG.fine(podName + " (Cleaning up)");
+        LOG.info(podName + " (Cleaning up)");
 
         // Clean up stuff that looks like it needs cleaning up...
 
         // The Job may have failed to get created.
         if (podCreated) {
-            LOG.fine(podName + " (...Pod)");
+            LOG.info(podName + " (deleting Pod...)");
             client.pods()
                     .inNamespace(OS_PROJECT)
                     .withName(podName)
                     .delete();
         }
 
-        // There may not be a PodWatcher, LogWatcher and LogStream
+        // There may not be a PodWatcher, LogWatcher or LogStream
         if (watchObject != null) {
+            LOG.info(podName + " (closing watchObject...)");
             watchObject.close();
         }
         if (logWatch != null) {
+            LOG.info(podName + " (closing logWatch...)");
             logWatch.close();
         }
         if (logStream != null) {
+            LOG.info(podName + " (clearing logStream...)");
             logStream = null;
         }
 
         super.cleanup();
         deleteRecursive(hostWorkDir);
 
-        LOG.fine(podName + " (Cleaned)");
+        LOG.info(podName + " (Cleaned)");
 
     }
 

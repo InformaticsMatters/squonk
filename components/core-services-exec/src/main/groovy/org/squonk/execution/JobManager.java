@@ -459,6 +459,7 @@ public class JobManager implements ExecutorCallback {
         ExternalExecutor executor = executionData.executor;
         if (executor != null) {
             try {
+                LOG.log(Level.INFO, "Invoking executor.cleanup() for jobId " + jobId);
                 executor.cleanup();
                 // set the persisted status to complete
                 jobStatus = updateStatus(jobId, JobStatus.Status.COMPLETED);
@@ -467,8 +468,11 @@ public class JobManager implements ExecutorCallback {
                 // should we retry later?
             } finally {
                 // job complete and state persisted so we can remove it
+                LOG.log(Level.INFO, "removing jobId " + jobId);
                 executionDataMap.remove(jobId);
             }
+        } else {
+            LOG.log(Level.SEVERE, "executor is null");
         }
         return jobStatus;
     }

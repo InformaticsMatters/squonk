@@ -180,10 +180,14 @@ public class CellExecutorRouteBuilder extends RouteBuilder {
             // TODO - review how stats are set
             jobstatusClient.updateStatus(jobid, JobStatus.Status.COMPLETED, statusMessage, numProcessed, numErrors);
             LOG.info("Status updated to COMPLETED");
+
         } catch (Exception e) {
             LOG.log(Level.WARNING, "Failed to execute job " + jobid, e);
             jobstatusClient.updateStatus(jobid, JobStatus.Status.ERROR, "Failed to execute job. " + e.getMessage());
+        } finally {
+            executor.cleanup();
         }
+
     }
 
 }

@@ -279,6 +279,15 @@ public class StepExecutor {
         return null;
     }
 
+    public void cleanup() {
+        Step s = currentStep;
+        if (s == null) {
+            LOG.warning(String.format("currentStep is null"));
+        } else {
+            s.cleanup();
+        }
+    }
+
     public List<Step> getExecutedSteps() {
         return steps;
     }
