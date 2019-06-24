@@ -31,7 +31,7 @@ directory with the command: -
     ansible-playbook playbooks/infra/deploy.yaml
 
 ## Deploying the key application components
-You can run Squonk playbook from this directory with the commands: -
+You can run Squonk's playbooks from this directory with the commands: -
 
     ansible-playbook playbooks/squonk/deploy.yaml
     ansible-playbook playbooks/squonk-chemcentral/deploy.yaml
