@@ -18,15 +18,21 @@ Before running the playbooks: -
     disk provisioning ready for each PV that expects a volume -
     the Ansible playbooks do not setup NFS.
 
-## Deploying the key application components
-If using Minishift see the instructions at the bottom of this page that must be
-executed first to set up the Minishift environment. After that the deployment is
-the same as for OpenShift.
+## Deploying the application's infrastructure components
+The infrastructure contains important components like RabbitMQ, PostgreSQl
+and Keycloak. You can run the infrastructure playbook from this
+directory with the command: -
 
-You can run the infrastructure and Squonk playbook from this
-directory with the commands: -
+>   If using Minishift then please refer to the instructions at the bottom
+    of this page, these must be executed first so that the Minishift
+    environment is configured properly. Once done the deployment from this
+    point forward is the same as for OpenShift.
 
     ansible-playbook playbooks/infra/deploy.yaml
+
+## Deploying the key application components
+You can run Squonk's playbooks from this directory with the commands: -
+
     ansible-playbook playbooks/squonk/deploy.yaml
     ansible-playbook playbooks/squonk-chemcentral/deploy.yaml
 
@@ -61,7 +67,7 @@ The playbooks for posting pipelines to Squonk are in this project.
 There is one role, shared with each set of pipelines that can be posted.
 
 >   The details of each postable pipeline is defined in the `default/main.yaml`
-    file of the `squonk-pipleines` role. There you'll find a map detailing
+    file of the `squonk-pipelines` role. There you'll find a map detailing
     image and tags names of each pipelines image-posting container.
 
 Deployment of the 'public' pipelines is achieved with the following
