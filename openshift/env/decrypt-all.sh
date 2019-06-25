@@ -17,5 +17,5 @@ do
   out_f=site-${f%.vault}
   echo ${out_f}
   ansible-vault decrypt ${f} --output=site-${f%.vault} \
-    --vault-password-file ${PASSWORD_FILE}
+    --vault-password-file ${PASSWORD_FILE} > /dev/null
 done
