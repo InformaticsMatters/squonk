@@ -70,8 +70,8 @@
     oc delete pvc/chemcentral-data-loader-pvc
     -n {{ oc_project }}
   when:
-  - squonk_project_exists
-  - pvc_result.stdout | regex_search('^chemcentral-data-loader-pvc\s', multiline=True)
+  - squonk_project_exists|bool
+  - pvc_result.stdout|regex_search('^chemcentral-data-loader-pvc\s', multiline=True)
 
 - name: Check ChemCentral PVCs (Infrastructure)
   shell: oc get pvc -n {{ oc_infra_project }}

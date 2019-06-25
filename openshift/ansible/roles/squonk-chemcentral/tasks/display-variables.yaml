@@ -2,22 +2,9 @@
 
 # Displays all of our variables known to this Ansible role.
 #
-# Here we rely on: -
-# 1. all Ansible variables starting with "oc_"
-# 2. all environment variables that control Ansible variables starting with "IM_"
-#
-# Not all Ansible variables are fully resolved
-# i.e. to know what value an Ansible variable has when it's based on
-# an environment variable you have to look at the variable and
-#
-# For example...
-#
-# The "oc_admin_password" is defined by the expression: -
-# "{{ ansible_env.IM_ADMIN_PASSWORD | default('admin', true) }}"
-#
-# Here, if IM_ADMIN_PASSWORD is defined in your environment then
-# "oc_admin_password" will be given its value. Otherwise it's
-# given the value "admin".
+# See the similarly named task
+# in the "infra" project for more details
+# on how this works.
 
 - name: Collect our variables
   set_fact:
