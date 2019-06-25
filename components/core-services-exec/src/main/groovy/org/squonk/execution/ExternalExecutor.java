@@ -306,7 +306,7 @@ public class ExternalExecutor extends ExecutableJob {
         // At some point we might want to rationalise the interfaces.
         if (runner != null && DEBUG_MODE < 2) {
             runner.cleanup();
-            LOG.info("Results cleaned up");
+            LOG.info("Results cleaned up (DEBUG_MODE=" + DEBUG_MODE + ")");
         } else {
             if (runner == null) {
                 LOG.info("Skipping cleanup (runner=null)");

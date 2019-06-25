@@ -453,6 +453,9 @@ public class JobManager implements ExecutorCallback {
     public JobStatus cleanupJob(String username, String jobId) {
         ExecutionData executionData = findMyExecutionData(username, jobId);
         if (executionData == null) {
+            LOG.log(Level.INFO,
+                    "Failed to find executiomn data (" +
+                    username + ", " + jobId + ")");
             return null;
         }
         JobStatus jobStatus = null;
@@ -472,7 +475,8 @@ public class JobManager implements ExecutorCallback {
                 executionDataMap.remove(jobId);
             }
         } else {
-            LOG.log(Level.SEVERE, "executor is null");
+            LOG.log(Level.SEVERE,
+                    "executor is null (" + username + ", " + jobId + ")");
         }
         return jobStatus;
     }
@@ -480,12 +484,16 @@ public class JobManager implements ExecutorCallback {
     public JobStatus cancelJob(String username, String jobId) {
         ExecutionData executionData = findMyExecutionData(username, jobId);
         if (executionData == null) {
+            LOG.log(Level.INFO,
+                    "Failed to find executiomn data (" +
+                            username + ", " + jobId + ")");
             return null;
         }
         ExternalExecutor executor = executionData.executor;
         JobStatus jobStatus = null;
         if (executor != null) {
             try {
+                LOG.log(Level.INFO, "Invoking executor.cancel() for jobId " + jobId);
                 executor.cancel();
                 // set the persisted status to cancelled
                 jobStatus = updateStatus(jobId, Status.CANCELLED);
@@ -517,6 +525,7 @@ public class JobManager implements ExecutorCallback {
 
                 // try to cleanup the runner
                 try {
+                    LOG.log(Level.INFO, "Trying to cleanup job " + jobStatus.getJobId());
                     executor.cleanup();
                 } catch (Exception e) {
                     LOG.log(Level.SEVERE, "Failed to cleanup job " + jobStatus.getJobId());
@@ -537,6 +546,7 @@ public class JobManager implements ExecutorCallback {
 
                 // try to cancel the execution
                 try {
+                    LOG.log(Level.INFO, "Trying to cancel job " + jobStatus.getJobId());
                     executor.cancel();
                 } catch (Exception e) {
                     LOG.log(Level.SEVERE, "Failed to terminate job " + jobStatus.getJobId());

@@ -141,7 +141,7 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
         // At some point we might want to rationalise the interfaces.
         if (containerRunner != null && DEBUG_MODE < 2) {
             containerRunner.cleanup();
-            LOG.info("Results cleaned up");
+            LOG.info("Results cleaned up (DEBUG_MODE=" + DEBUG_MODE + ")");
         } else {
             if (containerRunner == null) {
                 LOG.info("Skipping cleanup (containerRunner=null)");
