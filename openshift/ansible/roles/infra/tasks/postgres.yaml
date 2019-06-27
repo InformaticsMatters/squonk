@@ -20,6 +20,7 @@
     oc process
     -f {{ role_path }}/files/postgres.yaml
     -p POSTGRESQL_SHARED_BUFFERS={{ oc_postgresql_shared_buffer_size }}
+    -p POSTGRESQL_IMAGE_STREAM_TAG={{ oc_postgresql_image_stream_tag }}
     -p POSTGRES_SA={{ oc_infra_sa }}
     -p PG_CPU_REQUEST={{ oc_infra_postgresql_cpu_request }}
     -p PG_CPU_LIMIT={{ oc_infra_postgresql_cpu_limit }}
