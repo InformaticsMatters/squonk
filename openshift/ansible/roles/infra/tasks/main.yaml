@@ -37,5 +37,6 @@
 - import_tasks: add-keycloak-realm-manager.yaml
 - import_tasks: add-keycloak-realm-roles.yaml
 
-# Finally, RabbitMQ is part of the infrastructure...
+# Finally, RabbitMQ is (an optional) part of the infrastructure...
 - import_tasks: rabbitmq-deploy.yaml
+  when: oc_rabbitmq_deploy|bool

@@ -4,8 +4,8 @@
 # With dynamic provisioning you only need to provide the PVC and specify
 # the storage class.
 #
-# oc process -f infra-pvc-dynamic.yaml | oc create -n $OC_INFRA_PROJECT -f -
-# oc delete pvc --selector template=infra-pvc-dynamic -n $OC_INFRA_PROJECT
+# oc process -f infra-pvc-dynamic-rabbitmq.yaml | oc create -n $OC_INFRA_PROJECT -f -
+# oc delete pvc --selector template=infra-pvc-dynamic-rabbitmq -n $OC_INFRA_PROJECT
 
 kind: Template
 apiVersion: v1
@@ -15,7 +15,7 @@ metadata:
     description: Infrastructure Persistence using dynamic provisioning
     tags: infra,pv,pvc
 labels:
-  template: infra-pvc-dynamic
+  template: infra-pvc-dynamic-rabbitmq
 
 parameters:
 
@@ -24,9 +24,6 @@ parameters:
 
 - name: RABBITMQ_VOLUME_SIZE
   value: 1Gi
-
-- name: POSTGRESQL_VOLUME_SIZE
-  value: 50Gi
 
 objects:
 
@@ -42,18 +39,4 @@ objects:
     resources:
       requests:
         storage: ${RABBITMQ_VOLUME_SIZE}
-    storageClassName: ${STORAGE_CLASS}
-
-- apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: postgresql-claim
-    labels:
-      application: postgresql
-  spec:
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: "${POSTGRESQL_VOLUME_SIZE}"
     storageClassName: ${STORAGE_CLASS}

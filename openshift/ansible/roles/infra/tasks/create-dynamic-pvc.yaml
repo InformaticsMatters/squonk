@@ -17,15 +17,25 @@
   register: i_pvc_result
   changed_when: False
 
-- name: Create Infrastructure PVCs (dynamic)
+- name: Create PostgreSQL PVCs (dynamic)
   shell: >
     oc process
     -p STORAGE_CLASS={{ oc_infra_volume_storage_class }}
     -p POSTGRESQL_VOLUME_SIZE={{ oc_postgresql_volume_size }}
-    -p RABBITMQ_VOLUME_SIZE={{ oc_rabbitmq_volume_size }}
-    -f {{ role_path }}/files/infra-pvc-dynamic.yaml
+    -f {{ role_path }}/files/infra-pvc-dynamic-postgres.yaml
     | oc create -f -
-  when: not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
+  when: not i_pvc_result.stdout|regex_search('^postgresql-claim\s', multiline=True)
+
+- name: Create RabbitMQ PVCs (dynamic)
+  shell: >
+    oc process
+    -p STORAGE_CLASS={{ oc_infra_volume_storage_class }}
+    -p RABBITMQ_VOLUME_SIZE={{ oc_rabbitmq_volume_size }}
+    -f {{ role_path }}/files/infra-pvc-dynamic-rabbitmq.yaml
+    | oc create -f -
+  when:
+  - oc_rabbitmq_deploy|bool
+  - not i_pvc_result.stdout|regex_search('^rabbitmq-claim\s', multiline=True)
 
 - name: Create Backup PVCs (dynamic)
   shell: >
@@ -36,11 +46,11 @@
     | oc create -f -
   when:
   - oc_infra_backup_hourly_count|int > 0
-  - not i_pvc_result.stdout | regex_search('^postgresql-backup-claim\s', multiline=True)
+  - not i_pvc_result.stdout|regex_search('^postgresql-backup-claim\s', multiline=True)
 
 # Wait for claims to become bound...
 
-- name: Wait for Application PVCs to become Bound (dynamic)
+- name: Wait for PostgreSQL PVCs to become Bound (dynamic)
   shell: >
     oc get pvc/{{ item }} | grep Bound
   delay: 15
@@ -49,9 +59,22 @@
   until: result.rc == 0
   loop:
   - postgresql-claim
+  when:
+  - not i_pvc_result.stdout|regex_search('^postgresql-claim\s', multiline=True)
+  - oc_wait_for_volume_bind|bool
+
+- name: Wait for RabbitMQ PVCs to become Bound (dynamic)
+  shell: >
+    oc get pvc/{{ item }} | grep Bound
+  delay: 15
+  retries: "{{ (oc_pvc_bind_timeout | int / 15) | int }}"
+  register: result
+  until: result.rc == 0
+  loop:
   - rabbitmq-claim
   when:
-  - not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
+  - oc_rabbitmq_deploy|bool
+  - not i_pvc_result.stdout|regex_search('^rabbitmq-claim\s', multiline=True)
   - oc_wait_for_volume_bind|bool
 
 - name: Wait for Backup PVCs to become Bound (dynamic)
