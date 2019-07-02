@@ -1,0 +1,26 @@
+---
+
+# A simple travis CI build script.
+#
+# See: -
+#
+#   https://guides.gradle.org/executing-gradle-builds-on-travisci
+#   https://docs.travis-ci.com/user/languages/java/
+
+language: java
+install: true
+
+jdk:
+- openjdk8
+
+before_cache:
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+  - $HOME/.gradle/caches/
+  - $HOME/.gradle/wrapper/
+
+script:
+- cd components
+- ./gradlew build chemServicesWars -x test
