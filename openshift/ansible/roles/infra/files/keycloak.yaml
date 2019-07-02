@@ -186,19 +186,18 @@ objects:
           - name: sso-x509-jgroups-volume
             mountPath: /etc/x509/jgroups
             readOnly: true
-          livenessProbe:
-            timeoutSeconds: 4
-            initialDelaySeconds: 120
-            failureThreshold: 10
-            periodSeconds: 30
+          readinessProbe:
+            initialDelaySeconds: 20
+            failureThreshold: 20
+            periodSeconds: 10
             httpGet:
               path: /auth/realms/master
               port: 8080
               scheme: HTTP
-          readinessProbe:
-            failureThreshold: 20
-            initialDelaySeconds: 90
-            periodSeconds: 30
+          livenessProbe:
+            initialDelaySeconds: 5
+            failureThreshold: 12
+            periodSeconds: 15
             httpGet:
               path: /auth/realms/master
               port: 8080
