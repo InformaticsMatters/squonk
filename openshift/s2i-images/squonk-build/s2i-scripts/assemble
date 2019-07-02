@@ -22,7 +22,8 @@ if [ -d /tmp/artifacts/cache ]; then
     echo "=-> Restoring cache directory from incremental build."
     ls -la /tmp/artifacts/cache
     mkdir -p ${HOME}/.gradle
-    cp -r /tmp/artifacts/cache/.gradle ${HOME}/.gradle/
+    cp -r /tmp/artifacts/cache/caches ${HOME}/.gradle/caches
+    cp -r /tmp/artifacts/cache/wrapper ${HOME}/.gradle/wrapper
 fi
 
 echo "ls -la HOME"
@@ -41,14 +42,16 @@ popd
 # For incremental builds we move key build files
 # to the /home/squonk/cache directory
 #
-# https://medium.com/cirruslabs/mastering-gradle-caching-and-incremental-builds-37eb1af7fcde
+# Inspired by the notes relating to travis builds at...
+#   https://guides.gradle.org/executing-gradle-builds-on-travisci
 echo "=-> Cleaning artifacts..."
-rm -rf ${HOME}/.gradle/caches/3.5.1/
-find ${HOME}/.gradle/caches/ -name "*.lock" -type f -delete
+rm -f  ${HOME}/.gradle/caches/modules-2/modules-2.lock
+rm -rf ${HOME}/.gradle/caches/*/plugin-resolution/
 
 echo "=-> Copying artifacts to cache..."
 mkdir -p /tmp/cache
-cp -r ${HOME}/.gradle /tmp/cache/
+cp -r ${HOME}/.gradle/caches /tmp/cache/caches
+cp -r ${HOME}/.gradle/wrapper /tmp/cache/wrapper
 ls -la /tmp/cache
 
 echo "=-> Assembled"
