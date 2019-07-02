@@ -14,13 +14,16 @@
   shell: oc get is -n openshift
   register: is_result
   changed_when: False
+  when: oc_keycloak_deploy|bool
 
 - name: Deploy Keycloak Image Stream
   shell: >
     oc create
     -f {{ role_path }}/files/keycloak-image-stream.json
     -n openshift
-  when: not is_result.stdout | regex_search('^keycloak\s', multiline=True)
+  when:
+  - oc_keycloak_deploy|bool
+  - not is_result.stdout | regex_search('^keycloak\s', multiline=True)
 
 # Infrastructure Project
 

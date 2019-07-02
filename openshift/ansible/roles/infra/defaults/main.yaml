@@ -76,6 +76,9 @@ oc_rabbitmq_volume_size: 1Gi
 # "state" of all PVs in the squonk *and* infrastructure projects.
 oc_recycle_released_pvs: yes
 
+# Deploy keycloak?
+oc_keycloak_deploy: yes
+
 # Keycloak default roles.
 # A list of roles that need to be added to Keycloak.
 # Each is also added to the default set of roles for the realm.

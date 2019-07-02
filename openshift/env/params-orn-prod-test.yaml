@@ -1,0 +1,23 @@
+---
+
+# Squonk Ansible parameter adjustments for...
+# OpenRiskNet Production (Test)
+
+oc_master_hostname: 130.238.28.25.nip.io
+oc_routes_basename: 130.238.28.144.nip.io
+
+oc_keycloak_realm: openrisknet
+
+oc_infra_project: test-infra
+oc_infra_project_display_name: Test Infrastructure
+oc_infra_sa: test
+oc_infra_backup_hourly_count: 0
+oc_infra_backup_daily_count: 0
+
+oc_image_pull_policy: Always
+
+oc_postgresql_image_stream_tag: "9.5"
+oc_postgresql_volume_size: 5Gi
+
+oc_rabbitmq_deploy: no
+oc_keycloak_deploy: no
