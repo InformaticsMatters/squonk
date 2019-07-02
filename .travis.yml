@@ -24,4 +24,4 @@ cache:
 
 script:
 - cd components
-- ./gradlew build chemServicesWars --no-daemon -x test
+- gradle build chemServicesWars --no-daemon -x test
