@@ -1,6 +1,7 @@
 ---
 
 # A simple travis CI build script.
+# Used primarily to quickly validate the build prior to the OpenShift CI/CD.
 #
 # See: -
 #
