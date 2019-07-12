@@ -54,7 +54,6 @@ oc_infra_backup_daily_count: 0
 
 oc_infra_project: infra
 oc_infra_project_display_name: The Infrastructure Project
-oc_infra_project_node_selector: region=infra
 oc_infra_sa: infra
 oc_infra_keycloak_app_name: keycloak
 oc_infra_keycloak_svc_name: sso
