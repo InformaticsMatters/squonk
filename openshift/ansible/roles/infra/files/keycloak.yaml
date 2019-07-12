@@ -187,16 +187,16 @@ objects:
             mountPath: /etc/x509/jgroups
             readOnly: true
           readinessProbe:
-            initialDelaySeconds: 20
-            failureThreshold: 20
+            initialDelaySeconds: 120
+            failureThreshold: 6
             periodSeconds: 10
             httpGet:
               path: /auth/realms/master
               port: 8080
               scheme: HTTP
           livenessProbe:
-            initialDelaySeconds: 5
-            failureThreshold: 12
+            initialDelaySeconds: 120
+            failureThreshold: 2
             periodSeconds: 15
             httpGet:
               path: /auth/realms/master
@@ -221,7 +221,7 @@ objects:
           - name: DB_ADDR
             value: db-postgresql
           - name: DB_SERVICE_PREFIX_MAPPING
-            value: "db-postgresql=DB"
+            value: db-postgresql=DB
           - name: DB_JNDI
             value: "${DB_JNDI}"
           - name: DB_SCHEMA

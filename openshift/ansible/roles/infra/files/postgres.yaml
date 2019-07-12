@@ -167,7 +167,7 @@ objects:
               - "-c"
               - pg_isready -h 127.0.0.1 -p 5432
           volumeMounts:
-          - mountPath: "/var/lib/pgsql/data"
+          - mountPath: /var/lib/pgsql/data
             name: postgresql-pvol
           env:
           - name: POSTGRESQL_ADMIN_USERNAME

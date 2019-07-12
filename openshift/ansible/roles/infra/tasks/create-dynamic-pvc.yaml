@@ -42,7 +42,7 @@
     oc process
     -p STORAGE_CLASS={{ oc_infra_volume_storage_class }}
     -p POSTGRESQL_BACKUP_VOLUME_SIZE={{ oc_infra_backup_volume_size }}
-    -f {{ role_path }}/files/infra-backup-pvc-dynamic.yaml
+    -f {{ role_path }}/files/infra-pvc-dynamic-backup.yaml
     | oc create -f -
   when:
   - oc_infra_backup_hourly_count|int > 0
