@@ -20,3 +20,8 @@ oc_image_pull_policy: Always
 oc_postgresql_image_stream_tag: "9.5"
 oc_postgresql_volume_size: 250Gi
 oc_infra_backup_volume_size: 250Gi
+
+oc_squonk_volume_type: nfs
+
+oc_nfs_server: prod-infra.openstacklocal
+oc_nfs_path: /nfs-gp

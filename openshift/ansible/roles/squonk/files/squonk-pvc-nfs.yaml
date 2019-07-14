@@ -21,7 +21,7 @@ parameters:
 - name: APP_NAMESPACE
   value: squonk
 - name: CELL_WORK_PVC_SIZE
-  value: 20Gi
+  value: 10Gi
 
 objects:
 
@@ -31,7 +31,7 @@ objects:
     name: squonk-work-dir-pvc
     namespace: ${APP_NAMESPACE}
   spec:
-    volumeName: squonk-work-dir
+    volumeName: pv-squonk-work-dir
     accessModes:
     - ReadWriteMany
     resources:

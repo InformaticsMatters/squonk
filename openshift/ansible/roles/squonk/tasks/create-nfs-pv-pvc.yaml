@@ -20,7 +20,7 @@
 - name: Check Work Directory PV (in Recycle State)
   fail:
     msg: "Work Directory PV (squonk-work-dir) is in Recycle state"
-  when: s_pv_result.stdout | regex_search('^squonk-work-dir\s+\S+\s+\S+\s+Recycle\s' % data_loader_pv_name, multiline=True)
+  when: s_pv_result.stdout | regex_search('^%s\s+\S+\s+\S+\s+Recycle\s' % oc_pv_squonk_work_dir_name, multiline=True)
 
 - name: Create Squonk PVs
   shell: >
@@ -31,7 +31,7 @@
     -p CELL_WORK_PVC_SIZE={{ oc_cell_work_pvc_size }}
     -f {{ role_path }}/files/squonk-pv-nfs.yaml
     | oc create -f -
-  when: '"squonk-work-dir" not in s_pv_result.stdout'
+  when: 'oc_pv_squonk_work_dir_name not in s_pv_result.stdout'
 
 # Deal with "Released" volumes.
 # Those PVs that are "Released"
@@ -57,11 +57,11 @@
 - name: Wait for PVs to become Available
   shell: oc get pv/{{ item }} | grep Available
   delay: 5
-  retries: "{{ (oc_pv_create_timeout | int / 5) | int }}"
+  retries: "{{ (oc_pv_create_timeout|int / 5)|int }}"
   register: result
   until: result.rc == 0
   loop:
-  - squonk-work-dir
+  - pv-squonk-work-dir
   when: item not in s_pv_result.stdout
   changed_when: False
 

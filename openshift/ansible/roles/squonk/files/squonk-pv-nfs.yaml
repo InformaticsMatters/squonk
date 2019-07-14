@@ -2,37 +2,37 @@
 
 # The Squonk PVs.
 #
-# oc process -f squonk-pv-nfs.yaml | oc create -f -
-# oc delete pv --selector template=squonk-pv-nfs
+# oc process -f pv-squonk-work-dir.yaml | oc create -f -
+# oc delete pv --selector template=pv-squonk-work-dir
 
 kind: Template
 apiVersion: v1
 metadata:
-  name: squonk-persistence-nfs
+  name: pv-squonk-work-dir
   annotations:
     description: Squonk PVs using NFS
     tags: squonk,pv
 labels:
-  template: squonk-pv-nfs
+  template: pv-squonk-work-dir
   app: squonk-app
 
 parameters:
 
 - name: NFS_SERVER
-  value: infra-1
+  value: prod-infra.openstacklocal
 - name: NFS_PATH
-  value: /exports
+  value: /nfs-gp
 - name: APP_NAMESPACE
   value: squonk
 - name: CELL_WORK_PVC_SIZE
-  value: 20Gi
+  value: 10Gi
 
 objects:
 
 - kind: PersistentVolume
   apiVersion: v1
   metadata:
-    name: squonk-work-dir
+    name: pv-squonk-work-dir
   spec:
     capacity:
       storage: ${CELL_WORK_PVC_SIZE}
@@ -41,7 +41,7 @@ objects:
     persistentVolumeReclaimPolicy: Recycle
     nfs:
       server: ${NFS_SERVER}
-      path: ${NFS_PATH}/squonk-work-dir
+      path: ${NFS_PATH}/pv-squonk-work-dir
     claimRef:
       name: squonk-work-dir-pvc
       namespace: ${APP_NAMESPACE}

@@ -86,7 +86,7 @@
 - name: Delete Squonk PVs (nfs)
   shell: oc delete pv/{{ item }}
   loop:
-  - squonk-work-dir
+  - pv-squonk-work-dir
   when:
   - oc_squonk_volume_type == 'nfs'
   - s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
