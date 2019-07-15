@@ -10,7 +10,7 @@
     --insecure-skip-tls-verify=true
   changed_when: False
 
-- name: Check SSO Deployment
+- name: Check Keycloak Deployment
   shell: oc get dc
   register: dc_result
   changed_when: False
