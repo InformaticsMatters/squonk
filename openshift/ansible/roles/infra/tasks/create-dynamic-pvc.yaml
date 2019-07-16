@@ -1,11 +1,11 @@
 ---
 
 - name: Move to Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+  command: oc project {{ oc_infra_project }}
   changed_when: False
 
 - name: Login (user)
-  shell: >
+  command: >
     oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
     --insecure-skip-tls-verify=true
   changed_when: False
@@ -13,7 +13,7 @@
 # Infrastructure claims
 
 - name: Check Infrastructure PVCs (dyanmic)
-  shell: oc get pvc
+  command: oc get pvc
   register: i_pvc_result
   changed_when: False
 
@@ -37,24 +37,12 @@
   - oc_rabbitmq_deploy|bool
   - not i_pvc_result.stdout|regex_search('^rabbitmq-claim\s', multiline=True)
 
-- name: Create Backup PVCs (dynamic)
-  shell: >
-    oc process
-    -p STORAGE_CLASS={{ oc_infra_volume_storage_class }}
-    -p POSTGRESQL_BACKUP_VOLUME_SIZE={{ oc_infra_backup_volume_size }}
-    -f {{ role_path }}/files/infra-pvc-dynamic-backup.yaml
-    | oc create -f -
-  when:
-  - oc_infra_backup_hourly_count|int > 0
-  - not i_pvc_result.stdout|regex_search('^postgresql-backup-claim\s', multiline=True)
-
 # Wait for claims to become bound...
 
 - name: Wait for PostgreSQL PVCs to become Bound (dynamic)
-  shell: >
-    oc get pvc/{{ item }} | grep Bound
+  shell: oc get pvc/{{ item }} | grep Bound
   delay: 15
-  retries: "{{ (oc_pvc_bind_timeout | int / 15) | int }}"
+  retries: "{{ (oc_pvc_bind_timeout|int / 15)|int }}"
   register: result
   until: result.rc == 0
   loop:
@@ -64,10 +52,9 @@
   - oc_wait_for_volume_bind|bool
 
 - name: Wait for RabbitMQ PVCs to become Bound (dynamic)
-  shell: >
-    oc get pvc/{{ item }} | grep Bound
+  shell: oc get pvc/{{ item }} | grep Bound
   delay: 15
-  retries: "{{ (oc_pvc_bind_timeout | int / 15) | int }}"
+  retries: "{{ (oc_pvc_bind_timeout|int / 15)|int }}"
   register: result
   until: result.rc == 0
   loop:
@@ -75,18 +62,4 @@
   when:
   - oc_rabbitmq_deploy|bool
   - not i_pvc_result.stdout|regex_search('^rabbitmq-claim\s', multiline=True)
-  - oc_wait_for_volume_bind|bool
-
-- name: Wait for Backup PVCs to become Bound (dynamic)
-  shell: >
-    oc get pvc/{{ item }} | grep Bound
-  delay: 15
-  retries: "{{ (oc_pvc_bind_timeout | int / 15) | int }}"
-  register: result
-  until: result.rc == 0
-  loop:
-  - postgresql-backup-claim
-  when:
-  - oc_infra_backup_hourly_count|int > 0
-  - not i_pvc_result.stdout | regex_search('^rabbitmq-claim\s', multiline=True)
   - oc_wait_for_volume_bind|bool

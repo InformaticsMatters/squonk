@@ -88,7 +88,7 @@
 - name: Wait for User and Database Job
   shell: oc describe jobs/db-creator | grep '1 Succeeded'
   delay: 20
-  retries: "{{ (oc_pod_ready_timeout | int / 20) | int }}"
+  retries: "{{ (oc_pod_ready_timeout|int / 20)|int }}"
   register: result
   until: result.rc == 0
   changed_when: False

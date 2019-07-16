@@ -22,7 +22,7 @@ parameters:
 - name: STORAGE_CLASS
   value: standard
 
-- name: POSTGRESQL_BACKUP_VOLUME_SIZE
+- name: BACKUP_VOLUME_SIZE
   value: 50Gi
 
 objects:
@@ -38,5 +38,5 @@ objects:
     - ReadWriteOnce
     resources:
       requests:
-        storage: "${POSTGRESQL_BACKUP_VOLUME_SIZE}"
+        storage: "${BACKUP_VOLUME_SIZE}"
     storageClassName: ${STORAGE_CLASS}

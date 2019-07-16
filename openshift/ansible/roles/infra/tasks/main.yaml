@@ -15,10 +15,14 @@
 # NFS volumes...
 - import_tasks: create-nfs-pv-pvc.yaml
   when: oc_infra_volume_type == 'nfs'
+- import_tasks: create-backup-nfs-pv-pvc.yaml
+  when: oc_infra_backup_volume_type == 'nfs'
 # Dynamic volumes...
 - import_tasks: create-dynamic-pvc.yaml
   when: oc_infra_volume_type == 'dynamic'
-# MiniShift volumes...
+- import_tasks: create-backup-dynamic-pvc.yaml
+  when: oc_infra_backup_volume_type == 'dynamic'
+# MiniShift volumes (no backup here)...
 - import_tasks: create-minishift-pvc.yaml
   when: oc_infra_volume_type == 'minishift'
 - import_tasks: patch-minishift.yaml

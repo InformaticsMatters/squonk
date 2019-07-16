@@ -15,6 +15,8 @@
 #   When set to 'none' the user is expected to have provisioned
 #   the persistent volumes and claims suitable for the project.
 oc_infra_volume_type: dynamic
+# And the volume type for infrastructure backups
+oc_infra_backup_volume_type: dynamic
 
 # When using dynamic volumes the storage
 # class needs to be defined...
@@ -52,13 +54,15 @@ oc_infra_backup_hourly_count: 7
 oc_infra_backup_daily_schedule: "37 3 * * *"
 oc_infra_backup_daily_count: 0
 
+oc_infra_backup_nfs_path: /nfs-ib
+oc_infra_backup_nfs_pv_volume: pv-backup-dir
+oc_infra_backup_volume_size: 250Gi
+
 oc_infra_project: infra
 oc_infra_project_display_name: The Infrastructure Project
 oc_infra_sa: infra
 oc_infra_keycloak_app_name: keycloak
 oc_infra_keycloak_svc_name: sso
-
-oc_infra_backup_volume_size: 125Gi
 
 oc_postgresql_image_stream_tag: "10"
 oc_postgresql_volume_size: 125Gi
