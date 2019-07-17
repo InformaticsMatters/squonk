@@ -108,7 +108,11 @@ objects:
                   operator: In
                   values:
                   - app
+
         serviceAccountName: ${APP_SA}
+#        securityContext:
+#          supplementalGroups: [1000]
+
         containers:
         - image: squonk/jobexecutor-keycloak:${JE_IMAGE_TAG}
           name: jobexecutor-keycloak

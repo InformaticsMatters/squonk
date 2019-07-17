@@ -23,21 +23,15 @@ The infrastructure contains important components like RabbitMQ, PostgreSQl
 and Keycloak. You can run the infrastructure playbook from this
 directory with the command: -
 
+>   Remember to first `source` an appropriately crafted
+    `../env/setenv.sh` script first!
+
 >   If using Minishift then please refer to the instructions at the bottom
     of this page, these must be executed first so that the Minishift
     environment is configured properly. Once done the deployment from this
     point forward is the same as for OpenShift.
 
     ansible-playbook playbooks/infra/deploy.yaml
-
-## Deploying the key application components
-You can run Squonk's playbooks from this directory with the commands: -
-
-    ansible-playbook playbooks/squonk/deploy.yaml
-    ansible-playbook playbooks/squonk-chemcentral/deploy.yaml
-
->   Remember to first `source` an appropriately crafted
-    `../env/setenv.sh` script first!
 
 >   If you see an error relating to `../../../env/{{ ansible_env.IM_PARAMETER_FILE }}`
     you've probably not sourced your setenv file or provided a value
@@ -49,7 +43,21 @@ You can run Squonk's playbooks from this directory with the commands: -
     have to do before running any other playbooks.
     See the **Minishift considerations** section at the end of this document.
 
+## Deploying the key application components
+>   At this stage you might need to enable the secure route to Keycloak
+    by setting the corresponding `kubernetes.io/tls-acme:` annotation of the
+    route to `'true'`.
+
+You can run Squonk's playbooks from this directory with the commands: -
+
+    ansible-playbook playbooks/squonk/deploy.yaml
+    ansible-playbook playbooks/squonk-chemcentral/deploy.yaml
+
 ## Adding users
+>   At this stage you might need to enable the secure routes to Squonk
+    by setting the corresponding `kubernetes.io/tls-acme:` annotation of the
+    route to `'true'`.
+
 You can add users from a text file (that contains one user and space-separated
 password per line) 'after-the-fact' by defining the `user_file` playbook
 variable and then limiting the deployment to just the tasks relating to

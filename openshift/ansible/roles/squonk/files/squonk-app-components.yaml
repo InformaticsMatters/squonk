@@ -413,6 +413,8 @@ objects:
                   - app
 
         serviceAccountName: ${APP_SA}
+#        securityContext:
+#          supplementalGroups: [1000]
 
         containers:
         - image: squonk/cellexecutor:${CELL_IMAGE_TAG}
