@@ -31,11 +31,8 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.logging.Logger;
-import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * An OpenShift-based Docker image executor that expects inputs and outputs.
@@ -604,6 +601,13 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withEnv(containerEnv)
                 .withVolumeMounts(volumeMount).build();
 
+        // Here we add supplemental groups to the Pod.
+        // These need to match the supplemental group(s) of
+        // the pods that share the working directory
+        // (i.e. Cell and Job Executor).
+//        PodSecurityContext psc = new PodSecurityContextBuilder()
+//                .withSupplementalGroups(Long.valueOf(1000)).build();
+
         // The Pod, which runs the container image...
         Pod pod = new PodBuilder()
                 .withNewMetadata()
@@ -611,6 +615,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withNamespace(OS_PROJECT)
                 .endMetadata()
                 .withNewSpec()
+//                .withSecurityContext(psc)
                 .withContainers(podContainer)
                 .withServiceAccount(OS_SA)
                 .withRestartPolicy(OS_POD_RESTART_POLICY)
