@@ -602,11 +602,12 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withVolumeMounts(volumeMount).build();
 
         // Here we add supplemental groups to the Pod.
-        // These need to match the supplemental group(s) of
-        // the pods that share the working directory
-        // (i.e. Cell and Job Executor).
-//        PodSecurityContext psc = new PodSecurityContextBuilder()
-//                .withSupplementalGroups(Long.valueOf(1000)).build();
+        // Crucially we need to add our own group as the Pod's
+        // supplemenmtal group - so it can share directories
+        // and any files we create.
+        long gid = new com.sun.security.auth.module.UnixSystem().getGid();
+        PodSecurityContext psc = new PodSecurityContextBuilder()
+                .withSupplementalGroups(gid).build();
 
         // The Pod, which runs the container image...
         Pod pod = new PodBuilder()
@@ -615,7 +616,7 @@ public class OpenShiftRunner extends AbstractRunner {
                 .withNamespace(OS_PROJECT)
                 .endMetadata()
                 .withNewSpec()
-//                .withSecurityContext(psc)
+                .withSecurityContext(psc)
                 .withContainers(podContainer)
                 .withServiceAccount(OS_SA)
                 .withRestartPolicy(OS_POD_RESTART_POLICY)

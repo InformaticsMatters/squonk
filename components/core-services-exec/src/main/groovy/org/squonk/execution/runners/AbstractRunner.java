@@ -115,7 +115,7 @@ public abstract class AbstractRunner implements ContainerRunner {
                 }
             }
             long bytes = Files.copy(content, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            file.setExecutable(executable);
+            file.setExecutable(executable, false);
             return bytes;
         } finally {
             content.close();
