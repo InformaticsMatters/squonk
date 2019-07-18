@@ -74,5 +74,5 @@ objects:
             volumes:
             - name: postgresql-backup-data
               persistentVolumeClaim:
-                claimName: postgresql-backup-claim
+                claimName: infra-backup-claim
             restartPolicy: Never
