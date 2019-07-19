@@ -1,11 +1,11 @@
 ---
 
 - name: Login (user)
-  shell: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
+  command: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 
 - name: Get BuildConfigs
-  shell: oc get bc
+  command: oc get bc
   register: bc_result
   changed_when: False
 

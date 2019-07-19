@@ -20,7 +20,7 @@
 # Run the test ----------------------------------------------------------------
 
 - name: Create Job
-  shell: >-
+  command: >-
     curl -k
     -F 'options={"arg.num":3, "arg.method":"RMSD"}'
     -F 'input_data=@data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data'

@@ -18,7 +18,7 @@
 # Run the test ----------------------------------------------------------------
 
 - name: Create Job
-  shell: >-
+  command: >-
     curl -k
     -F 'options={"skip":2,"count":3}'
     -F 'input_data=@data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data'

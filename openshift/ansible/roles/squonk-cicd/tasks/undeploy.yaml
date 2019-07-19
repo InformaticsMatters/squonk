@@ -12,23 +12,23 @@
       Press Ctrl+c and then "a" if you've changed your mind
 
 - name: Login (admin)
-  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  command: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
 # To un-deploy the CI/CD project, the fastest way is to
 # simply delete the project.
 
 - name: Check Projects
-  shell: oc get projects
+  command: oc get projects
   register: projects_result
   changed_when: False
 
 - name: Delete CI/CD Project
-  shell: oc delete project/{{ oc_cicd_project }}
+  command: oc delete project/{{ oc_cicd_project }}
   when: projects_result.stdout | regex_search('^%s\s.*Active$' % oc_cicd_project, multiline=True)
 
 - name: Wait for CI/CD project deletion
-  shell: oc get projects
+  command: oc get projects
   register: pj_cmd
   retries: 20
   delay: 30
@@ -38,10 +38,10 @@
 # Delete SCC
 
 - name: Check CI/CD SCC
-  shell: oc get scc
+  command: oc get scc
   register: scc_result
   changed_when: False
 
 - name: Delete Infra SCC
-  shell: oc delete scc/scc-squonk-cicd
+  command: oc delete scc/scc-squonk-cicd
   when: scc_result.stdout | regex_search('^scc-squonk-cicd', multiline=True)

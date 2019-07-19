@@ -5,11 +5,11 @@
 # before deploying a new one (and waiting for completion).
 
 - name: Login (user)
-  shell: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
+  command: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 
 - name: Move to Squonk Project
-  shell: oc project {{ oc_project }}
+  command: oc project {{ oc_project }}
   changed_when: False
 
 - name: Set job-name fact
@@ -23,12 +23,12 @@
   changed_when: False
 
 - name: Get jobs
-  shell: oc get jobs
+  command: oc get jobs
   register: jobs_result
   changed_when: False
 
 - name: Delete existing SD poster job
-  shell: oc delete jobs/{{ job_name }}
+  command: oc delete jobs/{{ job_name }}
   when: jobs_result.stdout | regex_search('^%s ' % job_name, multiline=True)
 
 - name: Run SD poster job (always)
