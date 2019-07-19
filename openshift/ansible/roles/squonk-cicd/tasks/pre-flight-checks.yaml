@@ -7,6 +7,9 @@
 - name: Check secrets aren't using their default values
   assert:
     that:
+    - oc_cicd_cxn_maven_user|length > 0
     - oc_cicd_cxn_maven_user != 'SetMe'
+    - oc_cicd_cxn_maven_password|length > 0
     - oc_cicd_cxn_maven_password != 'SetMe'
+    - oc_cicd_trigger_secret|length > 0
     - oc_cicd_trigger_secret != 'SetMe'
