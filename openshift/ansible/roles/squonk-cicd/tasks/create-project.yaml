@@ -2,7 +2,7 @@
 
 # Preparation and project creation for Squonk CI/CD.
 
-- name: Login (user)
+- name: Login (user) ({{ oc_master_url }})
   command: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 

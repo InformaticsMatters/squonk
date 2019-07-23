@@ -2,7 +2,7 @@
 
 # Preparation and project creation for Squonk.
 
-- name: Login (user)
+- name: Login (user) ({{ oc_master_url }})
   shell: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 
