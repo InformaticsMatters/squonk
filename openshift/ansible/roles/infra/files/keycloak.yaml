@@ -188,16 +188,20 @@ objects:
             readOnly: true
           readinessProbe:
             initialDelaySeconds: 120
-            failureThreshold: 6
+            failureThreshold: 12
             periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 4
             httpGet:
               path: /auth/realms/master
               port: 8080
               scheme: HTTP
           livenessProbe:
-            initialDelaySeconds: 120
+            initialDelaySeconds: 240
             failureThreshold: 2
             periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 4
             httpGet:
               path: /auth/realms/master
               port: 8080
