@@ -1,11 +1,11 @@
 ---
 
 - name: Login (user)
-  shell: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
+  command: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 
 - name: Move to Squonk Project
-  shell: oc project {{ oc_project }}
+  command: oc project {{ oc_cc_project }}
   changed_when: False
 
 # Load data into the ChemCentral database.
@@ -16,7 +16,7 @@
 # so the rest is up to you...
 
 - name: Check Jobs
-  shell: oc get jobs
+  command: oc get jobs
   register: jobs_result
   changed_when: False
 
@@ -36,8 +36,8 @@
   shell: >
     oc process
     -f {{ role_path }}/files/loader.yaml
-    -p APP_NAMESPACE={{ oc_project }}
-    -p APP_SA={{ oc_project_sa }}
+    -p APP_NAMESPACE={{ oc_cc_project }}
+    -p APP_SA={{ oc_cc_sa }}
     -p LOADER_CLASS=org.squonk.rdkit.db.loaders.{{ oc_cc_loader_class }}
     -p LOADER_FILE={{ oc_cc_loader_file }}
     -p LOADER_MARKER={{ oc_cc_loader_marker }}
@@ -51,8 +51,8 @@
   shell: >
     oc process
     -f {{ role_path }}/files/loader.yaml
-    -p APP_NAMESPACE={{ oc_project }}
-    -p APP_SA={{ oc_project_sa }}
+    -p APP_NAMESPACE={{ oc_cc_project }}
+    -p APP_SA={{ oc_cc_sa }}
     -p LOADER_CLASS=org.squonk.rdkit.db.loaders.{{ oc_cc_loader_class }}
     -p LOADER_DIR={{ oc_cc_loader_dir }}
     -p LOADER_PATTERN={{ oc_cc_loader_pattern }}

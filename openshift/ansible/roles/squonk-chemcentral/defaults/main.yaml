@@ -1,5 +1,12 @@
 ---
 
+# Deployment project
+oc_cc_project: squonk-chemcentral
+oc_cc_project_display_name: Squonk ChemCentral Search
+
+# The ChemCentral Service Account
+oc_cc_sa: chemcentral
+
 # Misc variables...
 oc_cc_pv_name: pv-chemcentral-postgresql
 oc_cc_pvc_name: chemcentral-postgresql-claim
@@ -34,10 +41,6 @@ oc_cc_loader_limit: 0
 # so Jobs with the same marker are prevented
 # from running at the same time.
 oc_cc_loader_marker: a
-
-# The ChemCentral Service Account
-# in the Infrastructure project
-oc_cc_infra_sa: chemcentral-postgres
 
 # Here PVs used by the application (the squonk-work-dir for example)
 # are returned to an 'Available' state if they're currently

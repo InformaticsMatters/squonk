@@ -3,25 +3,25 @@
 # Deploy the ChemCentral database
 
 - name: Login (admin)
-  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  command: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
-- name: Move to Squonk Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+- name: Move to ChemCentral Search Project
+  command: oc project {{ oc_cc_project }}
   changed_when: False
 
-- name: Check ChemCentral Deployment
-  shell: oc get dc
+- name: Check ChemCentral Search Deployment
+  command: oc get dc
   register: dc_result
   changed_when: False
 
-- name: Create ChemCentral Database
+- name: Create ChemCentral Search Database
   shell: >
     oc process
     -f {{ role_path }}/files/chemcentral-db.yaml
-    -p DB_NAMESPACE={{ oc_infra_project }}
-    -p APP_NAMESPACE={{ oc_project }}
-    -p APP_SA={{ oc_cc_infra_sa }}
+    -p DB_NAMESPACE={{ oc_cc_project }}
+    -p APP_NAMESPACE={{ oc_cc_project }}
+    -p APP_SA={{ oc_cc_sa }}
     -p CCDB_CPU_REQUEST={{ oc_cc_postgresql_cpu_request }}
     -p CCDB_MEM_REQUEST={{ oc_cc_postgresql_mem_request }}
     | oc create -f -
@@ -29,10 +29,10 @@
 
 # Wait for running pods...
 
-- name: Wait for ChemCentral Database
+- name: Wait for ChemCentral Search Database
   shell: oc get po | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
   delay: 20
-  retries: "{{ (oc_pod_ready_timeout | int / 20) | int }}"
+  retries: "{{ (oc_pod_ready_timeout|int / 20)|int }}"
   register: result
   until: result.rc == 0
   loop:

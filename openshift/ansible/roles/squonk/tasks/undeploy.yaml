@@ -14,11 +14,11 @@
       Hit Ctrl+c and then "a" if you've changed your mind
 
 - name: Login (admin)
-  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  command: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
 - name: Check Squonk Project
-  shell: oc get projects
+  command: oc get projects
   register: projects_result
   changed_when: False
 
@@ -30,28 +30,19 @@
 # If so then you must un-deploy that first
 
 - name: Get Squonk Pods
-  shell: oc get po
+  command: oc get po
   register: pods_result
   when: squonk_project_exists|bool
-
-- name: Check ChemCentral Deployment
-  fail:
-    msg: >-
-      ChemCentral appears to be deployed.
-      You must remove ChemCentral first.
-  when:
-  - squonk_project_exists|bool
-  - pods_result.stdout|regex_search('^chemcentral', multiline=True)
 
 # To un-deploy squonk, the fastest way is to
 # simply delete the squonk project.
 
 - name: Delete Squonk Project
-  shell: oc delete project/{{ oc_project }}
+  command: oc delete project/{{ oc_project }}
   when: squonk_project_exists|bool
 
 - name: Wait for project deletion
-  shell: oc get projects
+  command: oc get projects
   register: pj_cmd
   retries: 20
   delay: 30
@@ -61,30 +52,30 @@
 # Delete SCC
 
 - name: Check Squonk SCC
-  shell: oc get scc
+  command: oc get scc
   register: scc_result
   changed_when: False
 
 - name: Delete Squonk SCC
-  shell: oc delete scc/scc-squonk
+  command: oc delete scc/scc-squonk
   when: scc_result.stdout|regex_search('^scc-squonk', multiline=True)
 
 # Now undo the stuff in the infrastructure project...
 
 - name: Move to Squonk Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+  command: oc project {{ oc_infra_project }}
   changed_when: False
 
 # Remove persistent volumes
 
 - name: Check Squonk PVs (nfs)
-  shell: oc get pv
+  command: oc get pv
   register: s_pv_result
   changed_when: False
   when: oc_squonk_volume_type == 'nfs'
 
 - name: Delete Squonk PVs (nfs)
-  shell: oc delete pv/{{ item }}
+  command: oc delete pv/{{ item }}
   loop:
   - pv-squonk-work-dir
   when:
@@ -92,12 +83,12 @@
   - s_pv_result.stdout | regex_search('^%s\s' % item, multiline=True)
 
 - name: Get jobs
-  shell: oc get jobs
+  command: oc get jobs
   register: job_result
   changed_when: False
 
 - name: Delete Jobs
-  shell: oc delete job/{{ item }}
+  command: oc delete job/{{ item }}
   loop:
   - db-creator
   - squonk-rabbitmq-creator
@@ -105,7 +96,7 @@
   when: job_result.stdout | regex_search('^%s\s' % item, multiline=True)
 
 - name: Wait for Jobs to Terminate
-  shell: oc get jobs
+  command: oc get jobs
   register: j_cmd
   delay: 10
   retries: "{{ (oc_pod_terminate_timeout | int / 10) | int }}"
@@ -117,12 +108,12 @@
   changed_when: False
 
 - name: Get ConfigMaps
-  shell: oc get configmaps
+  command: oc get configmaps
   register: cm_result
   changed_when: False
 
 - name: Delete ConfigMaps
-  shell: oc delete cm/{{ item }}
+  command: oc delete cm/{{ item }}
   loop:
   - db-creator
   - squonk-rabbitmq-config
@@ -133,7 +124,7 @@
 # Caution - this deletes the database as well as the user.
 
 - name: Remove prior temporary Objects (Infrastructure)
-  shell: oc delete all,cm --selector template=db-delete
+  command: oc delete all,cm --selector template=db-delete
   when: oc_delete_database|bool
 
 - name: Delete Squonk DB

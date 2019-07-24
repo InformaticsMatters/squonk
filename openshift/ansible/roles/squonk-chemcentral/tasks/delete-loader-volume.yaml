@@ -1,18 +1,17 @@
 ---
 
 - name: Move to Squonk Project
-  shell: oc project {{ oc_project }}
+  command: oc project {{ oc_cc_project }}
   changed_when: False
 
 # Check/Delete PVCs
 
 - name: Check Loader PVCs (dynamic)
-  shell: oc get pvc
+  command: oc get pvc
   register: i_pvc_result
   changed_when: False
 
 - name: Delete Loader PVCs (dynamic)
-  shell: >
-    oc delete pvc/{{ oc_cc_data_loader_pvc_name }}
+  command: oc delete pvc/{{ oc_cc_data_loader_pvc_name }}
   when: i_pvc_result.stdout|regex_search('^%s\s' % oc_cc_data_loader_pvc_name, multiline=True)
 

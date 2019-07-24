@@ -3,15 +3,15 @@
 # Deploy the ChemCentral Search Component.
 
 - name: Login (user)
-  shell: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
+  command: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 
 - name: Move to Squonk Project
-  shell: oc project {{ oc_project }}
+  command: oc project {{ oc_cc_project }}
   changed_when: False
 
-- name: Check ChemCentral Deployment
-  shell: oc get dc
+- name: Check ChemCentral Search Deployment
+  command: oc get dc
   register: dc_result
   changed_when: False
 
@@ -19,8 +19,8 @@
   shell: >
     oc process
     -f {{ role_path }}/files/chemcentral-search.yaml
-    -p APP_NAMESPACE={{ oc_project }}
-    -p APP_SA={{ oc_project_sa }}
+    -p APP_NAMESPACE={{ oc_cc_project }}
+    -p APP_SA={{ oc_cc_sa }}
     -p SEARCH_IMAGE_TAG={{ oc_squonk_search_image_tag }}
     -p CCS_CPU_REQUEST={{ oc_cc_search_cpu_request }}
     -p CCS_MEM_REQUEST={{ oc_cc_search_mem_request }}
@@ -30,9 +30,9 @@
 # Wait for running pods...
 
 - name: Wait for ChemCentral Search
-  shell: oc get po -n {{ oc_project }} | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
+  shell: oc get po -n {{ oc_cc_project }} | grep {{ item }} | grep -v deploy | grep 1/1 > /dev/null
   delay: 20
-  retries: "{{ (oc_pod_ready_timeout | int / 20) | int }}"
+  retries: "{{ (oc_pod_ready_timeout|int / 20)|int }}"
   register: result
   until: result.rc == 0
   loop:

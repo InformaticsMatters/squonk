@@ -2,11 +2,11 @@
 
 # Just run these plays...
 
-- import_tasks: pre-flight-checks.yaml
+- import_tasks: create-project.yaml
 - import_tasks: create-service-account.yaml
 
 # Some diagnostic debug...
-- name: Display squonk volume configuration
+- name: Display volume configuration
   debug:
     msg: >-
       volume_type={{ oc_cc_infra_volume_type }}

@@ -1,17 +1,15 @@
 ---
 
-# Infrastructure claims
-
-- name: Move to Squonk Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+- name: Move to Squonk ChemCentral Search Project
+  command: oc project {{ oc_cc_project }}
   changed_when: False
 
-- name: Check Infrastructure PVCs (minishift)
-  shell: oc get pvc
+- name: Check Databse PVCs (minishift)
+  command: oc get pvc
   register: i_pvc_result
   changed_when: False
 
-- name: Create Infrastructure PVCs (minishift)
+- name: Create Databse PVCs (minishift)
   shell: >
     oc process
     -p POSTGRESQL_VOLUME_SIZE={{ oc_cc_postgresql_volume_size }}
@@ -21,29 +19,22 @@
 
 # Wait for claims to become bound...
 
-- name: Wait for Infrastructure PVCs to become Bound (minishift)
-  shell: >
-    oc get pvc/{{ item }} | grep Bound
+- name: Wait for Database PVCs to become Bound (minishift)
+  shell: oc get pvc/{{ item }} | grep Bound
   delay: 15
-  retries: "{{ (oc_pvc_bind_timeout | int / 15) | int }}"
+  retries: "{{ (oc_pvc_bind_timeout|int / 15)|int }}"
   register: result
   until: result.rc == 0
   loop:
   - chemcentral-postgresql-claim
   when: not i_pvc_result.stdout|regex_search('^chemcentral-postgresql-claim\s', multiline=True)
 
-# Squonk claims
-
-- name: Move to Squonk Project
-  shell: oc project {{ oc_project }}
-  changed_when: False
-
-- name: Check Squonk PVCs (minishift)
-  shell: oc get pvc
+- name: Check Loader PVCs (minishift)
+  command: oc get pvc
   register: i_pvc_result
   changed_when: False
 
-- name: Create Squonk PVCs (minishift)
+- name: Create Loader PVCs (minishift)
   shell: >
     oc process
     -f {{ role_path }}/files/chemcentral-data-loader-pvc-minishift.yaml
@@ -52,11 +43,10 @@
 
 # Wait for claims to become bound...
 
-- name: Wait for Squonk PVCs to become Bound (minishift)
-  shell: >
-    oc get pvc/{{ item }} | grep Bound
+- name: Wait for Loader PVCs to become Bound (minishift)
+  shell: oc get pvc/{{ item }} | grep Bound
   delay: 15
-  retries: "{{ (oc_pvc_bind_timeout | int / 15) | int }}"
+  retries: "{{ (oc_pvc_bind_timeout|int / 15)|int }}"
   register: result
   until: result.rc == 0
   loop:
