@@ -2,6 +2,8 @@
 
 # Just run these plays...
 
+- import_tasks: pre-flight-checks.yaml
+
 - import_tasks: create-project.yaml
 - import_tasks: create-service-account.yaml
 

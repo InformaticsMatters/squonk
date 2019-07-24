@@ -18,16 +18,16 @@ labels:
 
 parameters:
 
-- name: DB_NAMESPACE
+- name: CCDB_NAMESPACE
   description: Namespace for the chemcentral database
   value: squonk-infra
 
-- name: APP_NAMESPACE
+- name: SEARCH_NAMESPACE
   description: Namespace for the chemcentral search service
   value: squonk
 
-- name: APP_SA
-  description: Service Account for the chemcentral search service
+- name: CCDB_SA
+  description: Service Account for the database service
   value: chemcentral-postgres
 
 - name: POSTGRES_IMAGE_TAG
@@ -70,20 +70,20 @@ objects:
   apiVersion: v1
   metadata:
     name: chemcentral-database-credentials
-    namespace: ${DB_NAMESPACE}
+    namespace: ${CCDB_NAMESPACE}
   stringData:
-    host: ${POSTGRES_SERVICE}.${DB_NAMESPACE}.svc
+    host: ${POSTGRES_SERVICE}.${CCDB_NAMESPACE}.svc
     database-admin-user: postgres
     database-admin-password: "${POSTGRES_ADMIN_PASSWORD}"
 
-# secret in the squonk namespace with the chemcentral user credentials
+# secret in the ChemCentral Search namespace with the chemcentral user credentials
 - kind: Secret
   apiVersion: v1
   metadata:
     name: chemcentral-database-credentials-search
-    namespace: ${APP_NAMESPACE}
+    namespace: ${SEARCH_NAMESPACE}
   stringData:
-    host: ${POSTGRES_SERVICE}.${DB_NAMESPACE}.svc
+    host: ${POSTGRES_SERVICE}.${CCDB_NAMESPACE}.svc
     database-name: chemcentral
     database-user: chemcentral
     database-password: "${POSTGRES_CHEMCENTRAL_PASSWORD}"
@@ -96,7 +96,7 @@ objects:
   apiVersion: v1
   metadata:
     name: chemcentral-init-map
-    namespace: ${DB_NAMESPACE}
+    namespace: ${CCDB_NAMESPACE}
   data:
     init-postgres-db.sh: |
       #!/bin/bash
@@ -127,7 +127,7 @@ objects:
   apiVersion: v1
   metadata:
     name: ${POSTGRES_SERVICE}
-    namespace: ${DB_NAMESPACE}
+    namespace: ${CCDB_NAMESPACE}
   spec:
     replicas: 1
     selector:
@@ -150,7 +150,7 @@ objects:
                   values:
                   - app
 
-        serviceAccountName: ${APP_SA}
+        serviceAccountName: ${CCDB_SA}
 
         containers:
         - image: informaticsmatters/rdkit_cartridge:${POSTGRES_IMAGE_TAG}
@@ -205,7 +205,7 @@ objects:
   apiVersion: v1
   metadata:
     name: ${POSTGRES_SERVICE}
-    namespace: ${DB_NAMESPACE}
+    namespace: ${CCDB_NAMESPACE}
   spec:
     ports:
     - name: ${POSTGRES_SERVICE}

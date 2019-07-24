@@ -37,7 +37,7 @@
     oc process
     -f {{ role_path }}/files/loader.yaml
     -p APP_NAMESPACE={{ oc_cc_project }}
-    -p APP_SA={{ oc_cc_sa }}
+    -p APP_SA={{ oc_cc_infra_sa }}
     -p LOADER_CLASS=org.squonk.rdkit.db.loaders.{{ oc_cc_loader_class }}
     -p LOADER_FILE={{ oc_cc_loader_file }}
     -p LOADER_MARKER={{ oc_cc_loader_marker }}
@@ -52,7 +52,7 @@
     oc process
     -f {{ role_path }}/files/loader.yaml
     -p APP_NAMESPACE={{ oc_cc_project }}
-    -p APP_SA={{ oc_cc_sa }}
+    -p APP_SA={{ oc_cc_infra_sa }}
     -p LOADER_CLASS=org.squonk.rdkit.db.loaders.{{ oc_cc_loader_class }}
     -p LOADER_DIR={{ oc_cc_loader_dir }}
     -p LOADER_PATTERN={{ oc_cc_loader_pattern }}

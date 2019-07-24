@@ -26,17 +26,37 @@
     project_exists: "{{ (projects_result.stdout|regex_search('^%s\\s.*Active$' % oc_cc_project, multiline=True) or '')|length > 0 }}"
 
 - name: Delete ChemCentral Project
-  shell: oc delete project/{{ oc_cc_project }}
+  command: oc delete project/{{ oc_cc_project }}
   when: project_exists|bool
 
 - name: Wait for ChemCentral project deletion
-  shell: oc get projects
+  command: oc get projects
   register: pj_cmd
   retries: 20
   delay: 30
   until: not pj_cmd.stdout|regex_search('^%s\s' % oc_cc_project, multiline=True)
   when: project_exists|bool
   changed_when: False
+
+# Infrastructure components...
+
+- name: Delete ChemCentral (Infrastructure)
+  command: >
+    oc delete all,cm,dc,secret --selector template=chemcentral-db
+    -n {{ oc_infra_project }}
+
+# Delete the Infrastructure PVCs...
+
+- name: Check ChemCentral PVCs (Infrastructure)
+  command: oc get pvc -n {{ oc_infra_project }}
+  register: pvc_result
+  changed_when: False
+
+- name: Delete ChemCentral PVC (Infrastructure)
+  command: >
+    oc delete pvc/chemcentral-postgresql-claim
+    -n {{ oc_infra_project }}
+  when: pvc_result.stdout|regex_search('^chemcentral-postgresql-claim\s', multiline=True)
 
 # Delete the PVs (NFS)...
 

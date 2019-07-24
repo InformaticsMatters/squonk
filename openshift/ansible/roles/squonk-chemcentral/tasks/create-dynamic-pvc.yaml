@@ -1,17 +1,17 @@
 ---
 
-- name: Move to Squonk ChemCentral Search Project
-  command: oc project {{ oc_cc_project }}
+- name: Move to Squonk Infrastructure Project
+  command: oc project {{ oc_infra_project }}
   changed_when: False
 
 # Check/Create PVCs
 
-- name: Check Database PVCs (dyanmic)
+- name: Check Infrastructure PVCs (dyanmic)
   command: oc get pvc
   register: i_pvc_result
   changed_when: False
 
-- name: Create Database PVCs (dynamic)
+- name: Create Infrastructure PVCs (dynamic)
   shell: >
     oc process
     -p STORAGE_CLASS={{ oc_cc_volume_storage_class }}
@@ -22,7 +22,7 @@
 
 # Wait for PVCs to become "Bound"...
 
-- name: Wait for Database PVCs to become Bound (dynamic)
+- name: Wait for PVCs to become Bound (dynamic)
   shell: >
     oc get pvc/{{ item }} | grep Bound
   retries: 12
@@ -30,7 +30,7 @@
   register: result
   until: result.rc == 0
   loop:
-  - chemcentral-postgresql-claim
+    - chemcentral-postgresql-claim
   when:
-  - not i_pvc_result.stdout|regex_search('^chemcentral-postgresql-claim\s', multiline=True)
-  - oc_wait_for_volume_bind|bool
+    - not i_pvc_result.stdout|regex_search('^chemcentral-postgresql-claim\s', multiline=True)
+    - oc_wait_for_volume_bind|bool

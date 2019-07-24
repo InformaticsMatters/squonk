@@ -4,8 +4,10 @@
 oc_cc_project: squonk-chemcentral
 oc_cc_project_display_name: Squonk ChemCentral Search
 
-# The ChemCentral Service Account
+# The ChemCentral Service Account (in the ChemCentral project)
 oc_cc_sa: chemcentral
+# The ChemCentral Service Account (in the Infrastructure project)
+oc_cc_infra_sa: chemcentral
 
 # Misc variables...
 oc_cc_pv_name: pv-chemcentral-postgresql

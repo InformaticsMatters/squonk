@@ -1,7 +1,7 @@
 ---
 
-- name: Move to Squonk ChemCentral Search Project
-  command: oc project {{ oc_cc_project }}
+- name: Move to Squonk Infrastructure Project
+  command: oc project {{ oc_infra_project }}
   changed_when: False
 
 # Check/Create PVs
@@ -14,7 +14,7 @@
 - name: Create Infrastructure PVs
   shell: >
     oc process
-    -p INFRA_NAMESPACE={{ oc_cc_project }}
+    -p INFRA_NAMESPACE={{ oc_infra_project }}
     -p NFS_SERVER={{ oc_nfs_server }}
     -p NFS_PATH={{ oc_nfs_path }}
     -p PVC_SIZE={{ oc_cc_postgresql_volume_size }}
@@ -25,13 +25,14 @@
 # Wait for PVs to become "Available"...
 
 - name: Wait for PVs to become Available
-  shell: oc get pv/{{ item }} | grep Available
+  shell: >
+    oc get pv/{{ item }} | grep Available
   retries: 12
   delay: 5
   register: result
   until: result.rc == 0
   loop:
-  - "{{ oc_cc_pv_name }}"
+    - "{{ oc_cc_pv_name }}"
   when: not i_pv_result.stdout|regex_search('^%s\s' % item, multiline=True)
 
 # Deal with "Released" volumes.
@@ -39,7 +40,7 @@
 # must be "Available" to accept new binds...
 
 - name: Check Released volumes
-  shell: oc get pv | grep Released | grep {{ oc_cc_project }}/ | cut -f 1 -d " "
+  shell: oc get pv | grep Released | grep {{ oc_infra_project }}/ | cut -f 1 -d " "
   register: released_vols
   when: oc_recycle_released_pvs|bool
   changed_when: False
@@ -49,7 +50,7 @@
     oc patch pv/{{ item }} --type json
     -p $'- op: remove\n  path: /spec/claimRef'
   with_items:
-  - "{{ released_vols.stdout_lines }}"
+    - "{{ released_vols.stdout_lines }}"
   when: oc_recycle_released_pvs|bool
 
 # Check/Create PVCs
@@ -70,11 +71,12 @@
 # Wait for PVCs to become "Bound"...
 
 - name: Wait for PVCs to become Bound (nfs)
-  shell: oc get pvc/{{ item }} | grep Bound
+  shell: >
+    oc get pvc/{{ item }} | grep Bound
   retries: 12
   delay: 5
   register: result
   until: result.rc == 0
   loop:
-  - "{{ oc_cc_pvc_name }}"
+    - "{{ oc_cc_pvc_name }}"
   when: not i_pvc_result.stdout|regex_search('^%s\s' % item, multiline=True)

@@ -6,7 +6,7 @@
   command: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 
-- name: Move to Squonk Project
+- name: Move to ChemCentral Project
   command: oc project {{ oc_cc_project }}
   changed_when: False
 
