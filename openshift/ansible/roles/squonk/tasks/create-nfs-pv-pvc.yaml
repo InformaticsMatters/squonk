@@ -1,11 +1,11 @@
 ---
 
 - name: Move to Squonk Project
-  shell: oc project {{ oc_project }}
+  command: oc project {{ oc_project }}
   changed_when: False
 
 - name: Login (admin)
-  shell: >
+  command: >
     oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
     --insecure-skip-tls-verify=true
   changed_when: False
@@ -13,7 +13,7 @@
 # Create PVs
 
 - name: Get Squonk PVs
-  shell: oc get pv
+  command: oc get pv
   register: s_pv_result
   changed_when: False
 
@@ -44,7 +44,7 @@
   changed_when: False
 
 - name: Recover Released volumes
-  shell: >
+  command: >
     oc patch pv/{{ item }} --type json
     -p $'- op: remove\n  path: /spec/claimRef'
   with_items:
@@ -68,7 +68,7 @@
 # Create PVCs
 
 - name: Check Squonk PV/PVC (nfs)
-  shell: oc get pvc
+  command: oc get pvc
   register: s_pvc_result
   changed_when: False
 
