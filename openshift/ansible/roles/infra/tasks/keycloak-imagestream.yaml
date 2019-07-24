@@ -1,0 +1,19 @@
+---
+
+# Setup the Keycloak ImageStream
+# in the 'openshift' project...
+
+- name: Check Keycloak Image Stream
+  command: oc get is -n openshift
+  register: is_result
+  changed_when: False
+  when: oc_keycloak_deploy|bool
+
+- name: Deploy Keycloak Image Stream
+  command: >
+    oc create
+    -f {{ role_path }}/files/keycloak-image-stream.json
+    -n openshift
+  when:
+  - oc_keycloak_deploy|bool
+  - not is_result.stdout | regex_search('^keycloak\s', multiline=True)

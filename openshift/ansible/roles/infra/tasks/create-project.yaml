@@ -3,43 +3,26 @@
 # Preparation and project creation for the Infrastructure.
 
 - name: Login (admin) ({{ oc_master_url }})
-  shell: >
+  command: >
     oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
     --insecure-skip-tls-verify=true
   changed_when: False
 
-# Keycloak ImageStream
-
-- name: Check Keycloak Image Stream
-  shell: oc get is -n openshift
-  register: is_result
-  changed_when: False
-  when: oc_keycloak_deploy|bool
-
-- name: Deploy Keycloak Image Stream
-  shell: >
-    oc create
-    -f {{ role_path }}/files/keycloak-image-stream.json
-    -n openshift
-  when:
-  - oc_keycloak_deploy|bool
-  - not is_result.stdout | regex_search('^keycloak\s', multiline=True)
-
 # Infrastructure Project
 
 - name: Login (user)
-  shell: >
+  command: >
     oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
     --insecure-skip-tls-verify=true
   changed_when: False
 
 - name: Check the Infrastructure Project
-  shell: oc get projects
+  command: oc get projects
   register: projects_result
   changed_when: False
 
 - name: Create the Infrastructure Project
-  shell: >
+  command: >
     oc new-project {{ oc_infra_project }}
     --display-name='{{ oc_infra_project_display_name }}'
   when: oc_infra_project not in projects_result.stdout

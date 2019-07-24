@@ -33,9 +33,11 @@
 - import_tasks: postgres-secrets.yaml
 - import_tasks: postgres.yaml
 
+- import_tasks: keycloak-imagestream.yaml
+  when: oc_keycloak_deploy|bool
 - import_tasks: keycloak-secrets.yaml
   when: oc_keycloak_deploy|bool
-- import_tasks: keycloak.yaml
+- import_tasks: keycloak-app.yaml
   when: oc_keycloak_deploy|bool
 - import_tasks: keycloak-route.yaml
   when: oc_keycloak_deploy|bool
