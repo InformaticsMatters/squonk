@@ -117,6 +117,10 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
 
     protected abstract ContainerRunner prepareContainerRunner() throws IOException;
 
+    public ContainerRunner getContainerRunner() {
+        return containerRunner;
+    }
+
     protected void handleExecute(ContainerRunner containerRunner) {
         // run the command
         statusMessage = MSG_RUNNING_CONTAINER;

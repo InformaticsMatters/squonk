@@ -225,7 +225,7 @@ public class ExternalExecutor extends ExecutableJob {
             AbstractStep step = (AbstractStep)cls.newInstance();
             step.configure(jobId, options, serviceDescriptor);
             DefaultServiceRunner serviceRunner = new DefaultServiceRunner(jobId, step, camelContext);
-            this.runner = serviceRunner;
+            runner = serviceRunner;
             updateStatus(Status.RUNNING);
             serviceRunner.execute(data);
             resultsDir = serviceRunner.getHostWorkDir();
@@ -255,6 +255,7 @@ public class ExternalExecutor extends ExecutableJob {
             DefaultDockerExecutorStep step = (DefaultDockerExecutorStep) cls.newInstance();
             step.configure(jobId, options, descriptor);
             Map<String,Object> variables = step.doExecute(data, camelContext);
+            runner = step.getContainerRunner();
             Map<String, List<SquonkDataSource>> outputs = new HashMap<>();
             for (Map.Entry<String,Object> e: variables.entrySet()) {
                 List<SquonkDataSource> dataSources = TypeHandlerUtils.convertVariableToDataSources(e.getValue());
@@ -276,7 +277,8 @@ public class ExternalExecutor extends ExecutableJob {
             DatasetNextflowInDockerExecutorStep step = (DatasetNextflowInDockerExecutorStep) cls.newInstance();
             step.configure(jobId, options, descriptor);
             Map<String, List<SquonkDataSource>> outputs = step.executeForDataSources(data, camelContext);
-            this.results.putAll(outputs);
+            runner = step.getContainerRunner();
+            results.putAll(outputs);
             statusMessage = MSG_PROCESSING_RESULTS_READY;
             updateStatus(Status.RESULTS_READY);
         } else {
