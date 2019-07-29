@@ -1,43 +1,11 @@
 #!/usr/bin/env bash
 
 echo "=-> Assembling..."
-
-echo "id"
-id
-
-echo "ls -la /tmp"
-ls -la /tmp
-echo "ls -la /tmp/artifacts"
-ls -la /tmp/artifacts
-echo "ls -la /tmp/artifacts/cache"
-ls -la /tmp/artifacts/cache
-echo "ls -la /tmp/artifacts/cache/caches"
-ls -la /tmp/artifacts/cache/caches
-echo "ls -la /tmp/src"
-ls -la /tmp/src
-
-echo "echo HOME"
-echo ${HOME}
-
-echo "ls -la ${HOME}/.gradle/caches"
-ls -la ${HOME}/.gradle/caches
-echo "ls -la ${HOME}/.gradle/wrapper"
-ls -la ${HOME}/.gradle/wrapper
-
 if [ -d /tmp/artifacts/cache ]; then
     echo "=-> Restoring cache directory from incremental build."
     mkdir -p ${HOME}/.gradle
     cp -r /tmp/artifacts/cache/caches ${HOME}/.gradle
-    cp -r /tmp/artifacts/cache/wrapper ${HOME}/.gradle
 fi
-
-echo "ls -la ${HOME}/.gradle/caches"
-ls -la ${HOME}/.gradle/caches
-echo "ls -la ${HOME}/.gradle/wrapper"
-ls -la ${HOME}/.gradle/wrapper
-
-echo "ls -la HOME"
-ls -la ${HOME}
 
 # Build the application and its artifacts.
 # S2I places the root of the 'source'
@@ -49,13 +17,6 @@ cd /tmp/src/components
 gradle build chemServicesWars --build-cache --no-daemon -x test
 popd
 
-echo "ls -la ${HOME}/.gradle"
-ls -la ${HOME}/.gradle
-echo "ls -la ${HOME}/.gradle/caches"
-ls -la ${HOME}/.gradle/caches
-echo "ls -la ${HOME}/.gradle/wrapper"
-ls -la ${HOME}/.gradle/wrapper
-
 # For incremental builds we move key build files
 # to the /home/squonk/cache directory
 #
@@ -65,22 +26,9 @@ echo "=-> Cleaning artifacts..."
 rm -f  ${HOME}/.gradle/caches/modules-2/modules-2.lock
 rm -rf ${HOME}/.gradle/caches/*/plugin-resolution/
 
-echo "ls -la ${HOME}/.gradle/caches"
-ls -la ${HOME}/.gradle/caches
-echo "ls -la ${HOME}/.gradle/wrapper"
-ls -la ${HOME}/.gradle/wrapper
-
 echo "=-> Copying artifacts to cache..."
 mkdir -p /tmp/cache
 cp -r ${HOME}/.gradle/caches /tmp/cache/caches
-cp -r ${HOME}/.gradle/wrapper /tmp/cache/wrapper
 ls -la /tmp/cache
-
-echo "ls -la /tmp/cache"
-ls -la /tmp/cache
-echo "ls -la /tmp/cache/caches"
-ls -la /tmp/cache/caches
-echo "ls -la /tmp/cache/wrapper"
-ls -la /tmp/cache/wrapper
 
 echo "=-> Assembled"
