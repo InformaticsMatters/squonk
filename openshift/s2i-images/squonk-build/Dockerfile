@@ -1,4 +1,4 @@
-FROM centos:7
+FROM openjdk:8
 LABEL maintainer="achristie@informaticsmatters.com"
 
 # Install a User --------------------------------------------------------------
@@ -10,18 +10,14 @@ RUN useradd -u 1001 -r -g 0 -d ${HOME} -s /sbin/nologin squonk && \
     mkdir -p ${HOME} && \
     chown -R 1001:0 ${HOME} && chmod -R g+rwX ${HOME}
 
-# Install Java ----------------------------------------------------------------
+# Java Env --------------------------------------------------------------------
 
-# Gradle needs JAVA_HOME but be careful with JAVA_HOME.
-# It might change if you build this container again.
-RUN yum -y install java-1.8.0-openjdk-devel
-ENV JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.201.b09-2.el7_6.x86_64/jre
+# Make JVM respect CPU and RAM limits
+ENV JAVA_OPTS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
 
 # Install Gradle --------------------------------------------------------------
 
 WORKDIR /opt/gradle
-RUN yum -y update && \
-    yum -y install unzip wget
 RUN wget https://services.gradle.org/distributions/gradle-3.5.1-bin.zip && \
     unzip -d /opt/gradle gradle-3.5.1-bin.zip
 ENV PATH=${PATH}:/opt/gradle/gradle-3.5.1/bin
