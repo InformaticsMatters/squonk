@@ -11,18 +11,10 @@ echo "ls -la /tmp/artifacts"
 ls -la /tmp/artifacts
 echo "ls -la /tmp/artifacts/cache"
 ls -la /tmp/artifacts/cache
-echo "ls -la /tmp/artifacts/cache/.gradle"
-ls -la /tmp/artifacts/cache/.gradle
-echo "ls -la /tmp/artifacts/cache/.gradle/caches"
-ls -la /tmp/artifacts/cache/.gradle/caches
-echo "ls -la /tmp/artifacts/cache/.gradle/.gradle"
-ls -la /tmp/artifacts/cache/.gradle/.gradle
-echo "ls -la /tmp/artifacts/cache/.gradle/.gradle/caches"
-ls -la /tmp/artifacts/cache/.gradle/.gradle/caches
+echo "ls -la /tmp/artifacts/cache/caches"
+ls -la /tmp/artifacts/cache/caches
 echo "ls -la /tmp/src"
 ls -la /tmp/src
-echo "ls -la /tmp/cache"
-ls -la /tmp/cache
 
 echo "echo HOME"
 echo ${HOME}
