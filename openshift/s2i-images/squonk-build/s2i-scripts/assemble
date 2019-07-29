@@ -26,10 +26,9 @@ ls -la ${HOME}/.gradle/wrapper
 
 if [ -d /tmp/artifacts/cache ]; then
     echo "=-> Restoring cache directory from incremental build."
-    ls -la /tmp/artifacts/cache
     mkdir -p ${HOME}/.gradle
-    cp -r /tmp/artifacts/cache/.gradle/caches ${HOME}/.gradle
-    cp -r /tmp/artifacts/cache/.gradle/wrapper ${HOME}/.gradle
+    cp -r /tmp/artifacts/cache/caches ${HOME}/.gradle
+    cp -r /tmp/artifacts/cache/wrapper ${HOME}/.gradle
 fi
 
 echo "ls -la ${HOME}/.gradle/caches"
