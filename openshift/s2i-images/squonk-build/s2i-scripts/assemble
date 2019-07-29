@@ -2,7 +2,7 @@
 
 echo "=-> Assembling..."
 if [ -d /tmp/artifacts/cache ]; then
-    echo "=-> Restoring cache directory from incremental build."
+    echo "=-> Restoring cache directory from incremental build..."
     mkdir -p ${HOME}/.gradle
     cp -r /tmp/artifacts/cache/caches ${HOME}/.gradle
 fi
