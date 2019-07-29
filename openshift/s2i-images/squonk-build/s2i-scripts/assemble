@@ -14,7 +14,7 @@ fi
 echo "=-> Building..."
 pushd ${HOME}
 cd /tmp/src/components
-gradle build chemServicesWars --build-cache --no-daemon -x test
+gradle build chemServicesWars --build-cache --no-daemon --quiet -x test
 popd
 
 # For incremental builds we move key build files
