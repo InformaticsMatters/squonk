@@ -29,6 +29,5 @@ rm -rf ${HOME}/.gradle/caches/*/plugin-resolution/
 echo "=-> Copying artifacts to cache..."
 mkdir -p /tmp/cache
 cp -r ${HOME}/.gradle/caches /tmp/cache/caches
-ls -la /tmp/cache
 
 echo "=-> Assembled"
