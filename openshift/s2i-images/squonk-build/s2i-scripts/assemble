@@ -1,33 +1,11 @@
 #!/usr/bin/env bash
 
 echo "=-> Assembling..."
-
-echo "ls -la /tmp"
-ls -la /tmp
-echo "ls -la /tmp/artifacts"
-ls -la /tmp/artifacts
-echo "ls -la /tmp/artifacts/cache"
-ls -la /tmp/artifacts/cache
-echo "ls -la /tmp/artifacts/cache/.gradle"
-ls -la /tmp/artifacts/cache/.gradle
-echo "ls -la /tmp/src"
-ls -la /tmp/src
-echo "ls -la /tmp/cache"
-ls -la /tmp/cache
-
-echo "echo HOME"
-echo ${HOME}
-
 if [ -d /tmp/artifacts/cache ]; then
-    echo "=-> Restoring cache directory from incremental build."
-    ls -la /tmp/artifacts/cache
+    echo "=-> Restoring cache directory from incremental build..."
     mkdir -p ${HOME}/.gradle
-    cp -r /tmp/artifacts/cache/caches ${HOME}/.gradle/caches
-    cp -r /tmp/artifacts/cache/wrapper ${HOME}/.gradle/wrapper
+    cp -r /tmp/artifacts/cache/caches ${HOME}/.gradle
 fi
-
-echo "ls -la HOME"
-ls -la ${HOME}
 
 # Build the application and its artifacts.
 # S2I places the root of the 'source'
@@ -36,7 +14,7 @@ ls -la ${HOME}
 echo "=-> Building..."
 pushd ${HOME}
 cd /tmp/src/components
-gradle build chemServicesWars --build-cache --no-daemon -x test
+gradle build chemServicesWars --build-cache --no-daemon --quiet -x test
 popd
 
 # For incremental builds we move key build files
@@ -51,7 +29,5 @@ rm -rf ${HOME}/.gradle/caches/*/plugin-resolution/
 echo "=-> Copying artifacts to cache..."
 mkdir -p /tmp/cache
 cp -r ${HOME}/.gradle/caches /tmp/cache/caches
-cp -r ${HOME}/.gradle/wrapper /tmp/cache/wrapper
-ls -la /tmp/cache
 
 echo "=-> Assembled"
