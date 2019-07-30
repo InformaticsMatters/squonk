@@ -1,0 +1,25 @@
+---
+
+# Prepares the Ci/CD project.
+
+# In order to use the CI/CI images as a source
+# the Squonk project's service account needs the image-puller role
+# in the CI/CD project.
+
+- name: Get CI/CD role bindings
+  command: oc get rolebindings --namespace={{ oc_cicd_project }} -o json
+  register: rb_cicd
+  changed_when: false
+
+- name: Collect role binding image-puller users
+  set_fact:
+    cicd_image_pullers: "{{ rb_cicd.stdout|from_json|json_query(query)|flatten }}"
+    squonk_sa_user: system:serviceaccount:{{ oc_project }}:{{ oc_project_sa }}
+  vars:
+    query: "items[?roleRef.name.contains(@, 'system:image-puller')].userNames[*]"
+
+- name: Add image-puller role to squonk SA in CI/CD
+  command: >-
+    oc policy add-role-to-user system:image-puller {{ squonk_sa_user }}
+    --namespace={{ oc_cicd_project }}
+  when: squonk_sa_user not in cicd_image_pullers

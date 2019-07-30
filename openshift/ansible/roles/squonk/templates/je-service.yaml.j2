@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: jobexecutor
+  namespace: {{ oc_project }}
+spec:
+  selector:
+    name: jobexecutor-keycloak
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080

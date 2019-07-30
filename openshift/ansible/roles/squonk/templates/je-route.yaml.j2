@@ -1,0 +1,16 @@
+kind: Route
+apiVersion: v1
+metadata:
+  name: jobexecutor
+  namespace: {{ oc_project }}
+  annotations:
+    kubernetes.io/tls-acme: "{{ oc_enable_acme }}"
+spec:
+  host: {{ oc_jobexecutor_host }}
+  path: /jobexecutor
+  to:
+    kind: Service
+    name: jobexecutor
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

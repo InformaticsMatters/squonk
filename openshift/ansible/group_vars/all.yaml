@@ -1,5 +1,10 @@
 ---
 
+# Re-direct the Ansible python interpreter (normally /usr/bin/python)
+# We do this ito cope with the user's virtual-environment,
+# where the python is different.
+ansible_python_interpreter: "{{ lookup('pipe', 'which python') }}"
+
 # Note  Some of the following variables may be duplicated in the 'infra'
 # ----  role's defaults. The de-duplication is necessary as a stand-alone
 #       copy of the the infra role existing in the ORN documentation and we
@@ -86,6 +91,12 @@ oc_squonk_search_image_tag: latest
 oc_squonk_portal_image_tag: latest
 oc_squonk_flyway_image_tag: latest
 
+# Use the ci/cd project as a image origin?
+# If set the deployment expects the squonk-cicd
+# project to exist, where it expects image streams for
+# the main deployments.
+oc_squonk_image_source_cicd: yes
+
 # NFS
 oc_nfs_server: bastion.informaticsmatters.com
 oc_nfs_path: /exports
@@ -104,3 +115,7 @@ oc_validate_certificates: no
 # will be followed by a monitoring step that waits for the
 # expected Pods to initialise before moving on to the next step.
 oc_wait_for_pods: yes
+
+# The Squonk ci/cd project
+oc_cicd_project: squonk-cicd
+oc_cicd_project_display_name: The Squonk CI/CD Build Project
