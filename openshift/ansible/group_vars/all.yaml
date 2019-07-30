@@ -95,7 +95,7 @@ oc_squonk_flyway_image_tag: latest
 # If set the deployment expects the squonk-cicd
 # project to exist, where it expects image streams for
 # the main deployments.
-oc_squonk_image_source_cicd: yes
+oc_squonk_image_source_cicd: no
 
 # NFS
 oc_nfs_server: bastion.informaticsmatters.com
