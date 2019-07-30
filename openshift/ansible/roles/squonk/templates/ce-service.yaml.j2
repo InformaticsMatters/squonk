@@ -1,11 +1,11 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: jobexecutor
+  name: cellexecutor
   namespace: {{ oc_project }}
 spec:
   selector:
-    name: jobexecutor
+    name: cellexecutor
   ports:
   - name: http
     port: 8080

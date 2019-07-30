@@ -1,6 +1,6 @@
 ---
 
-- name: Deploy squonk JobExecutor objects
+- name: Deploy JobExecutor objects
   k8s:
     definition: "{{ lookup('template', item.name)|from_yaml }}"
   loop:

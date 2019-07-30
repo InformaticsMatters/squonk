@@ -1,0 +1,8 @@
+---
+
+- name: Deploy CellExecutor objects
+  k8s:
+    definition: "{{ lookup('template', item.name)|from_yaml }}"
+  loop:
+  - name: ce-service.yaml.j2
+  - name: ce-deployment.yaml.j2

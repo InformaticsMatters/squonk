@@ -31,9 +31,10 @@
 # Install the application
 - import_tasks: squonk-infra-deploy.yaml
 - import_tasks: squonk-app-secrets.yaml
+- import_tasks: squonk-app-ce.yaml
 - import_tasks: squonk-app-components.yaml
-- import_tasks: squonk-app-portal-keycloak.yaml
 - import_tasks: squonk-app-je.yaml
+- import_tasks: squonk-app-portal-keycloak.yaml
 
 # Add users?
 - import_tasks: "{{ role_path }}/../infra/tasks/add-keycloak-realm-users.yaml"
