@@ -43,6 +43,35 @@ directory with the command: -
     have to do before running any other playbooks.
     See the **Minishift considerations** section at the end of this document.
 
+## Deploying the Squonk CI/CD components
+If you want the cluster to also act as the source of images for continuous
+builds driven by changes to the Squonk GitHub repository you should deploy
+the Squonk CI/CD project and its Source-To-Image (s2i) objects: -
+
+    ansible-playbook  playbooks/squonk-cicd/deploy.yaml
+
+Before doing this you will meed to define values for the following
+environment variables, ideally putting them in your vault-protected
+site script in the `env` directory: -
+
+-   IM_SQUONK_CICD_TRIGGER_SECRET
+-   IM_SQUONK_CICD_CXN_MAVEN_USER
+-   IM_SQUONK_CICD_CXN_MAVEN_PASSWORD
+ 
+The `IM_SQUONK_CICD_TRIGGER_SECRET` is used in your GitHub **Payload URL**.
+`<secret>` field. The payload URL is returned when you _describe_ the
+main Squonk build configuration, e.g.: -
+
+    oc project squonk-cicd
+    oc describe bc squonk-build
+    
+Where you will see something like the following (wrapped for readability): -
+
+    Webhook GitHub:
+	URL: https://prod.openrisknet.org:443/apis/build.openshift.io/v1
+	        /namespaces/squonk-cicd/buildconfigs/squonk-build/webhooks
+	        /<secret>/github
+
 ## Deploying the key application components
 >   At this stage you might need to enable the secure route to Keycloak
     by setting the corresponding `kubernetes.io/tls-acme:` annotation of the
@@ -52,6 +81,10 @@ You can run Squonk's playbooks from this directory with the commands: -
 
     ansible-playbook playbooks/squonk/deploy.yaml
     ansible-playbook playbooks/squonk-chemcentral/deploy.yaml
+
+>   If you want the Squonk deployment to be driven by the CI/CD project
+    you should set the cicd variable when deploying Squonk by adding the
+    following to the command-line `-e oc_squonk_image_source_cicd=yes`
 
 ## Adding users
 >   At this stage you might need to enable the secure routes to Squonk

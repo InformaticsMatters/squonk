@@ -27,20 +27,15 @@
     -p PULL_POLICY={{ oc_image_pull_policy }}
     -p FLYWAY_IMAGE_TAG={{ oc_squonk_flyway_image_tag }}
     -p CHEM_IMAGE_TAG={{ oc_squonk_chem_image_tag }}
-    -p CORE_IMAGE_TAG={{ oc_squonk_core_image_tag }}
     -p CHEM_CPU_REQUEST={{ oc_squonk_chem_cpu_request }}
     -p CHEM_MEM_REQUEST={{ oc_squonk_chem_mem_request }}
     -p CHEM_JAVA_TOOL_OPTIONS={{ oc_squonk_chem_java_tool_options }}
-    -p CORE_CPU_REQUEST={{ oc_squonk_core_cpu_request }}
-    -p CORE_MEM_REQUEST={{ oc_squonk_core_mem_request }}
-    -p CORE_JAVA_TOOL_OPTIONS={{ oc_squonk_core_java_tool_options }}
     | oc create -f -
-  when: '"coreservices" not in dc_result.stdout'
+  when: '"chemservices-basic" not in dc_result.stdout'
 
 # Wait for running pods
 # We expect (roughly in order of coming online)...
 #
-#   coreservices
 #   chemservices-basic
 
 - name: Wait for Squonk Pods
@@ -51,7 +46,6 @@
   until: result.rc == 0
   when: oc_wait_for_pods|bool
   loop:
-  - coreservices
   - chemservices-basic
   changed_when: False
 

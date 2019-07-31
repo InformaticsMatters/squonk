@@ -1,0 +1,104 @@
+kind: DeploymentConfig
+apiVersion: v1
+metadata:
+  labels:
+    app: squonk
+  name: coreservices
+  namespace: {{ oc_project }}
+spec:
+  replicas: 1
+  selector:
+    name: coreservices
+
+{# We use an ImageStreamTag trigger if we're using CI/CD,
+   where we pull our image from an image stream in the CI/CD project
+   rather than from Docker hub (see the contra-changes to the
+   container definition below) #}
+{% if oc_squonk_image_source_cicd|bool %}
+  triggers:
+  - type: ImageChange
+    imageChangeParams:
+      automatic: true
+      containerNames:
+      - coreservices
+      from:
+        kind: ImageStreamTag
+        name: coreservices:latest
+        namespace: {{ oc_cicd_project }}
+{% endif %}
+
+  strategy:
+    type: Recreate
+
+  template:
+    metadata:
+      labels:
+        name: coreservices
+    spec:
+
+      # A 'preferred' (not guaranteed)
+      # node selection affinity...
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            preference:
+              matchExpressions:
+              - key: purpose
+                operator: In
+                values:
+                - app
+
+      serviceAccountName: {{ oc_project_sa }}
+
+      containers:
+      - name: coreservices
+{% if not oc_squonk_image_source_cicd|bool %}
+        image: squonk/coreservices:{{ oc_squonk_core_image_tag }}
+        imagePullPolicy: {{ oc_image_pull_policy }}
+{% endif %}
+        env:
+        - name: RABBITMQ_HOSTNAME
+          valueFrom:
+            secretKeyRef:
+              name: squonk-rabbitmq-credentials
+              key: host
+        - name: RABBITMQ_SQUONK_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: squonk-rabbitmq-credentials
+              key: pass
+        - name: POSTGRES_HOSTNAME
+          valueFrom:
+            secretKeyRef:
+              name: squonk-database-credentials
+              key: host
+        - name: POSTGRES_SQUONK_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: squonk-database-credentials
+              key: user-password
+        - name: SQUONK_BASIC_CHEM_SERVICES_URL
+          value: http://chemservices:8080
+        - name: SQUONK_DOCKER_SERVICES_DIR
+          value: /var/local/squonk-docker-services
+        - name: JAVA_TOOL_OPTIONS
+          value: "{{ oc_squonk_core_java_tool_options }}"
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /coreservices/rest/ping
+            port: 8080
+          failureThreshold: 3
+          successThreshold: 1
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 60
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 8Gi
+          requests:
+            cpu: {{ oc_squonk_core_cpu_request }}
+            memory: {{ oc_squonk_core_mem_request }}

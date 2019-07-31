@@ -4,5 +4,5 @@
   k8s:
     definition: "{{ lookup('template', item.name)|from_yaml }}"
   loop:
-  - name: ce-service.yaml.j2
-  - name: ce-deployment.yaml.j2
+  - name: cellexecutor-service.yaml.j2
+  - name: cellexecutor-deployment.yaml.j2

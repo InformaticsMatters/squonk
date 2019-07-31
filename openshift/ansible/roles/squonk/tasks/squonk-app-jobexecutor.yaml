@@ -4,6 +4,6 @@
   k8s:
     definition: "{{ lookup('template', item.name)|from_yaml }}"
   loop:
-  - name: je-service.yaml.j2
-  - name: je-deployment.yaml.j2
-  - name: je-route.yaml.j2
+  - name: jobexecutor-service.yaml.j2
+  - name: jobexecutor-deployment.yaml.j2
+  - name: jobexecutor-route.yaml.j2
