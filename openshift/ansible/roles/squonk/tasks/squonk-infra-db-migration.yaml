@@ -1,0 +1,46 @@
+---
+
+# With infrastructure deployed and initialised
+# we can now continue with Squonk deployment (excluding the Portal)...
+
+- name: Login as The Squonk Developer
+  command: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
+  changed_when: False
+
+- name: Move to Squonk Project
+  command: oc project {{ oc_project }}
+  changed_when: False
+
+# Deploy...
+
+- name: Get Jobs
+  command: oc get jobs
+  register: jobs_result
+  changed_when: False
+
+- name: Start Migration
+  shell: >
+    oc process
+    -f {{ role_path }}/files/squonk-infra-db-migration.yaml
+    -p APP_NAMESPACE={{ oc_project }}
+    -p APP_SA={{ oc_project_sa }}
+    -p PULL_POLICY={{ oc_image_pull_policy }}
+    -p FLYWAY_IMAGE_TAG={{ oc_squonk_flyway_image_tag }}
+    | oc create -f -
+  when: '"postgres-migrate" not in jobs_result.stdout'
+
+# Wait for the migration Pod (a Job) to reach a "Completed" state.
+#
+# As we've probably waited for a long time for the pods above,
+# if it's been successful, waiting for the postgres migration should be a NOP.
+
+- name: Wait for migration
+  shell: oc describe jobs/{{ item }} | grep '1 Succeeded'  | grep 1
+  delay: 10
+  retries: "{{ (oc_pod_ready_timeout | int / 10) | int }}"
+  register: result
+  until: result.rc == 0
+  when: oc_wait_for_pods|bool
+  loop:
+  - postgres-migrate
+  changed_when: False

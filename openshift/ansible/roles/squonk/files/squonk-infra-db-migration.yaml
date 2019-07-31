@@ -1,0 +1,79 @@
+---
+
+# Everything except the Squonk Portal
+#
+# oc adm policy add-cluster-role-to-user cluster-admin -z default
+#
+# oc process -f squonk-app-components.yaml | oc create -f -
+# oc delete all,cm,pvc,routes,secrets --selector template=squonk-app-components
+
+kind: Template
+apiVersion: v1
+metadata:
+  name: squonk
+  annotations:
+    description: Squonk Application Service Definition
+    tags: squonk,core,cellexecutor,chemservices,coreservices,jobexecutor
+labels:
+  template: squonk-app-components
+  app: squonk-app
+
+parameters:
+
+# -------------
+# Configuration
+# -------------
+# Common (not specific to any service)
+
+- name: APP_NAMESPACE
+  value: squonk
+- name: APP_SA
+  value: squonk
+
+- name: PULL_POLICY
+  value: IfNotPresent
+
+# ------
+# Flyway (DB Migration)
+# ------
+
+- name: FLYWAY_IMAGE_TAG
+  value: latest
+
+objects:
+
+# -----------------------------------------------------------------------------
+# Postgres Migration (Job)
+# -----------------------------------------------------------------------------
+
+- kind: Job
+  apiVersion: batch/v1
+  metadata:
+    name: postgres-migrate
+    namespace: ${APP_NAMESPACE}
+  spec:
+    replicas: 1
+    selector:
+      name: postgres-migrate
+    template:
+      metadata:
+        labels:
+          name: postgres-migrate
+      spec:
+        serviceAccountName: ${APP_SA}
+        containers:
+        - name: postgres-migrate
+          image: squonk/flyway:${FLYWAY_IMAGE_TAG}
+          imagePullPolicy: {{ oc_image_pull_policy }}
+          env:
+          - name: POSTGRES_HOSTNAME
+            valueFrom:
+              secretKeyRef:
+                name: squonk-database-credentials
+                key: host
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: squonk-database-credentials
+                key: user-password
+        restartPolicy: OnFailure
