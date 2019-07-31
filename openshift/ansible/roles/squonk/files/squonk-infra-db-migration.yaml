@@ -64,7 +64,7 @@ objects:
         containers:
         - name: postgres-migrate
           image: squonk/flyway:${FLYWAY_IMAGE_TAG}
-          imagePullPolicy: {{ oc_image_pull_policy }}
+          imagePullPolicy: ${PULL_POLICY}
           env:
           - name: POSTGRES_HOSTNAME
             valueFrom:
