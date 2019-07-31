@@ -19,6 +19,8 @@ parameters:
 
 - name: GITHUB_TRIGGER_SECRET
   required: true
+- name: GITHUB_REF
+  value: master
 
 - name: CXN_MAVEN_USER
   required: true
@@ -99,6 +101,7 @@ objects:
     source:
       git:
         uri: https://github.com/InformaticsMatters/squonk.git
+        ref: ${GITHUB_REF}
       type: Git
     strategy:
       sourceStrategy:
