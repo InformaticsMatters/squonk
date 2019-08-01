@@ -17,6 +17,8 @@ image streams.
 The application containers (CellExecutor, CoreServices etc.) monitor the
 their corresponding _runtime_ image streams and re-deploy as they change.
 
+It's worth understanding [chained] builds and other advanced build operations.
+
 ## Deploying the s2i framework
 Deployment of the s2i build images and their respective image streams is
 handled by the squonk ansible playbook `squonk-cicd`. Refer to the
@@ -35,4 +37,5 @@ s2i image in the Squonk CI/CD project.
 
 ---
 
+[chained]: https://docs.okd.io/latest/dev_guide/builds/advanced_build_operations.html#dev-guide-chaining-builds
 [source-to-image]: https://docs.openshift.com/container-platform/3.11/creating_images/s2i.html#creating-images-s2i

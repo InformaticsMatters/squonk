@@ -75,6 +75,7 @@ objects:
     namespace: ${APP_NAMESPACE}
   spec:
     serviceAccount: ${APP_SA}
+    successfulBuildsHistoryLimit: 2
     failedBuildsHistoryLimit: 2
     resources:
       requests:
@@ -108,7 +109,6 @@ objects:
           name: cellexecutor-runtime:latest
           namespace: ${APP_NAMESPACE}
       type: Source
-    successfulBuildsHistoryLimit: 5
     triggers:
     - type: ConfigChange
     - type: ImageChange

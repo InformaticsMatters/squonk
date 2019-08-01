@@ -84,6 +84,7 @@ objects:
     namespace: ${APP_NAMESPACE}
   spec:
     serviceAccount: ${APP_SA}
+    successfulBuildsHistoryLimit: 2
     failedBuildsHistoryLimit: 2
     resources:
       requests:
@@ -116,7 +117,6 @@ objects:
           namespace: ${APP_NAMESPACE}
         incremental: true
       type: Source
-    successfulBuildsHistoryLimit: 5
     triggers:
     - type: GitHub
       github:
