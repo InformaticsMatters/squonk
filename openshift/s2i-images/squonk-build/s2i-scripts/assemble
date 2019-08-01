@@ -13,7 +13,11 @@ fi
 # in /tmp/src
 echo "=-> Building..."
 pushd ${HOME}
+echo "=-> ls -la /tmp/src"
+ls -la /tmp/src
 cd /tmp/src/components
+echo "=-> git describe --tags"
+git describe --tags
 gradle build chemServicesWars --build-cache --no-daemon --quiet -x test
 popd
 
