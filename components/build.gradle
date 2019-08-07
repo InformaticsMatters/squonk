@@ -59,15 +59,16 @@ allprojects {
     project.ext.set('flywayVersion', '3.2.1')
 
     // Define the tag label for docker images.
-    // If SQUONK_IMAGE_TAG is set then it is used.
-    // It's the Git branch name or 'latest' if building from 'master'
+    // If SQUONK_IMAGE_TAG is set then it is used,
+    // otherwise it's the Git branch name or, if on master
+    // it's either 'latest' or the value of our 'version' property.
     def dockerImageTag = System.getenv('SQUONK_IMAGE_TAG')
     if (dockerImageTag == null || dockerImageTag.length() == 0) {
         dockerImageTag = grgit.branch.getCurrent().name
         if (dockerImageTag == 'master') {
             // As we're here SQUONK_IMAGE_TAG is not set.
             // It's the master branch so the docker image tag should be...
-            // a version number if's not a SNAPSHOT or 'latest'
+            // the version number if it's not a SNAPSHOT otherwise 'latest'
             if (!version.endsWith('-SNAPSHOT')) {
                 dockerImageTag = version
             } else {
