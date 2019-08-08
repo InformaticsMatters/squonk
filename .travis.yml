@@ -45,4 +45,5 @@ script:
 - cd components
 - ./gradlew buildDockerImage --no-daemon -x test
 # Push images to docker-hub
-- docker push squonk/cellexecutor:latest
+- docker images
+- docker push squonk/jobexecutor-keycloak:latest
