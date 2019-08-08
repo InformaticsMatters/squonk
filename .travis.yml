@@ -11,6 +11,12 @@
 language: java
 install: true
 
+stages:
+- compile
+- build
+- name: push
+  if: branch = master
+
 services:
 - docker
 
@@ -36,14 +42,11 @@ cache:
   - $HOME/.gradle/caches/
   - $HOME/.gradle/wrapper/
 
-before_script:
-- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin docker.io
-
-script:
-# Move to the application directory
-# Build the main container images
-- cd components
-- ./gradlew cell-executor:dockerBuildImage -x test
-# Push images to docker-hub
-- docker images
-- docker push squonk/cellexecutor:latest
+jobs:
+  include:
+  - stage: compile
+    script: build-scripts/compile.sh
+  - stage: build
+    script: build-scripts/build.sh
+  - stage: push
+    script: build-scripts/push.sh
