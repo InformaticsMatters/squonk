@@ -43,7 +43,7 @@ script:
 # Move to the application directory
 # Build the main container images
 - cd components
-- ./gradlew buildDockerImage --no-daemon -x test
+- ./gradlew cell-executor:dockerBuildImage -x test
 # Push images to docker-hub
 - docker images
-- docker push squonk/jobexecutor-keycloak:latest
+- docker push squonk/cellexecutor:latest
