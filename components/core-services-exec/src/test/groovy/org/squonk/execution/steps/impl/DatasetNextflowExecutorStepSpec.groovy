@@ -4,8 +4,6 @@ import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.core.NextflowServiceDescriptor
 import org.squonk.core.ServiceDescriptorUtils
 import org.squonk.dataset.Dataset
-import org.squonk.execution.variable.VariableManager
-import org.squonk.notebook.api.VariableKey
 import org.squonk.types.MoleculeObject
 import spock.lang.Ignore
 import spock.lang.Specification
@@ -13,6 +11,7 @@ import spock.lang.Specification
 /**
  * Created by timbo on 02/08/17.
  */
+@Ignore
 class DatasetNextflowExecutorStepSpec extends Specification {
 
     static Dataset createDataset() {
