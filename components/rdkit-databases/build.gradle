@@ -63,6 +63,12 @@ task execute(type:JavaExec) {
 
 tasks.test.onlyIf { RDKitJava }
 
+// Add labels to the application container image.
+// Here we create a label for the git commit hash.
+dockerDistTar {
+    label(['commit-hash': "${imageCommitHash}"])
+}
+
 docker {
     url = dockerHost
     certPath = dockerCertPath

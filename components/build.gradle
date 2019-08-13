@@ -78,6 +78,8 @@ allprojects {
     }
     project.ext.set('dockerImageTag', dockerImageTag)
 
+    project.ext.set('imageCommitHash', grgit.head().abbreviatedId)
+
     // In this section you declare where to find the dependencies of your project
     repositories {
 
@@ -239,7 +241,9 @@ task dockerFileChemServices(type: Dockerfile) {
     destFile = project.file('build/chem-services-basic/Dockerfile')
     // if changing the version you must also update the hardcoded version number in org.squonk.camel.rdkit.processor.RDKitMoleculeProcessor
     from "informaticsmatters/rdkit-tomcat-debian:Release_2018_09_1"
-    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
+
+    label(['maintainer': 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'])
+    label(['commit-hash': "${imageCommitHash}"])
 
     addFile('*.war', "/usr/local/tomcat/webapps/")
     addFile('chemaxon_reaction_library.zip', '/chemaxon_reaction_library.zip')

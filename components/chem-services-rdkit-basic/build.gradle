@@ -78,8 +78,10 @@ task buildDockerFile(type: Dockerfile, dependsOn: war) {
     
     destFile = project.file('build/Dockerfile')
     from "informaticsmatters/rdkit_java_tomcat"
-    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
-    
+
+    label(['maintainer': 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'])
+    label(['commit-hash': "${imageCommitHash}"])
+
     runCommand("rm -rf /usr/local/tomcat/webapps/*")
     
     def warFile = tasks.war.outputs.files.singleFile
