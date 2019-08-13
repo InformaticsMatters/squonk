@@ -13,7 +13,7 @@ fi
 
 # Define the working directory for cell execution.
 # This is used as a default when no explicit directory is provided.
-export SQUONK_DOCKER_WORK_DIR=$TMPDIR/squonk
+export SQUONK_DOCKER_WORK_DIR="$TRAVIS_BUILD_DIR"/tmp
 
 cd "$TRAVIS_BUILD_DIR"/components || exit
 ./gradlew test
