@@ -13,6 +13,8 @@ fi
 
 # Define the working directory for cell execution.
 # This is used as a default when no explicit directory is provided.
+# Some unit tests expect to create this directory, delete it
+# and write files to it so it has to be somehere Travis will let us write.
 export SQUONK_DOCKER_WORK_DIR="$TRAVIS_BUILD_DIR"/tmp
 
 cd "$TRAVIS_BUILD_DIR"/components || exit

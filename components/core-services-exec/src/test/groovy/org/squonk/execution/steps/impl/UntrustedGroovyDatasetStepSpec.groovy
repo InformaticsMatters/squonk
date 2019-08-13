@@ -20,19 +20,22 @@ import org.apache.camel.impl.DefaultCamelContext
 import org.squonk.core.DockerServiceDescriptor
 import org.squonk.dataset.Dataset
 import org.squonk.execution.steps.StepDefinitionConstants
-import org.squonk.execution.variable.VariableManager
 import org.squonk.io.IODescriptor
 import org.squonk.io.IODescriptors
 import org.squonk.io.IORoute
-import org.squonk.notebook.api.VariableKey
 import org.squonk.options.OptionDescriptor
 import org.squonk.types.MoleculeObject
-import spock.lang.Ignore
 import spock.lang.Specification
+
+import spock.lang.IgnoreIf
 
 /**
  * Created by timbo on 13/09/16.
  */
+
+// Alan Christie: At the moment the tests expect to write to or own
+//                "/var/maven_repo". Withr Travis (CI/CD) this is not possible.
+@IgnoreIf({ System.getenv('TRAVIS') != null })
 class UntrustedGroovyDatasetStepSpec extends Specification {
 
 
