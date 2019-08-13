@@ -3,18 +3,12 @@
 # A build script used by Travis
 cd "$TRAVIS_BUILD_DIR"/components || exit
 
-# Build the application targets
-#
-# squonk/chemcentral-search
-# squonk/coreservices
-# squonk/cellexecutor
-# squonk/jobexecutor
-# squonk/chemcentral-loader
-# squonk/flyway
+# Construct the application docker images
+# but we do not push to docker.io.
 
-./gradlew chem-services-rdkit-search:build
-./gradlew core-services-server:build
-./gradlew cell-executor:build
-./gradlew job-executor:build
-./gradlew rdkit-databases:build
-./gradlew database:build
+./gradlew chem-services-rdkit-search:buildDockerImage -x test
+./gradlew core-services-server:buildDockerImage -x test
+./gradlew cell-executor:dockerBuildImage -x test
+./gradlew job-executor:buildDockerImage -x test
+./gradlew rdkit-databases:dockerBuildImage -x test
+./gradlew database:buildDockerImage -x test
