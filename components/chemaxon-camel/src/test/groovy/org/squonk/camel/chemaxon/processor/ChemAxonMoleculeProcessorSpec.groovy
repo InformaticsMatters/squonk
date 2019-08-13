@@ -25,9 +25,12 @@ import java.util.stream.*
 import org.squonk.camel.testsupport.CamelSpecificationBase
 import org.apache.camel.builder.RouteBuilder
 
+import spock.lang.IgnoreIf
+
 /**
  * Created by timbo on 14/04/2014.
  */
+@IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
 class ChemAxonMoleculeProcessorSpec extends CamelSpecificationBase {
     
     //    String file = "../../data/testfiles/Building_blocks_GBP.sdf.gz"

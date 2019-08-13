@@ -30,6 +30,8 @@ import spock.lang.Specification
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
+import spock.lang.IgnoreIf
+
 /**
  *
  * @author timbo
@@ -50,8 +52,8 @@ class ReactorExecutorSpec extends Specification {
             stream.close()   
         }
     }
-        
-    
+
+    @IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
     void "simple enumerate smiles"() {
         
         setup:
@@ -73,6 +75,7 @@ class ReactorExecutorSpec extends Specification {
         list[0].format == 'smiles'
     }
 
+    @IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
     void "simple enumerate mol"() {
 
         setup:
@@ -94,6 +97,7 @@ class ReactorExecutorSpec extends Specification {
         list[0].format == 'mol'
     }
 
+    @IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
     void "enumerate as stream"() {
 
         setup:
@@ -123,7 +127,8 @@ class ReactorExecutorSpec extends Specification {
         list[0].values['R2_INDEX'] != null
 
     }
-    
+
+    @IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
     void "chemaxon concurrent reactor"() {
         setup:
         Molecule rxnmol = new MolImporter(reaction).read();

@@ -28,9 +28,12 @@ import org.squonk.dataset.Dataset
 
 import java.util.stream.Stream
 
+import spock.lang.IgnoreIf
+
 /**
  * Created by timbo on 14/04/2014.
  */
+@IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
 class MoleculeScreenerProcessorSpec extends CamelSpecificationBase {
 
 
