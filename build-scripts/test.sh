@@ -11,5 +11,9 @@ if [[ ! -f "$TRAVIS_BUILD_DIR"/docker/deploy/images/chemservices/chemaxon_reacti
   export CHEMAXON_LIBRARY_ABSENT=yes
 fi
 
+# Define the working directory for cell execution.
+# This is used as a default when no explicit directory is provided.
+export SQUONK_DOCKER_WORK_DIR=$TMPDIR/squonk
+
 cd "$TRAVIS_BUILD_DIR"/components || exit
 ./gradlew test
