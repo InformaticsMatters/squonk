@@ -55,7 +55,9 @@ task buildDockerFile(type: Dockerfile) {
 
     destFile = project.file('build/Dockerfile')
     from "openjdk:8-jre"
-    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
+
+    label(['maintainer': 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'])
+    label(['commit-hash': "${imageCommitHash}"])
 
     runCommand("""wget -q https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${flywayVersion}/flyway-commandline-${flywayVersion}.zip &&\
  unzip flyway-commandline-${flywayVersion}.zip &&\

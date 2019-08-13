@@ -77,7 +77,9 @@ task buildDockerfile(type: Dockerfile) {
 
     destFile = project.file('build/Dockerfile')
     from "informaticsmatters/tomcat-keycloak:8.5-jre8-3.4.3"
-    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
+
+    label(['maintainer': 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'])
+    label(['commit-hash': "${imageCommitHash}"])
 
     def warFile = tasks.war.outputs.files.singleFile
     addFile('libs/' + warFile.name, "/usr/local/tomcat/webapps/${contextName}.war")

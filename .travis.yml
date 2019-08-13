@@ -17,8 +17,10 @@ services:
 
 stages:
 - compile
-- build
-- name: push
+- test
+- name: build
+  if: branch != master
+- name: deploy
   if: branch = master
 
 env:
@@ -44,7 +46,9 @@ jobs:
   include:
   - stage: compile
     script: build-scripts/compile.sh
+  - stage: test
+    script: build-scripts/test.sh
   - stage: build
     script: build-scripts/build.sh
-  - stage: push
-    script: build-scripts/push.sh
+  - stage: deploy
+    script: build-scripts/deploy.sh

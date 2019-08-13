@@ -67,7 +67,9 @@ task buildDockerfile(type: Dockerfile) {
 
     destFile = project.file('build/Dockerfile')
     from "informaticsmatters/rdkit-tomcat-debian:Release_2018_03_01"
-    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
+
+    label(['maintainer': 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'])
+    label(['commit-hash': "${imageCommitHash}"])
 
     runCommand("rm -rf /usr/local/tomcat/webapps/*")
 

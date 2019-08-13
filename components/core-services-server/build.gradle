@@ -121,7 +121,9 @@ task buildDockerfile(type: Dockerfile) {
 
     destFile = project.file('build/Dockerfile')
     from "informaticsmatters/tomcat:8.0-jre8"
-    maintainer 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'
+
+    label(['maintainer': 'Tim Dudgeon <tdudgeon@informaticsmatters.com>'])
+    label(['commit-hash': "${imageCommitHash}"])
 
     runCommand("rm -rf /usr/local/tomcat/webapps/*")
     
