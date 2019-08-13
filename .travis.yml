@@ -13,10 +13,9 @@ install: true
 jdk: openjdk8
 
 services:
-  - docker
+- docker
 
 stages:
-- compile
 - test
 - name: build
   if: branch != master
@@ -44,8 +43,6 @@ cache:
 
 jobs:
   include:
-  - stage: compile
-    script: build-scripts/compile.sh
   - stage: test
     script: build-scripts/test.sh
   - stage: build

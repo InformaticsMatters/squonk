@@ -28,13 +28,15 @@ import org.squonk.util.IOUtils
 
 import spock.lang.Specification
 
+import spock.lang.IgnoreIf
+
 /**
  *
  * @author timbo
  */
 class SphereExclusionClustererSpec extends Specification {
-	
-    
+
+    @IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
     void "test molecules"() {
         setup:
         InputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")
@@ -62,7 +64,8 @@ class SphereExclusionClustererSpec extends Specification {
         cleanup:
         IOUtils.closeIfCloseable(iterable)
     }
-    
+
+    @IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
     void "test molecule objects"() {
         setup:
         InputStream is = new FileInputStream("../../data/testfiles/dhfr_standardized.sdf.gz")

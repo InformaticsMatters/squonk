@@ -26,6 +26,8 @@ import com.chemaxon.descriptors.fingerprints.ecfp.EcfpParameters
 import spock.lang.Shared
 import spock.lang.Specification
 
+import spock.lang.IgnoreIf
+
 /**
  *
  * @author Tim Dudgeon
@@ -48,7 +50,8 @@ class MoleculeScreenerSpec extends Specification {
         then:
         szr != null
     }
-	
+
+    @IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
     void "test identical"() {
         setup:
         EcfpParameters params = EcfpParameters.createNewBuilder().build();
@@ -62,7 +65,8 @@ class MoleculeScreenerSpec extends Specification {
         then:
         d == 1.0
     }
-    
+
+    @IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
     void "test different"() {
         setup:
         EcfpParameters params = EcfpParameters.createNewBuilder().build();
@@ -78,7 +82,8 @@ class MoleculeScreenerSpec extends Specification {
         d > 0d
         d < 1d
     }
-    
+
+    @IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
     void "test no standardizer"() {
         setup:
         EcfpParameters params = EcfpParameters.createNewBuilder().build();
@@ -94,7 +99,8 @@ class MoleculeScreenerSpec extends Specification {
         then:
         d < 1d
     }
-    
+
+    @IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
     void "test custom standardizer"() {
         setup:
         EcfpParameters params = EcfpParameters.createNewBuilder().build();

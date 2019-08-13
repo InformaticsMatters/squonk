@@ -23,10 +23,13 @@ import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
 import org.squonk.types.MoleculeObject
 
+import spock.lang.IgnoreIf
+
 /**
  *
  * @author timbo
  */
+@IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
 class ReactorProcessorSpec extends CamelSpecificationBase {
 
 

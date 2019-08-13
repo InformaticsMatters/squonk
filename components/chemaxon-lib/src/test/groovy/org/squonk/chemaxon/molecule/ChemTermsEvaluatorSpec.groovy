@@ -24,6 +24,8 @@ import chemaxon.formats.MolImporter
 import java.util.stream.Stream
 import java.util.zip.GZIPInputStream
 
+import spock.lang.IgnoreIf
+
 /**
  * Created by timbo on 14/04/2014.
  */
@@ -31,8 +33,7 @@ class ChemTermsEvaluatorSpec extends Specification {
 
     static Map<String,Integer> stats = new HashMap<>();
 
-
-     def 'ChemTerms processor for Molecule'() {
+    def 'ChemTerms processor for Molecule'() {
 
         given:
         def atomCount = new ChemTermsEvaluator('atom_count', 'atomCount()', "")
@@ -50,6 +51,7 @@ class ChemTermsEvaluatorSpec extends Specification {
         mol1.getPropertyObject('atom_count') == 8
     }
 
+    @IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
     def 'ChemTerms solubility'() {
 
         /* this test is because a strange error was seen for solubility
@@ -95,7 +97,6 @@ class ChemTermsEvaluatorSpec extends Specification {
         
     }
 
-
     def 'ChemTerms calc for Stream'() {
 
         List mols = [
@@ -120,7 +121,6 @@ class ChemTermsEvaluatorSpec extends Specification {
         count == 4
     }
 
-
     def 'ChemTerms calc for file'() {
 
         FileInputStream fis = new FileInputStream('../../data/testfiles/Kinase_inhibs.sdf.gz')
@@ -144,8 +144,5 @@ class ChemTermsEvaluatorSpec extends Specification {
         cleanup:
         reader?.close()
     }
-
-
-
 
 }

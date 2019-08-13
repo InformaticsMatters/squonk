@@ -17,6 +17,7 @@
 package org.squonk.execution.runners
 
 import spock.lang.Specification
+
 /**
  * OpenShiftRunner unit tests.
  *
@@ -25,15 +26,16 @@ import spock.lang.Specification
 class OpenShiftRunnerSpec extends Specification {
 
     def hostBaseWorkDir = null
+    def localWorkDir = System.getenv('TMPDIR') + File.separator + 'osr'
 
     void "construction"() {
 
         when:
-        OpenShiftRunner runner = new OpenShiftRunner("busybox", hostBaseWorkDir, "/source", "123")
+        OpenShiftRunner runner = new OpenShiftRunner("busybox", hostBaseWorkDir, localWorkDir, "123")
 
         then:
         runner.currentStatus == AbstractRunner.RUNNER_CREATED;
-        runner.getLocalWorkDir() == "/source"
+        runner.getLocalWorkDir() == localWorkDir
 
         cleanup:
         runner.cleanup();
@@ -43,7 +45,7 @@ class OpenShiftRunnerSpec extends Specification {
     void "make workdir"() {
 
         setup:
-        OpenShiftRunner runner = new OpenShiftRunner("busybox", hostBaseWorkDir, "/source", "123")
+        OpenShiftRunner runner = new OpenShiftRunner("busybox", hostBaseWorkDir, localWorkDir, "123")
 
         when:
         runner.init()
@@ -59,7 +61,7 @@ class OpenShiftRunnerSpec extends Specification {
     void "clean workdir"() {
 
         setup:
-        ContainerRunner runner = new OpenShiftRunner("busybox", hostBaseWorkDir, "/source", "123")
+        ContainerRunner runner = new OpenShiftRunner("busybox", hostBaseWorkDir, localWorkDir, "123")
         runner.init()
 
         when:
@@ -73,7 +75,7 @@ class OpenShiftRunnerSpec extends Specification {
     void "execute before init"() {
 
         setup:
-        ContainerRunner runner = new OpenShiftRunner("busybox", hostBaseWorkDir, "/source", "123")
+        ContainerRunner runner = new OpenShiftRunner("busybox", hostBaseWorkDir, localWorkDir, "123")
 
         when:
         runner.execute("/bin/sh", "/source/run.sh")

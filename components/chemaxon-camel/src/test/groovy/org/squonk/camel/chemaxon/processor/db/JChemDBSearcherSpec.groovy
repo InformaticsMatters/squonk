@@ -29,11 +29,13 @@ import java.sql.*
 import java.util.stream.Collectors
 import org.apache.camel.builder.RouteBuilder
 import spock.lang.Shared
+import spock.lang.IgnoreIf
 
 /**
  *
  * @author timbo
  */
+@IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
 class JChemDBSearcherSpec extends CamelSpecificationBase {
     
     @Shared Connection con

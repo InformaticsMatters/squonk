@@ -26,9 +26,12 @@ import org.squonk.data.Molecules
 import org.squonk.dataset.Dataset
 import org.squonk.dataset.MoleculeObjectDataset
 
+import spock.lang.IgnoreIf
+
 /**
  * Created by timbo on 14/04/2014.
  */
+@IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
 class SphereExclusionClusteringProcessorSpec extends CamelSpecificationBase {
 
     

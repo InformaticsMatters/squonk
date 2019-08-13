@@ -19,14 +19,15 @@ package org.squonk.chemaxon.enumeration
 import spock.lang.Shared
 import spock.lang.Specification
 
+import spock.lang.IgnoreIf
 
 /**
  * Created by timbo on 05/07/16.
  */
+@IgnoreIf({ System.getenv('CHEMAXON_LIBRARY_ABSENT') != null })
 class ReactionLibrarySpec extends Specification {
 
     @Shared ReactionLibrary rxnlib = new ReactionLibrary("../../docker/deploy/images/chemservices/chemaxon_reaction_library.zip")
-
 
     void "read rxn names"() {
 

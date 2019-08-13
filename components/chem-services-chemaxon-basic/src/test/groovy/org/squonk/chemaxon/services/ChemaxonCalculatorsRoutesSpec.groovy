@@ -18,10 +18,8 @@ package org.squonk.chemaxon.services
 
 import chemaxon.struc.MolBond
 import chemaxon.struc.Molecule
-import org.squonk.dataset.Dataset
 import org.squonk.types.MoleculeObject
 import org.apache.camel.CamelContext
-import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.builder.ThreadPoolProfileBuilder
 import org.apache.camel.spi.ThreadPoolProfile
 import org.squonk.camel.CamelCommonConstants
@@ -31,9 +29,12 @@ import org.squonk.chemaxon.molecule.ChemTermsEvaluator
 import org.squonk.data.Molecules
 import org.squonk.dataset.MoleculeObjectDataset
 
+import spock.lang.IgnoreIf
+
 /**
  * Created by timbo on 14/04/2014.
  */
+@IgnoreIf({ System.getenv('CHEMAXON_LICENCE_ABSENT') != null })
 class ChemaxonCalculatorsRoutesSpec extends CamelSpecificationBase {
 
     def mols = [
