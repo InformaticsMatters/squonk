@@ -45,7 +45,7 @@ env:
   # Non-sensitive environment variables...
   CHEMAXON_HOME="$TRAVIS_BUILD_DIR"/data/licences
 
-install: true
+install:
 - cd "$TRAVIS_BUILD_DIR"/components
 - ./gradlew installChemaxonLicense
 - ./gradlew installChemaxonLibrary
