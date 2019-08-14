@@ -1,4 +1,8 @@
 ---
+
+# Remark Lint configuration file
+# A lint tol for Markdown files
+
 output: true
 settings:
   commonmark: true
