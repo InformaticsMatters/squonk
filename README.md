@@ -1,5 +1,6 @@
 # Squonk main repository
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7b109d9a65424b5f82cf8fbe8f1f4c51)](https://app.codacy.com/app/alanbchristie/squonk?utm_source=github.com&utm_medium=referral&utm_content=InformaticsMatters/squonk&utm_campaign=Badge_Grade_Dashboard)
 [![Build Status](https://travis-ci.org/InformaticsMatters/squonk.svg?branch=master)](https://travis-ci.org/InformaticsMatters/squonk)
 
 This is the main repository for [Squonk](http://squonk.it), both the Squonk Platform and the 
