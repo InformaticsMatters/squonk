@@ -19,6 +19,8 @@
 openshift/jenkins/setenv.sh
 **/vault-pass.txt
 
+tmp/
+
 data/licenses/*
 data/testfiles/emols_order*
 data/testfiles/all-sdf.sdf.gz

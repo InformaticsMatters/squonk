@@ -1,5 +1,5 @@
 FROM ubuntu:trusty
-MAINTAINER tdudgeon@informaticsmatters.com
+LABEL maintainer="Tim Dudgeon <tdudgeon@informaticsmatters.com>"
 
 # Add the PostgreSQL PGP key to verify their Debian packages.
 # It should be the same key as https://www.postgresql.org/media/keys/ACCC4CF8.asc
