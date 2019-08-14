@@ -60,10 +60,22 @@ _encryption key_.
     export SQUONK_DECRYPTION_KEY="GetTheKey"
     cd components
     ./gradlew installChemaxonLicense
+    ./gradlew installChemaxonLicenseToHome
     ./gradlew installChemaxonLibrary
-    
+
+>   The `installChemaxonLicenseToHome` installs the license file to your
+    `$HOME/.chemaxon` directory. If you want to put the file elsewhere you
+    can, as long as you set `CHEMAXON_HOME` to the directory you use.
+
 Once you've done this you can benefit from the full set of unit tests.
 
+## Running the Travis files
+Travis runs the scripts in the `build-scripts` directory. These scripts
+can also be run locally. So, to reproduce the Travis build commands,
+you could move to the project root and run the build script form there: -
+
+    ./build-scripts/build.sh
+    
 ## Contributing
 Currently it is not expected that third party developers will find it
 easy to contribute to this codebase, but that will change. If you are
