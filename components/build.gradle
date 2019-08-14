@@ -167,6 +167,16 @@ task installChemaxonLicense(type: Exec) {
         ' --decrypt license.cxl.gpg'
 }
 
+task installChemaxonLicenseToHome(type: Exec) {
+    workingDir '../encrypted/chemaxon'
+    commandLine  'bash', '-c',
+            'mkdir -p "$HOME"/.chemaxon' +
+            ' & echo "$SQUONK_DECRYPTION_KEY"' +
+            ' | gpg --batch --yes --passphrase-fd 0' +
+            ' --output "$HOME"/.chemaxon/license.cxl' +
+            ' --decrypt license.cxl.gpg'
+}
+
 // Install (decrypt) the ChemAxon reaction library.
 // This is expected in the project's encrypted/chemaxon directory.
 // SQUONK_DECRYPTION_KEY is expected to contain the decryption key.
