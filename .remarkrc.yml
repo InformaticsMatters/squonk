@@ -1,7 +1,7 @@
 ---
 
-# Remark Lint configuration file
-# A lint tol for Markdown files
+# Remark Lint configuration file.
+# A lint tool for Markdown files.
 
 output: true
 settings:
