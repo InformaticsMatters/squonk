@@ -44,10 +44,10 @@ env:
   - secure: "R44CjWy3h8StnlUukWALIu2+4Uu8upjq/xhSHGgPyCIB9LZojaK0SdibBJcjD76QuSzDAMq+Rh+E0VMTUrhLdA4PFuwkM01MLWgoMrcetcpKe2ttSjlj8+SFoJC5hqWHWP7BRnF/R/H2agIkNEJLOl59sq0N+UCXHI71Mu84Z7YG97V9cV05Ap/itN5EhFkNJ7/rV/5Ko2/qVlDg5rF+tPdnSslE4BOMJjJJVnebPMiDG6Lj01zPOCrM8d91HYAMcmrF1IxgGAcuvb2XDSEh0vbjvJcMvFzmvUpLVx59dOB75oDfj+y57c4Kr2tN4DvlvVWF0lmW6ZVR2PL7573YcNa67TvchY0wA1exOUVxQGOLxnBz+OkrWxEZSN94k+eWML+hPkY8+OMWbo7hGYPyOo4sYh5jrvRSP6DvrJYZhJe/c8ssmmlg/VFMgM9gpPIRtSycTIqo1M1EdtjSZo5hHyurvoJR7NVs/PriYkmRoylYZAv7rAuRiGrGEPlrfaX8JHQPd7632SQrUGTpnHbJOGQjlyIENsEiKSUIJFTP4SAVtB0LpnBkk74F4/tyGBWnNkcf4Va4DO3o2GZozrww18rH6dFzmvvqIPi08EdtjlEy0HbCCT7DvJG91v92Wn9BLqL9DA5q4CNzNfKdIAOlEgHgEAjN0M8afd7W3CCCWe0="
 
 install:
-- cd "$TRAVIS_BUILD_DIR"/components
+- pushd "$TRAVIS_BUILD_DIR"/components
 - ./gradlew installChemaxonLicense
 - ./gradlew installChemaxonLibrary
-- ls -l ../build-scripts
+- popd
 
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
