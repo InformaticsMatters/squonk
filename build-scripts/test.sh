@@ -18,4 +18,4 @@ fi
 export SQUONK_DOCKER_WORK_DIR="$TRAVIS_BUILD_DIR"/tmp
 
 cd "$TRAVIS_BUILD_DIR"/components || exit
-./gradlew test
+./gradlew build

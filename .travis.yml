@@ -9,15 +9,14 @@
 #   https://docs.travis-ci.com/user/languages/java/
 
 language: java
-install: true
 jdk: openjdk8
 
 services:
 - docker
 
 stages:
-- test
 - name: build
+- name: docker
   if: branch != master
 - name: deploy
   if: branch = master
@@ -25,12 +24,25 @@ stages:
 env:
   global:
   # Sensitive variables (Docker credentials)
+  # - DOCKER_USERNAME
+  # - DOCKER_PASSWORD
   - secure: "P4SKMWIEcvjOnok13nKc7svgna4X1/WXLcdJHjISHCxB1ugNZ8wfS9jivcnrBYfR+c+VUdG4qMxY+LV2ebUkpBgRJueZDgItOd9HU5HyhSd0Jr7hjLIXdO1m6Q2G+ty7547aU1CV2vEueNdARzlUmLpvcVgVFMvCrFWJ6rewGinzSYO5UyrIsHcQYg6YlvZfDTPoFD3j4O6xGSxvXfGYpNWM8FOZKZ7xPGc6LGigpyI5bIuNNJNinfdlUM/ljdECzjKIDB5vLZuP7nsfCH7/hlYlCcDiJ8LbcoFw1hW5Hwn37ZnOzt0GS6u09aSnPoqSDG+mjJUe8BDHN1Q04Idw7CuTRePSAA18P/D7sCz/JEHEYnx6sTFhU1e+xoNMqlB+/HYd4auuRQs3kz05JpPBRt8tdPfZH0Xqa/wnysEXXtOILNaj5ykZaOmSNLfFTrW12rUUkVUnS7mTgVjQ7bIZujMXuwjxP4WeFasCT26cdZLVo8pHwr2GMvbm1TASIXaOUT2tfDkydznyj+3o2rUMSrJi38zCgklsKEQ1Bs6E79hCK86BsNq+SjPFkmsDL7M9ZxdfmB9iBElytDleFfF23HUiQATg52K1YwUNPhmv+HitBV/Dn4NSBy3vZ5rxqEeMA+lnxEmh/rWaG58Uvm5LhtsIZ0VxfSg3CF1U7AfQH5s="
   - secure: "MwRBjSK+kX6ykcDL7FfZ0jsF/Kp1E0QOFJF5ZEVBhQ3m7VXVfalsAVntqSURS6KCX7YyS9Vp6rZx2SSpNcPMcjhnQm4tVDv7kWShhL99y7OS+TKInKEkLPjuueFeKkVpr+NabBXPW8uWKseH8lzUAru0Mg4e0kNZK++JVrG2tEdA7dXbAhUJncrdgOlyW7qgTkWBMUP9YDSD9NXR094ZxhE5y96WykvzYo/U2DWctxkasUhLLkxhOLkHtz9jt0QFGrGIvjomJcdMJxtsWfnG7583oZHRAD47V8v4JeqQitNRfEj/e4Xgaz/Ly2IDpkHHkphZ9eqQ6DK2AC+CLSXmHOgWMXqGORxfE6iiNDtXppWBtQ9SwBePTQlMn50l4kcStZ9X0LoZcIHGuv38PWSRMGuSyaA2K0y3JrRsWpjqtHEwcm/V/Ka7bGOMBugCALCcjBs5oSbPp75VKlDud91DnX7Gyj4MnyB8NNVfm2Svezjexu4/03lh1cMMVbYsdlcPlPyh8MpL2bHTlj0n9U2pQG79HKIsZJ7MYfqE06Eohkb8ezmXhMIEnlAE6HKVjUqW2K4nt5D22Yf+UNsC0GrVs50Fo1Il8wP9sqwwYaA/mhjEoYnYH+NFXwN5qS2SlbhrpGic4NNl+M3R8WKTfjtq6+Qk+/8ErbkRsjeThXNp2Kc="
   # Sensitive build environment variables for squonk
+  # - ORG_GRADLE_PROJECT_cxnMavenUser
+  # - ORG_GRADLE_PROJECT_cxnMavenPassword
+  # - ORG_GRADLE_PROJECT_cxnMavenRepositoryUrl
   - secure: "MWQyyhxxJhJU2UzAwRGaOSTlBaFRwjlhfGWZRLP15UgoLkx7bz0x8P/dAUSRJ2pEy2IHPxJeYbIY3XHGELkwHi3ASitvHfqQoCTOp2fh03QpD+FtSYqba5JKOxNFI/pEzingIuf0a5X1wl6CVu+Ng5sieaoZbVTi3I6NXMILbQcNJfCn1NhnNNwarnBuY9sO4uHN/oghRml5CLJdTMbkgC26lAW5vx3BzkJub2ercw0WQR0uNo9j3K0J2H5uQR7LdhRTIyokp0Bs4kqOGoZiNFsNzFfowVWv899F2kCYaUzONB/hYH5xT+/clJP8OCje2TTva/9hlaHe53lh5NI4biZUtX8UJBvrvVmH9btDuovZX/rTcuDL4l2yET2xJRV/u/GKob2Vx8e16m/fnFxsyIzmGKGlprnsmBcNdRx+Odsd4PI0Phv5k8yMGkspe0ZsNb2UDSOCW6sN8qwRmA26MrKOxhZURpI8CUQX6LZhAMbm+uORkPeyweAIFaqR9oCsQWE0Pg/ld7JeCZbHu0KrAtC/9ENW64Y53+5uNX/DmItT390L0xjcGS4Ozjfnt0rICm+T5F4Ze6/L7qGK9MPtWRZGQ+xwZpJJyao7PRSJaU4OvUSUojfuRAg7TbSaF5BjW5XJepVhoeP4os5kGkQfMHRXbxuazKWztv0CDdnclpc="
   - secure: "BWYTsJRPIDtMnzPmBsr4JJdLhB3v293OMDTQOIHUrBhphqiGQ9ScSVubIdOKstszV7VHIr5kntzqdkkaq1QMaEKFnq9nIW29wJnuEstnTHDbbwO69MOSP2TytMjx1UHtEmlkEVbAc0uQ4aSWh/uB0D1D34GhhS8Vk1H5Y2zElKF3NHi2A8fiS0NeEQq5G+bFNOecH8OE3hgRysMT1iujfz/45YtelQY2uBqRMF+mIyuwYkCOvbp3gIYod7XKaK5EVKUHS74E6dz1yQaEGmMSK2NW8mts4cU9U8BYWFifzaaG+uxEGT+z1MBydfY10PS9InAuP9zNG0xMRi3JnYw2JRKbeHEzzufZaolnEUqFjlMJXUrMHlg8Rad5Crw69+npTGOVqKix0E0BjEzAsTcdMy08f1ldApWHN0gE1cjWSJ8J3EaaDXbiKCTIULKf6AaInwi6p/cznRsadaQqaOvTIeDv0ndhNpv+iBJea+5rdMvUy8orYihA6cHHYEj0j6DQIE806Crx4UXMI8X4NlFLnf+p5cYBzGtKeTAxc4474Px/kHeIukE2bTRzfLaPRXGmhp7kfVKIVCpdDqgBn5QFGiPzU2kmoNux4EvM3R5RDRFoBdnSMWMzCNapRYH0GSvs5kc9y6lW+feA/zDPHCOwNwHKcMc/tWgNN8I6GPpJUeM="
   - secure: "hOpVbfHrHqgxHyoAv9pMWklx4NQjOkx5yf7tiuqf+Xpxmof8uUNtuiuffnDEhfUxZA4Sn+49wOOUoYPBOf18wiJsMToMGschd7p6S1LB/7fyMFjvtRcPFcoJWYIrT+HYap5ekxSGztT6PONITlJg9aVdsrSyWBFAjAttdxnp9JWtlkFc0g5PSp4uykddpqvR3sLiKGHLq2qX1L9tDcjcnRASq+dN+wyat7dsfaRiWniL4Ivm8jxcTZzoupRPJ0SsXCEeEvEAukCbbMoOec+57tg4ox1refFKLQ0gEJpmHdSC0FS8jFSBEQPQr3ErglnU87pOiv7UiBkEz78w328HMvgA6ODpT6P6qPTjf54WCKOdI3wH8251pGDsjcIAc5/huKoMvMHc9n7TbIBrMVpMdKBcZG7Czkv4o7wQ8mueRxDVdYpOt4tEcQaSBZ1YMvHWL4nAg0QNUxRxszdLGfuI3ULL0L9urFJN2R/nwhxA/XQ3Ljs1N3V688GraomSrRzc4GfQrBR4p6vwMudRl+7kH8HC2bGeG0mkhhUu7ZFOQdrHr2As6dUJSagh38JQbKM1WIrO7T175qT6cbP+0KAgLsOhuQhekCKI+qa7JpH0y6aSct46NieI0UQRfIHMTs2Z/bNCqFoFwua42PBa6mwL0aHtDcvjmgPYKX44wMDyBro="
+  # The decryption key for files in our encrypted directory
+  # - SQUONK_DECRYPTION_KEY
+  - secure: "R44CjWy3h8StnlUukWALIu2+4Uu8upjq/xhSHGgPyCIB9LZojaK0SdibBJcjD76QuSzDAMq+Rh+E0VMTUrhLdA4PFuwkM01MLWgoMrcetcpKe2ttSjlj8+SFoJC5hqWHWP7BRnF/R/H2agIkNEJLOl59sq0N+UCXHI71Mu84Z7YG97V9cV05Ap/itN5EhFkNJ7/rV/5Ko2/qVlDg5rF+tPdnSslE4BOMJjJJVnebPMiDG6Lj01zPOCrM8d91HYAMcmrF1IxgGAcuvb2XDSEh0vbjvJcMvFzmvUpLVx59dOB75oDfj+y57c4Kr2tN4DvlvVWF0lmW6ZVR2PL7573YcNa67TvchY0wA1exOUVxQGOLxnBz+OkrWxEZSN94k+eWML+hPkY8+OMWbo7hGYPyOo4sYh5jrvRSP6DvrJYZhJe/c8ssmmlg/VFMgM9gpPIRtSycTIqo1M1EdtjSZo5hHyurvoJR7NVs/PriYkmRoylYZAv7rAuRiGrGEPlrfaX8JHQPd7632SQrUGTpnHbJOGQjlyIENsEiKSUIJFTP4SAVtB0LpnBkk74F4/tyGBWnNkcf4Va4DO3o2GZozrww18rH6dFzmvvqIPi08EdtjlEy0HbCCT7DvJG91v92Wn9BLqL9DA5q4CNzNfKdIAOlEgHgEAjN0M8afd7W3CCCWe0="
+
+install: true
+#- cd "$TRAVIS_BUILD_DIR"/components
+#- ./gradlew installChemaxonLicense
+#- ./gradlew installChemaxonLibrary
 
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -43,9 +55,9 @@ cache:
 
 jobs:
   include:
-  - stage: test
-    script: build-scripts/test.sh
   - stage: build
-    script: build-scripts/build.sh
+    script: build-scripts/testsh
+  - stage: docker
+    script: build-scripts/docker.sh
   - stage: deploy
     script: build-scripts/deploy.sh

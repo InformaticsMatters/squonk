@@ -155,19 +155,28 @@ task wrapper(type: Wrapper) {
 project.ext.set('dockerHost', getDockerHost())
 project.ext.set('dockerCertPath', System.env.DOCKER_CERT_PATH ? file(System.env.DOCKER_CERT_PATH) : null)
 
-task installChemaxonLicense(type: Copy) {
-    from "$System.env.HOME/.squonk/license.cxl"
-    into "../data/licenses"
+// Install (decrypt) the ChemAxon licence file.
+// This is expected in the project's encrypted/chemaxon directory.
+// SQUONK_DECRYPTION_KEY is expected to contain the decryption key.
+task installChemaxonLicense(type: Exec) {
+    workingDir '../encrypted/chemaxon'
+    commandLine  'bash', '-c',
+        'echo "$SQUONK_DECRYPTION_KEY"' +
+        '| gpg --batch --yes --passphrase-fd 0' +
+        ' --output ../../data/licences/license.cxl' +
+        ' --decrypt license.cxl.gpg'
 }
 
-task installChemaxonLicenseToHome(type: Copy) {
-    from "$System.env.HOME/.squonk/license.cxl"
-    into "$System.env.HOME/.chemaxon"
-}
-
-task installChemaxonLibrary(type: Copy) {
-    from "$System.env.HOME/.squonk/chemaxon_reaction_library.zip"
-    into '../docker/deploy/images/chemservices'
+// Install (decrypt) the ChemAxon reaction library.
+// This is expected in the project's encrypted/chemaxon directory.
+// SQUONK_DECRYPTION_KEY is expected to contain the decryption key.
+task installChemaxonLibrary(type: Exec) {
+    workingDir '../encrypted/chemaxon'
+    commandLine  'bash', '-c',
+        'echo "$SQUONK_DECRYPTION_KEY"' +
+        '| gpg --batch --yes --passphrase-fd 0' +
+        ' --output ../../docker/deploy/images/chemservices/chemaxon_reaction_library.zip ' +
+        ' --decrypt chemaxon_reaction_library.zip.gpg'
 }
 
 task installCpSignLicense(type: Copy) {

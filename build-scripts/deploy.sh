@@ -9,8 +9,8 @@ cd "$TRAVIS_BUILD_DIR"/components || exit
 # If we do nothing our automatic tag generator will result in 'HEAD'.
 # So, to avoid this, we utilise our SQUONK_IMAGE_TAG variable -
 # if this is not a tagged build then set it to 'latest'
-# otherwise copy the tag value.
-LATEST_TAG='travis'
+# otherwise use the Travis tag value.
+LATEST_TAG='latest'
 export SQUONK_IMAGE_TAG="${TRAVIS_TAG:-$LATEST_TAG}"
 
 # Login to docker.io
