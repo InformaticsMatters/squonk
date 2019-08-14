@@ -60,9 +60,15 @@ cache:
 
 matrix:
   include:
+
   - stage: build
+    name: Build and Test
     script: build-scripts/build.sh
+
   - stage: docker
+    name: Docker Build
     script: build-scripts/docker.sh
+
   - stage: deploy
+    name: Docker Build and Push
     script: build-scripts/deploy.sh
