@@ -3,7 +3,7 @@
 # A build script used by Travis
 #
 # If you're a user then execute from the project root,
-# e.g. ./build-sceripts/build.sh
+# e.g. ./build-scripts/deploy.sh
 
 # Set the project path
 if [[ -z "$TRAVIS_BUILD_DIR" ]]; then
