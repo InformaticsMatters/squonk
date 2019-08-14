@@ -47,6 +47,7 @@ install:
 - cd "$TRAVIS_BUILD_DIR"/components
 - ./gradlew installChemaxonLicense
 - ./gradlew installChemaxonLibrary
+- ls -l ../build-scripts
 
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
