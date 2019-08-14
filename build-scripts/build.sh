@@ -17,7 +17,7 @@ fi
 export CHEMAXON_HOME="$PROJECT_DIR"/data/licenses
 # Do ChemAxon files exist? Some tests rely on these files.
 # If not present we'll set a corresponding environment variable.
-if [[ ! -f "$PROJECT_DIR"/data/licences/license.cxl ]]; then
+if [[ ! -f "$PROJECT_DIR"/data/licenses/license.cxl ]]; then
   export CHEMAXON_LICENCE_ABSENT=yes
 fi
 if [[ ! -f "$PROJECT_DIR"/docker/deploy/images/chemservices/chemaxon_reaction_library.zip ]]; then
