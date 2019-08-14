@@ -1,5 +1,5 @@
 FROM ubuntu:trusty
-MAINTAINER tdudgeon@informaticsmatters.com
+LABEL maintainer="Tim Dudgeon <tdudgeon@informaticsmatters.com>"
 
 # Docker file for test environment
 

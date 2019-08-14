@@ -21,6 +21,7 @@ fi
 # otherwise use the Travis tag value.
 LATEST_TAG='latest'
 export SQUONK_IMAGE_TAG="${TRAVIS_TAG:-$LATEST_TAG}"
+echo "SQUONK_IMAGE_TAG is $SQUONK_IMAGE_TAG"
 
 # Login to docker.io
 echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin docker.io
@@ -50,19 +51,19 @@ docker push squonk/flyway:"$SQUONK_IMAGE_TAG"
 
 if [[ "$SQUONK_IMAGE_TAG" != "$LATEST_TAG" ]]
 then
-    docker tag squonk/chemcentral-search:"$SQUONK_IMAGE_TAG" squonk/chemcentral-search:"$LATEST_TAG"
-    docker tag squonk/coreservices:"$SQUONK_IMAGE_TAG" squonk/coreservices:"$LATEST_TAG"
-    docker tag squonk/cellexecutor:"$SQUONK_IMAGE_TAG" squonk/cellexecutor:"$LATEST_TAG"
-    docker tag squonk/jobexecutor-keycloak:"$SQUONK_IMAGE_TAG" squonk/jobexecutor-keycloak:"$LATEST_TAG"
-    docker tag squonk/chemcentral-loader:"$SQUONK_IMAGE_TAG" squonk/chemcentral-loader:"$LATEST_TAG"
-    docker tag squonk/flyway:"$SQUONK_IMAGE_TAG" tag squonk/flyway:"$LATEST_TAG"
+  docker tag squonk/chemcentral-search:"$SQUONK_IMAGE_TAG" squonk/chemcentral-search:"$LATEST_TAG"
+  docker tag squonk/coreservices:"$SQUONK_IMAGE_TAG" squonk/coreservices:"$LATEST_TAG"
+  docker tag squonk/cellexecutor:"$SQUONK_IMAGE_TAG" squonk/cellexecutor:"$LATEST_TAG"
+  docker tag squonk/jobexecutor-keycloak:"$SQUONK_IMAGE_TAG" squonk/jobexecutor-keycloak:"$LATEST_TAG"
+  docker tag squonk/chemcentral-loader:"$SQUONK_IMAGE_TAG" squonk/chemcentral-loader:"$LATEST_TAG"
+  docker tag squonk/flyway:"$SQUONK_IMAGE_TAG" tag squonk/flyway:"$LATEST_TAG"
 
-    docker push squonk/chemcentral-search:"$LATEST_TAG"
-    docker push squonk/coreservices:"$LATEST_TAG"
-    docker push squonk/cellexecutor:"$LATEST_TAG"
-    docker push squonk/jobexecutor-keycloak:"$LATEST_TAG"
-    docker push squonk/chemcentral-loader:"$LATEST_TAG"
-    docker push squonk/flyway:"$LATEST_TAG"
+  docker push squonk/chemcentral-search:"$LATEST_TAG"
+  docker push squonk/coreservices:"$LATEST_TAG"
+  docker push squonk/cellexecutor:"$LATEST_TAG"
+  docker push squonk/jobexecutor-keycloak:"$LATEST_TAG"
+  docker push squonk/chemcentral-loader:"$LATEST_TAG"
+  docker push squonk/flyway:"$LATEST_TAG"
 fi
 
 popd

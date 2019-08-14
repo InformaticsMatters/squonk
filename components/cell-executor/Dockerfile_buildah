@@ -7,7 +7,7 @@
 # April 2018
 
 FROM informaticsmatters/openjdk_docker
-MAINTAINER Tim Dudgeon <tdudgeon@informaticsmatters.com>
+LABEL maintainer="Tim Dudgeon <tdudgeon@informaticsmatters.com>"
 ADD build/distributions/cell-executor-0.2-SNAPSHOT.tar /
 ENTRYPOINT ["/cell-executor-0.2-SNAPSHOT/bin/cell-executor"]
 EXPOSE 8080
