@@ -11,23 +11,18 @@ if [[ -z "$TRAVIS_BUILD_DIR" ]]; then
 else
   PROJECT_DIR="$TRAVIS_BUILD_DIR"
 fi
-echo "$PROJECT_DIR"
 
 # The CHEMAXON_HOME Variable
 # (the path to the licence directory)
 export CHEMAXON_HOME="$PROJECT_DIR"/data/licenses
 # Do ChemAxon files exist? Some tests rely on these files.
 # If not present we'll set a corresponding environment variable.
-if [[ ! -f "$PROJECT_DIR"/data/licenses/license.cxl ]]; then
+if [[ ! -f "$PROJECT_DIR"/data/licences/license.cxl ]]; then
   export CHEMAXON_LICENCE_ABSENT=yes
 fi
 if [[ ! -f "$PROJECT_DIR"/docker/deploy/images/chemservices/chemaxon_reaction_library.zip ]]; then
   export CHEMAXON_LIBRARY_ABSENT=yes
 fi
-
-echo "$CHEMAXON_HOME"
-echo "$CHEMAXON_LICENCE_ABSENT"
-echo "$CHEMAXON_LIBRARY_ABSENT"
 
 # Define the working directory for cell execution.
 # This is used as a default when no explicit directory is provided.
