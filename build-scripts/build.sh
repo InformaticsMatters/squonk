@@ -6,10 +6,10 @@
 # e.g. ./build-sceripts/deploy.sh
 
 # Set the project path
-if [[ ! "$TRAVIS_BUILD_DIR" ]]; then
-  export PROJECT_DIR="$PWD"
+if [[ -z "$TRAVIS_BUILD_DIR" ]]; then
+  PROJECT_DIR="$PWD"
 else
-  export PROJECT_DIR="$TRAVIS_BUILD_DIR"
+  PROJECT_DIR="$TRAVIS_BUILD_DIR"
 fi
 
 # The CHEMAXON_HOME Variable
