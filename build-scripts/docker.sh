@@ -1,10 +1,22 @@
 #!/bin/bash
 
 # A build script used by Travis
-cd "$TRAVIS_BUILD_DIR"/components || exit
+#
+# If you're a user then execute from the project root,
+# e.g. ./build-sceripts/deploy.sh
+
+# Set the project path
+if [[ ! "$TRAVIS_BUILD_DIR" ]]; then
+  export PROJECT_DIR="$PWD"
+else
+  export PROJECT_DIR="$TRAVIS_BUILD_DIR"
+fi
 
 # Construct the application docker images
-# but we do not push to docker.io.
+# but we do not push to docker.io
+# and do not need to run any tests.
+
+pushd "$PROJECT_DIR"/components
 
 ./gradlew chem-services-rdkit-search:buildDockerImage -x test
 ./gradlew core-services-server:buildDockerImage -x test
@@ -12,3 +24,5 @@ cd "$TRAVIS_BUILD_DIR"/components || exit
 ./gradlew job-executor:buildDockerImage -x test
 ./gradlew rdkit-databases:dockerBuildImage -x test
 ./gradlew database:buildDockerImage -x test
+
+popd

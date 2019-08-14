@@ -1,7 +1,16 @@
 #!/bin/bash
 
 # A build script used by Travis
-cd "$TRAVIS_BUILD_DIR"/components || exit
+#
+# If you're a user then execute from the project root,
+# e.g. ./build-sceripts/build.sh
+
+# Set the project path
+if [[ ! "$TRAVIS_BUILD_DIR" ]]; then
+  export PROJECT_DIR="$PWD"
+else
+  export PROJECT_DIR="$TRAVIS_BUILD_DIR"
+fi
 
 # We assume we're on master (as this is a push script)
 # As we're in the Travis environment we cannot rely on getting
@@ -17,8 +26,10 @@ export SQUONK_IMAGE_TAG="${TRAVIS_TAG:-$LATEST_TAG}"
 echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin docker.io
 
 # Construct the application docker images
-# and push to docker.io. This wil either be a tag
-# or 'latest'
+# and push to docker.io. This will either be a tag
+# or 'latest'.
+
+pushd "$PROJECT_DIR"/components
 
 ./gradlew chem-services-rdkit-search:buildDockerImage -x test
 ./gradlew core-services-server:buildDockerImage -x test
@@ -53,3 +64,5 @@ then
     docker push squonk/chemcentral-loader:"$LATEST_TAG"
     docker push squonk/flyway:"$LATEST_TAG"
 fi
+
+popd
