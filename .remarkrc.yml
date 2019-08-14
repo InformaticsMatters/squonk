@@ -1,0 +1,8 @@
+---
+output: true
+settings:
+  commonmark: true
+plugins:
+  lint:
+    no-shortcut-reference-link: false
+    definition-case: false
