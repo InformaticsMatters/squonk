@@ -18,6 +18,7 @@ fi
 
 pushd "$PROJECT_DIR"/components
 
+./gradlew dockerImageChemServices -x test
 ./gradlew chem-services-rdkit-search:buildDockerImage -x test
 ./gradlew core-services-server:buildDockerImage -x test
 ./gradlew cell-executor:dockerBuildImage -x test
