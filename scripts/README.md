@@ -10,4 +10,4 @@ directory and refer to from the project's `.travis.yml`.
 As a user you should be able to run any script from the project root
 of a local checkout, i.e.: -
 
-    $ ./scripts/build.sh
+    $ ./scripts/compile.sh

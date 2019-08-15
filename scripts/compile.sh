@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# A script used by Travis
+# A script used by users and Travis.
 #
 # If you're a user then execute from the project root,
-# e.g. ./scripts/docker.sh
+# e.g. ./scripts/compile.sh
 
 # Set the project path
 if [[ -z "$TRAVIS_BUILD_DIR" ]]; then
@@ -12,10 +12,6 @@ else
   PROJECT_DIR="$TRAVIS_BUILD_DIR"
 fi
 
-# Construct the application docker images
-# but we do not push to docker.io
-# and do not need to run any tests.
-
 pushd "$PROJECT_DIR"/components || exit
-./gradlew dockerBuildImages -x test
+./gradlew assemble
 popd || exit

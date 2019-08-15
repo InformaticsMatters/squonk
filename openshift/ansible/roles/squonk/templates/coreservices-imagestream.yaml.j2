@@ -1,0 +1,15 @@
+kind: ImageStream
+apiVersion: v1
+metadata:
+  name: coreservices
+  namespace: {{ oc_project }}
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+  - from:
+      kind: DockerImage
+      name: squonk/coreservices:{{ oc_squonk_core_image_tag }}
+    name: "{{ oc_squonk_core_image_tag }}"
+    importPolicy:
+      scheduled: true

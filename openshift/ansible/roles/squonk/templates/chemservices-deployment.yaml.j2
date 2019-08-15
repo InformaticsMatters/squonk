@@ -10,11 +10,6 @@ spec:
   selector:
     name: chemservices-basic
 
-{# We use an ImageStreamTag trigger if we're using CI/CD,
-   where we pull our image from an image stream in the CI/CD project
-   rather than from Docker hub (see the contra-changes to the
-   container definition below) #}
-{% if oc_squonk_image_source_cicd|bool %}
   triggers:
   - type: ImageChange
     imageChangeParams:
@@ -23,9 +18,8 @@ spec:
       - chemservices-basic
       from:
         kind: ImageStreamTag
-        name: chemservices-basic:latest
-        namespace: {{ oc_cicd_project }}
-{% endif %}
+        name: chemservices-basic:{{ oc_squonk_chem_image_tag }}
+        namespace: {{ oc_project }}
 
   strategy:
     type: Recreate
@@ -61,10 +55,6 @@ spec:
 
       containers:
       - name: chemservices-basic
-{% if not oc_squonk_image_source_cicd|bool %}
-        image: squonk/chemservices-basic:{{ oc_squonk_chem_image_tag }}
-        imagePullPolicy: {{ oc_image_pull_policy }}
-{% endif %}
         env:
         - name: POSTGRES_HOSTNAME
           valueFrom:

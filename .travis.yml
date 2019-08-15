@@ -1,10 +1,8 @@
 ---
 
-# A simple travis CI build script.
-# Used primarily to quickly validate the build prior to the OpenShift CI/CD.
+# The Squonk Travis CI build script.
 #
-# See: -
-#
+# For Gradle build hints checkout the following: -
 #   https://guides.gradle.org/executing-gradle-builds-on-travisci
 #   https://docs.travis-ci.com/user/languages/java/
 
@@ -16,9 +14,12 @@ services:
 - docker
 
 stages:
+  # The 'compile' stage
+  # - Compiles the code (a quick initial stage).
+- name: compile
   # The 'build' stage
-  # - Compiles the code while running unit tests.
-- name: build
+  # - Compiles the code and also used to run unit tests.
+- name: test
   # The 'docker' stage
   # - Assembles docker images to verify that they can be constructed.
   #   It does not push these images - it's simply an assembly-check.
@@ -72,13 +73,25 @@ cache:
 matrix:
   include:
 
-  - stage: build
-    name: Build and Test
-    script: scripts/build.sh
+  # Compile-stage jobs...
+
+  - stage: compile
+    name: Compile
+    script: scripts/compile.sh
+
+  # Test-stage jobs...
+
+  - stage: test
+    name: Unit Test
+    script: scripts/test.sh
+
+  # Docker-stage jobs...
 
   - stage: docker
     name: Docker Build
     script: scripts/docker.sh
+
+  # Publish-stage jobs...
 
   - stage: publish
     name: Docker Build and Push

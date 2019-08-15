@@ -1,0 +1,15 @@
+kind: ImageStream
+apiVersion: v1
+metadata:
+  name: jobexecutor
+  namespace: {{ oc_project }}
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+  - from:
+      kind: DockerImage
+      name: squonk/jobexecutor-keycloak:{{ oc_squonk_je_image_tag }}
+    name: "{{ oc_squonk_je_image_tag }}"
+    importPolicy:
+      scheduled: true

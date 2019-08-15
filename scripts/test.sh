@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# A build script used by users and Travis.
+# A script used by users and Travis.
 #
 # If you're a user then execute from the project root,
-# e.g. ./scripts/build.sh
+# e.g. ./scripts/test.sh
 
 # Set the project path
 if [[ -z "$TRAVIS_BUILD_DIR" ]]; then
@@ -33,6 +33,6 @@ fi
 # and write files to it so it has to be somehere Travis will let us write.
 export SQUONK_DOCKER_WORK_DIR="$PROJECT_DIR"/tmp
 
-pushd "$PROJECT_DIR"/components
+pushd "$PROJECT_DIR"/components || exit
 ./gradlew build
-popd
+popd || exit

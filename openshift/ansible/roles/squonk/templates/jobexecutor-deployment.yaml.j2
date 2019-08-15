@@ -10,11 +10,6 @@ spec:
   selector:
     name: jobexecutor
 
-{# We use an ImageStreamTag trigger if we're using CI/CD,
-   where we pull our image from an image stream in the CI/CD project
-   rather than from Docker hub (see the contra-changes to the
-   container definition below) #}
-{% if oc_squonk_image_source_cicd|bool %}
   triggers:
   - type: ImageChange
     imageChangeParams:
@@ -23,9 +18,8 @@ spec:
       - jobexecutor
       from:
         kind: ImageStreamTag
-        name: jobexecutor:latest
-        namespace: {{ oc_cicd_project }}
-{% endif %}
+        name: jobexecutor:{{ oc_squonk_je_image_tag }}
+        namespace: {{ oc_project }}
 
   strategy:
     type: Recreate
@@ -52,10 +46,6 @@ spec:
 
       containers:
       - name: jobexecutor
-{% if not oc_squonk_image_source_cicd|bool %}
-        image: squonk/jobexecutor-keycloak:{{ oc_squonk_je_image_tag }}
-        imagePullPolicy: {{ oc_image_pull_policy }}
-{% endif %}
         env:
         - name: SQUONK_CONTAINER_RUNNER_TYPE
           value: openshift
