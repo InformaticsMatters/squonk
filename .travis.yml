@@ -14,9 +14,12 @@ services:
 - docker
 
 stages:
+  # The 'compile' stage
+  # - Compiles the code (a quick initial stage).
+- name: compile
   # The 'build' stage
   # - Compiles the code and also used to run unit tests.
-- name: build
+- name: test
   # The 'docker' stage
   # - Assembles docker images to verify that they can be constructed.
   #   It does not push these images - it's simply an assembly-check.
@@ -70,15 +73,17 @@ cache:
 matrix:
   include:
 
-  # Build-stage jobs...
+  # Compile-stage jobs...
 
-  - stage: build
-    name: Build (Compile)
+  - stage: compile
+    name: Compile
     script: scripts/compile.sh
 
-  - stage: build
-    name: Build (Build and Test)
-    script: scripts/build.sh
+  # Test-stage jobs...
+
+  - stage: test
+    name: Unit Test
+    script: scripts/test.sh
 
   # Docker-stage jobs...
 
