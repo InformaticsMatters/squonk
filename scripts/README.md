@@ -1,4 +1,4 @@
-# Build Scripts
+# Scripts (for building)
 Scripts for use (mainly) by Travis.
 
 Unlike GitLab, Travis does not permit the execution of multiple commands in
@@ -10,4 +10,4 @@ directory and refer to from the project's `.travis.yml`.
 As a user you should be able to run any script from the project root
 of a local checkout, i.e.: -
 
-    $ ./build-scripts/build.sh
+    $ ./scripts/build.sh

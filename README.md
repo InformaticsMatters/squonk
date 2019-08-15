@@ -70,11 +70,11 @@ _encryption key_.
 Once you've done this you can benefit from the full set of unit tests.
 
 ## Running the Travis files
-Travis runs the scripts in the `build-scripts` directory. These scripts
+Travis runs the scripts in the `scripts` directory. These scripts
 can also be run locally. So, to reproduce the Travis build commands,
 you could move to the project root and run the build script form there: -
 
-    ./build-scripts/build.sh
+    ./scripts/build.sh
     
 ## Contributing
 Currently it is not expected that third party developers will find it
