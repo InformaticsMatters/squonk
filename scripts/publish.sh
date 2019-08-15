@@ -32,13 +32,7 @@ echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin do
 
 pushd "$PROJECT_DIR"/components
 
-./gradlew dockerImageChemServices -x test
-./gradlew chem-services-rdkit-search:buildDockerImage -x test
-./gradlew core-services-server:buildDockerImage -x test
-./gradlew cell-executor:dockerBuildImage -x test
-./gradlew job-executor:buildDockerImage -x test
-./gradlew rdkit-databases:dockerBuildImage -x test
-./gradlew database:buildDockerImage -x test
+./gradlew dockerBuildImages -x test
 
 docker push squonk/chemservices-basic:"$SQUONK_IMAGE_TAG"
 docker push squonk/chemcentral-search:"$SQUONK_IMAGE_TAG"
