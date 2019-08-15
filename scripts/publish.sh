@@ -32,13 +32,9 @@ echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin do
 
 pushd "$PROJECT_DIR"/components || exit
 
-./gradlew chem-services-rdkit-search:buildDockerImage -x test
-./gradlew core-services-server:buildDockerImage -x test
-./gradlew cell-executor:dockerBuildImage -x test
-./gradlew job-executor:buildDockerImage -x test
-./gradlew rdkit-databases:dockerBuildImage -x test
-./gradlew database:buildDockerImage -x test
+./gradlew dockerBuildImages -x test
 
+docker push squonk/chemservices-basic:"$SQUONK_IMAGE_TAG"
 docker push squonk/chemcentral-search:"$SQUONK_IMAGE_TAG"
 docker push squonk/coreservices:"$SQUONK_IMAGE_TAG"
 docker push squonk/cellexecutor:"$SQUONK_IMAGE_TAG"
@@ -51,6 +47,7 @@ docker push squonk/flyway:"$SQUONK_IMAGE_TAG"
 
 if [[ "$SQUONK_IMAGE_TAG" != "$LATEST_TAG" ]]
 then
+  docker tag squonk/chemservices-basic:"$SQUONK_IMAGE_TAG" squonk/chemservices-basic:"$LATEST_TAG"
   docker tag squonk/chemcentral-search:"$SQUONK_IMAGE_TAG" squonk/chemcentral-search:"$LATEST_TAG"
   docker tag squonk/coreservices:"$SQUONK_IMAGE_TAG" squonk/coreservices:"$LATEST_TAG"
   docker tag squonk/cellexecutor:"$SQUONK_IMAGE_TAG" squonk/cellexecutor:"$LATEST_TAG"
@@ -58,6 +55,7 @@ then
   docker tag squonk/chemcentral-loader:"$SQUONK_IMAGE_TAG" squonk/chemcentral-loader:"$LATEST_TAG"
   docker tag squonk/flyway:"$SQUONK_IMAGE_TAG" tag squonk/flyway:"$LATEST_TAG"
 
+  docker push squonk/chemservices-basic:"$LATEST_TAG"
   docker push squonk/chemcentral-search:"$LATEST_TAG"
   docker push squonk/coreservices:"$LATEST_TAG"
   docker push squonk/cellexecutor:"$LATEST_TAG"
