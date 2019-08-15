@@ -59,7 +59,6 @@ _encryption key_.
 
     export SQUONK_DECRYPTION_KEY="GetTheKey"
     cd components
-    ./gradlew installChemaxonLicense
     ./gradlew installChemaxonLicenseToHome
     ./gradlew installChemaxonLibrary
 

@@ -16,11 +16,22 @@ services:
 - docker
 
 stages:
+  # The 'build' stage
+  # - Compiles the code while running unit tests.
 - name: build
+  # The 'docker' stage
+  # - Assembles docker images to verify that they can be constructed.
+  #   It does not push these images - it's simply an assembly-check.
+  #   We do this if we're not the result of a tag and we're not on master.
 - name: docker
-  if: branch != master
-- name: deploy
-  if: branch = master
+  if: tag IS NOT present AND branch != master
+  # The 'publish' stage
+  # - Assembles docker images and pushes the resultant images to Docker Hub.
+  #   We execute the 'publish' stage and always publish an image
+  #   on master or when tagged. When tagged the tag value is used for the
+  #   image tag, when not tagged the published image tag is 'latest'.
+- name: publish
+  if: tag IS present OR branch == master
 
 env:
   global:
@@ -69,6 +80,6 @@ matrix:
     name: Docker Build
     script: scripts/docker.sh
 
-  - stage: deploy
+  - stage: publish
     name: Docker Build and Push
-    script: scripts/deploy.sh
+    script: scripts/publish.sh
