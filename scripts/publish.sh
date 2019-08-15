@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# A build script used by Travis
+# A script used by Travis
 #
 # If you're a user then execute from the project root,
 # e.g. ./scripts/publish.sh
@@ -30,7 +30,7 @@ echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin do
 # and push to docker.io. This will either be a tag
 # or 'latest'.
 
-pushd "$PROJECT_DIR"/components
+pushd "$PROJECT_DIR"/components || exit
 
 ./gradlew chem-services-rdkit-search:buildDockerImage -x test
 ./gradlew core-services-server:buildDockerImage -x test
@@ -66,4 +66,4 @@ then
   docker push squonk/flyway:"$LATEST_TAG"
 fi
 
-popd
+popd || exit

@@ -1,0 +1,15 @@
+kind: ImageStream
+apiVersion: v1
+metadata:
+  name: cellexecutor
+  namespace: {{ oc_project }}
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+  - from:
+      kind: DockerImage
+      name: squonk/cellexecutor:{{ oc_squonk_cell_image_tag }}
+    name: "{{ oc_squonk_cell_image_tag }}"
+    importPolicy:
+      scheduled: true

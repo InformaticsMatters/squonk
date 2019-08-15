@@ -10,11 +10,6 @@ spec:
   selector:
     name: coreservices
 
-{# We use an ImageStreamTag trigger if we're using CI/CD,
-   where we pull our image from an image stream in the CI/CD project
-   rather than from Docker hub (see the contra-changes to the
-   container definition below) #}
-{% if oc_squonk_image_source_cicd|bool %}
   triggers:
   - type: ImageChange
     imageChangeParams:
@@ -23,9 +18,8 @@ spec:
       - coreservices
       from:
         kind: ImageStreamTag
-        name: coreservices:latest
-        namespace: {{ oc_cicd_project }}
-{% endif %}
+        name: coreservices:{{ oc_squonk_core_image_tag }}
+        namespace: {{ oc_project }}
 
   strategy:
     type: Recreate
@@ -53,10 +47,6 @@ spec:
 
       containers:
       - name: coreservices
-{% if not oc_squonk_image_source_cicd|bool %}
-        image: squonk/coreservices:{{ oc_squonk_core_image_tag }}
-        imagePullPolicy: {{ oc_image_pull_policy }}
-{% endif %}
         env:
         - name: RABBITMQ_HOSTNAME
           valueFrom:

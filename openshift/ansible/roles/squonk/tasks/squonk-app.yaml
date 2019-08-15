@@ -1,5 +1,14 @@
 ---
 
+- name: Deploy application Image Streams
+  k8s:
+    definition: "{{ lookup('template', item.name)|from_yaml }}"
+  loop:
+  - name: cellexecutor-imagestream.yaml.j2
+  - name: chemservices-imagestream.yaml.j2
+  - name: coreservices-imagestream.yaml.j2
+  - name: jobexecutor-imagestream.yaml.j2
+
 - name: Deploy application objects
   k8s:
     definition: "{{ lookup('template', item.name)|from_yaml }}"

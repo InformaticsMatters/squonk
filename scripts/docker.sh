@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# A build script used by Travis
+# A script used by Travis
 #
 # If you're a user then execute from the project root,
 # e.g. ./scripts/docker.sh
@@ -16,7 +16,7 @@ fi
 # but we do not push to docker.io
 # and do not need to run any tests.
 
-pushd "$PROJECT_DIR"/components
+pushd "$PROJECT_DIR"/components || exit
 
 ./gradlew chem-services-rdkit-search:buildDockerImage -x test
 ./gradlew core-services-server:buildDockerImage -x test
@@ -25,4 +25,4 @@ pushd "$PROJECT_DIR"/components
 ./gradlew rdkit-databases:dockerBuildImage -x test
 ./gradlew database:buildDockerImage -x test
 
-popd
+popd || exit

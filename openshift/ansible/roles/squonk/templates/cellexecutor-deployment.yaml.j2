@@ -10,11 +10,6 @@ spec:
   selector:
     name: cellexecutor
 
-{# We use an ImageStreamTag trigger if we're using CI/CD,
-   where we pull our image from an image stream in the CI/CD project
-   rather than from Docker hub (see the contra-changes to the
-   container definition below) #}
-{% if oc_squonk_image_source_cicd|bool %}
   triggers:
   - type: ImageChange
     imageChangeParams:
@@ -23,9 +18,8 @@ spec:
       - cellexecutor
       from:
         kind: ImageStreamTag
-        name: cellexecutor:latest
-        namespace: {{ oc_cicd_project }}
-{% endif %}
+        name: cellexecutor:{{ oc_squonk_cell_image_tag }}
+        namespace: {{ oc_project }}
 
   strategy:
     type: Recreate
@@ -53,10 +47,6 @@ spec:
 
       containers:
       - name: cellexecutor
-{% if not oc_squonk_image_source_cicd|bool %}
-        image: squonk/cellexecutor:{{ oc_squonk_cell_image_tag }}
-        imagePullPolicy: {{ oc_image_pull_policy }}
-{% endif %}
         env:
         - name: RABBITMQ_HOSTNAME
           valueFrom:
