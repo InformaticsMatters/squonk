@@ -45,7 +45,7 @@ env:
 
 install:
 - pushd "$TRAVIS_BUILD_DIR"/components
-- ./gradlew installChemaxonLicense
+- ./gradlew installChemaxonLicenseToHome
 - ./gradlew installChemaxonLibrary
 - popd
 
@@ -63,12 +63,12 @@ matrix:
 
   - stage: build
     name: Build and Test
-    script: build-scripts/build.sh
+    script: scripts/build.sh
 
   - stage: docker
     name: Docker Build
-    script: build-scripts/docker.sh
+    script: scripts/docker.sh
 
   - stage: deploy
     name: Docker Build and Push
-    script: build-scripts/deploy.sh
+    script: scripts/deploy.sh

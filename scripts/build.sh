@@ -12,9 +12,6 @@ else
   PROJECT_DIR="$TRAVIS_BUILD_DIR"
 fi
 
-# The CHEMAXON_HOME Variable
-# (the path to the licence directory)
-export CHEMAXON_HOME="$PROJECT_DIR"/data/licenses
 # Do ChemAxon files exist? Some tests rely on these files.
 # If not present we'll set a corresponding environment variable.
 if [[ -f "$PROJECT_DIR"/data/licenses/license.cxl ]]; then
