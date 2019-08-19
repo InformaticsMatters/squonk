@@ -44,8 +44,8 @@ oc_squonk_cell_cpu_request: 100m
 oc_squonk_cell_mem_request: 100Mi
 oc_squonk_cell_java_tool_options: -Xmx80m
 oc_squonk_chem_cpu_request: 100m
-oc_squonk_chem_mem_request: 100Mi
-oc_squonk_chem_java_tool_options: -Xmx80m
+oc_squonk_chem_mem_request: 300Mi
+oc_squonk_chem_java_tool_options: -Xmx240m
 oc_squonk_core_cpu_request: 100m
 oc_squonk_core_mem_request: 100Mi
 oc_squonk_core_java_tool_options: -Xmx80m
