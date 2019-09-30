@@ -30,7 +30,7 @@ You can get a summary of the services that are available:
 
 
 ```
-curl -H "SquonkUsername: user1" http://<server:port>/jobexecutor/rest/v1/services/
+curl http://<server:port>/jobexecutor/rest/v1/services/
 ```
 
 Replace `<server:port>` with the appropriate hostname and port e.g. 172.20.0.2:8080. You might need to use https as the
@@ -41,7 +41,7 @@ Identify the service you want to use. e.g. `core.dataset.filter.slice.v1` which 
 a subset of a dataset. To see the full details of the service use the service ID to fetch the full service descriptor:
 
 ```
-curl -H "SquonkUsername: user1" http://<server:port>/jobexecutor/rest/v1/services/core.dataset.filter.slice.v1
+curl http://<server:port>/jobexecutor/rest/v1/services/core.dataset.filter.slice.v1
 ``` 
 
 The most important things to look for are the `inputDescriptors` and `outputDescriptors` which identify the expected inputs 
@@ -97,7 +97,7 @@ _Listing jobs_
 Display a list of your current jobs:
 
 ```
-curl -H "SquonkUsername: user1" http://<server:port>/jobexecutor/rest/v1/jobs/
+curl http://<server:port>/jobexecutor/rest/v1/jobs/
 ```
 
 Initially this will be an empty array as you have not yet submitted any.
@@ -108,7 +108,6 @@ From the root directory of the squonk project directory execute something like t
 
 ```
 curl -kL -X POST \
-  -H "SquonkUsername: user1"\
   -F 'options={"skip":5,"count":5}'\
   -F 'input_data=@data/testfiles/Kinase_inhibs.json.gz;type=application/x-squonk-molecule-object+json;filename=input_data'\
   -F 'input_metadata=@data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata'\
@@ -123,20 +122,20 @@ The result is some JSON that includes the job ID, and hopefully says that the jo
 You can then monitor the job's status like this:
 
 ```
-curl -H "SquonkUsername: user1" http://<server:port>/jobexecutor/rest/v1/jobs/<job-id>/status/
+curl http://<server:port>/jobexecutor/rest/v1/jobs/<job-id>/status/
 ```
 
 Substitute in your job ID. 
 Once the status is `RESULTS_READY` you can retrieve the results using:
 
 ```
-curl -H "SquonkUsername: user1" http://<server:port>/jobexecutor/rest/v1/jobs/<job-id>/results/
+curl http://<server:port>/jobexecutor/rest/v1/jobs/<job-id>/results/
 ```
 
 Once you have the results you must delete the job using:
 
 ```
-curl -X DELETE -H "SquonkUsername: user1" http://<server:port>/jobexecutor/rest/v1/jobs/<job-id>/
+curl -X DELETE http://<server:port>/jobexecutor/rest/v1/jobs/<job-id>/
 ```
 
 ## Authentication
@@ -247,7 +246,7 @@ curl -kL --post301\
   -F 'input_metadata=@data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata'\
   -H "Content-Type: multipart/mixed"\
   -H "Authorization: bearer $token"\
-  -H "SquonkUsername: user1" http://<server:port>/jobexecutor/rest/v1/jobs/core.dataset.filter.slice.v1
+  http://<server:port>/jobexecutor/rest/v1/jobs/core.dataset.filter.slice.v1
 ```
 
 See [here](https://curl.haxx.se/docs/manpage.html#--post301) for more info on those options.
