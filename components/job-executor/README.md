@@ -221,7 +221,7 @@ curl\
   -F 'input_metadata=@data/testfiles/Kinase_inhibs.metadata;type=application/x-squonk-dataset-metadata+json;filename=input_metadata'\
   -H "Content-Type: multipart/mixed"\
   -H "Authorization: bearer $token"\
-  -H "SquonkUsername: user1" http://<server:port>/jobexecutor/rest/v1/jobs/core.dataset.filter.slice.v1
+  http://<server:port>/jobexecutor/rest/v1/jobs/core.dataset.filter.slice.v1
 ```
 
 ### Working behind reverse proxy servers.
