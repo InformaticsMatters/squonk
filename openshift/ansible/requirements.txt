@@ -1,6 +1,6 @@
-ansible == 2.7.12
+ansible == 2.8.6
 
 # For json_query in Ansible...
 jmespath == 0.9.4
 # For k8s module in Ansible...
-openshift == 0.9.0
+openshift == 0.10.0

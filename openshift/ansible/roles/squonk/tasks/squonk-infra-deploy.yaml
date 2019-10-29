@@ -70,6 +70,7 @@
     -p SQUONK_NAMESPACE={{ oc_project }}
     -p INFRA_SA={{ oc_infra_sa }}
     -p RABBITMQ_HOST=rabbitmq.{{ oc_infra_project }}.svc
+    -p SQUONK_PASS= {{ oc_squonk_rabbitmq_pass }}
     | oc create -f -
   when: not j_result.stdout | regex_search('^squonk-rabbitmq-creator\s', multiline=True)
 
