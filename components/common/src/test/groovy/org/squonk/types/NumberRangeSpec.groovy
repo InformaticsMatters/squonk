@@ -35,6 +35,7 @@ class NumberRangeSpec extends Specification {
         def r2 = mapper.readValue(json, NumberRange.class)
 
         then:
+        json == '{"@class":"org.squonk.types.NumberRange$Integer","minValue":0,"maxValue":10}'
         r2 != null
         r2.minValue == 0
         r2.maxValue == 10
