@@ -1,0 +1,30 @@
+---
+
+# Squonk Ansible parameter adjustments for...
+# OpenRiskNet Development
+
+oc_master_hostname: okd.informaticsmatters.com
+oc_master_port: 443
+oc_routes_basename: okd.informaticsmatters.com
+
+oc_nfs_server: cloudv199.zdv.uni-mainz.de
+
+oc_infra_volume_type: nfs
+oc_infra_backup_volume_type: nfs
+
+oc_keycloak_realm: openrisknet
+
+oc_infra_project: openrisknet-infra
+oc_infra_project_display_name: OpenRiskNet Infrastructure
+oc_infra_sa: openrisknet
+oc_infra_backup_nfs_path: /exports
+oc_infra_backup_volume_size: 75Gi
+
+oc_postgresql_image_stream_tag: "9.5"
+oc_postgresql_volume_size: 50Gi
+
+oc_cell_work_pvc_size: 1Gi
+oc_cc_postgresql_volume_size: 5Gi
+oc_cc_loader_volume_size: 1Gi
+
+oc_image_pull_policy: Always

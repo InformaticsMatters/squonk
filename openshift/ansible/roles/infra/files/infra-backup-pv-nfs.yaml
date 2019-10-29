@@ -27,7 +27,7 @@ parameters:
   value: /nfs-ib
 
 - name: NFS_VOLUME
-  value: pv-backup-dir
+  value: pv-backup
 
 - name: BACKUP_VOLUME_SIZE
   value: 50Gi
