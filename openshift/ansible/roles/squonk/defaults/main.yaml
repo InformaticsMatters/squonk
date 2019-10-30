@@ -67,6 +67,5 @@ oc_delete_database: no
 
 # Squonk passwords
 oc_squonk_nobody_user_pass: "{{ ansible_env.IM_SQUONK_NOBODY_USER_PASS | default('blob1234', true) }}"
-oc_squonk_user_1_password: "{{ ansible_env.IM_SQUONK_USER_1_PASSWORD | default('blob1234', true) }}"
 # Squonk infrastructure passwords
 oc_squonk_rabbitmq_pass: "{{ ansible_env.IM_SQUONK_RABBITMQ_PASS | default('blob1234', true) }}"
