@@ -1,7 +1,7 @@
 ---
 
 # Squonk Ansible parameter adjustments for...
-# OpenRiskNet Development
+# OpenRiskNet (JGU) Development
 
 oc_master_hostname: okd.informaticsmatters.com
 oc_master_port: 443
@@ -30,4 +30,4 @@ oc_cell_work_pvc_size: 5Gi
 oc_cc_postgresql_volume_size: 5Gi
 oc_cc_loader_volume_size: 1Gi
 
-oc_image_pull_policy: Always
+oc_image_pull_policy: IfNotPresent
