@@ -4,17 +4,17 @@
 # we can now continue with Squonk deployment...
 
 - name: Login as The Squonk Developer
-  shell: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
+  command: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 
 - name: Move to Squonk Project
-  shell: oc project {{ oc_project }}
+  command: oc project {{ oc_project }}
   changed_when: False
 
 # Deploy...
 
 - name: Get DeploymentConfigs
-  shell: oc get dc
+  command: oc get dc
   register: dc_result
   changed_when: False
 

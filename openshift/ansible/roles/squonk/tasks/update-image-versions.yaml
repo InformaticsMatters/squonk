@@ -23,7 +23,7 @@
   changed_when: False
 
 - name: Get DC Information
-  shell: oc get dc/{{ item }} -o json
+  command: oc get dc/{{ item }} -o json
   register: dc_result
   loop:
   - cellexecutor
@@ -70,31 +70,31 @@
 # by setting the new image and tag...
 
 - name: Change CellExecutor
-  shell: >
+  command: >
     oc set image dc/cellexecutor
     cellexecutor=squonk/cellexecutor:{{ oc_squonk_cell_image_tag }}
   when: versions['squonk/cellexecutor'][0] != oc_squonk_cell_image_tag
 
 - name: Change ChemServices
-  shell: >
+  command: >
     oc set image dc/chemservices-basic
     chemservices-basic=squonk/chemservices-basic:{{ oc_squonk_cell_image_tag }}
   when: versions['squonk/chemservices-basic'][0] != oc_squonk_chem_image_tag
 
 - name: Change CoreServices
-  shell: >
+  command: >
     oc set image dc/coreservices
     coreservices=squonk/coreservices:{{ oc_squonk_core_image_tag }}
   when: versions['squonk/coreservices'][0] != oc_squonk_core_image_tag
 
 - name: Change JobExecutor
-  shell: >
+  command: >
     oc set image dc/jobexecutor-keycloak
     jobexecutor-keycloak=squonk/jobexecutor-keycloak:{{ oc_squonk_je_image_tag }}
   when: versions['squonk/jobexecutor-keycloak'][0] != oc_squonk_je_image_tag
 
 - name: Change Portal
-  shell: >
+  command: >
     oc set image dc/portal
     portal=squonk/portal:{{ oc_squonk_portal_image_tag }}
   when: versions['squonk/portal'][0] != oc_squonk_portal_image_tag
@@ -102,7 +102,7 @@
 # And now wait for the various Pods...
 
 - name: Wait for new CellExecutor to rollout
-  shell: oc get dc/cellexecutor -o yaml
+  command: oc get dc/cellexecutor -o yaml
   register: dc_result
   until: dc_result.stdout | regex_search(pattern % new_version, multiline=True)
   delay: 20
@@ -113,7 +113,7 @@
   when: versions['squonk/cellexecutor'][0] != oc_squonk_cell_image_tag
 
 - name: Wait for new ChemServices to rollout
-  shell: oc get dc/chemservices-basic -o yaml
+  command: oc get dc/chemservices-basic -o yaml
   register: dc_result
   until: dc_result.stdout | regex_search(pattern % new_version, multiline=True)
   delay: 20
@@ -124,7 +124,7 @@
   when: versions['squonk/chemservices-basic'][0] != oc_squonk_chem_image_tag
 
 - name: Wait for new CoreServices to rollout
-  shell: oc get dc/coreservices -o yaml
+  command: oc get dc/coreservices -o yaml
   register: dc_result
   until: dc_result.stdout | regex_search(pattern % new_version, multiline=True)
   delay: 20
@@ -135,7 +135,7 @@
   when: versions['squonk/coreservices'][0] != oc_squonk_core_image_tag
 
 - name: Wait for new JobExecutor to rollout
-  shell: oc get dc/jobexecutor-keycloak -o yaml
+  command: oc get dc/jobexecutor-keycloak -o yaml
   register: dc_result
   until: dc_result.stdout | regex_search(pattern % new_version, multiline=True)
   delay: 20
@@ -146,7 +146,7 @@
   when: versions['squonk/jobexecutor-keycloak'][0] != oc_squonk_je_image_tag
 
 - name: Wait for new Portal to rollout
-  shell: oc get dc/portal -o yaml
+  command: oc get dc/portal -o yaml
   register: dc_result
   until: dc_result.stdout | regex_search(pattern % new_version, multiline=True)
   delay: 20
