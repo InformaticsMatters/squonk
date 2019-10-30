@@ -147,9 +147,12 @@ objects:
               cpu: ${PG_CPU_REQUEST}
               memory: ${PG_MEM_REQUEST}
           readinessProbe:
-            initialDelaySeconds: 90
-            failureThreshold: 10
-            periodSeconds: 10
+            # Wait 2 minutes
+            # then fail after more than 2 minutes of failures...
+            initialDelaySeconds: 120
+            failureThreshold: 9
+            periodSeconds: 15
+            timeoutSeconds: 4
             exec:
               command:
               - "/bin/sh"
@@ -157,9 +160,12 @@ objects:
               - "-c"
               - pg_isready -h 127.0.0.1 -p 5432
           livenessProbe:
-            initialDelaySeconds: 90
-            failureThreshold: 2
+            # Wait 2 minutes
+            # then fail after more than 2 minutes of failures...
+            initialDelaySeconds: 120
+            failureThreshold: 9
             periodSeconds: 15
+            timeoutSeconds: 4
             exec:
               command:
               - "/bin/sh"

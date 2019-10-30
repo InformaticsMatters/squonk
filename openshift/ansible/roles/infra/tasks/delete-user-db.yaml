@@ -20,15 +20,15 @@
     - oc_db_user is defined
 
 - name: Login as Admin
-  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  command: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
 - name: Move to Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+  command: oc project {{ oc_infra_project }}
   changed_when: False
 
 - name: Remove prior temporary Objects (Infrastructure)
-  shell: oc delete all,cm --selector template=db-delete
+  command: oc delete all,cm --selector template=db-delete
 
 - name: Delete User and Database
   shell: >

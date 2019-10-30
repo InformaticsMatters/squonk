@@ -30,7 +30,7 @@
     - db_namespace is defined
 
 - name: Login (admin)
-  shell: >
+  command: >
     oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
     --insecure-skip-tls-verify=true
   changed_when: False
@@ -39,20 +39,19 @@
   # and create it if it does not exist.
 
 - name: Check the User Project
-  shell: oc get projects
+  command: oc get projects
   register: projects_result
   changed_when: False
 
 - name: Create the User Project
-  shell: >
-    oc new-project {{ db_namespace }}
+  command: oc new-project {{ db_namespace }}
   when: db_namespace not in projects_result.stdout
 
   # Assert there are no database credentials -
   # At the moment we only allow one set of database credentials per project
 
 - name: Check the User Project's Secrets
-  shell: oc get secrets --namespace  {{ db_namespace }}
+  command: oc get secrets --namespace  {{ db_namespace }}
   register: secrets_result
   changed_when: False
 
@@ -67,11 +66,11 @@
   # in the infrastructure project...
 
 - name: Move to Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+  command: oc project {{ oc_infra_project }}
   changed_when: False
 
 - name: Remove prior temporary Objects (Infrastructure)
-  shell: oc delete all,cm --selector template=db-create
+  command: oc delete all,cm --selector template=db-create
 
 - name: Create User and Database
   shell: >

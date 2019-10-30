@@ -12,23 +12,23 @@
       Press Ctrl+c and then "a" if you've changed your mind
 
 - name: Login (admin)
-  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  command: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
 # To un-deploy the infrastructure, the fastest way is to
 # simply delete the project.
 
 - name: Check Infra Project
-  shell: oc get projects
+  command: oc get projects
   register: projects_result
   changed_when: False
 
 - name: Delete Infra Project
-  shell: oc delete project/{{ oc_infra_project }}
+  command: oc delete project/{{ oc_infra_project }}
   when: projects_result.stdout|regex_search('^%s\s.*Active$' % oc_infra_project, multiline=True)
 
 - name: Wait for Infra project deletion
-  shell: oc get projects
+  command: oc get projects
   register: pj_cmd
   retries: 20
   delay: 30
@@ -38,7 +38,7 @@
 # Delete SCC
 
 - name: Check Infra SCC
-  shell: oc get scc
+  command: oc get scc
   register: scc_result
   changed_when: False
 
@@ -49,16 +49,31 @@
 # Remove persistent volumes
 
 - name: Check Infra PVs (nfs)
-  shell: oc get pv
+  command: oc get pv
   register: s_pv_result
   changed_when: False
   when: oc_infra_volume_type == 'nfs'
 
 - name: Delete Infra PVs (nfs)
-  shell: oc delete pv/{{ item }}
+  command: oc delete pv/{{ item }}
   loop:
   - pv-postgresql
   - pv-rabbitmq
   when:
   - oc_infra_volume_type == 'nfs'
   - s_pv_result.stdout|regex_search('^%s\s' % item, multiline=True)
+
+# Finally - display a warning about non-dynamic volume data content...
+
+- name: Display non-dynamic volume data warning
+  vars:
+    msg: |
+      -------
+      CAUTION
+      -------
+      Persistent volume content may not have been removed.
+      This is especially true if you are using non-dynamic volumes like NFS.
+      If you want to completely remove infrastructure data
+      please check and erase any non-dynamic volume content.
+  debug:
+    msg: "{{ msg.split('\n') }}"

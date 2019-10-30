@@ -187,9 +187,11 @@ objects:
             mountPath: /etc/x509/jgroups
             readOnly: true
           readinessProbe:
-            initialDelaySeconds: 120
-            failureThreshold: 12
-            periodSeconds: 10
+            # Wait 4 minutes
+            # then fail after more than a minute of failures...
+            initialDelaySeconds: 240
+            failureThreshold: 5
+            periodSeconds: 15
             successThreshold: 1
             timeoutSeconds: 4
             httpGet:
@@ -197,8 +199,10 @@ objects:
               port: 8080
               scheme: HTTP
           livenessProbe:
+            # Wait 4 minutes
+            # then fail after more than a minute of failures...
             initialDelaySeconds: 240
-            failureThreshold: 2
+            failureThreshold: 5
             periodSeconds: 15
             successThreshold: 1
             timeoutSeconds: 4
