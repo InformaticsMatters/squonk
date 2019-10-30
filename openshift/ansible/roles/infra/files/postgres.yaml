@@ -164,7 +164,7 @@ objects:
             # then fail after more than 2 minutes of failures...
             initialDelaySeconds: 120
             failureThreshold: 9
-            periodSeconds: 15
+            periodSeconds: 15x
             timeoutSeconds: 4
             exec:
               command:
