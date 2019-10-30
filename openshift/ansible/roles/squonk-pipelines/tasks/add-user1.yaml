@@ -39,7 +39,7 @@
 
 - name: Create a user1 password
   set_fact:
-    user1_password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"
+    user1_password: "{{ oc_squonk_user_1_password }}"
   when:
   - user1_password is undefined
   - not user_check|json_query('json')
