@@ -10,10 +10,13 @@
 #  oc_db_user
 #
 # Typical execution requires you to add your parameters to the play
-# command-line: -
+# command-line. You do not need to provide the namespace of your
+# project as the secrets that were put there by the 'create' script
+# are left: -
 #
 #  ansible-playbook playbooks/infra/delete-user-db.yaml \
-#     -e oc_db=my-db -e oc_db_user=user123
+#     -e oc_db=my-db \
+#     -e oc_db_user=user123
 #
 # At the successful end of this play: -
 #
@@ -36,6 +39,10 @@
     that:
     - oc_db is defined
     - oc_db_user is defined
+
+- name: Check oc
+  command: oc
+  changed_when: False
 
 - name: Login as Admin
   command: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}

@@ -2,6 +2,9 @@
 
 # Create a new user, password and database.
 #
+# The machine you run this playbook on must have the `oc` command
+# on the execution PATH.
+#
 # Before you run this playbook you will need to define variables to describe
 # your OpenShift deployment and its infrastructure configuration using the
 # following variables.: -
@@ -61,6 +64,10 @@
     that:
     - oc_db is defined
     - oc_db_namespace is defined
+
+- name: Check oc
+  command: oc
+  changed_when: False
 
 - name: Login (admin) ({{ oc_master_url }})
   command: >
