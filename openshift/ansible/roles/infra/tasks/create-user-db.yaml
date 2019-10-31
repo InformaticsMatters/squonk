@@ -22,18 +22,22 @@
 #  oc_db_user           <- Optional ... randomly generated if not defined
 #  oc_db_user_password  <- Optional ... randomly generated if not defined
 #
-# Typical execution requires you to place your parameters in the deployment's
-# parameter file, which will live in the `env` directory named something like
-# 'params-orn-???.yaml'. With parameters in that file run this playbook: -
+# Typical execution, from with in the squonk project's 'openshift/ansible'
+# directory, simplifies the process and allows you to just add the
+# 'oc_db' parameters to the play's command-line as other variables are
+# defined for you in the deployment's own parameter file: -
 #
-#  ansible-playbook playbooks/infra/create-user-db.yaml
+#  ansible-playbook playbooks/infra/create-user-db.yaml \
+#     -e oc_db=my-db \
+#     -e oc_db_namespace=my-project \
+#     -e oc_db_user=me
 #
-# It is an error to deploy another set of credentials
-# using the same database and namespace, but you can create
-# more than one set of credentials (using different databases).
+# Note: It is an error to deploy another set of credentials
+# ----  using the same database and namespace, but you can create
+#       more than one set of credentials (using different databases).
 #
 # Note: If the DB application project (oc_db) does not exist it will be created
-#       by the 'admin' user. Access to the project for other users needs to be
+# ----  by the 'admin' user. Access to the project for other users needs to be
 #       granted by the admin user after execution of this playbook.
 #
 # At the successful end of this play: -
@@ -41,6 +45,7 @@
 # - The user's project (oc_db_namespace) will exist
 # - A set of secrets called 'database-credentials-<oc_db>' will
 #   be present in the user's project
+# - A database and database user will have been created
 
 - name: Assert cluster variables have been defined
   assert:

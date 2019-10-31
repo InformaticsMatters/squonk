@@ -9,12 +9,18 @@
 #  oc_db
 #  oc_db_user
 #
-# This playbook *does not* remove the credentials from the user's
-# project.
+# Typical execution requires you to add your parameters to the play
+# command-line: -
+#
+#  ansible-playbook playbooks/infra/delete-user-db.yaml \
+#     -e oc_db=my-db -e oc_db_user=user123
 #
 # At the successful end of this play: -
 #
 # - The DB user and database will have been deleted.
+#
+# Note: This playbook *does not* remove the credentials
+# ----  from the user's project.
 
 - name: Assert cluster variables have been defined
   assert:
