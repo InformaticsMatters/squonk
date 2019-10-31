@@ -105,8 +105,8 @@ oc_db_sso_db_password: "{{ ansible_env.IM_INFRA_KEYCLOAK_DB_PASSWORD | default('
 # new database for projects. The following  (not defined here)
 # must be defined by the user on the command-line:
 #
-# db
-# db_namespace
+# oc_db
+# oc_db_namespace
 oc_db_user: "{{ lookup('password','/dev/null chars=lowercase length=10') }}"
 oc_db_user_password: "{{ lookup('password','/dev/null chars=ascii_letters,digits length=10') }}"
 

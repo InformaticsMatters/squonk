@@ -1,7 +1,10 @@
 ---
 
 # Deletes a database user and database.
-# The database name and user to be supplied: -
+#
+# See the matching 'create-user-db.yaml` playbook for further documentation.
+#
+# The database name and user has to be supplied: -
 #
 #  oc_db
 #  oc_db_user
@@ -13,7 +16,16 @@
 #
 # - The DB user and database will have been deleted.
 
-- name: Assert required variables have been defined
+- name: Assert cluster variables have been defined
+  assert:
+    that:
+    - oc_master_url is defined
+    - oc_admin is defined
+    - oc_admin_password is defined
+    - oc_infra_project is defined
+    - oc_infra_sa is defined
+
+- name: Assert database variables have been defined
   assert:
     that:
     - oc_db is defined
@@ -35,7 +47,7 @@
     oc process
     -f {{ role_path }}/files/infra-db-delete.yaml
     -p DB_USER={{ oc_db_user }}
-    -p DB={{ db }}
+    -p DB={{ oc_db }}
     -p INFRA_SA={{ oc_infra_sa }}
     -p DB_HOST={{ oc_postgresql_service }}.{{ oc_infra_project }}.svc
     | oc create -f -
