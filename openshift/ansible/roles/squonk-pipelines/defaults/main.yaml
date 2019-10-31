@@ -1,5 +1,8 @@
 ---
 
+# Squonk passwords
+oc_squonk_user_1_password: "{{ ansible_env.IM_SQUONK_USER_1_PASSWORD | default('blob1234', true) }}"
+
 # The default pipelines to post.
 # The value must be a value the 1st-level of the oc_p_sd_poster map (below)
 oc_p_origin: pipelines

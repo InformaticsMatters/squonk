@@ -7,28 +7,28 @@
 # it's what's expected of the downstream plays.
 
 - name: Login as MiniShift system:admin
-  shell: oc login {{ oc_master_url }} -u system:admin
+  command: oc login {{ oc_master_url }} -u system:admin
   changed_when: False
 
 - name: Get users
-  shell: oc get users
+  command: oc get users
   register: users_result
   changed_when: False
 
 - name: Create users
-  shell: oc create user {{ item }}
+  command: oc create user {{ item }}
   loop:
   - "{{ oc_admin }}"
   - "{{ oc_user }}"
   when: not users_result.stdout|regex_search('^%s\s' % item, multiline=True)
 
 - name: Get cluster role bindings
-  shell: oc adm policy who-can cluster-admin - --all-namespaces -o yaml
+  command: oc adm policy who-can cluster-admin - --all-namespaces -o yaml
   register: role_result
   changed_when: False
 
 - name: Assigning cluster-admin to users
-  shell: oc adm policy add-cluster-role-to-user cluster-admin {{ item }}
+  command: oc adm policy add-cluster-role-to-user cluster-admin {{ item }}
   loop:
   - "{{ oc_admin }}"
   vars:

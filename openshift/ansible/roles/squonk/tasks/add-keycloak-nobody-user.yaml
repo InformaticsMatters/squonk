@@ -18,7 +18,7 @@
 - name: Define the 'nobody' user (and assign a password)
   set_fact:
     user_name: nobody
-    user_password: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"
+    user_password: "{{ oc_squonk_nobody_user_pass }}"
   tags:
   - keycloak-users
 

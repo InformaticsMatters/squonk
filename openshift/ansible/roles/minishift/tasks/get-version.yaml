@@ -4,7 +4,7 @@
 # into the variable 'minishift_version'...
 
 - name: Query MiniShift Verison
-  shell: minishift version
+  command: minishift version
   register: version_result
   changed_when: False
 

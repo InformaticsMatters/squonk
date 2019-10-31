@@ -1,11 +1,11 @@
 ---
 
 - name: Move to Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+  command: oc project {{ oc_infra_project }}
   changed_when: False
 
 - name: Login (admin)
-  shell: >
+  command: >
     oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
     --insecure-skip-tls-verify=true
   changed_when: False
@@ -13,7 +13,7 @@
 # Check/Create PVs
 
 - name: Check Infrastructure PVs
-  shell: oc get pv
+  command: oc get pv
   register: i_pv_result
   changed_when: False
 
@@ -23,6 +23,8 @@
     -p INFRA_NAMESPACE={{ oc_infra_project }}
     -p NFS_SERVER={{ oc_nfs_server }}
     -p NFS_PATH={{ oc_nfs_path }}
+    -p POSTGRESQL_VOLUME_SIZE={{ oc_postgresql_volume_size }}
+    -p RABBITMQ_VOLUME_SIZE={{ oc_rabbitmq_volume_size }}
     -f {{ role_path }}/files/infra-pv-nfs.yaml
     | oc create -f -
   when: not i_pv_result.stdout | regex_search('^pv-rabbitmq\s', multiline=True)

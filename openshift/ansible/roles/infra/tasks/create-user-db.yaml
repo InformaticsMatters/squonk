@@ -1,36 +1,69 @@
 ---
 
 # Create a new user, password and database.
-# The database name has to be supplied,
-# along with the namespace it'll be used from with these variables: -
+#
+# Before you run this playbook you will need to define variables to describe
+# your OpenShift deployment and its infrastructure configuration using the
+# following variables.: -
+#
+#  oc_master_url        <- The Master API URL (i.e. example.com)
+#  oc_admin             <- The name of the admin user (i.e. 'admin')
+#  oc_admin_password    <- The admin user's password
+#  oc_infra_project     <- The project (namespace) of the infrastructure project
+#  oc_infra_sa          <- The infrastructure project's service accoutn name
+#
+# You need to provide a database name (oc_db),
+# along with the namespace (oc_db_namespace) of your application deployment.
+# If you do not provide a username (oc_db_user) or user password
+# (oc_db_user_password) they will be randomly generated.
 #
 #  oc_db
 #  oc_db_namespace
-#  oc_db_user           < -randomly generated if not defined
-#  oc_db_user_password  < -randomly generated if not defined
+#  oc_db_user           <- Optional ... randomly generated if not defined
+#  oc_db_user_password  <- Optional ... randomly generated if not defined
 #
-# It is an error to deploy another set of credentials
-# using the same database and namespace, but you can create
-# more than one set of credentials (using different databases).
+# Typical execution, from with in the squonk project's 'openshift/ansible'
+# directory, simplifies the process and allows you to just add the
+# 'oc_db' parameters to the play's command-line as other variables are
+# defined for you in the deployment's own parameter file: -
 #
-# Note: If the project does not exist it will be created by the 'admin' user.
-#       At the moment access to any other user needs to be granted by the admin
-#       user, separately to this task.
+#  ansible-playbook playbooks/infra/create-user-db.yaml \
+#     -e oc_db=my-db \
+#     -e oc_db_namespace=my-project \
+#     -e oc_db_user=me
+#
+# Note: It is an error to deploy another set of credentials
+# ----  using the same database and namespace, but you can create
+#       more than one set of credentials (using different databases).
+#
+# Note: If the DB application project (oc_db) does not exist it will be created
+# ----  by the 'admin' user. Access to the project for other users needs to be
+#       granted by the admin user after execution of this playbook.
 #
 # At the successful end of this play: -
 #
-# - The user's project (db_namespace) will exist
-# - A set of secrets called 'database-credentials-<db>' will
+# - The user's project (oc_db_namespace) will exist
+# - A set of secrets called 'database-credentials-<oc_db>' will
 #   be present in the user's project
+# - A database and database user will have been created
 
-- name: Assert required variables have been defined
+- name: Assert cluster variables have been defined
+  assert:
+    that:
+    - oc_master_url is defined
+    - oc_admin is defined
+    - oc_admin_password is defined
+    - oc_infra_project is defined
+    - oc_infra_sa is defined
+
+- name: Assert database variables have been defined
   assert:
     that:
     - oc_db is defined
-    - db_namespace is defined
+    - oc_db_namespace is defined
 
-- name: Login (admin)
-  shell: >
+- name: Login (admin) ({{ oc_master_url }})
+  command: >
     oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
     --insecure-skip-tls-verify=true
   changed_when: False
@@ -38,21 +71,20 @@
   # Check and create the user's namespace (Project)
   # and create it if it does not exist.
 
-- name: Check the User Project
-  shell: oc get projects
+- name: Get existing projects
+  command: oc get projects
   register: projects_result
   changed_when: False
 
 - name: Create the User Project
-  shell: >
-    oc new-project {{ db_namespace }}
-  when: db_namespace not in projects_result.stdout
+  command: oc new-project {{ oc_db_namespace }}
+  when: oc_db_namespace not in projects_result.stdout
 
   # Assert there are no database credentials -
   # At the moment we only allow one set of database credentials per project
 
 - name: Check the User Project's Secrets
-  shell: oc get secrets --namespace  {{ db_namespace }}
+  command: oc get secrets --namespace  {{ oc_db_namespace }}
   register: secrets_result
   changed_when: False
 
@@ -67,11 +99,11 @@
   # in the infrastructure project...
 
 - name: Move to Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+  command: oc project {{ oc_infra_project }}
   changed_when: False
 
 - name: Remove prior temporary Objects (Infrastructure)
-  shell: oc delete all,cm --selector template=db-create
+  command: oc delete all,cm --selector template=db-create
 
 - name: Create User and Database
   shell: >
@@ -80,7 +112,7 @@
     -p DB_USER={{ oc_db_user }}
     -p DB_USER_PASSWORD={{ oc_db_user_password }}
     -p DB={{ oc_db }}
-    -p DB_NAMESPACE={{ db_namespace }}
+    -p DB_NAMESPACE={{ oc_db_namespace }}
     -p INFRA_SA={{ oc_infra_sa }}
     -p DB_HOST={{ oc_postgresql_service }}.{{ oc_infra_project }}.svc
     | oc create -f -

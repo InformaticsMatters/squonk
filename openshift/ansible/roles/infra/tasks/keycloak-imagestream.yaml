@@ -4,7 +4,7 @@
 # in the 'openshift' project...
 
 - name: Move to Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+  command: oc project {{ oc_infra_project }}
   changed_when: False
 
 - name: Login (admin) ({{ oc_master_url }})

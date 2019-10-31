@@ -11,17 +11,17 @@
 # We do a few things in the infrastructure project first.
 
 - name: Login as Admin
-  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  command: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
 # Adjust the squonk project (add secrets etc.)
 
 - name: Move to Squonk Project
-  shell: oc project {{ oc_project }}
+  command: oc project {{ oc_project }}
   changed_when: False
 
 - name: Check Secrets
-  shell: oc get secrets
+  command: oc get secrets
   register: s_result
   changed_when: False
 
@@ -38,13 +38,13 @@
 # Move to infrastructure for the rest...
 
 - name: Move to Squonk Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+  command: oc project {{ oc_infra_project }}
   changed_when: False
 
 # Prepare PostgreSQL
 
 - name: Check Infrastructure DB
-  shell: oc get jobs
+  command: oc get jobs
   register: j_result
   changed_when: False
 
@@ -70,6 +70,7 @@
     -p SQUONK_NAMESPACE={{ oc_project }}
     -p INFRA_SA={{ oc_infra_sa }}
     -p RABBITMQ_HOST=rabbitmq.{{ oc_infra_project }}.svc
+    -p SQUONK_PASS={{ oc_squonk_rabbitmq_pass }}
     | oc create -f -
   when: not j_result.stdout | regex_search('^squonk-rabbitmq-creator\s', multiline=True)
 

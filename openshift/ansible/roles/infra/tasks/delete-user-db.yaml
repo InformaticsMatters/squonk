@@ -1,41 +1,59 @@
 ---
 
 # Deletes a database user and database.
-# The database name and user to be supplied: -
+#
+# See the matching 'create-user-db.yaml` playbook for further documentation.
+#
+# The database name and user has to be supplied: -
 #
 #  oc_db
 #  oc_db_user
 #
-# This playbook *does not* remove the credentials from the user's
-# project.
+# Typical execution requires you to add your parameters to the play
+# command-line: -
+#
+#  ansible-playbook playbooks/infra/delete-user-db.yaml \
+#     -e oc_db=my-db -e oc_db_user=user123
 #
 # At the successful end of this play: -
 #
 # - The DB user and database will have been deleted.
+#
+# Note: This playbook *does not* remove the credentials
+# ----  from the user's project.
 
-- name: Assert required variables have been defined
+- name: Assert cluster variables have been defined
+  assert:
+    that:
+    - oc_master_url is defined
+    - oc_admin is defined
+    - oc_admin_password is defined
+    - oc_infra_project is defined
+    - oc_infra_sa is defined
+
+- name: Assert database variables have been defined
   assert:
     that:
     - oc_db is defined
     - oc_db_user is defined
 
 - name: Login as Admin
-  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  command: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
 - name: Move to Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+  command: oc project {{ oc_infra_project }}
   changed_when: False
 
 - name: Remove prior temporary Objects (Infrastructure)
-  shell: oc delete all,cm --selector template=db-delete
+  command: oc delete all,cm --selector template=db-delete
 
 - name: Delete User and Database
   shell: >
     oc process
     -f {{ role_path }}/files/infra-db-delete.yaml
     -p DB_USER={{ oc_db_user }}
-    -p DB={{ db }}
+    -p DB={{ oc_db }}
     -p INFRA_SA={{ oc_infra_sa }}
     -p DB_HOST={{ oc_postgresql_service }}.{{ oc_infra_project }}.svc
     | oc create -f -

@@ -1,17 +1,17 @@
 ---
 
 - name: Move to Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+  command: oc project {{ oc_infra_project }}
   changed_when: False
 
 - name: Login (user)
-  shell: >
+  command: >
     oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
     --insecure-skip-tls-verify=true
   changed_when: False
 
 - name: Check RabbitMQ Deployment
-  shell: oc get dc
+  command: oc get dc
   register: dc_result
   changed_when: False
 

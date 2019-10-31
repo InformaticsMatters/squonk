@@ -14,12 +14,18 @@
 # Secrets used by applications,
 # kept here because they are not directly related to the Keycloak installation.
 
+- name: Assert Manager Password
+  assert:
+    that:
+    - oc_keycloak_manager_password is defined
+    - oc_keycloak_manager_password|length > 0
+
 - name: Login (user)
-  shell: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
+  command: oc login {{ oc_master_url }} -u {{ oc_user }} -p {{ oc_user_password }}
   changed_when: False
 
 - name: Move to Infrastructure Project
-  shell: oc project {{ oc_infra_project }}
+  command: oc project {{ oc_infra_project }}
   changed_when: False
 
 - name: Check Secrets
@@ -31,9 +37,9 @@
   set_fact:
     manager_username: manager
 
-- name: Generate manager password
+- name: Get manager password
   set_fact:
-    manager_password: "{{ lookup('password', '/dev/null chars=ascii_letters') }}"
+    manager_password: "{{ oc_keycloak_manager_password }}"
   when: '"manager-secrets" not in secret_result.stdout'
 
 - name: Deploy Secrets

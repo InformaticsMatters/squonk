@@ -8,13 +8,13 @@
 # and is there a RabbitMQ deployment in it?
 
 - name: Login (admin)
-  shell: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
+  command: oc login {{ oc_master_url }} -u {{ oc_admin }} -p {{ oc_admin_password }}
   changed_when: False
 
 # Check projects exists...
 
 - name: Collect projects
-  shell: oc get projects
+  command: oc get projects
   register: projects_result
   changed_when: False
 
@@ -37,7 +37,7 @@
 # Check some key deployments in the infrastructure project...
 
 - name: Collect infrastructure Deployments
-  shell: oc get dc -n {{ oc_infra_project }}
+  command: oc get dc -n {{ oc_infra_project }}
   register: dc_result
   changed_when: False
 

@@ -251,3 +251,19 @@
 
 # What's left is the database and its tables.
 # For now, deleting the database and its tables is a user action.
+# Just issue a warning...
+
+- name: Display database content warning
+  vars:
+    msg: |
+      -------
+      CAUTION
+      -------
+      You can re-deploy Squonk at any time but
+      the existing Squonk database (in the infrastructure project)
+      has not been deleted.
+
+      If you want to completely remove Squonk data
+      you must manually erase (drop) the Squonk database.
+  debug:
+    msg: "{{ msg.split('\n') }}"
