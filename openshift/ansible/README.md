@@ -17,8 +17,9 @@ Before running the playbooks: -
 >   If using NFS, it is correctly configured with appropriate
     disk provisioning ready for each PV that expects a volume -
     the Ansible playbooks do not setup NFS. So you will typically need mounts
-    and exports at `/exports/pv-backup`, `/exports/pv-rabbitmq` and
-    `/exports/pv-postgresql` in order to satisfy the infrastructure deployment. 
+    and exports at `/nfs-orn-infra/pv-backup`, `/nfs-orn-infra/pv-rabbitmq` and
+    `/nfs-orn-infra/pv-postgresql` in order to satisfy the infrastructure
+    deployment. 
 
 ## Deploying the application's infrastructure components
 The infrastructure contains important components like RabbitMQ, PostgreSQl

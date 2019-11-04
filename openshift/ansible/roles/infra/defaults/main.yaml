@@ -54,8 +54,8 @@ oc_infra_backup_hourly_count: 7
 oc_infra_backup_daily_schedule: "37 3 * * *"
 oc_infra_backup_daily_count: 0
 
-oc_infra_backup_nfs_path: /nfs-ib
-oc_infra_backup_nfs_pv_volume: pv-backup-dir
+oc_infra_backup_nfs_path: /nfs-orn-infra
+oc_infra_backup_nfs_pv_volume: pv-backup
 oc_infra_backup_volume_size: 250Gi
 
 oc_infra_project: infra

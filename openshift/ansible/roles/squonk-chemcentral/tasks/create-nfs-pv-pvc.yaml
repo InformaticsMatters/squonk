@@ -16,7 +16,7 @@
     oc process
     -p INFRA_NAMESPACE={{ oc_infra_project }}
     -p NFS_SERVER={{ oc_nfs_server }}
-    -p NFS_PATH={{ oc_nfs_path }}
+    -p NFS_PATH={{ oc_nfs_squonk_path }}
     -p PVC_SIZE={{ oc_cc_postgresql_volume_size }}
     -f {{ role_path }}/files/chemcentral-pv-nfs.yaml
     | oc create -f -

@@ -21,7 +21,7 @@
     oc process
     -p APP_NAMESPACE={{ oc_cc_project }}
     -p NFS_SERVER={{ oc_nfs_server }}
-    -p NFS_PATH={{ oc_nfs_path }}
+    -p NFS_PATH={{ oc_nfs_squonk_path }}
     -p PVC_SIZE={{ oc_cc_loader_volume_size }}
     -f {{ role_path }}/files/chemcentral-data-loader-pv-nfs.yaml
     | oc create -f -

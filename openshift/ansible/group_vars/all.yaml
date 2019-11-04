@@ -30,7 +30,7 @@ oc_squonk_pod_environment: "{{ ansible_env.IM_SQUONK_POD_ENVIRONMENT | default('
 
 # Other variables...
 
-# About the OpenShift sluster
+# About the OpenShift cluster
 oc_master_hostname: okd.informaticsmatters.com
 oc_master_port: 443
 oc_master_url: https://{{ oc_master_hostname }}:{{ oc_master_port }}
@@ -98,8 +98,11 @@ oc_squonk_flyway_image_tag: latest
 oc_squonk_image_source_cicd: no
 
 # NFS
+# One server but support for separate paths for the
+# infrastructure and Squonk NFS volumes
 oc_nfs_server: bastion.informaticsmatters.com
-oc_nfs_path: /exports
+oc_nfs_infra_path: /nfs-orn-infra
+oc_nfs_squonk_path: /nfs-squonk
 
 # Various retry timeouts (seconds)...
 oc_pod_ready_timeout: 600

@@ -22,7 +22,7 @@
     oc process
     -p APP_NAMESPACE={{ oc_project }}
     -p NFS_SERVER={{ oc_nfs_server | default('unset') }}
-    -p NFS_PATH={{ oc_nfs_path | default('unset') }}
+    -p NFS_PATH={{ oc_nfs_squonk_path | default('unset') }}
     -p CELL_WORK_PVC_SIZE={{ oc_cell_work_pvc_size }}
     -f {{ role_path }}/files/squonk-pv-nfs.yaml
     | oc create -f -
