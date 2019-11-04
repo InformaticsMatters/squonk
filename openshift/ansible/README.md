@@ -211,13 +211,13 @@ database and create a user for that database. You can do this using two
 convenient playbooks (refer to them for documentation): -
 
     ansible-playbook playbooks/infra/create-user-db.yaml \
-        -e db=mydb \
-        -e db_user=me \
-        -e db_namespace=myproject
+        -e oc_db=mydb \
+        -e oc_db_user=me \
+        -e oc_db_namespace=myproject
         
     ansible-playbook playbooks/infra/delete-user-db.yaml \
-        -e db=mydb \
-        -e db_user=me
+        -e oc_db=mydb \
+        -e oc_db_user=me
 
 The result will be secrets created in your project
 (`myproject` in the above example) containing  the database credentials that
