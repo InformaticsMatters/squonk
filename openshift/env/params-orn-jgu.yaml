@@ -16,6 +16,9 @@ oc_nfs_server: cloudv199.zdv.uni-mainz.de
 oc_nfs_infra_path: /nfs-orn-infra
 oc_nfs_squonk_path: /nfs-squonk
 
+oc_infra_keycloak_mem_request: 1Gi
+oc_infra_keycloak_mem_limit: 1Gi
+
 oc_infra_volume_type: nfs
 oc_infra_backup_volume_type: nfs
 
