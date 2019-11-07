@@ -21,3 +21,17 @@ services:
     chemcentral-search:
         ports:
         - "8093:8080"
+
+    cellexecutor:
+        environment:
+            FRAGNET_SEARCH_BASE_URL: "http://fragnet-services:8080/fragnet-search"
+
+    fragnet-services:
+        image: squonk/fragnet-services:latest
+        environment:
+            NEO4J_PASSWORD:
+            NEO4J_SERVER:
+        ports:
+            - "8094:8080"
+        networks:
+            - squonk_back
