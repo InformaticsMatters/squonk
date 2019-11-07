@@ -143,6 +143,7 @@ public class OpenShiftRunner extends AbstractRunner {
         // We maintain a number of phases throughout the Pod's lifetime:
         // - "Waiting" (Initial state)
         // - "Starting"
+        // - "Running"
         // - "Complete" (Stopped, waiting for the exit code event)
         // - "Finished" (where the exit code is available)
         private String podPhase = "Waiting";
@@ -217,14 +218,22 @@ public class OpenShiftRunner extends AbstractRunner {
                     }
                 }
             }
+
+            // Set phase to 'Running" or 'Terminated'...
             if (!podPhase.equals("Complete")) {
+                // Iterate through any ContainerStatus objects.
+                // If there's a status then it's waiting (not interested in this),
+                // running or terminated.
                 List<ContainerStatus> containerStatuses = podStatus.getContainerStatuses();
                 if (containerStatuses != null) {
                     for (ContainerStatus containerStatus : containerStatuses) {
                         ContainerState cs = containerStatus.getState();
                         if (cs != null) {
-                            ContainerStateTerminated csTerm = cs.getTerminated();
-                            if (csTerm != null) {
+                            if (cs.getRunning() != null) {
+                                LOG.info("Pod is Running");
+                                podPhase = "Running";
+                            } else if (cs.getTerminated() != null){
+                                ContainerStateTerminated csTerm = cs.getTerminated();
                                 // The Pod's terminated (unexpectedly?)
                                 // We'll handle the exit code in the next block.
                                 LOG.info("Pod has Terminated" +
@@ -237,7 +246,8 @@ public class OpenShiftRunner extends AbstractRunner {
                     }
                 }
             }
-            // Waiting for
+
+            // We're actually waiting for...
             if (podPhase == "Complete") {
 
                 // If we don't have a LogStream object (used to capture the
