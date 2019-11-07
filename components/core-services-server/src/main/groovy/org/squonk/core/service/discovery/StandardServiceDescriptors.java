@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,8 @@ public class StandardServiceDescriptors {
                 DatasetSelectRandomStep.SERVICE_DESCRIPTOR,
                 DatasetMergerStep.SERVICE_DESCRIPTOR,
                 DatasetEnricherStep.SERVICE_DESCRIPTOR,
-                DatasetUUIDFilterStep.SERVICE_DESCRIPTOR
+                DatasetUUIDFilterStep.SERVICE_DESCRIPTOR,
+                FragnetExpansionStep.SERVICE_DESCRIPTOR
                 // add these once the portal has been refactored to used these as services
                 //BasicObjectToMoleculeObjectStep.SERVICE_DESCRIPTOR,
                 //ChemblActivitiesFetcherStep.SERVICE_DESCRIPTOR,
