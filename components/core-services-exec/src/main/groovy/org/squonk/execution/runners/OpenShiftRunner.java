@@ -72,8 +72,8 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String POD_START_GRACE_PERIOD_M_ENV_NAME = "SQUONK_POD_START_GRACE_PERIOD_M";
     private static final String POD_START_GRACE_PERIOD_M_DEFAULT = "5";
 
-    private static final String POD_DEBUG_ENV_NAME = "SQUONK_POD_DEBUG";
-    private static final String POD_DEBUG_DEFAULT = "0";
+    private static final String POD_DEBUG_MODE_ENV_NAME = "SQUONK_POD_DEBUG_MODE";
+    private static final String POD_DEBUG_MODE_DEFAULT = "0";
 
     // The Pod Environment is a string that consists of YAML name:value pairs.
     // If the environment string is present, each name/value pair is injected
@@ -99,7 +99,7 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final int OS_POD_START_GRACE_PERIOD_M;
     // The Pod debug level (set in the static initialiser).
     // Currently anything other than 0 results in verbose debug.
-    private static final int OS_POD_DEBUG;
+    private static final int OS_POD_DEBUG_MODE;
 
     public static final int LOG_HISTORY;
 
@@ -193,7 +193,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
             PodStatus podStatus = resource.getStatus();
             // For debug (it's a large object)...
-            if (OS_POD_DEBUG > 0) {
+            if (OS_POD_DEBUG_MODE > 0) {
                 LOG.info("podStatus=" + podStatus.toString());
             }
 
@@ -881,10 +881,10 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // And the Pod debug (int)
         String podDebug = IOUtils
-                .getConfiguration(POD_DEBUG_ENV_NAME, POD_DEBUG_DEFAULT);
+                .getConfiguration(POD_DEBUG_MODE_ENV_NAME, POD_DEBUG_MODE_DEFAULT);
         int podDebugInt = Integer.parseInt(podDebug);
-        OS_POD_DEBUG = podDebugInt;
-        LOG.info("OS_POD_DEBUG=" + OS_POD_DEBUG);
+        OS_POD_DEBUG_MODE = podDebugInt;
+        LOG.info("OS_POD_DEBUG=" + OS_POD_DEBUG_MODE);
 
         // Get the configured log cpacity
         // (maximum number of lines collected from a Pod).

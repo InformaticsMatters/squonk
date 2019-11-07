@@ -79,10 +79,10 @@ spec:
           value: {{ oc_squonk_nextflow_image }}
         - name: SQUONK_DEBUG_MODE
           value: "0"
+        - name: SQUONK_POD_DEBUG_MODE
+          value: "0"
         - name: SQUONK_POD_START_GRACE_PERIOD_M
           value: "5"
-        - name: SQUONK_POD_DEBUG
-          value: "0"
         - name: JAVA_TOOL_OPTIONS
           value: "{{ oc_squonk_cell_java_tool_options }}"
 #        - name: JAVA_OPTS
