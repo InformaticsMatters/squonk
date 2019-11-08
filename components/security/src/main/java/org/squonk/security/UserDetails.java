@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@ package org.squonk.security;
 import java.io.Serializable;
 import java.util.Set;
 
-/** Represents details of a user
+/**
+ * Represents details of a user
  * Additional properties might be added later
  *
  * @author timbo
@@ -36,7 +37,6 @@ public class UserDetails implements Serializable {
     private final String lastName;
     private final Set<String> roles;
 
-    
     public UserDetails(String authenticator, String userid, String email, String firstName, String lastName, Set<String> roles) {
         this.authenticator = authenticator;
         this.userid = userid;
@@ -52,7 +52,8 @@ public class UserDetails implements Serializable {
 
     /**
      * Get the string that's used to identify the user
-     * @return 
+     *
+     * @return
      */
     public String getUserid() {
         return userid;
@@ -74,7 +75,8 @@ public class UserDetails implements Serializable {
         return roles;
     }
 
-    /** Get the name to display for the user, determined as best we can based on what is present as firstName, lastName and userid
+    /**
+     * Get the name to display for the user, determined as best we can based on what is present as firstName, lastName and userid
      *
      * @return Human friendly user name
      */

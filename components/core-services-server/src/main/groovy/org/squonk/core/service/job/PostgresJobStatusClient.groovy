@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public class PostgresJobStatusClient implements JobStatusClient {
      * @return
      */
     @Override
-    JobStatus submit(CellExecutorJobDefinition jobDef, String username, Integer totalCount) {
+    JobStatus submit(CellExecutorJobDefinition jobDef, String username, String accessToken, Integer totalCount) {
         registerJob(null, jobDef, username, totalCount);
     }
 

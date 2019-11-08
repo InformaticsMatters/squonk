@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class MemoryJobStatusClient implements JobStatusClient {
     private final Map<String,JobStatus> store = new LinkedHashMap<>();
 
     @Override
-    public JobStatus submit(CellExecutorJobDefinition jobdef, String username, Integer totalCount) {
+    public JobStatus submit(CellExecutorJobDefinition jobdef, String username, String accessToken, Integer totalCount) {
         LOG.finer("Registering JobDef: " + jobdef);
         JobStatus status = JobStatus.create(jobdef, username, new Date(), totalCount);
         store.put(status.getJobId(), status);

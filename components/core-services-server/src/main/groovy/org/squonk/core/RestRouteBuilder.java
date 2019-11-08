@@ -363,6 +363,8 @@ public class RestRouteBuilder extends RouteBuilder implements ServerConstants {
                     JobDefinition jobdef = JsonHandler.getInstance().objectFromJson(json, JobDefinition.class);
                     LOG.info("Received request to submit job for " + jobdef);
                     Integer count = exch.getIn().getHeader(HEADER_JOB_SIZE, Integer.class);
+                    String auth = exch.getIn().getHeader(HEADER_AUTH, String.class);
+                    LOG.info(auth == null ? "No Authorization header" : "Authorization header present");
                     if (jobdef instanceof ExecuteCellUsingStepsJobDefinition) {
                         ExecuteCellUsingStepsJobDefinition stepsJopbDef = (ExecuteCellUsingStepsJobDefinition) jobdef;
                         Job job = new StepsCellJob(jobstatusClient, stepsJopbDef);
