@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,9 +72,12 @@ public class OpenShiftRunner extends AbstractRunner {
     private static final String POD_START_GRACE_PERIOD_M_ENV_NAME = "SQUONK_POD_START_GRACE_PERIOD_M";
     private static final String POD_START_GRACE_PERIOD_M_DEFAULT = "5";
 
+    private static final String POD_DEBUG_MODE_ENV_NAME = "SQUONK_POD_DEBUG_MODE";
+    private static final String POD_DEBUG_MODE_DEFAULT = "0";
+
     // The Pod Environment is a string that consists of YAML name:value pairs.
     // If the environment string is present, each name/value pair is injected
-    // as a separate environemnt variable into the Pod container.
+    // as a separate environment variable into the Pod container.
     private static final String POD_ENVIRONMENT_ENV_NAME = "SQUONK_POD_ENVIRONMENT";
     private static final String POD_ENVIRONMENT_DEFAULT = "";
 
@@ -91,9 +94,12 @@ public class OpenShiftRunner extends AbstractRunner {
     // from an external repository. We need to do this
     // because I'm not sure, at the moment how to detect pull errors
     // from within OpenShift - so this is 'belt-and-braces' protection.
-    // Set via the enviornment with a default.
+    // Set via the environment with a default.
     // The value cannot be less than 1 (minute).
     private static final int OS_POD_START_GRACE_PERIOD_M;
+    // The Pod debug level (set in the static initialiser).
+    // Currently anything other than 0 results in verbose debug.
+    private static final int OS_POD_DEBUG_MODE;
 
     public static final int LOG_HISTORY;
 
@@ -137,6 +143,7 @@ public class OpenShiftRunner extends AbstractRunner {
         // We maintain a number of phases throughout the Pod's lifetime:
         // - "Waiting" (Initial state)
         // - "Starting"
+        // - "Running"
         // - "Complete" (Stopped, waiting for the exit code event)
         // - "Finished" (where the exit code is available)
         private String podPhase = "Waiting";
@@ -187,7 +194,9 @@ public class OpenShiftRunner extends AbstractRunner {
 
             PodStatus podStatus = resource.getStatus();
             // For debug (it's a large object)...
-//            LOG.info("podStatus=" + podStatus.toString());
+            if (OS_POD_DEBUG_MODE > 0) {
+                LOG.info("podStatus=" + podStatus.toString());
+            }
 
             // Check each PodCondition and its ContainerStatus array...
             // Significant information is:
@@ -209,14 +218,22 @@ public class OpenShiftRunner extends AbstractRunner {
                     }
                 }
             }
+
+            // Set phase to 'Running" or 'Terminated'...
             if (!podPhase.equals("Complete")) {
+                // Iterate through any ContainerStatus objects.
+                // If there's a status then it's waiting (not interested in this),
+                // running or terminated.
                 List<ContainerStatus> containerStatuses = podStatus.getContainerStatuses();
                 if (containerStatuses != null) {
                     for (ContainerStatus containerStatus : containerStatuses) {
                         ContainerState cs = containerStatus.getState();
                         if (cs != null) {
-                            ContainerStateTerminated csTerm = cs.getTerminated();
-                            if (csTerm != null) {
+                            if (cs.getRunning() != null) {
+                                LOG.info("Pod is Running");
+                                podPhase = "Running";
+                            } else if (cs.getTerminated() != null){
+                                ContainerStateTerminated csTerm = cs.getTerminated();
                                 // The Pod's terminated (unexpectedly?)
                                 // We'll handle the exit code in the next block.
                                 LOG.info("Pod has Terminated" +
@@ -229,7 +246,8 @@ public class OpenShiftRunner extends AbstractRunner {
                     }
                 }
             }
-            // Waiting for
+
+            // We're actually waiting for...
             if (podPhase == "Complete") {
 
                 // If we don't have a LogStream object (used to capture the
@@ -331,7 +349,7 @@ public class OpenShiftRunner extends AbstractRunner {
         public String getCollectedOutput() {
             // If we were using a queue to limit the number
             // of log lines - iterate through it into our StringBuilder.
-            // If we wern't using the logQueue then the StrignBuilder
+            // If we weren't using the logQueue then the StringBuilder
             // will already contain our log lines...
             for (String line : logQueue) {
                 stringBuilder.append(line);
@@ -603,7 +621,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // Here we add supplemental groups to the Pod.
         // Crucially we need to add our own group as the Pod's
-        // supplemenmtal group - so it can share directories
+        // supplemental group - so it can share directories
         // and any files we create.
         long gid = new com.sun.security.auth.module.UnixSystem().getGid();
         PodSecurityContext psc = new PodSecurityContextBuilder()
@@ -703,7 +721,7 @@ public class OpenShiftRunner extends AbstractRunner {
 
         // ---
 
-        // Adjust the 'isRunning' state if we terminated witout being stopped.
+        // Adjust the 'isRunning' state if we terminated without being stopped.
         // If we're stopped the 'stop()' method is responsible for the
         // isRunning value.
         if (!stopRequested) {
@@ -870,6 +888,13 @@ public class OpenShiftRunner extends AbstractRunner {
         }
         OS_POD_START_GRACE_PERIOD_M = gracePeriodInt;
         LOG.info("OS_POD_START_GRACE_PERIOD_M=" + OS_POD_START_GRACE_PERIOD_M);
+
+        // And the Pod debug (int)
+        String podDebug = IOUtils
+                .getConfiguration(POD_DEBUG_MODE_ENV_NAME, POD_DEBUG_MODE_DEFAULT);
+        int podDebugInt = Integer.parseInt(podDebug);
+        OS_POD_DEBUG_MODE = podDebugInt;
+        LOG.info("OS_POD_DEBUG=" + OS_POD_DEBUG_MODE);
 
         // Get the configured log cpacity
         // (maximum number of lines collected from a Pod).

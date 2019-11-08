@@ -67,7 +67,7 @@ oc_project_sa: squonk
 
 oc_squonk_app: squonk-notebook
 oc_squonk_host: "{{ oc_squonk_app }}.{{ oc_routes_basename }}"
-oc_squonk_nextflow_image: informaticsmatters/nextflow:19.01.0
+oc_squonk_nextflow_image: informaticsmatters/nextflow:19.10.0
 
 oc_jobexecutor_client: squonk-jobexecutor
 oc_jobexecutor_host: jobexecutor.{{ oc_routes_basename }}

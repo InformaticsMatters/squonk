@@ -6,11 +6,11 @@
 oc_master_hostname: prod.openrisknet.org
 oc_routes_basename: prod.openrisknet.org
 
-oc_squonk_cell_image_tag: 0.3.4
-oc_squonk_chem_image_tag: 0.3.4
-oc_squonk_core_image_tag: 0.3.4
-oc_squonk_je_image_tag: 0.3.4
-oc_squonk_flyway_image_tag: 0.3.4
+oc_squonk_cell_image_tag: 0.3.5
+oc_squonk_chem_image_tag: 0.3.5
+oc_squonk_core_image_tag: 0.3.5
+oc_squonk_je_image_tag: 0.3.5
+oc_squonk_flyway_image_tag: 0.3.5
 
 oc_nfs_server: cloudv199.zdv.uni-mainz.de
 oc_nfs_infra_path: /nfs-orn-infra

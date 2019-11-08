@@ -277,6 +277,8 @@ objects:
               secretKeyRef:
                 name: keycloak-secrets
                 key: sso-admin-password
+          - name: PROXY_ADDRESS_FORWARDING
+            value: "true"
           #- name: JAVA_OPTS
           #  value: "${KEYCLOAK_JAVA_OPTS}"
         volumes:
