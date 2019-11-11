@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,11 @@ class EchoStringStepSpec extends Specification {
         EchoStringStep step = new EchoStringStep()
         step.configure("simple test",
                 [:],
-                EchoStringStep.SERVICE_DESCRIPTOR)
+                EchoStringStep.SERVICE_DESCRIPTOR,
+        null, null)
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", value), null)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", value))
         def result = resultsMap["output"]
 
         then:

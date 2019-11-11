@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class CxnReactorStep extends AbstractStep {
 
 
     @Override
-    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> doExecute(Map<String, Object> inputs) throws Exception {
         String reactionName = getOption(OPTION_REACTION, String.class);
         if (reactionName == null) {
             throw new IllegalStateException("Reaction must be specified");
@@ -101,7 +101,7 @@ public class CxnReactorStep extends AbstractStep {
         // send for execution
         statusMessage = "Posting request ...";
         Map<String, Object> responseHeaders = new HashMap<>();
-        InputStream results = CamelUtils.doRequestUsingHeadersAndQueryParams(context, "POST", endpoint, input, requestHeaders, responseHeaders, options);
+        InputStream results = CamelUtils.doRequestUsingHeadersAndQueryParams(camelContext, "POST", endpoint, input, requestHeaders, responseHeaders, options);
         statusMessage = "Handling results ...";
 
         // start debug output

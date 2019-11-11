@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.apache.camel.CamelContext;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
 import org.squonk.dataset.Dataset;
@@ -51,7 +50,7 @@ public class DatasetWriterStep extends AbstractDatasetStep {
     );
 
     @Override
-    protected Dataset doExecuteWithDataset(Dataset input, CamelContext camelContext) throws Exception {
+    protected Dataset doExecuteWithDataset(Dataset input) throws Exception {
         return input;
     }
 }

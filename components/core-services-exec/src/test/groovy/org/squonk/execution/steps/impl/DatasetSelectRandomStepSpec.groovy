@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import spock.lang.Specification
  */
 class DatasetSelectRandomStepSpec extends Specification {
 
+    DefaultCamelContext context = new DefaultCamelContext()
+
     def createDataset() {
         def mols = []
         for (i in 1..100) {
@@ -42,18 +44,17 @@ class DatasetSelectRandomStepSpec extends Specification {
         def opts = [:]
         if (random != null) opts[DatasetSelectRandomStep.OPTION_RANDOM] = random
         if (count != null) opts[DatasetSelectRandomStep.OPTION_COUNT] = count
-        step.configure(jobId, opts, DatasetSelectRandomStep.SERVICE_DESCRIPTOR)
+        step.configure(jobId, opts, DatasetSelectRandomStep.SERVICE_DESCRIPTOR, context, null)
         return step
     }
     
     void "test random and count"() {
-        
-        DefaultCamelContext context = new DefaultCamelContext()
+
         DatasetSelectRandomStep step = createStep(0.2f, 10, "test random and count")
         Dataset input = createDataset()
         
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), null)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def dataset = resultsMap["output"]
         
         then:

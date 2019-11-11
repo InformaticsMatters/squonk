@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ public class DatasetNextflowExecutorStep extends AbstractContainerStep {
 //    }
 
     @Override
-    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> doExecute(Map<String, Object> inputs) throws Exception {
         // TODO - remove the need for this
         throw new RuntimeException("Not implementable");
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class DatasetNextflowInDockerExecutorStep extends AbstractContainerStep {
         NextflowServiceDescriptor descriptor = getNextflowServiceDescriptor();
         ContainerRunner containerRunner = prepareContainerRunner();
 
-        Map<String, List<SquonkDataSource>> outputs = doExecuteForDataSources(inputs, context, containerRunner, descriptor);
+        Map<String, List<SquonkDataSource>> outputs = doExecuteForDataSources(inputs, containerRunner, descriptor);
         return outputs;
     }
 

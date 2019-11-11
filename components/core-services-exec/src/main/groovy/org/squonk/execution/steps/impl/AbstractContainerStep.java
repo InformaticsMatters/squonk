@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,13 +48,13 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
     protected ContainerRunner containerRunner = null;
 
     @Override
-    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> doExecute(Map<String, Object> inputs) throws Exception {
 
         statusMessage = MSG_PREPARING_CONTAINER;
         DefaultServiceDescriptor dsd = getDefaultServiceDescriptor();
         containerRunner = prepareContainerRunner();
 
-        Map<String, List<SquonkDataSource>> dataSourcesMap = doExecuteForDataSources(inputs, context, containerRunner, dsd);
+        Map<String, List<SquonkDataSource>> dataSourcesMap = doExecuteForDataSources(inputs, containerRunner, dsd);
         LOG.info("Execution generated " + dataSourcesMap.size() + " outputs");
         int i = 1;
         if (LOG.isLoggable(Level.FINE)) {
@@ -96,7 +96,6 @@ public abstract class AbstractContainerStep extends AbstractThinStep {
 
     protected Map<String, List<SquonkDataSource>> doExecuteForDataSources(
             Map<String, Object> inputs,
-            CamelContext context,
             ContainerRunner containerRunner,
             DefaultServiceDescriptor descriptor) throws Exception {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.squonk.execution.steps.AbstractThinStep;
 import org.squonk.types.BasicObject;
 import org.squonk.types.MoleculeObject;
 import org.squonk.types.io.JsonHandler;
+import org.squonk.util.ServiceConstants;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -57,7 +58,7 @@ public abstract class AbstractDatasetStep<P extends BasicObject, Q extends Basic
      * @throws Exception
      */
     @Override
-    protected Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext camelContext) throws Exception {
+    protected Map<String, Object> doExecute(Map<String, Object> inputs) throws Exception {
         if (inputRequired && inputs.size() == 0) {
             throw new IllegalArgumentException("Single dataset expected - found none");
         } else if (inputs.size() > 1) {
@@ -65,6 +66,7 @@ public abstract class AbstractDatasetStep<P extends BasicObject, Q extends Basic
         } else if (!inputRequired && inputs.size() > 0) {
             throw new IllegalArgumentException("Input found but was not expected");
         }
+
         Dataset dataset = null;
         if (inputs.size() == 1) {
             Map.Entry<String, Object> entry = inputs.entrySet().iterator().next();
@@ -79,7 +81,7 @@ public abstract class AbstractDatasetStep<P extends BasicObject, Q extends Basic
                 throw new IllegalStateException("Input was not a dataset");
             }
         }
-        Dataset<Q> results = doExecuteWithDataset(dataset, camelContext);
+        Dataset<Q> results = doExecuteWithDataset(dataset);
         return Collections.singletonMap("output", results);
     }
 
@@ -87,13 +89,21 @@ public abstract class AbstractDatasetStep<P extends BasicObject, Q extends Basic
      * Override this method to implement the required functionality
      *
      * @param input Singe input dataset (can be null if the inputRequired property is set to false.
-     * @param camelContext
      * @return
      * @throws Exception
      */
-    protected abstract Dataset<Q> doExecuteWithDataset(Dataset<P> input, CamelContext camelContext) throws Exception;
+    protected abstract Dataset<Q> doExecuteWithDataset(Dataset<P> input) throws Exception;
 
-    protected Dataset handleHttpPost(CamelContext camelContext, String endpoint, InputStream data, Map<String, Object> requestHeaders)  throws Exception{
+    protected void addRequestHeaders(Map<String, Object> requestHeaders) {
+        if (auth != null && !auth.isEmpty()) {
+            requestHeaders.put(ServiceConstants.HEADER_AUTH, auth);
+        }
+    }
+
+    protected Dataset handleHttpPost(CamelContext camelContext, String endpoint, InputStream data)  throws Exception{
+
+        Map<String, Object> requestHeaders = new HashMap<>();
+        addRequestHeaders(requestHeaders);
 
         // send for execution
         updateStatus("Posting request ...");

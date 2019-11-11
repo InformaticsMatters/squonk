@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
@@ -63,9 +62,9 @@ public class DatasetUUIDFilterStep<P extends BasicObject> extends AbstractDatase
     );
 
     @Override
-    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input) throws Exception {
 
-        TypeConverter converter = findTypeConverter(context);
+        TypeConverter converter = findTypeConverter();
         String uuidsOpt = getOption(OPTION_UUIDS, String.class, converter);
         if (uuidsOpt == null) {
             throw new IllegalStateException("UUIDs not defined. Should be present as option named " + OPTION_UUIDS);

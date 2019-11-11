@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.squonk.execution.steps.AbstractStep;
-import org.squonk.execution.variable.VariableManager;
 
 import java.util.Collections;
 import java.util.Map;
@@ -34,12 +32,12 @@ public class IntegerToStringStep extends AbstractStep {
     private static final Logger LOG = Logger.getLogger(IntegerToStringStep.class.getName());
 
     @Override
-    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> doExecute(Map<String, Object> inputs) throws Exception {
         if (inputs.size() != 1) {
             throw new IllegalArgumentException("Must be a single input");
         }
         Object input = inputs.values().iterator().next();
-        TypeConverter converter = findTypeConverter(context);
+        TypeConverter converter = findTypeConverter();
         Integer result;
         if (converter == null) {
             result = new Integer(input.toString());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,11 +53,11 @@ field1\tfield2\tfield3
                 (CSVReaderStep.OPTION_USE_HEADER_FOR_FIELD_NAMES): true,
                 (CSVReaderStep.OPTION_SKIP_HEADER_LINE)          : true
         ],
-                CSVReaderStep.SERVICE_DESCRIPTOR
+                CSVReaderStep.SERVICE_DESCRIPTOR, null, null
         )
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), null)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def dataset = resultsMap["output"]
 
         then:
@@ -78,10 +78,10 @@ field1\tfield2\tfield3
 
         step.configure("simple tab reader without header",
                 [(CSVReaderStep.OPTION_FORMAT_TYPE): 'TDF'],
-                CSVReaderStep.SERVICE_DESCRIPTOR)
+                CSVReaderStep.SERVICE_DESCRIPTOR, null, null)
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), null)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def dataset = resultsMap["output"]
 
         then:

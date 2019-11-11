@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,9 @@ import java.util.Map;
 /** Interface for executable steps.
  *
  * The input data is provided by the caller and the results are
- * returned to the caller. Execution is handled by the {@link #execute(Map, CamelContext)}
+ * returned to the caller. Execution is handled by the {@link #execute(Map)}
  * method, with the inputs being present in the first parameter. The step is configured
- * using the {@link #configure(String jobId, Map options, ServiceDescriptor serviceDescriptor)} method.
+ * using the {@link #configure(String, Map, ServiceDescriptor, CamelContext, String)} method.
  *
  *
  * @author timbo
@@ -43,8 +43,10 @@ public interface Step {
      * @param jobId
      * @param options
      * @param serviceDescriptor
+     * @param context
+     * @param auth Authorization token
      */
-    void configure(String jobId, Map<String, Object> options, ServiceDescriptor serviceDescriptor);
+    void configure(String jobId, Map<String, Object> options, ServiceDescriptor serviceDescriptor, CamelContext context, String auth);
 
     IODescriptor[] getInputs();
     IODescriptor[] getOutputs();
@@ -56,7 +58,7 @@ public interface Step {
      * @return
      * @throws Exception
      */
-    Map<String,Object> execute(Map<String,Object> inputs, CamelContext context) throws Exception;
+    Map<String,Object> execute(Map<String,Object> inputs) throws Exception;
 
     int getNumProcessed();
 

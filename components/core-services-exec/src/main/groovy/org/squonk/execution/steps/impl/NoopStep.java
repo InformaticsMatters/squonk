@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.apache.camel.CamelContext;
 import org.squonk.dataset.Dataset;
-import org.squonk.execution.steps.AbstractStep;
-import org.squonk.execution.variable.VariableManager;
 
 import java.util.logging.Logger;
 
@@ -32,7 +29,7 @@ public class NoopStep extends AbstractDatasetStep {
     private static final Logger LOG = Logger.getLogger(NoopStep.class.getName());
 
     @Override
-    protected Dataset doExecuteWithDataset(Dataset input, CamelContext camelContext) throws Exception {
+    protected Dataset doExecuteWithDataset(Dataset input) throws Exception {
         return input;
     }
 }

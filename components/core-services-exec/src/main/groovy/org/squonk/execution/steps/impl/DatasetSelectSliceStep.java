@@ -65,9 +65,9 @@ public class DatasetSelectSliceStep<P extends BasicObject> extends AbstractDatas
      * @throws Exception
      */
     @Override
-    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input) throws Exception {
 
-        TypeConverter converter = findTypeConverter(context);
+        TypeConverter converter = findTypeConverter();
         int skip = getOption(OPTION_SKIP, Integer.class, converter, 0);
         Integer count = getOption(OPTION_COUNT, Integer.class, converter);
 

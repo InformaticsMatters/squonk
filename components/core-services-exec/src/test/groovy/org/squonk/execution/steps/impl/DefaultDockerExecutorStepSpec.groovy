@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import spock.lang.Specification
  */
 class DefaultDockerExecutorStepSpec extends Specification {
 
+    DefaultCamelContext context = new DefaultCamelContext()
+
     def createDataset() {
         def mols = [
                 new MoleculeObject('C', 'smiles', [idx: 0, a: 11, b: 'red',    c: 7, d: 5]),
@@ -50,20 +52,19 @@ class DefaultDockerExecutorStepSpec extends Specification {
                 null, null, "executor", 'busybox', cmd, [:])
 
         DefaultDockerExecutorStep step = new DefaultDockerExecutorStep()
-        step.configure(jobId, options, dsd)
+        step.configure(jobId, options, dsd, context, null)
         return step
     }
 
     void "simple execute using json"() {
 
-        DefaultCamelContext context = new DefaultCamelContext()
         Map args = ['docker.executor.id' :'id.busybox']
         String jobid = UUID.randomUUID().toString()
         DefaultDockerExecutorStep step = createStep(args, 'cp input.data.gz output.data.gz && cp input.metadata output.metadata', jobid)
         Dataset ds = createDataset()
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", ds), null)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", ds))
         def dataset = resultsMap["output"]
 
         then:

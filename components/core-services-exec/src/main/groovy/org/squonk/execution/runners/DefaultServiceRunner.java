@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,8 @@ public class DefaultServiceRunner implements ServiceRunner {
             LOG.info("Executing with " + data.size() + " inputs");
         }
 
-        Map<String,Object> outputs = step.execute(data, camelContext);
+        // TODO - handle auth
+        Map<String,Object> outputs = step.execute(data);
         results = new ArrayList<>();
         for (Map.Entry<String,Object> e : outputs.entrySet()) {
             String name = e.getKey();

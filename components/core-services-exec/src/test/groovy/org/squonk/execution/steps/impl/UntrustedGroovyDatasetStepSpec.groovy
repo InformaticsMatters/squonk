@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ class UntrustedGroovyDatasetStepSpec extends Specification {
                 "execute", [:])
 
         UntrustedGroovyDatasetScriptStep step = new UntrustedGroovyDatasetScriptStep()
-        step.configure(jobid, options, dsd)
+        step.configure(jobid, options, dsd, context, null)
         return step
     }
 
@@ -80,7 +80,7 @@ file2.renameTo 'output.data.gz'
         Dataset input = createDataset()
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def dataset = resultsMap["output"]
 
         then:
@@ -92,7 +92,7 @@ file2.renameTo 'output.data.gz'
 
     void "groovy consumer"() {
 
-        DefaultCamelContext context = new DefaultCamelContext()
+//        DefaultCamelContext context = new DefaultCamelContext()
         Map options = ['script' :'''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='*')
@@ -110,7 +110,7 @@ processDataset('input','output') { MoleculeObject mo ->
         Dataset input = createDataset()
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def dataset = resultsMap["output"]
 
         then:
@@ -124,7 +124,7 @@ processDataset('input','output') { MoleculeObject mo ->
 
     void "groovy function"() {
 
-        DefaultCamelContext context = new DefaultCamelContext()
+//        DefaultCamelContext context = new DefaultCamelContext()
         Map options = ['script' :'''
 @GrabResolver(name='local', root='file:///var/maven_repo/')
 @Grab(group='org.squonk.components', module='common', version='*')
@@ -145,7 +145,7 @@ processDatasetStream('input','output') { Stream<MoleculeObject> stream ->
         Dataset input = createDataset()
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def dataset = resultsMap["output"]
 
         then:

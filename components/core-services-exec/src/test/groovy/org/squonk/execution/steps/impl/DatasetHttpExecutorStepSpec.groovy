@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,10 +76,10 @@ class DatasetHttpExecutorStepSpec extends Specification {
                 null, "executor", 'http://localhost:8888/route1')
 
         DatasetHttpExecutorStep step = new DatasetHttpExecutorStep()
-        step.configure("test execute single", null, sd )
+        step.configure("test execute single", null, sd, context, null)
 
         when:
-        def resultsMap = step.execute(Collections.singletonMap("input", input), context)
+        def resultsMap = step.execute(Collections.singletonMap("input", input))
         def result = resultsMap["output"]
 
         then:
@@ -100,13 +100,13 @@ class DatasetHttpExecutorStepSpec extends Specification {
                 null, "executor", 'http://localhost:8888/route1')
 
         DatasetHttpExecutorStep step = new DatasetHttpExecutorStep()
-        step.configure("test execute single", null, sd )
+        step.configure("test execute single", null, sd, null, null )
 
         when:
-        def results1 = step.prepareInputs([input:input], null)
+        def results1 = step.prepareInputs([input:input])
         def shouldBeThin = results1["input"]
         shouldBeThin.items
-        def results2 = step.prepareOutputs([output:shouldBeThin], null)
+        def results2 = step.prepareOutputs([output:shouldBeThin])
         def shouldBeThick = results2["output"]
         shouldBeThick.items
 
@@ -150,10 +150,10 @@ class DatasetHttpExecutorStepSpec extends Specification {
                 null, "executor", 'http://localhost:8888/route')
 
         DatasetHttpExecutorStep step = new DatasetHttpExecutorStep()
-        step.configure("test thin execution", null, sd )
+        step.configure("test thin execution", null, sd, context, null)
 
         when:
-        def resultsMap = step.execute(Collections.singletonMap("input", input), context)
+        def resultsMap = step.execute(Collections.singletonMap("input", input))
         def result = resultsMap["output"]
 
         then:

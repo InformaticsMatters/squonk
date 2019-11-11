@@ -49,20 +49,30 @@ public class StepsCellJob implements Job<StepsCellExecutorJobDefinition> {
 
     protected final StepsCellExecutorJobDefinition jobdef;
     protected String jobid;
+    protected String auth;
     protected final JobStatusClient jobstatusClient;
     private static MessageQueueCredentials rabbitmqCredentials = new MessageQueueCredentials();
     private static final String mqueueUrl = rabbitmqCredentials.generateUrl(MQUEUE_JOB_STEPS_EXCHANGE_NAME, MQUEUE_JOB_STEPS_EXCHANGE_PARAMS);
 
-
     public StepsCellJob(JobStatusClient jobstatusClient, StepsCellExecutorJobDefinition jobdef) {
+        this(jobstatusClient, jobdef, null);
+    }
+
+    public StepsCellJob(JobStatusClient jobstatusClient, StepsCellExecutorJobDefinition jobdef, String auth) {
         this.jobstatusClient = jobstatusClient;
         this.jobdef = jobdef;
+        this.auth = auth;
     }
 
     public StepsCellJob(JobStatusClient jobstatusClient, JobStatus<StepsCellExecutorJobDefinition> jobStatus) {
+        this(jobstatusClient, jobStatus, null);
+    }
+
+    public StepsCellJob(JobStatusClient jobstatusClient, JobStatus<StepsCellExecutorJobDefinition> jobStatus, String auth) {
         this.jobstatusClient = jobstatusClient;
         this.jobdef = jobStatus.getJobDefinition();
         this.jobid = jobStatus.getJobId();
+        this.auth = auth;
     }
 
     @Override
@@ -143,6 +153,9 @@ public class StepsCellJob implements Job<StepsCellExecutorJobDefinition> {
         headers.put("rabbitmq.ROUTING_KEY", "jobs.steps");
         headers.put(StatsRecorder.HEADER_SQUONK_JOB_ID, jobid);
         headers.put(ServiceConstants.HEADER_SQUONK_USERNAME, username);
+        if (auth != null) {
+            headers.put(ServiceConstants.HEADER_AUTH, auth);
+        }
         // send to mqueue
         LOG.info("Sending job to queue " + mqueueUrl + " ->\n" + json);
         pt.sendBodyAndHeaders(mqueueUrl, json, headers);

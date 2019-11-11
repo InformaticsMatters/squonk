@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,16 +62,23 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
      * @param jobId
      * @param options
      * @param serviceDescriptor
+     * @param camelContext
+     * @param auth
      */
+    @Override
     public void configure(
             String jobId,
             Map<String, Object> options,
-            ServiceDescriptor serviceDescriptor) {
+            ServiceDescriptor serviceDescriptor,
+            CamelContext camelContext,
+            String auth) {
         this.jobId = jobId;
         this.options = options;
         this.inputs = serviceDescriptor == null ? null : serviceDescriptor.resolveInputIODescriptors();
         this.outputs = serviceDescriptor == null ? null :serviceDescriptor.resolveOutputIODescriptors();
         this.serviceDescriptor = serviceDescriptor;
+        this.camelContext = camelContext;
+        this.auth = auth;
     }
 
 
@@ -124,10 +131,10 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
     }
 
 
-    public Map<String,Object> execute(Map<String,Object> inputs, CamelContext context) throws Exception {
-        Map<String,Object> preparedInputs = prepareInputs(inputs, context);
-        Map<String,Object> outputs = doExecute(preparedInputs, context);
-        Map<String,Object> preparedOutputs = prepareOutputs(outputs, context);
+    public Map<String,Object> execute(Map<String,Object> inputs) throws Exception {
+        Map<String,Object> preparedInputs = prepareInputs(inputs);
+        Map<String,Object> outputs = doExecute(preparedInputs);
+        Map<String,Object> preparedOutputs = prepareOutputs(outputs);
         return preparedOutputs;
     }
 
@@ -135,15 +142,15 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
         doCleanup();
     }
 
-    protected Map<String,Object> prepareInputs(Map<String,Object> inputs, CamelContext context) throws Exception {
+    protected Map<String,Object> prepareInputs(Map<String,Object> inputs) throws Exception {
         return inputs;
     }
 
-    protected Map<String,Object> prepareOutputs(Map<String,Object> outputs, CamelContext context) throws Exception {
+    protected Map<String,Object> prepareOutputs(Map<String,Object> outputs) throws Exception {
         return outputs;
     }
 
-    protected abstract Map<String,Object> doExecute(Map<String,Object> inputs, CamelContext context) throws Exception;
+    protected abstract Map<String,Object> doExecute(Map<String,Object> inputs) throws Exception;
 
     protected void doCleanup() {
     }
@@ -179,7 +186,7 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
         return result;
     }
 
-    protected TypeConverter findTypeConverter(CamelContext camelContext) {
+    protected TypeConverter findTypeConverter() {
         if (camelContext == null) {
             return null;
         } else {
@@ -191,13 +198,12 @@ public abstract class AbstractStep extends ExecutableJob implements Step, Status
     /**
      * Converts the input value of the type specified by the from IODescriptor to the format specified by the to IODescriptor.
      *
-     * @param camelContext
      * @param from
      * @param to
      * @param value
      * @return
      */
-    protected Object convertValue(CamelContext camelContext, IODescriptor from, IODescriptor to, Object value) {
+    protected Object convertValue(IODescriptor from, IODescriptor to, Object value) {
 
         if (from.getMediaType().equals(to.getMediaType())) {
             return value;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,10 @@ class ChemblActivitiesFetcherStepSpec extends Specification {
         Long producer = 1
         step.configure("test fetch",
                 [(ChemblActivitiesFetcherStep.OPTION_ASSAY_ID):'CHEMBL864878'],
-                ChemblActivitiesFetcherStep.SERVICE_DESCRIPTOR)
+                ChemblActivitiesFetcherStep.SERVICE_DESCRIPTOR, null, null)
         
         when:
-        def resultsMap = step.doExecute(null, null)
+        def resultsMap = step.doExecute(null)
         def dataset = resultsMap["output"]
         
         then:

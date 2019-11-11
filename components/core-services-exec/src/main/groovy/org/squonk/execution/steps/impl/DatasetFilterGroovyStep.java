@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,9 +66,9 @@ public class DatasetFilterGroovyStep<P extends BasicObject> extends AbstractData
     public static final String OPTION_SCRIPT = StepDefinitionConstants.TrustedGroovyDataset.OPTION_SCRIPT;
 
     @Override
-    protected Dataset<P> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
+    protected Dataset<P> doExecuteWithDataset(Dataset<P> input) throws Exception {
 
-        TypeConverter converter = findTypeConverter(context);
+        TypeConverter converter = findTypeConverter();
         String script = getOption(OPTION_SCRIPT, String.class, converter);
         if (script == null) {
             throw new IllegalStateException("Script not defined. Should be present as option named " + OPTION_SCRIPT);

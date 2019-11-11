@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,11 +48,12 @@ class ValueTransformerStepSpec extends Specification {
         ValueTransformerStep step = new ValueTransformerStep()
         step.configure("test write mols",
                 [(ValueTransformerStep.OPTION_TRANSFORMS):tdefs],
-                ValueTransformerStep.SERVICE_DESCRIPTOR
+                ValueTransformerStep.SERVICE_DESCRIPTOR,
+                context, null
         )
         
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def dataset = resultsMap["output"]
 
         then:

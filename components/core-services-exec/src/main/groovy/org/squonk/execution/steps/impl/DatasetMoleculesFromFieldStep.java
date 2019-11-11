@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.squonk.execution.steps.impl;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.TypeConverter;
 import org.squonk.core.DefaultServiceDescriptor;
 import org.squonk.core.ServiceConfig;
@@ -74,13 +73,12 @@ public class DatasetMoleculesFromFieldStep<P extends BasicObject> extends Abstra
     /**
      *
      * @param input
-     * @param context
      * @throws Exception
      */
     @Override
-    protected Dataset<MoleculeObject> doExecuteWithDataset(Dataset<P> input, CamelContext context) throws Exception {
+    protected Dataset<MoleculeObject> doExecuteWithDataset(Dataset<P> input) throws Exception {
 
-        TypeConverter converter = findTypeConverter(context);
+        TypeConverter converter = findTypeConverter();
         String fieldName = getOption(OPTION_MOLECULES_FIELD, String.class, converter);
         if (fieldName == null) {
             throw new IllegalStateException("Selected field not found. Option named " + OPTION_MOLECULES_FIELD + " must present");

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,9 +97,9 @@ public class BasicObjectToMoleculeObjectStep extends AbstractDatasetStep<BasicOb
 
 
     @Override
-    protected Dataset<MoleculeObject> doExecuteWithDataset(Dataset<BasicObject> input, CamelContext context) throws Exception {
+    protected Dataset<MoleculeObject> doExecuteWithDataset(Dataset<BasicObject> input) throws Exception {
 
-        TypeConverter converter = findTypeConverter(context);
+        TypeConverter converter = findTypeConverter();
         String structureFieldName = getOption(OPTION_STRUCTURE_FIELD_NAME, String.class, converter, DEFAULT_STRUCTURE_FIELD_NAME);
         String structureFormat = getOption(OPTION_STRUCTURE_FORMAT, String.class, converter);
         boolean preserveUuid = getOption(OPTION_PRESERVE_UUID, Boolean.class, converter, true);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,10 +76,11 @@ class DatasetEnricherStepSpec extends Specification {
         step.configure(
                 "merge bo datasets using field",
                 [(DatasetEnricherStep.OPT_MAIN_FIELD): 'id', (DatasetEnricherStep.OPT_EXTRA_FIELD): 'id'],
-                DatasetEnricherStep.SERVICE_DESCRIPTOR)
+                DatasetEnricherStep.SERVICE_DESCRIPTOR,
+                context, null)
 
         when:
-        def resultsMap = step.doExecute(inputs, context)
+        def resultsMap = step.doExecute(inputs)
         def result = resultsMap["output"]
 
         then:
@@ -100,10 +101,11 @@ class DatasetEnricherStepSpec extends Specification {
 
         DatasetEnricherStep step = new DatasetEnricherStep()
         step.configure("merge bo datasets using uuid", null,
-                DatasetEnricherStep.SERVICE_DESCRIPTOR)
+                DatasetEnricherStep.SERVICE_DESCRIPTOR,
+                context, null)
 
         when:
-        def resultsMap = step.doExecute(inputs, context)
+        def resultsMap = step.doExecute(inputs)
         def result = resultsMap["output"]
 
         then:
@@ -125,10 +127,11 @@ class DatasetEnricherStepSpec extends Specification {
         DatasetEnricherStep step = new DatasetEnricherStep()
         step.configure("merge mo datasets using field",
                 [(DatasetEnricherStep.OPT_MAIN_FIELD): 'id', (DatasetEnricherStep.OPT_EXTRA_FIELD): 'id', (DatasetEnricherStep.OPT_MERGE_MODE): "both"],
-                DatasetEnricherStep.SERVICE_DESCRIPTOR)
+                DatasetEnricherStep.SERVICE_DESCRIPTOR,
+                context, null)
 
         when:
-        def resultsMap = step.doExecute(inputs, context)
+        def resultsMap = step.doExecute(inputs)
         def result = resultsMap["output"]
 
         then:
@@ -150,12 +153,13 @@ class DatasetEnricherStepSpec extends Specification {
         DatasetEnricherStep step = new DatasetEnricherStep()
         step.configure("merge mo datasets using uuid",
                 [(DatasetEnricherStep.OPT_MERGE_MODE): "both"],
-                DatasetEnricherStep.SERVICE_DESCRIPTOR
+                DatasetEnricherStep.SERVICE_DESCRIPTOR,
+                context, null
         )
 
 
         when:
-        def resultsMap = step.doExecute(inputs, context)
+        def resultsMap = step.doExecute(inputs)
         def result = resultsMap["output"]
 
         then:

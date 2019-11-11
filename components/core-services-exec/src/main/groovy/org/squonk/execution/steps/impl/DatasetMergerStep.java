@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ public class DatasetMergerStep extends AbstractThinStep {
     }
 
     @Override
-    public Map<String, Object> doExecute(Map<String, Object> inputs, CamelContext context) throws Exception {
+    public Map<String, Object> doExecute(Map<String, Object> inputs) throws Exception {
 
         if (inputs == null || inputs.size() == 0) {
             throw new IllegalArgumentException("No data to merge");

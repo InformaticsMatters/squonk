@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,10 +75,7 @@ class ThinDatasetDockerExecutorStepSpec extends Specification {
                 null, null, "executor", 'busybox', cmd, [:])
 
         ThinDatasetDockerExecutorStep step = new ThinDatasetDockerExecutorStep()
-        step.configure(jobId,
-                options,
-                dsd
-        )
+        step.configure(jobId, options, dsd, context, null)
         return step
     }
 
@@ -94,7 +91,7 @@ class ThinDatasetDockerExecutorStepSpec extends Specification {
         Dataset input = createDataset()
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def result = resultsMap["output"]
 
         then:
@@ -114,7 +111,7 @@ class ThinDatasetDockerExecutorStepSpec extends Specification {
                 IODescriptors.createZipFile("output"))
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def zip = resultsMap["output"]
 
 
@@ -134,7 +131,7 @@ class ThinDatasetDockerExecutorStepSpec extends Specification {
                 IODescriptors.createSDF("output"))
 
         when:
-        def resultsMap = step.doExecute(Collections.singletonMap("input", input), context)
+        def resultsMap = step.doExecute(Collections.singletonMap("input", input))
         def output = resultsMap["output"]
 
         then:

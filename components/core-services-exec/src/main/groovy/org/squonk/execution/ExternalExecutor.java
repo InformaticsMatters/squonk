@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Informatics Matters Ltd.
+ * Copyright (c) 2019 Informatics Matters Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,6 +80,7 @@ public class ExternalExecutor extends ExecutableJob {
             Map<String, Object> options,
             ServiceDescriptor serviceDescriptor,
             CamelContext camelContext,
+            String auth,
             ExecutorCallback callback) {
         this.jobDefinition = jobDefinition;
         this.jobId = jobDefinition.getJobId();
@@ -87,6 +88,7 @@ public class ExternalExecutor extends ExecutableJob {
         this.options = options;
         this.serviceDescriptor = serviceDescriptor;
         this.camelContext = camelContext;
+        this.auth = auth;
         this.callback = callback;
 
     }
@@ -189,6 +191,7 @@ public class ExternalExecutor extends ExecutableJob {
         ServiceDescriptor serviceDescriptor = getServiceDescriptor();
         LOG.info("Input types are " + IOUtils.joinArray(serviceDescriptor.getServiceConfig().getInputDescriptors(), ","));
         LOG.info("Output types are " + IOUtils.joinArray(serviceDescriptor.getServiceConfig().getOutputDescriptors(), ","));
+        LOG.info("Is authenticated? " + (auth != null));
 
         try {
             if (serviceDescriptor instanceof DockerServiceDescriptor) {
@@ -223,7 +226,7 @@ public class ExternalExecutor extends ExecutableJob {
         Class cls = Class.forName(execClsName);
         if (AbstractStep.class.isAssignableFrom(cls)) {
             AbstractStep step = (AbstractStep)cls.newInstance();
-            step.configure(jobId, options, serviceDescriptor);
+            step.configure(jobId, options, serviceDescriptor, camelContext, auth);
             DefaultServiceRunner serviceRunner = new DefaultServiceRunner(jobId, step, camelContext);
             runner = serviceRunner;
             updateStatus(Status.RUNNING);
@@ -253,8 +256,8 @@ public class ExternalExecutor extends ExecutableJob {
         Class cls = Class.forName(execClsName);
         if (DefaultDockerExecutorStep.class.isAssignableFrom(cls)) {
             DefaultDockerExecutorStep step = (DefaultDockerExecutorStep) cls.newInstance();
-            step.configure(jobId, options, descriptor);
-            Map<String,Object> variables = step.doExecute(data, camelContext);
+            step.configure(jobId, options, descriptor, camelContext, auth);
+            Map<String,Object> variables = step.doExecute(data);
             runner = step.getContainerRunner();
             Map<String, List<SquonkDataSource>> outputs = new HashMap<>();
             for (Map.Entry<String,Object> e: variables.entrySet()) {
@@ -275,7 +278,7 @@ public class ExternalExecutor extends ExecutableJob {
         Class cls = Class.forName(execClsName);
         if (DatasetNextflowInDockerExecutorStep.class.isAssignableFrom(cls)) {
             DatasetNextflowInDockerExecutorStep step = (DatasetNextflowInDockerExecutorStep) cls.newInstance();
-            step.configure(jobId, options, descriptor);
+            step.configure(jobId, options, descriptor, camelContext, auth);
             Map<String, List<SquonkDataSource>> outputs = step.executeForDataSources(data, camelContext);
             runner = step.getContainerRunner();
             results.putAll(outputs);
